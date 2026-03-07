@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, Camera, Save } from "lucide-react";
 import Link from "next/link";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { createClient } from "@/lib/supabase/client";
@@ -52,16 +53,19 @@ export default function ProfileEditPage() {
         .eq("id", user.id);
 
       if (updateError) {
+        toast.error("Speichern fehlgeschlagen.");
         setError("Speichern fehlgeschlagen.");
         setSaving(false);
         return;
       }
 
+      toast.success("Profil gespeichert!");
       setSuccess(true);
       setSaving(false);
       // Kurz warten, dann zurück zum Profil
       setTimeout(() => router.push("/profile"), 1000);
     } catch {
+      toast.error("Netzwerkfehler. Bitte versuchen Sie es erneut.");
       setError("Netzwerkfehler. Bitte versuchen Sie es erneut.");
       setSaving(false);
     }

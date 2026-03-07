@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useState, useEffect } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -10,7 +10,16 @@ import { createClient } from "@/lib/supabase/client";
 
 type Step = "credentials" | "invite" | "profile" | "mode";
 
+// Wrapper mit Suspense-Boundary für useSearchParams
 export default function RegisterPage() {
+  return (
+    <Suspense fallback={<div className="py-12 text-center text-muted-foreground">Laden...</div>}>
+      <RegisterForm />
+    </Suspense>
+  );
+}
+
+function RegisterForm() {
   const [step, setStep] = useState<Step>("credentials");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -20,6 +29,15 @@ export default function RegisterPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
+  const searchParams = useSearchParams();
+
+  // QR-Code Onboarding: Invite-Code aus URL übernehmen
+  useEffect(() => {
+    const invite = searchParams.get("invite");
+    if (invite) {
+      setInviteCode(invite.toUpperCase());
+    }
+  }, [searchParams]);
 
   const totalSteps = 4;
   const currentStep = { credentials: 1, invite: 2, profile: 3, mode: 4 }[step];

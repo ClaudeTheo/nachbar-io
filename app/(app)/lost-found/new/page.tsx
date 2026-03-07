@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, Check } from "lucide-react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -56,13 +57,16 @@ export default function LostFoundNewPage() {
       });
 
       if (insertError) {
+        toast.error("Speichern fehlgeschlagen.");
         setError("Speichern fehlgeschlagen.");
         setSaving(false);
         return;
       }
 
+      toast.success("Meldung erfolgreich erstellt!");
       setStep(3);
     } catch {
+      toast.error("Netzwerkfehler. Bitte versuchen Sie es erneut.");
       setError("Netzwerkfehler.");
       setSaving(false);
     }

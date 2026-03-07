@@ -96,7 +96,7 @@ export default function DashboardPage() {
 
   return (
     <PullToRefresh onRefresh={loadDashboard}>
-    <div className="space-y-6">
+    <div className="space-y-6 animate-fade-in-up">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -123,7 +123,7 @@ export default function DashboardPage() {
       {alerts.length > 0 && (
         <section>
           <SectionHeader title="Aktuelle Hilfeanfragen" href="/alerts" count={alerts.length} />
-          <div className="space-y-3">
+          <div className="space-y-3 animate-stagger">
             {alerts.map((alert) => (
               <AlertCard key={alert.id} alert={alert} />
             ))}
@@ -238,22 +238,30 @@ export default function DashboardPage() {
           {/* Schnelleinstieg */}
           <section>
             <h2 className="mb-2 font-semibold text-anthrazit">Entdecken</h2>
-            <div className="grid grid-cols-2 gap-2">
-              <Link href="/map" className="flex flex-col items-center gap-1 rounded-lg bg-white p-4 shadow-sm hover:bg-muted/50">
+            <div className="grid grid-cols-3 gap-2">
+              <Link href="/map" className="flex flex-col items-center gap-1 rounded-lg bg-white p-3 shadow-sm hover:bg-muted/50">
                 <span className="text-2xl">🗺️</span>
-                <span className="text-sm font-medium text-anthrazit">Quartierskarte</span>
+                <span className="text-xs font-medium text-anthrazit">Karte</span>
               </Link>
-              <Link href="/help" className="flex flex-col items-center gap-1 rounded-lg bg-white p-4 shadow-sm hover:bg-muted/50">
+              <Link href="/help" className="flex flex-col items-center gap-1 rounded-lg bg-white p-3 shadow-sm hover:bg-muted/50">
                 <span className="text-2xl">🤝</span>
-                <span className="text-sm font-medium text-anthrazit">Hilfe-Börse</span>
+                <span className="text-xs font-medium text-anthrazit">Hilfe-Börse</span>
               </Link>
-              <Link href="/marketplace" className="flex flex-col items-center gap-1 rounded-lg bg-white p-4 shadow-sm hover:bg-muted/50">
+              <Link href="/marketplace" className="flex flex-col items-center gap-1 rounded-lg bg-white p-3 shadow-sm hover:bg-muted/50">
                 <span className="text-2xl">🛒</span>
-                <span className="text-sm font-medium text-anthrazit">Marktplatz</span>
+                <span className="text-xs font-medium text-anthrazit">Marktplatz</span>
               </Link>
-              <Link href="/lost-found" className="flex flex-col items-center gap-1 rounded-lg bg-white p-4 shadow-sm hover:bg-muted/50">
+              <Link href="/events" className="flex flex-col items-center gap-1 rounded-lg bg-white p-3 shadow-sm hover:bg-muted/50">
+                <span className="text-2xl">📅</span>
+                <span className="text-xs font-medium text-anthrazit">Events</span>
+              </Link>
+              <Link href="/messages" className="flex flex-col items-center gap-1 rounded-lg bg-white p-3 shadow-sm hover:bg-muted/50">
+                <span className="text-2xl">💬</span>
+                <span className="text-xs font-medium text-anthrazit">Nachrichten</span>
+              </Link>
+              <Link href="/lost-found" className="flex flex-col items-center gap-1 rounded-lg bg-white p-3 shadow-sm hover:bg-muted/50">
                 <span className="text-2xl">🔍</span>
-                <span className="text-sm font-medium text-anthrazit">Fundstücke</span>
+                <span className="text-xs font-medium text-anthrazit">Fundbüro</span>
               </Link>
             </div>
           </section>

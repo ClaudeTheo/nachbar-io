@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { EmergencyBanner } from "@/components/EmergencyBanner";
@@ -54,7 +55,7 @@ export default function NewAlertPage() {
       .single();
 
     if (!membership) {
-      alert("Ihr Haushalt konnte nicht ermittelt werden. Bitte kontaktieren Sie den Admin.");
+      toast.error("Ihr Haushalt konnte nicht ermittelt werden. Bitte kontaktieren Sie den Admin.");
       setLoading(false);
       return;
     }
@@ -73,11 +74,12 @@ export default function NewAlertPage() {
     });
 
     if (error) {
-      alert("Fehler beim Senden der Hilfeanfrage.");
+      toast.error("Fehler beim Senden der Hilfeanfrage.");
       setLoading(false);
       return;
     }
 
+    toast.success("Hilferuf gesendet! Ihre Nachbarn werden benachrichtigt.");
     setStep("sent");
     setLoading(false);
   }

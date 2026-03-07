@@ -155,9 +155,86 @@
   padding-bottom: env(safe-area-inset-bottom, 0px);
 }
 
+/* Sanfte Einblend-Animation für Karten und Inhalte */
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in-up {
+  animation: fade-in-up 0.3s ease-out;
+}
+
+/* Stagger-Animation für Listen */
+@keyframes fade-in-stagger {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-stagger > * {
+  animation: fade-in-stagger 0.3s ease-out both;
+}
+.animate-stagger > *:nth-child(1) { animation-delay: 0ms; }
+.animate-stagger > *:nth-child(2) { animation-delay: 50ms; }
+.animate-stagger > *:nth-child(3) { animation-delay: 100ms; }
+.animate-stagger > *:nth-child(4) { animation-delay: 150ms; }
+.animate-stagger > *:nth-child(5) { animation-delay: 200ms; }
+.animate-stagger > *:nth-child(6) { animation-delay: 250ms; }
+
+/* Sanfte Skalierung für Buttons beim Klicken */
+@keyframes press {
+  0% { transform: scale(1); }
+  50% { transform: scale(0.97); }
+  100% { transform: scale(1); }
+}
+
+.animate-press:active {
+  animation: press 0.15s ease-out;
+}
+
+/* Shimmer-Effekt für Lade-Skelette */
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.animate-shimmer {
+  background: linear-gradient(90deg, #f0f0ec 25%, #e5e5e0 50%, #f0f0ec 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s ease-in-out infinite;
+}
+
+/* Erfolgs-Checkmark Animation */
+@keyframes check-bounce {
+  0% { transform: scale(0); }
+  50% { transform: scale(1.2); }
+  100% { transform: scale(1); }
+}
+
+.animate-check-bounce {
+  animation: check-bounce 0.4s ease-out;
+}
+
 /* Reduzierte Bewegung respektieren */
 @media (prefers-reduced-motion: reduce) {
-  .animate-pulse-alert {
+  .animate-pulse-alert,
+  .animate-fade-in-up,
+  .animate-stagger > *,
+  .animate-press:active,
+  .animate-shimmer,
+  .animate-check-bounce {
     animation: none;
   }
 }

@@ -116,6 +116,18 @@ export const PUSH_LIMITS = {
   quietHoursEnd: 7, // 07:00 Uhr
 } as const;
 
+// Event-Kategorien (Phase 2: Veranstaltungskalender)
+export const EVENT_CATEGORIES = [
+  { id: "community", label: "Nachbarschaftstreffen", icon: "🏘️" },
+  { id: "sports", label: "Sport & Bewegung", icon: "⚽" },
+  { id: "culture", label: "Kultur & Bildung", icon: "🎭" },
+  { id: "market", label: "Flohmarkt & Tausch", icon: "🛍️" },
+  { id: "kids", label: "Kinder & Familie", icon: "👨‍👩‍👧" },
+  { id: "seniors", label: "Seniorentreff", icon: "☕" },
+  { id: "cleanup", label: "Putzaktion & Garten", icon: "🧹" },
+  { id: "other", label: "Sonstiges", icon: "📅" },
+] as const;
+
 // Trust-Level
 export const TRUST_LEVELS = {
   new: { label: "Registriert", color: "gray" },

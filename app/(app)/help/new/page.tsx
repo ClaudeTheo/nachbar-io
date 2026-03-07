@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -62,15 +63,18 @@ export default function NewHelpPage() {
 
       if (insertError) {
         console.error("Hilfe-Eintrag Fehler:", insertError);
+        toast.error(`Fehler: ${insertError.message}`);
         setError(`Fehler: ${insertError.message}`);
         setLoading(false);
         return;
       }
 
+      toast.success(helpType === "need" ? "Hilfegesuch veröffentlicht!" : "Hilfsangebot veröffentlicht!");
       setStep("done");
       setLoading(false);
     } catch (err) {
       console.error("Netzwerkfehler:", err);
+      toast.error("Netzwerkfehler. Bitte versuchen Sie es erneut.");
       setError("Netzwerkfehler. Bitte versuchen Sie es erneut.");
       setLoading(false);
     }

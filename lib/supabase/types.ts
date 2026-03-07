@@ -156,3 +156,62 @@ export interface Notification {
   read: boolean;
   created_at: string;
 }
+
+// Phase 2: Veranstaltungskalender
+export type EventCategory =
+  | "community"
+  | "sports"
+  | "culture"
+  | "market"
+  | "kids"
+  | "seniors"
+  | "cleanup"
+  | "other";
+
+export interface Event {
+  id: string;
+  user_id: string;
+  title: string;
+  description: string | null;
+  location: string | null;
+  event_date: string;
+  event_time: string | null;
+  end_time: string | null;
+  category: EventCategory;
+  max_participants: number | null;
+  created_at: string;
+  user?: Pick<User, "display_name" | "avatar_url">;
+  participant_count?: number;
+  my_status?: "going" | "interested" | "cancelled" | null;
+}
+
+export interface EventParticipant {
+  id: string;
+  event_id: string;
+  user_id: string;
+  status: "going" | "interested" | "cancelled";
+  created_at: string;
+  user?: Pick<User, "display_name" | "avatar_url">;
+}
+
+// Phase 2: Direktnachrichten
+export interface Conversation {
+  id: string;
+  participant_1: string;
+  participant_2: string;
+  last_message_at: string;
+  created_at: string;
+  other_user?: Pick<User, "display_name" | "avatar_url">;
+  last_message?: string;
+  unread_count?: number;
+}
+
+export interface DirectMessage {
+  id: string;
+  conversation_id: string;
+  sender_id: string;
+  content: string;
+  read_at: string | null;
+  created_at: string;
+  sender?: Pick<User, "display_name" | "avatar_url">;
+}

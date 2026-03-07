@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Shield, Users, Home, Bell, BarChart3, RefreshCw, HandHelping, ShoppingBag, TrendingUp, CheckCircle } from "lucide-react";
+import { Shield, Users, Home, Bell, RefreshCw, HandHelping, ShoppingBag, TrendingUp, CheckCircle, QrCode } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -239,9 +239,18 @@ export default function AdminPage() {
                   <p className="font-semibold text-anthrazit">
                     {h.street_name} {h.house_number}
                   </p>
-                  <p className="text-xs text-muted-foreground">
-                    Code: <span className="font-mono font-bold">{h.invite_code}</span>
-                  </p>
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                    <span>Code: <span className="font-mono font-bold">{h.invite_code}</span></span>
+                    <a
+                      href={`/api/qr?code=${h.invite_code}&size=400`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-0.5 text-quartier-green hover:underline"
+                      title="QR-Code anzeigen"
+                    >
+                      <QrCode className="h-3 w-3" /> QR
+                    </a>
+                  </div>
                 </div>
                 <Badge variant={h.memberCount > 0 ? "default" : "secondary"}>
                   {h.memberCount > 0 ? `${h.memberCount} Bewohner` : "Frei"}

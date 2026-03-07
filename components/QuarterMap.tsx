@@ -33,7 +33,13 @@ export function QuarterMap({
     );
   }
 
-  return <QuarterMapInner households={households} onMarkerClick={onMarkerClick} className={className} />;
+  return (
+    <QuarterMapInner
+      households={households}
+      onMarkerClick={onMarkerClick}
+      className={className}
+    />
+  );
 }
 
 // Innere Komponente die Leaflet nur auf dem Client importiert
@@ -52,12 +58,10 @@ function QuarterMapInner({
   } | null>(null);
 
   useEffect(() => {
-    // Dynamischer Import von Leaflet (Client-only)
     Promise.all([
       import("react-leaflet"),
       import("leaflet"),
     ]).then(([reactLeaflet, L]) => {
-      // Standard-Icon-Fix für Leaflet mit Webpack/Next.js
       delete (L.default.Icon.Default.prototype as unknown as Record<string, unknown>)._getIconUrl;
       L.default.Icon.Default.mergeOptions({
         iconRetinaUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon-2x.png",
@@ -88,34 +92,50 @@ function QuarterMapInner({
 
   const { MapContainer, TileLayer, Marker, Popup, L } = leaflet;
 
-  // Custom Icons für verschiedene Status — mit Hausnummer-Label
-  const createIcon = (color: string, label?: string) =>
-    L.divIcon({
+  // Licht-Icon: Hausnummer mit leuchtendem Status-Licht
+  const createLightIcon = (
+    status: "ok" | "alert" | "help_coming",
+    houseNumber?: string
+  ) => {
+    const colors = {
+      ok: { bg: "#4CAF87", glow: "0 0 6px 2px rgba(76,175,135,0.5)", pulse: "" },
+      alert: {
+        bg: "#F59E0B",
+        glow: "0 0 10px 3px rgba(245,158,11,0.6)",
+        pulse: "animation: pulse-alert 2s ease-in-out infinite;",
+      },
+      help_coming: { bg: "#22C55E", glow: "0 0 8px 2px rgba(34,197,94,0.5)", pulse: "" },
+    };
+
+    const { bg, glow, pulse } = colors[status];
+    const size = status === "ok" ? 14 : 22;
+    const fontSize = status === "ok" ? 9 : 12;
+    const border = status === "ok" ? 2 : 3;
+
+    return L.divIcon({
       className: "custom-marker",
       html: `<div style="
         position: relative;
-        width: 20px; height: 20px; border-radius: 50%;
-        background: ${color}; border: 2.5px solid white;
-        box-shadow: 0 2px 5px rgba(0,0,0,0.3);
-        ${color === "#F59E0B" ? "animation: pulse-alert 2s ease-in-out infinite;" : ""}
-      "></div>${label ? `<div style="
-        position: absolute; top: 22px; left: 50%;
+        width: ${size}px; height: ${size}px; border-radius: 50%;
+        background: ${bg}; border: ${border}px solid rgba(255,255,255,0.9);
+        box-shadow: ${glow};
+        ${status !== "ok" ? `display: flex; align-items: center; justify-content: center;
+        font-size: ${fontSize}px; font-weight: 900; color: white;` : ""}
+        ${pulse}
+      ">${status === "alert" ? "!" : status === "help_coming" ? "✓" : ""}</div>${houseNumber ? `<div style="
+        position: absolute; top: ${size + 2}px; left: 50%;
         transform: translateX(-50%);
-        font-size: 10px; font-weight: 700;
+        font-size: ${status === "ok" ? 9 : 10}px; font-weight: 700;
         color: #2D3142; white-space: nowrap;
         text-shadow: 0 0 3px white, 0 0 3px white, 0 0 3px white, 0 0 3px white;
-      ">${label}</div>` : ""}`,
-      iconSize: [20, 30],
-      iconAnchor: [10, 10],
+      ">${houseNumber}</div>` : ""}`,
+      iconSize: [size, size + 14],
+      iconAnchor: [size / 2, size / 2],
     });
-
-  const defaultColor = "#4CAF87";
-  const alertColor = "#F59E0B";
-  const helpComingColor = "#22C55E";
+  };
 
   return (
     <>
-      {/* Leaflet CSS */}
       <link
         rel="stylesheet"
         href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"
@@ -136,8 +156,8 @@ function QuarterMapInner({
         {households?.map((household) => {
           const hasAlert = household.alert?.status === "open";
           const helpComing = household.alert?.status === "help_coming";
-          const color = hasAlert ? alertColor : helpComing ? helpComingColor : defaultColor;
-          const icon = createIcon(color, household.house_number);
+          const status = hasAlert ? "alert" : helpComing ? "help_coming" : "ok";
+          const icon = createLightIcon(status, household.house_number);
 
           return (
             <Marker
@@ -153,10 +173,12 @@ function QuarterMapInner({
                   <p className="font-semibold">
                     {household.street_name} {household.house_number}
                   </p>
-                  {household.alert && (
-                    <p className={`mt-1 ${hasAlert ? "text-alert-amber" : "text-quartier-green"}`}>
+                  {household.alert ? (
+                    <p className={`mt-1 font-medium ${hasAlert ? "text-alert-amber" : "text-quartier-green"}`}>
                       {household.alert.title}
                     </p>
+                  ) : (
+                    <p className="mt-1 text-muted-foreground">Alles in Ordnung</p>
                   )}
                 </div>
               </Popup>

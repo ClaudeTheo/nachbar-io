@@ -14,7 +14,6 @@ export default function MapPage() {
     async function load() {
       const supabase = createClient();
 
-      // Alle Haushalte mit aktiven Alerts laden
       const { data: householdData } = await supabase
         .from("households")
         .select("*")
@@ -57,17 +56,17 @@ export default function MapPage() {
       />
 
       {/* Legende */}
-      <div className="mt-3 flex items-center gap-4 text-xs text-muted-foreground">
-        <span className="flex items-center gap-1">
-          <span className="inline-block h-3 w-3 rounded-full bg-quartier-green" />
-          Haushalt
+      <div className="mt-3 flex flex-wrap items-center gap-4 text-xs text-muted-foreground">
+        <span className="flex items-center gap-1.5">
+          <span className="inline-block h-3 w-3 rounded-full bg-quartier-green" style={{ boxShadow: "0 0 4px #4CAF87" }} />
+          Alles gut
         </span>
-        <span className="flex items-center gap-1">
-          <span className="inline-block h-3 w-3 rounded-full bg-alert-amber animate-pulse-alert" />
+        <span className="flex items-center gap-1.5">
+          <span className="inline-block h-3 w-3 rounded-full bg-alert-amber animate-pulse-alert" style={{ boxShadow: "0 0 6px #F59E0B" }} />
           Hilfe gesucht
         </span>
-        <span className="flex items-center gap-1">
-          <span className="inline-block h-3 w-3 rounded-full bg-success-green" />
+        <span className="flex items-center gap-1.5">
+          <span className="inline-block h-3 w-3 rounded-full bg-success-green" style={{ boxShadow: "0 0 4px #22C55E" }} />
           Hilfe unterwegs
         </span>
       </div>

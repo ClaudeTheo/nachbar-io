@@ -41,22 +41,40 @@ export default function RegisterPage() {
     setLoading(true);
     setError(null);
 
-    // Invite-Code gegen die Datenbank prüfen
-    const supabase = createClient();
-    const { data: household } = await supabase
-      .from("households")
-      .select("id, street_name, house_number")
-      .eq("invite_code", inviteCode.trim().toUpperCase())
-      .single();
+    try {
+      // Invite-Code gegen die Datenbank prüfen
+      const supabase = createClient();
+      const { data: household, error: queryError } = await supabase
+        .from("households")
+        .select("id, street_name, house_number")
+        .eq("invite_code", inviteCode.trim().toUpperCase())
+        .single();
 
-    if (!household) {
-      setError("Ungültiger Einladungscode. Bitte prüfen Sie den Code auf Ihrem Brief.");
+      if (queryError) {
+        console.error("Invite-Code Prüfung fehlgeschlagen:", queryError);
+        if (queryError.code === "PGRST116") {
+          // No rows found — invalid code
+          setError("Ungültiger Einladungscode. Bitte prüfen Sie den Code auf Ihrem Brief.");
+        } else {
+          setError(`Verbindungsfehler: ${queryError.message}`);
+        }
+        setLoading(false);
+        return;
+      }
+
+      if (!household) {
+        setError("Ungültiger Einladungscode. Bitte prüfen Sie den Code auf Ihrem Brief.");
+        setLoading(false);
+        return;
+      }
+
       setLoading(false);
-      return;
+      setStep("profile");
+    } catch (err) {
+      console.error("Netzwerkfehler bei Invite-Code:", err);
+      setError("Netzwerkfehler. Bitte prüfen Sie Ihre Internetverbindung.");
+      setLoading(false);
     }
-
-    setLoading(false);
-    setStep("profile");
   }
 
   async function handleProfile(e: React.FormEvent) {
@@ -72,56 +90,78 @@ export default function RegisterPage() {
     setLoading(true);
     setError(null);
 
-    const supabase = createClient();
+    try {
+      const supabase = createClient();
 
-    // 1. Account erstellen
-    const { data: authData, error: authError } = await supabase.auth.signUp({
-      email,
-      password,
-    });
-
-    if (authError || !authData.user) {
-      setError("Registrierung fehlgeschlagen. Bitte versuchen Sie es erneut.");
-      setLoading(false);
-      return;
-    }
-
-    // 2. User-Profil erstellen
-    const { error: profileError } = await supabase.from("users").insert({
-      id: authData.user.id,
-      email_hash: "", // Wird serverseitig gesetzt
-      display_name: displayName.trim(),
-      ui_mode: uiMode,
-      trust_level: "verified",
-    });
-
-    if (profileError) {
-      setError("Profil konnte nicht erstellt werden.");
-      setLoading(false);
-      return;
-    }
-
-    // 3. Haushalt-Zuordnung erstellen
-    const { data: household } = await supabase
-      .from("households")
-      .select("id")
-      .eq("invite_code", inviteCode.trim().toUpperCase())
-      .single();
-
-    if (household) {
-      await supabase.from("household_members").insert({
-        household_id: household.id,
-        user_id: authData.user.id,
-        role: "member",
-        verified_at: new Date().toISOString(),
+      // 1. Account erstellen
+      const { data: authData, error: authError } = await supabase.auth.signUp({
+        email,
+        password,
       });
-    }
 
-    // 4. Weiterleitung
-    if (uiMode === "senior") {
-      router.push("/senior/home");
-    } else {
-      router.push("/dashboard");
+      if (authError) {
+        console.error("SignUp-Fehler:", authError);
+        setError(`Registrierung fehlgeschlagen: ${authError.message}`);
+        setLoading(false);
+        return;
+      }
+
+      if (!authData.user) {
+        setError("Registrierung fehlgeschlagen. Bitte versuchen Sie es erneut.");
+        setLoading(false);
+        return;
+      }
+
+      // 2. User-Profil erstellen
+      const { error: profileError } = await supabase.from("users").insert({
+        id: authData.user.id,
+        email_hash: "",
+        display_name: displayName.trim(),
+        ui_mode: uiMode,
+        trust_level: "verified",
+      });
+
+      if (profileError) {
+        console.error("Profil-Fehler:", profileError);
+        setError(`Profil konnte nicht erstellt werden: ${profileError.message}`);
+        setLoading(false);
+        return;
+      }
+
+      // 3. Haushalt-Zuordnung erstellen
+      const { data: household, error: householdError } = await supabase
+        .from("households")
+        .select("id")
+        .eq("invite_code", inviteCode.trim().toUpperCase())
+        .single();
+
+      if (householdError) {
+        console.error("Haushalt-Fehler:", householdError);
+      }
+
+      if (household) {
+        const { error: memberError } = await supabase.from("household_members").insert({
+          household_id: household.id,
+          user_id: authData.user.id,
+          role: "member",
+          verified_at: new Date().toISOString(),
+        });
+
+        if (memberError) {
+          console.error("Mitglied-Fehler:", memberError);
+        }
+      }
+
+      // 4. Weiterleitung
+      if (uiMode === "senior") {
+        router.push("/senior/home");
+      } else {
+        router.push("/dashboard");
+      }
+    } catch (err) {
+      console.error("Registrierung Netzwerkfehler:", err);
+      setError("Netzwerkfehler. Bitte prüfen Sie Ihre Internetverbindung.");
+      setLoading(false);
     }
   }
 

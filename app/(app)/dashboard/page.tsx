@@ -1,10 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { Bell, ChevronRight, Plus } from "lucide-react";
 import { AlertCard } from "@/components/AlertCard";
 import { NewsCard } from "@/components/NewsCard";
+import { PullToRefresh } from "@/components/PullToRefresh";
 import { Badge } from "@/components/ui/badge";
 import { createClient } from "@/lib/supabase/client";
 import type { Alert, NewsItem, HelpRequest, MarketplaceItem } from "@/lib/supabase/types";
@@ -17,71 +18,72 @@ export default function DashboardPage() {
   const [userName, setUserName] = useState("");
   const [unreadCount, setUnreadCount] = useState(0);
 
-  useEffect(() => {
+  const loadDashboard = useCallback(async () => {
     const supabase = createClient();
 
-    async function loadDashboard() {
-      // Nutzername laden
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
-        const { data: profile } = await supabase
-          .from("users")
-          .select("display_name")
-          .eq("id", user.id)
-          .single();
-        if (profile) setUserName(profile.display_name);
-      }
-
-      // Aktive Alerts laden (neueste zuerst)
-      const { data: alertData } = await supabase
-        .from("alerts")
-        .select("*, user:users(display_name, avatar_url), household:households(street_name, house_number, lat, lng)")
-        .in("status", ["open", "help_coming"])
-        .order("created_at", { ascending: false })
-        .limit(5);
-      if (alertData) setAlerts(alertData as unknown as Alert[]);
-
-      // Neueste News laden
-      const { data: newsData } = await supabase
-        .from("news_items")
-        .select("*")
-        .gte("relevance_score", 5)
-        .order("created_at", { ascending: false })
-        .limit(3);
-      if (newsData) setNews(newsData);
-
-      // Aktive Hilfe-Gesuche
-      const { data: helpData } = await supabase
-        .from("help_requests")
-        .select("*, user:users(display_name, avatar_url)")
-        .eq("status", "active")
-        .order("created_at", { ascending: false })
-        .limit(3);
-      if (helpData) setHelpRequests(helpData as unknown as HelpRequest[]);
-
-      // Neueste Marktplatz-Inserate
-      const { data: marketData } = await supabase
-        .from("marketplace_items")
-        .select("*, user:users(display_name, avatar_url)")
-        .eq("status", "active")
-        .order("created_at", { ascending: false })
-        .limit(3);
-      if (marketData) setMarketplaceItems(marketData as unknown as MarketplaceItem[]);
-
-      // Ungelesene Benachrichtigungen
-      if (user) {
-        const { count } = await supabase
-          .from("notifications")
-          .select("id", { count: "exact", head: true })
-          .eq("user_id", user.id)
-          .eq("read", false);
-        setUnreadCount(count ?? 0);
-      }
+    // Nutzername laden
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user) {
+      const { data: profile } = await supabase
+        .from("users")
+        .select("display_name")
+        .eq("id", user.id)
+        .single();
+      if (profile) setUserName(profile.display_name);
     }
 
+    // Aktive Alerts laden (neueste zuerst)
+    const { data: alertData } = await supabase
+      .from("alerts")
+      .select("*, user:users(display_name, avatar_url), household:households(street_name, house_number, lat, lng)")
+      .in("status", ["open", "help_coming"])
+      .order("created_at", { ascending: false })
+      .limit(5);
+    if (alertData) setAlerts(alertData as unknown as Alert[]);
+
+    // Neueste News laden
+    const { data: newsData } = await supabase
+      .from("news_items")
+      .select("*")
+      .gte("relevance_score", 5)
+      .order("created_at", { ascending: false })
+      .limit(3);
+    if (newsData) setNews(newsData);
+
+    // Aktive Hilfe-Gesuche
+    const { data: helpData } = await supabase
+      .from("help_requests")
+      .select("*, user:users(display_name, avatar_url)")
+      .eq("status", "active")
+      .order("created_at", { ascending: false })
+      .limit(3);
+    if (helpData) setHelpRequests(helpData as unknown as HelpRequest[]);
+
+    // Neueste Marktplatz-Inserate
+    const { data: marketData } = await supabase
+      .from("marketplace_items")
+      .select("*, user:users(display_name, avatar_url)")
+      .eq("status", "active")
+      .order("created_at", { ascending: false })
+      .limit(3);
+    if (marketData) setMarketplaceItems(marketData as unknown as MarketplaceItem[]);
+
+    // Ungelesene Benachrichtigungen
+    if (user) {
+      const { count } = await supabase
+        .from("notifications")
+        .select("id", { count: "exact", head: true })
+        .eq("user_id", user.id)
+        .eq("read", false);
+      setUnreadCount(count ?? 0);
+    }
+  }, []);
+
+  useEffect(() => {
     loadDashboard();
 
     // Realtime-Subscription für neue Alerts
+    const supabase = createClient();
     const channel = supabase
       .channel("dashboard-alerts")
       .on("postgres_changes", { event: "*", schema: "public", table: "alerts" }, () => {
@@ -90,9 +92,10 @@ export default function DashboardPage() {
       .subscribe();
 
     return () => { supabase.removeChannel(channel); };
-  }, []);
+  }, [loadDashboard]);
 
   return (
+    <PullToRefresh onRefresh={loadDashboard}>
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
@@ -199,19 +202,65 @@ export default function DashboardPage() {
         </section>
       )}
 
-      {/* Leer-Zustand */}
+      {/* Leer-Zustand mit Demo-Vorschau */}
       {alerts.length === 0 && news.length === 0 && helpRequests.length === 0 && marketplaceItems.length === 0 && (
-        <div className="py-12 text-center">
-          <div className="mb-4 text-5xl">🏘️</div>
-          <h2 className="text-lg font-semibold text-anthrazit">
-            Willkommen in Ihrem Quartier
-          </h2>
-          <p className="mt-2 text-muted-foreground">
-            Hier sehen Sie bald Aktivitäten aus Ihrer Nachbarschaft.
-          </p>
+        <div className="space-y-4">
+          <div className="py-6 text-center">
+            <div className="mb-3 text-5xl">🏘️</div>
+            <h2 className="text-lg font-semibold text-anthrazit">
+              Willkommen in Ihrem Quartier
+            </h2>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Purkersdorfer Str. · Sanarystr. · Oberer Rebberg
+            </p>
+          </div>
+
+          {/* Demo-News als Vorschau */}
+          <section>
+            <SectionHeader title="Quartiersnews" href="/news" />
+            <div className="space-y-2">
+              <div className="rounded-lg bg-white p-3 shadow-sm">
+                <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                  <span>🏗️</span><span>Infrastruktur</span><span>·</span><span>Heute</span>
+                </div>
+                <p className="mt-1 font-medium text-anthrazit">Kanalarbeiten Sanarystraße ab Montag</p>
+                <p className="mt-0.5 text-sm text-muted-foreground">Halbseitige Sperrung für ca. 3 Tage.</p>
+              </div>
+              <div className="rounded-lg bg-white p-3 shadow-sm">
+                <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                  <span>♻️</span><span>Abfallwirtschaft</span><span>·</span><span>Gestern</span>
+                </div>
+                <p className="mt-1 font-medium text-anthrazit">Gelber Sack: Nächste Abholung Donnerstag</p>
+              </div>
+            </div>
+          </section>
+
+          {/* Schnelleinstieg */}
+          <section>
+            <h2 className="mb-2 font-semibold text-anthrazit">Entdecken</h2>
+            <div className="grid grid-cols-2 gap-2">
+              <Link href="/map" className="flex flex-col items-center gap-1 rounded-lg bg-white p-4 shadow-sm hover:bg-muted/50">
+                <span className="text-2xl">🗺️</span>
+                <span className="text-sm font-medium text-anthrazit">Quartierskarte</span>
+              </Link>
+              <Link href="/help" className="flex flex-col items-center gap-1 rounded-lg bg-white p-4 shadow-sm hover:bg-muted/50">
+                <span className="text-2xl">🤝</span>
+                <span className="text-sm font-medium text-anthrazit">Hilfe-Börse</span>
+              </Link>
+              <Link href="/marketplace" className="flex flex-col items-center gap-1 rounded-lg bg-white p-4 shadow-sm hover:bg-muted/50">
+                <span className="text-2xl">🛒</span>
+                <span className="text-sm font-medium text-anthrazit">Marktplatz</span>
+              </Link>
+              <Link href="/lost-found" className="flex flex-col items-center gap-1 rounded-lg bg-white p-4 shadow-sm hover:bg-muted/50">
+                <span className="text-2xl">🔍</span>
+                <span className="text-sm font-medium text-anthrazit">Fundstücke</span>
+              </Link>
+            </div>
+          </section>
         </div>
       )}
     </div>
+    </PullToRefresh>
   );
 }
 

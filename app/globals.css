@@ -137,3 +137,22 @@
   font-size: 1.5rem;
   font-weight: 700;
 }
+
+/* Keyboard-Focus für Barrierefreiheit */
+:focus-visible {
+  outline: 2px solid #4CAF87;
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Safe-Area für iPhone Notch / Dynamic Island */
+.safe-bottom {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+/* Reduzierte Bewegung respektieren */
+@media (prefers-reduced-motion: reduce) {
+  .animate-pulse-alert {
+    animation: none;
+  }
+}

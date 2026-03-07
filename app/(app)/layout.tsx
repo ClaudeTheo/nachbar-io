@@ -8,8 +8,15 @@ export default function AppLayout({
 }) {
   return (
     <div className="min-h-screen bg-warmwhite pb-20">
+      {/* Skip-Navigation für Tastaturnutzer */}
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:fixed focus:left-2 focus:top-2 focus:z-50 focus:rounded-lg focus:bg-quartier-green focus:px-4 focus:py-2 focus:text-sm focus:font-semibold focus:text-white"
+      >
+        Zum Inhalt springen
+      </a>
       {/* Hauptinhalt mit Padding für Bottom-Nav */}
-      <main className="mx-auto max-w-lg px-4 pt-4">{children}</main>
+      <main id="main-content" className="mx-auto max-w-lg px-4 pt-4">{children}</main>
       <BottomNav />
     </div>
   );

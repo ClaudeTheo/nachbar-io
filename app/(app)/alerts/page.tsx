@@ -78,7 +78,7 @@ export default function AlertsPage() {
 
         <TabsContent value="open" className="mt-4 space-y-3">
           {openAlerts.length === 0 && !loading && (
-            <EmptyState text="Keine offenen Hilfeanfragen." />
+            <EmptyState text="Keine offenen Hilfeanfragen — alles in Ordnung!" icon="🎉" />
           )}
           {openAlerts.map((alert) => (
             <AlertCard key={alert.id} alert={alert} onHelp={handleHelp} />
@@ -87,7 +87,7 @@ export default function AlertsPage() {
 
         <TabsContent value="active" className="mt-4 space-y-3">
           {activeAlerts.length === 0 && !loading && (
-            <EmptyState text="Keine aktiven Anfragen." />
+            <EmptyState text="Keine aktiven Anfragen gerade." icon="🤝" />
           )}
           {activeAlerts.map((alert) => (
             <AlertCard key={alert.id} alert={alert} />
@@ -96,7 +96,7 @@ export default function AlertsPage() {
 
         <TabsContent value="resolved" className="mt-4 space-y-3">
           {resolvedAlerts.length === 0 && !loading && (
-            <EmptyState text="Noch keine erledigten Anfragen." />
+            <EmptyState text="Noch keine erledigten Anfragen." icon="📋" />
           )}
           {resolvedAlerts.map((alert) => (
             <AlertCard key={alert.id} alert={alert} />
@@ -107,10 +107,11 @@ export default function AlertsPage() {
   );
 }
 
-function EmptyState({ text }: { text: string }) {
+function EmptyState({ text, icon }: { text: string; icon?: string }) {
   return (
-    <div className="py-8 text-center">
-      <p className="text-muted-foreground">{text}</p>
+    <div className="flex flex-col items-center gap-2 py-12 text-center">
+      <span className="text-4xl">{icon ?? "✅"}</span>
+      <p className="text-sm text-muted-foreground">{text}</p>
     </div>
   );
 }

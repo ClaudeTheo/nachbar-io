@@ -72,8 +72,8 @@ self.addEventListener("push", (event) => {
 
   const options = {
     body: data.body || "Neue Nachricht aus Ihrem Quartier",
-    icon: "/icons/icon-192x192.png",
-    badge: "/icons/icon-72x72.png",
+    icon: "/icons/icon-192x192.svg",
+    badge: "/icons/icon-72x72.svg",
     tag: data.tag || "nachbar-io",
     data: {
       url: data.url || "/dashboard",

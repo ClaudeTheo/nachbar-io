@@ -227,6 +227,121 @@
   animation: check-bounce 0.4s ease-out;
 }
 
+/* ============================================================
+   ONBOARDING ANIMATIONS
+   ============================================================ */
+
+/* Safe-Area Top fuer Onboarding */
+.safe-top {
+  padding-top: env(safe-area-inset-top, 12px);
+}
+
+/* Slide 0: Haeuser bauen sich auf */
+@keyframes house-build {
+  0% { transform: translateY(40px) scale(0.3); opacity: 0; }
+  60% { transform: translateY(-8px) scale(1.05); opacity: 1; }
+  80% { transform: translateY(2px) scale(0.98); }
+  100% { transform: translateY(0) scale(1); }
+}
+@keyframes window-glow {
+  0% { background-color: transparent; box-shadow: none; }
+  100% { background-color: #4CAF87; box-shadow: 0 0 8px rgba(76,175,135,0.5); }
+}
+.animate-house-build { animation: house-build 0.7s ease-out both; }
+.animate-window-glow { animation: window-glow 0.4s ease-out both; }
+
+/* Slide 1: Puls-Ringe fuer Alert-Glocke */
+@keyframes pulse-ring-expand {
+  0% { transform: scale(0.5); opacity: 0.7; }
+  100% { transform: scale(2.5); opacity: 0; }
+}
+.animate-pulse-ring { animation: pulse-ring-expand 1.5s ease-out both; }
+
+/* Slide 1: Mock-Karte gleitet von rechts */
+@keyframes slide-in-right {
+  0% { transform: translateX(100%); opacity: 0; }
+  100% { transform: translateX(0); opacity: 1; }
+}
+.animate-slide-in-right { animation: slide-in-right 0.5s ease-out both; }
+
+/* Slide 2: Karten teilen sich */
+@keyframes card-split-left {
+  0% { transform: translateX(30px) rotate(3deg); opacity: 0; }
+  100% { transform: translateX(0) rotate(0); opacity: 1; }
+}
+@keyframes card-split-right {
+  0% { transform: translateX(-30px) rotate(-3deg); opacity: 0; }
+  100% { transform: translateX(0) rotate(0); opacity: 1; }
+}
+@keyframes heart-pop {
+  0% { transform: scale(0) translate(-50%, -50%); }
+  50% { transform: scale(1.3) translate(-50%, -50%); }
+  100% { transform: scale(1) translate(-50%, -50%); }
+}
+.animate-card-split-left { animation: card-split-left 0.6s ease-out both; }
+.animate-card-split-right { animation: card-split-right 0.6s ease-out both; }
+.animate-heart-pop { animation: heart-pop 0.4s ease-out both; }
+
+/* Slide 3: Regal + Items bouncen */
+@keyframes shelf-slide-up {
+  0% { transform: translateY(30px); opacity: 0; }
+  100% { transform: translateY(0); opacity: 1; }
+}
+@keyframes item-bounce-in {
+  0% { transform: translateY(-20px) scale(0.8); opacity: 0; }
+  60% { transform: translateY(4px) scale(1.02); }
+  100% { transform: translateY(0) scale(1); opacity: 1; }
+}
+.animate-shelf-slide { animation: shelf-slide-up 0.5s ease-out both; }
+.animate-item-bounce { animation: item-bounce-in 0.5s ease-out both; }
+
+/* Slide 4: Strassen zeichnen sich + Punkte erscheinen */
+@keyframes street-draw {
+  0% { stroke-dashoffset: 320; }
+  100% { stroke-dashoffset: 0; }
+}
+@keyframes dot-appear {
+  0% { transform: scale(0); opacity: 0; }
+  60% { transform: scale(1.3); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
+}
+@keyframes you-are-here-ping {
+  0% { transform: scale(0); opacity: 0; }
+  50% { transform: scale(1.2); }
+  100% { transform: scale(1); opacity: 1; }
+}
+.animate-street-draw { animation: street-draw 0.8s ease-out both; }
+.animate-dot-appear { animation: dot-appear 0.3s ease-out both; }
+.animate-you-are-here { animation: you-are-here-ping 0.5s ease-out both; }
+
+/* Slide 5: Karten fliegen von links/rechts */
+@keyframes slide-from-left {
+  0% { transform: translateX(-100%) rotate(-2deg); opacity: 0; }
+  100% { transform: translateX(0) rotate(0); opacity: 1; }
+}
+@keyframes sparkle-rotate {
+  0%, 100% { opacity: 0.3; transform: scale(0.8) rotate(0deg); }
+  50% { opacity: 1; transform: scale(1.2) rotate(180deg); }
+}
+.animate-slide-from-left { animation: slide-from-left 0.5s ease-out both; }
+.animate-slide-from-right { animation: slide-in-right 0.5s ease-out both; }
+.animate-sparkle { animation: sparkle-rotate 2s ease-in-out infinite; }
+
+/* Slide 6: Konfetti + Glow */
+@keyframes confetti-burst {
+  0% { transform: translate(0, 0) rotate(0deg) scale(1); opacity: 1; }
+  100% { transform: translate(var(--x), var(--y)) rotate(var(--r)) scale(0); opacity: 0; }
+}
+@keyframes glow-pulse-ring {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(76,175,135,0.4); }
+  50% { box-shadow: 0 0 0 14px rgba(76,175,135,0); }
+}
+.animate-glow-pulse { animation: glow-pulse-ring 2s ease-in-out infinite; }
+
+/* ============================================================
+   ACCESSIBILITY
+   ============================================================ */
+
 /* Reduzierte Bewegung respektieren */
 @media (prefers-reduced-motion: reduce) {
   .animate-pulse-alert,
@@ -234,7 +349,25 @@
   .animate-stagger > *,
   .animate-press:active,
   .animate-shimmer,
-  .animate-check-bounce {
-    animation: none;
+  .animate-check-bounce,
+  .animate-house-build,
+  .animate-window-glow,
+  .animate-pulse-ring,
+  .animate-slide-in-right,
+  .animate-card-split-left,
+  .animate-card-split-right,
+  .animate-heart-pop,
+  .animate-shelf-slide,
+  .animate-item-bounce,
+  .animate-street-draw,
+  .animate-dot-appear,
+  .animate-you-are-here,
+  .animate-slide-from-left,
+  .animate-slide-from-right,
+  .animate-sparkle,
+  .animate-glow-pulse {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
   }
 }

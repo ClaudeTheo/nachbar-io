@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Bell, ChevronRight, Plus } from "lucide-react";
 import { AlertCard } from "@/components/AlertCard";
@@ -11,6 +12,7 @@ import { createClient } from "@/lib/supabase/client";
 import type { Alert, NewsItem, HelpRequest, MarketplaceItem } from "@/lib/supabase/types";
 
 export default function DashboardPage() {
+  const router = useRouter();
   const [alerts, setAlerts] = useState<Alert[]>([]);
   const [news, setNews] = useState<NewsItem[]>([]);
   const [helpRequests, setHelpRequests] = useState<HelpRequest[]>([]);
@@ -21,15 +23,28 @@ export default function DashboardPage() {
   const loadDashboard = useCallback(async () => {
     const supabase = createClient();
 
-    // Nutzername laden
+    // Nutzerprofil laden + Onboarding-Pruefung
     const { data: { user } } = await supabase.auth.getUser();
     if (user) {
       const { data: profile } = await supabase
         .from("users")
-        .select("display_name")
+        .select("display_name, settings, created_at")
         .eq("id", user.id)
         .single();
-      if (profile) setUserName(profile.display_name);
+      if (profile) {
+        setUserName(profile.display_name);
+
+        // Onboarding: Neue Nutzer (< 24h) zur Tour weiterleiten
+        const settings = profile.settings as Record<string, unknown> | null;
+        if (!settings?.onboarding_completed) {
+          const createdAt = new Date(profile.created_at);
+          const hoursSince = (Date.now() - createdAt.getTime()) / (1000 * 60 * 60);
+          if (hoursSince < 24) {
+            router.push("/welcome");
+            return;
+          }
+        }
+      }
     }
 
     // Aktive Alerts laden (neueste zuerst)

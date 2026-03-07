@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nachbar.io — Offline</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+      background: #FAFAF8;
+      color: #2D3142;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      text-align: center;
+    }
+    .container { max-width: 320px; }
+    .icon { font-size: 64px; margin-bottom: 16px; }
+    h1 { font-size: 22px; font-weight: 700; margin-bottom: 8px; }
+    p { font-size: 14px; color: #9CA3AF; line-height: 1.5; margin-bottom: 24px; }
+    button {
+      padding: 14px 28px;
+      border-radius: 12px;
+      background: #4CAF87;
+      color: white;
+      border: none;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      width: 100%;
+    }
+    button:active { transform: scale(0.98); }
+    .info {
+      margin-top: 24px;
+      padding: 16px;
+      background: #F0F0EC;
+      border-radius: 12px;
+      font-size: 13px;
+      color: #4A4F63;
+      line-height: 1.5;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="icon">📡</div>
+    <h1>Keine Internetverbindung</h1>
+    <p>
+      Sie sind gerade offline. Sobald Sie wieder verbunden sind,
+      werden alle Daten automatisch aktualisiert.
+    </p>
+    <button onclick="window.location.reload()">Erneut versuchen</button>
+    <div class="info">
+      <strong>Notfall?</strong><br>
+      Rufen Sie direkt <a href="tel:112" style="color:#EF4444;font-weight:700;">112</a> an —
+      das funktioniert auch ohne Internet.
+    </div>
+  </div>
+</body>
+</html>

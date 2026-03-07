@@ -3,15 +3,14 @@
 -- PostgreSQL (Supabase) · Migration 001
 -- ============================================================
 
--- Extensions
-CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+-- Supabase stellt gen_random_uuid() nativ bereit (pgcrypto)
 -- PostGIS wird separat in Supabase aktiviert
 
 -- ============================================================
 -- USERS
 -- ============================================================
 CREATE TABLE IF NOT EXISTS users (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     email_hash TEXT NOT NULL,
     display_name TEXT NOT NULL,
     avatar_url TEXT,
@@ -29,7 +28,7 @@ CREATE TABLE IF NOT EXISTS users (
 -- HOUSEHOLDS
 -- ============================================================
 CREATE TABLE IF NOT EXISTS households (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     street_name TEXT NOT NULL
         CHECK (street_name IN (
             'Purkersdorfer Straße',
@@ -49,7 +48,7 @@ CREATE TABLE IF NOT EXISTS households (
 -- HOUSEHOLD_MEMBERS
 -- ============================================================
 CREATE TABLE IF NOT EXISTS household_members (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     household_id UUID NOT NULL REFERENCES households(id) ON DELETE CASCADE,
     user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     role TEXT NOT NULL DEFAULT 'member'
@@ -63,7 +62,7 @@ CREATE TABLE IF NOT EXISTS household_members (
 -- ALERTS (Soforthilfe)
 -- ============================================================
 CREATE TABLE IF NOT EXISTS alerts (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     user_id UUID NOT NULL REFERENCES users(id) ON DELETE SET NULL,
     household_id UUID NOT NULL REFERENCES households(id) ON DELETE CASCADE,
     category TEXT NOT NULL
@@ -86,7 +85,7 @@ CREATE TABLE IF NOT EXISTS alerts (
 -- ALERT_RESPONSES
 -- ============================================================
 CREATE TABLE IF NOT EXISTS alert_responses (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     alert_id UUID NOT NULL REFERENCES alerts(id) ON DELETE CASCADE,
     responder_user_id UUID NOT NULL REFERENCES users(id) ON DELETE SET NULL,
     message TEXT,
@@ -99,7 +98,7 @@ CREATE TABLE IF NOT EXISTS alert_responses (
 -- HELP_REQUESTS (Hilfe-Börse)
 -- ============================================================
 CREATE TABLE IF NOT EXISTS help_requests (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     type TEXT NOT NULL CHECK (type IN ('need', 'offer')),
     category TEXT NOT NULL
@@ -119,7 +118,7 @@ CREATE TABLE IF NOT EXISTS help_requests (
 -- MARKETPLACE_ITEMS
 -- ============================================================
 CREATE TABLE IF NOT EXISTS marketplace_items (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     type TEXT NOT NULL CHECK (type IN ('sell', 'give', 'search', 'lend')),
     category TEXT NOT NULL
@@ -141,7 +140,7 @@ CREATE TABLE IF NOT EXISTS marketplace_items (
 -- LOST_FOUND
 -- ============================================================
 CREATE TABLE IF NOT EXISTS lost_found (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     type TEXT NOT NULL CHECK (type IN ('lost', 'found')),
     category TEXT NOT NULL
@@ -163,7 +162,7 @@ CREATE TABLE IF NOT EXISTS lost_found (
 -- NEWS_ITEMS
 -- ============================================================
 CREATE TABLE IF NOT EXISTS news_items (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     source_url TEXT,
     original_title TEXT NOT NULL,
     ai_summary TEXT NOT NULL,
@@ -182,7 +181,7 @@ CREATE TABLE IF NOT EXISTS news_items (
 -- SKILLS (Experten-Profile)
 -- ============================================================
 CREATE TABLE IF NOT EXISTS skills (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     category TEXT NOT NULL
         CHECK (category IN (
@@ -199,7 +198,7 @@ CREATE TABLE IF NOT EXISTS skills (
 -- NOTIFICATIONS (In-App)
 -- ============================================================
 CREATE TABLE IF NOT EXISTS notifications (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     type TEXT NOT NULL
         CHECK (type IN (
@@ -218,7 +217,7 @@ CREATE TABLE IF NOT EXISTS notifications (
 -- PUSH_SUBSCRIPTIONS
 -- ============================================================
 CREATE TABLE IF NOT EXISTS push_subscriptions (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     endpoint TEXT NOT NULL UNIQUE,
     p256dh TEXT NOT NULL,
@@ -231,7 +230,7 @@ CREATE TABLE IF NOT EXISTS push_subscriptions (
 -- COMMUNITY_RULES_VIOLATIONS
 -- ============================================================
 CREATE TABLE IF NOT EXISTS community_rules_violations (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     reported_user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     reporter_user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     item_type TEXT NOT NULL,
@@ -248,7 +247,7 @@ CREATE TABLE IF NOT EXISTS community_rules_violations (
 -- SENIOR_CHECKINS
 -- ============================================================
 CREATE TABLE IF NOT EXISTS senior_checkins (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     checked_in_at TIMESTAMPTZ NOT NULL DEFAULT now(),
     contact_person_name TEXT,

@@ -152,11 +152,11 @@ export default function RegisterPage() {
         }
       }
 
-      // 4. Weiterleitung
+      // 4. Weiterleitung — neue Nutzer sehen die Willkommens-Tour
       if (uiMode === "senior") {
         router.push("/senior/home");
       } else {
-        router.push("/dashboard");
+        router.push("/welcome");
       }
     } catch (err) {
       console.error("Registrierung Netzwerkfehler:", err);

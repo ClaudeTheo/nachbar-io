@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
+import { Plus } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { createClient } from "@/lib/supabase/client";
@@ -29,7 +31,16 @@ export default function LostFoundPage() {
 
   return (
     <div>
-      <h1 className="mb-4 text-xl font-bold text-anthrazit">Verloren & Gefunden</h1>
+      <div className="mb-4 flex items-center justify-between">
+        <h1 className="text-xl font-bold text-anthrazit">Verloren & Gefunden</h1>
+        <Link
+          href="/lost-found/new"
+          className="flex items-center gap-1 rounded-lg bg-quartier-green px-3 py-2 text-sm font-semibold text-white hover:bg-quartier-green-dark"
+        >
+          <Plus className="h-4 w-4" />
+          Neue Meldung
+        </Link>
+      </div>
 
       <Tabs defaultValue="lost">
         <TabsList className="w-full">

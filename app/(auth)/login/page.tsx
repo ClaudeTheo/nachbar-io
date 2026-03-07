@@ -20,28 +20,40 @@ export default function LoginPage() {
     setLoading(true);
     setError(null);
 
-    const supabase = createClient();
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
+    try {
+      const supabase = createClient();
+      const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
 
-    if (error) {
-      setError("E-Mail oder Passwort ist falsch.");
-      setLoading(false);
-      return;
-    }
+      if (authError) {
+        console.error("Login-Fehler:", authError);
+        setError("E-Mail oder Passwort ist falsch.");
+        setLoading(false);
+        return;
+      }
 
-    // Prüfen welcher UI-Modus → entsprechende Startseite
-    const { data: user } = await supabase
-      .from("users")
-      .select("ui_mode")
-      .single();
+      // UI-Modus prüfen → entsprechende Startseite
+      const userId = authData.user?.id;
+      if (userId) {
+        const { data: profile } = await supabase
+          .from("users")
+          .select("ui_mode")
+          .eq("id", userId)
+          .single();
 
-    if (user?.ui_mode === "senior") {
-      router.push("/senior/home");
-    } else {
+        if (profile?.ui_mode === "senior") {
+          router.push("/senior/home");
+          return;
+        }
+      }
+
       router.push("/dashboard");
+    } catch (err) {
+      console.error("Login Netzwerkfehler:", err);
+      setError("Verbindungsfehler. Bitte versuchen Sie es erneut.");
+      setLoading(false);
     }
   }
 

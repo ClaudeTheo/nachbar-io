@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, Plus, Trash2, Eye, EyeOff } from "lucide-react";
+import { ArrowLeft, Plus, Trash2, Eye, EyeOff, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
@@ -103,6 +103,23 @@ export default function SkillsPage() {
         Teilen Sie Ihre Fähigkeiten mit der Nachbarschaft. Andere können Sie bei
         passenden Hilfeanfragen finden.
       </p>
+
+      {/* Experten-Hinweis */}
+      <Link
+        href="/experts"
+        className="flex items-center gap-3 rounded-xl border border-quartier-green/30 bg-quartier-green/5 p-4 hover:bg-quartier-green/10 transition-colors"
+      >
+        <span className="text-2xl">⭐</span>
+        <div className="flex-1 min-w-0">
+          <p className="text-sm font-semibold text-anthrazit">
+            Im Experten-Verzeichnis sichtbar
+          </p>
+          <p className="text-xs text-muted-foreground">
+            Ihre öffentlichen Kompetenzen erscheinen automatisch im Experten-Verzeichnis.
+          </p>
+        </div>
+        <ChevronRight className="h-4 w-4 text-quartier-green shrink-0" />
+      </Link>
 
       {/* Vorhandene Skills */}
       {skills.length === 0 && !adding ? (

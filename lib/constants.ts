@@ -128,6 +128,23 @@ export const EVENT_CATEGORIES = [
   { id: "other", label: "Sonstiges", icon: "📅" },
 ] as const;
 
+// Experten-Kategorien (Untergruppe der Skill-Kategorien, die als Experten gesucht werden)
+export const EXPERT_CATEGORIES = [
+  { id: "electrical", label: "Elektriker", icon: "🔌", description: "Elektroinstallation & Reparaturen" },
+  { id: "handwork", label: "Handwerk", icon: "🔧", description: "Sanitär, Schreiner, Maler & mehr" },
+  { id: "it", label: "IT & Technik", icon: "💻", description: "Computer, Handy, Internet & Smart Home" },
+  { id: "garden", label: "Garten & Pflanzen", icon: "🌿", description: "Rasenpflege, Bäume & Bepflanzung" },
+  { id: "medical", label: "Medizin & Pflege", icon: "🏥", description: "Gesundheitsberatung & Pflege" },
+  { id: "legal", label: "Recht & Finanzen", icon: "⚖️", description: "Rechtsberatung & Steuern" },
+  { id: "cooking", label: "Kochen & Backen", icon: "🍳", description: "Catering & Kochkurse" },
+  { id: "transport", label: "Fahrdienst", icon: "🚗", description: "Transporte & Umzugshilfe" },
+  { id: "music", label: "Musik & Kunst", icon: "🎵", description: "Unterricht & Auftritte" },
+  { id: "languages", label: "Sprachen", icon: "🌍", description: "Übersetzung & Sprachkurse" },
+  { id: "childcare", label: "Kinderbetreuung", icon: "👶", description: "Babysitting & Nachhilfe" },
+  { id: "pet_care", label: "Tierbetreuung", icon: "🐾", description: "Gassi gehen, Tiersitting" },
+  { id: "other", label: "Sonstiges", icon: "❓", description: "Weitere Kompetenzen" },
+] as const;
+
 // Trust-Level
 export const TRUST_LEVELS = {
   new: { label: "Registriert", color: "gray" },

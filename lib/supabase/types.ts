@@ -215,3 +215,37 @@ export interface DirectMessage {
   created_at: string;
   sender?: Pick<User, "display_name" | "avatar_url">;
 }
+
+// Phase 2: Verifizierte lokale Experten
+export interface ExpertReview {
+  id: string;
+  expert_user_id: string;
+  reviewer_user_id: string;
+  skill_category: string;
+  rating: number; // 1-5
+  comment: string | null;
+  created_at: string;
+  reviewer?: Pick<User, "display_name" | "avatar_url">;
+}
+
+export interface ExpertEndorsement {
+  id: string;
+  expert_user_id: string;
+  endorser_user_id: string;
+  skill_category: string;
+  created_at: string;
+  endorser?: Pick<User, "display_name" | "avatar_url">;
+}
+
+// Experten-Profil (aggregiert aus skills + reviews + endorsements)
+export interface ExpertProfile {
+  user_id: string;
+  display_name: string;
+  avatar_url: string | null;
+  trust_level: TrustLevel;
+  created_at: string;
+  skills: Skill[];
+  avg_rating: number | null;
+  review_count: number;
+  endorsement_count: number;
+}

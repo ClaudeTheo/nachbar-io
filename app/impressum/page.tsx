@@ -23,8 +23,8 @@ export default function ImpressumPage() {
               Angaben gemaess § 5 TMG
             </h2>
             <p>
-              Thomas [Nachname]<br />
-              [Strasse und Hausnummer]<br />
+              Thomas Theobald<br />
+              Purkersdorfer Strasse 35<br />
               79713 Bad Saeckingen<br />
               Deutschland
             </p>
@@ -34,8 +34,8 @@ export default function ImpressumPage() {
           <section>
             <h2 className="mb-2 text-lg font-semibold text-anthrazit">Kontakt</h2>
             <p>
-              E-Mail: [kontakt@nachbar.io]<br />
-              Telefon: [auf Anfrage]
+              E-Mail: kontakt@nachbar.io<br />
+              Telefon: auf Anfrage
             </p>
           </section>
 
@@ -45,8 +45,8 @@ export default function ImpressumPage() {
               Verantwortlich fuer den Inhalt nach § 18 Abs. 2 MStV
             </h2>
             <p>
-              Thomas [Nachname]<br />
-              [Anschrift wie oben]
+              Thomas Theobald<br />
+              Purkersdorfer Strasse 35, 79713 Bad Saeckingen
             </p>
           </section>
 

@@ -29,10 +29,10 @@ export default function DatenschutzPage() {
               Verantwortlich fuer die Datenverarbeitung auf dieser Plattform ist:
             </p>
             <p className="mt-2">
-              Thomas [Nachname]<br />
-              [Strasse und Hausnummer]<br />
+              Thomas Theobald<br />
+              Purkersdorfer Strasse 35<br />
               79713 Bad Saeckingen<br />
-              E-Mail: [kontakt@nachbar.io]
+              E-Mail: kontakt@nachbar.io
             </p>
           </section>
 
@@ -173,7 +173,7 @@ export default function DatenschutzPage() {
               <li><strong>Widerruf</strong> (Art. 7 Abs. 3 DSGVO) — Widerruf erteilter Einwilligungen</li>
             </ul>
             <p className="mt-2">
-              Zur Ausuebung Ihrer Rechte kontaktieren Sie uns unter [kontakt@nachbar.io].
+              Zur Ausuebung Ihrer Rechte kontaktieren Sie uns unter kontakt@nachbar.io.
             </p>
           </section>
 

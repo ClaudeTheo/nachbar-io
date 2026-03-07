@@ -34,7 +34,7 @@ export default function ImpressumPage() {
           <section>
             <h2 className="mb-2 text-lg font-semibold text-anthrazit">Kontakt</h2>
             <p>
-              E-Mail: kontakt@nachbar.io<br />
+              E-Mail: ThomasTh@gmx.de<br />
               Telefon: auf Anfrage
             </p>
           </section>

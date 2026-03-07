@@ -3,17 +3,20 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Settings, LogOut, Star, Shield, ChevronRight, Pencil, Bell } from "lucide-react";
+import { Settings, LogOut, Star, Shield, ChevronRight, Pencil, Bell, TrendingUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { TrustBadge } from "@/components/TrustBadge";
+import { ReputationBadge } from "@/components/ReputationBadge";
 import { createClient } from "@/lib/supabase/client";
-import type { User, Household } from "@/lib/supabase/types";
+import { getCachedReputation, getProgressToNextLevel } from "@/lib/reputation";
+import type { User, Household, ReputationStats } from "@/lib/supabase/types";
 
 export default function ProfilePage() {
   const [user, setUser] = useState<User | null>(null);
   const [household, setHousehold] = useState<Household | null>(null);
+  const [reputation, setReputation] = useState<ReputationStats | null>(null);
   const router = useRouter();
 
   useEffect(() => {
@@ -27,7 +30,12 @@ export default function ProfilePage() {
         .select("*")
         .eq("id", authUser.id)
         .single();
-      if (userData) setUser(userData as User);
+      if (userData) {
+        setUser(userData as User);
+        // Gecachte Reputation laden
+        const cached = getCachedReputation(userData.settings as Record<string, unknown> | null);
+        if (cached) setReputation(cached);
+      }
 
       const { data: membership } = await supabase
         .from("household_members")
@@ -122,6 +130,31 @@ export default function ProfilePage() {
           <Separator />
 
           <Link
+            href="/profile/reputation"
+            className="flex items-center justify-between p-4 hover:bg-muted/50"
+          >
+            <div className="flex items-center gap-3">
+              <TrendingUp className="h-5 w-5 text-muted-foreground" />
+              <div>
+                <span>Meine Reputation</span>
+                {reputation && reputation.level >= 1 && (
+                  <span className="ml-2 text-xs text-muted-foreground">
+                    <ReputationBadge level={reputation.level} showLabel size="sm" />
+                    {reputation.points > 0 && (
+                      <span className="ml-1">
+                        · {reputation.points} Punkte
+                      </span>
+                    )}
+                  </span>
+                )}
+              </div>
+            </div>
+            <ChevronRight className="h-4 w-4 text-muted-foreground" />
+          </Link>
+
+          <Separator />
+
+          <Link
             href="/profile/notifications"
             className="flex items-center justify-between p-4 hover:bg-muted/50"
           >
@@ -177,10 +210,18 @@ export default function ProfilePage() {
         </CardContent>
       </Card>
 
-      {/* DSGVO-Info */}
-      <p className="text-center text-xs text-muted-foreground">
-        Ihre Daten sind geschützt. Sie können Ihr Konto jederzeit löschen.
-      </p>
+      {/* DSGVO-Info + Rechtliche Links */}
+      <div className="text-center text-xs text-muted-foreground">
+        <p>Ihre Daten sind geschützt. Sie können Ihr Konto jederzeit löschen.</p>
+        <div className="mt-2 flex justify-center gap-4">
+          <Link href="/impressum" className="hover:text-anthrazit hover:underline">
+            Impressum
+          </Link>
+          <Link href="/datenschutz" className="hover:text-anthrazit hover:underline">
+            Datenschutz
+          </Link>
+        </div>
+      </div>
     </div>
   );
 }

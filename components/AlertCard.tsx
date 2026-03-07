@@ -4,6 +4,7 @@ import { Clock, MapPin, User } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { ReputationBadge } from "@/components/ReputationBadge";
 import { ALERT_CATEGORIES } from "@/lib/constants";
 import type { Alert } from "@/lib/supabase/types";
 import { formatDistanceToNow } from "date-fns";
@@ -14,9 +15,10 @@ interface AlertCardProps {
   onHelp?: (alertId: string) => void;
   onView?: (alertId: string) => void;
   compact?: boolean;
+  reputationLevel?: number; // Optionales Reputations-Level des Erstellers
 }
 
-export function AlertCard({ alert, onHelp, onView, compact = false }: AlertCardProps) {
+export function AlertCard({ alert, onHelp, onView, compact = false, reputationLevel }: AlertCardProps) {
   const category = ALERT_CATEGORIES.find((c) => c.id === alert.category);
   const timeAgo = formatDistanceToNow(new Date(alert.created_at), {
     addSuffix: true,
@@ -86,6 +88,9 @@ export function AlertCard({ alert, onHelp, onView, compact = false }: AlertCardP
                 <span className="flex items-center gap-1">
                   <User className="h-3 w-3" />
                   {alert.user.display_name}
+                  {reputationLevel && reputationLevel >= 2 && (
+                    <ReputationBadge level={reputationLevel} size="sm" />
+                  )}
                 </span>
               )}
             </div>

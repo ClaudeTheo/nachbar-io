@@ -41,6 +41,16 @@ export default function LandingPage() {
         <br />
         Purkersdorfer Str. · Sanarystr. · Oberer Rebberg
       </p>
+
+      {/* Rechtliche Links (DSGVO / TMG) */}
+      <div className="mt-4 flex gap-4 text-xs text-muted-foreground">
+        <Link href="/impressum" className="hover:text-anthrazit hover:underline">
+          Impressum
+        </Link>
+        <Link href="/datenschutz" className="hover:text-anthrazit hover:underline">
+          Datenschutz
+        </Link>
+      </div>
     </div>
   );
 }

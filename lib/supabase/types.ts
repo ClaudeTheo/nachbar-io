@@ -237,6 +237,21 @@ export interface ExpertEndorsement {
   endorser?: Pick<User, "display_name" | "avatar_url">;
 }
 
+// Reputationssystem (berechnet aus Interaktionsdaten)
+export interface ReputationStats {
+  points: number;
+  level: number;
+  levelName: string;
+  alertsHelped: number;
+  helpActionsCompleted: number;
+  itemsShared: number;
+  eventsAttended: number;
+  endorsementsReceived: number;
+  reviewsReceived: number;
+  badges: string[];
+  lastComputed: string;
+}
+
 // Experten-Profil (aggregiert aus skills + reviews + endorsements)
 export interface ExpertProfile {
   user_id: string;

@@ -7,8 +7,10 @@ import { Bell, ChevronRight, Plus } from "lucide-react";
 import { AlertCard } from "@/components/AlertCard";
 import { NewsCard } from "@/components/NewsCard";
 import { PullToRefresh } from "@/components/PullToRefresh";
+import { ReputationBadge } from "@/components/ReputationBadge";
 import { Badge } from "@/components/ui/badge";
 import { createClient } from "@/lib/supabase/client";
+import { getCachedReputation } from "@/lib/reputation";
 import type { Alert, NewsItem, HelpRequest, MarketplaceItem } from "@/lib/supabase/types";
 
 export default function DashboardPage() {
@@ -19,6 +21,7 @@ export default function DashboardPage() {
   const [marketplaceItems, setMarketplaceItems] = useState<MarketplaceItem[]>([]);
   const [userName, setUserName] = useState("");
   const [unreadCount, setUnreadCount] = useState(0);
+  const [reputationLevel, setReputationLevel] = useState(0);
 
   const loadDashboard = useCallback(async () => {
     const supabase = createClient();
@@ -33,6 +36,10 @@ export default function DashboardPage() {
         .single();
       if (profile) {
         setUserName(profile.display_name);
+
+        // Gecachte Reputation laden
+        const cached = getCachedReputation(profile.settings as Record<string, unknown> | null);
+        if (cached && cached.level >= 2) setReputationLevel(cached.level);
 
         // Onboarding: Neue Nutzer (< 24h) zur Tour weiterleiten
         const settings = profile.settings as Record<string, unknown> | null;
@@ -117,6 +124,11 @@ export default function DashboardPage() {
         <div>
           <h1 className="text-2xl font-bold text-anthrazit">
             {userName ? `Hallo, ${userName}` : "nachbar.io"}
+            {reputationLevel >= 2 && (
+              <span className="ml-1.5 align-middle">
+                <ReputationBadge level={reputationLevel} size="sm" />
+              </span>
+            )}
           </h1>
           <p className="text-sm text-muted-foreground">Ihr Quartier auf einen Blick</p>
         </div>

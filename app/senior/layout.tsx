@@ -1,4 +1,7 @@
+"use client";
+
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { ArrowLeft, Home } from "lucide-react";
 
 /**
@@ -16,19 +19,22 @@ export default function SeniorLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const pathname = usePathname();
+  const isHome = pathname === "/senior/home";
+
   return (
     <div className="min-h-screen bg-warmwhite">
       {/* Einfacher Header — Zurück + App-Name + Home */}
       <header className="sticky top-0 z-40 border-b-2 border-gray-200 bg-white">
         <div className="mx-auto flex max-w-lg items-center justify-between px-4" style={{ minHeight: "64px" }}>
           <Link
-            href="/senior/home"
+            href={isHome ? "/dashboard" : "/senior/home"}
             className="flex items-center gap-2 rounded-xl p-3 text-anthrazit hover:bg-gray-100 active:bg-gray-200"
             style={{ minHeight: "56px", minWidth: "56px" }}
-            aria-label="Zurück zur Startseite"
+            aria-label={isHome ? "Zum Dashboard" : "Zurück zur Startseite"}
           >
             <ArrowLeft className="h-7 w-7" />
-            <span className="text-lg font-semibold">Zurück</span>
+            <span className="text-lg font-semibold">{isHome ? "Dashboard" : "Zurück"}</span>
           </Link>
           <span className="text-lg font-bold text-quartier-green">Nachbar.io</span>
         </div>

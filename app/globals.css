@@ -138,6 +138,11 @@
   font-weight: 700;
 }
 
+/* Senior-Modus: Muted-Text braucht 4.5:1 Kontrast (statt Standard 3.5:1) */
+[class*="senior"] .text-muted-foreground {
+  color: #555 !important;
+}
+
 /* Keyboard-Focus für Barrierefreiheit */
 :focus-visible {
   outline: 2px solid #4CAF87;

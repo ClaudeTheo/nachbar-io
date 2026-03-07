@@ -88,23 +88,30 @@ function QuarterMapInner({
 
   const { MapContainer, TileLayer, Marker, Popup, L } = leaflet;
 
-  // Custom Icons für verschiedene Status
-  const createIcon = (color: string) =>
+  // Custom Icons für verschiedene Status — mit Hausnummer-Label
+  const createIcon = (color: string, label?: string) =>
     L.divIcon({
       className: "custom-marker",
       html: `<div style="
-        width: 24px; height: 24px; border-radius: 50%;
-        background: ${color}; border: 3px solid white;
-        box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+        position: relative;
+        width: 20px; height: 20px; border-radius: 50%;
+        background: ${color}; border: 2.5px solid white;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.3);
         ${color === "#F59E0B" ? "animation: pulse-alert 2s ease-in-out infinite;" : ""}
-      "></div>`,
-      iconSize: [24, 24],
-      iconAnchor: [12, 12],
+      "></div>${label ? `<div style="
+        position: absolute; top: 22px; left: 50%;
+        transform: translateX(-50%);
+        font-size: 10px; font-weight: 700;
+        color: #2D3142; white-space: nowrap;
+        text-shadow: 0 0 3px white, 0 0 3px white, 0 0 3px white, 0 0 3px white;
+      ">${label}</div>` : ""}`,
+      iconSize: [20, 30],
+      iconAnchor: [10, 10],
     });
 
-  const defaultIcon = createIcon("#4CAF87");
-  const alertIcon = createIcon("#F59E0B");
-  const helpComingIcon = createIcon("#22C55E");
+  const defaultColor = "#4CAF87";
+  const alertColor = "#F59E0B";
+  const helpComingColor = "#22C55E";
 
   return (
     <>
@@ -129,7 +136,8 @@ function QuarterMapInner({
         {households?.map((household) => {
           const hasAlert = household.alert?.status === "open";
           const helpComing = household.alert?.status === "help_coming";
-          const icon = hasAlert ? alertIcon : helpComing ? helpComingIcon : defaultIcon;
+          const color = hasAlert ? alertColor : helpComing ? helpComingColor : defaultColor;
+          const icon = createIcon(color, household.house_number);
 
           return (
             <Marker

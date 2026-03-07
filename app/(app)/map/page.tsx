@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { QuarterMap } from "@/components/QuarterMap";
 import { AlertCard } from "@/components/AlertCard";
 import { createClient } from "@/lib/supabase/client";
@@ -10,32 +10,43 @@ export default function MapPage() {
   const [households, setHouseholds] = useState<(Household & { alert?: Alert })[]>([]);
   const [selectedAlert, setSelectedAlert] = useState<Alert | null>(null);
 
-  useEffect(() => {
-    async function load() {
-      const supabase = createClient();
+  const loadMap = useCallback(async () => {
+    const supabase = createClient();
 
-      const { data: householdData } = await supabase
-        .from("households")
-        .select("*")
-        .eq("verified", true);
+    const { data: householdData } = await supabase
+      .from("households")
+      .select("*")
+      .eq("verified", true);
 
-      const { data: alertData } = await supabase
-        .from("alerts")
-        .select("*, user:users(display_name, avatar_url), household:households(street_name, house_number, lat, lng)")
-        .in("status", ["open", "help_coming"])
-        .order("created_at", { ascending: false });
+    const { data: alertData } = await supabase
+      .from("alerts")
+      .select("*, user:users(display_name, avatar_url), household:households(street_name, house_number, lat, lng)")
+      .in("status", ["open", "help_coming"])
+      .order("created_at", { ascending: false });
 
-      if (householdData) {
-        const merged = householdData.map((h) => ({
-          ...h,
-          alert: (alertData as unknown as Alert[])?.find((a) => a.household_id === h.id),
-        }));
-        setHouseholds(merged);
-      }
+    if (householdData) {
+      const merged = householdData.map((h) => ({
+        ...h,
+        alert: (alertData as unknown as Alert[])?.find((a) => a.household_id === h.id),
+      }));
+      setHouseholds(merged);
     }
-
-    load();
   }, []);
+
+  useEffect(() => {
+    loadMap();
+
+    // Echtzeit-Updates: Karte aktualisiert sich bei Alert-Änderungen
+    const supabase = createClient();
+    const channel = supabase
+      .channel("map-alerts")
+      .on("postgres_changes", { event: "*", schema: "public", table: "alerts" }, () => {
+        loadMap();
+      })
+      .subscribe();
+
+    return () => { supabase.removeChannel(channel); };
+  }, [loadMap]);
 
   function handleMarkerClick(householdId: string) {
     const household = households.find((h) => h.id === householdId);

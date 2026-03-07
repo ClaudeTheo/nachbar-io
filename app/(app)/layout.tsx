@@ -1,4 +1,5 @@
 import { BottomNav } from "@/components/BottomNav";
+import { InstallPrompt } from "@/components/InstallPrompt";
 
 // Layout für den aktiven Modus — mit Bottom-Navigation
 export default function AppLayout({
@@ -18,6 +19,7 @@ export default function AppLayout({
       {/* Hauptinhalt mit Padding für Bottom-Nav */}
       <main id="main-content" className="mx-auto max-w-lg px-4 pt-4">{children}</main>
       <BottomNav />
+      <InstallPrompt />
     </div>
   );
 }

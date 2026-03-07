@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Shield, Users, Home, Bell, BarChart3, RefreshCw } from "lucide-react";
+import { Shield, Users, Home, Bell, BarChart3, RefreshCw, HandHelping, ShoppingBag, TrendingUp, CheckCircle } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -16,6 +16,10 @@ interface Stats {
   occupiedHouseholds: number;
   openAlerts: number;
   totalAlerts: number;
+  resolvedAlerts: number;
+  activeHelpRequests: number;
+  activeMarketplace: number;
+  recentSignups: number;
 }
 
 export default function AdminPage() {
@@ -83,6 +87,18 @@ export default function AdminPage() {
       .order("created_at", { ascending: false })
       .limit(50);
 
+    // Hilfe-Börse zählen
+    const { count: helpCount } = await supabase
+      .from("help_requests")
+      .select("id", { count: "exact", head: true })
+      .eq("status", "active");
+
+    // Marktplatz zählen
+    const { count: marketCount } = await supabase
+      .from("marketplace_items")
+      .select("id", { count: "exact", head: true })
+      .eq("status", "active");
+
     const userList = (userData ?? []) as User[];
     const householdList = householdData ?? [];
     const members = memberData ?? [];
@@ -99,6 +115,11 @@ export default function AdminPage() {
       memberCount: memberCounts.get(h.id) ?? 0,
     }));
 
+    // Registrierungen der letzten 7 Tage
+    const weekAgo = new Date();
+    weekAgo.setDate(weekAgo.getDate() - 7);
+    const recentUsers = userList.filter((u) => new Date(u.created_at) > weekAgo);
+
     setUsers(userList);
     setHouseholds(enrichedHouseholds);
     setAlerts(alertList);
@@ -108,6 +129,10 @@ export default function AdminPage() {
       occupiedHouseholds: enrichedHouseholds.filter((h) => h.memberCount > 0).length,
       openAlerts: alertList.filter((a) => a.status === "open").length,
       totalAlerts: alertList.length,
+      resolvedAlerts: alertList.filter((a) => a.status === "resolved").length,
+      activeHelpRequests: helpCount ?? 0,
+      activeMarketplace: marketCount ?? 0,
+      recentSignups: recentUsers.length,
     });
     setLoading(false);
   }
@@ -141,12 +166,29 @@ export default function AdminPage() {
 
       {/* Statistiken */}
       {stats && (
-        <div className="grid grid-cols-2 gap-3">
-          <StatCard icon={<Users className="h-5 w-5" />} label="Registrierte Nutzer" value={stats.totalUsers} />
-          <StatCard icon={<Home className="h-5 w-5" />} label="Belegte Haushalte" value={`${stats.occupiedHouseholds}/${stats.totalHouseholds}`} />
-          <StatCard icon={<Bell className="h-5 w-5 text-alert-amber" />} label="Offene Meldungen" value={stats.openAlerts} highlight={stats.openAlerts > 0} />
-          <StatCard icon={<BarChart3 className="h-5 w-5" />} label="Meldungen gesamt" value={stats.totalAlerts} />
-        </div>
+        <>
+          <div className="grid grid-cols-2 gap-3">
+            <StatCard icon={<Users className="h-5 w-5" />} label="Registrierte Nutzer" value={stats.totalUsers} />
+            <StatCard icon={<Home className="h-5 w-5" />} label="Belegte Haushalte" value={`${stats.occupiedHouseholds}/${stats.totalHouseholds}`} />
+            <StatCard icon={<Bell className="h-5 w-5 text-alert-amber" />} label="Offene Meldungen" value={stats.openAlerts} highlight={stats.openAlerts > 0} />
+            <StatCard icon={<CheckCircle className="h-5 w-5 text-quartier-green" />} label="Erledigte Meldungen" value={stats.resolvedAlerts} />
+            <StatCard icon={<HandHelping className="h-5 w-5" />} label="Aktive Hilfegesuche" value={stats.activeHelpRequests} />
+            <StatCard icon={<ShoppingBag className="h-5 w-5" />} label="Marktplatz-Inserate" value={stats.activeMarketplace} />
+          </div>
+
+          {/* Aktivitäts-Hinweis */}
+          <Card className="border-quartier-green/20 bg-quartier-green/5">
+            <CardContent className="p-4">
+              <div className="flex items-center gap-2">
+                <TrendingUp className="h-5 w-5 text-quartier-green" />
+                <span className="font-medium text-anthrazit">Letzte 7 Tage</span>
+              </div>
+              <p className="mt-1 text-sm text-muted-foreground">
+                {stats.recentSignups} neue Registrierung{stats.recentSignups !== 1 ? "en" : ""} · {stats.openAlerts} offene Meldung{stats.openAlerts !== 1 ? "en" : ""} · {Math.round((stats.occupiedHouseholds / stats.totalHouseholds) * 100)}% Belegungsquote
+              </p>
+            </CardContent>
+          </Card>
+        </>
       )}
 
       {/* Tabs für Details */}

@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Plus, HandHelping, Search } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { Plus, HandHelping, Search, ChevronRight, Filter } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { createClient } from "@/lib/supabase/client";
@@ -13,6 +14,8 @@ import { de } from "date-fns/locale";
 
 export default function HelpPage() {
   const [requests, setRequests] = useState<HelpRequest[]>([]);
+  const [filterCategory, setFilterCategory] = useState<string | null>(null);
+  const [showFilter, setShowFilter] = useState(false);
 
   useEffect(() => {
     async function load() {
@@ -27,21 +30,64 @@ export default function HelpPage() {
     load();
   }, []);
 
-  const needs = requests.filter((r) => r.type === "need");
-  const offers = requests.filter((r) => r.type === "offer");
+  const filteredRequests = filterCategory
+    ? requests.filter((r) => r.category === filterCategory)
+    : requests;
+  const needs = filteredRequests.filter((r) => r.type === "need");
+  const offers = filteredRequests.filter((r) => r.type === "offer");
 
   return (
     <div>
       <div className="mb-4 flex items-center justify-between">
         <h1 className="text-xl font-bold text-anthrazit">Hilfe-Börse</h1>
-        <Link
-          href="/help/new"
-          className="flex items-center gap-1 rounded-lg bg-quartier-green px-3 py-2 text-sm font-semibold text-white hover:bg-quartier-green-dark"
-        >
-          <Plus className="h-4 w-4" />
-          Neuer Eintrag
-        </Link>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setShowFilter(!showFilter)}
+            className={`rounded-lg p-2 transition-colors ${
+              filterCategory ? "bg-quartier-green/10 text-quartier-green" : "hover:bg-muted"
+            }`}
+            aria-label="Filter"
+          >
+            <Filter className="h-4 w-4" />
+          </button>
+          <Link
+            href="/help/new"
+            className="flex items-center gap-1 rounded-lg bg-quartier-green px-3 py-2 text-sm font-semibold text-white hover:bg-quartier-green-dark"
+          >
+            <Plus className="h-4 w-4" />
+            Neuer Eintrag
+          </Link>
+        </div>
       </div>
+
+      {/* Kategorie-Filter */}
+      {showFilter && (
+        <div className="mb-4 flex flex-wrap gap-2">
+          <button
+            onClick={() => setFilterCategory(null)}
+            className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${
+              !filterCategory
+                ? "bg-quartier-green text-white"
+                : "bg-muted text-muted-foreground hover:bg-muted/80"
+            }`}
+          >
+            Alle
+          </button>
+          {HELP_CATEGORIES.map((cat) => (
+            <button
+              key={cat.id}
+              onClick={() => setFilterCategory(filterCategory === cat.id ? null : cat.id)}
+              className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${
+                filterCategory === cat.id
+                  ? "bg-quartier-green text-white"
+                  : "bg-muted text-muted-foreground hover:bg-muted/80"
+              }`}
+            >
+              {cat.icon} {cat.label}
+            </button>
+          ))}
+        </div>
+      )}
 
       <Tabs defaultValue="needs">
         <TabsList className="w-full">
@@ -57,7 +103,10 @@ export default function HelpPage() {
 
         <TabsContent value="needs" className="mt-4 space-y-3">
           {needs.length === 0 ? (
-            <EmptyState text="Keine aktuellen Hilfegesuche." />
+            <EmptyState
+              text={filterCategory ? "Keine Gesuche in dieser Kategorie." : "Keine aktuellen Hilfegesuche."}
+              subtext="Brauchen Sie Hilfe? Erstellen Sie ein neues Gesuch!"
+            />
           ) : (
             needs.map((req) => <HelpCard key={req.id} request={req} />)
           )}
@@ -65,7 +114,10 @@ export default function HelpPage() {
 
         <TabsContent value="offers" className="mt-4 space-y-3">
           {offers.length === 0 ? (
-            <EmptyState text="Keine aktuellen Hilfsangebote." />
+            <EmptyState
+              text={filterCategory ? "Keine Angebote in dieser Kategorie." : "Keine aktuellen Hilfsangebote."}
+              subtext="Können Sie helfen? Bieten Sie Ihre Hilfe an!"
+            />
           ) : (
             offers.map((req) => <HelpCard key={req.id} request={req} />)
           )}
@@ -76,6 +128,7 @@ export default function HelpPage() {
 }
 
 function HelpCard({ request }: { request: HelpRequest }) {
+  const router = useRouter();
   const cat = HELP_CATEGORIES.find((c) => c.id === request.category);
   const timeAgo = formatDistanceToNow(new Date(request.created_at), {
     addSuffix: true,
@@ -83,13 +136,16 @@ function HelpCard({ request }: { request: HelpRequest }) {
   });
 
   return (
-    <div className="rounded-lg border border-border bg-white p-4 shadow-sm">
+    <button
+      onClick={() => router.push(`/help/${request.id}`)}
+      className="w-full rounded-lg border border-border bg-white p-4 shadow-sm text-left transition-all hover:border-quartier-green hover:shadow-md active:scale-[0.99]"
+    >
       <div className="flex items-start gap-3">
         <span className="text-2xl">{cat?.icon ?? "❓"}</span>
-        <div className="flex-1">
+        <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
-            <h3 className="font-semibold text-anthrazit">{request.title}</h3>
-            <Badge variant={request.type === "need" ? "default" : "secondary"}>
+            <h3 className="font-semibold text-anthrazit truncate">{request.title}</h3>
+            <Badge variant={request.type === "need" ? "default" : "secondary"} className="shrink-0">
               {request.type === "need" ? "Gesucht" : "Angebot"}
             </Badge>
           </div>
@@ -99,18 +155,22 @@ function HelpCard({ request }: { request: HelpRequest }) {
             </p>
           )}
           <p className="mt-2 text-xs text-muted-foreground">
-            {request.user?.display_name} · {timeAgo}
+            {request.user?.display_name ?? "Nachbar"} · {timeAgo}
           </p>
         </div>
+        <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground mt-1" />
       </div>
-    </div>
+    </button>
   );
 }
 
-function EmptyState({ text }: { text: string }) {
+function EmptyState({ text, subtext }: { text: string; subtext?: string }) {
   return (
     <div className="py-8 text-center">
       <p className="text-muted-foreground">{text}</p>
+      {subtext && (
+        <p className="mt-1 text-sm text-muted-foreground/70">{subtext}</p>
+      )}
     </div>
   );
 }

@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Settings, LogOut, Star, Shield, ChevronRight } from "lucide-react";
+import { Settings, LogOut, Star, Shield, ChevronRight, Pencil, Bell } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
@@ -96,12 +96,38 @@ export default function ProfilePage() {
       <Card>
         <CardContent className="p-0">
           <Link
+            href="/profile/edit"
+            className="flex items-center justify-between p-4 hover:bg-muted/50"
+          >
+            <div className="flex items-center gap-3">
+              <Pencil className="h-5 w-5 text-muted-foreground" />
+              <span>Profil bearbeiten</span>
+            </div>
+            <ChevronRight className="h-4 w-4 text-muted-foreground" />
+          </Link>
+
+          <Separator />
+
+          <Link
             href="/profile/skills"
             className="flex items-center justify-between p-4 hover:bg-muted/50"
           >
             <div className="flex items-center gap-3">
               <Star className="h-5 w-5 text-muted-foreground" />
               <span>Meine Kompetenzen</span>
+            </div>
+            <ChevronRight className="h-4 w-4 text-muted-foreground" />
+          </Link>
+
+          <Separator />
+
+          <Link
+            href="/profile/notifications"
+            className="flex items-center justify-between p-4 hover:bg-muted/50"
+          >
+            <div className="flex items-center gap-3">
+              <Bell className="h-5 w-5 text-muted-foreground" />
+              <span>Benachrichtigungen</span>
             </div>
             <ChevronRight className="h-4 w-4 text-muted-foreground" />
           </Link>

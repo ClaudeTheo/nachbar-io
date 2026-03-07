@@ -55,8 +55,28 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
-  // TODO: Push-Notifications an Nachbarn senden (Radius 1)
-  // Dies wird über die Supabase Edge Function notify-neighbors gehandhabt
+  // Push-Notifications an Quartiersmitglieder senden
+  try {
+    const baseUrl = request.nextUrl.origin;
+    await fetch(`${baseUrl}/api/push/send`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Cookie: request.headers.get("cookie") || "",
+      },
+      body: JSON.stringify({
+        title: `${is_emergency ? "NOTFALL: " : ""}${title}`,
+        body: description || "Neue Meldung in Ihrem Quartier",
+        url: `/alerts`,
+        tag: `alert-${alert.id}`,
+        urgent: is_emergency || false,
+        excludeUserId: user.id,
+      }),
+    });
+  } catch (pushError) {
+    // Push-Fehler blockiert nicht die Alert-Erstellung
+    console.error("Push-Benachrichtigung fehlgeschlagen:", pushError);
+  }
 
   return NextResponse.json(alert, { status: 201 });
 }

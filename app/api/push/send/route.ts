@@ -2,16 +2,22 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import webpush from "web-push";
 
-// VAPID-Konfiguration
-const VAPID_PUBLIC = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY!;
-const VAPID_PRIVATE = process.env.VAPID_PRIVATE_KEY!;
+// VAPID-Konfiguration — lazy initialisiert, um Build-Fehler zu vermeiden
+let vapidConfigured = false;
 
-if (VAPID_PUBLIC && VAPID_PRIVATE) {
-  webpush.setVapidDetails(
-    "mailto:nachbar@nachbar.io",
-    VAPID_PUBLIC,
-    VAPID_PRIVATE
-  );
+function ensureVapid() {
+  if (vapidConfigured) return true;
+  const pub = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
+  const priv = process.env.VAPID_PRIVATE_KEY;
+  if (!pub || !priv) return false;
+  try {
+    webpush.setVapidDetails("mailto:nachbar@nachbar.io", pub, priv);
+    vapidConfigured = true;
+    return true;
+  } catch {
+    console.error("VAPID-Konfiguration fehlgeschlagen");
+    return false;
+  }
 }
 
 // POST /api/push/send — Push-Notification an Quartiersmitglieder senden
@@ -33,6 +39,10 @@ export async function POST(request: NextRequest) {
 
   if (!title) {
     return NextResponse.json({ error: "Titel erforderlich" }, { status: 400 });
+  }
+
+  if (!ensureVapid()) {
+    return NextResponse.json({ error: "Push nicht konfiguriert" }, { status: 503 });
   }
 
   // Alle Push-Subscriptions laden (außer Absender)

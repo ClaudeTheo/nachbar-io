@@ -43,8 +43,11 @@ export async function updateSession(request: NextRequest) {
     request.nextUrl.pathname.startsWith("/verify");
   const isApiRoute = request.nextUrl.pathname.startsWith("/api");
   const isRootPage = request.nextUrl.pathname === "/";
+  // Rechtliche Seiten muessen IMMER oeffentlich zugaenglich sein (DSGVO / TMG)
+  const isLegalPage = request.nextUrl.pathname.startsWith("/datenschutz") ||
+    request.nextUrl.pathname.startsWith("/impressum");
 
-  if (!user && !isAuthPage && !isApiRoute && !isRootPage) {
+  if (!user && !isAuthPage && !isApiRoute && !isRootPage && !isLegalPage) {
     const url = request.nextUrl.clone();
     url.pathname = "/login";
     return NextResponse.redirect(url);

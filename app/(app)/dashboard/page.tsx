@@ -294,6 +294,10 @@ export default function DashboardPage() {
                 <span className="text-2xl">⭐</span>
                 <span className="text-xs font-medium text-anthrazit">Experten</span>
               </Link>
+              <Link href="/tips" className="flex flex-col items-center gap-1 rounded-lg bg-white p-3 shadow-sm hover:bg-muted/50">
+                <span className="text-2xl">💡</span>
+                <span className="text-xs font-medium text-anthrazit">Tipps</span>
+              </Link>
             </div>
           </section>
         </div>

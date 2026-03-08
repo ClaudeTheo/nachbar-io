@@ -89,6 +89,7 @@ export interface HelpRequest {
   user_id: string;
   type: HelpRequestType;
   category: string;
+  subcategory: string | null;
   title: string;
   description: string | null;
   status: HelpRequestStatus;
@@ -235,6 +236,32 @@ export interface ExpertEndorsement {
   skill_category: string;
   created_at: string;
   endorser?: Pick<User, "display_name" | "avatar_url">;
+}
+
+// Nachbarschafts-Tipps (kooperative Empfehlungen, KEIN Social Media)
+export type TipStatus = "active" | "archived" | "reported";
+
+export interface CommunityTip {
+  id: string;
+  user_id: string;
+  category: string;
+  title: string;
+  business_name: string | null;
+  description: string;
+  location_hint: string | null;
+  contact_hint: string | null;
+  confirmation_count: number;
+  status: TipStatus;
+  created_at: string;
+  user?: Pick<User, "display_name" | "avatar_url">;
+  my_confirmation?: boolean;
+}
+
+export interface TipConfirmation {
+  id: string;
+  tip_id: string;
+  user_id: string;
+  created_at: string;
 }
 
 // Reputationssystem (berechnet aus Interaktionsdaten)

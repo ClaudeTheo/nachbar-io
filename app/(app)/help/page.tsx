@@ -7,7 +7,7 @@ import { Plus, HandHelping, Search, ChevronRight, Filter } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { createClient } from "@/lib/supabase/client";
-import { HELP_CATEGORIES } from "@/lib/constants";
+import { HELP_CATEGORIES, HELP_SUBCATEGORIES } from "@/lib/constants";
 import type { HelpRequest } from "@/lib/supabase/types";
 import { formatDistanceToNow } from "date-fns";
 import { de } from "date-fns/locale";
@@ -130,6 +130,9 @@ export default function HelpPage() {
 function HelpCard({ request }: { request: HelpRequest }) {
   const router = useRouter();
   const cat = HELP_CATEGORIES.find((c) => c.id === request.category);
+  const subLabel = request.subcategory
+    ? HELP_SUBCATEGORIES[request.category]?.find((s) => s.id === request.subcategory)?.label
+    : null;
   const timeAgo = formatDistanceToNow(new Date(request.created_at), {
     addSuffix: true,
     locale: de,
@@ -149,6 +152,11 @@ function HelpCard({ request }: { request: HelpRequest }) {
               {request.type === "need" ? "Gesucht" : "Angebot"}
             </Badge>
           </div>
+          {subLabel && (
+            <span className="mt-1 inline-block rounded-full bg-quartier-green/10 px-2 py-0.5 text-xs font-medium text-quartier-green">
+              {subLabel}
+            </span>
+          )}
           {request.description && (
             <p className="mt-1 text-sm text-muted-foreground line-clamp-2">
               {request.description}

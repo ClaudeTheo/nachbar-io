@@ -27,6 +27,7 @@ export const ACTIVITY_BADGES = [
   { id: "pet_friend", label: "Tier-Freund", icon: "🐾", description: "Kümmert sich um Nachbars Tiere" },
   { id: "event_organizer", label: "Event-Organisator", icon: "📅", description: "Bringt die Nachbarschaft zusammen" },
   { id: "welcome_helper", label: "Willkommens-Helfer", icon: "👋", description: "Hilft vielen verschiedenen Menschen" },
+  { id: "local_expert", label: "Ortskenner", icon: "📍", description: "Teilt wertvolle lokale Tipps" },
 ] as const;
 
 // Punkte-Werte pro Aktionstyp
@@ -37,6 +38,7 @@ const POINTS = {
   eventAttended: 1,       // Event teilgenommen
   endorsementReceived: 2, // Experten-Empfehlung erhalten
   reviewReceived: 3,      // Gute Bewertung erhalten (4+ Sterne)
+  tipShared: 2,           // Nachbarschafts-Tipp geteilt
 } as const;
 
 // ============================================================
@@ -95,6 +97,7 @@ export async function computeReputationStats(
     eventsResult,
     endorsementsResult,
     reviewsResult,
+    tipsSharedResult,
     // Badge-spezifische Abfragen
     gardenHelpResult,
     cookingHelpResult,
@@ -142,6 +145,13 @@ export async function computeReputationStats(
       .select("id", { count: "exact", head: true })
       .eq("expert_user_id", userId)
       .gte("rating", 4),
+
+    // Nachbarschafts-Tipps geteilt
+    supabase
+      .from("community_tips")
+      .select("id", { count: "exact", head: true })
+      .eq("user_id", userId)
+      .eq("status", "active"),
 
     // Badge: Gartenhilfe (help_requests in Kategorie garden)
     supabase
@@ -196,6 +206,7 @@ export async function computeReputationStats(
   const eventsAttended = eventsResult.count ?? 0;
   const endorsementsReceived = endorsementsResult.count ?? 0;
   const reviewsReceived = reviewsResult.count ?? 0;
+  const tipsShared = tipsSharedResult.count ?? 0;
 
   // Punkte berechnen
   const points =
@@ -204,7 +215,8 @@ export async function computeReputationStats(
     itemsShared * POINTS.itemShared +
     eventsAttended * POINTS.eventAttended +
     endorsementsReceived * POINTS.endorsementReceived +
-    reviewsReceived * POINTS.reviewReceived;
+    reviewsReceived * POINTS.reviewReceived +
+    tipsShared * POINTS.tipShared;
 
   // Level bestimmen
   const level = getReputationLevel(points);
@@ -219,6 +231,9 @@ export async function computeReputationStats(
   if ((cookingHelpResult.count ?? 0) >= BADGE_THRESHOLD) badges.push("neighborhood_cook");
   if ((petHelpResult.count ?? 0) >= BADGE_THRESHOLD) badges.push("pet_friend");
   if ((eventsCreatedResult.count ?? 0) >= BADGE_THRESHOLD) badges.push("event_organizer");
+
+  // Ortskenner: Tipps geteilt
+  if (tipsShared >= BADGE_THRESHOLD) badges.push("local_expert");
 
   // Willkommens-Helfer: Verschiedene Nachbarn geholfen
   if (uniqueHelpedResult.data) {

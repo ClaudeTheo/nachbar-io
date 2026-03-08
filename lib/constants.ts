@@ -64,6 +64,48 @@ export const HELP_CATEGORIES = [
   { id: "other", label: "Sonstiges", icon: "❓" },
 ] as const;
 
+// Hilfe-Unterkategorien (optional, nur fuer Kategorien mit sinnvollen Untergruppen)
+export const HELP_SUBCATEGORIES: Record<string, readonly { id: string; label: string }[]> = {
+  pet_care: [
+    { id: "dog_walking", label: "Gassi gehen" },
+    { id: "cat_feeding", label: "Katzen füttern" },
+    { id: "pet_sitting", label: "Tiersitting" },
+    { id: "vet_transport", label: "Tierarzt-Fahrt" },
+  ],
+  garden: [
+    { id: "mowing", label: "Rasen mähen" },
+    { id: "watering", label: "Gießen" },
+    { id: "hedge_trimming", label: "Hecke schneiden" },
+    { id: "planting", label: "Bepflanzung" },
+  ],
+  handwork: [
+    { id: "plumbing", label: "Klempner / Sanitär" },
+    { id: "painting", label: "Streichen / Tapezieren" },
+    { id: "carpentry", label: "Schreinern / Holz" },
+    { id: "assembly", label: "Möbel-Montage" },
+  ],
+  childcare: [
+    { id: "pickup", label: "Abholen / Bringen" },
+    { id: "play_date", label: "Spielnachmittag" },
+    { id: "homework", label: "Hausaufgabenhilfe" },
+  ],
+  tech: [
+    { id: "phone_help", label: "Handy-Hilfe" },
+    { id: "pc_setup", label: "PC-Einrichtung" },
+    { id: "internet", label: "Internet / WLAN" },
+  ],
+  shopping: [
+    { id: "weekly", label: "Wocheneinkauf" },
+    { id: "pharmacy", label: "Apotheke" },
+    { id: "parcel", label: "Paket-Annahme" },
+  ],
+  transport: [
+    { id: "doctor", label: "Arztfahrt" },
+    { id: "official", label: "Behördengang" },
+    { id: "moving", label: "Möbeltransport" },
+  ],
+} as const;
+
 // Marktplatz-Typen
 export const MARKETPLACE_TYPES = [
   { id: "sell", label: "Verkaufen", icon: "💰" },
@@ -144,6 +186,22 @@ export const EXPERT_CATEGORIES = [
   { id: "pet_care", label: "Tierbetreuung", icon: "🐾", description: "Gassi gehen, Tiersitting" },
   { id: "other", label: "Sonstiges", icon: "❓", description: "Weitere Kompetenzen" },
 ] as const;
+
+// Nachbarschafts-Tipps Kategorien (Empfehlungen, KEIN Social Media)
+export const TIP_CATEGORIES = [
+  { id: "craftsmen", label: "Handwerker & Betriebe", icon: "🔧" },
+  { id: "gastro", label: "Restaurants & Cafés", icon: "☕" },
+  { id: "health", label: "Ärzte & Gesundheit", icon: "🏥" },
+  { id: "services", label: "Dienstleistungen", icon: "📋" },
+  { id: "shopping", label: "Einkaufen & Läden", icon: "🛍️" },
+  { id: "kids", label: "Kinder & Familie", icon: "👶" },
+  { id: "mobility", label: "Mobilität & Verkehr", icon: "🚌" },
+  { id: "official", label: "Behörden & Recht", icon: "⚖️" },
+  { id: "nature", label: "Natur & Freizeit", icon: "🌳" },
+  { id: "general", label: "Allgemein", icon: "💡" },
+] as const;
+
+export type TipCategory = (typeof TIP_CATEGORIES)[number]["id"];
 
 // Trust-Level
 export const TRUST_LEVELS = {

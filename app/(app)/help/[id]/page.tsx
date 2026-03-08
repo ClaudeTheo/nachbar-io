@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { createClient } from "@/lib/supabase/client";
-import { HELP_CATEGORIES } from "@/lib/constants";
+import { HELP_CATEGORIES, HELP_SUBCATEGORIES } from "@/lib/constants";
 import type { HelpRequest } from "@/lib/supabase/types";
 import { formatDistanceToNow } from "date-fns";
 import { de } from "date-fns/locale";
@@ -76,6 +76,9 @@ export default function HelpDetailPage() {
 
   const isOwner = currentUserId && request?.user_id === currentUserId;
   const cat = request ? HELP_CATEGORIES.find((c) => c.id === request.category) : null;
+  const subLabel = request?.subcategory
+    ? HELP_SUBCATEGORIES[request.category]?.find((s) => s.id === request.subcategory)?.label
+    : null;
 
   // Nachricht senden
   async function handleSendMessage() {
@@ -208,6 +211,11 @@ export default function HelpDetailPage() {
               <span className="flex items-center gap-1">
                 <Tag className="h-3.5 w-3.5" />
                 {cat?.label ?? request.category}
+                {subLabel && (
+                  <span className="ml-1 rounded-full bg-quartier-green/10 px-2 py-0.5 text-xs font-medium text-quartier-green">
+                    {subLabel}
+                  </span>
+                )}
               </span>
               <span className="flex items-center gap-1">
                 <Clock className="h-3.5 w-3.5" />

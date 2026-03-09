@@ -72,8 +72,8 @@ export default function SeniorHomePage() {
       <div className="pt-4 text-center">
         <button
           onClick={() => router.push("/dashboard")}
-          className="rounded-xl border-2 border-gray-300 px-6 py-3 text-lg font-medium text-muted-foreground hover:bg-gray-100 active:bg-gray-200"
-          style={{ minHeight: "56px" }}
+          className="rounded-xl border-2 border-gray-300 px-6 py-3 text-lg font-medium text-anthrazit hover:bg-gray-100 active:bg-gray-200"
+          style={{ minHeight: "80px" }}
         >
           ← Zum normalen Modus
         </button>

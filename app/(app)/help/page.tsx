@@ -6,26 +6,39 @@ import { useRouter } from "next/navigation";
 import { Plus, HandHelping, Search, ChevronRight, Filter } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Skeleton } from "@/components/ui/skeleton";
 import { createClient } from "@/lib/supabase/client";
 import { HELP_CATEGORIES, HELP_SUBCATEGORIES } from "@/lib/constants";
 import type { HelpRequest } from "@/lib/supabase/types";
 import { formatDistanceToNow } from "date-fns";
 import { de } from "date-fns/locale";
+import { toast } from "sonner";
 
 export default function HelpPage() {
   const [requests, setRequests] = useState<HelpRequest[]>([]);
   const [filterCategory, setFilterCategory] = useState<string | null>(null);
   const [showFilter, setShowFilter] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function load() {
-      const supabase = createClient();
-      const { data } = await supabase
-        .from("help_requests")
-        .select("*, user:users(display_name, avatar_url)")
-        .eq("status", "active")
-        .order("created_at", { ascending: false });
-      if (data) setRequests(data as unknown as HelpRequest[]);
+      try {
+        const supabase = createClient();
+        const { data, error } = await supabase
+          .from("help_requests")
+          .select("*, user:users(display_name, avatar_url)")
+          .eq("status", "active")
+          .order("created_at", { ascending: false });
+        if (error) {
+          toast.error("Hilfe-Börse konnte nicht geladen werden.");
+          return;
+        }
+        if (data) setRequests(data as unknown as HelpRequest[]);
+      } catch {
+        toast.error("Netzwerkfehler beim Laden der Hilfe-Börse.");
+      } finally {
+        setLoading(false);
+      }
     }
     load();
   }, []);
@@ -89,40 +102,57 @@ export default function HelpPage() {
         </div>
       )}
 
-      <Tabs defaultValue="needs">
-        <TabsList className="w-full">
-          <TabsTrigger value="needs" className="flex-1">
-            <Search className="mr-1 h-4 w-4" />
-            Sucht Hilfe ({needs.length})
-          </TabsTrigger>
-          <TabsTrigger value="offers" className="flex-1">
-            <HandHelping className="mr-1 h-4 w-4" />
-            Bietet Hilfe ({offers.length})
-          </TabsTrigger>
-        </TabsList>
+      {loading ? (
+        <div className="mt-4 space-y-3">
+          {[1, 2, 3].map((i) => (
+            <div key={i} className="rounded-lg border border-border bg-white p-4">
+              <div className="flex items-start gap-3">
+                <Skeleton className="h-8 w-8 rounded" />
+                <div className="flex-1 space-y-2">
+                  <Skeleton className="h-4 w-3/4" />
+                  <Skeleton className="h-3 w-full" />
+                  <Skeleton className="h-3 w-1/3" />
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <Tabs defaultValue="needs">
+          <TabsList className="w-full">
+            <TabsTrigger value="needs" className="flex-1">
+              <Search className="mr-1 h-4 w-4" />
+              Sucht Hilfe ({needs.length})
+            </TabsTrigger>
+            <TabsTrigger value="offers" className="flex-1">
+              <HandHelping className="mr-1 h-4 w-4" />
+              Bietet Hilfe ({offers.length})
+            </TabsTrigger>
+          </TabsList>
 
-        <TabsContent value="needs" className="mt-4 space-y-3">
-          {needs.length === 0 ? (
-            <EmptyState
-              text={filterCategory ? "Keine Gesuche in dieser Kategorie." : "Keine aktuellen Hilfegesuche."}
-              subtext="Brauchen Sie Hilfe? Erstellen Sie ein neues Gesuch!"
-            />
-          ) : (
-            needs.map((req) => <HelpCard key={req.id} request={req} />)
-          )}
-        </TabsContent>
+          <TabsContent value="needs" className="mt-4 space-y-3">
+            {needs.length === 0 ? (
+              <EmptyState
+                text={filterCategory ? "Keine Gesuche in dieser Kategorie." : "Keine aktuellen Hilfegesuche."}
+                subtext="Brauchen Sie Hilfe? Erstellen Sie ein neues Gesuch!"
+              />
+            ) : (
+              needs.map((req) => <HelpCard key={req.id} request={req} />)
+            )}
+          </TabsContent>
 
-        <TabsContent value="offers" className="mt-4 space-y-3">
-          {offers.length === 0 ? (
-            <EmptyState
-              text={filterCategory ? "Keine Angebote in dieser Kategorie." : "Keine aktuellen Hilfsangebote."}
-              subtext="Können Sie helfen? Bieten Sie Ihre Hilfe an!"
-            />
-          ) : (
-            offers.map((req) => <HelpCard key={req.id} request={req} />)
-          )}
-        </TabsContent>
-      </Tabs>
+          <TabsContent value="offers" className="mt-4 space-y-3">
+            {offers.length === 0 ? (
+              <EmptyState
+                text={filterCategory ? "Keine Angebote in dieser Kategorie." : "Keine aktuellen Hilfsangebote."}
+                subtext="Können Sie helfen? Bieten Sie Ihre Hilfe an!"
+              />
+            ) : (
+              offers.map((req) => <HelpCard key={req.id} request={req} />)
+            )}
+          </TabsContent>
+        </Tabs>
+      )}
     </div>
   );
 }

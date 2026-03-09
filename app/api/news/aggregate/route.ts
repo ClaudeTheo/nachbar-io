@@ -1,22 +1,27 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 
 /**
  * POST /api/news/aggregate
  *
  * KI-Newsaggregation via Claude API.
- * Wird als Cron-Job täglich um 07:00 Uhr aufgerufen.
+ * Wird als Cron-Job aufgerufen — geschuetzt per CRON_SECRET.
  *
- * DSGVO-Regel: NUR öffentliche Nachrichtentexte werden an die API gesendet.
+ * DSGVO-Regel: NUR oeffentliche Nachrichtentexte werden an die API gesendet.
  * KEINE personenbezogenen Daten, KEINE Adressdaten, KEINE Nutzerdaten.
  */
-export async function POST() {
+export async function POST(request: NextRequest) {
+  // Auth: Nur per CRON_SECRET oder Admin aufrufbar
+  const authHeader = request.headers.get("authorization");
+  const cronSecret = process.env.CRON_SECRET;
+
+  if (!cronSecret || authHeader !== `Bearer ${cronSecret}`) {
+    return NextResponse.json({ error: "Nicht autorisiert" }, { status: 401 });
+  }
+
   const supabase = await createClient();
 
-  // Hier würde normalerweise ein Scraping/Fetching der lokalen Nachrichtenquellen stattfinden
-  // Für das MVP: Manuelle Nachrichten oder RSS-Feed von bad-saeckingen.de
-
-  // Beispiel: Nachricht verarbeiten
+  // Beispiel-Nachricht fuer MVP (spaeter durch RSS-Scraping ersetzen)
   const sampleNews = [
     {
       source_url: "https://www.bad-saeckingen.de",
@@ -29,9 +34,8 @@ export async function POST() {
   const results = [];
 
   for (const news of sampleNews) {
-    // Claude API aufrufen (nur öffentliche Nachrichtentexte!)
     const apiKey = process.env.ANTHROPIC_API_KEY;
-    if (!apiKey) {
+    if (!apiKey || apiKey === "placeholder-api-key") {
       console.error("ANTHROPIC_API_KEY nicht konfiguriert");
       continue;
     }
@@ -69,9 +73,14 @@ Format: {"summary": "...", "relevance_score": 0, "category": "infrastructure|eve
       const text = data.content?.[0]?.text;
 
       if (text) {
-        const parsed = JSON.parse(text);
+        let parsed;
+        try {
+          parsed = JSON.parse(text);
+        } catch {
+          console.error("Claude-Antwort kein gueltiges JSON:", text.substring(0, 100));
+          continue;
+        }
 
-        // In Datenbank speichern
         const { data: inserted } = await supabase.from("news_items").insert({
           source_url: news.source_url,
           original_title: news.original_title,

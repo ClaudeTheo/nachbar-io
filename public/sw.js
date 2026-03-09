@@ -4,10 +4,8 @@
 const CACHE_NAME = "nachbar-io-v1";
 const OFFLINE_URL = "/offline.html";
 
-// Assets die immer gecached werden
+// Nur statische Assets cachen — keine HTML-Seiten (Auth-geschützt)
 const PRECACHE_URLS = [
-  "/",
-  "/dashboard",
   "/manifest.json",
 ];
 
@@ -70,13 +68,16 @@ self.addEventListener("push", (event) => {
 
   const data = event.data.json();
 
+  // URL-Validierung: nur relative Pfade erlauben
+  const safeUrl = (typeof data.url === "string" && data.url.startsWith("/")) ? data.url : "/dashboard";
+
   const options = {
     body: data.body || "Neue Nachricht aus Ihrem Quartier",
     icon: "/icons/icon-192x192.svg",
     badge: "/icons/icon-72x72.svg",
     tag: data.tag || "nachbar-io",
     data: {
-      url: data.url || "/dashboard",
+      url: safeUrl,
     },
     actions: [
       { action: "help", title: "Ich helfe!" },
@@ -98,7 +99,9 @@ self.addEventListener("push", (event) => {
 self.addEventListener("notificationclick", (event) => {
   event.notification.close();
 
-  const url = event.notification.data?.url || "/dashboard";
+  // URL-Validierung: nur relative Pfade erlauben
+  const rawUrl = event.notification.data?.url || "/dashboard";
+  const url = (typeof rawUrl === "string" && rawUrl.startsWith("/")) ? rawUrl : "/dashboard";
 
   if (event.action === "help") {
     // "Ich helfe!" — Direkt zum Alert

@@ -5,9 +5,9 @@ import { NextResponse, type NextRequest } from "next/server";
 export async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request });
 
-  // Im Dev-Modus ohne echte Supabase-Credentials: Auth überspringen
+  // Nur im Development-Modus ohne Supabase-URL: Auth ueberspringen
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL ?? "";
-  if (supabaseUrl.includes("placeholder") || !supabaseUrl.includes("supabase")) {
+  if (process.env.NODE_ENV === "development" && !supabaseUrl) {
     return supabaseResponse;
   }
 

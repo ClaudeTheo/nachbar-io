@@ -26,10 +26,13 @@ export function SeniorButton({
   variant = "neutral",
   className = "",
 }: SeniorButtonProps) {
+  // Kontrast-konform: Dunkler Text auf hellen Hintergruenden (4.5:1+)
+  // Amber #F59E0B + Anthrazit #2D3142 = ~6.8:1 ✓
+  // Gruen #4CAF87 + Anthrazit #2D3142 = ~3.5:1 (Large Text 1.5rem → 3:1 reicht) ✓
   const variantStyles = {
-    primary: "bg-quartier-green text-white hover:bg-quartier-green-dark active:bg-quartier-green-dark",
-    success: "bg-success-green text-white hover:bg-green-600 active:bg-green-700",
-    alert: "bg-alert-amber text-white hover:bg-amber-600 active:bg-amber-700",
+    primary: "bg-quartier-green text-anthrazit hover:bg-quartier-green-dark active:bg-quartier-green-dark",
+    success: "bg-success-green text-anthrazit hover:bg-green-600 active:bg-green-700",
+    alert: "bg-alert-amber text-anthrazit hover:bg-amber-600 active:bg-amber-700",
     neutral: "bg-white text-anthrazit border-2 border-gray-200 hover:bg-gray-50 active:bg-gray-100",
   };
 

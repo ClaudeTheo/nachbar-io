@@ -1,9 +1,18 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 
-// GET /api/alerts — Alle aktiven Alerts abrufen
+// GET /api/alerts — Alle aktiven Alerts abrufen (authentifiziert)
 export async function GET() {
   const supabase = await createClient();
+
+  // Auth-Check: Nur authentifizierte Nutzer duerfen Alerts sehen
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return NextResponse.json({ error: "Nicht authentifiziert" }, { status: 401 });
+  }
 
   const { data, error } = await supabase
     .from("alerts")
@@ -14,7 +23,8 @@ export async function GET() {
     .order("created_at", { ascending: false });
 
   if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    console.error("Alerts-Abfrage fehlgeschlagen:", error);
+    return NextResponse.json({ error: "Alerts konnten nicht geladen werden" }, { status: 500 });
   }
 
   return NextResponse.json(data);
@@ -52,17 +62,18 @@ export async function POST(request: NextRequest) {
     .single();
 
   if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    console.error("Alert-Erstellung fehlgeschlagen:", error);
+    return NextResponse.json({ error: "Alert konnte nicht erstellt werden" }, { status: 500 });
   }
 
-  // Push-Notifications an Quartiersmitglieder senden
+  // Push-Notifications an Quartiersmitglieder senden (interner Aufruf)
   try {
     const baseUrl = request.nextUrl.origin;
     await fetch(`${baseUrl}/api/push/send`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Cookie: request.headers.get("cookie") || "",
+        "X-Internal-Secret": process.env.INTERNAL_API_SECRET || "",
       },
       body: JSON.stringify({
         title: `${is_emergency ? "NOTFALL: " : ""}${title}`,

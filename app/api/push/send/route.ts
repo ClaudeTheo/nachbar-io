@@ -21,18 +21,17 @@ function ensureVapid() {
 }
 
 // POST /api/push/send — Push-Notification an Quartiersmitglieder senden
-// Nur für Alerts/Meldungen — nicht für beliebige Nachrichten
+// Nur intern aufrufbar (per INTERNAL_API_SECRET)
 export async function POST(request: NextRequest) {
-  const supabase = await createClient();
+  // Internes Secret pruefen — nur andere API-Routes duerfen Push senden
+  const internalSecret = request.headers.get("x-internal-secret");
+  const expectedSecret = process.env.INTERNAL_API_SECRET;
 
-  // Authentifizierung prüfen
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    return NextResponse.json({ error: "Nicht authentifiziert" }, { status: 401 });
+  if (!expectedSecret || internalSecret !== expectedSecret) {
+    return NextResponse.json({ error: "Nicht autorisiert" }, { status: 403 });
   }
+
+  const supabase = await createClient();
 
   const body = await request.json();
   const { title, body: messageBody, url, tag, urgent, excludeUserId } = body;
@@ -41,11 +40,14 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Titel erforderlich" }, { status: 400 });
   }
 
+  // URL-Validierung: Nur relative Pfade erlauben (kein Phishing)
+  const safeUrl = (typeof url === "string" && url.startsWith("/")) ? url : "/dashboard";
+
   if (!ensureVapid()) {
     return NextResponse.json({ error: "Push nicht konfiguriert" }, { status: 503 });
   }
 
-  // Alle Push-Subscriptions laden (außer Absender)
+  // Alle Push-Subscriptions laden (ausser Absender)
   const query = supabase.from("push_subscriptions").select("*");
   if (excludeUserId) {
     query.neq("user_id", excludeUserId);
@@ -53,18 +55,19 @@ export async function POST(request: NextRequest) {
   const { data: subscriptions, error: fetchError } = await query;
 
   if (fetchError) {
-    return NextResponse.json({ error: fetchError.message }, { status: 500 });
+    console.error("Push-Subscriptions laden fehlgeschlagen:", fetchError);
+    return NextResponse.json({ error: "Empfaenger konnten nicht geladen werden" }, { status: 500 });
   }
 
   if (!subscriptions || subscriptions.length === 0) {
     return NextResponse.json({ sent: 0, message: "Keine Empfänger gefunden" });
   }
 
-  // Push-Payload erstellen
+  // Push-Payload erstellen (mit validierter URL)
   const payload = JSON.stringify({
     title,
     body: messageBody,
-    url: url || "/dashboard",
+    url: safeUrl,
     tag: tag || "nachbar-io",
     urgent: urgent || false,
   });
@@ -86,12 +89,11 @@ export async function POST(request: NextRequest) {
             },
           },
           payload,
-          { TTL: 3600 } // 1 Stunde gültig
+          { TTL: 3600 }
         );
         sent++;
       } catch (err: unknown) {
         failed++;
-        // Abgelaufene Subscriptions merken zum Aufräumen
         const statusCode = (err as { statusCode?: number })?.statusCode;
         if (statusCode === 410 || statusCode === 404) {
           expiredEndpoints.push(sub.endpoint);
@@ -100,7 +102,7 @@ export async function POST(request: NextRequest) {
     })
   );
 
-  // Abgelaufene Subscriptions aufräumen
+  // Abgelaufene Subscriptions aufraeumen
   if (expiredEndpoints.length > 0) {
     await supabase
       .from("push_subscriptions")

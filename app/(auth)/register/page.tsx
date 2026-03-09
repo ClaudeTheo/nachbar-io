@@ -130,13 +130,12 @@ function RegisterForm() {
         return;
       }
 
-      // 2. User-Profil erstellen
+      // 2. User-Profil erstellen (trust_level wird per DB-Trigger gesetzt)
       const { error: profileError } = await supabase.from("users").insert({
         id: authData.user.id,
         email_hash: "",
         display_name: displayName.trim(),
         ui_mode: uiMode,
-        trust_level: "verified",
       });
 
       if (profileError) {
@@ -158,11 +157,10 @@ function RegisterForm() {
       }
 
       if (household) {
+        // role und verified_at werden per DB-Trigger gesetzt
         const { error: memberError } = await supabase.from("household_members").insert({
           household_id: household.id,
           user_id: authData.user.id,
-          role: "member",
-          verified_at: new Date().toISOString(),
         });
 
         if (memberError) {

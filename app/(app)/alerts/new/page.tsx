@@ -142,7 +142,7 @@ export default function NewAlertPage() {
           <Button
             onClick={handleSubmit}
             disabled={loading}
-            className="w-full bg-alert-amber py-6 text-lg font-bold hover:bg-amber-600"
+            className="w-full bg-alert-amber py-6 text-lg font-bold text-anthrazit hover:bg-amber-600"
           >
             {loading ? "Wird gesendet..." : "Hilfe senden"}
           </Button>

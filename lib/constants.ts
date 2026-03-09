@@ -68,6 +68,7 @@ export const HELP_CATEGORIES = [
   { id: "pet_care", label: "Tierbetreuung", icon: "🐾" },
   { id: "tutoring", label: "Nachhilfe", icon: "📚" },
   { id: "company", label: "Gesellschaft", icon: "☕" },
+  { id: "package", label: "Paketannahme", icon: "📦" },
   { id: "other", label: "Sonstiges", icon: "❓" },
 ] as const;
 

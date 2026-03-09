@@ -2,13 +2,15 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, Package, MapPin, Clock } from "lucide-react";
+import { ArrowLeft, Package, MapPin, Send, CheckCircle } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { createClient } from "@/lib/supabase/client";
-import type { Paketannahme } from "@/lib/supabase/types";
+import type { Paketannahme, HelpRequest } from "@/lib/supabase/types";
+import { formatDistanceToNow } from "date-fns";
+import { de } from "date-fns/locale";
 
 export default function PackagesPage() {
   const [available, setAvailable] = useState<Paketannahme[]>([]);
@@ -16,6 +18,12 @@ export default function PackagesPage() {
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [note, setNote] = useState("");
   const [saving, setSaving] = useState(false);
+
+  // Paket-Anfragen
+  const [requests, setRequests] = useState<HelpRequest[]>([]);
+  const [requestDescription, setRequestDescription] = useState("");
+  const [sendingRequest, setSendingRequest] = useState(false);
+  const [respondingTo, setRespondingTo] = useState<string | null>(null);
 
   const today = new Date().toISOString().split("T")[0];
 
@@ -26,18 +34,32 @@ export default function PackagesPage() {
       if (!user) return;
       setCurrentUserId(user.id);
 
-      // Heutige Verfuegbarkeiten laden
-      const { data } = await supabase
-        .from("paketannahme")
-        .select("*, user:users(display_name, avatar_url)")
-        .eq("available_date", today)
-        .order("created_at", { ascending: false });
+      // Heutige Verfuegbarkeiten + Paket-Anfragen parallel laden
+      const [availResult, requestResult] = await Promise.all([
+        supabase
+          .from("paketannahme")
+          .select("*, user:users(display_name, avatar_url)")
+          .eq("available_date", today)
+          .order("created_at", { ascending: false }),
+        supabase
+          .from("help_requests")
+          .select("*, user:users(display_name, avatar_url)")
+          .eq("category", "package")
+          .eq("type", "need")
+          .in("status", ["active", "matched"])
+          .gte("created_at", `${today}T00:00:00`)
+          .order("created_at", { ascending: false }),
+      ]);
 
-      if (data) {
-        const entries = data as unknown as Paketannahme[];
+      if (availResult.data) {
+        const entries = availResult.data as unknown as Paketannahme[];
         setAvailable(entries);
         const mine = entries.find((e) => e.user_id === user.id);
         if (mine) setMyEntry(mine);
+      }
+
+      if (requestResult.data) {
+        setRequests(requestResult.data as unknown as HelpRequest[]);
       }
     }
     load();
@@ -82,7 +104,73 @@ export default function PackagesPage() {
     setSaving(false);
   }
 
+  async function submitRequest() {
+    if (!currentUserId || !requestDescription.trim()) return;
+    setSendingRequest(true);
+
+    const supabase = createClient();
+    const { data, error } = await supabase
+      .from("help_requests")
+      .insert({
+        user_id: currentUserId,
+        type: "need",
+        category: "package",
+        title: "Paketannahme gesucht",
+        description: requestDescription.trim(),
+        status: "active",
+      })
+      .select("*, user:users(display_name, avatar_url)")
+      .single();
+
+    if (error) {
+      toast.error("Anfrage konnte nicht gesendet werden.");
+      setSendingRequest(false);
+      return;
+    }
+
+    const newRequest = data as unknown as HelpRequest;
+    setRequests([newRequest, ...requests]);
+    setRequestDescription("");
+    toast.success("Anfrage gesendet! Ihre Nachbarn werden informiert.");
+    setSendingRequest(false);
+  }
+
+  async function acceptRequest(requestId: string) {
+    if (!currentUserId) return;
+    setRespondingTo(requestId);
+
+    const supabase = createClient();
+
+    // Antwort erstellen + Status auf "matched" setzen
+    const [responseResult, statusResult] = await Promise.all([
+      supabase.from("help_responses").insert({
+        help_request_id: requestId,
+        responder_user_id: currentUserId,
+        message: "Ich nehme Ihr Paket an!",
+      }),
+      supabase
+        .from("help_requests")
+        .update({ status: "matched" })
+        .eq("id", requestId),
+    ]);
+
+    if (responseResult.error || statusResult.error) {
+      toast.error("Antwort konnte nicht gesendet werden.");
+      setRespondingTo(null);
+      return;
+    }
+
+    // Lokal aktualisieren
+    setRequests(requests.map((r) =>
+      r.id === requestId ? { ...r, status: "matched" as const } : r
+    ));
+    toast.success("Vielen Dank! Der Nachbar wird benachrichtigt.");
+    setRespondingTo(null);
+  }
+
   const othersAvailable = available.filter((a) => a.user_id !== currentUserId);
+  const myRequests = requests.filter((r) => r.user_id === currentUserId);
+  const otherRequests = requests.filter((r) => r.user_id !== currentUserId && r.status === "active");
 
   return (
     <div className="space-y-6">
@@ -100,12 +188,101 @@ export default function PackagesPage() {
           <div>
             <p className="font-medium text-orange-900">Wie funktioniert es?</p>
             <p className="mt-1 text-sm text-orange-700">
-              Aktivieren Sie die Paketannahme, wenn Sie heute zuhause sind. Ihr Haus wird orange auf der Quartierskarte markiert,
-              damit Nachbarn wissen, dass Sie Pakete entgegennehmen können.
+              Aktivieren Sie die Paketannahme, wenn Sie heute zuhause sind. Oder stellen Sie eine Anfrage,
+              wenn Sie ein Paket erwarten und nicht zuhause sind.
             </p>
           </div>
         </div>
       </div>
+
+      {/* Paket-Anfrage stellen */}
+      <div className="rounded-xl border border-border bg-white p-5 shadow-sm">
+        <h2 className="mb-3 font-semibold text-anthrazit">
+          <span aria-hidden="true">📬</span> Paket erwartet?
+        </h2>
+        <p className="mb-3 text-sm text-muted-foreground">
+          Fragen Sie Ihre Nachbarn, ob jemand ein Paket für Sie annehmen kann.
+        </p>
+        <Input
+          placeholder="z.B. Amazon-Paket, kommt nachmittags"
+          value={requestDescription}
+          onChange={(e) => setRequestDescription(e.target.value)}
+          maxLength={200}
+          className="mb-3"
+        />
+        <Button
+          onClick={submitRequest}
+          disabled={sendingRequest || !requestDescription.trim()}
+          className="w-full bg-quartier-green text-white hover:bg-quartier-green-dark"
+        >
+          <Send className="mr-2 h-4 w-4" />
+          {sendingRequest ? "Wird gesendet..." : "Nachbarn fragen"}
+        </Button>
+      </div>
+
+      {/* Meine Anfragen */}
+      {myRequests.length > 0 && (
+        <div>
+          <h2 className="mb-3 font-semibold text-anthrazit">Meine Anfragen</h2>
+          <div className="space-y-2">
+            {myRequests.map((req) => (
+              <div key={req.id} className="flex items-center gap-3 rounded-lg border border-border bg-white p-3">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-quartier-green/10 text-lg">
+                  📬
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm text-anthrazit">{req.description}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {formatDistanceToNow(new Date(req.created_at), { addSuffix: true, locale: de })}
+                  </p>
+                </div>
+                <Badge className={req.status === "matched"
+                  ? "bg-green-100 text-green-700"
+                  : "bg-orange-100 text-orange-700"
+                }>
+                  {req.status === "matched" ? "Angenommen" : "Offen"}
+                </Badge>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Offene Anfragen von Nachbarn */}
+      {otherRequests.length > 0 && (
+        <div>
+          <h2 className="mb-3 font-semibold text-anthrazit">
+            Nachbarn suchen Hilfe ({otherRequests.length})
+          </h2>
+          <div className="space-y-2">
+            {otherRequests.map((req) => (
+              <div key={req.id} className="rounded-lg border border-border bg-white p-4">
+                <div className="flex items-start gap-3">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-orange-100 text-lg">
+                    📬
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="font-medium text-anthrazit">{req.user?.display_name ?? "Nachbar"}</p>
+                    <p className="mt-1 text-sm text-muted-foreground">{req.description}</p>
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      {formatDistanceToNow(new Date(req.created_at), { addSuffix: true, locale: de })}
+                    </p>
+                  </div>
+                </div>
+                <Button
+                  onClick={() => acceptRequest(req.id)}
+                  disabled={respondingTo === req.id}
+                  className="mt-3 w-full bg-quartier-green text-white hover:bg-quartier-green-dark"
+                  size="sm"
+                >
+                  <CheckCircle className="mr-2 h-4 w-4" />
+                  {respondingTo === req.id ? "Wird gesendet..." : "Ich nehme es an"}
+                </Button>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Toggle: Bin ich heute verfuegbar? */}
       <div className="rounded-xl border border-border bg-white p-5 shadow-sm">
@@ -149,7 +326,7 @@ export default function PackagesPage() {
 
         {othersAvailable.length === 0 ? (
           <div className="py-8 text-center">
-            <div className="mb-2 text-3xl">📦</div>
+            <div className="mb-2 text-3xl" aria-hidden="true">📦</div>
             <p className="text-sm text-muted-foreground">
               Heute nimmt noch niemand Pakete an.
             </p>

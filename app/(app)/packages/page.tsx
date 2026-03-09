@@ -2,15 +2,26 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, Package, MapPin, Send, CheckCircle } from "lucide-react";
+import { ArrowLeft, Package, MapPin, Send, CheckCircle, Users } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { createClient } from "@/lib/supabase/client";
+import { haversineDistance, RADIUS_DIRECT } from "@/lib/geo";
 import type { Paketannahme, HelpRequest } from "@/lib/supabase/types";
 import { formatDistanceToNow } from "date-fns";
 import { de } from "date-fns/locale";
+
+// Typ fuer Household-Position
+interface HouseholdPos {
+  id: string;
+  lat: number;
+  lng: number;
+}
+
+// Mapping: user_id → { lat, lng }
+type UserPosMap = Map<string, { lat: number; lng: number }>;
 
 export default function PackagesPage() {
   const [available, setAvailable] = useState<Paketannahme[]>([]);
@@ -19,9 +30,16 @@ export default function PackagesPage() {
   const [note, setNote] = useState("");
   const [saving, setSaving] = useState(false);
 
+  // Eigene Position
+  const [myPos, setMyPos] = useState<{ lat: number; lng: number } | null>(null);
+
+  // User → Position Mapping
+  const [userPositions, setUserPositions] = useState<UserPosMap>(new Map());
+
   // Paket-Anfragen
   const [requests, setRequests] = useState<HelpRequest[]>([]);
   const [requestDescription, setRequestDescription] = useState("");
+  const [askAll, setAskAll] = useState(false);
   const [sendingRequest, setSendingRequest] = useState(false);
   const [respondingTo, setRespondingTo] = useState<string | null>(null);
 
@@ -34,8 +52,8 @@ export default function PackagesPage() {
       if (!user) return;
       setCurrentUserId(user.id);
 
-      // Heutige Verfuegbarkeiten + Paket-Anfragen parallel laden
-      const [availResult, requestResult] = await Promise.all([
+      // Alles parallel laden
+      const [availResult, requestResult, householdsResult, membersResult] = await Promise.all([
         supabase
           .from("paketannahme")
           .select("*, user:users(display_name, avatar_url)")
@@ -49,7 +67,30 @@ export default function PackagesPage() {
           .in("status", ["active", "matched"])
           .gte("created_at", `${today}T00:00:00`)
           .order("created_at", { ascending: false }),
+        supabase
+          .from("households")
+          .select("id, lat, lng"),
+        supabase
+          .from("household_members")
+          .select("user_id, household_id")
+          .not("verified_at", "is", null),
       ]);
+
+      // User → Position Mapping aufbauen
+      const households = (householdsResult.data ?? []) as HouseholdPos[];
+      const members = (membersResult.data ?? []) as { user_id: string; household_id: string }[];
+      const householdMap = new Map(households.map((h) => [h.id, { lat: h.lat, lng: h.lng }]));
+      const posMap: UserPosMap = new Map();
+
+      for (const m of members) {
+        const pos = householdMap.get(m.household_id);
+        if (pos) posMap.set(m.user_id, pos);
+      }
+      setUserPositions(posMap);
+
+      // Eigene Position setzen
+      const myPosition = posMap.get(user.id);
+      if (myPosition) setMyPos(myPosition);
 
       if (availResult.data) {
         const entries = availResult.data as unknown as Paketannahme[];
@@ -65,6 +106,21 @@ export default function PackagesPage() {
     load();
   }, [today]);
 
+  // Distanz eines Users zu mir berechnen
+  function distanceTo(userId: string): number | null {
+    if (!myPos) return null;
+    const otherPos = userPositions.get(userId);
+    if (!otherPos) return null;
+    return haversineDistance(myPos.lat, myPos.lng, otherPos.lat, otherPos.lng);
+  }
+
+  // Prüfen ob User ein direkter Nachbar ist
+  function isDirect(userId: string): boolean {
+    const dist = distanceTo(userId);
+    if (dist === null) return true; // Im Zweifel anzeigen
+    return dist <= RADIUS_DIRECT;
+  }
+
   async function toggleAvailability() {
     if (!currentUserId) return;
     setSaving(true);
@@ -72,13 +128,11 @@ export default function PackagesPage() {
     const supabase = createClient();
 
     if (myEntry) {
-      // Verfuegbarkeit entfernen
       await supabase.from("paketannahme").delete().eq("id", myEntry.id);
       setMyEntry(null);
       setAvailable(available.filter((a) => a.id !== myEntry.id));
       toast.success("Paketannahme deaktiviert.");
     } else {
-      // Verfuegbarkeit eintragen
       const { data, error } = await supabase
         .from("paketannahme")
         .insert({
@@ -115,6 +169,7 @@ export default function PackagesPage() {
         user_id: currentUserId,
         type: "need",
         category: "package",
+        subcategory: askAll ? "all" : null,
         title: "Paketannahme gesucht",
         description: requestDescription.trim(),
         status: "active",
@@ -131,7 +186,11 @@ export default function PackagesPage() {
     const newRequest = data as unknown as HelpRequest;
     setRequests([newRequest, ...requests]);
     setRequestDescription("");
-    toast.success("Anfrage gesendet! Ihre Nachbarn werden informiert.");
+    setAskAll(false);
+    toast.success(askAll
+      ? "Anfrage an alle Nachbarn gesendet!"
+      : "Anfrage an direkte Nachbarn gesendet!"
+    );
     setSendingRequest(false);
   }
 
@@ -141,7 +200,6 @@ export default function PackagesPage() {
 
     const supabase = createClient();
 
-    // Antwort erstellen + Status auf "matched" setzen
     const [responseResult, statusResult] = await Promise.all([
       supabase.from("help_responses").insert({
         help_request_id: requestId,
@@ -160,7 +218,6 @@ export default function PackagesPage() {
       return;
     }
 
-    // Lokal aktualisieren
     setRequests(requests.map((r) =>
       r.id === requestId ? { ...r, status: "matched" as const } : r
     ));
@@ -168,9 +225,17 @@ export default function PackagesPage() {
     setRespondingTo(null);
   }
 
+  // Aufteilen nach Distanz
   const othersAvailable = available.filter((a) => a.user_id !== currentUserId);
+  const directAvailable = othersAvailable.filter((a) => isDirect(a.user_id));
+  const widerAvailable = othersAvailable.filter((a) => !isDirect(a.user_id));
+
   const myRequests = requests.filter((r) => r.user_id === currentUserId);
-  const otherRequests = requests.filter((r) => r.user_id !== currentUserId && r.status === "active");
+  const otherActiveRequests = requests.filter((r) => r.user_id !== currentUserId && r.status === "active");
+
+  // Anfragen anderer: direkte Nachbarn sehen alles, weitere nur wenn subcategory === "all"
+  const directRequests = otherActiveRequests.filter((r) => isDirect(r.user_id));
+  const widerRequests = otherActiveRequests.filter((r) => !isDirect(r.user_id) && r.subcategory === "all");
 
   return (
     <div className="space-y-6">
@@ -210,13 +275,31 @@ export default function PackagesPage() {
           maxLength={200}
           className="mb-3"
         />
+
+        {/* Radius-Toggle */}
+        <label className="mb-3 flex items-center gap-3 rounded-lg border border-border p-3 cursor-pointer hover:bg-muted/50">
+          <input
+            type="checkbox"
+            checked={askAll}
+            onChange={(e) => setAskAll(e.target.checked)}
+            className="h-4 w-4 rounded border-gray-300 accent-quartier-green"
+          />
+          <div className="flex-1">
+            <span className="text-sm font-medium text-anthrazit">Auch weitere Nachbarn fragen</span>
+            <p className="text-xs text-muted-foreground">
+              Standard: nur direkte Nachbarn (≤50m)
+            </p>
+          </div>
+          <Users className="h-4 w-4 text-muted-foreground" />
+        </label>
+
         <Button
           onClick={submitRequest}
           disabled={sendingRequest || !requestDescription.trim()}
           className="w-full bg-quartier-green text-white hover:bg-quartier-green-dark"
         >
           <Send className="mr-2 h-4 w-4" />
-          {sendingRequest ? "Wird gesendet..." : "Nachbarn fragen"}
+          {sendingRequest ? "Wird gesendet..." : askAll ? "Alle Nachbarn fragen" : "Direkte Nachbarn fragen"}
         </Button>
       </div>
 
@@ -233,7 +316,7 @@ export default function PackagesPage() {
                 <div className="min-w-0 flex-1">
                   <p className="text-sm text-anthrazit">{req.description}</p>
                   <p className="text-xs text-muted-foreground">
-                    {formatDistanceToNow(new Date(req.created_at), { addSuffix: true, locale: de })}
+                    {req.subcategory === "all" ? "Alle Nachbarn" : "Direkte Nachbarn"} · {formatDistanceToNow(new Date(req.created_at), { addSuffix: true, locale: de })}
                   </p>
                 </div>
                 <Badge className={req.status === "matched"
@@ -248,40 +331,26 @@ export default function PackagesPage() {
         </div>
       )}
 
-      {/* Offene Anfragen von Nachbarn */}
-      {otherRequests.length > 0 && (
-        <div>
-          <h2 className="mb-3 font-semibold text-anthrazit">
-            Nachbarn suchen Hilfe ({otherRequests.length})
-          </h2>
-          <div className="space-y-2">
-            {otherRequests.map((req) => (
-              <div key={req.id} className="rounded-lg border border-border bg-white p-4">
-                <div className="flex items-start gap-3">
-                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-orange-100 text-lg">
-                    📬
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <p className="font-medium text-anthrazit">{req.user?.display_name ?? "Nachbar"}</p>
-                    <p className="mt-1 text-sm text-muted-foreground">{req.description}</p>
-                    <p className="mt-1 text-xs text-muted-foreground">
-                      {formatDistanceToNow(new Date(req.created_at), { addSuffix: true, locale: de })}
-                    </p>
-                  </div>
-                </div>
-                <Button
-                  onClick={() => acceptRequest(req.id)}
-                  disabled={respondingTo === req.id}
-                  className="mt-3 w-full bg-quartier-green text-white hover:bg-quartier-green-dark"
-                  size="sm"
-                >
-                  <CheckCircle className="mr-2 h-4 w-4" />
-                  {respondingTo === req.id ? "Wird gesendet..." : "Ich nehme es an"}
-                </Button>
-              </div>
-            ))}
-          </div>
-        </div>
+      {/* Anfragen von direkten Nachbarn */}
+      {directRequests.length > 0 && (
+        <RequestList
+          title="Direkte Nachbarn suchen Hilfe"
+          requests={directRequests}
+          respondingTo={respondingTo}
+          onAccept={acceptRequest}
+          distanceFn={distanceTo}
+        />
+      )}
+
+      {/* Anfragen von weiteren Nachbarn */}
+      {widerRequests.length > 0 && (
+        <RequestList
+          title="Weitere Nachbarn suchen Hilfe"
+          requests={widerRequests}
+          respondingTo={respondingTo}
+          onAccept={acceptRequest}
+          distanceFn={distanceTo}
+        />
       )}
 
       {/* Toggle: Bin ich heute verfuegbar? */}
@@ -318,44 +387,121 @@ export default function PackagesPage() {
         </Button>
       </div>
 
-      {/* Wer ist heute verfuegbar? */}
+      {/* Direkte Nachbarn verfuegbar */}
       <div>
         <h2 className="mb-3 font-semibold text-anthrazit">
-          Heute verfügbar ({othersAvailable.length})
+          Direkte Nachbarn verfügbar ({directAvailable.length})
         </h2>
-
-        {othersAvailable.length === 0 ? (
-          <div className="py-8 text-center">
-            <div className="mb-2 text-3xl" aria-hidden="true">📦</div>
+        {directAvailable.length === 0 ? (
+          <div className="py-6 text-center">
             <p className="text-sm text-muted-foreground">
-              Heute nimmt noch niemand Pakete an.
+              Kein direkter Nachbar nimmt heute Pakete an.
             </p>
           </div>
         ) : (
-          <div className="space-y-2">
-            {othersAvailable.map((entry) => (
-              <div key={entry.id} className="flex items-center gap-3 rounded-lg border border-border bg-white p-3">
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-orange-100 text-lg">
-                  📦
-                </div>
-                <div className="min-w-0 flex-1">
-                  <p className="font-medium text-anthrazit">{entry.user?.display_name}</p>
-                  {entry.note && (
-                    <p className="truncate text-sm text-muted-foreground">{entry.note}</p>
-                  )}
-                </div>
-                <Badge className="bg-orange-100 text-orange-700">Verfügbar</Badge>
-              </div>
-            ))}
-          </div>
+          <AvailableList entries={directAvailable} distanceFn={distanceTo} />
         )}
       </div>
+
+      {/* Weitere Nachbarn verfuegbar */}
+      {widerAvailable.length > 0 && (
+        <div>
+          <h2 className="mb-3 font-semibold text-anthrazit">
+            Weitere Nachbarn verfügbar ({widerAvailable.length})
+          </h2>
+          <AvailableList entries={widerAvailable} distanceFn={distanceTo} />
+        </div>
+      )}
 
       {/* Karten-Hinweis */}
       <div className="flex items-center gap-2 rounded-lg bg-muted/50 p-3 text-sm text-muted-foreground">
         <MapPin className="h-4 w-4 shrink-0" />
         <span>Verfügbare Nachbarn werden orange auf der <Link href="/map" className="text-quartier-green hover:underline">Quartierskarte</Link> markiert.</span>
       </div>
+    </div>
+  );
+}
+
+// Wiederverwendbare Komponente: Liste von Paket-Anfragen
+function RequestList({
+  title,
+  requests,
+  respondingTo,
+  onAccept,
+  distanceFn,
+}: {
+  title: string;
+  requests: HelpRequest[];
+  respondingTo: string | null;
+  onAccept: (id: string) => void;
+  distanceFn: (userId: string) => number | null;
+}) {
+  return (
+    <div>
+      <h2 className="mb-3 font-semibold text-anthrazit">{title} ({requests.length})</h2>
+      <div className="space-y-2">
+        {requests.map((req) => {
+          const dist = distanceFn(req.user_id);
+          return (
+            <div key={req.id} className="rounded-lg border border-border bg-white p-4">
+              <div className="flex items-start gap-3">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-orange-100 text-lg">
+                  📬
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="font-medium text-anthrazit">{req.user?.display_name ?? "Nachbar"}</p>
+                  <p className="mt-1 text-sm text-muted-foreground">{req.description}</p>
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    {dist !== null ? `~${Math.round(dist)}m entfernt · ` : ""}
+                    {formatDistanceToNow(new Date(req.created_at), { addSuffix: true, locale: de })}
+                  </p>
+                </div>
+              </div>
+              <Button
+                onClick={() => onAccept(req.id)}
+                disabled={respondingTo === req.id}
+                className="mt-3 w-full bg-quartier-green text-white hover:bg-quartier-green-dark"
+                size="sm"
+              >
+                <CheckCircle className="mr-2 h-4 w-4" />
+                {respondingTo === req.id ? "Wird gesendet..." : "Ich nehme es an"}
+              </Button>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+// Wiederverwendbare Komponente: Liste verfuegbarer Nachbarn
+function AvailableList({
+  entries,
+  distanceFn,
+}: {
+  entries: Paketannahme[];
+  distanceFn: (userId: string) => number | null;
+}) {
+  return (
+    <div className="space-y-2">
+      {entries.map((entry) => {
+        const dist = distanceFn(entry.user_id);
+        return (
+          <div key={entry.id} className="flex items-center gap-3 rounded-lg border border-border bg-white p-3">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-orange-100 text-lg">
+              📦
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="font-medium text-anthrazit">{entry.user?.display_name}</p>
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                {entry.note && <span className="truncate">{entry.note}</span>}
+                {dist !== null && <span className="shrink-0">~{Math.round(dist)}m</span>}
+              </div>
+            </div>
+            <Badge className="bg-orange-100 text-orange-700">Verfügbar</Badge>
+          </div>
+        );
+      })}
     </div>
   );
 }

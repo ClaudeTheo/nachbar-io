@@ -223,6 +223,26 @@ export const LEIHBOERSE_CATEGORIES = [
   { id: "other", label: "Sonstiges", icon: "📦" },
 ] as const;
 
+// Lärm-Warnung Kategorien
+export const NOISE_CATEGORIES = [
+  { id: "drilling", label: "Bohren / Hämmern", icon: "🔨" },
+  { id: "party", label: "Feier / Musik", icon: "🎉" },
+  { id: "renovation", label: "Renovierung", icon: "🏗️" },
+  { id: "mowing", label: "Rasenmähen", icon: "🌿" },
+  { id: "music", label: "Instrument üben", icon: "🎸" },
+  { id: "construction", label: "Bauarbeiten", icon: "🚧" },
+  { id: "other", label: "Sonstiges", icon: "🔊" },
+] as const;
+
+// Lärm-Warnung Dauer-Optionen (in Stunden)
+export const NOISE_DURATIONS = [
+  { id: "1", label: "~1 Stunde", hours: 1 },
+  { id: "2", label: "~2 Stunden", hours: 2 },
+  { id: "4", label: "~4 Stunden", hours: 4 },
+  { id: "evening", label: "Bis heute Abend", hours: 6 },
+  { id: "allday", label: "Den ganzen Tag", hours: 12 },
+] as const;
+
 // Trust-Level
 export const TRUST_LEVELS = {
   new: { label: "Registriert", color: "gray" },

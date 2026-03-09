@@ -287,14 +287,26 @@ export default function DashboardPage() {
           {/* Schnelleinstieg */}
           <section>
             <h2 className="mb-2 font-semibold text-anthrazit">Entdecken</h2>
-            <div className="grid grid-cols-3 gap-2">
+            <div className="grid grid-cols-4 gap-2">
+              <Link href="/board" className="flex flex-col items-center gap-1 rounded-lg bg-white p-3 shadow-sm hover:bg-muted/50">
+                <span className="text-2xl" aria-hidden="true">📌</span>
+                <span className="text-xs font-medium text-anthrazit">Brett</span>
+              </Link>
+              <Link href="/whohas" className="flex flex-col items-center gap-1 rounded-lg bg-white p-3 shadow-sm hover:bg-muted/50">
+                <span className="text-2xl" aria-hidden="true">🔍</span>
+                <span className="text-xs font-medium text-anthrazit">Wer hat?</span>
+              </Link>
+              <Link href="/noise" className="flex flex-col items-center gap-1 rounded-lg bg-white p-3 shadow-sm hover:bg-muted/50">
+                <span className="text-2xl" aria-hidden="true">🔨</span>
+                <span className="text-xs font-medium text-anthrazit">Lärm</span>
+              </Link>
               <Link href="/map" className="flex flex-col items-center gap-1 rounded-lg bg-white p-3 shadow-sm hover:bg-muted/50">
                 <span className="text-2xl" aria-hidden="true">🗺️</span>
                 <span className="text-xs font-medium text-anthrazit">Karte</span>
               </Link>
               <Link href="/help" className="flex flex-col items-center gap-1 rounded-lg bg-white p-3 shadow-sm hover:bg-muted/50">
                 <span className="text-2xl" aria-hidden="true">🤝</span>
-                <span className="text-xs font-medium text-anthrazit">Hilfe-Börse</span>
+                <span className="text-xs font-medium text-anthrazit">Hilfe</span>
               </Link>
               <Link href="/marketplace" className="flex flex-col items-center gap-1 rounded-lg bg-white p-3 shadow-sm hover:bg-muted/50">
                 <span className="text-2xl" aria-hidden="true">🛒</span>
@@ -306,11 +318,23 @@ export default function DashboardPage() {
               </Link>
               <Link href="/messages" className="flex flex-col items-center gap-1 rounded-lg bg-white p-3 shadow-sm hover:bg-muted/50">
                 <span className="text-2xl" aria-hidden="true">💬</span>
-                <span className="text-xs font-medium text-anthrazit">Nachrichten</span>
+                <span className="text-xs font-medium text-anthrazit">Chat</span>
               </Link>
               <Link href="/lost-found" className="flex flex-col items-center gap-1 rounded-lg bg-white p-3 shadow-sm hover:bg-muted/50">
-                <span className="text-2xl" aria-hidden="true">🔍</span>
+                <span className="text-2xl" aria-hidden="true">📎</span>
                 <span className="text-xs font-medium text-anthrazit">Fundbüro</span>
+              </Link>
+              <Link href="/noise" className="flex flex-col items-center gap-1 rounded-lg bg-white p-3 shadow-sm hover:bg-muted/50">
+                <span className="text-2xl" aria-hidden="true">🔨</span>
+                <span className="text-xs font-medium text-anthrazit">Lärm-Info</span>
+              </Link>
+              <Link href="/board" className="flex flex-col items-center gap-1 rounded-lg bg-white p-3 shadow-sm hover:bg-muted/50">
+                <span className="text-2xl" aria-hidden="true">📌</span>
+                <span className="text-xs font-medium text-anthrazit">Brett</span>
+              </Link>
+              <Link href="/whohas" className="flex flex-col items-center gap-1 rounded-lg bg-white p-3 shadow-sm hover:bg-muted/50">
+                <span className="text-2xl" aria-hidden="true">🔍</span>
+                <span className="text-xs font-medium text-anthrazit">Wer hat?</span>
               </Link>
               <Link href="/experts" className="flex flex-col items-center gap-1 rounded-lg bg-white p-3 shadow-sm hover:bg-muted/50">
                 <span className="text-2xl" aria-hidden="true">⭐</span>

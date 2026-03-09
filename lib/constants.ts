@@ -35,13 +35,20 @@ export type QuartierStreet = (typeof QUARTIER_STREETS)[number];
 
 // Alert-Kategorien
 export const ALERT_CATEGORIES = [
+  // Notfall-Kategorien (loesen Emergency-Banner aus — 112/110 zuerst!)
+  { id: "fire", label: "Feuer / Rauch", icon: "🔥", urgency: "emergency" },
+  { id: "medical", label: "Medizinischer Notfall", icon: "🚑", urgency: "emergency" },
+  { id: "crime", label: "Einbruch / Bedrohung", icon: "🚨", urgency: "emergency" },
+  // Dringende Kategorien
   { id: "water_damage", label: "Wasserschaden", icon: "💧", urgency: "high" },
   { id: "power_outage", label: "Stromausfall", icon: "⚡", urgency: "high" },
-  { id: "door_lock", label: "Tür zu / Schlüssel", icon: "🔑", urgency: "medium" },
   { id: "fall", label: "Sturz", icon: "🩹", urgency: "high" },
+  // Mittlere Dringlichkeit
+  { id: "door_lock", label: "Tür zu / Schlüssel", icon: "🔑", urgency: "medium" },
+  { id: "pet", label: "Haustier entlaufen", icon: "🐾", urgency: "medium" },
+  // Niedrige Dringlichkeit
   { id: "shopping", label: "Einkaufshilfe", icon: "🛒", urgency: "low" },
   { id: "tech_help", label: "Technische Hilfe", icon: "💻", urgency: "low" },
-  { id: "pet", label: "Haustier entlaufen", icon: "🐾", urgency: "medium" },
   { id: "other", label: "Sonstiges", icon: "❓", urgency: "low" },
 ] as const;
 

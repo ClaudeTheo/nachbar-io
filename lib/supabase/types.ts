@@ -4,6 +4,9 @@ export type UserUiMode = "active" | "senior";
 export type TrustLevel = "new" | "verified" | "trusted" | "admin";
 
 export type AlertCategory =
+  | "fire"
+  | "medical"
+  | "crime"
   | "water_damage"
   | "power_outage"
   | "door_lock"
@@ -262,6 +265,48 @@ export interface TipConfirmation {
   tip_id: string;
   user_id: string;
   created_at: string;
+}
+
+// Karten-Konfiguration (Admin Map Editor)
+export type MapHouseStreetCode = "PS" | "SN" | "OR";
+export type MapHouseColor = "green" | "red" | "yellow";
+
+export interface MapHouse {
+  id: string;
+  house_number: string;
+  street_code: MapHouseStreetCode;
+  x: number;
+  y: number;
+  default_color: MapHouseColor;
+  created_at: string;
+  updated_at: string;
+}
+
+// Nachbar-Verbindungen
+export type NeighborConnectionStatus = "pending" | "accepted" | "declined";
+
+export interface NeighborConnection {
+  id: string;
+  requester_id: string;
+  target_id: string;
+  status: NeighborConnectionStatus;
+  message: string | null;
+  created_at: string;
+  responded_at: string | null;
+  requester?: Pick<User, "display_name" | "avatar_url">;
+  target?: Pick<User, "display_name" | "avatar_url">;
+}
+
+// Urlaub-Modus
+export interface VacationMode {
+  id: string;
+  user_id: string;
+  start_date: string;
+  end_date: string;
+  note: string | null;
+  notify_neighbors: boolean;
+  created_at: string;
+  user?: Pick<User, "display_name" | "avatar_url">;
 }
 
 // Reputationssystem (berechnet aus Interaktionsdaten)

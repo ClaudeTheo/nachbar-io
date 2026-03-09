@@ -2,17 +2,21 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { MessageCircle } from "lucide-react";
+import { MessageCircle, UserPlus, Check, X } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
 import { createClient } from "@/lib/supabase/client";
-import type { Conversation } from "@/lib/supabase/types";
+import type { Conversation, NeighborConnection } from "@/lib/supabase/types";
 import { formatDistanceToNow } from "date-fns";
 import { de } from "date-fns/locale";
+import { toast } from "sonner";
 
 export default function MessagesPage() {
   const router = useRouter();
   const [conversations, setConversations] = useState<Conversation[]>([]);
+  const [pendingRequests, setPendingRequests] = useState<NeighborConnection[]>([]);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -77,6 +81,24 @@ export default function MessagesPage() {
     setLoading(false);
   }, []);
 
+  // Offene Verbindungsanfragen laden
+  const loadPendingRequests = useCallback(async (userId: string) => {
+    const supabase = createClient();
+    const { data } = await supabase
+      .from("neighbor_connections")
+      .select("*, requester:users!neighbor_connections_requester_id_fkey(display_name, avatar_url)")
+      .eq("target_id", userId)
+      .eq("status", "pending")
+      .order("created_at", { ascending: false });
+
+    if (data) {
+      setPendingRequests(data.map(d => ({
+        ...d,
+        requester: d.requester as unknown as NeighborConnection["requester"],
+      })));
+    }
+  }, []);
+
   useEffect(() => {
     async function init() {
       const supabase = createClient();
@@ -90,10 +112,13 @@ export default function MessagesPage() {
       }
 
       setCurrentUserId(user.id);
-      await loadConversations(user.id);
+      await Promise.all([
+        loadConversations(user.id),
+        loadPendingRequests(user.id),
+      ]);
     }
     init();
-  }, [loadConversations]);
+  }, [loadConversations, loadPendingRequests]);
 
   // Supabase Realtime: bei neuen Nachrichten automatisch aktualisieren
   useEffect(() => {
@@ -114,12 +139,81 @@ export default function MessagesPage() {
           loadConversations(currentUserId);
         }
       )
+      .on(
+        "postgres_changes",
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "neighbor_connections",
+        },
+        () => {
+          loadPendingRequests(currentUserId);
+        }
+      )
       .subscribe();
 
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [currentUserId, loadConversations]);
+  }, [currentUserId, loadConversations, loadPendingRequests]);
+
+  // Verbindungsanfrage annehmen
+  async function acceptRequest(connectionId: string, requesterId: string) {
+    if (!currentUserId) return;
+    const supabase = createClient();
+
+    // Anfrage annehmen
+    await supabase
+      .from("neighbor_connections")
+      .update({ status: "accepted", responded_at: new Date().toISOString() })
+      .eq("id", connectionId);
+
+    // Konversation erstellen/oeffnen
+    const p1 = currentUserId < requesterId ? currentUserId : requesterId;
+    const p2 = currentUserId < requesterId ? requesterId : currentUserId;
+
+    const { data: existing } = await supabase
+      .from("conversations")
+      .select("id")
+      .or(
+        `and(participant_1.eq.${currentUserId},participant_2.eq.${requesterId}),and(participant_1.eq.${requesterId},participant_2.eq.${currentUserId})`
+      )
+      .maybeSingle();
+
+    let convId: string;
+    if (existing) {
+      convId = existing.id;
+    } else {
+      const { data: newConv } = await supabase
+        .from("conversations")
+        .insert({ participant_1: p1, participant_2: p2 })
+        .select("id")
+        .single();
+      convId = newConv?.id ?? "";
+    }
+
+    toast.success("Verbindung angenommen!");
+    await loadPendingRequests(currentUserId);
+    await loadConversations(currentUserId);
+
+    if (convId) {
+      router.push(`/messages/${convId}`);
+    }
+  }
+
+  // Verbindungsanfrage ablehnen
+  async function declineRequest(connectionId: string) {
+    if (!currentUserId) return;
+    const supabase = createClient();
+
+    await supabase
+      .from("neighbor_connections")
+      .update({ status: "declined", responded_at: new Date().toISOString() })
+      .eq("id", connectionId);
+
+    toast("Anfrage abgelehnt");
+    await loadPendingRequests(currentUserId);
+  }
 
   // Ladezustand
   if (loading) {
@@ -151,15 +245,96 @@ export default function MessagesPage() {
         <h1 className="text-xl font-bold text-anthrazit">Nachrichten</h1>
       </div>
 
+      {/* Offene Nachbar-Anfragen */}
+      {pendingRequests.length > 0 && (
+        <div className="mb-4">
+          <div className="mb-2 flex items-center gap-2">
+            <UserPlus className="h-4 w-4 text-quartier-green" />
+            <h2 className="text-sm font-semibold text-anthrazit">
+              Nachbar-Anfragen
+            </h2>
+            <Badge className="bg-quartier-green text-white text-xs px-1.5 py-0.5">
+              {pendingRequests.length}
+            </Badge>
+          </div>
+
+          <div className="space-y-2">
+            {pendingRequests.map((req) => {
+              const name = req.requester?.display_name ?? "Nachbar";
+              const initial = (name[0] ?? "N").toUpperCase();
+              return (
+                <div
+                  key={req.id}
+                  className="rounded-lg border border-quartier-green/30 bg-quartier-green/5 p-3"
+                >
+                  <div className="flex items-center gap-3">
+                    {/* Avatar */}
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-quartier-green/10 text-sm font-bold text-quartier-green">
+                      {req.requester?.avatar_url ? (
+                        <img src={req.requester.avatar_url} alt="" className="h-10 w-10 rounded-full object-cover" />
+                      ) : (
+                        initial
+                      )}
+                    </div>
+
+                    {/* Inhalt */}
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-anthrazit">{name}</p>
+                      {req.message && (
+                        <p className="mt-0.5 text-xs text-muted-foreground line-clamp-2">
+                          &ldquo;{req.message}&rdquo;
+                        </p>
+                      )}
+                      <p className="mt-0.5 text-xs text-muted-foreground/60">
+                        {formatDistanceToNow(new Date(req.created_at), { addSuffix: true, locale: de })}
+                      </p>
+                    </div>
+
+                    {/* Aktionen */}
+                    <div className="flex shrink-0 gap-1.5">
+                      <Button
+                        size="sm"
+                        className="gap-1 bg-quartier-green hover:bg-quartier-green/90"
+                        onClick={() => acceptRequest(req.id, req.requester_id)}
+                      >
+                        <Check className="h-3.5 w-3.5" />
+                        Annehmen
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="gap-1"
+                        onClick={() => declineRequest(req.id)}
+                      >
+                        <X className="h-3.5 w-3.5" />
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          <Separator className="mt-4" />
+        </div>
+      )}
+
       {/* Konversationsliste */}
-      {conversations.length === 0 ? (
+      {conversations.length === 0 && pendingRequests.length === 0 ? (
         <div className="py-12 text-center">
           <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-muted">
             <MessageCircle className="h-8 w-8 text-muted-foreground" />
           </div>
           <p className="mt-4 text-muted-foreground">Noch keine Nachrichten</p>
           <p className="mt-2 text-sm text-muted-foreground/70">
-            Nachrichten können über das Profil eines Nachbarn gestartet werden.
+            Klicken Sie auf ein Haus in der Quartierskarte, um sich mit Nachbarn zu verbinden.
+          </p>
+        </div>
+      ) : conversations.length === 0 ? (
+        <div className="py-8 text-center">
+          <p className="text-sm text-muted-foreground">Noch keine Konversationen</p>
+          <p className="mt-1 text-xs text-muted-foreground/60">
+            Nach Annahme einer Anfrage wird automatisch ein Chat gestartet.
           </p>
         </div>
       ) : (
@@ -174,7 +349,7 @@ export default function MessagesPage() {
 
           {/* Hinweis */}
           <p className="pt-4 text-center text-xs text-muted-foreground/60">
-            Nachrichten können über das Profil eines Nachbarn gestartet werden.
+            Neue Verbindungen über die Quartierskarte herstellen.
           </p>
         </div>
       )}

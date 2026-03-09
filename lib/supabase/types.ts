@@ -309,6 +309,68 @@ export interface VacationMode {
   user?: Pick<User, "display_name" | "avatar_url">;
 }
 
+// Leihboerse
+export type LeihboerseType = "lend" | "borrow";
+export type LeihboerseStatus = "active" | "reserved" | "done";
+
+export interface LeihboerseItem {
+  id: string;
+  user_id: string;
+  type: LeihboerseType;
+  category: string;
+  title: string;
+  description: string | null;
+  image_url: string | null;
+  deposit: string | null;
+  available_until: string | null;
+  status: LeihboerseStatus;
+  reserved_by: string | null;
+  created_at: string;
+  user?: Pick<User, "display_name" | "avatar_url">;
+}
+
+// Umfragen
+export interface Poll {
+  id: string;
+  user_id: string;
+  question: string;
+  multiple_choice: boolean;
+  closes_at: string | null;
+  status: "active" | "closed";
+  created_at: string;
+  user?: Pick<User, "display_name" | "avatar_url">;
+  options?: PollOption[];
+  vote_count?: number;
+}
+
+export interface PollOption {
+  id: string;
+  poll_id: string;
+  label: string;
+  sort_order: number;
+  vote_count?: number;
+}
+
+export interface PollVote {
+  id: string;
+  poll_id: string;
+  option_id: string;
+  user_id: string;
+  created_at: string;
+}
+
+// Paketannahme
+export interface Paketannahme {
+  id: string;
+  user_id: string;
+  available_date: string;
+  available_from: string | null;
+  available_until: string | null;
+  note: string | null;
+  created_at: string;
+  user?: Pick<User, "display_name" | "avatar_url">;
+}
+
 // Reputationssystem (berechnet aus Interaktionsdaten)
 export interface ReputationStats {
   points: number;

@@ -3,7 +3,7 @@
 export const MAP_W = 1083;
 export const MAP_H = 766;
 
-export type LampColor = "green" | "red" | "yellow" | "blue";
+export type LampColor = "green" | "red" | "yellow" | "blue" | "orange";
 export type StreetCode = "PS" | "SN" | "OR";
 
 export interface MapHouseData {
@@ -35,6 +35,7 @@ export const COLOR_CFG: Record<LampColor, { fill: string; ring: string; glow: st
   red:    { fill: "#ef4444", ring: "#b91c1c", glow: "rgba(239,68,68,0.4)",  label: "Rot" },
   yellow: { fill: "#eab308", ring: "#a16207", glow: "rgba(234,179,8,0.4)",  label: "Gelb" },
   blue:   { fill: "#3b82f6", ring: "#1d4ed8", glow: "rgba(59,130,246,0.4)", label: "Urlaub" },
+  orange: { fill: "#f97316", ring: "#c2410c", glow: "rgba(249,115,22,0.4)", label: "Paket" },
 };
 
 // Statische Haus-Daten (Fallback wenn Supabase leer oder nicht erreichbar)

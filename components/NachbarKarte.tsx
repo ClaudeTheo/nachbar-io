@@ -98,6 +98,46 @@ export function NachbarKarte() {
           }
         }
 
+        // Aktive Paketannahmen laden — Haeuser orange faerben
+        const { data: packages } = await supabase
+          .from("paketannahme")
+          .select("user_id")
+          .eq("available_date", today);
+
+        if (packages && packages.length > 0) {
+          const pkgUserIds = packages.map(p => p.user_id);
+          const { data: pkgMembers } = await supabase
+            .from("household_members")
+            .select("household_id, user_id, households(street_name, house_number)")
+            .in("user_id", pkgUserIds)
+            .not("verified_at", "is", null);
+
+          if (pkgMembers) {
+            const pkgHouseKeys: Record<string, boolean> = {};
+            for (const m of pkgMembers) {
+              const hh = m.households as unknown as { street_name: string; house_number: string } | null;
+              if (hh) {
+                const code = (Object.entries(STREET_CODE_TO_NAME) as [StreetCode, string][])
+                  .find(([, name]) => name === hh.street_name)?.[0];
+                if (code) {
+                  pkgHouseKeys[`${code}:${hh.house_number}`] = true;
+                }
+              }
+            }
+
+            setStatuses(prev => {
+              const updated = { ...prev };
+              for (const h of loadedHouses) {
+                // Paketannahme nur setzen wenn nicht schon blau (Urlaub hat Vorrang)
+                if (pkgHouseKeys[`${h.s}:${h.num}`] && updated[h.id] !== "blue") {
+                  updated[h.id] = "orange";
+                }
+              }
+              return updated;
+            });
+          }
+        }
+
         // Bewohnerzahlen laden (aggregiert)
         const { data: countData } = await supabase
           .from("household_members")
@@ -136,6 +176,7 @@ export function NachbarKarte() {
     red: Object.values(statuses).filter((s) => s === "red").length,
     yellow: Object.values(statuses).filter((s) => s === "yellow").length,
     blue: Object.values(statuses).filter((s) => s === "blue").length,
+    orange: Object.values(statuses).filter((s) => s === "orange").length,
   };
 
   const filterItems: { key: string; label: string; color: string; bg: string }[] = [
@@ -143,6 +184,7 @@ export function NachbarKarte() {
     { key: "red", label: "Rot", color: "#ef4444", bg: "#2d0505" },
     { key: "yellow", label: "Gelb", color: "#eab308", bg: "#2d2305" },
     { key: "blue", label: "Urlaub", color: "#3b82f6", bg: "#0c1e3d" },
+    { key: "orange", label: "Paket", color: "#f97316", bg: "#2d1505" },
   ];
 
   return (
@@ -164,7 +206,7 @@ export function NachbarKarte() {
         <div className="flex flex-wrap items-center gap-1.5">
           {filterItems.map(({ key, label, color, bg }) => {
             const count = counts[key as keyof typeof counts] ?? 0;
-            if (count === 0 && key === "blue") return null; // Urlaub nur zeigen wenn vorhanden
+            if (count === 0 && (key === "blue" || key === "orange")) return null;
             return (
               <button
                 key={key}
@@ -298,6 +340,7 @@ export function NachbarKarte() {
       <div className="text-xs text-muted-foreground">
         {houses.length} Häuser · {counts.green} Grün · {counts.red} Rot · {counts.yellow} Gelb
         {counts.blue > 0 && ` · ${counts.blue} Urlaub`}
+        {counts.orange > 0 && ` · ${counts.orange} Paket`}
       </div>
 
       {/* Haus-Info Panel */}

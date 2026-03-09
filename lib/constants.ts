@@ -210,6 +210,18 @@ export const TIP_CATEGORIES = [
 
 export type TipCategory = (typeof TIP_CATEGORIES)[number]["id"];
 
+// Leihboerse-Kategorien
+export const LEIHBOERSE_CATEGORIES = [
+  { id: "tools", label: "Werkzeug", icon: "🔧" },
+  { id: "garden", label: "Garten", icon: "🌱" },
+  { id: "kitchen", label: "Küche", icon: "🍳" },
+  { id: "sports", label: "Sport", icon: "⚽" },
+  { id: "kids", label: "Kinder", icon: "🧸" },
+  { id: "electronics", label: "Elektronik", icon: "💻" },
+  { id: "books", label: "Bücher", icon: "📚" },
+  { id: "other", label: "Sonstiges", icon: "📦" },
+] as const;
+
 // Trust-Level
 export const TRUST_LEVELS = {
   new: { label: "Registriert", color: "gray" },

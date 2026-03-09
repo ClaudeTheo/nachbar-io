@@ -13,3 +13,6 @@ ALTER TABLE help_requests ADD CONSTRAINT help_requests_category_check
     'board',    -- Schwarzes Brett
     'whohas'    -- Wer hat...?
   ));
+
+-- Subcategory-Spalte fuer Lärm-Typ, Alle-Nachbarn-Flag etc.
+ALTER TABLE help_requests ADD COLUMN IF NOT EXISTS subcategory TEXT;

@@ -20,6 +20,21 @@ const categoryConfig: Record<string, { label: string; icon: string }> = {
   other: { label: "Sonstiges", icon: "📰" },
 };
 
+// Relevanz-Farbe basierend auf Score (0-10)
+function relevanceColor(score: number): string {
+  if (score >= 8) return "bg-quartier-green text-white";
+  if (score >= 6) return "bg-quartier-green/20 text-quartier-green";
+  if (score >= 4) return "bg-amber-100 text-amber-700";
+  return "bg-muted text-muted-foreground";
+}
+
+function relevanceLabel(score: number): string {
+  if (score >= 8) return "Sehr relevant";
+  if (score >= 6) return "Relevant";
+  if (score >= 4) return "Etwas relevant";
+  return "Wenig relevant";
+}
+
 export function NewsCard({ item }: NewsCardProps) {
   const cat = categoryConfig[item.category] ?? categoryConfig.other;
   const date = item.published_at
@@ -27,16 +42,19 @@ export function NewsCard({ item }: NewsCardProps) {
     : format(new Date(item.created_at), "dd. MMM yyyy", { locale: de });
 
   return (
-    <Card className="transition-shadow hover:shadow-md">
+    <Card className="card-interactive shadow-soft">
       <CardContent className="p-4">
         <div className="flex items-start gap-3">
           <span className="text-2xl" aria-hidden="true">
             {cat.icon}
           </span>
           <div className="min-w-0 flex-1">
-            <div className="mb-1 flex items-center gap-2">
+            <div className="mb-1 flex items-center gap-2 flex-wrap">
               <Badge variant="secondary" className="text-xs">
                 {cat.label}
+              </Badge>
+              <Badge className={`text-xs ${relevanceColor(item.relevance_score)}`}>
+                {relevanceLabel(item.relevance_score)}
               </Badge>
               <span className="text-xs text-muted-foreground">{date}</span>
             </div>

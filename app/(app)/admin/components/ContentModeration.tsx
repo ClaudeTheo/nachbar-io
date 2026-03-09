@@ -1,10 +1,12 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Trash2, Eye, Filter, AlertTriangle, HandHelping, ShoppingBag, Search as SearchIcon, MapPin, X } from "lucide-react";
-import { Card, CardContent } from "@/components/ui/card";
+import { AlertTriangle, HandHelping, ShoppingBag, MapPin, X, ChevronDown, ChevronUp, Save, Edit } from "lucide-react";
+import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { createClient } from "@/lib/supabase/client";
 import { toast } from "sonner";
 
@@ -19,7 +21,7 @@ interface ContentItem {
   type: ContentType;
   user?: { display_name: string } | null;
   category?: string;
-  extra?: string; // Zusatz-Info (z.B. Preis, Typ)
+  extra?: string;
 }
 
 const CONTENT_TYPES: { id: ContentType; label: string; icon: React.ReactNode }[] = [
@@ -29,14 +31,44 @@ const CONTENT_TYPES: { id: ContentType; label: string; icon: React.ReactNode }[]
   { id: "lost_found_items", label: "Fundbuero", icon: <MapPin className="h-4 w-4" /> },
 ];
 
+// Verfuegbare Status-Optionen pro Content-Typ
+const STATUS_OPTIONS: Record<ContentType, { value: string; label: string }[]> = {
+  alerts: [
+    { value: "open", label: "Offen" },
+    { value: "help_coming", label: "Hilfe kommt" },
+    { value: "resolved", label: "Erledigt" },
+  ],
+  help_requests: [
+    { value: "active", label: "Aktiv" },
+    { value: "matched", label: "Vermittelt" },
+    { value: "closed", label: "Geschlossen" },
+  ],
+  marketplace_items: [
+    { value: "active", label: "Aktiv" },
+    { value: "reserved", label: "Reserviert" },
+    { value: "done", label: "Abgeschlossen" },
+    { value: "deleted", label: "Geloescht" },
+  ],
+  lost_found_items: [
+    { value: "open", label: "Offen" },
+    { value: "resolved", label: "Erledigt" },
+  ],
+};
+
 export function ContentModeration() {
   const [activeType, setActiveType] = useState<ContentType>("alerts");
   const [items, setItems] = useState<ContentItem[]>([]);
   const [loading, setLoading] = useState(true);
-  const [deleting, setDeleting] = useState<string | null>(null);
+  const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editTitle, setEditTitle] = useState("");
+  const [editDescription, setEditDescription] = useState("");
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     loadContent(activeType);
+    setExpandedId(null);
+    setEditingId(null);
   }, [activeType]);
 
   async function loadContent(type: ContentType) {
@@ -82,7 +114,6 @@ export function ContentModeration() {
       return;
     }
 
-    // Einheitliches Format
     const normalized: ContentItem[] = (data ?? []).map((item: Record<string, unknown>) => ({
       id: item.id as string,
       title: item.title as string,
@@ -105,35 +136,55 @@ export function ContentModeration() {
     setLoading(false);
   }
 
-  // Inhalt loeschen / Status aendern
-  async function deleteContent(id: string, type: ContentType) {
-    setDeleting(id);
+  // Status aendern
+  async function changeStatus(id: string, type: ContentType, newStatus: string) {
     const supabase = createClient();
-
-    // Statt echtem Loeschen: Status auf "deleted" / "resolved" / "done" setzen
-    const statusMap: Record<ContentType, string> = {
-      alerts: "resolved",
-      help_requests: "closed",
-      marketplace_items: "deleted",
-      lost_found_items: "resolved",
-    };
-
     const { error } = await supabase
       .from(type)
-      .update({ status: statusMap[type] })
+      .update({ status: newStatus })
       .eq("id", id);
 
     if (error) {
-      toast.error("Fehler beim Entfernen");
+      toast.error("Status-Aenderung fehlgeschlagen");
     } else {
-      toast.success("Inhalt entfernt");
-      // Aus lokaler Liste entfernen
-      setItems((prev) => prev.filter((i) => i.id !== id));
+      toast.success("Status geaendert");
+      setItems((prev) => prev.map((i) => i.id === id ? { ...i, status: newStatus } : i));
     }
-    setDeleting(null);
   }
 
-  // Status-Badge Farbe
+  // Inhalt bearbeiten starten
+  function startEdit(item: ContentItem) {
+    setEditingId(item.id);
+    setEditTitle(item.title);
+    setEditDescription(item.description ?? "");
+    setExpandedId(item.id);
+  }
+
+  // Bearbeitung speichern
+  async function saveEdit(id: string, type: ContentType) {
+    if (!editTitle.trim()) {
+      toast.error("Titel darf nicht leer sein");
+      return;
+    }
+    setSaving(true);
+    const supabase = createClient();
+    const { error } = await supabase
+      .from(type)
+      .update({ title: editTitle.trim(), description: editDescription.trim() || null })
+      .eq("id", id);
+
+    if (error) {
+      toast.error("Speichern fehlgeschlagen");
+    } else {
+      toast.success("Inhalt aktualisiert");
+      setItems((prev) => prev.map((i) =>
+        i.id === id ? { ...i, title: editTitle.trim(), description: editDescription.trim() || null } : i
+      ));
+      setEditingId(null);
+    }
+    setSaving(false);
+  }
+
   function statusColor(status: string) {
     switch (status) {
       case "open":
@@ -154,18 +205,11 @@ export function ContentModeration() {
     }
   }
 
-  // Status Label auf Deutsch
   function statusLabel(status: string) {
     const labels: Record<string, string> = {
-      open: "Offen",
-      active: "Aktiv",
-      help_coming: "Hilfe kommt",
-      matched: "Vermittelt",
-      reserved: "Reserviert",
-      resolved: "Erledigt",
-      closed: "Geschlossen",
-      done: "Abgeschlossen",
-      deleted: "Geloescht",
+      open: "Offen", active: "Aktiv", help_coming: "Hilfe kommt",
+      matched: "Vermittelt", reserved: "Reserviert", resolved: "Erledigt",
+      closed: "Geschlossen", done: "Abgeschlossen", deleted: "Geloescht",
     };
     return labels[status] ?? status;
   }
@@ -195,7 +239,6 @@ export function ContentModeration() {
         <div className="py-8 text-center text-muted-foreground">Laden...</div>
       ) : (
         <>
-          {/* Aktive Inhalte */}
           {activeItems.length > 0 && (
             <div className="space-y-2">
               <p className="text-xs font-medium text-muted-foreground">
@@ -207,14 +250,27 @@ export function ContentModeration() {
                   item={item}
                   statusColor={statusColor}
                   statusLabel={statusLabel}
-                  onDelete={() => deleteContent(item.id, item.type)}
-                  isDeleting={deleting === item.id}
+                  expanded={expandedId === item.id}
+                  editing={editingId === item.id}
+                  editTitle={editTitle}
+                  editDescription={editDescription}
+                  onToggleExpand={() => {
+                    setExpandedId(expandedId === item.id ? null : item.id);
+                    if (editingId === item.id) setEditingId(null);
+                  }}
+                  onStartEdit={() => startEdit(item)}
+                  onCancelEdit={() => setEditingId(null)}
+                  onEditTitle={setEditTitle}
+                  onEditDescription={setEditDescription}
+                  onSaveEdit={() => saveEdit(item.id, item.type)}
+                  saving={saving}
+                  onChangeStatus={(s) => changeStatus(item.id, item.type, s)}
+                  statusOptions={STATUS_OPTIONS[item.type]}
                 />
               ))}
             </div>
           )}
 
-          {/* Archivierte Inhalte */}
           {archivedItems.length > 0 && (
             <div className="space-y-2">
               <p className="text-xs font-medium text-muted-foreground mt-4">
@@ -226,6 +282,10 @@ export function ContentModeration() {
                   item={item}
                   statusColor={statusColor}
                   statusLabel={statusLabel}
+                  expanded={expandedId === item.id}
+                  onToggleExpand={() => setExpandedId(expandedId === item.id ? null : item.id)}
+                  onChangeStatus={(s) => changeStatus(item.id, item.type, s)}
+                  statusOptions={STATUS_OPTIONS[item.type]}
                   archived
                 />
               ))}
@@ -248,25 +308,51 @@ export function ContentModeration() {
   );
 }
 
-// Einzelne Inhalts-Karte
+// Einzelne Inhalts-Karte mit Detail-View und Edit
 function ContentCard({
   item,
   statusColor,
   statusLabel,
-  onDelete,
-  isDeleting,
+  expanded,
+  editing,
+  editTitle,
+  editDescription,
+  onToggleExpand,
+  onStartEdit,
+  onCancelEdit,
+  onEditTitle,
+  onEditDescription,
+  onSaveEdit,
+  saving,
+  onChangeStatus,
+  statusOptions,
   archived,
 }: {
   item: ContentItem;
   statusColor: (s: string) => string;
   statusLabel: (s: string) => string;
-  onDelete?: () => void;
-  isDeleting?: boolean;
+  expanded?: boolean;
+  editing?: boolean;
+  editTitle?: string;
+  editDescription?: string;
+  onToggleExpand?: () => void;
+  onStartEdit?: () => void;
+  onCancelEdit?: () => void;
+  onEditTitle?: (v: string) => void;
+  onEditDescription?: (v: string) => void;
+  onSaveEdit?: () => void;
+  saving?: boolean;
+  onChangeStatus?: (status: string) => void;
+  statusOptions?: { value: string; label: string }[];
   archived?: boolean;
 }) {
   return (
-    <Card className={`p-3 ${archived ? "opacity-60" : ""} ${isDeleting ? "opacity-40" : ""}`}>
-      <div className="flex items-start justify-between gap-2">
+    <Card className={`${archived ? "opacity-60" : ""}`}>
+      {/* Header — klickbar zum Aufklappen */}
+      <button
+        onClick={onToggleExpand}
+        className="flex w-full items-start justify-between gap-2 p-3 text-left"
+      >
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2 flex-wrap">
             <p className="font-semibold text-anthrazit text-sm truncate">{item.title}</p>
@@ -280,28 +366,89 @@ function ContentCard({
             {item.user?.display_name ?? "Unbekannt"} · {new Date(item.created_at).toLocaleDateString("de-DE")}
             {item.category && ` · ${item.category}`}
           </p>
-          {item.description && (
-            <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{item.description}</p>
-          )}
         </div>
         <div className="flex items-center gap-1.5 shrink-0">
           <Badge variant="outline" className={`text-[10px] h-5 ${statusColor(item.status)}`}>
             {statusLabel(item.status)}
           </Badge>
-          {!archived && onDelete && (
-            <Button
-              size="sm"
-              variant="ghost"
-              className="h-7 w-7 p-0 text-red-400 hover:text-red-600 hover:bg-red-50"
-              onClick={onDelete}
-              disabled={isDeleting}
-              title="Inhalt entfernen"
-            >
-              <X className="h-3.5 w-3.5" />
-            </Button>
+          {expanded ? <ChevronUp className="h-3.5 w-3.5 text-muted-foreground" /> : <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />}
+        </div>
+      </button>
+
+      {/* Detail-View */}
+      {expanded && (
+        <div className="border-t px-3 pb-3 pt-2 space-y-3">
+          {editing ? (
+            // Edit-Modus
+            <div className="space-y-2">
+              <div>
+                <label className="text-xs font-medium text-muted-foreground">Titel</label>
+                <Input
+                  value={editTitle}
+                  onChange={(e) => onEditTitle?.(e.target.value)}
+                  className="mt-1"
+                />
+              </div>
+              <div>
+                <label className="text-xs font-medium text-muted-foreground">Beschreibung</label>
+                <Textarea
+                  value={editDescription}
+                  onChange={(e) => onEditDescription?.(e.target.value)}
+                  rows={3}
+                  className="mt-1"
+                />
+              </div>
+              <div className="flex gap-2">
+                <Button size="sm" onClick={onSaveEdit} disabled={saving} className="bg-quartier-green hover:bg-quartier-green-dark">
+                  <Save className="h-3.5 w-3.5 mr-1" />
+                  {saving ? "Speichern..." : "Speichern"}
+                </Button>
+                <Button size="sm" variant="outline" onClick={onCancelEdit}>
+                  Abbrechen
+                </Button>
+              </div>
+            </div>
+          ) : (
+            // Ansichts-Modus
+            <>
+              {item.description ? (
+                <p className="text-sm text-muted-foreground whitespace-pre-line">{item.description}</p>
+              ) : (
+                <p className="text-sm text-muted-foreground italic">Keine Beschreibung</p>
+              )}
+
+              <div className="flex flex-wrap gap-2">
+                {/* Edit-Button */}
+                {!archived && onStartEdit && (
+                  <Button size="sm" variant="outline" className="text-xs h-7" onClick={onStartEdit}>
+                    <Edit className="h-3 w-3 mr-1" />
+                    Bearbeiten
+                  </Button>
+                )}
+
+                {/* Status-Aenderung */}
+                {statusOptions && onChangeStatus && (
+                  <div className="flex gap-1">
+                    {statusOptions
+                      .filter((s) => s.value !== item.status)
+                      .map((s) => (
+                        <Button
+                          key={s.value}
+                          size="sm"
+                          variant="outline"
+                          className={`text-xs h-7 ${s.value === "deleted" ? "text-red-500 hover:bg-red-50" : ""}`}
+                          onClick={(e) => { e.stopPropagation(); onChangeStatus(s.value); }}
+                        >
+                          {s.label}
+                        </Button>
+                      ))}
+                  </div>
+                )}
+              </div>
+            </>
           )}
         </div>
-      </div>
+      )}
     </Card>
   );
 }

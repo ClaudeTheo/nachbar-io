@@ -1,26 +1,28 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Newspaper, Plus, Trash2, Edit, Eye, Globe, Sparkles, X, Save } from "lucide-react";
+import { Newspaper, Plus, Trash2, Edit, Globe, Sparkles, X, Save, Download, CheckCircle, AlertCircle, Loader2, Clock, Rss } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { createClient } from "@/lib/supabase/client";
+import { NEWS_CATEGORIES } from "@/lib/constants";
 import type { NewsItem } from "@/lib/supabase/types";
 import { toast } from "sonner";
 
-const NEWS_CATEGORIES = [
-  { id: "infrastructure", label: "Infrastruktur", icon: "🏗️" },
-  { id: "events", label: "Veranstaltungen", icon: "📅" },
-  { id: "administration", label: "Verwaltung", icon: "🏛️" },
-  { id: "weather", label: "Wetter/Unwetter", icon: "🌤️" },
-  { id: "waste", label: "Abfallwirtschaft", icon: "♻️" },
-  { id: "traffic", label: "Verkehr", icon: "🚗" },
-  { id: "community", label: "Gemeinschaft", icon: "🏘️" },
-  { id: "other", label: "Sonstiges", icon: "📰" },
-];
+// Admin-spezifische Kategorie-Liste (ohne "Alle")
+const ADMIN_NEWS_CATEGORIES = NEWS_CATEGORIES.filter(c => c.id !== "all");
+
+interface ScrapeResult {
+  status: "idle" | "running" | "success" | "error";
+  message?: string;
+  processed?: number;
+  newItems?: number;
+  duplicates?: number;
+  timestamp?: Date;
+}
 
 export function NewsManagement() {
   const [news, setNews] = useState<NewsItem[]>([]);
@@ -35,6 +37,9 @@ export function NewsManagement() {
   const [sourceUrl, setSourceUrl] = useState("");
   const [relevance, setRelevance] = useState(7);
   const [saving, setSaving] = useState(false);
+
+  // Scrape-Status
+  const [scrapeResult, setScrapeResult] = useState<ScrapeResult>({ status: "idle" });
 
   useEffect(() => {
     loadNews();
@@ -94,7 +99,6 @@ export function NewsManagement() {
     };
 
     if (editingId) {
-      // Aktualisieren
       const { error } = await supabase
         .from("news_items")
         .update(payload)
@@ -108,7 +112,6 @@ export function NewsManagement() {
         loadNews();
       }
     } else {
-      // Erstellen
       const { error } = await supabase
         .from("news_items")
         .insert(payload);
@@ -136,6 +139,82 @@ export function NewsManagement() {
     }
   }
 
+  // Web-Scraper ausloesen (bad-saeckingen.de)
+  async function triggerScrape() {
+    setScrapeResult({ status: "running" });
+    try {
+      const res = await fetch("/api/news/scrape");
+      const data = await res.json();
+
+      if (!res.ok) {
+        setScrapeResult({
+          status: "error",
+          message: data.error || `HTTP ${res.status}`,
+          timestamp: new Date(),
+        });
+        toast.error("Scrape fehlgeschlagen: " + (data.error || "Unbekannter Fehler"));
+        return;
+      }
+
+      setScrapeResult({
+        status: "success",
+        message: data.message,
+        processed: data.processed,
+        newItems: data.new_items,
+        duplicates: data.duplicates,
+        timestamp: new Date(),
+      });
+
+      toast.success(`${data.new_items} neue Nachrichten importiert`);
+      loadNews();
+    } catch {
+      setScrapeResult({
+        status: "error",
+        message: "Netzwerkfehler",
+        timestamp: new Date(),
+      });
+      toast.error("Netzwerkfehler beim Scraping");
+    }
+  }
+
+  // RSS-Feeds importieren
+  async function triggerRSS() {
+    setScrapeResult({ status: "running", message: "RSS-Feeds werden abgerufen..." });
+    try {
+      const res = await fetch("/api/news/rss");
+      const data = await res.json();
+
+      if (!res.ok) {
+        setScrapeResult({
+          status: "error",
+          message: data.error || `HTTP ${res.status}`,
+          timestamp: new Date(),
+        });
+        toast.error("RSS-Import fehlgeschlagen");
+        return;
+      }
+
+      setScrapeResult({
+        status: "success",
+        message: data.message,
+        processed: data.total_fetched,
+        newItems: data.total_imported,
+        duplicates: (data.total_fetched || 0) - (data.total_imported || 0),
+        timestamp: new Date(),
+      });
+
+      toast.success(`${data.total_imported} neue Artikel aus RSS-Feeds`);
+      loadNews();
+    } catch {
+      setScrapeResult({
+        status: "error",
+        message: "Netzwerkfehler beim RSS-Import",
+        timestamp: new Date(),
+      });
+      toast.error("Netzwerkfehler beim RSS-Import");
+    }
+  }
+
   // KI-Aggregation ausloesen
   async function triggerAggregation() {
     try {
@@ -149,7 +228,7 @@ export function NewsManagement() {
     }
   }
 
-  const catMap = new Map(NEWS_CATEGORIES.map(c => [c.id, c]));
+  const catMap = new Map<string, { id: string; label: string; icon: string }>(ADMIN_NEWS_CATEGORIES.map(c => [c.id, c]));
 
   return (
     <div className="space-y-4">
@@ -160,6 +239,17 @@ export function NewsManagement() {
           <Badge variant="secondary" className="text-[10px]">{news.length}</Badge>
         </div>
         <div className="flex gap-1.5">
+          <Button size="sm" variant="outline" className="text-xs h-8" onClick={triggerScrape} disabled={scrapeResult.status === "running"}>
+            {scrapeResult.status === "running" ? (
+              <Loader2 className="h-3.5 w-3.5 mr-1 animate-spin" />
+            ) : (
+              <Download className="h-3.5 w-3.5 mr-1" />
+            )}
+            Scrape
+          </Button>
+          <Button size="sm" variant="outline" className="text-xs h-8" onClick={triggerRSS} disabled={scrapeResult.status === "running"}>
+            <Rss className="h-3.5 w-3.5 mr-1" />RSS
+          </Button>
           <Button size="sm" variant="outline" className="text-xs h-8" onClick={triggerAggregation}>
             <Sparkles className="h-3.5 w-3.5 mr-1" />KI
           </Button>
@@ -168,6 +258,56 @@ export function NewsManagement() {
           </Button>
         </div>
       </div>
+
+      {/* Scrape-Status-Anzeige */}
+      {scrapeResult.status !== "idle" && (
+        <Card className={`border-l-4 ${
+          scrapeResult.status === "running" ? "border-l-blue-400 bg-blue-50/50" :
+          scrapeResult.status === "success" ? "border-l-quartier-green bg-quartier-green/5" :
+          "border-l-red-400 bg-red-50/50"
+        }`}>
+          <CardContent className="p-3">
+            <div className="flex items-start gap-2">
+              {scrapeResult.status === "running" && <Loader2 className="h-4 w-4 text-blue-500 animate-spin mt-0.5" />}
+              {scrapeResult.status === "success" && <CheckCircle className="h-4 w-4 text-quartier-green mt-0.5" />}
+              {scrapeResult.status === "error" && <AlertCircle className="h-4 w-4 text-red-500 mt-0.5" />}
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium text-anthrazit">
+                  {scrapeResult.status === "running" && "Scraper laeuft..."}
+                  {scrapeResult.status === "success" && "Scrape erfolgreich"}
+                  {scrapeResult.status === "error" && "Scrape fehlgeschlagen"}
+                </p>
+                {scrapeResult.message && (
+                  <p className="text-xs text-muted-foreground mt-0.5">{scrapeResult.message}</p>
+                )}
+                {scrapeResult.status === "success" && (
+                  <div className="flex gap-3 mt-1 text-xs text-muted-foreground">
+                    <span>{scrapeResult.processed} Artikel gefunden</span>
+                    <span>{scrapeResult.newItems} neu importiert</span>
+                    <span>{scrapeResult.duplicates} Duplikate</span>
+                  </div>
+                )}
+                {scrapeResult.timestamp && (
+                  <div className="flex items-center gap-1 mt-1 text-[10px] text-muted-foreground">
+                    <Clock className="h-2.5 w-2.5" />
+                    {scrapeResult.timestamp.toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit", second: "2-digit" })}
+                  </div>
+                )}
+              </div>
+              {scrapeResult.status !== "running" && (
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  className="h-6 w-6 p-0"
+                  onClick={() => setScrapeResult({ status: "idle" })}
+                >
+                  <X className="h-3 w-3" />
+                </Button>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Formular */}
       {showForm && (
@@ -201,7 +341,7 @@ export function NewsManagement() {
                   onChange={(e) => setCategory(e.target.value)}
                   className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
                 >
-                  {NEWS_CATEGORIES.map(c => (
+                  {ADMIN_NEWS_CATEGORIES.map(c => (
                     <option key={c.id} value={c.id}>{c.icon} {c.label}</option>
                   ))}
                 </select>

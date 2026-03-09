@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { Megaphone, Send, Users, MapPin, AlertTriangle, Info, CheckCircle } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Megaphone, Send, Users, MapPin, AlertTriangle, Info, CheckCircle, History, Clock } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -13,13 +13,10 @@ import { toast } from "sonner";
 type Audience = "all" | "street" | "seniors";
 type Urgency = "normal" | "important" | "urgent";
 
-interface PushHistoryItem {
-  id: string;
+interface BroadcastHistoryItem {
   title: string;
   body: string;
-  audience: Audience;
-  urgency: Urgency;
-  sentAt: Date;
+  created_at: string;
   recipientCount: number;
 }
 
@@ -30,10 +27,30 @@ export function PushBroadcast() {
   const [street, setStreet] = useState("");
   const [urgency, setUrgency] = useState<Urgency>("normal");
   const [sending, setSending] = useState(false);
-  const [history, setHistory] = useState<PushHistoryItem[]>([]);
+  const [history, setHistory] = useState<BroadcastHistoryItem[]>([]);
+  const [loadingHistory, setLoadingHistory] = useState(true);
   const [showConfirm, setShowConfirm] = useState(false);
 
-  // Push senden
+  // Broadcast-History aus DB laden
+  useEffect(() => {
+    loadHistory();
+  }, []);
+
+  async function loadHistory() {
+    setLoadingHistory(true);
+    try {
+      const res = await fetch("/api/admin/broadcast");
+      if (res.ok) {
+        const data = await res.json();
+        setHistory(data.history ?? []);
+      }
+    } catch {
+      // Stille Fehlerbehandlung
+    }
+    setLoadingHistory(false);
+  }
+
+  // Push senden ueber Admin-Broadcast-API
   async function handleSend() {
     if (!title.trim() || !body.trim()) {
       toast.error("Titel und Nachricht sind erforderlich");
@@ -52,40 +69,29 @@ export function PushBroadcast() {
 
     setSending(true);
     try {
-      const res = await fetch("/api/push/send", {
+      const res = await fetch("/api/admin/broadcast", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          title: urgency === "urgent" ? `DRINGEND: ${title}` : title,
+          title,
           body,
-          url: "/dashboard",
-          tag: `broadcast-${Date.now()}`,
-          urgent: urgency === "urgent",
-          // Optionale Filter
-          ...(audience === "street" && { street }),
-          ...(audience === "seniors" && { uiMode: "senior" }),
+          audience,
+          street: audience === "street" ? street : undefined,
+          urgency,
         }),
       });
 
-      if (!res.ok) throw new Error("Push-Fehler");
+      if (!res.ok) throw new Error("Broadcast-Fehler");
 
       const result = await res.json();
 
-      // In lokale History aufnehmen
-      setHistory(prev => [{
-        id: Date.now().toString(),
-        title,
-        body,
-        audience,
-        urgency,
-        sentAt: new Date(),
-        recipientCount: result.sent ?? 0,
-      }, ...prev]);
-
-      toast.success(`Push an ${result.sent ?? "alle"} Empfaenger gesendet`);
+      toast.success(`Broadcast an ${result.sent} Empfaenger gesendet`);
       setTitle("");
       setBody("");
       setShowConfirm(false);
+
+      // History neu laden
+      loadHistory();
     } catch {
       toast.error("Fehler beim Senden der Push-Nachricht");
     }
@@ -94,6 +100,20 @@ export function PushBroadcast() {
 
   function cancelConfirm() {
     setShowConfirm(false);
+  }
+
+  // Relative Zeit formatieren
+  function timeAgo(dateStr: string): string {
+    const diffMs = Date.now() - new Date(dateStr).getTime();
+    const diffMin = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMs / 3600000);
+    const diffDays = Math.floor(diffMs / 86400000);
+
+    if (diffMin < 1) return "Gerade eben";
+    if (diffMin < 60) return `vor ${diffMin} Min.`;
+    if (diffHours < 24) return `vor ${diffHours} Std.`;
+    if (diffDays < 7) return `vor ${diffDays} Tag${diffDays > 1 ? "en" : ""}`;
+    return new Date(dateStr).toLocaleDateString("de-DE");
   }
 
   const audienceLabel = audience === "all" ? "Gesamtes Quartier"
@@ -255,7 +275,7 @@ export function PushBroadcast() {
         </CardContent>
       </Card>
 
-      {/* Vorlagen */}
+      {/* Schnellvorlagen */}
       <Card>
         <CardContent className="p-4">
           <p className="text-sm font-semibold text-anthrazit mb-2">Schnellvorlagen</p>
@@ -274,28 +294,45 @@ export function PushBroadcast() {
         </CardContent>
       </Card>
 
-      {/* Sende-History (Session-basiert) */}
-      {history.length > 0 && (
-        <div>
-          <p className="text-xs font-medium text-muted-foreground mb-2">Zuletzt gesendet</p>
+      {/* Persistente Broadcast-History */}
+      <div>
+        <div className="flex items-center gap-2 mb-2">
+          <History className="h-4 w-4 text-muted-foreground" />
+          <p className="text-xs font-medium text-muted-foreground">Sende-Verlauf</p>
+        </div>
+
+        {loadingHistory ? (
+          <p className="py-4 text-center text-xs text-muted-foreground">Laden...</p>
+        ) : history.length > 0 ? (
           <div className="space-y-1.5">
-            {history.map((item) => (
-              <Card key={item.id} className="p-3">
+            {history.map((item, idx) => (
+              <Card key={idx} className="p-3">
                 <div className="flex items-start justify-between gap-2">
                   <div className="min-w-0 flex-1">
                     <p className="text-sm font-medium text-anthrazit truncate">{item.title}</p>
-                    <p className="text-xs text-muted-foreground">
-                      {item.sentAt.toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" })}
-                      {" · "}{item.recipientCount} Empfaenger
-                    </p>
+                    <p className="text-xs text-muted-foreground truncate mt-0.5">{item.body}</p>
+                    <div className="flex items-center gap-2 mt-1 text-[10px] text-muted-foreground">
+                      <span className="flex items-center gap-0.5">
+                        <Clock className="h-3 w-3" />
+                        {timeAgo(item.created_at)}
+                      </span>
+                      <span className="flex items-center gap-0.5">
+                        <Users className="h-3 w-3" />
+                        {item.recipientCount} Empfaenger
+                      </span>
+                    </div>
                   </div>
                   <CheckCircle className="h-4 w-4 text-quartier-green shrink-0 mt-0.5" />
                 </div>
               </Card>
             ))}
           </div>
-        </div>
-      )}
+        ) : (
+          <p className="py-4 text-center text-xs text-muted-foreground">
+            Noch keine Broadcasts gesendet.
+          </p>
+        )}
+      </div>
     </div>
   );
 }

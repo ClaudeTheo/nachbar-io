@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { Activity, AlertTriangle, HandHelping, ShoppingBag, MapPin, UserPlus, MessageCircle, Calendar, Clock, Filter } from "lucide-react";
+import { useState, useEffect, useRef, useCallback } from "react";
+import { Activity, AlertTriangle, HandHelping, ShoppingBag, MapPin, UserPlus, MessageCircle, Calendar, Clock, Filter, RefreshCw } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -38,14 +38,37 @@ const ACTIVITY_LABELS: Record<ActivityType, string> = {
   event: "Veranstaltung",
 };
 
+const AUTO_REFRESH_INTERVAL = 30000; // 30 Sekunden
+const PAGE_SIZE = 20;
+
 export function ActivityFeed() {
   const [activities, setActivities] = useState<ActivityItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<ActivityType | "all">("all");
+  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
+  const [autoRefresh, setAutoRefresh] = useState(true);
+  const [lastRefresh, setLastRefresh] = useState<Date>(new Date());
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  useEffect(() => {
+  const loadActivitiesCallback = useCallback(() => {
     loadActivities();
   }, []);
+
+  useEffect(() => {
+    loadActivitiesCallback();
+  }, [loadActivitiesCallback]);
+
+  // Auto-Refresh
+  useEffect(() => {
+    if (autoRefresh) {
+      timerRef.current = setInterval(() => {
+        loadActivities();
+      }, AUTO_REFRESH_INTERVAL);
+    }
+    return () => {
+      if (timerRef.current) clearInterval(timerRef.current);
+    };
+  }, [autoRefresh]);
 
   async function loadActivities() {
     setLoading(true);
@@ -175,6 +198,7 @@ export function ActivityFeed() {
     allActivities.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
 
     setActivities(allActivities);
+    setLastRefresh(new Date());
     setLoading(false);
   }
 
@@ -218,23 +242,48 @@ export function ActivityFeed() {
     return groups;
   }
 
-  const filtered = filter === "all" ? activities : activities.filter(a => a.type === filter);
-  const grouped = groupByDate(filtered);
-
   const typeCounts = activities.reduce((acc, a) => {
     acc[a.type] = (acc[a.type] ?? 0) + 1;
     return acc;
   }, {} as Record<string, number>);
 
+  const filteredActivities = filter === "all" ? activities : activities.filter(a => a.type === filter);
+  const paginatedActivities = filteredActivities.slice(0, visibleCount);
+  const hasMore = filteredActivities.length > visibleCount;
+
+  const grouped = groupByDate(paginatedActivities);
+
   return (
     <div className="space-y-4">
+      {/* Header mit Auto-Refresh */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+          <Clock className="h-3 w-3" />
+          <span>Aktualisiert: {lastRefresh.toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" })}</span>
+        </div>
+        <div className="flex items-center gap-1.5">
+          <Button
+            size="sm"
+            variant={autoRefresh ? "default" : "outline"}
+            className="text-xs h-7"
+            onClick={() => setAutoRefresh(!autoRefresh)}
+          >
+            <RefreshCw className={`h-3 w-3 mr-1 ${autoRefresh ? "animate-spin" : ""}`} style={autoRefresh ? { animationDuration: "3s" } : undefined} />
+            {autoRefresh ? "Live" : "Pause"}
+          </Button>
+          <Button size="sm" variant="outline" className="text-xs h-7" onClick={loadActivities} disabled={loading}>
+            Aktualisieren
+          </Button>
+        </div>
+      </div>
+
       {/* Typ-Filter */}
       <div className="flex gap-1.5 overflow-x-auto pb-1">
         <Button
           size="sm"
           variant={filter === "all" ? "default" : "outline"}
           className="text-xs h-7 shrink-0"
-          onClick={() => setFilter("all")}
+          onClick={() => { setFilter("all"); setVisibleCount(PAGE_SIZE); }}
         >
           Alle ({activities.length})
         </Button>
@@ -244,7 +293,7 @@ export function ActivityFeed() {
             size="sm"
             variant={filter === type ? "default" : "outline"}
             className="text-xs h-7 shrink-0"
-            onClick={() => setFilter(type)}
+            onClick={() => { setFilter(type); setVisibleCount(PAGE_SIZE); }}
           >
             {ACTIVITY_ICONS[type]}
             <span className="ml-1">{typeCounts[type] ?? 0}</span>
@@ -292,7 +341,18 @@ export function ActivityFeed() {
             </div>
           ))}
 
-          {filtered.length === 0 && (
+          {/* Mehr laden */}
+          {hasMore && (
+            <Button
+              variant="outline"
+              className="w-full text-xs"
+              onClick={() => setVisibleCount((prev) => prev + PAGE_SIZE)}
+            >
+              Mehr laden ({filteredActivities.length - visibleCount} weitere)
+            </Button>
+          )}
+
+          {paginatedActivities.length === 0 && (
             <p className="py-8 text-center text-muted-foreground">
               Keine Aktivitaeten gefunden.
             </p>

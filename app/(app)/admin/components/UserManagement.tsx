@@ -20,12 +20,46 @@ export function UserManagement({ users, onRefresh }: UserManagementProps) {
   const [search, setSearch] = useState("");
   const [expandedUser, setExpandedUser] = useState<string | null>(null);
   const [updating, setUpdating] = useState<string | null>(null);
+  const [activityFilter, setActivityFilter] = useState<"all" | "active" | "inactive">("all");
 
-  // Filter nach Suchbegriff
-  const filtered = users.filter((u) =>
-    u.display_name.toLowerCase().includes(search.toLowerCase()) ||
-    u.trust_level.includes(search.toLowerCase())
-  );
+  // Bann-Funktion: Trust-Level auf "banned" setzen (deaktiviert Zugang via RLS)
+  async function banUser(userId: string, isBanned: boolean) {
+    setUpdating(userId);
+    const supabase = createClient();
+    const { error } = await supabase
+      .from("users")
+      .update({ trust_level: isBanned ? "new" : "banned" })
+      .eq("id", userId);
+
+    if (error) {
+      toast.error("Fehler beim Sperren/Entsperren");
+    } else {
+      toast.success(isBanned ? "Nutzer entsperrt" : "Nutzer gesperrt");
+      onRefresh();
+    }
+    setUpdating(null);
+  }
+
+  // Aktivitaets-Filter
+  const thirtyDaysAgo = new Date();
+  thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+  // Filter nach Suchbegriff und Aktivitaet
+  const filtered = users.filter((u) => {
+    const matchesSearch =
+      u.display_name.toLowerCase().includes(search.toLowerCase()) ||
+      u.trust_level.includes(search.toLowerCase());
+
+    if (!matchesSearch) return false;
+
+    if (activityFilter === "active") {
+      return u.last_seen && new Date(u.last_seen) > thirtyDaysAgo;
+    }
+    if (activityFilter === "inactive") {
+      return !u.last_seen || new Date(u.last_seen) <= thirtyDaysAgo;
+    }
+    return true;
+  });
 
   // Trust-Level aendern
   async function changeTrustLevel(userId: string, newLevel: TrustLevel) {
@@ -96,13 +130,28 @@ export function UserManagement({ users, onRefresh }: UserManagementProps) {
         />
       </div>
 
+      {/* Aktivitaets-Filter */}
+      <div className="flex gap-1.5">
+        <Button size="sm" variant={activityFilter === "all" ? "default" : "outline"} className="text-xs h-7" onClick={() => setActivityFilter("all")}>
+          Alle ({users.length})
+        </Button>
+        <Button size="sm" variant={activityFilter === "active" ? "default" : "outline"} className="text-xs h-7" onClick={() => setActivityFilter("active")}>
+          Aktiv (30d)
+        </Button>
+        <Button size="sm" variant={activityFilter === "inactive" ? "default" : "outline"} className="text-xs h-7" onClick={() => setActivityFilter("inactive")}>
+          Inaktiv
+        </Button>
+      </div>
+
       {/* Statistik-Zeile */}
       <div className="flex gap-2 text-xs text-muted-foreground">
-        <span>{filtered.length} von {users.length} Nutzern</span>
+        <span>{filtered.length} Nutzer</span>
         <span>·</span>
         <span>{users.filter(u => u.is_admin).length} Admins</span>
         <span>·</span>
         <span>{users.filter(u => u.ui_mode === "senior").length} Senioren</span>
+        <span>·</span>
+        <span>{users.filter(u => (u.trust_level as string) === "banned").length} Gesperrt</span>
       </div>
 
       {/* Nutzer-Liste */}
@@ -216,6 +265,25 @@ export function UserManagement({ users, onRefresh }: UserManagementProps) {
                     onClick={() => toggleAdmin(user.id, user.is_admin)}
                   >
                     {user.is_admin ? "Admin entziehen" : "Zum Admin machen"}
+                  </Button>
+                </div>
+
+                {/* Bann-Aktion */}
+                <div className="flex items-center justify-between pt-1 border-t">
+                  <div className="flex items-center gap-2">
+                    <Ban className={`h-4 w-4 ${(user.trust_level as string) === "banned" ? "text-red-500" : "text-muted-foreground"}`} />
+                    <span className="text-sm">
+                      {(user.trust_level as string) === "banned" ? "Nutzer ist gesperrt" : "Nutzer sperren"}
+                    </span>
+                  </div>
+                  <Button
+                    size="sm"
+                    variant={(user.trust_level as string) === "banned" ? "outline" : "destructive"}
+                    className="text-xs h-7"
+                    disabled={isUpdating}
+                    onClick={() => banUser(user.id, (user.trust_level as string) === "banned")}
+                  >
+                    {(user.trust_level as string) === "banned" ? "Entsperren" : "Sperren"}
                   </Button>
                 </div>
 

@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { Eye, Database, Server, Shield, Clock, Users, Home, AlertTriangle, CheckCircle, XCircle, Download, Trash2, MapPin } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Eye, Database, Server, Shield, Clock, Users, Home, AlertTriangle, CheckCircle, XCircle, Download, Trash2, MapPin, RefreshCw, Loader2 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -31,8 +31,44 @@ interface SystemHealthProps {
   households: (Household & { memberCount: number })[];
 }
 
+interface HealthCheck {
+  name: string;
+  status: "ok" | "warn" | "error";
+  detail: string;
+  responseMs?: number;
+}
+
 export function SystemHealth({ stats, users, households }: SystemHealthProps) {
   const [exporting, setExporting] = useState(false);
+  const [healthChecks, setHealthChecks] = useState<HealthCheck[]>([]);
+  const [healthLoading, setHealthLoading] = useState(false);
+  const [healthTimestamp, setHealthTimestamp] = useState<string | null>(null);
+  const [overallStatus, setOverallStatus] = useState<"ok" | "warn" | "error">("ok");
+
+  // Health-Checks beim Laden ausfuehren
+  useEffect(() => {
+    runHealthChecks();
+  }, []);
+
+  async function runHealthChecks() {
+    setHealthLoading(true);
+    try {
+      const res = await fetch("/api/admin/health");
+      if (res.ok) {
+        const data = await res.json();
+        setHealthChecks(data.checks);
+        setOverallStatus(data.overall);
+        setHealthTimestamp(data.timestamp);
+      } else {
+        setHealthChecks([{ name: "API", status: "error", detail: `HTTP ${res.status}` }]);
+        setOverallStatus("error");
+      }
+    } catch {
+      setHealthChecks([{ name: "Netzwerk", status: "error", detail: "Health-Check nicht erreichbar" }]);
+      setOverallStatus("error");
+    }
+    setHealthLoading(false);
+  }
 
   // Umgebungsvariablen-Status (DSGVO: keine Werte anzeigen, nur ob konfiguriert)
   const envChecks = [
@@ -119,18 +155,34 @@ export function SystemHealth({ stats, users, households }: SystemHealthProps) {
         </Button>
       </div>
 
-      {/* System-Status */}
-      <Card>
+      {/* System-Status (Echtzeit) */}
+      <Card className={`${overallStatus === "error" ? "border-red-300" : overallStatus === "warn" ? "border-alert-amber/50" : ""}`}>
         <CardContent className="p-4">
-          <h3 className="text-sm font-semibold text-anthrazit mb-3 flex items-center gap-2">
-            <Server className="h-4 w-4" /> System-Status
-          </h3>
-          <div className="space-y-2">
-            <StatusRow label="Datenbank (Supabase)" status="ok" detail="EU Frankfurt" />
-            <StatusRow label="Frontend (Vercel)" status="ok" detail="Edge Network" />
-            <StatusRow label="Push-Dienst" status="ok" detail="Web Push API" />
-            <StatusRow label="KI-News (Claude)" status="ok" detail="Haiku" />
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="text-sm font-semibold text-anthrazit flex items-center gap-2">
+              <Server className="h-4 w-4" /> System-Status
+              <Badge variant={overallStatus === "ok" ? "secondary" : "destructive"} className="text-[10px]">
+                {overallStatus === "ok" ? "Alles OK" : overallStatus === "warn" ? "Warnungen" : "Fehler"}
+              </Badge>
+            </h3>
+            <Button size="sm" variant="ghost" className="h-7 w-7 p-0" onClick={runHealthChecks} disabled={healthLoading}>
+              {healthLoading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <RefreshCw className="h-3.5 w-3.5" />}
+            </Button>
           </div>
+          {healthChecks.length > 0 ? (
+            <div className="space-y-2">
+              {healthChecks.map((check, i) => (
+                <StatusRow key={i} label={check.name} status={check.status} detail={check.detail} />
+              ))}
+            </div>
+          ) : (
+            <p className="text-xs text-muted-foreground">Health-Check wird ausgefuehrt...</p>
+          )}
+          {healthTimestamp && (
+            <p className="text-[10px] text-muted-foreground mt-2">
+              Geprueft: {new Date(healthTimestamp).toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit", second: "2-digit" })}
+            </p>
+          )}
         </CardContent>
       </Card>
 

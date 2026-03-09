@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { QrCode, Plus, Download, Copy, Check, Printer } from "lucide-react";
+import { QrCode, Plus, Copy, Check, Printer, Trash2, RotateCcw, Clock, Ban } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -23,6 +23,8 @@ export function InviteCodeManager({ households, onRefresh }: InviteCodeManagerPr
   const [newLng, setNewLng] = useState("");
   const [creating, setCreating] = useState(false);
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
+  const [revoking, setRevoking] = useState<string | null>(null);
+  const [showUsed, setShowUsed] = useState(false);
 
   // Code-Statistiken
   const usedCodes = households.filter(h => h.memberCount > 0).length;
@@ -30,7 +32,6 @@ export function InviteCodeManager({ households, onRefresh }: InviteCodeManagerPr
 
   // Invite-Code generieren (Kuerzel + laufende Nummer)
   function generateInviteCode(street: string, existingCodes: string[]): string {
-    // Strassenkuerzel
     const prefixMap: Record<string, string> = {
       "Purkersdorfer Strasse": "PKD",
       "Purkersdorfer Straße": "PKD",
@@ -40,7 +41,6 @@ export function InviteCodeManager({ households, onRefresh }: InviteCodeManagerPr
     };
     const prefix = prefixMap[street] ?? street.substring(0, 3).toUpperCase();
 
-    // Hoechste Nummer finden
     const existing = existingCodes
       .filter(c => c.startsWith(prefix))
       .map(c => parseInt(c.replace(prefix, ""), 10))
@@ -78,7 +78,6 @@ export function InviteCodeManager({ households, onRefresh }: InviteCodeManagerPr
     const allCodes = households.map(h => h.invite_code);
     const code = generateInviteCode(newStreet, allCodes);
 
-    // Standardkoordinaten (Quartierszentrum) falls nicht angegeben
     const lat = newLat ? parseFloat(newLat) : 47.5617;
     const lng = newLng ? parseFloat(newLng) : 7.9483;
 
@@ -117,13 +116,50 @@ export function InviteCodeManager({ households, onRefresh }: InviteCodeManagerPr
     }
   }
 
+  // Code widerrufen (Haushalt ohne Mitglieder loeschen)
+  async function revokeCode(householdId: string, code: string) {
+    setRevoking(householdId);
+    const supabase = createClient();
+
+    const { error } = await supabase
+      .from("households")
+      .delete()
+      .eq("id", householdId);
+
+    if (error) {
+      toast.error("Fehler beim Widerrufen: " + error.message);
+    } else {
+      toast.success(`Code ${code} widerrufen`);
+      onRefresh();
+    }
+    setRevoking(null);
+  }
+
+  // Code erneuern (neuen Code generieren fuer bestehenden Haushalt)
+  async function regenerateCode(householdId: string, street: string) {
+    const supabase = createClient();
+    const allCodes = households.map(h => h.invite_code);
+    const newCode = generateInviteCode(street, allCodes);
+
+    const { error } = await supabase
+      .from("households")
+      .update({ invite_code: newCode })
+      .eq("id", householdId);
+
+    if (error) {
+      toast.error("Fehler beim Erneuern: " + error.message);
+    } else {
+      toast.success(`Neuer Code: ${newCode}`);
+      onRefresh();
+    }
+  }
+
   // Alle QR-Codes als Druckansicht oeffnen
   function openPrintView(street?: string) {
     const codes = street
       ? households.filter(h => h.street_name === street)
       : households;
 
-    // HTML fuer Druckansicht erstellen
     const html = `
       <!DOCTYPE html>
       <html>
@@ -164,6 +200,8 @@ export function InviteCodeManager({ households, onRefresh }: InviteCodeManagerPr
 
   // Strassen gruppieren
   const streets = [...new Set(households.map(h => h.street_name))];
+  const unusedHouseholds = households.filter(h => h.memberCount === 0);
+  const usedHouseholds = households.filter(h => h.memberCount > 0);
 
   return (
     <div className="space-y-4">
@@ -265,40 +303,104 @@ export function InviteCodeManager({ households, onRefresh }: InviteCodeManagerPr
         </CardContent>
       </Card>
 
-      {/* Code-Liste */}
+      {/* Unbenutzte Codes mit Aktionen */}
       <div className="space-y-2">
-        <p className="text-xs font-medium text-muted-foreground">Unbenutzte Codes</p>
-        {households
-          .filter(h => h.memberCount === 0)
-          .map((h) => (
-            <div key={h.id} className="flex items-center justify-between bg-muted/30 rounded-lg p-2">
-              <div className="flex items-center gap-2">
-                <div className="h-2 w-2 rounded-full bg-gray-300" />
+        <p className="text-xs font-medium text-muted-foreground">
+          Unbenutzte Codes ({unusedHouseholds.length})
+        </p>
+        {unusedHouseholds.map((h) => (
+          <div key={h.id} className="flex items-center justify-between bg-muted/30 rounded-lg p-2">
+            <div className="flex items-center gap-2">
+              <div className="h-2 w-2 rounded-full bg-gray-300" />
+              <div>
                 <span className="text-sm">{h.street_name} {h.house_number}</span>
-              </div>
-              <div className="flex items-center gap-1">
-                <span className="font-mono text-sm font-bold text-quartier-green">{h.invite_code}</span>
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  className="h-7 w-7 p-0"
-                  onClick={() => copyCode(h.invite_code)}
-                >
-                  {copiedCode === h.invite_code ? (
-                    <Check className="h-3.5 w-3.5 text-green-600" />
-                  ) : (
-                    <Copy className="h-3.5 w-3.5" />
-                  )}
-                </Button>
+                <span className="font-mono text-sm font-bold text-quartier-green ml-2">{h.invite_code}</span>
               </div>
             </div>
-          ))}
+            <div className="flex items-center gap-1">
+              {/* Code kopieren */}
+              <Button
+                size="sm"
+                variant="ghost"
+                className="h-7 w-7 p-0"
+                onClick={() => copyCode(h.invite_code)}
+                title="Code kopieren"
+              >
+                {copiedCode === h.invite_code ? (
+                  <Check className="h-3.5 w-3.5 text-green-600" />
+                ) : (
+                  <Copy className="h-3.5 w-3.5" />
+                )}
+              </Button>
+              {/* Code erneuern */}
+              <Button
+                size="sm"
+                variant="ghost"
+                className="h-7 w-7 p-0"
+                onClick={() => regenerateCode(h.id, h.street_name)}
+                title="Neuen Code generieren"
+              >
+                <RotateCcw className="h-3.5 w-3.5 text-blue-500" />
+              </Button>
+              {/* Code widerrufen (Haushalt loeschen) */}
+              <Button
+                size="sm"
+                variant="ghost"
+                className="h-7 w-7 p-0 text-red-400 hover:text-red-600 hover:bg-red-50"
+                onClick={() => revokeCode(h.id, h.invite_code)}
+                disabled={revoking === h.id}
+                title="Code widerrufen"
+              >
+                <Trash2 className="h-3.5 w-3.5" />
+              </Button>
+            </div>
+          </div>
+        ))}
 
-        {households.filter(h => h.memberCount === 0).length === 0 && (
+        {unusedHouseholds.length === 0 && (
           <p className="py-4 text-center text-xs text-muted-foreground">
             Alle Codes sind vergeben!
           </p>
         )}
+      </div>
+
+      {/* Verwendete Codes (einklappbar) */}
+      <div className="space-y-2">
+        <button
+          onClick={() => setShowUsed(!showUsed)}
+          className="flex items-center gap-1 text-xs font-medium text-muted-foreground hover:text-anthrazit transition-colors"
+        >
+          <Check className="h-3 w-3" />
+          Verwendete Codes ({usedHouseholds.length})
+          <span className="text-[10px]">{showUsed ? "▲" : "▼"}</span>
+        </button>
+
+        {showUsed && usedHouseholds.map((h) => (
+          <div key={h.id} className="flex items-center justify-between bg-quartier-green/5 rounded-lg p-2">
+            <div className="flex items-center gap-2">
+              <div className="h-2 w-2 rounded-full bg-quartier-green" />
+              <div>
+                <span className="text-sm">{h.street_name} {h.house_number}</span>
+                <span className="font-mono text-xs text-muted-foreground ml-2">{h.invite_code}</span>
+              </div>
+            </div>
+            <div className="flex items-center gap-1">
+              <Badge variant="default" className="text-[10px]">
+                {h.memberCount} Bew.
+              </Badge>
+              {/* Code erneuern (fuer den Fall, dass er kompromittiert wurde) */}
+              <Button
+                size="sm"
+                variant="ghost"
+                className="h-7 w-7 p-0"
+                onClick={() => regenerateCode(h.id, h.street_name)}
+                title="Code erneuern (alter Code wird ungueltig)"
+              >
+                <RotateCcw className="h-3.5 w-3.5 text-blue-500" />
+              </Button>
+            </div>
+          </div>
+        ))}
       </div>
     </div>
   );

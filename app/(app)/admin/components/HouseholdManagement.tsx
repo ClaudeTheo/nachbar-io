@@ -1,13 +1,14 @@
 "use client";
 
 import { useState } from "react";
-import { Home, Users, QrCode, CheckCircle, XCircle, Search, ChevronDown, ChevronUp, UserMinus, MapPin } from "lucide-react";
+import { Home, Users, QrCode, CheckCircle, XCircle, Search, ChevronDown, ChevronUp, UserMinus, MapPin, Pencil, Save, X } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { createClient } from "@/lib/supabase/client";
-import type { Household, User } from "@/lib/supabase/types";
+import type { Household } from "@/lib/supabase/types";
+import { QUARTIER_STREETS } from "@/lib/constants";
 import { toast } from "sonner";
 
 interface HouseholdWithMembers extends Household {
@@ -34,6 +35,14 @@ export function HouseholdManagement({ households, onRefresh }: HouseholdManageme
   const [loadingMembers, setLoadingMembers] = useState(false);
   const [filter, setFilter] = useState<"all" | "occupied" | "free">("all");
 
+  // Edit-Modus
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editStreet, setEditStreet] = useState("");
+  const [editHouseNumber, setEditHouseNumber] = useState("");
+  const [editLat, setEditLat] = useState("");
+  const [editLng, setEditLng] = useState("");
+  const [saving, setSaving] = useState(false);
+
   // Filter nach Strasse und Belegung
   const filtered = households.filter((h) => {
     const matchesSearch =
@@ -52,17 +61,18 @@ export function HouseholdManagement({ households, onRefresh }: HouseholdManageme
   // Statistiken
   const totalOccupied = households.filter(h => h.memberCount > 0).length;
   const totalFree = households.filter(h => h.memberCount === 0).length;
-  const totalVerified = households.filter(h => h.verified).length;
 
   // Mitglieder eines Haushalts laden
   async function loadMembers(householdId: string) {
     if (expandedId === householdId) {
       setExpandedId(null);
+      setEditingId(null);
       return;
     }
 
     setLoadingMembers(true);
     setExpandedId(householdId);
+    setEditingId(null);
     const supabase = createClient();
 
     const { data, error } = await supabase
@@ -112,12 +122,51 @@ export function HouseholdManagement({ households, onRefresh }: HouseholdManageme
     }
   }
 
+  // Edit-Modus starten
+  function startEdit(h: HouseholdWithMembers) {
+    setEditingId(h.id);
+    setEditStreet(h.street_name);
+    setEditHouseNumber(h.house_number);
+    setEditLat(h.lat.toString());
+    setEditLng(h.lng.toString());
+  }
+
+  // Aenderungen speichern
+  async function saveEdit(householdId: string) {
+    if (!editStreet || !editHouseNumber) {
+      toast.error("Strasse und Hausnummer sind erforderlich");
+      return;
+    }
+
+    setSaving(true);
+    const supabase = createClient();
+
+    const { error } = await supabase
+      .from("households")
+      .update({
+        street_name: editStreet,
+        house_number: editHouseNumber,
+        lat: parseFloat(editLat) || 47.5617,
+        lng: parseFloat(editLng) || 7.9483,
+      })
+      .eq("id", householdId);
+
+    if (error) {
+      toast.error("Fehler beim Speichern: " + error.message);
+    } else {
+      toast.success("Haushalt aktualisiert");
+      setEditingId(null);
+      onRefresh();
+    }
+    setSaving(false);
+  }
+
   // Strassen gruppieren
   const streets = [...new Set(households.map(h => h.street_name))];
 
   return (
     <div className="space-y-3">
-      {/* Suchfeld + Filter */}
+      {/* Suchfeld */}
       <div className="flex gap-2">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -173,6 +222,7 @@ export function HouseholdManagement({ households, onRefresh }: HouseholdManageme
             <div className="space-y-1.5">
               {streetHouseholds.map((h) => {
                 const isExpanded = expandedId === h.id;
+                const isEditing = editingId === h.id;
 
                 return (
                   <Card key={h.id} className="overflow-hidden">
@@ -220,28 +270,97 @@ export function HouseholdManagement({ households, onRefresh }: HouseholdManageme
                     {/* Erweiterte Details */}
                     {isExpanded && (
                       <CardContent className="border-t bg-muted/10 p-3 space-y-2">
-                        {/* Verifizierung */}
-                        <div className="flex items-center justify-between">
-                          <span className="text-xs text-muted-foreground">Verifizierungsstatus</span>
-                          <Button
-                            size="sm"
-                            variant={h.verified ? "default" : "outline"}
-                            className={`text-xs h-7 ${h.verified ? "bg-green-600 hover:bg-green-700" : ""}`}
-                            onClick={() => toggleVerified(h.id, h.verified)}
-                          >
-                            {h.verified ? (
-                              <><CheckCircle className="h-3 w-3 mr-1" /> Verifiziert</>
-                            ) : (
-                              <><XCircle className="h-3 w-3 mr-1" /> Nicht verifiziert</>
-                            )}
-                          </Button>
-                        </div>
+                        {/* Edit-Modus */}
+                        {isEditing ? (
+                          <div className="space-y-2 p-2 rounded-lg bg-white border">
+                            <p className="text-xs font-semibold text-anthrazit">Haushalt bearbeiten</p>
+                            <select
+                              value={editStreet}
+                              onChange={(e) => setEditStreet(e.target.value)}
+                              className="w-full rounded-md border border-input bg-background px-3 py-1.5 text-sm"
+                            >
+                              {QUARTIER_STREETS.map((s) => (
+                                <option key={s} value={s}>{s}</option>
+                              ))}
+                            </select>
+                            <div className="grid grid-cols-3 gap-2">
+                              <Input
+                                placeholder="Hausnr."
+                                value={editHouseNumber}
+                                onChange={(e) => setEditHouseNumber(e.target.value)}
+                                className="h-8 text-sm"
+                              />
+                              <Input
+                                placeholder="Lat"
+                                value={editLat}
+                                onChange={(e) => setEditLat(e.target.value)}
+                                type="number"
+                                step="0.0001"
+                                className="h-8 text-sm"
+                              />
+                              <Input
+                                placeholder="Lng"
+                                value={editLng}
+                                onChange={(e) => setEditLng(e.target.value)}
+                                type="number"
+                                step="0.0001"
+                                className="h-8 text-sm"
+                              />
+                            </div>
+                            <div className="flex gap-2">
+                              <Button
+                                size="sm"
+                                className="flex-1 h-7 text-xs bg-quartier-green hover:bg-quartier-green-dark"
+                                onClick={() => saveEdit(h.id)}
+                                disabled={saving}
+                              >
+                                <Save className="h-3 w-3 mr-1" />
+                                {saving ? "Speichern..." : "Speichern"}
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="h-7 text-xs"
+                                onClick={() => setEditingId(null)}
+                              >
+                                <X className="h-3 w-3 mr-1" />
+                                Abbrechen
+                              </Button>
+                            </div>
+                          </div>
+                        ) : (
+                          <>
+                            {/* Aktions-Leiste */}
+                            <div className="flex items-center gap-1.5">
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="text-xs h-7"
+                                onClick={(e) => { e.stopPropagation(); startEdit(h); }}
+                              >
+                                <Pencil className="h-3 w-3 mr-1" /> Bearbeiten
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant={h.verified ? "default" : "outline"}
+                                className={`text-xs h-7 ${h.verified ? "bg-green-600 hover:bg-green-700" : ""}`}
+                                onClick={() => toggleVerified(h.id, h.verified)}
+                              >
+                                {h.verified ? (
+                                  <><CheckCircle className="h-3 w-3 mr-1" /> Verifiziert</>
+                                ) : (
+                                  <><XCircle className="h-3 w-3 mr-1" /> Verifizieren</>
+                                )}
+                              </Button>
+                            </div>
 
-                        {/* Koordinaten */}
-                        <div className="flex items-center justify-between text-xs text-muted-foreground">
-                          <span>Koordinaten</span>
-                          <span className="font-mono text-[10px]">{h.lat.toFixed(4)}, {h.lng.toFixed(4)}</span>
-                        </div>
+                            {/* Koordinaten */}
+                            <div className="flex items-center justify-between text-xs text-muted-foreground">
+                              <span>Koordinaten</span>
+                              <span className="font-mono text-[10px]">{h.lat.toFixed(4)}, {h.lng.toFixed(4)}</span>
+                            </div>
+                          </>
+                        )}
 
                         {/* Mitglieder */}
                         <div className="pt-1 border-t">

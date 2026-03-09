@@ -243,6 +243,17 @@ export const NOISE_DURATIONS = [
   { id: "allday", label: "Den ganzen Tag", hours: 12 },
 ] as const;
 
+// News-Kategorien (fuer Kategorie-Filter auf der News-Seite)
+export const NEWS_CATEGORIES = [
+  { id: "all", label: "Alle", icon: "📰" },
+  { id: "infrastructure", label: "Infrastruktur", icon: "🚧" },
+  { id: "events", label: "Veranstaltungen", icon: "🎭" },
+  { id: "administration", label: "Verwaltung", icon: "🏛️" },
+  { id: "weather", label: "Wetter", icon: "☀️" },
+  { id: "waste", label: "Entsorgung", icon: "🗑️" },
+  { id: "other", label: "Sonstiges", icon: "📰" },
+] as const;
+
 // Trust-Level
 export const TRUST_LEVELS = {
   new: { label: "Registriert", color: "gray" },

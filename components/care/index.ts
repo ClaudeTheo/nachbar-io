@@ -31,3 +31,4 @@ export { HelperRegistrationForm } from './HelperRegistrationForm';
 export { SeniorSosButton } from './senior/SeniorSosButton';
 export { SeniorCheckinButtons } from './senior/SeniorCheckinButtons';
 export { SeniorStatusScreen } from './senior/SeniorStatusScreen';
+export { SeniorMedicationScreen } from './senior/SeniorMedicationScreen';

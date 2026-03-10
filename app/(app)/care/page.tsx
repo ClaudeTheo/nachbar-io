@@ -3,18 +3,68 @@
 
 import { useEffect, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
-import { Heart, AlertTriangle, Clock, Pill } from 'lucide-react';
+import { Heart, AlertTriangle, Clock, ArrowRight } from 'lucide-react';
+import Link from 'next/link';
+import { SosButton } from '@/components/care/SosButton';
+import { SosAlertCard } from '@/components/care/SosAlertCard';
+import type { CareSosAlert } from '@/lib/care/types';
+
+interface CheckinStatus {
+  completedCount: number;
+  totalCount: number;
+  nextDue: string | null;
+  allCompleted: boolean;
+  checkinEnabled: boolean;
+}
 
 export default function CareDashboardPage() {
   const [userId, setUserId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [checkinStatus, setCheckinStatus] = useState<CheckinStatus | null>(null);
+  const [activeAlerts, setActiveAlerts] = useState<CareSosAlert[]>([]);
 
+  // Aktuellen Nutzer laden
   useEffect(() => {
     const supabase = createClient();
     supabase.auth.getUser().then(({ data: { user } }) => {
       setUserId(user?.id ?? null);
-      setLoading(false);
     });
+  }, []);
+
+  // Check-in Status laden
+  useEffect(() => {
+    async function loadCheckinStatus() {
+      try {
+        const res = await fetch('/api/care/checkin/status');
+        if (res.ok) setCheckinStatus(await res.json());
+      } catch { /* silent */ }
+    }
+    loadCheckinStatus();
+  }, []);
+
+  // Aktive SOS-Alerts laden und per Realtime aktuell halten
+  useEffect(() => {
+    async function loadAlerts() {
+      try {
+        const res = await fetch('/api/care/sos');
+        if (res.ok) {
+          const data = await res.json();
+          setActiveAlerts(data);
+        }
+      } catch { /* silent */ }
+      setLoading(false);
+    }
+    loadAlerts();
+
+    // Realtime-Abonnement fuer sofortige Aktualisierungen
+    const supabase = createClient();
+    const channel = supabase
+      .channel('care-dashboard-sos')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'care_sos_alerts' }, () => {
+        loadAlerts();
+      })
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
   }, []);
 
   if (loading) {
@@ -22,7 +72,7 @@ export default function CareDashboardPage() {
       <div className="px-4 py-6">
         <div className="animate-pulse space-y-4">
           <div className="h-8 bg-muted rounded w-1/2" />
-          <div className="h-32 bg-muted rounded" />
+          <div className="h-20 bg-muted rounded" />
           <div className="h-32 bg-muted rounded" />
         </div>
       </div>
@@ -37,49 +87,113 @@ export default function CareDashboardPage() {
           <Heart className="h-6 w-6 text-quartier-green" />
           Pflege & Seniorenhilfe
         </h1>
-        <p className="text-muted-foreground mt-1">
-          Ihr persoenliches Pflege-Dashboard
-        </p>
+        <p className="text-muted-foreground mt-1">Ihr persoenliches Pflege-Dashboard</p>
       </div>
 
-      {/* Platzhalter-Karten fuer spaetere Phasen */}
+      {/* SOS-Button (kompakt) */}
+      <SosButton compact />
+
+      {/* Status-Karten */}
       <div className="grid grid-cols-2 gap-3">
-        <div className="rounded-xl border bg-card p-4">
+        {/* Check-in Status */}
+        <Link
+          href="/care/checkins"
+          className="rounded-xl border bg-card p-4 hover:bg-gray-50 transition-colors"
+        >
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <Clock className="h-4 w-4" />
             Check-in
           </div>
-          <p className="text-lg font-semibold mt-1 text-quartier-green">
-            —
-          </p>
-        </div>
-        <div className="rounded-xl border bg-card p-4">
+          {checkinStatus ? (
+            <div className="mt-1">
+              {checkinStatus.allCompleted ? (
+                <p className="text-lg font-semibold text-quartier-green">Alle erledigt</p>
+              ) : (
+                <>
+                  <p className="text-lg font-semibold text-anthrazit">
+                    {checkinStatus.completedCount}/{checkinStatus.totalCount}
+                  </p>
+                  {checkinStatus.nextDue && (
+                    <p className="text-xs text-muted-foreground">
+                      Naechster: {checkinStatus.nextDue}
+                    </p>
+                  )}
+                </>
+              )}
+            </div>
+          ) : (
+            <p className="text-lg font-semibold mt-1 text-muted-foreground">—</p>
+          )}
+        </Link>
+
+        {/* SOS-Status */}
+        <Link
+          href="/care/sos"
+          className="rounded-xl border bg-card p-4 hover:bg-gray-50 transition-colors"
+        >
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <AlertTriangle className="h-4 w-4" />
-            Letzter SOS
+            SOS-Status
           </div>
-          <p className="text-lg font-semibold mt-1 text-muted-foreground">
-            Keiner
-          </p>
-        </div>
+          {activeAlerts.length > 0 ? (
+            <p className="text-lg font-semibold mt-1 text-emergency-red">
+              {activeAlerts.length} aktiv
+            </p>
+          ) : (
+            <p className="text-lg font-semibold mt-1 text-quartier-green">
+              Kein Alarm
+            </p>
+          )}
+        </Link>
       </div>
 
-      <div className="rounded-xl border bg-card p-4">
-        <div className="flex items-center gap-2 text-sm text-muted-foreground mb-3">
-          <Pill className="h-4 w-4" />
-          Medikamente heute
+      {/* Aktive SOS-Alerts */}
+      {activeAlerts.length > 0 && (
+        <div className="space-y-3">
+          <h2 className="text-sm font-medium text-muted-foreground">Aktive SOS-Alarme</h2>
+          {activeAlerts.slice(0, 3).map((alert) => (
+            <Link key={alert.id} href={`/care/sos/${alert.id}`}>
+              <SosAlertCard alert={alert} showActions={true} />
+            </Link>
+          ))}
+          {activeAlerts.length > 3 && (
+            <Link
+              href="/care/sos"
+              className="flex items-center gap-1 text-sm text-quartier-green font-medium"
+            >
+              Alle {activeAlerts.length} Alarme anzeigen <ArrowRight className="h-4 w-4" />
+            </Link>
+          )}
         </div>
-        <p className="text-sm text-muted-foreground">
-          Noch keine Medikamente eingerichtet.
-        </p>
+      )}
+
+      {/* Schnellzugriff */}
+      <div className="space-y-2">
+        <h2 className="text-sm font-medium text-muted-foreground">Schnellzugriff</h2>
+        <div className="grid grid-cols-2 gap-2">
+          <Link
+            href="/care/sos"
+            className="rounded-lg border bg-card p-3 text-sm font-medium text-anthrazit hover:bg-gray-50 flex items-center gap-2"
+          >
+            <AlertTriangle className="h-4 w-4 text-alert-amber" />
+            SOS-Uebersicht
+          </Link>
+          <Link
+            href="/care/checkins"
+            className="rounded-lg border bg-card p-3 text-sm font-medium text-anthrazit hover:bg-gray-50 flex items-center gap-2"
+          >
+            <Clock className="h-4 w-4 text-quartier-green" />
+            Check-in-Verlauf
+          </Link>
+        </div>
       </div>
 
       {/* Info-Hinweis */}
       <div className="rounded-xl bg-quartier-green/10 p-4 text-sm text-anthrazit">
-        <p className="font-medium">Pflege-Modul wird eingerichtet</p>
+        <p className="font-medium">Pflege-Modul aktiv</p>
         <p className="mt-1 text-muted-foreground">
-          Hier werden bald Check-ins, SOS-Alarme, Medikamenten-Erinnerungen
-          und Verlaufsprotokolle angezeigt.
+          SOS-Alarme und taegliche Check-ins sind eingerichtet. Medikamenten-Erinnerungen und
+          Berichte folgen in Phase 3.
         </p>
       </div>
     </div>

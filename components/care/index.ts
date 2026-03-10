@@ -12,6 +12,16 @@ export { SosStatusTracker } from './SosStatusTracker';
 export { CheckinDialog } from './CheckinDialog';
 export { CheckinHistory } from './CheckinHistory';
 
+// Medikamenten-Komponenten
+export { MedicationCard } from './MedicationCard';
+export { MedicationList } from './MedicationList';
+export { MedicationLogDialog } from './MedicationLogDialog';
+
+// Termin-Komponenten
+export { AppointmentCard } from './AppointmentCard';
+export { AppointmentList } from './AppointmentList';
+export { AppointmentForm } from './AppointmentForm';
+
 // Senior-Geraet (E-Ink)
 export { SeniorSosButton } from './senior/SeniorSosButton';
 export { SeniorCheckinButtons } from './senior/SeniorCheckinButtons';

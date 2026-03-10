@@ -27,6 +27,10 @@ export { HelperCard } from './HelperCard';
 export { HelperList } from './HelperList';
 export { HelperRegistrationForm } from './HelperRegistrationForm';
 
+// Admin-Uebersicht
+export { SystemOverview } from './SystemOverview';
+export { PilotMetrics } from './PilotMetrics';
+
 // Senior-Geraet (E-Ink)
 export { SeniorSosButton } from './senior/SeniorSosButton';
 export { SeniorCheckinButtons } from './senior/SeniorCheckinButtons';

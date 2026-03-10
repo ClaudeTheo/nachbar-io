@@ -27,6 +27,20 @@ export { HelperCard } from './HelperCard';
 export { HelperList } from './HelperList';
 export { HelperRegistrationForm } from './HelperRegistrationForm';
 
+// Bericht-Komponenten
+export { ReportCard } from './ReportCard';
+export { ReportList } from './ReportList';
+export { ReportGenerator } from './ReportGenerator';
+export { AuditLogViewer } from './AuditLogViewer';
+
+// Abo-Komponenten
+export { SubscriptionCard } from './SubscriptionCard';
+export { SubscriptionPlans } from './SubscriptionPlans';
+export { FeatureGate } from './FeatureGate';
+
+// Fehlerbehandlung
+export { CareErrorBoundary } from './CareErrorBoundary';
+
 // Admin-Uebersicht
 export { SystemOverview } from './SystemOverview';
 export { PilotMetrics } from './PilotMetrics';

@@ -3,7 +3,7 @@
 
 import { useEffect, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
-import { Heart, AlertTriangle, Clock, ArrowRight, Pill, CalendarDays, Users } from 'lucide-react';
+import { Heart, AlertTriangle, Clock, ArrowRight, Pill, CalendarDays, Users, FileText, CreditCard, ScrollText, BarChart3 } from 'lucide-react';
 import Link from 'next/link';
 import { SosButton } from '@/components/care/SosButton';
 import { SosAlertCard } from '@/components/care/SosAlertCard';
@@ -30,12 +30,17 @@ export default function CareDashboardPage() {
   const [medicationStatus, setMedicationStatus] = useState<MedicationDueStatus | null>(null);
   const [nextAppointment, setNextAppointment] = useState<CareAppointment | null>(null);
   const [helperCount, setHelperCount] = useState<number | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
 
-  // Aktuellen Nutzer laden
+  // Aktuellen Nutzer laden + Admin-Check
   useEffect(() => {
     const supabase = createClient();
-    supabase.auth.getUser().then(({ data: { user } }) => {
+    supabase.auth.getUser().then(async ({ data: { user } }) => {
       setUserId(user?.id ?? null);
+      if (user) {
+        const { data } = await supabase.from('users').select('is_admin').eq('id', user.id).single();
+        setIsAdmin(data?.is_admin === true);
+      }
     });
   }, []);
 
@@ -297,7 +302,7 @@ export default function CareDashboardPage() {
       {/* Schnellzugriff */}
       <div className="space-y-2">
         <h2 className="text-sm font-medium text-muted-foreground">Schnellzugriff</h2>
-        <div className="grid grid-cols-2 gap-2">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
           <Link
             href="/care/sos"
             className="rounded-lg border bg-card p-3 text-sm font-medium text-anthrazit hover:bg-gray-50 flex items-center gap-2"
@@ -333,6 +338,36 @@ export default function CareDashboardPage() {
             <Users className="h-4 w-4 text-quartier-green" />
             Helfer
           </Link>
+          <Link
+            href="/care/reports"
+            className="rounded-lg border bg-card p-3 text-sm font-medium text-anthrazit hover:bg-gray-50 flex items-center gap-2"
+          >
+            <FileText className="h-4 w-4 text-quartier-green" />
+            Berichte
+          </Link>
+          <Link
+            href="/care/subscription"
+            className="rounded-lg border bg-card p-3 text-sm font-medium text-anthrazit hover:bg-gray-50 flex items-center gap-2"
+          >
+            <CreditCard className="h-4 w-4 text-quartier-green" />
+            Abo-Plan
+          </Link>
+          <Link
+            href="/care/audit"
+            className="rounded-lg border bg-card p-3 text-sm font-medium text-anthrazit hover:bg-gray-50 flex items-center gap-2"
+          >
+            <ScrollText className="h-4 w-4 text-quartier-green" />
+            Protokoll
+          </Link>
+          {isAdmin && (
+            <Link
+              href="/care/admin/overview"
+              className="rounded-lg border border-blue-200 bg-blue-50/50 p-3 text-sm font-medium text-anthrazit hover:bg-blue-50 flex items-center gap-2"
+            >
+              <BarChart3 className="h-4 w-4 text-blue-600" />
+              Plattform-Uebersicht
+            </Link>
+          )}
         </div>
       </div>
 
@@ -340,7 +375,7 @@ export default function CareDashboardPage() {
       <div className="rounded-xl bg-quartier-green/10 p-4 text-sm text-anthrazit">
         <p className="font-medium">Pflege-Modul aktiv</p>
         <p className="mt-1 text-muted-foreground">
-          Pflege-Modul komplett: SOS, Check-ins, Medikamente, Termine und Helfer-Verwaltung aktiv.
+          Pflege-Modul vollstaendig: SOS, Check-ins, Medikamente, Termine, Helfer, Berichte, Abo-Verwaltung und Aktivitaetsprotokoll.
         </p>
       </div>
     </div>

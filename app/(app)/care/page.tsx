@@ -3,11 +3,11 @@
 
 import { useEffect, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
-import { Heart, AlertTriangle, Clock, ArrowRight } from 'lucide-react';
+import { Heart, AlertTriangle, Clock, ArrowRight, Pill, CalendarDays, Users } from 'lucide-react';
 import Link from 'next/link';
 import { SosButton } from '@/components/care/SosButton';
 import { SosAlertCard } from '@/components/care/SosAlertCard';
-import type { CareSosAlert } from '@/lib/care/types';
+import type { CareSosAlert, CareAppointment } from '@/lib/care/types';
 
 interface CheckinStatus {
   completedCount: number;
@@ -17,11 +17,19 @@ interface CheckinStatus {
   checkinEnabled: boolean;
 }
 
+interface MedicationDueStatus {
+  pendingCount: number;
+  completedCount: number;
+}
+
 export default function CareDashboardPage() {
   const [userId, setUserId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [checkinStatus, setCheckinStatus] = useState<CheckinStatus | null>(null);
   const [activeAlerts, setActiveAlerts] = useState<CareSosAlert[]>([]);
+  const [medicationStatus, setMedicationStatus] = useState<MedicationDueStatus | null>(null);
+  const [nextAppointment, setNextAppointment] = useState<CareAppointment | null>(null);
+  const [helperCount, setHelperCount] = useState<number | null>(null);
 
   // Aktuellen Nutzer laden
   useEffect(() => {
@@ -67,6 +75,50 @@ export default function CareDashboardPage() {
     return () => { supabase.removeChannel(channel); };
   }, []);
 
+  // Faellige Medikamente laden
+  useEffect(() => {
+    async function loadMedicationStatus() {
+      try {
+        const res = await fetch('/api/care/medications/due');
+        if (res.ok) {
+          const data: Array<{ status: string }> = await res.json();
+          const pendingCount = data.filter((m) => m.status === 'pending').length;
+          const completedCount = data.filter((m) => m.status === 'taken').length;
+          setMedicationStatus({ pendingCount, completedCount });
+        }
+      } catch { /* silent */ }
+    }
+    loadMedicationStatus();
+  }, []);
+
+  // Naechsten Termin laden
+  useEffect(() => {
+    async function loadNextAppointment() {
+      try {
+        const res = await fetch('/api/care/appointments?upcoming=true');
+        if (res.ok) {
+          const data: CareAppointment[] = await res.json();
+          setNextAppointment(data[0] ?? null);
+        }
+      } catch { /* silent */ }
+    }
+    loadNextAppointment();
+  }, []);
+
+  // Verifizierte Helfer laden
+  useEffect(() => {
+    async function loadHelperCount() {
+      try {
+        const res = await fetch('/api/care/helpers?status=verified');
+        if (res.ok) {
+          const data: unknown[] = await res.json();
+          setHelperCount(data.length);
+        }
+      } catch { /* silent */ }
+    }
+    loadHelperCount();
+  }, []);
+
   if (loading) {
     return (
       <div className="px-4 py-6">
@@ -94,7 +146,7 @@ export default function CareDashboardPage() {
       <SosButton compact />
 
       {/* Status-Karten */}
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
         {/* Check-in Status */}
         <Link
           href="/care/checkins"
@@ -145,6 +197,81 @@ export default function CareDashboardPage() {
             </p>
           )}
         </Link>
+
+        {/* Medikamente */}
+        <Link
+          href="/care/medications"
+          className="rounded-xl border bg-card p-4 hover:bg-gray-50 transition-colors"
+        >
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <Pill className="h-4 w-4" />
+            Medikamente
+          </div>
+          {medicationStatus !== null ? (
+            <div className="mt-1">
+              {medicationStatus.pendingCount === 0 ? (
+                <p className="text-lg font-semibold text-quartier-green">Alle eingenommen</p>
+              ) : (
+                <>
+                  <p className="text-lg font-semibold text-anthrazit">
+                    {medicationStatus.pendingCount} ausstehend
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    {medicationStatus.completedCount} eingenommen
+                  </p>
+                </>
+              )}
+            </div>
+          ) : (
+            <p className="text-lg font-semibold mt-1 text-muted-foreground">—</p>
+          )}
+        </Link>
+
+        {/* Termine */}
+        <Link
+          href="/care/appointments"
+          className="rounded-xl border bg-card p-4 hover:bg-gray-50 transition-colors"
+        >
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <CalendarDays className="h-4 w-4" />
+            Termine
+          </div>
+          {nextAppointment !== null ? (
+            <div className="mt-1">
+              <p className="text-sm font-semibold text-anthrazit leading-tight line-clamp-1">
+                {nextAppointment.title}
+              </p>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                {new Date(nextAppointment.scheduled_at).toLocaleDateString('de-DE', {
+                  day: '2-digit',
+                  month: '2-digit',
+                  hour: '2-digit',
+                  minute: '2-digit',
+                })}
+              </p>
+            </div>
+          ) : (
+            <p className="text-lg font-semibold mt-1 text-muted-foreground">Keine</p>
+          )}
+        </Link>
+
+        {/* Helfer */}
+        <Link
+          href="/care/helpers"
+          className="rounded-xl border bg-card p-4 hover:bg-gray-50 transition-colors"
+        >
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <Users className="h-4 w-4" />
+            Helfer
+          </div>
+          {helperCount !== null ? (
+            <p className="text-lg font-semibold mt-1 text-anthrazit">
+              {helperCount} {helperCount === 1 ? 'verifiziert' : 'verifiziert'}
+            </p>
+          ) : (
+            <p className="text-lg font-semibold mt-1 text-muted-foreground">—</p>
+          )}
+        </Link>
       </div>
 
       {/* Aktive SOS-Alerts */}
@@ -185,6 +312,27 @@ export default function CareDashboardPage() {
             <Clock className="h-4 w-4 text-quartier-green" />
             Check-in-Verlauf
           </Link>
+          <Link
+            href="/care/medications"
+            className="rounded-lg border bg-card p-3 text-sm font-medium text-anthrazit hover:bg-gray-50 flex items-center gap-2"
+          >
+            <Pill className="h-4 w-4 text-quartier-green" />
+            Medikamente
+          </Link>
+          <Link
+            href="/care/appointments"
+            className="rounded-lg border bg-card p-3 text-sm font-medium text-anthrazit hover:bg-gray-50 flex items-center gap-2"
+          >
+            <CalendarDays className="h-4 w-4 text-quartier-green" />
+            Termine
+          </Link>
+          <Link
+            href="/care/helpers"
+            className="rounded-lg border bg-card p-3 text-sm font-medium text-anthrazit hover:bg-gray-50 flex items-center gap-2"
+          >
+            <Users className="h-4 w-4 text-quartier-green" />
+            Helfer
+          </Link>
         </div>
       </div>
 
@@ -192,8 +340,7 @@ export default function CareDashboardPage() {
       <div className="rounded-xl bg-quartier-green/10 p-4 text-sm text-anthrazit">
         <p className="font-medium">Pflege-Modul aktiv</p>
         <p className="mt-1 text-muted-foreground">
-          SOS-Alarme und taegliche Check-ins sind eingerichtet. Medikamenten-Erinnerungen und
-          Berichte folgen in Phase 3.
+          Pflege-Modul komplett: SOS, Check-ins, Medikamente, Termine und Helfer-Verwaltung aktiv.
         </p>
       </div>
     </div>

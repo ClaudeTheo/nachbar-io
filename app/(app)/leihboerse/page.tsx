@@ -125,8 +125,12 @@ function LeihboerseCard({ item }: { item: LeihboerseItem }) {
       className="block rounded-lg border border-border bg-white p-4 shadow-sm transition-shadow hover:shadow-md"
     >
       <div className="flex gap-3">
-        <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-lg bg-muted text-2xl">
-          {category?.icon ?? "📦"}
+        <div className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-muted text-2xl">
+          {item.image_url ? (
+            <img src={item.image_url} alt="" className="h-full w-full object-cover" />
+          ) : (
+            category?.icon ?? "📦"
+          )}
         </div>
         <div className="min-w-0 flex-1">
           <h3 className="truncate font-semibold text-anthrazit">{item.title}</h3>

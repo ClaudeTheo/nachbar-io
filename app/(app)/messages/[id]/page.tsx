@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { createClient } from "@/lib/supabase/client";
+import { createNotification } from "@/lib/notifications";
 import type { DirectMessage } from "@/lib/supabase/types";
 import { format, isToday, isYesterday } from "date-fns";
 import { de } from "date-fns/locale";
@@ -17,6 +18,7 @@ export default function ChatPage() {
   const router = useRouter();
   const [messages, setMessages] = useState<DirectMessage[]>([]);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const [otherUserId, setOtherUserId] = useState<string | null>(null);
   const [otherUserName, setOtherUserName] = useState<string>("Nachbar");
   const [otherUserAvatar, setOtherUserAvatar] = useState<string | null>(null);
   const [inputValue, setInputValue] = useState("");
@@ -80,13 +82,14 @@ export default function ChatPage() {
       }
 
       // Anderen Teilnehmer bestimmen und Profil laden
-      const otherUserId =
+      const resolvedOtherUserId =
         conv.participant_1 === user.id ? conv.participant_2 : conv.participant_1;
+      setOtherUserId(resolvedOtherUserId);
 
       const { data: otherUser } = await supabase
         .from("users")
         .select("display_name, avatar_url")
-        .eq("id", otherUserId)
+        .eq("id", resolvedOtherUserId)
         .single();
 
       if (otherUser) {
@@ -213,6 +216,18 @@ export default function ChatPage() {
         .from("conversations")
         .update({ last_message_at: new Date().toISOString() })
         .eq("id", conversationId as string);
+
+      // Empfaenger benachrichtigen
+      if (otherUserId) {
+        createNotification({
+          userId: otherUserId,
+          type: "message",
+          title: "Neue Nachricht",
+          body: content.length > 80 ? content.slice(0, 80) + "..." : content,
+          referenceId: conversationId as string,
+          referenceType: "conversation",
+        });
+      }
     } catch {
       toast.error("Netzwerkfehler. Bitte versuchen Sie es erneut.");
       setInputValue(content);

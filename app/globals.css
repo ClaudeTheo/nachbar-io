@@ -109,6 +109,85 @@
   }
 }
 
+/* ============================================================
+   DESIGN TOKENS — 2026 Modernisierung
+   ============================================================ */
+
+/* Tap-Highlight auf Mobile deaktivieren */
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Weiche Schatten */
+.shadow-soft {
+  box-shadow: 0 1px 3px rgba(0,0,0,0.04), 0 1px 2px rgba(0,0,0,0.06);
+}
+
+.shadow-soft-hover {
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08), 0 2px 4px rgba(0,0,0,0.04);
+}
+
+/* Glassmorphism Navigation */
+.glass-nav {
+  background: rgba(255,255,255,0.7);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border-top: 1px solid rgba(255,255,255,0.2);
+  box-shadow: 0 -4px 30px rgba(0,0,0,0.05);
+}
+
+/* Interaktive Card-Klasse */
+.card-interactive {
+  transition: all 0.2s ease;
+}
+.card-interactive:active {
+  transform: scale(0.98);
+}
+@media (hover: hover) {
+  .card-interactive:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08), 0 2px 4px rgba(0,0,0,0.04);
+  }
+}
+
+/* ============================================================
+   NEUE KEYFRAMES — Micro-Animationen
+   ============================================================ */
+
+/* FAB schwebt subtil */
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-2px); }
+}
+.animate-float {
+  animation: float 2s ease-in-out infinite;
+}
+
+/* Button-Bounce beim Klick */
+@keyframes btn-bounce {
+  0% { transform: scale(1); }
+  30% { transform: scale(0.95); }
+  60% { transform: scale(1.02); }
+  100% { transform: scale(1); }
+}
+.animate-btn-bounce:active {
+  animation: btn-bounce 0.2s ease-out;
+}
+
+/* Badge Pop-In */
+@keyframes badge-pop {
+  0% { transform: scale(0); }
+  60% { transform: scale(1.15); }
+  100% { transform: scale(1); }
+}
+.animate-badge-pop {
+  animation: badge-pop 0.3s ease-out;
+}
+
+/* ============================================================
+   APP ANIMATIONS
+   ============================================================ */
+
 /* Puls-Animation für aktive Alerts */
 @keyframes pulse-alert {
   0%, 100% { opacity: 1; }
@@ -192,6 +271,10 @@
 .animate-stagger > *:nth-child(4) { animation-delay: 150ms; }
 .animate-stagger > *:nth-child(5) { animation-delay: 200ms; }
 .animate-stagger > *:nth-child(6) { animation-delay: 250ms; }
+.animate-stagger > *:nth-child(7) { animation-delay: 300ms; }
+.animate-stagger > *:nth-child(8) { animation-delay: 350ms; }
+.animate-stagger > *:nth-child(9) { animation-delay: 400ms; }
+.animate-stagger > *:nth-child(10) { animation-delay: 450ms; }
 
 /* Sanfte Skalierung für Buttons beim Klicken */
 @keyframes press {
@@ -213,7 +296,7 @@
 .animate-shimmer {
   background: linear-gradient(90deg, #f0f0ec 25%, #e5e5e0 50%, #f0f0ec 75%);
   background-size: 200% 100%;
-  animation: shimmer 1.5s ease-in-out infinite;
+  animation: shimmer 1s ease-in-out infinite;
 }
 
 /* Erfolgs-Checkmark Animation */
@@ -350,6 +433,9 @@
   .animate-press:active,
   .animate-shimmer,
   .animate-check-bounce,
+  .animate-float,
+  .animate-btn-bounce:active,
+  .animate-badge-pop,
   .animate-house-build,
   .animate-window-glow,
   .animate-pulse-ring,
@@ -369,5 +455,18 @@
     animation: none !important;
     opacity: 1 !important;
     transform: none !important;
+  }
+
+  /* Card-Interactive: kein Hover-Lift bei reduzierter Bewegung */
+  .card-interactive:active,
+  .card-interactive:hover {
+    transform: none !important;
+  }
+
+  /* Glassmorphism Fallback: kein Blur */
+  .glass-nav {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    background: rgba(255,255,255,0.9);
   }
 }

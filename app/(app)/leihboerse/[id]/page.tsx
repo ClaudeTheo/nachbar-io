@@ -7,6 +7,7 @@ import { ArrowLeft, MessageCircle, Clock, Tag } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/client";
+import { createNotification } from "@/lib/notifications";
 import { LEIHBOERSE_CATEGORIES } from "@/lib/constants";
 import type { LeihboerseItem } from "@/lib/supabase/types";
 import { formatDistanceToNow } from "date-fns";
@@ -116,7 +117,46 @@ export default function LeihboerseDetailPage() {
       {/* Aktionsbuttons */}
       {!isOwner && item.status === "active" && (
         <Button
-          onClick={() => router.push("/messages")}
+          onClick={async () => {
+            if (!currentUserId || !item) return;
+            const supabase = createClient();
+
+            // Bestehende Konversation suchen oder neue erstellen
+            const { data: existing } = await supabase
+              .from("conversations")
+              .select("id")
+              .or(
+                `and(participant_1.eq.${currentUserId},participant_2.eq.${item.user_id}),and(participant_1.eq.${item.user_id},participant_2.eq.${currentUserId})`
+              )
+              .maybeSingle();
+
+            let convId: string;
+            if (existing) {
+              convId = existing.id;
+            } else {
+              const { data: newConv } = await supabase
+                .from("conversations")
+                .insert({
+                  participant_1: currentUserId < item.user_id ? currentUserId : item.user_id,
+                  participant_2: currentUserId < item.user_id ? item.user_id : currentUserId,
+                })
+                .select("id")
+                .single();
+              convId = newConv?.id ?? "";
+            }
+
+            // Anbieter benachrichtigen
+            createNotification({
+              userId: item.user_id,
+              type: "leihboerse",
+              title: "Anfrage zu Ihrem Leih-Angebot",
+              body: `Jemand interessiert sich für „${item.title}".`,
+              referenceId: item.id,
+              referenceType: "leihboerse_item",
+            });
+
+            if (convId) router.push(`/messages/${convId}`);
+          }}
           className="w-full bg-quartier-green hover:bg-quartier-green-dark"
         >
           <MessageCircle className="mr-2 h-4 w-4" />

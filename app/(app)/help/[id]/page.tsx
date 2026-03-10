@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { createClient } from "@/lib/supabase/client";
+import { createNotification } from "@/lib/notifications";
 import { HELP_CATEGORIES, HELP_SUBCATEGORIES } from "@/lib/constants";
 import type { HelpRequest } from "@/lib/supabase/types";
 import { formatDistanceToNow } from "date-fns";
@@ -123,6 +124,17 @@ export default function HelpDetailPage() {
           responder: profile ? { display_name: profile.display_name, avatar_url: profile.avatar_url } : undefined,
         },
       ]);
+
+      // Ersteller benachrichtigen
+      createNotification({
+        userId: request.user_id,
+        type: "help_response",
+        title: "Neue Antwort auf Ihr Gesuch",
+        body: message.trim().length > 80 ? message.trim().slice(0, 80) + "..." : message.trim(),
+        referenceId: request.id,
+        referenceType: "help_request",
+      });
+
       setMessage("");
     } catch {
       setError("Netzwerkfehler beim Senden.");

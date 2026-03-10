@@ -102,7 +102,7 @@ function MarketplaceCard({ item }: { item: MarketplaceItem }) {
   return (
     <Link
       href={`/marketplace/${item.id}`}
-      className="block rounded-lg border border-border bg-white p-4 shadow-sm transition-shadow hover:shadow-md"
+      className="card-interactive block rounded-lg border border-border bg-white p-4 shadow-soft"
     >
       <div className="flex gap-3">
         {/* Bild-Platzhalter */}

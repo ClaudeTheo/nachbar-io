@@ -19,6 +19,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { createClient } from "@/lib/supabase/client";
+import { createNotification } from "@/lib/notifications";
 import { SKILL_CATEGORIES, TRUST_LEVELS } from "@/lib/constants";
 import type { Skill, ExpertReview, ExpertEndorsement, User } from "@/lib/supabase/types";
 
@@ -146,6 +147,17 @@ export default function ExpertDetailPage() {
         return;
       }
 
+      // Experten ueber Bewertung benachrichtigen
+      const catLabel = SKILL_CATEGORIES.find((c) => c.id === reviewCategory)?.label ?? reviewCategory;
+      createNotification({
+        userId: expertUserId,
+        type: "expert_review",
+        title: "Neue Bewertung erhalten",
+        body: `Sie haben ${reviewRating} Sterne für ${catLabel} erhalten.`,
+        referenceId: expertUserId,
+        referenceType: "expert",
+      });
+
       // Daten neu laden
       setShowReviewForm(false);
       setReviewRating(0);
@@ -181,6 +193,17 @@ export default function ExpertDetailPage() {
           expert_user_id: expertUserId,
           endorser_user_id: currentUserId,
           skill_category: skillCategory,
+        });
+
+        // Experten ueber Empfehlung benachrichtigen
+        const catLabel = SKILL_CATEGORIES.find((c) => c.id === skillCategory)?.label ?? skillCategory;
+        createNotification({
+          userId: expertUserId,
+          type: "expert_endorsement",
+          title: "Neue Empfehlung erhalten",
+          body: `Ein Nachbar empfiehlt Sie für ${catLabel}.`,
+          referenceId: expertUserId,
+          referenceType: "expert",
         });
       }
 

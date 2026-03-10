@@ -8,12 +8,25 @@ import { AlertCard } from "@/components/AlertCard";
 import { NewsCard } from "@/components/NewsCard";
 import { PullToRefresh } from "@/components/PullToRefresh";
 import { ReputationBadge } from "@/components/ReputationBadge";
+import { ProfileCompletionBanner } from "@/components/ProfileCompletionBanner";
+import { FloatingHelpButton } from "@/components/FloatingHelpButton";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { createClient } from "@/lib/supabase/client";
 import { getCachedReputation } from "@/lib/reputation";
+import { useUnreadCount } from "@/lib/useUnreadCount";
 import { toast } from "sonner";
 import type { Alert, NewsItem, HelpRequest, MarketplaceItem } from "@/lib/supabase/types";
+
+// Tageszeit-abhaengige Begruessung
+function getGreeting(): { text: string; emoji: string } {
+  const hour = new Date().getHours();
+  if (hour >= 6 && hour < 11) return { text: "Guten Morgen", emoji: "☀️" };
+  if (hour >= 11 && hour < 14) return { text: "Mahlzeit", emoji: "🍴" };
+  if (hour >= 14 && hour < 18) return { text: "Guten Tag", emoji: "🌤️" };
+  if (hour >= 18 && hour < 22) return { text: "Guten Abend", emoji: "🌙" };
+  return { text: "Gute Nacht", emoji: "✨" };
+}
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -22,9 +35,19 @@ export default function DashboardPage() {
   const [helpRequests, setHelpRequests] = useState<HelpRequest[]>([]);
   const [marketplaceItems, setMarketplaceItems] = useState<MarketplaceItem[]>([]);
   const [userName, setUserName] = useState("");
-  const [unreadCount, setUnreadCount] = useState(0);
   const [reputationLevel, setReputationLevel] = useState(0);
   const [loading, setLoading] = useState(true);
+  const { count: unreadCount } = useUnreadCount();
+
+  // Profilvervollstaendigung
+  const [profileData, setProfileData] = useState<{
+    userId: string;
+    avatarUrl: string | null;
+    bio: string | null;
+    phone: string | null;
+    hasSkills: boolean;
+    settings: Record<string, unknown> | null;
+  } | null>(null);
 
   const loadDashboard = useCallback(async () => {
     const supabase = createClient();
@@ -35,7 +58,7 @@ export default function DashboardPage() {
       if (user) {
         const { data: profile } = await supabase
           .from("users")
-          .select("display_name, settings, created_at")
+          .select("id, display_name, avatar_url, bio, phone, settings, created_at")
           .eq("id", user.id)
           .single();
         if (profile) {
@@ -54,11 +77,26 @@ export default function DashboardPage() {
               return;
             }
           }
+
+          // Profilvervollstaendigung pruefen
+          const { count: skillCount } = await supabase
+            .from("skills")
+            .select("id", { count: "exact", head: true })
+            .eq("user_id", profile.id);
+
+          setProfileData({
+            userId: profile.id,
+            avatarUrl: profile.avatar_url,
+            bio: profile.bio,
+            phone: profile.phone,
+            hasSkills: (skillCount ?? 0) > 0,
+            settings,
+          });
         }
       }
 
       // Parallele Datenabfragen (statt sequentiell)
-      const [alertResult, newsResult, helpResult, marketResult, notifResult] = await Promise.all([
+      const [alertResult, newsResult, helpResult, marketResult] = await Promise.all([
         supabase
           .from("alerts")
           .select("*, user:users(display_name, avatar_url), household:households(street_name, house_number, lat, lng)")
@@ -83,20 +121,12 @@ export default function DashboardPage() {
           .eq("status", "active")
           .order("created_at", { ascending: false })
           .limit(3),
-        user
-          ? supabase
-              .from("notifications")
-              .select("id", { count: "exact", head: true })
-              .eq("user_id", user.id)
-              .eq("read", false)
-          : Promise.resolve({ count: 0 }),
       ]);
 
       if (alertResult.data) setAlerts(alertResult.data as unknown as Alert[]);
       if (newsResult.data) setNews(newsResult.data);
       if (helpResult.data) setHelpRequests(helpResult.data as unknown as HelpRequest[]);
       if (marketResult.data) setMarketplaceItems(marketResult.data as unknown as MarketplaceItem[]);
-      setUnreadCount((notifResult as { count: number | null }).count ?? 0);
     } catch {
       toast.error("Daten konnten nicht geladen werden.");
     } finally {
@@ -139,34 +169,53 @@ export default function DashboardPage() {
   }
 
   return (
+    <>
     <PullToRefresh onRefresh={loadDashboard}>
     <div className="space-y-6 animate-fade-in-up">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-anthrazit">
-            {userName ? `Hallo, ${userName}` : "nachbar.io"}
-            {reputationLevel >= 2 && (
-              <span className="ml-1.5 align-middle">
-                <ReputationBadge level={reputationLevel} size="sm" />
+      {/* Header mit Tageszeit-Gradient */}
+      <div className="-mx-4 -mt-4 mb-2 rounded-b-2xl bg-gradient-to-b from-quartier-green/5 to-transparent px-4 pb-4 pt-4">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-bold text-anthrazit">
+              {userName ? (
+                <>
+                  {getGreeting().emoji} {getGreeting().text}, {userName}
+                </>
+              ) : "nachbar.io"}
+              {reputationLevel >= 2 && (
+                <span className="ml-1.5 align-middle">
+                  <ReputationBadge level={reputationLevel} size="sm" />
+                </span>
+              )}
+            </h1>
+            <p className="text-sm text-muted-foreground">Ihr Quartier auf einen Blick</p>
+          </div>
+          <Link
+            href="/notifications"
+            className="relative rounded-full p-2 transition-colors hover:bg-white/50"
+            aria-label="Benachrichtigungen"
+          >
+            <Bell className="h-6 w-6 text-anthrazit" aria-hidden="true" />
+            {unreadCount > 0 && (
+              <span className="animate-badge-pop absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-emergency-red text-xs font-bold text-white">
+                {unreadCount > 9 ? "9+" : unreadCount}
               </span>
             )}
-          </h1>
-          <p className="text-sm text-muted-foreground">Ihr Quartier auf einen Blick</p>
+          </Link>
         </div>
-        <Link
-          href="/profile"
-          className="relative rounded-full p-2 hover:bg-muted"
-          aria-label="Profil und Benachrichtigungen"
-        >
-          <Bell className="h-6 w-6 text-anthrazit" aria-hidden="true" />
-          {unreadCount > 0 && (
-            <span className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-emergency-red text-xs font-bold text-white">
-              {unreadCount > 9 ? "9+" : unreadCount}
-            </span>
-          )}
-        </Link>
       </div>
+
+      {/* Profilvervollstaendigung */}
+      {profileData && (
+        <ProfileCompletionBanner
+          userId={profileData.userId}
+          avatarUrl={profileData.avatarUrl}
+          bio={profileData.bio}
+          phone={profileData.phone}
+          hasSkills={profileData.hasSkills}
+          settings={profileData.settings}
+        />
+      )}
 
       {/* Aktive Hilfeanfragen */}
       {alerts.length > 0 && (
@@ -180,10 +229,10 @@ export default function DashboardPage() {
         </section>
       )}
 
-      {/* Schnell-Hilfe Button — Anthrazit auf Amber fuer Kontrast (6.8:1) */}
+      {/* Schnell-Hilfe Button — Gradient Amber */}
       <Link
         href="/alerts/new"
-        className="flex items-center justify-center gap-2 rounded-xl bg-alert-amber p-4 font-semibold text-anthrazit shadow-md transition-transform hover:scale-[1.02] active:scale-[0.98]"
+        className="animate-btn-bounce flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-alert-amber to-amber-400 p-4 font-semibold text-anthrazit shadow-soft transition-all duration-200 active:scale-[0.97]"
       >
         <Plus className="h-5 w-5" />
         Hilfe anfragen
@@ -198,7 +247,7 @@ export default function DashboardPage() {
               <Link
                 key={req.id}
                 href="/help"
-                className="flex items-center justify-between rounded-lg bg-white p-3 shadow-sm"
+                className="card-interactive flex items-center justify-between rounded-lg bg-white p-3 shadow-soft"
               >
                 <div>
                   <p className="font-medium text-anthrazit">{req.title}</p>
@@ -224,7 +273,7 @@ export default function DashboardPage() {
               <Link
                 key={item.id}
                 href={`/marketplace/${item.id}`}
-                className="flex items-center justify-between rounded-lg bg-white p-3 shadow-sm"
+                className="card-interactive flex items-center justify-between rounded-lg bg-white p-3 shadow-soft"
               >
                 <div>
                   <p className="font-medium text-anthrazit">{item.title}</p>
@@ -268,14 +317,14 @@ export default function DashboardPage() {
           <section>
             <SectionHeader title="Quartiersnews" href="/news" />
             <div className="space-y-2">
-              <div className="rounded-lg bg-white p-3 shadow-sm">
+              <div className="rounded-lg bg-white p-3 shadow-soft">
                 <div className="flex items-center gap-2 text-xs text-muted-foreground">
                   <span aria-hidden="true">🏗️</span><span>Infrastruktur</span><span>·</span><span>Heute</span>
                 </div>
                 <p className="mt-1 font-medium text-anthrazit">Kanalarbeiten Sanarystraße ab Montag</p>
                 <p className="mt-0.5 text-sm text-muted-foreground">Halbseitige Sperrung für ca. 3 Tage.</p>
               </div>
-              <div className="rounded-lg bg-white p-3 shadow-sm">
+              <div className="rounded-lg bg-white p-3 shadow-soft">
                 <div className="flex items-center gap-2 text-xs text-muted-foreground">
                   <span aria-hidden="true">♻️</span><span>Abfallwirtschaft</span><span>·</span><span>Gestern</span>
                 </div>
@@ -288,47 +337,47 @@ export default function DashboardPage() {
           <section>
             <h2 className="mb-2 font-semibold text-anthrazit">Entdecken</h2>
             <div className="grid grid-cols-4 gap-2">
-              <Link href="/board" className="flex flex-col items-center gap-1 rounded-lg bg-white p-3 shadow-sm hover:bg-muted/50">
+              <Link href="/board" className="flex flex-col items-center gap-1 card-interactive rounded-lg bg-white p-3 shadow-soft">
                 <span className="text-2xl" aria-hidden="true">📌</span>
                 <span className="text-xs font-medium text-anthrazit">Brett</span>
               </Link>
-              <Link href="/whohas" className="flex flex-col items-center gap-1 rounded-lg bg-white p-3 shadow-sm hover:bg-muted/50">
+              <Link href="/whohas" className="flex flex-col items-center gap-1 card-interactive rounded-lg bg-white p-3 shadow-soft">
                 <span className="text-2xl" aria-hidden="true">🔍</span>
                 <span className="text-xs font-medium text-anthrazit">Wer hat?</span>
               </Link>
-              <Link href="/noise" className="flex flex-col items-center gap-1 rounded-lg bg-white p-3 shadow-sm hover:bg-muted/50">
+              <Link href="/noise" className="flex flex-col items-center gap-1 card-interactive rounded-lg bg-white p-3 shadow-soft">
                 <span className="text-2xl" aria-hidden="true">🔨</span>
                 <span className="text-xs font-medium text-anthrazit">Lärm</span>
               </Link>
-              <Link href="/map" className="flex flex-col items-center gap-1 rounded-lg bg-white p-3 shadow-sm hover:bg-muted/50">
+              <Link href="/map" className="flex flex-col items-center gap-1 card-interactive rounded-lg bg-white p-3 shadow-soft">
                 <span className="text-2xl" aria-hidden="true">🗺️</span>
                 <span className="text-xs font-medium text-anthrazit">Karte</span>
               </Link>
-              <Link href="/help" className="flex flex-col items-center gap-1 rounded-lg bg-white p-3 shadow-sm hover:bg-muted/50">
+              <Link href="/help" className="flex flex-col items-center gap-1 card-interactive rounded-lg bg-white p-3 shadow-soft">
                 <span className="text-2xl" aria-hidden="true">🤝</span>
                 <span className="text-xs font-medium text-anthrazit">Hilfe</span>
               </Link>
-              <Link href="/marketplace" className="flex flex-col items-center gap-1 rounded-lg bg-white p-3 shadow-sm hover:bg-muted/50">
+              <Link href="/marketplace" className="flex flex-col items-center gap-1 card-interactive rounded-lg bg-white p-3 shadow-soft">
                 <span className="text-2xl" aria-hidden="true">🛒</span>
                 <span className="text-xs font-medium text-anthrazit">Marktplatz</span>
               </Link>
-              <Link href="/events" className="flex flex-col items-center gap-1 rounded-lg bg-white p-3 shadow-sm hover:bg-muted/50">
+              <Link href="/events" className="flex flex-col items-center gap-1 card-interactive rounded-lg bg-white p-3 shadow-soft">
                 <span className="text-2xl" aria-hidden="true">📅</span>
                 <span className="text-xs font-medium text-anthrazit">Events</span>
               </Link>
-              <Link href="/messages" className="flex flex-col items-center gap-1 rounded-lg bg-white p-3 shadow-sm hover:bg-muted/50">
+              <Link href="/messages" className="flex flex-col items-center gap-1 card-interactive rounded-lg bg-white p-3 shadow-soft">
                 <span className="text-2xl" aria-hidden="true">💬</span>
                 <span className="text-xs font-medium text-anthrazit">Chat</span>
               </Link>
-              <Link href="/lost-found" className="flex flex-col items-center gap-1 rounded-lg bg-white p-3 shadow-sm hover:bg-muted/50">
+              <Link href="/lost-found" className="flex flex-col items-center gap-1 card-interactive rounded-lg bg-white p-3 shadow-soft">
                 <span className="text-2xl" aria-hidden="true">📎</span>
                 <span className="text-xs font-medium text-anthrazit">Fundbüro</span>
               </Link>
-              <Link href="/experts" className="flex flex-col items-center gap-1 rounded-lg bg-white p-3 shadow-sm hover:bg-muted/50">
+              <Link href="/experts" className="flex flex-col items-center gap-1 card-interactive rounded-lg bg-white p-3 shadow-soft">
                 <span className="text-2xl" aria-hidden="true">⭐</span>
                 <span className="text-xs font-medium text-anthrazit">Experten</span>
               </Link>
-              <Link href="/tips" className="flex flex-col items-center gap-1 rounded-lg bg-white p-3 shadow-sm hover:bg-muted/50">
+              <Link href="/tips" className="flex flex-col items-center gap-1 card-interactive rounded-lg bg-white p-3 shadow-soft">
                 <span className="text-2xl" aria-hidden="true">💡</span>
                 <span className="text-xs font-medium text-anthrazit">Tipps</span>
               </Link>
@@ -338,6 +387,10 @@ export default function DashboardPage() {
       )}
     </div>
     </PullToRefresh>
+
+    {/* FAB Schnell-Hilfe */}
+    <FloatingHelpButton />
+    </>
   );
 }
 

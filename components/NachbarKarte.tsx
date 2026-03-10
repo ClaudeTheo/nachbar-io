@@ -253,6 +253,10 @@ export function NachbarKarte() {
 
           {/* Lampen-Marker */}
           {houses.map((h) => {
+            // Nur Haeuser mit registrierten Bewohnern anzeigen
+            const houseKey = `${h.s}:${h.num}`;
+            if (!residentCounts[houseKey]) return null;
+
             const color = statuses[h.id];
             if (!color) return null;
             const cfg = COLOR_CFG[color];
@@ -338,7 +342,7 @@ export function NachbarKarte() {
 
       {/* Fusszeile */}
       <div className="text-xs text-muted-foreground">
-        {houses.length} Häuser · {counts.green} Grün · {counts.red} Rot · {counts.yellow} Gelb
+        {Object.values(residentCounts).filter(c => c > 0).length} Nachbarn im Quartier
         {counts.blue > 0 && ` · ${counts.blue} Urlaub`}
         {counts.orange > 0 && ` · ${counts.orange} Paket`}
       </div>

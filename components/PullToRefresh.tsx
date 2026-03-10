@@ -94,10 +94,12 @@ export function PullToRefresh({ onRefresh, children }: PullToRefreshProps) {
         </div>
       </div>
 
-      {/* Content */}
+      {/* Content — leichte Skalierung beim Ziehen */}
       <div
         style={{
-          transform: pullDistance > 0 ? `translateY(${pullDistance}px)` : undefined,
+          transform: pullDistance > 0
+            ? `translateY(${pullDistance}px) scale(${1 - pullDistance * 0.0002})`
+            : undefined,
           transition: pulling ? "none" : "transform 0.3s ease",
         }}
       >

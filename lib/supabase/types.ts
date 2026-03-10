@@ -31,6 +31,8 @@ export interface User {
   email_hash: string;
   display_name: string;
   avatar_url: string | null;
+  bio: string | null;
+  phone: string | null;
   ui_mode: UserUiMode;
   trust_level: TrustLevel;
   is_admin: boolean;

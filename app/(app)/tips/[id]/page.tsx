@@ -7,6 +7,7 @@ import { ArrowLeft, MapPin, Phone, CheckCircle2, Clock, Tag, User } from "lucide
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { createClient } from "@/lib/supabase/client";
+import { createNotification } from "@/lib/notifications";
 import { TIP_CATEGORIES } from "@/lib/constants";
 import type { CommunityTip } from "@/lib/supabase/types";
 import { formatDistanceToNow } from "date-fns";
@@ -101,6 +102,18 @@ export default function TipDetailPage() {
 
         setHasConfirmed(true);
         setConfirmCount((prev) => prev + 1);
+
+        // Tipp-Ersteller benachrichtigen
+        if (tip.user_id) {
+          createNotification({
+            userId: tip.user_id,
+            type: "tip_confirmation",
+            title: "Tipp bestätigt",
+            body: `Ein Nachbar hat Ihren Tipp „${tip.title}" bestätigt.`,
+            referenceId: tip.id,
+            referenceType: "tip",
+          });
+        }
       }
     } catch {
       setError("Netzwerkfehler bei der Bestätigung.");

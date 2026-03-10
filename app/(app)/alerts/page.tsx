@@ -6,6 +6,7 @@ import { Plus } from "lucide-react";
 import { AlertCard } from "@/components/AlertCard";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { createClient } from "@/lib/supabase/client";
+import { createNotification } from "@/lib/notifications";
 import type { Alert } from "@/lib/supabase/types";
 
 export default function AlertsPage() {
@@ -42,6 +43,19 @@ export default function AlertsPage() {
 
     // Alert-Status aktualisieren
     await supabase.from("alerts").update({ status: "help_coming" }).eq("id", alertId);
+
+    // Alert-Ersteller benachrichtigen
+    const alert = alerts.find((a) => a.id === alertId);
+    if (alert) {
+      createNotification({
+        userId: alert.user_id,
+        type: "alert_response",
+        title: "Hilfe ist unterwegs!",
+        body: `${user.email?.split("@")[0] ?? "Ein Nachbar"} kommt Ihnen zu Hilfe.`,
+        referenceId: alertId,
+        referenceType: "alert",
+      });
+    }
 
     loadAlerts();
   }

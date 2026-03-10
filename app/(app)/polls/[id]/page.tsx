@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { createClient } from "@/lib/supabase/client";
+import { createNotification } from "@/lib/notifications";
 import type { Poll, PollOption, PollVote } from "@/lib/supabase/types";
 import { formatDistanceToNow } from "date-fns";
 import { de } from "date-fns/locale";
@@ -94,6 +95,19 @@ export default function PollDetailPage() {
     }
 
     toast.success("Stimme abgegeben!");
+
+    // Ersteller benachrichtigen
+    if (poll.user_id) {
+      createNotification({
+        userId: poll.user_id,
+        type: "poll_vote",
+        title: "Neue Abstimmung",
+        body: `Jemand hat bei „${poll.question.length > 50 ? poll.question.slice(0, 50) + "..." : poll.question}" abgestimmt.`,
+        referenceId: poll.id,
+        referenceType: "poll",
+      });
+    }
+
     loadPoll();
   }
 

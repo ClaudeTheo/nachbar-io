@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { createClient } from "@/lib/supabase/client";
+import { createNotification } from "@/lib/notifications";
 import type { Conversation, NeighborConnection } from "@/lib/supabase/types";
 import { formatDistanceToNow } from "date-fns";
 import { de } from "date-fns/locale";
@@ -193,6 +194,17 @@ export default function MessagesPage() {
     }
 
     toast.success("Verbindung angenommen!");
+
+    // Anfragenden benachrichtigen
+    createNotification({
+      userId: requesterId,
+      type: "connection_accepted",
+      title: "Verbindung angenommen",
+      body: "Ihre Nachbar-Anfrage wurde angenommen. Sie können jetzt chatten!",
+      referenceId: convId,
+      referenceType: "conversation",
+    });
+
     await loadPendingRequests(currentUserId);
     await loadConversations(currentUserId);
 

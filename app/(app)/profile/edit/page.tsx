@@ -2,11 +2,13 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Camera, Save } from "lucide-react";
+import { ArrowLeft, Save, ChevronRight } from "lucide-react";
 import Link from "next/link";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { AvatarPicker } from "@/components/AvatarPicker";
 import { createClient } from "@/lib/supabase/client";
 import type { User } from "@/lib/supabase/types";
 
@@ -14,6 +16,10 @@ export default function ProfileEditPage() {
   const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
   const [displayName, setDisplayName] = useState("");
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const [bio, setBio] = useState("");
+  const [phone, setPhone] = useState("");
+  const [hasSkills, setHasSkills] = useState(false);
   const [saving, setSaving] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -34,10 +40,36 @@ export default function ProfileEditPage() {
       if (data) {
         setUser(data as User);
         setDisplayName(data.display_name);
+        setAvatarUrl(data.avatar_url);
+        setBio(data.bio || "");
+        setPhone(data.phone || "");
       }
+
+      // Skills pruefen
+      const { count } = await supabase
+        .from("skills")
+        .select("id", { count: "exact", head: true })
+        .eq("user_id", authUser.id);
+      setHasSkills((count ?? 0) > 0);
     }
     load();
   }, []);
+
+  const hasChanges = user && (
+    displayName.trim() !== user.display_name ||
+    avatarUrl !== user.avatar_url ||
+    bio.trim() !== (user.bio || "") ||
+    phone.trim() !== (user.phone || "")
+  );
+
+  // Profil-Vollstaendigkeit
+  const completionSteps = [
+    { done: !!avatarUrl, label: "Avatar" },
+    { done: bio.trim().length > 0, label: "Bio" },
+    { done: hasSkills, label: "Kompetenzen" },
+    { done: phone.trim().length > 0, label: "Telefon" },
+  ];
+  const completedCount = completionSteps.filter((s) => s.done).length;
 
   async function handleSave() {
     if (!user || !displayName.trim()) return;
@@ -49,7 +81,12 @@ export default function ProfileEditPage() {
       const supabase = createClient();
       const { error: updateError } = await supabase
         .from("users")
-        .update({ display_name: displayName.trim() })
+        .update({
+          display_name: displayName.trim(),
+          avatar_url: avatarUrl,
+          bio: bio.trim() || null,
+          phone: phone.trim() || null,
+        })
         .eq("id", user.id);
 
       if (updateError) {
@@ -62,7 +99,6 @@ export default function ProfileEditPage() {
       toast.success("Profil gespeichert!");
       setSuccess(true);
       setSaving(false);
-      // Kurz warten, dann zurück zum Profil
       setTimeout(() => router.push("/profile"), 1000);
     } catch {
       toast.error("Netzwerkfehler. Bitte versuchen Sie es erneut.");
@@ -84,27 +120,33 @@ export default function ProfileEditPage() {
         <h1 className="text-xl font-bold text-anthrazit">Profil bearbeiten</h1>
       </div>
 
-      {/* Avatar */}
-      <div className="flex justify-center">
-        <div className="relative">
-          <div className="flex h-24 w-24 items-center justify-center rounded-full bg-quartier-green/10 text-4xl">
-            {user.avatar_url ? (
-              <img
-                src={user.avatar_url}
-                alt=""
-                className="h-full w-full rounded-full object-cover"
-              />
-            ) : (
-              "👤"
-            )}
-          </div>
-          <div className="absolute -bottom-1 -right-1 rounded-full bg-white p-1 shadow-md">
-            <Camera className="h-4 w-4 text-muted-foreground" />
-          </div>
-          <p className="mt-2 text-center text-xs text-muted-foreground">
-            Avatar-Upload kommt bald
+      {/* Profil-Vollstaendigkeit */}
+      {completedCount < 4 && (
+        <div className="rounded-lg border border-quartier-green/20 bg-quartier-green/5 p-3">
+          <p className="text-sm text-quartier-green">
+            Profil {completedCount}/4 vervollständigt
           </p>
+          <div className="mt-1.5 flex gap-1">
+            {completionSteps.map((step, i) => (
+              <div
+                key={i}
+                className={`h-1.5 flex-1 rounded-full ${
+                  step.done ? "bg-quartier-green" : "bg-quartier-green/20"
+                }`}
+                title={step.label}
+              />
+            ))}
+          </div>
         </div>
+      )}
+
+      {/* Avatar-Picker */}
+      <div className="flex justify-center">
+        <AvatarPicker
+          currentAvatarUrl={avatarUrl}
+          onAvatarChange={setAvatarUrl}
+          userId={user.id}
+        />
       </div>
 
       {/* Formular */}
@@ -122,6 +164,50 @@ export default function ProfileEditPage() {
             Dieser Name wird anderen Nachbarn angezeigt.
           </p>
         </div>
+
+        <div className="space-y-2">
+          <label htmlFor="bio" className="text-sm font-medium text-anthrazit">Über mich</label>
+          <Textarea
+            id="bio"
+            value={bio}
+            onChange={(e) => setBio(e.target.value)}
+            placeholder="Erzählen Sie etwas über sich (z.B. 'Hobbygärtner, 2 Kinder, immer für einen Kaffee zu haben')"
+            maxLength={200}
+            rows={3}
+          />
+          <p className="text-xs text-muted-foreground">
+            {bio.length}/200 Zeichen
+          </p>
+        </div>
+
+        <div className="space-y-2">
+          <label htmlFor="phone" className="text-sm font-medium text-anthrazit">Telefonnummer (optional)</label>
+          <Input
+            id="phone"
+            type="tel"
+            value={phone}
+            onChange={(e) => setPhone(e.target.value)}
+            placeholder="+49 ..."
+            maxLength={20}
+          />
+          <p className="text-xs text-muted-foreground">
+            Nur für Nachbarn sichtbar, wenn Sie es wünschen.
+          </p>
+        </div>
+
+        {/* Kompetenzen-Link */}
+        <Link
+          href="/profile/skills"
+          className="flex items-center justify-between rounded-lg border border-border p-3 transition-colors hover:bg-muted/50"
+        >
+          <div>
+            <p className="text-sm font-medium text-anthrazit">Kompetenzen bearbeiten</p>
+            <p className="text-xs text-muted-foreground">
+              {hasSkills ? "Ihre Fähigkeiten sind hinterlegt" : "Teilen Sie Ihre Fähigkeiten mit Nachbarn"}
+            </p>
+          </div>
+          <ChevronRight className="h-4 w-4 text-muted-foreground" />
+        </Link>
 
         <div className="space-y-2">
           <label className="text-sm font-medium text-anthrazit">E-Mail</label>
@@ -153,7 +239,7 @@ export default function ProfileEditPage() {
 
       <Button
         onClick={handleSave}
-        disabled={saving || !displayName.trim() || displayName.trim() === user.display_name}
+        disabled={saving || !displayName.trim() || !hasChanges}
         className="w-full bg-quartier-green hover:bg-quartier-green-dark"
       >
         <Save className="mr-2 h-4 w-4" />

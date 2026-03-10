@@ -67,6 +67,7 @@ CREATE TABLE IF NOT EXISTS alerts (
     household_id UUID NOT NULL REFERENCES households(id) ON DELETE CASCADE,
     category TEXT NOT NULL
         CHECK (category IN (
+            'fire', 'medical', 'crime',
             'water_damage', 'power_outage', 'door_lock', 'fall',
             'shopping', 'tech_help', 'pet', 'other'
         )),

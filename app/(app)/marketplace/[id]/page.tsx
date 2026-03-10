@@ -7,6 +7,7 @@ import { ArrowLeft, Clock, Tag, User, Trash2, CheckCircle, MessageCircle } from 
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { createClient } from "@/lib/supabase/client";
+import { createNotification } from "@/lib/notifications";
 import { MARKETPLACE_TYPES, MARKETPLACE_CATEGORIES } from "@/lib/constants";
 import type { MarketplaceItem } from "@/lib/supabase/types";
 import { formatDistanceToNow } from "date-fns";
@@ -148,7 +149,49 @@ export default function MarketplaceDetailPage() {
       )}
 
       {!isOwner && item.status === "active" && (
-        <Button className="w-full bg-quartier-green hover:bg-quartier-green-dark">
+        <Button
+          className="w-full bg-quartier-green hover:bg-quartier-green-dark"
+          onClick={async () => {
+            if (!currentUserId || !item) return;
+            const supabase = createClient();
+
+            // Bestehende Konversation suchen oder neue erstellen
+            const { data: existing } = await supabase
+              .from("conversations")
+              .select("id")
+              .or(
+                `and(participant_1.eq.${currentUserId},participant_2.eq.${item.user_id}),and(participant_1.eq.${item.user_id},participant_2.eq.${currentUserId})`
+              )
+              .maybeSingle();
+
+            let convId: string;
+            if (existing) {
+              convId = existing.id;
+            } else {
+              const { data: newConv } = await supabase
+                .from("conversations")
+                .insert({
+                  participant_1: currentUserId < item.user_id ? currentUserId : item.user_id,
+                  participant_2: currentUserId < item.user_id ? item.user_id : currentUserId,
+                })
+                .select("id")
+                .single();
+              convId = newConv?.id ?? "";
+            }
+
+            // Anbieter benachrichtigen
+            createNotification({
+              userId: item.user_id,
+              type: "marketplace",
+              title: "Anfrage zu Ihrem Inserat",
+              body: `Jemand interessiert sich für „${item.title}".`,
+              referenceId: item.id,
+              referenceType: "marketplace_item",
+            });
+
+            if (convId) router.push(`/messages/${convId}`);
+          }}
+        >
           <MessageCircle className="mr-2 h-4 w-4" />
           Nachbar kontaktieren
         </Button>

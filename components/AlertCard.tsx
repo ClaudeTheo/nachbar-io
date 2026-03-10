@@ -35,7 +35,7 @@ export function AlertCard({ alert, onHelp, onView, compact = false, reputationLe
 
   return (
     <Card
-      className={`overflow-hidden transition-shadow hover:shadow-md ${
+      className={`card-interactive overflow-hidden shadow-soft ${
         alert.status === "open" ? "border-alert-amber/50" : ""
       } ${compact ? "" : "cursor-pointer"}`}
       onClick={() => onView?.(alert.id)}

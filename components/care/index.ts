@@ -22,6 +22,11 @@ export { AppointmentCard } from './AppointmentCard';
 export { AppointmentList } from './AppointmentList';
 export { AppointmentForm } from './AppointmentForm';
 
+// Helfer-Komponenten
+export { HelperCard } from './HelperCard';
+export { HelperList } from './HelperList';
+export { HelperRegistrationForm } from './HelperRegistrationForm';
+
 // Senior-Geraet (E-Ink)
 export { SeniorSosButton } from './senior/SeniorSosButton';
 export { SeniorCheckinButtons } from './senior/SeniorCheckinButtons';

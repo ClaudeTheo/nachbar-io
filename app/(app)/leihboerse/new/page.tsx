@@ -82,7 +82,7 @@ export default function LeihboerseNewPage() {
         setUploading(false);
       }
 
-      toast.success("Angebot erfolgreich erstellt!");
+      toast.success(type === "borrow" ? "Anfrage erfolgreich erstellt!" : "Angebot erfolgreich erstellt!");
       setStep(4);
     } catch {
       toast.error("Netzwerkfehler.");
@@ -100,7 +100,9 @@ export default function LeihboerseNewPage() {
         <Link href="/leihboerse" className="rounded-lg p-2 hover:bg-muted">
           <ArrowLeft className="h-5 w-5" />
         </Link>
-        <h1 className="text-xl font-bold text-anthrazit">Neues Angebot</h1>
+        <h1 className="text-xl font-bold text-anthrazit">
+          {type === "borrow" ? "Neue Anfrage" : "Neues Angebot"}
+        </h1>
       </div>
 
       {/* Schrittanzeige */}
@@ -227,7 +229,7 @@ export default function LeihboerseNewPage() {
               disabled={saving}
               className="flex-1 bg-quartier-green hover:bg-quartier-green-dark"
             >
-              {saving ? "Wird erstellt..." : "Angebot erstellen"}
+              {saving ? "Wird erstellt..." : type === "borrow" ? "Anfrage erstellen" : "Angebot erstellen"}
             </Button>
           </div>
         </div>
@@ -239,7 +241,9 @@ export default function LeihboerseNewPage() {
           <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-quartier-green/10">
             <Check className="h-8 w-8 text-quartier-green" />
           </div>
-          <h2 className="text-lg font-bold text-anthrazit">Angebot erstellt!</h2>
+          <h2 className="text-lg font-bold text-anthrazit">
+            {type === "borrow" ? "Anfrage erstellt!" : "Angebot erstellt!"}
+          </h2>
           <p className="mt-2 text-muted-foreground">Ihre Nachbarn können es jetzt sehen.</p>
           <Button onClick={() => router.push("/leihboerse")} className="mt-4 bg-quartier-green hover:bg-quartier-green-dark">
             Zur Leihbörse

@@ -2,10 +2,12 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { SeniorSosButton } from '@/components/care/senior/SeniorSosButton';
 
 export default function SeniorDeviceHomePage() {
   const [currentTime, setCurrentTime] = useState('');
   const [currentDate, setCurrentDate] = useState('');
+  const [nextCheckin, setNextCheckin] = useState<string | null>(null);
 
   useEffect(() => {
     function updateClock() {
@@ -18,6 +20,22 @@ export default function SeniorDeviceHomePage() {
     return () => clearInterval(interval);
   }, []);
 
+  // Naechsten Check-in laden
+  useEffect(() => {
+    async function loadStatus() {
+      try {
+        const res = await fetch('/api/care/checkin/status');
+        if (res.ok) {
+          const data = await res.json();
+          setNextCheckin(data.nextDue);
+        }
+      } catch { /* Stille Fehlerbehandlung fuer Geraet */ }
+    }
+    loadStatus();
+    const interval = setInterval(loadStatus, 5 * 60 * 1000); // Alle 5 Min aktualisieren
+    return () => clearInterval(interval);
+  }, []);
+
   return (
     <div className="space-y-6 text-center">
       {/* Uhrzeit und Datum */}
@@ -26,28 +44,24 @@ export default function SeniorDeviceHomePage() {
         <p className="text-4xl font-bold">{currentTime}</p>
       </div>
 
-      {/* SOS-Button — Platzhalter, wird in Phase 2 implementiert */}
-      <button
-        className="w-full rounded-2xl bg-red-600 px-8 py-10 text-3xl font-bold text-white shadow-lg active:bg-red-700"
-        style={{ minHeight: '100px', touchAction: 'manipulation' }}
-        aria-label="SOS — Ich brauche Hilfe"
-      >
-        🆘 Ich brauche Hilfe
-      </button>
+      {/* SOS-Button */}
+      <SeniorSosButton />
 
-      {/* Check-in Button — Platzhalter */}
-      <button
-        className="w-full rounded-2xl bg-green-600 px-8 py-8 text-2xl font-bold text-white shadow-lg active:bg-green-700"
+      {/* Check-in Button */}
+      <a
+        href="/checkin"
+        className="block w-full rounded-2xl bg-green-600 px-8 py-8 text-2xl font-bold text-white shadow-lg active:bg-green-700 text-center"
         style={{ minHeight: '80px', touchAction: 'manipulation' }}
-        aria-label="Mir geht es gut"
       >
         ✅ Mir geht es gut
-      </button>
+      </a>
 
-      {/* Info-Text */}
-      <p className="text-base text-gray-400 mt-8">
-        Geraet wird eingerichtet...
-      </p>
+      {/* Naechster Check-in */}
+      {nextCheckin && (
+        <p className="text-base text-gray-400">
+          Naechster Check-in: {nextCheckin} Uhr
+        </p>
+      )}
     </div>
   );
 }

@@ -15,6 +15,13 @@ export interface MapHouseData {
   defaultColor: LampColor;
 }
 
+// Erweiterte Haus-Daten mit Geo-Koordinaten (fuer Leaflet)
+export interface GeoMapHouseData extends MapHouseData {
+  lat: number;
+  lng: number;
+  quarterId?: string;
+}
+
 export const STREET_LABELS: Record<string, string> = {
   PS: "Purkersdorfer Str.",
   SN: "Sanarystraße",

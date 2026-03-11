@@ -77,6 +77,7 @@ export async function POST(request: NextRequest) {
       email_hash: "",
       display_name: displayName.trim(),
       ui_mode: uiMode || "active",
+      is_tester: true,  // Pilotphase: alle Nutzer sind Tester
     });
 
     if (profileError) {

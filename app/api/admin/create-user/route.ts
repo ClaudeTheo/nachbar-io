@@ -109,6 +109,7 @@ export async function POST(request: NextRequest) {
     display_name: displayName.trim(),
     ui_mode: uiMode,
     trust_level: verified ? "verified" : "new",
+    is_tester: true,  // Pilotphase: alle Nutzer sind Tester
   });
 
   if (profileError) {

@@ -7,6 +7,7 @@ import {
   TrendingUp, CheckCircle, QrCode, FileText, Activity, Megaphone,
   Newspaper, Calendar, BarChart3, ArrowUpRight, ArrowDownRight, Minus,
   AlertTriangle, Eye, MapPin, Globe, ExternalLink, Database, Terminal, Wrench,
+  ClipboardList,
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -30,6 +31,7 @@ import { ExternalLinks } from "./components/ExternalLinks";
 import { DatabaseOverview } from "./components/DatabaseOverview";
 import { ApiTester } from "./components/ApiTester";
 import { DevOpsPanel } from "./components/DevOpsPanel";
+import { TestManagement } from "./components/TestManagement";
 
 // ============================================================
 // TYPEN
@@ -289,6 +291,9 @@ export default function AdminPage() {
           <TabsTrigger value="devops" className="text-xs flex-1 min-w-[55px]">
             <Wrench className="h-3.5 w-3.5 mr-1" />DevOps
           </TabsTrigger>
+          <TabsTrigger value="tests" className="text-xs flex-1 min-w-[55px]">
+            <ClipboardList className="h-3.5 w-3.5 mr-1" />Tests
+          </TabsTrigger>
         </TabsList>
 
         {/* TAB: UEBERSICHT */}
@@ -360,6 +365,7 @@ export default function AdminPage() {
         <TabsContent value="database" className="mt-4"><DatabaseOverview /></TabsContent>
         <TabsContent value="api" className="mt-4"><ApiTester /></TabsContent>
         <TabsContent value="devops" className="mt-4"><DevOpsPanel /></TabsContent>
+        <TabsContent value="tests" className="mt-4"><TestManagement /></TabsContent>
       </Tabs>
     </div>
   );

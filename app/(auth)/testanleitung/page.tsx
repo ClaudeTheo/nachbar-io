@@ -14,9 +14,32 @@ export default function TestanleitungPage() {
         <div className="mb-2 text-4xl">🧪</div>
         <h1 className="text-2xl font-bold text-anthrazit">Testanleitung</h1>
         <p className="mt-2 text-muted-foreground">
-          Nachbar.io — Pilottest für Bad Säckingen
+          Nachbar.io — Pilottest fuer Bad Saeckingen
         </p>
       </div>
+
+      {/* Hinweis auf das neue Test-System */}
+      <div className="mb-6 rounded-xl border-2 border-quartier-green bg-quartier-green/5 p-5">
+        <h3 className="mb-2 flex items-center gap-2 font-semibold text-quartier-green">
+          <CheckSquare className="h-5 w-5" />
+          Neues Test-System verfuegbar
+        </h3>
+        <p className="mb-3 text-sm text-muted-foreground">
+          Fuer registrierte Tester steht jetzt ein interaktives Test-System mit Fortschrittsverfolgung,
+          Status-Tracking und automatischen Berichten zur Verfuegung. Melden Sie sich einfach an —
+          das Test-Panel erscheint automatisch.
+        </p>
+        <Link
+          href="/login"
+          className="inline-flex items-center gap-1.5 rounded-lg bg-quartier-green px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-quartier-green/90"
+        >
+          Zum Login &amp; Test starten
+        </Link>
+      </div>
+
+      <p className="mb-6 text-center text-xs text-muted-foreground">
+        Die folgende Checkliste dient als Referenz. Nutzen Sie bevorzugt das interaktive Test-System nach dem Login.
+      </p>
 
       {/* Registrierung */}
       <Section icon={<Smartphone className="h-5 w-5" />} title="1. Registrierung" id="registrierung">

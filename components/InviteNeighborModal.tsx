@@ -26,6 +26,7 @@ export function InviteNeighborModal({ open, onClose }: InviteNeighborModalProps)
     inviteCode: string;
     registerUrl: string;
     whatsappUrl: string;
+    emailSent?: boolean;
   } | null>(null);
   const [copied, setCopied] = useState(false);
 
@@ -61,7 +62,15 @@ export function InviteNeighborModal({ open, onClose }: InviteNeighborModalProps)
         toast.error(data.error || "Fehler beim Senden der Einladung");
       } else {
         setResult(data);
-        toast.success("Einladung erstellt!");
+
+        // Erfolgs-Feedback je nach Methode
+        if (method === "email" && data.emailSent) {
+          toast.success("Einladung per E-Mail versendet!");
+        } else if (method === "email" && !data.emailSent) {
+          toast.success("Einladung erstellt! E-Mail konnte nicht gesendet werden — teilen Sie den Code manuell.");
+        } else {
+          toast.success("Einladung erstellt!");
+        }
 
         // WhatsApp direkt oeffnen
         if (method === "whatsapp" && data.whatsappUrl) {
@@ -136,6 +145,15 @@ export function InviteNeighborModal({ open, onClose }: InviteNeighborModalProps)
                 </Button>
               </div>
             </div>
+
+            {/* E-Mail-Status */}
+            {result.emailSent && (
+              <div className="rounded-lg bg-green-50 p-3 text-center">
+                <p className="text-sm text-quartier-green font-medium">
+                  ✅ E-Mail wurde versendet
+                </p>
+              </div>
+            )}
 
             {/* WhatsApp Button */}
             <Button

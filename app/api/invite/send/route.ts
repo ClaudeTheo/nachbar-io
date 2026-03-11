@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { generateSecureCode } from "@/lib/invite-codes";
+import { sendInvitationEmail } from "@/lib/email";
 
 /**
  * POST /api/invite/send
@@ -37,6 +38,14 @@ export async function POST(request: NextRequest) {
   if (!street || !houseNumber || !method) {
     return NextResponse.json(
       { error: "Strasse, Hausnummer und Methode sind erforderlich" },
+      { status: 400 }
+    );
+  }
+
+  // E-Mail-Adresse validieren bei E-Mail-Methode
+  if (method === "email" && !target) {
+    return NextResponse.json(
+      { error: "E-Mail-Adresse ist erforderlich" },
       { status: 400 }
     );
   }
@@ -100,11 +109,29 @@ export async function POST(request: NextRequest) {
   const whatsappText = `Hallo! Ich bin ${profile.display_name} und nutze Nachbar.io – unsere Quartiers-App. Möchten Sie auch dabei sein? Registrieren Sie sich hier: ${registerUrl}`;
   const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(whatsappText)}`;
 
+  // E-Mail versenden (asynchron, Fehler nicht blockierend)
+  let emailSent = false;
+  if (method === "email" && target) {
+    const emailResult = await sendInvitationEmail({
+      to: target,
+      inviterName: profile.display_name,
+      inviteCode,
+      registerUrl,
+      streetName: street,
+      houseNumber,
+    });
+    emailSent = emailResult.success;
+    if (!emailResult.success) {
+      console.warn("E-Mail-Versand fehlgeschlagen:", emailResult.error);
+    }
+  }
+
   return NextResponse.json({
     success: true,
     inviteCode,
     registerUrl,
     whatsappUrl,
     method,
+    emailSent,
   });
 }

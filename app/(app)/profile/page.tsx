@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Settings, LogOut, Star, Shield, ChevronRight, Pencil, Bell, TrendingUp, Plane, MapPin, HelpCircle, Repeat, BarChart3, Package } from "lucide-react";
+import { Settings, LogOut, Star, Shield, ChevronRight, Pencil, Bell, TrendingUp, Plane, MapPin, HelpCircle, Repeat, BarChart3, Package, UserPlus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
@@ -219,6 +219,19 @@ export default function ProfilePage() {
             <div className="flex items-center gap-3">
               <HelpCircle className="h-5 w-5 text-muted-foreground" />
               <span>Hilfecenter</span>
+            </div>
+            <ChevronRight className="h-4 w-4 text-muted-foreground" />
+          </Link>
+
+          <Separator />
+
+          <Link
+            href="/invitations"
+            className="flex items-center justify-between p-4 hover:bg-muted/50"
+          >
+            <div className="flex items-center gap-3">
+              <UserPlus className="h-5 w-5 text-muted-foreground" />
+              <span>Meine Einladungen</span>
             </div>
             <ChevronRight className="h-4 w-4 text-muted-foreground" />
           </Link>

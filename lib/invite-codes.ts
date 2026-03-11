@@ -38,8 +38,26 @@ export function normalizeCode(code: string): string {
   return code.replace(/[-\s]/g, "").toUpperCase();
 }
 
-// Pruefen ob ein Code dem neuen Format entspricht (nur gueltige Zeichen)
+// Pruefen ob ein Code einem gueltigen Format entspricht
+// Akzeptiert sowohl neue Codes (XXXX-XXXX, Base32) als auch alte (z.B. PKD001, SAN042)
 export function isValidCodeFormat(code: string): boolean {
+  const clean = normalizeCode(code);
+
+  // Neues Format: 8 Zeichen, nur Base32-Alphabet
+  if (clean.length === CODE_LENGTH && [...clean].every((ch) => ALPHABET.includes(ch))) {
+    return true;
+  }
+
+  // Altes Format: 3 Buchstaben + 3 Ziffern (z.B. PKD001, SAN042, ORE003)
+  if (/^[A-Z]{3}\d{3}$/.test(clean)) {
+    return true;
+  }
+
+  return false;
+}
+
+// Pruefen ob ein Code dem neuen kryptografischen Format entspricht
+export function isNewCodeFormat(code: string): boolean {
   const clean = normalizeCode(code);
   if (clean.length !== CODE_LENGTH) return false;
   return [...clean].every((ch) => ALPHABET.includes(ch));

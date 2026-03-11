@@ -188,10 +188,13 @@ export async function POST(request: NextRequest) {
 
     // 2. Haushalt-Zuordnung erstellen
     if (householdId) {
+      // Pilotphase: Alle Nutzer werden sofort verifiziert (verified_at gesetzt)
+      // Damit koennen sie die App direkt nutzen (RLS: is_verified_member())
       const { error: memberError } = await adminDb.from("household_members").insert({
         household_id: householdId,
         user_id: userId,
         verification_method: verificationMethod || "address_manual",
+        verified_at: new Date().toISOString(), // Pilot: sofort verifiziert
       });
 
       if (memberError) {
@@ -199,13 +202,14 @@ export async function POST(request: NextRequest) {
         // Nicht blockierend — Registrierung trotzdem abschliessen
       }
 
-      // 3. Bei manueller Adress-Verifikation: Anfrage erstellen
+      // 3. Bei manueller Adress-Verifikation: Anfrage trotzdem erstellen (fuer Admin-Uebersicht)
       if (verificationMethod === "address_manual") {
         const { error: requestError } = await adminDb.from("verification_requests").insert({
           user_id: userId,
           household_id: householdId,
           method: "address_manual",
-          status: "pending",
+          status: "approved",  // Pilot: direkt approved
+          reviewed_at: new Date().toISOString(),
         });
 
         if (requestError) {
@@ -214,27 +218,7 @@ export async function POST(request: NextRequest) {
         }
       }
 
-      // 4. Bei Einladungscode: sofort verifizieren
-      if (verificationMethod === "invite_code") {
-        const { error: verifyMemberErr } = await adminDb
-          .from("household_members")
-          .update({ verified_at: new Date().toISOString() })
-          .eq("user_id", userId)
-          .eq("household_id", householdId);
-
-        if (verifyMemberErr) {
-          console.error("Haushalt-Verifizierung fehlgeschlagen:", verifyMemberErr);
-        }
-
-        const { error: trustErr } = await adminDb
-          .from("users")
-          .update({ trust_level: "verified" })
-          .eq("id", userId);
-
-        if (trustErr) {
-          console.error("Trust-Level-Update fehlgeschlagen:", trustErr);
-        }
-      }
+      // 4. Bei Einladungscode: verified_at bereits oben gesetzt (Pilot: alle sofort verifiziert)
 
       // 5. Bei Nachbar-Einladung: Einladung als akzeptiert markieren + Punkte
       if (verificationMethod === "neighbor_invite" && inviteCode) {
@@ -254,25 +238,7 @@ export async function POST(request: NextRequest) {
           console.error("Einladung-Update fehlgeschlagen:", inviteErr);
         }
 
-        // Sofort verifizieren (Einladender buergt)
-        const { error: verifyMemberErr } = await adminDb
-          .from("household_members")
-          .update({ verified_at: new Date().toISOString() })
-          .eq("user_id", userId)
-          .eq("household_id", householdId);
-
-        if (verifyMemberErr) {
-          console.error("Haushalt-Verifizierung fehlgeschlagen:", verifyMemberErr);
-        }
-
-        const { error: trustErr } = await adminDb
-          .from("users")
-          .update({ trust_level: "verified" })
-          .eq("id", userId);
-
-        if (trustErr) {
-          console.error("Trust-Level-Update fehlgeschlagen:", trustErr);
-        }
+        // verified_at bereits oben gesetzt (Pilot: alle sofort verifiziert)
 
         // Punkte fuer den Einladenden
         if (referrerId) {

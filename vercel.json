@@ -9,23 +9,23 @@
     },
     {
       "path": "/api/news/rss",
-      "schedule": "0 7 * * 3,6"
+      "schedule": "0 7 * * 3"
     },
     {
       "path": "/api/care/cron/escalation",
-      "schedule": "* * * * *"
+      "schedule": "0 9 * * *"
     },
     {
       "path": "/api/care/cron/checkin",
-      "schedule": "*/5 * * * *"
+      "schedule": "0 8 * * *"
     },
     {
       "path": "/api/care/cron/medications",
-      "schedule": "*/5 * * * *"
+      "schedule": "0 7 * * *"
     },
     {
       "path": "/api/care/cron/appointments",
-      "schedule": "*/5 * * * *"
+      "schedule": "0 6 * * *"
     },
     {
       "path": "/api/cron/expire-invitations",

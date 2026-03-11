@@ -72,9 +72,12 @@ export function InviteNeighborModal({ open, onClose }: InviteNeighborModalProps)
           toast.success("Einladung erstellt!");
         }
 
-        // WhatsApp direkt oeffnen
+        // WhatsApp direkt oeffnen (window.location fuer mobile Kompatibilitaet)
         if (method === "whatsapp" && data.whatsappUrl) {
-          window.open(data.whatsappUrl, "_blank");
+          // Verzögerung damit React-State zuerst aktualisiert wird
+          setTimeout(() => {
+            window.location.href = data.whatsappUrl;
+          }, 100);
         }
       }
     } catch {
@@ -155,14 +158,16 @@ export function InviteNeighborModal({ open, onClose }: InviteNeighborModalProps)
               </div>
             )}
 
-            {/* WhatsApp Button */}
-            <Button
-              className="w-full bg-[#25D366] hover:bg-[#1da851] text-white"
-              onClick={() => window.open(result.whatsappUrl, "_blank")}
+            {/* WhatsApp Button — Link statt window.open fuer mobile Kompatibilitaet */}
+            <a
+              href={result.whatsappUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex w-full items-center justify-center gap-2 rounded-md bg-[#25D366] px-4 py-2 text-sm font-medium text-white hover:bg-[#1da851] transition-colors"
             >
-              <MessageCircle className="h-4 w-4 mr-2" />
+              <MessageCircle className="h-4 w-4" />
               Per WhatsApp teilen
-            </Button>
+            </a>
 
             <Button
               variant="outline"

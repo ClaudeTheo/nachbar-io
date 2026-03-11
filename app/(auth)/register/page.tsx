@@ -10,7 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { createClient } from "@/lib/supabase/client";
 import { QUARTIER_STREETS } from "@/lib/constants";
 import { normalizeCode, formatCode } from "@/lib/invite-codes";
-import { createNotification } from "@/lib/notifications";
+
 
 type Step = "credentials" | "verify_method" | "invite" | "address" | "profile" | "mode";
 type VerificationMethod = "invite_code" | "address_manual" | "neighbor_invite";
@@ -174,7 +174,7 @@ function RegisterForm() {
     try {
       const supabase = createClient();
 
-      // 1. Account erstellen
+      // 1. Account erstellen (Auth)
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email,
         password,
@@ -193,89 +193,40 @@ function RegisterForm() {
         return;
       }
 
-      // 2. User-Profil erstellen (trust_level wird per DB-Trigger gesetzt)
-      const { error: profileError } = await supabase.from("users").insert({
-        id: authData.user.id,
-        email_hash: "",
-        display_name: displayName.trim(),
-        ui_mode: uiMode,
+      // 2. Profil + Haushalt + Verifizierung serverseitig abschliessen
+      // (Server-Route nutzt Service-Role und umgeht RLS-Einschraenkungen)
+      const completeRes = await fetch("/api/register/complete", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          userId: authData.user.id,
+          displayName: displayName.trim(),
+          uiMode,
+          householdId,
+          verificationMethod,
+          inviteCode: inviteCode ? normalizeCode(inviteCode) : undefined,
+          referrerId,
+        }),
       });
 
-      if (profileError) {
-        console.error("Profil-Fehler:", profileError);
-        setError(`Profil konnte nicht erstellt werden: ${profileError.message}`);
+      const completeData = await completeRes.json();
+      if (!completeRes.ok) {
+        console.error("Registration-Complete Fehler:", completeData);
+        setError(completeData.error || "Profil konnte nicht erstellt werden.");
         setLoading(false);
         return;
       }
 
-      // 3. Haushalt-Zuordnung erstellen
-      if (householdId) {
-        const { error: memberError } = await supabase.from("household_members").insert({
-          household_id: householdId,
-          user_id: authData.user.id,
-          verification_method: verificationMethod,
-        });
-
-        if (memberError) {
-          console.error("Mitglied-Fehler:", memberError);
-        }
-
-        // 4. Bei manueller Adress-Verifikation: Anfrage erstellen
-        if (verificationMethod === "address_manual") {
-          const { error: requestError } = await supabase.from("verification_requests").insert({
-            user_id: authData.user.id,
-            household_id: householdId,
-            method: "address_manual",
-            status: "pending",
-          });
-
-          if (requestError) {
-            console.error("Verifizierungsanfrage-Fehler:", requestError);
-          }
-        }
-
-        // 5. Bei Nachbar-Einladung: Einladung als akzeptiert markieren + Punkte
-        if (verificationMethod === "neighbor_invite" && referrerId) {
-          await supabase
-            .from("neighbor_invitations")
-            .update({
-              status: "accepted",
-              accepted_at: new Date().toISOString(),
-              accepted_by: authData.user.id,
-            })
-            .eq("invite_code", normalizeCode(inviteCode))
-            .eq("status", "sent");
-
-          // Punkte fuer den Einladenden
-          await supabase.from("reputation_points").insert({
-            user_id: referrerId,
-            points: 50,
-            reason: "neighbor_invited",
-            reference_id: authData.user.id,
-          });
-
-          // Push-Notification an den Einladenden
-          createNotification({
-            userId: referrerId,
-            type: "neighbor_invited",
-            title: "Nachbar registriert! 🎉",
-            body: `${displayName.trim()} hat Ihre Einladung angenommen. +50 Punkte!`,
-            referenceId: authData.user.id,
-            referenceType: "user",
-          }).catch(() => {
-            // Fehler still ignorieren — Registrierung nicht blockieren
-          });
-
-          // Reputation des Einladenden neu berechnen (fire-and-forget)
-          fetch("/api/reputation/recompute", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ userId: referrerId }),
-          }).catch(() => {});
-        }
+      // 3. Bei Nachbar-Einladung: Reputation neu berechnen (fire-and-forget)
+      if (verificationMethod === "neighbor_invite" && referrerId) {
+        fetch("/api/reputation/recompute", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ userId: referrerId }),
+        }).catch(() => {});
       }
 
-      // 6. Weiterleitung
+      // 4. Weiterleitung
       if (uiMode === "senior") {
         router.push("/senior/home");
       } else {

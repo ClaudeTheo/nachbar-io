@@ -11,15 +11,28 @@ import { createClient } from "@/lib/supabase/server";
  * KEINE personenbezogenen Daten, KEINE Adressdaten, KEINE Nutzerdaten.
  */
 export async function POST(request: NextRequest) {
-  // Auth: Nur per CRON_SECRET oder Admin aufrufbar
+  // Auth: Per CRON_SECRET oder Admin-Session
   const authHeader = request.headers.get("authorization");
   const cronSecret = process.env.CRON_SECRET;
-
-  if (!cronSecret || authHeader !== `Bearer ${cronSecret}`) {
-    return NextResponse.json({ error: "Nicht autorisiert" }, { status: 401 });
-  }
+  const isCron = cronSecret && authHeader === `Bearer ${cronSecret}`;
 
   const supabase = await createClient();
+
+  if (!isCron) {
+    // Fallback: Admin-Check via Session
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      return NextResponse.json({ error: "Nicht autorisiert" }, { status: 401 });
+    }
+    const { data: profile } = await supabase
+      .from("users")
+      .select("is_admin")
+      .eq("id", user.id)
+      .single();
+    if (!profile?.is_admin) {
+      return NextResponse.json({ error: "Nur Admins" }, { status: 403 });
+    }
+  }
 
   // Beispiel-Nachricht fuer MVP (spaeter durch RSS-Scraping ersetzen)
   const sampleNews = [

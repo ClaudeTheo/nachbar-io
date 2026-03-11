@@ -327,10 +327,13 @@ export function SystemHealth({ stats, users, households }: SystemHealthProps) {
               onClick={async () => {
                 try {
                   const res = await fetch("/api/news/aggregate", { method: "POST" });
-                  if (!res.ok) throw new Error();
+                  if (!res.ok) {
+                    const err = await res.json().catch(() => ({}));
+                    throw new Error(err.error || `Status ${res.status}`);
+                  }
                   const data = await res.json();
                   toast.success(`${data.processed} Nachricht(en) verarbeitet`);
-                } catch { toast.error("News-Aggregation fehlgeschlagen"); }
+                } catch (e) { toast.error(`News-Aggregation: ${e instanceof Error ? e.message : "fehlgeschlagen"}`); }
               }}
             />
             <MaintenanceAction
@@ -338,10 +341,14 @@ export function SystemHealth({ stats, users, households }: SystemHealthProps) {
               description="Lokale Quellen nach neuen Nachrichten durchsuchen"
               onClick={async () => {
                 try {
-                  const res = await fetch("/api/news/scrape", { method: "POST" });
-                  if (!res.ok) throw new Error();
-                  toast.success("Scraper ausgefuehrt");
-                } catch { toast.error("Scraper fehlgeschlagen"); }
+                  const res = await fetch("/api/news/scrape");
+                  if (!res.ok) {
+                    const err = await res.json().catch(() => ({}));
+                    throw new Error(err.error || `Status ${res.status}`);
+                  }
+                  const data = await res.json();
+                  toast.success(`${data.new_items} neue Nachricht(en) importiert`);
+                } catch (e) { toast.error(`Scraper: ${e instanceof Error ? e.message : "fehlgeschlagen"}`); }
               }}
             />
             <MaintenanceAction

@@ -63,7 +63,7 @@ export async function POST(request: NextRequest) {
       .select("id, street_name, house_number")
       .eq("street_name", streetName)
       .eq("house_number", trimmedHouseNumber)
-      .single();
+      .maybeSingle();
 
     if (existing) {
       return NextResponse.json({
@@ -95,7 +95,7 @@ export async function POST(request: NextRequest) {
       .select("id, street_name, house_number")
       .single();
 
-    if (insertError) {
+    if (insertError || !newHousehold) {
       console.error("Haushalt-Erstellung fehlgeschlagen:", insertError);
       return NextResponse.json(
         { error: "Haushalt konnte nicht erstellt werden." },

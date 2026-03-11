@@ -1,7 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { createClient as createAdminClient } from "@supabase/supabase-js";
 import { generateSecureCode } from "@/lib/invite-codes";
 import { sendInvitationEmail } from "@/lib/email";
+
+// Ungefaehre Koordinaten pro Strasse
+const STREET_COORDS: Record<string, { lat: number; lng: number }> = {
+  "Purkersdorfer Straße": { lat: 47.5631, lng: 7.9480 },
+  "Sanarystraße": { lat: 47.5619, lng: 7.9480 },
+  "Oberer Rebberg": { lat: 47.5604, lng: 7.9480 },
+};
 
 /**
  * POST /api/invite/send
@@ -77,22 +85,36 @@ export async function POST(request: NextRequest) {
   if (existingHousehold) {
     householdId = existingHousehold.id;
   } else {
-    // Haushalt automatisch anlegen ueber interne API
-    const origin = request.headers.get("origin") || process.env.NEXT_PUBLIC_SITE_URL || "https://nachbar.io";
-    const createRes = await fetch(`${origin}/api/household/find-or-create`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ streetName: street, houseNumber }),
-    });
-    const createData = await createRes.json();
-
-    if (!createRes.ok || !createData.householdId) {
-      return NextResponse.json(
-        { error: `Haushalt konnte nicht erstellt werden` },
-        { status: 500 }
-      );
+    // Haushalt direkt per Service-Role anlegen (kein interner fetch noetig)
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    if (!supabaseUrl || !serviceKey) {
+      return NextResponse.json({ error: "Server-Konfigurationsfehler" }, { status: 500 });
     }
-    householdId = createData.householdId;
+    const adminDb = createAdminClient(supabaseUrl, serviceKey);
+    const coords = STREET_COORDS[street];
+    if (!coords) {
+      return NextResponse.json({ error: "Unbekannte Straße" }, { status: 400 });
+    }
+    const houseNum = parseInt(String(houseNumber), 10) || 0;
+    const { data: newHH, error: hhErr } = await adminDb
+      .from("households")
+      .insert({
+        street_name: street,
+        house_number: String(houseNumber).trim(),
+        lat: coords.lat,
+        lng: coords.lng + houseNum * 0.0005,
+        verified: false,
+        invite_code: generateSecureCode(),
+      })
+      .select("id")
+      .single();
+
+    if (hhErr || !newHH) {
+      console.error("Haushalt-Erstellung fehlgeschlagen:", hhErr);
+      return NextResponse.json({ error: "Haushalt konnte nicht erstellt werden" }, { status: 500 });
+    }
+    householdId = newHH.id;
   }
 
   // Einladungscode generieren

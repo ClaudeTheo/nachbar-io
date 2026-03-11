@@ -105,7 +105,7 @@ export async function POST(request: NextRequest) {
 
     // Push-Notification senden (fire-and-forget)
     try {
-      const baseUrl = request.nextUrl.origin;
+      const baseUrl = request.nextUrl.origin || process.env.NEXT_PUBLIC_SITE_URL || "https://nachbar.io";
       await fetch(`${baseUrl}/api/push/notify`, {
         method: "POST",
         headers: {
@@ -150,7 +150,7 @@ export async function POST(request: NextRequest) {
 
     // Push-Notification senden (fire-and-forget)
     try {
-      const baseUrl = request.nextUrl.origin;
+      const baseUrl = request.nextUrl.origin || process.env.NEXT_PUBLIC_SITE_URL || "https://nachbar.io";
       await fetch(`${baseUrl}/api/push/notify`, {
         method: "POST",
         headers: {

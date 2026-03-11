@@ -99,14 +99,12 @@ export function VerificationQueue() {
 
       {/* Ausstehende Anfragen */}
       {pendingRequests.length === 0 ? (
-        <Card className="border-dashed">
-          <CardContent className="py-8 text-center">
-            <CheckCircle className="mx-auto h-8 w-8 text-quartier-green/50" />
-            <p className="mt-2 text-sm text-muted-foreground">
-              Keine ausstehenden Verifizierungen
-            </p>
-          </CardContent>
-        </Card>
+        <div className="flex items-center gap-2 rounded-lg border border-dashed px-3 py-2">
+          <CheckCircle className="h-4 w-4 text-quartier-green/50" />
+          <p className="text-xs text-muted-foreground">
+            Keine ausstehenden Verifizierungen
+          </p>
+        </div>
       ) : (
         pendingRequests.map((req) => (
           <Card key={req.id} className="border-alert-amber/30 bg-alert-amber/5">

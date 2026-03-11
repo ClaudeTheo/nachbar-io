@@ -12,8 +12,18 @@ import {
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Select, SelectContent, SelectGroup, SelectItem,
+  SelectLabel, SelectTrigger, SelectValue,
+} from "@/components/ui/select";
 import { createClient } from "@/lib/supabase/client";
 import type { Alert, User, Household } from "@/lib/supabase/types";
+
+// Tab-Gruppen
+const SYSTEM_TAB_VALUES = [
+  "push", "codes", "map", "quarters", "system",
+  "external", "database", "api", "devops", "tests",
+] as const;
 
 // Admin-Komponenten
 import { UserManagement } from "./components/UserManagement";
@@ -239,134 +249,133 @@ export default function AdminPage() {
         </Button>
       </div>
 
-      {/* Tabs */}
-      <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="w-full h-auto flex-wrap gap-1 bg-muted/50 p-1">
-          <TabsTrigger value="overview" className="text-xs flex-1 min-w-[70px]">
-            <BarChart3 className="h-3.5 w-3.5 mr-1" />Uebersicht
-          </TabsTrigger>
-          <TabsTrigger value="activity" className="text-xs flex-1 min-w-[55px]">
-            <Activity className="h-3.5 w-3.5 mr-1" />Feed
-          </TabsTrigger>
-          <TabsTrigger value="users" className="text-xs flex-1 min-w-[60px]">
-            <Users className="h-3.5 w-3.5 mr-1" />Nutzer
-          </TabsTrigger>
-          <TabsTrigger value="households" className="text-xs flex-1 min-w-[70px]">
-            <Home className="h-3.5 w-3.5 mr-1" />Haushalte
-          </TabsTrigger>
-          <TabsTrigger value="content" className="text-xs flex-1 min-w-[60px]">
-            <FileText className="h-3.5 w-3.5 mr-1" />Inhalte
-          </TabsTrigger>
-          <TabsTrigger value="news" className="text-xs flex-1 min-w-[55px]">
-            <Newspaper className="h-3.5 w-3.5 mr-1" />News
-          </TabsTrigger>
-          <TabsTrigger value="events" className="text-xs flex-1 min-w-[55px]">
-            <Calendar className="h-3.5 w-3.5 mr-1" />Events
-          </TabsTrigger>
-          <TabsTrigger value="push" className="text-xs flex-1 min-w-[55px]">
-            <Megaphone className="h-3.5 w-3.5 mr-1" />Push
-          </TabsTrigger>
-          <TabsTrigger value="codes" className="text-xs flex-1 min-w-[55px]">
-            <QrCode className="h-3.5 w-3.5 mr-1" />Codes
-          </TabsTrigger>
-          <TabsTrigger value="map" className="text-xs flex-1 min-w-[55px]">
-            <MapPin className="h-3.5 w-3.5 mr-1" />Karte
-          </TabsTrigger>
-          <TabsTrigger value="quarters" className="text-xs flex-1 min-w-[65px]">
-            <Globe className="h-3.5 w-3.5 mr-1" />Quartiere
-          </TabsTrigger>
-          <TabsTrigger value="system" className="text-xs flex-1 min-w-[60px]">
-            <Eye className="h-3.5 w-3.5 mr-1" />System
-          </TabsTrigger>
-          {/* System-Admin Tabs */}
-          <TabsTrigger value="external" className="text-xs flex-1 min-w-[55px]">
-            <ExternalLink className="h-3.5 w-3.5 mr-1" />Extern
-          </TabsTrigger>
-          <TabsTrigger value="database" className="text-xs flex-1 min-w-[40px]">
-            <Database className="h-3.5 w-3.5 mr-1" />DB
-          </TabsTrigger>
-          <TabsTrigger value="api" className="text-xs flex-1 min-w-[40px]">
-            <Terminal className="h-3.5 w-3.5 mr-1" />API
-          </TabsTrigger>
-          <TabsTrigger value="devops" className="text-xs flex-1 min-w-[55px]">
-            <Wrench className="h-3.5 w-3.5 mr-1" />DevOps
-          </TabsTrigger>
-          <TabsTrigger value="tests" className="text-xs flex-1 min-w-[55px]">
-            <ClipboardList className="h-3.5 w-3.5 mr-1" />Tests
-          </TabsTrigger>
-        </TabsList>
+      {/* Navigation */}
+      <div className="space-y-2">
+        {/* Primaere Tabs: Quartier-Verwaltung */}
+        <Tabs value={SYSTEM_TAB_VALUES.includes(activeTab as typeof SYSTEM_TAB_VALUES[number]) ? "" : activeTab} onValueChange={setActiveTab}>
+          <TabsList className="w-full h-auto flex-wrap gap-1 bg-muted/50 p-1">
+            <TabsTrigger value="overview" className="text-xs flex-1 min-w-[60px]">
+              <BarChart3 className="h-3.5 w-3.5 mr-1" />Uebersicht
+            </TabsTrigger>
+            <TabsTrigger value="activity" className="text-xs flex-1 min-w-[50px]">
+              <Activity className="h-3.5 w-3.5 mr-1" />Feed
+            </TabsTrigger>
+            <TabsTrigger value="users" className="text-xs flex-1 min-w-[55px]">
+              <Users className="h-3.5 w-3.5 mr-1" />Nutzer
+            </TabsTrigger>
+            <TabsTrigger value="households" className="text-xs flex-1 min-w-[65px]">
+              <Home className="h-3.5 w-3.5 mr-1" />Haushalte
+            </TabsTrigger>
+            <TabsTrigger value="content" className="text-xs flex-1 min-w-[55px]">
+              <FileText className="h-3.5 w-3.5 mr-1" />Inhalte
+            </TabsTrigger>
+            <TabsTrigger value="news" className="text-xs flex-1 min-w-[50px]">
+              <Newspaper className="h-3.5 w-3.5 mr-1" />News
+            </TabsTrigger>
+            <TabsTrigger value="events" className="text-xs flex-1 min-w-[55px]">
+              <Calendar className="h-3.5 w-3.5 mr-1" />Events
+            </TabsTrigger>
+          </TabsList>
+        </Tabs>
 
-        {/* TAB: UEBERSICHT */}
-        <TabsContent value="overview" className="mt-4 space-y-4">
-          {stats && (
-            <>
-              <div className="grid grid-cols-2 gap-3">
-                {quickStats.map((qs, i) => (
-                  <StatCard key={i} stat={qs} />
-                ))}
-              </div>
+        {/* System-Tabs: Dropdown */}
+        <Select
+          value={SYSTEM_TAB_VALUES.includes(activeTab as typeof SYSTEM_TAB_VALUES[number]) ? activeTab : null}
+          onValueChange={(val) => setActiveTab(val as string)}
+        >
+          <SelectTrigger className="w-full h-8 text-xs">
+            <div className="flex items-center gap-2">
+              <Wrench className="h-3.5 w-3.5 text-muted-foreground" />
+              <SelectValue placeholder="System & Werkzeuge..." />
+            </div>
+          </SelectTrigger>
+          <SelectContent>
+            <SelectGroup>
+              <SelectLabel>System & Werkzeuge</SelectLabel>
+              <SelectItem value="push"><Megaphone className="h-3.5 w-3.5 text-muted-foreground" />Push</SelectItem>
+              <SelectItem value="codes"><QrCode className="h-3.5 w-3.5 text-muted-foreground" />Codes</SelectItem>
+              <SelectItem value="map"><MapPin className="h-3.5 w-3.5 text-muted-foreground" />Karte</SelectItem>
+              <SelectItem value="quarters"><Globe className="h-3.5 w-3.5 text-muted-foreground" />Quartiere</SelectItem>
+              <SelectItem value="system"><Eye className="h-3.5 w-3.5 text-muted-foreground" />System-Health</SelectItem>
+              <SelectItem value="external"><ExternalLink className="h-3.5 w-3.5 text-muted-foreground" />Externe Links</SelectItem>
+              <SelectItem value="database"><Database className="h-3.5 w-3.5 text-muted-foreground" />Datenbank</SelectItem>
+              <SelectItem value="api"><Terminal className="h-3.5 w-3.5 text-muted-foreground" />API-Tester</SelectItem>
+              <SelectItem value="devops"><Wrench className="h-3.5 w-3.5 text-muted-foreground" />DevOps</SelectItem>
+              <SelectItem value="tests"><ClipboardList className="h-3.5 w-3.5 text-muted-foreground" />Tests</SelectItem>
+            </SelectGroup>
+          </SelectContent>
+        </Select>
+      </div>
 
-              {/* Quartierspuls */}
-              <Card className="border-quartier-green/20 bg-quartier-green/5">
-                <CardContent className="p-4">
-                  <div className="flex items-center gap-2 mb-2">
-                    <TrendingUp className="h-5 w-5 text-quartier-green" />
-                    <span className="font-semibold text-anthrazit">Quartierspuls — Letzte 7 Tage</span>
-                  </div>
-                  <div className="grid grid-cols-2 gap-2 text-sm">
-                    <PulseItem label="Neue Nutzer" value={stats.recentSignups} />
-                    <PulseItem label="Belegungsquote" value={`${occupancyRate}%`} />
-                    <PulseItem label="Erledigte Alerts" value={stats.resolvedAlerts} color="text-quartier-green" />
-                    <PulseItem label="Seniorenmodus" value={stats.seniorUsers} />
-                  </div>
-                </CardContent>
-              </Card>
+      {/* Tab-Inhalte (bedingt gerendert) */}
+      <div className="mt-4">
+        {activeTab === "overview" && stats && (
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-3">
+              {quickStats.map((qs, i) => (
+                <StatCard key={i} stat={qs} />
+              ))}
+            </div>
 
-              {/* Modulnutzung */}
-              <Card>
-                <CardContent className="p-4">
-                  <h3 className="text-sm font-semibold text-anthrazit mb-3">Modulnutzung</h3>
-                  <div className="space-y-2.5">
-                    <ActivityBar label="Meldungen" value={stats.openAlerts} max={Math.max(stats.totalAlerts, 1)} color="bg-alert-amber" />
-                    <ActivityBar label="Hilfe-Boerse" value={stats.activeHelpRequests} max={Math.max(stats.activeHelpRequests + 5, 10)} color="bg-blue-500" />
-                    <ActivityBar label="Marktplatz" value={stats.activeMarketplace} max={Math.max(stats.activeMarketplace + 5, 10)} color="bg-purple-500" />
-                    <ActivityBar label="Events" value={stats.activeEvents} max={Math.max(stats.activeEvents + 3, 10)} color="bg-indigo-500" />
-                    <ActivityBar label="Fundbuero" value={stats.activeLostFound} max={Math.max(stats.activeLostFound + 3, 10)} color="bg-orange-500" />
-                    <ActivityBar label="Nachrichten" value={stats.totalMessages} max={Math.max(stats.totalMessages + 5, 10)} color="bg-quartier-green" />
-                    <ActivityBar label="News" value={stats.totalNews} max={Math.max(stats.totalNews + 5, 10)} color="bg-rose-500" />
-                  </div>
-                </CardContent>
-              </Card>
+            {/* Quartierspuls */}
+            <Card className="border-quartier-green/20 bg-quartier-green/5">
+              <CardContent className="p-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <TrendingUp className="h-5 w-5 text-quartier-green" />
+                  <span className="font-semibold text-anthrazit">Quartierspuls — Letzte 7 Tage</span>
+                </div>
+                <div className="grid grid-cols-2 gap-2 text-sm">
+                  <PulseItem label="Neue Nutzer" value={stats.recentSignups} />
+                  <PulseItem label="Belegungsquote" value={`${occupancyRate}%`} />
+                  <PulseItem label="Erledigte Alerts" value={stats.resolvedAlerts} color="text-quartier-green" />
+                  <PulseItem label="Seniorenmodus" value={stats.seniorUsers} />
+                </div>
+              </CardContent>
+            </Card>
 
-              {/* Schnellzugriff */}
-              <div className="grid grid-cols-2 gap-2">
-                <QuickActionCard icon={<AlertTriangle className="h-5 w-5 text-alert-amber" />} label="Offene Meldungen" count={stats.openAlerts} onClick={() => setActiveTab("content")} urgent={stats.openAlerts > 0} />
-                <QuickActionCard icon={<Users className="h-5 w-5 text-quartier-green" />} label="Nutzer verwalten" count={stats.totalUsers} onClick={() => setActiveTab("users")} />
-                <QuickActionCard icon={<Megaphone className="h-5 w-5 text-blue-500" />} label="Push senden" onClick={() => setActiveTab("push")} />
-                <QuickActionCard icon={<Newspaper className="h-5 w-5 text-rose-500" />} label="News erstellen" onClick={() => setActiveTab("news")} />
-              </div>
-            </>
-          )}
-        </TabsContent>
+            {/* Modulnutzung */}
+            <Card>
+              <CardContent className="p-4">
+                <h3 className="text-sm font-semibold text-anthrazit mb-3">Modulnutzung</h3>
+                <div className="space-y-2.5">
+                  <ActivityBar label="Meldungen" value={stats.openAlerts} max={Math.max(stats.totalAlerts, 1)} color="bg-alert-amber" />
+                  <ActivityBar label="Hilfe-Boerse" value={stats.activeHelpRequests} max={Math.max(stats.activeHelpRequests + 5, 10)} color="bg-blue-500" />
+                  <ActivityBar label="Marktplatz" value={stats.activeMarketplace} max={Math.max(stats.activeMarketplace + 5, 10)} color="bg-purple-500" />
+                  <ActivityBar label="Events" value={stats.activeEvents} max={Math.max(stats.activeEvents + 3, 10)} color="bg-indigo-500" />
+                  <ActivityBar label="Fundbuero" value={stats.activeLostFound} max={Math.max(stats.activeLostFound + 3, 10)} color="bg-orange-500" />
+                  <ActivityBar label="Nachrichten" value={stats.totalMessages} max={Math.max(stats.totalMessages + 5, 10)} color="bg-quartier-green" />
+                  <ActivityBar label="News" value={stats.totalNews} max={Math.max(stats.totalNews + 5, 10)} color="bg-rose-500" />
+                </div>
+              </CardContent>
+            </Card>
 
-        <TabsContent value="activity" className="mt-4"><ActivityFeed /></TabsContent>
-        <TabsContent value="users" className="mt-4"><UserManagement users={users} onRefresh={loadData} /></TabsContent>
-        <TabsContent value="households" className="mt-4"><HouseholdManagement households={households} onRefresh={loadData} /></TabsContent>
-        <TabsContent value="content" className="mt-4"><ContentModeration /></TabsContent>
-        <TabsContent value="news" className="mt-4"><NewsManagement /></TabsContent>
-        <TabsContent value="events" className="mt-4"><EventManagement /></TabsContent>
-        <TabsContent value="push" className="mt-4"><PushBroadcast /></TabsContent>
-        <TabsContent value="codes" className="mt-4"><InviteCodeManager households={households} onRefresh={loadData} /></TabsContent>
-        <TabsContent value="map" className="mt-4"><MapEditor /></TabsContent>
-        <TabsContent value="quarters" className="mt-4"><QuarterManagement /></TabsContent>
-        <TabsContent value="system" className="mt-4"><SystemHealth stats={stats} users={users} households={households} /></TabsContent>
-        {/* System-Admin Tabs */}
-        <TabsContent value="external" className="mt-4"><ExternalLinks /></TabsContent>
-        <TabsContent value="database" className="mt-4"><DatabaseOverview /></TabsContent>
-        <TabsContent value="api" className="mt-4"><ApiTester /></TabsContent>
-        <TabsContent value="devops" className="mt-4"><DevOpsPanel /></TabsContent>
-        <TabsContent value="tests" className="mt-4"><TestManagement /></TabsContent>
-      </Tabs>
+            {/* Schnellzugriff */}
+            <div className="grid grid-cols-2 gap-2">
+              <QuickActionCard icon={<AlertTriangle className="h-5 w-5 text-alert-amber" />} label="Offene Meldungen" count={stats.openAlerts} onClick={() => setActiveTab("content")} urgent={stats.openAlerts > 0} />
+              <QuickActionCard icon={<Users className="h-5 w-5 text-quartier-green" />} label="Nutzer verwalten" count={stats.totalUsers} onClick={() => setActiveTab("users")} />
+              <QuickActionCard icon={<Megaphone className="h-5 w-5 text-blue-500" />} label="Push senden" onClick={() => setActiveTab("push")} />
+              <QuickActionCard icon={<Newspaper className="h-5 w-5 text-rose-500" />} label="News erstellen" onClick={() => setActiveTab("news")} />
+            </div>
+          </div>
+        )}
+
+        {activeTab === "activity" && <ActivityFeed />}
+        {activeTab === "users" && <UserManagement users={users} onRefresh={loadData} />}
+        {activeTab === "households" && <HouseholdManagement households={households} onRefresh={loadData} />}
+        {activeTab === "content" && <ContentModeration />}
+        {activeTab === "news" && <NewsManagement />}
+        {activeTab === "events" && <EventManagement />}
+        {activeTab === "push" && <PushBroadcast />}
+        {activeTab === "codes" && <InviteCodeManager households={households} onRefresh={loadData} />}
+        {activeTab === "map" && <MapEditor />}
+        {activeTab === "quarters" && <QuarterManagement />}
+        {activeTab === "system" && <SystemHealth stats={stats} users={users} households={households} />}
+        {activeTab === "external" && <ExternalLinks />}
+        {activeTab === "database" && <DatabaseOverview />}
+        {activeTab === "api" && <ApiTester />}
+        {activeTab === "devops" && <DevOpsPanel />}
+        {activeTab === "tests" && <TestManagement />}
+      </div>
     </div>
   );
 }

@@ -11,7 +11,7 @@ test.describe("Authentifizierung", () => {
   test("Registrierungs-Seite ist erreichbar", async ({ page }) => {
     await page.goto("/register");
     await expect(page.getByText("Registrieren")).toBeVisible({ timeout: 10000 });
-    await expect(page.getByText("Schritt 1 von 4")).toBeVisible();
+    await expect(page.getByText("Schritt 1 von 5")).toBeVisible();
   });
 
   test("Login zeigt Fehler bei ungültigen Daten", async ({ page }) => {
@@ -30,7 +30,7 @@ test.describe("Authentifizierung", () => {
     await page.getByLabel("Passwort").fill("kurz");
     await page.getByRole("button", { name: "Weiter" }).click();
     // Browser-native minLength-Validierung verhindert Weiterleitung — Schritt 1 bleibt sichtbar
-    await expect(page.getByText("Schritt 1 von 4")).toBeVisible();
+    await expect(page.getByText("Schritt 1 von 5")).toBeVisible();
   });
 
   test("Link zwischen Login und Registrierung funktioniert", async ({ page }) => {

@@ -4,7 +4,7 @@ import { useEffect, useState, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, MapPin, Save } from "lucide-react";
+import { ArrowLeft, Save } from "lucide-react";
 import {
   MAP_W, MAP_H, STREET_LABELS, STREET_CODE_TO_NAME, COLOR_CFG, DEFAULT_HOUSES,
   type MapHouseData, type LampColor, type StreetCode,
@@ -21,6 +21,15 @@ export default function MapPositionPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [hasChanged, setHasChanged] = useState(false);
+
+  // Haushalt-Info fuer Create-Fall
+  const [householdInfo, setHouseholdInfo] = useState<{
+    householdId: string;
+    streetName: string;
+    houseNumber: string;
+    streetCode: StreetCode;
+  } | null>(null);
+  const [isNewEntry, setIsNewEntry] = useState(false);
 
   useEffect(() => {
     async function init() {
@@ -59,14 +68,37 @@ export default function MapPositionPage() {
       if (membership) {
         const hh = membership.households as unknown as { street_name: string; house_number: string } | null;
         if (hh) {
-          // Finde das Haus auf der Karte
           const code = (Object.entries(STREET_CODE_TO_NAME) as [StreetCode, string][])
             .find(([, name]) => name === hh.street_name)?.[0];
+
           if (code) {
+            setHouseholdInfo({
+              householdId: membership.household_id,
+              streetName: hh.street_name,
+              houseNumber: hh.house_number,
+              streetCode: code,
+            });
+
+            // Suche bestehendes Haus auf der Karte
             const found = loadedHouses.find(h => h.s === code && h.num === hh.house_number);
             if (found) {
+              // Bestehender Eintrag — Update-Modus
               setMyHouse(found);
               setPosition({ x: found.x, y: found.y });
+            } else {
+              // Kein Eintrag — Create-Modus (Punkt in der Mitte)
+              setIsNewEntry(true);
+              const newHouse: MapHouseData = {
+                id: `${code.toLowerCase()}${hh.house_number}`,
+                num: hh.house_number,
+                s: code,
+                x: Math.round(MAP_W / 2),
+                y: Math.round(MAP_H / 2),
+                defaultColor: "green",
+              };
+              setMyHouse(newHouse);
+              setPosition({ x: newHouse.x, y: newHouse.y });
+              setHasChanged(true); // Sofort als geaendert markieren
             }
           }
         }
@@ -110,20 +142,45 @@ export default function MapPositionPage() {
   }, []);
 
   async function handleSave() {
-    if (!myHouse || !position || !hasChanged) return;
+    if (!myHouse || !position || !hasChanged || !householdInfo) return;
     setSaving(true);
 
     const supabase = createClient();
-    const { error } = await supabase
-      .from("map_houses")
-      .update({ x: position.x, y: position.y })
-      .eq("id", myHouse.id);
 
-    if (error) {
-      toast.error("Position konnte nicht gespeichert werden.");
+    if (isNewEntry) {
+      // Neuen Eintrag erstellen
+      const { error } = await supabase
+        .from("map_houses")
+        .upsert({
+          id: myHouse.id,
+          house_number: householdInfo.houseNumber,
+          street_code: householdInfo.streetCode,
+          x: position.x,
+          y: position.y,
+          default_color: "green",
+          household_id: householdInfo.householdId,
+        }, { onConflict: "id" });
+
+      if (error) {
+        toast.error("Position konnte nicht gespeichert werden.");
+      } else {
+        toast.success("Position gespeichert!");
+        setHasChanged(false);
+        setIsNewEntry(false);
+      }
     } else {
-      toast.success("Position gespeichert!");
-      setHasChanged(false);
+      // Bestehenden Eintrag aktualisieren
+      const { error } = await supabase
+        .from("map_houses")
+        .update({ x: position.x, y: position.y })
+        .eq("id", myHouse.id);
+
+      if (error) {
+        toast.error("Position konnte nicht gespeichert werden.");
+      } else {
+        toast.success("Position gespeichert!");
+        setHasChanged(false);
+      }
     }
     setSaving(false);
   }
@@ -146,19 +203,18 @@ export default function MapPositionPage() {
         <div>
           <h1 className="text-xl font-bold text-anthrazit">Kartenposition</h1>
           <p className="text-sm text-muted-foreground">
-            Passen Sie die Position Ihres Hauses auf der Karte an
+            {isNewEntry
+              ? "Setzen Sie die Position Ihres Hauses auf der Karte"
+              : "Passen Sie die Position Ihres Hauses auf der Karte an"
+            }
           </p>
         </div>
       </div>
 
       {!myHouse ? (
         <div className="rounded-lg border border-border bg-muted/30 p-6 text-center">
-          <MapPin className="mx-auto h-8 w-8 text-muted-foreground/40" />
           <p className="mt-2 text-sm text-muted-foreground">
-            Ihr Haushalt ist noch nicht auf der Karte.
-          </p>
-          <p className="mt-1 text-xs text-muted-foreground/60">
-            Bitte kontaktieren Sie den Administrator.
+            Kein Haushalt zugeordnet. Bitte melden Sie sich zuerst an.
           </p>
         </div>
       ) : (

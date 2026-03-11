@@ -48,6 +48,7 @@ export function SeniorButton({
         ${className}
       `}
       style={{ minHeight: "80px" }}
+      data-testid={`senior-${label.toLowerCase().replace(/\s+/g, "-").replace(/[äöüß]/g, (c) => ({ ä: "ae", ö: "oe", ü: "ue", ß: "ss" }[c] || c))}-button`}
     >
       <span className="text-3xl" aria-hidden="true">
         {icon}

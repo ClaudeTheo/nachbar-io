@@ -8,6 +8,8 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { ImageUpload, UploadingOverlay, type PendingImage } from "@/components/ImageUpload";
+import { uploadCategoryImage } from "@/lib/storage";
 import { createClient } from "@/lib/supabase/client";
 
 const LOST_FOUND_CATEGORIES = [
@@ -28,7 +30,9 @@ export default function LostFoundNewPage() {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [locationHint, setLocationHint] = useState("");
+  const [pendingFiles, setPendingFiles] = useState<PendingImage[]>([]);
   const [saving, setSaving] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   async function handleSubmit() {
@@ -45,22 +49,50 @@ export default function LostFoundNewPage() {
         return;
       }
 
-      const { error: insertError } = await supabase.from("lost_found").insert({
-        user_id: user.id,
-        type,
-        category: category || "other",
-        title: title.trim(),
-        description: description.trim() || null,
-        location_hint: locationHint.trim() || null,
-        images: [],
-        status: "open",
-      });
+      // 1. Meldung erstellen
+      const { data: inserted, error: insertError } = await supabase
+        .from("lost_found")
+        .insert({
+          user_id: user.id,
+          type,
+          category: category || "other",
+          title: title.trim(),
+          description: description.trim() || null,
+          location_hint: locationHint.trim() || null,
+          images: [],
+          status: "open",
+        })
+        .select("id")
+        .single();
 
-      if (insertError) {
+      if (insertError || !inserted) {
         toast.error("Speichern fehlgeschlagen.");
         setError("Speichern fehlgeschlagen.");
         setSaving(false);
         return;
+      }
+
+      // 2. Bilder hochladen
+      if (pendingFiles.length > 0) {
+        setUploading(true);
+        const imageUrls: string[] = [];
+
+        for (const pf of pendingFiles) {
+          try {
+            const url = await uploadCategoryImage(supabase, "lost-found", inserted.id, pf.file);
+            imageUrls.push(url);
+          } catch {
+            // Einzelne Fehler ueberspringen
+          }
+        }
+
+        if (imageUrls.length > 0) {
+          await supabase
+            .from("lost_found")
+            .update({ images: imageUrls })
+            .eq("id", inserted.id);
+        }
+        setUploading(false);
       }
 
       toast.success("Meldung erfolgreich erstellt!");
@@ -69,11 +101,14 @@ export default function LostFoundNewPage() {
       toast.error("Netzwerkfehler. Bitte versuchen Sie es erneut.");
       setError("Netzwerkfehler.");
       setSaving(false);
+      setUploading(false);
     }
   }
 
   return (
     <div className="space-y-6">
+      {uploading && <UploadingOverlay />}
+
       <div className="flex items-center gap-3">
         <Link href="/lost-found" className="rounded-lg p-2 hover:bg-muted">
           <ArrowLeft className="h-5 w-5" />
@@ -149,6 +184,15 @@ export default function LostFoundNewPage() {
             value={locationHint}
             onChange={(e) => setLocationHint(e.target.value)}
             maxLength={100}
+          />
+
+          {/* Bilder-Upload */}
+          <ImageUpload
+            images={[]}
+            onImagesChange={() => {}}
+            pendingFiles={pendingFiles}
+            onPendingFilesChange={setPendingFiles}
+            maxImages={3}
           />
 
           {error && <p className="text-sm text-emergency-red">{error}</p>}

@@ -8,6 +8,8 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { ImageUpload, UploadingOverlay, type PendingImage } from "@/components/ImageUpload";
+import { uploadCategoryImage } from "@/lib/storage";
 import { createClient } from "@/lib/supabase/client";
 import { MARKETPLACE_TYPES, MARKETPLACE_CATEGORIES } from "@/lib/constants";
 
@@ -19,7 +21,9 @@ export default function MarketplaceNewPage() {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [price, setPrice] = useState("");
+  const [pendingFiles, setPendingFiles] = useState<PendingImage[]>([]);
   const [saving, setSaving] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   async function handleSubmit() {
@@ -38,22 +42,51 @@ export default function MarketplaceNewPage() {
         return;
       }
 
-      const { error: insertError } = await supabase.from("marketplace_items").insert({
-        user_id: user.id,
-        type,
-        category,
-        title: title.trim(),
-        description: description.trim() || null,
-        price: price ? parseFloat(price) : null,
-        images: [],
-        status: "active",
-      });
+      // 1. Inserat erstellen
+      const { data: inserted, error: insertError } = await supabase
+        .from("marketplace_items")
+        .insert({
+          user_id: user.id,
+          type,
+          category,
+          title: title.trim(),
+          description: description.trim() || null,
+          price: price ? parseFloat(price) : null,
+          images: [],
+          status: "active",
+        })
+        .select("id")
+        .single();
 
-      if (insertError) {
+      if (insertError || !inserted) {
         toast.error("Speichern fehlgeschlagen.");
         setError("Speichern fehlgeschlagen.");
         setSaving(false);
         return;
+      }
+
+      // 2. Bilder hochladen (falls vorhanden)
+      if (pendingFiles.length > 0) {
+        setUploading(true);
+        const imageUrls: string[] = [];
+
+        for (const pf of pendingFiles) {
+          try {
+            const url = await uploadCategoryImage(supabase, "marketplace", inserted.id, pf.file);
+            imageUrls.push(url);
+          } catch {
+            // Einzelne Fehler ueberspringen
+          }
+        }
+
+        // 3. Inserat mit Bild-URLs aktualisieren
+        if (imageUrls.length > 0) {
+          await supabase
+            .from("marketplace_items")
+            .update({ images: imageUrls })
+            .eq("id", inserted.id);
+        }
+        setUploading(false);
       }
 
       toast.success("Inserat erfolgreich erstellt!");
@@ -62,11 +95,14 @@ export default function MarketplaceNewPage() {
       toast.error("Netzwerkfehler. Bitte versuchen Sie es erneut.");
       setError("Netzwerkfehler.");
       setSaving(false);
+      setUploading(false);
     }
   }
 
   return (
     <div className="space-y-6">
+      {uploading && <UploadingOverlay />}
+
       <div className="flex items-center gap-3">
         <Link href="/marketplace" className="rounded-lg p-2 hover:bg-muted">
           <ArrowLeft className="h-5 w-5" />
@@ -86,7 +122,7 @@ export default function MarketplaceNewPage() {
         ))}
       </div>
 
-      {/* Schritt 1: Typ wählen */}
+      {/* Schritt 1: Typ waehlen */}
       {step === 1 && (
         <div className="space-y-4">
           <p className="text-muted-foreground">Was möchten Sie tun?</p>
@@ -157,6 +193,16 @@ export default function MarketplaceNewPage() {
                   <span className="text-sm text-muted-foreground">€</span>
                 </div>
               )}
+
+              {/* Bilder-Upload */}
+              <ImageUpload
+                images={[]}
+                onImagesChange={() => {}}
+                pendingFiles={pendingFiles}
+                onPendingFilesChange={setPendingFiles}
+                maxImages={3}
+              />
+
               <Button
                 onClick={() => setStep(3)}
                 disabled={!title.trim()}
@@ -182,6 +228,13 @@ export default function MarketplaceNewPage() {
             <h3 className="mt-1 text-lg font-bold text-anthrazit">{title}</h3>
             {description && <p className="mt-2 text-sm text-muted-foreground">{description}</p>}
             {price && <p className="mt-2 font-bold text-anthrazit">{price} €</p>}
+            {pendingFiles.length > 0 && (
+              <div className="mt-3 flex gap-2">
+                {pendingFiles.map((pf, i) => (
+                  <img key={i} src={pf.preview} alt="" className="h-16 w-16 rounded-lg object-cover" />
+                ))}
+              </div>
+            )}
           </div>
 
           {error && <p className="text-sm text-emergency-red">{error}</p>}

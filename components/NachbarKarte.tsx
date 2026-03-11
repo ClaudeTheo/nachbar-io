@@ -171,12 +171,18 @@ export function NachbarKarte() {
     setSelectedHouse(h);
   }, []);
 
+  // Nur Haeuser mit registrierten Bewohnern zaehlen
+  const occupiedIds = new Set(
+    houses
+      .filter((h) => residentCounts[`${h.s}:${h.num}`])
+      .map((h) => h.id),
+  );
   const counts = {
-    green: Object.values(statuses).filter((s) => s === "green").length,
-    red: Object.values(statuses).filter((s) => s === "red").length,
-    yellow: Object.values(statuses).filter((s) => s === "yellow").length,
-    blue: Object.values(statuses).filter((s) => s === "blue").length,
-    orange: Object.values(statuses).filter((s) => s === "orange").length,
+    green: Object.entries(statuses).filter(([id, s]) => s === "green" && occupiedIds.has(id)).length,
+    red: Object.entries(statuses).filter(([id, s]) => s === "red" && occupiedIds.has(id)).length,
+    yellow: Object.entries(statuses).filter(([id, s]) => s === "yellow" && occupiedIds.has(id)).length,
+    blue: Object.entries(statuses).filter(([id, s]) => s === "blue" && occupiedIds.has(id)).length,
+    orange: Object.entries(statuses).filter(([id, s]) => s === "orange" && occupiedIds.has(id)).length,
   };
 
   const filterItems: { key: string; label: string; color: string; bg: string }[] = [
@@ -253,6 +259,10 @@ export function NachbarKarte() {
 
           {/* Lampen-Marker */}
           {houses.map((h) => {
+            // Nur Haeuser mit registrierten Bewohnern anzeigen
+            const houseKey = `${h.s}:${h.num}`;
+            if (!residentCounts[houseKey]) return null;
+
             const color = statuses[h.id];
             if (!color) return null;
             const cfg = COLOR_CFG[color];
@@ -338,7 +348,7 @@ export function NachbarKarte() {
 
       {/* Fusszeile */}
       <div className="text-xs text-muted-foreground">
-        {houses.length} Häuser · {counts.green} Grün · {counts.red} Rot · {counts.yellow} Gelb
+        {Object.values(residentCounts).filter(c => c > 0).length} Nachbarn im Quartier
         {counts.blue > 0 && ` · ${counts.blue} Urlaub`}
         {counts.orange > 0 && ` · ${counts.orange} Paket`}
       </div>

@@ -28,7 +28,7 @@ export default function SeniorHomePage() {
   return (
     <div className="space-y-6">
       {/* Begrüßung */}
-      <div className="text-center">
+      <div className="text-center" data-testid="senior-greeting">
         <p className="senior-heading text-anthrazit">
           Guten Tag{userName ? `, ${userName}` : ""}!
         </p>

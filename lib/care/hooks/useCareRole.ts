@@ -1,0 +1,54 @@
+// lib/care/hooks/useCareRole.ts
+'use client';
+
+import { useEffect, useState } from 'react';
+import { createClient } from '@/lib/supabase/client';
+import type { CareUserRole } from '../types';
+
+/**
+ * Ermittelt die Care-Rolle des aktuellen Users
+ * im Kontext eines bestimmten Seniors.
+ */
+export function useCareRole(seniorId?: string) {
+  const [role, setRole] = useState<CareUserRole>('none');
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (!seniorId) { setLoading(false); return; }
+
+    const supabase = createClient();
+
+    async function load() {
+      setLoading(true);
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) { setRole('none'); setLoading(false); return; }
+
+      // Senior selbst?
+      if (user.id === seniorId) { setRole('senior'); setLoading(false); return; }
+
+      // Admin?
+      const { data: userData } = await supabase
+        .from('users').select('is_admin').eq('id', user.id).single();
+      if (userData?.is_admin) { setRole('admin'); setLoading(false); return; }
+
+      // Helfer?
+      const { data: helper } = await supabase
+        .from('care_helpers')
+        .select('role, assigned_seniors')
+        .eq('user_id', user.id)
+        .eq('verification_status', 'verified')
+        .single();
+
+      if (helper?.assigned_seniors?.includes(seniorId)) {
+        setRole(helper.role as CareUserRole);
+      } else {
+        setRole('none');
+      }
+      setLoading(false);
+    }
+
+    load();
+  }, [seniorId]);
+
+  return { role, loading };
+}

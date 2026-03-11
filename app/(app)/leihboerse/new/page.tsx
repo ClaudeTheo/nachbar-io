@@ -8,6 +8,8 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { ImageUpload, UploadingOverlay, type PendingImage } from "@/components/ImageUpload";
+import { uploadCategoryImage } from "@/lib/storage";
 import { createClient } from "@/lib/supabase/client";
 import { LEIHBOERSE_CATEGORIES } from "@/lib/constants";
 
@@ -24,7 +26,9 @@ export default function LeihboerseNewPage() {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [deposit, setDeposit] = useState("");
+  const [pendingFiles, setPendingFiles] = useState<PendingImage[]>([]);
   const [saving, setSaving] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   async function handleSubmit() {
@@ -41,39 +45,64 @@ export default function LeihboerseNewPage() {
         return;
       }
 
-      const { error: insertError } = await supabase.from("leihboerse_items").insert({
-        user_id: user.id,
-        type,
-        category,
-        title: title.trim(),
-        description: description.trim() || null,
-        deposit: deposit.trim() || null,
-        status: "active",
-      });
+      // 1. Eintrag erstellen
+      const { data: inserted, error: insertError } = await supabase
+        .from("leihboerse_items")
+        .insert({
+          user_id: user.id,
+          type,
+          category,
+          title: title.trim(),
+          description: description.trim() || null,
+          deposit: deposit.trim() || null,
+          status: "active",
+        })
+        .select("id")
+        .single();
 
-      if (insertError) {
+      if (insertError || !inserted) {
         toast.error("Speichern fehlgeschlagen.");
         setError("Speichern fehlgeschlagen.");
         setSaving(false);
         return;
       }
 
-      toast.success("Angebot erfolgreich erstellt!");
+      // 2. Bild hochladen (falls vorhanden)
+      if (pendingFiles.length > 0) {
+        setUploading(true);
+        try {
+          const url = await uploadCategoryImage(supabase, "leihboerse", inserted.id, pendingFiles[0].file);
+          await supabase
+            .from("leihboerse_items")
+            .update({ image_url: url })
+            .eq("id", inserted.id);
+        } catch {
+          // Bild-Upload-Fehler ueberspringen
+        }
+        setUploading(false);
+      }
+
+      toast.success(type === "borrow" ? "Anfrage erfolgreich erstellt!" : "Angebot erfolgreich erstellt!");
       setStep(4);
     } catch {
       toast.error("Netzwerkfehler.");
       setError("Netzwerkfehler.");
       setSaving(false);
+      setUploading(false);
     }
   }
 
   return (
     <div className="space-y-6">
+      {uploading && <UploadingOverlay />}
+
       <div className="flex items-center gap-3">
         <Link href="/leihboerse" className="rounded-lg p-2 hover:bg-muted">
           <ArrowLeft className="h-5 w-5" />
         </Link>
-        <h1 className="text-xl font-bold text-anthrazit">Neues Angebot</h1>
+        <h1 className="text-xl font-bold text-anthrazit">
+          {type === "borrow" ? "Neue Anfrage" : "Neues Angebot"}
+        </h1>
       </div>
 
       {/* Schrittanzeige */}
@@ -148,6 +177,16 @@ export default function LeihboerseNewPage() {
                   maxLength={30}
                 />
               )}
+
+              {/* Bild-Upload */}
+              <ImageUpload
+                images={[]}
+                onImagesChange={() => {}}
+                pendingFiles={pendingFiles}
+                onPendingFilesChange={setPendingFiles}
+                maxImages={1}
+              />
+
               <Button
                 onClick={() => setStep(3)}
                 disabled={!title.trim()}
@@ -174,6 +213,11 @@ export default function LeihboerseNewPage() {
             <h3 className="mt-1 text-lg font-bold text-anthrazit">{title}</h3>
             {description && <p className="mt-2 text-sm text-muted-foreground">{description}</p>}
             {deposit && <p className="mt-2 text-sm font-medium text-anthrazit">Pfand: {deposit}</p>}
+            {pendingFiles.length > 0 && (
+              <div className="mt-3">
+                <img src={pendingFiles[0].preview} alt="" className="h-20 w-20 rounded-lg object-cover" />
+              </div>
+            )}
           </div>
 
           {error && <p className="text-sm text-emergency-red">{error}</p>}
@@ -185,7 +229,7 @@ export default function LeihboerseNewPage() {
               disabled={saving}
               className="flex-1 bg-quartier-green hover:bg-quartier-green-dark"
             >
-              {saving ? "Wird erstellt..." : "Angebot erstellen"}
+              {saving ? "Wird erstellt..." : type === "borrow" ? "Anfrage erstellen" : "Angebot erstellen"}
             </Button>
           </div>
         </div>
@@ -197,7 +241,9 @@ export default function LeihboerseNewPage() {
           <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-quartier-green/10">
             <Check className="h-8 w-8 text-quartier-green" />
           </div>
-          <h2 className="text-lg font-bold text-anthrazit">Angebot erstellt!</h2>
+          <h2 className="text-lg font-bold text-anthrazit">
+            {type === "borrow" ? "Anfrage erstellt!" : "Angebot erstellt!"}
+          </h2>
           <p className="mt-2 text-muted-foreground">Ihre Nachbarn können es jetzt sehen.</p>
           <Button onClick={() => router.push("/leihboerse")} className="mt-4 bg-quartier-green hover:bg-quartier-green-dark">
             Zur Leihbörse

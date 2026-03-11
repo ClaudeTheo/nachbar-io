@@ -19,6 +19,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { createClient } from "@/lib/supabase/client";
+import { createNotification } from "@/lib/notifications";
 import { EVENT_CATEGORIES } from "@/lib/constants";
 import type { Event, EventParticipant } from "@/lib/supabase/types";
 import { format, parseISO, isToday, isTomorrow } from "date-fns";
@@ -147,6 +148,18 @@ export default function EventDetailPage() {
           ? "Sie nehmen jetzt teil!"
           : "Sie wurden als interessiert markiert."
       );
+
+      // Organisator benachrichtigen
+      if (event.user_id) {
+        createNotification({
+          userId: event.user_id,
+          type: "event_participation",
+          title: status === "going" ? "Neuer Teilnehmer" : "Jemand ist interessiert",
+          body: `Ein Nachbar ${status === "going" ? "nimmt an" : "interessiert sich für"} „${event.title}".`,
+          referenceId: event.id,
+          referenceType: "event",
+        });
+      }
 
       // Teilnehmer-Liste neu laden
       const { data: refreshed } = await supabase

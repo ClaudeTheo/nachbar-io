@@ -158,7 +158,7 @@ function EventCard({ event }: { event: Event }) {
   return (
     <button
       onClick={() => router.push(`/events/${event.id}`)}
-      className="w-full rounded-lg border border-border bg-white p-4 shadow-sm text-left transition-all hover:border-quartier-green hover:shadow-md active:scale-[0.99]"
+      className="card-interactive w-full rounded-lg border border-border bg-white p-4 shadow-soft text-left"
     >
       <div className="flex items-start gap-3">
         {/* Kategorie-Icon */}

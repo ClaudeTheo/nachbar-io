@@ -1,0 +1,27 @@
+// lib/care/hooks/useHelpers.ts
+'use client';
+
+import { useCallback, useEffect, useState } from 'react';
+import type { CareHelper } from '../types';
+
+export function useHelpers(seniorId?: string, role?: string) {
+  const [helpers, setHelpers] = useState<CareHelper[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const load = useCallback(async () => {
+    if (!seniorId) { setLoading(false); return; }
+    setLoading(true);
+    const params = new URLSearchParams({ senior_id: seniorId });
+    if (role) params.set('role', role);
+
+    try {
+      const res = await fetch(`/api/care/helpers?${params}`);
+      if (res.ok) setHelpers(await res.json());
+    } catch { /* silent */ }
+    setLoading(false);
+  }, [seniorId, role]);
+
+  useEffect(() => { load(); }, [load]);
+
+  return { helpers, loading, refetch: load };
+}

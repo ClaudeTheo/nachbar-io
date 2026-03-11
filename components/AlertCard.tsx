@@ -35,12 +35,13 @@ export function AlertCard({ alert, onHelp, onView, compact = false, reputationLe
 
   return (
     <Card
-      className={`overflow-hidden transition-shadow hover:shadow-md ${
+      className={`card-interactive overflow-hidden shadow-soft ${
         alert.status === "open" ? "border-alert-amber/50" : ""
       } ${compact ? "" : "cursor-pointer"}`}
       onClick={() => onView?.(alert.id)}
       role="article"
       aria-label={`Hilfeanfrage: ${alert.title}`}
+      data-testid="alert-card"
     >
       <CardContent className={compact ? "p-3" : "p-4"}>
         <div className="flex items-start gap-3">

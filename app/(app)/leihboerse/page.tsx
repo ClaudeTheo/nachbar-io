@@ -32,7 +32,11 @@ export default function LeihboersePage() {
       if (filterType) query = query.eq("type", filterType);
       if (filterCategory) query = query.eq("category", filterCategory);
 
-      const { data } = await query;
+      const { data, error } = await query;
+      if (error) {
+        console.error("Leihboerse laden fehlgeschlagen:", error.message);
+        return;
+      }
       if (data) setItems(data as unknown as LeihboerseItem[]);
     }
     load();
@@ -52,7 +56,7 @@ export default function LeihboersePage() {
           className="flex items-center gap-1 rounded-lg bg-quartier-green px-3 py-2 text-sm font-semibold text-white hover:bg-quartier-green-dark"
         >
           <Plus className="h-4 w-4" />
-          Angebot
+          Neu
         </Link>
       </div>
 
@@ -98,9 +102,9 @@ export default function LeihboersePage() {
       {items.length === 0 ? (
         <div className="py-12 text-center">
           <div className="mb-2 text-4xl">🔄</div>
-          <p className="text-muted-foreground">Noch keine Angebote vorhanden.</p>
+          <p className="text-muted-foreground">Noch keine Einträge vorhanden.</p>
           <Link href="/leihboerse/new" className="mt-2 inline-block text-sm text-quartier-green hover:underline">
-            Erstellen Sie das erste Angebot.
+            Erstellen Sie den ersten Eintrag.
           </Link>
         </div>
       ) : (
@@ -125,8 +129,12 @@ function LeihboerseCard({ item }: { item: LeihboerseItem }) {
       className="block rounded-lg border border-border bg-white p-4 shadow-sm transition-shadow hover:shadow-md"
     >
       <div className="flex gap-3">
-        <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-lg bg-muted text-2xl">
-          {category?.icon ?? "📦"}
+        <div className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-muted text-2xl">
+          {item.image_url ? (
+            <img src={item.image_url} alt="" className="h-full w-full object-cover" />
+          ) : (
+            category?.icon ?? "📦"
+          )}
         </div>
         <div className="min-w-0 flex-1">
           <h3 className="truncate font-semibold text-anthrazit">{item.title}</h3>

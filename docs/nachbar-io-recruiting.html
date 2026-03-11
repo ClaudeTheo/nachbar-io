@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NACHBAR.IO — Recruiting Package</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#0a0a0a;color:#e5e5e5;line-height:1.7;overflow-x:hidden}
+
+/* Hero */
+.hero{min-height:100vh;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:60px 40px;background:radial-gradient(ellipse at 50% 0%,rgba(76,175,135,0.15) 0%,transparent 60%),radial-gradient(ellipse at 80% 80%,rgba(45,49,66,0.3) 0%,transparent 50%);position:relative}
+.hero::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(76,175,135,0.5),transparent)}
+.badge{display:inline-block;padding:6px 20px;border:1px solid rgba(76,175,135,0.4);border-radius:100px;font-size:13px;font-weight:500;color:#4CAF87;letter-spacing:2px;text-transform:uppercase;margin-bottom:40px}
+.hero h1{font-size:clamp(48px,8vw,96px);font-weight:900;color:#fff;letter-spacing:-2px;line-height:1.05;margin-bottom:24px}
+.hero h1 span{color:#4CAF87}
+.hero .subtitle{font-size:clamp(18px,2.5vw,24px);font-weight:300;color:#999;max-width:700px;margin-bottom:50px}
+.hero-stats{display:flex;gap:60px;flex-wrap:wrap;justify-content:center}
+.hero-stat{text-align:center}
+.hero-stat .num{font-size:48px;font-weight:800;color:#fff;display:block;line-height:1}
+.hero-stat .label{font-size:13px;color:#666;text-transform:uppercase;letter-spacing:1px;margin-top:8px}
+.scroll-hint{position:absolute;bottom:40px;color:#444;font-size:13px;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:0.3}50%{opacity:1}}
+
+/* Sections */
+section{max-width:1100px;margin:0 auto;padding:100px 40px}
+.section-label{font-size:12px;font-weight:600;color:#4CAF87;text-transform:uppercase;letter-spacing:3px;margin-bottom:16px}
+section h2{font-size:clamp(32px,4vw,48px);font-weight:800;color:#fff;letter-spacing:-1px;margin-bottom:24px;line-height:1.15}
+section p{font-size:17px;color:#999;max-width:750px;margin-bottom:20px}
+.divider{width:60px;height:3px;background:#4CAF87;border-radius:2px}
+.div-wrap{max-width:1100px;margin:0 auto;padding:0 40px}
+
+/* Problem Cards */
+.problem-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:24px;margin-top:50px}
+.problem-card{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:16px;padding:32px;transition:all 0.3s}
+.problem-card:hover{border-color:rgba(239,68,68,0.3);background:rgba(239,68,68,0.03)}
+.problem-card .icon{font-size:32px;margin-bottom:16px}
+.problem-card h3{font-size:18px;font-weight:700;color:#fff;margin-bottom:10px}
+.problem-card p{font-size:15px;color:#777;margin:0}
+
+/* Built Grid */
+.built-grid{display:grid;grid-template-columns:1fr 1fr;gap:32px;margin-top:50px}
+@media(max-width:768px){.built-grid{grid-template-columns:1fr}.hero-stats{gap:30px}.roles-grid{grid-template-columns:1fr !important}}
+.built-card{background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.06);border-radius:16px;padding:36px;transition:all 0.3s}
+.built-card:hover{border-color:rgba(76,175,135,0.3);background:rgba(76,175,135,0.02)}
+.built-card h3{font-size:20px;font-weight:700;color:#fff;margin-bottom:20px}
+.built-list{list-style:none;padding:0}
+.built-list li{padding:8px 0;font-size:15px;color:#999;border-bottom:1px solid rgba(255,255,255,0.04);display:flex;align-items:center;gap:10px}
+.built-list li:last-child{border:none}
+.check{color:#4CAF87;font-weight:700;font-size:14px;flex-shrink:0}
+
+/* Tech Grid */
+.tech-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-top:40px}
+.tech-item{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:12px;padding:20px 24px;text-align:center;transition:all 0.3s}
+.tech-item:hover{border-color:rgba(76,175,135,0.3);transform:translateY(-2px)}
+.tech-item .name{font-weight:700;color:#fff;font-size:16px}
+.tech-item .desc{font-size:12px;color:#666;margin-top:4px}
+
+/* Roles */
+.roles-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:28px;margin-top:50px}
+.role-card{background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.06);border-radius:16px;padding:40px;transition:all 0.3s;position:relative;overflow:hidden}
+.role-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#4CAF87,#2D3142);opacity:0;transition:opacity 0.3s}
+.role-card:hover::before{opacity:1}
+.role-card:hover{border-color:rgba(76,175,135,0.2)}
+.role-card .role-icon{font-size:36px;margin-bottom:20px}
+.role-card h3{font-size:22px;font-weight:700;color:#fff;margin-bottom:14px}
+.role-card p{font-size:15px;color:#777;margin-bottom:20px}
+.role-tags{display:flex;flex-wrap:wrap;gap:8px}
+.role-tag{display:inline-block;padding:4px 12px;background:rgba(76,175,135,0.1);border:1px solid rgba(76,175,135,0.2);border-radius:100px;font-size:12px;color:#4CAF87;font-weight:500}
+
+/* Roadmap */
+.roadmap{margin-top:50px;position:relative}
+.roadmap::before{content:'';position:absolute;left:24px;top:0;bottom:0;width:2px;background:rgba(76,175,135,0.2)}
+.roadmap-item{display:flex;gap:32px;margin-bottom:40px;position:relative}
+.roadmap-dot{width:50px;height:50px;border-radius:50%;background:rgba(76,175,135,0.15);border:2px solid #4CAF87;display:flex;align-items:center;justify-content:center;font-weight:800;color:#4CAF87;font-size:18px;flex-shrink:0;z-index:1}
+.roadmap-item.active .roadmap-dot{background:#4CAF87;color:#000}
+.roadmap-content h3{font-size:20px;font-weight:700;color:#fff;margin-bottom:6px}
+.roadmap-content p{font-size:15px;color:#777;margin:0}
+
+/* Why Grid */
+.why-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:28px;margin-top:50px}
+.why-card{padding:32px;border-left:3px solid #4CAF87}
+.why-card .num{font-size:48px;font-weight:900;color:rgba(76,175,135,0.2);line-height:1;margin-bottom:12px}
+.why-card h3{font-size:18px;font-weight:700;color:#fff;margin-bottom:8px}
+.why-card p{font-size:15px;color:#777;margin:0}
+
+/* CTA */
+.cta{text-align:center;padding:120px 40px;background:radial-gradient(ellipse at 50% 100%,rgba(76,175,135,0.1) 0%,transparent 60%);position:relative}
+.cta::after{content:'';position:absolute;bottom:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(76,175,135,0.5),transparent)}
+.cta h2{font-size:clamp(36px,5vw,56px);font-weight:900;color:#fff;margin-bottom:20px;max-width:100%}
+.cta p{font-size:18px;color:#999;max-width:600px;margin:0 auto 40px}
+.cta-button{display:inline-block;padding:16px 48px;background:#4CAF87;color:#000;font-weight:700;font-size:16px;border-radius:100px;text-decoration:none;transition:all 0.3s;letter-spacing:0.5px}
+.cta-button:hover{background:#5cc99a;transform:translateY(-2px);box-shadow:0 8px 30px rgba(76,175,135,0.3)}
+.footer{text-align:center;padding:40px;color:#444;font-size:13px}
+</style>
+</head>
+<body>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="badge">Pre-Seed &middot; Technical MVP &middot; Bad S&auml;ckingen, Germany</div>
+  <h1>NACHBAR<span>.IO</span></h1>
+  <p class="subtitle">Hyperlocal Care &amp; Community Platform &mdash; helping elderly people live independently at home, longer, safer, and more connected.</p>
+  <div class="hero-stats">
+    <div class="hero-stat"><span class="num">38</span><span class="label">API Endpoints</span></div>
+    <div class="hero-stat"><span class="num">44</span><span class="label">Database Tables</span></div>
+    <div class="hero-stat"><span class="num">33</span><span class="label">Migrations</span></div>
+    <div class="hero-stat"><span class="num">1</span><span class="label">Hardware Terminal</span></div>
+  </div>
+  <div class="scroll-hint">&darr; Scroll to explore</div>
+</div>
+
+<!-- PROBLEM -->
+<section>
+  <div class="section-label">The Problem</div>
+  <h2>Europe is aging. The infrastructure isn&rsquo;t ready.</h2>
+  <p>5.6 million people in Germany need care. Most want to stay home. But the system is failing them.</p>
+  <div class="problem-grid">
+    <div class="problem-card"><div class="icon">&#9201;</div><h3>Delayed Emergencies</h3><p>Seniors living alone may not be found for hours or days after a fall or medical event.</p></div>
+    <div class="problem-card"><div class="icon">&#128138;</div><h3>Missed Medication</h3><p>Without reminders and tracking, medication adherence drops dramatically.</p></div>
+    <div class="problem-card"><div class="icon">&#128148;</div><h3>Loneliness Epidemic</h3><p>Social isolation is as deadly as smoking 15 cigarettes a day. Millions are affected.</p></div>
+    <div class="problem-card"><div class="icon">&#128170;</div><h3>Caregiver Overload</h3><p>Family and professional caregivers are stretched thin with no shared coordination tools.</p></div>
+    <div class="problem-card"><div class="icon">&#128268;</div><h3>Fragmented Systems</h3><p>Neighbors, family, caregivers, and municipalities don&rsquo;t share a common platform.</p></div>
+  </div>
+</section>
+
+<div class="div-wrap"><div class="divider"></div></div>
+
+<!-- SOLUTION -->
+<section>
+  <div class="section-label">The Solution</div>
+  <h2>Turn neighborhoods into care networks.</h2>
+  <p>Nachbar.io connects seniors, neighbors, families, caregivers, and municipalities through one system &mdash; combining a modern web platform with dedicated hardware for people who can&rsquo;t use smartphones.</p>
+  <p style="color:#4CAF87;font-weight:600;">The neighborhood is the smallest and most effective unit of care. Nachbar.io makes that network visible, organized, and reliable.</p>
+</section>
+
+<div class="div-wrap"><div class="divider"></div></div>
+
+<!-- WHAT'S BUILT -->
+<section>
+  <div class="section-label">Already Built</div>
+  <h2>This is not a pitch deck.<br>It&rsquo;s a running system.</h2>
+  <div class="built-grid">
+    <div class="built-card">
+      <h3>&#127760; Web Platform</h3>
+      <ul class="built-list">
+        <li><span class="check">&#10003;</span> 38 production API routes</li>
+        <li><span class="check">&#10003;</span> SOS emergency with escalation</li>
+        <li><span class="check">&#10003;</span> Daily check-in monitoring</li>
+        <li><span class="check">&#10003;</span> Medication tracking &amp; reminders</li>
+        <li><span class="check">&#10003;</span> Appointment management</li>
+        <li><span class="check">&#10003;</span> Helper network coordination</li>
+        <li><span class="check">&#10003;</span> Care reports (PDF export)</li>
+        <li><span class="check">&#10003;</span> Encrypted care data &amp; audit log</li>
+        <li><span class="check">&#10003;</span> Admin dashboards &amp; moderation</li>
+        <li><span class="check">&#10003;</span> Push notifications (PWA)</li>
+      </ul>
+    </div>
+    <div class="built-card">
+      <h3>&#128187; Hardware Terminal</h3>
+      <ul class="built-list">
+        <li><span class="check">&#10003;</span> ESP32-S3 with 7.5&quot; E-Paper display</li>
+        <li><span class="check">&#10003;</span> 3-button navigation (SOS, Check-in, Status)</li>
+        <li><span class="check">&#10003;</span> Home screen: weather, time, messages</li>
+        <li><span class="check">&#10003;</span> Alert view with categories</li>
+        <li><span class="check">&#10003;</span> Emergency screen (112 prompt)</li>
+        <li><span class="check">&#10003;</span> Check-in confirmation</li>
+        <li><span class="check">&#10003;</span> WiFi auto-connect &amp; NTP sync</li>
+        <li><span class="check">&#10003;</span> Adaptive polling intervals</li>
+      </ul>
+    </div>
+    <div class="built-card">
+      <h3>&#128101; Community Features</h3>
+      <ul class="built-list">
+        <li><span class="check">&#10003;</span> Interactive neighborhood map (76 houses)</li>
+        <li><span class="check">&#10003;</span> Alerts &amp; help requests</li>
+        <li><span class="check">&#10003;</span> Events &amp; marketplace</li>
+        <li><span class="check">&#10003;</span> Lending library &amp; lost+found</li>
+        <li><span class="check">&#10003;</span> Polls &amp; direct messaging</li>
+        <li><span class="check">&#10003;</span> Package reception system</li>
+      </ul>
+    </div>
+    <div class="built-card">
+      <h3>&#128220; Documentation</h3>
+      <ul class="built-list">
+        <li><span class="check">&#10003;</span> 16 concept documents</li>
+        <li><span class="check">&#10003;</span> API reference</li>
+        <li><span class="check">&#10003;</span> Database schema &amp; RLS docs</li>
+        <li><span class="check">&#10003;</span> GDPR compliance design</li>
+        <li><span class="check">&#10003;</span> Deployment &amp; pilot readiness</li>
+        <li><span class="check">&#10003;</span> Competitive analysis</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<div class="div-wrap"><div class="divider"></div></div>
+
+<!-- TECH STACK -->
+<section>
+  <div class="section-label">Technology</div>
+  <h2>Modern stack. No legacy. Clean architecture.</h2>
+  <div class="tech-grid">
+    <div class="tech-item"><div class="name">Next.js 16</div><div class="desc">App Router, SSR, API Routes</div></div>
+    <div class="tech-item"><div class="name">React 19</div><div class="desc">Server Components</div></div>
+    <div class="tech-item"><div class="name">TypeScript 5</div><div class="desc">Strict Mode</div></div>
+    <div class="tech-item"><div class="name">Tailwind CSS 4</div><div class="desc">+ shadcn/ui</div></div>
+    <div class="tech-item"><div class="name">Supabase</div><div class="desc">PostgreSQL + Auth + Realtime</div></div>
+    <div class="tech-item"><div class="name">Vercel</div><div class="desc">Edge Deployment</div></div>
+    <div class="tech-item"><div class="name">ESP32-S3</div><div class="desc">PlatformIO + Arduino</div></div>
+    <div class="tech-item"><div class="name">GxEPD2</div><div class="desc">7.5&quot; E-Paper Driver</div></div>
+    <div class="tech-item"><div class="name">Web Push</div><div class="desc">No Third-Party</div></div>
+    <div class="tech-item"><div class="name">Claude API</div><div class="desc">AI News Aggregation</div></div>
+    <div class="tech-item"><div class="name">Playwright</div><div class="desc">E2E Testing</div></div>
+    <div class="tech-item"><div class="name">Vitest</div><div class="desc">Unit Testing</div></div>
+  </div>
+</section>
+
+<div class="div-wrap"><div class="divider"></div></div>
+
+<!-- ROADMAP -->
+<section>
+  <div class="section-label">Roadmap</div>
+  <h2>From one neighborhood to a platform.</h2>
+  <div class="roadmap">
+    <div class="roadmap-item active">
+      <div class="roadmap-dot">1</div>
+      <div class="roadmap-content">
+        <h3>Pilot &mdash; Bad S&auml;ckingen</h3>
+        <p>1 neighborhood, 30&ndash;40 households. Validate core features, refine UX with real seniors. <strong style="color:#4CAF87">We are here.</strong></p>
+      </div>
+    </div>
+    <div class="roadmap-item">
+      <div class="roadmap-dot">2</div>
+      <div class="roadmap-content">
+        <h3>Multi-Neighborhood</h3>
+        <p>5&ndash;10 neighborhoods in 2&ndash;3 cities. Scalability, onboarding automation, municipal partnerships.</p>
+      </div>
+    </div>
+    <div class="roadmap-item">
+      <div class="roadmap-dot">3</div>
+      <div class="roadmap-content">
+        <h3>City-Wide</h3>
+        <p>Full city deployments. Municipal smart-city integration, care service provider partnerships.</p>
+      </div>
+    </div>
+    <div class="roadmap-item">
+      <div class="roadmap-dot">4</div>
+      <div class="roadmap-content">
+        <h3>Platform &mdash; B2B SaaS</h3>
+        <p>White-label for municipalities, care providers, and housing companies. Multi-city, multi-country.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="div-wrap"><div class="divider"></div></div>
+
+<!-- ROLES -->
+<section>
+  <div class="section-label">Join Us</div>
+  <h2>Build something that matters.</h2>
+  <p>Every feature you build will be used by real seniors in a real neighborhood. The feedback loop is weeks, not years.</p>
+  <div class="roles-grid">
+    <div class="role-card">
+      <div class="role-icon">&#128187;</div>
+      <h3>Software Engineers</h3>
+      <p>Full-stack, frontend, or backend. Work on care workflows, real-time features, admin dashboards, and PWA capabilities.</p>
+      <div class="role-tags">
+        <span class="role-tag">TypeScript</span>
+        <span class="role-tag">Next.js</span>
+        <span class="role-tag">React</span>
+        <span class="role-tag">Supabase</span>
+        <span class="role-tag">PostgreSQL</span>
+      </div>
+    </div>
+    <div class="role-card">
+      <div class="role-icon">&#9881;&#65039;</div>
+      <h3>Embedded Engineers</h3>
+      <p>ESP32-S3 firmware, E-Paper rendering, OTA updates, sensor integration, and production-ready reliability.</p>
+      <div class="role-tags">
+        <span class="role-tag">C/C++</span>
+        <span class="role-tag">ESP32</span>
+        <span class="role-tag">PlatformIO</span>
+        <span class="role-tag">IoT</span>
+        <span class="role-tag">E-Paper</span>
+      </div>
+    </div>
+    <div class="role-card">
+      <div class="role-icon">&#127912;</div>
+      <h3>UX / UI Designers</h3>
+      <p>Senior-accessible interfaces, monochrome E-Paper UI design, user research with elderly participants.</p>
+      <div class="role-tags">
+        <span class="role-tag">Accessibility</span>
+        <span class="role-tag">WCAG AAA</span>
+        <span class="role-tag">User Research</span>
+        <span class="role-tag">Design Systems</span>
+      </div>
+    </div>
+    <div class="role-card">
+      <div class="role-icon">&#129658;</div>
+      <h3>Care-Tech Experts</h3>
+      <p>Care workflow design, regulatory compliance, municipal partnerships, and pilot coordination.</p>
+      <div class="role-tags">
+        <span class="role-tag">Healthcare</span>
+        <span class="role-tag">GDPR</span>
+        <span class="role-tag">Gerontology</span>
+        <span class="role-tag">Social Work</span>
+      </div>
+    </div>
+    <div class="role-card">
+      <div class="role-icon">&#128640;</div>
+      <h3>Co-Founders</h3>
+      <p>Technical or business co-founder. Equity stake, full influence on product and strategy. Not starting from zero.</p>
+      <div class="role-tags">
+        <span class="role-tag">Equity</span>
+        <span class="role-tag">Leadership</span>
+        <span class="role-tag">Strategy</span>
+        <span class="role-tag">South Germany</span>
+      </div>
+    </div>
+    <div class="role-card">
+      <div class="role-icon">&#128421;&#65039;</div>
+      <h3>Open-Source Contributors</h3>
+      <p>Senior UI component library, E-Paper rendering engine, care protocols, localization, testing, docs.</p>
+      <div class="role-tags">
+        <span class="role-tag">Open Source</span>
+        <span class="role-tag">React</span>
+        <span class="role-tag">Accessibility</span>
+        <span class="role-tag">i18n</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="div-wrap"><div class="divider"></div></div>
+
+<!-- WHY NOW -->
+<section>
+  <div class="section-label">Why Now</div>
+  <h2>Six reasons to join today.</h2>
+  <div class="why-grid">
+    <div class="why-card"><div class="num">01</div><h3>It&rsquo;s Real</h3><p>38 API endpoints, 44 database tables, working firmware on real hardware. Running system, not a pitch deck.</p></div>
+    <div class="why-card"><div class="num">02</div><h3>Perfect Timing</h3><p>Europe&rsquo;s aging population is the defining challenge of the next 20 years. Digital care infrastructure is in its infancy.</p></div>
+    <div class="why-card"><div class="num">03</div><h3>Different Approach</h3><p>Most care-tech targets institutions. We target neighborhoods &mdash; the most natural and cost-effective unit of care.</p></div>
+    <div class="why-card"><div class="num">04</div><h3>Modern Tech</h3><p>Next.js 16, React 19, TypeScript, Supabase, ESP32-S3. No legacy code. Clean architecture. Good docs.</p></div>
+    <div class="why-card"><div class="num">05</div><h3>Privacy First</h3><p>GDPR built in from day one. Row-Level Security, EU data residency, encrypted care data. Not bolted on later.</p></div>
+    <div class="why-card"><div class="num">06</div><h3>Real Impact</h3><p>Every feature is used by real seniors in a real neighborhood. Feedback loop is weeks, not years.</p></div>
+  </div>
+</section>
+
+<!-- CTA -->
+<div class="cta">
+  <h2>Ready to build care infrastructure<br>for the next generation?</h2>
+  <p>We&rsquo;re looking for people who see the same problem and want to solve it. Every role has direct impact on real lives.</p>
+  <a class="cta-button" href="#">Get in Touch</a>
+</div>
+
+<div class="footer">
+  NACHBAR.IO &middot; Bad S&auml;ckingen, Germany &middot; Pre-Seed / Technical MVP &middot; March 2026
+</div>
+
+</body>
+</html>

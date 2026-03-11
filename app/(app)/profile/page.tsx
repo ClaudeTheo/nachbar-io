@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { TrustBadge } from "@/components/TrustBadge";
+import { resolveAvatarUrl } from "@/lib/storage";
 import { ReputationBadge } from "@/components/ReputationBadge";
 import { createClient } from "@/lib/supabase/client";
 import { getCachedReputation, getProgressToNextLevel } from "@/lib/reputation";
@@ -81,19 +82,26 @@ export default function ProfilePage() {
         <CardContent className="p-4">
           <div className="flex items-center gap-4">
             <div className="flex h-16 w-16 items-center justify-center rounded-full bg-quartier-green/10 text-2xl">
-              {user.avatar_url ? (
-                <img src={user.avatar_url} alt="" className="h-full w-full rounded-full object-cover" />
-              ) : (
-                "👤"
-              )}
+              {(() => {
+                const av = resolveAvatarUrl(user.avatar_url);
+                return av.type === "image"
+                  ? <img src={av.value} alt="" className="h-full w-full rounded-full object-cover" />
+                  : <span>{av.value}</span>;
+              })()}
             </div>
             <div>
               <h2 className="text-lg font-semibold text-anthrazit">{user.display_name}</h2>
               <TrustBadge level={user.trust_level} showLabel size="md" />
+              {user.bio && (
+                <p className="mt-1 text-sm text-muted-foreground">{user.bio}</p>
+              )}
               {household && (
-                <p className="mt-1 text-sm text-muted-foreground">
+                <p className="mt-1 text-xs text-muted-foreground">
                   {household.street_name} {household.house_number}
                 </p>
+              )}
+              {user.phone && (
+                <p className="mt-0.5 text-xs text-muted-foreground">{user.phone}</p>
               )}
             </div>
           </div>

@@ -10,6 +10,22 @@
     {
       "path": "/api/news/rss",
       "schedule": "0 7 * * 3,6"
+    },
+    {
+      "path": "/api/care/cron/escalation",
+      "schedule": "* * * * *"
+    },
+    {
+      "path": "/api/care/cron/checkin",
+      "schedule": "*/5 * * * *"
+    },
+    {
+      "path": "/api/care/cron/medications",
+      "schedule": "*/5 * * * *"
+    },
+    {
+      "path": "/api/care/cron/appointments",
+      "schedule": "*/5 * * * *"
     }
   ],
   "headers": [

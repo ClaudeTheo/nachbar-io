@@ -31,6 +31,8 @@ export interface User {
   email_hash: string;
   display_name: string;
   avatar_url: string | null;
+  bio: string | null;
+  phone: string | null;
   ui_mode: UserUiMode;
   trust_level: TrustLevel;
   is_admin: boolean;
@@ -50,12 +52,58 @@ export interface Household {
   created_at: string;
 }
 
+export type VerificationMethod = "invite_code" | "address_manual" | "admin_created" | "neighbor_invite";
+
 export interface HouseholdMember {
   id: string;
   household_id: string;
   user_id: string;
   role: "owner" | "member";
+  verification_method: VerificationMethod;
   verified_at: string | null;
+  created_at: string;
+}
+
+export type VerificationRequestStatus = "pending" | "approved" | "rejected";
+
+export interface VerificationRequest {
+  id: string;
+  user_id: string;
+  household_id: string;
+  method: string;
+  status: VerificationRequestStatus;
+  admin_note: string | null;
+  created_at: string;
+  reviewed_at: string | null;
+  reviewed_by: string | null;
+  user?: Pick<User, "display_name">;
+  household?: Pick<Household, "street_name" | "house_number">;
+}
+
+export type InviteMethod = "email" | "whatsapp" | "code";
+export type InvitationStatus = "sent" | "accepted" | "expired";
+
+export interface NeighborInvitation {
+  id: string;
+  inviter_id: string;
+  household_id: string;
+  invite_method: InviteMethod;
+  invite_target: string | null;
+  invite_code: string;
+  status: InvitationStatus;
+  created_at: string;
+  accepted_at: string | null;
+  accepted_by: string | null;
+  inviter?: Pick<User, "display_name">;
+  household?: Pick<Household, "street_name" | "house_number">;
+}
+
+export interface ReputationPoint {
+  id: string;
+  user_id: string;
+  points: number;
+  reason: string;
+  reference_id: string | null;
   created_at: string;
 }
 

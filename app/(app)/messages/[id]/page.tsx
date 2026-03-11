@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { createClient } from "@/lib/supabase/client";
+import { createNotification } from "@/lib/notifications";
 import type { DirectMessage } from "@/lib/supabase/types";
 import { format, isToday, isYesterday } from "date-fns";
 import { de } from "date-fns/locale";
@@ -17,6 +18,7 @@ export default function ChatPage() {
   const router = useRouter();
   const [messages, setMessages] = useState<DirectMessage[]>([]);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const [otherUserId, setOtherUserId] = useState<string | null>(null);
   const [otherUserName, setOtherUserName] = useState<string>("Nachbar");
   const [otherUserAvatar, setOtherUserAvatar] = useState<string | null>(null);
   const [inputValue, setInputValue] = useState("");
@@ -80,13 +82,14 @@ export default function ChatPage() {
       }
 
       // Anderen Teilnehmer bestimmen und Profil laden
-      const otherUserId =
+      const resolvedOtherUserId =
         conv.participant_1 === user.id ? conv.participant_2 : conv.participant_1;
+      setOtherUserId(resolvedOtherUserId);
 
       const { data: otherUser } = await supabase
         .from("users")
         .select("display_name, avatar_url")
-        .eq("id", otherUserId)
+        .eq("id", resolvedOtherUserId)
         .single();
 
       if (otherUser) {
@@ -213,6 +216,18 @@ export default function ChatPage() {
         .from("conversations")
         .update({ last_message_at: new Date().toISOString() })
         .eq("id", conversationId as string);
+
+      // Empfaenger benachrichtigen
+      if (otherUserId) {
+        createNotification({
+          userId: otherUserId,
+          type: "message",
+          title: "Neue Nachricht",
+          body: content.length > 80 ? content.slice(0, 80) + "..." : content,
+          referenceId: conversationId as string,
+          referenceType: "conversation",
+        });
+      }
     } catch {
       toast.error("Netzwerkfehler. Bitte versuchen Sie es erneut.");
       setInputValue(content);
@@ -258,7 +273,7 @@ export default function ChatPage() {
     <div className="flex h-[calc(100vh-7rem)] flex-col">
       {/* Header */}
       <div className="flex items-center gap-3 border-b border-border pb-3">
-        <Link href="/messages" className="rounded-lg p-2 hover:bg-muted">
+        <Link href="/messages" className="rounded-lg p-2 hover:bg-muted" data-testid="chat-back">
           <ArrowLeft className="h-5 w-5" />
         </Link>
         <div className="flex items-center gap-2">
@@ -274,7 +289,7 @@ export default function ChatPage() {
               (otherUserName[0] ?? "N").toUpperCase()
             )}
           </div>
-          <h1 className="text-lg font-bold text-anthrazit">{otherUserName}</h1>
+          <h1 className="text-lg font-bold text-anthrazit" data-testid="chat-partner-name">{otherUserName}</h1>
         </div>
       </div>
 
@@ -329,6 +344,7 @@ export default function ChatPage() {
 
                       {/* Nachrichten-Blase */}
                       <div
+                        data-testid="chat-message"
                         className={`rounded-2xl px-4 py-2.5 ${
                           isOwn
                             ? "bg-quartier-green text-white"
@@ -367,7 +383,7 @@ export default function ChatPage() {
                           {format(new Date(msg.created_at), "HH:mm", { locale: de })}
                           {/* Lesebestaetigung fuer eigene Nachrichten */}
                           {isOwn && msg.read_at && (
-                            <span className="ml-1 text-quartier-green/70">
+                            <span className="ml-1 text-quartier-green/70" data-testid="read-receipt">
                               Gelesen
                             </span>
                           )}
@@ -392,6 +408,7 @@ export default function ChatPage() {
             onChange={(e) => setInputValue(e.target.value)}
             onKeyDown={handleKeyDown}
             placeholder="Nachricht schreiben..."
+            data-testid="chat-input"
             rows={1}
             maxLength={1000}
             className="flex-1 resize-none rounded-2xl border border-border bg-white px-4 py-2.5 text-sm placeholder:text-muted-foreground focus:border-quartier-green focus:outline-none focus:ring-1 focus:ring-quartier-green"
@@ -412,6 +429,7 @@ export default function ChatPage() {
             size="icon"
             className="h-11 w-11 shrink-0 rounded-full bg-quartier-green hover:bg-quartier-green-dark disabled:opacity-40"
             aria-label="Nachricht senden"
+            data-testid="chat-send"
           >
             <Send className="h-4 w-4" />
           </Button>

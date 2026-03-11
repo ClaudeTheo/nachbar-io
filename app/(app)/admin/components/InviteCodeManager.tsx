@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { createClient } from "@/lib/supabase/client";
 import type { Household } from "@/lib/supabase/types";
 import { QUARTIER_STREETS } from "@/lib/constants";
+import { generateSecureCode, formatCode } from "@/lib/invite-codes";
 import { toast } from "sonner";
 
 interface InviteCodeManagerProps {
@@ -30,24 +31,9 @@ export function InviteCodeManager({ households, onRefresh }: InviteCodeManagerPr
   const usedCodes = households.filter(h => h.memberCount > 0).length;
   const unusedCodes = households.filter(h => h.memberCount === 0).length;
 
-  // Invite-Code generieren (Kuerzel + laufende Nummer)
-  function generateInviteCode(street: string, existingCodes: string[]): string {
-    const prefixMap: Record<string, string> = {
-      "Purkersdorfer Strasse": "PKD",
-      "Purkersdorfer Straße": "PKD",
-      "Sanarystrasse": "SAN",
-      "Sanarystraße": "SAN",
-      "Oberer Rebberg": "ORB",
-    };
-    const prefix = prefixMap[street] ?? street.substring(0, 3).toUpperCase();
-
-    const existing = existingCodes
-      .filter(c => c.startsWith(prefix))
-      .map(c => parseInt(c.replace(prefix, ""), 10))
-      .filter(n => !isNaN(n));
-
-    const nextNum = existing.length > 0 ? Math.max(...existing) + 1 : 1;
-    return `${prefix}${String(nextNum).padStart(3, "0")}`;
+  // Kryptografisch sicheren Invite-Code generieren (kein vorhersagbares Muster)
+  function generateInviteCode(): string {
+    return generateSecureCode();
   }
 
   // Neuen Haushalt + Code anlegen
@@ -74,9 +60,8 @@ export function InviteCodeManager({ households, onRefresh }: InviteCodeManagerPr
       return;
     }
 
-    // Code generieren
-    const allCodes = households.map(h => h.invite_code);
-    const code = generateInviteCode(newStreet, allCodes);
+    // Kryptografisch sicheren Code generieren
+    const code = generateInviteCode();
 
     const lat = newLat ? parseFloat(newLat) : 47.5617;
     const lng = newLng ? parseFloat(newLng) : 7.9483;
@@ -135,11 +120,10 @@ export function InviteCodeManager({ households, onRefresh }: InviteCodeManagerPr
     setRevoking(null);
   }
 
-  // Code erneuern (neuen Code generieren fuer bestehenden Haushalt)
-  async function regenerateCode(householdId: string, street: string) {
+  // Code erneuern (kryptografisch sicheren Code generieren fuer bestehenden Haushalt)
+  async function regenerateCode(householdId: string) {
     const supabase = createClient();
-    const allCodes = households.map(h => h.invite_code);
-    const newCode = generateInviteCode(street, allCodes);
+    const newCode = generateInviteCode();
 
     const { error } = await supabase
       .from("households")
@@ -182,9 +166,9 @@ export function InviteCodeManager({ households, onRefresh }: InviteCodeManagerPr
         <div class="grid">
           ${codes.map(h => `
             <div class="card">
-              <img src="/api/qr?code=${h.invite_code}&size=300" alt="QR ${h.invite_code}" />
+              <img src="/api/qr?code=${formatCode(h.invite_code)}&size=300" alt="QR ${formatCode(h.invite_code)}" />
               <h3>${h.street_name} ${h.house_number}</h3>
-              <p class="code">${h.invite_code}</p>
+              <p class="code">${formatCode(h.invite_code)}</p>
               <p>Scannen zum Registrieren</p>
             </div>
           `).join("")}
@@ -314,7 +298,7 @@ export function InviteCodeManager({ households, onRefresh }: InviteCodeManagerPr
               <div className="h-2 w-2 rounded-full bg-gray-300" />
               <div>
                 <span className="text-sm">{h.street_name} {h.house_number}</span>
-                <span className="font-mono text-sm font-bold text-quartier-green ml-2">{h.invite_code}</span>
+                <span className="font-mono text-sm font-bold text-quartier-green ml-2">{formatCode(h.invite_code)}</span>
               </div>
             </div>
             <div className="flex items-center gap-1">
@@ -337,7 +321,7 @@ export function InviteCodeManager({ households, onRefresh }: InviteCodeManagerPr
                 size="sm"
                 variant="ghost"
                 className="h-7 w-7 p-0"
-                onClick={() => regenerateCode(h.id, h.street_name)}
+                onClick={() => regenerateCode(h.id)}
                 title="Neuen Code generieren"
               >
                 <RotateCcw className="h-3.5 w-3.5 text-blue-500" />
@@ -381,7 +365,7 @@ export function InviteCodeManager({ households, onRefresh }: InviteCodeManagerPr
               <div className="h-2 w-2 rounded-full bg-quartier-green" />
               <div>
                 <span className="text-sm">{h.street_name} {h.house_number}</span>
-                <span className="font-mono text-xs text-muted-foreground ml-2">{h.invite_code}</span>
+                <span className="font-mono text-xs text-muted-foreground ml-2">{formatCode(h.invite_code)}</span>
               </div>
             </div>
             <div className="flex items-center gap-1">
@@ -393,7 +377,7 @@ export function InviteCodeManager({ households, onRefresh }: InviteCodeManagerPr
                 size="sm"
                 variant="ghost"
                 className="h-7 w-7 p-0"
-                onClick={() => regenerateCode(h.id, h.street_name)}
+                onClick={() => regenerateCode(h.id)}
                 title="Code erneuern (alter Code wird ungueltig)"
               >
                 <RotateCcw className="h-3.5 w-3.5 text-blue-500" />

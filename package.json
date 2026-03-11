@@ -11,7 +11,12 @@
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
     "test:e2e": "playwright test",
-    "test:e2e:ui": "playwright test --ui"
+    "test:e2e:ui": "playwright test --ui",
+    "test:e2e:multi": "playwright test --config=tests/e2e/playwright.config.ts",
+    "test:e2e:multi:ui": "playwright test --config=tests/e2e/playwright.config.ts --ui",
+    "test:e2e:smoke": "playwright test --config=tests/e2e/playwright.config.ts --project=smoke",
+    "test:e2e:agents": "playwright test --config=tests/e2e/playwright.config.ts --project=multi-agent",
+    "test:e2e:senior": "playwright test --config=tests/e2e/playwright.config.ts --project=senior-terminal"
   },
   "dependencies": {
     "@base-ui/react": "^1.2.0",

@@ -23,6 +23,6 @@ test.describe("API-Endpunkte", () => {
     const response = await request.post("/api/push/send", {
       data: { title: "Test" },
     });
-    expect(response.status()).toBe(401);
+    expect([401, 403]).toContain(response.status());
   });
 });

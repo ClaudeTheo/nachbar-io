@@ -6,7 +6,7 @@ import {
   Shield, Users, Home, RefreshCw, HandHelping, ShoppingBag,
   TrendingUp, CheckCircle, QrCode, FileText, Activity, Megaphone,
   Newspaper, Calendar, BarChart3, ArrowUpRight, ArrowDownRight, Minus,
-  AlertTriangle, Eye, MapPin,
+  AlertTriangle, Eye, MapPin, Globe,
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -25,6 +25,7 @@ import { NewsManagement } from "./components/NewsManagement";
 import { EventManagement } from "./components/EventManagement";
 import { SystemHealth } from "./components/SystemHealth";
 import { MapEditor } from "./components/MapEditor";
+import { QuarterManagement } from "./components/QuarterManagement";
 
 // ============================================================
 // TYPEN
@@ -265,6 +266,9 @@ export default function AdminPage() {
           <TabsTrigger value="map" className="text-xs flex-1 min-w-[55px]">
             <MapPin className="h-3.5 w-3.5 mr-1" />Karte
           </TabsTrigger>
+          <TabsTrigger value="quarters" className="text-xs flex-1 min-w-[65px]">
+            <Globe className="h-3.5 w-3.5 mr-1" />Quartiere
+          </TabsTrigger>
           <TabsTrigger value="system" className="text-xs flex-1 min-w-[60px]">
             <Eye className="h-3.5 w-3.5 mr-1" />System
           </TabsTrigger>
@@ -332,6 +336,7 @@ export default function AdminPage() {
         <TabsContent value="push" className="mt-4"><PushBroadcast /></TabsContent>
         <TabsContent value="codes" className="mt-4"><InviteCodeManager households={households} onRefresh={loadData} /></TabsContent>
         <TabsContent value="map" className="mt-4"><MapEditor /></TabsContent>
+        <TabsContent value="quarters" className="mt-4"><QuarterManagement /></TabsContent>
         <TabsContent value="system" className="mt-4"><SystemHealth stats={stats} users={users} households={households} /></TabsContent>
       </Tabs>
     </div>

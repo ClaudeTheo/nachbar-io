@@ -157,38 +157,17 @@ function RegisterForm() {
     setError(null);
 
     try {
-      const supabase = createClient();
-
-      // 1. Account erstellen (Auth)
-      const { data: authData, error: authError } = await supabase.auth.signUp({
-        email,
-        password,
-      });
-
-      if (authError) {
-        console.error("SignUp-Fehler:", authError);
-        setError(`Registrierung fehlgeschlagen: ${authError.message}`);
-        setLoading(false);
-        return;
-      }
-
-      if (!authData.user) {
-        setError("Registrierung fehlgeschlagen. Bitte versuchen Sie es erneut.");
-        setLoading(false);
-        return;
-      }
-
-      // 2. Profil + Haushalt + Verifizierung serverseitig abschliessen
-      // (Server-Route nutzt Service-Role und umgeht RLS-Einschraenkungen)
+      // Komplette Registrierung serverseitig per Admin-API
+      // (umgeht E-Mail-Rate-Limit und E-Mail-Bestaetigung)
       const completeRes = await fetch("/api/register/complete", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          userId: authData.user.id,
+          email,
+          password,
           displayName: displayName.trim(),
           uiMode,
           householdId,
-          // Adresse fuer Haushalt-Erstellung (falls kein householdId vorhanden)
           streetName: selectedStreet || undefined,
           houseNumber: houseNumber.trim() || undefined,
           verificationMethod,
@@ -200,12 +179,26 @@ function RegisterForm() {
       const completeData = await completeRes.json();
       if (!completeRes.ok) {
         console.error("Registration-Complete Fehler:", completeData);
-        setError(completeData.error || "Profil konnte nicht erstellt werden.");
+        setError(completeData.error || "Registrierung fehlgeschlagen.");
         setLoading(false);
         return;
       }
 
-      // 3. Bei Nachbar-Einladung: Reputation neu berechnen (fire-and-forget)
+      // Nach erfolgreicher Registrierung: automatisch einloggen
+      const supabase = createClient();
+      const { error: signInError } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      if (signInError) {
+        console.error("Auto-Login fehlgeschlagen:", signInError);
+        // Nicht blockierend — User kann sich manuell anmelden
+        router.push("/login");
+        return;
+      }
+
+      // Bei Nachbar-Einladung: Reputation neu berechnen (fire-and-forget)
       if (verificationMethod === "neighbor_invite" && referrerId) {
         fetch("/api/reputation/recompute", {
           method: "POST",
@@ -214,7 +207,7 @@ function RegisterForm() {
         }).catch(() => {});
       }
 
-      // 4. Weiterleitung
+      // Weiterleitung
       if (uiMode === "senior") {
         router.push("/senior/home");
       } else {

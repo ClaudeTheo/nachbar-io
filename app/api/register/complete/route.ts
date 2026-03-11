@@ -1,10 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient as createServerClient } from "@/lib/supabase/server";
 import { createClient } from "@supabase/supabase-js";
 import { safeInsertNotification } from "@/lib/notifications-server";
 import { generateSecureCode } from "@/lib/invite-codes";
 
-// Service-Role Client fuer Registrierungs-Operationen (umgeht RLS)
+// Service-Role Client fuer Registrierungs-Operationen (umgeht RLS + Rate Limits)
 function getAdminSupabase() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -17,17 +16,22 @@ function getAdminSupabase() {
 /**
  * POST /api/register/complete
  *
- * Schliesst die Registrierung serverseitig ab.
- * Erstellt User-Profil, Haushalt-Zuordnung, Verifizierungsanfrage.
- * Verwendet Service-Role um RLS-Probleme zu vermeiden.
+ * Komplette Registrierung serverseitig:
+ * 1. User per Admin-API erstellen (kein Rate Limit, keine E-Mail-Bestaetigung)
+ * 2. Profil erstellen
+ * 3. Haushalt suchen/erstellen + Zuordnung
+ * 4. Verifizierungsanfrage erstellen
+ *
+ * Verwendet Service-Role um RLS-Probleme und Rate Limits zu umgehen.
  *
  * Body: {
- *   userId: string,
+ *   email: string,
+ *   password: string,
  *   displayName: string,
  *   uiMode: 'active' | 'senior',
  *   householdId?: string,
- *   streetName?: string,        // fuer Haushalt-Erstellung bei Adress-Registrierung
- *   houseNumber?: string,       // fuer Haushalt-Erstellung bei Adress-Registrierung
+ *   streetName?: string,
+ *   houseNumber?: string,
  *   verificationMethod: string,
  *   inviteCode?: string,
  *   referrerId?: string,
@@ -35,20 +39,10 @@ function getAdminSupabase() {
  */
 export async function POST(request: NextRequest) {
   try {
-    // Auth-Check: Nur eingeloggte Nutzer
-    const supabase = await createServerClient();
-    const { data: { user } } = await supabase.auth.getUser();
-
-    if (!user) {
-      return NextResponse.json(
-        { error: "Nicht autorisiert" },
-        { status: 401 }
-      );
-    }
-
     const body = await request.json();
     const {
-      userId,
+      email,
+      password,
       displayName,
       uiMode,
       streetName,
@@ -56,16 +50,10 @@ export async function POST(request: NextRequest) {
       verificationMethod,
       inviteCode,
       referrerId,
+      // Legacy: userId fuer alte Clients die noch client-seitig signUp machen
+      userId: legacyUserId,
     } = body;
     let { householdId } = body;
-
-    // Sicherheits-Check: userId muss dem eingeloggten Nutzer entsprechen
-    if (userId !== user.id) {
-      return NextResponse.json(
-        { error: "Nicht autorisiert — userId stimmt nicht" },
-        { status: 403 }
-      );
-    }
 
     if (!displayName?.trim()) {
       return NextResponse.json(
@@ -75,6 +63,50 @@ export async function POST(request: NextRequest) {
     }
 
     const adminDb = getAdminSupabase();
+    let userId: string;
+
+    // Neuer Flow: User serverseitig per Admin-API erstellen
+    if (email && password) {
+      const { data: newUser, error: createError } = await adminDb.auth.admin.createUser({
+        email,
+        password,
+        email_confirm: true, // Sofort bestaetigt — kein E-Mail-Zwang im Pilot
+      });
+
+      if (createError) {
+        console.error("User-Erstellung fehlgeschlagen:", createError);
+
+        // Benutzerfreundliche Fehlermeldungen
+        if (createError.message?.includes("already been registered")) {
+          return NextResponse.json(
+            { error: "Diese E-Mail-Adresse ist bereits registriert. Bitte melden Sie sich an." },
+            { status: 409 }
+          );
+        }
+
+        return NextResponse.json(
+          { error: `Registrierung fehlgeschlagen: ${createError.message}` },
+          { status: 500 }
+        );
+      }
+
+      if (!newUser?.user) {
+        return NextResponse.json(
+          { error: "User konnte nicht erstellt werden." },
+          { status: 500 }
+        );
+      }
+
+      userId = newUser.user.id;
+    } else if (legacyUserId) {
+      // Legacy-Fallback: Client hat signUp bereits gemacht
+      userId = legacyUserId;
+    } else {
+      return NextResponse.json(
+        { error: "E-Mail und Passwort sind erforderlich." },
+        { status: 400 }
+      );
+    }
 
     // 0. Haushalt suchen oder erstellen (bei Adress-Registrierung ohne Invite-Code)
     if (!householdId && streetName && houseNumber) {
@@ -206,7 +238,6 @@ export async function POST(request: NextRequest) {
 
       // 5. Bei Nachbar-Einladung: Einladung als akzeptiert markieren + Punkte
       if (verificationMethod === "neighbor_invite" && inviteCode) {
-        // Einladungscode normalisieren (Bindestriche entfernen, Grossbuchstaben)
         const normalizedCode = inviteCode.replace(/[-\s]/g, "").toUpperCase();
 
         const { error: inviteErr } = await adminDb
@@ -256,7 +287,6 @@ export async function POST(request: NextRequest) {
             console.error("Reputationspunkte-Fehler:", pointsErr);
           }
 
-          // Benachrichtigung an den Einladenden (mit Constraint-Fallback)
           await safeInsertNotification(adminDb, {
             user_id: referrerId,
             type: "neighbor_invited",

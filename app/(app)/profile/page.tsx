@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Settings, LogOut, Star, Shield, ChevronRight, Pencil, Bell, TrendingUp, Plane, MapPin, HelpCircle, Repeat, BarChart3, Package, UserPlus } from "lucide-react";
+import { Settings, LogOut, Star, Shield, ChevronRight, Pencil, Bell, TrendingUp, Plane, MapPin, HelpCircle, Repeat, BarChart3, Package, UserPlus, Trash2, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
@@ -320,9 +320,25 @@ export default function ProfilePage() {
         </CardContent>
       </Card>
 
+      {/* DSGVO — Daten & Konto */}
+      <Card className="border-muted">
+        <CardContent className="p-0">
+          <Link
+            href="/profile/delete"
+            className="flex items-center justify-between p-4 hover:bg-muted/50"
+          >
+            <div className="flex items-center gap-3">
+              <Download className="h-5 w-5 text-muted-foreground" />
+              <span className="text-sm">Daten exportieren & Konto löschen</span>
+            </div>
+            <ChevronRight className="h-4 w-4 text-muted-foreground" />
+          </Link>
+        </CardContent>
+      </Card>
+
       {/* DSGVO-Info + Rechtliche Links */}
       <div className="text-center text-xs text-muted-foreground">
-        <p>Ihre Daten sind geschützt. Sie können Ihr Konto jederzeit löschen.</p>
+        <p>Ihre Daten sind geschützt gemäß DSGVO.</p>
         <div className="mt-2 flex justify-center gap-4">
           <Link href="/impressum" className="hover:text-anthrazit hover:underline">
             Impressum

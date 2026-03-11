@@ -1,5 +1,6 @@
 import { BottomNav } from "@/components/BottomNav";
 import { InstallPrompt } from "@/components/InstallPrompt";
+import { PendingVerificationBanner } from "@/components/PendingVerificationBanner";
 
 // Layout für den aktiven Modus — mit Bottom-Navigation
 export default function AppLayout({
@@ -16,6 +17,10 @@ export default function AppLayout({
       >
         Zum Inhalt springen
       </a>
+      {/* Verifikations-Banner fuer pending Nutzer */}
+      <div className="mx-auto max-w-lg pt-4">
+        <PendingVerificationBanner />
+      </div>
       {/* Hauptinhalt mit Padding für Bottom-Nav */}
       <main id="main-content" className="mx-auto max-w-lg px-4 pt-4">{children}</main>
       <BottomNav />

@@ -17,13 +17,15 @@ function getAdminSupabase() {
 
 // GET /api/cron/expire-invitations — Einladungen nach 30 Tagen ablaufen lassen
 export async function GET(request: NextRequest) {
-  // Cron-Auth: Authorization-Header gegen CRON_SECRET pruefen
+  // Cron-Auth: Authorization-Header gegen CRON_SECRET pruefen (PFLICHT)
   const cronSecret = process.env.CRON_SECRET;
-  if (cronSecret) {
-    const authHeader = request.headers.get("authorization");
-    if (authHeader !== `Bearer ${cronSecret}`) {
-      return NextResponse.json({ error: "Nicht autorisiert" }, { status: 401 });
-    }
+  if (!cronSecret) {
+    console.error("CRON_SECRET nicht konfiguriert — Endpoint gesperrt");
+    return NextResponse.json({ error: "Server-Konfigurationsfehler" }, { status: 500 });
+  }
+  const authHeader = request.headers.get("authorization");
+  if (authHeader !== `Bearer ${cronSecret}`) {
+    return NextResponse.json({ error: "Nicht autorisiert" }, { status: 401 });
   }
 
   try {

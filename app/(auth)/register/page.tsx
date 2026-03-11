@@ -55,13 +55,14 @@ function RegisterForm() {
     }
   }, [searchParams]);
 
-  const totalSteps = 5;
+  // Pilot-Phase: Verifizierungsmethode wird uebersprungen → 4 Schritte
+  const totalSteps = 4;
   const currentStep = (() => {
     if (step === "credentials") return 1;
-    if (step === "verify_method") return 2;
-    if (step === "invite" || step === "address") return 3;
-    if (step === "profile") return 4;
-    if (step === "mode") return 5;
+    if (step === "verify_method") return 2; // nur bei Invite-Code/Referrer
+    if (step === "invite" || step === "address") return 2;
+    if (step === "profile") return 3;
+    if (step === "mode") return 4;
     return 1;
   })();
 
@@ -77,8 +78,12 @@ function RegisterForm() {
     // Wenn Invite-Code aus URL vorhanden, direkt zum Code-Schritt
     if (inviteCode) {
       setStep("invite");
+    } else if (referrerId) {
+      // Nachbar-Einladung per Link
+      setStep("invite");
     } else {
-      setStep("verify_method");
+      // Pilot-Phase: Direkt zur Adresseingabe (keine Codes verteilt)
+      setStep("address");
     }
   }
 
@@ -451,7 +456,7 @@ function RegisterForm() {
               type="button"
               onClick={() => {
                 setError(null);
-                setStep("verify_method");
+                setStep("credentials");
               }}
               className="w-full text-sm text-muted-foreground hover:underline"
             >

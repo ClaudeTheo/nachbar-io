@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
-import { Plus, ArrowLeft } from "lucide-react";
+import { Plus, ArrowLeft, RefreshCw } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { LEIHBOERSE_CATEGORIES } from "@/lib/constants";
 import { createClient } from "@/lib/supabase/client";
@@ -19,28 +19,46 @@ export default function LeihboersePage() {
   const [items, setItems] = useState<LeihboerseItem[]>([]);
   const [filterType, setFilterType] = useState<string | null>(null);
   const [filterCategory, setFilterCategory] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    async function load() {
-      const supabase = createClient();
-      let query = supabase
-        .from("leihboerse_items")
-        .select("*, user:users(display_name, avatar_url)")
-        .eq("status", "active")
-        .order("created_at", { ascending: false });
+  const load = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    const supabase = createClient();
+    let query = supabase
+      .from("leihboerse_items")
+      .select("*, user:users(display_name, avatar_url)")
+      .eq("status", "active")
+      .order("created_at", { ascending: false });
 
-      if (filterType) query = query.eq("type", filterType);
-      if (filterCategory) query = query.eq("category", filterCategory);
+    if (filterType) query = query.eq("type", filterType);
+    if (filterCategory) query = query.eq("category", filterCategory);
 
-      const { data, error } = await query;
-      if (error) {
-        console.error("Leihboerse laden fehlgeschlagen:", error.message);
-        return;
-      }
-      if (data) setItems(data as unknown as LeihboerseItem[]);
+    const { data, error: queryError } = await query;
+    if (queryError) {
+      console.error("Leihboerse laden fehlgeschlagen:", queryError.message);
+      setError(queryError.message);
+      setLoading(false);
+      return;
     }
-    load();
+    setItems((data ?? []) as unknown as LeihboerseItem[]);
+    setLoading(false);
   }, [filterType, filterCategory]);
+
+  // Daten bei jedem Seitenaufruf neu laden
+  useEffect(() => {
+    load();
+  }, [load]);
+
+  // Auch bei Fokus neu laden (z.B. nach Erstellen eines Eintrags)
+  useEffect(() => {
+    function handleFocus() {
+      load();
+    }
+    window.addEventListener("focus", handleFocus);
+    return () => window.removeEventListener("focus", handleFocus);
+  }, [load]);
 
   return (
     <div>
@@ -51,13 +69,22 @@ export default function LeihboersePage() {
           </Link>
           <h1 className="text-xl font-bold text-anthrazit">Leihbörse</h1>
         </div>
-        <Link
-          href="/leihboerse/new"
-          className="flex items-center gap-1 rounded-lg bg-quartier-green px-3 py-2 text-sm font-semibold text-white hover:bg-quartier-green-dark"
-        >
-          <Plus className="h-4 w-4" />
-          Neu
-        </Link>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={load}
+            className="rounded-lg p-2 text-muted-foreground hover:bg-muted"
+            title="Aktualisieren"
+          >
+            <RefreshCw className="h-4 w-4" />
+          </button>
+          <Link
+            href="/leihboerse/new"
+            className="flex items-center gap-1 rounded-lg bg-quartier-green px-3 py-2 text-sm font-semibold text-white hover:bg-quartier-green-dark"
+          >
+            <Plus className="h-4 w-4" />
+            Neu
+          </Link>
+        </div>
       </div>
 
       {/* Typ-Filter */}
@@ -99,7 +126,20 @@ export default function LeihboersePage() {
       </div>
 
       {/* Eintraege */}
-      {items.length === 0 ? (
+      {error ? (
+        <div className="py-8 text-center">
+          <div className="mb-2 text-4xl">⚠️</div>
+          <p className="text-sm text-red-600">Laden fehlgeschlagen: {error}</p>
+          <button onClick={load} className="mt-3 inline-flex items-center gap-1.5 rounded-lg bg-quartier-green px-3 py-2 text-sm font-medium text-white hover:bg-quartier-green-dark">
+            <RefreshCw className="h-4 w-4" /> Erneut versuchen
+          </button>
+        </div>
+      ) : loading ? (
+        <div className="py-12 text-center">
+          <div className="mb-2 text-4xl animate-spin">🔄</div>
+          <p className="text-muted-foreground">Wird geladen...</p>
+        </div>
+      ) : items.length === 0 ? (
         <div className="py-12 text-center">
           <div className="mb-2 text-4xl">🔄</div>
           <p className="text-muted-foreground">Noch keine Einträge vorhanden.</p>

@@ -17,10 +17,11 @@ import { SlideHelp } from "./slides/SlideHelp";
 import { SlideMarketplace } from "./slides/SlideMarketplace";
 import { SlideMap } from "./slides/SlideMap";
 import { SlideCommunity } from "./slides/SlideCommunity";
+import { SlidePush } from "./slides/SlidePush";
 import { SlideSetPosition } from "./slides/SlideSetPosition";
 import { SlideReady } from "./slides/SlideReady";
 
-const TOTAL_SLIDES = 8;
+const TOTAL_SLIDES = 9;
 const SWIPE_THRESHOLD = 50;
 
 const BUTTON_LABELS = [
@@ -30,6 +31,7 @@ const BUTTON_LABELS = [
   "Weiter",
   "Weiter",
   "Weiter",
+  "Weiter",         // Push-Slide
   "Position speichern",
   "Zum Dashboard",
 ];
@@ -164,9 +166,9 @@ export function OnboardingFlow() {
     router.push("/dashboard");
   }
 
-  // Weiter-Button Handler (speichert Position auf Slide 6)
+  // Weiter-Button Handler (speichert Position auf Slide 7)
   async function handleNext() {
-    if (currentSlide === 6) {
+    if (currentSlide === 7) {
       // Position speichern beim Verlassen des Position-Slides
       await saveMapPosition();
     }
@@ -182,13 +184,13 @@ export function OnboardingFlow() {
   // Touch-Handler fuer Swipe
   function onTouchStart(e: React.TouchEvent) {
     // Swipe auf dem Position-Slide deaktivieren (Touch wird fuer Drag gebraucht)
-    if (currentSlide === 6) return;
+    if (currentSlide === 7) return;
     setTouchEnd(null);
     setTouchStart(e.targetTouches[0].clientX);
   }
 
   function onTouchMove(e: React.TouchEvent) {
-    if (currentSlide === 6) return;
+    if (currentSlide === 7) return;
     setTouchEnd(e.targetTouches[0].clientX);
   }
 
@@ -232,8 +234,9 @@ export function OnboardingFlow() {
       case 3: return <SlideMarketplace />;
       case 4: return <SlideMap />;
       case 5: return <SlideCommunity />;
-      case 6: return <SlideSetPosition position={mapPosition} onPositionChange={setMapPosition} />;
-      case 7: return <SlideReady displayName={displayName} />;
+      case 6: return <SlidePush />;
+      case 7: return <SlideSetPosition position={mapPosition} onPositionChange={setMapPosition} />;
+      case 8: return <SlideReady displayName={displayName} />;
       default: return null;
     }
   }

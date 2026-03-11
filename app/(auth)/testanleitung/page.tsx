@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowLeft, CheckSquare, Users, Bell, Shield, Smartphone } from "lucide-react";
+import { ArrowLeft, CheckSquare, Users, Bell, Shield, Smartphone, MessageCircle, HelpCircle } from "lucide-react";
 
 export default function TestanleitungPage() {
   return (
@@ -11,224 +11,302 @@ export default function TestanleitungPage() {
       </Link>
 
       <div className="mb-8 text-center">
-        <div className="mb-2 text-4xl">🧪</div>
-        <h1 className="text-2xl font-bold text-anthrazit">Testanleitung</h1>
+        <div className="mb-2 text-4xl">🏡</div>
+        <h1 className="text-2xl font-bold text-anthrazit">So testen Sie Nachbar.io</h1>
         <p className="mt-2 text-muted-foreground">
-          Nachbar.io — Pilottest fuer Bad Saeckingen
+          Eine einfache Anleitung — Schritt für Schritt
         </p>
       </div>
 
-      {/* Hinweis auf das neue Test-System */}
+      {/* Willkommen */}
       <div className="mb-6 rounded-xl border-2 border-quartier-green bg-quartier-green/5 p-5">
         <h3 className="mb-2 flex items-center gap-2 font-semibold text-quartier-green">
           <CheckSquare className="h-5 w-5" />
-          Neues Test-System verfuegbar
+          Bevor es losgeht
         </h3>
+        <p className="mb-2 text-sm text-muted-foreground">
+          Nachbar.io ist eine Internetseite speziell für unsere Nachbarschaft. Sie funktioniert
+          wie eine App auf Ihrem Handy — direkt im Internet-Browser (z.B. Safari oder Chrome).
+        </p>
         <p className="mb-3 text-sm text-muted-foreground">
-          Fuer registrierte Tester steht jetzt ein interaktives Test-System mit Fortschrittsverfolgung,
-          Status-Tracking und automatischen Berichten zur Verfuegung. Melden Sie sich einfach an —
-          das Test-Panel erscheint automatisch.
+          Wenn Sie sich anmelden, sehen Sie automatisch ein kleines Test-Fenster am unteren Rand.
+          Dort können Sie Ihren Fortschritt verfolgen. Aber keine Sorge — diese Anleitung hier erklärt
+          alles nochmal ganz in Ruhe.
         </p>
         <Link
           href="/login"
           className="inline-flex items-center gap-1.5 rounded-lg bg-quartier-green px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-quartier-green/90"
         >
-          Zum Login &amp; Test starten
+          Zur Anmeldung
         </Link>
       </div>
 
-      <p className="mb-6 text-center text-xs text-muted-foreground">
-        Die folgende Checkliste dient als Referenz. Nutzen Sie bevorzugt das interaktive Test-System nach dem Login.
-      </p>
+      <div className="mb-6 rounded-xl border bg-amber-50 p-4 text-sm text-amber-800">
+        <strong>Wichtig:</strong> Verwenden Sie zum Testen bitte <strong>keine echten persönlichen Daten</strong>.
+        Denken Sie sich einfach etwas aus — z.B. einen Fantasie-Namen für Ihren Hilfe-Eintrag.
+      </div>
 
-      {/* Registrierung */}
-      <Section icon={<Smartphone className="h-5 w-5" />} title="1. Registrierung" id="registrierung">
-        <ol className="list-inside list-decimal space-y-2 text-sm">
-          <li>Öffnen Sie <strong>nachbar-io.vercel.app</strong> auf Ihrem Smartphone</li>
-          <li>Tippen Sie auf <strong>&quot;Registrieren&quot;</strong></li>
-          <li><strong>Schritt 1:</strong> E-Mail-Adresse und Passwort eingeben (mind. 8 Zeichen)</li>
-          <li><strong>Schritt 2:</strong> Wählen Sie <strong>&quot;Adresse manuell angeben&quot;</strong></li>
-          <li><strong>Schritt 3:</strong> Wählen Sie eine Straße und geben Sie eine beliebige Hausnummer ein</li>
-          <li><strong>Schritt 4:</strong> Geben Sie einen Anzeigenamen ein (Vorname reicht)</li>
-          <li><strong>Schritt 5:</strong> Wählen Sie Ihren UI-Modus (Normal oder Seniorenmodus)</li>
-          <li>Nach der Registrierung: <strong>Thomas wird Ihre Adresse bestätigen</strong></li>
+      {/* 1. Registrierung */}
+      <Section icon={<Smartphone className="h-5 w-5" />} title="1. Konto erstellen" id="registrierung">
+        <p className="mb-3 text-sm text-muted-foreground">
+          Zuerst brauchen Sie ein Benutzerkonto. Das dauert nur wenige Minuten.
+        </p>
+        <ol className="list-inside list-decimal space-y-3 text-sm">
+          <li>
+            Öffnen Sie auf Ihrem Handy den Internet-Browser (Safari auf iPhone, Chrome auf Android)
+          </li>
+          <li>
+            Geben Sie oben in die Adresszeile ein: <strong>nachbar-io.vercel.app</strong>
+          </li>
+          <li>
+            Tippen Sie auf den grünen Knopf <strong>&quot;Registrieren&quot;</strong>
+          </li>
+          <li>
+            Geben Sie Ihre <strong>E-Mail-Adresse</strong> ein und wählen Sie ein <strong>Passwort</strong> (mindestens 8 Zeichen — z.B. &quot;Nachbar123&quot;)
+          </li>
+          <li>
+            Bei der Adresse: Tippen Sie auf <strong>&quot;Adresse manuell angeben&quot;</strong>, wählen Sie Ihre Straße aus der Liste und geben Sie Ihre Hausnummer ein
+          </li>
+          <li>
+            Geben Sie einen <strong>Anzeigenamen</strong> ein — das ist der Name, den andere Nachbarn sehen (z.B. Ihr Vorname)
+          </li>
+          <li>
+            Wählen Sie <strong>&quot;Normal&quot;</strong> oder <strong>&quot;Seniorenmodus&quot;</strong> — im Seniorenmodus ist alles größer und leichter zu lesen
+          </li>
+          <li>
+            Fertig! <strong>Thomas wird Ihre Adresse kurz prüfen</strong> und dann freischalten
+          </li>
         </ol>
-        <div className="mt-3 rounded-lg bg-amber-50 p-3 text-xs text-amber-700">
-          <strong>Hinweis:</strong> Solange die Adresse nicht bestätigt ist, sehen Sie ein gelbes Banner. Das ist normal!
+        <div className="mt-4 rounded-lg bg-amber-50 p-3 text-sm text-amber-700">
+          <strong>Ganz normal:</strong> Bis Thomas Ihre Adresse bestätigt hat, sehen Sie oben ein gelbes Band.
+          Das verschwindet automatisch nach der Freischaltung.
         </div>
       </Section>
 
-      {/* Grundlagen */}
-      <Section icon={<CheckSquare className="h-5 w-5" />} title="2. Grundlagen testen" id="grundlagen">
+      {/* 2. Die App kennenlernen */}
+      <Section icon={<CheckSquare className="h-5 w-5" />} title="2. Die App kennenlernen" id="grundlagen">
+        <p className="mb-3 text-sm text-muted-foreground">
+          Nach der Freischaltung können Sie alles ausprobieren. Hier eine Übersicht, was Sie testen können:
+        </p>
+
+        <h4 className="mb-2 text-sm font-semibold">Erste Schritte</h4>
         <Checklist items={[
-          "A1 — App im Browser öffnen und Startseite sehen",
-          "A2 — Registrierung abschließen (alle 5 Schritte)",
-          "A3 — Nach Freischaltung: Dashboard sehen mit Begrüßung",
-          "A4 — Untere Navigation: alle Tabs antippen (Dashboard, Hilfe, Karte, Marktplatz, Profil)",
-          "A5 — App als PWA installieren (\"Zum Startbildschirm hinzufügen\")",
+          "Öffnen Sie die Seite und schauen Sie sich die Startseite an",
+          "Unten am Bildschirm sehen Sie 5 Symbole — tippen Sie jedes einmal an: Startseite, Hilfe, Karte, Marktplatz, Profil",
         ]} />
 
-        <h4 className="mb-2 mt-4 text-sm font-semibold">Profil &amp; Einstellungen</h4>
+        <h4 className="mb-2 mt-5 text-sm font-semibold">Ihr Profil anpassen</h4>
         <Checklist items={[
-          "B1 — Profil öffnen und Anzeigenamen prüfen",
-          "B2 — Profil bearbeiten: Bio-Text hinzufügen",
-          "B3 — Push-Benachrichtigungen aktivieren (Profil → Benachrichtigungen)",
-          "B4 — Urlaubsmodus ein- und ausschalten",
-          "B5 — Hilfe-Center öffnen und FAQ lesen",
-          "B6 — Reputation-Seite öffnen (Profil → Meine Reputation)",
+          "Tippen Sie unten rechts auf \"Profil\"",
+          "Tippen Sie auf \"Profil bearbeiten\" und schreiben Sie einen kurzen Text über sich (z.B. \"Ich wohne seit 5 Jahren hier\")",
+          "Schalten Sie die Benachrichtigungen ein: Profil → Benachrichtigungen → einschalten (Ihr Handy fragt Sie dann, ob die Seite Ihnen Nachrichten schicken darf — tippen Sie auf \"Erlauben\")",
+          "Probieren Sie den Urlaubsmodus aus: einschalten und wieder ausschalten",
+          "Öffnen Sie das Hilfe-Center: dort finden Sie Antworten auf häufige Fragen",
         ]} />
 
-        <h4 className="mb-2 mt-4 text-sm font-semibold">Quartierskarte</h4>
+        <h4 className="mb-2 mt-5 text-sm font-semibold">Die Nachbarschaftskarte</h4>
+        <p className="mb-2 text-xs text-muted-foreground">
+          Die Karte zeigt unsere Nachbarschaft von oben. Jedes Haus ist eingezeichnet.
+        </p>
         <Checklist items={[
-          "C1 — Karte öffnen und alle 3 Straßen sehen",
-          "C2 — Auf ein Haus tippen → Info-Panel öffnet sich",
-          "C3 — Lampe antippen → Farbe wechselt (Grün → Rot → Gelb)",
-          "C4 — Straßenfilter nutzen",
+          "Tippen Sie unten auf \"Karte\" — Sie sehen ein Luftbild mit allen 3 Straßen",
+          "Tippen Sie auf ein Haus — es öffnet sich ein kleines Fenster mit Infos",
+          "Tippen Sie auf die kleine Lampe neben einem Haus — die Farbe wechselt (Grün = alles gut, Rot = brauche Hilfe, Gelb = bin im Urlaub)",
         ]} />
 
-        <h4 className="mb-2 mt-4 text-sm font-semibold">Hilfe-System</h4>
+        <h4 className="mb-2 mt-5 text-sm font-semibold">Hilfe anbieten oder suchen</h4>
+        <p className="mb-2 text-xs text-muted-foreground">
+          Das Herzstück von Nachbar.io: Nachbarn helfen Nachbarn.
+        </p>
         <Checklist items={[
-          "D1 — Neuen Hilfe-Eintrag erstellen (z.B. \"Suche jemanden zum Blumen gießen\")",
-          "D2 — Kategorie und Dringlichkeit wählen",
-          "D3 — Hilfe-Eintrag eines anderen Testers sehen",
-          "D4 — Auf einen Hilfe-Eintrag antworten",
+          "Tippen Sie unten auf \"Hilfe\"",
+          "Tippen Sie auf den grünen Knopf \"Neuer Eintrag\" oder \"+\"",
+          "Schreiben Sie z.B. \"Suche jemanden zum Blumen gießen nächste Woche\"",
+          "Wählen Sie eine Kategorie (z.B. \"Haushalt\") und wie dringend es ist",
+          "Schauen Sie sich die Hilfe-Einträge anderer Tester an",
+          "Antworten Sie auf einen Eintrag eines anderen Testers",
         ]} />
 
-        <h4 className="mb-2 mt-4 text-sm font-semibold">Marktplatz &amp; Börsen</h4>
+        <h4 className="mb-2 mt-5 text-sm font-semibold">Marktplatz — Verschenken, Verleihen, Suchen</h4>
         <Checklist items={[
-          "E1 — Marktplatz öffnen",
-          "E2 — Neues Angebot erstellen (z.B. \"Verschenke Blumentöpfe\")",
-          "E3 — Leihbörse öffnen",
-          "E4 — Neuen Leihbörse-Eintrag erstellen",
-          "E5 — \"Wer hat?\" nutzen",
+          "Tippen Sie unten auf \"Marktplatz\"",
+          "Erstellen Sie ein Angebot (z.B. \"Verschenke Blumentöpfe\")",
+          "Schauen Sie sich die Leihbörse an — hier können Nachbarn Dinge ausleihen",
+          "Probieren Sie \"Wer hat?\" aus — hier können Sie fragen, ob jemand etwas bestimmtes hat",
         ]} />
 
-        <h4 className="mb-2 mt-4 text-sm font-semibold">Community</h4>
+        <h4 className="mb-2 mt-5 text-sm font-semibold">Gemeinschaft — Brett, Veranstaltungen, Tipps</h4>
         <Checklist items={[
-          "F1 — Schwarzes Brett öffnen",
-          "F2 — Veranstaltungen öffnen",
-          "F3 — Neues Event erstellen",
-          "F4 — Tipps-Seite öffnen und neuen Tipp schreiben",
-          "F5 — Lokale Nachrichten lesen",
-          "F6 — Umfragen öffnen und neue erstellen",
+          "Öffnen Sie das Schwarze Brett — hier können Nachbarn Aushänge machen",
+          "Schauen Sie bei Veranstaltungen rein und erstellen Sie ein Test-Event (z.B. \"Straßenfest am Samstag\")",
+          "Schreiben Sie einen Tipp für die Nachbarschaft (z.B. \"Der Briefkasten wird um 14 Uhr geleert\")",
+          "Lesen Sie die lokalen Nachrichten",
+          "Schauen Sie bei Umfragen rein und erstellen Sie eine Test-Umfrage",
         ]} />
       </Section>
 
-      {/* Kommunikation */}
-      <Section icon={<Users className="h-5 w-5" />} title="3. Kommunikation testen (zu zweit!)" id="kommunikation">
-        <div className="mb-3 rounded-lg bg-quartier-green/10 p-3 text-xs text-quartier-green-dark">
-          <strong>Wichtig:</strong> Diese Tests erfordern mindestens 2 Tester gleichzeitig!
+      {/* 3. Nachrichten schreiben (zu zweit) */}
+      <Section icon={<Users className="h-5 w-5" />} title="3. Nachrichten schreiben (braucht 2 Personen)" id="kommunikation">
+        <div className="mb-3 rounded-lg bg-quartier-green/10 p-3 text-sm text-quartier-green-dark">
+          <strong>Zu zweit testen:</strong> Für diesen Teil brauchen Sie einen zweiten Tester.
+          Verabreden Sie sich kurz — z.B. per Telefon oder WhatsApp.
         </div>
 
-        <h4 className="mb-2 text-sm font-semibold">Nachrichten zwischen Nachbarn</h4>
-        <Checklist items={[
-          "G1 — Tester A öffnet \"Nachrichten\" in der Navigation",
-          "G2 — Tester A sucht Tester B und sendet eine Kontaktanfrage",
-          "G3 — Tester B sieht die Kontaktanfrage",
-          "G4 — Tester B nimmt die Anfrage an",
-          "G5 — Tester A sendet eine Nachricht an Tester B",
-          "G6 — Tester B sieht die Nachricht in Echtzeit (ohne Seite neu zu laden!)",
-          "G7 — Tester B antwortet → Tester A sieht die Antwort live",
-          "G8 — Ungelesene Nachrichten werden als Zahl am Icon angezeigt",
-        ]} />
+        <h4 className="mb-2 text-sm font-semibold">Sich gegenseitig schreiben</h4>
+        <ol className="list-inside list-decimal space-y-2 text-sm">
+          <li><strong>Person A</strong> öffnet &quot;Nachrichten&quot; (das Briefumschlag-Symbol)</li>
+          <li><strong>Person A</strong> sucht <strong>Person B</strong> und sendet eine Kontaktanfrage</li>
+          <li><strong>Person B</strong> schaut nach — dort sollte die Anfrage erscheinen</li>
+          <li><strong>Person B</strong> nimmt die Anfrage an</li>
+          <li>Jetzt können sich beide Nachrichten schreiben!</li>
+          <li>Achten Sie darauf: Neue Nachrichten sollten <strong>sofort</strong> erscheinen — ohne dass Sie die Seite neu laden müssen</li>
+          <li>Schauen Sie, ob am Nachrichten-Symbol eine <strong>kleine Zahl</strong> erscheint, wenn Sie ungelesene Nachrichten haben</li>
+        </ol>
 
-        <h4 className="mb-2 mt-4 text-sm font-semibold">Push-Benachrichtigungen (zu zweit!)</h4>
-        <div className="mb-2 text-xs text-muted-foreground">
-          Voraussetzung: Beide Tester haben Push aktiviert (siehe B3)
+        <h4 className="mb-2 mt-5 text-sm font-semibold">Benachrichtigungen testen (zu zweit)</h4>
+        <p className="mb-2 text-xs text-muted-foreground">
+          Voraussetzung: Beide haben die Benachrichtigungen eingeschaltet (siehe oben bei &quot;Profil anpassen&quot;).
+        </p>
+        <ol className="list-inside list-decimal space-y-2 text-sm">
+          <li><strong>Person A</strong> erstellt einen neuen Hilfe-Eintrag</li>
+          <li><strong>Person B</strong> wartet kurz — es sollte eine Benachrichtigung auf dem Handy erscheinen (ähnlich wie bei WhatsApp)</li>
+          <li>Tippen Sie auf die Benachrichtigung — die App sollte sich öffnen und den richtigen Eintrag zeigen</li>
+          <li>Tippen Sie auf das Glocken-Symbol oben rechts — dort sehen Sie alle Ihre Benachrichtigungen</li>
+        </ol>
+
+        <h4 className="mb-2 mt-5 text-sm font-semibold">Nachbarn einladen</h4>
+        <Checklist items={[
+          "Gehen Sie zu Profil → \"Nachbar einladen\"",
+          "Erstellen Sie eine Einladung — es öffnet sich WhatsApp mit einem fertigen Text",
+          "Sie müssen die Einladung NICHT wirklich senden — es reicht zu prüfen, ob WhatsApp sich öffnet",
+        ]} />
+      </Section>
+
+      {/* 4. Besondere Funktionen */}
+      <Section icon={<Bell className="h-5 w-5" />} title="4. Besondere Funktionen" id="sonderfaelle">
+        <h4 className="mb-2 text-sm font-semibold">Notfall-Hinweis testen</h4>
+        <div className="mb-3 rounded-lg bg-red-50 p-3 text-sm text-red-700">
+          <strong>Keine Sorge:</strong> Sie rufen dabei <strong>NICHT</strong> wirklich den Notruf an!
+          Wir testen nur, ob der Warnhinweis richtig angezeigt wird.
         </div>
-        <Checklist items={[
-          "H1 — Tester A erstellt einen neuen Hilfe-Eintrag",
-          "H2 — Tester B prüft: Kommt eine Push-Benachrichtigung an?",
-          "H3 — Tippen auf die Push-Nachricht → richtige Seite öffnet sich",
-          "H4 — Benachrichtigungs-Center (Glocke) öffnen → alle Benachrichtigungen sehen",
-          "H5 — Einzelne Benachrichtigung als gelesen markieren",
-          "H6 — Ungelesene als rote Zahl an der Glocke angezeigt",
-        ]} />
+        <ol className="list-inside list-decimal space-y-2 text-sm">
+          <li>Gehen Sie zu &quot;Hilfe&quot; und erstellen Sie einen neuen Eintrag</li>
+          <li>Wählen Sie als Kategorie <strong>&quot;Feuer/Brand&quot;</strong></li>
+          <li>Es sollte sofort ein <strong>großes rotes Band</strong> erscheinen mit dem Hinweis &quot;Rufen Sie zuerst 112 an!&quot;</li>
+          <li>Prüfen Sie: Das rote Band sollte <strong>über allem anderen</strong> stehen — nichts sollte es verdecken</li>
+          <li>Probieren Sie das Gleiche mit &quot;Medizinischer Notfall&quot; und &quot;Kriminalität&quot;</li>
+        </ol>
 
-        <h4 className="mb-2 mt-4 text-sm font-semibold">Einladungssystem</h4>
+        <h4 className="mb-2 mt-5 text-sm font-semibold">Seniorenmodus ausprobieren</h4>
+        <p className="mb-2 text-xs text-muted-foreground">
+          Der Seniorenmodus macht alles größer und leichter zu bedienen.
+        </p>
         <Checklist items={[
-          "I1 — Profil → \"Nachbar einladen\"",
-          "I2 — Einladung per WhatsApp-Link erstellen",
-          "I3 — WhatsApp öffnet sich mit vorgefertigtem Text",
-          "I4 — \"Meine Einladungen\" zeigt die offene Einladung",
+          "Gehen Sie zu Profil und schalten Sie den Seniorenmodus ein",
+          "Prüfen Sie: Ist die Schrift jetzt deutlich größer?",
+          "Prüfen Sie: Sind die Knöpfe groß genug, um sie leicht zu treffen?",
+          "Prüfen Sie: Können Sie alle Texte gut lesen? (Kontrast/Farben)",
         ]} />
       </Section>
 
-      {/* Sonderfälle */}
-      <Section icon={<Bell className="h-5 w-5" />} title="4. Sonderfälle" id="sonderfaelle">
-        <h4 className="mb-2 text-sm font-semibold">Notfall-System</h4>
-        <div className="mb-2 rounded-lg bg-red-50 p-3 text-xs text-red-700">
-          <strong>ACHTUNG:</strong> Bitte NICHT den echten Notruf wählen! Dies testet nur das Banner.
+      {/* 5. Datenschutz */}
+      <Section icon={<Shield className="h-5 w-5" />} title="5. Datenschutz prüfen" id="dsgvo">
+        <p className="mb-3 text-sm text-muted-foreground">
+          Ihre Daten gehören Ihnen. Prüfen Sie, ob der Datenschutz funktioniert:
+        </p>
+        <Checklist items={[
+          "Öffnen Sie die Impressum-Seite (ganz unten auf der Startseite)",
+          "Öffnen Sie die Datenschutz-Seite (ebenfalls ganz unten)",
+          "Gehen Sie zu Profil → \"Meine Daten herunterladen\" — es wird eine Datei gespeichert",
+          "Prüfen Sie: In dieser Datei sollten NUR Ihre eigenen Daten stehen — keine Adressen von anderen Nachbarn",
+        ]} />
+      </Section>
+
+      {/* 6. Allgemeiner Eindruck */}
+      <Section icon={<Smartphone className="h-5 w-5" />} title="6. Allgemeiner Eindruck" id="qualitaet">
+        <p className="mb-3 text-sm text-muted-foreground">
+          Zum Schluss noch ein paar allgemeine Punkte. Achten Sie einfach darauf:
+        </p>
+        <Checklist items={[
+          "Sieht die Seite auf Ihrem Handy gut aus? (Kein Text abgeschnitten, alles lesbar)",
+          "Sind alle Texte auf Deutsch und höflich formuliert?",
+          "Laden die Seiten schnell genug? (Nicht länger als 3 Sekunden)",
+          "Wenn etwas nicht funktioniert: Ist die Fehlermeldung verständlich?",
+        ]} />
+
+        <h4 className="mb-2 mt-5 text-sm font-semibold">App auf den Startbildschirm legen (freiwillig)</h4>
+        <div className="rounded-lg bg-blue-50 p-3 text-sm text-blue-800">
+          <p className="mb-2">
+            Sie können Nachbar.io wie eine richtige App auf Ihren Startbildschirm legen.
+            Dann müssen Sie nicht jedes Mal die Adresse eintippen.
+          </p>
+          <p className="mb-1"><strong>Auf dem iPhone (Safari):</strong></p>
+          <ol className="mb-2 ml-4 list-decimal space-y-1 text-xs">
+            <li>Tippen Sie unten auf das Teilen-Symbol (Quadrat mit Pfeil nach oben)</li>
+            <li>Scrollen Sie nach unten und tippen Sie auf &quot;Zum Home-Bildschirm&quot;</li>
+            <li>Tippen Sie auf &quot;Hinzufügen&quot;</li>
+          </ol>
+          <p className="mb-1"><strong>Auf Android (Chrome):</strong></p>
+          <ol className="ml-4 list-decimal space-y-1 text-xs">
+            <li>Tippen Sie oben rechts auf die drei Punkte (⋮)</li>
+            <li>Tippen Sie auf &quot;Zum Startbildschirm hinzufügen&quot;</li>
+            <li>Tippen Sie auf &quot;Hinzufügen&quot;</li>
+          </ol>
         </div>
-        <Checklist items={[
-          "J1 — Hilfe-Eintrag mit Kategorie \"Feuer/Brand\" erstellen",
-          "J2 — Rotes Banner erscheint mit \"Rufen Sie zuerst 112 an!\"",
-          "J3 — Banner steht ÜBER allem — nichts verdeckt es",
-          "J4 — Gleicher Test mit \"Medizinischer Notfall\" und \"Kriminalität\"",
-        ]} />
-
-        <h4 className="mb-2 mt-4 text-sm font-semibold">Seniorenmodus</h4>
-        <Checklist items={[
-          "K1 — Im Profil den Seniorenmodus aktivieren",
-          "K2 — Schrift wird deutlich größer",
-          "K3 — Buttons sind fingerkuppengroß (80px)",
-          "K4 — Kontraste sind gut lesbar",
-          "K5 — Jede Hauptaktion in max. 4 Taps erreichbar",
-        ]} />
-      </Section>
-
-      {/* DSGVO */}
-      <Section icon={<Shield className="h-5 w-5" />} title="5. Datenschutz (DSGVO)" id="dsgvo">
-        <Checklist items={[
-          "L1 — Impressum-Seite öffnen",
-          "L2 — Datenschutz-Seite öffnen",
-          "L3 — Profil → \"Daten exportieren\" → JSON-Datei wird heruntergeladen",
-          "L4 — In der Datei stehen keine Adressen anderer Nachbarn",
-        ]} />
-      </Section>
-
-      {/* Qualität */}
-      <Section icon={<Smartphone className="h-5 w-5" />} title="6. Allgemeine Qualität" id="qualitaet">
-        <Checklist items={[
-          "M1 — App sieht auf dem Handy gut aus (kein abgeschnittener Text)",
-          "M2 — Alle Texte auf Deutsch und in \"Sie\"-Form",
-          "M3 — Farben: Grün als Hauptfarbe, Gelb/Amber für Warnungen",
-          "M4 — Rot wird NUR für Notruf-Banner (112/110) verwendet",
-          "M5 — Seiten laden in 2-3 Sekunden",
-          "M6 — Fehlermeldungen sind verständlich (kein Englisch)",
-          "N1 — App als PWA installieren",
-          "N2 — Vom Startbildschirm öffnen → kein Browser-Rahmen",
-          "N3 — WLAN kurz aus → sinnvolle Offline-Meldung",
-        ]} />
+        <div className="mt-3">
+          <Checklist items={[
+            "Wenn Sie die App so installiert haben: Öffnen Sie sie vom Startbildschirm — die Browser-Leiste sollte verschwunden sein",
+            "Schalten Sie kurz das WLAN aus — es sollte eine verständliche Meldung kommen",
+          ]} />
+        </div>
       </Section>
 
       {/* Zeitplan */}
       <div className="mb-6 rounded-xl border bg-white p-5">
-        <h3 className="mb-3 text-lg font-semibold text-anthrazit">⏱️ Zeitplan (~65 Min.)</h3>
+        <h3 className="mb-3 text-lg font-semibold text-anthrazit">Wie lange dauert das?</h3>
+        <p className="mb-3 text-sm text-muted-foreground">
+          Ungefähr eine Stunde — aber Sie können jederzeit pausieren und später weitermachen.
+        </p>
         <div className="space-y-2 text-sm">
-          <TimeRow time="5 Min." label="Registrierung" />
-          <TimeRow time="20 Min." label="Solo-Tests (Profil, Karte, Hilfe, Marktplatz)" />
-          <TimeRow time="20 Min." label="Paar-Tests (Nachrichten, Push, Einladungen)" />
-          <TimeRow time="10 Min." label="Sonderfälle (Notfall, Seniorenmodus, DSGVO)" />
-          <TimeRow time="5 Min." label="Qualität (Aussehen, Offline, PWA)" />
-          <TimeRow time="5 Min." label="Feedback an Thomas senden" />
+          <TimeRow time="5 Min." label="Konto erstellen" />
+          <TimeRow time="20 Min." label="Alleine ausprobieren (Profil, Karte, Hilfe, Marktplatz)" />
+          <TimeRow time="20 Min." label="Zu zweit testen (Nachrichten, Benachrichtigungen)" />
+          <TimeRow time="10 Min." label="Besondere Funktionen (Notfall-Hinweis, Seniorenmodus)" />
+          <TimeRow time="5 Min." label="Datenschutz und allgemeiner Eindruck" />
         </div>
       </div>
 
-      {/* Hinweise */}
+      {/* Tipps */}
       <div className="mb-6 rounded-xl border bg-blue-50 p-5 text-sm text-blue-800">
-        <h3 className="mb-2 font-semibold">Technische Hinweise</h3>
-        <ul className="list-inside list-disc space-y-1">
-          <li>Beste Erfahrung: Chrome (Android) oder Safari (iPhone)</li>
-          <li>Push muss im Browser UND in den Handy-Einstellungen erlaubt sein</li>
-          <li>Keine echten sensiblen Daten beim Testen verwenden</li>
-          <li>Bei Fehlern: Screenshot machen + Aufgaben-Nr. notieren</li>
+        <h3 className="mb-2 flex items-center gap-2 font-semibold">
+          <HelpCircle className="h-4 w-4" />
+          Tipps zum Testen
+        </h3>
+        <ul className="list-inside list-disc space-y-2">
+          <li>Nutzen Sie am besten <strong>Safari</strong> (iPhone) oder <strong>Chrome</strong> (Android)</li>
+          <li>Wenn etwas nicht klappt — das ist in Ordnung! Genau dafür testen wir</li>
+          <li>Machen Sie gerne einen Screenshot, wenn etwas komisch aussieht</li>
+          <li>Notieren Sie kurz, was passiert ist und bei welchem Schritt</li>
+          <li>Bei Fragen können Sie sich jederzeit bei Thomas melden</li>
         </ul>
       </div>
 
+      {/* Feedback */}
+      <div className="mb-6 rounded-xl border-2 border-quartier-green bg-quartier-green/5 p-5">
+        <h3 className="mb-2 flex items-center gap-2 font-semibold text-quartier-green">
+          <MessageCircle className="h-5 w-5" />
+          Feedback geben
+        </h3>
+        <p className="text-sm text-muted-foreground">
+          Nach dem Testen würden wir uns sehr über Ihr Feedback freuen!
+          Schreiben Sie Thomas einfach eine kurze Nachricht — per WhatsApp, E-Mail oder direkt in der App.
+          Jeder Hinweis hilft, Nachbar.io besser zu machen.
+        </p>
+      </div>
+
       <div className="text-center text-sm text-muted-foreground">
-        <p>Vielen Dank für Ihre Hilfe! 🏡</p>
-        <p className="mt-1">Ihr Feedback macht Nachbar.io besser für alle Nachbarn.</p>
+        <p>Vielen Dank, dass Sie sich die Zeit nehmen! 🏡</p>
+        <p className="mt-1">Ihr Feedback macht Nachbar.io besser für die ganze Nachbarschaft.</p>
       </div>
     </div>
   );

@@ -46,8 +46,10 @@ export async function updateSession(request: NextRequest) {
   // Rechtliche Seiten muessen IMMER oeffentlich zugaenglich sein (DSGVO / TMG)
   const isLegalPage = request.nextUrl.pathname.startsWith("/datenschutz") ||
     request.nextUrl.pathname.startsWith("/impressum");
+  // Testanleitung muss vor Login zugaenglich sein (Tester brauchen sie)
+  const isPublicPage = request.nextUrl.pathname.startsWith("/testanleitung");
 
-  if (!user && !isAuthPage && !isApiRoute && !isRootPage && !isLegalPage) {
+  if (!user && !isAuthPage && !isApiRoute && !isRootPage && !isLegalPage && !isPublicPage) {
     const url = request.nextUrl.clone();
     url.pathname = "/login";
     return NextResponse.redirect(url);

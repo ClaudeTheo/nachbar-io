@@ -19,7 +19,8 @@ export function SeniorStatusScreen({ type, autoCloseSeconds = 10 }: SeniorStatus
   const config = STATUS_CONFIG[type];
 
   useEffect(() => {
-    const timer = setTimeout(() => router.push('/'), autoCloseSeconds * 1000);
+    // Zurueck zur Senior-Startseite (nicht zur Landing-Page)
+    const timer = setTimeout(() => router.push('/senior/home'), autoCloseSeconds * 1000);
     return () => clearTimeout(timer);
   }, [autoCloseSeconds, router]);
 

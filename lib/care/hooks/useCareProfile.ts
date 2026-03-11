@@ -21,9 +21,9 @@ export function useCareProfile(userId?: string) {
         .from('care_profiles')
         .select('*')
         .eq('user_id', userId)
-        .single();
+        .maybeSingle();
 
-      if (err && err.code !== 'PGRST116') {
+      if (err) {
         setError(err.message);
       } else {
         setProfile(data as CareProfile | null);

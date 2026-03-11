@@ -32,7 +32,7 @@ export default function PollDetailPage() {
       .from("polls")
       .select("*, user:users(display_name, avatar_url)")
       .eq("id", id)
-      .single();
+      .maybeSingle();
 
     if (!pollData) { setLoading(false); return; }
     setPoll(pollData as unknown as Poll);

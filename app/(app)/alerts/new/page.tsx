@@ -52,7 +52,7 @@ export default function NewAlertPage() {
       .select("household_id")
       .eq("user_id", user.id)
       .not("verified_at", "is", null)
-      .single();
+      .maybeSingle();
 
     if (!membership) {
       toast.error("Ihr Haushalt konnte nicht ermittelt werden. Bitte kontaktieren Sie den Admin.");

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
+import { createClient as createServerClient } from "@/lib/supabase/server";
 import { generateSecureCode } from "@/lib/invite-codes";
 
 // Ungefaehre Koordinaten pro Strasse (Mitte der Strasse)
@@ -14,9 +15,21 @@ const STREET_COORDS: Record<string, { lat: number; lng: number }> = {
  * Sucht einen Haushalt anhand von Strasse und Hausnummer.
  * Wenn nicht vorhanden, wird ein neuer Haushalt angelegt.
  * Gibt die household_id zurueck.
+ *
+ * SICHERHEIT: Erfordert authentifizierten User.
  */
 export async function POST(request: NextRequest) {
   try {
+    // Auth-Check: User muss eingeloggt sein
+    const supabaseAuth = await createServerClient();
+    const { data: { user } } = await supabaseAuth.auth.getUser();
+    if (!user) {
+      return NextResponse.json(
+        { error: "Nicht autorisiert." },
+        { status: 401 }
+      );
+    }
+
     const body = await request.json();
     const { streetName, houseNumber } = body;
 

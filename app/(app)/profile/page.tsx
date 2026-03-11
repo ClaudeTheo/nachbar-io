@@ -42,7 +42,7 @@ export default function ProfilePage() {
         .from("household_members")
         .select("household:households(*)")
         .eq("user_id", authUser.id)
-        .single();
+        .maybeSingle();
       if (membership?.household) setHousehold(membership.household as unknown as Household);
     }
     load();

@@ -50,7 +50,7 @@ export default function SeniorHelpPage() {
       .select("household_id")
       .eq("user_id", user.id)
       .not("verified_at", "is", null)
-      .single();
+      .maybeSingle();
 
     if (!membership) {
       setLoading(false);

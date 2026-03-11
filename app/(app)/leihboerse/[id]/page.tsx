@@ -30,7 +30,7 @@ export default function LeihboerseDetailPage() {
         .from("leihboerse_items")
         .select("*, user:users(display_name, avatar_url)")
         .eq("id", id)
-        .single();
+        .maybeSingle();
 
       if (data) setItem(data as unknown as LeihboerseItem);
       setLoading(false);

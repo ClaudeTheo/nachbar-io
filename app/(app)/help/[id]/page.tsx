@@ -47,7 +47,7 @@ export default function HelpDetailPage() {
         .from("help_requests")
         .select("*, user:users(display_name, avatar_url)")
         .eq("id", id)
-        .single();
+        .maybeSingle();
 
       if (fetchError || !data) {
         setError("Eintrag nicht gefunden.");

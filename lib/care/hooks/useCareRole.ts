@@ -37,7 +37,7 @@ export function useCareRole(seniorId?: string) {
         .select('role, assigned_seniors')
         .eq('user_id', user.id)
         .eq('verification_status', 'verified')
-        .single();
+        .maybeSingle();
 
       if (helper?.assigned_seniors?.includes(seniorId)) {
         setRole(helper.role as CareUserRole);

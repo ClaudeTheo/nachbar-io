@@ -35,7 +35,7 @@ export async function getCareRole(
     .select('role')
     .eq('user_id', user.id)
     .eq('verification_status', 'verified')
-    .single();
+    .maybeSingle();
 
   if (helper && helper.role) {
     // Pruefe ob der Senior in assigned_seniors ist
@@ -43,7 +43,7 @@ export async function getCareRole(
       .from('care_helpers')
       .select('assigned_seniors')
       .eq('user_id', user.id)
-      .single();
+      .maybeSingle();
 
     if (helperFull?.assigned_seniors?.includes(seniorId)) {
       return helper.role as CareHelperRole;
@@ -69,7 +69,7 @@ export async function canAccessFeature(
     .from('care_subscriptions')
     .select('plan, status')
     .eq('user_id', seniorId)
-    .single();
+    .maybeSingle();
 
   // Kein Abo = free Plan
   const plan: CareSubscriptionPlan = subscription?.plan ?? 'free';

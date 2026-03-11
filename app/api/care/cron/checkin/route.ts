@@ -9,13 +9,15 @@ import { CHECKIN_DEFAULTS } from '@/lib/care/constants';
 
 // GET /api/care/cron/checkin — Check-in Scheduler (Vercel Cron: alle 5 Minuten)
 export async function GET(request: NextRequest) {
-  // Cron-Auth: Authorization-Header gegen CRON_SECRET pruefen (falls konfiguriert)
+  // Cron-Auth: Authorization-Header gegen CRON_SECRET pruefen
   const cronSecret = process.env.CRON_SECRET;
-  if (cronSecret) {
-    const authHeader = request.headers.get('authorization');
-    if (authHeader !== `Bearer ${cronSecret}`) {
-      return NextResponse.json({ error: 'Nicht autorisiert' }, { status: 401 });
-    }
+  if (!cronSecret) {
+    console.error('CRON_SECRET nicht konfiguriert — Cron-Endpunkt blockiert');
+    return NextResponse.json({ error: 'Server nicht konfiguriert' }, { status: 500 });
+  }
+  const authHeader = request.headers.get('authorization');
+  if (authHeader !== `Bearer ${cronSecret}`) {
+    return NextResponse.json({ error: 'Nicht autorisiert' }, { status: 401 });
   }
 
   const supabase = await createClient();

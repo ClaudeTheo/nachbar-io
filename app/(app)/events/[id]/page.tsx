@@ -50,7 +50,7 @@ export default function EventDetailPage() {
         .from("events")
         .select("*, user:users(display_name, avatar_url)")
         .eq("id", id)
-        .single();
+        .maybeSingle();
 
       if (eventError || !eventData) {
         setLoading(false);

@@ -30,7 +30,7 @@ export default function MarketplaceDetailPage() {
         .from("marketplace_items")
         .select("*, user:users(display_name, avatar_url)")
         .eq("id", id)
-        .single();
+        .maybeSingle();
 
       if (data) setItem(data as unknown as MarketplaceItem);
       setLoading(false);

@@ -128,23 +128,26 @@ export default function ProfileEditPage() {
       return;
     }
 
+    if (!currentPassword) {
+      toast.error("Bitte geben Sie Ihr aktuelles Passwort ein.");
+      return;
+    }
+
     setChangingPassword(true);
     try {
       const supabase = createClient();
 
       // Aktuelles Passwort pruefen: Re-Authentifizierung via signInWithPassword
-      if (currentPassword) {
-        const { data: { user: authUser } } = await supabase.auth.getUser();
-        if (authUser?.email) {
-          const { error: signInError } = await supabase.auth.signInWithPassword({
-            email: authUser.email,
-            password: currentPassword,
-          });
-          if (signInError) {
-            toast.error("Das aktuelle Passwort ist nicht korrekt.");
-            setChangingPassword(false);
-            return;
-          }
+      const { data: { user: authUser } } = await supabase.auth.getUser();
+      if (authUser?.email) {
+        const { error: signInError } = await supabase.auth.signInWithPassword({
+          email: authUser.email,
+          password: currentPassword,
+        });
+        if (signInError) {
+          toast.error("Das aktuelle Passwort ist nicht korrekt.");
+          setChangingPassword(false);
+          return;
         }
       }
 
@@ -362,6 +365,7 @@ export default function ProfileEditPage() {
               onClick={handlePasswordChange}
               disabled={
                 changingPassword ||
+                !currentPassword ||
                 !newPassword ||
                 newPassword.length < 8 ||
                 newPassword !== confirmPassword

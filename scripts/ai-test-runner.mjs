@@ -362,13 +362,14 @@ const TEST_EVALUATORS = {
   // === D: Hilfe-System ===
   D1: async (ctx) => {
     // Hilfe-Eintrag per DB erstellen (RLS-Check)
+    // Schema: type='need'|'offer' (Pflicht), category aus erlaubter Liste, status='active' (Default)
     const { data, error } = await ctx.userDb.from('help_requests').insert({
       user_id: ctx.userId,
+      type: 'need',
       title: '[KI-Test] Testanfrage',
       description: 'Automatisierter Testdatensatz',
-      category: 'household',
-      urgency: 'low',
-      status: 'open',
+      category: 'other',
+      status: 'active',
     }).select('id').single();
 
     if (data) {
@@ -385,11 +386,12 @@ const TEST_EVALUATORS = {
   // === E: Marktplatz ===
   E1: async () => { const r = await runRouteCheck('/marketplace'); return result(r.ok, 'Marktplatz-Route', r); },
   E2: async (ctx) => {
+    // Schema: type='sell'|'give'|'search'|'lend' (Pflicht), category aus erlaubter Liste
     const { data, error } = await ctx.userDb.from('marketplace_items').insert({
       user_id: ctx.userId,
       title: '[KI-Test] Testartikel',
       description: 'Automatisierter Testdatensatz',
-      type: 'offer',
+      type: 'give',
       category: 'household',
       status: 'active',
     }).select('id').single();
@@ -401,10 +403,11 @@ const TEST_EVALUATORS = {
   },
   E3: async () => { const r = await runRouteCheck('/leihboerse'); return result(r.ok, 'Leihboerse-Route', r); },
   E4: async (ctx) => {
+    // Schema: type='lend'|'borrow' (Pflicht), category aus erlaubter Liste
     const { data, error } = await ctx.userDb.from('leihboerse_items').insert({
       user_id: ctx.userId,
       title: '[KI-Test] Test-Leihgegenstand',
-      type: 'offer',
+      type: 'lend',
       category: 'tools',
       status: 'active',
     }).select('id').single();

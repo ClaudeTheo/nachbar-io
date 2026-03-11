@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient as createServerClient } from "@/lib/supabase/server";
 import { createClient } from "@supabase/supabase-js";
 import { sendVerificationResultEmail } from "@/lib/email";
+import { safeInsertNotification } from "@/lib/notifications-server";
 
 // Service-Role Client fuer Admin-Operationen
 function getAdminSupabase() {
@@ -96,8 +97,8 @@ export async function POST(request: NextRequest) {
       .update({ trust_level: "verified" })
       .eq("id", vRequest.user_id);
 
-    // Benachrichtigung senden (In-App)
-    await adminSupabase.from("notifications").insert({
+    // Benachrichtigung senden (In-App, mit Constraint-Fallback)
+    await safeInsertNotification(adminSupabase, {
       user_id: vRequest.user_id,
       type: "verification_approved",
       title: "Verifizierung bestätigt",
@@ -154,8 +155,8 @@ export async function POST(request: NextRequest) {
       ? `Ihre Verifizierungsanfrage wurde leider abgelehnt: ${note}`
       : "Ihre Verifizierungsanfrage wurde leider abgelehnt. Bitte wenden Sie sich an einen Admin.";
 
-    // Benachrichtigung senden (In-App)
-    await adminSupabase.from("notifications").insert({
+    // Benachrichtigung senden (In-App, mit Constraint-Fallback)
+    await safeInsertNotification(adminSupabase, {
       user_id: vRequest.user_id,
       type: "verification_rejected",
       title: "Verifizierung nicht bestätigt",

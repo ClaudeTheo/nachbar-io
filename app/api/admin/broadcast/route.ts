@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { safeInsertNotifications } from "@/lib/notifications-server";
 
 /**
  * POST /api/admin/broadcast
@@ -72,7 +73,7 @@ export async function POST(request: NextRequest) {
       read: false,
     }));
 
-    await supabase.from("notifications").insert(notifications);
+    await safeInsertNotifications(supabase, notifications);
   }
 
   // Push-Nachrichten senden (falls VAPID konfiguriert)

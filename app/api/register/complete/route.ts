@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient as createServerClient } from "@/lib/supabase/server";
 import { createClient } from "@supabase/supabase-js";
+import { safeInsertNotification } from "@/lib/notifications-server";
 
 // Service-Role Client fuer Registrierungs-Operationen (umgeht RLS)
 function getAdminSupabase() {
@@ -164,8 +165,8 @@ export async function POST(request: NextRequest) {
             reference_id: userId,
           });
 
-          // Benachrichtigung an den Einladenden
-          await adminDb.from("notifications").insert({
+          // Benachrichtigung an den Einladenden (mit Constraint-Fallback)
+          await safeInsertNotification(adminDb, {
             user_id: referrerId,
             type: "neighbor_invited",
             title: "Nachbar registriert!",

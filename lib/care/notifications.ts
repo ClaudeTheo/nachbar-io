@@ -6,6 +6,7 @@ import type { CareNotificationType } from './types';
 import { sendPush } from './channels/push';
 import { sendSms } from './channels/sms';
 import { initiateCall } from './channels/voice';
+import { safeInsertNotification } from '@/lib/notifications-server';
 
 interface CareNotificationPayload {
   userId: string;
@@ -31,9 +32,9 @@ export async function sendCareNotification(
 ): Promise<void> {
   const results: Record<string, boolean> = {};
 
-  // In-App Notification (immer, wenn gewuenscht)
+  // In-App Notification (immer, wenn gewuenscht, mit Constraint-Fallback)
   if (payload.channels.includes('in_app')) {
-    const { error } = await supabase.from('notifications').insert({
+    const result = await safeInsertNotification(supabase, {
       user_id: payload.userId,
       type: payload.type,
       title: payload.title,
@@ -42,7 +43,7 @@ export async function sendCareNotification(
       reference_type: payload.referenceType ?? null,
       read: false,
     });
-    results.in_app = !error;
+    results.in_app = result.success;
   }
 
   // Web Push
@@ -81,7 +82,7 @@ export async function sendCareNotification(
 
     if (admins) {
       for (const admin of admins) {
-        await supabase.from('notifications').insert({
+        await safeInsertNotification(supabase, {
           user_id: admin.id,
           type: 'care_escalation',
           title: `[ADMIN] ${payload.title}`,

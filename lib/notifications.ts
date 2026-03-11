@@ -43,8 +43,8 @@ export async function createNotification(params: {
     const { data: { user } } = await supabase.auth.getUser();
     if (user?.id === params.userId) return;
 
-    // In-App Notification in DB schreiben
-    await supabase.from("notifications").insert({
+    // In-App Notification in DB schreiben (mit Constraint-Fallback)
+    const { error: insertError } = await supabase.from("notifications").insert({
       user_id: params.userId,
       type: params.type,
       title: params.title,
@@ -52,6 +52,19 @@ export async function createNotification(params: {
       reference_id: params.referenceId || null,
       reference_type: params.referenceType || null,
     });
+
+    // Bei CHECK-Constraint-Fehler: Fallback auf 'system' Typ
+    if (insertError?.code === "23514" || insertError?.message?.includes("notifications_type_check")) {
+      console.warn(`[notifications] Typ '${params.type}' blockiert — Fallback auf 'system'`);
+      await supabase.from("notifications").insert({
+        user_id: params.userId,
+        type: "system",
+        title: params.title,
+        body: params.body ? `[${params.type}] ${params.body}` : `[${params.type}]`,
+        reference_id: params.referenceId || null,
+        reference_type: params.referenceType || null,
+      });
+    }
 
     // Push-Notification an den Nutzer senden (fire-and-forget)
     const baseRoute = TYPE_ROUTES[params.type] || "/notifications";

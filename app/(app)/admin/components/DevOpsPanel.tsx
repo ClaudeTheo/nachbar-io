@@ -11,6 +11,9 @@ import {
   Server,
   Shield,
   GitCommit,
+  Database,
+  Copy,
+  ExternalLink,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -36,6 +39,20 @@ interface CronJob {
   schedule: string;
 }
 
+interface MigrationTypeStatus {
+  type: string;
+  status: "ok" | "blocked";
+}
+
+interface MigrationStatus {
+  migrationApplied: boolean;
+  migration: string;
+  summary: string;
+  types: MigrationTypeStatus[];
+  sqlEditorUrl: string;
+  migrationSql: string;
+}
+
 const CRON_JOBS: CronJob[] = [
   { label: "Einladungen ablaufen", path: "/api/cron/expire-invitations", schedule: "Taeglich" },
   { label: "Care: Eskalation", path: "/api/care/cron/escalation", schedule: "Taeglich 09:00" },
@@ -50,9 +67,13 @@ export function DevOpsPanel() {
   const [loading, setLoading] = useState(true);
   const [cronRunning, setCronRunning] = useState<string | null>(null);
   const [cronResults, setCronResults] = useState<Record<string, { status: number; time: number }>>({});
+  const [migrationStatus, setMigrationStatus] = useState<MigrationStatus | null>(null);
+  const [migrationLoading, setMigrationLoading] = useState(false);
+  const [sqlCopied, setSqlCopied] = useState(false);
 
   useEffect(() => {
     loadEnvStatus();
+    checkMigrationStatus();
   }, []);
 
   async function loadEnvStatus() {
@@ -68,6 +89,28 @@ export function DevOpsPanel() {
       // Fehler still ignorieren
     }
     setLoading(false);
+  }
+
+  async function checkMigrationStatus() {
+    setMigrationLoading(true);
+    try {
+      const res = await fetch("/api/admin/migration-status");
+      if (res.ok) {
+        const data = await res.json();
+        setMigrationStatus(data);
+      }
+    } catch {
+      // Fehler still ignorieren
+    }
+    setMigrationLoading(false);
+  }
+
+  async function copySql() {
+    if (migrationStatus?.migrationSql) {
+      await navigator.clipboard.writeText(migrationStatus.migrationSql);
+      setSqlCopied(true);
+      setTimeout(() => setSqlCopied(false), 2000);
+    }
   }
 
   async function triggerCron(path: string) {
@@ -124,6 +167,85 @@ export function DevOpsPanel() {
           )}
         </div>
       )}
+
+      {/* Datenbank-Migrationen */}
+      <div className="rounded-xl border bg-white p-4">
+        <div className="mb-3 flex items-center justify-between">
+          <h3 className="flex items-center gap-2 text-sm font-semibold text-anthrazit">
+            <Database className="h-4 w-4 text-quartier-green" />
+            Datenbank-Migrationen
+          </h3>
+          <Button variant="ghost" size="sm" onClick={checkMigrationStatus} disabled={migrationLoading}>
+            <RefreshCw className={`h-3.5 w-3.5 ${migrationLoading ? "animate-spin" : ""}`} />
+          </Button>
+        </div>
+
+        {migrationLoading && !migrationStatus ? (
+          <div className="py-4 text-center text-sm text-muted-foreground">Pruefe Migrations-Status...</div>
+        ) : migrationStatus ? (
+          <div className="space-y-3">
+            {/* Status-Banner */}
+            <div className={`rounded-lg p-3 text-xs ${
+              migrationStatus.migrationApplied
+                ? "bg-green-50 text-green-700"
+                : "bg-amber-50 text-amber-700"
+            }`}>
+              <div className="flex items-center gap-2 font-medium">
+                {migrationStatus.migrationApplied ? (
+                  <CheckCircle2 className="h-4 w-4" />
+                ) : (
+                  <AlertTriangle className="h-4 w-4" />
+                )}
+                {migrationStatus.summary}
+              </div>
+            </div>
+
+            {/* Typ-Status-Grid */}
+            <div className="grid grid-cols-3 gap-1 sm:grid-cols-4">
+              {migrationStatus.types.map((t) => (
+                <div
+                  key={t.type}
+                  className={`flex items-center gap-1 rounded px-2 py-1 text-[10px] font-mono ${
+                    t.status === "ok"
+                      ? "bg-green-50 text-green-700"
+                      : "bg-red-50 text-red-600"
+                  }`}
+                >
+                  {t.status === "ok" ? (
+                    <CheckCircle2 className="h-2.5 w-2.5 shrink-0" />
+                  ) : (
+                    <XCircle className="h-2.5 w-2.5 shrink-0" />
+                  )}
+                  {t.type}
+                </div>
+              ))}
+            </div>
+
+            {/* Aktions-Buttons (nur wenn Migration fehlt) */}
+            {!migrationStatus.migrationApplied && (
+              <div className="flex flex-wrap gap-2 pt-1">
+                <Button variant="outline" size="sm" onClick={copySql} className="text-xs">
+                  <Copy className="mr-1 h-3 w-3" />
+                  {sqlCopied ? "Kopiert!" : "SQL kopieren"}
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="text-xs"
+                  onClick={() => window.open(migrationStatus.sqlEditorUrl, "_blank")}
+                >
+                  <ExternalLink className="mr-1 h-3 w-3" />
+                  SQL Editor oeffnen
+                </Button>
+              </div>
+            )}
+          </div>
+        ) : (
+          <div className="py-4 text-center text-xs text-muted-foreground">
+            Status konnte nicht geladen werden.
+          </div>
+        )}
+      </div>
 
       {/* Umgebungsvariablen */}
       <div className="rounded-xl border bg-white p-4">

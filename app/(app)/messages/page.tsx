@@ -398,6 +398,7 @@ function ConversationCard({
     <button
       onClick={onClick}
       className="w-full rounded-lg border border-border bg-white p-4 text-left transition-all hover:border-quartier-green hover:shadow-md active:scale-[0.99]"
+      data-testid="conversation-card"
     >
       <div className="flex items-center gap-3">
         {/* Avatar-Platzhalter */}
@@ -434,7 +435,7 @@ function ConversationCard({
               {preview}
             </p>
             {hasUnread && (
-              <Badge className="shrink-0 bg-quartier-green text-white text-xs px-1.5 py-0.5 min-w-[1.25rem] text-center">
+              <Badge className="shrink-0 bg-quartier-green text-white text-xs px-1.5 py-0.5 min-w-[1.25rem] text-center" data-testid="unread-count">
                 {conversation.unread_count}
               </Badge>
             )}

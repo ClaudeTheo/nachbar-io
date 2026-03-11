@@ -273,7 +273,7 @@ export default function ChatPage() {
     <div className="flex h-[calc(100vh-7rem)] flex-col">
       {/* Header */}
       <div className="flex items-center gap-3 border-b border-border pb-3">
-        <Link href="/messages" className="rounded-lg p-2 hover:bg-muted">
+        <Link href="/messages" className="rounded-lg p-2 hover:bg-muted" data-testid="chat-back">
           <ArrowLeft className="h-5 w-5" />
         </Link>
         <div className="flex items-center gap-2">
@@ -289,7 +289,7 @@ export default function ChatPage() {
               (otherUserName[0] ?? "N").toUpperCase()
             )}
           </div>
-          <h1 className="text-lg font-bold text-anthrazit">{otherUserName}</h1>
+          <h1 className="text-lg font-bold text-anthrazit" data-testid="chat-partner-name">{otherUserName}</h1>
         </div>
       </div>
 
@@ -344,6 +344,7 @@ export default function ChatPage() {
 
                       {/* Nachrichten-Blase */}
                       <div
+                        data-testid="chat-message"
                         className={`rounded-2xl px-4 py-2.5 ${
                           isOwn
                             ? "bg-quartier-green text-white"
@@ -382,7 +383,7 @@ export default function ChatPage() {
                           {format(new Date(msg.created_at), "HH:mm", { locale: de })}
                           {/* Lesebestaetigung fuer eigene Nachrichten */}
                           {isOwn && msg.read_at && (
-                            <span className="ml-1 text-quartier-green/70">
+                            <span className="ml-1 text-quartier-green/70" data-testid="read-receipt">
                               Gelesen
                             </span>
                           )}
@@ -407,6 +408,7 @@ export default function ChatPage() {
             onChange={(e) => setInputValue(e.target.value)}
             onKeyDown={handleKeyDown}
             placeholder="Nachricht schreiben..."
+            data-testid="chat-input"
             rows={1}
             maxLength={1000}
             className="flex-1 resize-none rounded-2xl border border-border bg-white px-4 py-2.5 text-sm placeholder:text-muted-foreground focus:border-quartier-green focus:outline-none focus:ring-1 focus:ring-quartier-green"
@@ -427,6 +429,7 @@ export default function ChatPage() {
             size="icon"
             className="h-11 w-11 shrink-0 rounded-full bg-quartier-green hover:bg-quartier-green-dark disabled:opacity-40"
             aria-label="Nachricht senden"
+            data-testid="chat-send"
           >
             <Send className="h-4 w-4" />
           </Button>

@@ -41,6 +41,7 @@ export function AlertCard({ alert, onHelp, onView, compact = false, reputationLe
       onClick={() => onView?.(alert.id)}
       role="article"
       aria-label={`Hilfeanfrage: ${alert.title}`}
+      data-testid="alert-card"
     >
       <CardContent className={compact ? "p-3" : "p-4"}>
         <div className="flex items-start gap-3">

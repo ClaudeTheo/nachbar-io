@@ -60,12 +60,14 @@ export default function HelpPage() {
               filterCategory ? "bg-quartier-green/10 text-quartier-green" : "hover:bg-muted"
             }`}
             aria-label="Filter"
+            data-testid="help-filter-button"
           >
             <Filter className="h-4 w-4" />
           </button>
           <Link
             href="/help/new"
             className="flex items-center gap-1 rounded-lg bg-quartier-green px-3 py-2 text-sm font-semibold text-white hover:bg-quartier-green-dark"
+            data-testid="create-help-button"
           >
             <Plus className="h-4 w-4" />
             Neuer Eintrag
@@ -172,6 +174,7 @@ function HelpCard({ request }: { request: HelpRequest }) {
     <button
       onClick={() => router.push(`/help/${request.id}`)}
       className="card-interactive w-full rounded-lg border border-border bg-white p-4 shadow-soft text-left"
+      data-testid="help-card"
     >
       <div className="flex items-start gap-3">
         <span className="text-2xl">{cat?.icon ?? "❓"}</span>

@@ -95,13 +95,35 @@ export async function POST(request: NextRequest) {
       .update({ trust_level: "verified" })
       .eq("id", vRequest.user_id);
 
-    // Benachrichtigung senden
+    // Benachrichtigung senden (In-App)
     await adminSupabase.from("notifications").insert({
       user_id: vRequest.user_id,
       type: "verification_approved",
       title: "Verifizierung bestätigt",
       body: "Ihre Zugehörigkeit zum Quartier wurde bestätigt. Sie haben nun vollen Zugang.",
     });
+
+    // Push-Notification senden (fire-and-forget)
+    try {
+      const baseUrl = request.nextUrl.origin;
+      await fetch(`${baseUrl}/api/push/notify`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-Internal-Secret": process.env.INTERNAL_API_SECRET || "",
+        },
+        body: JSON.stringify({
+          userId: vRequest.user_id,
+          title: "Willkommen im Quartier!",
+          body: "Ihre Adresse wurde verifiziert. Sie haben nun vollen Zugang zur Nachbarschaft.",
+          url: "/dashboard",
+          tag: "verification_approved",
+        }),
+      });
+    } catch {
+      // Push-Fehler blockiert nicht die Verifizierung
+      console.error("Push-Benachrichtigung (Approve) fehlgeschlagen");
+    }
   } else {
     // 4b. Ablehnen
     await adminSupabase
@@ -114,15 +136,39 @@ export async function POST(request: NextRequest) {
       })
       .eq("id", requestId);
 
-    // Benachrichtigung senden
+    const rejectBody = note
+      ? `Ihre Verifizierungsanfrage wurde leider abgelehnt: ${note}`
+      : "Ihre Verifizierungsanfrage wurde leider abgelehnt. Bitte wenden Sie sich an einen Admin.";
+
+    // Benachrichtigung senden (In-App)
     await adminSupabase.from("notifications").insert({
       user_id: vRequest.user_id,
       type: "verification_rejected",
       title: "Verifizierung nicht bestätigt",
-      body: note
-        ? `Ihre Verifizierung konnte nicht bestätigt werden: ${note}`
-        : "Ihre Verifizierung konnte nicht bestätigt werden. Bitte wenden Sie sich an einen Admin.",
+      body: rejectBody,
     });
+
+    // Push-Notification senden (fire-and-forget)
+    try {
+      const baseUrl = request.nextUrl.origin;
+      await fetch(`${baseUrl}/api/push/notify`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-Internal-Secret": process.env.INTERNAL_API_SECRET || "",
+        },
+        body: JSON.stringify({
+          userId: vRequest.user_id,
+          title: "Verifizierung nicht bestätigt",
+          body: rejectBody,
+          url: "/profile",
+          tag: "verification_rejected",
+        }),
+      });
+    } catch {
+      // Push-Fehler blockiert nicht die Verifizierung
+      console.error("Push-Benachrichtigung (Reject) fehlgeschlagen");
+    }
   }
 
   return NextResponse.json({

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Save, ChevronRight } from "lucide-react";
+import { ArrowLeft, Save, ChevronRight, Lock } from "lucide-react";
 import Link from "next/link";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -23,6 +23,12 @@ export default function ProfileEditPage() {
   const [saving, setSaving] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // Passwort-Aenderung
+  const [showPasswordForm, setShowPasswordForm] = useState(false);
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [changingPassword, setChangingPassword] = useState(false);
 
   useEffect(() => {
     async function load() {
@@ -105,6 +111,61 @@ export default function ProfileEditPage() {
       setError("Netzwerkfehler. Bitte versuchen Sie es erneut.");
       setSaving(false);
     }
+  }
+
+  // Passwort aendern
+  async function handlePasswordChange() {
+    if (!newPassword || !confirmPassword) {
+      toast.error("Bitte füllen Sie alle Passwortfelder aus.");
+      return;
+    }
+    if (newPassword.length < 8) {
+      toast.error("Das neue Passwort muss mindestens 8 Zeichen lang sein.");
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      toast.error("Die Passwörter stimmen nicht überein.");
+      return;
+    }
+
+    setChangingPassword(true);
+    try {
+      const supabase = createClient();
+
+      // Aktuelles Passwort pruefen: Re-Authentifizierung via signInWithPassword
+      if (currentPassword) {
+        const { data: { user: authUser } } = await supabase.auth.getUser();
+        if (authUser?.email) {
+          const { error: signInError } = await supabase.auth.signInWithPassword({
+            email: authUser.email,
+            password: currentPassword,
+          });
+          if (signInError) {
+            toast.error("Das aktuelle Passwort ist nicht korrekt.");
+            setChangingPassword(false);
+            return;
+          }
+        }
+      }
+
+      // Neues Passwort setzen
+      const { error: updateError } = await supabase.auth.updateUser({
+        password: newPassword,
+      });
+
+      if (updateError) {
+        toast.error("Passwort konnte nicht geändert werden: " + updateError.message);
+      } else {
+        toast.success("Passwort erfolgreich geändert!");
+        setCurrentPassword("");
+        setNewPassword("");
+        setConfirmPassword("");
+        setShowPasswordForm(false);
+      }
+    } catch {
+      toast.error("Netzwerkfehler. Bitte versuchen Sie es erneut.");
+    }
+    setChangingPassword(false);
   }
 
   if (!user) {
@@ -228,6 +289,91 @@ export default function ProfileEditPage() {
             disabled
           />
         </div>
+      </div>
+
+      {/* Passwort aendern — aufklappbar */}
+      <div className="rounded-lg border border-border">
+        <button
+          onClick={() => setShowPasswordForm(!showPasswordForm)}
+          className="flex w-full items-center justify-between p-3"
+        >
+          <span className="flex items-center gap-2 text-sm font-semibold text-anthrazit">
+            <Lock className="h-4 w-4" /> Passwort ändern
+          </span>
+          <span className="text-xs text-muted-foreground">{showPasswordForm ? "▲" : "▼"}</span>
+        </button>
+
+        {showPasswordForm && (
+          <div className="space-y-3 border-t px-3 pb-3 pt-2">
+            <p className="text-xs text-muted-foreground">
+              Ändern Sie hier Ihr Passwort. Ideal nach der ersten Anmeldung mit einem temporären Passwort.
+            </p>
+
+            <div className="space-y-2">
+              <label htmlFor="currentPassword" className="text-sm font-medium text-anthrazit">
+                Aktuelles Passwort
+              </label>
+              <Input
+                id="currentPassword"
+                type="password"
+                value={currentPassword}
+                onChange={(e) => setCurrentPassword(e.target.value)}
+                placeholder="Ihr aktuelles Passwort"
+                autoComplete="current-password"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <label htmlFor="newPassword" className="text-sm font-medium text-anthrazit">
+                Neues Passwort
+              </label>
+              <Input
+                id="newPassword"
+                type="password"
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                placeholder="Mindestens 8 Zeichen"
+                minLength={8}
+                autoComplete="new-password"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <label htmlFor="confirmPassword" className="text-sm font-medium text-anthrazit">
+                Neues Passwort bestätigen
+              </label>
+              <Input
+                id="confirmPassword"
+                type="password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                placeholder="Passwort wiederholen"
+                autoComplete="new-password"
+              />
+              {confirmPassword && newPassword !== confirmPassword && (
+                <p className="text-xs text-emergency-red">Die Passwörter stimmen nicht überein.</p>
+              )}
+              {newPassword && newPassword.length < 8 && (
+                <p className="text-xs text-alert-amber">Mindestens 8 Zeichen erforderlich.</p>
+              )}
+            </div>
+
+            <Button
+              onClick={handlePasswordChange}
+              disabled={
+                changingPassword ||
+                !newPassword ||
+                newPassword.length < 8 ||
+                newPassword !== confirmPassword
+              }
+              variant="outline"
+              className="w-full"
+            >
+              <Lock className="mr-2 h-4 w-4" />
+              {changingPassword ? "Wird geändert..." : "Passwort ändern"}
+            </Button>
+          </div>
+        )}
       </div>
 
       {error && <p className="text-sm text-emergency-red">{error}</p>}

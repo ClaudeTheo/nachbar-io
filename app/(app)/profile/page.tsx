@@ -11,7 +11,7 @@ import { TrustBadge } from "@/components/TrustBadge";
 import { resolveAvatarUrl } from "@/lib/storage";
 import { ReputationBadge } from "@/components/ReputationBadge";
 import { createClient } from "@/lib/supabase/client";
-import { getCachedReputation, getProgressToNextLevel } from "@/lib/reputation";
+import { getCachedReputation, getProgressToNextLevel, getReputationLevel } from "@/lib/reputation";
 import type { User, Household, ReputationStats } from "@/lib/supabase/types";
 
 export default function ProfilePage() {
@@ -91,7 +91,18 @@ export default function ProfilePage() {
             </div>
             <div>
               <h2 className="text-lg font-semibold text-anthrazit">{user.display_name}</h2>
-              <TrustBadge level={user.trust_level} showLabel size="md" />
+              <div className="flex items-center gap-2 flex-wrap">
+                <TrustBadge level={user.trust_level} showLabel size="md" />
+                {reputation && reputation.points > 0 && (
+                  <span
+                    className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium ${getReputationLevel(reputation.points).bgColor} ${getReputationLevel(reputation.points).color}`}
+                    title={`Reputation: ${getReputationLevel(reputation.points).name}`}
+                  >
+                    <span>{getReputationLevel(reputation.points).icon}</span>
+                    {reputation.points} Punkte
+                  </span>
+                )}
+              </div>
               {user.bio && (
                 <p className="mt-1 text-sm text-muted-foreground">{user.bio}</p>
               )}

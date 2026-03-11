@@ -5,6 +5,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { writeAuditLog } from '@/lib/care/audit';
 import { canAccessFeature } from '@/lib/care/permissions';
+import { requireCareAccess } from '@/lib/care/api-helpers';
 import type { CareAppointmentType } from '@/lib/care/types';
 
 // GET /api/care/appointments — Termine abrufen
@@ -16,6 +17,12 @@ export async function GET(request: NextRequest) {
   const { searchParams } = request.nextUrl;
   const seniorId = searchParams.get('senior_id') ?? user.id;
   const upcoming = searchParams.get('upcoming') !== 'false';
+
+  // Zugriffspruefung: Nur Senior selbst, zugewiesene Helfer oder Admins
+  if (seniorId !== user.id) {
+    const role = await requireCareAccess(supabase, seniorId);
+    if (!role) return NextResponse.json({ error: 'Kein Zugriff auf diesen Senior' }, { status: 403 });
+  }
 
   let query = supabase
     .from('care_appointments')
@@ -70,6 +77,12 @@ export async function POST(request: NextRequest) {
   }
 
   const targetSeniorId = senior_id ?? user.id;
+
+  // Zugriffspruefung: Nur Senior selbst, zugewiesene Helfer oder Admins
+  if (targetSeniorId !== user.id) {
+    const role = await requireCareAccess(supabase, targetSeniorId);
+    if (!role) return NextResponse.json({ error: 'Kein Zugriff auf diesen Senior' }, { status: 403 });
+  }
 
   const { data: appointment, error: insertError } = await supabase
     .from('care_appointments')

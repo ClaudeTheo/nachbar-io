@@ -5,6 +5,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { writeAuditLog } from '@/lib/care/audit';
 import { canAccessFeature } from '@/lib/care/permissions';
+import { requireCareAccess } from '@/lib/care/api-helpers';
 import type { MedicationSchedule } from '@/lib/care/types';
 
 // GET /api/care/medications — Aktive Medikamente abrufen
@@ -16,6 +17,12 @@ export async function GET(request: NextRequest) {
   const { searchParams } = request.nextUrl;
   const seniorId = searchParams.get('senior_id') ?? user.id;
   const includeInactive = searchParams.get('include_inactive') === 'true';
+
+  // Zugriffspruefung: Nur Senior selbst, zugewiesene Helfer oder Admins
+  if (seniorId !== user.id) {
+    const role = await requireCareAccess(supabase, seniorId);
+    if (!role) return NextResponse.json({ error: 'Kein Zugriff auf diesen Senior' }, { status: 403 });
+  }
 
   let query = supabase
     .from('care_medications')
@@ -54,8 +61,14 @@ export async function POST(request: NextRequest) {
   }
 
   const { name, dosage, schedule, instructions, senior_id } = body;
-  if (!name || !schedule) {
-    return NextResponse.json({ error: 'Name und Zeitplan sind erforderlich' }, { status: 400 });
+  if (!name || typeof name !== 'string' || name.trim().length < 2 || name.trim().length > 200) {
+    return NextResponse.json({ error: 'Name muss 2-200 Zeichen lang sein' }, { status: 400 });
+  }
+  if (!schedule) {
+    return NextResponse.json({ error: 'Zeitplan ist erforderlich' }, { status: 400 });
+  }
+  if (instructions && (typeof instructions !== 'string' || instructions.length > 2000)) {
+    return NextResponse.json({ error: 'Anweisungen duerfen max. 2000 Zeichen lang sein' }, { status: 400 });
   }
 
   if (!['daily', 'weekly', 'interval'].includes(schedule.type)) {
@@ -63,6 +76,12 @@ export async function POST(request: NextRequest) {
   }
 
   const targetSeniorId = senior_id ?? user.id;
+
+  // Zugriffspruefung: Nur Senior selbst, zugewiesene Helfer oder Admins
+  if (targetSeniorId !== user.id) {
+    const role = await requireCareAccess(supabase, targetSeniorId);
+    if (!role) return NextResponse.json({ error: 'Kein Zugriff auf diesen Senior' }, { status: 403 });
+  }
 
   const { data: medication, error: insertError } = await supabase
     .from('care_medications')

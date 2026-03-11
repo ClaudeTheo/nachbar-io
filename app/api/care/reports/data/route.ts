@@ -1,7 +1,7 @@
 // app/api/care/reports/data/route.ts
 // Nachbar.io — Bericht-Daten (JSON) fuer Client-Rendering
 
-import { requireAuth, requireFeature, errorResponse, successResponse, careLog } from '@/lib/care/api-helpers';
+import { requireAuth, requireFeature, requireCareAccess, errorResponse, successResponse, careLog } from '@/lib/care/api-helpers';
 import { generateReportData } from '@/lib/care/reports/generator';
 import type { CareDocumentType } from '@/lib/care/types';
 
@@ -22,6 +22,12 @@ export async function GET(request: Request) {
 
   if (!periodStart || !periodEnd || !type) {
     return errorResponse('Parameter period_start, period_end und type erforderlich', 400);
+  }
+
+  // Zugriffspruefung: Nur Senior selbst, zugewiesene Helfer oder Admins
+  if (seniorId !== user.id) {
+    const role = await requireCareAccess(supabase, seniorId);
+    if (!role) return errorResponse('Kein Zugriff auf diesen Senior', 403);
   }
 
   // Feature-Gate

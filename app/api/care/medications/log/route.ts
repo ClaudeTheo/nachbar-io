@@ -5,6 +5,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { writeAuditLog } from '@/lib/care/audit';
 import { sendCareNotification } from '@/lib/care/notifications';
+import { requireCareAccess } from '@/lib/care/api-helpers';
 import { MEDICATION_DEFAULTS } from '@/lib/care/constants';
 import type { CareMedicationLogStatus } from '@/lib/care/types';
 
@@ -127,6 +128,12 @@ export async function GET(request: NextRequest) {
   const seniorId = searchParams.get('senior_id') ?? user.id;
   const medicationId = searchParams.get('medication_id');
   const limit = Math.min(parseInt(searchParams.get('limit') ?? '50', 10) || 50, 100);
+
+  // Zugriffspruefung: Nur Senior selbst, zugewiesene Helfer oder Admins
+  if (seniorId !== user.id) {
+    const role = await requireCareAccess(supabase, seniorId);
+    if (!role) return NextResponse.json({ error: 'Kein Zugriff auf diesen Senior' }, { status: 403 });
+  }
 
   let query = supabase
     .from('care_medication_logs')

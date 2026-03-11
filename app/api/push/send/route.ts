@@ -47,8 +47,11 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Push nicht konfiguriert" }, { status: 503 });
   }
 
-  // Alle Push-Subscriptions laden (ausser Absender)
-  const query = supabase.from("push_subscriptions").select("*");
+  // Alle Push-Subscriptions laden (ausser Absender, max 5000)
+  const query = supabase
+    .from("push_subscriptions")
+    .select("id, user_id, endpoint, p256dh, auth")
+    .limit(5000);
   if (excludeUserId) {
     query.neq("user_id", excludeUserId);
   }

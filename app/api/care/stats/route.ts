@@ -1,7 +1,7 @@
 // app/api/care/stats/route.ts
 // Nachbar.io — Aggregierte Pflege-Statistiken
 
-import { requireAuth, requireAdmin, errorResponse, successResponse, careLog } from '@/lib/care/api-helpers';
+import { requireAuth, requireAdmin, requireCareAccess, errorResponse, successResponse, careLog } from '@/lib/care/api-helpers';
 
 /**
  * GET /api/care/stats
@@ -20,6 +20,10 @@ export async function GET(request: Request) {
   if (!seniorId) {
     const isAdmin = await requireAdmin(supabase, user.id);
     if (!isAdmin) return errorResponse('Senior-ID erforderlich oder Admin-Rechte', 403);
+  } else if (seniorId !== user.id) {
+    // Mit senior_id: Zugriffspruefung
+    const role = await requireCareAccess(supabase, seniorId);
+    if (!role) return errorResponse('Kein Zugriff auf diesen Senior', 403);
   }
 
   careLog('stats', 'fetch', { seniorId: seniorId ?? 'system-wide', userId: user.id });

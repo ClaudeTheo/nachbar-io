@@ -117,16 +117,24 @@ export async function POST(request: NextRequest) {
 
       // 4. Bei Einladungscode: sofort verifizieren
       if (verificationMethod === "invite_code") {
-        await adminDb
+        const { error: verifyMemberErr } = await adminDb
           .from("household_members")
           .update({ verified_at: new Date().toISOString() })
           .eq("user_id", userId)
           .eq("household_id", householdId);
 
-        await adminDb
+        if (verifyMemberErr) {
+          console.error("Haushalt-Verifizierung fehlgeschlagen:", verifyMemberErr);
+        }
+
+        const { error: trustErr } = await adminDb
           .from("users")
           .update({ trust_level: "verified" })
           .eq("id", userId);
+
+        if (trustErr) {
+          console.error("Trust-Level-Update fehlgeschlagen:", trustErr);
+        }
       }
 
       // 5. Bei Nachbar-Einladung: Einladung als akzeptiert markieren + Punkte
@@ -134,7 +142,7 @@ export async function POST(request: NextRequest) {
         // Einladungscode normalisieren (Bindestriche entfernen, Grossbuchstaben)
         const normalizedCode = inviteCode.replace(/[-\s]/g, "").toUpperCase();
 
-        await adminDb
+        const { error: inviteErr } = await adminDb
           .from("neighbor_invitations")
           .update({
             status: "accepted",
@@ -144,26 +152,42 @@ export async function POST(request: NextRequest) {
           .eq("invite_code", normalizedCode)
           .eq("status", "sent");
 
+        if (inviteErr) {
+          console.error("Einladung-Update fehlgeschlagen:", inviteErr);
+        }
+
         // Sofort verifizieren (Einladender buergt)
-        await adminDb
+        const { error: verifyMemberErr } = await adminDb
           .from("household_members")
           .update({ verified_at: new Date().toISOString() })
           .eq("user_id", userId)
           .eq("household_id", householdId);
 
-        await adminDb
+        if (verifyMemberErr) {
+          console.error("Haushalt-Verifizierung fehlgeschlagen:", verifyMemberErr);
+        }
+
+        const { error: trustErr } = await adminDb
           .from("users")
           .update({ trust_level: "verified" })
           .eq("id", userId);
 
+        if (trustErr) {
+          console.error("Trust-Level-Update fehlgeschlagen:", trustErr);
+        }
+
         // Punkte fuer den Einladenden
         if (referrerId) {
-          await adminDb.from("reputation_points").insert({
+          const { error: pointsErr } = await adminDb.from("reputation_points").insert({
             user_id: referrerId,
             points: 50,
             reason: "neighbor_invited",
             reference_id: userId,
           });
+
+          if (pointsErr) {
+            console.error("Reputationspunkte-Fehler:", pointsErr);
+          }
 
           // Benachrichtigung an den Einladenden (mit Constraint-Fallback)
           await safeInsertNotification(adminDb, {

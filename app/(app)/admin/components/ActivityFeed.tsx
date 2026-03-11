@@ -99,7 +99,7 @@ export function ActivityFeed() {
         .order("created_at", { ascending: false })
         .limit(20),
       supabase
-        .from("lost_found_items")
+        .from("lost_found")
         .select("id, title, description, status, type, created_at, user:users(display_name)")
         .order("created_at", { ascending: false })
         .limit(20),

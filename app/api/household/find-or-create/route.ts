@@ -108,8 +108,36 @@ export async function POST(request: NextRequest) {
       .select("id, street_name, house_number")
       .single();
 
-    if (insertError || !newHousehold) {
+    if (insertError) {
+      // Race-Condition: Anderer Request hat den gleichen Haushalt gerade erstellt
+      // (unique constraint auf street_name + house_number)
+      // => Erneut suchen statt Fehler werfen
+      if (insertError.code === "23505") {
+        const { data: retry } = await supabase
+          .from("households")
+          .select("id, street_name, house_number")
+          .eq("street_name", streetName)
+          .eq("house_number", trimmedHouseNumber)
+          .maybeSingle();
+
+        if (retry) {
+          return NextResponse.json({
+            householdId: retry.id,
+            streetName: retry.street_name,
+            houseNumber: retry.house_number,
+            created: false,
+          });
+        }
+      }
+
       console.error("Haushalt-Erstellung fehlgeschlagen:", insertError);
+      return NextResponse.json(
+        { error: "Haushalt konnte nicht erstellt werden." },
+        { status: 500 }
+      );
+    }
+
+    if (!newHousehold) {
       return NextResponse.json(
         { error: "Haushalt konnte nicht erstellt werden." },
         { status: 500 }

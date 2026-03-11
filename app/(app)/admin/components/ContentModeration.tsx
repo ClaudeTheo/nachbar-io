@@ -10,7 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { createClient } from "@/lib/supabase/client";
 import { toast } from "sonner";
 
-type ContentType = "alerts" | "help_requests" | "marketplace_items" | "lost_found_items";
+type ContentType = "alerts" | "help_requests" | "marketplace_items" | "lost_found";
 
 interface ContentItem {
   id: string;
@@ -28,7 +28,7 @@ const CONTENT_TYPES: { id: ContentType; label: string; icon: React.ReactNode }[]
   { id: "alerts", label: "Meldungen", icon: <AlertTriangle className="h-4 w-4" /> },
   { id: "help_requests", label: "Hilfe-Boerse", icon: <HandHelping className="h-4 w-4" /> },
   { id: "marketplace_items", label: "Marktplatz", icon: <ShoppingBag className="h-4 w-4" /> },
-  { id: "lost_found_items", label: "Fundbuero", icon: <MapPin className="h-4 w-4" /> },
+  { id: "lost_found", label: "Fundbuero", icon: <MapPin className="h-4 w-4" /> },
 ];
 
 // Verfuegbare Status-Optionen pro Content-Typ
@@ -49,7 +49,7 @@ const STATUS_OPTIONS: Record<ContentType, { value: string; label: string }[]> = 
     { value: "done", label: "Abgeschlossen" },
     { value: "deleted", label: "Geloescht" },
   ],
-  lost_found_items: [
+  lost_found: [
     { value: "open", label: "Offen" },
     { value: "resolved", label: "Erledigt" },
   ],
@@ -98,9 +98,9 @@ export function ContentModeration() {
           .order("created_at", { ascending: false })
           .limit(100);
         break;
-      case "lost_found_items":
+      case "lost_found":
         query = supabase
-          .from("lost_found_items")
+          .from("lost_found")
           .select("id, title, description, status, category, type, location_hint, created_at, user:users(display_name)")
           .order("created_at", { ascending: false })
           .limit(100);
@@ -127,7 +127,7 @@ export function ContentModeration() {
         ? `${item.price} EUR`
         : type === "help_requests"
         ? (item.type === "need" ? "Suche Hilfe" : "Biete Hilfe")
-        : type === "lost_found_items"
+        : type === "lost_found"
         ? (item.type === "lost" ? "Verloren" : "Gefunden")
         : undefined,
     }));

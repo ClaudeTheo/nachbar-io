@@ -26,7 +26,7 @@ const DB_TABLES = [
   { name: "help_requests", category: "Content" },
   { name: "help_responses", category: "Content" },
   { name: "marketplace_items", category: "Content" },
-  { name: "lost_found_items", category: "Content" },
+  { name: "lost_found", category: "Content" },
   { name: "events", category: "Content" },
   { name: "event_participants", category: "Content" },
   { name: "news_items", category: "Content" },

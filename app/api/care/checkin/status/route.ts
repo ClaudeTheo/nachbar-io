@@ -3,6 +3,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
+import { requireCareAccess } from '@/lib/care/api-helpers';
 import { CHECKIN_DEFAULTS } from '@/lib/care/constants';
 import type { CareCheckin } from '@/lib/care/types';
 
@@ -33,6 +34,12 @@ export async function GET(request: NextRequest) {
   // Query-Parameter: senior_id (Standard: eingeloggter Nutzer)
   const { searchParams } = request.nextUrl;
   const seniorId = searchParams.get('senior_id') ?? user.id;
+
+  // Zugriffspruefung: Nur Senior selbst, zugewiesene Helfer oder Admins
+  if (seniorId !== user.id) {
+    const role = await requireCareAccess(supabase, seniorId);
+    if (!role) return NextResponse.json({ error: 'Kein Zugriff auf diesen Senior' }, { status: 403 });
+  }
 
   // Tagesgrenzen berechnen: heute 00:00 bis morgen 00:00 (ISO-Format)
   const todayStart = new Date();

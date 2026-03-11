@@ -115,7 +115,7 @@ export default function AdminPage() {
         .limit(50),
       supabase.from("help_requests").select("id", { count: "exact", head: true }).eq("status", "active"),
       supabase.from("marketplace_items").select("id", { count: "exact", head: true }).eq("status", "active"),
-      supabase.from("lost_found_items").select("id", { count: "exact", head: true }).eq("status", "open"),
+      supabase.from("lost_found").select("id", { count: "exact", head: true }).eq("status", "open"),
       supabase.from("events").select("id", { count: "exact", head: true }).gte("event_date", now.toISOString().split("T")[0]),
       supabase.from("conversations").select("id", { count: "exact", head: true }),
       supabase.from("news_items").select("id", { count: "exact", head: true }),

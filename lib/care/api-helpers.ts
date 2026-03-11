@@ -4,7 +4,8 @@
 import { NextResponse } from 'next/server';
 import type { SupabaseClient, AuthUser } from '@supabase/supabase-js';
 import { createClient } from '@/lib/supabase/server';
-import { canAccessFeature } from './permissions';
+import { canAccessFeature, getCareRole } from './permissions';
+import type { CareUserRole } from './types';
 
 /** Standardisierte Fehler-Antwort mit Logging */
 export function errorResponse(message: string, status: number) {
@@ -48,6 +49,20 @@ export async function requireAdmin(
     .eq('id', userId)
     .single();
   return data?.is_admin === true;
+}
+
+/**
+ * Care-Zugriffspruefung: Stellt sicher, dass der User berechtigt ist,
+ * auf die Daten eines bestimmten Seniors zuzugreifen.
+ * Gibt die Rolle zurueck oder null, wenn kein Zugriff.
+ */
+export async function requireCareAccess(
+  supabase: SupabaseClient,
+  seniorId: string
+): Promise<CareUserRole | null> {
+  const role = await getCareRole(supabase, seniorId);
+  if (role === 'none') return null;
+  return role;
 }
 
 /** Strukturiertes Care-Logging */

@@ -4,6 +4,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { writeAuditLog } from '@/lib/care/audit';
+import { requireCareAccess } from '@/lib/care/api-helpers';
 import type { CareHelperRole } from '@/lib/care/types';
 
 const VALID_ROLES: CareHelperRole[] = ['neighbor', 'relative', 'care_service'];
@@ -26,7 +27,14 @@ export async function GET(request: NextRequest) {
 
   if (status !== 'all') query = query.eq('verification_status', status);
   if (role) query = query.eq('role', role);
-  if (seniorId) query = query.contains('assigned_seniors', [seniorId]);
+  if (seniorId) {
+    // Zugriffspruefung: Nur Senior selbst, zugewiesene Helfer oder Admins
+    if (seniorId !== user.id) {
+      const careRole = await requireCareAccess(supabase, seniorId);
+      if (!careRole) return NextResponse.json({ error: 'Kein Zugriff auf diesen Senior' }, { status: 403 });
+    }
+    query = query.contains('assigned_seniors', [seniorId]);
+  }
 
   const { data, error } = await query;
   if (error) return NextResponse.json({ error: 'Helfer konnten nicht geladen werden' }, { status: 500 });

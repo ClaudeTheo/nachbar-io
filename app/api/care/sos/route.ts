@@ -6,6 +6,7 @@ import { createClient } from '@/lib/supabase/server';
 import { writeAuditLog } from '@/lib/care/audit';
 import { sendCareNotification } from '@/lib/care/notifications';
 import { canAccessFeature } from '@/lib/care/permissions';
+import { requireCareAccess } from '@/lib/care/api-helpers';
 import { CARE_SOS_CATEGORIES, ESCALATION_LEVELS } from '@/lib/care/constants';
 import type { CareSosCategory, CareSosSource } from '@/lib/care/types';
 
@@ -205,8 +206,10 @@ export async function GET(request: NextRequest) {
     .order('created_at', { ascending: false })
     .limit(50);
 
-  // Optionaler Filter nach Senior-ID
+  // Optionaler Filter nach Senior-ID (mit Zugriffspruefung)
   if (seniorId) {
+    const role = await requireCareAccess(supabase, seniorId);
+    if (!role) return NextResponse.json({ error: 'Kein Zugriff auf diesen Senior' }, { status: 403 });
     query = query.eq('senior_id', seniorId);
   }
 

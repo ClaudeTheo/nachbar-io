@@ -51,6 +51,18 @@ export async function PATCH(
     if (key in body) updates[key] = body[key];
   }
 
+  // Admin-Check fuer sicherheitskritische Felder (verification_status, role)
+  if (updates.verification_status || updates.role) {
+    const { data: adminCheck } = await supabase
+      .from('users')
+      .select('is_admin')
+      .eq('id', user.id)
+      .maybeSingle();
+    if (!adminCheck?.is_admin) {
+      return NextResponse.json({ error: 'Nur Admins koennen Helfer verifizieren oder Rollen aendern' }, { status: 403 });
+    }
+  }
+
   if (updates.verification_status === 'verified') {
     updates.verified_by = user.id;
   }

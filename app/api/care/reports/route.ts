@@ -1,7 +1,7 @@
 // app/api/care/reports/route.ts
 // Nachbar.io — Berichte-API: Liste und Generierung
 
-import { requireAuth, requireFeature, errorResponse, successResponse, careLog } from '@/lib/care/api-helpers';
+import { requireAuth, requireFeature, requireCareAccess, errorResponse, successResponse, careLog } from '@/lib/care/api-helpers';
 import { generateReportData } from '@/lib/care/reports/generator';
 import { writeAuditLog } from '@/lib/care/audit';
 import type { CareDocumentType } from '@/lib/care/types';
@@ -34,6 +34,12 @@ export async function GET(request: Request) {
   const { supabase, user } = auth;
   const url = new URL(request.url);
   const seniorId = url.searchParams.get('senior_id') ?? user.id;
+
+  // Zugriffspruefung: Nur Senior selbst, zugewiesene Helfer oder Admins
+  if (seniorId !== user.id) {
+    const role = await requireCareAccess(supabase, seniorId);
+    if (!role) return errorResponse('Kein Zugriff auf diesen Senior', 403);
+  }
 
   // Feature-Gate: reports
   const allowed = await requireFeature(supabase, seniorId, 'reports');
@@ -72,6 +78,12 @@ export async function POST(request: Request) {
 
   const { type, period_start, period_end } = body;
   const seniorId = body.senior_id ?? user.id;
+
+  // Zugriffspruefung: Nur Senior selbst, zugewiesene Helfer oder Admins
+  if (seniorId !== user.id) {
+    const role = await requireCareAccess(supabase, seniorId);
+    if (!role) return errorResponse('Kein Zugriff auf diesen Senior', 403);
+  }
 
   // Validierung
   if (!type || !VALID_TYPES.includes(type as CareDocumentType)) {

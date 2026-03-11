@@ -121,7 +121,13 @@ export async function GET(request: Request) {
   const authHeader = request.headers.get("authorization");
   const cronSecret = process.env.CRON_SECRET;
 
-  if (cronSecret && authHeader !== `Bearer ${cronSecret}`) {
+  if (!cronSecret) {
+    console.error("CRON_SECRET nicht konfiguriert — RSS-Endpunkt blockiert");
+    return NextResponse.json({ error: "Server nicht konfiguriert" }, { status: 500 });
+  }
+
+  if (authHeader !== `Bearer ${cronSecret}`) {
+    // Fallback: Admin-Check via Supabase
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
@@ -131,7 +137,7 @@ export async function GET(request: Request) {
       .from("users")
       .select("is_admin")
       .eq("id", user.id)
-      .single();
+      .maybeSingle();
     if (!profile?.is_admin) {
       return NextResponse.json({ error: "Nur Admins" }, { status: 403 });
     }

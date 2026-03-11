@@ -42,8 +42,35 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Nicht authentifiziert" }, { status: 401 });
   }
 
-  const body = await request.json();
+  let body;
+  try {
+    body = await request.json();
+  } catch {
+    return NextResponse.json({ error: "Ungueltiges Anfrage-Format" }, { status: 400 });
+  }
   const { category, title, description, household_id, is_emergency } = body;
+
+  // Input-Validierung
+  const VALID_CATEGORIES = ["noise", "package", "security", "fire", "medical", "crime", "other"];
+  if (!category || !VALID_CATEGORIES.includes(category)) {
+    return NextResponse.json({ error: "Ungueltige Kategorie" }, { status: 400 });
+  }
+  if (!title || title.length < 3 || title.length > 200) {
+    return NextResponse.json({ error: "Titel muss 3-200 Zeichen lang sein" }, { status: 400 });
+  }
+
+  // Household-Ownership pruefen (falls angegeben)
+  if (household_id) {
+    const { data: membership } = await supabase
+      .from("household_members")
+      .select("household_id")
+      .eq("user_id", user.id)
+      .eq("household_id", household_id)
+      .maybeSingle();
+    if (!membership) {
+      return NextResponse.json({ error: "Sie gehoeren nicht zu diesem Haushalt" }, { status: 403 });
+    }
+  }
 
   // Alert erstellen
   const { data: alert, error } = await supabase

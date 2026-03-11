@@ -14,8 +14,8 @@ export async function POST(request: NextRequest) {
   const body = await request.json();
   const { token } = body;
 
-  if (!token) {
-    return NextResponse.json({ error: "Token fehlt" }, { status: 401 });
+  if (!token || typeof token !== "string" || token.length < 16 || token.length > 128 || !/^[a-f0-9]+$/i.test(token)) {
+    return NextResponse.json({ error: "Ungueltiges Token-Format" }, { status: 401 });
   }
 
   const supabase = getSupabase();

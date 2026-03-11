@@ -5,6 +5,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { writeAuditLog } from '@/lib/care/audit';
 import { sendCareNotification } from '@/lib/care/notifications';
+import { requireCareAccess } from '@/lib/care/api-helpers';
 import type { CareCheckinStatus, CareCheckinMood } from '@/lib/care/types';
 
 // Gültige Check-in-Status-Werte für die Eingabe
@@ -223,6 +224,12 @@ export async function GET(request: NextRequest) {
   const seniorId = searchParams.get('senior_id') ?? user.id;
   const limitParam = searchParams.get('limit');
   const limit = limitParam ? Math.min(Math.max(parseInt(limitParam, 10) || 30, 1), 100) : 30;
+
+  // Zugriffspruefung: Nur Senior selbst, zugewiesene Helfer oder Admins
+  if (seniorId !== user.id) {
+    const role = await requireCareAccess(supabase, seniorId);
+    if (!role) return NextResponse.json({ error: 'Kein Zugriff auf diesen Senior' }, { status: 403 });
+  }
 
   // Check-in-Historie aus der Datenbank abrufen, absteigend nach geplantem Zeitpunkt
   const { data, error } = await supabase

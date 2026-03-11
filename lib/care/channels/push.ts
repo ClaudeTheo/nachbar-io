@@ -31,9 +31,14 @@ export async function sendPush(
     }
 
     // Sende an alle registrierten Endpunkte des Users
-    const response = await fetch('/api/push/send', {
+    // Absoluter URL fuer serverseitige Aufrufe (relative URLs funktionieren nicht in Node.js)
+    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://nachbar.io';
+    const response = await fetch(`${baseUrl}/api/push/send`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Internal-Secret': process.env.INTERNAL_API_SECRET || '',
+      },
       body: JSON.stringify({
         userId: payload.userId,
         title: payload.title,

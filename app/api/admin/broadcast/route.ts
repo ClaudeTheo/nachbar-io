@@ -28,8 +28,11 @@ export async function POST(request: NextRequest) {
   const body = await request.json();
   const { title, body: messageBody, audience, street, urgency } = body;
 
-  if (!title || !messageBody) {
-    return NextResponse.json({ error: "Titel und Nachricht erforderlich" }, { status: 400 });
+  if (!title || typeof title !== "string" || title.trim().length < 3 || title.trim().length > 200) {
+    return NextResponse.json({ error: "Titel muss 3-200 Zeichen lang sein" }, { status: 400 });
+  }
+  if (!messageBody || typeof messageBody !== "string" || messageBody.trim().length < 3 || messageBody.trim().length > 5000) {
+    return NextResponse.json({ error: "Nachricht muss 3-5000 Zeichen lang sein" }, { status: 400 });
   }
 
   // Empfaenger ermitteln

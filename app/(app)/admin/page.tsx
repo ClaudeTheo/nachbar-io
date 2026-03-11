@@ -42,6 +42,7 @@ import { DatabaseOverview } from "./components/DatabaseOverview";
 import { ApiTester } from "./components/ApiTester";
 import { DevOpsPanel } from "./components/DevOpsPanel";
 import { TestManagement } from "./components/TestManagement";
+import { VerificationQueue } from "./components/VerificationQueue";
 
 // ============================================================
 // TYPEN
@@ -311,6 +312,9 @@ export default function AdminPage() {
       <div className="mt-4">
         {activeTab === "overview" && stats && (
           <div className="space-y-4">
+            {/* Verifizierungs-Queue — immer ganz oben */}
+            <VerificationQueue />
+
             <div className="grid grid-cols-2 gap-3">
               {quickStats.map((qs, i) => (
                 <StatCard key={i} stat={qs} />

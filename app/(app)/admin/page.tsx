@@ -6,7 +6,7 @@ import {
   Shield, Users, Home, RefreshCw, HandHelping, ShoppingBag,
   TrendingUp, CheckCircle, QrCode, FileText, Activity, Megaphone,
   Newspaper, Calendar, BarChart3, ArrowUpRight, ArrowDownRight, Minus,
-  AlertTriangle, Eye, MapPin, Globe,
+  AlertTriangle, Eye, MapPin, Globe, ExternalLink, Database, Terminal, Wrench,
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -26,6 +26,10 @@ import { EventManagement } from "./components/EventManagement";
 import { SystemHealth } from "./components/SystemHealth";
 import { MapEditor } from "./components/MapEditor";
 import { QuarterManagement } from "./components/QuarterManagement";
+import { ExternalLinks } from "./components/ExternalLinks";
+import { DatabaseOverview } from "./components/DatabaseOverview";
+import { ApiTester } from "./components/ApiTester";
+import { DevOpsPanel } from "./components/DevOpsPanel";
 
 // ============================================================
 // TYPEN
@@ -272,6 +276,19 @@ export default function AdminPage() {
           <TabsTrigger value="system" className="text-xs flex-1 min-w-[60px]">
             <Eye className="h-3.5 w-3.5 mr-1" />System
           </TabsTrigger>
+          {/* System-Admin Tabs */}
+          <TabsTrigger value="external" className="text-xs flex-1 min-w-[55px]">
+            <ExternalLink className="h-3.5 w-3.5 mr-1" />Extern
+          </TabsTrigger>
+          <TabsTrigger value="database" className="text-xs flex-1 min-w-[40px]">
+            <Database className="h-3.5 w-3.5 mr-1" />DB
+          </TabsTrigger>
+          <TabsTrigger value="api" className="text-xs flex-1 min-w-[40px]">
+            <Terminal className="h-3.5 w-3.5 mr-1" />API
+          </TabsTrigger>
+          <TabsTrigger value="devops" className="text-xs flex-1 min-w-[55px]">
+            <Wrench className="h-3.5 w-3.5 mr-1" />DevOps
+          </TabsTrigger>
         </TabsList>
 
         {/* TAB: UEBERSICHT */}
@@ -338,6 +355,11 @@ export default function AdminPage() {
         <TabsContent value="map" className="mt-4"><MapEditor /></TabsContent>
         <TabsContent value="quarters" className="mt-4"><QuarterManagement /></TabsContent>
         <TabsContent value="system" className="mt-4"><SystemHealth stats={stats} users={users} households={households} /></TabsContent>
+        {/* System-Admin Tabs */}
+        <TabsContent value="external" className="mt-4"><ExternalLinks /></TabsContent>
+        <TabsContent value="database" className="mt-4"><DatabaseOverview /></TabsContent>
+        <TabsContent value="api" className="mt-4"><ApiTester /></TabsContent>
+        <TabsContent value="devops" className="mt-4"><DevOpsPanel /></TabsContent>
       </Tabs>
     </div>
   );

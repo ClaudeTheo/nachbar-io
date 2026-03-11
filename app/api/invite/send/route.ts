@@ -64,19 +64,35 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  // Haushalt pruefen
-  const { data: household } = await supabase
+  // Haushalt suchen oder automatisch anlegen
+  let householdId: string;
+
+  const { data: existingHousehold } = await supabase
     .from("households")
     .select("id")
     .eq("street_name", street)
     .eq("house_number", houseNumber)
     .maybeSingle();
 
-  if (!household) {
-    return NextResponse.json(
-      { error: `Haushalt ${street} ${houseNumber} nicht gefunden` },
-      { status: 404 }
-    );
+  if (existingHousehold) {
+    householdId = existingHousehold.id;
+  } else {
+    // Haushalt automatisch anlegen ueber interne API
+    const origin = request.headers.get("origin") || process.env.NEXT_PUBLIC_SITE_URL || "https://nachbar.io";
+    const createRes = await fetch(`${origin}/api/household/find-or-create`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ streetName: street, houseNumber }),
+    });
+    const createData = await createRes.json();
+
+    if (!createRes.ok || !createData.householdId) {
+      return NextResponse.json(
+        { error: `Haushalt konnte nicht erstellt werden` },
+        { status: 500 }
+      );
+    }
+    householdId = createData.householdId;
   }
 
   // Einladungscode generieren
@@ -87,7 +103,7 @@ export async function POST(request: NextRequest) {
     .from("neighbor_invitations")
     .insert({
       inviter_id: user.id,
-      household_id: household.id,
+      household_id: householdId,
       invite_method: method,
       invite_target: target || null,
       invite_code: inviteCode,

@@ -10,6 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { createClient } from "@/lib/supabase/client";
 import { QUARTIER_STREETS } from "@/lib/constants";
 import { normalizeCode, formatCode } from "@/lib/invite-codes";
+import { createNotification } from "@/lib/notifications";
 
 type Step = "credentials" | "verify_method" | "invite" | "address" | "profile" | "mode";
 type VerificationMethod = "invite_code" | "address_manual" | "neighbor_invite";
@@ -258,6 +259,25 @@ function RegisterForm() {
             reason: "neighbor_invited",
             reference_id: authData.user.id,
           });
+
+          // Push-Notification an den Einladenden
+          createNotification({
+            userId: referrerId,
+            type: "neighbor_invited",
+            title: "Nachbar registriert! 🎉",
+            body: `${displayName.trim()} hat Ihre Einladung angenommen. +50 Punkte!`,
+            referenceId: authData.user.id,
+            referenceType: "user",
+          }).catch(() => {
+            // Fehler still ignorieren — Registrierung nicht blockieren
+          });
+
+          // Reputation des Einladenden neu berechnen (fire-and-forget)
+          fetch("/api/reputation/recompute", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ userId: referrerId }),
+          }).catch(() => {});
         }
       }
 

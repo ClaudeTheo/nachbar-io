@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, TrendingUp } from "lucide-react";
+import { ArrowLeft, TrendingUp, RefreshCw } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { createClient } from "@/lib/supabase/client";
 import {
@@ -16,25 +17,32 @@ import type { ReputationStats } from "@/lib/supabase/types";
 export default function ReputationPage() {
   const [stats, setStats] = useState<ReputationStats | null>(null);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+
+  async function loadStats() {
+    const supabase = createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) return;
+
+    try {
+      const computed = await computeReputationStats(supabase, user.id);
+      setStats(computed);
+    } catch (err) {
+      console.error("Reputation konnte nicht geladen werden:", err);
+    }
+  }
 
   useEffect(() => {
-    async function load() {
-      const supabase = createClient();
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      if (!user) return;
-
-      try {
-        const computed = await computeReputationStats(supabase, user.id);
-        setStats(computed);
-      } catch (err) {
-        console.error("Reputation konnte nicht geladen werden:", err);
-      }
-      setLoading(false);
-    }
-    load();
+    loadStats().finally(() => setLoading(false));
   }, []);
+
+  async function handleRefresh() {
+    setRefreshing(true);
+    await loadStats();
+    setRefreshing(false);
+  }
 
   if (loading) {
     return (
@@ -68,11 +76,21 @@ export default function ReputationPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center gap-3">
-        <Link href="/profile" className="rounded-lg p-2 hover:bg-muted">
-          <ArrowLeft className="h-5 w-5" />
-        </Link>
-        <h1 className="text-xl font-bold text-anthrazit">Meine Reputation</h1>
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <Link href="/profile" className="rounded-lg p-2 hover:bg-muted">
+            <ArrowLeft className="h-5 w-5" />
+          </Link>
+          <h1 className="text-xl font-bold text-anthrazit">Meine Reputation</h1>
+        </div>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={handleRefresh}
+          disabled={refreshing}
+        >
+          <RefreshCw className={`h-4 w-4 ${refreshing ? "animate-spin" : ""}`} />
+        </Button>
       </div>
 
       {/* Level-Karte */}

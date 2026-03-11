@@ -19,6 +19,9 @@ const TYPE_ROUTES: Record<string, string> = {
   poll_vote: "/polls",
   tip_confirmation: "/tips",
   checkin_reminder: "/senior/checkin",
+  neighbor_invited: "/invitations",
+  verification_approved: "/dashboard",
+  verification_rejected: "/profile",
   system: "/dashboard",
 };
 

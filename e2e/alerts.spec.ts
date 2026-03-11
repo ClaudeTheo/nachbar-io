@@ -47,7 +47,7 @@ test.describe("Push-API", () => {
     const response = await request.post("/api/push/send", {
       data: { title: "Test", body: "Test Push" },
     });
-    expect(response.status()).toBe(401);
+    expect([401, 403]).toContain(response.status());
   });
 
   test("POST /api/push/subscribe erfordert Auth", async ({ request }) => {

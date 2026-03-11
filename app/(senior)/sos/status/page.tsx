@@ -1,12 +1,20 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { SeniorStatusScreen } from '@/components/care/senior/SeniorStatusScreen';
 import type { CareSosAlert } from '@/lib/care/types';
 
 export default function SeniorSosStatusPage() {
+  return (
+    <Suspense fallback={<div className="py-12 text-center text-muted-foreground">Laden...</div>}>
+      <SeniorSosStatusContent />
+    </Suspense>
+  );
+}
+
+function SeniorSosStatusContent() {
   const searchParams = useSearchParams();
   const alertId = searchParams.get('id');
   const [alert, setAlert] = useState<CareSosAlert | null>(null);

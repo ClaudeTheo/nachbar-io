@@ -3,14 +3,18 @@
 import { Suspense, useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
+import { Mail, MapPin } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { createClient } from "@/lib/supabase/client";
+import { QUARTIER_STREETS } from "@/lib/constants";
+import { normalizeCode, formatCode } from "@/lib/invite-codes";
 
-type Step = "credentials" | "invite" | "profile" | "mode";
+type Step = "credentials" | "verify_method" | "invite" | "address" | "profile" | "mode";
+type VerificationMethod = "invite_code" | "address_manual" | "neighbor_invite";
 
-// Wrapper mit Suspense-Boundary für useSearchParams
+// Wrapper mit Suspense-Boundary fuer useSearchParams
 export default function RegisterPage() {
   return (
     <Suspense fallback={<div className="py-12 text-center text-muted-foreground">Laden...</div>}>
@@ -26,21 +30,39 @@ function RegisterForm() {
   const [inviteCode, setInviteCode] = useState("");
   const [displayName, setDisplayName] = useState("");
   const [uiMode, setUiMode] = useState<"active" | "senior">("active");
+  const [verificationMethod, setVerificationMethod] = useState<VerificationMethod>("invite_code");
+  const [selectedStreet, setSelectedStreet] = useState("");
+  const [houseNumber, setHouseNumber] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [householdId, setHouseholdId] = useState<string | null>(null);
+  const [referrerId, setReferrerId] = useState<string | null>(null);
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  // QR-Code Onboarding: Invite-Code aus URL übernehmen
+  // QR-Code / Einladungslink: Invite-Code und Referrer aus URL uebernehmen
   useEffect(() => {
     const invite = searchParams.get("invite");
+    const ref = searchParams.get("ref");
     if (invite) {
-      setInviteCode(invite.toUpperCase());
+      setInviteCode(normalizeCode(invite));
+      setVerificationMethod("invite_code");
+    }
+    if (ref) {
+      setReferrerId(ref);
+      setVerificationMethod("neighbor_invite");
     }
   }, [searchParams]);
 
-  const totalSteps = 4;
-  const currentStep = { credentials: 1, invite: 2, profile: 3, mode: 4 }[step];
+  const totalSteps = 5;
+  const currentStep = (() => {
+    if (step === "credentials") return 1;
+    if (step === "verify_method") return 2;
+    if (step === "invite" || step === "address") return 3;
+    if (step === "profile") return 4;
+    if (step === "mode") return 5;
+    return 1;
+  })();
 
   async function handleCredentials(e: React.FormEvent) {
     e.preventDefault();
@@ -51,7 +73,12 @@ function RegisterForm() {
       return;
     }
 
-    setStep("invite");
+    // Wenn Invite-Code aus URL vorhanden, direkt zum Code-Schritt
+    if (inviteCode) {
+      setStep("invite");
+    } else {
+      setStep("verify_method");
+    }
   }
 
   async function handleInviteCode(e: React.FormEvent) {
@@ -60,18 +87,16 @@ function RegisterForm() {
     setError(null);
 
     try {
-      // Invite-Code gegen die Datenbank prüfen
       const supabase = createClient();
       const { data: household, error: queryError } = await supabase
         .from("households")
         .select("id, street_name, house_number")
-        .eq("invite_code", inviteCode.trim().toUpperCase())
+        .eq("invite_code", normalizeCode(inviteCode))
         .single();
 
       if (queryError) {
-        console.error("Invite-Code Prüfung fehlgeschlagen:", queryError);
+        console.error("Invite-Code Pruefung fehlgeschlagen:", queryError);
         if (queryError.code === "PGRST116") {
-          // No rows found — invalid code
           setError("Ungültiger Einladungscode. Bitte prüfen Sie den Code auf Ihrem Brief.");
         } else {
           setError(`Verbindungsfehler: ${queryError.message}`);
@@ -86,10 +111,53 @@ function RegisterForm() {
         return;
       }
 
+      setHouseholdId(household.id);
+      setVerificationMethod(referrerId ? "neighbor_invite" : "invite_code");
       setLoading(false);
       setStep("profile");
     } catch (err) {
       console.error("Netzwerkfehler bei Invite-Code:", err);
+      setError("Netzwerkfehler. Bitte prüfen Sie Ihre Internetverbindung.");
+      setLoading(false);
+    }
+  }
+
+  async function handleAddressSelection(e: React.FormEvent) {
+    e.preventDefault();
+    setLoading(true);
+    setError(null);
+
+    try {
+      const supabase = createClient();
+      const { data: household, error: queryError } = await supabase
+        .from("households")
+        .select("id, street_name, house_number")
+        .eq("street_name", selectedStreet)
+        .eq("house_number", houseNumber.trim())
+        .single();
+
+      if (queryError) {
+        if (queryError.code === "PGRST116") {
+          setError("Diese Adresse wurde nicht gefunden. Bitte prüfen Sie Straße und Hausnummer.");
+        } else {
+          setError(`Verbindungsfehler: ${queryError.message}`);
+        }
+        setLoading(false);
+        return;
+      }
+
+      if (!household) {
+        setError("Diese Adresse wurde nicht gefunden.");
+        setLoading(false);
+        return;
+      }
+
+      setHouseholdId(household.id);
+      setVerificationMethod("address_manual");
+      setLoading(false);
+      setStep("profile");
+    } catch (err) {
+      console.error("Netzwerkfehler bei Adressauswahl:", err);
       setError("Netzwerkfehler. Bitte prüfen Sie Ihre Internetverbindung.");
       setLoading(false);
     }
@@ -146,29 +214,54 @@ function RegisterForm() {
       }
 
       // 3. Haushalt-Zuordnung erstellen
-      const { data: household, error: householdError } = await supabase
-        .from("households")
-        .select("id")
-        .eq("invite_code", inviteCode.trim().toUpperCase())
-        .single();
-
-      if (householdError) {
-        console.error("Haushalt-Fehler:", householdError);
-      }
-
-      if (household) {
-        // role und verified_at werden per DB-Trigger gesetzt
+      if (householdId) {
         const { error: memberError } = await supabase.from("household_members").insert({
-          household_id: household.id,
+          household_id: householdId,
           user_id: authData.user.id,
+          verification_method: verificationMethod,
         });
 
         if (memberError) {
           console.error("Mitglied-Fehler:", memberError);
         }
+
+        // 4. Bei manueller Adress-Verifikation: Anfrage erstellen
+        if (verificationMethod === "address_manual") {
+          const { error: requestError } = await supabase.from("verification_requests").insert({
+            user_id: authData.user.id,
+            household_id: householdId,
+            method: "address_manual",
+            status: "pending",
+          });
+
+          if (requestError) {
+            console.error("Verifizierungsanfrage-Fehler:", requestError);
+          }
+        }
+
+        // 5. Bei Nachbar-Einladung: Einladung als akzeptiert markieren + Punkte
+        if (verificationMethod === "neighbor_invite" && referrerId) {
+          await supabase
+            .from("neighbor_invitations")
+            .update({
+              status: "accepted",
+              accepted_at: new Date().toISOString(),
+              accepted_by: authData.user.id,
+            })
+            .eq("invite_code", normalizeCode(inviteCode))
+            .eq("status", "sent");
+
+          // Punkte fuer den Einladenden
+          await supabase.from("reputation_points").insert({
+            user_id: referrerId,
+            points: 50,
+            reason: "neighbor_invited",
+            reference_id: authData.user.id,
+          });
+        }
       }
 
-      // 4. Weiterleitung — neue Nutzer sehen die Willkommens-Tour
+      // 6. Weiterleitung
       if (uiMode === "senior") {
         router.push("/senior/home");
       } else {
@@ -241,11 +334,68 @@ function RegisterForm() {
           </form>
         )}
 
-        {/* Schritt 2: Invite-Code */}
+        {/* Schritt 2: Verifizierungsmethode waehlen */}
+        {step === "verify_method" && (
+          <div className="space-y-4">
+            <p className="text-sm text-muted-foreground">
+              Wie möchten Sie sich als Nachbar verifizieren?
+            </p>
+
+            <button
+              onClick={() => {
+                setVerificationMethod("invite_code");
+                setStep("invite");
+              }}
+              className="w-full rounded-lg border-2 border-border p-4 text-left transition-colors hover:border-quartier-green/50"
+            >
+              <div className="flex items-start gap-3">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-quartier-green/10">
+                  <Mail className="h-5 w-5 text-quartier-green" />
+                </div>
+                <div>
+                  <p className="font-semibold text-anthrazit">Einladungscode eingeben</p>
+                  <p className="mt-1 text-sm text-muted-foreground">
+                    Sie haben einen Code per Brief oder von einem Nachbarn erhalten
+                  </p>
+                </div>
+              </div>
+            </button>
+
+            <button
+              onClick={() => {
+                setVerificationMethod("address_manual");
+                setStep("address");
+              }}
+              className="w-full rounded-lg border-2 border-border p-4 text-left transition-colors hover:border-quartier-green/50"
+            >
+              <div className="flex items-start gap-3">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-blue-50">
+                  <MapPin className="h-5 w-5 text-blue-500" />
+                </div>
+                <div>
+                  <p className="font-semibold text-anthrazit">Adresse manuell angeben</p>
+                  <p className="mt-1 text-sm text-muted-foreground">
+                    Ich wohne im Quartier und möchte mich verifizieren lassen
+                  </p>
+                </div>
+              </div>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setStep("credentials")}
+              className="w-full text-sm text-muted-foreground hover:underline"
+            >
+              Zurück
+            </button>
+          </div>
+        )}
+
+        {/* Schritt 2a: Invite-Code */}
         {step === "invite" && (
           <form onSubmit={handleInviteCode} className="space-y-4">
             <p className="text-sm text-muted-foreground">
-              Den Einladungscode haben Sie per Brief erhalten. Er besteht aus 8 Zeichen.
+              Den Einladungscode haben Sie per Brief oder von einem Nachbarn erhalten.
             </p>
             <div>
               <label htmlFor="invite" className="mb-1 block text-sm font-medium">
@@ -254,11 +404,11 @@ function RegisterForm() {
               <Input
                 id="invite"
                 type="text"
-                value={inviteCode}
-                onChange={(e) => setInviteCode(e.target.value.toUpperCase())}
-                placeholder="z.B. ABCD1234"
+                value={formatCode(inviteCode)}
+                onChange={(e) => setInviteCode(normalizeCode(e.target.value))}
+                placeholder="z.B. ABCD-EF23"
                 required
-                maxLength={8}
+                maxLength={9}
                 className="text-center text-lg font-mono tracking-widest"
                 autoComplete="off"
               />
@@ -269,7 +419,75 @@ function RegisterForm() {
             </Button>
             <button
               type="button"
-              onClick={() => setStep("credentials")}
+              onClick={() => {
+                setError(null);
+                setStep(searchParams.get("invite") ? "credentials" : "verify_method");
+              }}
+              className="w-full text-sm text-muted-foreground hover:underline"
+            >
+              Zurück
+            </button>
+          </form>
+        )}
+
+        {/* Schritt 2b: Adress-Auswahl */}
+        {step === "address" && (
+          <form onSubmit={handleAddressSelection} className="space-y-4">
+            <p className="text-sm text-muted-foreground">
+              Wählen Sie Ihre Straße und Hausnummer. Ein Admin wird Ihre Zugehörigkeit prüfen.
+            </p>
+            <div>
+              <label htmlFor="street" className="mb-1 block text-sm font-medium">
+                Straße
+              </label>
+              <select
+                id="street"
+                value={selectedStreet}
+                onChange={(e) => setSelectedStreet(e.target.value)}
+                required
+                className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+              >
+                <option value="">Straße wählen...</option>
+                {QUARTIER_STREETS.map((s) => (
+                  <option key={s} value={s}>{s}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label htmlFor="house_number" className="mb-1 block text-sm font-medium">
+                Hausnummer
+              </label>
+              <Input
+                id="house_number"
+                type="text"
+                value={houseNumber}
+                onChange={(e) => setHouseNumber(e.target.value)}
+                placeholder="z.B. 5 oder 12a"
+                required
+              />
+            </div>
+
+            <div className="rounded-lg bg-blue-50 p-3 text-xs text-blue-700">
+              <p className="font-medium">Hinweis zur Verifikation</p>
+              <p className="mt-1">
+                Ein Admin wird Ihre Zugehörigkeit zum Quartier prüfen. Sie erhalten eine Benachrichtigung, sobald Ihr Konto freigeschaltet wurde.
+              </p>
+            </div>
+
+            {error && <p className="text-sm text-emergency-red">{error}</p>}
+            <Button
+              type="submit"
+              disabled={loading || !selectedStreet || !houseNumber.trim()}
+              className="w-full bg-quartier-green hover:bg-quartier-green-dark"
+            >
+              {loading ? "Wird geprüft..." : "Adresse bestätigen"}
+            </Button>
+            <button
+              type="button"
+              onClick={() => {
+                setError(null);
+                setStep("verify_method");
+              }}
               className="w-full text-sm text-muted-foreground hover:underline"
             >
               Zurück

@@ -3,13 +3,14 @@
 import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Bell, ChevronRight, Plus } from "lucide-react";
+import { Bell, ChevronRight, Plus, UserPlus } from "lucide-react";
 import { AlertCard } from "@/components/AlertCard";
 import { NewsCard } from "@/components/NewsCard";
 import { PullToRefresh } from "@/components/PullToRefresh";
 import { ReputationBadge } from "@/components/ReputationBadge";
 import { ProfileCompletionBanner } from "@/components/ProfileCompletionBanner";
 import { FloatingHelpButton } from "@/components/FloatingHelpButton";
+import { InviteNeighborModal } from "@/components/InviteNeighborModal";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { createClient } from "@/lib/supabase/client";
@@ -37,6 +38,7 @@ export default function DashboardPage() {
   const [userName, setUserName] = useState("");
   const [reputationLevel, setReputationLevel] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [showInviteModal, setShowInviteModal] = useState(false);
   const { count: unreadCount } = useUnreadCount();
 
   // Profilvervollstaendigung
@@ -176,7 +178,7 @@ export default function DashboardPage() {
       <div className="-mx-4 -mt-4 mb-2 rounded-b-2xl bg-gradient-to-b from-quartier-green/5 to-transparent px-4 pb-4 pt-4">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-anthrazit">
+            <h1 className="text-2xl font-bold text-anthrazit" data-testid="dashboard-greeting">
               {userName ? (
                 <>
                   {getGreeting().emoji} {getGreeting().text}, {userName}
@@ -194,10 +196,11 @@ export default function DashboardPage() {
             href="/notifications"
             className="relative rounded-full p-2 transition-colors hover:bg-white/50"
             aria-label="Benachrichtigungen"
+            data-testid="notification-bell"
           >
             <Bell className="h-6 w-6 text-anthrazit" aria-hidden="true" />
             {unreadCount > 0 && (
-              <span className="animate-badge-pop absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-emergency-red text-xs font-bold text-white">
+              <span className="animate-badge-pop absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-emergency-red text-xs font-bold text-white" data-testid="unread-badge">
                 {unreadCount > 9 ? "9+" : unreadCount}
               </span>
             )}
@@ -233,10 +236,20 @@ export default function DashboardPage() {
       <Link
         href="/alerts/new"
         className="animate-btn-bounce flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-alert-amber to-amber-400 p-4 font-semibold text-anthrazit shadow-soft transition-all duration-200 active:scale-[0.97]"
+        data-testid="create-help-button"
       >
         <Plus className="h-5 w-5" />
         Hilfe anfragen
       </Link>
+
+      {/* Nachbar einladen */}
+      <button
+        onClick={() => setShowInviteModal(true)}
+        className="flex w-full items-center justify-center gap-2 rounded-xl border-2 border-dashed border-quartier-green/40 bg-quartier-green/5 p-3 text-sm font-medium text-quartier-green transition-all hover:border-quartier-green hover:bg-quartier-green/10 active:scale-[0.98]"
+      >
+        <UserPlus className="h-4 w-4" />
+        Nachbar einladen — 50 Punkte erhalten
+      </button>
 
       {/* Hilfe-Boerse */}
       {helpRequests.length > 0 && (
@@ -390,6 +403,9 @@ export default function DashboardPage() {
 
     {/* FAB Schnell-Hilfe */}
     <FloatingHelpButton />
+
+    {/* Nachbar-Einladungs-Modal */}
+    <InviteNeighborModal open={showInviteModal} onClose={() => setShowInviteModal(false)} />
     </>
   );
 }

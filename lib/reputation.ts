@@ -39,6 +39,7 @@ const POINTS = {
   endorsementReceived: 2, // Experten-Empfehlung erhalten
   reviewReceived: 3,      // Gute Bewertung erhalten (4+ Sterne)
   tipShared: 2,           // Nachbarschafts-Tipp geteilt
+  neighborInvited: 50,    // Nachbar erfolgreich eingeladen
 } as const;
 
 // ============================================================
@@ -98,6 +99,7 @@ export async function computeReputationStats(
     endorsementsResult,
     reviewsResult,
     tipsSharedResult,
+    neighborsInvitedResult,
     // Badge-spezifische Abfragen
     gardenHelpResult,
     cookingHelpResult,
@@ -153,6 +155,13 @@ export async function computeReputationStats(
       .eq("user_id", userId)
       .eq("status", "active"),
 
+    // Nachbarn erfolgreich eingeladen
+    supabase
+      .from("neighbor_invitations")
+      .select("id", { count: "exact", head: true })
+      .eq("inviter_id", userId)
+      .eq("status", "accepted"),
+
     // Badge: Gartenhilfe (help_requests in Kategorie garden)
     supabase
       .from("help_requests")
@@ -207,6 +216,7 @@ export async function computeReputationStats(
   const endorsementsReceived = endorsementsResult.count ?? 0;
   const reviewsReceived = reviewsResult.count ?? 0;
   const tipsShared = tipsSharedResult.count ?? 0;
+  const neighborsInvited = neighborsInvitedResult.count ?? 0;
 
   // Punkte berechnen
   const points =
@@ -216,7 +226,8 @@ export async function computeReputationStats(
     eventsAttended * POINTS.eventAttended +
     endorsementsReceived * POINTS.endorsementReceived +
     reviewsReceived * POINTS.reviewReceived +
-    tipsShared * POINTS.tipShared;
+    tipsShared * POINTS.tipShared +
+    neighborsInvited * POINTS.neighborInvited;
 
   // Level bestimmen
   const level = getReputationLevel(points);

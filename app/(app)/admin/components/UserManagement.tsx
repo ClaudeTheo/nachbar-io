@@ -1,15 +1,16 @@
 "use client";
 
 import { useState } from "react";
-import { UserCog, ShieldCheck, ShieldOff, Ban, CheckCircle, Search, ChevronDown, ChevronUp } from "lucide-react";
+import { UserCog, ShieldCheck, ShieldOff, Ban, CheckCircle, Search, ChevronDown, ChevronUp, UserPlus, Copy, Check } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { createClient } from "@/lib/supabase/client";
-import { TRUST_LEVELS } from "@/lib/constants";
+import { TRUST_LEVELS, QUARTIER_STREETS } from "@/lib/constants";
 import type { User, TrustLevel } from "@/lib/supabase/types";
 import { toast } from "sonner";
+import { VerificationQueue } from "./VerificationQueue";
 
 interface UserManagementProps {
   users: User[];
@@ -21,6 +22,65 @@ export function UserManagement({ users, onRefresh }: UserManagementProps) {
   const [expandedUser, setExpandedUser] = useState<string | null>(null);
   const [updating, setUpdating] = useState<string | null>(null);
   const [activityFilter, setActivityFilter] = useState<"all" | "active" | "inactive">("all");
+  const [showCreateForm, setShowCreateForm] = useState(false);
+  const [creating, setCreating] = useState(false);
+  const [newUserName, setNewUserName] = useState("");
+  const [newUserStreet, setNewUserStreet] = useState("");
+  const [newUserHouseNumber, setNewUserHouseNumber] = useState("");
+  const [newUserEmail, setNewUserEmail] = useState("");
+  const [newUserMode, setNewUserMode] = useState<"active" | "senior">("senior");
+  const [createdCredentials, setCreatedCredentials] = useState<{ email: string; password: string } | null>(null);
+  const [copiedPassword, setCopiedPassword] = useState(false);
+
+  // Admin: Konto fuer Nachbar erstellen
+  async function createUserAccount() {
+    if (!newUserName.trim() || !newUserStreet || !newUserHouseNumber.trim()) {
+      toast.error("Name, Strasse und Hausnummer sind erforderlich");
+      return;
+    }
+
+    setCreating(true);
+    try {
+      const response = await fetch("/api/admin/create-user", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          displayName: newUserName.trim(),
+          street: newUserStreet,
+          houseNumber: newUserHouseNumber.trim(),
+          email: newUserEmail.trim() || undefined,
+          uiMode: newUserMode,
+          verified: true,
+        }),
+      });
+
+      const data = await response.json();
+      if (!response.ok) {
+        toast.error(data.error || "Fehler beim Erstellen");
+      } else {
+        toast.success(`Konto für ${newUserName} erstellt`);
+        setCreatedCredentials({ email: data.email, password: data.tempPassword });
+        setNewUserName("");
+        setNewUserHouseNumber("");
+        setNewUserEmail("");
+        onRefresh();
+      }
+    } catch {
+      toast.error("Netzwerkfehler");
+    }
+    setCreating(false);
+  }
+
+  async function copyPassword(password: string) {
+    try {
+      await navigator.clipboard.writeText(password);
+      setCopiedPassword(true);
+      toast.success("Passwort kopiert!");
+      setTimeout(() => setCopiedPassword(false), 3000);
+    } catch {
+      toast.error("Kopieren fehlgeschlagen");
+    }
+  }
 
   // Bann-Funktion: Trust-Level auf "banned" setzen (deaktiviert Zugang via RLS)
   async function banUser(userId: string, isBanned: boolean) {
@@ -118,7 +178,116 @@ export function UserManagement({ users, onRefresh }: UserManagementProps) {
   const trustLevelOrder: TrustLevel[] = ["new", "verified", "trusted", "admin"];
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-4">
+      {/* Konto fuer Nachbar erstellen */}
+      <Card className="border-quartier-green/30">
+        <CardContent className="p-4 space-y-3">
+          <button
+            onClick={() => {
+              setShowCreateForm(!showCreateForm);
+              setCreatedCredentials(null);
+            }}
+            className="flex w-full items-center justify-between"
+          >
+            <span className="flex items-center gap-2 text-sm font-semibold text-quartier-green">
+              <UserPlus className="h-4 w-4" /> Konto für Nachbar erstellen
+            </span>
+            <span className="text-xs text-muted-foreground">{showCreateForm ? "▲" : "▼"}</span>
+          </button>
+
+          {showCreateForm && (
+            <div className="space-y-2 pt-2 border-t">
+              <Input
+                placeholder="Name (z.B. Erika Müller)"
+                value={newUserName}
+                onChange={(e) => setNewUserName(e.target.value)}
+              />
+              <div className="grid grid-cols-2 gap-2">
+                <select
+                  value={newUserStreet}
+                  onChange={(e) => setNewUserStreet(e.target.value)}
+                  className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                >
+                  <option value="">Straße...</option>
+                  {QUARTIER_STREETS.map((s) => (
+                    <option key={s} value={s}>{s}</option>
+                  ))}
+                </select>
+                <Input
+                  placeholder="Hausnr."
+                  value={newUserHouseNumber}
+                  onChange={(e) => setNewUserHouseNumber(e.target.value)}
+                />
+              </div>
+              <Input
+                placeholder="E-Mail (optional)"
+                type="email"
+                value={newUserEmail}
+                onChange={(e) => setNewUserEmail(e.target.value)}
+              />
+              <div className="flex gap-2">
+                <Button
+                  size="sm"
+                  variant={newUserMode === "senior" ? "default" : "outline"}
+                  className="flex-1 text-xs h-8"
+                  onClick={() => setNewUserMode("senior")}
+                >
+                  Seniorenmodus
+                </Button>
+                <Button
+                  size="sm"
+                  variant={newUserMode === "active" ? "default" : "outline"}
+                  className="flex-1 text-xs h-8"
+                  onClick={() => setNewUserMode("active")}
+                >
+                  Normal
+                </Button>
+              </div>
+              <Button
+                className="w-full bg-quartier-green hover:bg-quartier-green-dark"
+                onClick={createUserAccount}
+                disabled={creating || !newUserName.trim() || !newUserStreet || !newUserHouseNumber.trim()}
+              >
+                {creating ? "Wird erstellt..." : "Konto erstellen"}
+              </Button>
+
+              {/* Erstellte Zugangsdaten anzeigen */}
+              {createdCredentials && (
+                <Card className="border-quartier-green bg-quartier-green/5">
+                  <CardContent className="p-3 space-y-2">
+                    <p className="text-xs font-semibold text-quartier-green">Zugangsdaten (einmalig sichtbar!):</p>
+                    <div className="text-xs space-y-1">
+                      <p><span className="text-muted-foreground">E-Mail:</span> <span className="font-mono">{createdCredentials.email}</span></p>
+                      <div className="flex items-center gap-2">
+                        <span className="text-muted-foreground">Passwort:</span>
+                        <span className="font-mono font-bold">{createdCredentials.password}</span>
+                        <button
+                          onClick={() => copyPassword(createdCredentials.password)}
+                          className="ml-1"
+                          title="Passwort kopieren"
+                        >
+                          {copiedPassword ? (
+                            <Check className="h-3.5 w-3.5 text-green-600" />
+                          ) : (
+                            <Copy className="h-3.5 w-3.5 text-muted-foreground" />
+                          )}
+                        </button>
+                      </div>
+                    </div>
+                    <p className="text-[10px] text-alert-amber">
+                      Bitte notieren und dem Nutzer mitteilen. Das Passwort kann danach nicht mehr angezeigt werden.
+                    </p>
+                  </CardContent>
+                </Card>
+              )}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Verifizierungs-Queue */}
+      <VerificationQueue />
+
       {/* Suchfeld */}
       <div className="relative">
         <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />

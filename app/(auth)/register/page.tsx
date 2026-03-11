@@ -129,31 +129,25 @@ function RegisterForm() {
     setError(null);
 
     try {
-      const supabase = createClient();
-      const { data: household, error: queryError } = await supabase
-        .from("households")
-        .select("id, street_name, house_number")
-        .eq("street_name", selectedStreet)
-        .eq("house_number", houseNumber.trim())
-        .single();
+      // API-Route sucht oder erstellt den Haushalt automatisch
+      const res = await fetch("/api/household/find-or-create", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          streetName: selectedStreet,
+          houseNumber: houseNumber.trim(),
+        }),
+      });
 
-      if (queryError) {
-        if (queryError.code === "PGRST116") {
-          setError("Diese Adresse wurde nicht gefunden. Bitte prüfen Sie Straße und Hausnummer.");
-        } else {
-          setError(`Verbindungsfehler: ${queryError.message}`);
-        }
+      const data = await res.json();
+
+      if (!res.ok) {
+        setError(data.error || "Adresse konnte nicht verarbeitet werden.");
         setLoading(false);
         return;
       }
 
-      if (!household) {
-        setError("Diese Adresse wurde nicht gefunden.");
-        setLoading(false);
-        return;
-      }
-
-      setHouseholdId(household.id);
+      setHouseholdId(data.householdId);
       setVerificationMethod("address_manual");
       setLoading(false);
       setStep("profile");

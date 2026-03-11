@@ -130,37 +130,17 @@ function RegisterForm() {
 
   async function handleAddressSelection(e: React.FormEvent) {
     e.preventDefault();
-    setLoading(true);
     setError(null);
 
-    try {
-      // API-Route sucht oder erstellt den Haushalt automatisch
-      const res = await fetch("/api/household/find-or-create", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          streetName: selectedStreet,
-          houseNumber: houseNumber.trim(),
-        }),
-      });
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        setError(data.error || "Adresse konnte nicht verarbeitet werden.");
-        setLoading(false);
-        return;
-      }
-
-      setHouseholdId(data.householdId);
-      setVerificationMethod("address_manual");
-      setLoading(false);
-      setStep("profile");
-    } catch (err) {
-      console.error("Netzwerkfehler bei Adressauswahl:", err);
-      setError("Netzwerkfehler. Bitte prüfen Sie Ihre Internetverbindung.");
-      setLoading(false);
+    if (!selectedStreet || !houseNumber.trim()) {
+      setError("Bitte wählen Sie eine Straße und geben Sie eine Hausnummer ein.");
+      return;
     }
+
+    // Adresse nur im State speichern — Haushalt wird erst bei
+    // register/complete erstellt (User ist dann bereits eingeloggt)
+    setVerificationMethod("address_manual");
+    setStep("profile");
   }
 
   async function handleProfile(e: React.FormEvent) {
@@ -208,6 +188,9 @@ function RegisterForm() {
           displayName: displayName.trim(),
           uiMode,
           householdId,
+          // Adresse fuer Haushalt-Erstellung (falls kein householdId vorhanden)
+          streetName: selectedStreet || undefined,
+          houseNumber: houseNumber.trim() || undefined,
           verificationMethod,
           inviteCode: inviteCode ? normalizeCode(inviteCode) : undefined,
           referrerId,

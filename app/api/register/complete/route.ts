@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient as createServerClient } from "@/lib/supabase/server";
 import { createClient } from "@supabase/supabase-js";
 import { safeInsertNotification } from "@/lib/notifications-server";
+import { generateSecureCode } from "@/lib/invite-codes";
 
 // Service-Role Client fuer Registrierungs-Operationen (umgeht RLS)
 function getAdminSupabase() {
@@ -25,6 +26,8 @@ function getAdminSupabase() {
  *   displayName: string,
  *   uiMode: 'active' | 'senior',
  *   householdId?: string,
+ *   streetName?: string,        // fuer Haushalt-Erstellung bei Adress-Registrierung
+ *   houseNumber?: string,       // fuer Haushalt-Erstellung bei Adress-Registrierung
  *   verificationMethod: string,
  *   inviteCode?: string,
  *   referrerId?: string,
@@ -48,11 +51,13 @@ export async function POST(request: NextRequest) {
       userId,
       displayName,
       uiMode,
-      householdId,
+      streetName,
+      houseNumber,
       verificationMethod,
       inviteCode,
       referrerId,
     } = body;
+    let { householdId } = body;
 
     // Sicherheits-Check: userId muss dem eingeloggten Nutzer entsprechen
     if (userId !== user.id) {
@@ -70,6 +75,67 @@ export async function POST(request: NextRequest) {
     }
 
     const adminDb = getAdminSupabase();
+
+    // 0. Haushalt suchen oder erstellen (bei Adress-Registrierung ohne Invite-Code)
+    if (!householdId && streetName && houseNumber) {
+      const STREET_COORDS: Record<string, { lat: number; lng: number }> = {
+        "Purkersdorfer Straße": { lat: 47.5631, lng: 7.9480 },
+        "Sanarystraße": { lat: 47.5619, lng: 7.9480 },
+        "Oberer Rebberg": { lat: 47.5604, lng: 7.9480 },
+      };
+
+      const trimmedHouseNumber = String(houseNumber).trim();
+      const coords = STREET_COORDS[streetName];
+
+      if (coords && trimmedHouseNumber) {
+        // Bestehenden Haushalt suchen
+        const { data: existing } = await adminDb
+          .from("households")
+          .select("id")
+          .eq("street_name", streetName)
+          .eq("house_number", trimmedHouseNumber)
+          .maybeSingle();
+
+        if (existing) {
+          householdId = existing.id;
+        } else {
+          // Neuen Haushalt anlegen
+          const houseNum = parseInt(trimmedHouseNumber, 10) || 0;
+          const lngOffset = houseNum * 0.0005;
+          const newInviteCode = generateSecureCode();
+
+          const { data: newHousehold, error: insertError } = await adminDb
+            .from("households")
+            .insert({
+              street_name: streetName,
+              house_number: trimmedHouseNumber,
+              lat: coords.lat,
+              lng: coords.lng + lngOffset,
+              verified: false,
+              invite_code: newInviteCode,
+            })
+            .select("id")
+            .single();
+
+          if (insertError) {
+            // Race-Condition: Erneut suchen
+            if (insertError.code === "23505") {
+              const { data: retry } = await adminDb
+                .from("households")
+                .select("id")
+                .eq("street_name", streetName)
+                .eq("house_number", trimmedHouseNumber)
+                .maybeSingle();
+              if (retry) householdId = retry.id;
+            } else {
+              console.error("Haushalt-Erstellung fehlgeschlagen:", insertError);
+            }
+          } else if (newHousehold) {
+            householdId = newHousehold.id;
+          }
+        }
+      }
+    }
 
     // 1. User-Profil erstellen
     const { error: profileError } = await adminDb.from("users").insert({

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient as createServerClient } from "@/lib/supabase/server";
 import { createClient } from "@supabase/supabase-js";
+import { sendVerificationResultEmail } from "@/lib/email";
 
 // Service-Role Client fuer Admin-Operationen
 function getAdminSupabase() {
@@ -121,8 +122,21 @@ export async function POST(request: NextRequest) {
         }),
       });
     } catch {
-      // Push-Fehler blockiert nicht die Verifizierung
       console.error("Push-Benachrichtigung (Approve) fehlgeschlagen");
+    }
+
+    // E-Mail-Benachrichtigung senden (fire-and-forget)
+    try {
+      const { data: authUser } = await adminSupabase.auth.admin.getUserById(vRequest.user_id);
+      if (authUser?.user?.email) {
+        await sendVerificationResultEmail({
+          to: authUser.user.email,
+          userName: vRequest.user?.display_name || "Nachbar",
+          approved: true,
+        });
+      }
+    } catch {
+      console.error("E-Mail-Benachrichtigung (Approve) fehlgeschlagen");
     }
   } else {
     // 4b. Ablehnen
@@ -166,8 +180,22 @@ export async function POST(request: NextRequest) {
         }),
       });
     } catch {
-      // Push-Fehler blockiert nicht die Verifizierung
       console.error("Push-Benachrichtigung (Reject) fehlgeschlagen");
+    }
+
+    // E-Mail-Benachrichtigung senden (fire-and-forget)
+    try {
+      const { data: authUser } = await adminSupabase.auth.admin.getUserById(vRequest.user_id);
+      if (authUser?.user?.email) {
+        await sendVerificationResultEmail({
+          to: authUser.user.email,
+          userName: vRequest.user?.display_name || "Nachbar",
+          approved: false,
+          adminNote: note,
+        });
+      }
+    } catch {
+      console.error("E-Mail-Benachrichtigung (Reject) fehlgeschlagen");
     }
   }
 

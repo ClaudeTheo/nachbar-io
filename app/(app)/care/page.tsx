@@ -7,7 +7,8 @@ import { Heart, AlertTriangle, Clock, ArrowRight, Pill, CalendarDays, Users, Fil
 import Link from 'next/link';
 import { SosButton } from '@/components/care/SosButton';
 import { SosAlertCard } from '@/components/care/SosAlertCard';
-import type { CareSosAlert, CareAppointment } from '@/lib/care/types';
+import type { CareSosAlert, CareAppointment, CareSubscriptionPlan } from '@/lib/care/types';
+import { PLAN_FEATURES } from '@/lib/care/constants';
 
 interface CheckinStatus {
   completedCount: number;
@@ -31,8 +32,12 @@ export default function CareDashboardPage() {
   const [nextAppointment, setNextAppointment] = useState<CareAppointment | null>(null);
   const [helperCount, setHelperCount] = useState<number | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [planFeatures, setPlanFeatures] = useState<string[]>([]);
 
-  // Aktuellen Nutzer laden + Admin-Check
+  // Feature-Pruefung: Ist ein Feature im aktuellen Plan verfuegbar?
+  const hasFeature = (feature: string) => planFeatures.includes(feature);
+
+  // Aktuellen Nutzer laden + Admin-Check + Plan-Features laden
   useEffect(() => {
     const supabase = createClient();
     supabase.auth.getUser().then(async ({ data: { user } }) => {
@@ -40,6 +45,16 @@ export default function CareDashboardPage() {
       if (user) {
         const { data } = await supabase.from('users').select('is_admin').eq('id', user.id).single();
         setIsAdmin(data?.is_admin === true);
+
+        // Abo-Plan laden fuer Feature-Gating
+        const { data: subscription } = await supabase
+          .from('care_subscriptions')
+          .select('plan, status')
+          .eq('user_id', user.id)
+          .maybeSingle();
+        const plan: CareSubscriptionPlan = subscription?.plan ?? 'free';
+        const isActive = !subscription || subscription.status === 'active' || subscription.status === 'trial';
+        setPlanFeatures(isActive ? (PLAN_FEATURES[plan] ?? []) : []);
       }
     });
   }, []);
@@ -80,8 +95,9 @@ export default function CareDashboardPage() {
     return () => { supabase.removeChannel(channel); };
   }, []);
 
-  // Faellige Medikamente laden
+  // Faellige Medikamente laden (nur wenn Feature verfuegbar)
   useEffect(() => {
+    if (!hasFeature('medications')) return;
     async function loadMedicationStatus() {
       try {
         const res = await fetch('/api/care/medications/due');
@@ -94,10 +110,11 @@ export default function CareDashboardPage() {
       } catch { /* silent */ }
     }
     loadMedicationStatus();
-  }, []);
+  }, [planFeatures]);
 
-  // Naechsten Termin laden
+  // Naechsten Termin laden (nur wenn Feature verfuegbar)
   useEffect(() => {
+    if (!hasFeature('appointments')) return;
     async function loadNextAppointment() {
       try {
         const res = await fetch('/api/care/appointments?upcoming=true');
@@ -108,7 +125,7 @@ export default function CareDashboardPage() {
       } catch { /* silent */ }
     }
     loadNextAppointment();
-  }, []);
+  }, [planFeatures]);
 
   // Verifizierte Helfer laden
   useEffect(() => {
@@ -203,62 +220,66 @@ export default function CareDashboardPage() {
           )}
         </Link>
 
-        {/* Medikamente */}
-        <Link
-          href="/care/medications"
-          className="rounded-xl border bg-card p-4 hover:bg-gray-50 transition-colors"
-        >
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <Pill className="h-4 w-4" />
-            Medikamente
-          </div>
-          {medicationStatus !== null ? (
-            <div className="mt-1">
-              {medicationStatus.pendingCount === 0 ? (
-                <p className="text-lg font-semibold text-quartier-green">Alle eingenommen</p>
-              ) : (
-                <>
-                  <p className="text-lg font-semibold text-anthrazit">
-                    {medicationStatus.pendingCount} ausstehend
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    {medicationStatus.completedCount} eingenommen
-                  </p>
-                </>
-              )}
+        {/* Medikamente (Feature-Gate: medications) */}
+        {hasFeature('medications') && (
+          <Link
+            href="/care/medications"
+            className="rounded-xl border bg-card p-4 hover:bg-gray-50 transition-colors"
+          >
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <Pill className="h-4 w-4" />
+              Medikamente
             </div>
-          ) : (
-            <p className="text-lg font-semibold mt-1 text-muted-foreground">—</p>
-          )}
-        </Link>
+            {medicationStatus !== null ? (
+              <div className="mt-1">
+                {medicationStatus.pendingCount === 0 ? (
+                  <p className="text-lg font-semibold text-quartier-green">Alle eingenommen</p>
+                ) : (
+                  <>
+                    <p className="text-lg font-semibold text-anthrazit">
+                      {medicationStatus.pendingCount} ausstehend
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      {medicationStatus.completedCount} eingenommen
+                    </p>
+                  </>
+                )}
+              </div>
+            ) : (
+              <p className="text-lg font-semibold mt-1 text-muted-foreground">—</p>
+            )}
+          </Link>
+        )}
 
-        {/* Termine */}
-        <Link
-          href="/care/appointments"
-          className="rounded-xl border bg-card p-4 hover:bg-gray-50 transition-colors"
-        >
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <CalendarDays className="h-4 w-4" />
-            Termine
-          </div>
-          {nextAppointment !== null ? (
-            <div className="mt-1">
-              <p className="text-sm font-semibold text-anthrazit leading-tight line-clamp-1">
-                {nextAppointment.title}
-              </p>
-              <p className="text-xs text-muted-foreground mt-0.5">
-                {new Date(nextAppointment.scheduled_at).toLocaleDateString('de-DE', {
-                  day: '2-digit',
-                  month: '2-digit',
-                  hour: '2-digit',
-                  minute: '2-digit',
-                })}
-              </p>
+        {/* Termine (Feature-Gate: appointments) */}
+        {hasFeature('appointments') && (
+          <Link
+            href="/care/appointments"
+            className="rounded-xl border bg-card p-4 hover:bg-gray-50 transition-colors"
+          >
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <CalendarDays className="h-4 w-4" />
+              Termine
             </div>
-          ) : (
-            <p className="text-lg font-semibold mt-1 text-muted-foreground">Keine</p>
-          )}
-        </Link>
+            {nextAppointment !== null ? (
+              <div className="mt-1">
+                <p className="text-sm font-semibold text-anthrazit leading-tight line-clamp-1">
+                  {nextAppointment.title}
+                </p>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  {new Date(nextAppointment.scheduled_at).toLocaleDateString('de-DE', {
+                    day: '2-digit',
+                    month: '2-digit',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                  })}
+                </p>
+              </div>
+            ) : (
+              <p className="text-lg font-semibold mt-1 text-muted-foreground">Keine</p>
+            )}
+          </Link>
+        )}
 
         {/* Helfer */}
         <Link
@@ -324,20 +345,24 @@ export default function CareDashboardPage() {
             <Clock className="h-4 w-4 text-muted-foreground" />
             Check-in-Verlauf
           </Link>
-          <Link
-            href="/care/medications"
-            className="rounded-lg border bg-card p-3 text-sm font-medium text-anthrazit hover:bg-gray-50 flex items-center gap-2"
-          >
-            <Pill className="h-4 w-4 text-quartier-green" />
-            Medikamente
-          </Link>
-          <Link
-            href="/care/appointments"
-            className="rounded-lg border bg-card p-3 text-sm font-medium text-anthrazit hover:bg-gray-50 flex items-center gap-2"
-          >
-            <CalendarDays className="h-4 w-4 text-quartier-green" />
-            Termine
-          </Link>
+          {hasFeature('medications') && (
+            <Link
+              href="/care/medications"
+              className="rounded-lg border bg-card p-3 text-sm font-medium text-anthrazit hover:bg-gray-50 flex items-center gap-2"
+            >
+              <Pill className="h-4 w-4 text-quartier-green" />
+              Medikamente
+            </Link>
+          )}
+          {hasFeature('appointments') && (
+            <Link
+              href="/care/appointments"
+              className="rounded-lg border bg-card p-3 text-sm font-medium text-anthrazit hover:bg-gray-50 flex items-center gap-2"
+            >
+              <CalendarDays className="h-4 w-4 text-quartier-green" />
+              Termine
+            </Link>
+          )}
           <Link
             href="/care/helpers"
             className="rounded-lg border bg-card p-3 text-sm font-medium text-anthrazit hover:bg-gray-50 flex items-center gap-2"
@@ -345,13 +370,15 @@ export default function CareDashboardPage() {
             <Users className="h-4 w-4 text-quartier-green" />
             Helfer
           </Link>
-          <Link
-            href="/care/reports"
-            className="rounded-lg border bg-card p-3 text-sm font-medium text-anthrazit hover:bg-gray-50 flex items-center gap-2"
-          >
-            <FileText className="h-4 w-4 text-quartier-green" />
-            Berichte
-          </Link>
+          {hasFeature('reports') && (
+            <Link
+              href="/care/reports"
+              className="rounded-lg border bg-card p-3 text-sm font-medium text-anthrazit hover:bg-gray-50 flex items-center gap-2"
+            >
+              <FileText className="h-4 w-4 text-quartier-green" />
+              Berichte
+            </Link>
+          )}
           <Link
             href="/care/profile"
             className="rounded-lg border bg-card p-3 text-sm font-medium text-anthrazit hover:bg-gray-50 flex items-center gap-2"
@@ -366,13 +393,15 @@ export default function CareDashboardPage() {
             <CreditCard className="h-4 w-4 text-quartier-green" />
             Abo-Plan
           </Link>
-          <Link
-            href="/care/audit"
-            className="rounded-lg border bg-card p-3 text-sm font-medium text-anthrazit hover:bg-gray-50 flex items-center gap-2"
-          >
-            <ScrollText className="h-4 w-4 text-quartier-green" />
-            Protokoll
-          </Link>
+          {hasFeature('audit_log') && (
+            <Link
+              href="/care/audit"
+              className="rounded-lg border bg-card p-3 text-sm font-medium text-anthrazit hover:bg-gray-50 flex items-center gap-2"
+            >
+              <ScrollText className="h-4 w-4 text-quartier-green" />
+              Protokoll
+            </Link>
+          )}
           {isAdmin && (
             <Link
               href="/care/admin/overview"

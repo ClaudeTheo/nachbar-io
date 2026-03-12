@@ -83,8 +83,10 @@ export const AUDIT_EVENT_LABELS: Record<CareAuditEventType, string> = {
 } as const;
 
 // Subscription-Plan-Features (Feature-Gates)
+// PILOTPHASE: free hat alle Features freigeschaltet (fuer Tester)
+// NACH PILOTPHASE: free wieder auf ['checkin', 'medical_emergency_sos'] beschraenken
 export const PLAN_FEATURES: Record<CareSubscriptionPlan, string[]> = {
-  free: ['checkin', 'medical_emergency_sos'],
+  free: ['checkin', 'medical_emergency_sos', 'sos_all', 'medications', 'appointments', 'reports', 'audit_log'],
   basic: ['checkin', 'sos_all', 'medications', 'appointments'],
   family: ['checkin', 'sos_all', 'medications', 'appointments', 'relative_dashboard', 'reports', 'audit_log'],
   professional: ['checkin', 'sos_all', 'medications', 'appointments', 'relative_dashboard', 'reports', 'audit_log', 'multi_senior', 'care_dashboard', 'care_aid_forms'],

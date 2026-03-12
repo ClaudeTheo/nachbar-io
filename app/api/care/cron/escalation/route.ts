@@ -7,14 +7,17 @@ import { shouldEscalate, getNextEscalationLevel, getEscalationMeta } from '@/lib
 import { writeAuditLog } from '@/lib/care/audit';
 import { sendCareNotification } from '@/lib/care/notifications';
 import { writeCronHeartbeat } from '@/lib/care/cron-heartbeat';
+import { createCareLogger } from '@/lib/care/logger';
 import type { EscalationConfig } from '@/lib/care/types';
 
 // GET /api/care/cron/escalation — Automatische SOS-Eskalation (Vercel Cron: jede Minute)
 export async function GET(request: NextRequest) {
+  const log = createCareLogger('care/cron/escalation');
   // Cron-Auth: Authorization-Header gegen CRON_SECRET pruefen
   const cronSecret = process.env.CRON_SECRET;
   if (!cronSecret) {
-    console.error('CRON_SECRET nicht konfiguriert — Cron-Endpunkt blockiert');
+    log.error('cron_secret_missing');
+    log.done(500);
     return NextResponse.json({ error: 'Server nicht konfiguriert' }, { status: 500 });
   }
   const authHeader = request.headers.get('authorization');
@@ -32,7 +35,8 @@ export async function GET(request: NextRequest) {
     .lt('current_escalation_level', 4);
 
   if (alertsError) {
-    console.error('[care/cron/escalation] Alerts-Abfrage fehlgeschlagen:', alertsError);
+    log.error('alerts_query_failed', alertsError);
+    log.done(500);
     return NextResponse.json(
       { error: 'Alerts konnten nicht geladen werden' },
       { status: 500 }
@@ -55,10 +59,7 @@ export async function GET(request: NextRequest) {
       .maybeSingle();
 
     if (profileError) {
-      console.error(
-        `[care/cron/escalation] Profil fuer Senior ${alert.senior_id} konnte nicht geladen werden:`,
-        profileError
-      );
+      log.warn('profile_query_failed', { alertId: alert.id, seniorId: alert.senior_id });
     }
 
     const escalationConfig: EscalationConfig | undefined =
@@ -110,16 +111,10 @@ export async function GET(request: NextRequest) {
       }
 
       if (attempt < maxRetries - 1) {
-        console.warn(
-          `[care/cron/escalation] Update fuer Alert ${alert.id} fehlgeschlagen, Retry ${attempt + 1}/${maxRetries}:`,
-          error
-        );
+        log.warn('db_update_retry', { alertId: alert.id, attempt: attempt + 1, maxRetries });
         await new Promise(resolve => setTimeout(resolve, 1000 * (attempt + 1)));
       } else {
-        console.error(
-          `[care/cron/escalation] Update fuer Alert ${alert.id} endgueltig fehlgeschlagen nach ${maxRetries} Versuchen:`,
-          error
-        );
+        log.error('db_update_failed_permanently', error, { alertId: alert.id, maxRetries });
       }
     }
 
@@ -138,12 +133,13 @@ export async function GET(request: NextRequest) {
           channels: ['admin_alert'],
         });
       } catch (adminNotifyError) {
-        console.error('[care/cron/escalation] Admin-Benachrichtigung ueber Eskalationsfehler fehlgeschlagen:', adminNotifyError);
+        log.error('admin_alert_failed', adminNotifyError, { alertId: alert.id });
       }
       continue;
     }
 
     escalatedCount++;
+    log.info('alert_escalated', { alertId: alert.id, fromLevel, toLevel, seniorId: alert.senior_id });
 
     // Metadaten der neuen Eskalationsstufe abrufen (Label, Rolle, Kanaele)
     const escalationMeta = getEscalationMeta(toLevel);
@@ -173,10 +169,7 @@ export async function GET(request: NextRequest) {
             .contains('assigned_seniors', [alert.senior_id]);
 
           if (helpersError) {
-            console.error(
-              `[care/cron/escalation] Helfer-Abfrage fuer Alert ${alert.id} fehlgeschlagen:`,
-              helpersError
-            );
+            log.error('helpers_query_failed', helpersError, { alertId: alert.id, level: toLevel });
           } else if (helpers && helpers.length > 0) {
             // Kanaele aus den Metadaten als mutable Array uebernehmen
             const notificationChannels = [...escalationMeta.channels] as (
@@ -214,10 +207,7 @@ export async function GET(request: NextRequest) {
         }
       } catch (notifyError) {
         // Benachrichtigungsfehler blockiert nicht den Eskalationsprozess
-        console.error(
-          `[care/cron/escalation] Benachrichtigung fuer Alert ${alert.id} fehlgeschlagen:`,
-          notifyError
-        );
+        log.error('notification_failed', notifyError, { alertId: alert.id, level: toLevel });
       }
     }
 
@@ -232,15 +222,14 @@ export async function GET(request: NextRequest) {
         metadata: { fromLevel, toLevel, automatic: true },
       });
     } catch (auditError) {
-      console.error(
-        `[care/cron/escalation] Audit-Log fuer Alert ${alert.id} konnte nicht geschrieben werden:`,
-        auditError
-      );
+      log.warn('audit_log_failed', { alertId: alert.id });
     }
   }
 
   // Heartbeat schreiben (FMEA FM-SOS-03)
   await writeCronHeartbeat(supabase, 'escalation', { checked: checkedCount, escalated: escalatedCount, failed: failedCount });
+
+  log.done(200, { checked: checkedCount, escalated: escalatedCount, failed: failedCount });
 
   return NextResponse.json({
     checked: checkedCount,

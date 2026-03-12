@@ -7,6 +7,7 @@ import { writeAuditLog } from '@/lib/care/audit';
 import { sendCareNotification } from '@/lib/care/notifications';
 import { requireCareAccess } from '@/lib/care/api-helpers';
 import { encryptField, decryptField, decryptFields, decryptFieldsArray, CARE_CHECKINS_ENCRYPTED_FIELDS, CARE_SOS_ALERTS_ENCRYPTED_FIELDS } from '@/lib/care/field-encryption';
+import { createCareLogger } from '@/lib/care/logger';
 import type { CareCheckinStatus, CareCheckinMood } from '@/lib/care/types';
 
 // Gültige Check-in-Status-Werte für die Eingabe
@@ -17,6 +18,7 @@ const PENDING_CHECKIN_STATUSES: CareCheckinStatus[] = ['reminded', 'missed'];
 
 // POST /api/care/checkin — Check-in abgeben
 export async function POST(request: NextRequest) {
+  const log = createCareLogger('care/checkin/POST');
   const supabase = await createClient();
 
   // Auth-Check: Nur authentifizierte Nutzer dürfen Check-ins abgeben
@@ -25,6 +27,8 @@ export async function POST(request: NextRequest) {
   } = await supabase.auth.getUser();
 
   if (!user) {
+    log.warn('auth_failed');
+    log.done(401);
     return NextResponse.json({ error: 'Nicht authentifiziert' }, { status: 401 });
   }
 
@@ -81,7 +85,8 @@ export async function POST(request: NextRequest) {
       .maybeSingle();
 
     if (updateError) {
-      console.error('[care/checkin] Bestehender Check-in konnte nicht aktualisiert werden:', updateError);
+      log.error('db_update_failed', updateError, { userId: user.id, scheduled_at });
+      log.done(500);
       return NextResponse.json(
         { error: 'Check-in konnte nicht aktualisiert werden' },
         { status: 500 }
@@ -108,7 +113,8 @@ export async function POST(request: NextRequest) {
         .single();
 
       if (insertError || !newCheckin) {
-        console.error('[care/checkin] Check-in konnte nicht erstellt werden:', insertError);
+        log.error('db_insert_failed', insertError, { userId: user.id, scheduled_at });
+        log.done(500);
         return NextResponse.json({ error: 'Check-in konnte nicht gespeichert werden' }, { status: 500 });
       }
       checkin = newCheckin;
@@ -130,11 +136,14 @@ export async function POST(request: NextRequest) {
       .single();
 
     if (insertError || !newCheckin) {
-      console.error('[care/checkin] Check-in konnte nicht erstellt werden:', insertError);
+      log.error('db_insert_failed', insertError, { userId: user.id });
+      log.done(500);
       return NextResponse.json({ error: 'Check-in konnte nicht gespeichert werden' }, { status: 500 });
     }
     checkin = newCheckin;
   }
+
+  log.info('checkin_submitted', { userId: user.id, checkinId: checkin.id as string, status, mood: mood ?? null });
 
   // Audit-Log schreiben: ok → checkin_ok, not_well/need_help → checkin_not_well
   const auditEventType = status === 'ok' ? 'checkin_ok' : 'checkin_not_well';
@@ -149,7 +158,7 @@ export async function POST(request: NextRequest) {
     });
   } catch (auditError) {
     // Audit-Fehler blockiert nicht den Check-in-Prozess
-    console.error('[care/checkin] Audit-Log konnte nicht geschrieben werden:', auditError);
+    log.warn('audit_log_failed', { checkinId: checkin.id as string });
   }
 
   // Bei "not_well": Angehörige benachrichtigen
@@ -164,7 +173,7 @@ export async function POST(request: NextRequest) {
         .contains('assigned_seniors', [user.id]);
 
       if (relativesError) {
-        console.error('[care/checkin] Angehörigen-Abfrage fehlgeschlagen:', relativesError);
+        log.error('relatives_query_failed', relativesError, { userId: user.id });
       } else if (relatives && relatives.length > 0) {
         const notifyPromises = relatives.map((relative) =>
           sendCareNotification(supabase, {
@@ -182,7 +191,7 @@ export async function POST(request: NextRequest) {
       }
     } catch (notifyError) {
       // Benachrichtigungsfehler blockiert nicht die Check-in-Antwort
-      console.error('[care/checkin] Angehörigen-Benachrichtigung fehlgeschlagen:', notifyError);
+      log.error('notification_failed', notifyError, { userId: user.id });
     }
   }
 
@@ -200,14 +209,17 @@ export async function POST(request: NextRequest) {
       });
 
       if (sosError) {
-        console.error('[care/checkin] SOS-Erstellung fehlgeschlagen:', sosError);
+        log.error('auto_sos_failed', sosError, { userId: user.id });
+      } else {
+        log.info('auto_sos_created', { userId: user.id, source: 'checkin_need_help' });
       }
     } catch (e) {
-      console.error('[care/checkin] SOS fehlgeschlagen:', e);
+      log.error('auto_sos_exception', e, { userId: user.id });
     }
   }
 
   // Entschluesselt zurueckgeben
+  log.done(201, { checkinId: checkin.id as string, status });
   return NextResponse.json(decryptFields(checkin as Record<string, unknown>, CARE_CHECKINS_ENCRYPTED_FIELDS), { status: 201 });
 }
 

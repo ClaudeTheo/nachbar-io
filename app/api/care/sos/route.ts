@@ -9,6 +9,7 @@ import { canAccessFeature } from '@/lib/care/permissions';
 import { requireCareAccess } from '@/lib/care/api-helpers';
 import { encryptField, decryptFields, CARE_SOS_ALERTS_ENCRYPTED_FIELDS, CARE_SOS_RESPONSES_ENCRYPTED_FIELDS } from '@/lib/care/field-encryption';
 import { CARE_SOS_CATEGORIES, ESCALATION_LEVELS } from '@/lib/care/constants';
+import { createCareLogger } from '@/lib/care/logger';
 import type { CareSosCategory, CareSosSource } from '@/lib/care/types';
 
 // Aktive Status-Werte für die Standard-GET-Anfrage
@@ -22,6 +23,7 @@ const DEFAULT_ACTIVE_STATUSES = [
 
 // POST /api/care/sos — SOS auslösen
 export async function POST(request: NextRequest) {
+  const log = createCareLogger('care/sos/POST');
   const supabase = await createClient();
 
   // Auth-Check: Nur authentifizierte Nutzer dürfen SOS auslösen
@@ -30,6 +32,8 @@ export async function POST(request: NextRequest) {
   } = await supabase.auth.getUser();
 
   if (!user) {
+    log.warn('auth_failed');
+    log.done(401);
     return NextResponse.json({ error: 'Nicht authentifiziert' }, { status: 401 });
   }
 
@@ -86,9 +90,12 @@ export async function POST(request: NextRequest) {
     .single();
 
   if (insertError || !alert) {
-    console.error('[care/sos] SOS-Alert konnte nicht erstellt werden:', insertError);
+    log.error('db_insert_failed', insertError, { userId: user.id, category });
+    log.done(500);
     return NextResponse.json({ error: 'SOS konnte nicht ausgelöst werden' }, { status: 500 });
   }
+
+  log.info('sos_triggered', { userId: user.id, alertId: alert.id, category, source, isEmergency: validCategory.isEmergency });
 
   // Audit-Log schreiben (nicht-blockierend)
   try {
@@ -102,7 +109,7 @@ export async function POST(request: NextRequest) {
     });
   } catch (auditError) {
     // Audit-Fehler blockiert nicht den SOS-Prozess
-    console.error('[care/sos] Audit-Log konnte nicht geschrieben werden:', auditError);
+    log.warn('audit_log_failed', { alertId: alert.id });
   }
 
   // Level-1-Helfer (Nachbarn) benachrichtigen
@@ -116,8 +123,9 @@ export async function POST(request: NextRequest) {
       .contains('assigned_seniors', [user.id]);
 
     if (helpersError) {
-      console.error('[care/sos] Helfer-Abfrage fehlgeschlagen:', helpersError);
+      log.error('helpers_query_failed', helpersError, { alertId: alert.id });
     } else if (level1Helpers && level1Helpers.length > 0) {
+      log.info('helpers_notified', { alertId: alert.id, helperCount: level1Helpers.length, level: 1 });
       // Benachrichtigungsinhalt je nach Kategorie aufbauen
       const notificationTitle = validCategory.isEmergency
         ? `NOTFALL: ${validCategory.label}`
@@ -148,17 +156,18 @@ export async function POST(request: NextRequest) {
         .eq('id', alert.id);
 
       if (updateError) {
-        console.error('[care/sos] Status-Update auf "notified" fehlgeschlagen:', updateError);
+        log.error('status_update_failed', updateError, { alertId: alert.id, targetStatus: 'notified' });
       } else {
         alert.status = 'notified';
       }
     }
   } catch (notifyError) {
     // Benachrichtigungsfehler blockiert nicht die SOS-Antwort
-    console.error('[care/sos] Benachrichtigung der Helfer fehlgeschlagen:', notifyError);
+    log.error('notification_failed', notifyError, { alertId: alert.id });
   }
 
   // Entschluesselt zurueckgeben
+  log.done(201, { alertId: alert.id, status: alert.status });
   return NextResponse.json(decryptFields(alert, CARE_SOS_ALERTS_ENCRYPTED_FIELDS), { status: 201 });
 }
 
@@ -235,7 +244,7 @@ export async function GET(request: NextRequest) {
   const { data, error } = await query;
 
   if (error) {
-    console.error('[care/sos] Alerts-Abfrage fehlgeschlagen:', error);
+    console.error(JSON.stringify({ level: 'error', route: 'care/sos/GET', event: 'alerts_query_failed', error: error.message }));
     return NextResponse.json({ error: 'SOS-Alerts konnten nicht geladen werden' }, { status: 500 });
   }
 

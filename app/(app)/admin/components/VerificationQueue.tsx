@@ -34,17 +34,42 @@ export function VerificationQueue() {
   async function loadRequests() {
     setLoading(true);
     const supabase = createClient();
-    const { data, error } = await supabase
+
+    // verification_requests hat FKs zu auth.users (nicht public.users),
+    // daher separate Abfragen fuer Requests + Households und Users
+    const { data: rawRequests, error } = await supabase
       .from("verification_requests")
-      .select("*, user:users(display_name), household:households(street_name, house_number)")
+      .select("*, household:households(street_name, house_number)")
       .order("created_at", { ascending: false });
 
     if (error) {
       console.error("Fehler beim Laden:", error);
       toast.error("Fehler beim Laden der Anfragen");
-    } else {
-      setRequests((data ?? []) as unknown as VerificationRequest[]);
+      setLoading(false);
+      return;
     }
+
+    const rows = rawRequests ?? [];
+    // User-Display-Namen separat laden
+    const userIds = [...new Set(rows.map(r => r.user_id).filter(Boolean))];
+    let userMap: Record<string, string> = {};
+    if (userIds.length > 0) {
+      const { data: users } = await supabase
+        .from("users")
+        .select("id, display_name")
+        .in("id", userIds);
+      if (users) {
+        userMap = Object.fromEntries(users.map(u => [u.id, u.display_name]));
+      }
+    }
+
+    // Zusammenfuehren
+    const merged = rows.map(r => ({
+      ...r,
+      user: userMap[r.user_id] ? { display_name: userMap[r.user_id] } : undefined,
+    }));
+
+    setRequests(merged as unknown as VerificationRequest[]);
     setLoading(false);
   }
 

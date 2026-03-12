@@ -52,7 +52,7 @@ export async function POST(request: NextRequest) {
   // 3. Anfrage laden
   const { data: vRequest, error: fetchError } = await adminSupabase
     .from("verification_requests")
-    .select("*, user:users(display_name)")
+    .select("*, user:users!user_id(display_name)")
     .eq("id", requestId)
     .single();
 

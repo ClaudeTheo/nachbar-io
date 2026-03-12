@@ -12,7 +12,7 @@ const cspDirectives = [
   "style-src 'self' 'unsafe-inline'",
   "img-src 'self' data: blob:",
   "font-src 'self'",
-  `connect-src 'self' https://${supabaseDomain} wss://${supabaseDomain}`,
+  `connect-src 'self' https://${supabaseDomain} wss://${supabaseDomain} https://api.anthropic.com https://api.open-meteo.com https://api.twilio.com`,
   "worker-src 'self'",
   "manifest-src 'self'",
   "object-src 'none'",
@@ -51,6 +51,10 @@ const nextConfig: NextConfig = {
           {
             key: "Permissions-Policy",
             value: "camera=(), microphone=(), geolocation=(self)",
+          },
+          {
+            key: "Strict-Transport-Security",
+            value: "max-age=63072000; includeSubDomains; preload",
           },
         ],
       },

@@ -13,19 +13,35 @@ const CACHE_TTL_MS = 5000;
 
 /**
  * GET /api/care/health
- * Oeffentlicher Gesundheits-Check (kein Auth erforderlich).
- * Fuer Monitoring-Systeme und Status-Anzeigen.
+ * Gesundheits-Check (nur fuer authentifizierte Admins).
+ * Gibt interne System-Metriken zurueck.
  */
 export async function GET() {
   const now = Date.now();
 
-  // Cache pruefen
-  if (cachedResult && (now - cachedAt) < CACHE_TTL_MS) {
-    return NextResponse.json(cachedResult);
-  }
-
   try {
     const supabase = await createClient();
+
+    // SICHERHEIT: Auth + Admin-Check (M3)
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      return NextResponse.json({ overall: 'ok', timestamp: new Date().toISOString() });
+    }
+    const { data: adminCheck } = await supabase
+      .from('users')
+      .select('is_admin')
+      .eq('id', user.id)
+      .single();
+    if (!adminCheck?.is_admin) {
+      // Nicht-Admins bekommen nur den Gesamtstatus ohne Details
+      return NextResponse.json({ overall: 'ok', timestamp: new Date().toISOString() });
+    }
+
+    // Cache pruefen (nur fuer Admins relevant)
+    if (cachedResult && (now - cachedAt) < CACHE_TTL_MS) {
+      return NextResponse.json(cachedResult);
+    }
+
     const checks = await runCareHealthChecks(supabase);
 
     const hasError = checks.some(c => c.status === 'error');

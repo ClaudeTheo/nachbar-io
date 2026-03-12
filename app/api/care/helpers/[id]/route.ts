@@ -51,16 +51,33 @@ export async function PATCH(
     if (key in body) updates[key] = body[key];
   }
 
-  // Admin-Check fuer sicherheitskritische Felder (verification_status, role)
-  if (updates.verification_status || updates.role) {
-    const { data: adminCheck } = await supabase
-      .from('users')
-      .select('is_admin')
-      .eq('id', user.id)
-      .maybeSingle();
-    if (!adminCheck?.is_admin) {
-      return NextResponse.json({ error: 'Nur Admins koennen Helfer verifizieren oder Rollen aendern' }, { status: 403 });
-    }
+  // Helfer laden um Ownership zu pruefen
+  const { data: existingHelper } = await supabase
+    .from('care_helpers')
+    .select('user_id')
+    .eq('id', id)
+    .single();
+
+  if (!existingHelper) {
+    return NextResponse.json({ error: 'Helfer nicht gefunden' }, { status: 404 });
+  }
+
+  // Admin-Status pruefen
+  const { data: adminCheck } = await supabase
+    .from('users')
+    .select('is_admin')
+    .eq('id', user.id)
+    .maybeSingle();
+  const isAdmin = adminCheck?.is_admin === true;
+
+  // SICHERHEIT: Nur eigenes Profil oder Admin darf aendern
+  if (existingHelper.user_id !== user.id && !isAdmin) {
+    return NextResponse.json({ error: 'Kein Zugriff auf dieses Helfer-Profil' }, { status: 403 });
+  }
+
+  // Sicherheitskritische Felder (verification_status, role, assigned_seniors) nur fuer Admins
+  if ((updates.verification_status || updates.role || updates.assigned_seniors) && !isAdmin) {
+    return NextResponse.json({ error: 'Nur Admins koennen Verifizierung, Rollen oder Senior-Zuordnungen aendern' }, { status: 403 });
   }
 
   if (updates.verification_status === 'verified') {

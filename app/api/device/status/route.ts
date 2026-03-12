@@ -1,16 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@supabase/supabase-js";
 import { getWeather } from "@/lib/device/weather";
-
-// Service-Role Client (Token-basierte Auth, kein User-Session noetig)
-function getSupabase() {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!url || !key) {
-    throw new Error("SUPABASE_SERVICE_ROLE_KEY nicht konfiguriert");
-  }
-  return createClient(url, key);
-}
+import { authenticateDevice, isAuthError } from "@/lib/device/auth";
 
 // Kategorie-Label fuer das Device
 const CATEGORY_LABELS: Record<string, string> = {
@@ -34,29 +24,10 @@ function getGreeting(): string {
 }
 
 export async function GET(request: NextRequest) {
-  const token = request.nextUrl.searchParams.get("token");
-  if (!token || token.length < 16 || token.length > 128 || !/^[a-f0-9]+$/i.test(token)) {
-    return NextResponse.json({ error: "Ungueltiges Token-Format" }, { status: 401 });
-  }
-
-  const supabase = getSupabase();
-
-  // Token validieren und Haushalt ermitteln
-  const { data: device, error: tokenError } = await supabase
-    .from("device_tokens")
-    .select("id, household_id")
-    .eq("token", token)
-    .single();
-
-  if (tokenError || !device) {
-    return NextResponse.json({ error: "Ungültiger Token" }, { status: 401 });
-  }
-
-  // Last-seen aktualisieren
-  await supabase
-    .from("device_tokens")
-    .update({ last_seen_at: new Date().toISOString() })
-    .eq("id", device.id);
+  // Token-Auth: Authorization-Header > Query-Param (deprecated)
+  const authResult = await authenticateDevice(request);
+  if (isAuthError(authResult)) return authResult;
+  const { device, supabase } = authResult;
 
   // User-ID + Name des Haushalt-Eigentümers ermitteln
   const { data: member } = await supabase

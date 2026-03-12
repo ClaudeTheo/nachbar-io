@@ -58,6 +58,10 @@ export async function POST(request: NextRequest) {
   if (!title || title.length < 3 || title.length > 200) {
     return NextResponse.json({ error: "Titel muss 3-200 Zeichen lang sein" }, { status: 400 });
   }
+  // SICHERHEIT (H8): Beschreibung begrenzen
+  if (description && (typeof description !== "string" || description.length > 2000)) {
+    return NextResponse.json({ error: "Beschreibung darf maximal 2000 Zeichen lang sein" }, { status: 400 });
+  }
 
   // Household-Ownership pruefen (falls angegeben)
   if (household_id) {

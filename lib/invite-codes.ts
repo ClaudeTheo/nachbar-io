@@ -6,21 +6,25 @@ const ALPHABET = "ACDEFGHJKLMNPQRSTUVWXYZ2345679";
 // Format: XXXX-XXXX (8 Zeichen = 30^8 ≈ 656 Mrd. Kombinationen)
 const CODE_LENGTH = 8;
 
-// Sicheren Code generieren (Browser oder Server)
+// Sicheren Code generieren (Browser oder Server) — ohne Modulo-Bias
 export function generateSecureCode(): string {
-  const values = new Uint8Array(CODE_LENGTH);
-  if (typeof globalThis.crypto !== "undefined") {
-    globalThis.crypto.getRandomValues(values);
-  } else {
-    // Fallback fuer Umgebungen ohne Web Crypto API
-    for (let i = 0; i < CODE_LENGTH; i++) {
-      values[i] = Math.floor(Math.random() * 256);
-    }
-  }
+  const alphabetLen = ALPHABET.length; // 29
+  // Rejection-Sampling: Nur Werte < groesstes Vielfaches von alphabetLen akzeptieren
+  const maxValid = Math.floor(256 / alphabetLen) * alphabetLen; // 232 (= 8 * 29)
 
   let code = "";
   for (let i = 0; i < CODE_LENGTH; i++) {
-    code += ALPHABET[values[i] % ALPHABET.length];
+    let value: number;
+    do {
+      const buf = new Uint8Array(1);
+      if (typeof globalThis.crypto !== "undefined") {
+        globalThis.crypto.getRandomValues(buf);
+      } else {
+        buf[0] = Math.floor(Math.random() * 256);
+      }
+      value = buf[0];
+    } while (value >= maxValid); // Werte >= 232 verwerfen (Bias-Korrektur)
+    code += ALPHABET[value % alphabetLen];
   }
 
   return code;
@@ -63,16 +67,23 @@ export function isNewCodeFormat(code: string): boolean {
   return [...clean].every((ch) => ALPHABET.includes(ch));
 }
 
-// Temporaeres Passwort generieren (fuer Admin-Kontoerstellung)
+// Temporaeres Passwort generieren (fuer Admin-Kontoerstellung) — ohne Modulo-Bias
 export function generateTempPassword(): string {
   const chars = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789";
-  const values = new Uint8Array(12);
-  if (typeof globalThis.crypto !== "undefined") {
-    globalThis.crypto.getRandomValues(values);
-  } else {
-    for (let i = 0; i < 12; i++) {
-      values[i] = Math.floor(Math.random() * 256);
-    }
+  const maxValid = Math.floor(256 / chars.length) * chars.length;
+  let password = "";
+  for (let i = 0; i < 12; i++) {
+    let value: number;
+    do {
+      const buf = new Uint8Array(1);
+      if (typeof globalThis.crypto !== "undefined") {
+        globalThis.crypto.getRandomValues(buf);
+      } else {
+        buf[0] = Math.floor(Math.random() * 256);
+      }
+      value = buf[0];
+    } while (value >= maxValid);
+    password += chars[value % chars.length];
   }
-  return Array.from(values, (v) => chars[v % chars.length]).join("");
+  return password;
 }

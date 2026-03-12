@@ -23,6 +23,22 @@ export async function POST(request: NextRequest) {
     );
   }
 
+  // SICHERHEIT (M5): Push-Endpoint muss HTTPS sein
+  if (typeof endpoint !== "string" || !endpoint.startsWith("https://")) {
+    return NextResponse.json(
+      { error: "Push-Endpoint muss HTTPS verwenden" },
+      { status: 400 }
+    );
+  }
+
+  // Laengenbeschraenkung fuer Endpoint-URL
+  if (endpoint.length > 2048) {
+    return NextResponse.json(
+      { error: "Push-Endpoint zu lang" },
+      { status: 400 }
+    );
+  }
+
   // Bestehende Subscription löschen (falls vorhanden)
   await supabase
     .from("push_subscriptions")

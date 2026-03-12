@@ -1,35 +1,24 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@supabase/supabase-js";
-
-function getSupabase() {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!url || !key) {
-    throw new Error("SUPABASE_SERVICE_ROLE_KEY nicht konfiguriert");
-  }
-  return createClient(url, key);
-}
+import { authenticateDevice, isAuthError } from "@/lib/device/auth";
 
 export async function POST(request: NextRequest) {
   const body = await request.json();
-  const { token, alertId } = body;
+  const { alertId } = body;
 
-  if (!token || !alertId) {
-    return NextResponse.json({ error: "Token oder alertId fehlt" }, { status: 400 });
+  if (!alertId || typeof alertId !== "string") {
+    return NextResponse.json({ error: "alertId fehlt oder ungueltig" }, { status: 400 });
   }
 
-  const supabase = getSupabase();
-
-  // Token validieren
-  const { data: device, error: tokenError } = await supabase
-    .from("device_tokens")
-    .select("id, household_id")
-    .eq("token", token)
-    .single();
-
-  if (tokenError || !device) {
-    return NextResponse.json({ error: "Ungültiger Token" }, { status: 401 });
+  // UUID-Format validieren (N6: alertId als UUID validieren)
+  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  if (!uuidRegex.test(alertId)) {
+    return NextResponse.json({ error: "alertId muss eine gueltige UUID sein" }, { status: 400 });
   }
+
+  // Token-Auth: Authorization-Header > Body > Query-Param
+  const authResult = await authenticateDevice(request, body);
+  if (isAuthError(authResult)) return authResult;
+  const { device, supabase } = authResult;
 
   // Alert als gesehen markieren
   const { error: ackError } = await supabase

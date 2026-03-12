@@ -34,6 +34,13 @@ export async function GET(request: NextRequest) {
       if (!careRole) return NextResponse.json({ error: 'Kein Zugriff auf diesen Senior' }, { status: 403 });
     }
     query = query.contains('assigned_seniors', [seniorId]);
+  } else {
+    // SICHERHEIT (M2): Ohne senior_id nur eigene Helfer-Daten oder Admin sieht alle
+    const { data: adminCheck } = await supabase.from('users').select('is_admin').eq('id', user.id).single();
+    if (!adminCheck?.is_admin) {
+      // Nicht-Admins sehen nur sich selbst oder Helfer die ihnen zugeordnet sind
+      query = query.or(`user_id.eq.${user.id},assigned_seniors.cs.{${user.id}}`);
+    }
   }
 
   const { data, error } = await query;

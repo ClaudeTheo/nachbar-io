@@ -41,7 +41,13 @@ const TEST_USERS = [
   { num: 10, name: "Test Zehn",   householdCode: "REBB0015" },
 ];
 
-const PASSWORD = "Thomas0815";
+// SICHERHEIT: Passwort aus Umgebungsvariable laden (nicht hardcoden!)
+const PASSWORD = process.env.TEST_USER_PASSWORD;
+if (!PASSWORD) {
+  console.error("\n❌ TEST_USER_PASSWORD nicht gesetzt!");
+  console.error("   Ausfuehrung: TEST_USER_PASSWORD=MeinPasswort npx tsx scripts/create-test-users.ts\n");
+  process.exit(1);
+}
 
 async function main() {
   console.log("\n🏘️  Nachbar.io — Test-Accounts erstellen\n");

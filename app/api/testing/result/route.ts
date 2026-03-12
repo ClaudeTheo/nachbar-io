@@ -150,6 +150,26 @@ export async function PATCH(request: NextRequest) {
     return NextResponse.json({ error: `Ungueltiger Issue-Typ` }, { status: 400 });
   }
 
+  // SICHERHEIT (H10): Pruefen ob das Ergebnis dem Nutzer gehoert
+  const { data: existingResult } = await supabase
+    .from('test_results')
+    .select('id, session_id, test_sessions!inner(user_id)')
+    .eq('id', body.result_id)
+    .single();
+
+  if (!existingResult) {
+    return NextResponse.json({ error: 'Ergebnis nicht gefunden' }, { status: 404 });
+  }
+
+  const sessionOwner = (existingResult as unknown as { test_sessions: { user_id: string } }).test_sessions?.user_id;
+  if (sessionOwner !== user.id) {
+    // Admin darf alles aendern
+    const { data: adminCheck } = await supabase.from('users').select('is_admin').eq('id', user.id).single();
+    if (!adminCheck?.is_admin) {
+      return NextResponse.json({ error: 'Kein Zugriff auf dieses Testergebnis' }, { status: 403 });
+    }
+  }
+
   // Update-Objekt bauen (nur gesetzte Felder)
   const updateData: Record<string, unknown> = { updated_at: new Date().toISOString() };
   if (body.status !== undefined) updateData.status = body.status;

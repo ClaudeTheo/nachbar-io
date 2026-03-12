@@ -1,36 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@supabase/supabase-js";
-
-// Service-Role Client (Token-basierte Auth, kein User-Session noetig)
-function getSupabase() {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!url || !key) {
-    throw new Error("SUPABASE_SERVICE_ROLE_KEY nicht konfiguriert");
-  }
-  return createClient(url, key);
-}
+import { authenticateDevice, isAuthError } from "@/lib/device/auth";
 
 export async function POST(request: NextRequest) {
   const body = await request.json();
-  const { token } = body;
 
-  if (!token || typeof token !== "string" || token.length < 16 || token.length > 128 || !/^[a-f0-9]+$/i.test(token)) {
-    return NextResponse.json({ error: "Ungueltiges Token-Format" }, { status: 401 });
-  }
-
-  const supabase = getSupabase();
-
-  // Token validieren
-  const { data: device, error: tokenError } = await supabase
-    .from("device_tokens")
-    .select("id, household_id")
-    .eq("token", token)
-    .single();
-
-  if (tokenError || !device) {
-    return NextResponse.json({ error: "Ungültiger Token" }, { status: 401 });
-  }
+  // Token-Auth: Authorization-Header > Body > Query-Param
+  const authResult = await authenticateDevice(request, body);
+  if (isAuthError(authResult)) return authResult;
+  const { device, supabase } = authResult;
 
   const now = new Date().toISOString();
 
@@ -93,11 +70,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Check-in fehlgeschlagen" }, { status: 500 });
   }
 
-  // Last-seen aktualisieren
-  await supabase
-    .from("device_tokens")
-    .update({ last_seen_at: now })
-    .eq("id", device.id);
+  // last_seen_at wird bereits in authenticateDevice() aktualisiert
 
   return NextResponse.json({
     success: true,

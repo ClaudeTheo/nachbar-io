@@ -18,7 +18,7 @@ export async function GET(
 
   const { data, error } = await supabase
     .from('care_helpers')
-    .select('*, user:users(display_name, avatar_url)')
+    .select('*, user:users!care_helpers_user_id_fkey(display_name, avatar_url)')
     .eq('id', id)
     .single();
 
@@ -90,7 +90,7 @@ export async function PATCH(
     .from('care_helpers')
     .update(updates)
     .eq('id', id)
-    .select('*, user:users(display_name, avatar_url)')
+    .select('*, user:users!care_helpers_user_id_fkey(display_name, avatar_url)')
     .single();
 
   if (error) return NextResponse.json({ error: 'Aktualisierung fehlgeschlagen' }, { status: 500 });

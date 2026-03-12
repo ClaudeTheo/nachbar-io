@@ -22,7 +22,7 @@ export async function GET(request: NextRequest) {
 
   let query = supabase
     .from('care_helpers')
-    .select('*, user:users(display_name, avatar_url)')
+    .select('*, user:users!care_helpers_user_id_fkey(display_name, avatar_url)')
     .order('created_at', { ascending: false });
 
   if (status !== 'all') query = query.eq('verification_status', status);
@@ -87,7 +87,7 @@ export async function POST(request: NextRequest) {
       skills,
       availability: availability ?? null,
     })
-    .select('*, user:users(display_name, avatar_url)')
+    .select('*, user:users!care_helpers_user_id_fkey(display_name, avatar_url)')
     .single();
 
   if (insertError || !helper) {

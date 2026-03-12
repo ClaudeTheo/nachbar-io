@@ -45,9 +45,11 @@ export function SystemHealth({ stats, users, households }: SystemHealthProps) {
   const [healthTimestamp, setHealthTimestamp] = useState<string | null>(null);
   const [overallStatus, setOverallStatus] = useState<"ok" | "warn" | "error">("ok");
 
-  // Health-Checks beim Laden ausfuehren
+  // Health-Checks beim Laden ausfuehren + Auto-Refresh alle 30 Sekunden
   useEffect(() => {
     runHealthChecks();
+    const interval = setInterval(runHealthChecks, 30_000);
+    return () => clearInterval(interval);
   }, []);
 
   async function runHealthChecks() {
@@ -185,6 +187,46 @@ export function SystemHealth({ stats, users, households }: SystemHealthProps) {
           )}
         </CardContent>
       </Card>
+
+      {/* Care-Modul Cron-Monitoring (FMEA Massnahme) */}
+      {healthChecks.filter(c => c.name.startsWith("Cron:")).length > 0 && (
+        <Card>
+          <CardContent className="p-4">
+            <h3 className="text-sm font-semibold text-anthrazit mb-3 flex items-center gap-2">
+              <Clock className="h-4 w-4" /> Care-Modul Monitoring
+              <Badge variant="secondary" className="text-[10px]">Auto-Refresh 30s</Badge>
+            </h3>
+            <div className="space-y-2.5">
+              {healthChecks.filter(c => c.name.startsWith("Cron:")).map((cron, i) => (
+                <div key={i} className={`flex items-center justify-between p-2.5 rounded-lg border ${
+                  cron.status === "error" ? "border-red-200 bg-red-50" :
+                  cron.status === "warn" ? "border-amber-200 bg-amber-50" :
+                  "border-green-200 bg-green-50"
+                }`}>
+                  <div className="flex items-center gap-2.5">
+                    <div className={`h-3 w-3 rounded-full ${
+                      cron.status === "ok" ? "bg-quartier-green" :
+                      cron.status === "warn" ? "bg-alert-amber animate-pulse" :
+                      "bg-emergency-red animate-pulse"
+                    }`} />
+                    <div>
+                      <span className="text-sm font-medium">{cron.name.replace("Cron: ", "")}</span>
+                      <p className="text-[11px] text-muted-foreground">{cron.detail}</p>
+                    </div>
+                  </div>
+                  <Badge variant={cron.status === "ok" ? "secondary" : "destructive"} className="text-[10px] shrink-0">
+                    {cron.status === "ok" ? "OK" : cron.status === "warn" ? "WARNUNG" : "FEHLER"}
+                  </Badge>
+                </div>
+              ))}
+            </div>
+            <p className="text-[10px] text-muted-foreground mt-2 flex items-center gap-1">
+              <AlertTriangle className="h-3 w-3" />
+              Bei FEHLER-Status wird automatisch ein Admin-Alert ausgeloest (FMEA FM-SYS-01)
+            </p>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Konfigurationspruefung */}
       <Card>

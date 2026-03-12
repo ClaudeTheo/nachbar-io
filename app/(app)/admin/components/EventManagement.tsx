@@ -222,9 +222,12 @@ export function EventManagement() {
 
             return (
               <Card key={event.id} className={`overflow-hidden ${eventIsPast ? "opacity-60" : ""}`}>
-                <button
-                  className="flex w-full items-start gap-3 p-3 text-left hover:bg-muted/30"
+                <div
+                  role="button"
+                  tabIndex={0}
+                  className="flex w-full items-start gap-3 p-3 text-left hover:bg-muted/30 cursor-pointer"
                   onClick={() => loadParticipants(event.id)}
+                  onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); loadParticipants(event.id); } }}
                 >
                   <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-indigo-50 text-xl">
                     {cat?.icon ?? "📅"}
@@ -282,7 +285,7 @@ export function EventManagement() {
                     </Button>
                     {isExpanded ? <ChevronUp className="h-4 w-4 text-muted-foreground" /> : <ChevronDown className="h-4 w-4 text-muted-foreground" />}
                   </div>
-                </button>
+                </div>
 
                 {/* Erweiterter Bereich */}
                 {isExpanded && (

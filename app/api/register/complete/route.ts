@@ -50,8 +50,6 @@ export async function POST(request: NextRequest) {
       verificationMethod,
       inviteCode,
       referrerId,
-      // Legacy: userId fuer alte Clients die noch client-seitig signUp machen
-      userId: legacyUserId,
     } = body;
     let { householdId } = body;
 
@@ -98,10 +96,9 @@ export async function POST(request: NextRequest) {
       }
 
       userId = newUser.user.id;
-    } else if (legacyUserId) {
-      // Legacy-Fallback: Client hat signUp bereits gemacht
-      userId = legacyUserId;
     } else {
+      // SICHERHEIT: legacyUserId-Fallback entfernt (Account-Hijacking-Risiko)
+      // Clients muessen email + password senden fuer serverseitige User-Erstellung
       return NextResponse.json(
         { error: "E-Mail und Passwort sind erforderlich." },
         { status: 400 }

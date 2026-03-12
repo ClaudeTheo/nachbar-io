@@ -1,7 +1,7 @@
 // app/api/care/reports/[id]/route.ts
 // Nachbar.io — Einzelnen Bericht laden
 
-import { requireAuth, errorResponse, successResponse } from '@/lib/care/api-helpers';
+import { requireAuth, requireCareAccess, errorResponse, successResponse } from '@/lib/care/api-helpers';
 
 /**
  * GET /api/care/reports/[id]
@@ -24,5 +24,12 @@ export async function GET(
     .single();
 
   if (error || !data) return errorResponse('Dokument nicht gefunden', 404);
+
+  // SICHERHEIT: Zugriffspruefung — nur Senior, zugeordnete Helfer oder Admin
+  if (data.senior_id !== auth.user.id) {
+    const role = await requireCareAccess(supabase, data.senior_id);
+    if (!role) return errorResponse('Kein Zugriff auf dieses Dokument', 403);
+  }
+
   return successResponse(data);
 }

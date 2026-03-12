@@ -206,11 +206,28 @@ export async function GET(request: NextRequest) {
     .order('created_at', { ascending: false })
     .limit(50);
 
-  // Optionaler Filter nach Senior-ID (mit Zugriffspruefung)
+  // SICHERHEIT: Zugriffskontrolle — ohne senior_id nur eigene Alerts oder als Helfer zugeordnete
   if (seniorId) {
     const role = await requireCareAccess(supabase, seniorId);
     if (!role) return NextResponse.json({ error: 'Kein Zugriff auf diesen Senior' }, { status: 403 });
     query = query.eq('senior_id', seniorId);
+  } else {
+    // Pruefe ob User Admin ist
+    const { data: userData } = await supabase.from('users').select('is_admin').eq('id', user.id).single();
+    if (!userData?.is_admin) {
+      // Nicht-Admin: Nur eigene Alerts + Alerts von zugeordneten Senioren
+      const { data: helperData } = await supabase
+        .from('care_helpers')
+        .select('assigned_seniors')
+        .eq('user_id', user.id)
+        .eq('verification_status', 'verified')
+        .maybeSingle();
+
+      const assignedSeniors: string[] = helperData?.assigned_seniors ?? [];
+      const allowedIds = [user.id, ...assignedSeniors];
+      query = query.in('senior_id', allowedIds);
+    }
+    // Admins sehen alle Alerts (kein Filter)
   }
 
   const { data, error } = await query;

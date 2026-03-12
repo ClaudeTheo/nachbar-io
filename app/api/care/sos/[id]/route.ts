@@ -4,6 +4,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { writeAuditLog } from '@/lib/care/audit';
+import { requireCareAccess } from '@/lib/care/api-helpers';
 import type { CareSosStatus } from '@/lib/care/types';
 
 // Erlaubte Status-Übergänge für den PATCH-Endpunkt
@@ -57,6 +58,12 @@ export async function GET(
     return NextResponse.json({ error: 'SOS-Alert konnte nicht geladen werden' }, { status: 500 });
   }
 
+  // SICHERHEIT: Zugriffspruefung — nur Senior, zugeordnete Helfer oder Admin
+  if (alert.senior_id !== user.id) {
+    const role = await requireCareAccess(supabase, alert.senior_id);
+    if (!role) return NextResponse.json({ error: 'Kein Zugriff auf diesen SOS-Alert' }, { status: 403 });
+  }
+
   return NextResponse.json(alert);
 }
 
@@ -103,6 +110,14 @@ export async function PATCH(
   }
 
   const newStatus = status as 'resolved' | 'cancelled';
+
+  // SICHERHEIT: Zugriffspruefung — nur Senior, zugeordnete Helfer oder Admin duerfen Status aendern
+  const { data: alertCheck } = await supabase.from('care_sos_alerts').select('senior_id').eq('id', id).single();
+  if (!alertCheck) return NextResponse.json({ error: 'SOS-Alert nicht gefunden' }, { status: 404 });
+  if (alertCheck.senior_id !== user.id) {
+    const role = await requireCareAccess(supabase, alertCheck.senior_id);
+    if (!role) return NextResponse.json({ error: 'Kein Zugriff auf diesen SOS-Alert' }, { status: 403 });
+  }
 
   // Update-Objekt aufbauen — bei 'resolved' Resolver und Zeitstempel setzen
   const updatePayload: Record<string, unknown> = {

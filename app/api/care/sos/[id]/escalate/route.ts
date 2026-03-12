@@ -5,6 +5,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { writeAuditLog } from '@/lib/care/audit';
 import { sendCareNotification } from '@/lib/care/notifications';
+import { requireCareAccess } from '@/lib/care/api-helpers';
 import { getNextEscalationLevel, getEscalationMeta } from '@/lib/care/escalation';
 
 // POST /api/care/sos/[id]/escalate — SOS-Alert manuell eskalieren
@@ -37,6 +38,12 @@ export async function POST(
     }
     console.error('[care/sos/escalate] Alert-Abfrage fehlgeschlagen:', alertError);
     return NextResponse.json({ error: 'SOS-Alert konnte nicht geladen werden' }, { status: 500 });
+  }
+
+  // SICHERHEIT: Nur Senior, zugeordnete Helfer oder Admin duerfen eskalieren
+  if (alert.senior_id !== user.id) {
+    const role = await requireCareAccess(supabase, alert.senior_id);
+    if (!role) return NextResponse.json({ error: 'Kein Zugriff auf diesen SOS-Alert' }, { status: 403 });
   }
 
   const fromLevel: number = alert.current_escalation_level ?? 1;

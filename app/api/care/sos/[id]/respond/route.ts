@@ -67,6 +67,26 @@ export async function POST(
     return NextResponse.json({ error: 'SOS-Alert konnte nicht geladen werden' }, { status: 500 });
   }
 
+  // SICHERHEIT: Pruefe ob der Nutzer ein verifizierter Helfer fuer diesen Senior ist
+  if (alert.senior_id !== user.id) {
+    const { data: helperCheck } = await supabase
+      .from('care_helpers')
+      .select('id, assigned_seniors')
+      .eq('user_id', user.id)
+      .eq('verification_status', 'verified')
+      .maybeSingle();
+
+    const isAdmin = await supabase.from('users').select('is_admin').eq('id', user.id).single();
+    const isAssignedHelper = helperCheck?.assigned_seniors?.includes(alert.senior_id);
+
+    if (!isAssignedHelper && !isAdmin?.data?.is_admin) {
+      return NextResponse.json(
+        { error: 'Nur verifizierte Helfer duerfen auf SOS-Alerts reagieren' },
+        { status: 403 }
+      );
+    }
+  }
+
   // Reaktion in der Datenbank speichern
   const { data: response, error: insertError } = await supabase
     .from('care_sos_responses')

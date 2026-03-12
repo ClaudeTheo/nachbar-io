@@ -4,6 +4,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { writeAuditLog } from '@/lib/care/audit';
+import { requireCareAccess } from '@/lib/care/api-helpers';
 
 // GET /api/care/appointments/[id]
 export async function GET(
@@ -24,6 +25,12 @@ export async function GET(
   if (error) {
     if (error.code === 'PGRST116') return NextResponse.json({ error: 'Termin nicht gefunden' }, { status: 404 });
     return NextResponse.json({ error: 'Abfrage fehlgeschlagen' }, { status: 500 });
+  }
+
+  // SICHERHEIT: Zugriffspruefung — nur Senior selbst, zugeordnete Helfer oder Admin
+  if (data.senior_id !== user.id) {
+    const role = await requireCareAccess(supabase, data.senior_id);
+    if (!role) return NextResponse.json({ error: 'Kein Zugriff auf diesen Termin' }, { status: 403 });
   }
 
   return NextResponse.json(data);
@@ -52,6 +59,14 @@ export async function PATCH(
 
   if (Object.keys(updates).length === 0) {
     return NextResponse.json({ error: 'Keine aenderbaren Felder angegeben' }, { status: 400 });
+  }
+
+  // SICHERHEIT: Zugriffspruefung vor dem Update
+  const { data: existing } = await supabase.from('care_appointments').select('senior_id').eq('id', id).single();
+  if (!existing) return NextResponse.json({ error: 'Termin nicht gefunden' }, { status: 404 });
+  if (existing.senior_id !== user.id) {
+    const role = await requireCareAccess(supabase, existing.senior_id);
+    if (!role) return NextResponse.json({ error: 'Kein Zugriff auf diesen Termin' }, { status: 403 });
   }
 
   const { data: appointment, error } = await supabase
@@ -98,6 +113,12 @@ export async function DELETE(
   if (fetchError) {
     if (fetchError.code === 'PGRST116') return NextResponse.json({ error: 'Termin nicht gefunden' }, { status: 404 });
     return NextResponse.json({ error: 'Abfrage fehlgeschlagen' }, { status: 500 });
+  }
+
+  // SICHERHEIT: Zugriffspruefung vor dem Loeschen
+  if (existing.senior_id !== user.id) {
+    const role = await requireCareAccess(supabase, existing.senior_id);
+    if (!role) return NextResponse.json({ error: 'Kein Zugriff auf diesen Termin' }, { status: 403 });
   }
 
   const { error: deleteError } = await supabase

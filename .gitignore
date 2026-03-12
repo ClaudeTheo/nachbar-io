@@ -48,4 +48,6 @@ test-results/
 
 # Tool-generated
 docs/superpowers/
-.github/
+
+# GitHub Actions Workflows erlauben
+# .github/ — NICHT mehr ignoriert, wird fuer CI/CD benoetigt

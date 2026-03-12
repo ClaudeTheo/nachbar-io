@@ -156,7 +156,9 @@ export async function uploadCategoryImage(
 }
 
 // Test-Screenshot hochladen
+// Groesseres Limit: iPhone-Fotos sind oft 3-8 MB, Kompression reduziert auf <500 KB
 export const SCREENSHOT_DIMENSION = 1600; // px (Screenshots etwas groesser fuer Lesbarkeit)
+export const MAX_SCREENSHOT_SIZE = 20 * 1024 * 1024; // 20 MB (vor Kompression)
 
 export async function uploadTestScreenshot(
   supabase: SupabaseClient,
@@ -164,8 +166,13 @@ export async function uploadTestScreenshot(
   testPointId: string,
   file: File
 ): Promise<string> {
-  const validationError = validateImageFile(file);
-  if (validationError) throw new Error(validationError);
+  // Typ-Pruefung (aber groessere Dateien erlauben, da wir komprimieren)
+  if (!ALLOWED_TYPES.includes(file.type) && file.type !== "image/heic" && file.type !== "image/heif" && file.type !== "") {
+    throw new Error("Bitte wählen Sie ein Bild im Format JPEG, PNG oder WebP.");
+  }
+  if (file.size > MAX_SCREENSHOT_SIZE) {
+    throw new Error("Das Bild ist zu groß. Maximale Größe: 20 MB.");
+  }
 
   const blob = await compressImage(file, SCREENSHOT_DIMENSION);
   const ext = blob.type === "image/webp" ? "webp" : "jpg";

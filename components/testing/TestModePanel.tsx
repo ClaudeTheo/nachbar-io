@@ -368,6 +368,7 @@ function ResultEditor({
   const [saving, setSaving] = useState(false);
 
   const showDetails = status === "failed" || status === "partial";
+  const showScreenshot = status !== "open"; // Screenshot fuer alle Status ausser "offen"
 
   // Screenshot hochladen
   const handleScreenshot = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -443,7 +444,7 @@ function ResultEditor({
           })}
       </div>
 
-      {/* Erweiterte Details bei failed/partial */}
+      {/* Bug-Details bei failed/partial: Schweregrad + Art */}
       {showDetails && (
         <>
           {/* Schweregrad */}
@@ -481,72 +482,76 @@ function ResultEditor({
               ))}
             </div>
           </div>
-
-          {/* Kommentar */}
-          <div className="mb-2">
-            <label className="mb-1 block text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
-              <MessageSquare className="mr-1 inline h-3 w-3" />Kommentar
-            </label>
-            <textarea
-              value={comment}
-              onChange={e => setComment(e.target.value)}
-              placeholder="Was genau ist das Problem?"
-              className="w-full resize-none rounded-lg border bg-gray-50 px-3 py-2 text-xs placeholder:text-gray-400 focus:border-quartier-green focus:outline-none focus:ring-1 focus:ring-quartier-green/30"
-              rows={2}
-              maxLength={5000}
-            />
-          </div>
-
-          {/* Screenshot */}
-          <div className="mb-2">
-            <label className="mb-1 block text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
-              <Camera className="mr-1 inline h-3 w-3" />Screenshot
-            </label>
-
-            {screenshotUrl ? (
-              // Vorschau mit Entfernen-Button
-              <div className="relative inline-block">
-                <img
-                  src={screenshotUrl}
-                  alt="Screenshot"
-                  className="h-24 w-auto rounded-lg border object-cover"
-                />
-                <button
-                  onClick={removeScreenshot}
-                  className="absolute -right-1.5 -top-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-white shadow-sm hover:bg-red-600"
-                  aria-label="Screenshot entfernen"
-                >
-                  <Trash2 className="h-3 w-3" />
-                </button>
-              </div>
-            ) : (
-              // Upload-Button
-              <label className={`flex cursor-pointer items-center gap-1.5 rounded-lg border border-dashed px-3 py-2 text-xs transition-colors ${
-                uploading ? "bg-gray-50 text-muted-foreground" : "text-muted-foreground hover:border-quartier-green hover:bg-quartier-green/5 hover:text-quartier-green"
-              }`}>
-                {uploading ? (
-                  <>
-                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                    Wird hochgeladen...
-                  </>
-                ) : (
-                  <>
-                    <Camera className="h-3.5 w-3.5" />
-                    Foto aufnehmen oder auswaehlen
-                  </>
-                )}
-                <input
-                  type="file"
-                  accept="image/*"
-                  capture="environment"
-                  onChange={handleScreenshot}
-                  disabled={uploading}
-                  className="hidden"
-                />
-              </label>
-            )}
-          </div>
         </>
+      )}
+
+      {/* Kommentar — fuer alle Status ausser "offen" */}
+      {showScreenshot && (
+        <div className="mb-2">
+          <label className="mb-1 block text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
+            <MessageSquare className="mr-1 inline h-3 w-3" />Kommentar
+          </label>
+          <textarea
+            value={comment}
+            onChange={e => setComment(e.target.value)}
+            placeholder={showDetails ? "Was genau ist das Problem?" : "Optionaler Kommentar"}
+            className="w-full resize-none rounded-lg border bg-gray-50 px-3 py-2 text-xs placeholder:text-gray-400 focus:border-quartier-green focus:outline-none focus:ring-1 focus:ring-quartier-green/30"
+            rows={2}
+            maxLength={5000}
+          />
+        </div>
+      )}
+
+      {/* Screenshot — fuer alle Status ausser "offen" verfuegbar */}
+      {showScreenshot && (
+        <div className="mb-2">
+          <label className="mb-1 block text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
+            <Camera className="mr-1 inline h-3 w-3" />Screenshot
+          </label>
+
+          {screenshotUrl ? (
+            // Vorschau mit Entfernen-Button
+            <div className="relative inline-block">
+              <img
+                src={screenshotUrl}
+                alt="Screenshot"
+                className="h-24 w-auto rounded-lg border object-cover"
+              />
+              <button
+                onClick={removeScreenshot}
+                className="absolute -right-1.5 -top-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-white shadow-sm hover:bg-red-600"
+                aria-label="Screenshot entfernen"
+              >
+                <Trash2 className="h-3 w-3" />
+              </button>
+            </div>
+          ) : (
+            // Upload-Button
+            <label className={`flex cursor-pointer items-center gap-1.5 rounded-lg border border-dashed px-3 py-2 text-xs transition-colors ${
+              uploading ? "bg-gray-50 text-muted-foreground" : "text-muted-foreground hover:border-quartier-green hover:bg-quartier-green/5 hover:text-quartier-green"
+            }`}>
+              {uploading ? (
+                <>
+                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                  Wird hochgeladen...
+                </>
+              ) : (
+                <>
+                  <Camera className="h-3.5 w-3.5" />
+                  Foto aufnehmen oder auswaehlen
+                </>
+              )}
+              <input
+                type="file"
+                accept="image/*"
+                capture="environment"
+                onChange={handleScreenshot}
+                disabled={uploading}
+                className="hidden"
+              />
+            </label>
+          )}
+        </div>
       )}
 
       {/* Speichern / Abbrechen */}

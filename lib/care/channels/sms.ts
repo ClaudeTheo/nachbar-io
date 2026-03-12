@@ -16,7 +16,11 @@ const TWILIO_FROM = process.env.TWILIO_PHONE_NUMBER;
  * Pruefen ob Twilio konfiguriert ist.
  */
 export function isTwilioConfigured(): boolean {
-  return !!(TWILIO_SID && TWILIO_AUTH_TOKEN && TWILIO_FROM);
+  return !!(
+    TWILIO_SID && TWILIO_SID.startsWith('AC') &&
+    TWILIO_AUTH_TOKEN && TWILIO_AUTH_TOKEN.length > 20 &&
+    TWILIO_FROM
+  );
 }
 
 /**

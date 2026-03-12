@@ -9,7 +9,7 @@ const inter = Inter({
   subsets: ["latin"],
 });
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://nachbar.io";
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://nachbar-io.vercel.app";
 
 export const metadata: Metadata = {
   title: "Nachbar.io — Dein digitaler Dorfplatz",

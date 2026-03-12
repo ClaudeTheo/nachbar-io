@@ -5,6 +5,9 @@ import "@testing-library/jest-dom/vitest";
 import { vi } from "vitest";
 import React from "react";
 
+// Test-Encryption-Key fuer care/crypto Tests (32 Bytes = 64 Hex-Zeichen)
+process.env.CARE_ENCRYPTION_KEY = process.env.CARE_ENCRYPTION_KEY || "0".repeat(64);
+
 // Next.js Navigation Mocks
 vi.mock("next/navigation", () => ({
   useRouter: () => ({

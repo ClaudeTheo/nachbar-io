@@ -4,28 +4,33 @@ import { useEffect, useRef, useCallback } from "react";
 import { Phone } from "lucide-react";
 
 /**
- * KRITISCHE KOMPONENTE: EmergencyBanner
+ * KRITISCHE KOMPONENTE: EmergencyBanner (FMEA FM-NB-02)
  *
  * Zeigt den Notruf-Hinweis bei lebensbedrohlichen Situationen.
  * Muss IMMER angezeigt werden BEVOR andere Aktionen moeglich sind.
+ *
+ * SICHERHEIT: Banner kann NICHT geschlossen werden ohne explizite Bestaetigung.
+ * Escape-Taste ist DEAKTIVIERT (FMEA-Massnahme: RPZ 60 → 12).
+ * Zwei explizite Buttons: "Notruf gerufen" vs. "Kein Notruf noetig"
  *
  * Regel: Bei Feuer, medizinischem Notfall oder Einbruch → 112/110 zuerst.
  * Diese Regel ist NICHT verhandelbar.
  */
 
 interface EmergencyBannerProps {
-  onAcknowledge: () => void;
+  onAcknowledge: (calledEmergency?: boolean) => void;
 }
 
 export function EmergencyBanner({ onAcknowledge }: EmergencyBannerProps) {
   const dialogRef = useRef<HTMLDivElement>(null);
   const firstFocusRef = useRef<HTMLAnchorElement>(null);
 
-  // Focus-Trap: Tab innerhalb des Modals halten
+  // Focus-Trap: Tab innerhalb des Modals halten, Escape BLOCKIERT (FMEA FM-NB-02)
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
+      // Escape absichtlich blockiert — Banner darf nur per Button geschlossen werden
       if (e.key === "Escape") {
-        onAcknowledge();
+        e.preventDefault();
         return;
       }
 
@@ -45,7 +50,7 @@ export function EmergencyBanner({ onAcknowledge }: EmergencyBannerProps) {
         }
       }
     },
-    [onAcknowledge]
+    []
   );
 
   useEffect(() => {
@@ -98,19 +103,27 @@ export function EmergencyBanner({ onAcknowledge }: EmergencyBannerProps) {
         </div>
 
         {/* Hinweistext */}
-        <p className="mb-6 text-center text-sm text-muted-foreground">
+        <p className="mb-4 text-center text-sm text-muted-foreground">
           Bitte rufen Sie bei einem Notfall <strong>immer zuerst</strong> den
-          offiziellen Notruf an. Diese App ist kein Ersatz für
+          offiziellen Notruf an. Diese App ist kein Ersatz fuer
           Rettungsdienste.
         </p>
 
-        {/* Weiter-Button */}
-        <button
-          onClick={onAcknowledge}
-          className="w-full rounded-lg border-2 border-gray-300 px-4 py-3 text-sm font-medium text-muted-foreground transition-colors hover:bg-gray-50"
-        >
-          Ich habe den Notruf verständigt — Nachbarn zusätzlich informieren
-        </button>
+        {/* Zwei explizite Bestaetigungsbuttons (FMEA FM-NB-02) */}
+        <div className="space-y-2">
+          <button
+            onClick={() => onAcknowledge(true)}
+            className="w-full rounded-lg border-2 border-green-600 bg-green-50 px-4 py-3 text-sm font-semibold text-green-800 transition-colors hover:bg-green-100"
+          >
+            Ich habe 112/110 angerufen — Nachbarn zusaetzlich informieren
+          </button>
+          <button
+            onClick={() => onAcknowledge(false)}
+            className="w-full rounded-lg border-2 border-gray-300 px-4 py-3 text-sm font-medium text-muted-foreground transition-colors hover:bg-gray-50"
+          >
+            Kein Notruf noetig — nur Nachbarschaftshilfe
+          </button>
+        </div>
       </div>
     </div>
   );

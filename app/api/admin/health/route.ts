@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { checkCronHealth } from "@/lib/care/cron-heartbeat";
 
 /**
  * GET /api/admin/health
@@ -117,13 +118,24 @@ export async function GET() {
     detail: `${unreadNotifications} ungelesen`,
   });
 
-  // 5. Cron-Secret pruefen
+  // 5. Cron-Jobs: Secret pruefen + Heartbeat-Status (FMEA Massnahme)
   const cronSecret = process.env.CRON_SECRET;
-  checks.push({
-    name: "Cron-Jobs",
-    status: cronSecret ? "ok" : "warn",
-    detail: cronSecret ? "Secret konfiguriert" : "CRON_SECRET fehlt",
-  });
+  if (!cronSecret) {
+    checks.push({ name: "Cron-Jobs", status: "warn", detail: "CRON_SECRET fehlt" });
+  } else {
+    try {
+      const cronHealth = await checkCronHealth(supabase);
+      for (const cron of cronHealth) {
+        checks.push({
+          name: `Cron: ${cron.name}`,
+          status: cron.status,
+          detail: cron.detail,
+        });
+      }
+    } catch {
+      checks.push({ name: "Cron-Jobs", status: "warn", detail: "Heartbeat-Tabelle nicht verfuegbar" });
+    }
+  }
 
   // Gesamt-Status
   const hasError = checks.some((c) => c.status === "error");

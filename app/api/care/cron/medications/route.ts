@@ -7,6 +7,7 @@ import { sendCareNotification } from '@/lib/care/notifications';
 import { writeAuditLog } from '@/lib/care/audit';
 import { MEDICATION_DEFAULTS } from '@/lib/care/constants';
 import { decryptField, decryptFieldsArray, CARE_MEDICATIONS_ENCRYPTED_FIELDS } from '@/lib/care/field-encryption';
+import { writeCronHeartbeat } from '@/lib/care/cron-heartbeat';
 import type { CareMedication, MedicationSchedule } from '@/lib/care/types';
 
 // Wochentagsnamen auf Deutsch (Index entspricht getDay()-Rueckgabe: 0 = Sonntag)
@@ -286,6 +287,9 @@ export async function GET(request: NextRequest) {
       }
     }
   }
+
+  // Heartbeat schreiben (FMEA FM-MED-01)
+  await writeCronHeartbeat(supabase, 'medications', { reminders: remindersCount, missed: missedCount });
 
   return NextResponse.json({
     ok: true,

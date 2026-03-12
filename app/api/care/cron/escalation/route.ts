@@ -6,6 +6,7 @@ import { createClient } from '@/lib/supabase/server';
 import { shouldEscalate, getNextEscalationLevel, getEscalationMeta } from '@/lib/care/escalation';
 import { writeAuditLog } from '@/lib/care/audit';
 import { sendCareNotification } from '@/lib/care/notifications';
+import { writeCronHeartbeat } from '@/lib/care/cron-heartbeat';
 import type { EscalationConfig } from '@/lib/care/types';
 
 // GET /api/care/cron/escalation — Automatische SOS-Eskalation (Vercel Cron: jede Minute)
@@ -237,6 +238,9 @@ export async function GET(request: NextRequest) {
       );
     }
   }
+
+  // Heartbeat schreiben (FMEA FM-SOS-03)
+  await writeCronHeartbeat(supabase, 'escalation', { checked: checkedCount, escalated: escalatedCount, failed: failedCount });
 
   return NextResponse.json({
     checked: checkedCount,

@@ -1,5 +1,6 @@
-// Nachbar.io — Tests fuer EmergencyBanner (KRITISCHE KOMPONENTE)
+// Nachbar.io — Tests fuer EmergencyBanner (KRITISCHE KOMPONENTE, FMEA FM-NB-02)
 // Stellt sicher, dass 112/110 IMMER korrekt angezeigt werden
+// und Banner NICHT ohne explizite Bestaetigung geschlossen werden kann
 import { describe, it, expect, vi, afterEach } from "vitest";
 import { render, screen, fireEvent, cleanup } from "@testing-library/react";
 import { EmergencyBanner } from "./EmergencyBanner";
@@ -46,23 +47,36 @@ describe("EmergencyBanner", () => {
     expect(heading.id).toBe("emergency-title");
   });
 
-  it("ruft onAcknowledge bei Klick auf Weiter-Button auf", () => {
+  it("ruft onAcknowledge(true) bei Klick auf 'Notruf angerufen'-Button auf", () => {
     const onAcknowledge = vi.fn();
     render(<EmergencyBanner onAcknowledge={onAcknowledge} />);
 
-    const button = screen.getByText(/Nachbarn zusätzlich informieren/i);
+    const button = screen.getByText(/Ich habe 112\/110 angerufen/i);
     fireEvent.click(button);
 
     expect(onAcknowledge).toHaveBeenCalledTimes(1);
+    expect(onAcknowledge).toHaveBeenCalledWith(true);
   });
 
-  it("ruft onAcknowledge bei Escape-Taste auf", () => {
+  it("ruft onAcknowledge(false) bei Klick auf 'Kein Notruf'-Button auf", () => {
+    const onAcknowledge = vi.fn();
+    render(<EmergencyBanner onAcknowledge={onAcknowledge} />);
+
+    const button = screen.getByText(/Kein Notruf noetig/i);
+    fireEvent.click(button);
+
+    expect(onAcknowledge).toHaveBeenCalledTimes(1);
+    expect(onAcknowledge).toHaveBeenCalledWith(false);
+  });
+
+  it("blockiert Escape-Taste (FMEA FM-NB-02: Banner darf nicht einfach geschlossen werden)", () => {
     const onAcknowledge = vi.fn();
     render(<EmergencyBanner onAcknowledge={onAcknowledge} />);
 
     fireEvent.keyDown(document, { key: "Escape" });
 
-    expect(onAcknowledge).toHaveBeenCalledTimes(1);
+    // Escape darf NICHT onAcknowledge aufrufen
+    expect(onAcknowledge).not.toHaveBeenCalled();
   });
 
   it("zeigt den Hinweistext zum offiziellen Notruf", () => {

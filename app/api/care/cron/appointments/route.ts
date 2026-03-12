@@ -5,6 +5,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { sendCareNotification } from '@/lib/care/notifications';
 import { decryptFieldsArray, CARE_APPOINTMENTS_ENCRYPTED_FIELDS } from '@/lib/care/field-encryption';
+import { writeCronHeartbeat } from '@/lib/care/cron-heartbeat';
 import type { CareAppointment } from '@/lib/care/types';
 
 // Toleranz in Minuten (+/-) fuer den 5-Minuten-Cron-Intervall
@@ -119,6 +120,9 @@ export async function GET(request: NextRequest) {
       }
     }
   }
+
+  // Heartbeat schreiben (FMEA: Termin-Cron)
+  await writeCronHeartbeat(supabase, 'appointments', { sent: sentCount });
 
   return NextResponse.json({
     ok: true,

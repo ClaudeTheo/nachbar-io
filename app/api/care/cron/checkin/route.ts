@@ -7,6 +7,7 @@ import { writeAuditLog } from '@/lib/care/audit';
 import { sendCareNotification } from '@/lib/care/notifications';
 import { CHECKIN_DEFAULTS } from '@/lib/care/constants';
 import { encryptField } from '@/lib/care/field-encryption';
+import { writeCronHeartbeat } from '@/lib/care/cron-heartbeat';
 
 // GET /api/care/cron/checkin — Check-in Scheduler (Vercel Cron: alle 5 Minuten)
 export async function GET(request: NextRequest) {
@@ -341,6 +342,9 @@ export async function GET(request: NextRequest) {
       }
     }
   }
+
+  // Heartbeat schreiben (FMEA FM-CI-01)
+  await writeCronHeartbeat(supabase, 'checkin', { created: createdCount, reminded: remindedCount, escalated: escalatedCount });
 
   return NextResponse.json({
     created: createdCount,

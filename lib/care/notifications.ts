@@ -66,7 +66,7 @@ export async function sendCareNotification(
   }
 
   // Web Push
-  let pushRequested = payload.channels.includes('push');
+  const pushRequested = payload.channels.includes('push');
   if (pushRequested) {
     results.push = await sendPush(supabase, {
       userId: payload.userId,

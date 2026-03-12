@@ -155,6 +155,33 @@ export async function uploadCategoryImage(
   return data.publicUrl;
 }
 
+// Test-Screenshot hochladen
+export const SCREENSHOT_DIMENSION = 1600; // px (Screenshots etwas groesser fuer Lesbarkeit)
+
+export async function uploadTestScreenshot(
+  supabase: SupabaseClient,
+  sessionId: string,
+  testPointId: string,
+  file: File
+): Promise<string> {
+  const validationError = validateImageFile(file);
+  if (validationError) throw new Error(validationError);
+
+  const blob = await compressImage(file, SCREENSHOT_DIMENSION);
+  const ext = blob.type === "image/webp" ? "webp" : "jpg";
+  const uuid = crypto.randomUUID();
+  const path = `test-screenshots/${sessionId}/${testPointId}/${uuid}.${ext}`;
+
+  const { error } = await supabase.storage
+    .from(BUCKET)
+    .upload(path, blob, { contentType: blob.type });
+
+  if (error) throw new Error("Screenshot-Upload fehlgeschlagen: " + error.message);
+
+  const { data } = supabase.storage.from(BUCKET).getPublicUrl(path);
+  return data.publicUrl;
+}
+
 // Bild loeschen
 export async function deleteImage(
   supabase: SupabaseClient,

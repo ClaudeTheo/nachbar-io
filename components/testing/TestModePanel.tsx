@@ -9,7 +9,7 @@ import { useState, useMemo, useCallback } from "react";
 import {
   X, ChevronDown, ChevronRight, CheckCircle2, XCircle, MinusCircle,
   AlertTriangle, SkipForward, Circle, MessageSquare, Star,
-  ClipboardList, BarChart3, Send,
+  ClipboardList, BarChart3, Send, Camera, Loader2, Trash2,
 } from "lucide-react";
 import { useTestMode } from "./TestModeProvider";
 import { TEST_PATHS } from "@/lib/testing/test-config";
@@ -183,6 +183,7 @@ export function TestModePanel() {
                 editingPointId={editingPointId}
                 onEditPoint={setEditingPointId}
                 onUpdateResult={updateResult}
+                sessionId={session.id}
               />
             ))}
           </>
@@ -245,6 +246,7 @@ function PathSection({
   editingPointId,
   onEditPoint,
   onUpdateResult,
+  sessionId,
 }: {
   path: (typeof TEST_PATHS)[0];
   results: Map<string, import("@/lib/testing/types").TestResult>;
@@ -253,6 +255,7 @@ function PathSection({
   editingPointId: string | null;
   onEditPoint: (id: string | null) => void;
   onUpdateResult: (id: string, status: TestStatus, details?: Record<string, unknown>) => Promise<void>;
+  sessionId: string;
 }) {
   const activePoints = path.points.filter(p => p.active);
   const pathProgress = useMemo(() => {
@@ -321,6 +324,7 @@ function PathSection({
                 {isEditing && (
                   <ResultEditor
                     testPointId={point.id}
+                    sessionId={sessionId}
                     currentResult={result ?? null}
                     onSave={async (s, details) => {
                       await onUpdateResult(point.id, s, details);
@@ -344,11 +348,13 @@ function PathSection({
 
 function ResultEditor({
   testPointId,
+  sessionId,
   currentResult,
   onSave,
   onCancel,
 }: {
   testPointId: string;
+  sessionId: string;
   currentResult: import("@/lib/testing/types").TestResult | null;
   onSave: (status: TestStatus, details?: Record<string, unknown>) => Promise<void>;
   onCancel: () => void;
@@ -357,9 +363,46 @@ function ResultEditor({
   const [comment, setComment] = useState(currentResult?.comment ?? "");
   const [severity, setSeverity] = useState<IssueSeverity | "">(currentResult?.severity ?? "");
   const [issueType, setIssueType] = useState<IssueType | "">(currentResult?.issue_type ?? "");
+  const [screenshotUrl, setScreenshotUrl] = useState<string | null>(currentResult?.screenshot_url ?? null);
+  const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
 
   const showDetails = status === "failed" || status === "partial";
+
+  // Screenshot hochladen
+  const handleScreenshot = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploading(true);
+    try {
+      const { createClient } = await import("@/lib/supabase/client");
+      const { uploadTestScreenshot } = await import("@/lib/storage");
+      const supabase = createClient();
+      const url = await uploadTestScreenshot(supabase, sessionId, testPointId, file);
+      setScreenshotUrl(url);
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "Screenshot-Upload fehlgeschlagen");
+    } finally {
+      setUploading(false);
+      // Input zuruecksetzen damit erneutes Auswaehlen funktioniert
+      e.target.value = "";
+    }
+  };
+
+  // Screenshot entfernen
+  const removeScreenshot = async () => {
+    if (!screenshotUrl) return;
+    try {
+      const { createClient } = await import("@/lib/supabase/client");
+      const { deleteImage } = await import("@/lib/storage");
+      const supabase = createClient();
+      await deleteImage(supabase, screenshotUrl);
+    } catch {
+      // Loeschen ist nicht kritisch
+    }
+    setScreenshotUrl(null);
+  };
 
   const handleSave = async () => {
     setSaving(true);
@@ -368,6 +411,7 @@ function ResultEditor({
         comment: comment || undefined,
         severity: severity || undefined,
         issue_type: issueType || undefined,
+        screenshot_url: screenshotUrl || undefined,
       });
     } finally {
       setSaving(false);
@@ -452,6 +496,56 @@ function ResultEditor({
               maxLength={5000}
             />
           </div>
+
+          {/* Screenshot */}
+          <div className="mb-2">
+            <label className="mb-1 block text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
+              <Camera className="mr-1 inline h-3 w-3" />Screenshot
+            </label>
+
+            {screenshotUrl ? (
+              // Vorschau mit Entfernen-Button
+              <div className="relative inline-block">
+                <img
+                  src={screenshotUrl}
+                  alt="Screenshot"
+                  className="h-24 w-auto rounded-lg border object-cover"
+                />
+                <button
+                  onClick={removeScreenshot}
+                  className="absolute -right-1.5 -top-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-white shadow-sm hover:bg-red-600"
+                  aria-label="Screenshot entfernen"
+                >
+                  <Trash2 className="h-3 w-3" />
+                </button>
+              </div>
+            ) : (
+              // Upload-Button
+              <label className={`flex cursor-pointer items-center gap-1.5 rounded-lg border border-dashed px-3 py-2 text-xs transition-colors ${
+                uploading ? "bg-gray-50 text-muted-foreground" : "text-muted-foreground hover:border-quartier-green hover:bg-quartier-green/5 hover:text-quartier-green"
+              }`}>
+                {uploading ? (
+                  <>
+                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                    Wird hochgeladen...
+                  </>
+                ) : (
+                  <>
+                    <Camera className="h-3.5 w-3.5" />
+                    Foto aufnehmen oder auswaehlen
+                  </>
+                )}
+                <input
+                  type="file"
+                  accept="image/*"
+                  capture="environment"
+                  onChange={handleScreenshot}
+                  disabled={uploading}
+                  className="hidden"
+                />
+              </label>
+            )}
+          </div>
         </>
       )}
 
@@ -459,7 +553,7 @@ function ResultEditor({
       <div className="flex gap-2">
         <button
           onClick={handleSave}
-          disabled={saving || status === "open"}
+          disabled={saving || uploading || status === "open"}
           className="flex-1 rounded-lg bg-anthrazit px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-anthrazit/90 disabled:opacity-50"
         >
           {saving ? "Speichern..." : "Speichern"}

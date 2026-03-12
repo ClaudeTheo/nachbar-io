@@ -3,7 +3,7 @@
 
 import { useEffect, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
-import { Heart, AlertTriangle, Clock, ArrowRight, Pill, CalendarDays, Users, FileText, CreditCard, ScrollText, BarChart3 } from 'lucide-react';
+import { Heart, AlertTriangle, Clock, ArrowRight, Pill, CalendarDays, Users, FileText, CreditCard, ScrollText, BarChart3, UserCog } from 'lucide-react';
 import Link from 'next/link';
 import { SosButton } from '@/components/care/SosButton';
 import { SosAlertCard } from '@/components/care/SosAlertCard';
@@ -154,7 +154,7 @@ export default function CareDashboardPage() {
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
         {/* Check-in Status */}
         <Link
-          href="/care/checkins"
+          href="/care/checkin"
           className="rounded-xl border bg-card p-4 hover:bg-gray-50 transition-colors"
         >
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
@@ -304,6 +304,13 @@ export default function CareDashboardPage() {
         <h2 className="text-sm font-medium text-muted-foreground">Schnellzugriff</h2>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
           <Link
+            href="/care/checkin"
+            className="rounded-lg border-2 border-quartier-green bg-quartier-green/5 p-3 text-sm font-medium text-anthrazit hover:bg-quartier-green/10 flex items-center gap-2"
+          >
+            <Clock className="h-4 w-4 text-quartier-green" />
+            Jetzt einchecken
+          </Link>
+          <Link
             href="/care/sos"
             className="rounded-lg border bg-card p-3 text-sm font-medium text-anthrazit hover:bg-gray-50 flex items-center gap-2"
           >
@@ -314,7 +321,7 @@ export default function CareDashboardPage() {
             href="/care/checkins"
             className="rounded-lg border bg-card p-3 text-sm font-medium text-anthrazit hover:bg-gray-50 flex items-center gap-2"
           >
-            <Clock className="h-4 w-4 text-quartier-green" />
+            <Clock className="h-4 w-4 text-muted-foreground" />
             Check-in-Verlauf
           </Link>
           <Link
@@ -344,6 +351,13 @@ export default function CareDashboardPage() {
           >
             <FileText className="h-4 w-4 text-quartier-green" />
             Berichte
+          </Link>
+          <Link
+            href="/care/profile"
+            className="rounded-lg border bg-card p-3 text-sm font-medium text-anthrazit hover:bg-gray-50 flex items-center gap-2"
+          >
+            <UserCog className="h-4 w-4 text-quartier-green" />
+            Profil
           </Link>
           <Link
             href="/care/subscription"

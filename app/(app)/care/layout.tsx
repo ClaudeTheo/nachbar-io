@@ -1,5 +1,6 @@
 // app/(app)/care/layout.tsx
 import type { ReactNode } from 'react';
+import { CareAlarmProvider } from '@/components/care/CareAlarmProvider';
 
 export const metadata = {
   title: 'Pflege — Nachbar.io',
@@ -7,5 +8,5 @@ export const metadata = {
 };
 
 export default function CareLayout({ children }: { children: ReactNode }) {
-  return <>{children}</>;
+  return <CareAlarmProvider>{children}</CareAlarmProvider>;
 }

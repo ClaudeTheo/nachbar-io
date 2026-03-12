@@ -49,10 +49,10 @@ export async function POST(request: NextRequest) {
 
   const adminSupabase = getAdminSupabase();
 
-  // 3. Anfrage laden
+  // 3. Anfrage laden (kein FK-Join auf users, da FK auf auth.users zeigt)
   const { data: vRequest, error: fetchError } = await adminSupabase
     .from("verification_requests")
-    .select("*, user:users!user_id(display_name)")
+    .select("*")
     .eq("id", requestId)
     .single();
 
@@ -62,6 +62,15 @@ export async function POST(request: NextRequest) {
       { status: 404 }
     );
   }
+
+  // Display-Name separat aus public.users laden
+  const { data: reqUser } = await adminSupabase
+    .from("users")
+    .select("display_name")
+    .eq("id", vRequest.user_id)
+    .single();
+  // An vRequest anhängen für spätere Verwendung
+  (vRequest as Record<string, unknown>).user = reqUser || { display_name: "Nachbar" };
 
   if (vRequest.status !== "pending") {
     return NextResponse.json(

@@ -41,6 +41,7 @@ export async function GET(request: NextRequest) {
   const alerts = openAlerts ?? [];
   let checkedCount = 0;
   let escalatedCount = 0;
+  let failedCount = 0;
 
   for (const alert of alerts) {
     checkedCount++;
@@ -89,21 +90,55 @@ export async function GET(request: NextRequest) {
     // Neuen Eskalations-Zeitstempel anhaengen
     const updatedEscalatedAt = [...escalatedAt, new Date().toISOString()];
 
-    // Alert aktualisieren: neue Stufe, erweitertes Zeitstempel-Array, Status auf 'escalated'
-    const { error: updateError } = await supabase
-      .from('care_sos_alerts')
-      .update({
-        current_escalation_level: toLevel,
-        escalated_at: updatedEscalatedAt,
-        status: 'escalated',
-      })
-      .eq('id', alert.id);
+    // Alert aktualisieren mit Retry-Logik (bis zu 3 Versuche bei transientem DB-Fehler)
+    let updateSucceeded = false;
+    const maxRetries = 3;
+    for (let attempt = 0; attempt < maxRetries; attempt++) {
+      const { error } = await supabase
+        .from('care_sos_alerts')
+        .update({
+          current_escalation_level: toLevel,
+          escalated_at: updatedEscalatedAt,
+          status: 'escalated',
+        })
+        .eq('id', alert.id);
 
-    if (updateError) {
-      console.error(
-        `[care/cron/escalation] Update fuer Alert ${alert.id} fehlgeschlagen:`,
-        updateError
-      );
+      if (!error) {
+        updateSucceeded = true;
+        break;
+      }
+
+      if (attempt < maxRetries - 1) {
+        console.warn(
+          `[care/cron/escalation] Update fuer Alert ${alert.id} fehlgeschlagen, Retry ${attempt + 1}/${maxRetries}:`,
+          error
+        );
+        await new Promise(resolve => setTimeout(resolve, 1000 * (attempt + 1)));
+      } else {
+        console.error(
+          `[care/cron/escalation] Update fuer Alert ${alert.id} endgueltig fehlgeschlagen nach ${maxRetries} Versuchen:`,
+          error
+        );
+      }
+    }
+
+    if (!updateSucceeded) {
+      failedCount++;
+      // Admin-Benachrichtigung bei fehlgeschlagener Eskalation (sicherheitskritisch!)
+      try {
+        await sendCareNotification(supabase, {
+          userId: alert.senior_id,
+          type: 'care_escalation',
+          title: '[SYSTEM-FEHLER] SOS-Eskalation fehlgeschlagen',
+          body: `SOS-Alert ${alert.id} konnte nicht von Stufe ${fromLevel} auf ${toLevel} eskaliert werden. Manuelle Intervention erforderlich.`,
+          referenceId: alert.id,
+          referenceType: 'care_sos_alerts',
+          url: `/care/sos/${alert.id}`,
+          channels: ['admin_alert'],
+        });
+      } catch (adminNotifyError) {
+        console.error('[care/cron/escalation] Admin-Benachrichtigung ueber Eskalationsfehler fehlgeschlagen:', adminNotifyError);
+      }
       continue;
     }
 
@@ -128,6 +163,7 @@ export async function GET(request: NextRequest) {
           });
         } else {
           // Stufe 1-3: Alle verifizierten Helfer der entsprechenden Rolle benachrichtigen
+          // mit Fallback-Kaskade (Push -> SMS -> Voice)
           const { data: helpers, error: helpersError } = await supabase
             .from('care_helpers')
             .select('user_id')
@@ -150,6 +186,13 @@ export async function GET(request: NextRequest) {
               | 'admin_alert'
             )[];
 
+            // Telefonnummern der Helfer laden fuer SMS/Voice-Fallback
+            const { data: helperPhones } = await supabase
+              .from('users')
+              .select('id, phone')
+              .in('id', helpers.map(h => h.user_id));
+            const phoneMap = new Map((helperPhones ?? []).map(u => [u.id, u.phone as string | null]));
+
             const notifyPromises = helpers.map((helper) =>
               sendCareNotification(supabase, {
                 userId: helper.user_id,
@@ -160,6 +203,8 @@ export async function GET(request: NextRequest) {
                 referenceType: 'care_sos_alerts',
                 url: `/care/sos/${alert.id}`,
                 channels: notificationChannels,
+                phone: phoneMap.get(helper.user_id) ?? undefined,
+                enableFallback: true,
               })
             );
 
@@ -196,6 +241,7 @@ export async function GET(request: NextRequest) {
   return NextResponse.json({
     checked: checkedCount,
     escalated: escalatedCount,
+    failed: failedCount,
     timestamp: new Date().toISOString(),
   });
 }

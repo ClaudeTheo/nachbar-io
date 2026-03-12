@@ -6,6 +6,7 @@ import { createClient } from '@/lib/supabase/server';
 import { sendCareNotification } from '@/lib/care/notifications';
 import { writeAuditLog } from '@/lib/care/audit';
 import { MEDICATION_DEFAULTS } from '@/lib/care/constants';
+import { decryptField, decryptFieldsArray, CARE_MEDICATIONS_ENCRYPTED_FIELDS } from '@/lib/care/field-encryption';
 import type { CareMedication, MedicationSchedule } from '@/lib/care/types';
 
 // Wochentagsnamen auf Deutsch (Index entspricht getDay()-Rueckgabe: 0 = Sonntag)
@@ -30,7 +31,16 @@ function getTodayScheduledTimes(schedule: MedicationSchedule, now: Date): string
     return [];
   }
 
-  // Interval-Typ wird vom Cron nicht unterstuetzt (zu komplex fuer 5-Min-Intervall)
+  if (schedule.type === 'interval' && schedule.every_hours) {
+    // Intervall: alle N Stunden ab Mitternacht (z.B. every_hours=4 => 00:00, 04:00, 08:00, ...)
+    const times: string[] = [];
+    const intervalHours = schedule.every_hours;
+    for (let h = 0; h < 24; h += intervalHours) {
+      times.push(`${String(h).padStart(2, '0')}:00`);
+    }
+    return times;
+  }
+
   return [];
 }
 
@@ -63,7 +73,8 @@ export async function GET(request: NextRequest) {
     );
   }
 
-  const allMedications: CareMedication[] = medications ?? [];
+  // Medikamenten-Felder entschluesseln (Art. 9 DSGVO) — Name, Dosierung, Anweisungen fuer Benachrichtigungen
+  const allMedications: CareMedication[] = decryptFieldsArray(medications ?? [], CARE_MEDICATIONS_ENCRYPTED_FIELDS) as CareMedication[];
   const now = new Date();
 
   let remindersCount = 0;

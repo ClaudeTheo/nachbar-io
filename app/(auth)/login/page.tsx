@@ -58,7 +58,7 @@ export default function LoginPage() {
   }
 
   return (
-    <>
+    <div className="w-full max-w-md mx-auto space-y-4">
     <Card className="border-0 shadow-lg">
       <CardHeader className="text-center">
         <div className="mb-2 text-4xl">🏘️</div>
@@ -163,6 +163,6 @@ export default function LoginPage() {
         Ausführliche Testanleitung lesen →
       </Link>
     </div>
-    </>
+    </div>
   );
 }

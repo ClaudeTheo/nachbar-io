@@ -136,6 +136,30 @@ export default function ImpressumPage() {
               nachbarschaftlichen Zusammenhalts.
             </p>
           </section>
+
+          {/* Zweckbestimmung gemaess EU MDR 2017/745 */}
+          <section>
+            <h2 className="mb-2 text-lg font-semibold text-anthrazit">
+              Zweckbestimmung
+            </h2>
+            <p>
+              Nachbar.io ist eine Kommunikationsplattform zur Foerderung der
+              Nachbarschaftshilfe im Quartier. Die App dient der Koordination von
+              Alltagshilfe, dem Austausch lokaler Informationen und der freiwilligen
+              sozialen Vernetzung von Bewohnerinnen und Bewohnern.
+            </p>
+            <p className="mt-2">
+              Die optionalen Pflege-Koordinationsfunktionen (Erinnerungen,
+              Tagescheck, Helfer-Uebersicht) sind organisatorische Hilfsmittel zur
+              Alltagsunterstuetzung. Sie ersetzen weder professionelle Pflege,
+              aerztliche Beratung noch medizinische Notrufsysteme (112/110).
+            </p>
+            <p className="mt-2 font-medium text-anthrazit">
+              Nachbar.io ist kein Medizinprodukt im Sinne der Verordnung (EU)
+              2017/745. Die Software erhebt keinen diagnostischen, therapeutischen
+              oder klinischen Ueberwachungszweck.
+            </p>
+          </section>
         </div>
 
         {/* Footer */}

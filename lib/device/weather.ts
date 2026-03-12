@@ -4,7 +4,7 @@ const BAD_SAECKINGEN_LAT = 47.5535;
 const BAD_SAECKINGEN_LON = 7.9640;
 
 export interface WeatherData {
-  temp: number;
+  temp: number | null;
   icon: string;
 }
 
@@ -25,13 +25,18 @@ export async function getWeather(): Promise<WeatherData> {
   try {
     const url = `https://api.open-meteo.com/v1/forecast?latitude=${BAD_SAECKINGEN_LAT}&longitude=${BAD_SAECKINGEN_LON}&current=temperature_2m,weather_code&timezone=Europe/Berlin`;
     const res = await fetch(url, { next: { revalidate: 1800 } });
+    if (!res.ok) {
+      console.error("[weather] Open-Meteo API Fehler:", res.status, res.statusText);
+      return { temp: null, icon: "cloud" };
+    }
     const data = await res.json();
 
     return {
       temp: Math.round(data.current.temperature_2m),
       icon: wmoToIcon(data.current.weather_code),
     };
-  } catch {
-    return { temp: 0, icon: "cloud" };
+  } catch (err) {
+    console.error("[weather] Netzwerkfehler:", err);
+    return { temp: null, icon: "cloud" };
   }
 }

@@ -46,16 +46,27 @@ export function EventManagement() {
       .order("event_date", { ascending: true });
 
     if (data) {
-      const eventsWithCounts = await Promise.all(
-        (data as unknown as Event[]).map(async (event) => {
-          const { count } = await supabase
+      const typedEvents = data as unknown as Event[];
+      const eventIds = typedEvents.map((e) => e.id);
+
+      // Alle Teilnehmer-Counts in einer einzigen Abfrage laden (statt N+1)
+      const { data: countData } = eventIds.length > 0
+        ? await supabase
             .from("event_participants")
-            .select("*", { count: "exact", head: true })
-            .eq("event_id", event.id)
-            .eq("status", "going");
-          return { ...event, participant_count: count ?? 0 };
-        })
-      );
+            .select("event_id")
+            .in("event_id", eventIds)
+            .eq("status", "going")
+        : { data: [] };
+
+      const countMap = new Map<string, number>();
+      for (const row of countData ?? []) {
+        countMap.set(row.event_id, (countMap.get(row.event_id) ?? 0) + 1);
+      }
+
+      const eventsWithCounts = typedEvents.map((event) => ({
+        ...event,
+        participant_count: countMap.get(event.id) ?? 0,
+      }));
       setEvents(eventsWithCounts);
     }
     setLoading(false);

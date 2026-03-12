@@ -36,6 +36,8 @@ export default function EventDetailPage() {
   const [actionLoading, setActionLoading] = useState(false);
 
   useEffect(() => {
+    let cancelled = false;
+
     async function load() {
       const supabase = createClient();
 
@@ -43,6 +45,7 @@ export default function EventDetailPage() {
       const {
         data: { user },
       } = await supabase.auth.getUser();
+      if (cancelled) return;
       if (user) setCurrentUserId(user.id);
 
       // Event laden
@@ -52,6 +55,7 @@ export default function EventDetailPage() {
         .eq("id", id)
         .maybeSingle();
 
+      if (cancelled) return;
       if (eventError || !eventData) {
         setLoading(false);
         return;
@@ -67,6 +71,7 @@ export default function EventDetailPage() {
         .in("status", ["going", "interested"])
         .order("created_at", { ascending: true });
 
+      if (cancelled) return;
       if (participantData) {
         setParticipants(participantData as unknown as EventParticipant[]);
 
@@ -84,6 +89,8 @@ export default function EventDetailPage() {
       setLoading(false);
     }
     load();
+
+    return () => { cancelled = true; };
   }, [id]);
 
   // Teilnahme-Status setzen

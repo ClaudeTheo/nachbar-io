@@ -55,8 +55,9 @@ export async function POST(request: NextRequest) {
           reference_type: "care_checkins",
           metadata: { source: "reTerminal_E1001", device_id: device.id },
         });
-      } catch {
+      } catch (err) {
         // Audit-Fehler blockiert nicht den Check-in
+        console.error("[device/checkin] Audit-Log fehlgeschlagen:", err);
       }
     } else {
       console.error("[device/checkin] Care-Checkin fehlgeschlagen:", careError);

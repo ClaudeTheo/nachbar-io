@@ -55,6 +55,9 @@ export async function GET(request: NextRequest) {
   // Notfall-Kategorien
   const emergencyCategories = ["fire", "medical", "crime"];
 
+  // Heutiges Datum in Berlin-Timezone (nicht UTC) fuer korrekte Tagesgrenze
+  const todayBerlin = new Date().toLocaleDateString("sv-SE", { timeZone: "Europe/Berlin" }); // YYYY-MM-DD
+
   // Parallele Abfragen
   const [weather, alertsResult, careCheckinResult, legacyCheckinResult, newsResult] = await Promise.all([
     getWeather(),
@@ -75,7 +78,7 @@ export async function GET(request: NextRequest) {
           .select("id, status, completed_at, scheduled_at")
           .eq("senior_id", userId)
           .not("completed_at", "is", null)
-          .gte("completed_at", new Date().toISOString().split("T")[0])
+          .gte("completed_at", todayBerlin)
           .order("completed_at", { ascending: false })
           .limit(1)
       : Promise.resolve({ data: null, error: null }),
@@ -85,7 +88,7 @@ export async function GET(request: NextRequest) {
       .from("senior_checkins")
       .select("id, checked_in_at")
       .eq("user_id", device.household_id)
-      .gte("checked_in_at", new Date().toISOString().split("T")[0])
+      .gte("checked_in_at", todayBerlin)
       .order("checked_in_at", { ascending: false })
       .limit(1),
 
@@ -98,6 +101,12 @@ export async function GET(request: NextRequest) {
       .order("published_at", { ascending: false, nullsFirst: false })
       .limit(5),
   ]);
+
+  // DB-Fehler loggen (nicht-fatal)
+  if (alertsResult.error) console.error("[device/status] Alerts-Abfrage fehlgeschlagen:", alertsResult.error.message);
+  if (careCheckinResult?.error) console.error("[device/status] Care-Checkin-Abfrage fehlgeschlagen:", careCheckinResult.error.message);
+  if (legacyCheckinResult.error) console.error("[device/status] Legacy-Checkin-Abfrage fehlgeschlagen:", legacyCheckinResult.error.message);
+  if (newsResult.error) console.error("[device/status] News-Abfrage fehlgeschlagen:", newsResult.error.message);
 
   const alerts = (alertsResult.data || []).map((a: Record<string, unknown>) => ({
     id: a.id,

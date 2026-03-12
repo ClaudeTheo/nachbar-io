@@ -47,7 +47,12 @@ export async function POST(request: NextRequest) {
     }
   }
 
-  const body = await request.json();
+  let body;
+  try {
+    body = await request.json();
+  } catch {
+    return NextResponse.json({ error: "Ungueltiges Anfrage-Format" }, { status: 400 });
+  }
   const { userId, title, body: messageBody, url, tag } = body;
 
   if (!userId || !title) {

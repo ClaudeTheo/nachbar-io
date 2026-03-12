@@ -40,7 +40,12 @@ export async function POST(request: NextRequest) {
   }
 
   // Body parsen
-  const body = await request.json();
+  let body;
+  try {
+    body = await request.json();
+  } catch {
+    return NextResponse.json({ error: "Ungueltiges Anfrage-Format" }, { status: 400 });
+  }
   const { street, houseNumber, method, target } = body;
 
   if (!street || !houseNumber || !method) {

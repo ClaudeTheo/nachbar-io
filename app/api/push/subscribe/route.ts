@@ -13,7 +13,12 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Nicht authentifiziert" }, { status: 401 });
   }
 
-  const body = await request.json();
+  let body;
+  try {
+    body = await request.json();
+  } catch {
+    return NextResponse.json({ error: "Ungueltiges Anfrage-Format" }, { status: 400 });
+  }
   const { endpoint, keys } = body;
 
   if (!endpoint || !keys?.p256dh || !keys?.auth) {
@@ -77,7 +82,12 @@ export async function DELETE(request: NextRequest) {
     return NextResponse.json({ error: "Nicht authentifiziert" }, { status: 401 });
   }
 
-  const body = await request.json();
+  let body;
+  try {
+    body = await request.json();
+  } catch {
+    return NextResponse.json({ error: "Ungueltiges Anfrage-Format" }, { status: 400 });
+  }
   const { endpoint } = body;
 
   const { error } = await supabase

@@ -213,7 +213,7 @@ export default function ProfilePage() {
           <Separator />
 
           <Link
-            href="/help-center"
+            href="/help"
             className="flex items-center justify-between p-4 hover:bg-muted/50"
           >
             <div className="flex items-center gap-3">

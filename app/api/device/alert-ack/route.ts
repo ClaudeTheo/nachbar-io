@@ -2,7 +2,12 @@ import { NextRequest, NextResponse } from "next/server";
 import { authenticateDevice, isAuthError } from "@/lib/device/auth";
 
 export async function POST(request: NextRequest) {
-  const body = await request.json();
+  let body;
+  try {
+    body = await request.json();
+  } catch {
+    return NextResponse.json({ error: "Ungueltiges Anfrage-Format" }, { status: 400 });
+  }
   const { alertId } = body;
 
   if (!alertId || typeof alertId !== "string") {

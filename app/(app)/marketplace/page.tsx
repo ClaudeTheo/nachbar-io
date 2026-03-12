@@ -13,9 +13,11 @@ import { de } from "date-fns/locale";
 export default function MarketplacePage() {
   const [items, setItems] = useState<MarketplaceItem[]>([]);
   const [filterType, setFilterType] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function load() {
+      setLoading(true);
       const supabase = createClient();
       let query = supabase
         .from("marketplace_items")
@@ -29,6 +31,7 @@ export default function MarketplacePage() {
 
       const { data } = await query;
       if (data) setItems(data as unknown as MarketplaceItem[]);
+      setLoading(false);
     }
     load();
   }, [filterType]);
@@ -72,7 +75,22 @@ export default function MarketplacePage() {
       </div>
 
       {/* Inserate */}
-      {items.length === 0 ? (
+      {loading ? (
+        <div className="mt-4 space-y-3">
+          {[1, 2, 3].map((i) => (
+            <div key={i} className="rounded-lg border border-border bg-white p-4">
+              <div className="flex gap-3">
+                <div className="h-20 w-20 shrink-0 animate-pulse rounded-lg bg-muted" />
+                <div className="flex-1 space-y-2">
+                  <div className="h-4 w-3/4 animate-pulse rounded bg-muted" />
+                  <div className="h-3 w-1/2 animate-pulse rounded bg-muted" />
+                  <div className="h-3 w-1/3 animate-pulse rounded bg-muted" />
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : items.length === 0 ? (
         <div className="py-12 text-center">
           <div className="mb-2 text-4xl">🏪</div>
           <p className="text-muted-foreground">Noch keine Inserate vorhanden.</p>

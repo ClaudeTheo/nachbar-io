@@ -5,13 +5,23 @@
 // Stellt den Testmodus-State fuer die gesamte App bereit
 
 import { createContext, useContext, useState, useEffect, useCallback, useRef, type ReactNode } from "react";
+import { usePathname } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
-import type { TestSession, TestResult, TestStatus, IssueSeverity, IssueType, SessionFeedback } from "@/lib/testing/types";
+import type { TestSession, TestResult, TestStatus, IssueSeverity, IssueType, SessionFeedback, VisitedRoute } from "@/lib/testing/types";
 import { TestModePanel } from "./TestModePanel";
 
 // ============================================================
 // Context Definition
 // ============================================================
+
+/** Schluesselrouten die fuer das Auto-Tracking relevant sind */
+export const KEY_ROUTES = [
+  "/dashboard", "/map", "/help", "/help/new",
+  "/marketplace", "/leihboerse", "/whohas", "/lost-found",
+  "/board", "/events", "/tips", "/news", "/polls",
+  "/messages", "/profile", "/profile/edit",
+  "/care", "/notifications",
+] as const;
 
 interface TestModeContextValue {
   // Status
@@ -19,6 +29,7 @@ interface TestModeContextValue {
   isLoading: boolean;
   session: TestSession | null;
   results: Map<string, TestResult>;  // Key = test_point_id
+  visitedRoutes: VisitedRoute[];
   onboardingComplete: boolean;
 
   // Aktionen
@@ -72,10 +83,14 @@ export function TestModeProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
   const [session, setSession] = useState<TestSession | null>(null);
   const [results, setResults] = useState<Map<string, TestResult>>(new Map());
+  const [visitedRoutes, setVisitedRoutes] = useState<VisitedRoute[]>([]);
   const [panelOpen, setPanelOpen] = useState(false);
   const [activePathId, setActivePathId] = useState<string | null>(null);
   const [onboardingComplete, setOnboardingComplete] = useState(false);
   const initialized = useRef(false);
+  const visitedRoutesRef = useRef<VisitedRoute[]>([]);
+  const syncTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const pathname = usePathname();
 
   // ─────────────────────────────────────────────────
   // Initialisierung: Tester-Status + aktive Session laden
@@ -117,6 +132,10 @@ export function TestModeProvider({ children }: { children: ReactNode }) {
             map.set(r.test_point_id, r);
           }
           setResults(map);
+          // Besuchte Routen aus Session laden
+          const routes: VisitedRoute[] = data.session.visited_routes ?? [];
+          setVisitedRoutes(routes);
+          visitedRoutesRef.current = routes;
         }
       }
     } catch (error) {
@@ -206,11 +225,13 @@ export function TestModeProvider({ children }: { children: ReactNode }) {
   // Session abschliessen
   // ─────────────────────────────────────────────────
   const completeSession = useCallback(async (feedback: SessionFeedback) => {
+    // Letzte Visited-Routes synchronisieren vor Abschluss
     const res = await fetch("/api/testing/session", {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         status: "completed",
+        visited_routes: visitedRoutesRef.current,
         ...feedback,
       }),
     });
@@ -241,6 +262,71 @@ export function TestModeProvider({ children }: { children: ReactNode }) {
       setPanelOpen(false);
     }
   }, []);
+
+  // ─────────────────────────────────────────────────
+  // Automatisches Seiten-Tracking
+  // ─────────────────────────────────────────────────
+  const syncVisitedRoutes = useCallback(async (routes: VisitedRoute[]) => {
+    if (!session || session.status !== "active" || routes.length === 0) return;
+    try {
+      await fetch("/api/testing/session", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ visited_routes: routes }),
+      });
+    } catch {
+      // Silent fail — naechster Sync-Versuch bei Route-Wechsel
+    }
+  }, [session]);
+
+  // Bei Routenwechsel: Route erfassen
+  useEffect(() => {
+    if (!isTester || !session || session.status !== "active" || !pathname) return;
+
+    // Normalisierte Route (ohne Query-Parameter, dynamische Segmente vereinfacht)
+    const normalizedRoute = pathname.replace(/\/[0-9a-f-]{36}/g, "/[id]");
+
+    const now = new Date().toISOString();
+    const existing = visitedRoutesRef.current.find(r => r.route === normalizedRoute);
+
+    let updated: VisitedRoute[];
+    if (existing) {
+      updated = visitedRoutesRef.current.map(r =>
+        r.route === normalizedRoute
+          ? { ...r, visit_count: r.visit_count + 1 }
+          : r
+      );
+    } else {
+      updated = [
+        ...visitedRoutesRef.current,
+        { route: normalizedRoute, first_visit: now, visit_count: 1 },
+      ];
+    }
+
+    visitedRoutesRef.current = updated;
+    setVisitedRoutes(updated);
+
+    // Debounced Sync: Alle 10 Sekunden nach dem letzten Route-Wechsel
+    if (syncTimerRef.current) {
+      clearTimeout(syncTimerRef.current);
+    }
+    syncTimerRef.current = setTimeout(() => {
+      syncVisitedRoutes(visitedRoutesRef.current);
+    }, 10_000);
+  }, [pathname, isTester, session, syncVisitedRoutes]);
+
+  // Cleanup: Sync beim Unmount
+  useEffect(() => {
+    return () => {
+      if (syncTimerRef.current) {
+        clearTimeout(syncTimerRef.current);
+      }
+      // Letzter Sync-Versuch
+      if (visitedRoutesRef.current.length > 0) {
+        syncVisitedRoutes(visitedRoutesRef.current);
+      }
+    };
+  }, [syncVisitedRoutes]);
 
   // ─────────────────────────────────────────────────
   // Onboarding abschliessen
@@ -294,6 +380,7 @@ export function TestModeProvider({ children }: { children: ReactNode }) {
     isLoading,
     session,
     results,
+    visitedRoutes,
     onboardingComplete,
     startSession,
     updateResult,

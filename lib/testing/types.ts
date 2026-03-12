@@ -69,6 +69,7 @@ export interface TestSession {
   usability_rating: number | null;
   confidence_rating: number | null;
   summary: SessionSummary;
+  visited_routes: VisitedRoute[];
   created_at: string;
 }
 
@@ -120,6 +121,13 @@ export interface SessionFeedback {
   final_feedback: string;
   usability_rating: number;     // 1-5
   confidence_rating: number;    // 1-5
+}
+
+/** Automatisch erfasster Seitenbesuch */
+export interface VisitedRoute {
+  route: string;
+  first_visit: string;          // ISO-Timestamp
+  visit_count: number;
 }
 
 // ============================================================

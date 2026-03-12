@@ -10,8 +10,9 @@ import {
   X, ChevronDown, ChevronRight, CheckCircle2, XCircle, MinusCircle,
   AlertTriangle, SkipForward, Circle, MessageSquare, Star,
   ClipboardList, BarChart3, Send, Camera, Loader2, Trash2,
+  MapPin, Eye,
 } from "lucide-react";
-import { useTestMode } from "./TestModeProvider";
+import { useTestMode, KEY_ROUTES } from "./TestModeProvider";
 import { TEST_PATHS } from "@/lib/testing/test-config";
 import type { TestStatus, IssueSeverity, IssueType } from "@/lib/testing/types";
 import { TesterOnboardingFlow } from "./TesterOnboardingFlow";
@@ -51,7 +52,7 @@ const ISSUE_TYPE_OPTIONS: { value: IssueType; label: string }[] = [
 
 export function TestModePanel() {
   const {
-    session, results, panelOpen, setPanelOpen,
+    session, results, visitedRoutes, panelOpen, setPanelOpen,
     activePathId, setActivePathId,
     updateResult, completeSession, abandonSession,
     startSession, onboardingComplete, completeOnboarding,
@@ -61,9 +62,10 @@ export function TestModePanel() {
   const [editingPointId, setEditingPointId] = useState<string | null>(null);
   const [showFeedback, setShowFeedback] = useState(false);
   const [showConfirmAbandon, setShowConfirmAbandon] = useState(false);
+  const [showVisitedRoutes, setShowVisitedRoutes] = useState(false);
 
-  // Fortschritt berechnen
-  const progress = useMemo(() => {
+  // Manuelle Test-Fortschritte berechnen
+  const manualProgress = useMemo(() => {
     const total = results.size;
     if (total === 0) return { total: 0, done: 0, passed: 0, partial: 0, failed: 0, skipped: 0, open: 0, percent: 0 };
 
@@ -80,6 +82,19 @@ export function TestModePanel() {
     const done = passed + partial + failed + skipped;
     return { total, done, passed, partial, failed, skipped, open, percent: Math.round((done / total) * 100) };
   }, [results]);
+
+  // Seiten-Abdeckung berechnen
+  const routeCoverage = useMemo(() => {
+    const visitedSet = new Set(visitedRoutes.map(r => r.route));
+    const covered = KEY_ROUTES.filter(r => visitedSet.has(r)).length;
+    return { total: KEY_ROUTES.length, covered, percent: Math.round((covered / KEY_ROUTES.length) * 100) };
+  }, [visitedRoutes]);
+
+  // Kombinierter Fortschritt: 40% Seiten-Abdeckung + 60% manuelle Tests
+  const progress = useMemo(() => ({
+    ...manualProgress,
+    percent: Math.round(routeCoverage.percent * 0.4 + manualProgress.percent * 0.6),
+  }), [manualProgress, routeCoverage]);
 
   // Onboarding anzeigen
   if (!onboardingComplete) {
@@ -154,12 +169,18 @@ export function TestModePanel() {
             style={{ width: `${progress.percent}%` }}
           />
         </div>
-        <div className="flex gap-3 text-xs text-muted-foreground">
-          <span className="text-emerald-600">✓ {progress.passed}</span>
-          <span className="text-amber-600">◐ {progress.partial}</span>
-          <span className="text-red-600">✗ {progress.failed}</span>
-          <span className="text-gray-500">⏭ {progress.skipped}</span>
-          <span className="text-gray-400">○ {progress.open}</span>
+        <div className="mb-1.5 flex gap-3 text-xs text-muted-foreground">
+          <span className="text-emerald-600">✓ {manualProgress.passed}</span>
+          <span className="text-amber-600">◐ {manualProgress.partial}</span>
+          <span className="text-red-600">✗ {manualProgress.failed}</span>
+          <span className="text-gray-500">⏭ {manualProgress.skipped}</span>
+          <span className="text-gray-400">○ {manualProgress.open}</span>
+        </div>
+        <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
+          <MapPin className="h-3 w-3" />
+          <span>Seiten: {routeCoverage.covered}/{routeCoverage.total}</span>
+          <span className="text-gray-300">|</span>
+          <span>Tests: {manualProgress.done}/{manualProgress.total}</span>
         </div>
       </div>
 
@@ -172,6 +193,55 @@ export function TestModePanel() {
           />
         ) : (
           <>
+            {/* Besuchte Bereiche */}
+            <div className="border-b">
+              <button
+                onClick={() => setShowVisitedRoutes(!showVisitedRoutes)}
+                className="flex w-full items-center gap-3 px-4 py-3 text-left hover:bg-gray-50"
+              >
+                {showVisitedRoutes ? <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground" /> : <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" />}
+                <div className="flex flex-1 items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Eye className="h-4 w-4 text-blue-500" />
+                    <span className="text-sm font-medium text-anthrazit">Besuchte Bereiche</span>
+                  </div>
+                  <span className="text-xs text-muted-foreground">{routeCoverage.covered}/{routeCoverage.total}</span>
+                </div>
+              </button>
+              {showVisitedRoutes && (
+                <div className="px-4 pb-3">
+                  <div className="grid grid-cols-2 gap-1">
+                    {KEY_ROUTES.map(route => {
+                      const visited = visitedRoutes.find(r => r.route === route);
+                      return (
+                        <div
+                          key={route}
+                          className={`flex items-center gap-1.5 rounded-lg px-2 py-1.5 text-[11px] ${
+                            visited ? "bg-emerald-50 text-emerald-700" : "bg-gray-50 text-gray-400"
+                          }`}
+                        >
+                          {visited ? (
+                            <CheckCircle2 className="h-3 w-3 shrink-0" />
+                          ) : (
+                            <Circle className="h-3 w-3 shrink-0" />
+                          )}
+                          <span className="truncate">{route}</span>
+                          {visited && visited.visit_count > 1 && (
+                            <span className="ml-auto shrink-0 text-[9px] text-emerald-500">×{visited.visit_count}</span>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                  {visitedRoutes.length > KEY_ROUTES.length && (
+                    <p className="mt-2 text-[10px] text-muted-foreground">
+                      + {visitedRoutes.length - routeCoverage.covered} weitere Seiten besucht
+                    </p>
+                  )}
+                </div>
+              )}
+            </div>
+
             {/* Testpfade */}
             {TEST_PATHS.map(path => (
               <PathSection

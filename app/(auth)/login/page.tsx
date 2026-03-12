@@ -58,6 +58,7 @@ export default function LoginPage() {
   }
 
   return (
+    <>
     <Card className="border-0 shadow-lg">
       <CardHeader className="text-center">
         <div className="mb-2 text-4xl">🏘️</div>
@@ -123,5 +124,45 @@ export default function LoginPage() {
         </div>
       </CardContent>
     </Card>
+
+    {/* Tester-Hinweis */}
+    <div className="mt-4 rounded-xl border-2 border-quartier-green/30 bg-quartier-green/5 p-5">
+      <h3 className="mb-2 flex items-center gap-2 text-base font-semibold text-quartier-green">
+        <span className="text-lg">🧪</span>
+        Testen Sie Nachbar.io
+      </h3>
+      <p className="mb-3 text-sm text-muted-foreground">
+        Helfen Sie mit, unsere Quartiers-App zu verbessern! Als Tester prüfen Sie die Funktionen
+        und geben wertvolles Feedback.
+      </p>
+      <div className="mb-3 space-y-2 rounded-lg bg-white/60 p-3 text-sm">
+        <p className="font-medium text-anthrazit">So starten Sie:</p>
+        <ul className="ml-1 space-y-1.5 text-muted-foreground">
+          <li className="flex items-start gap-2">
+            <span className="mt-0.5 text-quartier-green">1.</span>
+            <span>Tippen Sie oben auf <strong>&quot;Jetzt registrieren&quot;</strong></span>
+          </li>
+          <li className="flex items-start gap-2">
+            <span className="mt-0.5 text-quartier-green">2.</span>
+            <span>Verwenden Sie eine <strong>beliebige E-Mail-Adresse</strong></span>
+          </li>
+          <li className="flex items-start gap-2">
+            <span className="mt-0.5 text-quartier-green">3.</span>
+            <span>Wählen Sie ein <strong>Passwort mit mind. 8 Zeichen</strong> (z.B. &quot;Test1234&quot;)</span>
+          </li>
+          <li className="flex items-start gap-2">
+            <span className="mt-0.5 text-quartier-green">4.</span>
+            <span>Wählen Sie Ihre Straße und Hausnummer</span>
+          </li>
+        </ul>
+      </div>
+      <Link
+        href="/testanleitung"
+        className="inline-flex items-center gap-1.5 text-sm font-medium text-quartier-green hover:underline"
+      >
+        Ausführliche Testanleitung lesen →
+      </Link>
+    </div>
+    </>
   );
 }

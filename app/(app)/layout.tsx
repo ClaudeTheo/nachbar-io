@@ -2,6 +2,7 @@ import { BottomNav } from "@/components/BottomNav";
 import { InstallPrompt } from "@/components/InstallPrompt";
 import { PendingVerificationBanner } from "@/components/PendingVerificationBanner";
 import { TestModeProvider } from "@/components/testing/TestModeProvider";
+import { TesterWelcomeDialog } from "@/components/testing/TesterWelcomeDialog";
 
 // Layout fuer den aktiven Modus — mit Bottom-Navigation + Test-Modus
 export default function AppLayout({
@@ -25,6 +26,7 @@ export default function AppLayout({
       {/* Hauptinhalt mit Padding fuer Bottom-Nav + Test-Modus Provider */}
       <TestModeProvider>
         <main id="main-content" className="mx-auto max-w-lg px-4 pt-4">{children}</main>
+        <TesterWelcomeDialog />
       </TestModeProvider>
       <BottomNav />
       <InstallPrompt />

@@ -4,6 +4,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { getAllActiveTestPoints } from '@/lib/testing/test-config';
+import { sendTestReportEmail } from '@/lib/email';
 
 // GET /api/testing/session — Aktive Session + Ergebnisse laden
 export async function GET() {
@@ -162,6 +163,7 @@ export async function PATCH(request: NextRequest) {
     final_feedback?: string;
     usability_rating?: number;
     confidence_rating?: number;
+    visited_routes?: { route: string; first_visit: string; visit_count: number }[];
   };
   try { body = await request.json(); } catch {
     return NextResponse.json({ error: 'Ungueltiges Anfrage-Format' }, { status: 400 });
@@ -223,6 +225,36 @@ export async function PATCH(request: NextRequest) {
   if (body.usability_rating !== undefined) updateData.usability_rating = body.usability_rating;
   if (body.confidence_rating !== undefined) updateData.confidence_rating = body.confidence_rating;
 
+  // Visited Routes mergen (Client sendet aktuelle Liste, Server merged mit bestehenden)
+  if (body.visited_routes && Array.isArray(body.visited_routes)) {
+    // Bestehende Routen laden
+    const { data: currentSession } = await supabase
+      .from('test_sessions')
+      .select('visited_routes')
+      .eq('id', session.id)
+      .single();
+
+    const existingRoutes: { route: string; first_visit: string; visit_count: number }[] =
+      (currentSession?.visited_routes as { route: string; first_visit: string; visit_count: number }[]) ?? [];
+    const routeMap = new Map(existingRoutes.map(r => [r.route, r]));
+
+    // Neue Routen mergen (hoehere visit_count gewinnt, frueherer first_visit bleibt)
+    for (const newRoute of body.visited_routes) {
+      const existing = routeMap.get(newRoute.route);
+      if (existing) {
+        routeMap.set(newRoute.route, {
+          route: newRoute.route,
+          first_visit: existing.first_visit < newRoute.first_visit ? existing.first_visit : newRoute.first_visit,
+          visit_count: Math.max(existing.visit_count, newRoute.visit_count),
+        });
+      } else {
+        routeMap.set(newRoute.route, newRoute);
+      }
+    }
+
+    updateData.visited_routes = Array.from(routeMap.values());
+  }
+
   const { data: updated, error: updateError } = await supabase
     .from('test_sessions')
     .update(updateData)
@@ -233,6 +265,29 @@ export async function PATCH(request: NextRequest) {
   if (updateError) {
     console.error('[testing/session] Session aktualisieren fehlgeschlagen:', updateError);
     return NextResponse.json({ error: 'Session konnte nicht aktualisiert werden' }, { status: 500 });
+  }
+
+  // Bei Abschluss: Test-Report per E-Mail an Admin senden (fire-and-forget)
+  if (body.status === 'completed' && process.env.ADMIN_EMAIL) {
+    const { data: testerProfile } = await supabase
+      .from('users')
+      .select('display_name')
+      .eq('id', user.id)
+      .single();
+
+    const { data: allResults } = await supabase
+      .from('test_results')
+      .select('*')
+      .eq('session_id', session.id);
+
+    sendTestReportEmail({
+      to: process.env.ADMIN_EMAIL,
+      testerName: testerProfile?.display_name ?? 'Unbekannt',
+      session: updated,
+      results: allResults ?? [],
+    }).catch((err: unknown) => {
+      console.error('[testing/session] Report-E-Mail fehlgeschlagen:', err);
+    });
   }
 
   return NextResponse.json(updated);

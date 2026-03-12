@@ -52,7 +52,7 @@ export function ProfileCompletionBanner({
       <button
         onClick={handleDismiss}
         className="absolute right-2 top-2 rounded-full p-1 text-muted-foreground hover:bg-white/50"
-        aria-label="Spaeter erinnern"
+        aria-label="Später erinnern"
       >
         <X className="h-4 w-4" />
       </button>

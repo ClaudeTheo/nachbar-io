@@ -255,7 +255,7 @@ export function OnboardingFlow() {
           <button
             onClick={() => goToSlide(currentSlide - 1)}
             className="flex h-9 w-9 items-center justify-center rounded-full text-muted-foreground hover:bg-gray-100 transition-colors"
-            aria-label="Zurueck"
+            aria-label="Zurück"
           >
             <ArrowLeft className="h-5 w-5" />
           </button>
@@ -276,7 +276,7 @@ export function OnboardingFlow() {
             onClick={handleSkip}
             className="px-2 py-1 text-sm text-muted-foreground hover:text-anthrazit transition-colors"
           >
-            Ueberspringen
+            Überspringen
           </button>
         ) : (
           <div className="w-[100px]" />

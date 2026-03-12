@@ -114,6 +114,15 @@ export async function POST(request: NextRequest) {
 
   if (profileError) {
     console.error("Profil-Fehler:", profileError);
+    // Rollback: Auth-User loeschen, da Konto ohne Profil unbenutzbar
+    const { error: rollbackError } = await adminSupabase.auth.admin.deleteUser(authData.user.id);
+    if (rollbackError) {
+      console.error("Rollback Auth-User-Loeschung fehlgeschlagen:", rollbackError);
+    }
+    return NextResponse.json(
+      { error: `Profil konnte nicht erstellt werden: ${profileError.message}` },
+      { status: 500 }
+    );
   }
 
   // 7. Haushalt-Zuordnung erstellen
@@ -125,6 +134,16 @@ export async function POST(request: NextRequest) {
 
   if (memberError) {
     console.error("Mitglied-Fehler:", memberError);
+    // Kein Rollback — Konto existiert, Admin wird ueber fehlende Zuordnung informiert
+    return NextResponse.json({
+      success: true,
+      userId: authData.user.id,
+      email: userEmail,
+      tempPassword,
+      displayName: displayName.trim(),
+      household: `${street} ${houseNumber}`,
+      warning: `Haushalt-Zuordnung fehlgeschlagen: ${memberError.message}`,
+    });
   }
 
   return NextResponse.json({

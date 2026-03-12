@@ -107,10 +107,13 @@ export async function POST(request: NextRequest) {
 
   // Abgelaufene Subscriptions aufraeumen
   if (expiredEndpoints.length > 0) {
-    await supabase
+    const { error: cleanupError } = await supabase
       .from("push_subscriptions")
       .delete()
       .in("endpoint", expiredEndpoints);
+    if (cleanupError) {
+      console.error("Push-Cleanup fehlgeschlagen:", cleanupError.message);
+    }
   }
 
   return NextResponse.json({

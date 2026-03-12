@@ -47,32 +47,44 @@ export async function POST(request: NextRequest) {
     // 1. Nutzerdaten aus verknuepften Tabellen loeschen
     //    (Die meisten haben ON DELETE CASCADE, aber sicherheitshalber explizit)
     const userId = user.id;
+    const errors: string[] = [];
 
-    // Push-Subscriptions entfernen
-    await adminSupabase.from("push_subscriptions").delete().eq("user_id", userId);
+    // Kaskaden-Loeschung mit Fehler-Tracking
+    const cascadeDeletes: { table: string; filter: [string, string] }[] = [
+      { table: "push_subscriptions", filter: ["user_id", userId] },
+      { table: "notifications", filter: ["user_id", userId] },
+      { table: "reputation_points", filter: ["user_id", userId] },
+      { table: "neighbor_invitations", filter: ["inviter_id", userId] },
+      { table: "verification_requests", filter: ["user_id", userId] },
+      { table: "vacation_modes", filter: ["user_id", userId] },
+      { table: "household_members", filter: ["user_id", userId] },
+    ];
 
-    // Notifications entfernen
-    await adminSupabase.from("notifications").delete().eq("user_id", userId);
-
-    // Reputation-Punkte entfernen
-    await adminSupabase.from("reputation_points").delete().eq("user_id", userId);
-
-    // Einladungen (als Einladender) entfernen
-    await adminSupabase.from("neighbor_invitations").delete().eq("inviter_id", userId);
-
-    // Verifizierungsanfragen entfernen
-    await adminSupabase.from("verification_requests").delete().eq("user_id", userId);
-
-    // Urlaubsmodus entfernen
-    await adminSupabase.from("vacation_modes").delete().eq("user_id", userId);
-
-    // Haushaltsmitgliedschaft entfernen
-    await adminSupabase.from("household_members").delete().eq("user_id", userId);
+    for (const { table, filter } of cascadeDeletes) {
+      const { error } = await adminSupabase.from(table).delete().eq(filter[0], filter[1]);
+      if (error) {
+        console.error(`DSGVO-Loeschung ${table} fehlgeschlagen:`, error.message);
+        errors.push(table);
+      }
+    }
 
     // Nutzerprofil aus users-Tabelle entfernen
-    await adminSupabase.from("users").delete().eq("id", userId);
+    const { error: profileDeleteError } = await adminSupabase.from("users").delete().eq("id", userId);
+    if (profileDeleteError) {
+      console.error("DSGVO-Loeschung users fehlgeschlagen:", profileDeleteError.message);
+      errors.push("users");
+    }
 
-    // 2. Auth-User loeschen (entfernt auch Session/Token)
+    // Bei kritischen Fehlern abbrechen BEVOR Auth-User geloescht wird
+    if (errors.length > 0) {
+      console.error(`DSGVO-Loeschung unvollstaendig (${errors.join(", ")}), Auth-User bleibt erhalten`);
+      return NextResponse.json(
+        { error: `Daten konnten nicht vollständig gelöscht werden (${errors.join(", ")}). Bitte kontaktieren Sie den Admin.` },
+        { status: 500 }
+      );
+    }
+
+    // 2. Auth-User loeschen (erst wenn alle Daten entfernt — sonst verwaiste Daten)
     const { error: deleteError } = await adminSupabase.auth.admin.deleteUser(userId);
     if (deleteError) {
       console.error("Auth-User-Loeschung fehlgeschlagen:", deleteError);

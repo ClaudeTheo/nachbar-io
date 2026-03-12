@@ -40,11 +40,15 @@ export async function POST(request: NextRequest) {
   }
 
   // Bestehende Subscription löschen (falls vorhanden)
-  await supabase
+  const { error: deleteOldError } = await supabase
     .from("push_subscriptions")
     .delete()
     .eq("user_id", user.id)
     .eq("endpoint", endpoint);
+
+  if (deleteOldError) {
+    console.error("Push-Subscription Bereinigung fehlgeschlagen:", deleteOldError.message);
+  }
 
   // Neue Subscription speichern
   const { error } = await supabase.from("push_subscriptions").insert({
@@ -76,11 +80,15 @@ export async function DELETE(request: NextRequest) {
   const body = await request.json();
   const { endpoint } = body;
 
-  await supabase
+  const { error } = await supabase
     .from("push_subscriptions")
     .delete()
     .eq("user_id", user.id)
     .eq("endpoint", endpoint);
+
+  if (error) {
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
 
   return NextResponse.json({ success: true });
 }

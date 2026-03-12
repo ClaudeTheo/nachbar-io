@@ -76,10 +76,10 @@ export async function POST(
       .eq('verification_status', 'verified')
       .maybeSingle();
 
-    const isAdmin = await supabase.from('users').select('is_admin').eq('id', user.id).single();
+    const { data: adminCheck } = await supabase.from('users').select('is_admin').eq('id', user.id).single();
     const isAssignedHelper = helperCheck?.assigned_seniors?.includes(alert.senior_id);
 
-    if (!isAssignedHelper && !isAdmin?.data?.is_admin) {
+    if (!isAssignedHelper && !adminCheck?.is_admin) {
       return NextResponse.json(
         { error: 'Nur verifizierte Helfer duerfen auf SOS-Alerts reagieren' },
         { status: 403 }

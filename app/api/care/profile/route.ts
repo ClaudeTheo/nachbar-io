@@ -5,6 +5,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { writeAuditLog } from '@/lib/care/audit';
 import { requireCareAccess } from '@/lib/care/api-helpers';
+import { encryptFields, decryptFields, CARE_PROFILES_ENCRYPTED_FIELDS } from '@/lib/care/field-encryption';
 import type { CareLevel, EscalationConfig, EmergencyContact } from '@/lib/care/types';
 
 // Gueltige Pflegestufen
@@ -74,7 +75,10 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: 'Profil konnte nicht geladen werden' }, { status: 500 });
   }
 
-  return NextResponse.json(data);
+  // Gesundheitsfelder entschluesseln (Art. 9 DSGVO)
+  const decryptedData = data ? decryptFields(data, CARE_PROFILES_ENCRYPTED_FIELDS) : data;
+
+  return NextResponse.json(decryptedData);
 }
 
 // PUT /api/care/profile — Pflege-Profil erstellen oder aktualisieren
@@ -162,10 +166,13 @@ export async function PUT(request: NextRequest) {
   if (checkin_enabled !== undefined) updateData.checkin_enabled = !!checkin_enabled;
   if (escalation_config !== undefined) updateData.escalation_config = escalation_config;
 
+  // Gesundheitsfelder verschluesseln (Art. 9 DSGVO)
+  const encryptedData = encryptFields(updateData, CARE_PROFILES_ENCRYPTED_FIELDS);
+
   // Upsert: Erstellen falls nicht vorhanden, sonst aktualisieren
   const { data: profile, error } = await supabase
     .from('care_profiles')
-    .upsert(updateData, { onConflict: 'user_id' })
+    .upsert(encryptedData, { onConflict: 'user_id' })
     .select()
     .single();
 
@@ -190,5 +197,6 @@ export async function PUT(request: NextRequest) {
     console.error('[care/profile] Audit-Log fehlgeschlagen:', auditError);
   }
 
-  return NextResponse.json(profile);
+  // Entschluesselt zurueckgeben
+  return NextResponse.json(decryptFields(profile, CARE_PROFILES_ENCRYPTED_FIELDS));
 }

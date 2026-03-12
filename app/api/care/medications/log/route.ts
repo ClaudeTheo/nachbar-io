@@ -7,6 +7,7 @@ import { writeAuditLog } from '@/lib/care/audit';
 import { sendCareNotification } from '@/lib/care/notifications';
 import { requireCareAccess } from '@/lib/care/api-helpers';
 import { MEDICATION_DEFAULTS } from '@/lib/care/constants';
+import { decryptField, CARE_MEDICATIONS_ENCRYPTED_FIELDS } from '@/lib/care/field-encryption';
 import type { CareMedicationLogStatus } from '@/lib/care/types';
 
 const VALID_LOG_STATUSES: CareMedicationLogStatus[] = ['taken', 'skipped', 'snoozed'];
@@ -100,12 +101,15 @@ export async function POST(request: NextRequest) {
         .eq('id', medication_id)
         .single();
 
+      // Medikamenten-Name entschluesseln fuer Benachrichtigungstext
+      const medName = med?.name ? decryptField(med.name) : null;
+
       for (const rel of relatives) {
         await sendCareNotification(supabase, {
           userId: rel.user_id,
           type: 'care_medication_missed',
           title: 'Medikament uebersprungen',
-          body: `${med?.name ?? 'Ein Medikament'} wurde uebersprungen.`,
+          body: `${medName ?? 'Ein Medikament'} wurde uebersprungen.`,
           referenceId: logEntry.id,
           referenceType: 'care_medication_logs',
           url: '/care/medications',
@@ -147,5 +151,21 @@ export async function GET(request: NextRequest) {
   const { data, error } = await query;
   if (error) return NextResponse.json({ error: 'Log konnte nicht geladen werden' }, { status: 500 });
 
-  return NextResponse.json(data ?? []);
+  // Verschluesselte Medikamenten-Namen in der verschachtelten Relation entschluesseln
+  const decryptedData = (data ?? []).map((log: Record<string, unknown>) => {
+    if (log.medication && typeof log.medication === 'object') {
+      const med = log.medication as Record<string, unknown>;
+      return {
+        ...log,
+        medication: {
+          ...med,
+          name: typeof med.name === 'string' ? decryptField(med.name) : med.name,
+          dosage: typeof med.dosage === 'string' ? decryptField(med.dosage) : med.dosage,
+        },
+      };
+    }
+    return log;
+  });
+
+  return NextResponse.json(decryptedData);
 }

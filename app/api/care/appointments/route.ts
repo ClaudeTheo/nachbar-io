@@ -6,6 +6,7 @@ import { createClient } from '@/lib/supabase/server';
 import { writeAuditLog } from '@/lib/care/audit';
 import { canAccessFeature } from '@/lib/care/permissions';
 import { requireCareAccess } from '@/lib/care/api-helpers';
+import { encryptFields, decryptFields, decryptFieldsArray, CARE_APPOINTMENTS_ENCRYPTED_FIELDS } from '@/lib/care/field-encryption';
 import type { CareAppointmentType } from '@/lib/care/types';
 
 // GET /api/care/appointments — Termine abrufen
@@ -40,7 +41,8 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: 'Termine konnten nicht geladen werden' }, { status: 500 });
   }
 
-  return NextResponse.json(data ?? []);
+  // Termin-Felder entschluesseln (Art. 9 DSGVO)
+  return NextResponse.json(decryptFieldsArray(data ?? [], CARE_APPOINTMENTS_ENCRYPTED_FIELDS));
 }
 
 // POST /api/care/appointments — Neuen Termin anlegen
@@ -84,20 +86,23 @@ export async function POST(request: NextRequest) {
     if (!role) return NextResponse.json({ error: 'Kein Zugriff auf diesen Senior' }, { status: 403 });
   }
 
+  // Termin-Felder verschluesseln (Art. 9 DSGVO)
+  const insertData = encryptFields({
+    senior_id: targetSeniorId,
+    title,
+    scheduled_at,
+    type: type ?? 'other',
+    duration_minutes: duration_minutes ?? 60,
+    location: location ?? null,
+    reminder_minutes_before: reminder_minutes_before ?? [60, 15],
+    recurrence: recurrence ?? null,
+    notes: notes ?? null,
+    managed_by: user.id,
+  }, CARE_APPOINTMENTS_ENCRYPTED_FIELDS);
+
   const { data: appointment, error: insertError } = await supabase
     .from('care_appointments')
-    .insert({
-      senior_id: targetSeniorId,
-      title,
-      scheduled_at,
-      type: type ?? 'other',
-      duration_minutes: duration_minutes ?? 60,
-      location: location ?? null,
-      reminder_minutes_before: reminder_minutes_before ?? [60, 15],
-      recurrence: recurrence ?? null,
-      notes: notes ?? null,
-      managed_by: user.id,
-    })
+    .insert(insertData)
     .select()
     .single();
 
@@ -115,5 +120,6 @@ export async function POST(request: NextRequest) {
     metadata: { action: 'created', title, scheduled_at },
   }).catch(() => {});
 
-  return NextResponse.json(appointment, { status: 201 });
+  // Entschluesselt zurueckgeben
+  return NextResponse.json(decryptFields(appointment, CARE_APPOINTMENTS_ENCRYPTED_FIELDS), { status: 201 });
 }

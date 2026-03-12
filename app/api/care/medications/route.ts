@@ -6,6 +6,7 @@ import { createClient } from '@/lib/supabase/server';
 import { writeAuditLog } from '@/lib/care/audit';
 import { canAccessFeature } from '@/lib/care/permissions';
 import { requireCareAccess } from '@/lib/care/api-helpers';
+import { encryptFields, decryptFieldsArray, CARE_MEDICATIONS_ENCRYPTED_FIELDS } from '@/lib/care/field-encryption';
 import type { MedicationSchedule } from '@/lib/care/types';
 
 // GET /api/care/medications — Aktive Medikamente abrufen
@@ -40,7 +41,8 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: 'Medikamente konnten nicht geladen werden' }, { status: 500 });
   }
 
-  return NextResponse.json(data ?? []);
+  // Medikamenten-Felder entschluesseln (Art. 9 DSGVO)
+  return NextResponse.json(decryptFieldsArray(data ?? [], CARE_MEDICATIONS_ENCRYPTED_FIELDS));
 }
 
 // POST /api/care/medications — Neues Medikament anlegen
@@ -83,17 +85,20 @@ export async function POST(request: NextRequest) {
     if (!role) return NextResponse.json({ error: 'Kein Zugriff auf diesen Senior' }, { status: 403 });
   }
 
+  // Medikamenten-Felder verschluesseln (Art. 9 DSGVO)
+  const insertData = encryptFields({
+    senior_id: targetSeniorId,
+    name,
+    dosage: dosage ?? null,
+    schedule,
+    instructions: instructions ?? null,
+    managed_by: user.id,
+    active: true,
+  }, CARE_MEDICATIONS_ENCRYPTED_FIELDS);
+
   const { data: medication, error: insertError } = await supabase
     .from('care_medications')
-    .insert({
-      senior_id: targetSeniorId,
-      name,
-      dosage: dosage ?? null,
-      schedule,
-      instructions: instructions ?? null,
-      managed_by: user.id,
-      active: true,
-    })
+    .insert(insertData)
     .select()
     .single();
 

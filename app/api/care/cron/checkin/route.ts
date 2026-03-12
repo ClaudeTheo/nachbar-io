@@ -6,6 +6,7 @@ import { createClient } from '@/lib/supabase/server';
 import { writeAuditLog } from '@/lib/care/audit';
 import { sendCareNotification } from '@/lib/care/notifications';
 import { CHECKIN_DEFAULTS } from '@/lib/care/constants';
+import { encryptField } from '@/lib/care/field-encryption';
 
 // GET /api/care/cron/checkin — Check-in Scheduler (Vercel Cron: alle 5 Minuten)
 export async function GET(request: NextRequest) {
@@ -257,7 +258,7 @@ export async function GET(request: NextRequest) {
                 status: 'triggered',
                 current_escalation_level: 1,
                 escalated_at: [],
-                notes: `Automatischer SOS-Alert: Check-in um ${timeStr} Uhr wurde nicht bestaetigt.`,
+                notes: encryptField(`Automatischer SOS-Alert: Check-in um ${timeStr} Uhr wurde nicht bestaetigt.`),
                 source: 'checkin_timeout',
               })
               .select('id')

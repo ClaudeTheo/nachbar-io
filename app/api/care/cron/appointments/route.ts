@@ -4,6 +4,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { sendCareNotification } from '@/lib/care/notifications';
+import { decryptFieldsArray, CARE_APPOINTMENTS_ENCRYPTED_FIELDS } from '@/lib/care/field-encryption';
 import type { CareAppointment } from '@/lib/care/types';
 
 // Toleranz in Minuten (+/-) fuer den 5-Minuten-Cron-Intervall
@@ -42,7 +43,8 @@ export async function GET(request: NextRequest) {
     );
   }
 
-  const allAppointments: CareAppointment[] = appointments ?? [];
+  // Termin-Felder entschluesseln (Art. 9 DSGVO) — Location und Notes fuer Benachrichtigungen
+  const allAppointments: CareAppointment[] = decryptFieldsArray(appointments ?? [], CARE_APPOINTMENTS_ENCRYPTED_FIELDS) as CareAppointment[];
   let sentCount = 0;
 
   for (const appointment of allAppointments) {

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { authenticateDevice, isAuthError } from "@/lib/device/auth";
+import { encryptField } from "@/lib/care/field-encryption";
 
 export async function POST(request: NextRequest) {
   let body;
@@ -37,7 +38,7 @@ export async function POST(request: NextRequest) {
         senior_id: userId,
         status: "ok",
         mood: "good",
-        note: "Wecker bestaetigt via reTerminal E1001",
+        note: encryptField("Wecker bestaetigt via reTerminal E1001"),
         scheduled_at: now,
         completed_at: now,
         escalated: false,

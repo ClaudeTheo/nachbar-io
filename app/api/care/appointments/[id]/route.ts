@@ -5,6 +5,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { writeAuditLog } from '@/lib/care/audit';
 import { requireCareAccess } from '@/lib/care/api-helpers';
+import { encryptFields, decryptFields, CARE_APPOINTMENTS_ENCRYPTED_FIELDS } from '@/lib/care/field-encryption';
 
 // GET /api/care/appointments/[id]
 export async function GET(
@@ -33,7 +34,8 @@ export async function GET(
     if (!role) return NextResponse.json({ error: 'Kein Zugriff auf diesen Termin' }, { status: 403 });
   }
 
-  return NextResponse.json(data);
+  // Termin-Felder entschluesseln (Art. 9 DSGVO)
+  return NextResponse.json(decryptFields(data, CARE_APPOINTMENTS_ENCRYPTED_FIELDS));
 }
 
 // PATCH /api/care/appointments/[id] — Termin aktualisieren
@@ -69,9 +71,12 @@ export async function PATCH(
     if (!role) return NextResponse.json({ error: 'Kein Zugriff auf diesen Termin' }, { status: 403 });
   }
 
+  // Termin-Felder verschluesseln (Art. 9 DSGVO)
+  const encryptedUpdates = encryptFields(updates, CARE_APPOINTMENTS_ENCRYPTED_FIELDS);
+
   const { data: appointment, error } = await supabase
     .from('care_appointments')
-    .update(updates)
+    .update(encryptedUpdates)
     .eq('id', id)
     .select()
     .single();
@@ -90,7 +95,8 @@ export async function PATCH(
     metadata: { action: 'updated', changes: Object.keys(updates) },
   }).catch(() => {});
 
-  return NextResponse.json(appointment);
+  // Entschluesselt zurueckgeben
+  return NextResponse.json(decryptFields(appointment, CARE_APPOINTMENTS_ENCRYPTED_FIELDS));
 }
 
 // DELETE /api/care/appointments/[id] — Termin endgueltig loeschen (hard delete)

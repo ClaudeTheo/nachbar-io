@@ -5,6 +5,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { writeAuditLog } from '@/lib/care/audit';
 import { sendCareNotification } from '@/lib/care/notifications';
+import { encryptField, decryptFields, CARE_SOS_RESPONSES_ENCRYPTED_FIELDS } from '@/lib/care/field-encryption';
 import type { CareSosResponseType } from '@/lib/care/types';
 
 // Alle erlaubten Reaktionstypen für diesen Endpunkt
@@ -95,7 +96,7 @@ export async function POST(
       helper_id: user.id,
       response_type,
       eta_minutes: eta_minutes ?? null,
-      note: note ?? null,
+      note: encryptField(note ?? null),
     })
     .select()
     .single();
@@ -164,5 +165,6 @@ export async function POST(
     }
   }
 
-  return NextResponse.json(response, { status: 201 });
+  // Entschluesselt zurueckgeben
+  return NextResponse.json(decryptFields(response, CARE_SOS_RESPONSES_ENCRYPTED_FIELDS), { status: 201 });
 }

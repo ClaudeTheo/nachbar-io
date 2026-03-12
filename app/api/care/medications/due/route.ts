@@ -4,6 +4,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { requireCareAccess } from '@/lib/care/api-helpers';
+import { decryptFieldsArray, CARE_MEDICATIONS_ENCRYPTED_FIELDS } from '@/lib/care/field-encryption';
 import type { CareMedication, MedicationSchedule } from '@/lib/care/types';
 
 // Berechnet ob ein Medikament zu einer bestimmten Uhrzeit faellig ist
@@ -68,7 +69,10 @@ export async function GET(request: NextRequest) {
     snoozed_until: string | null;
   }> = [];
 
-  for (const med of (medications ?? []) as CareMedication[]) {
+  // Medikamenten-Felder entschluesseln (Art. 9 DSGVO)
+  const decryptedMeds = decryptFieldsArray(medications ?? [], CARE_MEDICATIONS_ENCRYPTED_FIELDS) as CareMedication[];
+
+  for (const med of decryptedMeds) {
     const schedule = med.schedule;
     const times = schedule.type === 'daily' ? (schedule.times ?? []) :
                   schedule.type === 'weekly' ? (schedule.time ? [schedule.time] : []) : [];

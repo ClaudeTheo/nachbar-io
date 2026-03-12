@@ -6,6 +6,7 @@ import type { CareDocumentType } from '../types';
 import { AUDIT_EVENT_LABELS } from '../constants';
 import type { CareAuditEventType } from '../types';
 import type { ReportData, ReportMedicationEntry } from './types';
+import { decryptField } from '../field-encryption';
 
 /**
  * Sammelt alle Pflege-Daten fuer einen Berichtszeitraum
@@ -63,7 +64,7 @@ export async function generateReportData(
   const medLogList = medLogs ?? [];
   const medList = medications ?? [];
 
-  // Pro Medikament aggregieren
+  // Pro Medikament aggregieren (Name und Dosierung entschluesseln — Art. 9 DSGVO)
   const medEntries: ReportMedicationEntry[] = medList.map(med => {
     const logs = medLogList.filter(l => l.medication_id === med.id);
     const taken = logs.filter(l => l.status === 'taken').length;
@@ -71,8 +72,8 @@ export async function generateReportData(
     const missed = logs.filter(l => l.status === 'missed').length;
     const total = logs.length;
     return {
-      name: med.name,
-      dosage: med.dosage,
+      name: decryptField(med.name) ?? med.name,
+      dosage: decryptField(med.dosage) ?? med.dosage,
       totalDoses: total,
       taken,
       skipped,

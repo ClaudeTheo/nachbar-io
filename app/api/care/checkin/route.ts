@@ -6,6 +6,7 @@ import { createClient } from '@/lib/supabase/server';
 import { writeAuditLog } from '@/lib/care/audit';
 import { sendCareNotification } from '@/lib/care/notifications';
 import { requireCareAccess } from '@/lib/care/api-helpers';
+import { encryptField, decryptField, decryptFields, decryptFieldsArray, CARE_CHECKINS_ENCRYPTED_FIELDS, CARE_SOS_ALERTS_ENCRYPTED_FIELDS } from '@/lib/care/field-encryption';
 import type { CareCheckinStatus, CareCheckinMood } from '@/lib/care/types';
 
 // Gültige Check-in-Status-Werte für die Eingabe
@@ -60,6 +61,9 @@ export async function POST(request: NextRequest) {
   const now = new Date().toISOString();
   let checkin: Record<string, unknown>;
 
+  // Note verschluesseln (Art. 9 DSGVO)
+  const encryptedNote = encryptField(note ?? null);
+
   // Versuche, einen bestehenden ausstehenden Check-in zu aktualisieren, wenn scheduled_at angegeben
   if (scheduled_at) {
     const { data: existing, error: updateError } = await supabase
@@ -67,7 +71,7 @@ export async function POST(request: NextRequest) {
       .update({
         status,
         mood: mood ?? null,
-        note: note ?? null,
+        note: encryptedNote,
         completed_at: now,
       })
       .eq('senior_id', user.id)
@@ -95,7 +99,7 @@ export async function POST(request: NextRequest) {
           senior_id: user.id,
           status,
           mood: mood ?? null,
-          note: note ?? null,
+          note: encryptedNote,
           scheduled_at,
           completed_at: now,
           escalated: false,
@@ -117,7 +121,7 @@ export async function POST(request: NextRequest) {
         senior_id: user.id,
         status,
         mood: mood ?? null,
-        note: note ?? null,
+        note: encryptedNote,
         scheduled_at: now,
         completed_at: now,
         escalated: false,
@@ -191,7 +195,7 @@ export async function POST(request: NextRequest) {
         status: 'triggered',
         current_escalation_level: 1,
         escalated_at: [],
-        notes: note || 'Hilfe ueber Check-in angefordert',
+        notes: encryptField(note || 'Hilfe ueber Check-in angefordert'),
         source: 'checkin_timeout',
       });
 
@@ -203,7 +207,8 @@ export async function POST(request: NextRequest) {
     }
   }
 
-  return NextResponse.json(checkin, { status: 201 });
+  // Entschluesselt zurueckgeben
+  return NextResponse.json(decryptFields(checkin as Record<string, unknown>, CARE_CHECKINS_ENCRYPTED_FIELDS), { status: 201 });
 }
 
 // GET /api/care/checkin — Check-in-Historie abrufen
@@ -244,5 +249,6 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: 'Check-in-Historie konnte nicht geladen werden' }, { status: 500 });
   }
 
-  return NextResponse.json(data ?? []);
+  // Check-in-Notizen entschluesseln (Art. 9 DSGVO)
+  return NextResponse.json(decryptFieldsArray(data ?? [], CARE_CHECKINS_ENCRYPTED_FIELDS));
 }

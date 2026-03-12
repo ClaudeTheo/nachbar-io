@@ -7,6 +7,7 @@ import { writeAuditLog } from '@/lib/care/audit';
 import { sendCareNotification } from '@/lib/care/notifications';
 import { canAccessFeature } from '@/lib/care/permissions';
 import { requireCareAccess } from '@/lib/care/api-helpers';
+import { encryptField, decryptFields, CARE_SOS_ALERTS_ENCRYPTED_FIELDS, CARE_SOS_RESPONSES_ENCRYPTED_FIELDS } from '@/lib/care/field-encryption';
 import { CARE_SOS_CATEGORIES, ESCALATION_LEVELS } from '@/lib/care/constants';
 import type { CareSosCategory, CareSosSource } from '@/lib/care/types';
 
@@ -69,7 +70,7 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  // SOS-Alert in der Datenbank anlegen
+  // SOS-Alert in der Datenbank anlegen (notes verschluesselt — Art. 9 DSGVO)
   const { data: alert, error: insertError } = await supabase
     .from('care_sos_alerts')
     .insert({
@@ -78,7 +79,7 @@ export async function POST(request: NextRequest) {
       status: 'triggered',
       current_escalation_level: 1,
       escalated_at: [],
-      notes: notes ?? null,
+      notes: encryptField(notes ?? null),
       source,
     })
     .select()
@@ -157,7 +158,8 @@ export async function POST(request: NextRequest) {
     console.error('[care/sos] Benachrichtigung der Helfer fehlgeschlagen:', notifyError);
   }
 
-  return NextResponse.json(alert, { status: 201 });
+  // Entschluesselt zurueckgeben
+  return NextResponse.json(decryptFields(alert, CARE_SOS_ALERTS_ENCRYPTED_FIELDS), { status: 201 });
 }
 
 // GET /api/care/sos — Aktive SOS-Alerts abrufen
@@ -237,5 +239,16 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: 'SOS-Alerts konnten nicht geladen werden' }, { status: 500 });
   }
 
-  return NextResponse.json(data ?? []);
+  // SOS-Notes und Response-Notes entschluesseln (Art. 9 DSGVO)
+  const decryptedAlerts = (data ?? []).map((alert: Record<string, unknown>) => {
+    const decryptedAlert = decryptFields(alert, CARE_SOS_ALERTS_ENCRYPTED_FIELDS);
+    if (Array.isArray(decryptedAlert.responses)) {
+      decryptedAlert.responses = (decryptedAlert.responses as Record<string, unknown>[]).map(
+        (resp) => decryptFields(resp, CARE_SOS_RESPONSES_ENCRYPTED_FIELDS)
+      );
+    }
+    return decryptedAlert;
+  });
+
+  return NextResponse.json(decryptedAlerts);
 }

@@ -5,6 +5,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { requireCareAccess } from '@/lib/care/api-helpers';
 import { CHECKIN_DEFAULTS } from '@/lib/care/constants';
+import { decryptFieldsArray, CARE_CHECKINS_ENCRYPTED_FIELDS } from '@/lib/care/field-encryption';
 import type { CareCheckin } from '@/lib/care/types';
 
 // Antwort-Struktur für den Status-Endpunkt
@@ -80,7 +81,8 @@ export async function GET(request: NextRequest) {
     );
   }
 
-  const todayCheckins: CareCheckin[] = (checkinsResult.data ?? []) as CareCheckin[];
+  // Check-in-Notizen entschluesseln (Art. 9 DSGVO)
+  const todayCheckins: CareCheckin[] = decryptFieldsArray(checkinsResult.data ?? [], CARE_CHECKINS_ENCRYPTED_FIELDS) as CareCheckin[];
 
   // Check-in-Zeiten und Aktivierungsstatus aus dem Profil oder Defaults laden
   const checkinTimes: string[] =

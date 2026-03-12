@@ -5,6 +5,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { writeAuditLog } from '@/lib/care/audit';
 import { requireCareAccess } from '@/lib/care/api-helpers';
+import { encryptField, decryptFields, CARE_SOS_ALERTS_ENCRYPTED_FIELDS, CARE_SOS_RESPONSES_ENCRYPTED_FIELDS } from '@/lib/care/field-encryption';
 import type { CareSosStatus } from '@/lib/care/types';
 
 // Erlaubte Status-Übergänge für den PATCH-Endpunkt
@@ -64,7 +65,15 @@ export async function GET(
     if (!role) return NextResponse.json({ error: 'Kein Zugriff auf diesen SOS-Alert' }, { status: 403 });
   }
 
-  return NextResponse.json(alert);
+  // SOS-Notes und Response-Notes entschluesseln (Art. 9 DSGVO)
+  const decryptedAlert = decryptFields(alert, CARE_SOS_ALERTS_ENCRYPTED_FIELDS);
+  if (Array.isArray(decryptedAlert.responses)) {
+    decryptedAlert.responses = (decryptedAlert.responses as Record<string, unknown>[]).map(
+      (resp) => decryptFields(resp, CARE_SOS_RESPONSES_ENCRYPTED_FIELDS)
+    );
+  }
+
+  return NextResponse.json(decryptedAlert);
 }
 
 // PATCH /api/care/sos/[id] — SOS-Alert schließen oder abbrechen
@@ -122,7 +131,7 @@ export async function PATCH(
   // Update-Objekt aufbauen — bei 'resolved' Resolver und Zeitstempel setzen
   const updatePayload: Record<string, unknown> = {
     status: newStatus,
-    ...(notes !== undefined && { notes }),
+    ...(notes !== undefined && { notes: encryptField(notes) }),
   };
 
   if (newStatus === 'resolved') {
@@ -162,5 +171,6 @@ export async function PATCH(
     console.error('[care/sos/id] Audit-Log konnte nicht geschrieben werden:', auditError);
   }
 
-  return NextResponse.json(updatedAlert);
+  // Entschluesselt zurueckgeben
+  return NextResponse.json(decryptFields(updatedAlert, CARE_SOS_ALERTS_ENCRYPTED_FIELDS));
 }

@@ -5,6 +5,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { writeAuditLog } from '@/lib/care/audit';
 import { requireCareAccess } from '@/lib/care/api-helpers';
+import { encryptFields, decryptFields, CARE_MEDICATIONS_ENCRYPTED_FIELDS } from '@/lib/care/field-encryption';
 
 // GET /api/care/medications/[id]
 export async function GET(
@@ -33,7 +34,8 @@ export async function GET(
     if (!role) return NextResponse.json({ error: 'Kein Zugriff auf dieses Medikament' }, { status: 403 });
   }
 
-  return NextResponse.json(data);
+  // Medikamenten-Felder entschluesseln (Art. 9 DSGVO)
+  return NextResponse.json(decryptFields(data, CARE_MEDICATIONS_ENCRYPTED_FIELDS));
 }
 
 // PATCH /api/care/medications/[id] — Medikament aktualisieren
@@ -69,9 +71,12 @@ export async function PATCH(
     if (!role) return NextResponse.json({ error: 'Kein Zugriff auf dieses Medikament' }, { status: 403 });
   }
 
+  // Medikamenten-Felder verschluesseln (Art. 9 DSGVO)
+  const encryptedUpdates = encryptFields(updates, CARE_MEDICATIONS_ENCRYPTED_FIELDS);
+
   const { data: medication, error } = await supabase
     .from('care_medications')
-    .update(updates)
+    .update(encryptedUpdates)
     .eq('id', id)
     .select()
     .single();
@@ -90,7 +95,8 @@ export async function PATCH(
     metadata: { action: updates.active === false ? 'deactivated' : 'updated', changes: Object.keys(updates) },
   }).catch(() => {});
 
-  return NextResponse.json(medication);
+  // Entschluesselt zurueckgeben
+  return NextResponse.json(decryptFields(medication, CARE_MEDICATIONS_ENCRYPTED_FIELDS));
 }
 
 // DELETE /api/care/medications/[id] — Medikament deaktivieren (soft delete)

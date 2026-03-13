@@ -5,6 +5,7 @@ import { QuarterProvider } from "@/lib/quarters";
 import { QuarterSwitcher } from "@/components/QuarterSwitcher";
 import { TestModeProvider } from "@/components/testing/TestModeProvider";
 import { TesterWelcomeDialog } from "@/components/testing/TesterWelcomeDialog";
+import { BugReportButton } from "@/components/testing/BugReportButton";
 
 // Layout fuer den aktiven Modus — mit Bottom-Navigation + Test-Modus
 export default function AppLayout({
@@ -32,6 +33,7 @@ export default function AppLayout({
         <TestModeProvider>
           <main id="main-content" className="mx-auto max-w-lg px-4 pt-4">{children}</main>
           <TesterWelcomeDialog />
+          <BugReportButton />
         </TestModeProvider>
       </QuarterProvider>
       <BottomNav />

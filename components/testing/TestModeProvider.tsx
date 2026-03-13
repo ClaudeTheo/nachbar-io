@@ -7,8 +7,22 @@
 import { createContext, useContext, useState, useEffect, useCallback, useRef, type ReactNode } from "react";
 import { usePathname } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { useQuarter } from "@/lib/quarters";
 import type { TestSession, TestResult, TestStatus, IssueSeverity, IssueType, SessionFeedback, VisitedRoute } from "@/lib/testing/types";
 import { TestModePanel } from "./TestModePanel";
+import { toast } from "sonner";
+
+// ============================================================
+// Bug-Report: Console-Error Typen
+// ============================================================
+interface ConsoleError {
+  level: "error" | "warn" | "unhandled";
+  message: string;
+  stack?: string;
+  timestamp: string;
+}
+
+const MAX_CONSOLE_ERRORS = 50;
 
 // ============================================================
 // Context Definition
@@ -52,6 +66,11 @@ interface TestModeContextValue {
   completeOnboarding: () => void;
   refreshSession: () => Promise<void>;
 
+  // Bug-Report
+  consoleErrors: ConsoleError[];
+  submitBugReport: (comment?: string) => Promise<void>;
+  bugReportLoading: boolean;
+
   // UI-State
   panelOpen: boolean;
   setPanelOpen: (open: boolean) => void;
@@ -91,6 +110,15 @@ export function TestModeProvider({ children }: { children: ReactNode }) {
   const visitedRoutesRef = useRef<VisitedRoute[]>([]);
   const syncTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const pathname = usePathname();
+
+  // Bug-Report: Console-Error-Buffer + State
+  const [consoleErrors, setConsoleErrors] = useState<ConsoleError[]>([]);
+  const consoleErrorsRef = useRef<ConsoleError[]>([]);
+  const [bugReportLoading, setBugReportLoading] = useState(false);
+  const originalConsoleError = useRef<typeof console.error | null>(null);
+
+  // Quartier-Kontext fuer Bug-Reports (QuarterProvider umschliesst TestModeProvider im Layout)
+  const { currentQuarter } = useQuarter();
 
   // ─────────────────────────────────────────────────
   // Initialisierung: Tester-Status + aktive Session laden
@@ -329,6 +357,154 @@ export function TestModeProvider({ children }: { children: ReactNode }) {
   }, [syncVisitedRoutes]);
 
   // ─────────────────────────────────────────────────
+  // Bug-Report: Console-Error Capture
+  // ─────────────────────────────────────────────────
+  useEffect(() => {
+    if (!isTester) return;
+
+    // Console.error wrappen
+    if (!originalConsoleError.current) {
+      originalConsoleError.current = console.error;
+    }
+    const origError = originalConsoleError.current;
+
+    console.error = (...args: unknown[]) => {
+      const entry: ConsoleError = {
+        level: "error",
+        message: args.map(a => (typeof a === "object" ? JSON.stringify(a) : String(a))).join(" "),
+        timestamp: new Date().toISOString(),
+      };
+      consoleErrorsRef.current = [...consoleErrorsRef.current.slice(-(MAX_CONSOLE_ERRORS - 1)), entry];
+      setConsoleErrors(consoleErrorsRef.current);
+      origError.apply(console, args);
+    };
+
+    // Window-Error-Handler
+    const handleError = (event: ErrorEvent) => {
+      const entry: ConsoleError = {
+        level: "error",
+        message: event.message || "Unbekannter Fehler",
+        stack: event.error?.stack,
+        timestamp: new Date().toISOString(),
+      };
+      consoleErrorsRef.current = [...consoleErrorsRef.current.slice(-(MAX_CONSOLE_ERRORS - 1)), entry];
+      setConsoleErrors(consoleErrorsRef.current);
+    };
+
+    // Unhandled Promise Rejection Handler
+    const handleRejection = (event: PromiseRejectionEvent) => {
+      const entry: ConsoleError = {
+        level: "unhandled",
+        message: event.reason?.message || String(event.reason),
+        stack: event.reason?.stack,
+        timestamp: new Date().toISOString(),
+      };
+      consoleErrorsRef.current = [...consoleErrorsRef.current.slice(-(MAX_CONSOLE_ERRORS - 1)), entry];
+      setConsoleErrors(consoleErrorsRef.current);
+    };
+
+    window.addEventListener("error", handleError);
+    window.addEventListener("unhandledrejection", handleRejection);
+
+    return () => {
+      console.error = origError;
+      window.removeEventListener("error", handleError);
+      window.removeEventListener("unhandledrejection", handleRejection);
+    };
+  }, [isTester]);
+
+  // ─────────────────────────────────────────────────
+  // Bug-Report: Screenshot + Senden
+  // ─────────────────────────────────────────────────
+  const submitBugReport = useCallback(async (comment?: string) => {
+    setBugReportLoading(true);
+    try {
+      const supabase = createClient();
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Nicht eingeloggt");
+
+      // 1. Screenshot via html2canvas
+      let screenshotUrl: string | undefined;
+      try {
+        const html2canvas = (await import("html2canvas")).default;
+        const canvas = await html2canvas(document.body, {
+          scale: 1,
+          useCORS: true,
+          logging: false,
+          width: window.innerWidth,
+          height: window.innerHeight,
+        });
+        const blob = await new Promise<Blob | null>(resolve =>
+          canvas.toBlob(resolve, "image/jpeg", 0.7)
+        );
+
+        if (blob) {
+          const uuid = crypto.randomUUID();
+          const path = `bug-reports/${user.id}/${uuid}.jpg`;
+          const { error: uploadError } = await supabase.storage
+            .from("images")
+            .upload(path, blob, { contentType: "image/jpeg" });
+
+          if (!uploadError) {
+            const { data: urlData } = supabase.storage
+              .from("images")
+              .getPublicUrl(path);
+            screenshotUrl = urlData.publicUrl;
+          }
+        }
+      } catch (screenshotErr) {
+        // Screenshot fehlgeschlagen — Report trotzdem senden
+        console.warn("[BugReport] Screenshot fehlgeschlagen:", screenshotErr);
+      }
+
+      // 2. Browser-Info sammeln
+      const browserInfo = {
+        userAgent: navigator.userAgent,
+        language: navigator.language,
+        viewport: { width: window.innerWidth, height: window.innerHeight },
+        screenSize: { width: screen.width, height: screen.height },
+        devicePixelRatio: window.devicePixelRatio,
+        online: navigator.onLine,
+        platform: navigator.platform,
+      };
+
+      // 3. Seiten-Meta sammeln
+      const pageMeta = {
+        scrollX: window.scrollX,
+        scrollY: window.scrollY,
+        pathname: window.location.pathname,
+        search: window.location.search,
+        referrer: document.referrer,
+        timestamp: new Date().toISOString(),
+      };
+
+      // 4. Bug-Report in DB speichern
+      const { error: insertError } = await supabase
+        .from("bug_reports")
+        .insert({
+          user_id: user.id,
+          quarter_id: currentQuarter?.id,
+          page_url: window.location.href,
+          page_title: document.title,
+          screenshot_url: screenshotUrl,
+          console_errors: consoleErrorsRef.current,
+          browser_info: browserInfo,
+          page_meta: pageMeta,
+          user_comment: comment?.trim() || null,
+        });
+
+      if (insertError) throw insertError;
+
+      toast.success("Bug-Report gesendet! Danke fuers Testen.");
+    } catch (err) {
+      console.error("[BugReport] Fehler:", err);
+      toast.error("Bug-Report konnte nicht gesendet werden.");
+    } finally {
+      setBugReportLoading(false);
+    }
+  }, [currentQuarter?.id]);
+
+  // ─────────────────────────────────────────────────
   // Onboarding abschliessen
   // ─────────────────────────────────────────────────
   const completeOnboarding = useCallback(() => {
@@ -388,6 +564,9 @@ export function TestModeProvider({ children }: { children: ReactNode }) {
     abandonSession,
     completeOnboarding,
     refreshSession,
+    consoleErrors,
+    submitBugReport,
+    bugReportLoading,
     panelOpen,
     setPanelOpen,
     activePathId,

@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
 import { createClient } from "@/lib/supabase/client";
+import { useQuarter } from "@/lib/quarters";
 import { haversineDistance, RADIUS_DIRECT } from "@/lib/geo";
 import { formatDistanceToNow } from "date-fns";
 import { de } from "date-fns/locale";
@@ -50,7 +51,10 @@ export default function WhoHasPage() {
   const [myPos, setMyPos] = useState<{ lat: number; lng: number } | null>(null);
   const [userPositions, setUserPositions] = useState<UserPosMap>(new Map());
 
+  const { currentQuarter } = useQuarter();
+
   const loadData = useCallback(async () => {
+    if (!currentQuarter) return;
     const supabase = createClient();
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
@@ -65,6 +69,7 @@ export default function WhoHasPage() {
         supabase
           .from("help_requests")
           .select("*, user:users(display_name, avatar_url)")
+          .eq("quarter_id", currentQuarter.id)
           .eq("category", "whohas")
           .eq("status", "active")
           .gte("created_at", yesterday.toISOString())
@@ -113,7 +118,7 @@ export default function WhoHasPage() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [currentQuarter]);
 
   useEffect(() => {
     loadData();

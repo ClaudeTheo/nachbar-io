@@ -43,6 +43,9 @@ import { ApiTester } from "./components/ApiTester";
 import { DevOpsPanel } from "./components/DevOpsPanel";
 import { TestManagement } from "./components/TestManagement";
 import { VerificationQueue } from "./components/VerificationQueue";
+import { SuperAdminOverview } from "./components/SuperAdminOverview";
+import { QuarterWizard } from "./components/QuarterWizard";
+import { useUserRole } from "@/lib/quarters";
 
 // ============================================================
 // TYPEN
@@ -87,7 +90,16 @@ export default function AdminPage() {
   const [households, setHouseholds] = useState<(Household & { memberCount: number })[]>([]);
   const [activeTab, setActiveTab] = useState("overview");
   const [lastRefresh, setLastRefresh] = useState<Date>(new Date());
+  const [wizardOpen, setWizardOpen] = useState(false);
   const router = useRouter();
+  const { isSuperAdmin } = useUserRole();
+
+  // Standardtab fuer Super-Admins setzen
+  useEffect(() => {
+    if (isSuperAdmin && activeTab === "overview") {
+      setActiveTab("super-overview");
+    }
+  }, [isSuperAdmin]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Daten laden
   const loadData = useCallback(async () => {
@@ -255,6 +267,11 @@ export default function AdminPage() {
         {/* Primaere Tabs: Quartier-Verwaltung */}
         <Tabs value={SYSTEM_TAB_VALUES.includes(activeTab as typeof SYSTEM_TAB_VALUES[number]) ? "" : activeTab} onValueChange={setActiveTab}>
           <TabsList className="w-full h-auto flex-wrap gap-1 bg-muted/50 p-1">
+            {isSuperAdmin && (
+              <TabsTrigger value="super-overview" className="text-xs flex-1 min-w-[70px]">
+                <Globe className="h-3.5 w-3.5 mr-1" />Plattform
+              </TabsTrigger>
+            )}
             <TabsTrigger value="overview" className="text-xs flex-1 min-w-[60px]">
               <BarChart3 className="h-3.5 w-3.5 mr-1" />Uebersicht
             </TabsTrigger>
@@ -308,8 +325,27 @@ export default function AdminPage() {
         </Select>
       </div>
 
+      {/* QuarterWizard Dialog (fuer Super-Admins) */}
+      {isSuperAdmin && (
+        <QuarterWizard
+          open={wizardOpen}
+          onOpenChange={setWizardOpen}
+          onCreated={() => {
+            setWizardOpen(false);
+            // SuperAdminOverview laedt selbst nach
+          }}
+        />
+      )}
+
       {/* Tab-Inhalte (bedingt gerendert) */}
       <div className="mt-4">
+        {activeTab === "super-overview" && isSuperAdmin && (
+          <SuperAdminOverview
+            onOpenWizard={() => setWizardOpen(true)}
+            onSwitchTab={setActiveTab}
+          />
+        )}
+
         {activeTab === "overview" && stats && (
           <div className="space-y-4">
             {/* Verifizierungs-Queue — immer ganz oben */}

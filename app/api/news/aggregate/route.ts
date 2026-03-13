@@ -34,6 +34,14 @@ export async function POST(request: NextRequest) {
     }
   }
 
+  // Quartier-ID fuer Bad Saeckingen Pilot ermitteln
+  const { data: pilotQuarter } = await supabase
+    .from("quarters")
+    .select("id")
+    .eq("slug", "bad-saeckingen-pilot")
+    .single();
+  const quarterId = pilotQuarter?.id ?? null;
+
   // Beispiel-Nachricht fuer MVP (spaeter durch RSS-Scraping ersetzen)
   const sampleNews = [
     {
@@ -101,6 +109,7 @@ Format: {"summary": "...", "relevance_score": 0, "category": "infrastructure|eve
           category: parsed.category || "other",
           relevance_score: Math.min(10, Math.max(0, parsed.relevance_score)),
           published_at: new Date().toISOString(),
+          quarter_id: quarterId,
         }).select().single();
 
         if (inserted) results.push(inserted);

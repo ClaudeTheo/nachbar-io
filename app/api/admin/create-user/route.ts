@@ -50,6 +50,7 @@ export async function POST(request: NextRequest) {
     email,
     uiMode = "senior",
     verified = true,
+    quarter_id,
   } = body;
 
   if (!displayName || !street || !houseNumber) {
@@ -59,14 +60,19 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  // 3. Haushalt pruefen
+  // 3. Haushalt pruefen (optional mit quarter_id filtern)
   const adminSupabase = getAdminSupabase();
-  const { data: household, error: householdError } = await adminSupabase
+  let householdQuery = adminSupabase
     .from("households")
-    .select("id")
+    .select("id, quarter_id")
     .eq("street_name", street)
-    .eq("house_number", houseNumber)
-    .maybeSingle();
+    .eq("house_number", houseNumber);
+
+  if (quarter_id) {
+    householdQuery = householdQuery.eq("quarter_id", quarter_id);
+  }
+
+  const { data: household, error: householdError } = await householdQuery.maybeSingle();
 
   if (householdError) {
     return NextResponse.json(

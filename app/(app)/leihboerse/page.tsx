@@ -6,6 +6,7 @@ import { Plus, ArrowLeft, RefreshCw } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { LEIHBOERSE_CATEGORIES } from "@/lib/constants";
 import { createClient } from "@/lib/supabase/client";
+import { useQuarter } from "@/lib/quarters";
 import type { LeihboerseItem } from "@/lib/supabase/types";
 import { formatDistanceToNow } from "date-fns";
 import { de } from "date-fns/locale";
@@ -21,14 +22,17 @@ export default function LeihboersePage() {
   const [filterCategory, setFilterCategory] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const { currentQuarter } = useQuarter();
 
   const load = useCallback(async () => {
+    if (!currentQuarter) return;
     setLoading(true);
     setError(null);
     const supabase = createClient();
     let query = supabase
       .from("leihboerse_items")
       .select("*, user:users(display_name, avatar_url)")
+      .eq("quarter_id", currentQuarter.id)
       .eq("status", "active")
       .order("created_at", { ascending: false });
 
@@ -44,7 +48,7 @@ export default function LeihboersePage() {
     }
     setItems((data ?? []) as unknown as LeihboerseItem[]);
     setLoading(false);
-  }, [filterType, filterCategory]);
+  }, [filterType, filterCategory, currentQuarter]);
 
   // Daten bei jedem Seitenaufruf neu laden
   useEffect(() => {

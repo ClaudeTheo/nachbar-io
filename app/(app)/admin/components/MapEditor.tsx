@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback } from "react";
-import { MapPin, Plus, Save, Trash2, GripVertical, X, Users, Home, ChevronDown, ChevronUp } from "lucide-react";
+import { useState, useEffect, useRef, useCallback, useMemo } from "react";
+import { MapPin, Plus, Save, Trash2, GripVertical, X, Users, Home, ChevronDown, ChevronUp, Upload, Image } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -11,8 +11,11 @@ import { createClient } from "@/lib/supabase/client";
 import { toast } from "sonner";
 import {
   MAP_W, MAP_H, STREET_LABELS, COLOR_CFG, DEFAULT_HOUSES,
+  loadQuarterHouses, parseViewBox,
   type MapHouseData, type LampColor, type StreetCode,
 } from "@/lib/map-houses";
+import { useQuarter } from "@/lib/quarters";
+import type { Quarter } from "@/lib/quarters/types";
 import type { User, Household, HouseholdMember } from "@/lib/supabase/types";
 
 // ============================================================
@@ -26,6 +29,22 @@ interface HouseholdWithMembers extends Household {
 // HAUPTKOMPONENTE
 // ============================================================
 export function MapEditor() {
+  // Quartier-Kontext
+  const { currentQuarter, allQuarters } = useQuarter();
+  const [selectedQuarterId, setSelectedQuarterId] = useState<string | null>(null);
+
+  // Ausgewaehltes Quartier bestimmen (Fallback auf aktuelles)
+  const activeQuarter = useMemo(() => {
+    if (selectedQuarterId) return allQuarters.find(q => q.id === selectedQuarterId) ?? currentQuarter;
+    return currentQuarter;
+  }, [selectedQuarterId, allQuarters, currentQuarter]);
+
+  // Karten-Konfiguration aus Quartier
+  const mapConfig = activeQuarter?.map_config;
+  const viewBoxStr = mapConfig?.viewBox ?? `0 0 ${MAP_W} ${MAP_H}`;
+  const backgroundImage = mapConfig?.backgroundImage ?? "/map-quartier.jpg";
+  const { w: mapW, h: mapH } = useMemo(() => parseViewBox(mapConfig?.viewBox), [mapConfig?.viewBox]);
+
   // Karten-State
   const [houses, setHouses] = useState<MapHouseData[]>([]);
   const [originalHouses, setOriginalHouses] = useState<MapHouseData[]>([]);
@@ -33,6 +52,8 @@ export function MapEditor() {
   const [isAddMode, setIsAddMode] = useState(false);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [uploadingBg, setUploadingBg] = useState(false);
+  const bgInputRef = useRef<HTMLInputElement>(null);
 
   // Nutzer-State (fuer Panel)
   const [showUsers, setShowUsers] = useState(false);
@@ -57,25 +78,18 @@ export function MapEditor() {
   const loadHouses = useCallback(async () => {
     setLoading(true);
     try {
-      const supabase = createClient();
-      const { data, error } = await supabase
-        .from("map_houses")
-        .select("id, house_number, street_code, x, y, default_color")
-        .order("street_code");
-
-      if (!error && data && data.length > 0) {
-        const mapped: MapHouseData[] = data.map(h => ({
-          id: h.id,
-          num: h.house_number,
-          s: h.street_code as StreetCode,
-          x: h.x,
-          y: h.y,
-          defaultColor: h.default_color as LampColor,
-        }));
-        setHouses(mapped);
-        setOriginalHouses(JSON.parse(JSON.stringify(mapped)));
+      const qId = activeQuarter?.id;
+      if (qId) {
+        const quarterHouses = await loadQuarterHouses(qId);
+        if (quarterHouses.length > 0) {
+          setHouses(quarterHouses);
+          setOriginalHouses(JSON.parse(JSON.stringify(quarterHouses)));
+        } else {
+          // Fallback auf Hardcoded (nur fuer Pilot-Quartier)
+          setHouses([...DEFAULT_HOUSES]);
+          setOriginalHouses(JSON.parse(JSON.stringify(DEFAULT_HOUSES)));
+        }
       } else {
-        // Fallback auf Hardcoded
         setHouses([...DEFAULT_HOUSES]);
         setOriginalHouses(JSON.parse(JSON.stringify(DEFAULT_HOUSES)));
       }
@@ -84,7 +98,7 @@ export function MapEditor() {
       setOriginalHouses(JSON.parse(JSON.stringify(DEFAULT_HOUSES)));
     }
     setLoading(false);
-  }, []);
+  }, [activeQuarter?.id]);
 
   // Haushalte + Mitglieder laden (fuer Nutzerverwaltung)
   const loadHouseholds = useCallback(async () => {
@@ -152,8 +166,8 @@ export function MapEditor() {
     if (!svgRef.current) return { x: 0, y: 0 };
     const rect = svgRef.current.getBoundingClientRect();
     return {
-      x: Math.round(Math.max(0, Math.min(MAP_W, ((clientX - rect.left) / rect.width) * MAP_W))),
-      y: Math.round(Math.max(0, Math.min(MAP_H, ((clientY - rect.top) / rect.height) * MAP_H))),
+      x: Math.round(Math.max(0, Math.min(mapW, ((clientX - rect.left) / rect.width) * mapW))),
+      y: Math.round(Math.max(0, Math.min(mapH, ((clientY - rect.top) / rect.height) * mapH))),
     };
   }
 
@@ -261,7 +275,7 @@ export function MapEditor() {
         if (error) { toast.error("Fehler beim Loeschen"); setSaving(false); return; }
       }
 
-      // Alle aktuellen upserten
+      // Alle aktuellen upserten (mit quarter_id)
       const { error } = await supabase.from("map_houses").upsert(
         houses.map(h => ({
           id: h.id,
@@ -270,6 +284,7 @@ export function MapEditor() {
           x: h.x,
           y: h.y,
           default_color: h.defaultColor,
+          quarter_id: activeQuarter?.id ?? null,
         }))
       );
 
@@ -295,6 +310,53 @@ export function MapEditor() {
     OR: houses.filter(h => h.s === "OR").length,
   };
 
+  // Hintergrundbild hochladen und in Quartier-map_config speichern
+  async function handleBgUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file || !activeQuarter) return;
+    setUploadingBg(true);
+    try {
+      const supabase = createClient();
+      const ext = file.name.split(".").pop() ?? "jpg";
+      const path = `quarters/${activeQuarter.id}/map-bg.${ext}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from("public-assets")
+        .upload(path, file, { upsert: true });
+
+      if (uploadError) {
+        toast.error("Bild-Upload fehlgeschlagen");
+        setUploadingBg(false);
+        return;
+      }
+
+      const { data: { publicUrl } } = supabase.storage
+        .from("public-assets")
+        .getPublicUrl(path);
+
+      // map_config im Quartier aktualisieren
+      const updatedConfig = {
+        ...(activeQuarter.map_config ?? {}),
+        backgroundImage: publicUrl,
+      };
+      const { error: updateError } = await supabase
+        .from("quarters")
+        .update({ map_config: updatedConfig })
+        .eq("id", activeQuarter.id);
+
+      if (updateError) {
+        toast.error("Quartier-Update fehlgeschlagen");
+      } else {
+        toast.success("Hintergrundbild aktualisiert");
+        // Seite neu laden um neues Bild zu zeigen
+        window.location.reload();
+      }
+    } catch {
+      toast.error("Upload fehlgeschlagen");
+    }
+    setUploadingBg(false);
+  }
+
   // Haushalt fuer ausgewaehltes Haus
   const selectedHousehold = selectedHouse
     ? householdMap[`${selectedHouse.s}:${selectedHouse.num}`] ?? null
@@ -311,13 +373,54 @@ export function MapEditor() {
 
   return (
     <div className="space-y-3">
+      {/* Quartier-Auswahl */}
+      {allQuarters.length > 1 && (
+        <div className="flex items-center gap-2">
+          <label className="text-xs text-muted-foreground">Quartier:</label>
+          <select
+            value={activeQuarter?.id ?? ""}
+            onChange={e => {
+              setSelectedQuarterId(e.target.value);
+              setSelectedId(null);
+              setNewHouse(null);
+            }}
+            className="h-8 rounded-md border border-input bg-background px-2 text-sm"
+          >
+            {allQuarters.map(q => (
+              <option key={q.id} value={q.id}>{q.name}</option>
+            ))}
+          </select>
+        </div>
+      )}
+
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <MapPin className="h-5 w-5 text-anthrazit" />
-          <h2 className="font-semibold text-anthrazit">Karten-Editor</h2>
+          <h2 className="font-semibold text-anthrazit">
+            Karten-Editor{activeQuarter ? ` — ${activeQuarter.name}` : ""}
+          </h2>
         </div>
         <div className="flex items-center gap-2">
+          {/* Hintergrundbild hochladen */}
+          <input
+            ref={bgInputRef}
+            type="file"
+            accept="image/*"
+            onChange={handleBgUpload}
+            className="hidden"
+          />
+          <Button
+            size="sm"
+            variant="outline"
+            className="text-xs h-8"
+            onClick={() => bgInputRef.current?.click()}
+            disabled={uploadingBg || !activeQuarter}
+            title="Hintergrundbild fuer dieses Quartier hochladen"
+          >
+            <Image className="h-3.5 w-3.5 mr-1" />
+            {uploadingBg ? "..." : "Hintergrund"}
+          </Button>
           <Button
             size="sm"
             variant={showUsers ? "default" : "outline"}
@@ -365,7 +468,7 @@ export function MapEditor() {
         <div className="relative">
           <svg
             ref={svgRef}
-            viewBox={`0 0 ${MAP_W} ${MAP_H}`}
+            viewBox={viewBoxStr}
             width="100%"
             className="block"
             style={{ cursor: isAddMode ? "crosshair" : "default", touchAction: "none" }}
@@ -373,7 +476,7 @@ export function MapEditor() {
             onPointerMove={handlePointerMove}
             onPointerUp={handlePointerUp}
           >
-            <image href="/map-quartier.jpg" x={0} y={0} width={MAP_W} height={MAP_H} preserveAspectRatio="xMidYMid slice" />
+            <image href={backgroundImage} x={0} y={0} width={mapW} height={mapH} preserveAspectRatio="xMidYMid slice" />
 
             {/* Haus-Marker */}
             {houses.map((h) => {

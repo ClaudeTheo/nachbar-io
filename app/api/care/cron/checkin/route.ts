@@ -8,6 +8,7 @@ import { sendCareNotification } from '@/lib/care/notifications';
 import { CHECKIN_DEFAULTS } from '@/lib/care/constants';
 import { encryptField } from '@/lib/care/field-encryption';
 import { writeCronHeartbeat } from '@/lib/care/cron-heartbeat';
+import { getUserQuarterId } from '@/lib/quarters/helpers';
 
 // GET /api/care/cron/checkin — Check-in Scheduler (Vercel Cron: alle 5 Minuten)
 export async function GET(request: NextRequest) {
@@ -251,6 +252,7 @@ export async function GET(request: NextRequest) {
           // Auto-SOS-Alert anlegen: Quelle 'checkin_timeout'
           let sosAlertId: string | null = null;
           try {
+            const quarterId = await getUserQuarterId(supabase, profile.user_id);
             const { data: sosAlert, error: sosError } = await supabase
               .from('care_sos_alerts')
               .insert({
@@ -261,6 +263,7 @@ export async function GET(request: NextRequest) {
                 escalated_at: [],
                 notes: encryptField(`Automatischer SOS-Alert: Check-in um ${timeStr} Uhr wurde nicht bestaetigt.`),
                 source: 'checkin_timeout',
+                quarter_id: quarterId,
               })
               .select('id')
               .single();

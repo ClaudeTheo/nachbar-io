@@ -1,5 +1,7 @@
 // Nachbar.io — Datenbank-Typen (manuell, bis supabase gen types verfügbar)
 
+import type { UserRole } from "@/lib/quarters/types";
+
 export type UserUiMode = "active" | "senior";
 export type TrustLevel = "new" | "verified" | "trusted" | "admin";
 
@@ -35,6 +37,7 @@ export interface User {
   phone: string | null;
   ui_mode: UserUiMode;
   trust_level: TrustLevel;
+  role?: UserRole;
   is_admin: boolean;
   created_at: string;
   last_seen: string;
@@ -43,6 +46,7 @@ export interface User {
 
 export interface Household {
   id: string;
+  quarter_id?: string;
   street_name: string;
   house_number: string;
   lat: number;
@@ -109,6 +113,7 @@ export interface ReputationPoint {
 
 export interface Alert {
   id: string;
+  quarter_id?: string;
   user_id: string;
   household_id: string;
   category: AlertCategory;
@@ -137,6 +142,7 @@ export interface AlertResponse {
 
 export interface HelpRequest {
   id: string;
+  quarter_id?: string;
   user_id: string;
   type: HelpRequestType;
   category: string;
@@ -151,6 +157,7 @@ export interface HelpRequest {
 
 export interface MarketplaceItem {
   id: string;
+  quarter_id?: string;
   user_id: string;
   type: MarketplaceType;
   category: string;
@@ -165,6 +172,7 @@ export interface MarketplaceItem {
 
 export interface LostFoundItem {
   id: string;
+  quarter_id?: string;
   user_id: string;
   type: LostFoundType;
   category: string;
@@ -179,6 +187,7 @@ export interface LostFoundItem {
 
 export interface NewsItem {
   id: string;
+  quarter_id?: string;
   source_url: string | null;
   original_title: string;
   ai_summary: string;
@@ -190,6 +199,7 @@ export interface NewsItem {
 
 export interface Skill {
   id: string;
+  quarter_id?: string;
   user_id: string;
   category: string;
   description: string | null;
@@ -222,6 +232,7 @@ export type EventCategory =
 
 export interface Event {
   id: string;
+  quarter_id?: string;
   user_id: string;
   title: string;
   description: string | null;
@@ -294,6 +305,7 @@ export type TipStatus = "active" | "archived" | "reported";
 
 export interface CommunityTip {
   id: string;
+  quarter_id?: string;
   user_id: string;
   category: string;
   title: string;
@@ -363,6 +375,7 @@ export type LeihboerseStatus = "active" | "reserved" | "done";
 
 export interface LeihboerseItem {
   id: string;
+  quarter_id?: string;
   user_id: string;
   type: LeihboerseType;
   category: string;
@@ -380,6 +393,7 @@ export interface LeihboerseItem {
 // Umfragen
 export interface Poll {
   id: string;
+  quarter_id?: string;
   user_id: string;
   question: string;
   multiple_choice: boolean;
@@ -410,6 +424,7 @@ export interface PollVote {
 // Paketannahme
 export interface Paketannahme {
   id: string;
+  quarter_id?: string;
   user_id: string;
   available_date: string;
   available_from: string | null;

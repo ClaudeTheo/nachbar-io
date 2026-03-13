@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Plus, Filter, ChevronRight, MapPin, Clock, Users, CalendarDays } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
+import { useQuarter } from "@/lib/quarters";
 import { EVENT_CATEGORIES } from "@/lib/constants";
 import type { Event } from "@/lib/supabase/types";
 import { format, parseISO, isToday, isTomorrow } from "date-fns";
@@ -16,8 +17,10 @@ export default function EventsPage() {
   const [filterCategory, setFilterCategory] = useState<string | null>(null);
   const [showFilter, setShowFilter] = useState(false);
   const [loading, setLoading] = useState(true);
+  const { currentQuarter } = useQuarter();
 
   useEffect(() => {
+    if (!currentQuarter) return;
     async function load() {
       const supabase = createClient();
       const today = new Date().toISOString().split("T")[0];
@@ -25,6 +28,7 @@ export default function EventsPage() {
       const { data } = await supabase
         .from("events")
         .select("*, user:users(display_name, avatar_url)")
+        .eq("quarter_id", currentQuarter!.id)
         .gte("event_date", today)
         .order("event_date", { ascending: true });
 
@@ -55,7 +59,7 @@ export default function EventsPage() {
       setLoading(false);
     }
     load();
-  }, []);
+  }, [currentQuarter?.id]);
 
   const filteredEvents = filterCategory
     ? events.filter((e) => e.category === filterCategory)

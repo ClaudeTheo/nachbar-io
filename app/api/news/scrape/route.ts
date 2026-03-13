@@ -218,6 +218,14 @@ export async function GET(request: Request) {
 
     // 3. Bestehende Titel aus DB laden (Duplikat-Check)
     const supabase = await createClient();
+
+    // Quartier-ID fuer Bad Saeckingen Pilot ermitteln
+    const { data: pilotQuarter } = await supabase
+      .from("quarters")
+      .select("id")
+      .eq("slug", "bad-saeckingen-pilot")
+      .single();
+    const quarterId = pilotQuarter?.id ?? null;
     const { data: existingNews } = await supabase
       .from("news_items")
       .select("original_title")
@@ -299,6 +307,7 @@ Format: {"summary": "...", "relevance_score": 0, "category": "infrastructure|eve
           category,
           relevance_score: relevance,
           published_at: isoDate || new Date().toISOString(),
+          quarter_id: quarterId,
         })
         .select()
         .single();

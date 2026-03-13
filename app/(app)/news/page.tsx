@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback } from "react";
 import { RefreshCw, Clock } from "lucide-react";
 import { NewsCard } from "@/components/NewsCard";
 import { createClient } from "@/lib/supabase/client";
+import { useQuarter } from "@/lib/quarters";
 import { NEWS_CATEGORIES } from "@/lib/constants";
 import type { NewsItem } from "@/lib/supabase/types";
 import { formatDistanceToNow } from "date-fns";
@@ -14,14 +15,17 @@ export default function NewsPage() {
   const [loading, setLoading] = useState(true);
   const [activeCategory, setActiveCategory] = useState("all");
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
+  const { currentQuarter } = useQuarter();
 
   const loadNews = useCallback(async () => {
+    if (!currentQuarter) return;
     setLoading(true);
     const supabase = createClient();
 
     let query = supabase
       .from("news_items")
       .select("*")
+      .or(`quarter_id.eq.${currentQuarter.id},quarter_id.is.null`)
       .order("published_at", { ascending: false, nullsFirst: false })
       .limit(30);
 
@@ -33,7 +37,7 @@ export default function NewsPage() {
     if (data) setNews(data);
     setLastUpdated(new Date());
     setLoading(false);
-  }, [activeCategory]);
+  }, [activeCategory, currentQuarter]);
 
   useEffect(() => {
     loadNews();

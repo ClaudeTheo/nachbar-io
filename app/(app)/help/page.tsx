@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
 import { createClient } from "@/lib/supabase/client";
+import { useQuarter } from "@/lib/quarters";
 import { HELP_CATEGORIES, HELP_SUBCATEGORIES } from "@/lib/constants";
 import type { HelpRequest } from "@/lib/supabase/types";
 import { formatDistanceToNow } from "date-fns";
@@ -19,14 +20,17 @@ export default function HelpPage() {
   const [filterCategory, setFilterCategory] = useState<string | null>(null);
   const [showFilter, setShowFilter] = useState(false);
   const [loading, setLoading] = useState(true);
+  const { currentQuarter } = useQuarter();
 
   useEffect(() => {
+    if (!currentQuarter) return;
     async function load() {
       try {
         const supabase = createClient();
         const { data, error } = await supabase
           .from("help_requests")
           .select("*, user:users(display_name, avatar_url)")
+          .eq("quarter_id", currentQuarter!.id)
           .eq("status", "active")
           .order("created_at", { ascending: false });
         if (error) {
@@ -41,7 +45,7 @@ export default function HelpPage() {
       }
     }
     load();
-  }, []);
+  }, [currentQuarter?.id]);
 
   const filteredRequests = filterCategory
     ? requests.filter((r) => r.category === filterCategory)

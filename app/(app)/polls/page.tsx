@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Plus, ArrowLeft, BarChart3, CheckCircle2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { createClient } from "@/lib/supabase/client";
+import { useQuarter } from "@/lib/quarters";
 import type { Poll } from "@/lib/supabase/types";
 import { formatDistanceToNow } from "date-fns";
 import { de } from "date-fns/locale";
@@ -12,13 +13,16 @@ import { de } from "date-fns/locale";
 export default function PollsPage() {
   const [polls, setPolls] = useState<Poll[]>([]);
   const [filter, setFilter] = useState<"active" | "closed" | null>(null);
+  const { currentQuarter } = useQuarter();
 
   useEffect(() => {
+    if (!currentQuarter) return;
     async function load() {
       const supabase = createClient();
       let query = supabase
         .from("polls")
         .select("*, user:users(display_name, avatar_url)")
+        .eq("quarter_id", currentQuarter!.id)
         .order("created_at", { ascending: false });
 
       if (filter) query = query.eq("status", filter);
@@ -43,7 +47,7 @@ export default function PollsPage() {
       }
     }
     load();
-  }, [filter]);
+  }, [filter, currentQuarter?.id]);
 
   return (
     <div>

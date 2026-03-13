@@ -1,6 +1,8 @@
 import { BottomNav } from "@/components/BottomNav";
 import { InstallPrompt } from "@/components/InstallPrompt";
 import { PendingVerificationBanner } from "@/components/PendingVerificationBanner";
+import { QuarterProvider } from "@/lib/quarters";
+import { QuarterSwitcher } from "@/components/QuarterSwitcher";
 import { TestModeProvider } from "@/components/testing/TestModeProvider";
 import { TesterWelcomeDialog } from "@/components/testing/TesterWelcomeDialog";
 
@@ -23,11 +25,15 @@ export default function AppLayout({
       <div className="mx-auto max-w-lg pt-4">
         <PendingVerificationBanner />
       </div>
-      {/* Hauptinhalt mit Padding fuer Bottom-Nav + Test-Modus Provider */}
-      <TestModeProvider>
-        <main id="main-content" className="mx-auto max-w-lg px-4 pt-4">{children}</main>
-        <TesterWelcomeDialog />
-      </TestModeProvider>
+      {/* Quartier-Kontext + Hauptinhalt mit Padding fuer Bottom-Nav + Test-Modus Provider */}
+      <QuarterProvider>
+        {/* Quartier-Umschalter fuer Super-Admins (rendert sich nur fuer berechtigte Nutzer) */}
+        <QuarterSwitcher />
+        <TestModeProvider>
+          <main id="main-content" className="mx-auto max-w-lg px-4 pt-4">{children}</main>
+          <TesterWelcomeDialog />
+        </TestModeProvider>
+      </QuarterProvider>
       <BottomNav />
       <InstallPrompt />
     </div>

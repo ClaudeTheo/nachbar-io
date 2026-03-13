@@ -6,6 +6,7 @@ import { Plus } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { MARKETPLACE_TYPES, MARKETPLACE_CATEGORIES } from "@/lib/constants";
 import { createClient } from "@/lib/supabase/client";
+import { useQuarter } from "@/lib/quarters";
 import type { MarketplaceItem } from "@/lib/supabase/types";
 import { formatDistanceToNow } from "date-fns";
 import { de } from "date-fns/locale";
@@ -14,14 +15,17 @@ export default function MarketplacePage() {
   const [items, setItems] = useState<MarketplaceItem[]>([]);
   const [filterType, setFilterType] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const { currentQuarter } = useQuarter();
 
   useEffect(() => {
+    if (!currentQuarter) return;
     async function load() {
       setLoading(true);
       const supabase = createClient();
       let query = supabase
         .from("marketplace_items")
         .select("*, user:users(display_name, avatar_url)")
+        .eq("quarter_id", currentQuarter!.id)
         .eq("status", "active")
         .order("created_at", { ascending: false });
 
@@ -34,7 +38,7 @@ export default function MarketplacePage() {
       setLoading(false);
     }
     load();
-  }, [filterType]);
+  }, [filterType, currentQuarter?.id]);
 
   return (
     <div>

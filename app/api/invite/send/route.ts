@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createClient as createAdminClient } from "@supabase/supabase-js";
 import { generateSecureCode } from "@/lib/invite-codes";
 import { sendInvitationEmail } from "@/lib/email";
+import { getUserQuarterId } from "@/lib/quarters/helpers";
 
 // Ungefaehre Koordinaten pro Strasse
 const STREET_COORDS: Record<string, { lat: number; lng: number }> = {
@@ -101,6 +102,8 @@ export async function POST(request: NextRequest) {
     if (!coords) {
       return NextResponse.json({ error: "Unbekannte Straße" }, { status: 400 });
     }
+    // Quartier-ID des einladenden Nutzers ermitteln
+    const inviterQuarterId = await getUserQuarterId(supabase, user.id);
     const houseNum = parseInt(String(houseNumber), 10) || 0;
     const { data: newHH, error: hhErr } = await adminDb
       .from("households")
@@ -111,6 +114,7 @@ export async function POST(request: NextRequest) {
         lng: coords.lng + houseNum * 0.0005,
         verified: false,
         invite_code: generateSecureCode(),
+        quarter_id: inviterQuarterId,
       })
       .select("id")
       .single();

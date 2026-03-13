@@ -1,17 +1,35 @@
 // Nachbar.io — Quartier-Konfiguration und Konstanten
+//
+// ============================================================================
+// MIGRATION HINWEIS: Multi-Quartier-Expansion
+// ============================================================================
+// Die folgenden PILOT_*-Konstanten sind Fallback-Werte fuer das Pilotquartier
+// Bad Saeckingen. In neuen Komponenten sollte stattdessen `useQuarter()` aus
+// `@/lib/quarters` verwendet werden, um die Quartiersdaten dynamisch aus der
+// Datenbank zu laden.
+//
+// Die alten Namen (QUARTIER_CENTER, QUARTIER_STREETS etc.) werden als
+// Aliase re-exportiert, damit bestehender Code weiterhin funktioniert.
+// Sie sollten schrittweise durch useQuarter() ersetzt werden.
+// ============================================================================
 
-// Geo-Zentrum des Quartiers Bad Säckingen
+// --- Pilot-Quartier Bad Saeckingen: Fallback-Konstanten ---
+
+// Geo-Zentrum des Pilotquartiers Bad Saeckingen
 // Basierend auf realer Karte: Purkersdorfer Str. / Sanarystraße / Oberer Rebberg
 // Mitte des Quartiers: 47°33'42.1"N, 7°56'53.7"E
-export const QUARTIER_CENTER = {
+// @deprecated Verwende useQuarter().center aus @/lib/quarters
+export const PILOT_QUARTIER_CENTER = {
   lat: 47.5617,
   lng: 7.9483,
 } as const;
 
-export const QUARTIER_ZOOM = 17;
+// @deprecated Verwende useQuarter().zoom aus @/lib/quarters
+export const PILOT_QUARTIER_ZOOM = 17;
 
-// GeoJSON-Bounding-Box für das Quartier
-export const QUARTIER_BOUNDS = {
+// GeoJSON-Bounding-Box fuer das Pilotquartier
+// @deprecated Verwende useQuarter().bounds aus @/lib/quarters
+export const PILOT_QUARTIER_BOUNDS = {
   type: "Polygon" as const,
   coordinates: [
     [
@@ -24,14 +42,29 @@ export const QUARTIER_BOUNDS = {
   ],
 };
 
-// Straßen des Quartiers
-export const QUARTIER_STREETS = [
+// Straßen des Pilotquartiers
+// @deprecated Verwende useQuarter().streets aus @/lib/quarters
+export const PILOT_QUARTIER_STREETS = [
   "Purkersdorfer Straße",
   "Sanarystraße",
   "Oberer Rebberg",
 ] as const;
 
-export type QuartierStreet = (typeof QUARTIER_STREETS)[number];
+// --- Abwaertskompatible Aliase (schrittweise durch useQuarter() ersetzen) ---
+
+/** @deprecated Verwende PILOT_QUARTIER_CENTER oder useQuarter().center */
+export const QUARTIER_CENTER = PILOT_QUARTIER_CENTER;
+
+/** @deprecated Verwende PILOT_QUARTIER_ZOOM oder useQuarter().zoom */
+export const QUARTIER_ZOOM = PILOT_QUARTIER_ZOOM;
+
+/** @deprecated Verwende PILOT_QUARTIER_BOUNDS oder useQuarter().bounds */
+export const QUARTIER_BOUNDS = PILOT_QUARTIER_BOUNDS;
+
+/** @deprecated Verwende PILOT_QUARTIER_STREETS oder useQuarter().streets */
+export const QUARTIER_STREETS = PILOT_QUARTIER_STREETS;
+
+export type QuartierStreet = (typeof PILOT_QUARTIER_STREETS)[number];
 
 // Alert-Kategorien
 export const ALERT_CATEGORIES = [

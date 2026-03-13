@@ -8,6 +8,7 @@ import { sendCareNotification } from '@/lib/care/notifications';
 import { requireCareAccess } from '@/lib/care/api-helpers';
 import { encryptField, decryptField, decryptFields, decryptFieldsArray, CARE_CHECKINS_ENCRYPTED_FIELDS, CARE_SOS_ALERTS_ENCRYPTED_FIELDS } from '@/lib/care/field-encryption';
 import { createCareLogger } from '@/lib/care/logger';
+import { getUserQuarterId } from '@/lib/quarters/helpers';
 import type { CareCheckinStatus, CareCheckinMood } from '@/lib/care/types';
 
 // Gültige Check-in-Status-Werte für die Eingabe
@@ -198,6 +199,7 @@ export async function POST(request: NextRequest) {
   // Bei "need_help": SOS-Alert direkt in der Datenbank anlegen (kein internes fetch wegen Cookie-Weiterleitung)
   if (status === 'need_help') {
     try {
+      const quarterId = await getUserQuarterId(supabase, user.id);
       const { error: sosError } = await supabase.from('care_sos_alerts').insert({
         senior_id: user.id,
         category: 'general_help',
@@ -206,6 +208,7 @@ export async function POST(request: NextRequest) {
         escalated_at: [],
         notes: encryptField(note || 'Hilfe ueber Check-in angefordert'),
         source: 'checkin_timeout',
+        quarter_id: quarterId,
       });
 
       if (sosError) {

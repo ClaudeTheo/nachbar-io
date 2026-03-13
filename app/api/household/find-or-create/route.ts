@@ -95,6 +95,13 @@ export async function POST(request: NextRequest) {
 
     const inviteCode = generateSecureCode();
 
+    // Quartier-ID fuer den Pilotquartier ermitteln
+    const { data: pilotQuarter } = await supabase
+      .from("quarters")
+      .select("id")
+      .eq("slug", "bad-saeckingen-pilot")
+      .single();
+
     const { data: newHousehold, error: insertError } = await supabase
       .from("households")
       .insert({
@@ -104,6 +111,7 @@ export async function POST(request: NextRequest) {
         lng: coords.lng + lngOffset,
         verified: false,
         invite_code: inviteCode,
+        quarter_id: pilotQuarter?.id,
       })
       .select("id, street_name, house_number")
       .single();

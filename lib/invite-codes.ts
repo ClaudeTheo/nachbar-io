@@ -57,6 +57,16 @@ export function isValidCodeFormat(code: string): boolean {
     return true;
   }
 
+  // Quartier-Prefix-Format: PREFIX-XXXX-XXXX (Prefix + 8 Zeichen Base32)
+  const raw = code.replace(/\s/g, "").toUpperCase();
+  const prefixMatch = raw.match(/^([A-Z]{2,6})-(.{4,5})-(.{4})$/);
+  if (prefixMatch) {
+    const codeBody = (prefixMatch[2] + prefixMatch[3]).replace(/-/g, "");
+    if (codeBody.length === CODE_LENGTH && [...codeBody].every((ch) => ALPHABET.includes(ch))) {
+      return true;
+    }
+  }
+
   return false;
 }
 
@@ -65,6 +75,29 @@ export function isNewCodeFormat(code: string): boolean {
   const clean = normalizeCode(code);
   if (clean.length !== CODE_LENGTH) return false;
   return [...clean].every((ch) => ALPHABET.includes(ch));
+}
+
+// Generiert einen quartier-spezifischen Invite-Code (PREFIX-XXXX-XXXX)
+export function generateQuarterCode(prefix: string): string {
+  const code = generateSecureCode();
+  return `${prefix.toUpperCase()}-${formatCode(code)}`;
+}
+
+// Extrahiert den Prefix aus einem quartier-spezifischen Code
+export function extractQuarterPrefix(code: string): string | null {
+  const normalized = code.toUpperCase().trim();
+  const parts = normalized.split("-");
+  if (parts.length >= 3) {
+    // Format: PREFIX-XXXX-XXXX
+    return parts[0];
+  }
+  return null;
+}
+
+// Validiert ob ein Code zum erwarteten Quartier-Prefix passt
+export function isValidQuarterCode(code: string, expectedPrefix: string): boolean {
+  const prefix = extractQuarterPrefix(code);
+  return prefix === expectedPrefix.toUpperCase();
 }
 
 // Temporaeres Passwort generieren (fuer Admin-Kontoerstellung) — ohne Modulo-Bias

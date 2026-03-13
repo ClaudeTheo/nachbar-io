@@ -1,0 +1,17 @@
+[Unit]
+Description=Nachbar.io GPIO Bridge (Buzzer, LED, Display-Helligkeit)
+After=network.target
+Documentation=https://github.com/ClaudeTheo/nachbar-io
+
+[Service]
+Type=simple
+User=pi
+WorkingDirectory=/home/pi/nachbar-terminal/gpio-bridge
+ExecStart=/usr/bin/python3 /home/pi/nachbar-terminal/gpio-bridge/bridge.py
+Restart=always
+RestartSec=5
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

@@ -3,10 +3,12 @@
 import { use, type ReactNode } from "react";
 import TerminalHeader from "@/components/terminal/TerminalHeader";
 import TerminalSidebar from "@/components/terminal/TerminalSidebar";
+import { TerminalProvider } from "@/lib/terminal/TerminalContext";
 
 /**
  * Terminal-Layout: Vollbild fuer 10" Kiosk-Display (1280x800).
  * Links: Header + Hauptinhalt (flex-1), Rechts: Sidebar (140px).
+ * TerminalProvider stellt Daten und Navigation fuer alle Kinder bereit.
  */
 export default function TerminalLayout({
   children,
@@ -19,17 +21,19 @@ export default function TerminalLayout({
   const { token } = use(params);
 
   return (
-    <div className="flex h-screen w-screen overflow-hidden bg-warmwhite" data-token={token}>
-      {/* Hauptbereich: Header oben + Inhalt darunter */}
-      <div className="flex flex-col flex-1 min-w-0">
-        <TerminalHeader />
-        <main className="flex-1 overflow-hidden p-4">
-          {children}
-        </main>
-      </div>
+    <TerminalProvider token={token}>
+      <div className="flex h-screen w-screen overflow-hidden bg-warmwhite">
+        {/* Hauptbereich: Header oben + Inhalt darunter */}
+        <div className="flex flex-col flex-1 min-w-0">
+          <TerminalHeader />
+          <main className="flex-1 overflow-hidden p-4">
+            {children}
+          </main>
+        </div>
 
-      {/* Sidebar rechts, immer sichtbar */}
-      <TerminalSidebar />
-    </div>
+        {/* Sidebar rechts, immer sichtbar */}
+        <TerminalSidebar />
+      </div>
+    </TerminalProvider>
   );
 }

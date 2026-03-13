@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/client";
 import { createNotification } from "@/lib/notifications";
+import { useQuarter } from "@/lib/quarters";
 import { LEIHBOERSE_CATEGORIES } from "@/lib/constants";
 import type { LeihboerseItem } from "@/lib/supabase/types";
 import { formatDistanceToNow } from "date-fns";
@@ -16,6 +17,7 @@ import { de } from "date-fns/locale";
 export default function LeihboerseDetailPage() {
   const { id } = useParams();
   const router = useRouter();
+  const { currentQuarter } = useQuarter();
   const [item, setItem] = useState<LeihboerseItem | null>(null);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -139,6 +141,7 @@ export default function LeihboerseDetailPage() {
                 .insert({
                   participant_1: currentUserId < item.user_id ? currentUserId : item.user_id,
                   participant_2: currentUserId < item.user_id ? item.user_id : currentUserId,
+                  quarter_id: currentQuarter?.id,
                 })
                 .select("id")
                 .single();

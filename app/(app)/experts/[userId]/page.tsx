@@ -19,6 +19,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { createClient } from "@/lib/supabase/client";
+import { useQuarter } from "@/lib/quarters";
 import { createNotification } from "@/lib/notifications";
 import { SKILL_CATEGORIES, TRUST_LEVELS } from "@/lib/constants";
 import type { Skill, ExpertReview, ExpertEndorsement, User } from "@/lib/supabase/types";
@@ -26,6 +27,7 @@ import type { Skill, ExpertReview, ExpertEndorsement, User } from "@/lib/supabas
 export default function ExpertDetailPage() {
   const params = useParams();
   const router = useRouter();
+  const { currentQuarter } = useQuarter();
   const expertUserId = params.userId as string;
 
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
@@ -239,6 +241,7 @@ export default function ExpertDetailPage() {
         .insert({
           participant_1: currentUserId,
           participant_2: expertUserId,
+          quarter_id: currentQuarter?.id,
         })
         .select("id")
         .single();

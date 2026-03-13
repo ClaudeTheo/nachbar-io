@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { createClient } from "@/lib/supabase/client";
 import { createNotification } from "@/lib/notifications";
+import { useQuarter } from "@/lib/quarters";
 import type { Conversation, NeighborConnection } from "@/lib/supabase/types";
 import { formatDistanceToNow } from "date-fns";
 import { de } from "date-fns/locale";
@@ -16,6 +17,7 @@ import { toast } from "sonner";
 
 export default function MessagesPage() {
   const router = useRouter();
+  const { currentQuarter } = useQuarter();
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [pendingRequests, setPendingRequests] = useState<NeighborConnection[]>([]);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
@@ -187,7 +189,7 @@ export default function MessagesPage() {
     } else {
       const { data: newConv } = await supabase
         .from("conversations")
-        .insert({ participant_1: p1, participant_2: p2 })
+        .insert({ participant_1: p1, participant_2: p2, quarter_id: currentQuarter?.id })
         .select("id")
         .single();
       convId = newConv?.id ?? "";

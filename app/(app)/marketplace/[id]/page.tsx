@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { createClient } from "@/lib/supabase/client";
 import { createNotification } from "@/lib/notifications";
+import { useQuarter } from "@/lib/quarters";
 import { MARKETPLACE_TYPES, MARKETPLACE_CATEGORIES } from "@/lib/constants";
 import type { MarketplaceItem } from "@/lib/supabase/types";
 import { formatDistanceToNow } from "date-fns";
@@ -16,6 +17,7 @@ import { de } from "date-fns/locale";
 export default function MarketplaceDetailPage() {
   const { id } = useParams();
   const router = useRouter();
+  const { currentQuarter } = useQuarter();
   const [item, setItem] = useState<MarketplaceItem | null>(null);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -174,6 +176,7 @@ export default function MarketplaceDetailPage() {
                 .insert({
                   participant_1: currentUserId < item.user_id ? currentUserId : item.user_id,
                   participant_2: currentUserId < item.user_id ? item.user_id : currentUserId,
+                  quarter_id: currentQuarter?.id,
                 })
                 .select("id")
                 .single();

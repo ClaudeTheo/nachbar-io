@@ -4,8 +4,8 @@ import { GET } from "./route";
 
 // Supabase Server Client Mock
 const mockSelect = vi.fn();
-const mockEq = vi.fn();
-const mockSingle = vi.fn();
+const _mockEq = vi.fn();
+const _mockSingle = vi.fn();
 const mockGetUser = vi.fn();
 
 vi.mock("@/lib/supabase/server", () => ({

@@ -2,7 +2,7 @@
 // Strategie: Direct SQL via Supabase REST API oder Test-API-Route.
 // Fuer CI ohne DB-Zugang: Mock-Modus via Test-API-Route (/api/test/seed).
 
-import { TEST_HOUSEHOLDS, TEST_AGENTS, TEST_PREFIX } from "./test-config";
+import { TEST_HOUSEHOLDS, TEST_AGENTS } from "./test-config";
 import type { AgentCredentials, TestHousehold } from "./types";
 
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || "";

@@ -45,6 +45,7 @@ export default function HelpPage() {
       }
     }
     load();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentQuarter?.id]);
 
   const filteredRequests = filterCategory

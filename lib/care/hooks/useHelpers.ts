@@ -21,6 +21,7 @@ export function useHelpers(seniorId?: string, role?: string) {
     setLoading(false);
   }, [seniorId, role]);
 
+  // eslint-disable-next-line react-hooks/set-state-in-effect -- Daten laden bei Mount
   useEffect(() => { load(); }, [load]);
 
   return { helpers, loading, refetch: load };

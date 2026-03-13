@@ -116,6 +116,7 @@ export default function ExpertsPage() {
     }
 
     loadExperts();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentQuarter?.id]);
 
   // Gefilterte und sortierte Experten

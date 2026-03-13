@@ -20,6 +20,7 @@ export function useAppointments(seniorId?: string, upcoming = true) {
     setLoading(false);
   }, [seniorId, upcoming]);
 
+  // eslint-disable-next-line react-hooks/set-state-in-effect -- Daten laden bei Mount
   useEffect(() => { load(); }, [load]);
 
   return { appointments, loading, refetch: load };

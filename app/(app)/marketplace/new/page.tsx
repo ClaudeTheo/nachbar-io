@@ -231,6 +231,7 @@ export default function MarketplaceNewPage() {
             {pendingFiles.length > 0 && (
               <div className="mt-3 flex gap-2">
                 {pendingFiles.map((pf, i) => (
+                  /* eslint-disable-next-line @next/next/no-img-element */
                   <img key={i} src={pf.preview} alt="" className="h-16 w-16 rounded-lg object-cover" />
                 ))}
               </div>

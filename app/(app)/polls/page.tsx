@@ -47,6 +47,7 @@ export default function PollsPage() {
       }
     }
     load();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filter, currentQuarter?.id]);
 
   return (

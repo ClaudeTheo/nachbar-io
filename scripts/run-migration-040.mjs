@@ -54,7 +54,7 @@ async function executeSql(sql) {
 
       // Anderer Fehler = Endpoint existiert aber SQL fehlgeschlagen
       return { success: false, endpoint, status, error: text };
-    } catch (err) {
+    } catch (_err) {
       continue;
     }
   }

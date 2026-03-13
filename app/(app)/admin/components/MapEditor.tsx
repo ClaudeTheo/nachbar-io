@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback, useMemo } from "react";
-import { MapPin, Plus, Save, Trash2, GripVertical, X, Users, Home, ChevronDown, ChevronUp, Upload, Image } from "lucide-react";
+import { MapPin, Plus, Save, Trash2, GripVertical, X, Users, Home, ChevronDown, ChevronUp, Image } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -15,7 +15,7 @@ import {
   type MapHouseData, type LampColor, type StreetCode,
 } from "@/lib/map-houses";
 import { useQuarter } from "@/lib/quarters";
-import type { Quarter } from "@/lib/quarters/types";
+// Quarter-Type Import entfernt (nicht verwendet)
 import type { User, Household, HouseholdMember } from "@/lib/supabase/types";
 
 // ============================================================
@@ -418,6 +418,7 @@ export function MapEditor() {
             disabled={uploadingBg || !activeQuarter}
             title="Hintergrundbild fuer dieses Quartier hochladen"
           >
+            {/* eslint-disable-next-line jsx-a11y/alt-text */}
             <Image className="h-3.5 w-3.5 mr-1" />
             {uploadingBg ? "..." : "Hintergrund"}
           </Button>

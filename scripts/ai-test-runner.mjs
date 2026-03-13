@@ -167,7 +167,7 @@ async function fetchHtml(route) {
   } catch (err) { return { ok: false, status: 0, html: '', error: err.message }; }
 }
 
-async function fetchJson(route, token) {
+async function _fetchJson(route, token) {
   try {
     const res = await fetch(`${APP_BASE_URL}${route}`, {
       headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
@@ -187,7 +187,7 @@ function ok(passed, comment, details = {}) {
   };
 }
 
-function partial(comment, details = {}) {
+function partial(comment, _details = {}) {
   return { status: 'partial', comment: `[KI] ${comment}`, severity: 'low', issue_type: 'ux', duration_seconds: 1 };
 }
 
@@ -541,7 +541,7 @@ const TEST_EVALUATORS = {
   G2: async (ctx) => {
     // User A sendet Kontaktanfrage an User B
     // Sicherstellen dass participant_1 < participant_2 (UUID-Sortierung)
-    const [p1, p2] = [ctx.userA.userId, ctx.userB.userId].sort();
+    const [p1, _p2] = [ctx.userA.userId, ctx.userB.userId].sort();
     const isAFirst = p1 === ctx.userA.userId;
 
     const { data, error } = await (isAFirst ? ctx.userA.userDb : ctx.userB.userDb)
@@ -598,7 +598,7 @@ const TEST_EVALUATORS = {
     if (existConv) {
       convId = existConv.id;
     } else {
-      const { data: newConv, error: convErr } = await (p1 === ctx.userA.userId ? ctx.userA.userDb : ctx.userB.userDb)
+      const { data: newConv, error: _convErr } = await (p1 === ctx.userA.userId ? ctx.userA.userDb : ctx.userB.userDb)
         .from('conversations').insert({ participant_1: p1, participant_2: p2 }).select('id').single();
       if (newConv) { convId = newConv.id; }
       else {
@@ -683,13 +683,13 @@ const TEST_EVALUATORS = {
 
   H2: async (ctx) => {
     // User B hat ungelesene Benachrichtigungen
-    const { data, error } = await ctx.userB.userDb.from('notifications')
+    const { data, error: _error } = await ctx.userB.userDb.from('notifications')
       .select('id, type, title, read').eq('user_id', ctx.userB.userId).eq('read', false);
     const count = data?.length || 0;
     return ok(count > 0, `User B hat ${count} ungelesene Benachrichtigung(en)`, { count });
   },
 
-  H3: async (ctx) => {
+  H3: async (_ctx) => {
     // Notification hat korrekten Typ und reference_type
     if (!testData.ids.notification1) return ok(false, 'Keine Notification vorhanden (H1)');
     const { data } = await adminDb.from('notifications').select('type, reference_type, reference_id').eq('id', testData.ids.notification1).single();
@@ -770,7 +770,7 @@ const TEST_EVALUATORS = {
 
   I4: async (ctx) => {
     // User A's Einladungen auflisten
-    const { data, error } = await adminDb.from('neighbor_invitations')
+    const { data, error: _error } = await adminDb.from('neighbor_invitations')
       .select('id, invite_code, status').eq('inviter_id', ctx.userA.userId);
     const count = data?.length || 0;
     return ok(count > 0, `User A hat ${count} Einladung(en)`, { count });
@@ -1000,7 +1000,7 @@ const TEST_EVALUATORS = {
       const res = await fetch(`${APP_BASE_URL}/manifest.json`);
       const data = await res.json();
       const isStandalone = data.display === 'standalone' || data.display === 'fullscreen';
-      const hasIcons = data.icons?.length > 0;
+      const _hasIcons = data.icons?.length > 0;
       const hasName = !!data.name || !!data.short_name;
       return ok(isStandalone && hasName, `PWA Manifest: display=${data.display}, Name="${data.short_name || data.name}", Icons=${data.icons?.length || 0}`, { display: data.display, name: data.short_name, icons: data.icons?.length });
     } catch (err) { return ok(false, 'Manifest.json nicht lesbar', { error: err.message }); }
@@ -1064,7 +1064,7 @@ const TEST_EVALUATORS = {
   ADM6: async () => {
     // Admin Nutzer-Verwaltung: Pruefen ob is_admin Flag funktioniert
     const { data: admins } = await adminDb.from('users').select('id, display_name').eq('is_admin', true);
-    const { data: testers } = await adminDb.from('users').select('id', { count: 'exact', head: true }).eq('is_tester', true);
+    const { data: _testers } = await adminDb.from('users').select('id', { count: 'exact', head: true }).eq('is_tester', true);
     const { count: totalUsers } = await adminDb.from('users').select('id', { count: 'exact', head: true });
     return ok(true, `Nutzer: ${totalUsers || 0} gesamt, ${admins?.length || 0} Admins, Tester-Flag aktiv`, { admins: admins?.length, total: totalUsers });
   },
@@ -1264,7 +1264,7 @@ async function main() {
 
   // 1. Beide KI-Test-User sicherstellen
   const userAId = await ensureTestUser(TESTER_A);
-  const userBId = await ensureTestUser(TESTER_B);
+  const _userBId = await ensureTestUser(TESTER_B);
 
   if (REPORT_ONLY) {
     const { data: last } = await adminDb.from('test_sessions').select('id')

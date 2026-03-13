@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Home, Users, QrCode, CheckCircle, XCircle, Search, ChevronDown, ChevronUp, UserMinus, MapPin, Pencil, Save, X, Globe } from "lucide-react";
+import { QrCode, CheckCircle, XCircle, Search, ChevronDown, ChevronUp, UserMinus, MapPin, Pencil, Save, X, Globe } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -73,6 +73,7 @@ export function HouseholdManagement({ households, onRefresh }: HouseholdManageme
   // Standard-Quartier setzen wenn verfuegbar
   useEffect(() => {
     if (currentQuarter && selectedQuarterId === "all") {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setSelectedQuarterId(currentQuarter.id);
     }
   }, [currentQuarter, selectedQuarterId]);

@@ -3,15 +3,14 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Settings, LogOut, Star, Shield, ChevronRight, Pencil, Bell, TrendingUp, Plane, MapPin, HelpCircle, Repeat, BarChart3, Package, UserPlus, Trash2, Download } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Settings, LogOut, Star, Shield, ChevronRight, Pencil, Bell, TrendingUp, Plane, MapPin, HelpCircle, Repeat, BarChart3, Package, UserPlus, Download } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { TrustBadge } from "@/components/TrustBadge";
 import { resolveAvatarUrl } from "@/lib/storage";
 import { ReputationBadge } from "@/components/ReputationBadge";
 import { createClient } from "@/lib/supabase/client";
-import { getCachedReputation, getProgressToNextLevel, getReputationLevel } from "@/lib/reputation";
+import { getCachedReputation, getReputationLevel } from "@/lib/reputation";
 import type { User, Household, ReputationStats } from "@/lib/supabase/types";
 
 export default function ProfilePage() {
@@ -85,6 +84,7 @@ export default function ProfilePage() {
               {(() => {
                 const av = resolveAvatarUrl(user.avatar_url);
                 return av.type === "image"
+                  /* eslint-disable-next-line @next/next/no-img-element */
                   ? <img src={av.value} alt="" className="h-full w-full rounded-full object-cover" />
                   : <span>{av.value}</span>;
               })()}

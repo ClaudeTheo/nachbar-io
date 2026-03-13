@@ -12,6 +12,7 @@ export function useAnimatedCounter(target: number, duration = 400): number {
     prevTarget.current = target;
 
     if (target === 0) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- Animation-Reset gewollt
       setValue(0);
       return;
     }

@@ -15,8 +15,9 @@ export function InstallPrompt() {
   const [dismissed, setDismissed] = useState(false);
 
   useEffect(() => {
-    // Prüfen ob schon dismissed
+    // Pruefen ob schon dismissed
     if (localStorage.getItem("pwa-install-dismissed")) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- Initialer Zustand aus localStorage
       setDismissed(true);
       return;
     }

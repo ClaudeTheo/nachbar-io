@@ -52,6 +52,7 @@ export default function LeihboersePage() {
 
   // Daten bei jedem Seitenaufruf neu laden
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     load();
   }, [load]);
 
@@ -175,6 +176,7 @@ function LeihboerseCard({ item }: { item: LeihboerseItem }) {
       <div className="flex gap-3">
         <div className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-muted text-2xl">
           {item.image_url ? (
+            /* eslint-disable-next-line @next/next/no-img-element */
             <img src={item.image_url} alt="" className="h-full w-full object-cover" />
           ) : (
             category?.icon ?? "📦"

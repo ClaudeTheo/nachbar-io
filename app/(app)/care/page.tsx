@@ -24,7 +24,7 @@ interface MedicationDueStatus {
 }
 
 export default function CareDashboardPage() {
-  const [userId, setUserId] = useState<string | null>(null);
+  const [_userId, setUserId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [checkinStatus, setCheckinStatus] = useState<CheckinStatus | null>(null);
   const [activeAlerts, setActiveAlerts] = useState<CareSosAlert[]>([]);
@@ -110,6 +110,7 @@ export default function CareDashboardPage() {
       } catch { /* silent */ }
     }
     loadMedicationStatus();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [planFeatures]);
 
   // Naechsten Termin laden (nur wenn Feature verfuegbar)
@@ -125,6 +126,7 @@ export default function CareDashboardPage() {
       } catch { /* silent */ }
     }
     loadNextAppointment();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [planFeatures]);
 
   // Verifizierte Helfer laden

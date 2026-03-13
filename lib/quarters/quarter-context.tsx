@@ -78,6 +78,7 @@ export function QuarterProvider({ children }: { children: ReactNode }) {
     await loadQuarter();
   }, [loadQuarter]);
 
+  // eslint-disable-next-line react-hooks/set-state-in-effect -- Daten laden bei Mount
   useEffect(() => { loadQuarter(); }, [loadQuarter]);
 
   return (

@@ -197,7 +197,7 @@ test.describe("S10: Barrierefreiheit (WCAG 2.1 AA)", () => {
           const ariaModal = await banner.getAttribute("aria-modal");
           const ariaLabel = await banner.getAttribute("aria-label");
           const ariaLabelledby = await banner.getAttribute("aria-labelledby");
-          const hasAria = ariaModal || ariaLabel || ariaLabelledby;
+          const _hasAria = ariaModal || ariaLabel || ariaLabelledby;
           console.log(`[axe] EmergencyBanner ARIA: modal=${ariaModal}, label=${ariaLabel}, labelledby=${ariaLabelledby}`);
 
           // 112 Link per axe pruefen

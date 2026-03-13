@@ -12,7 +12,6 @@ import { format, parseISO, isToday, isTomorrow } from "date-fns";
 import { de } from "date-fns/locale";
 
 export default function EventsPage() {
-  const router = useRouter();
   const [events, setEvents] = useState<Event[]>([]);
   const [filterCategory, setFilterCategory] = useState<string | null>(null);
   const [showFilter, setShowFilter] = useState(false);
@@ -59,6 +58,7 @@ export default function EventsPage() {
       setLoading(false);
     }
     load();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentQuarter?.id]);
 
   const filteredEvents = filterCategory

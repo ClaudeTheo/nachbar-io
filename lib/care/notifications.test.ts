@@ -206,7 +206,7 @@ describe('sendCareNotification', () => {
       vi.mocked(sendPush).mockResolvedValueOnce(false);
       const supabase = createMockSupabase();
 
-      const result = await sendCareNotification(supabase, {
+      await sendCareNotification(supabase, {
         ...basePayload,
         channels: ['push'],
         // Kein phone

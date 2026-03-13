@@ -2,8 +2,8 @@
 // Agent A registriert sich, durchlaeuft alle 4 Schritte, wird verifiziert.
 import { test, expect } from "@playwright/test";
 import { RegisterPage, LoginPage } from "../pages";
-import { createConsoleErrorCollector, waitForStableUI } from "../helpers/observer";
-import { TEST_AGENTS, TEST_HOUSEHOLDS, TIMEOUTS } from "../helpers/test-config";
+import { createConsoleErrorCollector } from "../helpers/observer";
+import { TEST_AGENTS, TIMEOUTS } from "../helpers/test-config";
 
 test.describe("S1: Onboarding + Verifikation", () => {
   test("S1.1 — Komplette Registrierung mit gueltigem Invite-Code", async ({ browser }) => {

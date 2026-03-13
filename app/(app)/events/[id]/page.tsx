@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
 import Link from "next/link";
 import {
   ArrowLeft,
@@ -27,7 +27,6 @@ import { de } from "date-fns/locale";
 
 export default function EventDetailPage() {
   const { id } = useParams();
-  const router = useRouter();
   const [event, setEvent] = useState<Event | null>(null);
   const [participants, setParticipants] = useState<EventParticipant[]>([]);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
@@ -446,6 +445,7 @@ export default function EventDetailPage() {
               >
                 <div className="flex h-9 w-9 items-center justify-center rounded-full bg-quartier-green/10 text-sm font-bold text-quartier-green">
                   {p.user?.avatar_url ? (
+                    /* eslint-disable-next-line @next/next/no-img-element */
                     <img
                       src={p.user.avatar_url}
                       alt=""
@@ -481,6 +481,7 @@ export default function EventDetailPage() {
                 >
                   <div className="flex h-9 w-9 items-center justify-center rounded-full bg-muted text-sm font-bold text-muted-foreground">
                     {p.user?.avatar_url ? (
+                      /* eslint-disable-next-line @next/next/no-img-element */
                       <img
                         src={p.user.avatar_url}
                         alt=""

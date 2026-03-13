@@ -16,6 +16,7 @@ export function SosAlertCard({ alert, onAccept, onDecline, showActions = true }:
   const [responding, setResponding] = useState(false);
   const category = CARE_SOS_CATEGORIES.find((c) => c.id === alert.category);
   const level = ESCALATION_LEVELS.find((l) => l.level === alert.current_escalation_level);
+  // eslint-disable-next-line react-hooks/purity -- Zeitberechnung ist gewollt
   const createdAgo = Math.round((Date.now() - new Date(alert.created_at).getTime()) / (1000 * 60));
 
   async function handleRespond(responseType: 'accepted' | 'declined') {

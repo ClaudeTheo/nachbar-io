@@ -38,6 +38,7 @@ export default function MarketplacePage() {
       setLoading(false);
     }
     load();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filterType, currentQuarter?.id]);
 
   return (
@@ -130,6 +131,7 @@ function MarketplaceCard({ item }: { item: MarketplaceItem }) {
         {/* Bild-Platzhalter */}
         {item.images && item.images.length > 0 ? (
           <div className="h-20 w-20 shrink-0 overflow-hidden rounded-lg bg-muted">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={item.images[0]} alt={item.title} className="h-full w-full object-cover" />
           </div>
         ) : (

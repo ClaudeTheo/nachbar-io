@@ -49,9 +49,9 @@ function getSupabase() {
 }
 
 // Ergebnis der Device-Authentifizierung
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export interface DeviceAuthResult {
   device: { id: string; household_id: string };
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Supabase generischer Typ
   supabase: SupabaseClient<any, "public", any>;
 }
 

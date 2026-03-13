@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, Clock, Tag, User, Trash2, CheckCircle, MessageCircle } from "lucide-react";
+import { ArrowLeft, Clock, User, Trash2, CheckCircle, MessageCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { createClient } from "@/lib/supabase/client";
@@ -90,6 +90,7 @@ export default function MarketplaceDetailPage() {
       {/* Bild / Platzhalter */}
       <div className="flex h-48 items-center justify-center rounded-xl bg-muted text-6xl">
         {item.images?.length > 0 ? (
+          /* eslint-disable-next-line @next/next/no-img-element */
           <img src={item.images[0]} alt={item.title} className="h-full w-full rounded-xl object-cover" />
         ) : (
           type?.icon ?? "📦"

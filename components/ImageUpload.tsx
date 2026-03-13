@@ -97,6 +97,7 @@ export function ImageUpload({
               removingIndex === i ? "opacity-0" : ""
             }`}
           >
+            {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={url}
               alt={`Bild ${i + 1}`}
@@ -118,6 +119,7 @@ export function ImageUpload({
         {/* Lokale Vorschau-Bilder */}
         {pendingFiles.map((pf, i) => (
           <div key={`pending-${i}`} className="relative shrink-0">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={pf.preview}
               alt={`Vorschau ${i + 1}`}

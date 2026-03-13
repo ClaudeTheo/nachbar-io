@@ -42,6 +42,7 @@ export function useDocuments(seniorId?: string) {
   }, [seniorId]);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- Daten laden bei Mount
     load();
   }, [load]);
 

@@ -51,6 +51,7 @@ export function useReportData(params: UseReportDataParams) {
   }, [seniorId, periodStart, periodEnd, type]);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- Daten laden bei Mount
     load();
   }, [load]);
 

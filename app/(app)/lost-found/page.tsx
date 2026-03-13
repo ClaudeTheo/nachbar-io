@@ -28,6 +28,7 @@ export default function LostFoundPage() {
       if (data) setItems(data as unknown as LostFoundItem[]);
     }
     load();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentQuarter?.id]);
 
   const lost = items.filter((i) => i.type === "lost");

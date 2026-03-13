@@ -6,6 +6,7 @@ const COLORS = ["#4CAF87", "#F59E0B", "#3B82F6", "#8B5CF6", "#EF4444"];
 export function ConfettiEffect({ active }: { active: boolean }) {
   if (!active) return null;
 
+  /* eslint-disable react-hooks/purity -- Zufallswerte fuer Konfetti-Partikel gewollt */
   const particles = Array.from({ length: 35 }).map((_, i) => ({
     id: i,
     x: Math.random() * 300 - 150,
@@ -16,6 +17,7 @@ export function ConfettiEffect({ active }: { active: boolean }) {
     size: Math.random() * 6 + 4,
     shape: i % 3 === 0 ? "rounded-full" : "rounded-sm",
   }));
+  /* eslint-enable react-hooks/purity */
 
   return (
     <div className="pointer-events-none fixed inset-0 z-[60] overflow-hidden">

@@ -71,11 +71,6 @@ export function DevOpsPanel() {
   const [migrationLoading, setMigrationLoading] = useState(false);
   const [sqlCopied, setSqlCopied] = useState(false);
 
-  useEffect(() => {
-    loadEnvStatus();
-    checkMigrationStatus();
-  }, []);
-
   async function loadEnvStatus() {
     setLoading(true);
     try {
@@ -105,6 +100,11 @@ export function DevOpsPanel() {
     setMigrationLoading(false);
   }
 
+  useEffect(() => {
+    loadEnvStatus();
+    checkMigrationStatus();
+  }, []);
+
   async function copySql() {
     if (migrationStatus?.migrationSql) {
       await navigator.clipboard.writeText(migrationStatus.migrationSql);
@@ -115,6 +115,7 @@ export function DevOpsPanel() {
 
   async function triggerCron(path: string) {
     setCronRunning(path);
+    // eslint-disable-next-line react-hooks/purity -- triggerCron ist ein Event-Handler, nicht waehrend Render aufgerufen
     const start = Date.now();
     try {
       const res = await fetch(path, { method: "POST" });

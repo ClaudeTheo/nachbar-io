@@ -280,6 +280,7 @@ export default function ChatPage() {
           {/* Avatar */}
           <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-quartier-green/10 text-sm font-bold text-quartier-green">
             {otherUserAvatar ? (
+              /* eslint-disable-next-line @next/next/no-img-element */
               <img
                 src={otherUserAvatar}
                 alt=""

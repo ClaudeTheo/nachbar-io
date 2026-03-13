@@ -123,6 +123,7 @@ export default function ExpertDetailPage() {
   }, [expertUserId]);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     loadExpertData();
   }, [loadExpertData]);
 

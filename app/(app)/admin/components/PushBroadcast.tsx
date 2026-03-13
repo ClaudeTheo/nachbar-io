@@ -3,7 +3,6 @@
 import { useState, useEffect } from "react";
 import { Megaphone, Send, Users, MapPin, AlertTriangle, Info, CheckCircle, History, Clock } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -32,10 +31,6 @@ export function PushBroadcast() {
   const [showConfirm, setShowConfirm] = useState(false);
 
   // Broadcast-History aus DB laden
-  useEffect(() => {
-    loadHistory();
-  }, []);
-
   async function loadHistory() {
     setLoadingHistory(true);
     try {
@@ -49,6 +44,10 @@ export function PushBroadcast() {
     }
     setLoadingHistory(false);
   }
+
+  useEffect(() => {
+    loadHistory();
+  }, []);
 
   // Push senden ueber Admin-Broadcast-API
   async function handleSend() {

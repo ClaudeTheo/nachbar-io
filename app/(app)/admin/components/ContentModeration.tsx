@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { AlertTriangle, HandHelping, ShoppingBag, MapPin, X, ChevronDown, ChevronUp, Save, Edit } from "lucide-react";
+import { AlertTriangle, HandHelping, ShoppingBag, MapPin, ChevronDown, ChevronUp, Save, Edit } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -64,12 +64,6 @@ export function ContentModeration() {
   const [editTitle, setEditTitle] = useState("");
   const [editDescription, setEditDescription] = useState("");
   const [saving, setSaving] = useState(false);
-
-  useEffect(() => {
-    loadContent(activeType);
-    setExpandedId(null);
-    setEditingId(null);
-  }, [activeType]);
 
   async function loadContent(type: ContentType) {
     setLoading(true);
@@ -135,6 +129,13 @@ export function ContentModeration() {
     setItems(normalized);
     setLoading(false);
   }
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    loadContent(activeType);
+    setExpandedId(null);
+    setEditingId(null);
+  }, [activeType]);
 
   // Status aendern
   async function changeStatus(id: string, type: ContentType, newStatus: string) {

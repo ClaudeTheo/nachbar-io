@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Users, UserCog, ShieldCheck, ShieldOff, Ban, CheckCircle, Search, ChevronDown, ChevronUp, UserPlus, Copy, Check } from "lucide-react";
+import { Users, UserCog, ShieldCheck, ShieldOff, Ban, Search, ChevronDown, ChevronUp, UserPlus, Copy, Check } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";

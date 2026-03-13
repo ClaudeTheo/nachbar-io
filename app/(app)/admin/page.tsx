@@ -4,14 +4,14 @@ import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import {
   Shield, Users, Home, RefreshCw, HandHelping, ShoppingBag,
-  TrendingUp, CheckCircle, QrCode, FileText, Activity, Megaphone,
+  TrendingUp, QrCode, FileText, Activity, Megaphone,
   Newspaper, Calendar, BarChart3, ArrowUpRight, ArrowDownRight, Minus,
   AlertTriangle, Eye, MapPin, Globe, ExternalLink, Database, Terminal, Wrench,
   ClipboardList,
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Select, SelectContent, SelectGroup, SelectItem,
   SelectLabel, SelectTrigger, SelectValue,
@@ -97,6 +97,7 @@ export default function AdminPage() {
   // Standardtab fuer Super-Admins setzen
   useEffect(() => {
     if (isSuperAdmin && activeTab === "overview") {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setActiveTab("super-overview");
     }
   }, [isSuperAdmin]); // eslint-disable-line react-hooks/exhaustive-deps

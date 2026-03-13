@@ -109,6 +109,7 @@ export default function PackagesPage() {
       }
     }
     load();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [today, currentQuarter?.id]);
 
   // Distanz eines Users zu mir berechnen

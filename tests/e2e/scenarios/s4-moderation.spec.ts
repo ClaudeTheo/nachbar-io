@@ -4,8 +4,7 @@ import { test, expect } from "@playwright/test";
 import { createAgent, loginAgent, cleanupAgents, type TestAgent } from "../helpers/agent-factory";
 import { withAgent } from "../helpers/scenario-runner";
 import { waitForStableUI, createConsoleErrorCollector } from "../helpers/observer";
-import { AdminPage } from "../pages";
-import { TIMEOUTS } from "../helpers/test-config";
+
 
 test.describe("S4: Rollen / Moderation / Admin", () => {
   let agentM: TestAgent;

@@ -6,7 +6,7 @@ import { createClient } from '@/lib/supabase/server';
 import { sendCareNotification } from '@/lib/care/notifications';
 import { writeAuditLog } from '@/lib/care/audit';
 import { MEDICATION_DEFAULTS } from '@/lib/care/constants';
-import { decryptField, decryptFieldsArray, CARE_MEDICATIONS_ENCRYPTED_FIELDS } from '@/lib/care/field-encryption';
+import { decryptFieldsArray, CARE_MEDICATIONS_ENCRYPTED_FIELDS } from '@/lib/care/field-encryption';
 import { writeCronHeartbeat } from '@/lib/care/cron-heartbeat';
 import type { CareMedication, MedicationSchedule } from '@/lib/care/types';
 

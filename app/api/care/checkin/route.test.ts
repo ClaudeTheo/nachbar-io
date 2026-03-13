@@ -179,7 +179,7 @@ describe('POST /api/care/checkin', () => {
                 return createChain();
               };
             }
-            return (..._: unknown[]) => createChain();
+            return (..._args: unknown[]) => createChain();
           },
         });
         return createChain();

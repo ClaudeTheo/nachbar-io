@@ -75,6 +75,7 @@ export default function PollDetailPage() {
     setLoading(false);
   }, [id]);
 
+  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => { loadPoll(); }, [loadPoll]);
 
   async function vote(optionId: string) {

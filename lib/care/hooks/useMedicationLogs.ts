@@ -21,6 +21,7 @@ export function useMedicationLogs(seniorId?: string, medicationId?: string) {
     setLoading(false);
   }, [seniorId, medicationId]);
 
+  // eslint-disable-next-line react-hooks/set-state-in-effect -- Daten laden bei Mount
   useEffect(() => { load(); }, [load]);
 
   return { logs, loading, refetch: load };

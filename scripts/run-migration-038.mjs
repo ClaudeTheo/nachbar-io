@@ -21,7 +21,7 @@ async function run() {
 
   // 1. is_tester Spalte hinzufuegen (via RPC nicht moeglich, nutze workaround)
   // Pruefen ob Spalte schon existiert
-  const { data: testUser, error: testError } = await supabase
+  const { data: _testUser, error: testError } = await supabase
     .from('users')
     .select('id, is_tester')
     .limit(1);

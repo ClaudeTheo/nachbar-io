@@ -35,6 +35,7 @@ export default function ReputationPage() {
   }
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     loadStats().finally(() => setLoading(false));
   }, []);
 

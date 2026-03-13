@@ -15,7 +15,7 @@ import { createClient } from "@/lib/supabase/client";
 
 export default function SeniorCheckinPage() {
   const [checkedIn, setCheckedIn] = useState(false);
-  const [loading, setLoading] = useState(false);
+  const [_loading, setLoading] = useState(false);
   const router = useRouter();
 
   async function handleCheckin() {

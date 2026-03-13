@@ -83,17 +83,17 @@ function parseNewsArticles(html: string): Array<{
 
   // Regex fuer die Artikel-Bloecke der Bad Saeckingen Seite
   // Typische Struktur: <h2>Titel</h2> ... <span class="tag">Aktuelles</span> ... Datum ... Beschreibung
-  const articleRegex = /<div[^>]*class="[^"]*teaser[^"]*"[^>]*>([\s\S]*?)<\/div>\s*<\/div>\s*<\/div>/gi;
-  const titleRegex = /<h[23][^>]*>\s*([\s\S]*?)\s*<\/h[23]>/i;
-  const dateRegex = /(\d{2}\.\d{2}\.\d{4})/;
-  const descRegex = /<p[^>]*>\s*([\s\S]*?)\s*<\/p>/gi;
-  const tagRegex = /<span[^>]*class="[^"]*tag[^"]*"[^>]*>([\s\S]*?)<\/span>/gi;
+  const _articleRegex = /<div[^>]*class="[^"]*teaser[^"]*"[^>]*>([\s\S]*?)<\/div>\s*<\/div>\s*<\/div>/gi;
+  const _titleRegex = /<h[23][^>]*>\s*([\s\S]*?)\s*<\/h[23]>/i;
+  const _dateRegex = /(\d{2}\.\d{2}\.\d{4})/;
+  const _descRegex = /<p[^>]*>\s*([\s\S]*?)\s*<\/p>/gi;
+  const _tagRegex = /<span[^>]*class="[^"]*tag[^"]*"[^>]*>([\s\S]*?)<\/span>/gi;
 
   // Alternativ: Einfacherer Ansatz — nach den bekannten Strukturen suchen
   // Die Seite hat Artikel-Karten mit Titeln in <h2>, Datum und Beschreibungen
-  const simpleArticleRegex = /<h2[^>]*>\s*<a[^>]*>([\s\S]*?)<\/a>\s*<\/h2>|<h2[^>]*>([\s\S]*?)<\/h2>/gi;
-  const matches: string[] = [];
-  let match: RegExpExecArray | null;
+  const _simpleArticleRegex = /<h2[^>]*>\s*<a[^>]*>([\s\S]*?)<\/a>\s*<\/h2>|<h2[^>]*>([\s\S]*?)<\/h2>/gi;
+  const _matches: string[] = [];
+  let _match: RegExpExecArray | null;
 
   // Gesamten HTML in Bloecke aufteilen
   const sections = html.split(/<hr|<div[^>]*class="[^"]*teaser-divider/i);

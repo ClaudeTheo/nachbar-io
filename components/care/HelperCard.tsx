@@ -2,7 +2,7 @@
 
 // Zeigt eine einzelne Helfer-Karte mit Avatar, Rolle, Verifikations-Status, Skills und Statistiken
 
-import { CheckCircle, Clock, ShieldOff, Star, Users } from 'lucide-react';
+import { CheckCircle, Clock, ShieldOff, Star } from 'lucide-react';
 import type { CareHelper, CareHelperRole, CareHelperVerification } from '@/lib/care/types';
 
 interface HelperCardProps {
@@ -51,6 +51,7 @@ export function HelperCard({ helper, showVerifyButton, onVerify, onRevoke }: Hel
       <div className="flex items-start gap-3">
         {/* Avatar */}
         {helper.user?.avatar_url ? (
+          /* eslint-disable-next-line @next/next/no-img-element */
           <img
             src={helper.user.avatar_url}
             alt={displayName}

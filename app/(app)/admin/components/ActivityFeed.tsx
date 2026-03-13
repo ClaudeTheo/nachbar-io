@@ -1,12 +1,10 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback } from "react";
-import { Activity, AlertTriangle, HandHelping, ShoppingBag, MapPin, UserPlus, MessageCircle, Calendar, Clock, Filter, RefreshCw } from "lucide-react";
-import { Card } from "@/components/ui/card";
+import { useState, useEffect, useRef } from "react";
+import { AlertTriangle, HandHelping, ShoppingBag, MapPin, UserPlus, Calendar, Clock, RefreshCw } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/client";
-import { toast } from "sonner";
 
 type ActivityType = "alert" | "help_request" | "marketplace" | "lost_found" | "registration" | "event";
 
@@ -49,26 +47,6 @@ export function ActivityFeed() {
   const [autoRefresh, setAutoRefresh] = useState(true);
   const [lastRefresh, setLastRefresh] = useState<Date>(new Date());
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
-
-  const loadActivitiesCallback = useCallback(() => {
-    loadActivities();
-  }, []);
-
-  useEffect(() => {
-    loadActivitiesCallback();
-  }, [loadActivitiesCallback]);
-
-  // Auto-Refresh
-  useEffect(() => {
-    if (autoRefresh) {
-      timerRef.current = setInterval(() => {
-        loadActivities();
-      }, AUTO_REFRESH_INTERVAL);
-    }
-    return () => {
-      if (timerRef.current) clearInterval(timerRef.current);
-    };
-  }, [autoRefresh]);
 
   async function loadActivities() {
     setLoading(true);
@@ -201,6 +179,23 @@ export function ActivityFeed() {
     setLastRefresh(new Date());
     setLoading(false);
   }
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    loadActivities();
+  }, []);
+
+  // Auto-Refresh
+  useEffect(() => {
+    if (autoRefresh) {
+      timerRef.current = setInterval(() => {
+        loadActivities();
+      }, AUTO_REFRESH_INTERVAL);
+    }
+    return () => {
+      if (timerRef.current) clearInterval(timerRef.current);
+    };
+  }, [autoRefresh]);
 
   // Relative Zeit formatieren
   function timeAgo(dateStr: string): string {

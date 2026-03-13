@@ -215,6 +215,7 @@ export default function LeihboerseNewPage() {
             {deposit && <p className="mt-2 text-sm font-medium text-anthrazit">Pfand: {deposit}</p>}
             {pendingFiles.length > 0 && (
               <div className="mt-3">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src={pendingFiles[0].preview} alt="" className="h-20 w-20 rounded-lg object-cover" />
               </div>
             )}

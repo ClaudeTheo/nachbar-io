@@ -42,10 +42,6 @@ export default function InvitationsPage() {
   const [showModal, setShowModal] = useState(false);
   const [copiedId, setCopiedId] = useState<string | null>(null);
 
-  useEffect(() => {
-    loadInvitations();
-  }, []);
-
   async function loadInvitations() {
     setLoading(true);
     const supabase = createClient();
@@ -63,6 +59,10 @@ export default function InvitationsPage() {
     }
     setLoading(false);
   }
+
+  useEffect(() => {
+    loadInvitations();
+  }, []);
 
   async function copyCode(id: string, code: string) {
     try {
@@ -131,15 +131,8 @@ export default function InvitationsPage() {
     }
   }
 
-  function formatDate(dateStr: string) {
-    return new Date(dateStr).toLocaleDateString("de-DE", {
-      day: "numeric",
-      month: "short",
-      year: "numeric",
-    });
-  }
-
   function daysAgo(dateStr: string) {
+    // eslint-disable-next-line react-hooks/purity
     const diff = Date.now() - new Date(dateStr).getTime();
     const days = Math.floor(diff / (1000 * 60 * 60 * 24));
     if (days === 0) return "Heute";

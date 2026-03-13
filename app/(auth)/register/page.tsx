@@ -46,6 +46,7 @@ function RegisterForm() {
     const invite = searchParams.get("invite");
     const ref = searchParams.get("ref");
     if (invite) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setInviteCode(normalizeCode(invite));
       setVerificationMethod("invite_code");
     }

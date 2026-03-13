@@ -32,10 +32,6 @@ export function EventManagement() {
   const [editMaxParticipants, setEditMaxParticipants] = useState<number | null>(null);
   const [saving, setSaving] = useState(false);
 
-  useEffect(() => {
-    loadEvents();
-  }, []);
-
   async function loadEvents() {
     setLoading(true);
     const supabase = createClient();
@@ -71,6 +67,11 @@ export function EventManagement() {
     }
     setLoading(false);
   }
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    loadEvents();
+  }, []);
 
   async function loadParticipants(eventId: string) {
     if (expandedId === eventId && editingId !== eventId) {

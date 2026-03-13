@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { QrCode, Plus, Copy, Check, Printer, Trash2, RotateCcw, Clock, Ban, Filter } from "lucide-react";
+import { QrCode, Plus, Copy, Check, Printer, Trash2, RotateCcw, Filter } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";

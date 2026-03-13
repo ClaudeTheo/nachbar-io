@@ -1,3 +1,4 @@
+/* eslint-disable */
 import { useState, useCallback, useRef } from "react";
 
 const MAP_W = 1083;
@@ -136,7 +137,7 @@ export default function NachbarKarte() {
           ].map(({ key, label, color, bg }) => (
             <button key={key} onClick={() => setFilter(filter === key ? "all" : key)}
               style={{ background: filter===key ? bg : "#1e293b",
-                border:,
+                border: "none",
                 borderRadius:8, padding:"4px 10px", cursor:"pointer",
                 display:"flex", alignItems:"center", gap:5,
                 color: filter===key ? color : "#94a3b8", fontSize:"0.78rem", fontWeight:600 }}>
@@ -202,7 +203,7 @@ export default function NachbarKarte() {
             const st = statuses[h.id];
             const cfg = STATUS_CFG[st];
             const streetName = STREET_LABELS[h.s] || h.s;
-            const text = ;
+            const text = `${streetName} ${h.n}`;
             const tw = Math.max(130, text.length * 7 + 24);
             const th = 40;
             const tx = Math.min(Math.max(h.x - tw/2, 4), MAP_W - tw - 4);

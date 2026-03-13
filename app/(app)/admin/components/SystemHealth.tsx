@@ -1,12 +1,12 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Eye, Database, Server, Shield, Clock, Users, Home, AlertTriangle, CheckCircle, XCircle, Download, Trash2, MapPin, RefreshCw, Loader2 } from "lucide-react";
+import { Eye, Database, Server, Shield, Clock, AlertTriangle, CheckCircle, XCircle, Download, MapPin, RefreshCw, Loader2 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { createClient } from "@/lib/supabase/client";
+// createClient-Import entfernt (nicht verwendet)
 import { QUARTIER_STREETS } from "@/lib/constants";
 import type { User, Household } from "@/lib/supabase/types";
 import { toast } from "sonner";
@@ -45,13 +45,6 @@ export function SystemHealth({ stats, users, households }: SystemHealthProps) {
   const [healthTimestamp, setHealthTimestamp] = useState<string | null>(null);
   const [overallStatus, setOverallStatus] = useState<"ok" | "warn" | "error">("ok");
 
-  // Health-Checks beim Laden ausfuehren + Auto-Refresh alle 30 Sekunden
-  useEffect(() => {
-    runHealthChecks();
-    const interval = setInterval(runHealthChecks, 30_000);
-    return () => clearInterval(interval);
-  }, []);
-
   async function runHealthChecks() {
     setHealthLoading(true);
     try {
@@ -71,6 +64,13 @@ export function SystemHealth({ stats, users, households }: SystemHealthProps) {
     }
     setHealthLoading(false);
   }
+
+  // Health-Checks beim Laden ausfuehren + Auto-Refresh alle 30 Sekunden
+  useEffect(() => {
+    runHealthChecks();
+    const interval = setInterval(runHealthChecks, 30_000);
+    return () => clearInterval(interval);
+  }, []);
 
   // Umgebungsvariablen-Status (DSGVO: keine Werte anzeigen, nur ob konfiguriert)
   const envChecks = [

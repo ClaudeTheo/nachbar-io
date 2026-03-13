@@ -23,6 +23,7 @@ export function useSubscription() {
     setLoading(false);
   }, []);
 
+  // eslint-disable-next-line react-hooks/set-state-in-effect -- Daten laden bei Mount
   useEffect(() => { load(); }, [load]);
 
   /** Plan aendern */

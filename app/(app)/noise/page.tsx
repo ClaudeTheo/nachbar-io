@@ -333,6 +333,7 @@ function WarningList({
       {warnings.map((w) => {
         const dist = distanceFn(w.user_id);
         const cat = NOISE_CATEGORIES.find((c) => c.id === w.subcategory);
+        // eslint-disable-next-line react-hooks/purity
         const isExpiringSoon = w.expires_at && (new Date(w.expires_at).getTime() - Date.now()) < 3600000;
 
         return (

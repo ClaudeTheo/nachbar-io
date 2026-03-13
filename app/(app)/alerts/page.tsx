@@ -15,11 +15,6 @@ export default function AlertsPage() {
   const [loading, setLoading] = useState(true);
   const { currentQuarter } = useQuarter();
 
-  useEffect(() => {
-    if (!currentQuarter) return;
-    loadAlerts();
-  }, [currentQuarter?.id]);
-
   async function loadAlerts() {
     if (!currentQuarter) return;
     const supabase = createClient();
@@ -33,6 +28,12 @@ export default function AlertsPage() {
     if (data) setAlerts(data as unknown as Alert[]);
     setLoading(false);
   }
+
+  useEffect(() => {
+    if (!currentQuarter) return;
+    loadAlerts();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentQuarter?.id]);
 
   async function handleHelp(alertId: string) {
     const supabase = createClient();

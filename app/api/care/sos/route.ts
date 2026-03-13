@@ -112,7 +112,7 @@ export async function POST(request: NextRequest) {
       referenceId: alert.id,
       metadata: { category, source, isEmergency: validCategory.isEmergency },
     });
-  } catch (auditError) {
+  } catch (_auditError) {
     // Audit-Fehler blockiert nicht den SOS-Prozess
     log.warn('audit_log_failed', { alertId: alert.id });
   }

@@ -2,9 +2,9 @@
 // Agent A erstellt "Hilfe gesucht", Agent B sieht es im Feed und nimmt an.
 import { test, expect } from "@playwright/test";
 import { createAgent, loginAgent, cleanupAgents, type TestAgent } from "../helpers/agent-factory";
-import { withAgent, navigateAgent } from "../helpers/scenario-runner";
+import { withAgent } from "../helpers/scenario-runner";
 import { waitForStableUI, waitForFeedItem } from "../helpers/observer";
-import { HelpPage, HelpNewPage } from "../pages";
+
 import { TIMEOUTS } from "../helpers/test-config";
 
 test.describe("S2: Hilfe-Anfrage → Zustellung → Annahme", () => {
@@ -186,7 +186,7 @@ test.describe("S2: Hilfe-Anfrage → Zustellung → Annahme", () => {
 
       if (await helpCard.first().isVisible().catch(() => false)) {
         // Pruefen ob Status sich geaendert hat
-        const statusBadge = helpCard.first().locator("[data-testid='help-status']").or(
+        const _statusBadge = helpCard.first().locator("[data-testid='help-status']").or(
           helpCard.first().locator(".badge, [class*='badge']")
         );
         console.log("[A] Status der Hilfe-Anfrage geprueft");

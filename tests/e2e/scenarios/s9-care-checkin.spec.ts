@@ -4,7 +4,6 @@ import { test, expect } from "@playwright/test";
 import { createAgent, loginAgent, cleanupAgents, type TestAgent } from "../helpers/agent-factory";
 import { withAgent } from "../helpers/scenario-runner";
 import { waitForStableUI, createConsoleErrorCollector } from "../helpers/observer";
-import { SeniorCheckinPage } from "../pages";
 import { TIMEOUTS } from "../helpers/test-config";
 
 test.describe("S9: Care Check-in & Medikamenten-Workflow", () => {
@@ -234,7 +233,7 @@ test.describe("S9: Care Check-in & Medikamenten-Workflow", () => {
 
       // AlarmScreen oder Check-in-Seite
       const ausButton = page.getByText("Aus").first();
-      const schlummernButton = page.getByText(/Schlummern/i);
+      const _schlummernButton = page.getByText(/Schlummern/i);
       const checkinTime = page.getByText("Check-in Zeit");
 
       if (await checkinTime.isVisible().catch(() => false)) {

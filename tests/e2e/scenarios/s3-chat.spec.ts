@@ -3,8 +3,8 @@
 import { test, expect } from "@playwright/test";
 import { createAgent, loginAgent, cleanupAgents, type TestAgent } from "../helpers/agent-factory";
 import { withAgent } from "../helpers/scenario-runner";
-import { waitForStableUI, waitForChatMessage, getChatMessageCount, getUnreadCount } from "../helpers/observer";
-import { MessagesPage, ChatPage } from "../pages";
+import { waitForStableUI, waitForChatMessage, getUnreadCount } from "../helpers/observer";
+
 import { TIMEOUTS } from "../helpers/test-config";
 
 test.describe("S3: Direktnachricht / Chat Zustellung", () => {

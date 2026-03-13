@@ -84,6 +84,7 @@ export function AvatarPicker({
       >
         <div className="flex h-24 w-24 items-center justify-center rounded-full bg-quartier-green/10 text-4xl transition-shadow group-hover:ring-2 group-hover:ring-quartier-green/30">
           {resolved.type === "image" ? (
+            /* eslint-disable-next-line @next/next/no-img-element */
             <img
               src={resolved.value}
               alt="Avatar"

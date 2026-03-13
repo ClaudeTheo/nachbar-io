@@ -4,7 +4,7 @@ import { test, expect } from "@playwright/test";
 import { createAgent, loginAgent, cleanupAgents, type TestAgent } from "../helpers/agent-factory";
 import { withAgent } from "../helpers/scenario-runner";
 import { waitForStableUI, createConsoleErrorCollector } from "../helpers/observer";
-import { SeniorHomePage, SeniorCheckinPage, SeniorHelpPage } from "../pages";
+import { SeniorHomePage, SeniorCheckinPage } from "../pages";
 import { TIMEOUTS } from "../helpers/test-config";
 
 test.describe("S5: Senioren-Terminal Komplett-Test", () => {

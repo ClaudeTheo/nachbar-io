@@ -221,7 +221,7 @@ export async function GET(request: NextRequest) {
         referenceId: alert.id,
         metadata: { fromLevel, toLevel, automatic: true },
       });
-    } catch (auditError) {
+    } catch (_auditError) {
       log.warn('audit_log_failed', { alertId: alert.id });
     }
   }

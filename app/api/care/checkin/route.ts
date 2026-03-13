@@ -6,7 +6,7 @@ import { createClient } from '@/lib/supabase/server';
 import { writeAuditLog } from '@/lib/care/audit';
 import { sendCareNotification } from '@/lib/care/notifications';
 import { requireCareAccess } from '@/lib/care/api-helpers';
-import { encryptField, decryptField, decryptFields, decryptFieldsArray, CARE_CHECKINS_ENCRYPTED_FIELDS, CARE_SOS_ALERTS_ENCRYPTED_FIELDS } from '@/lib/care/field-encryption';
+import { encryptField, decryptFields, decryptFieldsArray, CARE_CHECKINS_ENCRYPTED_FIELDS } from '@/lib/care/field-encryption';
 import { createCareLogger } from '@/lib/care/logger';
 import { getUserQuarterId } from '@/lib/quarters/helpers';
 import type { CareCheckinStatus, CareCheckinMood } from '@/lib/care/types';
@@ -157,7 +157,7 @@ export async function POST(request: NextRequest) {
       referenceId: checkin.id as string,
       metadata: { status, mood: mood ?? null, hasNote: !!note },
     });
-  } catch (auditError) {
+  } catch (_auditError) {
     // Audit-Fehler blockiert nicht den Check-in-Prozess
     log.warn('audit_log_failed', { checkinId: checkin.id as string });
   }

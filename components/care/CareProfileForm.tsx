@@ -60,6 +60,7 @@ export function CareProfileForm({ userId, onSuccess }: CareProfileFormProps) {
   // Formular mit vorhandenen Daten befuellen
   useEffect(() => {
     if (profile && !initialized) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- Formular mit vorhandenen Daten befuellen
       setCareLevel(profile.care_level);
       setCheckinEnabled(profile.checkin_enabled);
       setCheckinTimes(profile.checkin_times.length > 0 ? profile.checkin_times : ['08:00', '20:00']);

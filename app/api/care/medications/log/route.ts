@@ -7,7 +7,7 @@ import { writeAuditLog } from '@/lib/care/audit';
 import { sendCareNotification } from '@/lib/care/notifications';
 import { requireCareAccess } from '@/lib/care/api-helpers';
 import { MEDICATION_DEFAULTS } from '@/lib/care/constants';
-import { decryptField, CARE_MEDICATIONS_ENCRYPTED_FIELDS } from '@/lib/care/field-encryption';
+import { decryptField } from '@/lib/care/field-encryption';
 import type { CareMedicationLogStatus } from '@/lib/care/types';
 
 const VALID_LOG_STATUSES: CareMedicationLogStatus[] = ['taken', 'skipped', 'snoozed'];

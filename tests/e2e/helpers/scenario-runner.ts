@@ -1,6 +1,6 @@
 // Nachbar.io — Scenario Runner: Orchestriert Multi-Agent Szenarien
 import { Browser } from "@playwright/test";
-import { createAgent, loginAgent, cleanupAgents, type TestAgent } from "./agent-factory";
+import { createAgent, loginAgent, type TestAgent } from "./agent-factory";
 import { waitForStableUI, takeAgentScreenshot } from "./observer";
 
 /**

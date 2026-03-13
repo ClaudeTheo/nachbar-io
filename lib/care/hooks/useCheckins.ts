@@ -10,6 +10,7 @@ export function useCheckins(seniorId?: string, limit = 30) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- Daten laden bei Mount
     if (!seniorId) { setLoading(false); return; }
     const supabase = createClient();
 

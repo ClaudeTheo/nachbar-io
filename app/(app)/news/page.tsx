@@ -40,6 +40,7 @@ export default function NewsPage() {
   }, [activeCategory, currentQuarter]);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     loadNews();
   }, [loadNews]);
 

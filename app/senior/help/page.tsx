@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { SeniorButton } from "@/components/SeniorButton";
-import { EmergencyBanner } from "@/components/EmergencyBanner";
 import { createClient } from "@/lib/supabase/client";
 
 /**
@@ -29,7 +28,7 @@ const SENIOR_CATEGORIES = [
 export default function SeniorHelpPage() {
   const [step, setStep] = useState<Step>("category");
   const [category, setCategory] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
+  const [_loading, setLoading] = useState(false);
   const router = useRouter();
 
   function handleCategory(id: string) {

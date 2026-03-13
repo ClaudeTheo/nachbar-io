@@ -1,7 +1,7 @@
 // lib/care/cron-heartbeat.test.ts
 // Nachbar.io — Tests fuer Cron-Heartbeat-Monitoring (FMEA FM-SOS-03, FM-CI-01, FM-MED-01)
 
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { CRON_JOBS, writeCronHeartbeat, checkCronHealth } from './cron-heartbeat';
 import type { CronJobId } from './cron-heartbeat';
 

@@ -11,6 +11,7 @@ export function useCareProfile(userId?: string) {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- Daten laden bei Mount
     if (!userId) { setLoading(false); return; }
 
     const supabase = createClient();

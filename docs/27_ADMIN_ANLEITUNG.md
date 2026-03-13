@@ -66,11 +66,24 @@ Jeder Nutzer hat zusaetzlich ein Trust-Level, das die Vertrauensstufe im Quartie
 
 ## 2. Zugang zum Admin-Dashboard
 
+### Option A: Ueber die Haupt-App
+
 1. Melden Sie sich unter **https://nachbar-io.vercel.app/login** an
 2. Tippen Sie auf das **Menue-Symbol** (drei Striche) unten rechts
 3. Waehlen Sie **Admin-Dashboard**
 
 > **Hinweis:** Der Menuepunkt erscheint nur, wenn Ihr Konto Admin-Rechte besitzt (`is_admin = true`).
+
+### Option B: Externes Admin-Portal (empfohlen)
+
+Das Admin-Portal ist unter **https://nachbar-admin.vercel.app** erreichbar — unabhaengig von der Haupt-App. Selbst wenn die Haupt-App Probleme hat, bleibt das Admin-Portal funktionsfaehig.
+
+**Dreifache Sicherheit:**
+1. **Admin-PIN eingeben** — 6-stelliger Zugangs-PIN (erhalten Sie vom Super-Admin)
+2. **Anmelden** — Mit Ihrem Admin-E-Mail und Passwort
+3. **Automatische Pruefung** — Nur Konten mit Admin-Rechten werden zugelassen
+
+> **Wichtig:** Bei unbekannter PIN oder Zugangsproblemen wenden Sie sich an den Super-Admin (thomasth@gmx.de).
 
 ---
 

@@ -34,10 +34,6 @@ export function DatabaseOverview() {
   const [loading, setLoading] = useState(true);
   const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set(["Core"]));
 
-  useEffect(() => {
-    loadData();
-  }, []);
-
   async function loadData() {
     setLoading(true);
     try {
@@ -53,6 +49,11 @@ export function DatabaseOverview() {
     }
     setLoading(false);
   }
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    loadData();
+  }, []);
 
   // Tabellen nach Kategorie gruppieren
   const grouped = tables.reduce<Record<string, TableInfo[]>>((acc, t) => {

@@ -187,7 +187,7 @@ describe('POST /api/care/sos', () => {
                 return createChain();
               };
             }
-            return (..._: unknown[]) => createChain();
+            return (..._args: unknown[]) => createChain();
           },
         });
         return createChain();

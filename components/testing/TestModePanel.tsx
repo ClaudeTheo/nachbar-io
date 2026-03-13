@@ -5,10 +5,10 @@
 // Minimiert: Badge mit Fortschrittsring
 // Maximiert: Pfad-Uebersicht, Checkliste, Ergebnis-Eingabe
 
-import { useState, useMemo, useCallback } from "react";
+import { useState, useMemo } from "react";
 import {
   X, ChevronDown, ChevronRight, CheckCircle2, XCircle, MinusCircle,
-  AlertTriangle, SkipForward, Circle, MessageSquare, Star,
+  SkipForward, Circle, MessageSquare, Star,
   ClipboardList, BarChart3, Send, Camera, Loader2, Trash2,
   MapPin, Eye,
 } from "lucide-react";
@@ -55,7 +55,7 @@ export function TestModePanel() {
     session, results, visitedRoutes, panelOpen, setPanelOpen,
     activePathId, setActivePathId,
     updateResult, completeSession, abandonSession,
-    startSession, onboardingComplete, completeOnboarding,
+    startSession, onboardingComplete,
     isLoading,
   } = useTestMode();
 
@@ -582,6 +582,7 @@ function ResultEditor({
           {screenshotUrl ? (
             // Vorschau mit Entfernen-Button
             <div className="relative inline-block">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={screenshotUrl}
                 alt="Screenshot"

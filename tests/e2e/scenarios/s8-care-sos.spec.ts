@@ -4,7 +4,7 @@ import { test, expect } from "@playwright/test";
 import { createAgent, loginAgent, cleanupAgents, type TestAgent } from "../helpers/agent-factory";
 import { withAgent } from "../helpers/scenario-runner";
 import { waitForStableUI, createConsoleErrorCollector } from "../helpers/observer";
-import { CareSosNewPage, CareSosAlertPage } from "../pages/care-sos.page";
+import { CareSosNewPage } from "../pages/care-sos.page";
 import { TIMEOUTS } from "../helpers/test-config";
 
 test.describe("S8: Care SOS Workflow", () => {

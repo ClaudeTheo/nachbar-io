@@ -6,14 +6,13 @@
 
 import { useEffect, useState, useCallback } from "react";
 import {
-  Users, BarChart3, Download, Search, Filter,
-  ChevronDown, ChevronRight, CheckCircle2, XCircle, MinusCircle,
-  SkipForward, Circle, AlertTriangle, RefreshCw,
+  Users, BarChart3, Download, Search,
+  ChevronDown, ChevronRight, CheckCircle2, XCircle,
+  Circle, AlertTriangle, RefreshCw,
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { TEST_PATHS, getTestPointById } from "@/lib/testing/test-config";
-import type { IssueSeverity, IssueType } from "@/lib/testing/types";
+import { getTestPointById } from "@/lib/testing/test-config";
 
 // ============================================================
 // Typen

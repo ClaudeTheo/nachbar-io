@@ -117,6 +117,15 @@ export async function POST(request: NextRequest) {
       const coords = STREET_COORDS[streetName];
 
       if (coords && trimmedHouseNumber) {
+        // Quartier-ID ermitteln (fuer Pilot: das einzige aktive Quartier)
+        let quarterId: string | null = null;
+        const { data: quarter } = await adminDb
+          .from("quarters")
+          .select("id")
+          .limit(1)
+          .single();
+        if (quarter) quarterId = quarter.id;
+
         // Bestehenden Haushalt suchen
         const { data: existing } = await adminDb
           .from("households")
@@ -133,16 +142,20 @@ export async function POST(request: NextRequest) {
           const lngOffset = houseNum * 0.0005;
           const newInviteCode = generateSecureCode();
 
+          const insertData: Record<string, unknown> = {
+            street_name: streetName,
+            house_number: trimmedHouseNumber,
+            lat: coords.lat,
+            lng: coords.lng + lngOffset,
+            verified: false,
+            invite_code: newInviteCode,
+          };
+          // quarter_id setzen damit QuarterProvider den Haushalt findet
+          if (quarterId) insertData.quarter_id = quarterId;
+
           const { data: newHousehold, error: insertError } = await adminDb
             .from("households")
-            .insert({
-              street_name: streetName,
-              house_number: trimmedHouseNumber,
-              lat: coords.lat,
-              lng: coords.lng + lngOffset,
-              verified: false,
-              invite_code: newInviteCode,
-            })
+            .insert(insertData)
             .select("id")
             .single();
 
@@ -158,11 +171,30 @@ export async function POST(request: NextRequest) {
               if (retry) householdId = retry.id;
             } else {
               console.error("Haushalt-Erstellung fehlgeschlagen:", insertError);
+              // Fallback: Trotzdem nach bestehendem Haushalt suchen
+              const { data: fallback } = await adminDb
+                .from("households")
+                .select("id")
+                .eq("street_name", streetName)
+                .eq("house_number", trimmedHouseNumber)
+                .maybeSingle();
+              if (fallback) householdId = fallback.id;
             }
           } else if (newHousehold) {
             householdId = newHousehold.id;
           }
         }
+      } else if (trimmedHouseNumber) {
+        // Fallback: Straßenname nicht in STREET_COORDS (z.B. Tippfehler)
+        // Trotzdem versuchen, bestehenden Haushalt zu finden
+        console.warn(`Unbekannter Straßenname: "${streetName}" — versuche Haushalt-Suche`);
+        const { data: existing } = await adminDb
+          .from("households")
+          .select("id")
+          .eq("street_name", streetName)
+          .eq("house_number", String(houseNumber).trim())
+          .maybeSingle();
+        if (existing) householdId = existing.id;
       }
     }
 

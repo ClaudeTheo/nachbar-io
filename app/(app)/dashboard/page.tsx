@@ -41,7 +41,7 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
   const [showInviteModal, setShowInviteModal] = useState(false);
   const { count: unreadCount } = useUnreadCount();
-  const { currentQuarter } = useQuarter();
+  const { currentQuarter, loading: quarterLoading } = useQuarter();
 
   // Profilvervollstaendigung
   const [profileData, setProfileData] = useState<{
@@ -159,7 +159,7 @@ export default function DashboardPage() {
   }, [loadDashboard]);
 
   // Loading-Skeleton
-  if (loading) {
+  if (loading && (quarterLoading || currentQuarter)) {
     return (
       <div className="space-y-6 animate-fade-in-up">
         <div className="flex items-center justify-between">
@@ -173,6 +173,26 @@ export default function DashboardPage() {
         {[1, 2, 3].map((i) => (
           <Skeleton key={i} className="h-24 w-full rounded-lg" />
         ))}
+      </div>
+    );
+  }
+
+  // Kein Quartier zugeordnet — hilfreiche Meldung statt endlosem Skeleton
+  if (!quarterLoading && !currentQuarter) {
+    return (
+      <div className="flex flex-col items-center justify-center py-16 text-center animate-fade-in-up">
+        <div className="mb-4 text-5xl" aria-hidden="true">🏘️</div>
+        <h1 className="text-xl font-bold text-anthrazit">Willkommen bei nachbar.io</h1>
+        <p className="mt-2 max-w-sm text-sm text-muted-foreground">
+          Ihr Konto ist noch keinem Quartier zugeordnet. Bitte wenden Sie sich an die
+          Quartiersadministration, damit Ihr Haushalt verifiziert wird.
+        </p>
+        <a
+          href="mailto:thomasth@gmx.de"
+          className="mt-4 rounded-lg bg-quartier-green px-6 py-3 text-sm font-semibold text-white transition-all hover:bg-quartier-green/90 active:scale-[0.97]"
+        >
+          Kontakt aufnehmen
+        </a>
       </div>
     );
   }

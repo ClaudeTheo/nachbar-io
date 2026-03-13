@@ -12,8 +12,6 @@ export function createClient() {
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       auth: {
-        // Laengerer Timeout verhindert aggressives Lock-Stealing zwischen Tabs
-        lockAcquireTimeout: 15000,
         detectSessionInUrl: true,
       },
     }

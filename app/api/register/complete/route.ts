@@ -199,12 +199,14 @@ export async function POST(request: NextRequest) {
     }
 
     // 1. User-Profil erstellen
+    // Pilotphase: trust_level direkt auf 'verified' (Nutzer wird sofort verifiziert)
     const { error: profileError } = await adminDb.from("users").insert({
       id: userId,
       email_hash: "",
       display_name: displayName.trim(),
       ui_mode: uiMode || "active",
       is_tester: true,  // Pilotphase: alle Nutzer sind Tester
+      trust_level: "verified",  // Pilotphase: sofort verifiziert
     });
 
     if (profileError) {

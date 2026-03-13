@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { getUserQuarterId } from "@/lib/quarters/helpers";
 
 // GET /api/alerts — Alle aktiven Alerts abrufen (authentifiziert)
 export async function GET() {
@@ -76,6 +77,9 @@ export async function POST(request: NextRequest) {
     }
   }
 
+  // Quartier-ID des Nutzers ermitteln
+  const quarterId = await getUserQuarterId(supabase, user.id);
+
   // Alert erstellen
   const { data: alert, error } = await supabase
     .from("alerts")
@@ -88,6 +92,7 @@ export async function POST(request: NextRequest) {
       status: "open",
       is_emergency: is_emergency || false,
       current_radius: 1,
+      quarter_id: quarterId,
     })
     .select()
     .single();

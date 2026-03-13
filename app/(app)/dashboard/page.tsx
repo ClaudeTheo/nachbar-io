@@ -14,6 +14,7 @@ import { InviteNeighborModal } from "@/components/InviteNeighborModal";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { createClient } from "@/lib/supabase/client";
+import { useQuarter } from "@/lib/quarters";
 import { getCachedReputation } from "@/lib/reputation";
 import { useUnreadCount } from "@/lib/useUnreadCount";
 import { toast } from "sonner";
@@ -40,6 +41,7 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
   const [showInviteModal, setShowInviteModal] = useState(false);
   const { count: unreadCount } = useUnreadCount();
+  const { currentQuarter } = useQuarter();
 
   // Profilvervollstaendigung
   const [profileData, setProfileData] = useState<{
@@ -52,6 +54,7 @@ export default function DashboardPage() {
   } | null>(null);
 
   const loadDashboard = useCallback(async () => {
+    if (!currentQuarter) return;
     const supabase = createClient();
 
     try {
@@ -102,24 +105,28 @@ export default function DashboardPage() {
         supabase
           .from("alerts")
           .select("*, user:users(display_name, avatar_url), household:households(street_name, house_number, lat, lng)")
+          .eq("quarter_id", currentQuarter.id)
           .in("status", ["open", "help_coming"])
           .order("created_at", { ascending: false })
           .limit(5),
         supabase
           .from("news_items")
           .select("*")
+          .or(`quarter_id.eq.${currentQuarter.id},quarter_id.is.null`)
           .gte("relevance_score", 5)
           .order("created_at", { ascending: false })
           .limit(3),
         supabase
           .from("help_requests")
           .select("*, user:users(display_name, avatar_url)")
+          .eq("quarter_id", currentQuarter.id)
           .eq("status", "active")
           .order("created_at", { ascending: false })
           .limit(3),
         supabase
           .from("marketplace_items")
           .select("*, user:users(display_name, avatar_url)")
+          .eq("quarter_id", currentQuarter.id)
           .eq("status", "active")
           .order("created_at", { ascending: false })
           .limit(3),
@@ -134,7 +141,7 @@ export default function DashboardPage() {
     } finally {
       setLoading(false);
     }
-  }, [router]);
+  }, [router, currentQuarter]);
 
   useEffect(() => {
     loadDashboard();

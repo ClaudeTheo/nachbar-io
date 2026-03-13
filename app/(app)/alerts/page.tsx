@@ -6,22 +6,27 @@ import { Plus } from "lucide-react";
 import { AlertCard } from "@/components/AlertCard";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { createClient } from "@/lib/supabase/client";
+import { useQuarter } from "@/lib/quarters";
 import { createNotification } from "@/lib/notifications";
 import type { Alert } from "@/lib/supabase/types";
 
 export default function AlertsPage() {
   const [alerts, setAlerts] = useState<Alert[]>([]);
   const [loading, setLoading] = useState(true);
+  const { currentQuarter } = useQuarter();
 
   useEffect(() => {
+    if (!currentQuarter) return;
     loadAlerts();
-  }, []);
+  }, [currentQuarter?.id]);
 
   async function loadAlerts() {
+    if (!currentQuarter) return;
     const supabase = createClient();
     const { data } = await supabase
       .from("alerts")
       .select("*, user:users(display_name, avatar_url), household:households(street_name, house_number, lat, lng), responses:alert_responses(*, responder:users(display_name, avatar_url))")
+      .eq("quarter_id", currentQuarter.id)
       .order("created_at", { ascending: false })
       .limit(50);
 

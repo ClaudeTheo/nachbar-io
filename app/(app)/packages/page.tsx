@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { createClient } from "@/lib/supabase/client";
+import { useQuarter } from "@/lib/quarters";
 import { haversineDistance, RADIUS_DIRECT } from "@/lib/geo";
 import type { Paketannahme, HelpRequest } from "@/lib/supabase/types";
 import { formatDistanceToNow } from "date-fns";
@@ -44,8 +45,10 @@ export default function PackagesPage() {
   const [respondingTo, setRespondingTo] = useState<string | null>(null);
 
   const today = new Date().toISOString().split("T")[0];
+  const { currentQuarter } = useQuarter();
 
   useEffect(() => {
+    if (!currentQuarter) return;
     async function load() {
       const supabase = createClient();
       const { data: { user } } = await supabase.auth.getUser();
@@ -57,11 +60,13 @@ export default function PackagesPage() {
         supabase
           .from("paketannahme")
           .select("*, user:users(display_name, avatar_url)")
+          .eq("quarter_id", currentQuarter!.id)
           .eq("available_date", today)
           .order("created_at", { ascending: false }),
         supabase
           .from("help_requests")
           .select("*, user:users(display_name, avatar_url)")
+          .eq("quarter_id", currentQuarter!.id)
           .eq("category", "package")
           .eq("type", "need")
           .in("status", ["active", "matched"])
@@ -104,7 +109,7 @@ export default function PackagesPage() {
       }
     }
     load();
-  }, [today]);
+  }, [today, currentQuarter?.id]);
 
   // Distanz eines Users zu mir berechnen
   function distanceTo(userId: string): number | null {

@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
 import { createClient } from "@/lib/supabase/client";
+import { useQuarter } from "@/lib/quarters";
 import { formatDistanceToNow } from "date-fns";
 import { de } from "date-fns/locale";
 import type { HelpRequest } from "@/lib/supabase/types";
@@ -17,8 +18,10 @@ export default function BoardPage() {
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
   const [newPost, setNewPost] = useState("");
+  const { currentQuarter } = useQuarter();
 
   const loadPosts = useCallback(async () => {
+    if (!currentQuarter) return;
     const supabase = createClient();
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
@@ -32,6 +35,7 @@ export default function BoardPage() {
       const { data } = await supabase
         .from("help_requests")
         .select("*, user:users(display_name, avatar_url)")
+        .eq("quarter_id", currentQuarter.id)
         .eq("category", "board")
         .eq("status", "active")
         .gte("created_at", weekAgo.toISOString())
@@ -44,7 +48,7 @@ export default function BoardPage() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [currentQuarter]);
 
   useEffect(() => {
     loadPosts();

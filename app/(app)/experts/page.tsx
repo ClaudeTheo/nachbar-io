@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { createClient } from "@/lib/supabase/client";
+import { useQuarter } from "@/lib/quarters";
 import { EXPERT_CATEGORIES, SKILL_CATEGORIES, TRUST_LEVELS } from "@/lib/constants";
 import type { Skill, User } from "@/lib/supabase/types";
 
@@ -36,8 +37,10 @@ export default function ExpertsPage() {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [sortMode, setSortMode] = useState<SortMode>("rating");
+  const { currentQuarter } = useQuarter();
 
   useEffect(() => {
+    if (!currentQuarter) return;
     async function loadExperts() {
       const supabase = createClient();
 
@@ -45,6 +48,7 @@ export default function ExpertsPage() {
       const { data: skillsData } = await supabase
         .from("skills")
         .select("*, user:users(id, display_name, avatar_url, trust_level, created_at)")
+        .eq("quarter_id", currentQuarter!.id)
         .eq("is_public", true)
         .order("created_at", { ascending: false });
 
@@ -112,7 +116,7 @@ export default function ExpertsPage() {
     }
 
     loadExperts();
-  }, []);
+  }, [currentQuarter?.id]);
 
   // Gefilterte und sortierte Experten
   const filteredExperts = useMemo(() => {

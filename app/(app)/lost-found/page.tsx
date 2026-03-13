@@ -6,25 +6,29 @@ import { Plus } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { createClient } from "@/lib/supabase/client";
+import { useQuarter } from "@/lib/quarters";
 import type { LostFoundItem } from "@/lib/supabase/types";
 import { formatDistanceToNow } from "date-fns";
 import { de } from "date-fns/locale";
 
 export default function LostFoundPage() {
   const [items, setItems] = useState<LostFoundItem[]>([]);
+  const { currentQuarter } = useQuarter();
 
   useEffect(() => {
+    if (!currentQuarter) return;
     async function load() {
       const supabase = createClient();
       const { data } = await supabase
         .from("lost_found")
         .select("*, user:users(display_name)")
+        .eq("quarter_id", currentQuarter!.id)
         .eq("status", "open")
         .order("created_at", { ascending: false });
       if (data) setItems(data as unknown as LostFoundItem[]);
     }
     load();
-  }, []);
+  }, [currentQuarter?.id]);
 
   const lost = items.filter((i) => i.type === "lost");
   const found = items.filter((i) => i.type === "found");

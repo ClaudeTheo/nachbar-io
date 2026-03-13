@@ -78,5 +78,6 @@ export interface QuarterWithStats extends Quarter {
     residentCount: number;
     activeAlerts: number;
     activePosts: number;
+    helpRequests: number;
   };
 }

@@ -31,7 +31,7 @@ export default function LeihboersePage() {
     const supabase = createClient();
     let query = supabase
       .from("leihboerse_items")
-      .select("*, user:users(display_name, avatar_url)")
+      .select("*, user:users!user_id(display_name, avatar_url)")
       .eq("quarter_id", currentQuarter.id)
       .eq("status", "active")
       .order("created_at", { ascending: false });

@@ -427,15 +427,21 @@ export function TestModeProvider({ children }: { children: ReactNode }) {
       let screenshotUrl: string | undefined;
       try {
         const html2canvas = (await import("html2canvas")).default;
-        const canvas = await html2canvas(document.body, {
-          scale: 1,
+        // Nur den sichtbaren Bereich erfassen (scrollY bis scrollY+viewportHeight)
+        const canvas = await html2canvas(document.documentElement, {
+          scale: 0.75,
           useCORS: true,
+          allowTaint: true,
           logging: false,
           width: window.innerWidth,
           height: window.innerHeight,
+          x: window.scrollX,
+          y: window.scrollY,
+          windowWidth: window.innerWidth,
+          windowHeight: window.innerHeight,
         });
         const blob = await new Promise<Blob | null>(resolve =>
-          canvas.toBlob(resolve, "image/jpeg", 0.7)
+          canvas.toBlob(resolve, "image/jpeg", 0.6)
         );
 
         if (blob) {
@@ -445,16 +451,20 @@ export function TestModeProvider({ children }: { children: ReactNode }) {
             .from("images")
             .upload(path, blob, { contentType: "image/jpeg" });
 
-          if (!uploadError) {
+          if (uploadError) {
+            console.error("[BugReport] Storage-Upload fehlgeschlagen:", uploadError.message);
+          } else {
             const { data: urlData } = supabase.storage
               .from("images")
               .getPublicUrl(path);
             screenshotUrl = urlData.publicUrl;
           }
+        } else {
+          console.error("[BugReport] Canvas-to-Blob hat null zurueckgegeben");
         }
       } catch (screenshotErr) {
         // Screenshot fehlgeschlagen — Report trotzdem senden
-        console.warn("[BugReport] Screenshot fehlgeschlagen:", screenshotErr);
+        console.error("[BugReport] Screenshot fehlgeschlagen:", screenshotErr);
       }
 
       // 2. Browser-Info sammeln

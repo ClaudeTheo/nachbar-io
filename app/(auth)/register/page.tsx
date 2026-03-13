@@ -1,14 +1,14 @@
 "use client";
 
-import { Suspense, useState, useEffect } from "react";
+import { Suspense, useState, useEffect, useCallback, useRef } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Mail, MapPin } from "lucide-react";
+import { Mail, MapPin, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { createClient } from "@/lib/supabase/client";
-import { QUARTIER_STREETS } from "@/lib/constants";
+// QUARTIER_STREETS nicht mehr benoetigt — Adressen kommen jetzt von Photon API
 import { normalizeCode, formatCode } from "@/lib/invite-codes";
 
 
@@ -34,7 +34,18 @@ function RegisterForm() {
   const [verificationMethod, setVerificationMethod] = useState<VerificationMethod>("invite_code");
   const [selectedStreet, setSelectedStreet] = useState("");
   const [houseNumber, setHouseNumber] = useState("");
+  const [addressQuery, setAddressQuery] = useState("");
+  const [addressSuggestions, setAddressSuggestions] = useState<Array<{
+    street: string;
+    houseNumber: string;
+    display: string;
+    postcode?: string;
+  }>>([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [addressSelected, setAddressSelected] = useState(false);
   const [loading, setLoading] = useState(false);
+  const suggestionsRef = useRef<HTMLDivElement>(null);
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [householdId, setHouseholdId] = useState<string | null>(null);
   const [referrerId, setReferrerId] = useState<string | null>(null);
@@ -55,6 +66,83 @@ function RegisterForm() {
       setVerificationMethod("neighbor_invite");
     }
   }, [searchParams]);
+
+  // Photon API (OpenStreetMap) fuer Adress-Autocomplete
+  // Beschraenkt auf Bad Saeckingen (lat/lon Bias + Bounding Box)
+  const searchAddress = useCallback(async (query: string) => {
+    if (query.length < 2) {
+      setAddressSuggestions([]);
+      return;
+    }
+
+    try {
+      // Photon API mit Geo-Bias auf Bad Saeckingen
+      const params = new URLSearchParams({
+        q: `${query}, Bad Säckingen`,
+        lat: "47.5535",
+        lon: "7.9640",
+        limit: "8",
+        lang: "de",
+        layer: "house",
+      });
+
+      const res = await fetch(`https://photon.komoot.io/api/?${params}`);
+      const data = await res.json();
+
+      if (!data.features) {
+        setAddressSuggestions([]);
+        return;
+      }
+
+      // Ergebnisse filtern: nur Bad Saeckingen und Umgebung
+      const suggestions = data.features
+        .filter((f: { properties: { city?: string; postcode?: string; street?: string; housenumber?: string } }) => {
+          const p = f.properties;
+          // Nur Ergebnisse mit Strasse + Hausnummer aus Bad Saeckingen
+          return p.street && p.housenumber && (
+            p.city === "Bad Säckingen" ||
+            p.postcode === "79713"
+          );
+        })
+        .map((f: { properties: { street: string; housenumber: string; postcode?: string } }) => ({
+          street: f.properties.street,
+          houseNumber: f.properties.housenumber,
+          display: `${f.properties.street} ${f.properties.housenumber}`,
+          postcode: f.properties.postcode,
+        }))
+        // Duplikate entfernen
+        .filter((s: { display: string }, i: number, arr: Array<{ display: string }>) =>
+          arr.findIndex((a) => a.display === s.display) === i
+        );
+
+      setAddressSuggestions(suggestions);
+    } catch {
+      setAddressSuggestions([]);
+    }
+  }, []);
+
+  // Debounced Suche bei Texteingabe
+  useEffect(() => {
+    if (!addressQuery || addressSelected) return;
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => {
+      searchAddress(addressQuery);
+    }, 300);
+    return () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+    };
+  }, [addressQuery, addressSelected, searchAddress]);
+
+  // Klick ausserhalb der Vorschlaege schliesst die Liste
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (suggestionsRef.current && !suggestionsRef.current.contains(e.target as Node)) {
+        setShowSuggestions(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   // Pilot-Phase: Verifizierungsmethode wird uebersprungen → 4 Schritte
   const totalSteps = 4;
@@ -134,12 +222,26 @@ function RegisterForm() {
     setError(null);
 
     if (!selectedStreet || !houseNumber.trim()) {
-      setError("Bitte wählen Sie eine Straße und geben Sie eine Hausnummer ein.");
+      setError("Bitte wählen Sie eine Adresse aus den Vorschlägen oder geben Sie Straße und Hausnummer ein.");
       return;
     }
 
-    // Adresse nur im State speichern — Haushalt wird erst bei
-    // register/complete erstellt (User ist dann bereits eingeloggt)
+    // Bestehenden Haushalt suchen
+    try {
+      const supabase = createClient();
+      const { data: household } = await supabase
+        .from("households")
+        .select("id")
+        .eq("street_name", selectedStreet)
+        .eq("house_number", houseNumber.trim())
+        .maybeSingle();
+      if (household) {
+        setHouseholdId(household.id);
+      }
+    } catch {
+      // Nicht blockierend — Server erstellt Haushalt-Zuordnung im Fallback
+    }
+
     setVerificationMethod("address_manual");
     setStep("profile");
   }
@@ -377,42 +479,74 @@ function RegisterForm() {
           </form>
         )}
 
-        {/* Schritt 2b: Adress-Auswahl */}
+        {/* Schritt 2b: Adress-Auswahl mit Photon-Autocomplete */}
         {step === "address" && (
           <form onSubmit={handleAddressSelection} className="space-y-4">
             <p className="text-sm text-muted-foreground">
-              Wählen Sie Ihre Straße und Hausnummer. Ein Admin wird Ihre Zugehörigkeit prüfen.
+              Geben Sie Ihre Adresse ein. Vorschläge werden automatisch angezeigt.
             </p>
-            <div>
-              <label htmlFor="street" className="mb-1 block text-sm font-medium">
-                Straße
+
+            <div className="relative" ref={suggestionsRef}>
+              <label htmlFor="address_search" className="mb-1 block text-sm font-medium">
+                Adresse
               </label>
-              <select
-                id="street"
-                value={selectedStreet}
-                onChange={(e) => setSelectedStreet(e.target.value)}
-                required
-                className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-              >
-                <option value="">Straße wählen...</option>
-                {QUARTIER_STREETS.map((s) => (
-                  <option key={s} value={s}>{s}</option>
-                ))}
-              </select>
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                <Input
+                  id="address_search"
+                  type="text"
+                  value={addressQuery}
+                  onChange={(e) => {
+                    setAddressQuery(e.target.value);
+                    setAddressSelected(false);
+                    setShowSuggestions(true);
+                  }}
+                  onFocus={() => setShowSuggestions(true)}
+                  placeholder="z.B. Purkersdorfer Straße 33"
+                  autoComplete="off"
+                  className="pl-9"
+                />
+              </div>
+
+              {/* Live-Vorschlaege aus Photon API (OpenStreetMap) */}
+              {showSuggestions && addressSuggestions.length > 0 && (
+                <div className="absolute z-10 mt-1 max-h-56 w-full overflow-y-auto rounded-md border border-input bg-white shadow-lg">
+                  {addressSuggestions.map((s, i) => (
+                    <button
+                      key={`${s.display}-${i}`}
+                      type="button"
+                      className="flex w-full items-center gap-2.5 px-3 py-2.5 text-left text-sm transition-colors hover:bg-quartier-green/10"
+                      onClick={() => {
+                        setSelectedStreet(s.street);
+                        setHouseNumber(s.houseNumber);
+                        setAddressQuery(s.display);
+                        setAddressSelected(true);
+                        setShowSuggestions(false);
+                      }}
+                    >
+                      <MapPin className="h-4 w-4 shrink-0 text-quartier-green" />
+                      <div>
+                        <span className="font-medium text-anthrazit">{s.display}</span>
+                        {s.postcode && (
+                          <span className="ml-1.5 text-xs text-muted-foreground">{s.postcode} Bad Säckingen</span>
+                        )}
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
-            <div>
-              <label htmlFor="house_number" className="mb-1 block text-sm font-medium">
-                Hausnummer
-              </label>
-              <Input
-                id="house_number"
-                type="text"
-                value={houseNumber}
-                onChange={(e) => setHouseNumber(e.target.value)}
-                placeholder="z.B. 5 oder 12a"
-                required
-              />
-            </div>
+
+            {/* Gewaehlte Adresse anzeigen */}
+            {addressSelected && selectedStreet && houseNumber && (
+              <div className="flex items-center gap-2 rounded-lg border border-quartier-green/30 bg-quartier-green/5 p-3">
+                <MapPin className="h-4 w-4 shrink-0 text-quartier-green" />
+                <div className="text-sm">
+                  <span className="font-semibold text-anthrazit">{selectedStreet} {houseNumber}</span>
+                  <span className="ml-1 text-muted-foreground">· 79713 Bad Säckingen</span>
+                </div>
+              </div>
+            )}
 
             <div className="rounded-lg bg-blue-50 p-3 text-xs text-blue-700">
               <p className="font-medium">Hinweis zur Verifikation</p>

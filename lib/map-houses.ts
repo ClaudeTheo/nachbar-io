@@ -1,5 +1,8 @@
 // Nachbar.io — Karten-Konfiguration (gemeinsam fuer NachbarKarte + MapEditor)
 
+import { createClient } from "@/lib/supabase/client";
+
+// Standard-Kartengroesse (Pilot-Quartier), ueberschreibbar per map_config.viewBox
 export const MAP_W = 1083;
 export const MAP_H = 766;
 
@@ -152,3 +155,34 @@ export const DEFAULT_HOUSES: MapHouseData[] = [
   { id: "or24_26", num: "24-26", s: "OR", x: 893, y: 661, defaultColor: "green" },
   { id: "or28", num: "28", s: "OR", x: 980, y: 553, defaultColor: "green" },
 ];
+
+// Laedt Haeuser fuer ein bestimmtes Quartier aus der Datenbank
+export async function loadQuarterHouses(quarterId: string): Promise<MapHouseData[]> {
+  const supabase = createClient();
+  const { data, error } = await supabase
+    .from("map_houses")
+    .select("id, house_number, street_code, x, y, default_color")
+    .eq("quarter_id", quarterId)
+    .order("street_code");
+
+  if (error || !data || data.length === 0) return [];
+
+  return data.map(h => ({
+    id: h.id,
+    num: h.house_number,
+    s: h.street_code as StreetCode,
+    x: h.x,
+    y: h.y,
+    defaultColor: h.default_color as LampColor,
+  }));
+}
+
+// Parst viewBox-String und gibt Breite/Hoehe zurueck (Fallback: MAP_W x MAP_H)
+export function parseViewBox(viewBox?: string): { w: number; h: number } {
+  if (!viewBox) return { w: MAP_W, h: MAP_H };
+  const parts = viewBox.split(/\s+/).map(Number);
+  if (parts.length === 4 && !parts.some(isNaN)) {
+    return { w: parts[2], h: parts[3] };
+  }
+  return { w: MAP_W, h: MAP_H };
+}

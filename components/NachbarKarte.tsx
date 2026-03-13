@@ -1,15 +1,30 @@
 "use client";
 
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useMemo } from "react";
 import { createClient } from "@/lib/supabase/client";
 import {
   MAP_W, MAP_H, STREET_LABELS, STREET_CODE_TO_NAME, COLOR_CFG, DEFAULT_HOUSES,
+  loadQuarterHouses, parseViewBox,
   type MapHouseData, type LampColor, type StreetCode,
 } from "@/lib/map-houses";
+import { useQuarter } from "@/lib/quarters";
 import { HouseInfoPanel } from "@/components/HouseInfoPanel";
 import { HelpTip } from "@/components/HelpTip";
 
-export function NachbarKarte() {
+interface NachbarKarteProps {
+  quarterId?: string;
+}
+
+export function NachbarKarte({ quarterId: quarterIdProp }: NachbarKarteProps) {
+  const { currentQuarter } = useQuarter();
+  const quarterId = quarterIdProp ?? currentQuarter?.id;
+  const mapConfig = currentQuarter?.map_config;
+
+  // ViewBox und Hintergrundbild aus map_config (Fallback auf Pilot-Werte)
+  const viewBox = mapConfig?.viewBox ?? `0 0 ${MAP_W} ${MAP_H}`;
+  const backgroundImage = mapConfig?.backgroundImage ?? "/map-quartier.jpg";
+  const { w: mapW, h: mapH } = useMemo(() => parseViewBox(mapConfig?.viewBox), [mapConfig?.viewBox]);
+
   const [houses, setHouses] = useState<MapHouseData[]>(DEFAULT_HOUSES);
   const [statuses, setStatuses] = useState<Record<string, LampColor>>(() => {
     const s: Record<string, LampColor> = {};
@@ -22,35 +37,26 @@ export function NachbarKarte() {
   // Bewohnerzahl pro Haus-Key (street_code:house_number)
   const [residentCounts, setResidentCounts] = useState<Record<string, number>>({});
 
-  // Haeuser dynamisch von Supabase laden (mit Fallback)
+  // Haeuser dynamisch von Supabase laden (quartier-spezifisch, mit Fallback)
   useEffect(() => {
     async function loadData() {
       try {
         const supabase = createClient();
 
-        // Haeuser laden
-        const { data, error } = await supabase
-          .from("map_houses")
-          .select("id, house_number, street_code, x, y, default_color")
-          .order("street_code");
-
+        // Haeuser fuer aktuelles Quartier laden
         let loadedHouses = DEFAULT_HOUSES;
-        if (!error && data && data.length > 0) {
-          loadedHouses = data.map(h => ({
-            id: h.id,
-            num: h.house_number,
-            s: h.street_code as MapHouseData["s"],
-            x: h.x,
-            y: h.y,
-            defaultColor: h.default_color as LampColor,
-          }));
-          setHouses(loadedHouses);
-          setStatuses(prev => {
-            const s: Record<string, LampColor> = {};
-            loadedHouses.forEach((h) => { s[h.id] = prev[h.id] ?? h.defaultColor; });
-            return s;
-          });
+        if (quarterId) {
+          const quarterHouses = await loadQuarterHouses(quarterId);
+          if (quarterHouses.length > 0) {
+            loadedHouses = quarterHouses;
+          }
         }
+        setHouses(loadedHouses);
+        setStatuses(prev => {
+          const s: Record<string, LampColor> = {};
+          loadedHouses.forEach((h) => { s[h.id] = prev[h.id] ?? h.defaultColor; });
+          return s;
+        });
 
         // Aktive Urlaube laden — Haeuser blau faerben
         const today = new Date().toISOString().split("T")[0];
@@ -164,7 +170,7 @@ export function NachbarKarte() {
       }
     }
     loadData();
-  }, []);
+  }, [quarterId]);
 
   // Klick oeffnet Haus-Info Panel
   const click = useCallback((h: MapHouseData) => {
@@ -196,10 +202,10 @@ export function NachbarKarte() {
   return (
     <div className="flex flex-col items-center gap-2">
       {/* Steuerleiste */}
-      <div className="flex w-full max-w-[1083px] flex-wrap items-center justify-between gap-2 rounded-lg bg-[#111827] px-3 py-2">
+      <div className="flex w-full flex-wrap items-center justify-between gap-2 rounded-lg bg-[#111827] px-3 py-2" style={{ maxWidth: `${mapW}px` }}>
         <div className="flex items-center gap-1.5">
           <div>
-            <div className="text-sm font-bold text-[#f8fafc]">Nachbar.io — Bad Säckingen</div>
+            <div className="text-sm font-bold text-[#f8fafc]">Nachbar.io — {currentQuarter?.name ?? "Bad Säckingen"}</div>
             <div className="text-xs text-[#64748b]">
               Klick auf ein Haus für Details · Hover für Adresse
             </div>
@@ -247,14 +253,14 @@ export function NachbarKarte() {
       </div>
 
       {/* Karte */}
-      <div className="w-full max-w-[1083px] overflow-hidden rounded-xl shadow-lg"
-        style={{ boxShadow: "0 0 0 1px #1e293b, 0 4px 24px rgba(0,0,0,0.6)" }}>
-        <svg viewBox={`0 0 ${MAP_W} ${MAP_H}`} width="100%" className="block">
-          <image href="/map-quartier.jpg" x={0} y={0} width={MAP_W} height={MAP_H} preserveAspectRatio="xMidYMid slice" />
+      <div className={`w-full max-w-[${mapW}px] overflow-hidden rounded-xl shadow-lg`}
+        style={{ boxShadow: "0 0 0 1px #1e293b, 0 4px 24px rgba(0,0,0,0.6)", maxWidth: `${mapW}px` }}>
+        <svg viewBox={viewBox} width="100%" className="block">
+          <image href={backgroundImage} x={0} y={0} width={mapW} height={mapH} preserveAspectRatio="xMidYMid slice" />
 
           {/* Dimmer bei aktivem Filter */}
           {filter !== "all" && (
-            <rect x={0} y={0} width={MAP_W} height={MAP_H} fill="rgba(0,0,0,0.35)" style={{ pointerEvents: "none" }} />
+            <rect x={0} y={0} width={mapW} height={mapH} fill="rgba(0,0,0,0.35)" style={{ pointerEvents: "none" }} />
           )}
 
           {/* Lampen-Marker */}
@@ -328,7 +334,7 @@ export function NachbarKarte() {
               : `${cfg.label} · Klick für Details`;
             const tw = Math.max(140, Math.max(text.length, subText.length) * 6.5 + 30);
             const th = 40;
-            const tx = Math.min(Math.max(h.x - tw / 2, 4), MAP_W - tw - 4);
+            const tx = Math.min(Math.max(h.x - tw / 2, 4), mapW - tw - 4);
             const ty = h.y < 80 ? h.y + 14 : h.y - th - 12;
             return (
               <g style={{ pointerEvents: "none" }}>

@@ -53,26 +53,28 @@ export async function GET(
   }
 
   // Stats aggregieren
-  const [households, residents, alerts, posts] = await Promise.all([
+  const [households, residents, alerts, activeAlerts] = await Promise.all([
     adminDb
       .from("households")
       .select("*", { count: "exact", head: true })
       .eq("quarter_id", id),
+    // Bewohner ueber household_members zaehlen (users hat kein quarter_id)
     adminDb
-      .from("users")
-      .select("*", { count: "exact", head: true })
-      .eq("quarter_id", id),
+      .from("household_members")
+      .select("*, households!inner(quarter_id)", { count: "exact", head: true })
+      .eq("households.quarter_id", id),
+    // Alerts im Quartier (letzte 24h)
     adminDb
-      .from("posts")
+      .from("alerts")
       .select("*", { count: "exact", head: true })
       .eq("quarter_id", id)
-      .in("category", ["emergency", "fire", "medical", "crime"])
       .gte("created_at", new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()),
+    // Alle aktiven Alerts im Quartier
     adminDb
-      .from("posts")
+      .from("alerts")
       .select("*", { count: "exact", head: true })
       .eq("quarter_id", id)
-      .gte("created_at", new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()),
+      .eq("status", "active"),
   ]);
 
   return NextResponse.json({
@@ -81,7 +83,7 @@ export async function GET(
       householdCount: households.count ?? 0,
       residentCount: residents.count ?? 0,
       activeAlerts: alerts.count ?? 0,
-      activePosts: posts.count ?? 0,
+      activePosts: activeAlerts.count ?? 0,
     },
   });
 }

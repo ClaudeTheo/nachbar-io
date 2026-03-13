@@ -43,26 +43,28 @@ export async function GET() {
   // Stats pro Quartier aggregieren
   const quartersWithStats = await Promise.all(
     (quarters ?? []).map(async (q) => {
-      const [households, residents, alerts, posts, helpRequests] = await Promise.all([
+      const [households, residents, alerts, activeAlerts, helpRequests] = await Promise.all([
         adminDb
           .from("households")
           .select("*", { count: "exact", head: true })
           .eq("quarter_id", q.id),
+        // Bewohner ueber household_members zaehlen (users hat kein quarter_id)
         adminDb
-          .from("users")
-          .select("*", { count: "exact", head: true })
-          .eq("quarter_id", q.id),
+          .from("household_members")
+          .select("*, households!inner(quarter_id)", { count: "exact", head: true })
+          .eq("households.quarter_id", q.id),
+        // Alerts im Quartier (letzte 24h, Notfall-Kategorien)
         adminDb
-          .from("posts")
+          .from("alerts")
           .select("*", { count: "exact", head: true })
           .eq("quarter_id", q.id)
-          .in("category", ["emergency", "fire", "medical", "crime"])
           .gte("created_at", new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()),
+        // Alle aktiven Alerts im Quartier
         adminDb
-          .from("posts")
+          .from("alerts")
           .select("*", { count: "exact", head: true })
           .eq("quarter_id", q.id)
-          .gte("created_at", new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()),
+          .eq("status", "active"),
         adminDb
           .from("help_requests")
           .select("*", { count: "exact", head: true })
@@ -76,7 +78,7 @@ export async function GET() {
           householdCount: households.count ?? 0,
           residentCount: residents.count ?? 0,
           activeAlerts: alerts.count ?? 0,
-          activePosts: posts.count ?? 0,
+          activePosts: activeAlerts.count ?? 0,
           helpRequests: helpRequests.count ?? 0,
         },
       };

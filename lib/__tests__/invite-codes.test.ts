@@ -83,14 +83,20 @@ describe("isValidCodeFormat", () => {
   });
 
   it("akzeptiert Quartier-Prefix-Format PREFIX-XXXX-XXXX", () => {
-    // Prefix muss 2-6 Zeichen lang sein (Regex-Beschraenkung in isValidCodeFormat)
+    // Prefix muss 2-10 Zeichen lang sein (Regex-Beschraenkung in isValidCodeFormat)
     expect(isValidCodeFormat("REBBRG-ACDE-FGHJ")).toBe(true);
     expect(isValidCodeFormat("BS-ACDE-FGHJ")).toBe(true);
   });
 
-  it("lehnt zu lange Prefixe ab (>6 Zeichen)", () => {
-    // "REBBERG" hat 7 Zeichen — wird vom Prefix-Regex nicht erkannt
-    expect(isValidCodeFormat("REBBERG-ACDE-FGHJ")).toBe(false);
+  it("akzeptiert Prefixe mit 7-10 Zeichen", () => {
+    // "REBBERG" hat 7 Zeichen, "BADSAECKIN" hat 10 Zeichen
+    expect(isValidCodeFormat("REBBERG-ACDE-FGHJ")).toBe(true);
+    expect(isValidCodeFormat("BADSAECKIN-ACDE-FGHJ")).toBe(true);
+  });
+
+  it("lehnt zu lange Prefixe ab (>10 Zeichen)", () => {
+    // "BADSAECKINGE" hat 12 Zeichen — wird vom Prefix-Regex nicht erkannt
+    expect(isValidCodeFormat("BADSAECKINGE-ACDE-FGHJ")).toBe(false);
   });
 
   it("lehnt ungueltiges Format ab", () => {

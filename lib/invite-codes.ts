@@ -59,7 +59,7 @@ export function isValidCodeFormat(code: string): boolean {
 
   // Quartier-Prefix-Format: PREFIX-XXXX-XXXX (Prefix + 8 Zeichen Base32)
   const raw = code.replace(/\s/g, "").toUpperCase();
-  const prefixMatch = raw.match(/^([A-Z]{2,6})-(.{4,5})-(.{4})$/);
+  const prefixMatch = raw.match(/^([A-Z]{2,10})-(.{4,5})-(.{4})$/);
   if (prefixMatch) {
     const codeBody = (prefixMatch[2] + prefixMatch[3]).replace(/-/g, "");
     if (codeBody.length === CODE_LENGTH && [...codeBody].every((ch) => ALPHABET.includes(ch))) {

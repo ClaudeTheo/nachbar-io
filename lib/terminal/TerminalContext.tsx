@@ -1,7 +1,13 @@
 "use client";
 
-import { createContext, useContext, useState, useCallback, type ReactNode } from "react";
+import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from "react";
 import { useTerminalData, type TerminalStatusData } from "./useTerminalData";
+
+/** Pruefen ob die aktuelle Stunde im Nachtmodus-Fenster liegt (22:00–06:59) */
+function isNightTime(): boolean {
+  const hour = new Date().getHours();
+  return hour >= 22 || hour < 7;
+}
 
 // Verfuegbare Bildschirme im Terminal
 export type TerminalScreen =
@@ -26,6 +32,11 @@ interface TerminalContextValue {
   // Bildschirm-Navigation
   activeScreen: TerminalScreen;
   setActiveScreen: (screen: TerminalScreen) => void;
+
+  // Nachtmodus (22:00–07:00)
+  isNightMode: boolean;
+  nightModeOverrideUntil: Date | null;
+  dismissNightMode: () => void;
 }
 
 const TerminalContext = createContext<TerminalContextValue | null>(null);
@@ -42,6 +53,27 @@ interface TerminalProviderProps {
 export function TerminalProvider({ token, children }: TerminalProviderProps) {
   const { data, loading, error, sendCheckin, ackAlert, refresh } = useTerminalData(token);
   const [activeScreen, setActiveScreenState] = useState<TerminalScreen>("home");
+  const [isNightTime_, setIsNightTime] = useState(isNightTime());
+  const [nightModeOverrideUntil, setNightModeOverrideUntil] = useState<Date | null>(null);
+
+  // Jede Minute pruefen ob Nachtmodus aktiv ist
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setIsNightTime(isNightTime());
+    }, 60_000);
+    return () => clearInterval(interval);
+  }, []);
+
+  // Berechnen ob Nachtmodus-Overlay angezeigt werden soll
+  const isNightModeOverridden =
+    nightModeOverrideUntil !== null && new Date() < nightModeOverrideUntil;
+  const isNightMode = isNightTime_ && !isNightModeOverridden;
+
+  // Nachtmodus fuer 5 Minuten ausblenden
+  const dismissNightMode = useCallback(() => {
+    const until = new Date(Date.now() + 5 * 60 * 1000);
+    setNightModeOverrideUntil(until);
+  }, []);
 
   const setActiveScreen = useCallback((screen: TerminalScreen) => {
     setActiveScreenState(screen);
@@ -56,6 +88,9 @@ export function TerminalProvider({ token, children }: TerminalProviderProps) {
     refresh,
     activeScreen,
     setActiveScreen,
+    isNightMode,
+    nightModeOverrideUntil,
+    dismissNightMode,
   };
 
   return (

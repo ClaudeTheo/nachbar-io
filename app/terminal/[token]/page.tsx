@@ -13,6 +13,9 @@ import {
 import { useTerminal, type TerminalScreen } from "@/lib/terminal/TerminalContext";
 import CheckinScreen from "@/components/terminal/screens/CheckinScreen";
 import EmergencyScreen from "@/components/terminal/screens/EmergencyScreen";
+import MedicationsScreen from "@/components/terminal/screens/MedicationsScreen";
+import NewsScreen from "@/components/terminal/screens/NewsScreen";
+import VideoCallScreen from "@/components/terminal/screens/VideoCallScreen";
 
 /**
  * Terminal-Seite: Rendert den aktiven Bildschirm basierend auf TerminalContext.
@@ -27,35 +30,15 @@ export default function TerminalPage() {
     case "emergency":
       return <EmergencyScreen />;
     case "medications":
-      // TODO Task 5: MedicationsScreen
-      return <PlaceholderScreen title="Medikamente" />;
+      return <MedicationsScreen />;
     case "news":
-      // TODO Task 6: NewsScreen
-      return <PlaceholderScreen title="Neuigkeiten" />;
+      return <NewsScreen />;
     case "video":
-      // TODO Task 12: VideoCallScreen
-      return <PlaceholderScreen title="Sprechstunde" />;
+      return <VideoCallScreen />;
     case "home":
     default:
       return <DashboardGrid />;
   }
-}
-
-// Platzhalter fuer noch nicht implementierte Screens
-function PlaceholderScreen({ title }: { title: string }) {
-  const { setActiveScreen } = useTerminal();
-  return (
-    <div className="flex flex-col items-center justify-center h-full gap-6">
-      <p className="text-3xl font-bold text-anthrazit">{title}</p>
-      <p className="text-xl text-anthrazit/60">Wird bald verfuegbar sein</p>
-      <button
-        onClick={() => setActiveScreen("home")}
-        className="mt-4 rounded-xl bg-quartier-green px-8 py-4 text-xl font-bold text-white active:scale-95"
-      >
-        Zurueck
-      </button>
-    </div>
-  );
 }
 
 // --- Dashboard-Grid (Home-Ansicht) ---

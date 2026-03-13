@@ -4,6 +4,7 @@ import { use, type ReactNode } from "react";
 import TerminalHeader from "@/components/terminal/TerminalHeader";
 import TerminalSidebar from "@/components/terminal/TerminalSidebar";
 import { TerminalProvider } from "@/lib/terminal/TerminalContext";
+import { NightModeGate } from "@/components/terminal/NightModeGate";
 
 /**
  * Terminal-Layout: Vollbild fuer 10" Kiosk-Display (1280x800).
@@ -34,6 +35,9 @@ export default function TerminalLayout({
         {/* Sidebar rechts, immer sichtbar */}
         <TerminalSidebar />
       </div>
+
+      {/* Nachtmodus-Overlay (22:00–07:00), ueberlagert alles */}
+      <NightModeGate />
     </TerminalProvider>
   );
 }

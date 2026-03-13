@@ -43,7 +43,7 @@ export async function GET() {
   // Stats pro Quartier aggregieren
   const quartersWithStats = await Promise.all(
     (quarters ?? []).map(async (q) => {
-      const [households, residents, alerts, posts] = await Promise.all([
+      const [households, residents, alerts, posts, helpRequests] = await Promise.all([
         adminDb
           .from("households")
           .select("*", { count: "exact", head: true })
@@ -63,6 +63,11 @@ export async function GET() {
           .select("*", { count: "exact", head: true })
           .eq("quarter_id", q.id)
           .gte("created_at", new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()),
+        adminDb
+          .from("help_requests")
+          .select("*", { count: "exact", head: true })
+          .eq("quarter_id", q.id)
+          .eq("status", "active"),
       ]);
 
       return {
@@ -72,6 +77,7 @@ export async function GET() {
           residentCount: residents.count ?? 0,
           activeAlerts: alerts.count ?? 0,
           activePosts: posts.count ?? 0,
+          helpRequests: helpRequests.count ?? 0,
         },
       };
     })
@@ -103,7 +109,13 @@ export async function POST(request: NextRequest) {
   }
 
   const body = await request.json();
-  const { name, city, state: bundesland, description, center_lat, center_lng, invite_prefix, max_households } = body;
+  const {
+    name, city, state: bundesland, description, contact_email,
+    center_lat, center_lng, zoom_level,
+    bounds_sw_lat, bounds_sw_lng, bounds_ne_lat, bounds_ne_lng,
+    invite_prefix, max_households, status: requestedStatus,
+    settings: requestedSettings, map_config: requestedMapConfig,
+  } = body;
 
   // Pflichtfelder pruefen
   if (!name || center_lat == null || center_lng == null) {
@@ -113,8 +125,8 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  const lat = parseFloat(center_lat);
-  const lng = parseFloat(center_lng);
+  const lat = typeof center_lat === "number" ? center_lat : parseFloat(center_lat);
+  const lng = typeof center_lng === "number" ? center_lng : parseFloat(center_lng);
   if (isNaN(lat) || isNaN(lng)) {
     return NextResponse.json({ error: "Ungueltige Koordinaten" }, { status: 400 });
   }
@@ -130,14 +142,35 @@ export async function POST(request: NextRequest) {
     .replace(/\s+/g, "-")
     .replace(/-+/g, "-");
 
-  // Bounding Box ~500m um Zentrum
+  // Bounding Box: Vom Client uebernehmen oder ~500m Offset berechnen
   const offset = 0.003;
+  const swLat = bounds_sw_lat != null ? Number(bounds_sw_lat) : lat - offset;
+  const swLng = bounds_sw_lng != null ? Number(bounds_sw_lng) : lng - offset;
+  const neLat = bounds_ne_lat != null ? Number(bounds_ne_lat) : lat + offset;
+  const neLng = bounds_ne_lng != null ? Number(bounds_ne_lng) : lng + offset;
+
+  // Status validieren (nur draft oder active erlaubt bei Erstellung)
+  const validStatuses = ["draft", "active"];
+  const finalStatus = validStatuses.includes(requestedStatus) ? requestedStatus : "draft";
 
   // Service-Client fuer Insert
   const adminDb = createServiceClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY!
   );
+
+  // Standard-Settings mit uebergebenen mergen
+  const defaultSettings = {
+    allowSelfRegistration: false,
+    requireVerification: true,
+    enableCareModule: false,
+    enableMarketplace: true,
+    enableEvents: true,
+    enablePolls: true,
+    emergencyBannerEnabled: true,
+    maxMembersPerHousehold: 8,
+    defaultLanguage: "de",
+  };
 
   const { data: created, error } = await adminDb
     .from("quarters")
@@ -147,30 +180,21 @@ export async function POST(request: NextRequest) {
       city: city?.trim() || null,
       state: bundesland?.trim() || null,
       description: description?.trim() || null,
+      contact_email: contact_email?.trim() || null,
       center_lat: lat,
       center_lng: lng,
-      zoom_level: 17,
-      bounds_sw_lat: lat - offset,
-      bounds_sw_lng: lng - offset,
-      bounds_ne_lat: lat + offset,
-      bounds_ne_lng: lng + offset,
-      status: "draft",
+      zoom_level: zoom_level != null ? Number(zoom_level) : 17,
+      bounds_sw_lat: swLat,
+      bounds_sw_lng: swLng,
+      bounds_ne_lat: neLat,
+      bounds_ne_lng: neLng,
+      status: finalStatus,
       invite_prefix: invite_prefix?.trim() || null,
-      max_households: max_households ? parseInt(max_households) : 50,
-      settings: {
-        allowSelfRegistration: false,
-        requireVerification: true,
-        enableCareModule: false,
-        enableMarketplace: true,
-        enableEvents: true,
-        enablePolls: true,
-        emergencyBannerEnabled: true,
-        maxMembersPerHousehold: 8,
-        defaultLanguage: "de",
-      },
-      map_config: {
-        type: "leaflet",
-      },
+      max_households: max_households ? Number(max_households) : 50,
+      settings: requestedSettings
+        ? { ...defaultSettings, ...requestedSettings }
+        : defaultSettings,
+      map_config: requestedMapConfig ?? { type: "leaflet" },
       created_by: user.id,
     })
     .select()

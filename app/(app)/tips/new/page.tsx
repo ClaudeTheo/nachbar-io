@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { TIP_CATEGORIES } from "@/lib/constants";
 import { createClient } from "@/lib/supabase/client";
+import { useQuarter } from "@/lib/quarters";
 
 type Step = "category" | "details" | "done";
 
@@ -27,6 +28,7 @@ export default function NewTipPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
+  const { currentQuarter } = useQuarter();
 
   function handleCategorySelect(catId: string) {
     setCategory(catId);
@@ -64,6 +66,7 @@ export default function NewTipPage() {
 
       const { error: insertError } = await supabase.from("community_tips").insert({
         user_id: user.id,
+        quarter_id: currentQuarter?.id,
         category,
         title: title.trim(),
         business_name: businessName.trim() || null,

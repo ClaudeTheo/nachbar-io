@@ -8,9 +8,11 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { createClient } from "@/lib/supabase/client";
+import { useQuarter } from "@/lib/quarters";
 
 export default function PollNewPage() {
   const router = useRouter();
+  const { currentQuarter } = useQuarter();
   const [step, setStep] = useState(1);
   const [question, setQuestion] = useState("");
   const [options, setOptions] = useState(["", ""]);
@@ -54,6 +56,7 @@ export default function PollNewPage() {
         .from("polls")
         .insert({
           user_id: user.id,
+          quarter_id: currentQuarter?.id,
           question: question.trim(),
           multiple_choice: multipleChoice,
           status: "active",

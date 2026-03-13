@@ -11,6 +11,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { ImageUpload, UploadingOverlay, type PendingImage } from "@/components/ImageUpload";
 import { uploadCategoryImage } from "@/lib/storage";
 import { createClient } from "@/lib/supabase/client";
+import { useQuarter } from "@/lib/quarters";
 
 const LOST_FOUND_CATEGORIES = [
   { id: "keys", label: "Schlüssel", icon: "🔑" },
@@ -24,6 +25,7 @@ const LOST_FOUND_CATEGORIES = [
 
 export default function LostFoundNewPage() {
   const router = useRouter();
+  const { currentQuarter } = useQuarter();
   const [step, setStep] = useState(1);
   const [type, setType] = useState<"lost" | "found" | null>(null);
   const [category, setCategory] = useState<string | null>(null);
@@ -54,6 +56,7 @@ export default function LostFoundNewPage() {
         .from("lost_found")
         .insert({
           user_id: user.id,
+          quarter_id: currentQuarter?.id,
           type,
           category: category || "other",
           title: title.trim(),

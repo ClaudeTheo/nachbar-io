@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { HELP_CATEGORIES, HELP_SUBCATEGORIES } from "@/lib/constants";
 import { createClient } from "@/lib/supabase/client";
+import { useQuarter } from "@/lib/quarters";
 
 type Step = "type" | "category" | "subcategory" | "details" | "done";
 
@@ -23,6 +24,7 @@ export default function NewHelpPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
+  const { currentQuarter } = useQuarter();
 
   // Prüfen ob gewählte Kategorie Unterkategorien hat
   const subcategories = category ? HELP_SUBCATEGORIES[category] ?? [] : [];
@@ -80,6 +82,7 @@ export default function NewHelpPage() {
 
       const { error: insertError } = await supabase.from("help_requests").insert({
         user_id: user.id,
+        quarter_id: currentQuarter?.id,
         type: helpType,
         category,
         subcategory: subcategory || null,

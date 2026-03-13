@@ -10,6 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { EmergencyBanner } from "@/components/EmergencyBanner";
 import { ALERT_CATEGORIES, EMERGENCY_CATEGORIES } from "@/lib/constants";
 import { createClient } from "@/lib/supabase/client";
+import { useQuarter } from "@/lib/quarters";
 
 type Step = "category" | "emergency" | "description" | "sent";
 
@@ -19,6 +20,7 @@ export default function NewAlertPage() {
   const [description, setDescription] = useState("");
   const [loading, setLoading] = useState(false);
   const router = useRouter();
+  const { currentQuarter } = useQuarter();
 
   // Prüfen ob es eine Notfall-Kategorie ist
   const isEmergency = selectedCategory && EMERGENCY_CATEGORIES.includes(selectedCategory as typeof EMERGENCY_CATEGORIES[number]);
@@ -65,6 +67,7 @@ export default function NewAlertPage() {
     const { error } = await supabase.from("alerts").insert({
       user_id: user.id,
       household_id: membership.household_id,
+      quarter_id: currentQuarter?.id,
       category: selectedCategory,
       title: category?.label ?? "Hilfeanfrage",
       description: description.trim() || null,

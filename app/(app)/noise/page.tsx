@@ -122,6 +122,7 @@ export default function NoisePage() {
       .from("help_requests")
       .insert({
         user_id: currentUserId,
+        quarter_id: currentQuarter?.id,
         type: "offer",
         category: "noise",
         subcategory: selectedCategory,

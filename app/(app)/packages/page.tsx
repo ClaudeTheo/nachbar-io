@@ -143,6 +143,7 @@ export default function PackagesPage() {
         .from("paketannahme")
         .insert({
           user_id: currentUserId,
+          quarter_id: currentQuarter?.id,
           available_date: today,
           note: note.trim() || null,
         })
@@ -173,6 +174,7 @@ export default function PackagesPage() {
       .from("help_requests")
       .insert({
         user_id: currentUserId,
+        quarter_id: currentQuarter?.id,
         type: "need",
         category: "package",
         subcategory: askAll ? "all" : null,

@@ -149,6 +149,7 @@ export default function WhoHasPage() {
       .from("help_requests")
       .insert({
         user_id: currentUserId,
+        quarter_id: currentQuarter?.id,
         type: "need",
         category: "whohas",
         title: `Wer hat ${newQuestion.trim()}?`,

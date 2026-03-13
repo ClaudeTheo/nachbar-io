@@ -7,12 +7,14 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { createClient } from "@/lib/supabase/client";
+import { useQuarter } from "@/lib/quarters";
 import { SKILL_CATEGORIES } from "@/lib/constants";
 import type { Skill } from "@/lib/supabase/types";
 
 export default function SkillsPage() {
   const [skills, setSkills] = useState<Skill[]>([]);
   const [userId, setUserId] = useState<string | null>(null);
+  const { currentQuarter } = useQuarter();
   const [adding, setAdding] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [description, setDescription] = useState("");
@@ -47,6 +49,7 @@ export default function SkillsPage() {
         .from("skills")
         .insert({
           user_id: userId,
+          quarter_id: currentQuarter?.id,
           category: selectedCategory,
           description: description.trim() || null,
           is_public: true,

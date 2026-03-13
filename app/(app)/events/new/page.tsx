@@ -9,12 +9,14 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { createClient } from "@/lib/supabase/client";
+import { useQuarter } from "@/lib/quarters";
 import { EVENT_CATEGORIES } from "@/lib/constants";
 
 type Step = 1 | 2 | 3 | 4;
 
 export default function NewEventPage() {
   const router = useRouter();
+  const { currentQuarter } = useQuarter();
   const [step, setStep] = useState<Step>(1);
   const [category, setCategory] = useState<string | null>(null);
   const [title, setTitle] = useState("");
@@ -61,6 +63,7 @@ export default function NewEventPage() {
 
       const { error: insertError } = await supabase.from("events").insert({
         user_id: user.id,
+        quarter_id: currentQuarter?.id,
         category,
         title: title.trim(),
         description: description.trim() || null,

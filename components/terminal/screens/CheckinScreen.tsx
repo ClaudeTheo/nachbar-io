@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { Heart, Frown, AlertTriangle, CheckCircle } from "lucide-react";
+import { Heart, Frown, AlertTriangle, CheckCircle, ArrowLeft } from "lucide-react";
 import { useTerminal } from "@/lib/terminal/TerminalContext";
 
 /**
@@ -52,13 +52,28 @@ export default function CheckinScreen() {
         <p className="text-xl text-anthrazit/70">
           Sie werden automatisch weitergeleitet...
         </p>
+        <button
+          onClick={() => setActiveScreen("home")}
+          className="mt-4 rounded-xl bg-quartier-green px-8 py-4 text-xl font-bold text-white shadow-lg transition-transform hover:scale-105 active:scale-95"
+        >
+          Zurueck zur Startseite
+        </button>
       </div>
     );
   }
 
   // Haupt-Ansicht: Stimmungsabfrage
   return (
-    <div className="flex flex-1 flex-col items-center justify-center gap-12 p-8">
+    <div className="flex flex-1 flex-col items-center justify-center gap-12 p-8 relative">
+      {/* Zurueck-Button oben links */}
+      <button
+        onClick={() => setActiveScreen("home")}
+        className="absolute top-0 left-0 flex items-center gap-2 text-anthrazit/70 hover:text-anthrazit transition-colors"
+        aria-label="Zurueck zur Startseite"
+      >
+        <ArrowLeft className="h-8 w-8" />
+      </button>
+
       <h1 className="text-3xl font-bold text-anthrazit">
         Wie geht es Ihnen heute?
       </h1>

@@ -1,14 +1,17 @@
 "use client";
 
-import { useState } from "react";
-import { Home, Users, QrCode, CheckCircle, XCircle, Search, ChevronDown, ChevronUp, UserMinus, MapPin, Pencil, Save, X } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Home, Users, QrCode, CheckCircle, XCircle, Search, ChevronDown, ChevronUp, UserMinus, MapPin, Pencil, Save, X, Globe } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import {
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+} from "@/components/ui/select";
 import { createClient } from "@/lib/supabase/client";
 import type { Household } from "@/lib/supabase/types";
-import { QUARTIER_STREETS } from "@/lib/constants";
+import { useQuarter } from "@/lib/quarters";
 import { toast } from "sonner";
 
 interface HouseholdWithMembers extends Household {
@@ -28,12 +31,22 @@ interface MemberDetail {
   created_at: string;
 }
 
+interface QuarterInfo {
+  id: string;
+  name: string;
+}
+
 export function HouseholdManagement({ households, onRefresh }: HouseholdManagementProps) {
+  const { currentQuarter, allQuarters } = useQuarter();
   const [search, setSearch] = useState("");
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [members, setMembers] = useState<MemberDetail[]>([]);
   const [loadingMembers, setLoadingMembers] = useState(false);
   const [filter, setFilter] = useState<"all" | "occupied" | "free">("all");
+
+  // Quartier-Filter: Default auf aktuelles Quartier
+  const [selectedQuarterId, setSelectedQuarterId] = useState<string>("all");
+  const [quarters, setQuarters] = useState<QuarterInfo[]>([]);
 
   // Edit-Modus
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -43,8 +56,40 @@ export function HouseholdManagement({ households, onRefresh }: HouseholdManageme
   const [editLng, setEditLng] = useState("");
   const [saving, setSaving] = useState(false);
 
-  // Filter nach Strasse und Belegung
+  // Quartiere laden
+  useEffect(() => {
+    async function loadQuarters() {
+      const supabase = createClient();
+      const { data } = await supabase
+        .from("quarters")
+        .select("id, name")
+        .eq("status", "active")
+        .order("name");
+      if (data) setQuarters(data);
+    }
+    loadQuarters();
+  }, []);
+
+  // Standard-Quartier setzen wenn verfuegbar
+  useEffect(() => {
+    if (currentQuarter && selectedQuarterId === "all") {
+      setSelectedQuarterId(currentQuarter.id);
+    }
+  }, [currentQuarter, selectedQuarterId]);
+
+  // Quartier-Map fuer schnellen Zugriff
+  const quarterMap = new Map<string, string>();
+  quarters.forEach(q => quarterMap.set(q.id, q.name));
+  // Auch allQuarters einbeziehen (fuer super_admin)
+  allQuarters.forEach(q => quarterMap.set(q.id, q.name));
+
+  // Filter nach Quartier, Strasse und Belegung
   const filtered = households.filter((h) => {
+    // Quartier-Filter
+    const matchesQuarter =
+      selectedQuarterId === "all" ? true :
+      h.quarter_id === selectedQuarterId;
+
     const matchesSearch =
       h.street_name.toLowerCase().includes(search.toLowerCase()) ||
       h.house_number.includes(search) ||
@@ -55,12 +100,15 @@ export function HouseholdManagement({ households, onRefresh }: HouseholdManageme
       filter === "occupied" ? h.memberCount > 0 :
       h.memberCount === 0;
 
-    return matchesSearch && matchesFilter;
+    return matchesQuarter && matchesSearch && matchesFilter;
   });
 
-  // Statistiken
-  const totalOccupied = households.filter(h => h.memberCount > 0).length;
-  const totalFree = households.filter(h => h.memberCount === 0).length;
+  // Statistiken (basierend auf gefiltertem Quartier)
+  const quarterHouseholds = selectedQuarterId === "all"
+    ? households
+    : households.filter(h => h.quarter_id === selectedQuarterId);
+  const totalOccupied = quarterHouseholds.filter(h => h.memberCount > 0).length;
+  const totalFree = quarterHouseholds.filter(h => h.memberCount === 0).length;
 
   // Mitglieder eines Haushalts laden
   async function loadMembers(householdId: string) {
@@ -146,8 +194,8 @@ export function HouseholdManagement({ households, onRefresh }: HouseholdManageme
       .update({
         street_name: editStreet,
         house_number: editHouseNumber,
-        lat: parseFloat(editLat) || 47.5617,
-        lng: parseFloat(editLng) || 7.9483,
+        lat: parseFloat(editLat) || 0,
+        lng: parseFloat(editLng) || 0,
       })
       .eq("id", householdId);
 
@@ -161,11 +209,29 @@ export function HouseholdManagement({ households, onRefresh }: HouseholdManageme
     setSaving(false);
   }
 
-  // Strassen gruppieren
-  const streets = [...new Set(households.map(h => h.street_name))];
+  // Strassen gruppieren (dynamisch aus den gefilterten Daten)
+  const streets = [...new Set(filtered.map(h => h.street_name))].sort();
 
   return (
     <div className="space-y-3">
+      {/* Quartier-Filter */}
+      {quarters.length > 1 && (
+        <div className="flex items-center gap-2">
+          <Globe className="h-4 w-4 text-muted-foreground shrink-0" />
+          <Select value={selectedQuarterId} onValueChange={(val) => { if (val) setSelectedQuarterId(val); }}>
+            <SelectTrigger className="h-8 text-xs">
+              <SelectValue placeholder="Quartier waehlen..." />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Alle Quartiere</SelectItem>
+              {quarters.map((q) => (
+                <SelectItem key={q.id} value={q.id}>{q.name}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      )}
+
       {/* Suchfeld */}
       <div className="flex gap-2">
         <div className="relative flex-1">
@@ -187,7 +253,7 @@ export function HouseholdManagement({ households, onRefresh }: HouseholdManageme
           className="text-xs h-7"
           onClick={() => setFilter("all")}
         >
-          Alle ({households.length})
+          Alle ({quarterHouseholds.length})
         </Button>
         <Button
           size="sm"
@@ -223,6 +289,7 @@ export function HouseholdManagement({ households, onRefresh }: HouseholdManageme
               {streetHouseholds.map((h) => {
                 const isExpanded = expandedId === h.id;
                 const isEditing = editingId === h.id;
+                const quarterName = h.quarter_id ? quarterMap.get(h.quarter_id) : null;
 
                 return (
                   <Card key={h.id} className="overflow-hidden">
@@ -236,7 +303,7 @@ export function HouseholdManagement({ households, onRefresh }: HouseholdManageme
                           <p className="font-semibold text-anthrazit text-sm">
                             Nr. {h.house_number}
                           </p>
-                          <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
+                          <div className="flex items-center gap-2 text-[10px] text-muted-foreground flex-wrap">
                             <span className="font-mono">{h.invite_code}</span>
                             <a
                               href={`/api/qr?code=${h.invite_code}&size=400`}
@@ -251,6 +318,13 @@ export function HouseholdManagement({ households, onRefresh }: HouseholdManageme
                               <span className="inline-flex items-center gap-0.5 text-green-600">
                                 <CheckCircle className="h-3 w-3" /> Verifiziert
                               </span>
+                            )}
+                            {/* Quartier-Badge */}
+                            {quarterName && selectedQuarterId === "all" && (
+                              <Badge variant="outline" className="text-[9px] h-4 px-1">
+                                <Globe className="h-2.5 w-2.5 mr-0.5" />
+                                {quarterName}
+                              </Badge>
                             )}
                           </div>
                         </div>
@@ -274,15 +348,12 @@ export function HouseholdManagement({ households, onRefresh }: HouseholdManageme
                         {isEditing ? (
                           <div className="space-y-2 p-2 rounded-lg bg-white border">
                             <p className="text-xs font-semibold text-anthrazit">Haushalt bearbeiten</p>
-                            <select
+                            <Input
+                              placeholder="Strassenname"
                               value={editStreet}
                               onChange={(e) => setEditStreet(e.target.value)}
-                              className="w-full rounded-md border border-input bg-background px-3 py-1.5 text-sm"
-                            >
-                              {QUARTIER_STREETS.map((s) => (
-                                <option key={s} value={s}>{s}</option>
-                              ))}
-                            </select>
+                              className="h-8 text-sm"
+                            />
                             <div className="grid grid-cols-3 gap-2">
                               <Input
                                 placeholder="Hausnr."
@@ -354,10 +425,18 @@ export function HouseholdManagement({ households, onRefresh }: HouseholdManageme
                               </Button>
                             </div>
 
-                            {/* Koordinaten */}
-                            <div className="flex items-center justify-between text-xs text-muted-foreground">
-                              <span>Koordinaten</span>
-                              <span className="font-mono text-[10px]">{h.lat.toFixed(4)}, {h.lng.toFixed(4)}</span>
+                            {/* Quartier + Koordinaten */}
+                            <div className="space-y-1">
+                              {quarterName && (
+                                <div className="flex items-center justify-between text-xs text-muted-foreground">
+                                  <span>Quartier</span>
+                                  <span className="font-medium text-anthrazit">{quarterName}</span>
+                                </div>
+                              )}
+                              <div className="flex items-center justify-between text-xs text-muted-foreground">
+                                <span>Koordinaten</span>
+                                <span className="font-mono text-[10px]">{h.lat.toFixed(4)}, {h.lng.toFixed(4)}</span>
+                              </div>
                             </div>
                           </>
                         )}

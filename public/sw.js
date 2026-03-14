@@ -1,15 +1,24 @@
 // Nachbar.io — Service Worker
-// Offline-Fallback, Push-Notifications, Background Sync
+// Offline-Fallback, Push-Notifications, API-Caching
 
-const CACHE_NAME = "nachbar-io-v1";
+const CACHE_NAME = "nachbar-io-v2";
+const API_CACHE_NAME = "nachbar-io-api-v1";
 const OFFLINE_URL = "/offline.html";
 
-// Nur statische Assets cachen — keine HTML-Seiten (Auth-geschützt)
 const PRECACHE_URLS = [
   "/manifest.json",
+  "/offline.html",
 ];
 
-// Installation: Assets vorab cachen
+const CACHEABLE_API_PATHS = [
+  "/api/care/medications",
+  "/api/care/checkin/status",
+  "/api/care/sos",
+  "/api/alerts",
+];
+
+const API_CACHE_MAX_ENTRIES = 50;
+
 self.addEventListener("install", (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
@@ -19,13 +28,12 @@ self.addEventListener("install", (event) => {
   self.skipWaiting();
 });
 
-// Aktivierung: Alte Caches löschen
 self.addEventListener("activate", (event) => {
   event.waitUntil(
     caches.keys().then((cacheNames) => {
       return Promise.all(
         cacheNames
-          .filter((name) => name !== CACHE_NAME)
+          .filter((name) => name !== CACHE_NAME && name !== API_CACHE_NAME)
           .map((name) => caches.delete(name))
       );
     })
@@ -33,18 +41,61 @@ self.addEventListener("activate", (event) => {
   self.clients.claim();
 });
 
-// Fetch: Network-first mit Cache-Fallback
+function shouldCacheApi(url) {
+  return CACHEABLE_API_PATHS.some((path) => url.includes(path));
+}
+
+async function trimApiCache() {
+  const cache = await caches.open(API_CACHE_NAME);
+  const keys = await cache.keys();
+  if (keys.length > API_CACHE_MAX_ENTRIES) {
+    const toDelete = keys.slice(0, keys.length - API_CACHE_MAX_ENTRIES);
+    await Promise.all(toDelete.map((key) => cache.delete(key)));
+  }
+}
+
 self.addEventListener("fetch", (event) => {
-  // Nur GET-Requests cachen
   if (event.request.method !== "GET") return;
 
-  // API-Calls nicht cachen
-  if (event.request.url.includes("/api/")) return;
+  const url = event.request.url;
+
+  if (shouldCacheApi(url)) {
+    event.respondWith(
+      caches.open(API_CACHE_NAME).then(async (cache) => {
+        const cachedResponse = await cache.match(event.request);
+
+        const fetchPromise = fetch(event.request)
+          .then((networkResponse) => {
+            if (networkResponse.ok) {
+              const responseToCache = networkResponse.clone();
+              cache.put(event.request, responseToCache);
+              trimApiCache();
+            }
+            return networkResponse;
+          })
+          .catch(() => {
+            return cachedResponse || new Response(
+              JSON.stringify({ error: "Offline", cached: false }),
+              { status: 503, headers: { "Content-Type": "application/json" } }
+            );
+          });
+
+        if (cachedResponse) {
+          event.waitUntil(fetchPromise);
+          return cachedResponse;
+        }
+
+        return fetchPromise;
+      })
+    );
+    return;
+  }
+
+  if (url.includes("/api/")) return;
 
   event.respondWith(
     fetch(event.request)
       .then((response) => {
-        // Erfolgreiche Antwort cachen
         if (response.ok) {
           const responseClone = response.clone();
           caches.open(CACHE_NAME).then((cache) => {
@@ -54,7 +105,6 @@ self.addEventListener("fetch", (event) => {
         return response;
       })
       .catch(() => {
-        // Offline: Aus Cache laden
         return caches.match(event.request).then((cachedResponse) => {
           return cachedResponse || caches.match(OFFLINE_URL);
         });
@@ -62,13 +112,10 @@ self.addEventListener("fetch", (event) => {
   );
 });
 
-// Push-Notification Handler
 self.addEventListener("push", (event) => {
   if (!event.data) return;
 
   const data = event.data.json();
-
-  // URL-Validierung: nur relative Pfade erlauben
   const safeUrl = (typeof data.url === "string" && data.url.startsWith("/")) ? data.url : "/dashboard";
 
   const options = {
@@ -76,41 +123,30 @@ self.addEventListener("push", (event) => {
     icon: "/icons/icon-192x192.svg",
     badge: "/icons/icon-72x72.svg",
     tag: data.tag || "nachbar-io",
-    data: {
-      url: safeUrl,
-    },
+    data: { url: safeUrl },
     actions: [
       { action: "help", title: "Ich helfe!" },
-      { action: "later", title: "Später ansehen" },
+      { action: "later", title: "Spaeter ansehen" },
     ],
-    // Vibrationsmuster für Hilfeanfragen
     vibrate: data.urgent ? [200, 100, 200, 100, 200] : [200, 100, 200],
   };
 
   event.waitUntil(
-    self.registration.showNotification(
-      data.title || "Nachbar.io",
-      options
-    )
+    self.registration.showNotification(data.title || "Nachbar.io", options)
   );
 });
 
-// Notification Click Handler
 self.addEventListener("notificationclick", (event) => {
   event.notification.close();
 
-  // URL-Validierung: nur relative Pfade erlauben
   const rawUrl = event.notification.data?.url || "/dashboard";
   const url = (typeof rawUrl === "string" && rawUrl.startsWith("/")) ? rawUrl : "/dashboard";
 
   if (event.action === "help") {
-    // "Ich helfe!" — Direkt zum Alert
     event.waitUntil(clients.openWindow(url));
   } else if (event.action === "later") {
-    // "Später ansehen" — Notification schließen, nichts tun
     return;
   } else {
-    // Standard-Klick: App öffnen
     event.waitUntil(clients.openWindow(url));
   }
 });

@@ -48,8 +48,10 @@ export async function updateSession(request: NextRequest) {
     request.nextUrl.pathname.startsWith("/impressum");
   // Testanleitung muss vor Login zugaenglich sein (Tester brauchen sie)
   const isPublicPage = request.nextUrl.pathname.startsWith("/testanleitung");
+  // Terminal-Seite authentifiziert sich ueber Token in der URL, nicht ueber Session
+  const isTerminalPage = request.nextUrl.pathname.startsWith("/terminal");
 
-  if (!user && !isAuthPage && !isApiRoute && !isRootPage && !isLegalPage && !isPublicPage) {
+  if (!user && !isAuthPage && !isApiRoute && !isRootPage && !isLegalPage && !isPublicPage && !isTerminalPage) {
     const url = request.nextUrl.clone();
     url.pathname = "/login";
     return NextResponse.redirect(url);

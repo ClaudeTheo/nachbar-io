@@ -19,6 +19,7 @@
     "test:e2e:senior": "playwright test --config=tests/e2e/playwright.config.ts --project=senior-terminal"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.78.0",
     "@base-ui/react": "^1.2.0",
     "@capacitor/android": "^8.2.0",
     "@capacitor/cli": "^8.2.0",

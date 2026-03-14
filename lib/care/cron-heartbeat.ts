@@ -9,6 +9,9 @@ export const CRON_JOBS = {
   checkin: { name: 'Check-in-Monitoring', expectedIntervalMinutes: 6, criticalAfterMinutes: 15 },
   medications: { name: 'Medikamenten-Erinnerung', expectedIntervalMinutes: 6, criticalAfterMinutes: 15 },
   appointments: { name: 'Termin-Erinnerung', expectedIntervalMinutes: 6, criticalAfterMinutes: 30 },
+  onboarding: { name: 'Onboarding-Sequenz', expectedIntervalMinutes: 20, criticalAfterMinutes: 60 },
+  dormancy: { name: 'Dormancy-Detection', expectedIntervalMinutes: 1500, criticalAfterMinutes: 2880 },
+  digest: { name: 'Woechentlicher Digest', expectedIntervalMinutes: 10500, criticalAfterMinutes: 14400 },
 } as const;
 
 export type CronJobId = keyof typeof CRON_JOBS;

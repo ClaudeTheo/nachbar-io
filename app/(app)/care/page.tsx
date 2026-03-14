@@ -7,7 +7,7 @@ import { Heart, AlertTriangle, Clock, ArrowRight, Pill, CalendarDays, Users, Fil
 import Link from 'next/link';
 import { SosButton } from '@/components/care/SosButton';
 import { SosAlertCard } from '@/components/care/SosAlertCard';
-import type { CareSosAlert, CareAppointment, CareSubscriptionPlan } from '@/lib/care/types';
+import type { CareSosAlert, CareAppointment, CareSubscriptionPlan, CareHelperRole } from '@/lib/care/types';
 import { PLAN_FEATURES } from '@/lib/care/constants';
 
 interface CheckinStatus {
@@ -33,6 +33,9 @@ export default function CareDashboardPage() {
   const [helperCount, setHelperCount] = useState<number | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [planFeatures, setPlanFeatures] = useState<string[]>([]);
+  const [helperRole, setHelperRole] = useState<CareHelperRole | null>(null);
+  const [isVerifiedHelper, setIsVerifiedHelper] = useState(false);
+  const [trustLevel, setTrustLevel] = useState<string>('verified');
 
   // Feature-Pruefung: Ist ein Feature im aktuellen Plan verfuegbar?
   const hasFeature = (feature: string) => planFeatures.includes(feature);
@@ -43,8 +46,9 @@ export default function CareDashboardPage() {
     supabase.auth.getUser().then(async ({ data: { user } }) => {
       setUserId(user?.id ?? null);
       if (user) {
-        const { data } = await supabase.from('users').select('is_admin').eq('id', user.id).single();
+        const { data } = await supabase.from('users').select('is_admin, trust_level').eq('id', user.id).single();
         setIsAdmin(data?.is_admin === true);
+        setTrustLevel(data?.trust_level ?? 'verified');
 
         // Abo-Plan laden fuer Feature-Gating
         const { data: subscription } = await supabase
@@ -143,6 +147,26 @@ export default function CareDashboardPage() {
     loadHelperCount();
   }, []);
 
+  // Eigenen Helfer-Status laden (fuer "Meine Senioren" Link)
+  useEffect(() => {
+    const supabase = createClient();
+    supabase.auth.getUser().then(async ({ data: { user } }) => {
+      if (!user) return;
+      const { data: helper } = await supabase
+        .from('care_helpers')
+        .select('role, verification_status, assigned_seniors')
+        .eq('user_id', user.id)
+        .maybeSingle();
+      if (helper) {
+        setHelperRole(helper.role as CareHelperRole);
+        setIsVerifiedHelper(
+          helper.verification_status === 'verified' &&
+          (helper.assigned_seniors?.length ?? 0) > 0
+        );
+      }
+    });
+  }, []);
+
   if (loading) {
     return (
       <div className="px-4 py-6">
@@ -165,6 +189,25 @@ export default function CareDashboardPage() {
         </h1>
         <p className="text-muted-foreground mt-1">Ihr persoenliches Pflege-Dashboard</p>
       </div>
+
+      {/* Verifikations-Hinweis fuer neue Nutzer */}
+      {trustLevel === 'new' && (
+        <div className="rounded-xl border border-amber-200 bg-amber-50 p-4">
+          <p className="text-sm font-medium text-amber-800">
+            Ihre Adresse muss noch bestaetigt werden.
+          </p>
+          <p className="text-xs text-amber-700 mt-1">
+            Bitten Sie zwei Nachbarn um Bestaetigung, damit Sie alle Funktionen nutzen koennen.
+          </p>
+          <Link
+            href="/vouching"
+            className="inline-flex items-center gap-1 mt-2 text-sm font-medium text-amber-800 hover:text-amber-900"
+          >
+            Zur Verifikation
+            <ArrowRight className="h-3.5 w-3.5" />
+          </Link>
+        </div>
+      )}
 
       {/* SOS-Button (kompakt) */}
       <SosButton compact />
@@ -333,6 +376,16 @@ export default function CareDashboardPage() {
             <Clock className="h-4 w-4 text-quartier-green" />
             Jetzt einchecken
           </Link>
+          {/* Meine Senioren (nur fuer verifizierte Angehoerige/Pflegedienst) */}
+          {isVerifiedHelper && (helperRole === 'relative' || helperRole === 'care_service') && (
+            <Link
+              href="/care/meine-senioren"
+              className="rounded-lg border-2 border-quartier-green bg-quartier-green/5 p-3 text-sm font-medium text-anthrazit hover:bg-quartier-green/10 flex items-center gap-2"
+            >
+              <Users className="h-4 w-4 text-quartier-green" />
+              Meine Senioren
+            </Link>
+          )}
           <Link
             href="/care/sos"
             className="rounded-lg border bg-card p-3 text-sm font-medium text-anthrazit hover:bg-gray-50 flex items-center gap-2"

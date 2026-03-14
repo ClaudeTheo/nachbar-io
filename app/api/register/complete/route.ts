@@ -199,14 +199,24 @@ export async function POST(request: NextRequest) {
     }
 
     // 1. User-Profil erstellen
-    // Pilotphase: trust_level direkt auf 'verified' (Nutzer wird sofort verifiziert)
+    // Trust-Level abhaengig von Verifikationsmethode:
+    // - Invite-Code: sofort 'verified' (B2B-Track, vertrauenswuerdiger Kanal)
+    // - Adresse manuell: 'new' (B2C-Track, muss per Vouching verifiziert werden)
+    // PILOT_AUTO_VERIFY=true: Alle Nutzer auf 'verified' (Pilot-Modus)
+    const pilotAutoVerify = process.env.PILOT_AUTO_VERIFY === "true";
+    const trustLevel = pilotAutoVerify
+      ? "verified"
+      : verificationMethod === "neighbor_invite"
+        ? "verified"
+        : "new";
+
     const { error: profileError } = await adminDb.from("users").insert({
       id: userId,
       email_hash: "",
       display_name: displayName.trim(),
       ui_mode: uiMode || "active",
       is_tester: true,  // Pilotphase: alle Nutzer sind Tester
-      trust_level: "verified",  // Pilotphase: sofort verifiziert
+      trust_level: trustLevel,
     });
 
     if (profileError) {

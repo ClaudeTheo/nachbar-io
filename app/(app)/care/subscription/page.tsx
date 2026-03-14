@@ -1,7 +1,8 @@
 // app/(app)/care/subscription/page.tsx
 'use client';
 
-import { CreditCard } from 'lucide-react';
+import { useSearchParams } from 'next/navigation';
+import { CreditCard, CheckCircle2, XCircle, Gift } from 'lucide-react';
 import { useSubscription } from '@/lib/care/hooks/useSubscription';
 import { SubscriptionCard } from '@/components/care/SubscriptionCard';
 import { SubscriptionPlans } from '@/components/care/SubscriptionPlans';
@@ -9,6 +10,8 @@ import type { CareSubscriptionPlan } from '@/lib/care/types';
 
 export default function SubscriptionPage() {
   const { subscription, changePlan } = useSubscription();
+  const searchParams = useSearchParams();
+  const checkout = searchParams.get('checkout');
 
   const currentPlan = (subscription?.plan ?? 'free') as CareSubscriptionPlan;
 
@@ -24,19 +27,46 @@ export default function SubscriptionPage() {
         </p>
       </div>
 
+      {/* Checkout-Feedback */}
+      {checkout === 'success' && (
+        <div className="rounded-xl bg-green-50 border border-green-200 p-4 text-sm text-[#2D3142] flex items-start gap-3">
+          <CheckCircle2 className="h-5 w-5 text-[#4CAF87] shrink-0 mt-0.5" />
+          <div>
+            <p className="font-medium">Zahlung erfolgreich!</p>
+            <p className="mt-1 text-muted-foreground">
+              Ihr Abo wurde aktiviert. Alle Funktionen stehen Ihnen ab sofort zur Verfuegung.
+            </p>
+          </div>
+        </div>
+      )}
+      {checkout === 'cancelled' && (
+        <div className="rounded-xl bg-amber-50 border border-amber-200 p-4 text-sm text-[#2D3142] flex items-start gap-3">
+          <XCircle className="h-5 w-5 text-amber-500 shrink-0 mt-0.5" />
+          <div>
+            <p className="font-medium">Zahlung abgebrochen</p>
+            <p className="mt-1 text-muted-foreground">
+              Die Zahlung wurde nicht abgeschlossen. Sie koennen es jederzeit erneut versuchen.
+            </p>
+          </div>
+        </div>
+      )}
+
       <SubscriptionCard />
+
+      {/* Early-Adopter-Hinweis */}
+      <div className="rounded-xl bg-[#4CAF87]/5 border border-[#4CAF87]/20 p-4 text-sm text-[#2D3142] flex items-start gap-3">
+        <Gift className="h-5 w-5 text-[#4CAF87] shrink-0 mt-0.5" />
+        <div>
+          <p className="font-medium">Early-Adopter-Aktion</p>
+          <p className="mt-1 text-muted-foreground">
+            Die ersten 200 Nutzer erhalten alle Funktionen kostenlos — als Dankeschoen fuer Ihre fruehe Unterstuetzung.
+          </p>
+        </div>
+      </div>
 
       <div>
         <h2 className="text-sm font-medium text-muted-foreground mb-3">Verfuegbare Plaene</h2>
         <SubscriptionPlans currentPlan={currentPlan} onSelectPlan={changePlan} />
-      </div>
-
-      {/* Info-Hinweis */}
-      <div className="rounded-xl bg-blue-50 p-4 text-sm text-[#2D3142]">
-        <p className="font-medium">Hinweis zur Zahlungsabwicklung</p>
-        <p className="mt-1 text-muted-foreground">
-          Die Zahlungsabwicklung wird in Kuerze verfuegbar sein. Derzeit koennen Sie Ihren Plan kostenfrei aendern und alle Funktionen testen.
-        </p>
       </div>
     </div>
   );

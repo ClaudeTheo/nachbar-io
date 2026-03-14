@@ -24,21 +24,42 @@ const ALL_FEATURES = [
 
 interface SubscriptionPlansProps {
   currentPlan?: CareSubscriptionPlan;
-  onSelectPlan?: (plan: CareSubscriptionPlan) => Promise<boolean>;
+  onSelectPlan?: (plan: CareSubscriptionPlan, billingCycle?: 'monthly' | 'yearly') => Promise<boolean>;
 }
 
 export function SubscriptionPlans({ currentPlan = 'free', onSelectPlan }: SubscriptionPlansProps) {
   const [changingPlan, setChangingPlan] = useState<CareSubscriptionPlan | null>(null);
+  const [billingCycle, setBillingCycle] = useState<'monthly' | 'yearly'>('monthly');
 
   async function handleSelect(plan: CareSubscriptionPlan) {
     if (plan === currentPlan || !onSelectPlan) return;
     setChangingPlan(plan);
-    await onSelectPlan(plan);
+    await onSelectPlan(plan, billingCycle);
     setChangingPlan(null);
   }
 
   return (
     <div className="space-y-4">
+      {/* Abrechnungszyklus-Toggle */}
+      <div className="flex items-center justify-center gap-2 rounded-lg bg-gray-100 p-1">
+        <button
+          onClick={() => setBillingCycle('monthly')}
+          className={`rounded-md px-4 py-1.5 text-sm font-medium transition-colors ${
+            billingCycle === 'monthly' ? 'bg-white text-[#2D3142] shadow-sm' : 'text-muted-foreground'
+          }`}
+        >
+          Monatlich
+        </button>
+        <button
+          onClick={() => setBillingCycle('yearly')}
+          className={`rounded-md px-4 py-1.5 text-sm font-medium transition-colors ${
+            billingCycle === 'yearly' ? 'bg-white text-[#2D3142] shadow-sm' : 'text-muted-foreground'
+          }`}
+        >
+          Jaehrlich <span className="text-[#4CAF87] text-xs font-semibold">−17%</span>
+        </button>
+      </div>
+
       {/* Mobile: Karten-Layout */}
       <div className="space-y-3">
         {PLAN_HIERARCHY.map(plan => {
@@ -69,7 +90,9 @@ export function SubscriptionPlans({ currentPlan = 'free', onSelectPlan }: Subscr
                   </div>
                   <p className="text-xs text-muted-foreground mt-0.5">{meta.description}</p>
                 </div>
-                <span className="text-sm font-semibold text-[#2D3142]">{meta.price}</span>
+                <span className="text-sm font-semibold text-[#2D3142]">
+                  {plan === 'free' ? meta.price : billingCycle === 'yearly' ? meta.priceYearly : meta.price}
+                </span>
               </div>
 
               {/* Features */}

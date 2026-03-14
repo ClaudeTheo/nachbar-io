@@ -26,9 +26,32 @@ export function useSubscription() {
   // eslint-disable-next-line react-hooks/set-state-in-effect -- Daten laden bei Mount
   useEffect(() => { load(); }, [load]);
 
-  /** Plan aendern */
-  const changePlan = useCallback(async (plan: CareSubscriptionPlan) => {
+  /** Plan aendern — Checkout-Route entscheidet: gratis (Early Adopter) oder Stripe */
+  const changePlan = useCallback(async (plan: CareSubscriptionPlan, billingCycle: 'monthly' | 'yearly' = 'monthly') => {
     try {
+      if (plan === 'plus' || plan === 'pro') {
+        const res = await fetch('/api/billing/checkout', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ plan, billing_cycle: billingCycle }),
+        });
+        if (res.ok) {
+          const data = await res.json();
+          // Early Adopter: direkt aktiviert, kein Stripe noetig
+          if (data.earlyAdopter) {
+            setSubscription(data.subscription);
+            return true;
+          }
+          // Stripe Checkout
+          if (data.url) {
+            window.location.href = data.url;
+            return true;
+          }
+        }
+        return false;
+      }
+
+      // Free Plan → direkt in DB setzen
       const res = await fetch('/api/care/subscriptions', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

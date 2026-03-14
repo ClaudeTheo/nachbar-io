@@ -62,7 +62,9 @@ export async function POST(request: NextRequest) {
 
     case 'invoice.paid': {
       const invoice = event.data.object as Stripe.Invoice;
-      const subscriptionId = invoice.subscription as string;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Stripe v20 hat subscription als string|Subscription
+      const sub = (invoice as any).subscription;
+      const subscriptionId = (typeof sub === 'string' ? sub : sub?.id) as string;
       if (!subscriptionId) break;
 
       // Abrechnungszeitraum aktualisieren

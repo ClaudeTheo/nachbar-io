@@ -35,6 +35,7 @@ export default function CareDashboardPage() {
   const [planFeatures, setPlanFeatures] = useState<string[]>([]);
   const [helperRole, setHelperRole] = useState<CareHelperRole | null>(null);
   const [isVerifiedHelper, setIsVerifiedHelper] = useState(false);
+  const [trustLevel, setTrustLevel] = useState<string>('verified');
 
   // Feature-Pruefung: Ist ein Feature im aktuellen Plan verfuegbar?
   const hasFeature = (feature: string) => planFeatures.includes(feature);
@@ -45,8 +46,9 @@ export default function CareDashboardPage() {
     supabase.auth.getUser().then(async ({ data: { user } }) => {
       setUserId(user?.id ?? null);
       if (user) {
-        const { data } = await supabase.from('users').select('is_admin').eq('id', user.id).single();
+        const { data } = await supabase.from('users').select('is_admin, trust_level').eq('id', user.id).single();
         setIsAdmin(data?.is_admin === true);
+        setTrustLevel(data?.trust_level ?? 'verified');
 
         // Abo-Plan laden fuer Feature-Gating
         const { data: subscription } = await supabase
@@ -187,6 +189,25 @@ export default function CareDashboardPage() {
         </h1>
         <p className="text-muted-foreground mt-1">Ihr persoenliches Pflege-Dashboard</p>
       </div>
+
+      {/* Verifikations-Hinweis fuer neue Nutzer */}
+      {trustLevel === 'new' && (
+        <div className="rounded-xl border border-amber-200 bg-amber-50 p-4">
+          <p className="text-sm font-medium text-amber-800">
+            Ihre Adresse muss noch bestaetigt werden.
+          </p>
+          <p className="text-xs text-amber-700 mt-1">
+            Bitten Sie zwei Nachbarn um Bestaetigung, damit Sie alle Funktionen nutzen koennen.
+          </p>
+          <Link
+            href="/vouching"
+            className="inline-flex items-center gap-1 mt-2 text-sm font-medium text-amber-800 hover:text-amber-900"
+          >
+            Zur Verifikation
+            <ArrowRight className="h-3.5 w-3.5" />
+          </Link>
+        </div>
+      )}
 
       {/* SOS-Button (kompakt) */}
       <SosButton compact />

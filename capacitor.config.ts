@@ -1,5 +1,5 @@
 // Nachbar.io — Capacitor-Konfiguration
-// Native App-Wrapper fuer Android (und spaeter iOS)
+// Native App-Wrapper fuer Android und iOS
 // Die App laedt die gehostete Web-App von Vercel
 
 import type { CapacitorConfig } from "@capacitor/cli";
@@ -18,10 +18,25 @@ const config: CapacitorConfig = {
     // WebView-Einstellungen
     allowMixedContent: false,
   },
+  ios: {
+    // iOS-spezifische Einstellungen
+    backgroundColor: "#2D3142",
+    contentInset: "automatic",
+    scheme: "Nachbar.io",
+  },
   plugins: {
-    // Push-Notifications (native, zuverlaessiger als Web Push auf Mobilgeraeten)
+    // Push-Notifications (Web Push via VAPID — kein FCM noetig)
     PushNotifications: {
       presentationOptions: ["badge", "sound", "alert"],
+    },
+    // Status-Bar Konfiguration
+    StatusBar: {
+      style: "DARK",
+      backgroundColor: "#2D3142",
+    },
+    // Kamera-Berechtigungen
+    Camera: {
+      presentationStyle: "popover",
     },
   },
 };

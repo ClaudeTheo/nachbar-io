@@ -3,7 +3,7 @@
 import { Suspense, useState, useEffect, useCallback, useRef } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Mail, MapPin, Search } from "lucide-react";
+import { Mail, MapPin, Search, Navigation } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -49,6 +49,8 @@ function RegisterForm() {
   const [error, setError] = useState<string | null>(null);
   const [householdId, setHouseholdId] = useState<string | null>(null);
   const [referrerId, setReferrerId] = useState<string | null>(null);
+  const [geoLoading, setGeoLoading] = useState(false);
+  const [geoQuarter, setGeoQuarter] = useState<{ quarter_id: string; quarter_name: string; action: string } | null>(null);
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -276,6 +278,7 @@ function RegisterForm() {
           verificationMethod,
           inviteCode: inviteCode ? normalizeCode(inviteCode) : undefined,
           referrerId,
+          quarterId: geoQuarter?.quarter_id || undefined,
         }),
       });
 
@@ -425,6 +428,48 @@ function RegisterForm() {
                   <p className="font-semibold text-anthrazit">Adresse manuell angeben</p>
                   <p className="mt-1 text-sm text-muted-foreground">
                     Ich wohne im Quartier und möchte mich verifizieren lassen
+                  </p>
+                </div>
+              </div>
+            </button>
+
+            <button
+              onClick={async () => {
+                setGeoLoading(true);
+                setError(null);
+                try {
+                  const pos = await new Promise<GeolocationPosition>((resolve, reject) =>
+                    navigator.geolocation.getCurrentPosition(resolve, reject, { timeout: 10000 })
+                  );
+                  const res = await fetch(
+                    `/api/quarters/find-by-location?lat=${pos.coords.latitude}&lng=${pos.coords.longitude}`
+                  );
+                  if (res.ok) {
+                    const data = await res.json();
+                    setGeoQuarter(data);
+                    setVerificationMethod("address_manual");
+                    setStep("profile");
+                  } else {
+                    setError("Kein Quartier in Ihrer Naehe gefunden.");
+                  }
+                } catch {
+                  setError("Standort konnte nicht ermittelt werden. Bitte erlauben Sie den Zugriff.");
+                }
+                setGeoLoading(false);
+              }}
+              disabled={geoLoading}
+              className="w-full rounded-lg border-2 border-border p-4 text-left transition-colors hover:border-quartier-green/50"
+            >
+              <div className="flex items-start gap-3">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-green-50">
+                  <Navigation className="h-5 w-5 text-quartier-green" />
+                </div>
+                <div>
+                  <p className="font-semibold text-anthrazit">
+                    {geoLoading ? "Standort wird ermittelt..." : "Standort teilen"}
+                  </p>
+                  <p className="mt-1 text-sm text-muted-foreground">
+                    Automatisch dem naechsten Quartier beitreten
                   </p>
                 </div>
               </div>

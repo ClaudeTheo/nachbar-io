@@ -60,8 +60,8 @@ function DashboardGrid() {
   if (loading) {
     return (
       <div className="flex flex-col items-center justify-center h-full gap-4">
-        <Loader2 className="h-16 w-16 animate-spin text-quartier-green" />
-        <p className="text-2xl text-anthrazit font-medium">Daten werden geladen...</p>
+        <Loader2 className="h-20 w-20 animate-spin text-quartier-green" />
+        <p className="text-3xl text-anthrazit font-medium">Daten werden geladen...</p>
       </div>
     );
   }
@@ -70,9 +70,9 @@ function DashboardGrid() {
   if (error) {
     return (
       <div className="flex flex-col items-center justify-center h-full gap-4">
-        <AlertTriangle className="h-16 w-16 text-alert-amber" />
-        <p className="text-2xl text-anthrazit font-medium">Verbindungsfehler</p>
-        <p className="text-lg text-anthrazit/70">{error}</p>
+        <AlertTriangle className="h-20 w-20 text-alert-amber" />
+        <p className="text-3xl text-anthrazit font-medium">Verbindungsfehler</p>
+        <p className="text-[28px] text-anthrazit/70">{error}</p>
       </div>
     );
   }
@@ -154,18 +154,18 @@ function DashboardGrid() {
   ];
 
   return (
-    <div className="grid grid-cols-2 grid-rows-3 gap-4 h-full">
+    <div className="grid grid-cols-2 grid-rows-3 gap-5 h-full">
       {tiles.map((tile) => {
         const Icon = tile.icon;
         return (
           <button
             key={tile.key}
             onClick={() => setActiveScreen(tile.screen)}
-            className={`flex flex-col items-center justify-center gap-3 rounded-2xl ${tile.bgColor} ${tile.textColor} shadow-soft transition-transform active:scale-[0.98] focus-visible:ring-2 focus-visible:ring-quartier-green`}
+            className={`flex flex-col items-center justify-center gap-3 rounded-3xl ${tile.bgColor} ${tile.textColor} shadow-soft transition-transform active:scale-[0.98] focus-visible:ring-2 focus-visible:ring-quartier-green`}
           >
-            <Icon className="h-12 w-12" />
-            <span className="text-2xl font-bold">{tile.title}</span>
-            <span className="text-lg opacity-80">{tile.subtitle}</span>
+            <Icon className="h-16 w-16" />
+            <span className="text-[44px] font-bold">{tile.title}</span>
+            <span className="text-2xl opacity-90">{tile.subtitle}</span>
           </button>
         );
       })}

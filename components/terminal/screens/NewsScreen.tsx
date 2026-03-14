@@ -71,9 +71,9 @@ export default function NewsScreen() {
           aria-label="Zurueck zur Startseite"
           className="flex h-[80px] w-[80px] items-center justify-center rounded-2xl bg-anthrazit/10 text-anthrazit transition-transform active:scale-95"
         >
-          <ArrowLeft className="h-10 w-10" />
+          <ArrowLeft className="h-12 w-12" />
         </button>
-        <h1 className="text-3xl font-bold text-anthrazit">Neuigkeiten</h1>
+        <h1 className="text-4xl font-bold text-anthrazit">Neuigkeiten</h1>
       </div>
 
       {/* Nachrichten-Liste oder Leer-Zustand */}
@@ -103,11 +103,11 @@ export default function NewsScreen() {
 function EmptyState() {
   return (
     <div className="flex flex-1 flex-col items-center justify-center gap-6 px-8">
-      <Newspaper className="h-24 w-24 text-anthrazit/30" />
-      <p className="text-3xl font-bold text-anthrazit">
+      <Newspaper className="h-28 w-28 text-anthrazit/30" />
+      <p className="text-4xl font-bold text-anthrazit">
         Keine Neuigkeiten
       </p>
-      <p className="text-xl text-anthrazit/60 text-center">
+      <p className="text-[28px] text-anthrazit/60 text-center">
         Im Moment gibt es keine neuen Nachrichten aus Ihrem Quartier.
       </p>
     </div>
@@ -140,24 +140,24 @@ function NewsCard({
       {/* Obere Zeile: Kategorie-Badge + Zeitangabe */}
       <div className="flex items-center justify-between gap-3 mb-3">
         <span
-          className={`inline-block rounded-full px-4 py-1.5 text-base font-semibold ${categoryColor.bg} ${categoryColor.text}`}
+          className={`inline-block rounded-full px-5 py-2 text-lg font-semibold ${categoryColor.bg} ${categoryColor.text}`}
         >
           {item.categoryLabel}
         </span>
-        <span className="text-base text-anthrazit/50 whitespace-nowrap">
+        <span className="text-lg text-anthrazit/50 whitespace-nowrap">
           {timeAgo(item.publishedAt)}
         </span>
       </div>
 
       {/* Titel */}
-      <h2 className="text-2xl font-bold text-anthrazit leading-snug mb-2">
+      <h2 className="text-3xl font-bold text-anthrazit leading-snug mb-2">
         {item.title}
       </h2>
 
       {/* Zusammenfassung: Gekuerzt oder Volltext je nach Expand-Status */}
       {item.summary && (
         <p
-          className={`text-xl text-anthrazit/70 leading-relaxed ${
+          className={`text-[28px] text-anthrazit/70 leading-relaxed ${
             isExpanded ? "" : "line-clamp-2"
           }`}
         >
@@ -168,7 +168,7 @@ function NewsCard({
       {/* Aufklapp-Indikator */}
       {item.summary && (
         <div className="flex items-center justify-center mt-4 text-anthrazit/40">
-          <ExpandIcon className="h-7 w-7" />
+          <ExpandIcon className="h-8 w-8" />
         </div>
       )}
     </button>

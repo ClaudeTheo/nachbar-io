@@ -64,27 +64,27 @@ export default function TerminalHeader() {
     : "";
 
   return (
-    <header className="flex items-center justify-between bg-anthrazit text-white px-6 py-3">
+    <header className="flex items-center justify-between bg-anthrazit text-white px-8 py-4">
       {/* Wetter (live aus Device-API) */}
-      <div className="flex items-center gap-3 min-w-[160px]">
-        <WeatherIcon icon={weatherIcon} className="h-8 w-8 text-quartier-green-light" />
-        <span className="text-2xl font-semibold">{tempDisplay}</span>
+      <div className="flex items-center gap-3 min-w-[200px]">
+        <WeatherIcon icon={weatherIcon} className="h-12 w-12 text-quartier-green-light" />
+        <span className="text-4xl font-semibold">{tempDisplay}</span>
       </div>
 
       {/* Begruessung + Datum zentriert */}
       <div className="text-center">
         {greetingText && (
-          <div className="text-lg font-semibold text-quartier-green-light">
+          <div className="text-[28px] font-semibold text-quartier-green-light">
             {greetingText}
           </div>
         )}
-        <div className="text-xl font-medium text-warmwhite/90">
+        <div className="text-[28px] font-medium text-warmwhite/90">
           {dateString}
         </div>
       </div>
 
       {/* Uhrzeit rechts */}
-      <div className="text-3xl font-bold tabular-nums min-w-[140px] text-right">
+      <div className="text-[32px] font-bold tabular-nums min-w-[220px] text-right">
         {timeString}
       </div>
     </header>

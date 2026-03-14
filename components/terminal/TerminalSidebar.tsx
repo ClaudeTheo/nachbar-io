@@ -60,7 +60,7 @@ export default function TerminalSidebar() {
   const { activeScreen, setActiveScreen } = useTerminal();
 
   return (
-    <aside className="flex flex-col gap-2 w-[140px] shrink-0 bg-lightgray p-2">
+    <aside className="flex flex-col gap-3 w-[160px] shrink-0 bg-lightgray p-3">
       {buttons.map((btn) => {
         const Icon = btn.icon;
         const isActive = activeScreen === btn.screen;
@@ -69,7 +69,7 @@ export default function TerminalSidebar() {
           <button
             key={btn.label}
             onClick={() => setActiveScreen(btn.screen)}
-            className={`flex-1 flex flex-col items-center justify-center gap-2 rounded-xl ${btn.bgColor} ${btn.textColor} min-h-[100px] transition-all active:scale-95 focus-visible:ring-2 focus-visible:ring-quartier-green ${
+            className={`flex-1 flex flex-col items-center justify-center gap-2 rounded-xl ${btn.bgColor} ${btn.textColor} min-h-[120px] transition-all active:scale-95 focus-visible:ring-2 focus-visible:ring-quartier-green ${
               isActive
                 ? "ring-3 ring-white brightness-110 scale-[1.02]"
                 : ""
@@ -77,8 +77,8 @@ export default function TerminalSidebar() {
             aria-label={btn.label}
             aria-pressed={isActive}
           >
-            <Icon className="h-8 w-8" />
-            <span className="text-sm font-bold leading-tight text-center">
+            <Icon className="h-12 w-12" />
+            <span className="text-[22px] font-bold leading-tight text-center">
               {btn.label}
             </span>
           </button>

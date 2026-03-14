@@ -53,11 +53,11 @@ export default function MedicationsScreen() {
           aria-label="Zurueck zur Startseite"
           className="flex h-[80px] w-[80px] items-center justify-center rounded-2xl bg-anthrazit/10 text-anthrazit transition-transform active:scale-95"
         >
-          <ArrowLeft className="h-10 w-10" />
+          <ArrowLeft className="h-12 w-12" />
         </button>
         <div className="flex items-center gap-3">
-          <Pill className="h-10 w-10 text-anthrazit" />
-          <h1 className="text-3xl font-bold text-anthrazit">
+          <Pill className="h-12 w-12 text-anthrazit" />
+          <h1 className="text-4xl font-bold text-anthrazit">
             Ihre Medikamente heute
           </h1>
         </div>
@@ -66,21 +66,21 @@ export default function MedicationsScreen() {
       {/* Erfolgsmeldung wenn alle eingenommen */}
       {allTaken && (
         <div className="flex items-center gap-4 rounded-2xl bg-quartier-green/15 p-5">
-          <CheckCircle className="h-10 w-10 text-quartier-green flex-shrink-0" />
-          <p className="text-2xl font-bold text-quartier-green">
+          <CheckCircle className="h-12 w-12 text-quartier-green flex-shrink-0" />
+          <p className="text-3xl font-bold text-quartier-green">
             Alle Medikamente eingenommen!
           </p>
         </div>
       )}
 
       {/* Medikamenten-Liste */}
-      <div className="flex flex-1 flex-col gap-4 overflow-y-auto">
+      <div className="flex flex-1 flex-col gap-5 overflow-y-auto">
         {medications.map((med) => (
           <button
             key={med.id}
             onClick={() => toggleMedication(med.id)}
             aria-label={`${med.name} ${med.dosage} um ${med.time} Uhr${med.taken ? ", bereits eingenommen" : ", noch nicht eingenommen"}`}
-            className={`flex items-center gap-5 rounded-2xl p-5 shadow-soft transition-all active:scale-[0.98] min-h-[100px] ${
+            className={`flex items-center gap-5 rounded-2xl p-6 shadow-soft transition-all active:scale-[0.98] min-h-[110px] ${
               med.taken
                 ? "bg-quartier-green text-white"
                 : "bg-info-blue text-white"
@@ -88,18 +88,18 @@ export default function MedicationsScreen() {
           >
             {/* Medikamenten-Info */}
             <div className="flex flex-1 flex-col items-start gap-1">
-              <span className="text-2xl font-bold">
+              <span className="text-3xl font-bold">
                 {med.name} — {med.dosage}
               </span>
-              <span className="flex items-center gap-2 text-xl opacity-90">
-                <Clock className="h-5 w-5" />
+              <span className="flex items-center gap-2 text-[28px] opacity-90">
+                <Clock className="h-7 w-7" />
                 {med.time} Uhr
               </span>
             </div>
 
             {/* Status-Anzeige */}
             <div
-              className={`flex h-[80px] w-[200px] items-center justify-center rounded-xl font-bold text-xl transition-colors ${
+              className={`flex h-[80px] w-[220px] items-center justify-center rounded-xl font-bold text-[28px] transition-colors ${
                 med.taken
                   ? "bg-white/25 text-white"
                   : "bg-white/20 text-white"
@@ -107,7 +107,7 @@ export default function MedicationsScreen() {
             >
               {med.taken ? (
                 <span className="flex items-center gap-2">
-                  <CheckCircle className="h-7 w-7" />
+                  <CheckCircle className="h-8 w-8" />
                   Eingenommen
                 </span>
               ) : (
@@ -121,7 +121,7 @@ export default function MedicationsScreen() {
       {/* Zurueck-Button unten */}
       <button
         onClick={() => setActiveScreen("home")}
-        className="flex h-[80px] items-center justify-center rounded-2xl bg-quartier-green px-8 text-2xl font-bold text-white shadow-soft transition-transform active:scale-95"
+        className="flex h-[80px] items-center justify-center rounded-2xl bg-quartier-green px-8 text-3xl font-bold text-white shadow-soft transition-transform active:scale-95"
       >
         Zurueck zur Startseite
       </button>

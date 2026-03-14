@@ -45,16 +45,16 @@ export default function CheckinScreen() {
   if (state === "done") {
     return (
       <div className="flex flex-1 flex-col items-center justify-center gap-8 p-8">
-        <CheckCircle className="h-32 w-32 text-success-green" />
-        <p className="text-4xl font-bold text-anthrazit">
+        <CheckCircle className="h-40 w-40 text-success-green" />
+        <p className="text-5xl font-bold text-anthrazit">
           Vielen Dank!
         </p>
-        <p className="text-xl text-anthrazit/70">
+        <p className="text-[28px] text-anthrazit/70">
           Sie werden automatisch weitergeleitet...
         </p>
         <button
           onClick={() => setActiveScreen("home")}
-          className="mt-4 rounded-xl bg-quartier-green px-8 py-4 text-xl font-bold text-white shadow-lg transition-transform hover:scale-105 active:scale-95"
+          className="mt-4 rounded-xl bg-quartier-green px-10 py-5 text-[28px] font-bold text-white shadow-lg transition-transform active:scale-95"
         >
           Zurueck zur Startseite
         </button>
@@ -68,26 +68,26 @@ export default function CheckinScreen() {
       {/* Zurueck-Button oben links */}
       <button
         onClick={() => setActiveScreen("home")}
-        className="absolute top-0 left-0 flex items-center gap-2 text-anthrazit/70 hover:text-anthrazit transition-colors"
+        className="absolute top-0 left-0 flex items-center gap-2 text-anthrazit/70 transition-colors"
         aria-label="Zurueck zur Startseite"
       >
-        <ArrowLeft className="h-8 w-8" />
+        <ArrowLeft className="h-12 w-12" />
       </button>
 
-      <h1 className="text-3xl font-bold text-anthrazit">
+      <h1 className="text-4xl font-bold text-anthrazit">
         Wie geht es Ihnen heute?
       </h1>
 
-      <div className="flex flex-wrap items-center justify-center gap-6">
+      <div className="flex flex-wrap items-center justify-center gap-8">
         {/* Gut */}
         <button
           onClick={handleCheckin}
           disabled={state === "sending"}
           aria-label="Mir geht es gut"
-          className="flex h-[220px] w-[220px] flex-col items-center justify-center gap-4 rounded-2xl bg-success-green text-white shadow-lg transition-transform hover:scale-105 active:scale-95 disabled:opacity-60 disabled:hover:scale-100"
+          className="flex h-[260px] w-[260px] flex-col items-center justify-center gap-5 rounded-3xl bg-success-green text-white shadow-lg transition-transform active:scale-95 disabled:opacity-60"
         >
-          <Heart className="h-16 w-16" />
-          <span className="text-2xl font-bold leading-tight text-center">
+          <Heart className="h-20 w-20" />
+          <span className="text-3xl font-bold leading-tight text-center">
             Mir geht es gut
           </span>
         </button>
@@ -97,10 +97,10 @@ export default function CheckinScreen() {
           onClick={handleCheckin}
           disabled={state === "sending"}
           aria-label="Nicht so gut"
-          className="flex h-[220px] w-[220px] flex-col items-center justify-center gap-4 rounded-2xl bg-alert-amber text-white shadow-lg transition-transform hover:scale-105 active:scale-95 disabled:opacity-60 disabled:hover:scale-100"
+          className="flex h-[260px] w-[260px] flex-col items-center justify-center gap-5 rounded-3xl bg-alert-amber text-white shadow-lg transition-transform active:scale-95 disabled:opacity-60"
         >
-          <Frown className="h-16 w-16" />
-          <span className="text-2xl font-bold leading-tight text-center">
+          <Frown className="h-20 w-20" />
+          <span className="text-3xl font-bold leading-tight text-center">
             Nicht so gut
           </span>
         </button>
@@ -110,17 +110,17 @@ export default function CheckinScreen() {
           onClick={handleCheckin}
           disabled={state === "sending"}
           aria-label="Brauche Hilfe"
-          className="flex h-[220px] w-[220px] flex-col items-center justify-center gap-4 rounded-2xl bg-emergency-red text-white shadow-lg transition-transform hover:scale-105 active:scale-95 disabled:opacity-60 disabled:hover:scale-100"
+          className="flex h-[260px] w-[260px] flex-col items-center justify-center gap-5 rounded-3xl bg-emergency-red text-white shadow-lg transition-transform active:scale-95 disabled:opacity-60"
         >
-          <AlertTriangle className="h-16 w-16" />
-          <span className="text-2xl font-bold leading-tight text-center">
+          <AlertTriangle className="h-20 w-20" />
+          <span className="text-3xl font-bold leading-tight text-center">
             Brauche Hilfe
           </span>
         </button>
       </div>
 
       {state === "sending" && (
-        <p className="text-xl text-anthrazit/70 animate-pulse">
+        <p className="text-[28px] text-anthrazit/70 animate-pulse">
           Wird gesendet...
         </p>
       )}

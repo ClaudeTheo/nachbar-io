@@ -17,34 +17,34 @@ export default function EmergencyScreen() {
       <button
         onClick={() => setActiveScreen("home")}
         aria-label="Notruf-Bildschirm schliessen"
-        className="absolute right-6 top-6 flex h-20 w-20 items-center justify-center rounded-full bg-white/20 text-white transition-colors hover:bg-white/30"
+        className="absolute right-8 top-8 flex h-24 w-24 items-center justify-center rounded-full bg-white/20 text-white transition-colors"
       >
-        <X className="h-10 w-10" />
+        <X className="h-12 w-12" />
       </button>
 
       {/* Telefon-Icon mit Puls-Animation */}
-      <Phone className="h-32 w-32 animate-pulse text-white" />
+      <Phone className="h-40 w-40 animate-pulse text-white" />
 
       {/* NOTRUF Ueberschrift */}
-      <h1 className="mt-6 text-6xl font-black tracking-wider text-white">
+      <h1 className="mt-6 text-7xl font-black tracking-wider text-white">
         NOTRUF
       </h1>
 
       {/* Handlungsanweisung */}
-      <p className="mt-4 text-2xl font-semibold text-white/90">
+      <p className="mt-4 text-3xl font-semibold text-white/90">
         Rufen Sie sofort den Rettungsdienst
       </p>
 
       {/* 112 Anrufen Button */}
       <a
         href="tel:112"
-        className="mt-10 flex min-h-[100px] items-center justify-center rounded-2xl bg-white px-16 py-6 text-4xl font-black text-emergency-red shadow-2xl transition-transform hover:scale-105 active:scale-95"
+        className="mt-10 flex min-h-[120px] items-center justify-center rounded-3xl bg-white px-20 py-8 text-5xl font-black text-emergency-red shadow-2xl transition-transform active:scale-95"
       >
         112 ANRUFEN
       </a>
 
       {/* Weitere Notrufnummern */}
-      <p className="mt-10 text-xl font-medium text-white/80">
+      <p className="mt-10 text-[28px] font-medium text-white/80">
         Polizei: <a href="tel:110" className="underline text-white">110</a>
         {" \u00B7 "}
         Giftnotruf: <a href="tel:076119240" className="underline text-white">0761 19240</a>

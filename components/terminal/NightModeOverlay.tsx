@@ -85,7 +85,7 @@ export default function NightModeOverlay() {
             e.stopPropagation();
             window.location.href = "tel:112";
           }}
-          className="min-h-[80px] min-w-[280px] px-10 py-5 bg-[#EF4444] hover:bg-[#DC2626] active:bg-[#B91C1C] text-white font-bold text-2xl rounded-2xl shadow-lg transition-colors focus:outline-none focus:ring-4 focus:ring-red-300"
+          className="min-h-[80px] min-w-[280px] px-10 py-5 bg-[#EF4444] active:bg-[#B91C1C] text-white font-bold text-2xl rounded-2xl shadow-lg transition-colors focus:outline-none focus:ring-4 focus:ring-red-300"
           aria-label="Notruf 112 anrufen"
         >
           NOTRUF 112

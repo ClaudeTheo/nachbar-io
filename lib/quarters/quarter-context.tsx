@@ -38,7 +38,8 @@ export function QuarterProvider({ children }: { children: ReactNode }) {
         .order("name");
       if (quarters) {
         setAllQuarters(quarters);
-        const savedId = localStorage.getItem("selected_quarter_id");
+        const { getStorage } = await import("@/lib/platform-storage");
+        const savedId = await getStorage("selected_quarter_id");
         const found = quarters.find(q => q.id === savedId);
         setCurrentQuarter(found ?? quarters[0] ?? null);
       }
@@ -69,7 +70,9 @@ export function QuarterProvider({ children }: { children: ReactNode }) {
     const found = allQuarters.find(q => q.id === quarterId);
     if (found) {
       setCurrentQuarter(found);
-      localStorage.setItem("selected_quarter_id", quarterId);
+      import("@/lib/platform-storage").then(({ setStorage }) => {
+        setStorage("selected_quarter_id", quarterId);
+      });
     }
   }, [allQuarters]);
 

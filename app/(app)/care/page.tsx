@@ -7,7 +7,7 @@ import { Heart, AlertTriangle, Clock, ArrowRight, Pill, CalendarDays, Users, Fil
 import Link from 'next/link';
 import { SosButton } from '@/components/care/SosButton';
 import { SosAlertCard } from '@/components/care/SosAlertCard';
-import type { CareSosAlert, CareAppointment, CareSubscriptionPlan } from '@/lib/care/types';
+import type { CareSosAlert, CareAppointment, CareSubscriptionPlan, CareHelperRole } from '@/lib/care/types';
 import { PLAN_FEATURES } from '@/lib/care/constants';
 
 interface CheckinStatus {
@@ -33,6 +33,8 @@ export default function CareDashboardPage() {
   const [helperCount, setHelperCount] = useState<number | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [planFeatures, setPlanFeatures] = useState<string[]>([]);
+  const [helperRole, setHelperRole] = useState<CareHelperRole | null>(null);
+  const [isVerifiedHelper, setIsVerifiedHelper] = useState(false);
 
   // Feature-Pruefung: Ist ein Feature im aktuellen Plan verfuegbar?
   const hasFeature = (feature: string) => planFeatures.includes(feature);
@@ -141,6 +143,26 @@ export default function CareDashboardPage() {
       } catch { /* silent */ }
     }
     loadHelperCount();
+  }, []);
+
+  // Eigenen Helfer-Status laden (fuer "Meine Senioren" Link)
+  useEffect(() => {
+    const supabase = createClient();
+    supabase.auth.getUser().then(async ({ data: { user } }) => {
+      if (!user) return;
+      const { data: helper } = await supabase
+        .from('care_helpers')
+        .select('role, verification_status, assigned_seniors')
+        .eq('user_id', user.id)
+        .maybeSingle();
+      if (helper) {
+        setHelperRole(helper.role as CareHelperRole);
+        setIsVerifiedHelper(
+          helper.verification_status === 'verified' &&
+          (helper.assigned_seniors?.length ?? 0) > 0
+        );
+      }
+    });
   }, []);
 
   if (loading) {
@@ -333,6 +355,16 @@ export default function CareDashboardPage() {
             <Clock className="h-4 w-4 text-quartier-green" />
             Jetzt einchecken
           </Link>
+          {/* Meine Senioren (nur fuer verifizierte Angehoerige/Pflegedienst) */}
+          {isVerifiedHelper && (helperRole === 'relative' || helperRole === 'care_service') && (
+            <Link
+              href="/care/meine-senioren"
+              className="rounded-lg border-2 border-quartier-green bg-quartier-green/5 p-3 text-sm font-medium text-anthrazit hover:bg-quartier-green/10 flex items-center gap-2"
+            >
+              <Users className="h-4 w-4 text-quartier-green" />
+              Meine Senioren
+            </Link>
+          )}
           <Link
             href="/care/sos"
             className="rounded-lg border bg-card p-3 text-sm font-medium text-anthrazit hover:bg-gray-50 flex items-center gap-2"

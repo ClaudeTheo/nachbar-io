@@ -48,7 +48,7 @@ export type CareDocumentType =
   | 'emergency_log' | 'medication_report' | 'care_aid_application'
   | 'tax_summary' | 'usage_report';
 
-export type CareSubscriptionPlan = 'free' | 'basic' | 'family' | 'professional' | 'premium';
+export type CareSubscriptionPlan = 'free' | 'plus' | 'pro';
 export type CareSubscriptionStatus = 'active' | 'trial' | 'cancelled' | 'expired';
 
 export type CareNotificationType =

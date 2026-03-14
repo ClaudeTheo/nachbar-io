@@ -83,14 +83,33 @@ export const AUDIT_EVENT_LABELS: Record<CareAuditEventType, string> = {
 } as const;
 
 // Subscription-Plan-Features (Feature-Gates)
+// Strategie-Dokument Phase 4: Free / Plus / Pro
 // PILOTPHASE: free hat alle Features freigeschaltet (fuer Tester)
-// NACH PILOTPHASE: free wieder auf ['checkin', 'medical_emergency_sos'] beschraenken
+// NACH PILOTPHASE: free wieder auf Basis-Features beschraenken
+const FREE_FEATURES = [
+  'alerts_receive', 'alerts_send', 'pinnwand_read', 'pinnwand_post',
+  'profile_basic', 'help_basic', 'push_notifications', 'senior_mode',
+  'checkin', 'medical_emergency_sos', 'sos_all',
+] as const;
+
+const PLUS_FEATURES = [
+  ...FREE_FEATURES,
+  'marketplace', 'events_create', 'help_extended',
+  'group_messages', 'ai_digest', 'profile_extended', 'ad_free',
+  'medications', 'appointments', 'reports',
+] as const;
+
+const PRO_FEATURES = [
+  ...PLUS_FEATURES,
+  'quarter_dashboard', 'bulk_invites', 'moderation_tools',
+  'polls', 'sponsor_management', 'export_csv_pdf', 'priority_support',
+  'multi_senior', 'care_dashboard', 'audit_log', 'relative_dashboard',
+] as const;
+
 export const PLAN_FEATURES: Record<CareSubscriptionPlan, string[]> = {
-  free: ['checkin', 'medical_emergency_sos', 'sos_all', 'medications', 'appointments', 'reports', 'audit_log'],
-  basic: ['checkin', 'sos_all', 'medications', 'appointments'],
-  family: ['checkin', 'sos_all', 'medications', 'appointments', 'relative_dashboard', 'reports', 'audit_log'],
-  professional: ['checkin', 'sos_all', 'medications', 'appointments', 'relative_dashboard', 'reports', 'audit_log', 'multi_senior', 'care_dashboard', 'care_aid_forms'],
-  premium: ['checkin', 'sos_all', 'medications', 'appointments', 'relative_dashboard', 'reports', 'audit_log', 'multi_senior', 'care_dashboard', 'care_aid_forms', 'sim_fallback', 'sms_notifications', 'voice_notifications', 'priority_support'],
+  free: [...FREE_FEATURES],
+  plus: [...PLUS_FEATURES],
+  pro: [...PRO_FEATURES],
 } as const;
 
 // Prueft ob ein Feature im aktuellen Plan verfuegbar ist

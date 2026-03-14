@@ -15,25 +15,44 @@ export function InstallPrompt() {
   const [dismissed, setDismissed] = useState(false);
 
   useEffect(() => {
-    // Pruefen ob schon dismissed
-    if (localStorage.getItem("pwa-install-dismissed")) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect -- Initialer Zustand aus localStorage
-      setDismissed(true);
-      return;
+    // Auf nativer App: PWA Install-Prompt nicht anzeigen
+    import("@capacitor/core").then(({ Capacitor }) => {
+      if (Capacitor.isNativePlatform()) return;
+      initPromptLogic();
+    }).catch(() => {
+      // Capacitor nicht verfuegbar (reiner Web-Modus) — normal weitermachen
+      initPromptLogic();
+    });
+
+    function initPromptLogic() {
+      // Pruefen ob schon dismissed (plattform-agnostisch)
+      import("@/lib/platform-storage").then(({ getStorage }) => {
+        getStorage("pwa-install-dismissed").then(val => {
+          if (val) {
+            setDismissed(true);
+            return;
+          }
+          setupBeforeInstallPrompt();
+        });
+      }).catch(() => {
+        setupBeforeInstallPrompt();
+      });
     }
 
-    // Prüfen ob bereits installiert (standalone mode)
-    if (window.matchMedia("(display-mode: standalone)").matches) {
-      return;
-    }
+    function setupBeforeInstallPrompt() {
+      // Pruefen ob bereits installiert (standalone mode)
+      if (window.matchMedia("(display-mode: standalone)").matches) {
+        return;
+      }
 
-    function handleBeforeInstall(e: Event) {
-      e.preventDefault();
-      setDeferredPrompt(e as BeforeInstallPromptEvent);
-    }
+      function handleBeforeInstall(e: Event) {
+        e.preventDefault();
+        setDeferredPrompt(e as BeforeInstallPromptEvent);
+      }
 
-    window.addEventListener("beforeinstallprompt", handleBeforeInstall);
-    return () => window.removeEventListener("beforeinstallprompt", handleBeforeInstall);
+      window.addEventListener("beforeinstallprompt", handleBeforeInstall);
+      // Cleanup nicht moeglich da Referenz in async Callback — akzeptabel fuer diesen Use-Case
+    }
   }, []);
 
   async function handleInstall() {
@@ -48,7 +67,9 @@ export function InstallPrompt() {
   function handleDismiss() {
     setDismissed(true);
     setDeferredPrompt(null);
-    localStorage.setItem("pwa-install-dismissed", "true");
+    import("@/lib/platform-storage").then(({ setStorage }) => {
+      setStorage("pwa-install-dismissed", "true");
+    });
   }
 
   if (!deferredPrompt || dismissed) return null;

@@ -8,11 +8,18 @@ import { PLAN_HIERARCHY, PLAN_METADATA, FEATURE_LABELS } from '@/lib/care/billin
 import { PLAN_FEATURES } from '@/lib/care/constants';
 import type { CareSubscriptionPlan } from '@/lib/care/types';
 
-// Alle Features in Anzeige-Reihenfolge
+// Alle Features in Anzeige-Reihenfolge (Free → Plus → Pro)
 const ALL_FEATURES = [
-  'checkin', 'medical_emergency_sos', 'sos_all', 'medications', 'appointments',
-  'relative_dashboard', 'reports', 'audit_log', 'multi_senior', 'care_dashboard',
-  'care_aid_forms', 'sim_fallback', 'sms_notifications', 'voice_notifications', 'priority_support',
+  // Free
+  'alerts_receive', 'alerts_send', 'pinnwand_read', 'pinnwand_post',
+  'push_notifications', 'senior_mode', 'checkin', 'medical_emergency_sos', 'sos_all',
+  // Plus
+  'marketplace', 'events_create', 'group_messages', 'ai_digest', 'ad_free',
+  'medications', 'appointments', 'reports',
+  // Pro
+  'quarter_dashboard', 'bulk_invites', 'moderation_tools', 'polls',
+  'export_csv_pdf', 'priority_support', 'multi_senior', 'care_dashboard',
+  'audit_log', 'relative_dashboard',
 ];
 
 interface SubscriptionPlansProps {

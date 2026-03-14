@@ -55,8 +55,8 @@ export function SystemOverview() {
   ];
 
   // Abo-Verteilung als Balken
-  const planColors: Record<string, string> = { free: 'bg-gray-300', basic: 'bg-blue-400', family: 'bg-[#4CAF87]', professional: 'bg-purple-500', premium: 'bg-amber-500' };
-  const planLabels: Record<string, string> = { free: 'Kostenlos', basic: 'Basis', family: 'Familie', professional: 'Professionell', premium: 'Premium' };
+  const planColors: Record<string, string> = { free: 'bg-gray-300', plus: 'bg-[#4CAF87]', pro: 'bg-purple-500' };
+  const planLabels: Record<string, string> = { free: 'Free', plus: 'Plus', pro: 'Pro' };
   const totalSubs = Object.values(data.subscriptions.distribution).reduce((a, b) => a + b, 0);
 
   return (

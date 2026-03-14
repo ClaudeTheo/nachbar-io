@@ -5,39 +5,58 @@ import type { CareSubscriptionPlan } from './types';
 import { PLAN_FEATURES } from './constants';
 
 // Plan-Hierarchie (niedrig → hoch)
-export const PLAN_HIERARCHY: CareSubscriptionPlan[] = ['free', 'basic', 'family', 'professional', 'premium'];
+export const PLAN_HIERARCHY: CareSubscriptionPlan[] = ['free', 'plus', 'pro'];
 
 // Plan-Metadaten fuer UI
 export const PLAN_METADATA: Record<CareSubscriptionPlan, {
   label: string;
   description: string;
   price: string;
+  priceYearly?: string;
   highlighted?: boolean;
 }> = {
-  free: { label: 'Kostenlos', description: 'Grundlegende Sicherheit', price: 'Kostenlos' },
-  basic: { label: 'Basis', description: 'Alltagshilfe', price: 'ab 4,99 EUR/Monat' },
-  family: { label: 'Familie', description: 'Fuer Angehoerige', price: 'ab 9,99 EUR/Monat', highlighted: true },
-  professional: { label: 'Professionell', description: 'Fuer Pflegedienste', price: 'ab 19,99 EUR/Monat' },
-  premium: { label: 'Premium', description: 'Rundum-Schutz', price: 'ab 29,99 EUR/Monat' },
+  free: { label: 'Free', description: 'Grundlegende Nachbarschaft', price: 'Kostenlos' },
+  plus: { label: 'Plus', description: 'Voller Funktionsumfang', price: '4,99 EUR/Monat', priceYearly: '49,90 EUR/Jahr', highlighted: true },
+  pro: { label: 'Pro', description: 'Fuer Quartier-Manager & Pflegedienste', price: '14,99 EUR/Monat', priceYearly: '149,90 EUR/Jahr' },
 };
 
 // Feature-Labels fuer UI-Anzeige
 export const FEATURE_LABELS: Record<string, string> = {
+  // Free
+  alerts_receive: 'Alarme empfangen',
+  alerts_send: 'Alarme senden',
+  pinnwand_read: 'Pinnwand lesen',
+  pinnwand_post: 'Pinnwand posten',
+  profile_basic: 'Basisprofil',
+  help_basic: 'Grundlegende Hilfe',
+  push_notifications: 'Push-Benachrichtigungen',
+  senior_mode: 'Senioren-Modus',
   checkin: 'Taegliche Check-ins',
   medical_emergency_sos: 'Medizinischer Notfall-SOS',
   sos_all: 'Alle SOS-Kategorien',
+  // Plus
+  marketplace: 'Marktplatz',
+  events_create: 'Events erstellen',
+  help_extended: 'Erweiterte Hilfe',
+  group_messages: 'Gruppen-Nachrichten',
+  ai_digest: 'KI-Nachrichten-Zusammenfassung',
+  profile_extended: 'Erweitertes Profil',
+  ad_free: 'Werbefrei',
   medications: 'Medikamenten-Verwaltung',
   appointments: 'Termin-Verwaltung',
-  relative_dashboard: 'Angehoerigen-Dashboard',
   reports: 'Pflegeberichte & Export',
-  audit_log: 'Aktivitaetsprotokoll',
+  // Pro
+  quarter_dashboard: 'Quartier-Dashboard',
+  bulk_invites: 'Massen-Einladungen',
+  moderation_tools: 'Moderations-Tools',
+  polls: 'Umfragen',
+  sponsor_management: 'Sponsor-Verwaltung',
+  export_csv_pdf: 'CSV/PDF-Export',
+  priority_support: 'Prioritaets-Support',
   multi_senior: 'Mehrere Senioren',
   care_dashboard: 'Pflege-Dashboard',
-  care_aid_forms: 'Pflegehilfsmittel-Antraege',
-  sim_fallback: 'SIM-Fallback (Offline)',
-  sms_notifications: 'SMS-Benachrichtigungen',
-  voice_notifications: 'Sprach-Benachrichtigungen',
-  priority_support: 'Prioritaets-Support',
+  audit_log: 'Aktivitaetsprotokoll',
+  relative_dashboard: 'Angehoerigen-Dashboard',
 };
 
 /** Prueft ob Upgrade von current auf target moeglich ist */

@@ -131,6 +131,11 @@ export function InviteNeighborModal({ open, onClose }: InviteNeighborModalProps)
                 <p className="text-sm text-muted-foreground">
                   Code: <span className="font-mono font-bold text-quartier-green">{formatCode(result.inviteCode)}</span>
                 </p>
+                <p className="text-xs text-muted-foreground leading-relaxed">
+                  Teilen Sie diesen Code oder den Link unten mit Ihrem Nachbarn.
+                  Damit kann er sich bei nachbar.io registrieren und Ihrem Quartier beitreten.
+                  Der Code ist 30 Tage gültig.
+                </p>
               </CardContent>
             </Card>
 

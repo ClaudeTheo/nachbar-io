@@ -198,7 +198,7 @@ export default function ExpertDetailPage() {
           skill_category: skillCategory,
         });
 
-        // Experten ueber Empfehlung benachrichtigen
+        // Experten ueber Empfehlung benachrichtigen (anonym — kein Name)
         const catLabel = SKILL_CATEGORIES.find((c) => c.id === skillCategory)?.label ?? skillCategory;
         createNotification({
           userId: expertUserId,
@@ -573,11 +573,11 @@ export default function ExpertDetailPage() {
                   <div className="flex items-start justify-between">
                     <div className="flex items-center gap-2">
                       <div className="flex h-8 w-8 items-center justify-center rounded-full bg-lightgray text-xs font-bold text-anthrazit">
-                        {reviewer?.display_name?.charAt(0) ?? "?"}
+                        {isOwnProfile ? "👤" : (reviewer?.display_name?.charAt(0) ?? "?")}
                       </div>
                       <div>
                         <p className="text-sm font-medium text-anthrazit">
-                          {reviewer?.display_name ?? "Unbekannt"}
+                          {isOwnProfile ? "Ein Nachbar" : (reviewer?.display_name ?? "Unbekannt")}
                         </p>
                         <p className="text-[10px] text-muted-foreground">
                           {new Date(review.created_at).toLocaleDateString("de-DE")}

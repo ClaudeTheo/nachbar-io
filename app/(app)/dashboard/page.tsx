@@ -121,8 +121,10 @@ export default function DashboardPage() {
           .select("*, user:users(display_name, avatar_url)")
           .eq("quarter_id", currentQuarter.id)
           .eq("status", "active")
+          .gte("created_at", new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString())
+          .order("type", { ascending: true }) // 'need' vor 'offer' (Prioritaet)
           .order("created_at", { ascending: false })
-          .limit(3),
+          .limit(5),
         supabase
           .from("marketplace_items")
           .select("*, user:users(display_name, avatar_url)")
@@ -283,23 +285,27 @@ export default function DashboardPage() {
         <section>
           <SectionHeader title="Hilfe-Börse" href="/help" />
           <div className="space-y-2">
-            {helpRequests.map((req) => (
-              <Link
-                key={req.id}
-                href="/help"
-                className="card-interactive flex items-center justify-between rounded-lg bg-white p-3 shadow-soft"
-              >
-                <div>
-                  <p className="font-medium text-anthrazit">{req.title}</p>
-                  <p className="text-xs text-muted-foreground">
-                    {req.user?.display_name} · {req.type === "need" ? "Sucht Hilfe" : "Bietet Hilfe"}
-                  </p>
-                </div>
-                <Badge variant={req.type === "need" ? "default" : "secondary"}>
-                  {req.type === "need" ? "Gesucht" : "Angebot"}
-                </Badge>
-              </Link>
-            ))}
+            {helpRequests.map((req) => {
+              const hoursAgo = Math.floor((Date.now() - new Date(req.created_at).getTime()) / (1000 * 60 * 60));
+              return (
+                <Link
+                  key={req.id}
+                  href={`/help/${req.id}`}
+                  className="card-interactive flex items-center justify-between rounded-lg bg-white p-3 shadow-soft"
+                >
+                  <div>
+                    <p className="font-medium text-anthrazit">{req.title}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {req.user?.display_name} · {req.type === "need" ? "Sucht Hilfe" : "Bietet Hilfe"}
+                      {hoursAgo < 2 && <span className="ml-1 text-quartier-green font-medium">· Neu</span>}
+                    </p>
+                  </div>
+                  <Badge variant={req.type === "need" ? "default" : "secondary"}>
+                    {req.type === "need" ? "Gesucht" : "Angebot"}
+                  </Badge>
+                </Link>
+              );
+            })}
           </div>
         </section>
       )}

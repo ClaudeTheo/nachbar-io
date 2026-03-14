@@ -190,35 +190,41 @@ export default function NotificationsInboxPage() {
             <p className="mb-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">
               {group.label}
             </p>
-            <div className="space-y-1">
+            <div className="space-y-1.5">
               {group.items.map((notif) => (
                 <button
                   key={notif.id}
                   onClick={() => markAsRead(notif)}
-                  className={`card-interactive flex w-full items-start gap-3 rounded-lg p-3 text-left ${
+                  className={`card-interactive flex w-full items-start gap-3 rounded-xl p-3.5 text-left transition-colors ${
                     notif.read
-                      ? "bg-white"
-                      : "bg-quartier-green/5"
+                      ? "bg-white hover:bg-gray-50"
+                      : "bg-quartier-green/5 border border-quartier-green/15 hover:bg-quartier-green/10"
                   }`}
+                  style={{ minHeight: "72px" }}
                 >
-                  <span className="mt-0.5 text-xl">
+                  {/* Avatar-Kreis wie bei Messenger-Apps */}
+                  <div className={`mt-0.5 flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-lg ${
+                    notif.read ? "bg-gray-100" : "bg-quartier-green/15"
+                  }`}>
                     {TYPE_ICONS[notif.type] || "\uD83D\uDD14"}
-                  </span>
+                  </div>
                   <div className="min-w-0 flex-1">
-                    <p className={`text-sm ${notif.read ? "text-anthrazit" : "font-semibold text-anthrazit"}`}>
-                      {notif.title}
-                    </p>
+                    <div className="flex items-start justify-between gap-2">
+                      <p className={`text-sm leading-snug ${notif.read ? "text-anthrazit" : "font-semibold text-anthrazit"}`}>
+                        {notif.title}
+                      </p>
+                      <span className="shrink-0 text-[10px] text-muted-foreground/60 whitespace-nowrap">
+                        {formatDistanceToNow(new Date(notif.created_at), { addSuffix: true, locale: de })}
+                      </span>
+                    </div>
                     {notif.body && (
-                      <p className="mt-0.5 truncate text-xs text-muted-foreground">
+                      <p className={`mt-0.5 text-xs leading-relaxed ${notif.read ? "text-muted-foreground truncate" : "text-anthrazit/70 line-clamp-2"}`}>
                         {notif.body}
                       </p>
                     )}
-                    <p className="mt-1 text-[11px] text-muted-foreground/60">
-                      {formatDistanceToNow(new Date(notif.created_at), { addSuffix: true, locale: de })}
-                    </p>
                   </div>
                   {!notif.read && (
-                    <span className="mt-2 h-2.5 w-2.5 shrink-0 rounded-full bg-quartier-green" />
+                    <span className="mt-3 h-2.5 w-2.5 shrink-0 rounded-full bg-quartier-green" />
                   )}
                 </button>
               ))}

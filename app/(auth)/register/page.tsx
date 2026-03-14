@@ -173,8 +173,8 @@ function RegisterForm() {
       // Nachbar-Einladung per Link
       setStep("invite");
     } else {
-      // Pilot-Phase: Direkt zur Adresseingabe (keine Codes verteilt)
-      setStep("address");
+      // Verifikationsmethode waehlen (Adresse, Standort, oder Invite-Code)
+      setStep("verify_method");
     }
   }
 

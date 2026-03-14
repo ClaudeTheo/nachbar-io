@@ -42,7 +42,13 @@ export async function GET(request: NextRequest) {
   }
 
   // Termin-Felder entschluesseln (Art. 9 DSGVO)
-  return NextResponse.json(decryptFieldsArray(data ?? [], CARE_APPOINTMENTS_ENCRYPTED_FIELDS));
+  try {
+    return NextResponse.json(decryptFieldsArray(data ?? [], CARE_APPOINTMENTS_ENCRYPTED_FIELDS));
+  } catch (decryptError) {
+    console.error('[care/appointments] Entschluesselung fehlgeschlagen:', decryptError);
+    // Daten ohne Entschluesselung zurueckgeben damit die Seite nicht abstuerzt
+    return NextResponse.json(data ?? []);
+  }
 }
 
 // POST /api/care/appointments — Neuen Termin anlegen

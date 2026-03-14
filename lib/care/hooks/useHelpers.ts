@@ -9,9 +9,9 @@ export function useHelpers(seniorId?: string, role?: string) {
   const [loading, setLoading] = useState(true);
 
   const load = useCallback(async () => {
-    if (!seniorId) { setLoading(false); return; }
     setLoading(true);
-    const params = new URLSearchParams({ senior_id: seniorId, status: 'all' });
+    const params = new URLSearchParams({ status: 'all' });
+    if (seniorId) params.set('senior_id', seniorId);
     if (role) params.set('role', role);
 
     try {

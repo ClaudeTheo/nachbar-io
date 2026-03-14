@@ -10,7 +10,8 @@ import { CARE_HELPER_ROLES } from '@/lib/care/constants';
 import { HelperCard } from './HelperCard';
 
 interface HelperListProps {
-  seniorId: string;
+  /** Optional: Nur Helfer fuer diesen Senior anzeigen */
+  seniorId?: string;
   /** Wenn true: alle Helfer inkl. pending anzeigen (Admin-Modus) */
   showPending?: boolean;
 }

@@ -105,7 +105,12 @@ export default function ProfileEditPage() {
       toast.success("Profil gespeichert!");
       setSuccess(true);
       setSaving(false);
-      setTimeout(() => router.push("/profile"), 1000);
+      // Aktualisierte Daten im User-State speichern damit hasChanges korrekt ist
+      setUser({ ...user, display_name: displayName.trim(), avatar_url: avatarUrl, bio: bio.trim() || null, phone: phone.trim() || null });
+      setTimeout(() => {
+        router.push("/profile");
+        router.refresh();
+      }, 1000);
     } catch {
       toast.error("Netzwerkfehler. Bitte versuchen Sie es erneut.");
       setError("Netzwerkfehler. Bitte versuchen Sie es erneut.");

@@ -50,6 +50,7 @@ export async function POST(request: NextRequest) {
       verificationMethod,
       inviteCode,
       referrerId,
+      quarterId: bodyQuarterId,
     } = body;
     let { householdId } = body;
 
@@ -117,14 +118,16 @@ export async function POST(request: NextRequest) {
       const coords = STREET_COORDS[streetName];
 
       if (coords && trimmedHouseNumber) {
-        // Quartier-ID ermitteln (fuer Pilot: das einzige aktive Quartier)
-        let quarterId: string | null = null;
-        const { data: quarter } = await adminDb
-          .from("quarters")
-          .select("id")
-          .limit(1)
-          .single();
-        if (quarter) quarterId = quarter.id;
+        // Quartier-ID ermitteln: aus Body (Geo-Zuweisung) oder Fallback (Pilot: erstes Quartier)
+        let quarterId: string | null = bodyQuarterId || null;
+        if (!quarterId) {
+          const { data: quarter } = await adminDb
+            .from("quarters")
+            .select("id")
+            .limit(1)
+            .single();
+          if (quarter) quarterId = quarter.id;
+        }
 
         // Bestehenden Haushalt suchen
         const { data: existing } = await adminDb

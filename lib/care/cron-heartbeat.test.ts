@@ -28,8 +28,8 @@ function createMockSupabase(heartbeats: Array<{ job_id: string; last_run_at: str
 }
 
 describe('CRON_JOBS Konfiguration', () => {
-  it('definiert alle 4 Cron-Jobs', () => {
-    const jobIds: CronJobId[] = ['escalation', 'checkin', 'medications', 'appointments'];
+  it('definiert alle 7 Cron-Jobs', () => {
+    const jobIds: CronJobId[] = ['escalation', 'checkin', 'medications', 'appointments', 'onboarding', 'dormancy', 'digest'];
     for (const id of jobIds) {
       expect(CRON_JOBS[id]).toBeDefined();
       expect(CRON_JOBS[id].name).toBeTruthy();
@@ -90,7 +90,7 @@ describe('checkCronHealth', () => {
 
     const results = await checkCronHealth(supabase);
 
-    expect(results).toHaveLength(4); // Alle 4 Jobs
+    expect(results).toHaveLength(7); // Alle 7 Jobs
     for (const result of results) {
       expect(result.status).toBe('error');
       expect(result.lastRunAt).toBeNull();

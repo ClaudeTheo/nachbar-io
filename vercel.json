@@ -32,6 +32,10 @@
       "schedule": "0 * * * *"
     },
     {
+      "path": "/api/care/cron/tasks",
+      "schedule": "0 */2 * * *"
+    },
+    {
       "path": "/api/cron/expire-invitations",
       "schedule": "0 3 * * *"
     },

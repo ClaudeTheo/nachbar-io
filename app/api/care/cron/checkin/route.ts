@@ -324,12 +324,13 @@ export async function GET(request: NextRequest) {
                 sendCareNotification(supabase, {
                   userId: helper.user_id,
                   type: 'care_checkin_missed',
-                  title: 'Check-in verpasst — Bitte nachsehen',
-                  body: `Ihr Angehoeriger hat sich seit ${timeStr} Uhr nicht gemeldet. Ein SOS-Alert wurde automatisch ausgeloest.`,
+                  title: 'Check-in verpasst',
+                  body: 'Ihr Angehoeriger hat den Check-in seit ueber 60 Minuten nicht bestaetigt.',
                   referenceId: sosAlertId ?? overdueCheckin.id,
                   referenceType: sosAlertId ? 'care_sos_alerts' : 'care_checkins',
                   url: sosAlertId ? `/care/sos/${sosAlertId}` : '/care/checkin',
-                  channels: ['push', 'in_app'],
+                  channels: ['push', 'sms', 'in_app'],
+                  enableFallback: true,
                 })
               );
 

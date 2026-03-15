@@ -11,6 +11,7 @@ import { ReputationBadge } from "@/components/ReputationBadge";
 import { ProfileCompletionBanner } from "@/components/ProfileCompletionBanner";
 import { FloatingHelpButton } from "@/components/FloatingHelpButton";
 import { InviteNeighborModal } from "@/components/InviteNeighborModal";
+import { DailyCheckinButton } from "@/components/care/DailyCheckinButton";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { createClient } from "@/lib/supabase/client";
@@ -236,6 +237,9 @@ export default function DashboardPage() {
           </Link>
         </div>
       </div>
+
+      {/* Taeglicher Check-in Button (Care-Modul) */}
+      <DailyCheckinButton />
 
       {/* Profilvervollstaendigung */}
       {profileData && (

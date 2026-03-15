@@ -12,13 +12,14 @@ interface AppointmentCardProps {
 }
 
 // Typ-Konfiguration: Icon, Label, Farbe
-const TYPE_CONFIG: Record<
+const TYPE_CONFIG: Partial<Record<
   CareAppointmentType,
   { label: string; Icon: React.ComponentType<{ className?: string }> }
-> = {
+>> = {
   doctor:       { label: 'Arzttermin',       Icon: Stethoscope },
   care_service: { label: 'Pflegedienst',      Icon: Heart },
   therapy:      { label: 'Therapie',          Icon: Activity },
+  shopping:     { label: 'Einkauf',           Icon: MapPin },
   other:        { label: 'Sonstiger Termin',  Icon: Calendar },
 };
 

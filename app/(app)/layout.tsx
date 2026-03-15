@@ -1,4 +1,5 @@
 import { BottomNav } from "@/components/BottomNav";
+import { HeartbeatProvider } from "@/components/HeartbeatProvider";
 import { InstallPrompt } from "@/components/InstallPrompt";
 import { PendingVerificationBanner } from "@/components/PendingVerificationBanner";
 import { QuarterProvider } from "@/lib/quarters";
@@ -28,7 +29,9 @@ export default function AppLayout({
       {/* Quartier-Kontext + Hauptinhalt mit Padding fuer Bottom-Nav + Test-Modus Provider */}
       <QuarterProvider>
         <TestModeProvider>
-          <main id="main-content" className="mx-auto max-w-lg px-4 pt-4">{children}</main>
+          <HeartbeatProvider>
+            <main id="main-content" className="mx-auto max-w-lg px-4 pt-4">{children}</main>
+          </HeartbeatProvider>
           <TesterWelcomeDialog />
           <BugReportButton />
         </TestModeProvider>

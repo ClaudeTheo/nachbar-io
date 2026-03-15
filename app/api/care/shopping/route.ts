@@ -88,7 +88,8 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Sie sind keinem Quartier zugeordnet' }, { status: 400 });
   }
 
-  const quarterId = (membership.household as { quarter_id: string }).quarter_id;
+  const household = Array.isArray(membership.household) ? membership.household[0] : membership.household;
+  const quarterId = (household as { quarter_id: string }).quarter_id;
 
   // Items sanitisieren
   const sanitizedItems = body.items.map((item) => ({

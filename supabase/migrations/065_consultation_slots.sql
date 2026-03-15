@@ -56,16 +56,8 @@ CREATE POLICY "consultation_book_resident" ON consultation_slots
 CREATE POLICY "consultation_host_all" ON consultation_slots
   FOR ALL USING (host_user_id = auth.uid());
 
--- Org-Admin: alle Slots im Quartier verwalten
-CREATE POLICY "consultation_org_admin" ON consultation_slots
-  FOR ALL USING (
-    EXISTS (
-      SELECT 1 FROM org_members
-      WHERE user_id = auth.uid()
-        AND role = 'admin'
-        AND quarter_id = ANY(assigned_quarters)
-    )
-  );
+-- Org-Admin Policy: wird mit Pro-Modul hinzugefuegt (benoetigt org_members Tabelle)
+-- CREATE POLICY "consultation_org_admin" ON consultation_slots ...
 
 -- === DSGVO-Einwilligung fuer Videosprechstunde ===
 CREATE TABLE consultation_consents (

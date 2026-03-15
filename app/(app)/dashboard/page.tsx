@@ -12,6 +12,8 @@ import { ProfileCompletionBanner } from "@/components/ProfileCompletionBanner";
 import { FloatingHelpButton } from "@/components/FloatingHelpButton";
 import { InviteNeighborModal } from "@/components/InviteNeighborModal";
 import { DailyCheckinButton } from "@/components/care/DailyCheckinButton";
+import { RedeemCodeBanner } from "@/components/care/RedeemCodeBanner";
+import { CaregiverDashboard } from "@/components/care/CaregiverDashboard";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { createClient } from "@/lib/supabase/client";
@@ -241,6 +243,9 @@ export default function DashboardPage() {
       {/* Taeglicher Check-in Button (Care-Modul) */}
       <DailyCheckinButton />
 
+      {/* Einladungs-Code Banner (Caregiver/Plus) */}
+      <RedeemCodeBanner />
+
       {/* Profilvervollstaendigung */}
       {profileData && (
         <ProfileCompletionBanner
@@ -349,6 +354,9 @@ export default function DashboardPage() {
           </div>
         </section>
       )}
+
+      {/* Angehoerigen-Dashboard (Caregiver/Plus) */}
+      <CaregiverDashboard />
 
       {/* Leer-Zustand mit Demo-Vorschau */}
       {alerts.length === 0 && news.length === 0 && helpRequests.length === 0 && marketplaceItems.length === 0 && (

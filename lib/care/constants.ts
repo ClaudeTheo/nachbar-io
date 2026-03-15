@@ -1,7 +1,7 @@
 // lib/care/constants.ts
 // Nachbar.io — Pflege-Modul Konstanten
 
-import type { CareSosCategory, CareHelperRole, CareAuditEventType, CareSubscriptionPlan } from './types';
+import type { CareSosCategory, CareHelperRole, CareAuditEventType, CareSubscriptionPlan, CaregiverRelationshipType } from './types';
 
 // SOS-Kategorien mit UI-Metadaten
 export const CARE_SOS_CATEGORIES: Array<{
@@ -88,6 +88,12 @@ export const AUDIT_EVENT_LABELS: Record<CareAuditEventType, string> = {
   task_cancelled: 'Aufgabe abgebrochen',
   task_deleted: 'Aufgabe geloescht',
   subscription_changed: 'Abo geaendert',
+  caregiver_invited: 'Angehoeriger eingeladen',
+  caregiver_linked: 'Angehoeriger verknuepft',
+  caregiver_revoked: 'Angehoeriger entfernt',
+  heartbeat_toggle: 'Aktivitaetsstatus geaendert',
+  escalation_triggered: 'Eskalation ausgeloest',
+  escalation_resolved: 'Eskalation aufgeloest',
 } as const;
 
 // Subscription-Plan-Features (Feature-Gates)
@@ -105,6 +111,7 @@ const PLUS_FEATURES = [
   'marketplace', 'events_create', 'help_extended',
   'group_messages', 'ai_digest', 'profile_extended', 'ad_free',
   'medications', 'appointments', 'reports',
+  'caregiver_links', 'heartbeat_sharing',
 ] as const;
 
 const PRO_FEATURES = [
@@ -124,3 +131,34 @@ export const PLAN_FEATURES: Record<CareSubscriptionPlan, string[]> = {
 export function hasFeature(plan: CareSubscriptionPlan, feature: string): boolean {
   return PLAN_FEATURES[plan]?.includes(feature) ?? false;
 }
+
+// Caregiver-Beziehungstypen mit UI-Metadaten
+export const CAREGIVER_RELATIONSHIP_TYPES: Array<{
+  id: CaregiverRelationshipType;
+  label: string;
+}> = [
+  { id: 'partner', label: 'Partner/in' },
+  { id: 'child', label: 'Sohn/Tochter' },
+  { id: 'grandchild', label: 'Enkel/in' },
+  { id: 'friend', label: 'Freund/in' },
+  { id: 'volunteer', label: 'Ehrenamtliche/r Pate' },
+  { id: 'other', label: 'Sonstige' },
+] as const;
+
+// Heartbeat-Eskalationsstufen
+export const HEARTBEAT_ESCALATION = {
+  ok_hours: 4,
+  reminder_hours: 8,
+  alert_hours: 12,
+  lotse_hours: 24,
+} as const;
+
+// Max Caregivers pro Bewohner
+export const MAX_CAREGIVERS_PER_RESIDENT = 5;
+
+// Einladungs-Code Konfiguration
+export const INVITE_CODE_LENGTH = 8;
+export const INVITE_CODE_EXPIRY_HOURS = 24;
+
+// Heartbeat-Retention in Tagen
+export const HEARTBEAT_RETENTION_DAYS = 90;

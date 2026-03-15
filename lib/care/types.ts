@@ -47,7 +47,9 @@ export type CareAuditEventType =
   | 'visit_logged' | 'helper_registered' | 'helper_verified'
   | 'task_created' | 'task_claimed' | 'task_unclaimed' | 'task_started'
   | 'task_completed' | 'task_confirmed' | 'task_cancelled' | 'task_deleted'
-  | 'document_generated' | 'profile_updated' | 'subscription_changed';
+  | 'document_generated' | 'profile_updated' | 'subscription_changed'
+  | 'caregiver_invited' | 'caregiver_linked' | 'caregiver_revoked'
+  | 'heartbeat_toggle' | 'escalation_triggered' | 'escalation_resolved';
 
 export type CareDocumentType =
   | 'care_report_daily' | 'care_report_weekly' | 'care_report_monthly'
@@ -62,7 +64,8 @@ export type CareNotificationType =
   | 'care_checkin_missed' | 'care_medication_reminder'
   | 'care_medication_missed' | 'care_appointment_reminder'
   | 'care_escalation' | 'care_helper_verified'
-  | 'care_task_claimed' | 'care_task_completed';
+  | 'care_task_claimed' | 'care_task_completed'
+  | 'care_heartbeat_reminder' | 'care_heartbeat_alert';
 
 // === Interfaces ===
 
@@ -283,4 +286,57 @@ export interface ConsultationConsent {
   consent_version: string;
   consented_at: string;
   provider_type: ConsultationProviderType;
+}
+
+// === Heartbeat + Caregiver (Plus-Features) ===
+
+export type HeartbeatSource = 'app' | 'kiosk' | 'web';
+export type HeartbeatDeviceType = 'mobile' | 'tablet' | 'kiosk' | 'desktop';
+
+export type CaregiverRelationshipType =
+  | 'partner' | 'child' | 'grandchild' | 'friend' | 'volunteer' | 'other';
+
+export type EscalationStage =
+  | 'reminder_4h' | 'alert_8h' | 'lotse_12h' | 'urgent_24h';
+
+export type ResidentStatus = 'ok' | 'warning' | 'missing' | 'critical';
+
+export interface Heartbeat {
+  id: string;
+  user_id: string;
+  source: HeartbeatSource;
+  device_type: HeartbeatDeviceType | null;
+  created_at: string;
+}
+
+export interface CaregiverInvite {
+  id: string;
+  resident_id: string;
+  invite_code: string;
+  expires_at: string;
+  used_at: string | null;
+  used_by: string | null;
+  created_at: string;
+}
+
+export interface CaregiverLink {
+  id: string;
+  resident_id: string;
+  caregiver_id: string;
+  relationship_type: CaregiverRelationshipType;
+  heartbeat_visible: boolean;
+  created_at: string;
+  revoked_at: string | null;
+  // Joined
+  resident?: { display_name: string; avatar_url: string | null };
+  caregiver?: { display_name: string; avatar_url: string | null };
+}
+
+export interface EscalationEvent {
+  id: string;
+  resident_id: string;
+  stage: EscalationStage;
+  triggered_at: string;
+  resolved_at: string | null;
+  notified_users: string[];
 }

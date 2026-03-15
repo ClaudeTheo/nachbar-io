@@ -37,7 +37,7 @@ export async function POST(request: NextRequest) {
     .limit(1)
     .single();
 
-  const voucherQuarterId = (voucherHm?.households as { quarter_id: string } | null)?.quarter_id;
+  const voucherQuarterId = (voucherHm?.households as unknown as { quarter_id: string } | null)?.quarter_id;
 
   if (!voucherQuarterId) {
     return NextResponse.json({ error: "Kein Quartier zugeordnet" }, { status: 400 });
@@ -51,7 +51,7 @@ export async function POST(request: NextRequest) {
     .limit(1)
     .single();
 
-  const targetQuarterId = (targetHm?.households as { quarter_id: string } | null)?.quarter_id;
+  const targetQuarterId = (targetHm?.households as unknown as { quarter_id: string } | null)?.quarter_id;
 
   if (targetQuarterId !== voucherQuarterId) {
     return NextResponse.json(
@@ -131,7 +131,7 @@ export async function GET() {
     .limit(1)
     .single();
 
-  const quarterId = (hm?.households as { quarter_id: string } | null)?.quarter_id;
+  const quarterId = (hm?.households as unknown as { quarter_id: string } | null)?.quarter_id;
   if (!quarterId) {
     return NextResponse.json([]);
   }

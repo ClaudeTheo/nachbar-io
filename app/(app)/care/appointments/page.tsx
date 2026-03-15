@@ -2,14 +2,19 @@
 
 import { useEffect, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
-import { Calendar, Plus, X } from 'lucide-react';
+import { Calendar, List, Plus, X } from 'lucide-react';
 import { AppointmentList } from '@/components/care/AppointmentList';
+import { AppointmentCalendar } from '@/components/care/AppointmentCalendar';
 import { AppointmentForm } from '@/components/care/AppointmentForm';
+import { useAppointments } from '@/lib/care/hooks/useAppointments';
+
+type ViewMode = 'calendar' | 'list';
 
 export default function AppointmentsPage() {
   const [userId, setUserId] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
   const [listKey, setListKey] = useState(0);
+  const [viewMode, setViewMode] = useState<ViewMode>('calendar');
 
   useEffect(() => {
     const supabase = createClient();
@@ -18,9 +23,13 @@ export default function AppointmentsPage() {
     });
   }, []);
 
+  // Alle Termine laden (nicht nur anstehende) fuer Kalenderansicht
+  const { appointments, refetch } = useAppointments(userId ?? undefined, false);
+
   function handleSuccess() {
     setShowForm(false);
     setListKey((k) => k + 1);
+    refetch();
   }
 
   if (!userId) {
@@ -54,6 +63,34 @@ export default function AppointmentsPage() {
         </button>
       </div>
 
+      {/* Ansicht-Umschalter: Kalender / Liste */}
+      <div className="flex gap-1 rounded-lg border border-gray-200 bg-gray-50 p-1 w-fit">
+        <button
+          onClick={() => setViewMode('calendar')}
+          className={`flex items-center gap-1.5 min-h-[44px] px-4 rounded-md text-sm font-medium transition-colors ${
+            viewMode === 'calendar'
+              ? 'bg-white text-anthrazit shadow-sm'
+              : 'text-muted-foreground hover:text-anthrazit'
+          }`}
+          aria-label="Kalenderansicht"
+        >
+          <Calendar className="h-4 w-4" />
+          Kalender
+        </button>
+        <button
+          onClick={() => setViewMode('list')}
+          className={`flex items-center gap-1.5 min-h-[44px] px-4 rounded-md text-sm font-medium transition-colors ${
+            viewMode === 'list'
+              ? 'bg-white text-anthrazit shadow-sm'
+              : 'text-muted-foreground hover:text-anthrazit'
+          }`}
+          aria-label="Listenansicht"
+        >
+          <List className="h-4 w-4" />
+          Liste
+        </button>
+      </div>
+
       {showForm && (
         <div className="rounded-xl border bg-card p-4">
           <AppointmentForm
@@ -64,10 +101,14 @@ export default function AppointmentsPage() {
         </div>
       )}
 
-      <div>
-        <h2 className="text-sm font-medium text-muted-foreground mb-3">Anstehende Termine</h2>
-        <AppointmentList key={listKey} seniorId={userId} />
-      </div>
+      {viewMode === 'calendar' ? (
+        <AppointmentCalendar appointments={appointments} />
+      ) : (
+        <div>
+          <h2 className="text-sm font-medium text-muted-foreground mb-3">Anstehende Termine</h2>
+          <AppointmentList key={listKey} seniorId={userId} />
+        </div>
+      )}
     </div>
   );
 }

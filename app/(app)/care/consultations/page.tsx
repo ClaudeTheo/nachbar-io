@@ -44,7 +44,7 @@ export default function ConsultationsPage() {
           <h2 className="text-lg font-semibold text-anthrazit mb-3">Meine Termine</h2>
           <div className="space-y-3">
             {mySlots.map(slot => (
-              <ConsultationSlotCard key={slot.id} slot={slot} onJoin={handleJoin} />
+              <ConsultationSlotCard key={slot.id} slot={slot} onJoin={() => handleJoin(slot.id)} />
             ))}
           </div>
         </section>
@@ -56,7 +56,7 @@ export default function ConsultationsPage() {
           <h2 className="text-lg font-semibold text-anthrazit mb-3">Verfuegbare Termine</h2>
           <div className="space-y-3">
             {available.map(slot => (
-              <ConsultationSlotCard key={slot.id} slot={slot} onBook={handleBook} />
+              <ConsultationSlotCard key={slot.id} slot={slot} onBook={() => handleBook(slot.id)} />
             ))}
           </div>
         </section>

@@ -29,11 +29,11 @@
     },
     {
       "path": "/api/care/cron/shopping",
-      "schedule": "0 * * * *"
+      "schedule": "0 10 * * *"
     },
     {
       "path": "/api/care/cron/tasks",
-      "schedule": "0 */2 * * *"
+      "schedule": "0 11 * * *"
     },
     {
       "path": "/api/cron/expire-invitations",
@@ -41,7 +41,7 @@
     },
     {
       "path": "/api/cron/onboarding",
-      "schedule": "*/15 * * * *"
+      "schedule": "0 5 * * *"
     },
     {
       "path": "/api/cron/dormancy",

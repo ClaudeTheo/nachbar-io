@@ -22,7 +22,7 @@ describe("DailyCheckinButton", () => {
 
   beforeEach(() => {
     mockFetch = vi.fn();
-    globalThis.fetch = mockFetch;
+    globalThis.fetch = mockFetch as typeof fetch;
   });
 
   it("zeigt Button wenn Check-in ausstehend", async () => {

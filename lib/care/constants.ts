@@ -79,6 +79,14 @@ export const AUDIT_EVENT_LABELS: Record<CareAuditEventType, string> = {
   helper_verified: 'Helfer verifiziert',
   document_generated: 'Dokument erstellt',
   profile_updated: 'Profil aktualisiert',
+  task_created: 'Aufgabe erstellt',
+  task_claimed: 'Aufgabe uebernommen',
+  task_unclaimed: 'Aufgabe freigegeben',
+  task_started: 'Aufgabe gestartet',
+  task_completed: 'Aufgabe abgeschlossen',
+  task_confirmed: 'Aufgabe bestaetigt',
+  task_cancelled: 'Aufgabe abgebrochen',
+  task_deleted: 'Aufgabe geloescht',
   subscription_changed: 'Abo geaendert',
 } as const;
 

@@ -26,7 +26,7 @@ describe('CheckinDialog', () => {
       ok: true,
       json: () => Promise.resolve({ id: 'ci-1', status: 'ok' }),
     });
-    globalThis.fetch = mockFetch;
+    globalThis.fetch = mockFetch as typeof fetch;
   });
 
   it('zeigt "Wie geht es Ihnen?" Ueberschrift', () => {

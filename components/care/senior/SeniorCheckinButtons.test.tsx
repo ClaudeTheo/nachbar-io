@@ -24,7 +24,7 @@ describe('SeniorCheckinButtons', () => {
 
   beforeEach(() => {
     mockFetch = vi.fn().mockResolvedValue({ ok: true, json: () => Promise.resolve({}) });
-    globalThis.fetch = mockFetch;
+    globalThis.fetch = mockFetch as typeof fetch;
   });
 
   it('zeigt alle 3 Stimmungs-Buttons', () => {

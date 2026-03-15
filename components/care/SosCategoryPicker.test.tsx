@@ -31,7 +31,7 @@ describe('SosCategoryPicker', () => {
       ok: true,
       json: () => Promise.resolve({ id: 'alert-1' }),
     });
-    globalThis.fetch = mockFetch;
+    globalThis.fetch = mockFetch as typeof fetch;
   });
 
   it('zeigt "Was brauchen Sie?" Ueberschrift', () => {

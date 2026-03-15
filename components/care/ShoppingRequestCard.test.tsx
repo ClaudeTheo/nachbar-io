@@ -37,7 +37,7 @@ const mockRequest: ShoppingRequest = {
   due_date: '2026-03-20',
   created_at: '2026-03-15T10:00:00Z',
   requester: { display_name: 'Frau Mueller' },
-  claimer: null,
+  claimer: undefined,
 };
 
 describe('ShoppingRequestCard', () => {

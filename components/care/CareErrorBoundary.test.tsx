@@ -16,7 +16,7 @@ afterEach(() => {
 });
 
 // Hilfskomponente die einen Fehler wirft
-function ThrowingChild({ error }: { error: Error }) {
+function ThrowingChild({ error }: { error: Error }): React.ReactNode {
   throw error;
 }
 

@@ -41,7 +41,7 @@ function formatTime(iso: string): string {
 }
 
 export function AppointmentCard({ appointment, onEdit, onDelete }: AppointmentCardProps) {
-  const config = TYPE_CONFIG[appointment.type] ?? TYPE_CONFIG.other;
+  const config = TYPE_CONFIG[appointment.type] ?? TYPE_CONFIG.other!;
   const { Icon } = config;
 
   return (

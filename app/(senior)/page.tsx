@@ -82,6 +82,15 @@ export default function SeniorDeviceHomePage() {
         </p>
       )}
 
+      {/* Sprechstunde-Button */}
+      <a
+        href="/sprechstunde"
+        className="block w-full rounded-2xl bg-purple-600 px-8 py-8 text-2xl font-bold text-white shadow-lg active:bg-purple-700 text-center"
+        style={{ minHeight: '80px', touchAction: 'manipulation' }}
+      >
+        📹 Sprechstunde
+      </a>
+
       {/* Check-in Button */}
       <a
         href="/checkin"

@@ -119,7 +119,8 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  const quarterId = (membership.household as { quarter_id: string }).quarter_id;
+  const household = Array.isArray(membership.household) ? membership.household[0] : membership.household;
+  const quarterId = (household as { quarter_id: string }).quarter_id;
 
   const { data: task, error: insertError } = await supabase
     .from('care_tasks')

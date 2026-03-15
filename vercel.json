@@ -54,6 +54,10 @@
     {
       "path": "/api/care/cron/heartbeat-escalation",
       "schedule": "*/30 * * * *"
+    },
+    {
+      "path": "/api/cron/heartbeat-cleanup",
+      "schedule": "0 3 * * 0"
     }
   ],
   "headers": [

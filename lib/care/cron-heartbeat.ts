@@ -12,6 +12,7 @@ export const CRON_JOBS = {
   onboarding: { name: 'Onboarding-Sequenz', expectedIntervalMinutes: 20, criticalAfterMinutes: 60 },
   dormancy: { name: 'Dormancy-Detection', expectedIntervalMinutes: 1500, criticalAfterMinutes: 2880 },
   digest: { name: 'Woechentlicher Digest', expectedIntervalMinutes: 10500, criticalAfterMinutes: 14400 },
+  heartbeat_escalation: { name: 'Heartbeat-Eskalation', expectedIntervalMinutes: 30, criticalAfterMinutes: 60 },
 } as const;
 
 export type CronJobId = keyof typeof CRON_JOBS;

@@ -425,6 +425,20 @@ export default function CareDashboardPage() {
             <Users className="h-4 w-4 text-quartier-green" />
             Helfer
           </Link>
+          <Link
+            href="/care/shopping"
+            className="rounded-lg border bg-card p-3 text-sm font-medium text-anthrazit hover:bg-gray-50 flex items-center gap-2"
+          >
+            <span className="text-base" aria-hidden="true">🛒</span>
+            Einkaufshilfe
+          </Link>
+          <Link
+            href="/care/tasks"
+            className="rounded-lg border bg-card p-3 text-sm font-medium text-anthrazit hover:bg-gray-50 flex items-center gap-2"
+          >
+            <span className="text-base" aria-hidden="true">📋</span>
+            Aufgabentafel
+          </Link>
           {hasFeature('reports') && (
             <Link
               href="/care/reports"

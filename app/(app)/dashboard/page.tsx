@@ -431,6 +431,14 @@ export default function DashboardPage() {
                 <span className="text-2xl" aria-hidden="true">💡</span>
                 <span className="text-xs font-medium text-anthrazit">Tipps</span>
               </Link>
+              <Link href="/care/shopping" className="flex flex-col items-center gap-1 card-interactive rounded-lg bg-white p-3 shadow-soft">
+                <span className="text-2xl" aria-hidden="true">🛒</span>
+                <span className="text-xs font-medium text-anthrazit">Einkaufshilfe</span>
+              </Link>
+              <Link href="/care/tasks" className="flex flex-col items-center gap-1 card-interactive rounded-lg bg-white p-3 shadow-soft">
+                <span className="text-2xl" aria-hidden="true">📋</span>
+                <span className="text-xs font-medium text-anthrazit">Aufgabentafel</span>
+              </Link>
             </div>
           </section>
         </div>

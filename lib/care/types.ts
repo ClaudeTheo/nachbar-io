@@ -41,6 +41,8 @@ export type CareAuditEventType =
   | 'medication_taken' | 'medication_skipped' | 'medication_missed' | 'medication_snoozed'
   | 'appointment_confirmed' | 'appointment_missed'
   | 'visit_logged' | 'helper_registered' | 'helper_verified'
+  | 'task_created' | 'task_claimed' | 'task_unclaimed' | 'task_started'
+  | 'task_completed' | 'task_confirmed' | 'task_cancelled' | 'task_deleted'
   | 'document_generated' | 'profile_updated' | 'subscription_changed';
 
 export type CareDocumentType =
@@ -55,7 +57,8 @@ export type CareNotificationType =
   | 'care_sos' | 'care_sos_response' | 'care_checkin_reminder'
   | 'care_checkin_missed' | 'care_medication_reminder'
   | 'care_medication_missed' | 'care_appointment_reminder'
-  | 'care_escalation' | 'care_helper_verified';
+  | 'care_escalation' | 'care_helper_verified'
+  | 'care_task_claimed' | 'care_task_completed';
 
 // === Interfaces ===
 

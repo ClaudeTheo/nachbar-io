@@ -245,3 +245,42 @@ export interface CareSubscription {
 
 // === Aktive Rolle des eingeloggten Users im Care-Kontext ===
 export type CareUserRole = 'senior' | CareHelperRole | 'admin' | 'none';
+
+// === Online-Sprechstunde ===
+
+export type ConsultationProviderType = 'community' | 'medical';
+
+export type ConsultationStatus =
+  | 'scheduled'
+  | 'waiting'
+  | 'active'
+  | 'completed'
+  | 'cancelled'
+  | 'no_show';
+
+export interface ConsultationSlot {
+  id: string;
+  quarter_id: string;
+  provider_type: ConsultationProviderType;
+  host_user_id: string | null;
+  host_name: string;
+  title: string;
+  scheduled_at: string;
+  duration_minutes: number;
+  status: ConsultationStatus;
+  booked_by: string | null;
+  booked_at: string | null;
+  room_id: string | null;
+  join_url: string | null;
+  notes: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ConsultationConsent {
+  id: string;
+  user_id: string;
+  consent_version: string;
+  consented_at: string;
+  provider_type: ConsultationProviderType;
+}

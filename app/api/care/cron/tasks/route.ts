@@ -37,9 +37,9 @@ export async function GET(req: Request) {
 
       if (members) {
         for (const member of members.slice(0, 10)) {
-          await sendCareNotification({
+          await sendCareNotification(adminSupabase, {
             userId: member.user_id,
-            type: 'sos_triggered',
+            type: 'care_sos',
             title: 'Dringende Hilfe gesucht',
             body: `"${task.title}" — Ein Nachbar braucht dringend Hilfe!`,
             referenceId: task.id,

@@ -90,7 +90,7 @@ describe('checkCronHealth', () => {
 
     const results = await checkCronHealth(supabase);
 
-    expect(results).toHaveLength(7); // Alle 7 Jobs
+    expect(results).toHaveLength(8); // Alle 8 Jobs (inkl. heartbeat_escalation)
     for (const result of results) {
       expect(result.status).toBe('error');
       expect(result.lastRunAt).toBeNull();

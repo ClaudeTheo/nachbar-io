@@ -3,17 +3,16 @@
 import { Suspense, useState, useEffect, useCallback, useRef } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Mail, MapPin, Search, Navigation } from "lucide-react";
+import { Mail, MapPin, Search, Navigation, ArrowLeft, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { createClient } from "@/lib/supabase/client";
-// QUARTIER_STREETS nicht mehr benoetigt — Adressen kommen jetzt von Photon API
 import { normalizeCode, formatCode } from "@/lib/invite-codes";
 
 
-type Step = "credentials" | "verify_method" | "invite" | "address" | "profile" | "mode";
-type VerificationMethod = "invite_code" | "address_manual" | "neighbor_invite";
+// Schritt-Typen fuer den neuen 2-Schritt-Flow
+type Step = "entry" | "invite_code" | "address" | "identity" | "magic_link_sent";
 
 // Wrapper mit Suspense-Boundary fuer useSearchParams
 export default function RegisterPage() {
@@ -25,15 +24,16 @@ export default function RegisterPage() {
 }
 
 function RegisterForm() {
-  const [step, setStep] = useState<Step>("credentials");
+  // === State ===
+  const [step, setStep] = useState<Step>("entry");
   const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [inviteCode, setInviteCode] = useState("");
   const [displayName, setDisplayName] = useState("");
-  const [uiMode, setUiMode] = useState<"active" | "senior">("active");
-  const [verificationMethod, setVerificationMethod] = useState<VerificationMethod>("invite_code");
-  const [selectedStreet, setSelectedStreet] = useState("");
-  const [houseNumber, setHouseNumber] = useState("");
+  const [inviteCode, setInviteCode] = useState("");
+  const [householdId, setHouseholdId] = useState<string | null>(null);
+  const [referrerId, setReferrerId] = useState<string | null>(null);
+  const [verificationMethod, setVerificationMethod] = useState<string>("invite_code");
+
+  // Adress-State
   const [addressQuery, setAddressQuery] = useState("");
   const [addressSuggestions, setAddressSuggestions] = useState<Array<{
     street: string;
@@ -43,25 +43,29 @@ function RegisterForm() {
   }>>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [addressSelected, setAddressSelected] = useState(false);
-  const [loading, setLoading] = useState(false);
+  const [selectedStreet, setSelectedStreet] = useState("");
+  const [houseNumber, setHouseNumber] = useState("");
   const suggestionsRef = useRef<HTMLDivElement>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const [householdId, setHouseholdId] = useState<string | null>(null);
-  const [referrerId, setReferrerId] = useState<string | null>(null);
+
+  // Geo-State
   const [geoLoading, setGeoLoading] = useState(false);
   const [geoQuarter, setGeoQuarter] = useState<{ quarter_id: string; quarter_name: string; action: string } | null>(null);
+
+  // UI-State
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  // QR-Code / Einladungslink: Invite-Code und Referrer aus URL uebernehmen
+  // === URL-Parameter: Invite-Code und Referrer aus QR-Code/Link ===
   useEffect(() => {
     const invite = searchParams.get("invite");
     const ref = searchParams.get("ref");
     if (invite) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
       setInviteCode(normalizeCode(invite));
       setVerificationMethod("invite_code");
+      setStep("invite_code"); // Direkt zum Code-Schritt
     }
     if (ref) {
       setReferrerId(ref);
@@ -69,8 +73,7 @@ function RegisterForm() {
     }
   }, [searchParams]);
 
-  // Photon API (OpenStreetMap) fuer Adress-Autocomplete
-  // Beschraenkt auf Bad Saeckingen (lat/lon Bias + Bounding Box)
+  // === Photon API (OpenStreetMap) fuer Adress-Autocomplete ===
   const searchAddress = useCallback(async (query: string) => {
     if (query.length < 2) {
       setAddressSuggestions([]);
@@ -78,7 +81,6 @@ function RegisterForm() {
     }
 
     try {
-      // Photon API mit Geo-Bias auf Bad Saeckingen
       const params = new URLSearchParams({
         q: `${query}, Bad Säckingen`,
         lat: "47.5535",
@@ -96,11 +98,9 @@ function RegisterForm() {
         return;
       }
 
-      // Ergebnisse filtern: nur Bad Saeckingen und Umgebung
       const suggestions = data.features
         .filter((f: { properties: { city?: string; postcode?: string; street?: string; housenumber?: string } }) => {
           const p = f.properties;
-          // Nur Ergebnisse mit Strasse + Hausnummer aus Bad Saeckingen
           return p.street && p.housenumber && (
             p.city === "Bad Säckingen" ||
             p.postcode === "79713"
@@ -112,7 +112,6 @@ function RegisterForm() {
           display: `${f.properties.street} ${f.properties.housenumber}`,
           postcode: f.properties.postcode,
         }))
-        // Duplikate entfernen
         .filter((s: { display: string }, i: number, arr: Array<{ display: string }>) =>
           arr.findIndex((a) => a.display === s.display) === i
         );
@@ -146,38 +145,15 @@ function RegisterForm() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // Pilot-Phase: Verifizierungsmethode wird uebersprungen → 4 Schritte
-  const totalSteps = 4;
+  // === Fortschrittsberechnung ===
+  const totalSteps = 2;
   const currentStep = (() => {
-    if (step === "credentials") return 1;
-    if (step === "verify_method") return 2; // nur bei Invite-Code/Referrer
-    if (step === "invite" || step === "address") return 2;
-    if (step === "profile") return 3;
-    if (step === "mode") return 4;
-    return 1;
+    if (step === "entry" || step === "invite_code" || step === "address") return 1;
+    if (step === "identity") return 2;
+    return 2; // magic_link_sent
   })();
 
-  async function handleCredentials(e: React.FormEvent) {
-    e.preventDefault();
-    setError(null);
-
-    if (password.length < 8) {
-      setError("Das Passwort muss mindestens 8 Zeichen lang sein.");
-      return;
-    }
-
-    // Wenn Invite-Code aus URL vorhanden, direkt zum Code-Schritt
-    if (inviteCode) {
-      setStep("invite");
-    } else if (referrerId) {
-      // Nachbar-Einladung per Link
-      setStep("invite");
-    } else {
-      // Verifikationsmethode waehlen (Adresse, Standort, oder Invite-Code)
-      setStep("verify_method");
-    }
-  }
-
+  // === Invite-Code pruefen ===
   async function handleInviteCode(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
@@ -192,7 +168,7 @@ function RegisterForm() {
         .single();
 
       if (queryError) {
-        console.error("Invite-Code Pruefung fehlgeschlagen:", queryError);
+        console.error("Invite-Code Prüfung fehlgeschlagen:", queryError);
         if (queryError.code === "PGRST116") {
           setError("Ungültiger Einladungscode. Bitte prüfen Sie den Code auf Ihrem Brief.");
         } else {
@@ -211,7 +187,7 @@ function RegisterForm() {
       setHouseholdId(household.id);
       setVerificationMethod(referrerId ? "neighbor_invite" : "invite_code");
       setLoading(false);
-      setStep("profile");
+      setStep("identity");
     } catch (err) {
       console.error("Netzwerkfehler bei Invite-Code:", err);
       setError("Netzwerkfehler. Bitte prüfen Sie Ihre Internetverbindung.");
@@ -219,12 +195,13 @@ function RegisterForm() {
     }
   }
 
+  // === Adresse bestaetigen ===
   async function handleAddressSelection(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
 
     if (!selectedStreet || !houseNumber.trim()) {
-      setError("Bitte wählen Sie eine Adresse aus den Vorschlägen oder geben Sie Straße und Hausnummer ein.");
+      setError("Bitte wählen Sie eine Adresse aus den Vorschlägen.");
       return;
     }
 
@@ -241,37 +218,65 @@ function RegisterForm() {
         setHouseholdId(household.id);
       }
     } catch {
-      // Nicht blockierend — Server erstellt Haushalt-Zuordnung im Fallback
+      // Nicht blockierend — Server erstellt Haushalt im Fallback
     }
 
     setVerificationMethod("address_manual");
-    setStep("profile");
+    setStep("identity");
   }
 
-  async function handleProfile(e: React.FormEvent) {
-    e.preventDefault();
-    if (!displayName.trim()) {
-      setError("Bitte geben Sie einen Namen ein.");
-      return;
+  // === Geo-Standort ermitteln ===
+  async function handleGeoDetection() {
+    setGeoLoading(true);
+    setError(null);
+    try {
+      const pos = await new Promise<GeolocationPosition>((resolve, reject) =>
+        navigator.geolocation.getCurrentPosition(resolve, reject, { timeout: 10000 })
+      );
+      const res = await fetch(
+        `/api/quarters/find-by-location?lat=${pos.coords.latitude}&lng=${pos.coords.longitude}`
+      );
+      if (res.ok) {
+        const data = await res.json();
+        setGeoQuarter(data);
+        setVerificationMethod("address_manual");
+        setStep("identity");
+      } else {
+        setError("Kein Quartier in Ihrer Nähe gefunden. Bitte geben Sie Ihre Adresse manuell ein.");
+      }
+    } catch {
+      setError("Standort konnte nicht ermittelt werden. Bitte erlauben Sie den Zugriff oder geben Sie Ihre Adresse ein.");
     }
-    setStep("mode");
+    setGeoLoading(false);
   }
 
-  async function handleComplete() {
+  // === Registrierung abschliessen: User erstellen + Magic Link senden ===
+  async function handleIdentitySubmit(e: React.FormEvent) {
+    e.preventDefault();
     setLoading(true);
     setError(null);
 
+    if (!displayName.trim()) {
+      setError("Bitte geben Sie einen Namen ein.");
+      setLoading(false);
+      return;
+    }
+
+    if (!email.trim()) {
+      setError("Bitte geben Sie eine E-Mail-Adresse ein.");
+      setLoading(false);
+      return;
+    }
+
     try {
-      // Komplette Registrierung serverseitig per Admin-API
-      // (umgeht E-Mail-Rate-Limit und E-Mail-Bestaetigung)
+      // 1. User serverseitig erstellen (Admin-API, kein Passwort noetig)
       const completeRes = await fetch("/api/register/complete", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           email,
-          password,
           displayName: displayName.trim(),
-          uiMode,
+          uiMode: "active", // UI-Modus wird spaeter im Onboarding gewaehlt
           householdId,
           streetName: selectedStreet || undefined,
           houseNumber: houseNumber.trim() || undefined,
@@ -290,21 +295,28 @@ function RegisterForm() {
         return;
       }
 
-      // Nach erfolgreicher Registrierung: automatisch einloggen
+      // 2. Magic Link senden via signInWithOtp
       const supabase = createClient();
-      const { error: signInError } = await supabase.auth.signInWithPassword({
+      const { error: otpError } = await supabase.auth.signInWithOtp({
         email,
-        password,
+        options: {
+          emailRedirectTo: `${window.location.origin}/welcome`,
+        },
       });
 
-      if (signInError) {
-        console.error("Auto-Login fehlgeschlagen:", signInError);
-        // Nicht blockierend — User kann sich manuell anmelden
-        router.push("/login");
+      if (otpError) {
+        console.error("Magic Link Fehler:", otpError);
+        // Fallback: User existiert bereits, Magic Link trotzdem senden
+        if (otpError.message?.includes("rate limit")) {
+          setError("Zu viele Versuche. Bitte warten Sie einen Moment.");
+        } else {
+          setError("Magic Link konnte nicht gesendet werden. Bitte versuchen Sie es erneut.");
+        }
+        setLoading(false);
         return;
       }
 
-      // Bei Nachbar-Einladung: Reputation neu berechnen (fire-and-forget)
+      // 3. Bei Nachbar-Einladung: Reputation berechnen (fire-and-forget)
       if (verificationMethod === "neighbor_invite" && referrerId) {
         fetch("/api/reputation/recompute", {
           method: "POST",
@@ -313,12 +325,9 @@ function RegisterForm() {
         }).catch(() => {});
       }
 
-      // Weiterleitung
-      if (uiMode === "senior") {
-        router.push("/senior/home");
-      } else {
-        router.push("/welcome");
-      }
+      // 4. Bestaetigung anzeigen
+      setLoading(false);
+      setStep("magic_link_sent");
     } catch (err) {
       console.error("Registrierung Netzwerkfehler:", err);
       setError("Netzwerkfehler. Bitte prüfen Sie Ihre Internetverbindung.");
@@ -330,73 +339,45 @@ function RegisterForm() {
     <Card className="border-0 shadow-lg">
       <CardHeader className="text-center">
         <div className="mb-2 text-4xl">🏘️</div>
-        <CardTitle className="text-2xl text-anthrazit">Registrieren</CardTitle>
-        {/* Fortschrittsbalken */}
-        <div className="mt-4 flex gap-1">
-          {Array.from({ length: totalSteps }).map((_, i) => (
-            <div
-              key={i}
-              className={`h-1.5 flex-1 rounded-full transition-colors ${
-                i < currentStep ? "bg-quartier-green" : "bg-muted"
-              }`}
-            />
-          ))}
-        </div>
-        <p className="mt-2 text-xs text-muted-foreground">
-          Schritt {currentStep} von {totalSteps}
-        </p>
+        <CardTitle className="text-2xl text-anthrazit">
+          {step === "magic_link_sent" ? "Fast geschafft!" : "Willkommen bei Nachbar.io"}
+        </CardTitle>
+
+        {/* Fortschrittsbalken (nicht auf Bestaetigungsseite) */}
+        {step !== "magic_link_sent" && (
+          <>
+            <div className="mt-4 flex gap-1">
+              {Array.from({ length: totalSteps }).map((_, i) => (
+                <div
+                  key={i}
+                  className={`h-1.5 flex-1 rounded-full transition-colors ${
+                    i < currentStep ? "bg-quartier-green" : "bg-muted"
+                  }`}
+                />
+              ))}
+            </div>
+            <p className="mt-2 text-xs text-muted-foreground">
+              Schritt {currentStep} von {totalSteps}
+            </p>
+          </>
+        )}
       </CardHeader>
       <CardContent>
-        {/* Schritt 1: E-Mail & Passwort */}
-        {step === "credentials" && (
-          <form onSubmit={handleCredentials} className="space-y-4">
-            <div>
-              <label htmlFor="email" className="mb-1 block text-sm font-medium">
-                E-Mail-Adresse
-              </label>
-              <Input
-                id="email"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="ihre@email.de"
-                required
-                autoComplete="email"
-              />
-            </div>
-            <div>
-              <label htmlFor="password" className="mb-1 block text-sm font-medium">
-                Passwort
-              </label>
-              <Input
-                id="password"
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="Mindestens 8 Zeichen"
-                required
-                autoComplete="new-password"
-                minLength={8}
-              />
-            </div>
-            {error && <p className="text-sm text-emergency-red">{error}</p>}
-            <Button type="submit" className="w-full bg-quartier-green hover:bg-quartier-green-dark">
-              Weiter
-            </Button>
-          </form>
-        )}
 
-        {/* Schritt 2: Verifizierungsmethode waehlen */}
-        {step === "verify_method" && (
+        {/* ============================================ */}
+        {/* SCHRITT 1a: Einstieg — Zwei Pfade            */}
+        {/* ============================================ */}
+        {step === "entry" && (
           <div className="space-y-4">
-            <p className="text-sm text-muted-foreground">
-              Wie möchten Sie sich als Nachbar verifizieren?
+            <p className="text-sm text-muted-foreground text-center">
+              Wie möchten Sie beitreten?
             </p>
 
+            {/* Pfad 1: Einladungscode */}
             <button
               onClick={() => {
-                setVerificationMethod("invite_code");
-                setStep("invite");
+                setError(null);
+                setStep("invite_code");
               }}
               className="w-full rounded-lg border-2 border-border p-4 text-left transition-colors hover:border-quartier-green/50"
             >
@@ -405,17 +386,18 @@ function RegisterForm() {
                   <Mail className="h-5 w-5 text-quartier-green" />
                 </div>
                 <div>
-                  <p className="font-semibold text-anthrazit">Einladungscode eingeben</p>
+                  <p className="font-semibold text-anthrazit">Ich habe einen Einladungscode</p>
                   <p className="mt-1 text-sm text-muted-foreground">
-                    Sie haben einen Code per Brief oder von einem Nachbarn erhalten
+                    Per Brief, Aushang oder von einem Nachbarn erhalten
                   </p>
                 </div>
               </div>
             </button>
 
+            {/* Pfad 2: Quartier finden */}
             <button
               onClick={() => {
-                setVerificationMethod("address_manual");
+                setError(null);
                 setStep("address");
               }}
               className="w-full rounded-lg border-2 border-border p-4 text-left transition-colors hover:border-quartier-green/50"
@@ -425,68 +407,31 @@ function RegisterForm() {
                   <MapPin className="h-5 w-5 text-blue-500" />
                 </div>
                 <div>
-                  <p className="font-semibold text-anthrazit">Adresse manuell angeben</p>
+                  <p className="font-semibold text-anthrazit">Ich möchte mein Quartier finden</p>
                   <p className="mt-1 text-sm text-muted-foreground">
-                    Ich wohne im Quartier und möchte mich verifizieren lassen
+                    Über Adresse oder Standort dem nächsten Quartier beitreten
                   </p>
                 </div>
               </div>
             </button>
 
-            <button
-              onClick={async () => {
-                setGeoLoading(true);
-                setError(null);
-                try {
-                  const pos = await new Promise<GeolocationPosition>((resolve, reject) =>
-                    navigator.geolocation.getCurrentPosition(resolve, reject, { timeout: 10000 })
-                  );
-                  const res = await fetch(
-                    `/api/quarters/find-by-location?lat=${pos.coords.latitude}&lng=${pos.coords.longitude}`
-                  );
-                  if (res.ok) {
-                    const data = await res.json();
-                    setGeoQuarter(data);
-                    setVerificationMethod("address_manual");
-                    setStep("profile");
-                  } else {
-                    setError("Kein Quartier in Ihrer Naehe gefunden.");
-                  }
-                } catch {
-                  setError("Standort konnte nicht ermittelt werden. Bitte erlauben Sie den Zugriff.");
-                }
-                setGeoLoading(false);
-              }}
-              disabled={geoLoading}
-              className="w-full rounded-lg border-2 border-border p-4 text-left transition-colors hover:border-quartier-green/50"
-            >
-              <div className="flex items-start gap-3">
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-green-50">
-                  <Navigation className="h-5 w-5 text-quartier-green" />
-                </div>
-                <div>
-                  <p className="font-semibold text-anthrazit">
-                    {geoLoading ? "Standort wird ermittelt..." : "Standort teilen"}
-                  </p>
-                  <p className="mt-1 text-sm text-muted-foreground">
-                    Automatisch dem naechsten Quartier beitreten
-                  </p>
-                </div>
-              </div>
-            </button>
+            {error && <p className="text-sm text-emergency-red">{error}</p>}
 
-            <button
-              type="button"
-              onClick={() => setStep("credentials")}
-              className="w-full text-sm text-muted-foreground hover:underline"
-            >
-              Zurück
-            </button>
+            <div className="mt-6 text-center">
+              <p className="text-sm text-muted-foreground">
+                Bereits registriert?{" "}
+                <Link href="/login" className="text-quartier-green hover:underline">
+                  Jetzt anmelden
+                </Link>
+              </p>
+            </div>
           </div>
         )}
 
-        {/* Schritt 2a: Invite-Code */}
-        {step === "invite" && (
+        {/* ============================================ */}
+        {/* SCHRITT 1b: Invite-Code eingeben              */}
+        {/* ============================================ */}
+        {step === "invite_code" && (
           <form onSubmit={handleInviteCode} className="space-y-4">
             <p className="text-sm text-muted-foreground">
               Den Einladungscode haben Sie per Brief oder von einem Nachbarn erhalten.
@@ -505,6 +450,7 @@ function RegisterForm() {
                 maxLength={9}
                 className="text-center text-lg font-mono tracking-widest"
                 autoComplete="off"
+                autoFocus
               />
             </div>
             {error && <p className="text-sm text-emergency-red">{error}</p>}
@@ -515,22 +461,47 @@ function RegisterForm() {
               type="button"
               onClick={() => {
                 setError(null);
-                setStep(searchParams.get("invite") ? "credentials" : "verify_method");
+                setStep("entry");
               }}
-              className="w-full text-sm text-muted-foreground hover:underline"
+              className="flex w-full items-center justify-center gap-1 text-sm text-muted-foreground hover:underline"
             >
+              <ArrowLeft className="h-3.5 w-3.5" />
               Zurück
             </button>
           </form>
         )}
 
-        {/* Schritt 2b: Adress-Auswahl mit Photon-Autocomplete */}
+        {/* ============================================ */}
+        {/* SCHRITT 1c: Adresse / Standort               */}
+        {/* ============================================ */}
         {step === "address" && (
           <form onSubmit={handleAddressSelection} className="space-y-4">
             <p className="text-sm text-muted-foreground">
-              Geben Sie Ihre Adresse ein. Vorschläge werden automatisch angezeigt.
+              Geben Sie Ihre Adresse ein oder teilen Sie Ihren Standort.
             </p>
 
+            {/* Standort-Button */}
+            <button
+              type="button"
+              onClick={handleGeoDetection}
+              disabled={geoLoading}
+              className="w-full rounded-lg border-2 border-dashed border-quartier-green/30 p-3 text-center transition-colors hover:border-quartier-green/60 hover:bg-quartier-green/5"
+            >
+              <div className="flex items-center justify-center gap-2">
+                <Navigation className="h-4 w-4 text-quartier-green" />
+                <span className="text-sm font-medium text-quartier-green">
+                  {geoLoading ? "Standort wird ermittelt..." : "Standort automatisch erkennen"}
+                </span>
+              </div>
+            </button>
+
+            <div className="flex items-center gap-3">
+              <div className="h-px flex-1 bg-border" />
+              <span className="text-xs text-muted-foreground">oder</span>
+              <div className="h-px flex-1 bg-border" />
+            </div>
+
+            {/* Adress-Suche mit Photon Autocomplete */}
             <div className="relative" ref={suggestionsRef}>
               <label htmlFor="address_search" className="mb-1 block text-sm font-medium">
                 Adresse
@@ -553,7 +524,7 @@ function RegisterForm() {
                 />
               </div>
 
-              {/* Live-Vorschlaege aus Photon API (OpenStreetMap) */}
+              {/* Live-Vorschlaege aus Photon API */}
               {showSuggestions && addressSuggestions.length > 0 && (
                 <div className="absolute z-10 mt-1 max-h-56 w-full overflow-y-auto rounded-md border border-input bg-white shadow-lg">
                   {addressSuggestions.map((s, i) => (
@@ -593,40 +564,48 @@ function RegisterForm() {
               </div>
             )}
 
-            <div className="rounded-lg bg-blue-50 p-3 text-xs text-blue-700">
-              <p className="font-medium">Hinweis zur Verifikation</p>
-              <p className="mt-1">
-                Ein Admin wird Ihre Zugehörigkeit zum Quartier prüfen. Sie erhalten eine Benachrichtigung, sobald Ihr Konto freigeschaltet wurde.
-              </p>
-            </div>
-
             {error && <p className="text-sm text-emergency-red">{error}</p>}
+
             <Button
               type="submit"
               disabled={loading || !selectedStreet || !houseNumber.trim()}
               className="w-full bg-quartier-green hover:bg-quartier-green-dark"
             >
-              {loading ? "Wird geprüft..." : "Adresse bestätigen"}
+              Weiter
             </Button>
             <button
               type="button"
               onClick={() => {
                 setError(null);
-                setStep("credentials");
+                setStep("entry");
               }}
-              className="w-full text-sm text-muted-foreground hover:underline"
+              className="flex w-full items-center justify-center gap-1 text-sm text-muted-foreground hover:underline"
             >
+              <ArrowLeft className="h-3.5 w-3.5" />
               Zurück
             </button>
           </form>
         )}
 
-        {/* Schritt 3: Name */}
-        {step === "profile" && (
-          <form onSubmit={handleProfile} className="space-y-4">
+        {/* ============================================ */}
+        {/* SCHRITT 2: Name + E-Mail → Magic Link        */}
+        {/* ============================================ */}
+        {step === "identity" && (
+          <form onSubmit={handleIdentitySubmit} className="space-y-4">
             <p className="text-sm text-muted-foreground">
-              Wie möchten Sie in der Nachbarschaft angezeigt werden?
+              Noch Ihr Name und Ihre E-Mail — dann senden wir Ihnen einen Anmeldelink.
             </p>
+
+            {/* Quartier-Info anzeigen */}
+            {geoQuarter && (
+              <div className="flex items-center gap-2 rounded-lg border border-quartier-green/30 bg-quartier-green/5 p-3">
+                <MapPin className="h-4 w-4 shrink-0 text-quartier-green" />
+                <span className="text-sm text-anthrazit">
+                  Quartier: <strong>{geoQuarter.quarter_name}</strong>
+                </span>
+              </div>
+            )}
+
             <div>
               <label htmlFor="name" className="mb-1 block text-sm font-medium">
                 Anzeigename
@@ -639,73 +618,104 @@ function RegisterForm() {
                 placeholder="z.B. Thomas L. oder Ihr Vorname"
                 required
                 autoComplete="name"
+                autoFocus
               />
               <p className="mt-1 text-xs text-muted-foreground">
                 Ihr Klarname ist nicht erforderlich. Ein Vorname oder Kürzel genügt.
               </p>
             </div>
+
+            <div>
+              <label htmlFor="email" className="mb-1 block text-sm font-medium">
+                E-Mail-Adresse
+              </label>
+              <Input
+                id="email"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="ihre@email.de"
+                required
+                autoComplete="email"
+              />
+              <p className="mt-1 text-xs text-muted-foreground">
+                Wir senden Ihnen einen Link — kein Passwort nötig.
+              </p>
+            </div>
+
             {error && <p className="text-sm text-emergency-red">{error}</p>}
-            <Button type="submit" className="w-full bg-quartier-green hover:bg-quartier-green-dark">
-              Weiter
+
+            <Button type="submit" disabled={loading} className="w-full bg-quartier-green hover:bg-quartier-green-dark">
+              {loading ? "Wird verarbeitet..." : "Anmeldelink senden"}
             </Button>
+            <button
+              type="button"
+              onClick={() => {
+                setError(null);
+                setStep("entry");
+              }}
+              className="flex w-full items-center justify-center gap-1 text-sm text-muted-foreground hover:underline"
+            >
+              <ArrowLeft className="h-3.5 w-3.5" />
+              Zurück
+            </button>
           </form>
         )}
 
-        {/* Schritt 4: UI-Modus */}
-        {step === "mode" && (
-          <div className="space-y-4">
-            <p className="text-sm text-muted-foreground">
-              Wählen Sie die Darstellung, die am besten zu Ihnen passt.
-            </p>
-
-            <button
-              onClick={() => setUiMode("active")}
-              className={`w-full rounded-lg border-2 p-4 text-left transition-colors ${
-                uiMode === "active"
-                  ? "border-quartier-green bg-quartier-green/5"
-                  : "border-border hover:border-quartier-green/50"
-              }`}
-            >
-              <p className="font-semibold text-anthrazit">Aktiver Modus</p>
-              <p className="mt-1 text-sm text-muted-foreground">
-                Voller Funktionsumfang: Karte, Marktplatz, News, Profile
+        {/* ============================================ */}
+        {/* BESTAETIGUNG: Magic Link gesendet            */}
+        {/* ============================================ */}
+        {step === "magic_link_sent" && (
+          <div className="space-y-4 text-center">
+            <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-quartier-green/10">
+              <CheckCircle2 className="h-8 w-8 text-quartier-green" />
+            </div>
+            <div>
+              <p className="text-sm text-muted-foreground">
+                Wir haben einen Anmeldelink an
               </p>
-            </button>
-
-            <button
-              onClick={() => setUiMode("senior")}
-              className={`w-full rounded-lg border-2 p-4 text-left transition-colors ${
-                uiMode === "senior"
-                  ? "border-quartier-green bg-quartier-green/5"
-                  : "border-border hover:border-quartier-green/50"
-              }`}
-            >
-              <p className="font-semibold text-anthrazit">Einfacher Modus</p>
+              <p className="mt-1 font-semibold text-anthrazit">{email}</p>
               <p className="mt-1 text-sm text-muted-foreground">
-                Große Schrift, wenige Buttons — ideal für einfache Bedienung
+                gesendet. Bitte prüfen Sie Ihren Posteingang.
               </p>
-            </button>
+            </div>
 
-            {error && <p className="text-sm text-emergency-red">{error}</p>}
+            <div className="rounded-lg bg-amber-50 p-3 text-xs text-amber-700">
+              <p className="font-medium">Keine E-Mail erhalten?</p>
+              <p className="mt-1">
+                Prüfen Sie Ihren Spam-Ordner. Der Link ist 60 Minuten gültig.
+              </p>
+            </div>
 
             <Button
-              onClick={handleComplete}
+              onClick={() => {
+                setLoading(true);
+                const supabase = createClient();
+                supabase.auth.signInWithOtp({
+                  email,
+                  options: {
+                    emailRedirectTo: `${window.location.origin}/welcome`,
+                  },
+                }).then(() => {
+                  setLoading(false);
+                  setError(null);
+                }).catch(() => {
+                  setLoading(false);
+                  setError("Bitte warten Sie einen Moment, bevor Sie es erneut versuchen.");
+                });
+              }}
               disabled={loading}
-              className="w-full bg-quartier-green hover:bg-quartier-green-dark"
+              variant="outline"
+              className="w-full"
             >
-              {loading ? "Konto wird erstellt..." : "Registrierung abschließen"}
+              {loading ? "Wird gesendet..." : "Link erneut senden"}
             </Button>
-          </div>
-        )}
 
-        {step === "credentials" && (
-          <div className="mt-6 text-center">
-            <p className="text-sm text-muted-foreground">
-              Bereits registriert?{" "}
-              <Link href="/login" className="text-quartier-green hover:underline">
-                Jetzt anmelden
+            <div className="mt-4">
+              <Link href="/login" className="text-sm text-quartier-green hover:underline">
+                Zur Anmeldung
               </Link>
-            </p>
+            </div>
           </div>
         )}
       </CardContent>

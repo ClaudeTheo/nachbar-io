@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { safeInsertNotification } from "@/lib/notifications-server";
-import { generateSecureCode } from "@/lib/invite-codes";
+import { generateSecureCode, generateTempPassword } from "@/lib/invite-codes";
 
 // Service-Role Client fuer Registrierungs-Operationen (umgeht RLS + Rate Limits)
 function getAdminSupabase() {
@@ -26,7 +26,7 @@ function getAdminSupabase() {
  *
  * Body: {
  *   email: string,
- *   password: string,
+ *   password?: string,         // Optional seit Magic-Link-Umstellung
  *   displayName: string,
  *   uiMode: 'active' | 'senior',
  *   householdId?: string,
@@ -64,12 +64,19 @@ export async function POST(request: NextRequest) {
     const adminDb = getAdminSupabase();
     let userId: string;
 
-    // Neuer Flow: User serverseitig per Admin-API erstellen
-    if (email && password) {
+    // User serverseitig per Admin-API erstellen
+    // Passwort ist seit Magic-Link-Umstellung optional:
+    // - Mit Passwort: Klassischer Flow (Fallback, Tester)
+    // - Ohne Passwort: Magic Link Flow (Standard ab 2026-03)
+    if (email) {
+      // Temporaeres Passwort generieren wenn keins mitgesendet wird
+      // (Supabase erfordert ein Passwort bei admin.createUser)
+      const userPassword = password || generateTempPassword();
+
       const { data: newUser, error: createError } = await adminDb.auth.admin.createUser({
         email,
-        password,
-        email_confirm: true, // Sofort bestaetigt — kein E-Mail-Zwang im Pilot
+        password: userPassword,
+        email_confirm: true, // Sofort bestaetigt — Magic Link uebernimmt Verifizierung
       });
 
       if (createError) {
@@ -98,10 +105,8 @@ export async function POST(request: NextRequest) {
 
       userId = newUser.user.id;
     } else {
-      // SICHERHEIT: legacyUserId-Fallback entfernt (Account-Hijacking-Risiko)
-      // Clients muessen email + password senden fuer serverseitige User-Erstellung
       return NextResponse.json(
-        { error: "E-Mail und Passwort sind erforderlich." },
+        { error: "E-Mail-Adresse ist erforderlich." },
         { status: 400 }
       );
     }

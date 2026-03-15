@@ -1,6 +1,7 @@
 // app/(app)/care/subscription/page.tsx
 'use client';
 
+import { Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { CreditCard, CheckCircle2, XCircle, Gift } from 'lucide-react';
 import { useSubscription } from '@/lib/care/hooks/useSubscription';
@@ -8,7 +9,7 @@ import { SubscriptionCard } from '@/components/care/SubscriptionCard';
 import { SubscriptionPlans } from '@/components/care/SubscriptionPlans';
 import type { CareSubscriptionPlan } from '@/lib/care/types';
 
-export default function SubscriptionPage() {
+function SubscriptionContent() {
   const { subscription, changePlan } = useSubscription();
   const searchParams = useSearchParams();
   const checkout = searchParams.get('checkout');
@@ -69,5 +70,13 @@ export default function SubscriptionPage() {
         <SubscriptionPlans currentPlan={currentPlan} onSelectPlan={changePlan} />
       </div>
     </div>
+  );
+}
+
+export default function SubscriptionPage() {
+  return (
+    <Suspense fallback={<div className="px-4 py-6 text-muted-foreground">Laden...</div>}>
+      <SubscriptionContent />
+    </Suspense>
   );
 }

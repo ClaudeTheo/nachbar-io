@@ -30,7 +30,11 @@ export type CareCheckinMood = 'good' | 'neutral' | 'bad';
 
 export type CareMedicationLogStatus = 'taken' | 'skipped' | 'snoozed' | 'missed';
 
-export type CareAppointmentType = 'doctor' | 'care_service' | 'therapy' | 'other';
+export type CareAppointmentType =
+  | 'doctor' | 'care_service' | 'therapy' | 'other'
+  | 'waste_collection' | 'quarter_meeting' | 'shopping' | 'personal' | 'birthday';
+
+export type CareAppointmentVisibility = 'private' | 'helpers' | 'quarter';
 
 export type CareHelperRole = 'neighbor' | 'relative' | 'care_service';
 export type CareHelperVerification = 'pending' | 'verified' | 'revoked';
@@ -178,6 +182,7 @@ export interface CareAppointment {
   recurrence: Record<string, unknown> | null;
   managed_by: string | null;
   notes: string | null;
+  visibility?: CareAppointmentVisibility;
   created_at: string;
   updated_at: string;
 }

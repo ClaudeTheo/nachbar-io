@@ -172,8 +172,10 @@ export async function GET() {
   const result = unverified
     .filter((u) => u.user_id !== user.id)
     .map((u) => {
-      const household = u.households as { street_name: string; house_number: string };
-      const userInfo = u.users as { id: string; display_name: string };
+      const householdRaw = Array.isArray(u.households) ? u.households[0] : u.households;
+      const household = householdRaw as unknown as { street_name: string; house_number: string };
+      const userRaw = Array.isArray(u.users) ? u.users[0] : u.users;
+      const userInfo = userRaw as unknown as { id: string; display_name: string };
       return {
         id: userInfo.id,
         display_name: userInfo.display_name,

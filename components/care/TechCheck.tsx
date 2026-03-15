@@ -66,7 +66,7 @@ export function TechCheck({ onReady, onFailed }: Props) {
     }
   }, [camera, mic, network, onReady, onFailed]);
 
-  function StatusIcon({ status }: { status: CheckStatus }) {
+  function renderStatusIcon(status: CheckStatus) {
     if (status === 'checking') {
       return <div className="h-8 w-8 rounded-full bg-anthrazit/20 animate-pulse" />;
     }
@@ -83,19 +83,19 @@ export function TechCheck({ onReady, onFailed }: Props) {
       <div className="flex items-center gap-4 rounded-2xl bg-white p-4">
         <Camera className="h-8 w-8 text-anthrazit" />
         <span className="text-xl text-anthrazit flex-1">Kamera</span>
-        <StatusIcon status={camera} />
+        {renderStatusIcon(camera)}
       </div>
 
       <div className="flex items-center gap-4 rounded-2xl bg-white p-4">
         <Mic className="h-8 w-8 text-anthrazit" />
         <span className="text-xl text-anthrazit flex-1">Mikrofon</span>
-        <StatusIcon status={mic} />
+        {renderStatusIcon(mic)}
       </div>
 
       <div className="flex items-center gap-4 rounded-2xl bg-white p-4">
         <Wifi className="h-8 w-8 text-anthrazit" />
         <span className="text-xl text-anthrazit flex-1">Internet</span>
-        <StatusIcon status={network} />
+        {renderStatusIcon(network)}
       </div>
     </div>
   );

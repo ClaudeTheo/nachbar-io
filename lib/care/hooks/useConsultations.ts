@@ -32,10 +32,12 @@ export function useConsultations(quarterId?: string, myOnly = false) {
   }, [quarterId, myOnly]);
 
   useEffect(() => {
+    // Initiales Laden + Polling alle 30 Sekunden fuer aktuelle Slot-Statuswechsel
+    const controller = new AbortController();
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- data fetching pattern
     load();
-    // Polling alle 30 Sekunden fuer aktuelle Slot-Statuswechsel
-    const interval = setInterval(load, 30_000);
-    return () => clearInterval(interval);
+    const interval = setInterval(() => { if (!controller.signal.aborted) load(); }, 30_000);
+    return () => { controller.abort(); clearInterval(interval); };
   }, [load]);
 
   /** Slot buchen — aktualisiert lokalen State bei Erfolg */

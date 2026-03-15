@@ -25,6 +25,7 @@ export default function VideoCallScreen() {
   // Wenn Termin aktiv wird, automatisch Consent-Flow starten
   useEffect(() => {
     if (nextSlot && (nextSlot.status === 'waiting' || nextSlot.status === 'active')) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- sync external slot state
       setActiveSlot(nextSlot);
       if (phase === 'idle') setPhase('consent');
     }

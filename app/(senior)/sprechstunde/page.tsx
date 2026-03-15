@@ -2,6 +2,7 @@
 'use client';
 
 import { useState, useCallback } from 'react';
+import Link from 'next/link';
 import { useConsultations } from '@/lib/care/hooks/useConsultations';
 import { ConsultationConsent } from '@/components/care/ConsultationConsent';
 import { TechCheck } from '@/components/care/TechCheck';
@@ -122,13 +123,13 @@ export default function SeniorSprechstundePage() {
   // Termin-Liste
   return (
     <div className="space-y-6">
-      <a
+      <Link
         href="/"
         className="inline-block rounded-2xl bg-gray-200 px-6 py-4 text-xl font-bold text-anthrazit"
         style={{ minHeight: '60px', touchAction: 'manipulation' }}
       >
         ← Zurueck
-      </a>
+      </Link>
 
       <h1 className="text-3xl font-bold text-center">Sprechstunde</h1>
 

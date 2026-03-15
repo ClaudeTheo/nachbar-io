@@ -1,18 +1,13 @@
 // app/(app)/care/consultations/page.tsx
 'use client';
 
-import { useState } from 'react';
 import { useConsultations } from '@/lib/care/hooks/useConsultations';
 import { ConsultationSlotCard } from '@/components/care/ConsultationSlotCard';
-import { ConsultationConsent } from '@/components/care/ConsultationConsent';
-import { TechCheck } from '@/components/care/TechCheck';
 import { ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 
 export default function ConsultationsPage() {
   const { slots, loading, bookSlot } = useConsultations(undefined, false);
-  const [joining, setJoining] = useState<string | null>(null);
-  const [techCheckPassed, setTechCheckPassed] = useState(false);
 
   const available = slots.filter(s => s.status === 'scheduled' && !s.booked_by);
   const mySlots = slots.filter(s => s.booked_by || s.status === 'waiting' || s.status === 'active');

@@ -1,12 +1,12 @@
-// Nachbar.io — S1: Onboarding + Adress/Code-Verifikation
-// Agent A registriert sich, durchlaeuft alle 4 Schritte, wird verifiziert.
+// Nachbar.io — S1: Onboarding (2-Schritt Magic-Link-Flow)
+// Neuer Flow: Entry → [Invite-Code ODER Adresse] → Name+Email → Magic Link gesendet
 import { test, expect } from "@playwright/test";
 import { RegisterPage, LoginPage } from "../pages";
 import { createConsoleErrorCollector } from "../helpers/observer";
 import { TEST_AGENTS, TIMEOUTS } from "../helpers/test-config";
 
-test.describe("S1: Onboarding + Verifikation", () => {
-  test("S1.1 — Komplette Registrierung mit gueltigem Invite-Code", async ({ browser }) => {
+test.describe("S1: Onboarding — 2-Schritt Magic-Link-Flow", () => {
+  test("S1.1 — Registrierung via Invite-Code bis Magic-Link-Bestaetigung", async ({ browser }) => {
     const context = await browser.newContext({ locale: "de-DE" });
     const page = await context.newPage();
     const errors = createConsoleErrorCollector(page);
@@ -14,30 +14,28 @@ test.describe("S1: Onboarding + Verifikation", () => {
     const registerPage = new RegisterPage(page);
     await registerPage.goto();
 
-    // Schritt 1: Credentials
+    // Entry: Beide Pfade sichtbar
+    await registerPage.assertEntryVisible();
     await registerPage.assertOnStep(1);
-    await registerPage.fillCredentials(
-      TEST_AGENTS.nachbar_a.email,
-      TEST_AGENTS.nachbar_a.password
-    );
 
-    // Schritt 2: Invite-Code
-    await registerPage.assertOnStep(2);
+    // Pfad: Einladungscode waehlen
+    await registerPage.chooseInviteCodePath();
+
+    // Invite-Code eingeben → weiter zu Identity
     await registerPage.fillInviteCode(TEST_AGENTS.nachbar_a.inviteCode);
 
-    // Schritt 3: Anzeigename
-    await registerPage.assertOnStep(3);
-    await registerPage.fillDisplayName(TEST_AGENTS.nachbar_a.displayName);
+    // Schritt 2: Name + E-Mail
+    await registerPage.assertOnStep(2);
+    await registerPage.fillIdentity(
+      TEST_AGENTS.nachbar_a.displayName,
+      TEST_AGENTS.nachbar_a.email
+    );
 
-    // Schritt 4: Modus waehlen
-    await registerPage.assertOnStep(4);
-    await registerPage.selectModeAndComplete("active");
+    // Bestaetigung: Magic Link gesendet
+    await registerPage.assertMagicLinkSent(TEST_AGENTS.nachbar_a.email);
+    console.log("[A] Magic Link Registrierung erfolgreich — Bestaetigung angezeigt");
 
-    // Assert: Weiterleitung zur Welcome-Tour oder Dashboard
-    await page.waitForURL(/\/(welcome|dashboard)/, { timeout: TIMEOUTS.pageLoad });
-    console.log("[A] Registrierung erfolgreich →", page.url());
-
-    // Assert: Keine fatalen Konsolenfehler
+    // Keine fatalen Konsolenfehler
     errors.stop();
     expect(errors.errors).toHaveLength(0);
 
@@ -48,76 +46,127 @@ test.describe("S1: Onboarding + Verifikation", () => {
     const registerPage = new RegisterPage(page);
     await registerPage.goto();
 
-    // Schritt 1
-    await registerPage.fillCredentials("invalid@test.nachbar.local", "TestPass123!");
+    // Invite-Code-Pfad waehlen
+    await registerPage.chooseInviteCodePath();
 
-    // Schritt 2: Ungueltiger Code
+    // Ungueltigen Code eingeben
     await registerPage.fillInviteCode("INVALID1");
 
-    // Assert: Fehlermeldung erscheint, Schritt 2 bleibt aktiv
+    // Fehlermeldung erscheint, bleibt auf Schritt 1
     await registerPage.assertInviteCodeError();
-    await registerPage.assertOnStep(2);
-  });
-
-  test("S1.3 — Kurzes Passwort wird blockiert", async ({ page }) => {
-    const registerPage = new RegisterPage(page);
-    await registerPage.goto();
-
-    await page.getByLabel("E-Mail-Adresse").fill("short@test.nachbar.local");
-    await page.getByLabel("Passwort").fill("kurz");
-    await page.getByRole("button", { name: "Weiter" }).click();
-
-    // Assert: Bleibt auf Schritt 1 (Browser minLength oder JS-Validierung)
     await registerPage.assertOnStep(1);
   });
 
-  test("S1.4 — Senior-Modus Registrierung fuehrt zu Senior-Home", async ({ browser }) => {
-    const context = await browser.newContext({
-      locale: "de-DE",
-      viewport: { width: 393, height: 851 },
-    });
+  test("S1.3 — Entry zeigt beide Pfade (Code + Adresse)", async ({ page }) => {
+    const registerPage = new RegisterPage(page);
+    await registerPage.goto();
+
+    // Beide Optionen muessen sichtbar sein
+    await registerPage.assertEntryVisible();
+
+    // Beschreibungstexte pruefen
+    await expect(page.getByText("Per Brief, Aushang oder von einem Nachbarn erhalten")).toBeVisible();
+    await expect(page.getByText("Über Adresse oder Standort dem nächsten Quartier beitreten")).toBeVisible();
+  });
+
+  test("S1.4 — Zurueck-Button kehrt zum Entry zurueck", async ({ page }) => {
+    const registerPage = new RegisterPage(page);
+    await registerPage.goto();
+
+    // Zum Invite-Code-Schritt navigieren
+    await registerPage.chooseInviteCodePath();
+    await expect(registerPage.inviteCodeInput).toBeVisible();
+
+    // Zurueck zum Entry
+    await registerPage.backButton.click();
+    await registerPage.assertEntryVisible();
+
+    // Zum Adress-Schritt navigieren
+    await registerPage.chooseAddressPath();
+    await expect(registerPage.addressSearchInput).toBeVisible();
+
+    // Zurueck zum Entry
+    await registerPage.backButton.click();
+    await registerPage.assertEntryVisible();
+  });
+
+  test("S1.5 — Identity validiert leere Felder", async ({ browser }) => {
+    const context = await browser.newContext({ locale: "de-DE" });
     const page = await context.newPage();
 
     const registerPage = new RegisterPage(page);
     await registerPage.goto();
 
-    await registerPage.registerFull({
-      email: TEST_AGENTS.senior_s.email,
-      password: TEST_AGENTS.senior_s.password,
-      inviteCode: TEST_AGENTS.senior_s.inviteCode,
-      displayName: TEST_AGENTS.senior_s.displayName,
-      mode: "senior",
-    });
+    // Zum Identity-Schritt gelangen (via gueltigen Invite-Code)
+    await registerPage.chooseInviteCodePath();
+    await registerPage.fillInviteCode(TEST_AGENTS.nachbar_a.inviteCode);
 
-    // Assert: Weiterleitung zu Senior-Home
-    await expect(page).toHaveURL(/\/senior/);
-    console.log("[S] Senior-Registrierung erfolgreich →", page.url());
+    // Schritt 2: Ohne Name absenden
+    await registerPage.assertOnStep(2);
+    await registerPage.emailInput.fill(TEST_AGENTS.nachbar_a.email);
+    await registerPage.sendMagicLinkButton.click();
+
+    // Soll auf Schritt 2 bleiben (Browser required-Validierung oder JS-Fehler)
+    await registerPage.assertOnStep(2);
 
     await context.close();
   });
 
-  test("S1.5 — Login nach Registrierung funktioniert", async ({ browser }) => {
+  test("S1.6 — Login: Magic Link als Standard", async ({ page }) => {
+    const loginPage = new LoginPage(page);
+    await loginPage.goto();
+    await loginPage.assertVisible();
+
+    // Magic-Link-Button ist sichtbar, Passwort-Feld NICHT
+    await expect(loginPage.sendMagicLinkButton).toBeVisible();
+    await expect(loginPage.passwordInput).not.toBeVisible();
+
+    // Passwort-Fallback-Link ist vorhanden
+    await expect(loginPage.switchToPasswordLink).toBeVisible();
+  });
+
+  test("S1.7 — Login: Wechsel zwischen Magic Link und Passwort-Modus", async ({ page }) => {
+    const loginPage = new LoginPage(page);
+    await loginPage.goto();
+
+    // Standard: Magic-Link-Modus
+    await expect(loginPage.sendMagicLinkButton).toBeVisible();
+    await expect(loginPage.passwordInput).not.toBeVisible();
+
+    // Zu Passwort wechseln
+    await loginPage.switchToPasswordMode();
+    await expect(loginPage.passwordSubmitButton).toBeVisible();
+    await expect(loginPage.passwordInput).toBeVisible();
+
+    // Zurueck zu Magic Link
+    await loginPage.switchToMagicLinkLink.click();
+    await expect(loginPage.sendMagicLinkButton).toBeVisible({
+      timeout: TIMEOUTS.elementVisible,
+    });
+    await expect(loginPage.passwordInput).not.toBeVisible();
+  });
+
+  test("S1.8 — Login mit Passwort-Fallback funktioniert", async ({ browser }) => {
     const context = await browser.newContext({ locale: "de-DE" });
     const page = await context.newPage();
 
     const loginPage = new LoginPage(page);
     await loginPage.goto();
-    await loginPage.assertVisible();
 
-    // Mit vorher registriertem Account einloggen
-    await loginPage.login(
+    // Passwort-Login (fuer bestehende Tester mit Passwort)
+    await loginPage.loginWithPassword(
       TEST_AGENTS.nachbar_a.email,
       TEST_AGENTS.nachbar_a.password
     );
 
-    // Assert: Weiterleitung zum Dashboard
+    // Weiterleitung zum Dashboard oder Welcome
     await page.waitForURL(/\/(dashboard|welcome|senior)/, { timeout: TIMEOUTS.pageLoad });
-    console.log("[A] Login erfolgreich →", page.url());
+    console.log("[A] Passwort-Login erfolgreich →", page.url());
 
     await context.close();
   });
 
-  test("S1.6 — Navigation Login <-> Registrierung", async ({ page }) => {
+  test("S1.9 — Navigation Login <-> Registrierung", async ({ page }) => {
     await page.goto("/login");
     await page.getByRole("link", { name: "Jetzt registrieren" }).click();
     await expect(page).toHaveURL(/\/register/);

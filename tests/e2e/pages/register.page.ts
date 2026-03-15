@@ -1,133 +1,152 @@
-// Nachbar.io — Page Object: Registrierungs-Seite (4 Schritte)
+// Nachbar.io — Page Object: Registrierungs-Seite (2-Schritt Magic-Link-Flow)
+// Flow: Entry → [Invite-Code ODER Adresse] → Identity (Name+Email) → Magic Link gesendet
 import { Page, Locator, expect } from "@playwright/test";
 import { TIMEOUTS } from "../helpers/test-config";
-import { waitForStableUI } from "../helpers/observer";
 
 export class RegisterPage {
   readonly page: Page;
 
-  // Schritt 1: Credentials
-  readonly emailInput: Locator;
-  readonly passwordInput: Locator;
-  readonly nextButton: Locator;
+  // Schritt 1a: Entry — Zwei Pfade
+  readonly inviteCodePathButton: Locator;
+  readonly addressPathButton: Locator;
 
-  // Schritt 2: Invite-Code
+  // Schritt 1b: Invite-Code
   readonly inviteCodeInput: Locator;
   readonly checkCodeButton: Locator;
-  readonly backButton: Locator;
 
-  // Schritt 3: Profil
+  // Schritt 1c: Adresse
+  readonly addressSearchInput: Locator;
+  readonly geoDetectButton: Locator;
+  readonly addressNextButton: Locator;
+
+  // Schritt 2: Identity (Name + E-Mail)
   readonly displayNameInput: Locator;
-  readonly profileNextButton: Locator;
+  readonly emailInput: Locator;
+  readonly sendMagicLinkButton: Locator;
 
-  // Schritt 4: Modus
-  readonly activeModeButton: Locator;
-  readonly seniorModeButton: Locator;
-  readonly completeButton: Locator;
+  // Bestaetigung: Magic Link gesendet
+  readonly resendLinkButton: Locator;
+  readonly confirmationIcon: Locator;
 
   // Allgemein
-  readonly stepIndicator: Locator;
+  readonly backButton: Locator;
   readonly errorMessage: Locator;
   readonly loginLink: Locator;
+  readonly stepIndicator: Locator;
 
   constructor(page: Page) {
     this.page = page;
 
-    // Schritt 1
-    this.emailInput = page.getByLabel("E-Mail-Adresse");
-    this.passwordInput = page.getByLabel("Passwort");
-    this.nextButton = page.getByRole("button", { name: "Weiter" });
+    // Entry-Pfade
+    this.inviteCodePathButton = page.getByText("Ich habe einen Einladungscode");
+    this.addressPathButton = page.getByText("Ich möchte mein Quartier finden");
 
-    // Schritt 2
+    // Invite-Code
     this.inviteCodeInput = page.getByLabel("Einladungscode");
     this.checkCodeButton = page.getByRole("button", { name: "Code prüfen" });
-    this.backButton = page.getByText("Zurück");
 
-    // Schritt 3
+    // Adresse
+    this.addressSearchInput = page.getByLabel("Adresse");
+    this.geoDetectButton = page.getByText("Standort automatisch erkennen");
+    this.addressNextButton = page.getByRole("button", { name: "Weiter" });
+
+    // Identity
     this.displayNameInput = page.getByLabel("Anzeigename");
-    this.profileNextButton = page.getByRole("button", { name: "Weiter" });
+    this.emailInput = page.getByLabel("E-Mail-Adresse");
+    this.sendMagicLinkButton = page.getByRole("button", { name: "Anmeldelink senden" });
 
-    // Schritt 4
-    this.activeModeButton = page.getByText("Aktiver Modus");
-    this.seniorModeButton = page.getByText("Einfacher Modus");
-    this.completeButton = page.getByRole("button", { name: "Registrierung abschließen" });
+    // Bestaetigung
+    this.resendLinkButton = page.getByRole("button", { name: "Link erneut senden" });
+    this.confirmationIcon = page.locator(".bg-quartier-green\\/10");
 
     // Allgemein
-    this.stepIndicator = page.locator("text=/Schritt \\d+ von 4/");
+    this.backButton = page.getByText("Zurück");
     this.errorMessage = page.locator(".text-emergency-red");
     this.loginLink = page.getByRole("link", { name: "Jetzt anmelden" });
+    this.stepIndicator = page.locator("text=/Schritt \\d+ von 2/");
   }
 
   async goto() {
     await this.page.goto("/register");
-    await this.page.getByText("Registrieren").waitFor({ state: "visible", timeout: TIMEOUTS.pageLoad });
+    await this.page.getByText("Willkommen bei Nachbar.io").waitFor({
+      state: "visible",
+      timeout: TIMEOUTS.pageLoad,
+    });
   }
 
+  // Pruefen, auf welchem Schritt wir sind (1 oder 2)
   async assertOnStep(step: number) {
-    await expect(this.page.getByText(`Schritt ${step} von 4`)).toBeVisible({
+    await expect(this.page.getByText(`Schritt ${step} von 2`)).toBeVisible({
       timeout: TIMEOUTS.elementVisible,
     });
   }
 
-  // Schritt 1: Credentials eingeben
-  async fillCredentials(email: string, password: string) {
-    await this.emailInput.fill(email);
-    await this.passwordInput.fill(password);
-    await this.nextButton.click();
+  // Entry: Pfad "Einladungscode" waehlen
+  async chooseInviteCodePath() {
+    await this.inviteCodePathButton.click();
+    await this.inviteCodeInput.waitFor({ state: "visible", timeout: TIMEOUTS.elementVisible });
   }
 
-  // Schritt 2: Invite-Code eingeben
+  // Entry: Pfad "Quartier finden" waehlen
+  async chooseAddressPath() {
+    await this.addressPathButton.click();
+    await this.addressSearchInput.waitFor({ state: "visible", timeout: TIMEOUTS.elementVisible });
+  }
+
+  // Invite-Code eingeben und pruefen
   async fillInviteCode(code: string) {
-    await this.inviteCodeInput.waitFor({ state: "visible", timeout: TIMEOUTS.elementVisible });
     await this.inviteCodeInput.fill(code);
     await this.checkCodeButton.click();
   }
 
-  // Schritt 3: Profil-Name eingeben
-  async fillDisplayName(name: string) {
+  // Identity: Name + E-Mail eingeben und Magic Link senden
+  async fillIdentity(displayName: string, email: string) {
     await this.displayNameInput.waitFor({ state: "visible", timeout: TIMEOUTS.elementVisible });
-    await this.displayNameInput.fill(name);
-    await this.profileNextButton.click();
+    await this.displayNameInput.fill(displayName);
+    await this.emailInput.fill(email);
+    await this.sendMagicLinkButton.click();
   }
 
-  // Schritt 4: Modus waehlen und abschliessen
-  async selectModeAndComplete(mode: "active" | "senior") {
-    await this.activeModeButton.waitFor({ state: "visible", timeout: TIMEOUTS.elementVisible });
-
-    if (mode === "senior") {
-      await this.seniorModeButton.click();
-    } else {
-      await this.activeModeButton.click();
-    }
-
-    await this.completeButton.click();
+  // Pruefen, dass Magic-Link-Bestaetigung angezeigt wird
+  async assertMagicLinkSent(email: string) {
+    await expect(this.page.getByText("Fast geschafft!")).toBeVisible({
+      timeout: TIMEOUTS.elementVisible,
+    });
+    await expect(this.page.getByText(email)).toBeVisible();
+    await expect(this.resendLinkButton).toBeVisible();
   }
 
-  // Kompletter Registrierungsfluss
-  async registerFull(options: {
-    email: string;
-    password: string;
+  // Kompletter Registrierungsfluss via Invite-Code bis Magic-Link-Bestaetigung
+  async registerWithInviteCode(options: {
     inviteCode: string;
     displayName: string;
-    mode: "active" | "senior";
+    email: string;
   }) {
-    await this.fillCredentials(options.email, options.password);
+    await this.chooseInviteCodePath();
     await this.fillInviteCode(options.inviteCode);
-    await this.fillDisplayName(options.displayName);
-    await this.selectModeAndComplete(options.mode);
-
-    // Auf Weiterleitung warten
-    if (options.mode === "senior") {
-      await this.page.waitForURL("**/senior/**", { timeout: TIMEOUTS.pageLoad });
-    } else {
-      await this.page.waitForURL("**/welcome**", { timeout: TIMEOUTS.pageLoad });
-    }
-
-    await waitForStableUI(this.page);
+    await this.fillIdentity(options.displayName, options.email);
+    await this.assertMagicLinkSent(options.email);
   }
 
+  // Invite-Code Fehlermeldung pruefen
   async assertInviteCodeError() {
     await expect(this.errorMessage).toBeVisible({ timeout: TIMEOUTS.elementVisible });
     await expect(this.errorMessage).toContainText(/ungültig|Einladungscode/i);
+  }
+
+  // Allgemeine Fehlermeldung pruefen
+  async assertError(pattern: string | RegExp) {
+    await expect(this.errorMessage).toBeVisible({ timeout: TIMEOUTS.elementVisible });
+    if (typeof pattern === "string") {
+      await expect(this.errorMessage).toContainText(pattern);
+    } else {
+      await expect(this.errorMessage).toHaveText(pattern);
+    }
+  }
+
+  // Entry-Ansicht pruefen (beide Pfade sichtbar)
+  async assertEntryVisible() {
+    await expect(this.inviteCodePathButton).toBeVisible({ timeout: TIMEOUTS.elementVisible });
+    await expect(this.addressPathButton).toBeVisible();
   }
 }

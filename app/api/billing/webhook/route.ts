@@ -1,8 +1,10 @@
 // POST /api/billing/webhook
 // Stripe Webhook Handler — verarbeitet Abo-Events
+// Behandelt: checkout.session.completed, invoice.paid, customer.subscription.deleted
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { stripe } from '@/lib/stripe';
+import type { PaidPlan } from '@/lib/stripe';
 import type Stripe from 'stripe';
 
 // Service-Client fuer DB-Updates (umgeht RLS)
@@ -39,7 +41,9 @@ export async function POST(request: NextRequest) {
     case 'checkout.session.completed': {
       const session = event.data.object as Stripe.Checkout.Session;
       const userId = session.metadata?.user_id;
-      const plan = session.metadata?.plan;
+      const plan = session.metadata?.plan as PaidPlan | undefined;
+      const quarterId = session.metadata?.quarter_id;
+      const role = session.metadata?.role;
 
       if (!userId || !plan) break;
 
@@ -56,7 +60,69 @@ export async function POST(request: NextRequest) {
           updated_at: new Date().toISOString(),
         }, { onConflict: 'user_id' });
 
-      if (error) console.error('Subscription-Update Fehler:', error);
+      if (error) {
+        console.error('Subscription-Update Fehler:', error);
+        break;
+      }
+
+      // Rolle in users-Tabelle setzen basierend auf Plan
+      const roleMap: Record<string, string> = {
+        plus: 'caregiver',
+        pro_community: 'org_admin',
+        pro_medical: 'doctor',
+      };
+
+      const newRole = roleMap[plan];
+      if (newRole) {
+        const { error: roleError } = await adminDb
+          .from('users')
+          .update({ role: newRole, updated_at: new Date().toISOString() })
+          .eq('id', userId);
+
+        if (roleError) console.error('Rollen-Update Fehler:', roleError);
+      }
+
+      // Pro Community: org_member erstellen mit Quartier-Zuweisung
+      if (plan === 'pro_community' && quarterId) {
+        const { data: existingMember } = await adminDb
+          .from('org_members')
+          .select('id')
+          .eq('user_id', userId)
+          .maybeSingle();
+
+        if (!existingMember) {
+          const { error: orgError } = await adminDb
+            .from('org_members')
+            .insert({
+              user_id: userId,
+              role: 'admin',
+              assigned_quarters: [quarterId],
+            });
+
+          if (orgError) console.error('org_member Erstellung Fehler:', orgError);
+        }
+      }
+
+      // Pro Medical: doctor_profile erstellen
+      if (plan === 'pro_medical' || role === 'doctor') {
+        const { data: existingProfile } = await adminDb
+          .from('doctor_profiles')
+          .select('id')
+          .eq('user_id', userId)
+          .maybeSingle();
+
+        if (!existingProfile) {
+          const { error: docError } = await adminDb
+            .from('doctor_profiles')
+            .insert({
+              user_id: userId,
+              status: 'pending_verification',
+            });
+
+          if (docError) console.error('doctor_profile Erstellung Fehler:', docError);
+        }
+      }
+
       break;
     }
 
@@ -67,7 +133,7 @@ export async function POST(request: NextRequest) {
       const subscriptionId = (typeof sub === 'string' ? sub : sub?.id) as string;
       if (!subscriptionId) break;
 
-      // Abrechnungszeitraum aktualisieren
+      // Abrechnungszeitraum aktualisieren, Status auf active setzen (Verlaengerung)
       const { error } = await adminDb
         .from('care_subscriptions')
         .update({
@@ -89,6 +155,13 @@ export async function POST(request: NextRequest) {
     case 'customer.subscription.deleted': {
       const subscription = event.data.object as Stripe.Subscription;
 
+      // Downgrade auf Free: Rolle zuruecksetzen, aber Daten behalten
+      const { data: subData } = await adminDb
+        .from('care_subscriptions')
+        .select('user_id')
+        .eq('external_subscription_id', subscription.id)
+        .maybeSingle();
+
       const { error } = await adminDb
         .from('care_subscriptions')
         .update({
@@ -99,6 +172,17 @@ export async function POST(request: NextRequest) {
         .eq('external_subscription_id', subscription.id);
 
       if (error) console.error('Subscription-Kuendigung Fehler:', error);
+
+      // Rolle auf 'user' zuruecksetzen (Daten bleiben erhalten, nur Zugriff entfernt)
+      if (subData?.user_id) {
+        const { error: roleError } = await adminDb
+          .from('users')
+          .update({ role: 'user', updated_at: new Date().toISOString() })
+          .eq('id', subData.user_id);
+
+        if (roleError) console.error('Rollen-Downgrade Fehler:', roleError);
+      }
+
       break;
     }
 

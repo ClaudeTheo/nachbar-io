@@ -1,23 +1,8 @@
 // Nachbar.io — Tests fuer das Benachrichtigungssystem
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
-// Supabase Client Mock
-const mockInsert = vi.fn().mockResolvedValue({ error: null });
-const mockGetUser = vi.fn();
-
-vi.mock("@/lib/supabase/client", () => ({
-  createClient: () => ({
-    auth: {
-      getUser: mockGetUser,
-    },
-    from: () => ({
-      insert: mockInsert,
-    }),
-  }),
-}));
-
-// Fetch Mock fuer Push-API
-const mockFetch = vi.fn().mockResolvedValue({ ok: true });
+// Fetch Mock fuer Server-API
+const mockFetch = vi.fn();
 vi.stubGlobal("fetch", mockFetch);
 
 // Import NACH den Mocks
@@ -25,86 +10,67 @@ import { createNotification } from "./notifications";
 
 beforeEach(() => {
   vi.clearAllMocks();
-  mockGetUser.mockResolvedValue({ data: { user: { id: "admin-user-id" } } });
+  mockFetch.mockResolvedValue({ ok: true });
 });
 
 describe("createNotification", () => {
-  it("erstellt In-App Notification und sendet Push", async () => {
+  it("sendet POST an /api/notifications/create mit allen Parametern", async () => {
     await createNotification({
       userId: "target-user-id",
       type: "alert",
       title: "Neue Meldung",
       body: "Wasserschaden in Nr. 5",
+      referenceId: "alert-123",
+      referenceType: "alert",
     });
 
-    // Supabase Insert wurde aufgerufen
-    expect(mockInsert).toHaveBeenCalledWith(
-      expect.objectContaining({
-        user_id: "target-user-id",
-        type: "alert",
-        title: "Neue Meldung",
-        body: "Wasserschaden in Nr. 5",
-      })
-    );
-
-    // Push-API wurde aufgerufen
     expect(mockFetch).toHaveBeenCalledWith(
-      "/api/push/notify",
+      "/api/notifications/create",
       expect.objectContaining({
         method: "POST",
+        headers: { "Content-Type": "application/json" },
       })
     );
-  });
 
-  it("verhindert Self-Notify (eigene userId)", async () => {
-    mockGetUser.mockResolvedValue({ data: { user: { id: "same-user-id" } } });
-
-    await createNotification({
-      userId: "same-user-id",
+    // Body pruefen
+    const callBody = JSON.parse(mockFetch.mock.calls[0][1].body);
+    expect(callBody).toEqual({
+      userId: "target-user-id",
       type: "alert",
-      title: "Test",
+      title: "Neue Meldung",
+      body: "Wasserschaden in Nr. 5",
+      referenceId: "alert-123",
+      referenceType: "alert",
     });
-
-    // Kein Insert bei Self-Notify
-    expect(mockInsert).not.toHaveBeenCalled();
-    expect(mockFetch).not.toHaveBeenCalled();
   });
 
-  it("setzt optionale Felder auf null wenn nicht angegeben", async () => {
+  it("sendet nur Pflichtfelder wenn optionale nicht angegeben", async () => {
     await createNotification({
       userId: "target-user-id",
       type: "system",
       title: "System-Hinweis",
     });
 
-    expect(mockInsert).toHaveBeenCalledWith(
-      expect.objectContaining({
-        body: null,
-        reference_id: null,
-        reference_type: null,
-      })
-    );
+    const callBody = JSON.parse(mockFetch.mock.calls[0][1].body);
+    expect(callBody).toEqual({
+      userId: "target-user-id",
+      type: "system",
+      title: "System-Hinweis",
+    });
+    // Optionale Felder sind nicht im Body
+    expect(callBody.body).toBeUndefined();
+    expect(callBody.referenceId).toBeUndefined();
   });
 
-  it("konstruiert korrekte Push-URL aus Typ und Referenz", async () => {
-    await createNotification({
-      userId: "target-user-id",
-      type: "alert",
-      title: "Meldung",
-      referenceId: "alert-123",
-      referenceType: "alert",
+  it("loggt Fehler bei Server-Fehlerantwort (nicht werfen)", async () => {
+    const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+    mockFetch.mockResolvedValue({
+      ok: false,
+      status: 500,
+      json: () => Promise.resolve({ error: "DB-Fehler" }),
     });
 
-    // Push-Fetch sollte URL mit /alerts/alert-123 enthalten
-    const pushCall = mockFetch.mock.calls[0];
-    const pushBody = JSON.parse(pushCall[1].body);
-    expect(pushBody.url).toBe("/alerts/alert-123");
-  });
-
-  it("schluckt Fehler still (fire-and-forget)", async () => {
-    mockInsert.mockRejectedValueOnce(new Error("DB-Fehler"));
-
-    // Sollte nicht werfen
+    // Sollte nicht werfen (fire-and-forget)
     await expect(
       createNotification({
         userId: "target-user-id",
@@ -112,5 +78,53 @@ describe("createNotification", () => {
         title: "Test",
       })
     ).resolves.toBeUndefined();
+
+    expect(consoleSpy).toHaveBeenCalledWith(
+      expect.stringContaining("[notifications]"),
+      expect.anything()
+    );
+    consoleSpy.mockRestore();
+  });
+
+  it("schluckt Netzwerk-Fehler still (fire-and-forget)", async () => {
+    const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+    mockFetch.mockRejectedValueOnce(new Error("Network Error"));
+
+    await expect(
+      createNotification({
+        userId: "target-user-id",
+        type: "alert",
+        title: "Test",
+      })
+    ).resolves.toBeUndefined();
+
+    expect(consoleSpy).toHaveBeenCalledWith(
+      expect.stringContaining("[notifications] createNotification fehlgeschlagen"),
+      expect.any(Error)
+    );
+    consoleSpy.mockRestore();
+  });
+
+  it("loggt Fehler wenn response.json() fehlschlaegt", async () => {
+    const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+    mockFetch.mockResolvedValue({
+      ok: false,
+      status: 502,
+      json: () => Promise.reject(new Error("invalid json")),
+    });
+
+    await expect(
+      createNotification({
+        userId: "target-user-id",
+        type: "alert",
+        title: "Test",
+      })
+    ).resolves.toBeUndefined();
+
+    expect(consoleSpy).toHaveBeenCalledWith(
+      expect.stringContaining("[notifications]"),
+      502
+    );
+    consoleSpy.mockRestore();
   });
 });

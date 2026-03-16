@@ -3,7 +3,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient as createSupabaseClient } from '@supabase/supabase-js';
 import { createClient } from '@/lib/supabase/server';
-import { stripe, STRIPE_PRICES } from '@/lib/stripe';
+import { stripe, getStripePriceId } from '@/lib/stripe';
 import type { PaidPlan, BillingCycle } from '@/lib/stripe';
 import { writeAuditLog } from '@/lib/care/audit';
 
@@ -29,7 +29,7 @@ export async function POST(request: NextRequest) {
   const plan = body.plan as PaidPlan;
   const cycle = (body.billing_cycle || 'monthly') as BillingCycle;
 
-  if (!['plus', 'pro'].includes(plan)) {
+  if (!['plus', 'pro_community', 'pro_medical'].includes(plan)) {
     return NextResponse.json({ error: 'Ungueltiger Plan' }, { status: 400 });
   }
 
@@ -38,7 +38,7 @@ export async function POST(request: NextRequest) {
   const { count } = await adminDb
     .from('care_subscriptions')
     .select('id', { count: 'exact', head: true })
-    .in('plan', ['plus', 'pro'])
+    .in('plan', ['plus', 'pro_community', 'pro_medical'])
     .in('status', ['active', 'trial']);
 
   const totalPaidSubs = count ?? 0;
@@ -122,8 +122,7 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  const priceKey = `${plan}_${cycle}` as keyof typeof STRIPE_PRICES;
-  const priceId = STRIPE_PRICES[priceKey];
+  const priceId = getStripePriceId(plan, cycle);
 
   if (!priceId) {
     return NextResponse.json(

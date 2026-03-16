@@ -17,7 +17,7 @@ interface DoctorProfile {
   quarter_ids: string[];
 }
 
-export default function SprechstundePage() {
+export default function SprechstundeDoctorsPage() {
   const [doctors, setDoctors] = useState<DoctorProfile[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedDoctorId, setSelectedDoctorId] = useState<string | null>(null);

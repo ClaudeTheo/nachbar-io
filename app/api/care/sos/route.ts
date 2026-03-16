@@ -48,6 +48,15 @@ export async function POST(request: NextRequest) {
 
   const { category, notes, source = 'app' } = body;
 
+  // L8: source validieren
+  const VALID_SOURCES: CareSosSource[] = ['app', 'device', 'checkin_timeout'];
+  if (!VALID_SOURCES.includes(source)) {
+    return NextResponse.json(
+      { error: `Ungueltige Quelle: ${source}. Erlaubt: ${VALID_SOURCES.join(', ')}` },
+      { status: 400 }
+    );
+  }
+
   // Kategorie ist Pflichtfeld
   if (!category) {
     return NextResponse.json({ error: 'Kategorie ist erforderlich' }, { status: 400 });

@@ -63,6 +63,23 @@ export async function POST(request: NextRequest) {
     );
   }
 
+  // M2: mood gegen Whitelist pruefen
+  const VALID_MOODS: CareCheckinMood[] = ['good', 'neutral', 'bad'];
+  if (mood && !VALID_MOODS.includes(mood)) {
+    return NextResponse.json(
+      { error: `Ungueltiger mood-Wert: "${mood}". Erlaubt: ${VALID_MOODS.join(', ')}` },
+      { status: 400 }
+    );
+  }
+
+  // M3: note Laengenlimit (max 2000 Zeichen)
+  if (note && note.length > 2000) {
+    return NextResponse.json(
+      { error: 'Notiz darf maximal 2000 Zeichen lang sein' },
+      { status: 400 }
+    );
+  }
+
   const now = new Date().toISOString();
   let checkin: Record<string, unknown>;
 

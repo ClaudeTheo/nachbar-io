@@ -87,7 +87,7 @@ export async function PATCH(
   if (error) {
     log.error('status_update_failed', error.message);
     log.done(500);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ error: 'Vorgang fehlgeschlagen' }, { status: 500 });
   }
 
   // Audit-Log fuer medizinische Sprechstunden (strukturiertes JSON-Logging)

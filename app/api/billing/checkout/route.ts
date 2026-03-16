@@ -29,7 +29,12 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Nicht authentifiziert' }, { status: 401 });
   }
 
-  const body = await request.json();
+  let body: Record<string, unknown>;
+  try {
+    body = await request.json();
+  } catch {
+    return NextResponse.json({ error: 'Ungueltiges Anfrage-Format' }, { status: 400 });
+  }
 
   // Abwaertskompatibilitaet: planType oder plan akzeptieren, interval oder billing_cycle
   const plan = (body.planType || body.plan) as PaidPlan;
@@ -89,7 +94,7 @@ export async function POST(request: NextRequest) {
         .select()
         .single();
 
-      if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+      if (error) return NextResponse.json({ error: 'Vorgang fehlgeschlagen' }, { status: 500 });
 
       // Plan-spezifische Provisioning (auch fuer Early Adopter)
       await provisionPlanResources(adminDb, user.id, plan, quarterId);
@@ -118,7 +123,7 @@ export async function POST(request: NextRequest) {
         .select()
         .single();
 
-      if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+      if (error) return NextResponse.json({ error: 'Vorgang fehlgeschlagen' }, { status: 500 });
 
       // Plan-spezifische Provisioning (auch fuer Early Adopter)
       await provisionPlanResources(adminDb, user.id, plan, quarterId);

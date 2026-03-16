@@ -157,7 +157,7 @@ export async function PUT(
     .single();
 
   if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ error: 'Vorgang fehlgeschlagen' }, { status: 500 });
   }
 
   return NextResponse.json(updated);
@@ -185,7 +185,7 @@ export async function DELETE(
     .single();
 
   if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ error: 'Vorgang fehlgeschlagen' }, { status: 500 });
   }
 
   return NextResponse.json({ message: "Quartier archiviert", quarter: updated });

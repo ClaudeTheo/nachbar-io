@@ -144,11 +144,16 @@ export async function GET(request: NextRequest) {
     }
   }
 
-  // CSV-Export
+  // CSV-Export (L1: CSV-Injection-Schutz)
   if (format === 'csv') {
+    // Fuehrende Sonderzeichen escapen die Formeln ausloesen koennten (=, +, -, @, \t, \r)
+    const csvSafe = (val: string) => {
+      if (/^[=+\-@\t\r]/.test(val)) return `'${val}`;
+      return val;
+    };
     const header = 'Tester,Session-Status,Fortschritt %,Bestanden,Teilweise,Fehlgeschlagen,Uebersprungen,Offen,Usability,Vertrauen\n';
     const rows = testerOverviews.map(t =>
-      `"${t.display_name}",${t.session_status ?? 'keine'},${t.progressPercent},${t.passed},${t.partial},${t.failed},${t.skipped},${t.open},${t.usability_rating ?? '-'},${t.confidence_rating ?? '-'}`
+      `"${csvSafe(t.display_name)}",${t.session_status ?? 'keine'},${t.progressPercent},${t.passed},${t.partial},${t.failed},${t.skipped},${t.open},${t.usability_rating ?? '-'},${t.confidence_rating ?? '-'}`
     ).join('\n');
 
     return new NextResponse(header + rows, {

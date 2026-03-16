@@ -49,7 +49,7 @@ export async function GET(
     .eq("quarter_id", id);
 
   if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ error: 'Vorgang fehlgeschlagen' }, { status: 500 });
   }
 
   // User-Infos separat laden (da kein FK-Join moeglich ueber Service-Client)
@@ -136,7 +136,7 @@ export async function POST(
     .single();
 
   if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ error: 'Vorgang fehlgeschlagen' }, { status: 500 });
   }
 
   // Rolle auf quarter_admin setzen wenn aktuell nur 'user'
@@ -180,7 +180,7 @@ export async function DELETE(
     .eq("user_id", user_id);
 
   if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ error: 'Vorgang fehlgeschlagen' }, { status: 500 });
   }
 
   // Pruefen ob User noch andere Quarter-Admin-Zuweisungen hat

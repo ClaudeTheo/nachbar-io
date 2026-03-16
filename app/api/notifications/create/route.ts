@@ -42,6 +42,12 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ ok: true, skipped: true });
   }
 
+  // 3b. Beziehungscheck: Nur an User mit Beziehung senden
+  const hasRelationship = await checkUserRelationship(supabase, user.id, userId);
+  if (!hasRelationship) {
+    return NextResponse.json({ error: "Keine Berechtigung fuer diesen Empfaenger" }, { status: 403 });
+  }
+
   // 4. Service-Role Client fuer INSERT (umgeht RLS)
   const serviceClient = createServiceClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -101,4 +107,83 @@ export async function POST(request: NextRequest) {
   }
 
   return NextResponse.json({ ok: true, fallback: result.usedFallback });
+}
+
+// Beziehungscheck: Gleicher Haushalt, Caregiver-Link, gleiches Quartier, oder Admin
+async function checkUserRelationship(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  senderId: string,
+  recipientId: string
+): Promise<boolean> {
+  // 1. Admin darf an alle senden
+  const { data: sender } = await supabase
+    .from("users")
+    .select("is_admin, role")
+    .eq("id", senderId)
+    .single();
+
+  if (sender?.is_admin || sender?.role === "super_admin") {
+    return true;
+  }
+
+  // 2. Gleicher Haushalt
+  const { data: senderHouseholds } = await supabase
+    .from("household_members")
+    .select("household_id")
+    .eq("user_id", senderId);
+
+  if (senderHouseholds && senderHouseholds.length > 0) {
+    const householdIds = senderHouseholds.map((h) => h.household_id);
+    const { data: recipientInHousehold } = await supabase
+      .from("household_members")
+      .select("id")
+      .eq("user_id", recipientId)
+      .in("household_id", householdIds)
+      .limit(1);
+
+    if (recipientInHousehold && recipientInHousehold.length > 0) {
+      return true;
+    }
+  }
+
+  // 3. Caregiver-Link (in beide Richtungen)
+  const { data: caregiverLink } = await supabase
+    .from("caregiver_links")
+    .select("id")
+    .is("revoked_at", null)
+    .or(
+      `and(caregiver_id.eq.${senderId},resident_id.eq.${recipientId}),and(resident_id.eq.${senderId},caregiver_id.eq.${recipientId})`
+    )
+    .limit(1);
+
+  if (caregiverLink && caregiverLink.length > 0) {
+    return true;
+  }
+
+  // 4. Gleiches Quartier (ueber household_members → households)
+  const { data: senderQuarter } = await supabase
+    .from("household_members")
+    .select("households(quarter_id)")
+    .eq("user_id", senderId)
+    .limit(1)
+    .single();
+
+  const senderQuarterId = (senderQuarter?.households as { quarter_id?: string } | null)?.quarter_id;
+
+  if (senderQuarterId) {
+    const { data: recipientQuarter } = await supabase
+      .from("household_members")
+      .select("households(quarter_id)")
+      .eq("user_id", recipientId)
+      .limit(1)
+      .single();
+
+    const recipientQuarterId = (recipientQuarter?.households as { quarter_id?: string } | null)?.quarter_id;
+
+    if (recipientQuarterId && senderQuarterId === recipientQuarterId) {
+      return true;
+    }
+  }
+
+  return false;
 }

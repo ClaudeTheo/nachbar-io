@@ -64,7 +64,7 @@ export async function POST(request: NextRequest) {
   });
 
   if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ error: 'Vorgang fehlgeschlagen' }, { status: 500 });
   }
 
   return NextResponse.json({ success: true });
@@ -97,7 +97,7 @@ export async function DELETE(request: NextRequest) {
     .eq("endpoint", endpoint);
 
   if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ error: 'Vorgang fehlgeschlagen' }, { status: 500 });
   }
 
   return NextResponse.json({ success: true });

@@ -15,13 +15,18 @@ export async function POST(request: NextRequest) {
   if (!authResult) return errorResponse('Nicht autorisiert', 401);
   const { supabase, user } = authResult;
 
-  const body = await request.json();
+  let body: { code?: string; relationship_type?: string };
+  try {
+    body = await request.json();
+  } catch {
+    return errorResponse('Ungueltiges Anfrage-Format', 400);
+  }
   const { code, relationship_type } = body;
 
   if (!code || typeof code !== 'string') {
     return errorResponse('Code ist erforderlich', 400);
   }
-  if (!relationship_type || !VALID_RELATIONSHIPS.includes(relationship_type)) {
+  if (!relationship_type || !VALID_RELATIONSHIPS.includes(relationship_type as CaregiverRelationshipType)) {
     return errorResponse('Ungueltiger Beziehungstyp', 400);
   }
 

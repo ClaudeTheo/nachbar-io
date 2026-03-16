@@ -79,6 +79,15 @@ export async function POST(request: NextRequest) {
 
   const { title, description, category, urgency, preferred_date, preferred_time_from, preferred_time_to } = body;
 
+  // L8: urgency validieren
+  const VALID_URGENCIES = ['low', 'normal', 'high', 'urgent'];
+  if (urgency && !VALID_URGENCIES.includes(urgency)) {
+    return NextResponse.json(
+      { error: `Ungueltige Dringlichkeit: ${urgency}. Erlaubt: ${VALID_URGENCIES.join(', ')}` },
+      { status: 400 }
+    );
+  }
+
   // Pflichtfeld: title (3-200 Zeichen)
   if (!title || title.trim().length < 3 || title.trim().length > 200) {
     return NextResponse.json(

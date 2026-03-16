@@ -41,7 +41,7 @@ export async function GET(request: NextRequest) {
   if (error) {
     log.error('db_error', error.message);
     log.done(500);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ error: 'Vorgang fehlgeschlagen' }, { status: 500 });
   }
 
   // Notizen nur fuer Host oder gebuchten Nutzer entschluesseln
@@ -95,6 +95,18 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'duration_minutes muss zwischen 5 und 60 liegen' }, { status: 400 });
   }
 
+  // join_url validieren (nur HTTPS, kein javascript: etc.)
+  if (body.join_url) {
+    try {
+      const parsed = new URL(body.join_url);
+      if (parsed.protocol !== 'https:') {
+        return NextResponse.json({ error: 'join_url muss eine HTTPS-URL sein' }, { status: 400 });
+      }
+    } catch {
+      return NextResponse.json({ error: 'join_url ist keine gueltige URL' }, { status: 400 });
+    }
+  }
+
   // Notizen verschluesseln bei medizinischen Sprechstunden
   const notes = body.notes
     ? (body.provider_type === 'medical' ? encryptField(body.notes) : body.notes)
@@ -119,7 +131,7 @@ export async function POST(request: NextRequest) {
   if (error) {
     log.error('insert_error', error.message);
     log.done(500);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ error: 'Vorgang fehlgeschlagen' }, { status: 500 });
   }
 
   log.info('slot_created', { slotId: data.id, type: body.provider_type });

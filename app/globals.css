@@ -136,12 +136,13 @@
   box-shadow: 0 -4px 30px rgba(0,0,0,0.05);
 }
 
-/* Interaktive Card-Klasse */
+/* Interaktive Card-Klasse — GPU-beschleunigt */
 .card-interactive {
-  transition: all 0.2s ease;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  will-change: transform;
 }
 .card-interactive:active {
-  transform: scale(0.98);
+  transform: scale(0.97);
 }
 @media (hover: hover) {
   .card-interactive:hover {

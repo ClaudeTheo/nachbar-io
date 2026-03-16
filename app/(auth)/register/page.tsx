@@ -160,31 +160,21 @@ function RegisterForm() {
     setError(null);
 
     try {
-      const supabase = createClient();
-      const { data: household, error: queryError } = await supabase
-        .from("households")
-        .select("id, street_name, house_number")
-        .eq("invite_code", normalizeCode(inviteCode))
-        .single();
+      // Serverseitiger Check (umgeht RLS fuer unauthentifizierte Nutzer)
+      const res = await fetch("/api/register/check-invite", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ inviteCode: normalizeCode(inviteCode) }),
+      });
+      const result = await res.json();
 
-      if (queryError) {
-        console.error("Invite-Code Prüfung fehlgeschlagen:", queryError);
-        if (queryError.code === "PGRST116") {
-          setError("Ungültiger Einladungscode. Bitte prüfen Sie den Code auf Ihrem Brief.");
-        } else {
-          setError(`Verbindungsfehler: ${queryError.message}`);
-        }
-        setLoading(false);
-        return;
-      }
-
-      if (!household) {
+      if (!result.valid) {
         setError("Ungültiger Einladungscode. Bitte prüfen Sie den Code auf Ihrem Brief.");
         setLoading(false);
         return;
       }
 
-      setHouseholdId(household.id);
+      setHouseholdId(result.householdId);
       setVerificationMethod(referrerId ? "neighbor_invite" : "invite_code");
       setLoading(false);
       setStep("identity");

@@ -214,7 +214,7 @@ export async function POST(request: NextRequest) {
     const pilotAutoVerify = process.env.PILOT_AUTO_VERIFY === "true";
     const trustLevel = pilotAutoVerify
       ? "verified"
-      : verificationMethod === "neighbor_invite"
+      : (verificationMethod === "invite_code" || verificationMethod === "neighbor_invite")
         ? "verified"
         : "new";
 
@@ -223,6 +223,7 @@ export async function POST(request: NextRequest) {
       email_hash: "",
       display_name: displayName.trim(),
       ui_mode: uiMode || "active",
+      role: "resident",  // Vier-Versionen-Modell: Standard-Rolle fuer Bewohner
       is_tester: true,  // Pilotphase: alle Nutzer sind Tester
       trust_level: trustLevel,
     });

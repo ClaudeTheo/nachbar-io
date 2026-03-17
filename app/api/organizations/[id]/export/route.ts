@@ -3,9 +3,9 @@
 // Exportiert Bewohner, Alerts oder Check-ins als Datei-Download
 
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
 import { createClient as createServiceClient } from '@supabase/supabase-js';
 import { generateCsv, generateXlsx } from '@/lib/export';
+import { requireAuth, requireSubscription, requireOrgAccess, requireAdmin, unauthorizedResponse } from '@/lib/care/api-helpers';
 
 export const dynamic = 'force-dynamic';
 
@@ -21,41 +21,6 @@ function getServiceDb() {
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY!
   );
-}
-
-/**
- * Prueft ob der aktuelle User org_admin oder org_viewer der Organisation ist.
- */
-async function requireOrgReadAccess(orgId: string) {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) {
-    return { error: NextResponse.json({ error: 'Nicht authentifiziert' }, { status: 401 }) };
-  }
-
-  // Mitgliedschaft pruefen
-  const { data: membership } = await supabase
-    .from('org_members')
-    .select('role')
-    .eq('org_id', orgId)
-    .eq('user_id', user.id)
-    .maybeSingle();
-
-  // Plattform-Admin hat immer Zugriff
-  const { data: profile } = await supabase
-    .from('users')
-    .select('is_admin')
-    .eq('id', user.id)
-    .single();
-
-  const isOrgMember = membership?.role === 'admin' || membership?.role === 'viewer';
-  const isPlatformAdmin = profile?.is_admin === true;
-
-  if (!isOrgMember && !isPlatformAdmin) {
-    return { error: NextResponse.json({ error: 'Kein Zugriff auf diese Organisation' }, { status: 403 }) };
-  }
-
-  return { user, role: membership?.role ?? 'admin' };
 }
 
 /**
@@ -158,14 +123,29 @@ async function fetchCheckins(orgId: string) {
 /**
  * GET /api/organizations/[id]/export?format=csv|xlsx&type=residents|alerts|checkins
  * Exportiert Organisationsdaten als CSV oder XLSX Datei-Download.
+ * Erfordert Pro-Abo + org_admin oder Plattform-Admin.
  */
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params;
-  const access = await requireOrgReadAccess(id);
-  if ('error' in access && access.error) return access.error;
+
+  // Auth-Guard
+  const auth = await requireAuth();
+  if (!auth) return unauthorizedResponse();
+
+  // Abo-Guard: Pro erforderlich
+  const sub = await requireSubscription(auth.supabase, auth.user.id, 'pro');
+  if (sub instanceof NextResponse) return sub;
+
+  // Org-Zugriffs-Guard: Admin-Rolle erforderlich (oder Plattform-Admin als Fallback)
+  const org = await requireOrgAccess(auth.supabase, auth.user.id, id, 'admin');
+  if (org instanceof NextResponse) {
+    // Plattform-Admin hat immer Zugriff
+    const isPlatformAdmin = await requireAdmin(auth.supabase, auth.user.id);
+    if (!isPlatformAdmin) return org;
+  }
 
   // Query-Parameter validieren
   const { searchParams } = request.nextUrl;

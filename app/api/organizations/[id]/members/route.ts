@@ -2,9 +2,9 @@
 // Nachbar.io — Org-Mitglieder: Auflisten (GET) und Hinzufuegen (POST)
 
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
 import { createClient as createServiceClient } from '@supabase/supabase-js';
 import { validateOrgMemberAdd } from '@/lib/organizations';
+import { requireAuth, requireSubscription, requireOrgAccess, requireAdmin, unauthorizedResponse } from '@/lib/care/api-helpers';
 
 export const dynamic = 'force-dynamic';
 
@@ -16,53 +16,32 @@ function getServiceDb() {
 }
 
 /**
- * Prueft ob der aktuelle User org_admin der Organisation ist.
- * Gibt { user, isAdmin } oder { error } zurueck.
- */
-async function requireOrgAccess(orgId: string) {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) {
-    return { error: NextResponse.json({ error: 'Nicht authentifiziert' }, { status: 401 }) };
-  }
-
-  // Mitgliedschaft und Rolle pruefen
-  const { data: membership } = await supabase
-    .from('org_members')
-    .select('role')
-    .eq('org_id', orgId)
-    .eq('user_id', user.id)
-    .maybeSingle();
-
-  // Plattform-Admin hat immer Zugriff
-  const { data: profile } = await supabase
-    .from('users')
-    .select('is_admin')
-    .eq('id', user.id)
-    .single();
-
-  const isOrgAdmin = membership?.role === 'admin';
-  const isPlatformAdmin = profile?.is_admin === true;
-
-  if (!membership && !isPlatformAdmin) {
-    return { error: NextResponse.json({ error: 'Kein Zugriff auf diese Organisation' }, { status: 403 }) };
-  }
-
-  return { user, isAdmin: isOrgAdmin || isPlatformAdmin };
-}
-
-/**
  * GET /api/organizations/[id]/members
  * Mitglieder der Organisation auflisten.
  * Sichtbar fuer alle Org-Mitglieder und Plattform-Admins.
+ * Erfordert Pro-Abo.
  */
 export async function GET(
   _request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params;
-  const access = await requireOrgAccess(id);
-  if ('error' in access && access.error) return access.error;
+
+  // Auth-Guard
+  const auth = await requireAuth();
+  if (!auth) return unauthorizedResponse();
+
+  // Abo-Guard: Pro erforderlich
+  const sub = await requireSubscription(auth.supabase, auth.user.id, 'pro');
+  if (sub instanceof NextResponse) return sub;
+
+  // Org-Zugriffs-Guard: beliebige Org-Rolle (oder Plattform-Admin als Fallback)
+  const org = await requireOrgAccess(auth.supabase, auth.user.id, id);
+  if (org instanceof NextResponse) {
+    // Plattform-Admin hat immer Zugriff
+    const isPlatformAdmin = await requireAdmin(auth.supabase, auth.user.id);
+    if (!isPlatformAdmin) return org;
+  }
 
   const serviceDb = getServiceDb();
 
@@ -100,7 +79,7 @@ export async function GET(
 /**
  * POST /api/organizations/[id]/members
  * Mitglied zur Organisation hinzufuegen.
- * Nur org_admin oder Plattform-Admin.
+ * Nur org_admin oder Plattform-Admin. Erfordert Pro-Abo.
  * Body: { user_id, role, assigned_quarters? }
  */
 export async function POST(
@@ -108,15 +87,21 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params;
-  const access = await requireOrgAccess(id);
-  if ('error' in access && access.error) return access.error;
 
-  // Nur Admins duerfen Mitglieder hinzufuegen
-  if (!access.isAdmin) {
-    return NextResponse.json(
-      { error: 'Nur Organisations-Administratoren duerfen Mitglieder hinzufuegen' },
-      { status: 403 }
-    );
+  // Auth-Guard
+  const auth = await requireAuth();
+  if (!auth) return unauthorizedResponse();
+
+  // Abo-Guard: Pro erforderlich
+  const sub = await requireSubscription(auth.supabase, auth.user.id, 'pro');
+  if (sub instanceof NextResponse) return sub;
+
+  // Org-Zugriffs-Guard: Admin-Rolle erforderlich (oder Plattform-Admin als Fallback)
+  const org = await requireOrgAccess(auth.supabase, auth.user.id, id, 'admin');
+  if (org instanceof NextResponse) {
+    // Plattform-Admin hat immer Zugriff
+    const isPlatformAdmin = await requireAdmin(auth.supabase, auth.user.id);
+    if (!isPlatformAdmin) return org;
   }
 
   // Body parsen
@@ -136,13 +121,13 @@ export async function POST(
   const serviceDb = getServiceDb();
 
   // Pruefen ob Organisation existiert
-  const { data: org } = await serviceDb
+  const { data: orgData } = await serviceDb
     .from('organizations')
     .select('id')
     .eq('id', id)
     .single();
 
-  if (!org) {
+  if (!orgData) {
     return NextResponse.json({ error: 'Organisation nicht gefunden' }, { status: 404 });
   }
 
@@ -191,7 +176,7 @@ export async function POST(
     .from('org_audit_log')
     .insert({
       org_id: id,
-      user_id: access.user!.id,
+      user_id: auth.user.id,
       action: 'member_added',
       target_user_id: body.user_id as string,
       details: { role: body.role },

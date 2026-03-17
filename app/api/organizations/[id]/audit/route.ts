@@ -2,50 +2,36 @@
 // Nachbar.io — Org-Audit-Log: Abrufen (GET), nur fuer org_admin
 
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
+import { requireAuth, requireSubscription, requireOrgAccess, requireAdmin, unauthorizedResponse } from '@/lib/care/api-helpers';
 
 export const dynamic = 'force-dynamic';
 
 /**
  * GET /api/organizations/[id]/audit
  * Audit-Log der Organisation auflisten.
- * Nur fuer org_admin (via RLS) oder Plattform-Admin.
+ * Nur fuer org_admin oder Plattform-Admin. Erfordert Pro-Abo.
  * Query-Parameter: limit (default 50), offset (default 0)
  */
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) {
-    return NextResponse.json({ error: 'Nicht authentifiziert' }, { status: 401 });
-  }
-
   const { id } = await params;
 
-  // Zugriffspruefung: org_admin oder Plattform-Admin
-  const { data: membership } = await supabase
-    .from('org_members')
-    .select('role')
-    .eq('org_id', id)
-    .eq('user_id', user.id)
-    .maybeSingle();
+  // Auth-Guard
+  const auth = await requireAuth();
+  if (!auth) return unauthorizedResponse();
 
-  const { data: profile } = await supabase
-    .from('users')
-    .select('is_admin')
-    .eq('id', user.id)
-    .single();
+  // Abo-Guard: Pro erforderlich
+  const sub = await requireSubscription(auth.supabase, auth.user.id, 'pro');
+  if (sub instanceof NextResponse) return sub;
 
-  const isOrgAdmin = membership?.role === 'admin';
-  const isPlatformAdmin = profile?.is_admin === true;
-
-  if (!isOrgAdmin && !isPlatformAdmin) {
-    return NextResponse.json(
-      { error: 'Nur Organisations-Administratoren koennen das Audit-Log einsehen' },
-      { status: 403 }
-    );
+  // Org-Zugriffs-Guard: Admin-Rolle erforderlich (oder Plattform-Admin als Fallback)
+  const org = await requireOrgAccess(auth.supabase, auth.user.id, id, 'admin');
+  if (org instanceof NextResponse) {
+    // Plattform-Admin hat immer Zugriff
+    const isPlatformAdmin = await requireAdmin(auth.supabase, auth.user.id);
+    if (!isPlatformAdmin) return org;
   }
 
   // Paginierung
@@ -54,7 +40,7 @@ export async function GET(
   const offset = parseInt(searchParams.get('offset') ?? '0', 10) || 0;
 
   // Audit-Eintraege laden (RLS stellt zusaetzlich sicher, dass nur berechtigte Daten kommen)
-  const { data, error, count } = await supabase
+  const { data, error, count } = await auth.supabase
     .from('org_audit_log')
     .select('*', { count: 'exact' })
     .eq('org_id', id)

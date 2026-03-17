@@ -2,9 +2,9 @@
 // Nachbar.io — Organisationen: Auflisten (GET) und Erstellen (POST)
 
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
 import { createClient as createServiceClient } from '@supabase/supabase-js';
 import { validateOrgCreate } from '@/lib/organizations';
+import { requireAuth, requireSubscription, unauthorizedResponse } from '@/lib/care/api-helpers';
 
 export const dynamic = 'force-dynamic';
 
@@ -22,14 +22,12 @@ function getServiceDb() {
  * Admins sehen alle Organisationen.
  */
 export async function GET() {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) {
-    return NextResponse.json({ error: 'Nicht authentifiziert' }, { status: 401 });
-  }
+  // Auth-Guard (kein Abo-Gate — eigene Orgs auflisten ist erlaubt)
+  const auth = await requireAuth();
+  if (!auth) return unauthorizedResponse();
 
   // RLS filtert automatisch auf Orgs, in denen der User Mitglied ist (oder Admin)
-  const { data, error } = await supabase
+  const { data, error } = await auth.supabase
     .from('organizations')
     .select('*, org_members(id, user_id, role, assigned_quarters)')
     .order('created_at', { ascending: false });
@@ -44,21 +42,23 @@ export async function GET() {
 
 /**
  * POST /api/organizations
- * Neue Organisation erstellen. Nur fuer Plattform-Admins (is_admin = true).
+ * Neue Organisation erstellen. Nur fuer Plattform-Admins mit Pro-Abo (is_admin = true).
  * Body: { name, type, hr_vr_number, contact_email, contact_phone?, address? }
  */
 export async function POST(request: NextRequest) {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) {
-    return NextResponse.json({ error: 'Nicht authentifiziert' }, { status: 401 });
-  }
+  // Auth-Guard
+  const auth = await requireAuth();
+  if (!auth) return unauthorizedResponse();
+
+  // Abo-Guard: Pro erforderlich
+  const sub = await requireSubscription(auth.supabase, auth.user.id, 'pro');
+  if (sub instanceof NextResponse) return sub;
 
   // Nur Plattform-Admins duerfen Organisationen erstellen
-  const { data: profile } = await supabase
+  const { data: profile } = await auth.supabase
     .from('users')
     .select('is_admin')
-    .eq('id', user.id)
+    .eq('id', auth.user.id)
     .single();
 
   if (!profile?.is_admin) {
@@ -108,7 +108,7 @@ export async function POST(request: NextRequest) {
     .from('org_audit_log')
     .insert({
       org_id: org.id,
-      user_id: user.id,
+      user_id: auth.user.id,
       action: 'org_created',
       details: { name: org.name, type: org.type },
     });

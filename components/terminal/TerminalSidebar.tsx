@@ -1,89 +1,57 @@
 "use client";
 
-import { Heart, AlertTriangle, Pill, Video, Newspaper } from "lucide-react";
-import { useTerminal, type TerminalScreen } from "@/lib/terminal/TerminalContext";
-
-/**
- * Terminal-Sidebar: 5 Aktions-Buttons, immer sichtbar.
- * Jeder Button fuellt die gleiche Hoehe (flex-1).
- * Seniorengerecht: grosse Touch-Targets, klare Farben, active:scale-95.
- * Aktiver Button wird mit hellem Ring hervorgehoben.
- */
-
-interface SidebarButton {
-  label: string;
-  screen: TerminalScreen;
-  icon: React.ComponentType<{ className?: string }>;
-  bgColor: string;
-  textColor: string;
-}
-
-const buttons: SidebarButton[] = [
-  {
-    label: "Check-in",
-    screen: "checkin",
-    icon: Heart,
-    bgColor: "bg-quartier-green",
-    textColor: "text-white",
-  },
-  {
-    label: "NOTRUF",
-    screen: "emergency",
-    icon: AlertTriangle,
-    bgColor: "bg-emergency-red",
-    textColor: "text-white",
-  },
-  {
-    label: "Medikamente",
-    screen: "medications",
-    icon: Pill,
-    bgColor: "bg-info-blue",
-    textColor: "text-white",
-  },
-  {
-    label: "Sprechstunde",
-    screen: "video",
-    icon: Video,
-    bgColor: "bg-anthrazit",
-    textColor: "text-white",
-  },
-  {
-    label: "News",
-    screen: "news",
-    icon: Newspaper,
-    bgColor: "bg-anthrazit-light",
-    textColor: "text-white",
-  },
-];
+import { Home, Phone, Smartphone } from "lucide-react";
+import { useTerminal } from "@/lib/terminal/TerminalContext";
 
 export default function TerminalSidebar() {
   const { activeScreen, setActiveScreen } = useTerminal();
 
-  return (
-    <aside className="flex flex-col gap-3 w-[160px] shrink-0 bg-lightgray p-3">
-      {buttons.map((btn) => {
-        const Icon = btn.icon;
-        const isActive = activeScreen === btn.screen;
+  // TODO Welle 2: "Alle Funktionen" nur anzeigen wenn Angehörige es freischalten
+  const showAlleFunktionen = false;
 
-        return (
-          <button
-            key={btn.label}
-            onClick={() => setActiveScreen(btn.screen)}
-            className={`flex-1 flex flex-col items-center justify-center gap-2 rounded-xl ${btn.bgColor} ${btn.textColor} min-h-[120px] transition-all active:scale-95 focus-visible:ring-2 focus-visible:ring-quartier-green ${
-              isActive
-                ? "ring-3 ring-white brightness-110 scale-[1.02]"
-                : ""
-            }`}
-            aria-label={btn.label}
-            aria-pressed={isActive}
-          >
-            <Icon className="h-12 w-12" />
-            <span className="text-[22px] font-bold leading-tight text-center">
-              {btn.label}
-            </span>
-          </button>
-        );
-      })}
+  return (
+    <aside className="flex flex-col gap-4 w-[130px] bg-anthrazit p-3 shrink-0">
+      {/* Home */}
+      <button
+        onClick={() => setActiveScreen("home")}
+        className={`flex flex-col items-center justify-center gap-2 rounded-2xl min-h-[100px] transition-all
+          ${activeScreen === "home"
+            ? "bg-quartier-green text-white ring-2 ring-white"
+            : "bg-anthrazit-light text-white/80 hover:bg-anthrazit-light/80"
+          }`}
+      >
+        <Home className="h-8 w-8" />
+        <span className="text-[16px] font-semibold">Home</span>
+      </button>
+
+      {/* Wichtige Nummern */}
+      <button
+        onClick={() => setActiveScreen("emergency-numbers")}
+        className={`flex flex-col items-center justify-center gap-2 rounded-2xl min-h-[100px] transition-all
+          ${activeScreen === "emergency-numbers"
+            ? "bg-emergency-red text-white ring-2 ring-white"
+            : "bg-emergency-red/80 text-white hover:bg-emergency-red"
+          }`}
+      >
+        <Phone className="h-8 w-8" />
+        <span className="text-[14px] font-semibold text-center leading-tight">Wichtige Nummern</span>
+      </button>
+
+      {/* Spacer */}
+      <div className="flex-1" />
+
+      {/* Alle Funktionen (optional, durch Angehörige freigeschaltet) */}
+      {showAlleFunktionen && (
+        <button
+          onClick={() => {
+            window.location.href = "/";
+          }}
+          className="flex flex-col items-center justify-center gap-2 rounded-2xl min-h-[100px] bg-anthrazit-light text-white/70 hover:bg-anthrazit-light/80 transition-all"
+        >
+          <Smartphone className="h-8 w-8" />
+          <span className="text-[13px] font-semibold text-center leading-tight">Alle Funkt.</span>
+        </button>
+      )}
     </aside>
   );
 }

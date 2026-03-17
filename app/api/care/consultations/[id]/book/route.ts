@@ -1,8 +1,8 @@
 // app/api/care/consultations/[id]/book/route.ts
 // Nachbar.io — Online-Sprechstunde: Termin buchen
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
 import { createCareLogger } from '@/lib/care/logger';
+import { requireAuth, requireSubscription, unauthorizedResponse } from '@/lib/care/api-helpers';
 import { getProvider } from '@/lib/consultation/provider';
 
 export async function POST(
@@ -11,14 +11,20 @@ export async function POST(
 ) {
   const log = createCareLogger('care/consultations/book/POST');
   const { id } = await params;
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
 
-  if (!user) {
+  // Auth
+  const auth = await requireAuth();
+  if (!auth) {
     log.warn('auth_failed');
     log.done(401);
-    return NextResponse.json({ error: 'Nicht authentifiziert' }, { status: 401 });
+    return unauthorizedResponse();
   }
+
+  // Subscription-Gate: Plus erforderlich
+  const sub = await requireSubscription(auth.supabase, auth.user.id, 'plus');
+  if (sub instanceof NextResponse) return sub;
+
+  const { supabase, user } = auth;
 
   // Slot laden
   const { data: slot, error: fetchError } = await supabase

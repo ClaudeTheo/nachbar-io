@@ -2,9 +2,8 @@
 // Nachbar.io — Einzelnen Termin lesen, aktualisieren, loeschen
 
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
 import { writeAuditLog } from '@/lib/care/audit';
-import { requireCareAccess } from '@/lib/care/api-helpers';
+import { requireAuth, requireSubscription, unauthorizedResponse, requireCareAccess } from '@/lib/care/api-helpers';
 import { encryptFields, decryptFields, CARE_APPOINTMENTS_ENCRYPTED_FIELDS } from '@/lib/care/field-encryption';
 
 // GET /api/care/appointments/[id]
@@ -13,9 +12,16 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params;
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return NextResponse.json({ error: 'Nicht authentifiziert' }, { status: 401 });
+
+  // Auth
+  const auth = await requireAuth();
+  if (!auth) return unauthorizedResponse();
+
+  // Subscription-Gate: Plus erforderlich
+  const sub = await requireSubscription(auth.supabase, auth.user.id, 'plus');
+  if (sub instanceof NextResponse) return sub;
+
+  const { supabase, user } = auth;
 
   const { data, error } = await supabase
     .from('care_appointments')
@@ -44,9 +50,16 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params;
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return NextResponse.json({ error: 'Nicht authentifiziert' }, { status: 401 });
+
+  // Auth
+  const auth = await requireAuth();
+  if (!auth) return unauthorizedResponse();
+
+  // Subscription-Gate: Plus erforderlich
+  const sub = await requireSubscription(auth.supabase, auth.user.id, 'plus');
+  if (sub instanceof NextResponse) return sub;
+
+  const { supabase, user } = auth;
 
   let body: Record<string, unknown>;
   try { body = await request.json(); } catch {
@@ -105,9 +118,16 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params;
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return NextResponse.json({ error: 'Nicht authentifiziert' }, { status: 401 });
+
+  // Auth
+  const auth = await requireAuth();
+  if (!auth) return unauthorizedResponse();
+
+  // Subscription-Gate: Plus erforderlich
+  const sub = await requireSubscription(auth.supabase, auth.user.id, 'plus');
+  if (sub instanceof NextResponse) return sub;
+
+  const { supabase, user } = auth;
 
   // senior_id vor dem Loeschen fuer den Audit-Log sichern
   const { data: existing, error: fetchError } = await supabase

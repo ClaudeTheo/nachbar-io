@@ -2,10 +2,9 @@
 // Nachbar.io — Medikamenten-Einnahme protokollieren (POST) und Log abrufen (GET)
 
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
 import { writeAuditLog } from '@/lib/care/audit';
 import { sendCareNotification } from '@/lib/care/notifications';
-import { requireCareAccess } from '@/lib/care/api-helpers';
+import { requireAuth, requireSubscription, unauthorizedResponse, requireCareAccess } from '@/lib/care/api-helpers';
 import { MEDICATION_DEFAULTS } from '@/lib/care/constants';
 import { decryptField } from '@/lib/care/field-encryption';
 import type { CareMedicationLogStatus } from '@/lib/care/types';
@@ -14,9 +13,15 @@ const VALID_LOG_STATUSES: CareMedicationLogStatus[] = ['taken', 'skipped', 'snoo
 
 // POST /api/care/medications/log — Einnahme protokollieren
 export async function POST(request: NextRequest) {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return NextResponse.json({ error: 'Nicht authentifiziert' }, { status: 401 });
+  // Auth
+  const auth = await requireAuth();
+  if (!auth) return unauthorizedResponse();
+
+  // Subscription-Gate: Plus erforderlich
+  const sub = await requireSubscription(auth.supabase, auth.user.id, 'plus');
+  if (sub instanceof NextResponse) return sub;
+
+  const { supabase, user } = auth;
 
   let body: { medication_id?: string; status?: CareMedicationLogStatus; scheduled_at?: string };
   try { body = await request.json(); } catch {
@@ -124,9 +129,15 @@ export async function POST(request: NextRequest) {
 
 // GET /api/care/medications/log — Log-Historie abrufen
 export async function GET(request: NextRequest) {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return NextResponse.json({ error: 'Nicht authentifiziert' }, { status: 401 });
+  // Auth
+  const auth = await requireAuth();
+  if (!auth) return unauthorizedResponse();
+
+  // Subscription-Gate: Plus erforderlich
+  const sub = await requireSubscription(auth.supabase, auth.user.id, 'plus');
+  if (sub instanceof NextResponse) return sub;
+
+  const { supabase, user } = auth;
 
   const { searchParams } = request.nextUrl;
   const seniorId = searchParams.get('senior_id') ?? user.id;

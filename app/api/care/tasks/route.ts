@@ -2,8 +2,8 @@
 // Nachbar.io — Aufgabentafel: Aufgaben auflisten (GET) und erstellen (POST)
 
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
 import { writeAuditLog } from '@/lib/care/audit';
+import { requireAuth, requireSubscription, unauthorizedResponse } from '@/lib/care/api-helpers';
 
 export const dynamic = 'force-dynamic';
 
@@ -16,9 +16,15 @@ type TaskCategory = typeof VALID_CATEGORIES[number];
 
 // GET /api/care/tasks — Aufgaben auflisten
 export async function GET(request: NextRequest) {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return NextResponse.json({ error: 'Nicht authentifiziert' }, { status: 401 });
+  // Auth
+  const auth = await requireAuth();
+  if (!auth) return unauthorizedResponse();
+
+  // Subscription-Gate: Plus erforderlich
+  const sub = await requireSubscription(auth.supabase, auth.user.id, 'plus');
+  if (sub instanceof NextResponse) return sub;
+
+  const { supabase, user } = auth;
 
   const { searchParams } = request.nextUrl;
   const status = searchParams.get('status') ?? 'open';
@@ -58,9 +64,15 @@ export async function GET(request: NextRequest) {
 
 // POST /api/care/tasks — Neue Aufgabe erstellen
 export async function POST(request: NextRequest) {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return NextResponse.json({ error: 'Nicht authentifiziert' }, { status: 401 });
+  // Auth
+  const auth = await requireAuth();
+  if (!auth) return unauthorizedResponse();
+
+  // Subscription-Gate: Plus erforderlich
+  const sub = await requireSubscription(auth.supabase, auth.user.id, 'plus');
+  if (sub instanceof NextResponse) return sub;
+
+  const { supabase, user } = auth;
 
   let body: {
     title?: string;

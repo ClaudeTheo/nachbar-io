@@ -1,8 +1,8 @@
 // app/api/care/consultations/[id]/status/route.ts
 // Nachbar.io — Online-Sprechstunde: Status-Uebergaenge (nur Host)
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
 import { createCareLogger } from '@/lib/care/logger';
+import { requireAuth, requireSubscription, unauthorizedResponse } from '@/lib/care/api-helpers';
 import { encryptField } from '@/lib/care/field-encryption';
 import type { ConsultationStatus } from '@/lib/care/types';
 
@@ -19,14 +19,20 @@ export async function PATCH(
 ) {
   const log = createCareLogger('care/consultations/status/PATCH');
   const { id } = await params;
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
 
-  if (!user) {
+  // Auth
+  const auth = await requireAuth();
+  if (!auth) {
     log.warn('auth_failed');
     log.done(401);
-    return NextResponse.json({ error: 'Nicht authentifiziert' }, { status: 401 });
+    return unauthorizedResponse();
   }
+
+  // Subscription-Gate: Plus erforderlich
+  const sub = await requireSubscription(auth.supabase, auth.user.id, 'plus');
+  if (sub instanceof NextResponse) return sub;
+
+  const { supabase, user } = auth;
 
   let body: { status?: ConsultationStatus; notes?: string };
   try {

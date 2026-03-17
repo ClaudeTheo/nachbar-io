@@ -1,12 +1,18 @@
 // app/api/care/consultations/consent/route.ts
 // API-Route fuer DSGVO-Einwilligung zur Online-Sprechstunde
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
+import { requireAuth, requireSubscription, unauthorizedResponse } from '@/lib/care/api-helpers';
 
 export async function GET(request: NextRequest) {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return NextResponse.json({ error: 'Nicht authentifiziert' }, { status: 401 });
+  // Auth
+  const auth = await requireAuth();
+  if (!auth) return unauthorizedResponse();
+
+  // Subscription-Gate: Plus erforderlich
+  const sub = await requireSubscription(auth.supabase, auth.user.id, 'plus');
+  if (sub instanceof NextResponse) return sub;
+
+  const { supabase, user } = auth;
 
   const providerType = request.nextUrl.searchParams.get('provider_type') || 'community';
 
@@ -22,9 +28,15 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return NextResponse.json({ error: 'Nicht authentifiziert' }, { status: 401 });
+  // Auth
+  const auth = await requireAuth();
+  if (!auth) return unauthorizedResponse();
+
+  // Subscription-Gate: Plus erforderlich
+  const sub = await requireSubscription(auth.supabase, auth.user.id, 'plus');
+  if (sub instanceof NextResponse) return sub;
+
+  const { supabase, user } = auth;
 
   let body: { provider_type?: string };
   try {

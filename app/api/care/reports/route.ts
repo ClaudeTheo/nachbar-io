@@ -1,7 +1,8 @@
 // app/api/care/reports/route.ts
 // Nachbar.io — Berichte-API: Liste und Generierung
 
-import { requireAuth, requireFeature, requireCareAccess, errorResponse, successResponse, careLog } from '@/lib/care/api-helpers';
+import { NextResponse } from 'next/server';
+import { requireAuth, requireSubscription, requireFeature, requireCareAccess, errorResponse, successResponse, careLog } from '@/lib/care/api-helpers';
 import { generateReportData } from '@/lib/care/reports/generator';
 import { writeAuditLog } from '@/lib/care/audit';
 import type { CareDocumentType } from '@/lib/care/types';
@@ -30,6 +31,10 @@ const TYPE_LABELS: Record<CareDocumentType, string> = {
 export async function GET(request: Request) {
   const auth = await requireAuth();
   if (!auth) return errorResponse('Nicht autorisiert', 401);
+
+  // Subscription-Gate: Plus erforderlich
+  const sub = await requireSubscription(auth.supabase, auth.user.id, 'plus');
+  if (sub instanceof NextResponse) return sub;
 
   const { supabase, user } = auth;
   const url = new URL(request.url);
@@ -66,6 +71,10 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   const auth = await requireAuth();
   if (!auth) return errorResponse('Nicht autorisiert', 401);
+
+  // Subscription-Gate: Plus erforderlich
+  const sub = await requireSubscription(auth.supabase, auth.user.id, 'plus');
+  if (sub instanceof NextResponse) return sub;
 
   const { supabase, user } = auth;
 

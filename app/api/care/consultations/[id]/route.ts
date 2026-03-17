@@ -1,8 +1,8 @@
 // Nachbar.io — Patienten-API: Terminverhandlung (Bestätigen/Gegenvorschlag/Ablehnen)
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
 import { canTransition, type AppointmentStatus } from "@/lib/consultation/appointment-status";
 import { createCareLogger } from "@/lib/care/logger";
+import { requireAuth, requireSubscription, unauthorizedResponse } from "@/lib/care/api-helpers";
 import { sendAppointmentPush, sendAppointmentEmail } from "@/lib/consultation/notifications";
 
 const ACTION_TO_STATUS: Record<string, AppointmentStatus> = {
@@ -18,13 +18,19 @@ export async function PATCH(
 ) {
   const log = createCareLogger("care/consultations/PATCH");
   const { id } = await params;
-  const supabase = await createClient();
 
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) {
+  // Auth
+  const auth = await requireAuth();
+  if (!auth) {
     log.done(401);
-    return NextResponse.json({ error: "Nicht authentifiziert" }, { status: 401 });
+    return unauthorizedResponse();
   }
+
+  // Subscription-Gate: Plus erforderlich
+  const sub = await requireSubscription(auth.supabase, auth.user.id, 'plus');
+  if (sub instanceof NextResponse) return sub;
+
+  const { supabase, user } = auth;
 
   const body = await req.json();
   const { action, scheduled_at } = body;

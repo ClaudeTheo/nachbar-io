@@ -1,7 +1,8 @@
 // app/api/care/reports/[id]/route.ts
 // Nachbar.io — Einzelnen Bericht laden
 
-import { requireAuth, requireCareAccess, errorResponse, successResponse } from '@/lib/care/api-helpers';
+import { NextResponse } from 'next/server';
+import { requireAuth, requireSubscription, requireCareAccess, errorResponse, successResponse } from '@/lib/care/api-helpers';
 
 /**
  * GET /api/care/reports/[id]
@@ -13,6 +14,10 @@ export async function GET(
 ) {
   const auth = await requireAuth();
   if (!auth) return errorResponse('Nicht autorisiert', 401);
+
+  // Subscription-Gate: Plus erforderlich
+  const sub = await requireSubscription(auth.supabase, auth.user.id, 'plus');
+  if (sub instanceof NextResponse) return sub;
 
   const { supabase } = auth;
   const { id } = await params;

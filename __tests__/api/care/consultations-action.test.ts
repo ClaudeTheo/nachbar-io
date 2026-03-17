@@ -3,7 +3,8 @@ import { NextRequest } from "next/server";
 
 // Mock Supabase
 const mockSingle = vi.fn();
-const mockEq = vi.fn().mockReturnValue({ single: mockSingle });
+const mockMaybeSingle = vi.fn().mockResolvedValue({ data: { plan: 'plus', status: 'active' } });
+const mockEq = vi.fn().mockReturnValue({ single: mockSingle, maybeSingle: mockMaybeSingle });
 const mockUpdate = vi.fn().mockReturnValue({ eq: vi.fn().mockResolvedValue({ error: null }) });
 const mockSelect = vi.fn().mockReturnValue({ eq: mockEq });
 

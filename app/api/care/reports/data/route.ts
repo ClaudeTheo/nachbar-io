@@ -1,7 +1,8 @@
 // app/api/care/reports/data/route.ts
 // Nachbar.io — Bericht-Daten (JSON) fuer Client-Rendering
 
-import { requireAuth, requireFeature, requireCareAccess, errorResponse, successResponse, careLog } from '@/lib/care/api-helpers';
+import { NextResponse } from 'next/server';
+import { requireAuth, requireSubscription, requireFeature, requireCareAccess, errorResponse, successResponse, careLog } from '@/lib/care/api-helpers';
 import { generateReportData } from '@/lib/care/reports/generator';
 import type { CareDocumentType } from '@/lib/care/types';
 
@@ -12,6 +13,10 @@ import type { CareDocumentType } from '@/lib/care/types';
 export async function GET(request: Request) {
   const auth = await requireAuth();
   if (!auth) return errorResponse('Nicht autorisiert', 401);
+
+  // Subscription-Gate: Plus erforderlich
+  const sub = await requireSubscription(auth.supabase, auth.user.id, 'plus');
+  if (sub instanceof NextResponse) return sub;
 
   const { supabase, user } = auth;
   const url = new URL(request.url);

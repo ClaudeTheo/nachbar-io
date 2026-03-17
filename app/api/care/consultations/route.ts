@@ -1,8 +1,8 @@
 // app/api/care/consultations/route.ts
 // Nachbar.io — Online-Sprechstunde: Slots auflisten (GET) und erstellen (POST)
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
 import { createCareLogger } from '@/lib/care/logger';
+import { requireAuth, requireSubscription, unauthorizedResponse } from '@/lib/care/api-helpers';
 import { encryptField, decryptFieldsArray } from '@/lib/care/field-encryption';
 import type { ConsultationProviderType } from '@/lib/care/types';
 
@@ -11,14 +11,20 @@ const ENCRYPTED_FIELDS = ['notes'];
 
 export async function GET(request: NextRequest) {
   const log = createCareLogger('care/consultations/GET');
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
 
-  if (!user) {
+  // Auth
+  const auth = await requireAuth();
+  if (!auth) {
     log.warn('auth_failed');
     log.done(401);
-    return NextResponse.json({ error: 'Nicht authentifiziert' }, { status: 401 });
+    return unauthorizedResponse();
   }
+
+  // Subscription-Gate: Plus erforderlich
+  const sub = await requireSubscription(auth.supabase, auth.user.id, 'plus');
+  if (sub instanceof NextResponse) return sub;
+
+  const { supabase, user } = auth;
 
   const quarterId = request.nextUrl.searchParams.get('quarter_id');
   const myOnly = request.nextUrl.searchParams.get('my') === 'true';
@@ -58,14 +64,20 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   const log = createCareLogger('care/consultations/POST');
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
 
-  if (!user) {
+  // Auth
+  const auth = await requireAuth();
+  if (!auth) {
     log.warn('auth_failed');
     log.done(401);
-    return NextResponse.json({ error: 'Nicht authentifiziert' }, { status: 401 });
+    return unauthorizedResponse();
   }
+
+  // Subscription-Gate: Plus erforderlich
+  const sub = await requireSubscription(auth.supabase, auth.user.id, 'plus');
+  if (sub instanceof NextResponse) return sub;
+
+  const { supabase, user } = auth;
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let body: any;

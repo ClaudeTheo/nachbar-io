@@ -2,18 +2,22 @@
 // Nachbar.io — Termine auflisten (GET) und anlegen (POST)
 
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
 import { writeAuditLog } from '@/lib/care/audit';
-import { canAccessFeature } from '@/lib/care/permissions';
-import { requireCareAccess } from '@/lib/care/api-helpers';
+import { requireAuth, requireSubscription, unauthorizedResponse, requireCareAccess } from '@/lib/care/api-helpers';
 import { encryptFields, decryptFields, decryptFieldsArray, CARE_APPOINTMENTS_ENCRYPTED_FIELDS } from '@/lib/care/field-encryption';
 import type { CareAppointmentType } from '@/lib/care/types';
 
 // GET /api/care/appointments — Termine abrufen
 export async function GET(request: NextRequest) {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return NextResponse.json({ error: 'Nicht authentifiziert' }, { status: 401 });
+  // Auth
+  const auth = await requireAuth();
+  if (!auth) return unauthorizedResponse();
+
+  // Subscription-Gate: Plus erforderlich
+  const sub = await requireSubscription(auth.supabase, auth.user.id, 'plus');
+  if (sub instanceof NextResponse) return sub;
+
+  const { supabase, user } = auth;
 
   const { searchParams } = request.nextUrl;
   const seniorId = searchParams.get('senior_id') ?? user.id;
@@ -53,15 +57,15 @@ export async function GET(request: NextRequest) {
 
 // POST /api/care/appointments — Neuen Termin anlegen
 export async function POST(request: NextRequest) {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return NextResponse.json({ error: 'Nicht authentifiziert' }, { status: 401 });
+  // Auth
+  const auth = await requireAuth();
+  if (!auth) return unauthorizedResponse();
 
-  // Feature-Gate
-  const hasAccess = await canAccessFeature(supabase, user.id, 'appointments');
-  if (!hasAccess) {
-    return NextResponse.json({ error: 'Termin-Verwaltung nicht im aktuellen Plan enthalten' }, { status: 403 });
-  }
+  // Subscription-Gate: Plus erforderlich
+  const sub = await requireSubscription(auth.supabase, auth.user.id, 'plus');
+  if (sub instanceof NextResponse) return sub;
+
+  const { supabase, user } = auth;
 
   let body: {
     title?: string;

@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { canTransition, type AppointmentStatus } from "@/lib/consultation/appointment-status";
 import { createCareLogger } from "@/lib/care/logger";
+import { sendAppointmentPush, sendAppointmentEmail } from "@/lib/consultation/notifications";
 
 const ACTION_TO_STATUS: Record<string, AppointmentStatus> = {
   confirm: "confirmed",
@@ -104,6 +105,35 @@ export async function PATCH(
   }
 
   log.info("appointment_action", { slotId: id, action, targetStatus });
+
+  // Benachrichtigung an Arzt senden (async, nicht blockierend)
+  const doctorId = slot.host_user_id ?? slot.doctor_id;
+  if (doctorId) {
+    const { data: patient } = await supabase
+      .from("users")
+      .select("display_name")
+      .eq("id", user.id)
+      .single();
+    const patientName = patient?.display_name ?? "Patient";
+    const scheduledAt = (updateData.scheduled_at as string) ?? slot.scheduled_at;
+    const event = targetStatus === "confirmed" ? "confirmed"
+      : targetStatus === "counter_proposed" ? "counter_proposed"
+      : targetStatus === "declined" ? "declined"
+      : "cancelled";
+
+    // Push + E-Mail (fire-and-forget, Fehler nicht blockierend)
+    sendAppointmentPush(doctorId, event, patientName, scheduledAt).catch(() => {});
+
+    const { data: doctor } = await supabase
+      .from("users")
+      .select("email")
+      .eq("id", doctorId)
+      .single();
+    if (doctor?.email) {
+      sendAppointmentEmail(doctor.email, event, patientName, scheduledAt).catch(() => {});
+    }
+  }
+
   log.done(200);
   return NextResponse.json({ success: true, status: targetStatus });
 }

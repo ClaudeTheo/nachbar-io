@@ -2,7 +2,7 @@
 
 import {
   Home,
-  Bell,
+  MessageSquare,
   Pill,
   Newspaper,
   CalendarDays,
@@ -12,7 +12,6 @@ import {
 } from "lucide-react";
 import { useTerminal, type TerminalScreen } from "@/lib/terminal/TerminalContext";
 import CheckinScreen from "@/components/terminal/screens/CheckinScreen";
-import EmergencyScreen from "@/components/terminal/screens/EmergencyScreen";
 import MedicationsScreen from "@/components/terminal/screens/MedicationsScreen";
 import NewsScreen from "@/components/terminal/screens/NewsScreen";
 import VideoCallScreen from "@/components/terminal/screens/VideoCallScreen";
@@ -27,8 +26,6 @@ export default function TerminalPage() {
   switch (activeScreen) {
     case "checkin":
       return <CheckinScreen />;
-    case "emergency":
-      return <EmergencyScreen />;
     case "medications":
       return <MedicationsScreen />;
     case "news":
@@ -107,11 +104,11 @@ function DashboardGrid() {
       textColor: "text-white",
     },
     {
-      key: "alerts",
-      screen: "emergency",
-      title: "Meldungen",
+      key: "board",
+      screen: "news",
+      title: "Schwarzes Brett",
       subtitle: alertsSubtitle,
-      icon: Bell,
+      icon: MessageSquare,
       bgColor: "bg-alert-amber",
       textColor: "text-anthrazit",
     },

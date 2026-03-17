@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<title>Pi-Kiosk Mockup (1280x800)</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Inter', system-ui, sans-serif; background: #F5F3EF; width: 1280px; height: 800px; overflow: hidden; display: flex; }
+
+  /* Hauptbereich */
+  .main { flex: 1; display: flex; flex-direction: column; }
+
+  /* Header */
+  .header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 12px 24px; background: white; border-bottom: 1px solid #e5e5e5;
+  }
+  .header-left { display: flex; align-items: center; gap: 16px; }
+  .temp { font-size: 28px; font-weight: 700; color: #2D3142; }
+  .greeting { font-size: 28px; font-weight: 600; color: #2D3142; }
+  .header-right { text-align: right; }
+  .date { font-size: 22px; color: #2D3142; }
+  .time { font-size: 32px; font-weight: 700; color: #2D3142; }
+
+  /* Dashboard Grid */
+  .grid {
+    flex: 1; display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr 1fr;
+    gap: 16px; padding: 16px;
+  }
+
+  /* Kacheln */
+  .tile {
+    border-radius: 24px; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; gap: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08); cursor: pointer;
+    transition: transform 0.1s;
+  }
+  .tile:active { transform: scale(0.98); }
+  .tile-icon { font-size: 52px; }
+  .tile-title { font-size: 40px; font-weight: 700; }
+  .tile-subtitle { font-size: 22px; opacity: 0.85; }
+
+  /* Farben */
+  .bg-green { background: #4CAF87; color: white; }
+  .bg-blue { background: #3B82F6; color: white; }
+  .bg-amber { background: #F59E0B; color: #2D3142; }
+  .bg-dark { background: #2D3142; color: white; }
+  .bg-green-dark { background: #3A8F6E; color: white; }
+  .bg-gray { background: #4B5563; color: white; }
+
+  /* Sidebar */
+  .sidebar {
+    width: 130px; background: #2D3142; display: flex; flex-direction: column;
+    align-items: center; padding: 16px 8px; gap: 12px;
+  }
+  .sidebar-btn {
+    width: 100%; padding: 14px 8px; border-radius: 16px; border: none;
+    background: rgba(255,255,255,0.1); color: white; font-size: 16px;
+    font-weight: 600; cursor: pointer; text-align: center;
+  }
+  .sidebar-btn.active { background: #4CAF87; }
+</style>
+</head>
+<body>
+
+<!-- Hauptbereich -->
+<div class="main">
+
+  <!-- Header -->
+  <div class="header">
+    <div class="header-left">
+      <span class="temp">&#9925; 16 &deg;C</span>
+      <span class="greeting">Guten Abend, Frau Müller</span>
+    </div>
+    <div class="header-right">
+      <div class="date">Montag, 16. März 2026</div>
+      <div class="time">19:30</div>
+    </div>
+  </div>
+
+  <!-- 6-Kachel Dashboard -->
+  <div class="grid">
+
+    <!-- 1: Wie geht's mir? -->
+    <div class="tile bg-green">
+      <div class="tile-icon">&#128522;</div>
+      <div class="tile-title">Wie geht's mir?</div>
+      <div class="tile-subtitle">Heute noch nicht geteilt</div>
+    </div>
+
+    <!-- 2: Wetter -->
+    <div class="tile bg-blue">
+      <div class="tile-icon">&#9925;</div>
+      <div class="tile-title">Wetter</div>
+      <div class="tile-subtitle">3-Tage-Vorhersage</div>
+    </div>
+
+    <!-- 3: Schwarzes Brett -->
+    <div class="tile bg-amber">
+      <div class="tile-icon">&#128172;</div>
+      <div class="tile-title">Schwarzes Brett</div>
+      <div class="tile-subtitle">2 neue Nachrichten</div>
+    </div>
+
+    <!-- 4: Neuigkeiten -->
+    <div class="tile bg-dark">
+      <div class="tile-icon">&#128240;</div>
+      <div class="tile-title">Neuigkeiten</div>
+      <div class="tile-subtitle">5 Artikel</div>
+    </div>
+
+    <!-- 5: Erinnerungen -->
+    <div class="tile bg-green-dark">
+      <div class="tile-icon">&#128276;</div>
+      <div class="tile-title">Erinnerungen</div>
+      <div class="tile-subtitle">3 heute</div>
+    </div>
+
+    <!-- 6: Wichtige Nummern -->
+    <div class="tile bg-gray">
+      <div class="tile-icon">&#128222;</div>
+      <div class="tile-title">Wichtige Nummern</div>
+      <div class="tile-subtitle">Notruf, Polizei, Arzt</div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Sidebar -->
+<div class="sidebar">
+  <div class="sidebar-btn active">&#127968;<br>Home</div>
+  <div class="sidebar-btn">&#9925;<br>Wetter</div>
+  <div class="sidebar-btn">&#128276;<br>Erinne-<br>rungen</div>
+</div>
+
+</body>
+</html>

@@ -259,7 +259,11 @@ export type ConsultationStatus =
   | 'active'
   | 'completed'
   | 'cancelled'
-  | 'no_show';
+  | 'no_show'
+  | 'proposed'
+  | 'counter_proposed'
+  | 'confirmed'
+  | 'declined';
 
 export interface ConsultationSlot {
   id: string;
@@ -278,6 +282,13 @@ export interface ConsultationSlot {
   notes: string | null;
   created_at: string;
   updated_at: string;
+  // Verhandlungsfelder (Migration 076, optional fuer Abwaertskompatibilitaet)
+  proposed_by?: string | null;
+  counter_proposed_at?: string | null;
+  previous_scheduled_at?: string | null;
+  status_changed_at?: string | null;
+  cancelled_by?: string | null;
+  doctor_id?: string | null;
 }
 
 export interface ConsultationConsent {

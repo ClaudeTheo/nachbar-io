@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
+import { NextRequest } from "next/server";
 
 // Mock Supabase
 const mockSingle = vi.fn();
@@ -36,7 +37,7 @@ describe("PATCH /api/care/consultations/[id]", () => {
     const { PATCH } = await import(
       "@/app/api/care/consultations/[id]/route"
     );
-    const req = new Request("http://localhost/api/care/consultations/123", {
+    const req = new NextRequest("http://localhost/api/care/consultations/123", {
       method: "PATCH",
       body: JSON.stringify({ action: "invalid" }),
     });

@@ -67,9 +67,10 @@ export default function ScreensaverOverlay() {
         // Fehler im Screensaver sind nicht kritisch
       }
     }
-    loadScreensaverData();
-    setCurrentPhotoIndex(0);
-    setFadeIn(true);
+    loadScreensaverData().then(() => {
+      setCurrentPhotoIndex(0);
+      setFadeIn(true);
+    });
   }, [isIdle, token]);
 
   // Uhr aktualisieren

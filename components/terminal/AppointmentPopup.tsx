@@ -33,8 +33,9 @@ export default function AppointmentPopup() {
   }, [token, dismissed]);
 
   useEffect(() => {
-    checkUpcoming();
-    const interval = setInterval(checkUpcoming, POPUP_POLL_MS);
+    const run = () => { checkUpcoming(); };
+    run();
+    const interval = setInterval(run, POPUP_POLL_MS);
     return () => clearInterval(interval);
   }, [checkUpcoming]);
 

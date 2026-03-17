@@ -21,6 +21,9 @@ export type TerminalScreen =
   | "emergency-numbers"; // Wichtige Nummern (Sidebar)
 
 interface TerminalContextValue {
+  // Device-Token (fuer direkte API-Aufrufe aus Child-Komponenten)
+  token: string;
+
   // Daten aus der Device-API
   data: TerminalStatusData | null;
   loading: boolean;
@@ -82,6 +85,7 @@ export function TerminalProvider({ token, children }: TerminalProviderProps) {
   }, []);
 
   const value: TerminalContextValue = {
+    token,
     data,
     loading,
     error,

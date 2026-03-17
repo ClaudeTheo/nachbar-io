@@ -6,6 +6,7 @@ import TerminalSidebar from "@/components/terminal/TerminalSidebar";
 import { TerminalProvider } from "@/lib/terminal/TerminalContext";
 import { NightModeGate } from "@/components/terminal/NightModeGate";
 import ScreensaverOverlay from "@/components/terminal/ScreensaverOverlay";
+import AppointmentPopup from "@/components/terminal/AppointmentPopup";
 
 /**
  * Terminal-Layout: Vollbild fuer 10" Kiosk-Display (1280x800).
@@ -39,6 +40,9 @@ export default function TerminalLayout({
 
       {/* Screensaver nach 5 Min. Inaktivitaet (z-40) */}
       <ScreensaverOverlay />
+
+      {/* Termin-Popup 15 Min. vor Termin (z-45) */}
+      <AppointmentPopup />
 
       {/* Nachtmodus-Overlay (22:00–07:00), ueberlagert alles (z-50) */}
       <NightModeGate />

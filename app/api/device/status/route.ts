@@ -58,8 +58,8 @@ export async function GET(request: NextRequest) {
   // Heutiges Datum in Berlin-Timezone (nicht UTC) fuer korrekte Tagesgrenze
   const todayBerlin = new Date().toLocaleDateString("sv-SE", { timeZone: "Europe/Berlin" }); // YYYY-MM-DD
 
-  // Parallele Abfragen
-  const [weather, alertsResult, careCheckinResult, legacyCheckinResult, newsResult] = await Promise.all([
+  // Parallele Abfragen (inkl. Welle-2-Daten: Fotos + Erinnerungen)
+  const [weather, alertsResult, careCheckinResult, legacyCheckinResult, newsResult, photosCountResult, remindersResult] = await Promise.all([
     getWeather(),
 
     // Offene Alerts im Quartier (letzte 24h)
@@ -100,6 +100,21 @@ export async function GET(request: NextRequest) {
       .gte("created_at", new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString())
       .order("published_at", { ascending: false, nullsFirst: false })
       .limit(5),
+
+    // Welle 2: Anzahl sichtbarer Fotos
+    supabase
+      .from("kiosk_photos")
+      .select("id", { count: "exact", head: true })
+      .eq("household_id", device.household_id)
+      .eq("visible", true),
+
+    // Welle 2: Aktive Erinnerungen (Stickies + Termine)
+    supabase
+      .from("kiosk_reminders")
+      .select("id, type")
+      .eq("household_id", device.household_id)
+      .is("acknowledged_at", null)
+      .limit(50),
   ]);
 
   // DB-Fehler loggen (nicht-fatal)
@@ -137,6 +152,13 @@ export async function GET(request: NextRequest) {
     publishedAt: n.published_at ?? n.created_at,
   }));
 
+  // Welle 2: Zaehler aufbereiten
+  const remindersData = remindersResult.data ?? [];
+  const photosCount = photosCountResult.count ?? 0;
+  const remindersCount = remindersData.length;
+  const stickiesCount = remindersData.filter((r: { type: string }) => r.type === "sticky").length;
+  const appointmentsToday = remindersData.filter((r: { type: string }) => r.type === "appointment").length;
+
   return NextResponse.json({
     weather,
     alerts,
@@ -147,5 +169,10 @@ export async function GET(request: NextRequest) {
     newsCount: news.length,
     userName,
     greeting: getGreeting(),
+    // Welle 2
+    photosCount,
+    remindersCount,
+    stickiesCount,
+    appointmentsToday,
   });
 }

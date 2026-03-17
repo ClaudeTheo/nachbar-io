@@ -98,6 +98,23 @@ function DashboardGrid() {
     ? `${data.newsCount} ${data.newsCount === 1 ? "Artikel" : "Artikel"}`
     : "Keine neuen";
 
+  // Erinnerungen Subtitle
+  const remindersSubtitle = data
+    ? data.stickiesCount > 0 || data.appointmentsToday > 0
+      ? [
+          data.stickiesCount > 0 ? `${data.stickiesCount} Notiz${data.stickiesCount !== 1 ? "en" : ""}` : "",
+          data.appointmentsToday > 0 ? `${data.appointmentsToday} Termin${data.appointmentsToday !== 1 ? "e" : ""}` : "",
+        ].filter(Boolean).join(" + ")
+      : "Keine neuen"
+    : "Laden...";
+
+  // Fotos Subtitle
+  const photosSubtitle = data
+    ? data.photosCount > 0
+      ? `${data.photosCount} ${data.photosCount === 1 ? "Foto" : "Fotos"}`
+      : "Noch keine Fotos"
+    : "Laden...";
+
   const tiles: DashboardTile[] = [
     {
       key: "checkin",
@@ -127,7 +144,7 @@ function DashboardGrid() {
       key: "reminders",
       screen: "reminders",
       title: "Erinnerungen",
-      subtitle: "Bald verfügbar",
+      subtitle: remindersSubtitle,
       icon: Bell,
       bgColor: "bg-[#3A8F6E]",
     },
@@ -143,7 +160,7 @@ function DashboardGrid() {
       key: "photos",
       screen: "photos",
       title: "Familienfotos",
-      subtitle: "Bald verfügbar",
+      subtitle: photosSubtitle,
       icon: Camera,
       bgColor: "bg-[#4B5563]",
     },

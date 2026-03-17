@@ -45,6 +45,11 @@ export interface TerminalStatusData {
   newsCount: number;
   userName: string;
   greeting: string;
+  // Welle 2: Fotos + Erinnerungen
+  photosCount: number;
+  remindersCount: number;
+  stickiesCount: number;
+  appointmentsToday: number;
 }
 
 interface UseTerminalDataReturn {

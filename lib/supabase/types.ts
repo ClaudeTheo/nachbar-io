@@ -7,6 +7,7 @@ export type TrustLevel = "new" | "verified" | "trusted" | "admin";
 
 export type AlertCategory =
   | "fire"
+  | "health_concern"
   | "medical"
   | "crime"
   | "water_damage"

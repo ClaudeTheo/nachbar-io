@@ -80,7 +80,7 @@ export function EmergencyBanner({ onAcknowledge }: EmergencyBannerProps) {
         {/* Roter Notfall-Header */}
         <div className="mb-4 rounded-lg bg-emergency-red p-4 text-center text-white">
           <Phone className="mx-auto mb-2 h-10 w-10" aria-hidden="true" />
-          <h2 id="emergency-title" className="text-xl font-bold">Notruf zuerst!</h2>
+          <h2 id="emergency-title" className="text-xl font-bold">Wichtiger Hinweis</h2>
         </div>
 
         {/* Notrufnummern */}
@@ -104,9 +104,9 @@ export function EmergencyBanner({ onAcknowledge }: EmergencyBannerProps) {
 
         {/* Hinweistext */}
         <p className="mb-4 text-center text-sm text-muted-foreground">
-          Bitte rufen Sie bei einem Notfall <strong>immer zuerst</strong> den
-          offiziellen Notruf an. Diese App ist kein Ersatz fuer
-          Rettungsdienste.
+          Diese App ist eine Nachbarschaftshilfe — kein Notruf- oder
+          Rettungsdienst. Wählen Sie im Notfall <strong>immer</strong> 112
+          oder 110.
         </p>
 
         {/* Zwei explizite Bestaetigungsbuttons (FMEA FM-NB-02) */}

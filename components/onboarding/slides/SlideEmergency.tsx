@@ -52,7 +52,7 @@ export function SlideEmergency() {
       {/* Text */}
       <div className="mt-10 text-center animate-fade-in-up" style={{ animationDelay: "1200ms" }}>
         <h1 className="text-2xl font-bold text-anthrazit">
-          Soforthilfe in Sekunden
+          Schnelle Hilfe im Quartier
         </h1>
         <p className="mt-2 text-base text-muted-foreground leading-relaxed">
           Wasserschaden? Stromausfall? Ihre Nachbarn sehen Ihren

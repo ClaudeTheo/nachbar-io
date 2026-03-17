@@ -47,9 +47,9 @@ export default function MedicationsPage() {
         <div>
           <h1 className="text-2xl font-bold text-anthrazit flex items-center gap-2">
             <Pill className="h-6 w-6 text-quartier-green" />
-            Medikamente
+            Erinnerungen
           </h1>
-          <p className="text-muted-foreground mt-1">Verwaltung und Einnahme-Protokoll</p>
+          <p className="text-muted-foreground mt-1">Verwaltung und Alltags-Protokoll</p>
         </div>
         <Link
           href="/care/medications/new"

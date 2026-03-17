@@ -52,7 +52,7 @@ export async function POST(request: NextRequest) {
   const { category, title, description, household_id, is_emergency } = body;
 
   // Input-Validierung
-  const VALID_CATEGORIES = ["noise", "package", "security", "fire", "medical", "crime", "other"];
+  const VALID_CATEGORIES = ["noise", "package", "security", "fire", "health_concern", "medical", "crime", "other"];
   if (!category || !VALID_CATEGORIES.includes(category)) {
     return NextResponse.json({ error: "Ungueltige Kategorie" }, { status: 400 });
   }

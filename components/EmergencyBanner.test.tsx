@@ -15,9 +15,9 @@ afterEach(() => {
 });
 
 describe("EmergencyBanner", () => {
-  it("zeigt 'Notruf zuerst!' Ueberschrift", () => {
+  it("zeigt 'Wichtiger Hinweis' Ueberschrift", () => {
     render(<EmergencyBanner onAcknowledge={vi.fn()} />);
-    expect(screen.getByText("Notruf zuerst!")).toBeInTheDocument();
+    expect(screen.getByText("Wichtiger Hinweis")).toBeInTheDocument();
   });
 
   it("zeigt tel:112 Link (Feuerwehr/Rettungsdienst)", () => {
@@ -43,7 +43,7 @@ describe("EmergencyBanner", () => {
     const { container } = render(<EmergencyBanner onAcknowledge={vi.fn()} />);
     const dialog = container.querySelector("[role='alertdialog']");
     expect(dialog).toHaveAttribute("aria-labelledby", "emergency-title");
-    const heading = screen.getByText("Notruf zuerst!");
+    const heading = screen.getByText("Wichtiger Hinweis");
     expect(heading.id).toBe("emergency-title");
   });
 
@@ -79,9 +79,10 @@ describe("EmergencyBanner", () => {
     expect(onAcknowledge).not.toHaveBeenCalled();
   });
 
-  it("zeigt den Hinweistext zum offiziellen Notruf", () => {
+  it("zeigt den Hinweistext zur Nachbarschaftshilfe", () => {
     render(<EmergencyBanner onAcknowledge={vi.fn()} />);
-    expect(screen.getByText(/offiziellen Notruf/i)).toBeInTheDocument();
+    const matches = screen.getAllByText(/Nachbarschaftshilfe/i);
+    expect(matches.length).toBeGreaterThan(0);
   });
 
   it("112 Link erscheint VOR dem 110 Link im DOM", () => {

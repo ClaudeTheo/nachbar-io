@@ -648,7 +648,7 @@ function StepKonfiguration({
 
         <ModuleToggle
           label="Care-Modul"
-          description="Senioren-Betreuung, SOS-Alerts, Medikamenten-Erinnerungen"
+          description="Nachbarschaftshilfe, Hilfeanfragen, Alltags-Erinnerungen"
           checked={formData.enableCareModule}
           onCheckedChange={(v) => update("enableCareModule", v)}
         />

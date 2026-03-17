@@ -11,9 +11,9 @@ const TYPE_LABELS: Record<CareDocumentType, string> = {
   care_report_daily: 'Tagesbericht',
   care_report_weekly: 'Wochenbericht',
   care_report_monthly: 'Monatsbericht',
-  emergency_log: 'Notfall-Protokoll',
-  medication_report: 'Medikamenten-Bericht',
-  care_aid_application: 'Pflegehilfsmittel-Antrag',
+  emergency_log: 'Hilfeanfrage-Protokoll',
+  medication_report: 'Erinnerungs-Bericht',
+  care_aid_application: 'Hilfsmittel-Antrag',
   tax_summary: 'Steuer-Zusammenfassung',
   usage_report: 'Nutzungsbericht',
 };
@@ -183,11 +183,11 @@ function ReportViewContent() {
           )}
         </div>
 
-        {/* SOS-Aktivitaet */}
+        {/* Hilfeanfrage-Aktivitaet */}
         <div className="print-section mb-6">
-          <h2 className="text-lg font-semibold text-[#2D3142] mb-3 border-b pb-2">SOS-Aktivitaet</h2>
+          <h2 className="text-lg font-semibold text-[#2D3142] mb-3 border-b pb-2">Hilfeanfrage-Aktivität</h2>
           {reportData.sos.total === 0 ? (
-            <p className="text-sm text-muted-foreground">Keine SOS-Alarme im Zeitraum.</p>
+            <p className="text-sm text-muted-foreground">Keine Hilfeanfragen im Zeitraum.</p>
           ) : (
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-sm">
               <div className="rounded-lg border p-3 text-center">

@@ -11,11 +11,11 @@ export const CARE_SOS_CATEGORIES: Array<{
   isEmergency: boolean;
   description: string;
 }> = [
-  { id: 'medical_emergency', label: 'Medizinischer Notfall', icon: '🚑', isEmergency: true, description: 'Sofort 112 anrufen' },
+  { id: 'medical_emergency', label: 'Dringende Hilfe benötigt', icon: '🚑', isEmergency: true, description: 'Bitte rufen Sie im Notfall 112 an' },
   { id: 'general_help', label: 'Allgemeine Hilfe', icon: '🤝', isEmergency: false, description: 'Ich brauche Unterstuetzung' },
   { id: 'visit_wanted', label: 'Besuch gewuenscht', icon: '👋', isEmergency: false, description: 'Ich moechte Gesellschaft' },
   { id: 'shopping', label: 'Einkauf / Besorgung', icon: '🛒', isEmergency: false, description: 'Ich brauche etwas aus dem Laden' },
-  { id: 'medication_help', label: 'Medikamentenhilfe', icon: '💊', isEmergency: false, description: 'Hilfe mit meinen Medikamenten' },
+  { id: 'medication_help', label: 'Erinnerungshilfe', icon: '💊', isEmergency: false, description: 'Hilfe mit meinen Erinnerungen' },
 ] as const;
 
 // Eskalations-Defaults
@@ -59,19 +59,19 @@ export const CARE_HELPER_ROLES: Array<{
 
 // Audit-Event-Labels (fuer UI)
 export const AUDIT_EVENT_LABELS: Record<CareAuditEventType, string> = {
-  sos_triggered: 'SOS ausgeloest',
-  sos_accepted: 'SOS angenommen',
-  sos_resolved: 'SOS geschlossen',
-  sos_escalated: 'SOS eskaliert',
-  sos_cancelled: 'SOS abgebrochen',
+  sos_triggered: 'Hilfeanfrage gesendet',
+  sos_accepted: 'Hilfeanfrage angenommen',
+  sos_resolved: 'Hilfeanfrage erledigt',
+  sos_escalated: 'Hilfeanfrage weitergeleitet',
+  sos_cancelled: 'Hilfeanfrage abgebrochen',
   checkin_ok: 'Check-in: Mir geht es gut',
   checkin_not_well: 'Check-in: Nicht so gut',
   checkin_missed: 'Check-in verpasst',
   checkin_escalated: 'Check-in eskaliert',
-  medication_taken: 'Medikament genommen',
-  medication_skipped: 'Medikament uebersprungen',
-  medication_missed: 'Medikament verpasst',
-  medication_snoozed: 'Medikament verschoben',
+  medication_taken: 'Erinnerung bestätigt',
+  medication_skipped: 'Erinnerung übersprungen',
+  medication_missed: 'Erinnerung verpasst',
+  medication_snoozed: 'Erinnerung verschoben',
   appointment_confirmed: 'Termin bestaetigt',
   appointment_missed: 'Termin verpasst',
   visit_logged: 'Besuch dokumentiert',

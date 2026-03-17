@@ -68,9 +68,9 @@ export type QuartierStreet = (typeof PILOT_QUARTIER_STREETS)[number];
 
 // Alert-Kategorien
 export const ALERT_CATEGORIES = [
-  // Notfall-Kategorien (loesen Emergency-Banner aus — 112/110 zuerst!)
+  // Dringende Kategorien (loesen Hinweis-Banner aus — 112/110 zuerst!)
   { id: "fire", label: "Feuer / Rauch", icon: "🔥", urgency: "emergency" },
-  { id: "medical", label: "Medizinischer Notfall", icon: "🚑", urgency: "emergency" },
+  { id: "health_concern", label: "Gesundheitliche Sorge", icon: "🚑", urgency: "emergency" },
   { id: "crime", label: "Einbruch / Bedrohung", icon: "🚨", urgency: "emergency" },
   // Dringende Kategorien
   { id: "water_damage", label: "Wasserschaden", icon: "💧", urgency: "high" },
@@ -88,7 +88,7 @@ export const ALERT_CATEGORIES = [
 export type AlertCategory = (typeof ALERT_CATEGORIES)[number]["id"];
 
 // Notfall-Kategorien die den Emergency-Banner auslösen
-export const EMERGENCY_CATEGORIES = ["fire", "medical", "crime"] as const;
+export const EMERGENCY_CATEGORIES = ["fire", "health_concern", "crime"] as const;
 
 // Hilfe-Börse Kategorien
 export const HELP_CATEGORIES = [

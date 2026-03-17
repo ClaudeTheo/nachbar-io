@@ -53,7 +53,7 @@ export async function GET(request: NextRequest) {
   }
 
   // Notfall-Kategorien
-  const emergencyCategories = ["fire", "medical", "crime"];
+  const emergencyCategories = ["fire", "health_concern", "medical", "crime"];
 
   // Heutiges Datum in Berlin-Timezone (nicht UTC) fuer korrekte Tagesgrenze
   const todayBerlin = new Date().toLocaleDateString("sv-SE", { timeZone: "Europe/Berlin" }); // YYYY-MM-DD

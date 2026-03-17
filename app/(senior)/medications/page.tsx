@@ -71,14 +71,14 @@ export default function SeniorMedicationsPage() {
   if (loading && dueMeds.length === 0) {
     return (
       <div className="flex min-h-[60vh] items-center justify-center">
-        <p className="text-3xl font-bold text-gray-600">Medikamente werden geladen...</p>
+        <p className="text-3xl font-bold text-gray-600">Erinnerungen werden geladen...</p>
       </div>
     );
   }
 
   return (
     <div className="space-y-6">
-      <h1 className="text-3xl font-bold text-center">Medikamente</h1>
+      <h1 className="text-3xl font-bold text-center">Erinnerungen</h1>
       <SeniorMedicationScreen
         medications={mappedMeds}
         onAction={handleAction}

@@ -149,10 +149,14 @@ export default function ImpressumPage() {
               sozialen Vernetzung von Bewohnerinnen und Bewohnern.
             </p>
             <p className="mt-2">
-              Die optionalen Pflege-Koordinationsfunktionen (Erinnerungen,
+              Die optionalen Koordinationsfunktionen (Erinnerungen,
               Tagescheck, Helfer-Uebersicht) sind organisatorische Hilfsmittel zur
               Alltagsunterstuetzung. Sie ersetzen weder professionelle Pflege,
               aerztliche Beratung noch medizinische Notrufsysteme (112/110).
+            </p>
+            <p className="mt-2">
+              Die Erinnerungsfunktion dient der Alltagsorganisation und stellt
+              keine medizinische Dosierungs-, Diagnose- oder Therapieempfehlung dar.
             </p>
             <p className="mt-2 font-medium text-anthrazit">
               Nachbar.io ist kein Medizinprodukt im Sinne der Verordnung (EU)

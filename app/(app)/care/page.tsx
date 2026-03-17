@@ -252,7 +252,7 @@ export default function CareDashboardPage() {
         >
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <AlertTriangle className="h-4 w-4" />
-            SOS-Status
+            Hilfeanfragen
           </div>
           {activeAlerts.length > 0 ? (
             <p className="text-lg font-semibold mt-1 text-emergency-red">
@@ -348,7 +348,7 @@ export default function CareDashboardPage() {
       {/* Aktive SOS-Alerts */}
       {activeAlerts.length > 0 && (
         <div className="space-y-3">
-          <h2 className="text-sm font-medium text-muted-foreground">Aktive SOS-Alarme</h2>
+          <h2 className="text-sm font-medium text-muted-foreground">Aktive Hilfeanfragen</h2>
           {activeAlerts.slice(0, 3).map((alert) => (
             <Link key={alert.id} href={`/care/sos/${alert.id}`}>
               <SosAlertCard alert={alert} showActions={true} />

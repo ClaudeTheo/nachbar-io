@@ -15,7 +15,7 @@ import { REPUTATION_LEVELS } from "./reputation";
 
 describe("EMERGENCY_CATEGORIES", () => {
   it("enthaelt genau fire, medical und crime", () => {
-    expect([...EMERGENCY_CATEGORIES]).toEqual(["fire", "medical", "crime"]);
+    expect([...EMERGENCY_CATEGORIES]).toEqual(["fire", "health_concern", "crime"]);
   });
 
   it("sind alle in ALERT_CATEGORIES enthalten", () => {

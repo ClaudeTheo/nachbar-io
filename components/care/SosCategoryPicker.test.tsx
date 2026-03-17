@@ -41,24 +41,24 @@ describe('SosCategoryPicker', () => {
 
   it('rendert alle 5 Kategorien', () => {
     render(<SosCategoryPicker />);
-    expect(screen.getByText('Medizinischer Notfall')).toBeInTheDocument();
+    expect(screen.getByText('Dringende Hilfe benötigt')).toBeInTheDocument();
     expect(screen.getByText('Allgemeine Hilfe')).toBeInTheDocument();
     expect(screen.getByText('Besuch gewuenscht')).toBeInTheDocument();
     expect(screen.getByText('Einkauf / Besorgung')).toBeInTheDocument();
-    expect(screen.getByText('Medikamentenhilfe')).toBeInTheDocument();
+    expect(screen.getByText('Erinnerungshilfe')).toBeInTheDocument();
   });
 
-  it('zeigt EmergencyBanner bei Klick auf "Medizinischer Notfall" (FMEA FM-NB-02)', () => {
+  it('zeigt EmergencyBanner bei Klick auf "Dringende Hilfe benötigt" (FMEA FM-NB-02)', () => {
     render(<SosCategoryPicker />);
-    fireEvent.click(screen.getByText('Medizinischer Notfall'));
+    fireEvent.click(screen.getByText('Dringende Hilfe benötigt'));
 
-    // EmergencyBanner muss "Notruf zuerst!" zeigen
-    expect(screen.getByText('Notruf zuerst!')).toBeInTheDocument();
+    // EmergencyBanner muss "Wichtiger Hinweis" zeigen
+    expect(screen.getByText('Wichtiger Hinweis')).toBeInTheDocument();
   });
 
   it('zeigt 112 und 110 Nummern im EmergencyBanner', () => {
     render(<SosCategoryPicker />);
-    fireEvent.click(screen.getByText('Medizinischer Notfall'));
+    fireEvent.click(screen.getByText('Dringende Hilfe benötigt'));
 
     // 112/110 koennen mehrfach vorkommen (Link + Text)
     const elements112 = screen.getAllByText(/112/);
@@ -72,7 +72,7 @@ describe('SosCategoryPicker', () => {
     fireEvent.click(screen.getByText('Allgemeine Hilfe'));
 
     // Kein Banner, stattdessen wird fetch aufgerufen
-    expect(screen.queryByText('Notruf zuerst!')).not.toBeInTheDocument();
+    expect(screen.queryByText('Wichtiger Hinweis')).not.toBeInTheDocument();
     await waitFor(() => {
       expect(mockFetch).toHaveBeenCalled();
     });

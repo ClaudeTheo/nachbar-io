@@ -543,7 +543,7 @@ export function QuarterManagement() {
               <h4 className="text-sm font-semibold text-anthrazit">Module</h4>
               <SettingsToggle
                 label="Care-Modul"
-                description="Senioren-Betreuung, SOS-Alerts, Medikamente"
+                description="Nachbarschaftshilfe, Hilfeanfragen, Erinnerungen"
                 checked={editSettings.enableCareModule ?? false}
                 onCheckedChange={(v) => setEditSettings({ ...editSettings, enableCareModule: v })}
               />
@@ -567,7 +567,7 @@ export function QuarterManagement() {
               />
               <SettingsToggle
                 label="Notfall-Banner"
-                description="112/110 Banner bei Notfallkategorien"
+                description="Hinweis-Banner bei dringenden Meldungen"
                 checked={editSettings.emergencyBannerEnabled ?? true}
                 onCheckedChange={(v) => setEditSettings({ ...editSettings, emergencyBannerEnabled: v })}
               />

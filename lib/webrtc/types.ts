@@ -24,3 +24,18 @@ export interface PeerConnectionConfig {
 
 /** Callback-Typ fuer Signaling-Events */
 export type SignalingCallback<T = unknown> = (data: T) => void;
+
+// --- Welle 3: Videochat-Erweiterungen ---
+
+/** Verbindungsqualitaet fuer Audio-only-Fallback */
+export type ConnectionQuality = 'good' | 'degraded' | 'failed';
+
+/** TURN-Server-Konfiguration (Metered.ca Pilot / eigener coturn Go-Live) */
+export interface TurnConfig {
+  url: string;
+  username: string;
+  credential: string;
+}
+
+/** Audio-only-Modus */
+export type MediaMode = 'video' | 'audio-only';

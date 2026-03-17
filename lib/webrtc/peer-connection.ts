@@ -1,17 +1,38 @@
 // WebRTC PeerConnection-Manager fuer Nachbar Plus Video-Anrufe
 // Verwaltet RTCPeerConnection, Media-Streams und ICE-Handling
 
-import type { PeerConnectionConfig, SignalingMessage, CallState, SignalingCallback } from './types';
+import type { PeerConnectionConfig, SignalingMessage, CallState, SignalingCallback, ConnectionQuality } from './types';
 import type { WebRTCSignaling } from './signaling';
 
-/** STUN-Server fuer NAT Traversal (Testphase, kein TURN) */
-const ICE_SERVERS: RTCIceServer[] = [
-  { urls: 'stun:stun.l.google.com:19302' },
-  { urls: 'stun:stun1.l.google.com:19302' },
-];
+// TURN/STUN-Konfiguration — zentral und austauschbar
+// Pilot: Metered.ca Free, Go-Live: eigener coturn (Hetzner EU)
+export function getIceServers(): RTCIceServer[] {
+  const servers: RTCIceServer[] = [
+    { urls: ['stun:stun.l.google.com:19302', 'stun:stun1.l.google.com:19302'] },
+  ];
+
+  const turnUrl = process.env.NEXT_PUBLIC_TURN_URL;
+  const turnUsername = process.env.NEXT_PUBLIC_TURN_USERNAME;
+  const turnCredential = process.env.NEXT_PUBLIC_TURN_CREDENTIAL;
+
+  if (turnUrl && turnUsername && turnCredential) {
+    servers.push({
+      urls: turnUrl,
+      username: turnUsername,
+      credential: turnCredential,
+    });
+  }
+
+  return servers;
+}
+
+/** Verbindungsqualitaet pruefen (fuer Audio-only-Fallback) */
+export function isConnectionDegraded(state: RTCPeerConnectionState): boolean {
+  return state === 'disconnected' || state === 'failed';
+}
 
 const DEFAULT_CONFIG: PeerConnectionConfig = {
-  iceServers: ICE_SERVERS,
+  iceServers: getIceServers(),
 };
 
 /**
@@ -122,6 +143,23 @@ export class PeerConnectionManager {
   /** Lokalen MediaStream zurueckgeben (z.B. fuer lokales Video-Preview) */
   getLocalStream(): MediaStream | null {
     return this.localStream;
+  }
+
+  /** Audio-only umschalten (Video-Track deaktivieren/reaktivieren) */
+  setAudioOnly(enabled: boolean): void {
+    if (!this.localStream) return;
+    this.localStream.getVideoTracks().forEach(track => {
+      track.enabled = !enabled;
+    });
+  }
+
+  /** Aktuelle Verbindungsqualitaet abfragen */
+  getConnectionQuality(): ConnectionQuality {
+    if (!this.peerConnection) return 'failed';
+    const state = this.peerConnection.connectionState;
+    if (state === 'connected') return 'good';
+    if (state === 'disconnected') return 'degraded';
+    return 'failed';
   }
 
   // --- Private Methoden ---

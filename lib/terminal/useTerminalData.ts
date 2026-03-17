@@ -4,9 +4,16 @@ import { useState, useEffect, useCallback, useRef } from "react";
 
 // --- Typen fuer die Device-API-Antwort ---
 
+export interface WeatherDay {
+  day: string;       // Deutscher Kurzname: "Mo", "Di", ...
+  tempMax: number;   // Tageshöchsttemperatur in °C
+  icon: string;      // Icon-Schluessel (sun/cloud/rain/snow/fog/storm)
+}
+
 export interface WeatherInfo {
   temp: number | null;
   icon: string;
+  forecast: WeatherDay[];
 }
 
 export interface AlertInfo {

@@ -13,10 +13,12 @@ function isNightTime(): boolean {
 export type TerminalScreen =
   | "home"
   | "checkin"
-  | "emergency"
-  | "medications"
-  | "video"
-  | "news";
+  | "board"             // Schwarzes Brett (Quartier-Nachrichten)
+  | "news"              // KI-News
+  | "reminders"         // Erinnerungen (Welle 2 Placeholder)
+  | "videochat"         // Videochat (Welle 3 Placeholder)
+  | "photos"            // Familienfotos (Welle 2 Placeholder)
+  | "emergency-numbers"; // Wichtige Nummern (Sidebar)
 
 interface TerminalContextValue {
   // Daten aus der Device-API

@@ -15,10 +15,31 @@ export type TerminalScreen =
   | "checkin"
   | "board"             // Schwarzes Brett (Quartier-Nachrichten)
   | "news"              // KI-News
-  | "reminders"         // Erinnerungen (Welle 2 Placeholder)
-  | "videochat"         // Videochat (Welle 3 Placeholder)
-  | "photos"            // Familienfotos (Welle 2 Placeholder)
-  | "emergency-numbers"; // Wichtige Nummern (Sidebar)
+  | "reminders"         // Erinnerungen (Welle 2)
+  | "videochat"         // Videochat-Kontaktliste (Welle 3)
+  | "photos"            // Familienfotos (Welle 2)
+  | "emergency-numbers" // Wichtige Nummern (Sidebar)
+  | "active-call";      // Aktiver Videoanruf (Welle 3)
+
+// Eingehender Anruf (Overlay ueber aktuellem Screen)
+export interface IncomingCallData {
+  callId: string;
+  callerId: string;
+  callerName: string;
+  callerAvatar: string | null;
+  autoAnswer: boolean;
+  offer: RTCSessionDescriptionInit;
+}
+
+// Aktiver Anruf (Video oder Audio-only)
+export interface ActiveCallData {
+  callId: string;
+  remoteUserId: string;
+  remoteName: string;
+  isInitiator: boolean;
+  offer?: RTCSessionDescriptionInit;
+  mediaMode: 'video' | 'audio-only';
+}
 
 interface TerminalContextValue {
   // Device-Token (fuer direkte API-Aufrufe aus Child-Komponenten)
@@ -42,6 +63,12 @@ interface TerminalContextValue {
   isNightMode: boolean;
   nightModeOverrideUntil: Date | null;
   dismissNightMode: () => void;
+
+  // Videoanruf-State (Welle 3)
+  incomingCall: IncomingCallData | null;
+  activeCall: ActiveCallData | null;
+  setIncomingCall: (call: IncomingCallData | null) => void;
+  setActiveCall: (call: ActiveCallData | null) => void;
 }
 
 const TerminalContext = createContext<TerminalContextValue | null>(null);
@@ -60,6 +87,8 @@ export function TerminalProvider({ token, children }: TerminalProviderProps) {
   const [activeScreen, setActiveScreenState] = useState<TerminalScreen>("home");
   const [isNightTime_, setIsNightTime] = useState(isNightTime());
   const [nightModeOverrideUntil, setNightModeOverrideUntil] = useState<Date | null>(null);
+  const [incomingCall, setIncomingCall] = useState<IncomingCallData | null>(null);
+  const [activeCall, setActiveCall] = useState<ActiveCallData | null>(null);
 
   // Jede Minute pruefen ob Nachtmodus aktiv ist
   useEffect(() => {
@@ -97,6 +126,10 @@ export function TerminalProvider({ token, children }: TerminalProviderProps) {
     isNightMode,
     nightModeOverrideUntil,
     dismissNightMode,
+    incomingCall,
+    activeCall,
+    setIncomingCall,
+    setActiveCall,
   };
 
   return (

@@ -17,13 +17,15 @@ import WichtigeNummernScreen from "@/components/terminal/screens/WichtigeNummern
 import ErinnerungenScreen from "@/components/terminal/screens/ErinnerungenScreen";
 import FamilienFotosScreen from "@/components/terminal/screens/FamilienFotosScreen";
 import VideochatScreen from "@/components/terminal/screens/VideochatScreen";
+import KioskActiveCall from "@/components/terminal/video/KioskActiveCall";
+import KioskAudioOnlyScreen from "@/components/terminal/video/KioskAudioOnlyScreen";
 
 /**
  * Terminal-Seite: Rendert den aktiven Bildschirm basierend auf TerminalContext.
  * Home = 6-Kachel-Dashboard, andere Screens werden direkt eingeblendet.
  */
 export default function TerminalPage() {
-  const { activeScreen } = useTerminal();
+  const { activeScreen, activeCall, setActiveCall, setActiveScreen } = useTerminal();
 
   switch (activeScreen) {
     case "checkin":
@@ -39,6 +41,29 @@ export default function TerminalPage() {
       return <FamilienFotosScreen />;
     case "emergency-numbers":
       return <WichtigeNummernScreen />;
+    case "active-call":
+      if (!activeCall) return <DashboardGrid />;
+      if (activeCall.mediaMode === 'audio-only') {
+        return (
+          <KioskAudioOnlyScreen
+            callerName={activeCall.remoteName}
+            callerAvatar={null}
+            onHangup={() => { setActiveCall(null); setActiveScreen('home'); }}
+            onRetryVideo={() => setActiveCall({ ...activeCall, mediaMode: 'video' })}
+          />
+        );
+      }
+      return (
+        <KioskActiveCall
+          callId={activeCall.callId}
+          remoteUserId={activeCall.remoteUserId}
+          callerName={activeCall.remoteName}
+          isInitiator={activeCall.isInitiator}
+          incomingOffer={activeCall.offer}
+          onHangup={() => { setActiveCall(null); setActiveScreen('home'); }}
+          onAudioOnly={() => setActiveCall({ ...activeCall, mediaMode: 'audio-only' })}
+        />
+      );
     case "home":
     default:
       return <DashboardGrid />;
@@ -152,7 +177,7 @@ function DashboardGrid() {
       key: "videochat",
       screen: "videochat",
       title: "Videochat",
-      subtitle: "Bald verfügbar",
+      subtitle: "Angehörige anrufen",
       icon: Video,
       bgColor: "bg-[#3B82F6]",
     },

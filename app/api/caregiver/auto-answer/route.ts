@@ -2,13 +2,19 @@
 // Angehoerige koennen konfigurieren ob/wann ihr Anruf automatisch angenommen wird
 
 import { NextRequest, NextResponse } from "next/server";
-import { requireAuth, errorResponse } from "@/lib/care/api-helpers";
+import { requireAuth, requireSubscription, unauthorizedResponse, errorResponse } from "@/lib/care/api-helpers";
 
 // GET: Auto-Answer-Einstellungen fuer einen Caregiver-Link abrufen
 export async function GET(request: NextRequest) {
-  const authResult = await requireAuth();
-  if (!authResult) return errorResponse("Nicht angemeldet", 401);
-  const { supabase, user } = authResult;
+  // Auth
+  const auth = await requireAuth();
+  if (!auth) return unauthorizedResponse();
+
+  // Subscription-Gate: Plus erforderlich
+  const sub = await requireSubscription(auth.supabase, auth.user.id, 'plus');
+  if (sub instanceof NextResponse) return sub;
+
+  const { supabase, user } = auth;
 
   const linkId = request.nextUrl.searchParams.get("linkId");
   if (!linkId) return errorResponse("linkId fehlt", 400);
@@ -30,9 +36,15 @@ export async function GET(request: NextRequest) {
 
 // PATCH: Auto-Answer-Einstellungen aktualisieren
 export async function PATCH(request: NextRequest) {
-  const authResult = await requireAuth();
-  if (!authResult) return errorResponse("Nicht angemeldet", 401);
-  const { supabase, user } = authResult;
+  // Auth
+  const auth = await requireAuth();
+  if (!auth) return unauthorizedResponse();
+
+  // Subscription-Gate: Plus erforderlich
+  const sub = await requireSubscription(auth.supabase, auth.user.id, 'plus');
+  if (sub instanceof NextResponse) return sub;
+
+  const { supabase, user } = auth;
 
   let body: { linkId?: string; autoAnswerAllowed?: boolean; autoAnswerStart?: string; autoAnswerEnd?: string };
   try {

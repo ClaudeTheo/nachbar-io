@@ -24,9 +24,13 @@ vi.mock('@/lib/care/audit', () => ({
 
 let mockSupabase: Record<string, unknown>;
 
+// Subscription-Ergebnis fuer Plus-Gate (wird als erster from()-Aufruf benoetigt)
+const PLUS_SUB_RESULT = { data: { plan: 'plus', status: 'active' }, error: null };
+
 function createLinksGetMock(asResident: unknown[], asCaregiver: unknown[]) {
   let callIndex = 0;
   const results = [
+    PLUS_SUB_RESULT, // care_subscriptions (Subscription-Gate)
     { data: asResident, error: null },
     { data: asCaregiver, error: null },
   ];
@@ -47,6 +51,7 @@ function createLinksGetMock(asResident: unknown[], asCaregiver: unknown[]) {
       chain.is = vi.fn().mockReturnValue(chain);
       chain.order = vi.fn().mockReturnValue(terminalResult);
       chain.single = vi.fn().mockReturnValue(terminalResult);
+      chain.maybeSingle = vi.fn().mockReturnValue(terminalResult);
       chain.then = terminalResult.then.bind(terminalResult);
 
       return chain;
@@ -56,13 +61,15 @@ function createLinksGetMock(asResident: unknown[], asCaregiver: unknown[]) {
 
 function createLinksPatchMock(callResults: Array<{ data: unknown; error: unknown }>) {
   let callIndex = 0;
+  // Subscription-Gate als ersten Aufruf voranstellen
+  const allResults = [PLUS_SUB_RESULT, ...callResults];
 
   return {
     auth: {
       getUser: vi.fn().mockResolvedValue({ data: { user: mockUser }, error: null }),
     },
     from: vi.fn().mockImplementation(() => {
-      const response = callResults[callIndex] ?? { data: null, error: null };
+      const response = allResults[callIndex] ?? { data: null, error: null };
       callIndex++;
 
       const chain: Record<string, unknown> = {};
@@ -74,6 +81,7 @@ function createLinksPatchMock(callResults: Array<{ data: unknown; error: unknown
       chain.eq = vi.fn().mockReturnValue(chain);
       chain.is = vi.fn().mockReturnValue(terminalResult);
       chain.single = vi.fn().mockReturnValue(terminalResult);
+      chain.maybeSingle = vi.fn().mockReturnValue(terminalResult);
       chain.then = terminalResult.then.bind(terminalResult);
 
       return chain;

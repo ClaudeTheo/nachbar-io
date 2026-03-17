@@ -1,8 +1,8 @@
 // app/api/caregiver/invite/route.ts
 // Nachbar.io — Caregiver-Einladung: 8-stelliger Code, 24h gueltig
 
-import { NextRequest } from 'next/server';
-import { requireAuth, errorResponse, successResponse, careLog } from '@/lib/care/api-helpers';
+import { NextRequest, NextResponse } from 'next/server';
+import { requireAuth, requireSubscription, unauthorizedResponse, errorResponse, successResponse, careLog } from '@/lib/care/api-helpers';
 import { writeAuditLog } from '@/lib/care/audit';
 import { MAX_CAREGIVERS_PER_RESIDENT, INVITE_CODE_LENGTH, INVITE_CODE_EXPIRY_HOURS } from '@/lib/care/constants';
 
@@ -17,9 +17,15 @@ function generateInviteCode(): string {
 }
 
 export async function POST(_request: NextRequest) {
-  const authResult = await requireAuth();
-  if (!authResult) return errorResponse('Nicht autorisiert', 401);
-  const { supabase, user } = authResult;
+  // Auth
+  const auth = await requireAuth();
+  if (!auth) return unauthorizedResponse();
+
+  // Subscription-Gate: Plus erforderlich
+  const sub = await requireSubscription(auth.supabase, auth.user.id, 'plus');
+  if (sub instanceof NextResponse) return sub;
+
+  const { supabase, user } = auth;
 
   // Aktive Links zaehlen
   const { data: activeLinks } = await supabase

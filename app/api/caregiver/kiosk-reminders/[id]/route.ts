@@ -1,9 +1,11 @@
 // app/api/caregiver/kiosk-reminders/[id]/route.ts
 // Nachbar.io — Einzelne Kiosk-Erinnerung: Bearbeiten und Loeschen (nur eigene)
 
-import { NextRequest } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import {
   requireAuth,
+  requireSubscription,
+  unauthorizedResponse,
   errorResponse,
   successResponse,
   careLog,
@@ -20,9 +22,15 @@ export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const authResult = await requireAuth();
-  if (!authResult) return errorResponse("Nicht autorisiert", 401);
-  const { supabase, user } = authResult;
+  // Auth
+  const auth = await requireAuth();
+  if (!auth) return unauthorizedResponse();
+
+  // Subscription-Gate: Plus erforderlich
+  const sub = await requireSubscription(auth.supabase, auth.user.id, 'plus');
+  if (sub instanceof NextResponse) return sub;
+
+  const { supabase, user } = auth;
 
   const { id } = await params;
 
@@ -113,9 +121,15 @@ export async function DELETE(
   _request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const authResult = await requireAuth();
-  if (!authResult) return errorResponse("Nicht autorisiert", 401);
-  const { supabase, user } = authResult;
+  // Auth
+  const auth = await requireAuth();
+  if (!auth) return unauthorizedResponse();
+
+  // Subscription-Gate: Plus erforderlich
+  const sub = await requireSubscription(auth.supabase, auth.user.id, 'plus');
+  if (sub instanceof NextResponse) return sub;
+
+  const { supabase, user } = auth;
 
   const { id } = await params;
 

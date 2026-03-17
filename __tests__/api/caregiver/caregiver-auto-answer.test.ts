@@ -8,8 +8,13 @@ import { NextRequest } from 'next/server';
 
 let mockUser: { id: string; email: string } | null;
 
+// Subscription-Ergebnis fuer Plus-Gate
+const PLUS_SUB_RESULT = { data: { plan: 'plus', status: 'active' }, error: null };
+
 function createMockSupabase(callResults: Array<{ data: unknown; error: unknown }>) {
   let callIndex = 0;
+  // Subscription-Gate als ersten Aufruf voranstellen
+  const allResults = [PLUS_SUB_RESULT, ...callResults];
 
   return {
     auth: {
@@ -18,7 +23,7 @@ function createMockSupabase(callResults: Array<{ data: unknown; error: unknown }
       ),
     },
     from: vi.fn().mockImplementation(() => {
-      const response = callResults[callIndex] ?? { data: null, error: null };
+      const response = allResults[callIndex] ?? { data: null, error: null };
       callIndex++;
 
       const chain: Record<string, unknown> = {};
@@ -29,6 +34,7 @@ function createMockSupabase(callResults: Array<{ data: unknown; error: unknown }
       chain.eq = vi.fn().mockReturnValue(chain);
       chain.is = vi.fn().mockReturnValue(chain);
       chain.single = vi.fn().mockReturnValue(terminalResult);
+      chain.maybeSingle = vi.fn().mockReturnValue(terminalResult);
       chain.then = terminalResult.then.bind(terminalResult);
 
       return chain;

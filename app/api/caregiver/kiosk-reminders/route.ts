@@ -1,9 +1,11 @@
 // app/api/caregiver/kiosk-reminders/route.ts
 // Nachbar.io — Kiosk-Erinnerungen: Auflisten und Anlegen (Caregiver / Haushaltsmitglied)
 
-import { NextRequest } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import {
   requireAuth,
+  requireSubscription,
+  unauthorizedResponse,
   errorResponse,
   successResponse,
   careLog,
@@ -18,9 +20,15 @@ const VALID_TYPES = ["appointment", "sticky"] as const;
  * Erinnerungen eines Haushalts auflisten. Zugriff fuer Caregiver und Haushaltsmitglieder.
  */
 export async function GET(request: NextRequest) {
-  const authResult = await requireAuth();
-  if (!authResult) return errorResponse("Nicht autorisiert", 401);
-  const { supabase, user } = authResult;
+  // Auth
+  const auth = await requireAuth();
+  if (!auth) return unauthorizedResponse();
+
+  // Subscription-Gate: Plus erforderlich
+  const sub = await requireSubscription(auth.supabase, auth.user.id, 'plus');
+  if (sub instanceof NextResponse) return sub;
+
+  const { supabase, user } = auth;
 
   const householdId = request.nextUrl.searchParams.get("household_id");
   if (!householdId) {
@@ -72,9 +80,15 @@ export async function GET(request: NextRequest) {
  * Nur Caregiver mit aktivem Link zum Haushalt.
  */
 export async function POST(request: NextRequest) {
-  const authResult = await requireAuth();
-  if (!authResult) return errorResponse("Nicht autorisiert", 401);
-  const { supabase, user } = authResult;
+  // Auth
+  const auth = await requireAuth();
+  if (!auth) return unauthorizedResponse();
+
+  // Subscription-Gate: Plus erforderlich
+  const sub = await requireSubscription(auth.supabase, auth.user.id, 'plus');
+  if (sub instanceof NextResponse) return sub;
+
+  const { supabase, user } = auth;
 
   let body: {
     household_id?: string;

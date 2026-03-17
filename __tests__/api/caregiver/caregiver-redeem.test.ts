@@ -14,9 +14,15 @@ vi.mock('next/headers', () => ({
 
 let mockUser: { id: string; email: string } | null;
 
+// Subscription-Ergebnis fuer Plus-Gate
+const PLUS_SUB_RESULT = { data: { plan: 'plus', status: 'active' }, error: null };
+
 // Sequenzielle from()-Aufrufe mit unterschiedlichen Ergebnissen
+// Subscription-Gate wird automatisch als erster Aufruf vorangestellt (wenn mockUser gesetzt)
 function createMockSupabase(callResults: Array<{ data: unknown; error: unknown }>) {
   let callIndex = 0;
+  // Subscription-Gate als ersten Aufruf voranstellen
+  const allResults = [PLUS_SUB_RESULT, ...callResults];
 
   return {
     auth: {
@@ -25,7 +31,7 @@ function createMockSupabase(callResults: Array<{ data: unknown; error: unknown }
       ),
     },
     from: vi.fn().mockImplementation(() => {
-      const response = callResults[callIndex] ?? { data: null, error: null };
+      const response = allResults[callIndex] ?? { data: null, error: null };
       callIndex++;
 
       const chain: Record<string, unknown> = {};
@@ -37,6 +43,7 @@ function createMockSupabase(callResults: Array<{ data: unknown; error: unknown }
       chain.eq = vi.fn().mockReturnValue(chain);
       chain.is = vi.fn().mockReturnValue(terminalResult);
       chain.single = vi.fn().mockReturnValue(terminalResult);
+      chain.maybeSingle = vi.fn().mockReturnValue(terminalResult);
       chain.then = terminalResult.then.bind(terminalResult);
 
       return chain;
@@ -104,7 +111,7 @@ describe('POST /api/caregiver/redeem', () => {
     const json = await response.json();
 
     expect(response.status).toBe(401);
-    expect(json.error).toContain('autorisiert');
+    expect(json.error).toContain('authentifiziert');
   });
 
   it('gibt 400 bei fehlendem Code', async () => {

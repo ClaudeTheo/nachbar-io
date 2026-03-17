@@ -1,17 +1,23 @@
 // app/api/caregiver/links/[id]/route.ts
 // Nachbar.io — Caregiver-Link aktualisieren (Widerruf oder Heartbeat-Toggle)
 
-import { NextRequest } from 'next/server';
-import { requireAuth, errorResponse, successResponse, careLog } from '@/lib/care/api-helpers';
+import { NextRequest, NextResponse } from 'next/server';
+import { requireAuth, requireSubscription, unauthorizedResponse, errorResponse, successResponse, careLog } from '@/lib/care/api-helpers';
 import { writeAuditLog } from '@/lib/care/audit';
 
 export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const authResult = await requireAuth();
-  if (!authResult) return errorResponse('Nicht autorisiert', 401);
-  const { supabase, user } = authResult;
+  // Auth
+  const auth = await requireAuth();
+  if (!auth) return unauthorizedResponse();
+
+  // Subscription-Gate: Plus erforderlich
+  const sub = await requireSubscription(auth.supabase, auth.user.id, 'plus');
+  if (sub instanceof NextResponse) return sub;
+
+  const { supabase, user } = auth;
   const { id } = await params;
 
   // Pruefen ob der Link dem Bewohner gehoert

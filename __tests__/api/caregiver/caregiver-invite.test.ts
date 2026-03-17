@@ -62,6 +62,7 @@ function createMockSupabase() {
       chain.eq = vi.fn().mockReturnValue(chain);
       chain.is = vi.fn().mockReturnValue(terminalResult);
       chain.single = vi.fn().mockReturnValue(terminalResult);
+      chain.maybeSingle = vi.fn().mockReturnValue(terminalResult);
       // from().insert() (ohne select) soll auch resolven
       chain.then = terminalResult.then.bind(terminalResult);
 
@@ -107,10 +108,12 @@ describe('POST /api/caregiver/invite', () => {
     mockSupabase._setTableResponse('care_audit_log', null);
 
     // Wir muessen die from()-Aufrufe differenzieren:
+    // 0. care_subscriptions (Subscription-Gate) → Plus aktiv
     // 1. caregiver_links (zaehlen) → data: 2 Links
     // 2. caregiver_invites (insert) → data: { invite_code, expires_at }
     // 3. care_audit_log (insert) → OK
     const callResults: Array<{ data: unknown; error: unknown }> = [
+      { data: { plan: 'plus', status: 'active' }, error: null }, // care_subscriptions
       { data: [{ id: '1' }, { id: '2' }], error: null },         // caregiver_links
       { data: { invite_code: 'TESTCODE', expires_at: '2026-03-16T12:00:00Z' }, error: null }, // caregiver_invites
       { data: null, error: null },                                // care_audit_log
@@ -129,6 +132,7 @@ describe('POST /api/caregiver/invite', () => {
       chain.eq = vi.fn().mockReturnValue(chain);
       chain.is = vi.fn().mockReturnValue(terminalResult);
       chain.single = vi.fn().mockReturnValue(terminalResult);
+      chain.maybeSingle = vi.fn().mockReturnValue(terminalResult);
 
       return chain;
     });
@@ -147,8 +151,15 @@ describe('POST /api/caregiver/invite', () => {
     // 5 aktive Links → Limit erreicht
     const fiveLinks = [{ id: '1' }, { id: '2' }, { id: '3' }, { id: '4' }, { id: '5' }];
 
+    const callResults: Array<{ data: unknown; error: unknown }> = [
+      { data: { plan: 'plus', status: 'active' }, error: null }, // care_subscriptions
+      { data: fiveLinks, error: null },                          // caregiver_links
+    ];
+    let callIndex = 0;
+
     mockSupabase.from = vi.fn().mockImplementation(() => {
-      const response = { data: fiveLinks, error: null };
+      const response = callResults[callIndex] ?? { data: fiveLinks, error: null };
+      callIndex++;
       const chain: Record<string, unknown> = {};
       const terminalResult = Promise.resolve(response);
 
@@ -157,6 +168,7 @@ describe('POST /api/caregiver/invite', () => {
       chain.eq = vi.fn().mockReturnValue(chain);
       chain.is = vi.fn().mockReturnValue(terminalResult);
       chain.single = vi.fn().mockReturnValue(terminalResult);
+      chain.maybeSingle = vi.fn().mockReturnValue(terminalResult);
 
       return chain;
     });
@@ -179,6 +191,6 @@ describe('POST /api/caregiver/invite', () => {
     const json = await response.json();
 
     expect(response.status).toBe(401);
-    expect(json.error).toContain('autorisiert');
+    expect(json.error).toContain('authentifiziert');
   });
 });

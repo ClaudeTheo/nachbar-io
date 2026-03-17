@@ -1,20 +1,22 @@
 "use client";
 
 import {
-  Home,
+  Smile,
   MessageSquare,
-  Pill,
   Newspaper,
-  CalendarDays,
+  Bell,
   Video,
+  Camera,
   Loader2,
   AlertTriangle,
 } from "lucide-react";
 import { useTerminal, type TerminalScreen } from "@/lib/terminal/TerminalContext";
 import CheckinScreen from "@/components/terminal/screens/CheckinScreen";
-import MedicationsScreen from "@/components/terminal/screens/MedicationsScreen";
 import NewsScreen from "@/components/terminal/screens/NewsScreen";
-import VideoCallScreen from "@/components/terminal/screens/VideoCallScreen";
+import WichtigeNummernScreen from "@/components/terminal/screens/WichtigeNummernScreen";
+import ErinnerungenScreen from "@/components/terminal/screens/ErinnerungenScreen";
+import FamilienFotosScreen from "@/components/terminal/screens/FamilienFotosScreen";
+import VideochatScreen from "@/components/terminal/screens/VideochatScreen";
 
 /**
  * Terminal-Seite: Rendert den aktiven Bildschirm basierend auf TerminalContext.
@@ -26,12 +28,17 @@ export default function TerminalPage() {
   switch (activeScreen) {
     case "checkin":
       return <CheckinScreen />;
-    case "medications":
-      return <MedicationsScreen />;
+    case "board":
     case "news":
       return <NewsScreen />;
-    case "video":
-      return <VideoCallScreen />;
+    case "reminders":
+      return <ErinnerungenScreen />;
+    case "videochat":
+      return <VideochatScreen />;
+    case "photos":
+      return <FamilienFotosScreen />;
+    case "emergency-numbers":
+      return <WichtigeNummernScreen />;
     case "home":
     default:
       return <DashboardGrid />;
@@ -47,7 +54,6 @@ interface DashboardTile {
   subtitle: string;
   icon: React.ComponentType<{ className?: string }>;
   bgColor: string;
-  textColor: string;
 }
 
 function DashboardGrid() {
@@ -58,7 +64,7 @@ function DashboardGrid() {
     return (
       <div className="flex flex-col items-center justify-center h-full gap-4">
         <Loader2 className="h-20 w-20 animate-spin text-quartier-green" />
-        <p className="text-3xl text-anthrazit font-medium">Daten werden geladen...</p>
+        <p className="text-[32px] text-anthrazit font-medium">Daten werden geladen...</p>
       </div>
     );
   }
@@ -68,58 +74,46 @@ function DashboardGrid() {
     return (
       <div className="flex flex-col items-center justify-center h-full gap-4">
         <AlertTriangle className="h-20 w-20 text-alert-amber" />
-        <p className="text-3xl text-anthrazit font-medium">Verbindungsfehler</p>
-        <p className="text-[28px] text-anthrazit/70">{error}</p>
+        <p className="text-[32px] text-anthrazit font-medium">Verbindungsfehler</p>
+        <p className="text-[24px] text-anthrazit/70">{error}</p>
       </div>
     );
   }
 
-  // Letztes Check-in formatieren
-  const lastCheckinText = data?.lastCheckin
+  // Check-in Subtitle
+  const checkinSubtitle = data?.lastCheckin
     ? `Letztes: ${new Date(data.lastCheckin).toLocaleTimeString("de-DE", {
         hour: "2-digit",
         minute: "2-digit",
       })} Uhr`
-    : "Noch nicht eingecheckt";
+    : "Heute noch nicht geteilt";
 
-  // Alerts-Subtitle
-  const alertsSubtitle = data && data.alerts.length > 0
-    ? `${data.alerts.length} ${data.alerts.length === 1 ? "Meldung" : "Meldungen"}`
+  // Schwarzes Brett Subtitle
+  const boardSubtitle = data && data.alerts.length > 0
+    ? `${data.alerts.length} neue ${data.alerts.length === 1 ? "Nachricht" : "Nachrichten"}`
     : "Keine neuen";
 
-  // News-Subtitle
+  // News Subtitle
   const newsSubtitle = data && data.newsCount > 0
     ? `${data.newsCount} ${data.newsCount === 1 ? "Artikel" : "Artikel"}`
     : "Keine neuen";
 
-  // Kacheln mit Live-Daten
   const tiles: DashboardTile[] = [
     {
-      key: "home",
+      key: "checkin",
       screen: "checkin",
-      title: data?.greeting ?? "Willkommen",
-      subtitle: lastCheckinText,
-      icon: Home,
-      bgColor: "bg-quartier-green",
-      textColor: "text-white",
+      title: "Wie geht's mir?",
+      subtitle: checkinSubtitle,
+      icon: Smile,
+      bgColor: "bg-[#4CAF87]",
     },
     {
       key: "board",
-      screen: "news",
+      screen: "board",
       title: "Schwarzes Brett",
-      subtitle: alertsSubtitle,
+      subtitle: boardSubtitle,
       icon: MessageSquare,
-      bgColor: "bg-alert-amber",
-      textColor: "text-anthrazit",
-    },
-    {
-      key: "medications",
-      screen: "medications",
-      title: "Medikamente",
-      subtitle: "Alles eingenommen",
-      icon: Pill,
-      bgColor: "bg-info-blue",
-      textColor: "text-white",
+      bgColor: "bg-[#F59E0B]",
     },
     {
       key: "news",
@@ -127,26 +121,31 @@ function DashboardGrid() {
       title: "Neuigkeiten",
       subtitle: newsSubtitle,
       icon: Newspaper,
-      bgColor: "bg-anthrazit",
-      textColor: "text-white",
+      bgColor: "bg-[#2D3142]",
     },
     {
-      key: "events",
-      screen: "home",
-      title: "Termine",
-      subtitle: "Heute keine",
-      icon: CalendarDays,
-      bgColor: "bg-quartier-green-dark",
-      textColor: "text-white",
+      key: "reminders",
+      screen: "reminders",
+      title: "Erinnerungen",
+      subtitle: "Bald verfügbar",
+      icon: Bell,
+      bgColor: "bg-[#3A8F6E]",
     },
     {
-      key: "video",
-      screen: "video",
-      title: "Sprechstunde",
-      subtitle: "Naechste: --:--",
+      key: "videochat",
+      screen: "videochat",
+      title: "Videochat",
+      subtitle: "Bald verfügbar",
       icon: Video,
-      bgColor: "bg-anthrazit-light",
-      textColor: "text-white",
+      bgColor: "bg-[#3B82F6]",
+    },
+    {
+      key: "photos",
+      screen: "photos",
+      title: "Familienfotos",
+      subtitle: "Bald verfügbar",
+      icon: Camera,
+      bgColor: "bg-[#4B5563]",
     },
   ];
 
@@ -158,11 +157,11 @@ function DashboardGrid() {
           <button
             key={tile.key}
             onClick={() => setActiveScreen(tile.screen)}
-            className={`flex flex-col items-center justify-center gap-3 rounded-3xl ${tile.bgColor} ${tile.textColor} shadow-soft transition-transform active:scale-[0.98] focus-visible:ring-2 focus-visible:ring-quartier-green`}
+            className={`flex flex-col items-center justify-center gap-3 rounded-3xl ${tile.bgColor} text-white shadow-soft transition-transform active:scale-[0.98] focus-visible:ring-2 focus-visible:ring-quartier-green`}
           >
-            <Icon className="h-16 w-16" />
-            <span className="text-[44px] font-bold">{tile.title}</span>
-            <span className="text-2xl opacity-90">{tile.subtitle}</span>
+            <Icon className="h-14 w-14" />
+            <span className="text-[40px] font-bold leading-tight">{tile.title}</span>
+            <span className="text-[22px] opacity-90">{tile.subtitle}</span>
           </button>
         );
       })}

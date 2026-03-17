@@ -1,13 +1,14 @@
 // Nachbar.io — Karten-Konfiguration (gemeinsam fuer NachbarKarte + MapEditor)
 
 import { createClient } from "@/lib/supabase/client";
+import type { MapConfig } from "@/lib/quarters/types";
 
 // Standard-Kartengroesse (Pilot-Quartier), ueberschreibbar per map_config.viewBox
 export const MAP_W = 1083;
 export const MAP_H = 766;
 
 export type LampColor = "green" | "red" | "yellow" | "blue" | "orange";
-export type StreetCode = "PS" | "SN" | "OR";
+export type StreetCode = "PS" | "SN" | "OR" | "HS" | "MG" | "CS";
 
 export interface MapHouseData {
   id: string;
@@ -29,6 +30,10 @@ export const STREET_LABELS: Record<string, string> = {
   PS: "Purkersdorfer Str.",
   SN: "Sanarystraße",
   OR: "Oberer Rebberg",
+  // Laufenburg
+  HS: "Hauptstraße",
+  MG: "Marktgasse",
+  CS: "Codmanstraße",
 };
 
 // Mapping street_code → voller Strassenname (fuer Household-Lookup)
@@ -36,6 +41,10 @@ export const STREET_CODE_TO_NAME: Record<StreetCode, string> = {
   PS: "Purkersdorfer Straße",
   SN: "Sanarystraße",
   OR: "Oberer Rebberg",
+  // Laufenburg
+  HS: "Hauptstraße",
+  MG: "Marktgasse",
+  CS: "Codmanstraße",
 };
 
 export const COLOR_CYCLE: LampColor[] = ["green", "red", "yellow"];
@@ -174,6 +183,37 @@ export async function loadQuarterHouses(quarterId: string): Promise<MapHouseData
     x: h.x,
     y: h.y,
     defaultColor: h.default_color as LampColor,
+  }));
+}
+
+// Prueft ob ein Quartier Geo-Koordinaten (Leaflet) nutzt statt SVG
+export function isGeoQuarter(mapConfig?: Partial<MapConfig>): boolean {
+  return mapConfig?.type === "leaflet";
+}
+
+// Laedt Haeuser mit Geo-Koordinaten fuer ein Leaflet-Quartier
+export async function loadGeoQuarterHouses(quarterId: string): Promise<GeoMapHouseData[]> {
+  const supabase = createClient();
+  const { data, error } = await supabase
+    .from("map_houses")
+    .select("id, house_number, street_code, x, y, default_color, lat, lng, quarter_id")
+    .eq("quarter_id", quarterId)
+    .not("lat", "is", null)
+    .not("lng", "is", null)
+    .order("street_code");
+
+  if (error || !data || data.length === 0) return [];
+
+  return data.map(h => ({
+    id: h.id,
+    num: h.house_number,
+    s: h.street_code as StreetCode,
+    x: h.x ?? 0,
+    y: h.y ?? 0,
+    defaultColor: (h.default_color ?? "green") as LampColor,
+    lat: h.lat!,
+    lng: h.lng!,
+    quarterId: h.quarter_id ?? undefined,
   }));
 }
 

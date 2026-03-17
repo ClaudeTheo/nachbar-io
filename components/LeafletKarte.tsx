@@ -1,0 +1,99 @@
+"use client";
+
+import { useState, useMemo, useCallback } from "react";
+import dynamic from "next/dynamic";
+import { useQuarter } from "@/lib/quarters";
+import { useMapStatuses } from "@/lib/hooks/useMapStatuses";
+import { MapFilterBar } from "@/components/MapFilterBar";
+import { HouseInfoPanel } from "@/components/HouseInfoPanel";
+import type { GeoMapHouseData, LampColor } from "@/lib/map-houses";
+
+// Leaflet muss client-side geladen werden (kein SSR)
+const LeafletMapInner = dynamic(() => import("./LeafletMapInner"), { ssr: false });
+
+interface LeafletKarteProps {
+  quarterId?: string;
+}
+
+export function LeafletKarte({ quarterId: quarterIdProp }: LeafletKarteProps) {
+  const { currentQuarter } = useQuarter();
+  const quarterId = quarterIdProp ?? currentQuarter?.id;
+  const mapConfig = currentQuarter?.map_config;
+
+  const { geoHouses, statuses, residentCounts, loading } = useMapStatuses(quarterId, mapConfig);
+
+  const [filter, setFilter] = useState<string>("all");
+  const [selectedHouse, setSelectedHouse] = useState<GeoMapHouseData | null>(null);
+
+  // Nur Haeuser mit registrierten Bewohnern zaehlen
+  const occupiedIds = useMemo(() => new Set(
+    geoHouses.filter((h) => residentCounts[`${h.s}:${h.num}`]).map((h) => h.id),
+  ), [geoHouses, residentCounts]);
+
+  const counts = useMemo(() => ({
+    green: Object.entries(statuses).filter(([id, s]) => s === "green" && occupiedIds.has(id)).length,
+    red: Object.entries(statuses).filter(([id, s]) => s === "red" && occupiedIds.has(id)).length,
+    yellow: Object.entries(statuses).filter(([id, s]) => s === "yellow" && occupiedIds.has(id)).length,
+    blue: Object.entries(statuses).filter(([id, s]) => s === "blue" && occupiedIds.has(id)).length,
+    orange: Object.entries(statuses).filter(([id, s]) => s === "orange" && occupiedIds.has(id)).length,
+  }), [statuses, occupiedIds]);
+
+  const handleReset = useCallback(() => setFilter("all"), []);
+  const handleHouseClick = useCallback((house: GeoMapHouseData) => setSelectedHouse(house), []);
+
+  // Sichtbare Haeuser filtern
+  const visibleHouses = useMemo(() =>
+    geoHouses.filter((h) => {
+      if (!residentCounts[`${h.s}:${h.num}`]) return false;
+      const color = statuses[h.id];
+      return filter === "all" || color === filter;
+    }),
+  [geoHouses, statuses, filter, residentCounts]);
+
+  if (loading) {
+    return <div className="flex h-64 items-center justify-center text-muted-foreground">Karte wird geladen...</div>;
+  }
+
+  return (
+    <div className="flex flex-col items-center gap-2">
+      <MapFilterBar
+        counts={counts}
+        filter={filter}
+        onFilterChange={setFilter}
+        onReset={handleReset}
+        quarterName={currentQuarter?.name ?? "Quartier"}
+      />
+
+      {/* Leaflet-Karte */}
+      <div className="w-full overflow-hidden rounded-xl shadow-lg"
+        style={{ boxShadow: "0 0 0 1px #1e293b, 0 4px 24px rgba(0,0,0,0.6)", height: "400px" }}>
+        <LeafletMapInner
+          center={[currentQuarter?.center_lat ?? 47.5670, currentQuarter?.center_lng ?? 8.0640]}
+          zoom={currentQuarter?.zoom_level ?? 17}
+          tileUrl={mapConfig?.tileUrl ?? "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"}
+          houses={visibleHouses}
+          statuses={statuses}
+          residentCounts={residentCounts}
+          onHouseClick={handleHouseClick}
+        />
+      </div>
+
+      {/* Fusszeile */}
+      <div className="text-xs text-muted-foreground">
+        {Object.values(residentCounts).filter(c => c > 0).length} Nachbarn im Quartier
+        {counts.blue > 0 && ` · ${counts.blue} Urlaub`}
+        {counts.orange > 0 && ` · ${counts.orange} Paket`}
+      </div>
+
+      {/* Haus-Info Panel */}
+      {selectedHouse && (
+        <HouseInfoPanel
+          open={!!selectedHouse}
+          onOpenChange={(open) => { if (!open) setSelectedHouse(null); }}
+          streetCode={selectedHouse.s}
+          houseNumber={selectedHouse.num}
+        />
+      )}
+    </div>
+  );
+}

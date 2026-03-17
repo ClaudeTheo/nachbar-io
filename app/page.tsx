@@ -50,6 +50,9 @@ export default function LandingPage() {
         <Link href="/datenschutz" className="hover:text-anthrazit hover:underline">
           Datenschutz
         </Link>
+        <Link href="/agb" className="hover:text-anthrazit hover:underline">
+          AGB
+        </Link>
       </div>
     </div>
   );

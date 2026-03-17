@@ -1,8 +1,8 @@
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 
-// Datenschutzerklaerung gemaess DSGVO Art. 13, 14
-// TMG-konform, Stand: Maerz 2026
+// Datenschutzerklärung gemäß DSGVO Art. 13, 14
+// TDDDG-konform, Stand: März 2026
 export default function DatenschutzPage() {
   return (
     <div className="min-h-screen bg-warmwhite px-4 py-8">
@@ -12,11 +12,11 @@ export default function DatenschutzPage() {
           className="mb-6 inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-anthrazit"
         >
           <ArrowLeft className="h-4 w-4" />
-          Zurueck
+          Zurück
         </Link>
 
         <h1 className="mb-8 text-2xl font-bold text-anthrazit">
-          Datenschutzerklaerung
+          Datenschutzerklärung
         </h1>
 
         <div className="space-y-8 text-sm leading-relaxed text-anthrazit/80">
@@ -26,245 +26,480 @@ export default function DatenschutzPage() {
               1. Verantwortlicher
             </h2>
             <p>
-              Verantwortlich fuer die Datenverarbeitung auf dieser Plattform ist:
+              Verantwortlich für die Datenverarbeitung auf dieser Plattform ist:
             </p>
             <p className="mt-2">
               Thomas Theobald<br />
-              Purkersdorfer Strasse 35<br />
-              79713 Bad Saeckingen<br />
+              Purkersdorfer Straße 35<br />
+              79713 Bad Säckingen<br />
               E-Mail: ThomasTh@gmx.de
             </p>
           </section>
 
-          {/* 2. Ueberblick */}
+          {/* 2. Geltungsbereich */}
           <section>
             <h2 className="mb-2 text-lg font-semibold text-anthrazit">
-              2. Ueberblick der Verarbeitung
+              2. Geltungsbereich
             </h2>
             <p>
-              nachbar.io ist eine hyperlokale Community-App fuer das Quartier
-              Purkersdorfer Strasse / Sanarystrasse / Oberer Rebberg in Bad Saeckingen.
-              Wir verarbeiten personenbezogene Daten nur, soweit dies zur Bereitstellung
-              der Plattform erforderlich ist.
+              Diese Datenschutzerklärung gilt für alle Zugangswege zu nachbar.io:
+              die Web-App (nachbar-io.vercel.app), das Arzt-Portal
+              (nachbar-arzt.vercel.app) sowie das Pi-Kiosk-Terminal im Quartier.
+              Alle Zugangswege nutzen dieselbe Datenbank und unterliegen denselben
+              Datenschutzgrundsätzen.
             </p>
           </section>
 
-          {/* 3. Rechtsgrundlagen */}
+          {/* 3. Überblick */}
           <section>
             <h2 className="mb-2 text-lg font-semibold text-anthrazit">
-              3. Rechtsgrundlagen
+              3. Überblick der Verarbeitung
+            </h2>
+            <p>
+              nachbar.io ist eine Kommunikationsplattform für Nachbarschaftshilfe
+              und Quartiersvernetzung. Wir verarbeiten personenbezogene Daten nur,
+              soweit dies zur Bereitstellung der Plattform erforderlich ist oder
+              Sie ausdrücklich eingewilligt haben.
+            </p>
+          </section>
+
+          {/* 4. Rechtsgrundlagen */}
+          <section>
+            <h2 className="mb-2 text-lg font-semibold text-anthrazit">
+              4. Rechtsgrundlagen
             </h2>
             <ul className="ml-4 list-disc space-y-1">
               <li>
-                <strong>Art. 6 Abs. 1 lit. b DSGVO</strong> — Vertragseruellung:
-                Registrierung und Nutzung der Plattform
+                <strong>Art. 6 Abs. 1 lit. b DSGVO</strong> — Vertragserfüllung:
+                Registrierung, Nutzung der Plattform, Abwicklung kostenpflichtiger
+                Funktionen
               </li>
               <li>
                 <strong>Art. 6 Abs. 1 lit. f DSGVO</strong> — Berechtigtes Interesse:
-                Sicherheit der Plattform, Missbrauchsverhinderung
+                Sicherheit der Plattform, Missbrauchsverhinderung, Nachrichtenaufbereitung
               </li>
               <li>
                 <strong>Art. 6 Abs. 1 lit. a DSGVO</strong> — Einwilligung:
-                Push-Benachrichtigungen, optionale Profilangaben
+                Push-Benachrichtigungen, optionale Profilangaben, Freigabe von
+                Statusdaten an Angehörige
               </li>
             </ul>
+            <p className="mt-3">
+              Soweit Nutzerinnen und Nutzer in bestimmten Funktionen
+              gesundheitsbezogene Angaben machen oder daraus besondere Kategorien
+              personenbezogener Daten im Sinne von Art. 9 Abs. 1 DSGVO
+              hervorgehen, erfolgt die Verarbeitung ausschließlich auf Grundlage
+              einer gesonderten, ausdrücklichen Einwilligung gemäß
+              Art. 9 Abs. 2 lit. a DSGVO. Diese Einwilligung wird vor der
+              erstmaligen Nutzung der betreffenden Funktion eingeholt und kann
+              jederzeit widerrufen werden.
+            </p>
           </section>
 
-          {/* 4. Erhobene Daten */}
+          {/* 5. Erhobene Daten */}
           <section>
             <h2 className="mb-2 text-lg font-semibold text-anthrazit">
-              4. Welche Daten wir erheben
+              5. Welche Daten wir erheben
             </h2>
 
-            <h3 className="mt-3 font-semibold">4.1 Registrierung</h3>
+            <h3 className="mt-3 font-semibold">5.1 Registrierung</h3>
             <ul className="ml-4 list-disc space-y-1">
-              <li>E-Mail-Adresse (gespeichert als Hash, nicht im Klartext in unserer Datenbank)</li>
-              <li>Anzeigename (frei waehlbar, kein Klarname erforderlich)</li>
-              <li>Haushaltszuordnung via Einladungscode</li>
+              <li>E-Mail-Adresse (für Anmeldung via Magic Link)</li>
+              <li>Anzeigename (frei wählbar, kein Klarname erforderlich)</li>
+              <li>Haushaltszuordnung via Einladungscode oder Standortangabe</li>
             </ul>
 
-            <h3 className="mt-3 font-semibold">4.2 Nutzung der Plattform</h3>
+            <h3 className="mt-3 font-semibold">5.2 Nutzung der Plattform</h3>
             <ul className="ml-4 list-disc space-y-1">
               <li>Hilfeanfragen und -antworten</li>
-              <li>Marktplatz-Eintraege</li>
+              <li>Marktplatz-Einträge und Leihbörse</li>
               <li>Veranstaltungsteilnahmen</li>
-              <li>Direktnachrichten (nur zwischen Sender und Empfaenger sichtbar)</li>
-              <li>Kompetenzen (Skills) — nur wenn als oeffentlich markiert</li>
-              <li>Experten-Bewertungen und -Empfehlungen</li>
-              <li>Reputationsdaten (aggregierte Statistiken Ihrer Aktivitaeten)</li>
+              <li>Direktnachrichten (nur zwischen Sender und Empfänger sichtbar)</li>
+              <li>Umfragen und Abstimmungen</li>
+              <li>Kompetenzen (Skills) — nur wenn als öffentlich markiert</li>
+              <li>Bewertungen und Empfehlungen</li>
+              <li>Reputationsdaten (aggregierte Statistiken Ihrer Aktivitäten)</li>
             </ul>
 
-            <h3 className="mt-3 font-semibold">4.3 Technische Daten</h3>
+            <h3 className="mt-3 font-semibold">5.3 Koordinationsfunktionen</h3>
+            <p className="mb-1">
+              Die folgenden Funktionen sind optional und werden nur bei aktiver
+              Nutzung durch Sie erhoben:
+            </p>
             <ul className="ml-4 list-disc space-y-1">
-              <li>IP-Adresse (temporaer, fuer Sicherheit)</li>
-              <li>Push-Subscription-Daten (Endpoint, Schluessel) fuer Benachrichtigungen</li>
-              <li>Letzte Aktivitaetszeit (fuer Senioren-Check-In)</li>
+              <li>
+                <strong>Tagescheck:</strong> Statusmeldung (gut / geht so / schlecht),
+                Zeitstempel
+              </li>
+              <li>
+                <strong>Aktivitätssignal (Heartbeat):</strong> Zeitpunkt der letzten
+                Interaktion mit der App — kein Inhalt, nur Zeitstempel
+              </li>
+              <li>
+                <strong>Erinnerungen:</strong> Von Ihnen eingegebene Erinnerungstexte,
+                Zeitpunkte, Bestätigungen
+              </li>
+              <li>
+                <strong>Angehörigen-Verknüpfung:</strong> Auf Ihre Einladung hin
+                können Angehörige Ihren Aktivitätsstatus und Tagescheck-Status
+                einsehen — nicht jedoch Nachrichteninhalte, Standort oder Details
+              </li>
+              <li>
+                <strong>Einkaufshilfe:</strong> Einkaufslisten, Zuweisungen an Helfer
+              </li>
+            </ul>
+
+            <h3 className="mt-3 font-semibold">5.4 Video-Anrufe</h3>
+            <ul className="ml-4 list-disc space-y-1">
+              <li>
+                <strong>Angehörigen-Videoanrufe:</strong> Peer-to-Peer-Verbindung
+                (WebRTC). Audio- und Videodaten werden direkt zwischen den
+                Teilnehmern übertragen und nicht auf unseren Servern gespeichert.
+              </li>
+              <li>
+                <strong>Ärztliche Videosprechstunde:</strong> Über einen
+                KBV-zertifizierten Drittanbieter (MeetOne). Für die Datenverarbeitung
+                innerhalb der Videosprechstunde gelten die Datenschutzhinweise des
+                Anbieters.
+              </li>
+            </ul>
+
+            <h3 className="mt-3 font-semibold">5.5 Arzt-Portal</h3>
+            <ul className="ml-4 list-disc space-y-1">
+              <li>Arztprofil (Fachrichtung, Beschreibung, Quartierszuordnung)</li>
+              <li>Terminbuchungen (Datum, Uhrzeit, Status)</li>
+              <li>Anamnese-Bögen (verschlüsselt gespeichert)</li>
+              <li>Patientenbewertungen</li>
+            </ul>
+
+            <h3 className="mt-3 font-semibold">5.6 Zahlungsdaten</h3>
+            <p>
+              Für kostenpflichtige Funktionen (Plus, Pro) werden Zahlungsdaten
+              ausschließlich durch unseren Zahlungsdienstleister Stripe verarbeitet.
+              Wir speichern keine Kreditkarten- oder Bankdaten. Wir erhalten von
+              Stripe lediglich eine Referenz-ID sowie den Zahlungsstatus.
+            </p>
+
+            <h3 className="mt-3 font-semibold">5.7 Technische Daten</h3>
+            <ul className="ml-4 list-disc space-y-1">
+              <li>IP-Adresse (temporär, für Sicherheitszwecke)</li>
+              <li>Push-Subscription-Daten (Endpoint, Schlüssel) für Benachrichtigungen</li>
+              <li>Gerätetyp und Browser (für Kompatibilität, nicht für Tracking)</li>
             </ul>
           </section>
 
-          {/* 5. Datenweitergabe */}
+          {/* 6. Empfänger und Datenweitergabe */}
           <section>
             <h2 className="mb-2 text-lg font-semibold text-anthrazit">
-              5. Datenweitergabe an Dritte
+              6. Empfänger und Datenweitergabe
             </h2>
 
-            <h3 className="mt-3 font-semibold">5.1 Supabase (Hosting & Datenbank)</h3>
+            <h3 className="mt-3 font-semibold">6.1 Kategorien von Empfängern</h3>
+            <ul className="ml-4 list-disc space-y-1">
+              <li>
+                <strong>Andere Nutzer im Quartier:</strong> Nur Inhalte, die Sie
+                bewusst veröffentlichen (Einträge, Hilfeanfragen, Bewertungen)
+              </li>
+              <li>
+                <strong>Verknüpfte Angehörige:</strong> Nur Aktivitätsstatus und
+                Tagescheck-Status, keine Nachrichteninhalte (nur nach Ihrer
+                ausdrücklichen Einladung)
+              </li>
+              <li>
+                <strong>Quartiers-Organisationen (Pro):</strong> Nur anonymisierte
+                Statistiken und aggregierte Daten, keine personenbezogenen
+                Einzeldaten
+              </li>
+              <li>
+                <strong>Ärzte (Pro Medical):</strong> Nur Daten eigener Patienten
+                im Rahmen der Terminbuchung
+              </li>
+            </ul>
+
+            <h3 className="mt-3 font-semibold">6.2 Auftragsverarbeiter</h3>
+
+            <h4 className="mt-2 font-medium">Supabase (Datenbank & Authentifizierung)</h4>
             <p>
-              Unsere Datenbank wird bei Supabase Inc. in der EU-Region Frankfurt gehostet.
-              Es gilt ein Auftragsverarbeitungsvertrag (AVV) gemaess Art. 28 DSGVO.
-              Alle Daten verbleiben in der EU.
+              Supabase Inc., EU-Region Frankfurt. Alle Daten verbleiben in der EU.
+              Es gilt ein Auftragsverarbeitungsvertrag (AVV) gemäß Art. 28 DSGVO.
             </p>
 
-            <h3 className="mt-3 font-semibold">5.2 Vercel (Frontend-Hosting)</h3>
+            <h4 className="mt-2 font-medium">Vercel (Frontend-Hosting)</h4>
             <p>
-              Das Frontend wird ueber Vercel Inc. ausgeliefert (Region Frankfurt).
-              Es gilt ein DPA (Data Processing Agreement). Es werden keine
-              personenbezogenen Daten an Vercel uebermittelt.
+              Vercel Inc. Es gilt ein Data Processing Agreement (DPA). Über Vercel
+              werden Seitenzugriffe ausgeliefert; personenbezogene Nutzerdaten
+              werden nicht an Vercel übermittelt.
             </p>
 
-            <h3 className="mt-3 font-semibold">5.3 Anthropic (KI-Nachrichtenzusammenfassung)</h3>
+            <h4 className="mt-2 font-medium">Twilio (SMS & Sprachanrufe)</h4>
             <p>
-              Fuer die Zusammenfassung oeffentlicher Nachrichtentexte der Stadt Bad Saeckingen
-              nutzen wir die Claude API von Anthropic. Es werden <strong>ausschliesslich
-              oeffentlich zugaengliche Nachrichtentexte</strong> verarbeitet —
-              keine personenbezogenen Daten, keine Nutzerdaten, keine Adressdaten.
-              Die Verarbeitung erfolgt auf Grundlage von Art. 6 Abs. 1 lit. f DSGVO
-              (berechtigtes Interesse an lokaler Nachrichtenaufbereitung).
+              Twilio Inc., USA. Wird für den Versand von SMS (Magic-Link-Fallback)
+              und Sprachanrufe (SOS-Eskalation) genutzt. Die Übermittlung erfolgt
+              auf Grundlage von EU-Standardvertragsklauseln (SCCs) gemäß
+              Art. 46 Abs. 2 lit. c DSGVO.
             </p>
 
-            <h3 className="mt-3 font-semibold">5.4 Keine weiteren Drittanbieter</h3>
+            <h4 className="mt-2 font-medium">Stripe (Zahlungsabwicklung)</h4>
+            <p>
+              Stripe Inc., USA/Irland. Verarbeitet Zahlungsdaten für kostenpflichtige
+              Funktionen. Stripe ist als eigenständiger Verantwortlicher für die
+              Zahlungsverarbeitung tätig und unterliegt dem EU-US Data Privacy
+              Framework sowie eigenen Datenschutzrichtlinien.
+            </p>
+
+            <h4 className="mt-2 font-medium">Anthropic (KI-Nachrichtenzusammenfassung)</h4>
+            <p>
+              Anthropic PBC, USA. Wird für die Zusammenfassung öffentlich
+              zugänglicher Nachrichtentexte der Stadt Bad Säckingen verwendet.
+              Es werden <strong>ausschließlich öffentliche Nachrichtentexte</strong>
+              verarbeitet — keine personenbezogenen Daten, keine Nutzerdaten.
+              Übermittlung auf Grundlage von SCCs.
+            </p>
+
+            <h4 className="mt-2 font-medium">Metered Networks (TURN-Server)</h4>
+            <p>
+              Metered Networks Inc. Stellt TURN-Server für die Verbindungsherstellung
+              bei Video-Anrufen bereit, falls eine direkte Peer-to-Peer-Verbindung
+              nicht möglich ist. Es werden nur Verbindungsdaten (IP-Adressen)
+              temporär verarbeitet, keine Gesprächsinhalte.
+            </p>
+
+            <h3 className="mt-3 font-semibold">6.3 Keine weiteren Drittanbieter</h3>
             <p>
               Wir nutzen <strong>kein Google Analytics</strong>, keine Tracking-Pixel,
               keine Social-Media-Plugins und keine Werbedienste.
             </p>
           </section>
 
-          {/* 6. Cookies */}
+          {/* 7. Drittlandtransfer */}
           <section>
             <h2 className="mb-2 text-lg font-semibold text-anthrazit">
-              6. Cookies und lokale Speicherung
+              7. Datenübermittlung in Drittländer
             </h2>
             <p>
-              nachbar.io verwendet ausschliesslich <strong>technisch notwendige Cookies</strong>
-              fuer die Authentifizierung (Supabase Auth Session). Diese sind fuer den
-              Betrieb der Plattform zwingend erforderlich und benoetigen keine Einwilligung
-              (§ 25 Abs. 2 TDDDG / ePrivacy-Ausnahme).
+              Einige unserer Auftragsverarbeiter haben ihren Sitz in den USA
+              (Twilio, Stripe, Anthropic, Metered Networks). Die Übermittlung
+              personenbezogener Daten erfolgt auf Grundlage von:
             </p>
-            <p className="mt-2">
-              Zusaetzlich wird ein lokaler Speicherwert (localStorage) verwendet,
-              um zu merken, ob Sie den PWA-Installationshinweis geschlossen haben.
-              Dieser Wert enthaelt keine personenbezogenen Daten.
-            </p>
-          </section>
-
-          {/* 7. Betroffenenrechte */}
-          <section>
-            <h2 className="mb-2 text-lg font-semibold text-anthrazit">
-              7. Ihre Rechte
-            </h2>
-            <p>Sie haben folgende Rechte bezueglich Ihrer personenbezogenen Daten:</p>
             <ul className="ml-4 mt-2 list-disc space-y-1">
-              <li><strong>Auskunft</strong> (Art. 15 DSGVO) — Welche Daten wir ueber Sie speichern</li>
-              <li><strong>Berichtigung</strong> (Art. 16 DSGVO) — Korrektur falscher Daten</li>
-              <li><strong>Loeschung</strong> (Art. 17 DSGVO) — Loeschung Ihrer Daten und Ihres Kontos</li>
-              <li><strong>Einschraenkung</strong> (Art. 18 DSGVO) — Einschraenkung der Verarbeitung</li>
-              <li><strong>Datenuebertragbarkeit</strong> (Art. 20 DSGVO) — Export Ihrer Daten</li>
-              <li><strong>Widerspruch</strong> (Art. 21 DSGVO) — Widerspruch gegen Verarbeitung</li>
-              <li><strong>Widerruf</strong> (Art. 7 Abs. 3 DSGVO) — Widerruf erteilter Einwilligungen</li>
+              <li>
+                EU-Standardvertragsklauseln (SCCs) gemäß Art. 46 Abs. 2 lit. c DSGVO
+              </li>
+              <li>
+                Teilnahme am EU-US Data Privacy Framework (soweit zutreffend)
+              </li>
             </ul>
             <p className="mt-2">
-              Zur Ausuebung Ihrer Rechte kontaktieren Sie uns unter ThomasTh@gmx.de.
+              Die Kerndatenbank (Supabase) befindet sich ausschließlich in der
+              EU-Region Frankfurt. Personenbezogene Nutzerdaten verlassen die EU
+              nur in dem oben beschriebenen, begrenzten Umfang.
             </p>
           </section>
 
-          {/* 8. Datenlöschung */}
+          {/* 8. Speicherfristen */}
           <section>
             <h2 className="mb-2 text-lg font-semibold text-anthrazit">
-              8. Datenloesch-Konzept
+              8. Speicherfristen
+            </h2>
+            <ul className="ml-4 list-disc space-y-1">
+              <li>
+                <strong>Kontodaten:</strong> Bis zur Löschung Ihres Kontos
+              </li>
+              <li>
+                <strong>Aktivitätssignale (Heartbeats):</strong> 90 Tage,
+                danach automatische Löschung
+              </li>
+              <li>
+                <strong>Tagescheck-Historie:</strong> 30 Tage (für Angehörige
+                einsehbar), danach automatische Löschung
+              </li>
+              <li>
+                <strong>Audit-Log (Pro-Organisationen):</strong> 12 Monate
+              </li>
+              <li>
+                <strong>Zahlungsdaten (Stripe-Referenzen):</strong> Gemäß
+                gesetzlichen Aufbewahrungspflichten (6 bzw. 10 Jahre)
+              </li>
+              <li>
+                <strong>IP-Adressen:</strong> Maximal 7 Tage
+              </li>
+            </ul>
+            <p className="mt-2">
+              Nach Ablauf der jeweiligen Frist werden die Daten automatisch
+              gelöscht oder anonymisiert.
+            </p>
+          </section>
+
+          {/* 9. Cookies und lokale Speicherung */}
+          <section>
+            <h2 className="mb-2 text-lg font-semibold text-anthrazit">
+              9. Cookies und lokale Speicherung
             </h2>
             <p>
-              Bei Loeschung Ihres Kontos werden alle personenbezogenen Daten
-              innerhalb von 30 Tagen unwiderruflich geloescht. Dies umfasst:
+              nachbar.io verwendet ausschließlich <strong>technisch notwendige
+              Cookies</strong> für die Authentifizierung (Supabase Auth Session).
+              Diese sind für den Betrieb der Plattform zwingend erforderlich und
+              benötigen keine Einwilligung (§ 25 Abs. 2 TDDDG / ePrivacy-Ausnahme).
+            </p>
+            <p className="mt-2">
+              Zusätzlich werden lokale Speicherwerte (localStorage) verwendet,
+              um Einstellungen wie den PWA-Installationshinweis oder die
+              Bestätigung von Hinweisdialogen zu speichern. Diese Werte enthalten
+              keine personenbezogenen Daten.
+            </p>
+          </section>
+
+          {/* 10. Ihre Rechte */}
+          <section>
+            <h2 className="mb-2 text-lg font-semibold text-anthrazit">
+              10. Ihre Rechte
+            </h2>
+            <p>Sie haben folgende Rechte bezüglich Ihrer personenbezogenen Daten:</p>
+            <ul className="ml-4 mt-2 list-disc space-y-1">
+              <li><strong>Auskunft</strong> (Art. 15 DSGVO) — Welche Daten wir über Sie speichern</li>
+              <li><strong>Berichtigung</strong> (Art. 16 DSGVO) — Korrektur unrichtiger Daten</li>
+              <li><strong>Löschung</strong> (Art. 17 DSGVO) — Löschung Ihrer Daten und Ihres Kontos</li>
+              <li><strong>Einschränkung</strong> (Art. 18 DSGVO) — Einschränkung der Verarbeitung</li>
+              <li><strong>Datenübertragbarkeit</strong> (Art. 20 DSGVO) — Export Ihrer Daten in maschinenlesbarem Format</li>
+              <li><strong>Widerspruch</strong> (Art. 21 DSGVO) — Widerspruch gegen Verarbeitung auf Basis berechtigter Interessen</li>
+            </ul>
+            <p className="mt-3 font-medium text-anthrazit">
+              Widerruf von Einwilligungen:
+            </p>
+            <p>
+              Soweit die Verarbeitung auf Ihrer Einwilligung beruht, können Sie
+              diese jederzeit mit Wirkung für die Zukunft widerrufen. Die
+              Rechtmäßigkeit der bis zum Widerruf erfolgten Verarbeitung bleibt
+              unberührt. Den Widerruf können Sie in den App-Einstellungen vornehmen
+              oder per E-Mail an ThomasTh@gmx.de mitteilen.
+            </p>
+          </section>
+
+          {/* 11. Kontolöschung und Datenlöschung */}
+          <section>
+            <h2 className="mb-2 text-lg font-semibold text-anthrazit">
+              11. Kontolöschung und Datenlöschung
+            </h2>
+            <p>
+              Sie können Ihr Konto jederzeit in den Profileinstellungen unter
+              „Konto löschen" selbständig löschen. Bei Löschung Ihres Kontos werden
+              alle personenbezogenen Daten innerhalb von 30 Tagen unwiderruflich
+              gelöscht. Dies umfasst:
             </p>
             <ul className="ml-4 mt-2 list-disc space-y-1">
               <li>Nutzerprofil und Einstellungen</li>
-              <li>Haushaltszuordnung</li>
-              <li>Alle erstellten Eintraege (Alerts, Hilfe, Marktplatz, Events)</li>
+              <li>Haushaltszuordnung und Angehörigen-Verknüpfungen</li>
+              <li>Alle erstellten Einträge (Hilfeanfragen, Marktplatz, Veranstaltungen)</li>
               <li>Alle Nachrichten</li>
-              <li>Alle Bewertungen und Empfehlungen</li>
+              <li>Tagescheck-Historie und Aktivitätssignale</li>
+              <li>Erinnerungen und Einkaufslisten</li>
+              <li>Bewertungen und Empfehlungen</li>
               <li>Push-Subscriptions</li>
               <li>Reputationsdaten</li>
             </ul>
             <p className="mt-2">
-              Anonymisierte, aggregierte Statistiken (z.B. Gesamtzahl der
-              Hilfeanfragen) koennen zu Analysezwecken beibehalten werden.
+              Anonymisierte, aggregierte Statistiken (z. B. Gesamtzahl der
+              Hilfeanfragen) können zu Analysezwecken beibehalten werden, da
+              sie keinen Personenbezug mehr aufweisen.
+            </p>
+            <p className="mt-2">
+              Alternativ können Sie die Löschung Ihrer Daten per E-Mail an
+              ThomasTh@gmx.de beantragen.
             </p>
           </section>
 
-          {/* 9. Sicherheit */}
+          {/* 12. Datensicherheit */}
           <section>
             <h2 className="mb-2 text-lg font-semibold text-anthrazit">
-              9. Datensicherheit
+              12. Datensicherheit
             </h2>
             <ul className="ml-4 list-disc space-y-1">
-              <li>Verschluesselung aller Daten waehrend der Uebertragung (TLS/HTTPS)</li>
-              <li>Verschluesselung ruhender Daten in der Datenbank (AES-256)</li>
+              <li>Verschlüsselung aller Daten während der Übertragung (TLS/HTTPS)</li>
+              <li>Verschlüsselung ruhender Daten in der Datenbank (AES-256)</li>
+              <li>Zusätzliche Feldverschlüsselung (AES-256-GCM) für besonders sensible Daten</li>
               <li>Row Level Security (RLS) auf allen Datenbanktabellen</li>
               <li>Einladungscode-basierter Zugang (kein offener Zugriff)</li>
-              <li>Keine Speicherung von Klartext-Passwoertern</li>
-              <li>Regelmaessige Sicherheitsupdates</li>
+              <li>Keine Speicherung von Klartext-Passwörtern</li>
+              <li>Regelmäßige Sicherheitsupdates und Security-Audits</li>
             </ul>
           </section>
 
-          {/* 10. Reputationssystem */}
+          {/* 13. Reputationssystem */}
           <section>
             <h2 className="mb-2 text-lg font-semibold text-anthrazit">
-              10. Reputationssystem
+              13. Reputationssystem
             </h2>
             <p>
               nachbar.io berechnet ein Reputationslevel basierend auf Ihrer
-              Aktivitaet in der Nachbarschaft (z.B. Hilfeanfragen beantwortet,
-              Artikel geteilt, Events besucht). Diese Berechnung erfolgt
-              ausschliesslich aus bereits vorhandenen Interaktionsdaten.
+              Aktivität in der Nachbarschaft (z. B. Hilfeanfragen beantwortet,
+              Artikel geteilt, Veranstaltungen besucht). Diese Berechnung erfolgt
+              ausschließlich aus bereits vorhandenen Interaktionsdaten.
             </p>
             <ul className="ml-4 mt-2 list-disc space-y-1">
-              <li>Keine zusaetzlichen Daten werden fuer die Reputation erhoben</li>
-              <li>Die detaillierte Statistik ist nur fuer Sie selbst sichtbar</li>
+              <li>Keine zusätzlichen Daten werden für die Reputation erhoben</li>
+              <li>Die detaillierte Statistik ist nur für Sie selbst sichtbar</li>
               <li>Andere Nutzer sehen nur ein kleines Level-Symbol</li>
               <li>Es gibt kein Ranking und keinen Wettbewerb</li>
-              <li>Die Reputation wird bei Kontoloeschung vollstaendig geloescht</li>
+              <li>Die Reputation wird bei Kontolöschung vollständig gelöscht</li>
             </ul>
           </section>
 
-          {/* 11. Beschwerderecht */}
+          {/* 14. Automatisierte Entscheidungsfindung */}
           <section>
             <h2 className="mb-2 text-lg font-semibold text-anthrazit">
-              11. Beschwerderecht
+              14. Automatisierte Entscheidungsfindung
             </h2>
             <p>
-              Sie haben das Recht, sich bei einer Datenschutz-Aufsichtsbehoerde
-              zu beschweren (Art. 77 DSGVO). Zustaendig ist:
+              Es findet keine automatisierte Entscheidungsfindung einschließlich
+              Profiling im Sinne von Art. 22 DSGVO statt. Die Berechnung des
+              Reputationslevels dient ausschließlich der Anzeige und hat keine
+              rechtlichen oder vergleichbar erheblichen Auswirkungen.
+            </p>
+          </section>
+
+          {/* 15. Minderjährige */}
+          <section>
+            <h2 className="mb-2 text-lg font-semibold text-anthrazit">
+              15. Minderjährige
+            </h2>
+            <p>
+              nachbar.io richtet sich nicht an Kinder. Soweit eine Nutzung durch
+              Minderjährige erfolgt, darf dies nur mit Zustimmung der
+              Erziehungsberechtigten geschehen, soweit gesetzlich erforderlich.
+            </p>
+          </section>
+
+          {/* 16. Beschwerderecht */}
+          <section>
+            <h2 className="mb-2 text-lg font-semibold text-anthrazit">
+              16. Beschwerderecht
+            </h2>
+            <p>
+              Sie haben das Recht, sich bei einer Datenschutz-Aufsichtsbehörde
+              zu beschweren (Art. 77 DSGVO). Zuständig ist:
             </p>
             <p className="mt-2">
-              Der Landesbeauftragte fuer den Datenschutz und die
-              Informationsfreiheit Baden-Wuerttemberg<br />
-              Lautenschlagerstrasse 20<br />
+              Der Landesbeauftragte für den Datenschutz und die
+              Informationsfreiheit Baden-Württemberg<br />
+              Lautenschlagerstraße 20<br />
               70173 Stuttgart<br />
               poststelle@lfdi.bwl.de
             </p>
           </section>
 
-          {/* 12. Aenderungen */}
+          {/* 17. Änderungen */}
           <section>
             <h2 className="mb-2 text-lg font-semibold text-anthrazit">
-              12. Aenderungen dieser Erklaerung
+              17. Änderungen dieser Erklärung
             </h2>
             <p>
-              Diese Datenschutzerklaerung kann bei Bedarf aktualisiert werden.
-              Die aktuelle Version ist stets auf dieser Seite abrufbar.
+              Diese Datenschutzerklärung kann bei Bedarf aktualisiert werden.
+              Die aktuelle Version ist stets auf dieser Seite abrufbar. Bei
+              wesentlichen Änderungen werden registrierte Nutzer per
+              Push-Benachrichtigung oder E-Mail informiert.
             </p>
             <p className="mt-2 text-xs text-muted-foreground">
-              Stand: Maerz 2026
+              Stand: März 2026
             </p>
           </section>
         </div>
@@ -276,6 +511,9 @@ export default function DatenschutzPage() {
           </Link>
           <Link href="/datenschutz" className="font-medium text-anthrazit">
             Datenschutz
+          </Link>
+          <Link href="/agb" className="hover:text-anthrazit hover:underline">
+            AGB
           </Link>
         </div>
       </div>

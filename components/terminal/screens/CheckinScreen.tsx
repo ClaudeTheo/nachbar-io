@@ -1,12 +1,12 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { Heart, Frown, AlertTriangle, CheckCircle, ArrowLeft } from "lucide-react";
+import { Smile, Meh, Frown, CheckCircle, ArrowLeft } from "lucide-react";
 import { useTerminal } from "@/lib/terminal/TerminalContext";
 
 /**
  * Check-in Screen: Stimmungsabfrage fuer Senioren-Terminal.
- * 3 grosse Buttons (Gut / Nicht so gut / Brauche Hilfe).
+ * 3 grosse Smiley-Buttons (Gut / Geht so / Schlecht).
  * State-Machine: idle -> sending -> done (mit Auto-Rueckkehr nach 5s).
  */
 
@@ -68,10 +68,10 @@ export default function CheckinScreen() {
       {/* Zurueck-Button oben links */}
       <button
         onClick={() => setActiveScreen("home")}
-        className="absolute top-0 left-0 flex items-center gap-2 text-anthrazit/70 transition-colors"
+        className="absolute top-0 left-0 flex h-[70px] w-[70px] items-center justify-center rounded-xl text-anthrazit/70 transition-colors active:bg-anthrazit/10"
         aria-label="Zurueck zur Startseite"
       >
-        <ArrowLeft className="h-12 w-12" />
+        <ArrowLeft className="h-10 w-10" />
       </button>
 
       <h1 className="text-4xl font-bold text-anthrazit">
@@ -79,42 +79,42 @@ export default function CheckinScreen() {
       </h1>
 
       <div className="flex flex-wrap items-center justify-center gap-8">
-        {/* Gut */}
+        {/* Gut — gruener Smiley */}
         <button
           onClick={handleCheckin}
           disabled={state === "sending"}
-          aria-label="Mir geht es gut"
-          className="flex h-[260px] w-[260px] flex-col items-center justify-center gap-5 rounded-3xl bg-success-green text-white shadow-lg transition-transform active:scale-95 disabled:opacity-60"
+          aria-label="Gut"
+          className="flex h-[260px] w-[260px] flex-col items-center justify-center gap-5 rounded-3xl bg-quartier-green text-white shadow-lg transition-transform active:scale-95 disabled:opacity-60"
         >
-          <Heart className="h-20 w-20" />
+          <Smile className="h-20 w-20" />
           <span className="text-3xl font-bold leading-tight text-center">
-            Mir geht es gut
+            Gut
           </span>
         </button>
 
-        {/* Nicht so gut */}
+        {/* Geht so — gelber neutraler Smiley */}
         <button
           onClick={handleCheckin}
           disabled={state === "sending"}
-          aria-label="Nicht so gut"
+          aria-label="Geht so"
           className="flex h-[260px] w-[260px] flex-col items-center justify-center gap-5 rounded-3xl bg-alert-amber text-white shadow-lg transition-transform active:scale-95 disabled:opacity-60"
+        >
+          <Meh className="h-20 w-20" />
+          <span className="text-3xl font-bold leading-tight text-center">
+            Geht so
+          </span>
+        </button>
+
+        {/* Schlecht — roter trauriger Smiley */}
+        <button
+          onClick={handleCheckin}
+          disabled={state === "sending"}
+          aria-label="Schlecht"
+          className="flex h-[260px] w-[260px] flex-col items-center justify-center gap-5 rounded-3xl bg-emergency-red text-white shadow-lg transition-transform active:scale-95 disabled:opacity-60"
         >
           <Frown className="h-20 w-20" />
           <span className="text-3xl font-bold leading-tight text-center">
-            Nicht so gut
-          </span>
-        </button>
-
-        {/* Brauche Hilfe */}
-        <button
-          onClick={handleCheckin}
-          disabled={state === "sending"}
-          aria-label="Brauche Hilfe"
-          className="flex h-[260px] w-[260px] flex-col items-center justify-center gap-5 rounded-3xl bg-emergency-red text-white shadow-lg transition-transform active:scale-95 disabled:opacity-60"
-        >
-          <AlertTriangle className="h-20 w-20" />
-          <span className="text-3xl font-bold leading-tight text-center">
-            Brauche Hilfe
+            Schlecht
           </span>
         </button>
       </div>

@@ -16,7 +16,8 @@ const cspDirectives = [
   "worker-src 'self'",
   "manifest-src 'self'",
   "object-src 'none'",
-  "frame-src 'none'",
+  // Jitsi Meet fuer Videosprechstunde (Community), meet.jit.si als Default
+  `frame-src 'self' https://meet.jit.si ${process.env.JITSI_BASE_URL ? process.env.JITSI_BASE_URL : ''}`.trim(),
   "frame-ancestors 'none'",
   "base-uri 'self'",
   "form-action 'self'",
@@ -71,7 +72,8 @@ const nextConfig: NextConfig = {
           },
           {
             key: "Permissions-Policy",
-            value: "camera=(), microphone=(), geolocation=(self)",
+            // Kamera + Mikrofon fuer Videosprechstunde erlauben (self + Jitsi iframe)
+            value: "camera=(self), microphone=(self), geolocation=(self)",
           },
           {
             key: "Strict-Transport-Security",

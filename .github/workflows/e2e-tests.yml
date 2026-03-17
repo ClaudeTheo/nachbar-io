@@ -2,9 +2,9 @@ name: E2E Multi-Agent Tests
 
 on:
   push:
-    branches: [main, develop]
+    branches: [master]
   pull_request:
-    branches: [main]
+    branches: [master]
   # Manueller Trigger
   workflow_dispatch:
 

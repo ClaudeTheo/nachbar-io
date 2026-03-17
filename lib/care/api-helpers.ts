@@ -5,7 +5,9 @@ import { NextResponse } from 'next/server';
 import type { SupabaseClient, AuthUser } from '@supabase/supabase-js';
 import { createClient } from '@/lib/supabase/server';
 import { canAccessFeature, getCareRole } from './permissions';
-import type { CareUserRole } from './types';
+import type { CareUserRole, CareSubscriptionPlan, GateCode } from './types';
+import { PLAN_HIERARCHY } from './billing';
+import { hasFeature } from './constants';
 
 /** Standardisierte Fehler-Antwort mit Logging */
 export function errorResponse(message: string, status: number) {
@@ -100,4 +102,133 @@ export function careError(
     ...details,
   };
   console.error(JSON.stringify(logEntry));
+}
+
+/** Einheitliche 403-Antwort fuer Feature-Gates */
+export function featureGateResponse(
+  code: GateCode,
+  details: Record<string, string> = {}
+): NextResponse {
+  const messages: Record<GateCode, string> = {
+    PLAN_REQUIRED: 'Feature nicht verfügbar',
+    ROLE_REQUIRED: 'Unzureichende Berechtigung',
+    TENANT_ACCESS_REQUIRED: 'Kein Zugriff auf diese Organisation',
+  };
+
+  const body: Record<string, string> = {
+    error: messages[code],
+    code,
+    ...details,
+  };
+
+  if (code === 'PLAN_REQUIRED') {
+    body.upgradeUrl = '/care/subscription';
+  }
+
+  careLog('gate', code, { ...details });
+  return NextResponse.json(body, { status: 403 });
+}
+
+/** Abo-Guard: prueft ob User mindestens requiredPlan hat */
+export async function requireSubscription(
+  supabase: SupabaseClient,
+  userId: string,
+  requiredPlan: CareSubscriptionPlan,
+  options?: { feature?: string }
+): Promise<{ plan: CareSubscriptionPlan; status: string } | NextResponse> {
+  const { data: subscription } = await supabase
+    .from('care_subscriptions')
+    .select('plan, status')
+    .eq('user_id', userId)
+    .maybeSingle();
+
+  let plan: CareSubscriptionPlan;
+  let status: string;
+  let reason: string;
+
+  if (subscription) {
+    plan = subscription.plan;
+    status = subscription.status;
+    reason = 'from_record';
+  } else if (process.env.PILOT_MODE === 'true') {
+    plan = 'pro';
+    status = 'active';
+    reason = 'pilot_fallback';
+    careLog('gate', 'pilot_fallback', { userId });
+  } else {
+    plan = 'free';
+    status = 'active';
+    reason = 'no_subscription';
+  }
+
+  // Abgelaufene/gekuendigte Abos blockieren
+  const isActive = status === 'active' || status === 'trial';
+  if (!isActive) {
+    return featureGateResponse('PLAN_REQUIRED', { requiredPlan, reason: 'subscription_inactive' });
+  }
+
+  // Plan-Hierarchie pruefen
+  const currentIdx = PLAN_HIERARCHY.indexOf(plan);
+  const requiredIdx = PLAN_HIERARCHY.indexOf(requiredPlan);
+  if (currentIdx < requiredIdx) {
+    return featureGateResponse('PLAN_REQUIRED', { requiredPlan, reason: 'plan_insufficient' });
+  }
+
+  // Optionales Feature-Check
+  if (options?.feature && !hasFeature(plan, options.feature)) {
+    return featureGateResponse('PLAN_REQUIRED', { requiredPlan, reason: 'feature_missing' });
+  }
+
+  return { plan, status };
+}
+
+/** Org-Zugriffs-Guard: prueft org_members-Eintrag */
+export async function requireOrgAccess(
+  supabase: SupabaseClient,
+  userId: string,
+  orgId: string,
+  minRole?: 'admin'
+): Promise<Record<string, unknown> | NextResponse> {
+  const { data: member, error } = await supabase
+    .from('org_members')
+    .select('role, org_id')
+    .eq('user_id', userId)
+    .eq('org_id', orgId)
+    .single();
+
+  if (error || !member) {
+    return featureGateResponse('TENANT_ACCESS_REQUIRED');
+  }
+
+  if (minRole === 'admin' && member.role !== 'admin') {
+    return featureGateResponse('ROLE_REQUIRED', { requiredRole: 'admin' });
+  }
+
+  return member;
+}
+
+/** Arzt-Zugriffs-Guard: prueft doctor_profiles-Eintrag */
+export async function requireDoctorAccess(
+  supabase: SupabaseClient,
+  userId: string
+): Promise<Record<string, unknown> | NextResponse> {
+  const { data: profile } = await supabase
+    .from('doctor_profiles')
+    .select('user_id, visible')
+    .eq('user_id', userId)
+    .maybeSingle();
+
+  if (!profile) {
+    return featureGateResponse('ROLE_REQUIRED', { requiredRole: 'doctor' });
+  }
+
+  return profile;
+}
+
+/** 401-Antwort fuer fehlende Auth */
+export function unauthorizedResponse(): NextResponse {
+  return NextResponse.json(
+    { error: 'Nicht authentifiziert', code: 'UNAUTHORIZED' },
+    { status: 401 }
+  );
 }

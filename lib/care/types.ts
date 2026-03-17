@@ -351,3 +351,6 @@ export interface EscalationEvent {
   resolved_at: string | null;
   notified_users: string[];
 }
+
+// === Feature-Gate Response Codes ===
+export type GateCode = 'PLAN_REQUIRED' | 'ROLE_REQUIRED' | 'TENANT_ACCESS_REQUIRED';

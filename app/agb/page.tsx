@@ -141,10 +141,10 @@ export default function AGBPage() {
 
             <h3 className="mt-3 font-semibold">5.1 Kein Medizinprodukt</h3>
             <p>
-              nachbar.io ist <strong>kein Medizinprodukt</strong> im Sinne der
-              Verordnung (EU) 2017/745 (MDR). Die Plattform erhebt keinen
-              diagnostischen, therapeutischen oder klinischen
-              Überwachungszweck.
+              nachbar.io ist keine Plattform zur Diagnose, Behandlung,
+              Überwachung oder Verhütung von Krankheiten und{" "}
+              <strong>kein Medizinprodukt</strong> im Sinne der
+              Verordnung (EU) 2017/745 (MDR).
             </p>
             <p className="mt-2">
               Die optionalen Koordinationsfunktionen (Erinnerungen, Tagescheck,
@@ -221,8 +221,9 @@ export default function AGBPage() {
             <h3 className="mt-3 font-semibold">8.1 Kostenfreie Nutzung</h3>
             <p>
               Nachbar Free ist dauerhaft kostenfrei. Der Betreiber behält sich
-              vor, einzelne Zusatzfunktionen in Zukunft kostenpflichtig anzubieten.
-              Bestehende kostenfreie Funktionen bleiben erhalten.
+              vor, Funktionen weiterzuentwickeln, zu ändern oder neu zu
+              strukturieren. Wesentliche Änderungen bestehender Funktionen
+              werden vorab angekündigt.
             </p>
 
             <h3 className="mt-3 font-semibold">8.2 Kostenpflichtige Funktionen</h3>
@@ -261,9 +262,9 @@ export default function AGBPage() {
               9. Pilotbetrieb
             </h2>
             <p>
-              nachbar.io befindet sich derzeit im <strong>Pilotbetrieb</strong> für
-              das Quartier Bad Säckingen (Purkersdorfer Straße, Sanarystraße,
-              Oberer Rebberg). Im Rahmen des Pilotbetriebs gilt:
+              nachbar.io befindet sich derzeit im <strong>Pilotbetrieb</strong>,
+              insbesondere im Pilotgebiet Bad Säckingen. Im Rahmen des
+              Pilotbetriebs gilt:
             </p>
             <ul className="ml-4 mt-2 list-disc space-y-1">
               <li>
@@ -297,8 +298,8 @@ export default function AGBPage() {
               </li>
               <li>
                 Änderungen dieser AGB werden den Nutzern in geeigneter Form
-                mitgeteilt. Die weitere Nutzung nach Inkrafttreten der Änderungen
-                gilt als Zustimmung.
+                mitgeteilt. Soweit eine ausdrückliche Zustimmung rechtlich
+                erforderlich ist, wird diese gesondert eingeholt.
               </li>
             </ul>
             <p className="mt-4 text-xs text-muted-foreground">

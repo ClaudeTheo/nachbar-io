@@ -7,15 +7,18 @@ let vapidConfigured = false;
 
 function ensureVapid() {
   if (vapidConfigured) return true;
-  const pub = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
-  const priv = process.env.VAPID_PRIVATE_KEY;
-  if (!pub || !priv) return false;
+  const pub = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY?.trim();
+  const priv = process.env.VAPID_PRIVATE_KEY?.trim();
+  if (!pub || !priv) {
+    console.error(`VAPID-Keys fehlen: pub=${pub ? "SET" : "MISSING"}(${pub?.length ?? 0}), priv=${priv ? "SET" : "MISSING"}(${priv?.length ?? 0})`);
+    return false;
+  }
   try {
     webpush.setVapidDetails("mailto:nachbar@nachbar.io", pub, priv);
     vapidConfigured = true;
     return true;
-  } catch {
-    console.error("VAPID-Konfiguration fehlgeschlagen");
+  } catch (err) {
+    console.error("VAPID-Konfiguration fehlgeschlagen:", err);
     return false;
   }
 }

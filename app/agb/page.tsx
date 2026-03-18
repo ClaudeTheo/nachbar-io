@@ -27,13 +27,13 @@ export default function AGBPage() {
             </h2>
             <p>
               Diese Allgemeinen Geschäftsbedingungen regeln die Nutzung der
-              Plattform nachbar.io, betrieben von Thomas Theobald,
+              Plattform QuartierApp (quartierapp.de), betrieben von Thomas Theobald,
               Purkersdorfer Straße 35, 79713 Bad Säckingen (nachfolgend
               „Betreiber"). Sie gelten für alle Zugangswege: Web-App,
               Arzt-Portal und Pi-Kiosk-Terminal.
             </p>
             <p className="mt-2">
-              Mit der Registrierung und Nutzung von nachbar.io erklären Sie sich
+              Mit der Registrierung und Nutzung von QuartierApp erklären Sie sich
               mit diesen AGB einverstanden.
             </p>
           </section>
@@ -44,7 +44,7 @@ export default function AGBPage() {
               2. Leistungsbeschreibung
             </h2>
             <p>
-              nachbar.io ist eine Kommunikationsplattform zur Förderung der
+              QuartierApp ist eine Kommunikationsplattform zur Förderung der
               Nachbarschaftshilfe und des Quartierslebens. Die Plattform bietet
               je nach Nutzungsmodell folgende Funktionen:
             </p>
@@ -141,7 +141,7 @@ export default function AGBPage() {
 
             <h3 className="mt-3 font-semibold">5.1 Kein Medizinprodukt</h3>
             <p>
-              nachbar.io ist keine Plattform zur Diagnose, Behandlung,
+              QuartierApp ist keine Plattform zur Diagnose, Behandlung,
               Überwachung oder Verhütung von Krankheiten und{" "}
               <strong>kein Medizinprodukt</strong> im Sinne der
               Verordnung (EU) 2017/745 (MDR).
@@ -155,7 +155,7 @@ export default function AGBPage() {
 
             <h3 className="mt-3 font-semibold">5.2 Keine Notrufleistung</h3>
             <p>
-              nachbar.io ist <strong>kein Ersatz für den Notruf 112/110</strong>.
+              QuartierApp ist <strong>kein Ersatz für den Notruf 112/110</strong>.
               In medizinischen Notfällen, bei Feuer oder Straftaten ist immer
               zuerst der offizielle Notruf zu wählen. Die Hilfeanfrage-Funktion
               der App dient ausschließlich der nachbarschaftlichen Koordination
@@ -262,7 +262,7 @@ export default function AGBPage() {
               9. Pilotbetrieb
             </h2>
             <p>
-              nachbar.io befindet sich derzeit im <strong>Pilotbetrieb</strong>,
+              QuartierApp befindet sich derzeit im <strong>Pilotbetrieb</strong>,
               insbesondere im Pilotgebiet Bad Säckingen. Im Rahmen des
               Pilotbetriebs gilt:
             </p>

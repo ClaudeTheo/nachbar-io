@@ -190,7 +190,7 @@ export async function GET(request: Request) {
     // 1. Neuigkeiten-Seite abrufen
     const response = await fetch(NEWS_URL, {
       headers: {
-        "User-Agent": "nachbar.io-newsbot/1.0 (Community-App Bad Saeckingen)",
+        "User-Agent": "quartierapp-newsbot/1.0 (Community-App Bad Saeckingen)",
         "Accept": "text/html",
       },
       next: { revalidate: 0 },

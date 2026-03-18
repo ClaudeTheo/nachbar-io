@@ -20,7 +20,7 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
 // Nominatim Rate Limit: max 1 Request/Sekunde
 const NOMINATIM_URL = "https://nominatim.openstreetmap.org/search";
-const USER_AGENT = "Nachbar.io/1.0 (geocoding script)";
+const USER_AGENT = "QuartierApp/1.0 (geocoding script)";
 
 // Street-Code zu vollem Strassennamen
 const STREET_MAP: Record<string, string> = {

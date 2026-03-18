@@ -68,7 +68,7 @@ export class RegisterPage {
 
   async goto() {
     await this.page.goto("/register");
-    await this.page.getByText("Willkommen bei Nachbar.io").waitFor({
+    await this.page.getByText("Willkommen bei QuartierApp").waitFor({
       state: "visible",
       timeout: TIMEOUTS.pageLoad,
     });

@@ -32,7 +32,7 @@ export async function sendPush(
 
     // Sende an alle registrierten Endpunkte des Users
     // Absoluter URL fuer serverseitige Aufrufe (relative URLs funktionieren nicht in Node.js)
-    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://nachbar.io';
+    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://quartierapp.de';
     const response = await fetch(`${baseUrl}/api/push/send`, {
       method: 'POST',
       headers: {

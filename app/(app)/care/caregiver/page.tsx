@@ -4,7 +4,7 @@
 import { CaregiverSettings } from '@/components/care/CaregiverSettings';
 
 export const metadata = {
-  title: 'Angehoerige verwalten — Nachbar.io',
+  title: 'Angehörige verwalten — QuartierApp',
 };
 
 export default function CaregiverPage() {

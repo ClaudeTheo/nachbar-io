@@ -38,7 +38,7 @@ export function CareDisclaimer({ children }: { children: React.ReactNode }) {
           </h2>
 
           <p className="text-sm text-muted-foreground mb-4">
-            Nachbar.io unterstützt Sie bei der Organisation Ihres Alltags im Quartier.
+            QuartierApp unterstützt Sie bei der Organisation Ihres Alltags im Quartier.
           </p>
 
           <div className="space-y-3 mb-6">

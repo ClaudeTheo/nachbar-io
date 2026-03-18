@@ -8,7 +8,7 @@ export default function OnboardingAnleitungPage() {
       {/* Header */}
       <div className="mb-8 text-center">
         <h1 className="text-3xl font-bold text-anthrazit print:text-4xl">
-          Willkommen bei Nachbar.io
+          Willkommen bei QuartierApp
         </h1>
         <p className="mt-2 text-lg text-muted-foreground">
           Ihre digitale Nachbarschaft — einfach erklärt
@@ -18,10 +18,10 @@ export default function OnboardingAnleitungPage() {
       {/* Was ist Nachbar.io */}
       <div className="mb-6 rounded-xl border-2 border-quartier-green bg-quartier-green/5 p-5 print:border print:bg-white">
         <h2 className="mb-2 text-xl font-semibold text-quartier-green">
-          Was ist Nachbar.io?
+          Was ist QuartierApp?
         </h2>
         <p className="text-base leading-relaxed text-gray-700">
-          Nachbar.io ist eine Internetseite speziell für unsere Nachbarschaft in Bad Säckingen.
+          QuartierApp ist eine Internetseite speziell für unsere Nachbarschaft in Bad Säckingen.
           Sie funktioniert wie eine App auf Ihrem Handy — direkt im Internet-Browser.
           Hier können Sie Nachbarn kennenlernen, Hilfe anbieten oder suchen,
           und immer wissen, was in der Nachbarschaft los ist.
@@ -92,7 +92,7 @@ export default function OnboardingAnleitungPage() {
           App auf dem Startbildschirm (empfohlen)
         </h2>
         <p className="mb-3 text-sm text-blue-800">
-          Sie können Nachbar.io wie eine richtige App auf Ihren Startbildschirm legen.
+          Sie können QuartierApp wie eine richtige App auf Ihren Startbildschirm legen.
           Dann müssen Sie nicht jedes Mal die Adresse eintippen.
         </p>
 
@@ -145,7 +145,7 @@ export default function OnboardingAnleitungPage() {
 
       {/* Footer */}
       <div className="text-center text-sm text-muted-foreground print:mt-8">
-        <p>nachbar.io — Ihre digitale Nachbarschaft</p>
+        <p>QuartierApp — Ihre digitale Nachbarschaft</p>
         <p className="mt-1">Bad Säckingen · Purkersdorfer Straße · Sanarystraße · Oberer Rebberg</p>
       </div>
     </div>

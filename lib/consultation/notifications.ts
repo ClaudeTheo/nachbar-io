@@ -119,7 +119,7 @@ export async function sendAppointmentEmail(
       Authorization: `Bearer ${resendKey}`,
     },
     body: JSON.stringify({
-      from: "nachbar.io <noreply@nachbar.io>",
+      from: "QuartierApp <noreply@quartierapp.de>",
       to: email,
       subject: content.title,
       text: `${content.body}\n\nZum Termin: ${process.env.NEXT_PUBLIC_BASE_URL || "https://nachbar-io.vercel.app"}${content.url}`,

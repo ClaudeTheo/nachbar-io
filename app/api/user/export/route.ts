@@ -77,7 +77,7 @@ export async function GET() {
     const exportData = {
       exportInfo: {
         exportDate: new Date().toISOString(),
-        service: "Nachbar.io",
+        service: "QuartierApp",
         description: "Vollständiger Export Ihrer personenbezogenen Daten gemäß DSGVO Art. 20",
       },
       profile: profileResult.data,

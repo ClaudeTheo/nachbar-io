@@ -7,7 +7,7 @@ export default function LandingPage() {
       {/* Logo */}
       <div className="mb-8">
         <div className="mb-4 text-6xl">🏘️</div>
-        <h1 className="text-3xl font-bold text-anthrazit">nachbar.io</h1>
+        <h1 className="text-3xl font-bold text-anthrazit">QuartierApp</h1>
         <p className="mt-2 text-lg text-muted-foreground">
           Ihr digitaler Dorfplatz
         </p>

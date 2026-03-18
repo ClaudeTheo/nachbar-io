@@ -18,7 +18,7 @@ function getResend(): Resend | null {
 }
 
 // Absender-Adresse (Resend erfordert verifizierte Domain oder onboarding@resend.dev)
-const FROM_ADDRESS = process.env.EMAIL_FROM || "Nachbar.io <onboarding@resend.dev>";
+const FROM_ADDRESS = process.env.EMAIL_FROM || "QuartierApp <noreply@quartierapp.de>";
 
 // ============================================================
 // Einladungs-E-Mail
@@ -42,7 +42,7 @@ export async function sendInvitationEmail(params: {
     const { error } = await resend.emails.send({
       from: FROM_ADDRESS,
       to: params.to,
-      subject: `${params.inviterName} lädt Sie zu Nachbar.io ein`,
+      subject: `${params.inviterName} lädt Sie zu QuartierApp ein`,
       html: getInvitationEmailHtml({
         inviterName: params.inviterName,
         inviteCode: formattedCode,
@@ -86,8 +86,8 @@ export async function sendVerificationResultEmail(params: {
   }
 
   const subject = params.approved
-    ? "Willkommen bei Nachbar.io — Konto freigeschaltet!"
-    : "Nachbar.io — Verifizierung nicht bestätigt";
+    ? "Willkommen bei QuartierApp — Konto freigeschaltet!"
+    : "QuartierApp — Verifizierung nicht bestätigt";
 
   try {
     const { error } = await resend.emails.send({
@@ -125,7 +125,7 @@ function getInvitationEmailHtml(params: {
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Einladung zu Nachbar.io</title>
+  <title>Einladung zu QuartierApp</title>
 </head>
 <body style="margin:0; padding:0; background-color:#f5f5f5; font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;">
   <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#f5f5f5; padding:32px 16px;">
@@ -137,7 +137,7 @@ function getInvitationEmailHtml(params: {
           <tr>
             <td style="background-color:#2D3142; padding:28px 32px; text-align:center;">
               <h1 style="margin:0; color:#ffffff; font-size:22px; font-weight:700; letter-spacing:0.5px;">
-                🏘️ Nachbar.io
+                🏘️ QuartierApp
               </h1>
               <p style="margin:8px 0 0; color:#a0a4b8; font-size:13px;">
                 Ihre Quartiers-App
@@ -205,14 +205,14 @@ function getInvitationEmailHtml(params: {
             </td>
           </tr>
 
-          <!-- Was ist Nachbar.io? -->
+          <!-- Was ist QuartierApp? -->
           <tr>
             <td style="padding:0 32px 32px;">
               <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#fafafa; border-radius:12px;">
                 <tr>
                   <td style="padding:20px;">
                     <p style="margin:0 0 12px; color:#2D3142; font-size:14px; font-weight:600;">
-                      Was ist Nachbar.io?
+                      Was ist QuartierApp?
                     </p>
                     <table width="100%" cellpadding="0" cellspacing="0">
                       <tr>
@@ -242,7 +242,7 @@ function getInvitationEmailHtml(params: {
             <td style="background-color:#f8f8fa; padding:20px 32px; text-align:center; border-top:1px solid #eee;">
               <p style="margin:0; color:#999; font-size:11px; line-height:1.5;">
                 Diese E-Mail wurde im Auftrag von ${escapeHtml(params.inviterName)} gesendet.<br>
-                Nachbar.io — Quartiers-App Bad Säckingen<br>
+                QuartierApp — Quartiers-App Bad Säckingen<br>
                 Der Code ist 30 Tage gültig.
               </p>
             </td>
@@ -265,7 +265,7 @@ function getInvitationEmailText(params: {
 }): string {
   return `Guten Tag!
 
-${params.inviterName} aus Ihrer Nachbarschaft lädt Sie ein, Teil der Quartiers-Community Nachbar.io zu werden.
+${params.inviterName} aus Ihrer Nachbarschaft lädt Sie ein, Teil der Quartiers-Community QuartierApp zu werden.
 
 Einladung für: ${params.streetName} ${params.houseNumber}
 
@@ -274,7 +274,7 @@ Ihr Einladungscode: ${params.inviteCode}
 Registrieren Sie sich hier:
 ${params.registerUrl}
 
-Was ist Nachbar.io?
+Was ist QuartierApp?
 - Soforthilfe bei Notfällen
 - Nachbarschaftshilfe anfragen & anbieten
 - Quartiers-Veranstaltungen
@@ -284,7 +284,7 @@ Was ist Nachbar.io?
 Der Code ist 30 Tage gültig.
 
 —
-Nachbar.io — Quartiers-App Bad Säckingen`;
+QuartierApp — Quartiers-App Bad Säckingen`;
 }
 
 // ============================================================
@@ -314,12 +314,12 @@ function getVerificationEmailHtml(params: {
               <p style="color:#2D3142; font-size:15px; line-height:1.6;">
                 Guten Tag ${escapeHtml(params.userName)},<br><br>
                 Ihre Adresse wurde bestätigt und Ihr Konto ist jetzt vollständig freigeschaltet.
-                Sie können ab sofort alle Funktionen von Nachbar.io nutzen.
+                Sie können ab sofort alle Funktionen von QuartierApp nutzen.
               </p>
               <table width="100%" cellpadding="0" cellspacing="0" style="margin:24px 0;">
                 <tr>
                   <td align="center">
-                    <a href="${process.env.NEXT_PUBLIC_SITE_URL || "https://nachbar.io"}/dashboard"
+                    <a href="${process.env.NEXT_PUBLIC_SITE_URL || "https://quartierapp.de"}/dashboard"
                        style="display:inline-block; background-color:#4CAF87; color:#ffffff; text-decoration:none; padding:14px 36px; border-radius:10px; font-size:16px; font-weight:600;">
                       Zum Dashboard
                     </a>
@@ -330,7 +330,7 @@ function getVerificationEmailHtml(params: {
           </tr>
           <tr>
             <td style="background-color:#f8f8fa; padding:16px 32px; text-align:center;">
-              <p style="margin:0; color:#999; font-size:11px;">Nachbar.io — Quartiers-App Bad Säckingen</p>
+              <p style="margin:0; color:#999; font-size:11px;">QuartierApp — Quartiers-App Bad Säckingen</p>
             </td>
           </tr>
         </table>
@@ -369,7 +369,7 @@ function getVerificationEmailHtml(params: {
           </tr>
           <tr>
             <td style="background-color:#f8f8fa; padding:16px 32px; text-align:center;">
-              <p style="margin:0; color:#999; font-size:11px;">Nachbar.io — Quartiers-App Bad Säckingen</p>
+              <p style="margin:0; color:#999; font-size:11px;">QuartierApp — Quartiers-App Bad Säckingen</p>
             </td>
           </tr>
         </table>
@@ -389,12 +389,12 @@ function getVerificationEmailText(params: {
     return `Guten Tag ${params.userName},
 
 Ihre Adresse wurde bestätigt und Ihr Konto ist jetzt vollständig freigeschaltet.
-Sie können ab sofort alle Funktionen von Nachbar.io nutzen.
+Sie können ab sofort alle Funktionen von QuartierApp nutzen.
 
-Zum Dashboard: ${process.env.NEXT_PUBLIC_SITE_URL || "https://nachbar.io"}/dashboard
+Zum Dashboard: ${process.env.NEXT_PUBLIC_SITE_URL || "https://quartierapp.de"}/dashboard
 
 —
-Nachbar.io — Quartiers-App Bad Säckingen`;
+QuartierApp — Quartiers-App Bad Säckingen`;
   }
 
   return `Guten Tag ${params.userName},
@@ -405,7 +405,7 @@ ${params.adminNote ? `Hinweis: ${params.adminNote}` : ""}
 Bitte wenden Sie sich an einen Admin, wenn Sie Fragen haben.
 
 —
-Nachbar.io — Quartiers-App Bad Säckingen`;
+QuartierApp — Quartiers-App Bad Säckingen`;
 }
 
 // ============================================================
@@ -583,7 +583,7 @@ ${p.failedTests.length > 0 ? `
 </td></tr>
 
 <tr><td style="background-color:#f8f8fa;padding:16px 32px;text-align:center;border-top:1px solid #eee;">
-  <p style="margin:0;color:#999;font-size:11px;">Nachbar.io \u2014 Pilot-Test-Report<br>Session: ${escapeHtml(p.session.id.slice(0, 8))}</p>
+  <p style="margin:0;color:#999;font-size:11px;">QuartierApp \u2014 Pilot-Test-Report<br>Session: ${escapeHtml(p.session.id.slice(0, 8))}</p>
 </td></tr>
 
 </table>
@@ -624,7 +624,7 @@ Bewertungen:
 ${p.session.final_feedback ? `\nFeedback: "${p.session.final_feedback}"` : ''}
 
 \u2014
-Nachbar.io \u2014 Pilot-Test-Report`;
+QuartierApp \u2014 Pilot-Test-Report`;
 }
 
 // ============================================================

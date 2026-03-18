@@ -104,7 +104,7 @@ export async function POST(request: NextRequest) {
 
   // Push-Notifications an Quartiersmitglieder senden (interner Aufruf)
   try {
-    const baseUrl = request.nextUrl.origin || process.env.NEXT_PUBLIC_SITE_URL || "https://nachbar.io";
+    const baseUrl = request.nextUrl.origin || process.env.NEXT_PUBLIC_SITE_URL || "https://quartierapp.de";
     await fetch(`${baseUrl}/api/push/send`, {
       method: "POST",
       headers: {

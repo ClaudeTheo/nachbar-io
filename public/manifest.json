@@ -1,6 +1,6 @@
 {
-  "name": "Nachbar.io — Dein digitaler Dorfplatz",
-  "short_name": "Nachbar.io",
+  "name": "QuartierApp — Ihr digitaler Dorfplatz",
+  "short_name": "QuartierApp",
   "description": "Nachbarschaftshilfe und lokale Informationen für Ihr Quartier in Bad Säckingen.",
   "start_url": "/dashboard",
   "display": "standalone",

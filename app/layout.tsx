@@ -13,7 +13,7 @@ const inter = Inter({
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://nachbar-io.vercel.app";
 
 export const metadata: Metadata = {
-  title: "Nachbar.io — Dein digitaler Dorfplatz",
+  title: "QuartierApp — Ihr digitaler Dorfplatz",
   description:
     "Nachbarschaftshilfe, lokale Informationen und soziale Interaktion für Ihr Quartier in Bad Säckingen.",
   manifest: "/manifest.json",
@@ -22,8 +22,8 @@ export const metadata: Metadata = {
     type: "website",
     locale: "de_DE",
     url: siteUrl,
-    siteName: "Nachbar.io",
-    title: "Nachbar.io — Dein digitaler Dorfplatz",
+    siteName: "QuartierApp",
+    title: "QuartierApp — Ihr digitaler Dorfplatz",
     description:
       "Nachbarschaftshilfe, lokale Informationen und Quartiersleben in Bad Säckingen. Jetzt mitmachen!",
     images: [
@@ -31,13 +31,13 @@ export const metadata: Metadata = {
         url: "/og-image.svg",
         width: 1200,
         height: 630,
-        alt: "Nachbar.io — Dein digitaler Dorfplatz",
+        alt: "QuartierApp — Ihr digitaler Dorfplatz",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Nachbar.io — Dein digitaler Dorfplatz",
+    title: "QuartierApp — Ihr digitaler Dorfplatz",
     description:
       "Nachbarschaftshilfe, lokale Informationen und Quartiersleben in Bad Säckingen.",
     images: ["/og-image.svg"],
@@ -45,7 +45,7 @@ export const metadata: Metadata = {
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
-    title: "Nachbar.io",
+    title: "QuartierApp",
   },
 };
 

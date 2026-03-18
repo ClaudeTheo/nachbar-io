@@ -90,7 +90,7 @@ export async function POST(request: NextRequest) {
 
   // 4. Temporaeres Passwort + E-Mail generieren
   const tempPassword = generateTempPassword();
-  const userEmail = email || `${displayName.toLowerCase().replace(/[^a-z0-9]/g, "")}.${Date.now()}@nachbar.io`;
+  const userEmail = email || `${displayName.toLowerCase().replace(/[^a-z0-9]/g, "")}.${Date.now()}@quartierapp.de`;
 
   // 5. Auth-User erstellen (Service-Role = Admin-Rechte)
   const { data: authData, error: authError } = await adminSupabase.auth.admin.createUser({

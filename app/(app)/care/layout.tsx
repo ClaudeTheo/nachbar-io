@@ -4,7 +4,7 @@ import { CareAlarmProvider } from '@/components/care/CareAlarmProvider';
 import { CareDisclaimer } from '@/components/care/CareDisclaimer';
 
 export const metadata = {
-  title: 'Alltag — Nachbar.io',
+  title: 'Alltag — QuartierApp',
   description: 'Nachbarschaftshilfe und Alltagsunterstuetzung',
 };
 

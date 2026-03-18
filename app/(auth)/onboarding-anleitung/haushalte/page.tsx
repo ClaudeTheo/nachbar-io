@@ -109,7 +109,7 @@ export default async function HaushalteQrPage({
           >
             {/* Nachbar.io Header */}
             <p className="mb-1 text-sm font-medium tracking-wider text-quartier-green uppercase">
-              nachbar.io
+              QuartierApp
             </p>
             <h2 className="mb-1 text-2xl font-bold text-anthrazit">
               Willkommen in der Nachbarschaft!

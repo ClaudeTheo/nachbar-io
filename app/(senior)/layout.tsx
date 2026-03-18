@@ -2,7 +2,7 @@
 import type { ReactNode } from 'react';
 
 export const metadata = {
-  title: 'Nachbar.io — Senioren-Geraet',
+  title: 'QuartierApp — Senioren-Gerät',
 };
 
 /**

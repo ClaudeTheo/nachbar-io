@@ -14,7 +14,7 @@ const ONBOARDING_STEPS = [
   {
     step: 'welcome',
     delayHours: 0,
-    title: 'Willkommen bei Nachbar.io!',
+    title: 'Willkommen bei QuartierApp!',
     body: 'Lernen Sie Ihre Nachbarn kennen.',
     url: '/dashboard',
   },
@@ -49,7 +49,7 @@ const ONBOARDING_STEPS = [
   {
     step: 'feedback',
     delayHours: 720,
-    title: 'Wie gefaellt Ihnen Nachbar.io?',
+    title: 'Wie gefällt Ihnen QuartierApp?',
     body: 'Wir freuen uns ueber Ihr Feedback.',
     url: '/feedback',
   },

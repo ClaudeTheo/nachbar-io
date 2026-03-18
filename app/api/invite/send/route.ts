@@ -149,11 +149,11 @@ export async function POST(request: NextRequest) {
   }
 
   // Registrierungs-URL generieren
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://nachbar.io";
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://quartierapp.de";
   const registerUrl = `${baseUrl}/register?invite=${inviteCode}&ref=${user.id}`;
 
   // WhatsApp-Text vorbereiten
-  const whatsappText = `Hallo! Ich bin ${profile.display_name} und nutze Nachbar.io – unsere Quartiers-App. Möchten Sie auch dabei sein? Registrieren Sie sich hier: ${registerUrl}`;
+  const whatsappText = `Hallo! Ich bin ${profile.display_name} und nutze QuartierApp – unsere Quartiers-App. Möchten Sie auch dabei sein? Registrieren Sie sich hier: ${registerUrl}`;
   const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(whatsappText)}`;
 
   // E-Mail versenden (asynchron, Fehler nicht blockierend)

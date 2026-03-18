@@ -24,7 +24,7 @@ function SubscriptionContent() {
           Ihr Abo-Plan
         </h1>
         <p className="text-muted-foreground mt-1">
-          Verwalten Sie Ihren Nachbar.io Pflege-Plan.
+          Verwalten Sie Ihren QuartierApp Pflege-Plan.
         </p>
       </div>
 

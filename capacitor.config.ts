@@ -6,7 +6,7 @@ import type { CapacitorConfig } from "@capacitor/cli";
 
 const config: CapacitorConfig = {
   appId: "io.nachbar.app",
-  appName: "Nachbar.io",
+  appName: "QuartierApp",
   // Web-App wird von Vercel geladen (SSR + API Routes bleiben erhalten)
   server: {
     url: "https://nachbar-io.vercel.app",
@@ -22,7 +22,7 @@ const config: CapacitorConfig = {
     // iOS-spezifische Einstellungen
     backgroundColor: "#2D3142",
     contentInset: "automatic",
-    scheme: "Nachbar.io",
+    scheme: "QuartierApp",
   },
   plugins: {
     // Push-Notifications (Web Push via VAPID — kein FCM noetig)

@@ -17,7 +17,7 @@ test.describe("Dashboard", () => {
 test.describe("Dashboard UI-Elemente (Landing Page Fallback)", () => {
   test("Landing-Page hat Quartier-Beschreibung", async ({ page }) => {
     await page.goto("/");
-    await expect(page.getByText("nachbar.io")).toBeVisible({ timeout: 10000 });
+    await expect(page.getByText("QuartierApp")).toBeVisible({ timeout: 10000 });
     await expect(page.getByText(/digitaler Dorfplatz/i)).toBeVisible();
   });
 

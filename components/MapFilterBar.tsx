@@ -35,7 +35,7 @@ export function MapFilterBar({ counts, filter, onFilterChange, onReset, quarterN
       <div className="flex items-center gap-1.5">
         <div>
           <div className="text-sm font-bold text-[#f8fafc]">
-            Nachbar.io — {quarterName}
+            QuartierApp — {quarterName}
           </div>
           <div className="text-xs text-[#64748b]">
             Tippen Sie auf ein Haus für Details

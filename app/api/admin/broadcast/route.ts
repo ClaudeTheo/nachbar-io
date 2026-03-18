@@ -91,7 +91,7 @@ export async function POST(request: NextRequest) {
   if (internalSecret) {
     try {
       // Interne Push-API aufrufen
-      const baseUrl = request.nextUrl.origin || process.env.NEXT_PUBLIC_SITE_URL || "https://nachbar.io";
+      const baseUrl = request.nextUrl.origin || process.env.NEXT_PUBLIC_SITE_URL || "https://quartierapp.de";
       const pushRes = await fetch(`${baseUrl}/api/push/send`, {
         method: "POST",
         headers: {

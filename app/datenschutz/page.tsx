@@ -42,7 +42,7 @@ export default function DatenschutzPage() {
               2. Geltungsbereich
             </h2>
             <p>
-              Diese Datenschutzerklärung gilt für alle Zugangswege zu nachbar.io:
+              Diese Datenschutzerklärung gilt für alle Zugangswege zu QuartierApp:
               die Web-App (nachbar-io.vercel.app), das Arzt-Portal
               (nachbar-arzt.vercel.app) sowie das Pi-Kiosk-Terminal im Quartier.
               Alle Zugangswege nutzen dieselbe Datenbank und unterliegen denselben
@@ -56,7 +56,7 @@ export default function DatenschutzPage() {
               3. Überblick der Verarbeitung
             </h2>
             <p>
-              nachbar.io ist eine Kommunikationsplattform für Nachbarschaftshilfe
+              QuartierApp ist eine Kommunikationsplattform für Nachbarschaftshilfe
               und Quartiersvernetzung. Wir verarbeiten personenbezogene Daten nur,
               soweit dies zur Bereitstellung der Plattform erforderlich ist oder
               Sie ausdrücklich eingewilligt haben.
@@ -336,7 +336,7 @@ export default function DatenschutzPage() {
               9. Cookies und lokale Speicherung
             </h2>
             <p>
-              nachbar.io verwendet ausschließlich <strong>technisch notwendige
+              QuartierApp verwendet ausschließlich <strong>technisch notwendige
               Cookies</strong> für die Authentifizierung (Supabase Auth Session).
               Diese sind für den Betrieb der Plattform zwingend erforderlich und
               benötigen keine Einwilligung (§ 25 Abs. 2 TDDDG / ePrivacy-Ausnahme).
@@ -430,7 +430,7 @@ export default function DatenschutzPage() {
               13. Reputationssystem
             </h2>
             <p>
-              nachbar.io berechnet ein Reputationslevel basierend auf Ihrer
+              QuartierApp berechnet ein Reputationslevel basierend auf Ihrer
               Aktivität in der Nachbarschaft (z. B. Hilfeanfragen beantwortet,
               Artikel geteilt, Veranstaltungen besucht). Diese Berechnung erfolgt
               ausschließlich aus bereits vorhandenen Interaktionsdaten.
@@ -463,7 +463,7 @@ export default function DatenschutzPage() {
               15. Minderjährige
             </h2>
             <p>
-              nachbar.io richtet sich nicht an Kinder. Soweit eine Nutzung durch
+              QuartierApp richtet sich nicht an Kinder. Soweit eine Nutzung durch
               Minderjährige erfolgt, darf dies nur mit Zustimmung der
               Erziehungsberechtigten geschehen, soweit gesetzlich erforderlich.
             </p>

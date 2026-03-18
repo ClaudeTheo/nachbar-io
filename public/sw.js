@@ -203,7 +203,7 @@ self.addEventListener("push", (event) => {
   };
 
   event.waitUntil(
-    self.registration.showNotification(data.title || "Nachbar.io", options)
+    self.registration.showNotification(data.title || "QuartierApp", options)
   );
 });
 

@@ -60,7 +60,7 @@ export function SlideWelcome() {
       {/* Text */}
       <div className="mt-8 text-center animate-fade-in-up" style={{ animationDelay: "1000ms" }}>
         <h1 className="text-2xl font-bold text-anthrazit">
-          Willkommen bei nachbar.io
+          Willkommen bei QuartierApp
         </h1>
         <p className="mt-2 text-base text-muted-foreground">
           Ihr digitaler Dorfplatz fuer die Nachbarschaft

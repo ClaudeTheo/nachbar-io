@@ -14,7 +14,7 @@ function ensureVapid() {
     return false;
   }
   try {
-    webpush.setVapidDetails("mailto:nachbar@nachbar.io", pub, priv);
+    webpush.setVapidDetails("mailto:info@quartierapp.de", pub, priv);
     vapidConfigured = true;
     return true;
   } catch (err) {

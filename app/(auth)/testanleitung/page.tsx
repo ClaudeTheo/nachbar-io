@@ -12,7 +12,7 @@ export default function TestanleitungPage() {
 
       <div className="mb-8 text-center">
         <div className="mb-2 text-4xl">🏡</div>
-        <h1 className="text-2xl font-bold text-anthrazit">So testen Sie Nachbar.io</h1>
+        <h1 className="text-2xl font-bold text-anthrazit">So testen Sie QuartierApp</h1>
         <p className="mt-2 text-muted-foreground">
           Eine einfache Anleitung — Schritt für Schritt
         </p>
@@ -25,7 +25,7 @@ export default function TestanleitungPage() {
           Bevor es losgeht
         </h3>
         <p className="mb-2 text-sm text-muted-foreground">
-          Nachbar.io ist eine Internetseite speziell für unsere Nachbarschaft. Sie funktioniert
+          QuartierApp ist eine Internetseite speziell für unsere Nachbarschaft. Sie funktioniert
           wie eine App auf Ihrem Handy — direkt im Internet-Browser (z.B. Safari oder Chrome).
         </p>
         <p className="mb-3 text-sm text-muted-foreground">
@@ -116,7 +116,7 @@ export default function TestanleitungPage() {
 
         <h4 className="mb-2 mt-5 text-sm font-semibold">Hilfe anbieten oder suchen</h4>
         <p className="mb-2 text-xs text-muted-foreground">
-          Das Herzstück von Nachbar.io: Nachbarn helfen Nachbarn.
+          Das Herzstück von QuartierApp: Nachbarn helfen Nachbarn.
         </p>
         <Checklist items={[
           "Tippen Sie unten auf \"Hilfe\"",
@@ -237,7 +237,7 @@ export default function TestanleitungPage() {
         <h4 className="mb-2 mt-5 text-sm font-semibold">App auf den Startbildschirm legen (freiwillig)</h4>
         <div className="rounded-lg bg-blue-50 p-3 text-sm text-blue-800">
           <p className="mb-2">
-            Sie können Nachbar.io wie eine richtige App auf Ihren Startbildschirm legen.
+            Sie können QuartierApp wie eine richtige App auf Ihren Startbildschirm legen.
             Dann müssen Sie nicht jedes Mal die Adresse eintippen.
           </p>
           <p className="mb-1"><strong>Auf dem iPhone (Safari):</strong></p>
@@ -300,13 +300,13 @@ export default function TestanleitungPage() {
         <p className="text-sm text-muted-foreground">
           Nach dem Testen würden wir uns sehr über Ihr Feedback freuen!
           Schreiben Sie Thomas einfach eine kurze Nachricht — per WhatsApp, E-Mail oder direkt in der App.
-          Jeder Hinweis hilft, Nachbar.io besser zu machen.
+          Jeder Hinweis hilft, QuartierApp besser zu machen.
         </p>
       </div>
 
       <div className="text-center text-sm text-muted-foreground">
         <p>Vielen Dank, dass Sie sich die Zeit nehmen! 🏡</p>
-        <p className="mt-1">Ihr Feedback macht Nachbar.io besser für die ganze Nachbarschaft.</p>
+        <p className="mt-1">Ihr Feedback macht QuartierApp besser für die ganze Nachbarschaft.</p>
       </div>
     </div>
   );

@@ -84,7 +84,7 @@ function ReportViewContent() {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Heart className="h-6 w-6 text-[#4CAF87]" />
-              <span className="text-xl font-bold text-[#2D3142]">Nachbar.io</span>
+              <span className="text-xl font-bold text-[#2D3142]">QuartierApp</span>
             </div>
             <span className="text-sm text-muted-foreground">Pflege-Bericht</span>
           </div>
@@ -262,8 +262,8 @@ function ReportViewContent() {
 
         {/* Fusszeile */}
         <div className="print-section mt-8 pt-4 border-t text-center text-xs text-muted-foreground">
-          <p>Dieser Bericht wurde automatisch von Nachbar.io generiert.</p>
-          <p>Nachbar.io — Hyperlokale Seniorenhilfe | DSGVO-konform | nachbar.io</p>
+          <p>Dieser Bericht wurde automatisch von QuartierApp generiert.</p>
+          <p>QuartierApp — Hyperlokale Seniorenhilfe | DSGVO-konform | quartierapp.de</p>
         </div>
       </div>
     </>

@@ -186,7 +186,7 @@ export function InviteCodeManager({ households, onRefresh }: InviteCodeManagerPr
       <!DOCTYPE html>
       <html>
       <head>
-        <title>QR-Codes${street ? ` — ${street}` : ""} — Nachbar.io</title>
+        <title>QR-Codes${street ? ` — ${street}` : ""} — QuartierApp</title>
         <style>
           body { font-family: Arial, sans-serif; margin: 20px; }
           .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
@@ -199,7 +199,7 @@ export function InviteCodeManager({ households, onRefresh }: InviteCodeManagerPr
         </style>
       </head>
       <body>
-        <h1>Nachbar.io — Einladungs-Codes${street ? ` fuer ${street}` : ""}</h1>
+        <h1>QuartierApp — Einladungs-Codes${street ? ` fuer ${street}` : ""}</h1>
         <p class="no-print"><button onclick="window.print()">Drucken</button></p>
         <div class="grid">
           ${codes.map(h => `

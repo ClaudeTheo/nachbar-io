@@ -12,7 +12,7 @@ export class LandingPage {
 
   constructor(page: Page) {
     this.page = page;
-    this.logo = page.locator("[data-testid='landing-logo']").or(page.getByText("Nachbar.io").first());
+    this.logo = page.locator("[data-testid='landing-logo']").or(page.getByText("QuartierApp").first());
     this.loginButton = page.getByRole("link", { name: /anmelden|login/i }).first();
     this.registerButton = page.getByRole("link", { name: /registrieren|register/i }).first();
     this.datenschutzLink = page.getByRole("link", { name: /datenschutz/i });

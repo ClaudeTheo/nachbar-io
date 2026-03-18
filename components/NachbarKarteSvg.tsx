@@ -205,7 +205,7 @@ export function NachbarKarteSvg({ quarterId: quarterIdProp }: NachbarKarteSvgPro
       <div className="flex w-full flex-wrap items-center justify-between gap-2 rounded-lg bg-[#111827] px-3 py-2" style={{ maxWidth: `${mapW}px` }}>
         <div className="flex items-center gap-1.5">
           <div>
-            <div className="text-sm font-bold text-[#f8fafc]">Nachbar.io — {currentQuarter?.name ?? "Bad Säckingen"}</div>
+            <div className="text-sm font-bold text-[#f8fafc]">QuartierApp — {currentQuarter?.name ?? "Bad Säckingen"}</div>
             <div className="text-xs text-[#64748b]">
               Klick auf ein Haus für Details · Hover für Adresse
             </div>

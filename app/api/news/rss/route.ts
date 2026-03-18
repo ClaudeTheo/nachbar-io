@@ -181,7 +181,7 @@ export async function GET(request: Request) {
     try {
       const response = await fetch(source.url, {
         headers: {
-          "User-Agent": "nachbar.io-newsbot/1.0 (Community-App Bad Saeckingen)",
+          "User-Agent": "quartierapp-newsbot/1.0 (Community-App Bad Saeckingen)",
           Accept: "application/rss+xml, application/xml, text/xml",
         },
         next: { revalidate: 0 },

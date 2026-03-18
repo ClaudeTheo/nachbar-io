@@ -331,7 +331,7 @@ function RegisterForm() {
       <CardHeader className="text-center">
         <div className="mb-2 text-4xl">🏘️</div>
         <CardTitle className="text-2xl text-anthrazit">
-          {step === "magic_link_sent" ? "Code eingeben" : "Willkommen bei Nachbar.io"}
+          {step === "magic_link_sent" ? "Code eingeben" : "Willkommen bei QuartierApp"}
         </CardTitle>
 
         {/* Fortschrittsbalken (nicht auf Bestaetigungsseite) */}

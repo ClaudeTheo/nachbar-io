@@ -36,7 +36,7 @@ export default function SeniorLayout({
             <ArrowLeft className="h-7 w-7" />
             <span className="text-lg font-semibold">{isHome ? "Dashboard" : "Zurück"}</span>
           </Link>
-          <span className="text-lg font-bold text-quartier-green">Nachbar.io</span>
+          <span className="text-lg font-bold text-quartier-green">QuartierApp</span>
         </div>
       </header>
 

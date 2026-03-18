@@ -130,7 +130,7 @@ export default function ImpressumPage() {
               Hinweis zur Plattform
             </h2>
             <p>
-              nachbar.io ist ein nichtkommerzielles Community-Projekt fuer die
+              QuartierApp ist ein nichtkommerzielles Community-Projekt fuer die
               Nachbarschaft in Bad Saeckingen. Die Nutzung ist kostenlos. Die
               Plattform wird ehrenamtlich betrieben und dient der Foerderung des
               nachbarschaftlichen Zusammenhalts.
@@ -143,7 +143,7 @@ export default function ImpressumPage() {
               Zweckbestimmung
             </h2>
             <p>
-              Nachbar.io ist eine Kommunikationsplattform zur Foerderung der
+              QuartierApp ist eine Kommunikationsplattform zur Foerderung der
               Nachbarschaftshilfe im Quartier. Die App dient der Koordination von
               Alltagshilfe, dem Austausch lokaler Informationen und der freiwilligen
               sozialen Vernetzung von Bewohnerinnen und Bewohnern.
@@ -159,7 +159,7 @@ export default function ImpressumPage() {
               keine medizinische Dosierungs-, Diagnose- oder Therapieempfehlung dar.
             </p>
             <p className="mt-2 font-medium text-anthrazit">
-              Nachbar.io ist kein Medizinprodukt im Sinne der Verordnung (EU)
+              QuartierApp ist kein Medizinprodukt im Sinne der Verordnung (EU)
               2017/745. Die Software erhebt keinen diagnostischen, therapeutischen
               oder klinischen Ueberwachungszweck.
             </p>

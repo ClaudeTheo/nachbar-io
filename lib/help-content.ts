@@ -20,7 +20,7 @@ export const HELP_CATEGORIES: HelpCategory[] = [
     icon: "rocket",
     items: [
       {
-        question: "Wie registriere ich mich bei Nachbar.io?",
+        question: "Wie registriere ich mich bei QuartierApp?",
         answer: "Sie benötigen einen Einladungscode Ihres Haushalts. Diesen erhalten Sie per Brief oder von Ihrem Nachbarn. Geben Sie den Code bei der Registrierung ein, um Ihrem Haushalt beizutreten.",
       },
       {
@@ -60,7 +60,7 @@ export const HELP_CATEGORIES: HelpCategory[] = [
       },
       {
         question: "Warum sehe ich bei einem Haus 'Noch keine Bewohner registriert'?",
-        answer: "Das bedeutet, dass sich noch niemand aus diesem Haushalt bei Nachbar.io angemeldet hat. Sobald Bewohner sich mit ihrem Einladungscode registrieren, werden sie dort angezeigt.",
+        answer: "Das bedeutet, dass sich noch niemand aus diesem Haushalt bei QuartierApp angemeldet hat. Sobald Bewohner sich mit ihrem Einladungscode registrieren, werden sie dort angezeigt.",
       },
     ],
   },
@@ -94,7 +94,7 @@ export const HELP_CATEGORIES: HelpCategory[] = [
     items: [
       {
         question: "Was tue ich bei einem Notfall?",
-        answer: "Bei einem echten Notfall (Feuer, medizinischer Notfall, Verbrechen) IMMER zuerst 112 oder 110 anrufen! Nachbar.io zeigt Ihnen automatisch die Notrufnummern an, ersetzt aber NICHT den Rettungsdienst.",
+        answer: "Bei einem echten Notfall (Feuer, medizinischer Notfall, Verbrechen) IMMER zuerst 112 oder 110 anrufen! QuartierApp zeigt Ihnen automatisch die Notrufnummern an, ersetzt aber NICHT den Rettungsdienst.",
       },
       {
         question: "Was ist ein Nachbarschafts-Alert?",
@@ -129,7 +129,7 @@ export const HELP_CATEGORIES: HelpCategory[] = [
       },
       {
         question: "Werden meine Daten geschützt?",
-        answer: "Ja. Nachbar.io speichert nur die nötigsten Daten auf Servern in der EU (Frankfurt). Ihre E-Mail wird verschlüsselt gespeichert. Nur verifizierte Nachbarn können Quartiersdaten sehen.",
+        answer: "Ja. QuartierApp speichert nur die nötigsten Daten auf Servern in der EU (Frankfurt). Ihre E-Mail wird verschlüsselt gespeichert. Nur verifizierte Nachbarn können Quartiersdaten sehen.",
       },
     ],
   },

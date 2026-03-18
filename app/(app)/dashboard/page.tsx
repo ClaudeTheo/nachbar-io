@@ -187,7 +187,7 @@ export default function DashboardPage() {
     return (
       <div className="flex flex-col items-center justify-center py-16 text-center animate-fade-in-up">
         <div className="mb-4 text-5xl" aria-hidden="true">🏘️</div>
-        <h1 className="text-xl font-bold text-anthrazit">Willkommen bei nachbar.io</h1>
+        <h1 className="text-xl font-bold text-anthrazit">Willkommen bei QuartierApp</h1>
         <p className="mt-2 max-w-sm text-sm text-muted-foreground">
           Ihr Konto ist noch keinem Quartier zugeordnet. Bitte wenden Sie sich an die
           Quartiersadministration, damit Ihr Haushalt verifiziert wird.
@@ -215,7 +215,7 @@ export default function DashboardPage() {
                 <>
                   {getGreeting().emoji} {getGreeting().text}, {userName}
                 </>
-              ) : "nachbar.io"}
+              ) : "QuartierApp"}
               {reputationLevel >= 2 && (
                 <span className="ml-1.5 align-middle">
                   <ReputationBadge level={reputationLevel} size="sm" />

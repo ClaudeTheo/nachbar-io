@@ -84,7 +84,7 @@ export function TesterWelcomeDialog() {
             Willkommen als Tester!
           </DialogTitle>
           <DialogDescription className="text-left">
-            Vielen Dank, dass Sie Nachbar.io testen. Ihr Feedback hilft, die App
+            Vielen Dank, dass Sie QuartierApp testen. Ihr Feedback hilft, die App
             für die gesamte Nachbarschaft zu verbessern.
           </DialogDescription>
         </DialogHeader>

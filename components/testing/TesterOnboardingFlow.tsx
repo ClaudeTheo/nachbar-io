@@ -131,7 +131,7 @@ function SlideWelcome() {
       </div>
       <h2 className="mb-2 text-xl font-bold text-anthrazit">Willkommen zum Test!</h2>
       <p className="text-sm text-muted-foreground">
-        Sie helfen dabei, Nachbar.io fuer alle Nachbarn besser zu machen.
+        Sie helfen dabei, QuartierApp fuer alle Nachbarn besser zu machen.
         In den naechsten Minuten fuehren wir Sie durch die App und pruefen gemeinsam alle Funktionen.
       </p>
       <div className="mt-4 rounded-lg bg-quartier-green/5 p-3 text-xs text-quartier-green-dark">
@@ -152,7 +152,7 @@ function SlideNavigation() {
         <h2 className="text-lg font-bold text-anthrazit">App-Bereiche</h2>
       </div>
       <p className="mb-3 text-sm text-muted-foreground">
-        Nachbar.io hat verschiedene Module. Sie testen diese systematisch:
+        QuartierApp hat verschiedene Module. Sie testen diese systematisch:
       </p>
       <div className="space-y-1.5">
         {[

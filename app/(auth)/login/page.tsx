@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Mail, KeyRound } from "lucide-react";
@@ -18,7 +18,15 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [mode, setMode] = useState<LoginMode>("magic_link");
+  const [sendCooldown, setSendCooldown] = useState(0);
   const router = useRouter();
+
+  // Cooldown-Timer nach OTP-Versand (verhindert Supabase Rate Limit)
+  useEffect(() => {
+    if (sendCooldown <= 0) return;
+    const timer = setTimeout(() => setSendCooldown(sendCooldown - 1), 1000);
+    return () => clearTimeout(timer);
+  }, [sendCooldown]);
 
   // Magic Link senden
   async function handleMagicLink(e: React.FormEvent) {
@@ -47,6 +55,7 @@ export default function LoginPage() {
       }
 
       setLoading(false);
+      setSendCooldown(30);
       setMode("magic_link_sent");
     } catch (err) {
       console.error("Login Netzwerkfehler:", err);
@@ -140,11 +149,11 @@ export default function LoginPage() {
 
             <Button
               type="submit"
-              disabled={loading}
+              disabled={loading || sendCooldown > 0}
               className="w-full bg-quartier-green hover:bg-quartier-green-dark"
             >
               <Mail className="mr-2 h-4 w-4" />
-              {loading ? "Wird gesendet..." : "Anmeldelink senden"}
+              {loading ? "Wird gesendet..." : sendCooldown > 0 ? `Bitte warten (${sendCooldown}s)` : "Anmeldelink senden"}
             </Button>
 
             <button
@@ -232,7 +241,7 @@ export default function LoginPage() {
               const supabase = createClient();
               supabase.auth.signInWithOtp({
                 email,
-                options: { emailRedirectTo: `${window.location.origin}/dashboard` },
+                options: { emailRedirectTo: `${window.location.origin}/auth/callback?next=/dashboard` },
               });
             }}
           />

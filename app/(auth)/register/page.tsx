@@ -665,7 +665,7 @@ function RegisterForm() {
               const supabase = createClient();
               supabase.auth.signInWithOtp({
                 email,
-                options: { emailRedirectTo: `${window.location.origin}/welcome` },
+                options: { emailRedirectTo: `${window.location.origin}/auth/callback?next=/welcome` },
               });
             }}
           />

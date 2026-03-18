@@ -30,11 +30,16 @@ export function generateSecureCode(): string {
   return code;
 }
 
-// Code mit Bindestrich formatieren (XXXX-XXXX)
+// Code mit Bindestrich formatieren
+// Unterstuetzt: XXXX-XXXX (8 Zeichen), PREFIX-XXXX-XXXX (z.B. PILOT, LAUF)
 export function formatCode(code: string): string {
   const clean = code.replace(/[-\s]/g, "").toUpperCase();
   if (clean.length <= 4) return clean;
-  return `${clean.slice(0, 4)}-${clean.slice(4, 8)}`;
+  if (clean.length <= 8) return `${clean.slice(0, 4)}-${clean.slice(4, 8)}`;
+  // Prefix-Format: alles vor den letzten 8 Zeichen ist Prefix
+  const prefix = clean.slice(0, clean.length - 8);
+  const body = clean.slice(clean.length - 8);
+  return `${prefix}-${body.slice(0, 4)}-${body.slice(4)}`;
 }
 
 // Code normalisieren (Bindestriche/Leerzeichen entfernen, uppercase)

@@ -436,9 +436,9 @@ function RegisterForm() {
                 type="text"
                 value={formatCode(inviteCode)}
                 onChange={(e) => setInviteCode(normalizeCode(e.target.value))}
-                placeholder="z.B. ABCD-EF23"
+                placeholder="z.B. ABCD-EF23 oder PILOT-ABCD-EF23"
                 required
-                maxLength={9}
+                maxLength={20}
                 className="text-center text-lg font-mono tracking-widest"
                 autoComplete="off"
                 autoFocus

@@ -3,11 +3,12 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Mail, KeyRound, CheckCircle2 } from "lucide-react";
+import { Mail, KeyRound } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { createClient } from "@/lib/supabase/client";
+import { OtpCodeEntry } from "@/components/auth/OtpCodeEntry";
 
 type LoginMode = "magic_link" | "password" | "magic_link_sent";
 
@@ -102,7 +103,7 @@ export default function LoginPage() {
       <CardHeader className="text-center">
         <div className="mb-2 text-4xl">🏘️</div>
         <CardTitle className="text-2xl text-anthrazit">
-          {mode === "magic_link_sent" ? "Link gesendet!" : "Anmelden"}
+          {mode === "magic_link_sent" ? "Code eingeben" : "Anmelden"}
         </CardTitle>
         {mode !== "magic_link_sent" && (
           <p className="text-sm text-muted-foreground">
@@ -221,40 +222,20 @@ export default function LoginPage() {
           </form>
         )}
 
-        {/* === Magic Link Bestaetigung === */}
+        {/* === OTP-Code Eingabe (ersetzt Magic Link Bestaetigung) === */}
         {mode === "magic_link_sent" && (
-          <div className="space-y-4 text-center">
-            <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-quartier-green/10">
-              <CheckCircle2 className="h-8 w-8 text-quartier-green" />
-            </div>
-            <div>
-              <p className="text-sm text-muted-foreground">
-                Anmeldelink gesendet an
-              </p>
-              <p className="mt-1 font-semibold text-anthrazit">{email}</p>
-              <p className="mt-1 text-sm text-muted-foreground">
-                Prüfen Sie Ihren Posteingang und klicken Sie auf den Link.
-              </p>
-            </div>
-
-            <div className="rounded-lg bg-amber-50 p-3 text-xs text-amber-700">
-              <p className="font-medium">Keine E-Mail erhalten?</p>
-              <p className="mt-1">
-                Prüfen Sie Ihren Spam-Ordner. Der Link ist 60 Minuten gültig.
-              </p>
-            </div>
-
-            <Button
-              onClick={() => {
-                setMode("magic_link");
-                setError(null);
-              }}
-              variant="outline"
-              className="w-full"
-            >
-              Erneut versuchen
-            </Button>
-          </div>
+          <OtpCodeEntry
+            email={email}
+            redirectTo="/dashboard"
+            onBack={() => { setMode("magic_link"); setError(null); }}
+            onResend={() => {
+              const supabase = createClient();
+              supabase.auth.signInWithOtp({
+                email,
+                options: { emailRedirectTo: `${window.location.origin}/dashboard` },
+              });
+            }}
+          />
         )}
 
         {/* Registrierung-Link (nicht auf Bestaetigungsseite) */}

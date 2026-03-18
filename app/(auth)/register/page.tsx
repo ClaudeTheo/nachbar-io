@@ -3,12 +3,13 @@
 import { Suspense, useState, useEffect, useCallback, useRef } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Mail, MapPin, Search, Navigation, ArrowLeft, CheckCircle2 } from "lucide-react";
+import { Mail, MapPin, Search, Navigation, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { createClient } from "@/lib/supabase/client";
 import { normalizeCode, formatCode } from "@/lib/invite-codes";
+import { OtpCodeEntry } from "@/components/auth/OtpCodeEntry";
 
 
 // Schritt-Typen fuer den neuen 2-Schritt-Flow
@@ -330,7 +331,7 @@ function RegisterForm() {
       <CardHeader className="text-center">
         <div className="mb-2 text-4xl">🏘️</div>
         <CardTitle className="text-2xl text-anthrazit">
-          {step === "magic_link_sent" ? "Fast geschafft!" : "Willkommen bei Nachbar.io"}
+          {step === "magic_link_sent" ? "Code eingeben" : "Willkommen bei Nachbar.io"}
         </CardTitle>
 
         {/* Fortschrittsbalken (nicht auf Bestaetigungsseite) */}
@@ -653,60 +654,21 @@ function RegisterForm() {
         )}
 
         {/* ============================================ */}
-        {/* BESTAETIGUNG: Magic Link gesendet            */}
+        {/* BESTAETIGUNG: OTP-Code Eingabe               */}
         {/* ============================================ */}
         {step === "magic_link_sent" && (
-          <div className="space-y-4 text-center">
-            <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-quartier-green/10">
-              <CheckCircle2 className="h-8 w-8 text-quartier-green" />
-            </div>
-            <div>
-              <p className="text-sm text-muted-foreground">
-                Wir haben einen Anmeldelink an
-              </p>
-              <p className="mt-1 font-semibold text-anthrazit">{email}</p>
-              <p className="mt-1 text-sm text-muted-foreground">
-                gesendet. Bitte prüfen Sie Ihren Posteingang.
-              </p>
-            </div>
-
-            <div className="rounded-lg bg-amber-50 p-3 text-xs text-amber-700">
-              <p className="font-medium">Keine E-Mail erhalten?</p>
-              <p className="mt-1">
-                Prüfen Sie Ihren Spam-Ordner. Der Link ist 60 Minuten gültig.
-              </p>
-            </div>
-
-            <Button
-              onClick={() => {
-                setLoading(true);
-                const supabase = createClient();
-                supabase.auth.signInWithOtp({
-                  email,
-                  options: {
-                    emailRedirectTo: `${window.location.origin}/welcome`,
-                  },
-                }).then(() => {
-                  setLoading(false);
-                  setError(null);
-                }).catch(() => {
-                  setLoading(false);
-                  setError("Bitte warten Sie einen Moment, bevor Sie es erneut versuchen.");
-                });
-              }}
-              disabled={loading}
-              variant="outline"
-              className="w-full"
-            >
-              {loading ? "Wird gesendet..." : "Link erneut senden"}
-            </Button>
-
-            <div className="mt-4">
-              <Link href="/login" className="text-sm text-quartier-green hover:underline">
-                Zur Anmeldung
-              </Link>
-            </div>
-          </div>
+          <OtpCodeEntry
+            email={email}
+            redirectTo="/welcome"
+            onBack={() => { setStep("identity"); setError(null); }}
+            onResend={() => {
+              const supabase = createClient();
+              supabase.auth.signInWithOtp({
+                email,
+                options: { emailRedirectTo: `${window.location.origin}/welcome` },
+              });
+            }}
+          />
         )}
       </CardContent>
     </Card>

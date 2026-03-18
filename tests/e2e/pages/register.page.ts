@@ -53,7 +53,7 @@ export class RegisterPage {
     // Identity
     this.displayNameInput = page.getByLabel("Anzeigename");
     this.emailInput = page.getByLabel("E-Mail-Adresse");
-    this.sendMagicLinkButton = page.getByRole("button", { name: "Anmeldelink senden" });
+    this.sendMagicLinkButton = page.getByRole("button", { name: "Anmelde-Code senden" });
 
     // Bestaetigung
     this.resendLinkButton = page.getByRole("button", { name: "Link erneut senden" });

@@ -48,7 +48,7 @@ export default function LoginPage() {
         if (otpError.message?.includes("rate limit")) {
           setError("Zu viele Versuche. Bitte warten Sie einen Moment.");
         } else {
-          setError("Anmeldelink konnte nicht gesendet werden. Bitte versuchen Sie es erneut.");
+          setError("Anmelde-Code konnte nicht gesendet werden. Bitte versuchen Sie es erneut.");
         }
         setLoading(false);
         return;
@@ -153,7 +153,7 @@ export default function LoginPage() {
               className="w-full bg-quartier-green hover:bg-quartier-green-dark"
             >
               <Mail className="mr-2 h-4 w-4" />
-              {loading ? "Wird gesendet..." : sendCooldown > 0 ? `Bitte warten (${sendCooldown}s)` : "Anmeldelink senden"}
+              {loading ? "Wird gesendet..." : sendCooldown > 0 ? `Bitte warten (${sendCooldown}s)` : "Anmelde-Code senden"}
             </Button>
 
             <button
@@ -226,7 +226,7 @@ export default function LoginPage() {
               className="flex w-full items-center justify-center gap-1.5 text-xs text-muted-foreground hover:underline"
             >
               <Mail className="h-3 w-3" />
-              Stattdessen Anmeldelink per E-Mail erhalten
+              Stattdessen Anmelde-Code per E-Mail erhalten
             </button>
           </form>
         )}

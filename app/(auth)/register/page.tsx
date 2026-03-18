@@ -584,7 +584,7 @@ function RegisterForm() {
         {step === "identity" && (
           <form onSubmit={handleIdentitySubmit} className="space-y-4">
             <p className="text-sm text-muted-foreground">
-              Noch Ihr Name und Ihre E-Mail — dann senden wir Ihnen einen Anmeldelink.
+              Noch Ihr Name und Ihre E-Mail — dann senden wir Ihnen einen Anmelde-Code.
             </p>
 
             {/* Quartier-Info anzeigen */}
@@ -637,7 +637,7 @@ function RegisterForm() {
             {error && <p className="text-sm text-emergency-red">{error}</p>}
 
             <Button type="submit" disabled={loading} className="w-full bg-quartier-green hover:bg-quartier-green-dark">
-              {loading ? "Wird verarbeitet..." : "Anmeldelink senden"}
+              {loading ? "Wird verarbeitet..." : "Anmelde-Code senden"}
             </Button>
             <button
               type="button"

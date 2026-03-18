@@ -31,14 +31,14 @@ export class LoginPage {
 
     // Magic Link
     this.emailInput = page.getByLabel("E-Mail-Adresse").first();
-    this.sendMagicLinkButton = page.getByRole("button", { name: "Anmeldelink senden" });
+    this.sendMagicLinkButton = page.getByRole("button", { name: "Anmelde-Code senden" });
     this.switchToPasswordLink = page.getByText("Stattdessen mit Passwort anmelden");
 
     // Passwort
     this.passwordEmailInput = page.locator("#email-pw");
     this.passwordInput = page.getByLabel("Passwort");
     this.passwordSubmitButton = page.getByRole("button", { name: "Anmelden" });
-    this.switchToMagicLinkLink = page.getByText("Stattdessen Anmeldelink per E-Mail erhalten");
+    this.switchToMagicLinkLink = page.getByText("Stattdessen Anmelde-Code per E-Mail erhalten");
 
     // Bestaetigung
     this.magicLinkSentHeading = page.getByText("Link gesendet!");

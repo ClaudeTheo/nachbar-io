@@ -73,10 +73,20 @@ export async function POST(request: NextRequest) {
       // (Supabase erfordert ein Passwort bei admin.createUser)
       const userPassword = password || generateTempPassword();
 
+      // B-1 Pilot-Entscheidung (2026-03-18):
+      // email_confirm: true = Account wird sofort als bestaetigt markiert.
+      // Im Pilot mit Invite-Code-Pflicht akzeptabel: Code-Besitz dient als
+      // Verifikation (nur Personen mit gueltigem Invite-Code koennen sich registrieren).
+      //
+      // WICHTIG — NICHT fuer oeffentlichen Rollout ohne Invite-Gate geeignet:
+      // Ohne Invite-Code-Pflicht koennte ein Angreifer beliebige E-Mail-Adressen
+      // registrieren, ohne den Besitz nachzuweisen.
+      // Vor oeffentlichem Rollout: email_confirm auf false setzen und
+      // Supabase E-Mail-Bestaetigung erzwingen (Confirm Signup Template).
       const { data: newUser, error: createError } = await adminDb.auth.admin.createUser({
         email,
         password: userPassword,
-        email_confirm: true, // Sofort bestaetigt — Magic Link uebernimmt Verifizierung
+        email_confirm: true,
       });
 
       if (createError) {

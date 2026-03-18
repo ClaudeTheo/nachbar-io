@@ -102,13 +102,10 @@ export function OtpCodeEntry({ email, redirectTo = "/welcome", onBack, onResend 
       });
 
       if (verifyError) {
-        if (verifyError.message.includes("expired")) {
-          setError("Der Code ist abgelaufen. Bitte fordern Sie einen neuen an.");
-        } else if (verifyError.message.includes("invalid") || verifyError.message.includes("Invalid")) {
-          setError("Der Code ist falsch. Bitte prüfen Sie die Ziffern.");
-        } else {
-          setError("Fehler bei der Anmeldung. Bitte versuchen Sie es erneut.");
-        }
+        // B-3 Sicherheitsfix: Einheitliche Fehlermeldung verhindert E-Mail-Enumeration
+        // und Rueckschluesse auf Code-Gueltigkeit (expired vs. invalid).
+        // Vorher: unterschiedliche Meldungen fuer "abgelaufen" vs. "falsch" vs. "generisch".
+        setError("Code ungültig oder abgelaufen. Bitte fordern Sie einen neuen an.");
         setLoading(false);
         // Felder leeren bei Fehler
         setDigits(["", "", "", "", "", ""]);

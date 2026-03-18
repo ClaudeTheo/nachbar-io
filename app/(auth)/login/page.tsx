@@ -12,6 +12,13 @@ import { OtpCodeEntry } from "@/components/auth/OtpCodeEntry";
 
 type LoginMode = "magic_link" | "password" | "magic_link_sent";
 
+// B-2 Pilot-Entscheidung: Passwort-Login ist ausgeblendet, solange kein
+// Recovery-Flow (Passwort vergessen) implementiert ist. Nutzer ohne
+// Recovery-Moeglichkeit koennten sich aussperren.
+// Reaktivierung: auf false setzen ODER Recovery-Flow implementieren
+// und dann "Passwort vergessen"-Link einfuegen (siehe Go-Live Audit B-2).
+const PILOT_HIDE_PASSWORD_LOGIN = true;
+
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -156,22 +163,24 @@ export default function LoginPage() {
               {loading ? "Wird gesendet..." : sendCooldown > 0 ? `Bitte warten (${sendCooldown}s)` : "Anmelde-Code senden"}
             </Button>
 
-            <button
-              type="button"
-              onClick={() => {
-                setError(null);
-                setMode("password");
-              }}
-              className="flex w-full items-center justify-center gap-1.5 text-xs text-muted-foreground hover:underline"
-            >
-              <KeyRound className="h-3 w-3" />
-              Stattdessen mit Passwort anmelden
-            </button>
+            {!PILOT_HIDE_PASSWORD_LOGIN && (
+              <button
+                type="button"
+                onClick={() => {
+                  setError(null);
+                  setMode("password");
+                }}
+                className="flex w-full items-center justify-center gap-1.5 text-xs text-muted-foreground hover:underline"
+              >
+                <KeyRound className="h-3 w-3" />
+                Stattdessen mit Passwort anmelden
+              </button>
+            )}
           </form>
         )}
 
-        {/* === Passwort-Login (Fallback) === */}
-        {mode === "password" && (
+        {/* === Passwort-Login (Fallback) — ausgeblendet im Pilot (B-2) === */}
+        {mode === "password" && !PILOT_HIDE_PASSWORD_LOGIN && (
           <form onSubmit={handlePasswordLogin} className="space-y-4">
             <div>
               <label htmlFor="email-pw" className="mb-1 block text-sm font-medium">

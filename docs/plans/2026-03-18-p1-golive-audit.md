@@ -322,9 +322,9 @@ Für den Pilotbetrieb mit Invite-Code-Gate ist die Anwendung go-live-fähig, sof
 
 ### 3.6 Bedingungen für "Go-Live-fähig" (Pilot)
 
-- [ ] **B-1 entschieden:** `email_confirm: true` als bewusste Pilot-Entscheidung dokumentiert (Invite-Code als Verifizierung) ODER auf `false` umgestellt
-- [ ] **B-2 entschieden:** Passwort-Login-Fallback ausgeblendet ODER "Passwort vergessen"-Link implementiert
-- [ ] **B-3 umgesetzt:** OTP-Fehlermeldungen vereinheitlicht ("Code ungültig oder abgelaufen")
+- [x] **B-1 entschieden:** `email_confirm: true` als bewusste Pilot-Entscheidung dokumentiert (Invite-Code als Verifizierung). Kommentar in `app/api/register/complete/route.ts` (Zeile 76-85). Nicht für öffentlichen Rollout ohne Invite-Gate.
+- [x] **B-2 entschieden:** Passwort-Login-Fallback ausgeblendet via `PILOT_HIDE_PASSWORD_LOGIN` in `app/(auth)/login/page.tsx` (Zeile 20). Reaktivierung: Flag auf `false` setzen + Recovery-Flow implementieren.
+- [x] **B-3 umgesetzt:** OTP-Fehlermeldungen vereinheitlicht auf "Code ungültig oder abgelaufen. Bitte fordern Sie einen neuen an." in `components/auth/OtpCodeEntry.tsx` (Zeile 108).
 - [ ] **E2E-Auth-Test (Flow 1):** Confirm Signup mit Invite-Code erfolgreich durchlaufen
 - [ ] **E2E-Auth-Test (Flow 2):** Magic Link / OTP Login erfolgreich durchlaufen
 - [ ] **Zustellbarkeit:** Test-Mail an GMX/Gmail/Outlook — kein Spam, korrekte Darstellung

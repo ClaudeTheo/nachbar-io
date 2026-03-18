@@ -40,7 +40,8 @@ export async function updateSession(request: NextRequest) {
   // Nicht eingeloggte Nutzer zu Login umleiten (außer Auth-Seiten und API)
   const isAuthPage = request.nextUrl.pathname.startsWith("/login") ||
     request.nextUrl.pathname.startsWith("/register") ||
-    request.nextUrl.pathname.startsWith("/verify");
+    request.nextUrl.pathname.startsWith("/verify") ||
+    request.nextUrl.pathname.startsWith("/auth/callback");
   const isApiRoute = request.nextUrl.pathname.startsWith("/api");
   const isRootPage = request.nextUrl.pathname === "/";
   // Rechtliche Seiten muessen IMMER oeffentlich zugaenglich sein (DSGVO / TMG)

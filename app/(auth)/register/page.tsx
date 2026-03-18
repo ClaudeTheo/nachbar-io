@@ -291,7 +291,7 @@ function RegisterForm() {
       const { error: otpError } = await supabase.auth.signInWithOtp({
         email,
         options: {
-          emailRedirectTo: `${window.location.origin}/welcome`,
+          emailRedirectTo: `${window.location.origin}/auth/callback?next=/welcome`,
         },
       });
 

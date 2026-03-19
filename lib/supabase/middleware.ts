@@ -53,8 +53,10 @@ export async function updateSession(request: NextRequest) {
     request.nextUrl.pathname.startsWith("/b2b");
   // Terminal-Seite authentifiziert sich ueber Token in der URL, nicht ueber Session
   const isTerminalPage = request.nextUrl.pathname.startsWith("/terminal");
+  // Jugend-Freigabe: Oeffentliche Elternfreigabe-Seiten (via SMS-Token, kein Login)
+  const isYouthConsentPage = request.nextUrl.pathname.startsWith("/jugend/freigabe");
 
-  if (!user && !isAuthPage && !isApiRoute && !isRootPage && !isLegalPage && !isPublicPage && !isTerminalPage) {
+  if (!user && !isAuthPage && !isApiRoute && !isRootPage && !isLegalPage && !isPublicPage && !isTerminalPage && !isYouthConsentPage) {
     const url = request.nextUrl.clone();
     url.pathname = "/login";
     return NextResponse.redirect(url);

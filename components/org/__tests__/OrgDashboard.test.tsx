@@ -7,6 +7,21 @@ import { OrgDashboard } from "../OrgDashboard";
 import { OrgMemberList } from "../OrgMemberList";
 import type { Organization } from "@/app/(app)/org/page";
 
+// Mock Supabase Client (fuer QuarterStats-Kind-Komponente)
+vi.mock("@/lib/supabase/client", () => ({
+  createClient: () => ({
+    from: () => ({
+      select: () => ({
+        in: () => ({
+          order: () => ({
+            limit: () => Promise.resolve({ data: [] }),
+          }),
+        }),
+      }),
+    }),
+  }),
+}));
+
 afterEach(() => {
   cleanup();
   vi.clearAllMocks();

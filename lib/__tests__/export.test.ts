@@ -5,10 +5,13 @@ import { describe, it, expect } from 'vitest';
 import * as XLSX from 'xlsx';
 import { generateCsv, generateXlsx } from '../export';
 
+// BOM-Prefix fuer Excel UTF-8
+const BOM = '\uFEFF';
+
 describe('generateCsv', () => {
-  it('generiert korrekte Header-Zeile', () => {
+  it('generiert korrekte Header-Zeile mit BOM und Semikolon', () => {
     const csv = generateCsv(['Name', 'E-Mail', 'Quartier'], []);
-    expect(csv).toBe('Name,E-Mail,Quartier');
+    expect(csv).toBe(`${BOM}Name;E-Mail;Quartier`);
   });
 
   it('generiert Header und Datenzeilen', () => {
@@ -16,20 +19,20 @@ describe('generateCsv', () => {
       ['Name', 'Alter'],
       [['Max Mustermann', '42'], ['Erika Muster', '35']]
     );
-    const lines = csv.split('\r\n');
+    const lines = csv.replace(BOM, '').split('\r\n');
     expect(lines).toHaveLength(3);
-    expect(lines[0]).toBe('Name,Alter');
-    expect(lines[1]).toBe('Max Mustermann,42');
-    expect(lines[2]).toBe('Erika Muster,35');
+    expect(lines[0]).toBe('Name;Alter');
+    expect(lines[1]).toBe('Max Mustermann;42');
+    expect(lines[2]).toBe('Erika Muster;35');
   });
 
-  it('escaped Kommas in Werten', () => {
+  it('escaped Semikolons in Werten', () => {
     const csv = generateCsv(
       ['Adresse'],
-      [['Purkersdorfer Straße 5, Bad Säckingen']]
+      [['Purkersdorfer Strasse 5; Bad Saeckingen']]
     );
-    const lines = csv.split('\r\n');
-    expect(lines[1]).toBe('"Purkersdorfer Straße 5, Bad Säckingen"');
+    const lines = csv.replace(BOM, '').split('\r\n');
+    expect(lines[1]).toBe('"Purkersdorfer Strasse 5; Bad Saeckingen"');
   });
 
   it('escaped Anfuehrungszeichen in Werten', () => {
@@ -37,7 +40,7 @@ describe('generateCsv', () => {
       ['Notiz'],
       [['Er sagte "Hallo" und ging']]
     );
-    const lines = csv.split('\r\n');
+    const lines = csv.replace(BOM, '').split('\r\n');
     expect(lines[1]).toBe('"Er sagte ""Hallo"" und ging"');
   });
 
@@ -46,8 +49,7 @@ describe('generateCsv', () => {
       ['Beschreibung'],
       [['Zeile 1\nZeile 2']]
     );
-    const lines = csv.split('\r\n');
-    // Der Wert mit Zeilenumbruch muss in Anfuehrungszeichen stehen
+    const lines = csv.replace(BOM, '').split('\r\n');
     expect(lines[1]).toBe('"Zeile 1\nZeile 2"');
   });
 
@@ -56,8 +58,8 @@ describe('generateCsv', () => {
       ['A', 'B', 'C'],
       [['', 'Wert', '']]
     );
-    const lines = csv.split('\r\n');
-    expect(lines[1]).toBe(',Wert,');
+    const lines = csv.replace(BOM, '').split('\r\n');
+    expect(lines[1]).toBe(';Wert;');
   });
 });
 

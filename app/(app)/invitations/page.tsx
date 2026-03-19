@@ -13,6 +13,7 @@ import {
   MessageCircle,
   Mail,
   RefreshCw,
+  Smartphone,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -24,12 +25,15 @@ import { toast } from "sonner";
 
 interface Invitation {
   id: string;
-  invite_method: "email" | "whatsapp" | "code";
+  invite_method: "email" | "whatsapp" | "code" | "sms";
   invite_target: string | null;
   invite_code: string;
-  status: "sent" | "accepted" | "expired";
+  status: "sent" | "accepted" | "expired" | "converted";
   created_at: string;
   accepted_at: string | null;
+  recipient_name: string | null;
+  recipient_phone: string | null;
+  converted_at: string | null;
   household: {
     street_name: string;
     house_number: string;
@@ -79,7 +83,7 @@ export default function InvitationsPage() {
 
   // Statistiken berechnen
   const openCount = invitations.filter((i) => i.status === "sent").length;
-  const acceptedCount = invitations.filter((i) => i.status === "accepted").length;
+  const acceptedCount = invitations.filter((i) => i.status === "accepted" || i.status === "converted").length;
   const expiredCount = invitations.filter((i) => i.status === "expired").length;
   const pointsEarned = acceptedCount * 50;
 
@@ -88,6 +92,7 @@ export default function InvitationsPage() {
       case "sent":
         return <Clock className="h-4 w-4 text-alert-amber" />;
       case "accepted":
+      case "converted":
         return <CheckCircle2 className="h-4 w-4 text-quartier-green" />;
       case "expired":
         return <XCircle className="h-4 w-4 text-muted-foreground" />;
@@ -101,6 +106,7 @@ export default function InvitationsPage() {
       case "sent":
         return "Offen";
       case "accepted":
+      case "converted":
         return "Angenommen";
       case "expired":
         return "Abgelaufen";
@@ -115,6 +121,8 @@ export default function InvitationsPage() {
         return <Mail className="h-3.5 w-3.5" />;
       case "whatsapp":
         return <MessageCircle className="h-3.5 w-3.5" />;
+      case "sms":
+        return <Smartphone className="h-3.5 w-3.5" />;
       default:
         return <Copy className="h-3.5 w-3.5" />;
     }
@@ -126,6 +134,8 @@ export default function InvitationsPage() {
         return "E-Mail";
       case "whatsapp":
         return "WhatsApp";
+      case "sms":
+        return "SMS";
       default:
         return "Code";
     }
@@ -234,9 +244,11 @@ export default function InvitationsPage() {
                     <div className="flex items-center gap-2">
                       {getStatusIcon(invitation.status)}
                       <span className="font-medium text-sm text-anthrazit truncate">
-                        {invitation.household
-                          ? `${invitation.household.street_name} ${invitation.household.house_number}`
-                          : "Unbekannte Adresse"}
+                        {invitation.recipient_name
+                          ? `${invitation.recipient_name} — ${invitation.household?.street_name ?? ""} ${invitation.household?.house_number ?? ""}`
+                          : invitation.household
+                            ? `${invitation.household.street_name} ${invitation.household.house_number}`
+                            : "Unbekannte Adresse"}
                       </span>
                     </div>
 
@@ -263,14 +275,14 @@ export default function InvitationsPage() {
                         className={`rounded-full px-1.5 py-0.5 text-[10px] font-medium ${
                           invitation.status === "sent"
                             ? "bg-amber-50 text-alert-amber"
-                            : invitation.status === "accepted"
+                            : (invitation.status === "accepted" || invitation.status === "converted")
                             ? "bg-green-50 text-quartier-green"
                             : "bg-gray-100 text-gray-500"
                         }`}
                       >
                         {getStatusLabel(invitation.status)}
                       </span>
-                      {invitation.status === "accepted" && (
+                      {(invitation.status === "accepted" || invitation.status === "converted") && (
                         <span className="text-quartier-green font-medium">+50 Punkte</span>
                       )}
                     </div>

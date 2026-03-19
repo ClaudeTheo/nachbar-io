@@ -3,6 +3,7 @@
 "use client";
 
 import type { Organization } from "@/app/(app)/org/page";
+import { QuarterStats } from "./QuarterStats";
 
 // Org-Typ Anzeigenamen (Deutsch)
 const ORG_TYPE_LABELS: Record<Organization["type"], string> = {
@@ -96,6 +97,9 @@ export function OrgDashboard({ org }: OrgDashboardProps) {
           <p className="mt-1 text-xs text-gray-400">Daten werden geladen</p>
         </div>
       </div>
+
+      {/* Quartier-Statistiken (anonymisiert, aus analytics_snapshots) */}
+      {allQuarters.length > 0 && <QuarterStats quarterIds={allQuarters} />}
 
       {/* Zugewiesene Quartiere */}
       <div className="rounded-xl border bg-white p-6 shadow-sm">

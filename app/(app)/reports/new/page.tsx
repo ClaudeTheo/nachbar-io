@@ -3,14 +3,16 @@
 // Maengelmelder — Mehrstufiges Formular zum Erstellen einer Meldung
 // 6 Schritte: Kategorie → Foto → Standort → Beschreibung → Zusammenfassung → Absenden
 
-import { useState, useRef, useCallback } from "react";
+import { useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Camera, ImageIcon, X, MapPin, CheckCircle2, Loader2 } from "lucide-react";
+import { ArrowLeft, MapPin, CheckCircle2, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { createClient } from "@/lib/supabase/client";
 import { useQuarter } from "@/lib/quarters";
 import type { ReportCategory } from "@/lib/municipal";
 import { REPORT_CATEGORIES, DISCLAIMERS } from "@/lib/municipal";
+import { PhotoUpload } from "@/components/municipal/PhotoUpload";
+import { GpsPicker } from "@/components/municipal/GpsPicker";
 
 // --- Typen ---
 
@@ -38,30 +40,6 @@ const INITIAL_FORM: FormData = {
 
 const TOTAL_STEPS = 6;
 const MAX_DESCRIPTION = 500;
-const MAX_FILE_SIZE = 2 * 1024 * 1024; // 2 MB
-
-// --- Bildkomprimierung ---
-
-async function compressImage(file: File, maxWidth = 1200, quality = 0.8): Promise<Blob> {
-  return new Promise((resolve, reject) => {
-    const img = new Image();
-    img.onload = () => {
-      const canvas = document.createElement("canvas");
-      const ratio = Math.min(maxWidth / img.width, 1);
-      canvas.width = img.width * ratio;
-      canvas.height = img.height * ratio;
-      const ctx = canvas.getContext("2d")!;
-      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-      canvas.toBlob(
-        (blob) => (blob ? resolve(blob) : reject(new Error("Komprimierung fehlgeschlagen"))),
-        "image/jpeg",
-        quality,
-      );
-    };
-    img.onerror = reject;
-    img.src = URL.createObjectURL(file);
-  });
-}
 
 // --- Fortschrittsanzeige ---
 
@@ -108,21 +86,18 @@ function StepCategory({
 }
 
 // --- Schritt 2: Foto (optional) ---
+// Nutzt die wiederverwendbare PhotoUpload-Komponente
 
 function StepPhoto({
   photoPreview,
-  uploading,
-  onCapture,
-  onGallery,
-  onRemove,
+  onPhotoUploaded,
+  onPhotoRemoved,
   onNext,
   onSkip,
 }: {
   photoPreview: string | null;
-  uploading: boolean;
-  onCapture: () => void;
-  onGallery: () => void;
-  onRemove: () => void;
+  onPhotoUploaded: (url: string, preview: string) => void;
+  onPhotoRemoved: () => void;
   onNext: () => void;
   onSkip: () => void;
 }) {
@@ -132,60 +107,13 @@ function StepPhoto({
         Fotografieren Sie den Mangel. Das hilft bei der Bearbeitung.
       </p>
 
-      {/* Foto-Vorschau */}
-      {photoPreview ? (
-        <div className="relative">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={photoPreview}
-            alt="Foto-Vorschau"
-            className="w-full rounded-xl object-cover shadow-soft"
-            style={{ maxHeight: 300 }}
-          />
-          <button
-            onClick={onRemove}
-            className="absolute right-2 top-2 rounded-full bg-black/50 p-1.5 text-white transition-colors hover:bg-black/70"
-            aria-label="Foto entfernen"
-          >
-            <X className="h-4 w-4" />
-          </button>
-        </div>
-      ) : (
-        <div className="grid grid-cols-2 gap-3">
-          {/* Kamera */}
-          <button
-            onClick={onCapture}
-            disabled={uploading}
-            className="flex min-h-[80px] flex-col items-center justify-center gap-2 rounded-xl bg-white p-4 shadow-soft transition-all hover:shadow-md active:scale-[0.97] disabled:opacity-50"
-          >
-            {uploading ? (
-              <Loader2 className="h-8 w-8 animate-spin text-quartier-green" />
-            ) : (
-              <Camera className="h-8 w-8 text-quartier-green" />
-            )}
-            <span className="text-sm font-medium text-anthrazit">Kamera</span>
-          </button>
-
-          {/* Galerie */}
-          <button
-            onClick={onGallery}
-            disabled={uploading}
-            className="flex min-h-[80px] flex-col items-center justify-center gap-2 rounded-xl bg-white p-4 shadow-soft transition-all hover:shadow-md active:scale-[0.97] disabled:opacity-50"
-          >
-            {uploading ? (
-              <Loader2 className="h-8 w-8 animate-spin text-quartier-green" />
-            ) : (
-              <ImageIcon className="h-8 w-8 text-quartier-green" />
-            )}
-            <span className="text-sm font-medium text-anthrazit">Galerie</span>
-          </button>
-        </div>
-      )}
-
-      {/* Hinweis */}
-      <div className="rounded-lg border border-blue-200 bg-blue-50 p-3 text-xs text-blue-700">
-        {DISCLAIMERS.reportPhoto}
-      </div>
+      <PhotoUpload
+        bucket="report-photos"
+        photoPreview={photoPreview}
+        onPhotoUploaded={onPhotoUploaded}
+        onPhotoRemoved={onPhotoRemoved}
+        hint={DISCLAIMERS.reportPhoto}
+      />
 
       {/* Aktionen */}
       <div className="flex gap-3">
@@ -209,69 +137,35 @@ function StepPhoto({
   );
 }
 
-// --- Schritt 3: Standort ---
+// --- Schritt 3: Standort (mit GPS-Picker Karte) ---
 
 function StepLocation({
   locationText,
   locationLat,
   locationLng,
-  locating,
-  onLocate,
+  onLocationChange,
   onTextChange,
   onNext,
 }: {
   locationText: string;
   locationLat: number | null;
   locationLng: number | null;
-  locating: boolean;
-  onLocate: () => void;
+  onLocationChange: (lat: number, lng: number) => void;
   onTextChange: (text: string) => void;
   onNext: () => void;
 }) {
-  const hasCoords = locationLat !== null && locationLng !== null;
-
   return (
     <div className="space-y-4 animate-fade-in-up">
       <p className="text-sm text-muted-foreground">Wo befindet sich der Mangel?</p>
 
-      {/* GPS-Erkennung */}
-      <button
-        onClick={onLocate}
-        disabled={locating}
-        className="flex min-h-[56px] w-full items-center justify-center gap-2 rounded-xl bg-white p-4 shadow-soft transition-all hover:shadow-md active:scale-[0.97] disabled:opacity-50"
-      >
-        {locating ? (
-          <Loader2 className="h-5 w-5 animate-spin text-quartier-green" />
-        ) : (
-          <MapPin className="h-5 w-5 text-quartier-green" />
-        )}
-        <span className="text-sm font-medium text-anthrazit">
-          {locating ? "Standort wird ermittelt ..." : hasCoords ? "Standort erkannt" : "Aktuellen Standort verwenden"}
-        </span>
-      </button>
-
-      {/* Koordinaten-Anzeige */}
-      {hasCoords && (
-        <div className="rounded-lg bg-quartier-green/5 p-3 text-xs text-quartier-green">
-          <span className="font-medium">GPS-Koordinaten:</span> {locationLat!.toFixed(5)}, {locationLng!.toFixed(5)}
-        </div>
-      )}
-
-      {/* Ort-Beschreibung (Pflicht) */}
-      <div>
-        <label htmlFor="locationText" className="mb-1 block text-sm font-medium text-anthrazit">
-          Standort-Beschreibung *
-        </label>
-        <input
-          id="locationText"
-          type="text"
-          value={locationText}
-          onChange={(e) => onTextChange(e.target.value)}
-          placeholder="z. B. Vor Purkersdorfer Str. 12"
-          maxLength={200}
-          className="w-full rounded-lg border border-gray-200 bg-white px-4 py-3 text-sm text-anthrazit placeholder:text-gray-400 focus:border-quartier-green focus:outline-none focus:ring-1 focus:ring-quartier-green"
-        />
-      </div>
+      {/* GPS-Picker mit Leaflet-Karte */}
+      <GpsPicker
+        lat={locationLat}
+        lng={locationLng}
+        locationText={locationText}
+        onLocationChange={onLocationChange}
+        onTextChange={onTextChange}
+      />
 
       {/* Weiter */}
       <button
@@ -368,7 +262,6 @@ function StepSummary({
           </div>
         )}
 
-        {/* Foto */}
         {/* Foto-Vorschau (blob URL, kein next/image moeglich) */}
         {formData.photoPreview && (
           // eslint-disable-next-line @next/next/no-img-element
@@ -440,13 +333,7 @@ export default function NewReportPage() {
   // Formular-State
   const [step, setStep] = useState(0);
   const [formData, setFormData] = useState<FormData>(INITIAL_FORM);
-  const [uploading, setUploading] = useState(false);
-  const [locating, setLocating] = useState(false);
   const [submitting, setSubmitting] = useState(false);
-
-  // Datei-Input Referenzen
-  const cameraRef = useRef<HTMLInputElement>(null);
-  const galleryRef = useRef<HTMLInputElement>(null);
 
   // --- Navigation ---
 
@@ -462,120 +349,14 @@ export default function NewReportPage() {
     setStep((s) => Math.min(s + 1, TOTAL_STEPS - 1));
   }, []);
 
-  // --- Foto-Handling ---
+  // --- Foto-Callbacks (delegiert an PhotoUpload-Komponente) ---
 
-  const handleFileSelect = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    // Validierung: nur Bilder
-    if (!file.type.startsWith("image/")) {
-      toast.error("Bitte wählen Sie ein Bild aus.");
-      return;
-    }
-
-    // Validierung: max 2 MB (vor Komprimierung)
-    if (file.size > MAX_FILE_SIZE * 2) {
-      toast.error("Das Bild ist zu groß (max. 4 MB vor Komprimierung).");
-      return;
-    }
-
-    setUploading(true);
-
-    try {
-      // Komprimieren
-      const compressed = await compressImage(file);
-
-      // Pruefen ob komprimiertes Bild unter 2 MB liegt
-      if (compressed.size > MAX_FILE_SIZE) {
-        toast.error("Das Bild ist auch nach Komprimierung zu groß (max. 2 MB).");
-        setUploading(false);
-        return;
-      }
-
-      // Vorschau erstellen
-      const previewUrl = URL.createObjectURL(compressed);
-
-      // Hochladen in Supabase Storage
-      const supabase = createClient();
-      const fileName = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}.jpg`;
-      const { data, error } = await supabase.storage
-        .from("report-photos")
-        .upload(fileName, compressed, {
-          contentType: "image/jpeg",
-          cacheControl: "3600",
-        });
-
-      if (error) {
-        toast.error("Foto-Upload fehlgeschlagen. Bitte versuchen Sie es erneut.");
-        console.error("Storage upload error:", error);
-        setUploading(false);
-        return;
-      }
-
-      // Oeffentliche URL holen
-      const { data: urlData } = supabase.storage
-        .from("report-photos")
-        .getPublicUrl(data.path);
-
-      setFormData((prev) => ({
-        ...prev,
-        photoUrl: urlData.publicUrl,
-        photoPreview: previewUrl,
-      }));
-    } catch (err) {
-      console.error("Bildverarbeitung fehlgeschlagen:", err);
-      toast.error("Bildverarbeitung fehlgeschlagen.");
-    } finally {
-      setUploading(false);
-      // Input zuruecksetzen (damit dasselbe Bild nochmal gewaehlt werden kann)
-      e.target.value = "";
-    }
+  const handlePhotoUploaded = useCallback((url: string, preview: string) => {
+    setFormData((prev) => ({ ...prev, photoUrl: url, photoPreview: preview }));
   }, []);
 
-  const handleRemovePhoto = useCallback(() => {
-    // Vorschau-URL aufraeumen
-    if (formData.photoPreview) {
-      URL.revokeObjectURL(formData.photoPreview);
-    }
-    setFormData((prev) => ({
-      ...prev,
-      photoUrl: null,
-      photoPreview: null,
-    }));
-  }, [formData.photoPreview]);
-
-  // --- GPS-Standort ---
-
-  const handleLocate = useCallback(() => {
-    if (!navigator.geolocation) {
-      toast.error("Standortbestimmung wird von Ihrem Gerät nicht unterstützt.");
-      return;
-    }
-
-    setLocating(true);
-
-    navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        setFormData((prev) => ({
-          ...prev,
-          locationLat: pos.coords.latitude,
-          locationLng: pos.coords.longitude,
-        }));
-        setLocating(false);
-        toast.success("Standort erkannt.");
-      },
-      (err) => {
-        console.error("Geolocation error:", err);
-        setLocating(false);
-        if (err.code === err.PERMISSION_DENIED) {
-          toast.error("Standort-Zugriff verweigert. Bitte erlauben Sie den Zugriff in den Einstellungen.");
-        } else {
-          toast.error("Standort konnte nicht ermittelt werden.");
-        }
-      },
-      { enableHighAccuracy: true, timeout: 10000 },
-    );
+  const handlePhotoRemoved = useCallback(() => {
+    setFormData((prev) => ({ ...prev, photoUrl: null, photoPreview: null }));
   }, []);
 
   // --- Absenden ---
@@ -677,25 +458,6 @@ export default function NewReportPage() {
         </p>
       </div>
 
-      {/* Versteckte Datei-Inputs */}
-      <input
-        ref={cameraRef}
-        type="file"
-        accept="image/*"
-        capture="environment"
-        onChange={handleFileSelect}
-        className="hidden"
-        aria-hidden="true"
-      />
-      <input
-        ref={galleryRef}
-        type="file"
-        accept="image/*"
-        onChange={handleFileSelect}
-        className="hidden"
-        aria-hidden="true"
-      />
-
       {/* Schritte */}
 
       {step === 0 && (
@@ -710,10 +472,8 @@ export default function NewReportPage() {
       {step === 1 && (
         <StepPhoto
           photoPreview={formData.photoPreview}
-          uploading={uploading}
-          onCapture={() => cameraRef.current?.click()}
-          onGallery={() => galleryRef.current?.click()}
-          onRemove={handleRemovePhoto}
+          onPhotoUploaded={handlePhotoUploaded}
+          onPhotoRemoved={handlePhotoRemoved}
           onNext={goNext}
           onSkip={goNext}
         />
@@ -724,8 +484,9 @@ export default function NewReportPage() {
           locationText={formData.locationText}
           locationLat={formData.locationLat}
           locationLng={formData.locationLng}
-          locating={locating}
-          onLocate={handleLocate}
+          onLocationChange={(lat, lng) =>
+            setFormData((prev) => ({ ...prev, locationLat: lat, locationLng: lng }))
+          }
           onTextChange={(text) =>
             setFormData((prev) => ({ ...prev, locationText: text }))
           }

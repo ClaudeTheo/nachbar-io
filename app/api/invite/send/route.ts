@@ -4,6 +4,15 @@ import { createClient as createAdminClient } from "@supabase/supabase-js";
 import { generateSecureCode } from "@/lib/invite-codes";
 import { sendInvitationEmail } from "@/lib/email";
 import { getUserQuarterId } from "@/lib/quarters/helpers";
+import {
+  checkInviteLimit,
+  getUserPlan,
+  sendInviteSms,
+  buildWhatsAppMessage,
+  buildWhatsAppUrl,
+  validatePhone,
+  type InviteChannel,
+} from "@/lib/invitations";
 
 // Ungefaehre Koordinaten pro Strasse
 const STREET_COORDS: Record<string, { lat: number; lng: number }> = {
@@ -12,12 +21,19 @@ const STREET_COORDS: Record<string, { lat: number; lng: number }> = {
   "Oberer Rebberg": { lat: 47.5604, lng: 7.9480 },
 };
 
+const VALID_METHODS: InviteChannel[] = ["email", "whatsapp", "code", "sms"];
+
 /**
  * POST /api/invite/send
  *
  * Verifizierter Nutzer laedt einen Nachbarn ein.
- * Body: { street, houseNumber, method: 'email' | 'whatsapp' | 'code', target?: string }
- * Gibt den generierten Einladungscode zurueck.
+ * Body: {
+ *   street, houseNumber,
+ *   method: 'email' | 'whatsapp' | 'code' | 'sms',
+ *   target?: string (E-Mail),
+ *   recipientName?: string,
+ *   recipientPhone?: string
+ * }
  */
 export async function POST(request: NextRequest) {
   const supabase = await createClient();
@@ -45,42 +61,68 @@ export async function POST(request: NextRequest) {
   try {
     body = await request.json();
   } catch {
-    return NextResponse.json({ error: "Ungueltiges Anfrage-Format" }, { status: 400 });
+    return NextResponse.json({ error: "Ungültiges Anfrage-Format" }, { status: 400 });
   }
-  const { street, houseNumber, method, target } = body;
+  const { street, houseNumber, method, target, recipientName, recipientPhone } = body;
 
   if (!street || !houseNumber || !method) {
     return NextResponse.json(
-      { error: "Strasse, Hausnummer und Methode sind erforderlich" },
+      { error: "Straße, Hausnummer und Methode sind erforderlich" },
       { status: 400 }
     );
   }
 
-  // E-Mail-Adresse validieren bei E-Mail-Methode
+  if (!VALID_METHODS.includes(method)) {
+    return NextResponse.json(
+      { error: "Ungültige Einladungsmethode" },
+      { status: 400 }
+    );
+  }
+
+  // Kanal-spezifische Validierung
   if (method === "email" && !target) {
     return NextResponse.json(
       { error: "E-Mail-Adresse ist erforderlich" },
       { status: 400 }
     );
   }
-
-  // Offene Einladungen pruefen (Spam-Schutz: max 5)
-  const { count: openCount } = await supabase
-    .from("neighbor_invitations")
-    .select("id", { count: "exact", head: true })
-    .eq("inviter_id", user.id)
-    .eq("status", "sent");
-
-  if ((openCount ?? 0) >= 5) {
+  if (method === "sms" && !recipientPhone) {
     return NextResponse.json(
-      { error: "Sie haben bereits 5 offene Einladungen. Bitte warten Sie, bis diese angenommen oder abgelaufen sind." },
+      { error: "Telefonnummer ist erforderlich für SMS-Einladungen" },
+      { status: 400 }
+    );
+  }
+  if (method === "sms") {
+    const { valid } = validatePhone(recipientPhone);
+    if (!valid) {
+      return NextResponse.json(
+        { error: "Ungültige Telefonnummer. Bitte im Format +49... oder 0... eingeben." },
+        { status: 400 }
+      );
+    }
+  }
+
+  // Plan-basiertes Rate-Limit pruefen
+  const userPlan = await getUserPlan(supabase, user.id);
+  const { allowed, remaining, limit } = await checkInviteLimit(supabase, user.id, userPlan);
+  if (!allowed) {
+    return NextResponse.json(
+      {
+        error: `Sie haben Ihr Einladungslimit erreicht (${limit} Einladungen). ${
+          userPlan === "free"
+            ? "Mit Nachbar Plus können Sie mehr Nachbarn einladen."
+            : "Bitte warten Sie, bis bestehende Einladungen angenommen oder abgelaufen sind."
+        }`,
+        limit,
+        remaining: 0,
+        upgradable: userPlan === "free",
+      },
       { status: 429 }
     );
   }
 
   // Haushalt suchen oder automatisch anlegen
   let householdId: string;
-
   const { data: existingHousehold } = await supabase
     .from("households")
     .select("id")
@@ -91,7 +133,6 @@ export async function POST(request: NextRequest) {
   if (existingHousehold) {
     householdId = existingHousehold.id;
   } else {
-    // Haushalt direkt per Service-Role anlegen (kein interner fetch noetig)
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
     const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
     if (!supabaseUrl || !serviceKey) {
@@ -102,7 +143,6 @@ export async function POST(request: NextRequest) {
     if (!coords) {
       return NextResponse.json({ error: "Unbekannte Straße" }, { status: 400 });
     }
-    // Quartier-ID des einladenden Nutzers ermitteln
     const inviterQuarterId = await getUserQuarterId(supabase, user.id);
     const houseNum = parseInt(String(houseNumber), 10) || 0;
     const { data: newHH, error: hhErr } = await adminDb
@@ -128,17 +168,25 @@ export async function POST(request: NextRequest) {
 
   // Einladungscode generieren
   const inviteCode = generateSecureCode();
+  const inviterQuarterId = await getUserQuarterId(supabase, user.id);
 
-  // Einladung speichern
+  // Registrierungs-URL generieren
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://quartierapp.de";
+  const registerUrl = `${baseUrl}/register?invite=${inviteCode}&ref=${user.id}`;
+
+  // Einladung speichern (erweiterte Felder)
   const { error: insertError } = await supabase
     .from("neighbor_invitations")
     .insert({
       inviter_id: user.id,
       household_id: householdId,
       invite_method: method,
-      invite_target: target || null,
+      invite_target: target || recipientPhone || null,
       invite_code: inviteCode,
       status: "sent",
+      recipient_name: recipientName || null,
+      recipient_phone: recipientPhone || null,
+      quarter_id: inviterQuarterId,
     });
 
   if (insertError) {
@@ -148,16 +196,14 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  // Registrierungs-URL generieren
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://quartierapp.de";
-  const registerUrl = `${baseUrl}/register?invite=${inviteCode}&ref=${user.id}`;
+  // Personalisierte WhatsApp-URL (fuer alle Methoden als Fallback)
+  const whatsappText = buildWhatsAppMessage(profile.display_name, recipientName, registerUrl);
+  const whatsappUrl = buildWhatsAppUrl(whatsappText, recipientPhone);
 
-  // WhatsApp-Text vorbereiten
-  const whatsappText = `Hallo! Ich bin ${profile.display_name} und nutze QuartierApp – unsere Quartiers-App. Möchten Sie auch dabei sein? Registrieren Sie sich hier: ${registerUrl}`;
-  const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(whatsappText)}`;
-
-  // E-Mail versenden (asynchron, Fehler nicht blockierend)
+  // Kanal-spezifischer Versand
   let emailSent = false;
+  let smsSent = false;
+
   if (method === "email" && target) {
     const emailResult = await sendInvitationEmail({
       to: target,
@@ -169,7 +215,28 @@ export async function POST(request: NextRequest) {
     });
     emailSent = emailResult.success;
     if (!emailResult.success) {
-      console.warn("E-Mail-Versand fehlgeschlagen:", emailResult.error);
+      console.warn("[invite] E-Mail-Versand fehlgeschlagen:", emailResult.error);
+    }
+  }
+
+  if (method === "sms" && recipientPhone) {
+    const smsResult = await sendInviteSms(
+      recipientPhone,
+      profile.display_name,
+      recipientName,
+      registerUrl
+    );
+    smsSent = smsResult.sent;
+
+    // SMS-Status in DB aktualisieren
+    if (smsSent) {
+      await supabase
+        .from("neighbor_invitations")
+        .update({ sms_sent: true })
+        .eq("invite_code", inviteCode);
+    }
+    if (!smsResult.sent) {
+      console.warn("[invite] SMS-Versand fehlgeschlagen:", smsResult.error);
     }
   }
 
@@ -180,5 +247,7 @@ export async function POST(request: NextRequest) {
     whatsappUrl,
     method,
     emailSent,
+    smsSent,
+    remaining: remaining - 1,
   });
 }

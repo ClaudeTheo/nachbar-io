@@ -277,9 +277,11 @@ export async function POST(request: NextRequest) {
         const { error: inviteErr } = await adminDb
           .from("neighbor_invitations")
           .update({
-            status: "accepted",
+            status: "converted",
             accepted_at: new Date().toISOString(),
             accepted_by: userId,
+            converted_user_id: userId,
+            converted_at: new Date().toISOString(),
           })
           .eq("invite_code", normalizedCode)
           .eq("status", "sent");

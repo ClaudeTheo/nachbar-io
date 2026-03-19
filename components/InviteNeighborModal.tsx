@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { X, Mail, MessageCircle, Copy, Check, UserPlus, MapPin } from "lucide-react";
+import { X, Mail, MessageCircle, Copy, Check, UserPlus, MapPin, Phone, Smartphone } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
@@ -14,19 +14,23 @@ interface InviteNeighborModalProps {
   onClose: () => void;
 }
 
-type InviteMethod = "email" | "whatsapp" | "code";
+type InviteMethod = "email" | "whatsapp" | "code" | "sms";
 
 export function InviteNeighborModal({ open, onClose }: InviteNeighborModalProps) {
   const [street, setStreet] = useState("");
   const [houseNumber, setHouseNumber] = useState("");
   const [method, setMethod] = useState<InviteMethod | null>(null);
   const [emailTarget, setEmailTarget] = useState("");
+  const [recipientName, setRecipientName] = useState("");
+  const [recipientPhone, setRecipientPhone] = useState("");
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<{
     inviteCode: string;
     registerUrl: string;
     whatsappUrl: string;
     emailSent?: boolean;
+    smsSent?: boolean;
+    remaining?: number;
   } | null>(null);
   const [copied, setCopied] = useState(false);
 
@@ -37,6 +41,8 @@ export function InviteNeighborModal({ open, onClose }: InviteNeighborModalProps)
     setHouseNumber("");
     setMethod(null);
     setEmailTarget("");
+    setRecipientName("");
+    setRecipientPhone("");
     setResult(null);
     setCopied(false);
   }
@@ -54,6 +60,8 @@ export function InviteNeighborModal({ open, onClose }: InviteNeighborModalProps)
           houseNumber: houseNumber.trim(),
           method,
           target: method === "email" ? emailTarget : undefined,
+          recipientName: recipientName.trim() || undefined,
+          recipientPhone: (method === "sms" || method === "whatsapp") ? recipientPhone.trim() || undefined : undefined,
         }),
       });
 
@@ -64,7 +72,11 @@ export function InviteNeighborModal({ open, onClose }: InviteNeighborModalProps)
         setResult(data);
 
         // Erfolgs-Feedback je nach Methode
-        if (method === "email" && data.emailSent) {
+        if (method === "sms" && data.smsSent) {
+          toast.success("SMS-Einladung versendet!");
+        } else if (method === "sms" && !data.smsSent) {
+          toast.success("Einladung erstellt! SMS konnte nicht gesendet werden — teilen Sie den Code manuell.");
+        } else if (method === "email" && data.emailSent) {
           toast.success("Einladung per E-Mail versendet!");
         } else if (method === "email" && !data.emailSent) {
           toast.success("Einladung erstellt! E-Mail konnte nicht gesendet werden — teilen Sie den Code manuell.");
@@ -72,9 +84,8 @@ export function InviteNeighborModal({ open, onClose }: InviteNeighborModalProps)
           toast.success("Einladung erstellt!");
         }
 
-        // WhatsApp direkt oeffnen (window.location fuer mobile Kompatibilitaet)
+        // WhatsApp direkt oeffnen
         if (method === "whatsapp" && data.whatsappUrl) {
-          // Verzögerung damit React-State zuerst aktualisiert wird
           setTimeout(() => {
             window.location.href = data.whatsappUrl;
           }, 100);
@@ -97,6 +108,14 @@ export function InviteNeighborModal({ open, onClose }: InviteNeighborModalProps)
     }
   }
 
+  // Pruefen ob Senden moeglich ist
+  const canSend = street && houseNumber.trim() && method && (
+    method === "code" ||
+    method === "whatsapp" ||
+    (method === "email" && emailTarget.trim()) ||
+    (method === "sms" && recipientPhone.trim())
+  );
+
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center sm:items-center">
       {/* Backdrop */}
@@ -106,7 +125,7 @@ export function InviteNeighborModal({ open, onClose }: InviteNeighborModalProps)
       />
 
       {/* Modal */}
-      <div className="relative z-10 mx-4 mb-4 w-full max-w-md animate-fade-in-up rounded-2xl bg-white p-6 shadow-xl sm:mb-0">
+      <div className="relative z-10 mx-4 mb-4 w-full max-w-md animate-fade-in-up rounded-2xl bg-white p-6 shadow-xl sm:mb-0 max-h-[90vh] overflow-y-auto">
         {/* Header */}
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
@@ -126,7 +145,6 @@ export function InviteNeighborModal({ open, onClose }: InviteNeighborModalProps)
           <div className="space-y-4">
             <Card className="border-quartier-green/30 bg-quartier-green/5">
               <CardContent className="p-4 text-center space-y-3">
-                <div className="text-3xl">🎉</div>
                 <p className="font-semibold text-anthrazit">Einladung erstellt!</p>
                 <p className="text-sm text-muted-foreground">
                   Code: <span className="font-mono font-bold text-quartier-green">{formatCode(result.inviteCode)}</span>
@@ -138,6 +156,22 @@ export function InviteNeighborModal({ open, onClose }: InviteNeighborModalProps)
                 </p>
               </CardContent>
             </Card>
+
+            {/* Versand-Status */}
+            {result.smsSent && (
+              <div className="rounded-lg bg-green-50 p-3 text-center">
+                <p className="text-sm text-quartier-green font-medium">
+                  SMS wurde versendet
+                </p>
+              </div>
+            )}
+            {result.emailSent && (
+              <div className="rounded-lg bg-green-50 p-3 text-center">
+                <p className="text-sm text-quartier-green font-medium">
+                  E-Mail wurde versendet
+                </p>
+              </div>
+            )}
 
             {/* Registrierungslink */}
             <div className="space-y-2">
@@ -154,16 +188,7 @@ export function InviteNeighborModal({ open, onClose }: InviteNeighborModalProps)
               </div>
             </div>
 
-            {/* E-Mail-Status */}
-            {result.emailSent && (
-              <div className="rounded-lg bg-green-50 p-3 text-center">
-                <p className="text-sm text-quartier-green font-medium">
-                  ✅ E-Mail wurde versendet
-                </p>
-              </div>
-            )}
-
-            {/* WhatsApp Button — Link statt window.open fuer mobile Kompatibilitaet */}
+            {/* WhatsApp Button */}
             <a
               href={result.whatsappUrl}
               target="_blank"
@@ -182,12 +207,27 @@ export function InviteNeighborModal({ open, onClose }: InviteNeighborModalProps)
               Fertig
             </Button>
 
-            <p className="text-[10px] text-center text-muted-foreground">
-              Sie erhalten 50 Punkte, wenn Ihr Nachbar sich registriert!
-            </p>
+            {result.remaining !== undefined && (
+              <p className="text-[10px] text-center text-muted-foreground">
+                Noch {result.remaining} Einladungen verfügbar
+              </p>
+            )}
           </div>
         ) : (
           <div className="space-y-4">
+            {/* Name des Nachbarn (optional) */}
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Name des Nachbarn (optional)</label>
+              <Input
+                placeholder="z.B. Frau Müller"
+                value={recipientName}
+                onChange={(e) => setRecipientName(e.target.value)}
+              />
+              <p className="text-[10px] text-muted-foreground">
+                Macht die Einladung persönlicher
+              </p>
+            </div>
+
             {/* Adresse des Nachbarn */}
             <div className="space-y-2">
               <label className="text-sm font-medium flex items-center gap-1">
@@ -214,7 +254,7 @@ export function InviteNeighborModal({ open, onClose }: InviteNeighborModalProps)
             {/* Methode */}
             <div className="space-y-2">
               <label className="text-sm font-medium">Wie möchten Sie einladen?</label>
-              <div className="grid grid-cols-3 gap-2">
+              <div className="grid grid-cols-2 gap-2">
                 <button
                   onClick={() => setMethod("whatsapp")}
                   className={`flex flex-col items-center gap-1 rounded-lg border-2 p-3 transition-colors ${
@@ -223,6 +263,15 @@ export function InviteNeighborModal({ open, onClose }: InviteNeighborModalProps)
                 >
                   <MessageCircle className={`h-5 w-5 ${method === "whatsapp" ? "text-[#25D366]" : "text-muted-foreground"}`} />
                   <span className="text-xs font-medium">WhatsApp</span>
+                </button>
+                <button
+                  onClick={() => setMethod("sms")}
+                  className={`flex flex-col items-center gap-1 rounded-lg border-2 p-3 transition-colors ${
+                    method === "sms" ? "border-blue-500 bg-blue-50" : "border-border hover:border-blue-300"
+                  }`}
+                >
+                  <Smartphone className={`h-5 w-5 ${method === "sms" ? "text-blue-500" : "text-muted-foreground"}`} />
+                  <span className="text-xs font-medium">SMS</span>
                 </button>
                 <button
                   onClick={() => setMethod("email")}
@@ -245,6 +294,24 @@ export function InviteNeighborModal({ open, onClose }: InviteNeighborModalProps)
               </div>
             </div>
 
+            {/* Telefonnummer-Eingabe (SMS oder WhatsApp) */}
+            {(method === "sms" || method === "whatsapp") && (
+              <div className="space-y-1">
+                <Input
+                  type="tel"
+                  placeholder="Telefonnummer (z.B. 0171 1234567)"
+                  value={recipientPhone}
+                  onChange={(e) => setRecipientPhone(e.target.value)}
+                />
+                <p className="text-[10px] text-muted-foreground">
+                  {method === "sms"
+                    ? "Wir senden eine persönliche SMS-Einladung"
+                    : "Optional — öffnet WhatsApp direkt an diese Nummer"
+                  }
+                </p>
+              </div>
+            )}
+
             {/* E-Mail-Eingabe */}
             {method === "email" && (
               <Input
@@ -258,7 +325,7 @@ export function InviteNeighborModal({ open, onClose }: InviteNeighborModalProps)
             {/* Senden */}
             <Button
               className="w-full bg-quartier-green hover:bg-quartier-green-dark"
-              disabled={loading || !street || !houseNumber.trim() || !method}
+              disabled={loading || !canSend}
               onClick={sendInvite}
             >
               {loading ? "Wird erstellt..." : "Einladung erstellen"}

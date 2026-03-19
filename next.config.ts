@@ -10,7 +10,7 @@ const cspDirectives = [
   "default-src 'self'",
   `script-src 'self' 'unsafe-inline'${process.env.NODE_ENV === "development" ? " 'unsafe-eval'" : ""}`,
   "style-src 'self' 'unsafe-inline'",
-  "img-src 'self' data: blob:",
+  "img-src 'self' data: blob: https://*.tile.openstreetmap.org https://cdnjs.cloudflare.com https://*.supabase.co",
   "font-src 'self'",
   `connect-src 'self' https://${supabaseDomain} wss://${supabaseDomain} https://api.anthropic.com https://api.open-meteo.com https://api.twilio.com`,
   "worker-src 'self'",

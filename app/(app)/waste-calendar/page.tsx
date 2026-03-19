@@ -7,7 +7,7 @@ import { toast } from "sonner";
 import { createClient } from "@/lib/supabase/client";
 import { useQuarter } from "@/lib/quarters";
 import { WASTE_TYPES, DISCLAIMERS } from "@/lib/municipal";
-import type { WasteSchedule, WasteReminder, WasteType } from "@/lib/municipal";
+import type { WasteSchedule, WasteReminder, WasteType, WasteCollectionDate } from "@/lib/municipal";
 
 // --- Hilfsfunktionen ---
 
@@ -98,8 +98,8 @@ export default function WasteCalendarPage() {
   const [viewYear, setViewYear] = useState(() => new Date().getFullYear());
   const [viewMonth, setViewMonth] = useState(() => new Date().getMonth());
 
-  // Daten
-  const [schedules, setSchedules] = useState<WasteSchedule[]>([]);
+  // Daten — primaer aus waste_collection_dates (source-driven), Fallback waste_schedules
+  const [schedules, setSchedules] = useState<(WasteSchedule | WasteCollectionDate)[]>([]);
   const [reminders, setReminders] = useState<WasteReminder[]>([]);
   const [loadingData, setLoadingData] = useState(true);
   const [savingType, setSavingType] = useState<WasteType | null>(null);
@@ -118,8 +118,27 @@ export default function WasteCalendarPage() {
       setLoadingData(true);
       const { data: { user } } = await supabase.auth.getUser();
 
-      // Termine und Erinnerungen parallel laden
-      const [schedulesRes, remindersRes] = await Promise.all([
+      // 1. Abfuhrgebiete fuer dieses Quartier ermitteln (source-driven)
+      const { data: areaLinks } = await supabase
+        .from("quarter_collection_areas")
+        .select("area_id")
+        .eq("quarter_id", quarterId);
+
+      const areaIds = (areaLinks ?? []).map((a: { area_id: string }) => a.area_id);
+
+      // 2. Termine + Erinnerungen parallel laden
+      const [newSchedulesRes, legacyRes, remindersRes] = await Promise.all([
+        // Neue Tabelle (source-driven)
+        areaIds.length > 0
+          ? supabase
+              .from("waste_collection_dates")
+              .select("*")
+              .in("area_id", areaIds)
+              .gte("collection_date", todayStr())
+              .eq("is_cancelled", false)
+              .order("collection_date", { ascending: true })
+          : Promise.resolve({ data: [] }),
+        // Fallback: alte Tabelle (quartierbezogen)
         supabase
           .from("waste_schedules")
           .select("*")
@@ -135,7 +154,11 @@ export default function WasteCalendarPage() {
       ]);
 
       if (cancelled) return;
-      if (schedulesRes.data) setSchedules(schedulesRes.data);
+
+      // Source-driven Termine bevorzugen, sonst Fallback
+      const newDates = newSchedulesRes.data ?? [];
+      const legacyDates = legacyRes.data ?? [];
+      setSchedules(newDates.length > 0 ? newDates : legacyDates);
       if (remindersRes.data) setReminders(remindersRes.data);
       setLoadingData(false);
     }
@@ -154,7 +177,7 @@ export default function WasteCalendarPage() {
 
   // --- Termine nach Datum gruppiert (fuer Kalender) ---
   const schedulesByDate = useMemo(() => {
-    const map = new Map<string, WasteSchedule[]>();
+    const map = new Map<string, (WasteSchedule | WasteCollectionDate)[]>();
     for (const s of schedules) {
       const list = map.get(s.collection_date) ?? [];
       list.push(s);

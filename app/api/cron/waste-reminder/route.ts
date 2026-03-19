@@ -36,23 +36,23 @@ export async function GET(request: NextRequest) {
     tomorrow.setDate(tomorrow.getDate() + 1);
     const tomorrowStr = tomorrow.toISOString().split('T')[0]; // YYYY-MM-DD
 
-    // 1. Alle Abholtermine für morgen abfragen
-    const { data: schedules, error: schedulesError } = await supabase
+    // 1. Abholtermine fuer morgen: Neue Tabelle (source-driven) + Fallback (Legacy)
+    const { data: newDates } = await supabase
+      .from('waste_collection_dates')
+      .select('id, area_id, waste_type, notes, time_hint')
+      .eq('collection_date', tomorrowStr)
+      .eq('is_cancelled', false);
+
+    const { data: legacyDates } = await supabase
       .from('waste_schedules')
       .select('id, quarter_id, waste_type, notes')
       .eq('collection_date', tomorrowStr);
 
-    if (schedulesError) {
-      console.error(JSON.stringify({
-        level: 'error',
-        cron: 'waste-reminder',
-        message: 'Fehler beim Laden der Abholtermine',
-        error: schedulesError.message,
-      }));
-      return NextResponse.json({ error: 'Datenbankfehler' }, { status: 500 });
-    }
+    // Source-driven bevorzugen, sonst Legacy
+    const useNewDates = (newDates ?? []).length > 0;
+    const schedules = useNewDates ? (newDates ?? []) : (legacyDates ?? []);
 
-    if (!schedules || schedules.length === 0) {
+    if (schedules.length === 0) {
       console.log(JSON.stringify({
         level: 'info',
         cron: 'waste-reminder',
@@ -68,9 +68,21 @@ export async function GET(request: NextRequest) {
       });
     }
 
-    // Eindeutige Müllarten und Quartiere sammeln
+    // Eindeutige Müllarten sammeln
     const wasteTypes = Array.from(new Set(schedules.map((s) => s.waste_type)));
-    const quarterIds = Array.from(new Set(schedules.map((s) => s.quarter_id)));
+
+    // Quartier-IDs: Bei neuen Daten über quarter_collection_areas View, bei Legacy direkt
+    let quarterIds: string[] = [];
+    if (useNewDates) {
+      const areaIds = Array.from(new Set((newDates ?? []).map((d) => d.area_id)));
+      const { data: areaQuarters } = await supabase
+        .from('quarter_collection_areas')
+        .select('quarter_id, area_id')
+        .in('area_id', areaIds);
+      quarterIds = Array.from(new Set((areaQuarters ?? []).map((aq: { quarter_id: string }) => aq.quarter_id)));
+    } else {
+      quarterIds = Array.from(new Set((legacyDates ?? []).map((s) => s.quarter_id)));
+    }
 
     // 2. Nutzer mit aktiver Erinnerung für diese Müllarten finden
     const { data: reminders, error: remindersError } = await supabase
@@ -148,10 +160,10 @@ export async function GET(request: NextRequest) {
       const userQuarterId = userQuarterMap.get(reminder.user_id);
       if (!userQuarterId) continue;
 
-      // Prüfen ob es einen Abholtermin für dieses Quartier und diese Müllart gibt
-      const matchingSchedule = schedules.find(
-        (s) => s.quarter_id === userQuarterId && s.waste_type === reminder.waste_type
-      );
+      // Pruefen ob es einen passenden Abholtermin gibt
+      const matchingSchedule = useNewDates
+        ? schedules.find((s) => s.waste_type === reminder.waste_type && quarterIds.includes(userQuarterId))
+        : schedules.find((s) => 'quarter_id' in s && s.quarter_id === userQuarterId && s.waste_type === reminder.waste_type);
       if (!matchingSchedule) continue;
 
       notifications.push({

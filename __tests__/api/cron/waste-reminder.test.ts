@@ -25,36 +25,22 @@ beforeEach(() => {
   vi.stubEnv('SUPABASE_SERVICE_ROLE_KEY', 'test-service-key');
 });
 
-// Hilfsfunktion: Supabase-Kette simulieren
+// Hilfsfunktion: Supabase-Kette simulieren (rekursiver Proxy)
 function setupChain(responses: Record<string, { data: unknown; error: unknown }>) {
   mockFrom.mockImplementation((table: string) => {
-    const resp = responses[table];
-    const chain = {
-      select: vi.fn().mockReturnThis(),
-      eq: vi.fn().mockReturnThis(),
-      in: vi.fn().mockReturnThis(),
+    const resp = responses[table] || { data: [], error: null };
+    // Rekursiver Proxy: Jeder Method-Aufruf gibt den Proxy zurueck,
+    // bis man .data oder .error abfragt
+    const createProxy = (): unknown => {
+      return new Proxy(resp, {
+        get(target, prop) {
+          if (prop === 'data' || prop === 'error') return target[prop as keyof typeof target];
+          if (prop === 'then') return undefined; // Kein Promise
+          return vi.fn().mockReturnValue(createProxy());
+        },
+      });
     };
-    // Letzter Aufruf in der Kette liefert Ergebnis
-    chain.select.mockImplementation(() => {
-      const sub = {
-        eq: vi.fn().mockReturnThis(),
-        in: vi.fn().mockReturnThis(),
-      };
-      // Für waste_schedules: .eq('collection_date', ...) als letztes
-      sub.eq.mockImplementation(() => resp || { data: [], error: null });
-      // Für waste_reminders: .in().eq().eq() Kette
-      sub.in.mockImplementation(() => ({
-        eq: vi.fn().mockImplementation(() => ({
-          eq: vi.fn().mockImplementation(() => resp || { data: [], error: null }),
-        })),
-      }));
-      // Für household_members + push_subscriptions: .in() als letztes
-      return {
-        eq: sub.eq,
-        in: vi.fn().mockImplementation(() => resp || { data: [], error: null }),
-      };
-    });
-    return chain;
+    return createProxy();
   });
 }
 
@@ -80,6 +66,7 @@ describe('GET /api/cron/waste-reminder', () => {
 
   it('gibt 0 queued wenn keine Termine morgen', async () => {
     setupChain({
+      waste_collection_dates: { data: [], error: null },
       waste_schedules: { data: [], error: null },
     });
 
@@ -97,6 +84,7 @@ describe('GET /api/cron/waste-reminder', () => {
 
   it('enthaelt success, queued, schedules, date und timestamp in Antwort', async () => {
     setupChain({
+      waste_collection_dates: { data: [], error: null },
       waste_schedules: { data: [], error: null },
     });
 

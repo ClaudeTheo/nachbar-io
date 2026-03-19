@@ -1,22 +1,11 @@
 "use client";
 
-// GPS-Picker — Wiederverwendbare Standortauswahl mit Leaflet-Karte
-// Wrapper-Komponente mit dynamic import (SSR-sicher), GPS-Button und Textfeld
+// GPS-Picker — Standortauswahl mit GPS-Erkennung + Textfeld
+// Zeigt nach GPS-Erkennung einen Link zur OpenStreetMap-Karte
 
 import { useState, useCallback } from "react";
-import dynamic from "next/dynamic";
-import { MapPin, Loader2, Navigation, ChevronDown, ChevronUp } from "lucide-react";
+import { MapPin, Loader2, Navigation, ExternalLink } from "lucide-react";
 import { toast } from "sonner";
-
-// Leaflet muss client-side geladen werden (kein SSR)
-const GpsPickerMap = dynamic(() => import("./GpsPickerMap"), {
-  ssr: false,
-  loading: () => (
-    <div className="flex h-[250px] items-center justify-center rounded-xl bg-gray-50">
-      <Loader2 className="h-6 w-6 animate-spin text-quartier-green" />
-    </div>
-  ),
-});
 
 // --- Typen ---
 
@@ -37,7 +26,6 @@ export function GpsPicker({
   onLocationChange,
   onTextChange,
 }: GpsPickerProps) {
-  const [mapOpen, setMapOpen] = useState(false);
   const [locating, setLocating] = useState(false);
 
   const hasCoords = lat !== null && lng !== null;
@@ -55,7 +43,6 @@ export function GpsPicker({
       (pos) => {
         onLocationChange(pos.coords.latitude, pos.coords.longitude);
         setLocating(false);
-        setMapOpen(true); // Karte oeffnen nach GPS-Erkennung
         toast.success("Standort erkannt.");
       },
       (err) => {
@@ -72,6 +59,11 @@ export function GpsPicker({
       { enableHighAccuracy: true, timeout: 10000 },
     );
   }, [onLocationChange]);
+
+  // OpenStreetMap-Link generieren
+  const osmUrl = hasCoords
+    ? `https://www.openstreetmap.org/?mlat=${lat!.toFixed(5)}&mlon=${lng!.toFixed(5)}#map=17/${lat!.toFixed(5)}/${lng!.toFixed(5)}`
+    : null;
 
   return (
     <div className="space-y-3">
@@ -95,48 +87,27 @@ export function GpsPicker({
         </span>
       </button>
 
-      {/* Koordinaten-Anzeige */}
+      {/* Koordinaten + Karten-Link */}
       {hasCoords && (
-        <div className="rounded-lg bg-quartier-green/5 p-3 text-xs text-quartier-green">
-          <span className="font-medium">GPS-Koordinaten:</span>{" "}
-          {lat!.toFixed(5)}, {lng!.toFixed(5)}
+        <div className="rounded-xl bg-quartier-green/5 p-4 space-y-2">
+          <div className="flex items-center gap-2 text-sm text-quartier-green">
+            <MapPin className="h-4 w-4 flex-shrink-0" />
+            <span className="font-medium">
+              {lat!.toFixed(5)}, {lng!.toFixed(5)}
+            </span>
+          </div>
+          {osmUrl && (
+            <a
+              href={osmUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-2 text-xs text-quartier-green underline underline-offset-2"
+            >
+              <ExternalLink className="h-3.5 w-3.5" />
+              Auf OpenStreetMap anzeigen
+            </a>
+          )}
         </div>
-      )}
-
-      {/* Karte aufklappen / zuklappen */}
-      <button
-        onClick={() => setMapOpen((prev) => !prev)}
-        className="flex w-full items-center justify-between rounded-xl bg-white px-4 py-3 shadow-soft transition-all hover:shadow-md"
-      >
-        <div className="flex items-center gap-2">
-          <MapPin className="h-5 w-5 text-quartier-green" />
-          <span className="text-sm font-medium text-anthrazit">
-            {mapOpen ? "Karte ausblenden" : "Auf Karte wählen"}
-          </span>
-        </div>
-        {mapOpen ? (
-          <ChevronUp className="h-4 w-4 text-muted-foreground" />
-        ) : (
-          <ChevronDown className="h-4 w-4 text-muted-foreground" />
-        )}
-      </button>
-
-      {/* Leaflet-Karte (aufklappbar) */}
-      {mapOpen && (
-        <div className="rounded-xl shadow-soft">
-          <GpsPickerMap
-            lat={lat}
-            lng={lng}
-            onLocationChange={onLocationChange}
-          />
-        </div>
-      )}
-
-      {/* Karten-Hinweis */}
-      {mapOpen && (
-        <p className="text-center text-xs text-muted-foreground">
-          Tippen Sie auf die Karte oder ziehen Sie den Marker
-        </p>
       )}
 
       {/* Ort-Beschreibung (Pflicht) */}

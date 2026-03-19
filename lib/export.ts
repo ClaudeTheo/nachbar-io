@@ -3,40 +3,150 @@
 
 import * as XLSX from 'xlsx';
 
+// --- Typen ---
+
+export type ExportFormat = 'csv' | 'xlsx';
+
+export type ExportType = 'quarter_stats' | 'activity_report' | 'escalation_report';
+
+export type ExportRow = Record<string, string | number | boolean | null>;
+
+// --- Deutsche Spaltennamen ---
+
+const QUARTER_STATS_HEADERS: Record<string, string> = {
+  snapshot_date: 'Datum',
+  wah: 'Aktive Haushalte (WAH)',
+  total_users: 'Bewohner gesamt',
+  active_users_7d: 'Aktiv (7 Tage)',
+  active_users_30d: 'Aktiv (30 Tage)',
+  new_registrations: 'Neuregistrierungen',
+  activation_rate: 'Aktivierungsrate (%)',
+  retention_7d: 'Retention 7d (%)',
+  posts_count: 'Beitraege',
+  events_count: 'Veranstaltungen',
+  heartbeat_coverage: 'Heartbeat-Abdeckung (%)',
+  escalation_count: 'Eskalationen',
+  plus_subscribers: 'Plus-Abonnenten',
+  mrr: 'MRR (EUR)',
+};
+
+const ESCALATION_HEADERS: Record<string, string> = {
+  created_at: 'Zeitpunkt',
+  user_id_anon: 'Nutzer (anonymisiert)',
+  level: 'Eskalationsstufe',
+  status: 'Status',
+  resolved_at: 'Geloest am',
+};
+
+function getHeaders(exportType: ExportType): Record<string, string> {
+  switch (exportType) {
+    case 'quarter_stats':
+      return QUARTER_STATS_HEADERS;
+    case 'escalation_report':
+      return ESCALATION_HEADERS;
+    default:
+      return {};
+  }
+}
+
+// Daten mit deutschen Spaltennamen vorbereiten
+export function prepareData(rows: ExportRow[], exportType: ExportType): ExportRow[] {
+  const headers = getHeaders(exportType);
+  return rows.map(row => {
+    const mapped: ExportRow = {};
+    for (const [key, value] of Object.entries(row)) {
+      const label = headers[key] ?? key;
+      mapped[label] = value;
+    }
+    return mapped;
+  });
+}
+
+// --- Low-Level Basis-Funktionen ---
+
 /**
- * Escaped einen CSV-Wert gemaess RFC 4180:
- * - Werte mit Komma, Anfuehrungszeichen oder Zeilenumbruch werden in Anfuehrungszeichen gesetzt
- * - Anfuehrungszeichen innerhalb des Werts werden verdoppelt
+ * Escaped einen CSV-Wert gemaess RFC 4180
  */
 function escapeCsvValue(value: string): string {
-  // Wenn Komma, Anfuehrungszeichen oder Zeilenumbruch enthalten → quoten
-  if (value.includes(',') || value.includes('"') || value.includes('\n') || value.includes('\r')) {
+  if (value.includes(';') || value.includes('"') || value.includes('\n') || value.includes('\r')) {
     return '"' + value.replace(/"/g, '""') + '"';
   }
   return value;
 }
 
 /**
- * Generiert einen CSV-String aus Header-Zeile und Datenzeilen.
- * Verwendet RFC 4180 konformes Escaping.
+ * Generiert CSV aus Header + Datenzeilen (low-level)
  */
 export function generateCsv(headers: string[], rows: string[][]): string {
-  const headerLine = headers.map(escapeCsvValue).join(',');
-  const dataLines = rows.map((row) => row.map(escapeCsvValue).join(','));
-  return [headerLine, ...dataLines].join('\r\n');
+  const headerLine = headers.map(escapeCsvValue).join(';');
+  const dataLines = rows.map((row) => row.map(escapeCsvValue).join(';'));
+  // BOM fuer Excel UTF-8-Erkennung
+  return '\uFEFF' + [headerLine, ...dataLines].join('\r\n');
 }
 
 /**
- * Generiert einen XLSX-Buffer aus Header-Zeile und Datenzeilen.
- * Verwendet die xlsx-Bibliothek fuer korrektes Excel-Format.
+ * Generiert XLSX-Buffer aus Header + Datenzeilen (low-level)
  */
 export function generateXlsx(headers: string[], rows: string[][]): Buffer {
   const worksheetData = [headers, ...rows];
   const worksheet = XLSX.utils.aoa_to_sheet(worksheetData);
+
+  // Spaltenbreiten anpassen
+  worksheet['!cols'] = headers.map(h => ({ wch: Math.max(h.length, 12) }));
+
   const workbook = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(workbook, worksheet, 'Export');
-
-  // Buffer fuer Node.js erzeugen
   const buffer = XLSX.write(workbook, { type: 'buffer', bookType: 'xlsx' });
   return Buffer.from(buffer);
+}
+
+// --- High-Level Export-Funktionen ---
+
+/**
+ * Generiert CSV aus typisiertem Export (mit deutschen Spaltennamen)
+ */
+export function generateTypedCsv(rows: ExportRow[], exportType: ExportType): string {
+  const prepared = prepareData(rows, exportType);
+  if (prepared.length === 0) return '';
+  const headers = Object.keys(prepared[0]);
+  const dataRows = prepared.map(row =>
+    headers.map(h => String(row[h] ?? ''))
+  );
+  return generateCsv(headers, dataRows);
+}
+
+/**
+ * Generiert XLSX aus typisiertem Export (mit deutschen Spaltennamen)
+ */
+export function generateTypedXlsx(rows: ExportRow[], exportType: ExportType, sheetName?: string): Buffer {
+  const prepared = prepareData(rows, exportType);
+  if (prepared.length === 0) {
+    return generateXlsx(['Keine Daten'], []);
+  }
+  const headers = Object.keys(prepared[0]);
+  const dataRows = prepared.map(row =>
+    headers.map(h => String(row[h] ?? ''))
+  );
+
+  const worksheetData = [headers, ...dataRows];
+  const worksheet = XLSX.utils.aoa_to_sheet(worksheetData);
+  worksheet['!cols'] = headers.map(h => ({ wch: Math.max(h.length, 12) }));
+
+  const workbook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(workbook, worksheet, sheetName ?? 'Export');
+  const buffer = XLSX.write(workbook, { type: 'buffer', bookType: 'xlsx' });
+  return Buffer.from(buffer);
+}
+
+/**
+ * Export-Dateiname generieren
+ */
+export function getExportFilename(exportType: ExportType, format: ExportFormat): string {
+  const date = new Date().toISOString().split('T')[0];
+  const typeLabel: Record<ExportType, string> = {
+    quarter_stats: 'Quartier-Statistiken',
+    activity_report: 'Aktivitaets-Report',
+    escalation_report: 'Eskalations-Report',
+  };
+  return `${typeLabel[exportType]}_${date}.${format}`;
 }

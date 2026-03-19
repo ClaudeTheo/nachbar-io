@@ -78,6 +78,10 @@
     {
       "path": "/api/cron/recurring-events",
       "schedule": "0 4 * * *"
+    },
+    {
+      "path": "/api/cron/waste-reminder",
+      "schedule": "0 18 * * *"
     }
   ],
   "headers": [

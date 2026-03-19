@@ -5,9 +5,9 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { Phone, Mic, MicOff, Video, VideoOff } from 'lucide-react';
+import { Phone, Mic, MicOff, Video, VideoOff, Wifi, WifiOff } from 'lucide-react';
 import { WebRTCSignaling, PeerConnectionManager } from '@/lib/webrtc';
-import type { CallState } from '@/lib/webrtc';
+import type { CallState, ConnectionQuality } from '@/lib/webrtc';
 
 interface VideoCallProps {
   /** Eindeutige Anruf-ID fuer den Signaling-Channel */
@@ -53,6 +53,7 @@ export function VideoCall({
   const [callState, setCallState] = useState<CallState>('idle');
   const [isMicMuted, setIsMicMuted] = useState(false);
   const [isCamOff, setIsCamOff] = useState(false);
+  const [connectionQuality, setConnectionQuality] = useState<ConnectionQuality>('good');
 
   // Verbindung aufbauen
   useEffect(() => {
@@ -97,8 +98,17 @@ export function VideoCall({
 
     initCall();
 
+    // Qualitaets-Polling alle 3 Sekunden
+    const qualityInterval = setInterval(() => {
+      if (managerRef.current) {
+        const quality = managerRef.current.getConnectionQuality();
+        setConnectionQuality(quality);
+      }
+    }, 3000);
+
     // Cleanup bei Unmount
     return () => {
+      clearInterval(qualityInterval);
       if (managerRef.current?.getCallState() !== 'ended') {
         managerRef.current?.hangup();
       }
@@ -162,14 +172,36 @@ export function VideoCall({
       />
 
       {/* Verbindungsstatus oben */}
-      <div className="absolute left-0 right-0 top-0 z-10 bg-gradient-to-b from-black/60 to-transparent p-6 text-center">
-        <p
-          className="text-lg font-medium text-white"
-          aria-live="polite"
-          data-testid="connection-status"
-        >
-          {STATUS_TEXT[callState]}
-        </p>
+      <div className="absolute left-0 right-0 top-0 z-10 bg-gradient-to-b from-black/60 to-transparent p-6">
+        <div className="flex items-center justify-center gap-3">
+          <p
+            className="text-lg font-medium text-white"
+            aria-live="polite"
+            data-testid="connection-status"
+          >
+            {STATUS_TEXT[callState]}
+          </p>
+          {/* Verbindungsqualitaets-Indikator */}
+          {callState === 'active' && (
+            <div
+              className="flex items-center gap-1"
+              aria-label={`Verbindungsqualitaet: ${connectionQuality === 'good' ? 'Gut' : connectionQuality === 'degraded' ? 'Eingeschraenkt' : 'Unterbrochen'}`}
+              data-testid="quality-indicator"
+            >
+              {connectionQuality === 'failed' ? (
+                <WifiOff className="h-5 w-5 text-red-400" />
+              ) : (
+                <Wifi className={`h-5 w-5 ${connectionQuality === 'good' ? 'text-quartier-green' : 'text-amber-400'}`} />
+              )}
+              {connectionQuality === 'degraded' && (
+                <span className="text-xs text-amber-400">Eingeschraenkt</span>
+              )}
+              {connectionQuality === 'failed' && (
+                <span className="text-xs text-red-400">Unterbrochen</span>
+              )}
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Steuerleiste unten */}

@@ -91,7 +91,7 @@ export async function POST(request: NextRequest) {
 
   await sendSms({
     phone: guardian_phone,
-    message: `${userName} möchte erweiterte Funktionen in QuartierApp nutzen. Bitte bestätigen Sie hier: ${consentUrl} (gültig 72h)`,
+    message: `Hallo! ${userName} nutzt die QuartierApp und wuenscht sich Zugang zu weiteren Funktionen. Als Erziehungsberechtigte/r koennen Sie das hier freigeben: ${consentUrl} - Der Link ist 72 Stunden gueltig. Vielen Dank! Ihr QuartierApp-Team`,
   });
 
   return NextResponse.json({ sent: true }, { status: 200 });

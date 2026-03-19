@@ -46,12 +46,30 @@ function MapClickHandler({
   return null;
 }
 
+// --- Karten-Groesse korrigieren (noetig bei aufklappbaren Containern) ---
+
+function InvalidateSizeOnMount() {
+  const map = useMap();
+
+  useEffect(() => {
+    // Leaflet berechnet die Container-Groesse beim Mount falsch,
+    // wenn der Container gerade eingeblendet wird (height: 0 → 250px)
+    const timer = setTimeout(() => {
+      map.invalidateSize();
+    }, 100);
+    return () => clearTimeout(timer);
+  }, [map]);
+
+  return null;
+}
+
 // --- Karte zentrieren wenn sich Position aendert ---
 
 function RecenterMap({ lat, lng }: { lat: number; lng: number }) {
   const map = useMap();
 
   useEffect(() => {
+    map.invalidateSize();
     map.setView([lat, lng], map.getZoom(), { animate: true });
   }, [map, lat, lng]);
 
@@ -83,6 +101,9 @@ export default function GpsPickerMap({
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
       />
+
+      {/* Karten-Groesse nach Mount korrigieren */}
+      <InvalidateSizeOnMount />
 
       {/* Klick auf Karte setzt Marker */}
       <MapClickHandler onMapClick={onLocationChange} />

@@ -11,6 +11,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { createClient } from "@/lib/supabase/client";
 import { useQuarter } from "@/lib/quarters";
 import { EVENT_CATEGORIES } from "@/lib/constants";
+import { RECURRENCE_LABELS, type RecurrenceRule } from "@/lib/recurring-events";
 
 type Step = 1 | 2 | 3 | 4;
 
@@ -26,6 +27,7 @@ export default function NewEventPage() {
   const [eventTime, setEventTime] = useState("");
   const [endTime, setEndTime] = useState("");
   const [maxParticipants, setMaxParticipants] = useState("");
+  const [recurrenceRule, setRecurrenceRule] = useState<RecurrenceRule | "">("");
   const [saving, setSaving] = useState(false);
 
   // Mindestdatum: heute
@@ -72,6 +74,7 @@ export default function NewEventPage() {
         event_time: eventTime || null,
         end_time: endTime || null,
         max_participants: maxParticipants ? parseInt(maxParticipants, 10) : null,
+        recurrence_rule: recurrenceRule || null,
       });
 
       if (insertError) {
@@ -247,6 +250,26 @@ export default function NewEventPage() {
             </div>
           </div>
 
+          {/* Wiederholung */}
+          <div>
+            <label htmlFor="recurrence" className="mb-1 block text-sm font-medium">
+              Wiederholung (optional)
+            </label>
+            <select
+              id="recurrence"
+              value={recurrenceRule}
+              onChange={(e) => setRecurrenceRule(e.target.value as RecurrenceRule | "")}
+              className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+            >
+              <option value="">Einmalig</option>
+              {Object.entries(RECURRENCE_LABELS).map(([key, label]) => (
+                <option key={key} value={key}>
+                  {label}
+                </option>
+              ))}
+            </select>
+          </div>
+
           <div className="flex gap-3 pt-2">
             <Button variant="outline" onClick={() => setStep(1)} className="flex-1">
               Zurueck
@@ -314,6 +337,13 @@ export default function NewEventPage() {
             {maxParticipants && (
               <p className="text-sm text-muted-foreground">
                 Max. {maxParticipants} Teilnehmer
+              </p>
+            )}
+
+            {/* Wiederholung */}
+            {recurrenceRule && (
+              <p className="text-sm text-muted-foreground">
+                Wiederholung: {RECURRENCE_LABELS[recurrenceRule]}
               </p>
             )}
           </div>

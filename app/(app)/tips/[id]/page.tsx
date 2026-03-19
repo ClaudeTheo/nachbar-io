@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, MapPin, Phone, CheckCircle2, Clock, Tag, User } from "lucide-react";
+import { BusinessReview } from "@/components/BusinessReview";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { createClient } from "@/lib/supabase/client";
@@ -256,6 +257,9 @@ export default function TipDetailPage() {
           </p>
         )}
       </div>
+
+      {/* Bewertungen */}
+      <BusinessReview tipId={tip.id} currentUserId={currentUserId} />
 
       {error && <p className="text-sm text-emergency-red">{error}</p>}
     </div>

@@ -123,7 +123,7 @@ export function GpsPicker({
 
       {/* Leaflet-Karte (aufklappbar) */}
       {mapOpen && (
-        <div className="overflow-hidden rounded-xl shadow-soft">
+        <div className="rounded-xl shadow-soft">
           <GpsPickerMap
             lat={lat}
             lng={lng}

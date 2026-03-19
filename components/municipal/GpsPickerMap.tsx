@@ -53,11 +53,13 @@ function InvalidateSizeOnMount() {
 
   useEffect(() => {
     // Leaflet berechnet die Container-Groesse beim Mount falsch,
-    // wenn der Container gerade eingeblendet wird (height: 0 → 250px)
-    const timer = setTimeout(() => {
-      map.invalidateSize();
-    }, 100);
-    return () => clearTimeout(timer);
+    // wenn der Container in einem aufklappbaren Element steckt.
+    // Mehrfach invalidieren: sofort, nach Animation, und nochmal sicherheitshalber.
+    map.invalidateSize();
+    const t1 = setTimeout(() => map.invalidateSize(), 150);
+    const t2 = setTimeout(() => map.invalidateSize(), 400);
+    const t3 = setTimeout(() => map.invalidateSize(), 800);
+    return () => { clearTimeout(t1); clearTimeout(t2); clearTimeout(t3); };
   }, [map]);
 
   return null;

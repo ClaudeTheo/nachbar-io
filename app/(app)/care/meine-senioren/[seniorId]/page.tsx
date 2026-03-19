@@ -4,7 +4,7 @@
 
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { ArrowLeft, Pill, Clock, AlertTriangle, Plus, Activity, RefreshCw } from 'lucide-react';
+import { ArrowLeft, Pill, Clock, AlertTriangle, Plus, Activity, RefreshCw, MessageCircle } from 'lucide-react';
 import Link from 'next/link';
 import { useCareRole } from '@/lib/care/hooks/useCareRole';
 import { createClient } from '@/lib/supabase/client';
@@ -173,6 +173,27 @@ export default function SeniorDetailPage() {
           aria-label="Aktualisieren"
         >
           <RefreshCw className={`h-4 w-4 ${refreshing ? 'animate-spin' : ''}`} />
+        </button>
+      </div>
+
+      {/* Schnellaktionen */}
+      <div className="flex gap-2">
+        <button
+          onClick={async () => {
+            const res = await fetch('/api/caregiver/chat', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ resident_id: seniorId }),
+            });
+            if (res.ok) {
+              const data = await res.json();
+              router.push(`/messages/${data.conversation_id}`);
+            }
+          }}
+          className="flex flex-1 items-center justify-center gap-2 rounded-xl border border-border bg-white py-3 text-sm font-medium text-anthrazit hover:bg-muted"
+        >
+          <MessageCircle className="h-4 w-4" />
+          Nachricht senden
         </button>
       </div>
 

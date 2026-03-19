@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
-import { ArrowLeft, Pin, Send, Trash2 } from "lucide-react";
+import { ArrowLeft, Pin, Send, Trash2, ImageIcon, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
@@ -11,6 +11,8 @@ import { useQuarter } from "@/lib/quarters";
 import { formatDistanceToNow } from "date-fns";
 import { de } from "date-fns/locale";
 import type { HelpRequest } from "@/lib/supabase/types";
+import { BoardComments } from "@/components/BoardComments";
+import { validateImageFile, compressImage, MAX_DIMENSION } from "@/lib/storage";
 
 export default function BoardPage() {
   const [posts, setPosts] = useState<HelpRequest[]>([]);
@@ -18,6 +20,8 @@ export default function BoardPage() {
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
   const [newPost, setNewPost] = useState("");
+  const [selectedImage, setSelectedImage] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
   const { currentQuarter } = useQuarter();
 
   const loadPosts = useCallback(async () => {
@@ -70,11 +74,56 @@ export default function BoardPage() {
     return () => { supabase.removeChannel(channel); };
   }, [loadPosts]);
 
+  function handleImageSelect(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const err = validateImageFile(file);
+    if (err) { toast.error(err); return; }
+    setSelectedImage(file);
+    const reader = new FileReader();
+    reader.onload = (ev) => setImagePreview(ev.target?.result as string);
+    reader.readAsDataURL(file);
+  }
+
+  function removeImage() {
+    setSelectedImage(null);
+    setImagePreview(null);
+  }
+
   async function submitPost() {
     if (!currentUserId || !newPost.trim()) return;
     setSending(true);
 
     const supabase = createClient();
+    let imageUrl: string | null = null;
+
+    // Bild hochladen falls vorhanden
+    if (selectedImage) {
+      try {
+        const blob = await compressImage(selectedImage, MAX_DIMENSION);
+        const ext = blob.type === "image/webp" ? "webp" : "jpg";
+        const uuid = crypto.randomUUID();
+        const path = `board/${currentQuarter?.id}/${uuid}.${ext}`;
+
+        const { error: uploadError } = await supabase.storage
+          .from("images")
+          .upload(path, blob, { contentType: blob.type });
+
+        if (uploadError) {
+          toast.error("Bild-Upload fehlgeschlagen.");
+          setSending(false);
+          return;
+        }
+
+        const { data: urlData } = supabase.storage.from("images").getPublicUrl(path);
+        imageUrl = urlData.publicUrl;
+      } catch {
+        toast.error("Bild konnte nicht verarbeitet werden.");
+        setSending(false);
+        return;
+      }
+    }
+
     const { data, error } = await supabase
       .from("help_requests")
       .insert({
@@ -85,6 +134,7 @@ export default function BoardPage() {
         title: newPost.trim(),
         description: null,
         status: "active",
+        image_url: imageUrl,
       })
       .select("*, user:users(display_name, avatar_url)")
       .single();
@@ -97,6 +147,8 @@ export default function BoardPage() {
 
     setPosts([data as unknown as HelpRequest, ...posts]);
     setNewPost("");
+    setSelectedImage(null);
+    setImagePreview(null);
     toast.success("Beitrag veröffentlicht!");
     setSending(false);
   }
@@ -160,8 +212,33 @@ export default function BoardPage() {
           rows={3}
           className="w-full resize-none rounded-lg border border-border bg-muted/30 p-3 text-sm placeholder:text-muted-foreground focus:border-quartier-green focus:outline-none"
         />
+        {/* Bild-Vorschau */}
+        {imagePreview && (
+          <div className="mt-2 relative inline-block">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={imagePreview} alt="Vorschau" className="h-20 w-20 rounded-lg object-cover" />
+            <button
+              onClick={removeImage}
+              className="absolute -right-1 -top-1 rounded-full bg-red-500 p-0.5 text-white"
+            >
+              <X className="h-3 w-3" />
+            </button>
+          </div>
+        )}
         <div className="mt-2 flex items-center justify-between">
-          <span className="text-xs text-muted-foreground">{newPost.length}/300</span>
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-muted-foreground">{newPost.length}/300</span>
+            <label className="flex cursor-pointer items-center gap-1 rounded-lg px-2 py-1 text-xs text-muted-foreground hover:bg-muted">
+              <ImageIcon className="h-3.5 w-3.5" />
+              Bild
+              <input
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+                onChange={handleImageSelect}
+                className="hidden"
+              />
+            </label>
+          </div>
           <Button
             onClick={submitPost}
             disabled={sending || !newPost.trim()}
@@ -193,6 +270,17 @@ export default function BoardPage() {
                     </span>
                   </div>
                   <p className="mt-1 text-sm text-anthrazit whitespace-pre-line">{post.title}</p>
+                  {/* Bild */}
+                  {(post as HelpRequest & { image_url?: string }).image_url && (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={(post as HelpRequest & { image_url?: string }).image_url!}
+                      alt="Bild zum Beitrag"
+                      className="mt-2 max-h-48 rounded-lg object-cover"
+                    />
+                  )}
+                  {/* Kommentare */}
+                  <BoardComments postId={post.id} currentUserId={currentUserId} />
                 </div>
                 {post.user_id === currentUserId && (
                   <button

@@ -88,6 +88,7 @@ export interface WasteCollectionArea {
   postal_code: string | null;
   street_patterns: string[] | null;
   ics_url: string | null;
+  deprecated: boolean;
   created_at: string;
 }
 

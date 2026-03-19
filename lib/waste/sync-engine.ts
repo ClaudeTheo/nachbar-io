@@ -91,11 +91,12 @@ async function syncSource(
   });
 
   try {
-    // Areas fuer diese Quelle laden
+    // Areas fuer diese Quelle laden (nur aktive, nicht deprecated)
     const { data: areas } = await supabase
       .from("waste_collection_areas")
       .select("*")
-      .eq("source_id", source.id);
+      .eq("source_id", source.id)
+      .eq("deprecated", false);
 
     if (!areas || areas.length === 0) {
       throw new Error("Keine Abfuhrgebiete konfiguriert");

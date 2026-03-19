@@ -1,0 +1,200 @@
+"use client";
+
+import { useEffect, useState, useCallback } from "react";
+import { createClient } from "@/lib/supabase/client";
+import { invalidateFlagCache } from "@/lib/feature-flags";
+import type { FeatureFlag } from "@/lib/feature-flags";
+import { Switch } from "@/components/ui/switch";
+import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Card, CardContent } from "@/components/ui/card";
+import { toast } from "sonner";
+import { Settings2 } from "lucide-react";
+
+// Beschreibungen fuer bekannte Flag-Keys
+const FLAG_DESCRIPTIONS: Record<string, string> = {
+  PILOT_MODE: "Pilotmodus — alle Features freigeschaltet",
+  CARE_MODULE: "Heartbeat & Check-in System",
+  VIDEO_CALL_PLUS: "Video-Call fuer Angehoerige (Plus)",
+  VIDEO_CALL_MEDICAL: "Video-Sprechstunde (Pro Medical)",
+  MARKETPLACE: "Marktplatz-Modul",
+  LOST_FOUND: "Fundbuero-Modul",
+  EVENTS: "Veranstaltungen-Modul",
+  NEWS_AI: "KI-Nachrichtenzusammenfassung",
+  PUSH_NOTIFICATIONS: "Push-Benachrichtigungen",
+};
+
+/**
+ * Admin-Komponente zur Verwaltung von Feature-Flags.
+ * Zeigt alle Flags in einer Tabelle mit Toggle-Switch.
+ */
+export function FeatureFlagManager() {
+  const [flags, setFlags] = useState<FeatureFlag[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [updatingKey, setUpdatingKey] = useState<string | null>(null);
+
+  // Flags aus der Datenbank laden
+  const loadFlags = useCallback(async () => {
+    setLoading(true);
+    const supabase = createClient();
+    const { data, error } = await supabase
+      .from("feature_flags")
+      .select("key, enabled, required_roles, required_plans, enabled_quarters, admin_override")
+      .order("key", { ascending: true });
+
+    if (error) {
+      toast.error("Feature-Flags konnten nicht geladen werden.");
+      setLoading(false);
+      return;
+    }
+
+    const parsed: FeatureFlag[] = (data ?? []).map((row) => ({
+      key: row.key,
+      enabled: Boolean(row.enabled),
+      required_roles: Array.isArray(row.required_roles) ? row.required_roles : [],
+      required_plans: Array.isArray(row.required_plans) ? row.required_plans : [],
+      enabled_quarters: Array.isArray(row.enabled_quarters) ? row.enabled_quarters : [],
+      admin_override: Boolean(row.admin_override),
+    }));
+
+    setFlags(parsed);
+    setLoading(false);
+  }, []);
+
+  useEffect(() => {
+    loadFlags();
+  }, [loadFlags]);
+
+  // Flag aktivieren/deaktivieren
+  const handleToggle = async (flagKey: string, newValue: boolean) => {
+    setUpdatingKey(flagKey);
+    const supabase = createClient();
+
+    const { error } = await supabase
+      .from("feature_flags")
+      .update({ enabled: newValue })
+      .eq("key", flagKey);
+
+    if (error) {
+      toast.error(`Fehler beim Aktualisieren von "${flagKey}".`);
+      setUpdatingKey(null);
+      return;
+    }
+
+    // Cache invalidieren und lokalen State aktualisieren
+    invalidateFlagCache();
+    setFlags((prev) =>
+      prev.map((f) => (f.key === flagKey ? { ...f, enabled: newValue } : f))
+    );
+    toast.success(`"${flagKey}" wurde ${newValue ? "aktiviert" : "deaktiviert"}.`);
+    setUpdatingKey(null);
+  };
+
+  // Ladezustand
+  if (loading) {
+    return (
+      <Card>
+        <CardContent className="p-4 space-y-3">
+          <div className="flex items-center gap-2 mb-4">
+            <Settings2 className="h-5 w-5 text-quartier-green" />
+            <h2 className="text-lg font-semibold text-anthrazit">Feature-Flags Verwaltung</h2>
+          </div>
+          {[1, 2, 3, 4].map((i) => (
+            <div key={i} className="flex items-center gap-4" data-testid="flag-skeleton">
+              <Skeleton className="h-5 w-32" />
+              <Skeleton className="h-5 w-48 flex-1" />
+              <Skeleton className="h-5 w-10" />
+            </div>
+          ))}
+        </CardContent>
+      </Card>
+    );
+  }
+
+  // Keine Flags vorhanden
+  if (flags.length === 0) {
+    return (
+      <Card>
+        <CardContent className="p-4">
+          <div className="flex items-center gap-2 mb-4">
+            <Settings2 className="h-5 w-5 text-quartier-green" />
+            <h2 className="text-lg font-semibold text-anthrazit">Feature-Flags Verwaltung</h2>
+          </div>
+          <p className="text-sm text-muted-foreground">Keine Feature-Flags vorhanden.</p>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  return (
+    <Card>
+      <CardContent className="p-4">
+        <div className="flex items-center gap-2 mb-4">
+          <Settings2 className="h-5 w-5 text-quartier-green" />
+          <h2 className="text-lg font-semibold text-anthrazit">Feature-Flags Verwaltung</h2>
+        </div>
+
+        {/* Tabelle */}
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm" data-testid="flag-table">
+            <thead>
+              <tr className="border-b text-left text-xs text-muted-foreground">
+                <th className="pb-2 pr-4 font-medium">Flag Key</th>
+                <th className="pb-2 pr-4 font-medium">Beschreibung</th>
+                <th className="pb-2 pr-4 font-medium">Aktiv</th>
+                <th className="pb-2 pr-4 font-medium">Rollen</th>
+                <th className="pb-2 font-medium">Plaene</th>
+              </tr>
+            </thead>
+            <tbody>
+              {flags.map((flag) => (
+                <tr key={flag.key} className="border-b last:border-0">
+                  <td className="py-3 pr-4 font-mono text-xs text-anthrazit">
+                    {flag.key}
+                  </td>
+                  <td className="py-3 pr-4 text-xs text-muted-foreground">
+                    {FLAG_DESCRIPTIONS[flag.key] ?? "—"}
+                  </td>
+                  <td className="py-3 pr-4">
+                    <Switch
+                      checked={flag.enabled}
+                      disabled={updatingKey === flag.key}
+                      onCheckedChange={(val) => handleToggle(flag.key, val)}
+                      aria-label={`${flag.key} ${flag.enabled ? "deaktivieren" : "aktivieren"}`}
+                    />
+                  </td>
+                  <td className="py-3 pr-4">
+                    <div className="flex flex-wrap gap-1">
+                      {flag.required_roles.length > 0
+                        ? flag.required_roles.map((role) => (
+                            <Badge key={role} variant="secondary" className="text-[10px]">
+                              {role}
+                            </Badge>
+                          ))
+                        : <span className="text-xs text-muted-foreground">alle</span>}
+                    </div>
+                  </td>
+                  <td className="py-3">
+                    <div className="flex flex-wrap gap-1">
+                      {flag.required_plans.length > 0
+                        ? flag.required_plans.map((plan) => (
+                            <Badge
+                              key={plan}
+                              variant="secondary"
+                              className="text-[10px] bg-quartier-green/10 text-quartier-green border-quartier-green/20"
+                            >
+                              {plan}
+                            </Badge>
+                          ))
+                        : <span className="text-xs text-muted-foreground">alle</span>}
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}

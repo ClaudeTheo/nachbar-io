@@ -7,7 +7,7 @@ import {
   TrendingUp, QrCode, FileText, Activity, Megaphone,
   Newspaper, Calendar, BarChart3, ArrowUpRight, ArrowDownRight, Minus,
   AlertTriangle, Eye, MapPin, Globe, ExternalLink, Database, Terminal, Wrench,
-  ClipboardList,
+  ClipboardList, Settings2,
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -22,7 +22,7 @@ import type { Alert, User, Household } from "@/lib/supabase/types";
 // Tab-Gruppen
 const SYSTEM_TAB_VALUES = [
   "push", "codes", "map", "quarters", "system",
-  "external", "database", "api", "devops", "tests",
+  "external", "database", "api", "devops", "tests", "flags",
 ] as const;
 
 // Admin-Komponenten
@@ -45,6 +45,7 @@ import { TestManagement } from "./components/TestManagement";
 import { VerificationQueue } from "./components/VerificationQueue";
 import { SuperAdminOverview } from "./components/SuperAdminOverview";
 import { QuarterWizard } from "./components/QuarterWizard";
+import { FeatureFlagManager } from "./components/FeatureFlagManager";
 import { useUserRole } from "@/lib/quarters";
 
 // ============================================================
@@ -321,6 +322,7 @@ export default function AdminPage() {
               <SelectItem value="api"><Terminal className="h-3.5 w-3.5 text-muted-foreground" />API-Tester</SelectItem>
               <SelectItem value="devops"><Wrench className="h-3.5 w-3.5 text-muted-foreground" />DevOps</SelectItem>
               <SelectItem value="tests"><ClipboardList className="h-3.5 w-3.5 text-muted-foreground" />Tests</SelectItem>
+              <SelectItem value="flags"><Settings2 className="h-3.5 w-3.5 text-muted-foreground" />Feature Flags</SelectItem>
             </SelectGroup>
           </SelectContent>
         </Select>
@@ -416,6 +418,7 @@ export default function AdminPage() {
         {activeTab === "api" && <ApiTester />}
         {activeTab === "devops" && <DevOpsPanel />}
         {activeTab === "tests" && <TestManagement />}
+        {activeTab === "flags" && <FeatureFlagManager />}
       </div>
     </div>
   );

@@ -33,7 +33,18 @@ export function useYouthProfile() {
         .eq('user_id', user.id)
         .single();
 
-      setProfile(data as YouthProfileData | null);
+      if (data) {
+        // Punkte aus dem Ledger summieren
+        const { data: pointsData } = await supabase
+          .from('youth_points_ledger')
+          .select('points')
+          .eq('user_id', user.id);
+
+        const totalPoints = (pointsData || []).reduce((sum, row) => sum + (row.points || 0), 0);
+        setProfile({ ...(data as YouthProfileData), total_points: totalPoints });
+      } else {
+        setProfile(null);
+      }
       setLoading(false);
     }
 

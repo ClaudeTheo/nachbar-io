@@ -1,18 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient as createServerClient } from "@/lib/supabase/server";
-import { createClient } from "@supabase/supabase-js";
+import { getAdminSupabase } from "@/lib/supabase/admin";
 import { sendVerificationResultEmail } from "@/lib/email";
 import { safeInsertNotification } from "@/lib/notifications-server";
-
-// Service-Role Client fuer Admin-Operationen
-function getAdminSupabase() {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!url || !key) {
-    throw new Error("SUPABASE_SERVICE_ROLE_KEY nicht konfiguriert");
-  }
-  return createClient(url, key);
-}
 
 /**
  * POST /api/admin/verify-address

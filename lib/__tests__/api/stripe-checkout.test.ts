@@ -29,10 +29,10 @@ vi.mock('@/lib/supabase/server', () => ({
   })),
 }));
 
-// Supabase Admin-Client Mock (Service Role)
+// Supabase Admin-Client Mock (Service Role) — zentraler Import aus lib/supabase/admin
 const mockAdminFrom = vi.fn();
-vi.mock('@supabase/supabase-js', () => ({
-  createClient: vi.fn(() => ({
+vi.mock('@/lib/supabase/admin', () => ({
+  getAdminSupabase: vi.fn(() => ({
     from: mockAdminFrom,
   })),
 }));

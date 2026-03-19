@@ -4,17 +4,10 @@
 // Erkennt inaktive Quartiere und sendet Re-Engagement-Pushes
 
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
+import { getAdminSupabase } from '@/lib/supabase/admin';
 import { sendPush } from '@/lib/care/channels/push';
 import { writeCronHeartbeat } from '@/lib/care/cron-heartbeat';
 import { safeInsertNotification } from '@/lib/notifications-server';
-
-function getAdminSupabase() {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!url || !key) throw new Error('SUPABASE_SERVICE_ROLE_KEY nicht konfiguriert');
-  return createClient(url, key);
-}
 
 export async function GET(request: NextRequest) {
   const cronSecret = process.env.CRON_SECRET;

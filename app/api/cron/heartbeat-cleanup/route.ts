@@ -3,18 +3,8 @@
 // Vercel Cron: woechentlich Sonntag 3:00 Uhr
 
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
+import { getAdminSupabase } from '@/lib/supabase/admin';
 import { HEARTBEAT_RETENTION_DAYS } from '@/lib/care/constants';
-
-// Service-Role Client fuer Admin-Operationen (kein User-Context noetig)
-function getAdminSupabase() {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!url || !key) {
-    throw new Error('SUPABASE_SERVICE_ROLE_KEY nicht konfiguriert');
-  }
-  return createClient(url, key);
-}
 
 // GET /api/cron/heartbeat-cleanup — Alte Heartbeats loeschen (90-Tage-Retention)
 export async function GET(request: NextRequest) {

@@ -1,17 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient as createServerClient } from "@/lib/supabase/server";
-import { createClient } from "@supabase/supabase-js";
+import { getAdminSupabase } from "@/lib/supabase/admin";
 import { generateTempPassword } from "@/lib/invite-codes";
-
-// Service-Role Client fuer Admin-Operationen (User-Erstellung)
-function getAdminSupabase() {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!url || !key) {
-    throw new Error("SUPABASE_SERVICE_ROLE_KEY nicht konfiguriert");
-  }
-  return createClient(url, key);
-}
 
 /**
  * POST /api/admin/create-user

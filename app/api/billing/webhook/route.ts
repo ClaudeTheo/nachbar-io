@@ -2,18 +2,10 @@
 // Stripe Webhook Handler — verarbeitet Abo-Events
 // Behandelt: checkout.session.completed, invoice.paid, customer.subscription.deleted
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
+import { getAdminSupabase } from '@/lib/supabase/admin';
 import { stripe } from '@/lib/stripe';
 import type { PaidPlan } from '@/lib/stripe';
 import type Stripe from 'stripe';
-
-// Service-Client fuer DB-Updates (umgeht RLS)
-function getAdminSupabase() {
-  return createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
-  );
-}
 
 export async function POST(request: NextRequest) {
   if (!stripe) {

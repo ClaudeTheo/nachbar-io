@@ -4,7 +4,7 @@
 // Sendet zeitgesteuerte Push-Nachrichten an neue Nutzer
 
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
+import { getAdminSupabase } from '@/lib/supabase/admin';
 import { sendPush } from '@/lib/care/channels/push';
 import { writeCronHeartbeat } from '@/lib/care/cron-heartbeat';
 import { safeInsertNotification } from '@/lib/notifications-server';
@@ -54,13 +54,6 @@ const ONBOARDING_STEPS = [
     url: '/feedback',
   },
 ] as const;
-
-function getAdminSupabase() {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!url || !key) throw new Error('SUPABASE_SERVICE_ROLE_KEY nicht konfiguriert');
-  return createClient(url, key);
-}
 
 export async function GET(request: NextRequest) {
   // Auth

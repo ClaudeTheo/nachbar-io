@@ -2,19 +2,11 @@
 // Erstellt eine Stripe Checkout Session — oder aktiviert kostenlos fuer Early Adopter
 // Unterstuetzt alle Plan-Typen: plus, pro_community, pro_medical
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient as createSupabaseClient } from '@supabase/supabase-js';
 import { createClient } from '@/lib/supabase/server';
+import { getAdminSupabase } from '@/lib/supabase/admin';
 import { stripe, getStripePriceId } from '@/lib/stripe';
 import type { PaidPlan, BillingInterval } from '@/lib/stripe';
 import { writeAuditLog } from '@/lib/care/audit';
-
-// Service-Client fuer DB-Updates (umgeht RLS)
-function getAdminSupabase() {
-  return createSupabaseClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
-  );
-}
 
 // Gueltige bezahlte Plan-Typen
 const VALID_PAID_PLANS: PaidPlan[] = ['plus', 'pro_community', 'pro_medical'];
@@ -260,4 +252,4 @@ async function provisionPlanResources(
 }
 
 // Export fuer Tests und Webhook-Nutzung
-export { provisionPlanResources, getAdminSupabase };
+export { provisionPlanResources };

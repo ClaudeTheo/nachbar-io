@@ -47,9 +47,10 @@ export async function updateSession(request: NextRequest) {
   // Rechtliche Seiten muessen IMMER oeffentlich zugaenglich sein (DSGVO / TMG)
   const isLegalPage = request.nextUrl.pathname.startsWith("/datenschutz") ||
     request.nextUrl.pathname.startsWith("/impressum");
-  // Oeffentliche Seiten: Testanleitung + Onboarding-Anleitung (Pilot-Bewohner brauchen Zugang vor Login)
+  // Oeffentliche Seiten: Testanleitung, Onboarding-Anleitung, B2B-Landingpage
   const isPublicPage = request.nextUrl.pathname.startsWith("/testanleitung") ||
-    request.nextUrl.pathname.startsWith("/onboarding-anleitung");
+    request.nextUrl.pathname.startsWith("/onboarding-anleitung") ||
+    request.nextUrl.pathname.startsWith("/b2b");
   // Terminal-Seite authentifiziert sich ueber Token in der URL, nicht ueber Session
   const isTerminalPage = request.nextUrl.pathname.startsWith("/terminal");
 

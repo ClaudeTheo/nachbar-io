@@ -24,6 +24,7 @@ import { EVENT_CATEGORIES } from "@/lib/constants";
 import type { Event, EventParticipant } from "@/lib/supabase/types";
 import { format, parseISO, isToday, isTomorrow } from "date-fns";
 import { de } from "date-fns/locale";
+import { EventRecap } from "@/components/EventRecap";
 
 export default function EventDetailPage() {
   const { id } = useParams();
@@ -503,6 +504,13 @@ export default function EventDetailPage() {
           </>
         )}
       </div>
+
+      {/* Nachbericht (nur bei vergangenen Events) */}
+      <EventRecap
+        eventId={event.id}
+        eventDate={event.event_date}
+        currentUserId={currentUserId}
+      />
     </div>
   );
 }

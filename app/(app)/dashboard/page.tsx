@@ -14,6 +14,7 @@ import { InviteNeighborModal } from "@/components/InviteNeighborModal";
 import { DailyCheckinButton } from "@/components/care/DailyCheckinButton";
 import { RedeemCodeBanner } from "@/components/care/RedeemCodeBanner";
 import { CaregiverDashboard } from "@/components/care/CaregiverDashboard";
+import { QuartierServicesSection } from "@/components/municipal/QuartierServicesSection";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { createClient } from "@/lib/supabase/client";
@@ -289,6 +290,9 @@ export default function DashboardPage() {
         Nachbar einladen — 50 Punkte erhalten
       </button>
 
+      {/* Quartier-Services (Kommunal-Modul) */}
+      <QuartierServicesSection />
+
       {/* Hilfe-Boerse */}
       {helpRequests.length > 0 && (
         <section>
@@ -426,6 +430,18 @@ export default function DashboardPage() {
               <Link href="/messages" className="flex flex-col items-center gap-1 card-interactive rounded-lg bg-white p-3 shadow-soft">
                 <span className="text-2xl" aria-hidden="true">💬</span>
                 <span className="text-xs font-medium text-anthrazit">Chat</span>
+              </Link>
+              <Link href="/reports" className="flex flex-col items-center gap-1 card-interactive rounded-lg bg-white p-3 shadow-soft">
+                <span className="text-2xl" aria-hidden="true">🔧</span>
+                <span className="text-xs font-medium text-anthrazit">Mängel</span>
+              </Link>
+              <Link href="/waste-calendar" className="flex flex-col items-center gap-1 card-interactive rounded-lg bg-white p-3 shadow-soft">
+                <span className="text-2xl" aria-hidden="true">🗑️</span>
+                <span className="text-xs font-medium text-anthrazit">Müllkalender</span>
+              </Link>
+              <Link href="/city-services" className="flex flex-col items-center gap-1 card-interactive rounded-lg bg-white p-3 shadow-soft">
+                <span className="text-2xl" aria-hidden="true">🏛️</span>
+                <span className="text-xs font-medium text-anthrazit">Rathaus</span>
               </Link>
               <Link href="/lost-found" className="flex flex-col items-center gap-1 card-interactive rounded-lg bg-white p-3 shadow-soft">
                 <span className="text-2xl" aria-hidden="true">📎</span>

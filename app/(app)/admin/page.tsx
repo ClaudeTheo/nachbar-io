@@ -22,7 +22,7 @@ import type { Alert, User, Household } from "@/lib/supabase/types";
 // Tab-Gruppen
 const SYSTEM_TAB_VALUES = [
   "push", "codes", "map", "quarters", "system",
-  "external", "database", "api", "devops", "tests", "flags",
+  "external", "database", "api", "devops", "tests", "flags", "kpi",
 ] as const;
 
 // Admin-Komponenten
@@ -46,6 +46,7 @@ import { VerificationQueue } from "./components/VerificationQueue";
 import { SuperAdminOverview } from "./components/SuperAdminOverview";
 import { QuarterWizard } from "./components/QuarterWizard";
 import { FeatureFlagManager } from "./components/FeatureFlagManager";
+import { KpiDashboard } from "@/components/admin/KpiDashboard";
 import { useUserRole } from "@/lib/quarters";
 
 // ============================================================
@@ -323,6 +324,7 @@ export default function AdminPage() {
               <SelectItem value="devops"><Wrench className="h-3.5 w-3.5 text-muted-foreground" />DevOps</SelectItem>
               <SelectItem value="tests"><ClipboardList className="h-3.5 w-3.5 text-muted-foreground" />Tests</SelectItem>
               <SelectItem value="flags"><Settings2 className="h-3.5 w-3.5 text-muted-foreground" />Feature Flags</SelectItem>
+              <SelectItem value="kpi"><BarChart3 className="h-3.5 w-3.5 text-muted-foreground" />KPI-Dashboard</SelectItem>
             </SelectGroup>
           </SelectContent>
         </Select>
@@ -419,6 +421,7 @@ export default function AdminPage() {
         {activeTab === "devops" && <DevOpsPanel />}
         {activeTab === "tests" && <TestManagement />}
         {activeTab === "flags" && <FeatureFlagManager />}
+        {activeTab === "kpi" && <KpiDashboard />}
       </div>
     </div>
   );

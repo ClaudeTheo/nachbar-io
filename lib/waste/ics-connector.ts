@@ -1,7 +1,6 @@
 // ICS-Connector: Parst ICS/iCal-Feeds von Abfallwirtschaftsbetrieben
-// Primaerer Connector fuer AWB Waldshut und andere Kommunen mit ICS-Download
+// Eigener leichtgewichtiger Parser (kein node-ical — BigInt-Problem mit Turbopack)
 
-import ical from "node-ical";
 import { extractWasteTypeFromSummary } from "./type-mapping";
 import type { WasteType } from "@/lib/municipal/types";
 
@@ -30,13 +29,106 @@ export interface IcsFetchResult {
   total_events: number;
 }
 
-/** Hilfsfunktion: node-ical ParameterValue → String */
-function paramToString(val: unknown): string {
-  if (typeof val === "string") return val;
-  if (val && typeof val === "object" && "val" in val) {
-    return String((val as { val: unknown }).val);
+/** Geparster VEVENT-Block */
+interface ParsedVEvent {
+  summary: string;
+  dtstart: string;       // Roh-Wert aus DTSTART
+  dtstart_is_date: boolean; // VALUE=DATE (ganztaegig)
+  description: string | null;
+}
+
+/**
+ * Parst ICS-Text in VEVENT-Bloecke.
+ * Leichtgewichtiger Parser — unterstuetzt VEVENT mit SUMMARY, DTSTART, DESCRIPTION.
+ */
+function parseIcsText(icsText: string): ParsedVEvent[] {
+  const events: ParsedVEvent[] = [];
+  const lines = icsText.replace(/\r\n/g, "\n").replace(/\r/g, "\n").split("\n");
+
+  // RFC 5545: Zeilen die mit Whitespace beginnen sind Fortsetzungen
+  const unfolded: string[] = [];
+  for (const line of lines) {
+    if (line.startsWith(" ") || line.startsWith("\t")) {
+      if (unfolded.length > 0) {
+        unfolded[unfolded.length - 1] += line.slice(1);
+      }
+    } else {
+      unfolded.push(line);
+    }
   }
-  return String(val ?? "");
+
+  let inEvent = false;
+  let summary = "";
+  let dtstart = "";
+  let dtstartIsDate = false;
+  let description: string | null = null;
+
+  for (const line of unfolded) {
+    if (line === "BEGIN:VEVENT") {
+      inEvent = true;
+      summary = "";
+      dtstart = "";
+      dtstartIsDate = false;
+      description = null;
+      continue;
+    }
+
+    if (line === "END:VEVENT") {
+      if (inEvent && dtstart && summary) {
+        events.push({ summary, dtstart, dtstart_is_date: dtstartIsDate, description });
+      }
+      inEvent = false;
+      continue;
+    }
+
+    if (!inEvent) continue;
+
+    // SUMMARY (mit optionalem LANGUAGE-Parameter)
+    if (line.startsWith("SUMMARY")) {
+      const colonIdx = line.indexOf(":");
+      if (colonIdx >= 0) summary = line.slice(colonIdx + 1).trim();
+    }
+
+    // DTSTART — ganztaegig (VALUE=DATE:YYYYMMDD) oder mit Zeit
+    if (line.startsWith("DTSTART")) {
+      dtstartIsDate = line.includes("VALUE=DATE");
+      const colonIdx = line.indexOf(":");
+      if (colonIdx >= 0) dtstart = line.slice(colonIdx + 1).trim();
+    }
+
+    // DESCRIPTION
+    if (line.startsWith("DESCRIPTION")) {
+      const colonIdx = line.indexOf(":");
+      if (colonIdx >= 0) {
+        const val = line.slice(colonIdx + 1).trim();
+        description = val || null;
+      }
+    }
+  }
+
+  return events;
+}
+
+/**
+ * Wandelt DTSTART-Wert in YYYY-MM-DD um.
+ * Formate: YYYYMMDD (ganztaegig) oder YYYYMMDDTHHmmss(Z)
+ */
+function dtstartToDate(raw: string, isDate: boolean): string | null {
+  // Nur Ziffern und T/Z behalten
+  const cleaned = raw.replace(/[^0-9TZ]/g, "");
+  if (cleaned.length < 8) return null;
+
+  const year = cleaned.slice(0, 4);
+  const month = cleaned.slice(4, 6);
+  const day = cleaned.slice(6, 8);
+
+  // Validierung
+  const y = parseInt(year, 10);
+  const m = parseInt(month, 10);
+  const d = parseInt(day, 10);
+  if (y < 2020 || y > 2040 || m < 1 || m > 12 || d < 1 || d > 31) return null;
+
+  return `${year}-${month}-${day}`;
 }
 
 /**
@@ -52,13 +144,24 @@ export async function fetchIcsWasteDates(
   let totalEvents = 0;
 
   try {
-    // ICS-Daten laden
-    let events: ical.CalendarResponse;
+    let icsText: string;
 
     if (config.file_content) {
-      events = ical.sync.parseICS(config.file_content);
+      icsText = config.file_content;
     } else if (config.url) {
-      events = await ical.async.fromURL(config.url);
+      const response = await fetch(config.url, {
+        signal: AbortSignal.timeout(30000),
+      });
+      if (!response.ok) {
+        return {
+          success: false,
+          dates: [],
+          skipped: 0,
+          errors: [`HTTP ${response.status}: ${response.statusText}`],
+          total_events: 0,
+        };
+      }
+      icsText = await response.text();
     } else {
       return {
         success: false,
@@ -69,51 +172,48 @@ export async function fetchIcsWasteDates(
       };
     }
 
-    // Events durchgehen
-    for (const key of Object.keys(events)) {
-      const event = events[key];
-      if (!event || event.type !== "VEVENT") continue;
+    // ICS-Validierung
+    if (!icsText.includes("BEGIN:VCALENDAR")) {
+      return {
+        success: false,
+        dates: [],
+        skipped: 0,
+        errors: ["Kein gueltiges ICS-Format (BEGIN:VCALENDAR fehlt)"],
+        total_events: 0,
+      };
+    }
 
-      totalEvents++;
-      const vevent = event as ical.VEvent;
-      const summary = paramToString(vevent.summary);
+    // Events parsen
+    const events = parseIcsText(icsText);
+    totalEvents = events.length;
 
+    for (const event of events) {
       // Muelltyp aus Summary extrahieren
-      const wasteType = extractWasteTypeFromSummary(summary);
+      const wasteType = extractWasteTypeFromSummary(event.summary);
       if (!wasteType) {
         skipped++;
         if (skipped <= 5) {
-          errors.push(`Unbekannter Muelltyp: "${summary}"`);
+          errors.push(`Unbekannter Muelltyp: "${event.summary}"`);
         }
         continue;
       }
 
       // Datum extrahieren
-      const start = vevent.start;
-      if (!start) {
-        errors.push(`Event ohne Datum: "${summary}"`);
+      const isoDate = dtstartToDate(event.dtstart, event.dtstart_is_date);
+      if (!isoDate) {
+        errors.push(`Ungueltiges Datum: "${event.dtstart}" (${event.summary})`);
         continue;
       }
 
-      const date = start instanceof Date ? start : new Date(String(start));
-      // Ganztaegige Events (VALUE=DATE) haben keine Uhrzeit →
-      // toISOString() kann durch Zeitzonen-Offset einen Tag verschieben.
-      // Wir verwenden daher die lokalen Date-Komponenten.
-      const year = date.getFullYear();
-      const month = String(date.getMonth() + 1).padStart(2, "0");
-      const day = String(date.getDate()).padStart(2, "0");
-      const isoDate = `${year}-${month}-${day}`;
-
-      // Notizen und Zeithinweis
-      const description = vevent.description ? paramToString(vevent.description) : null;
-      const timeHint = extractTimeHint(description || summary);
+      // Zeithinweis
+      const timeHint = extractTimeHint(event.description || event.summary);
 
       dates.push({
         waste_type: wasteType,
         collection_date: isoDate,
-        notes: description,
+        notes: event.description,
         time_hint: timeHint,
-        raw_summary: summary,
+        raw_summary: event.summary,
       });
     }
 

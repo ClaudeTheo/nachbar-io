@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, MapPin, Phone, CheckCircle2, Clock, Tag, User } from "lucide-react";
+import { ArrowLeft, MapPin, Phone, CheckCircle2, Clock, Tag, User, Globe, CalendarClock, Crown } from "lucide-react";
 import { BusinessReview } from "@/components/BusinessReview";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -196,6 +196,50 @@ export default function TipDetailPage() {
                     {tip.contact_hint}
                   </p>
                 )}
+              </div>
+            )}
+
+            {/* Premium-Badge */}
+            {(tip as CommunityTip & { is_premium?: boolean }).is_premium && (
+              <div className="mt-3 inline-flex items-center gap-1 rounded-full bg-amber-100 px-3 py-1 text-xs font-medium text-amber-700">
+                <Crown className="h-3 w-3" />
+                Premium-Eintrag
+              </div>
+            )}
+
+            {/* Premium-Felder: Website, Oeffnungszeiten, Bilder */}
+            {(tip as CommunityTip & { website_url?: string }).website_url && (
+              <p className="mt-2 flex items-center gap-2 text-sm text-muted-foreground">
+                <Globe className="h-4 w-4 shrink-0" />
+                <a
+                  href={(tip as CommunityTip & { website_url: string }).website_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-quartier-green hover:underline"
+                >
+                  Website besuchen
+                </a>
+              </p>
+            )}
+
+            {(tip as CommunityTip & { opening_hours?: string }).opening_hours && (
+              <p className="mt-2 flex items-center gap-2 text-sm text-muted-foreground">
+                <CalendarClock className="h-4 w-4 shrink-0" />
+                {(tip as CommunityTip & { opening_hours: string }).opening_hours}
+              </p>
+            )}
+
+            {((tip as CommunityTip & { images?: string[] }).images?.length ?? 0) > 0 && (
+              <div className="mt-3 flex gap-2 overflow-x-auto">
+                {(tip as CommunityTip & { images: string[] }).images.map((url: string, i: number) => (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    key={i}
+                    src={url}
+                    alt={`Bild ${i + 1}`}
+                    className="h-32 w-32 rounded-lg object-cover flex-shrink-0"
+                  />
+                ))}
               </div>
             )}
 

@@ -301,12 +301,12 @@ function StepSummary({
       <div className="rounded-lg border border-gray-200 bg-gray-50 p-3 text-xs text-muted-foreground">
         {DISCLAIMERS.reportRathaus}{" "}
         <a
-          href="https://www.bad-saeckingen.de"
+          href="https://www.bad-saeckingen.de/kontakt"
           target="_blank"
           rel="noopener noreferrer"
           className="font-medium text-quartier-green underline"
         >
-          Zum Rathaus
+          Zum Rathaus-Kontaktformular
         </a>
       </div>
 

@@ -343,7 +343,7 @@ export default function ReportDetailPage() {
           {DISCLAIMERS.reportRathaus}
         </p>
         <a
-          href="https://www.bad-saeckingen.de"
+          href="https://www.bad-saeckingen.de/kontakt"
           target="_blank"
           rel="noopener noreferrer"
           className="flex h-[48px] items-center justify-center gap-2 rounded-lg border border-alert-amber/30 bg-white px-4 py-2 text-sm font-medium text-anthrazit transition-colors hover:bg-gray-50"

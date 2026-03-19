@@ -4,10 +4,11 @@
 
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { ArrowLeft, Pill, Clock, AlertTriangle, Plus } from 'lucide-react';
+import { ArrowLeft, Pill, Clock, AlertTriangle, Plus, Activity, RefreshCw } from 'lucide-react';
 import Link from 'next/link';
 import { useCareRole } from '@/lib/care/hooks/useCareRole';
 import { createClient } from '@/lib/supabase/client';
+import { HeartbeatTimeline } from '@/components/care/HeartbeatTimeline';
 
 interface MedicationEntry {
   id: string;
@@ -47,6 +48,9 @@ export default function SeniorDetailPage() {
   const [checkins, setCheckins] = useState<CheckinEntry[]>([]);
   const [sosAlerts, setSosAlerts] = useState<SosEntry[]>([]);
   const [loading, setLoading] = useState(true);
+  const [lastHeartbeat, setLastHeartbeat] = useState<string | null>(null);
+  const [lastCheckinStatus, setLastCheckinStatus] = useState<string | null>(null);
+  const [refreshing, setRefreshing] = useState(false);
 
   // Zugriffspruefung: Redirect wenn keine Berechtigung
   useEffect(() => {
@@ -55,10 +59,12 @@ export default function SeniorDetailPage() {
     }
   }, [role, roleLoading, router]);
 
-  // Senior-Name laden
+  // Senior-Name + Heartbeat-Status laden
   useEffect(() => {
     if (!seniorId) return;
     const supabase = createClient();
+
+    // Name
     supabase
       .from('users')
       .select('display_name')
@@ -67,6 +73,17 @@ export default function SeniorDetailPage() {
       .then(({ data }) => {
         setSeniorName(data?.display_name ?? 'Senior');
       });
+
+    // Heartbeat-Status
+    fetch(`/api/resident/status?resident_id=${seniorId}`)
+      .then(r => r.ok ? r.json() : null)
+      .then(data => {
+        if (data) {
+          setLastHeartbeat(data.last_heartbeat ?? null);
+          setLastCheckinStatus(data.last_checkin_status ?? null);
+        }
+      })
+      .catch(() => { /* silent */ });
   }, [seniorId]);
 
   // Daten pro Tab laden
@@ -80,11 +97,18 @@ export default function SeniorDetailPage() {
           const res = await fetch(`/api/care/medications?senior_id=${seniorId}`);
           if (res.ok) setMedications(await res.json());
         } else if (activeTab === 'checkins') {
-          const res = await fetch(`/api/care/checkin/status?senior_id=${seniorId}`);
-          if (res.ok) {
-            const data = await res.json();
-            setCheckins(data.today ?? []);
-          }
+          // 30-Tage-Check-in-Historie laden
+          const supabase = createClient();
+          const thirtyDaysAgo = new Date();
+          thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+          const { data: ciData } = await supabase
+            .from('care_checkins')
+            .select('id, status, scheduled_at, completed_at, mood')
+            .eq('senior_id', seniorId)
+            .gte('scheduled_at', thirtyDaysAgo.toISOString())
+            .order('scheduled_at', { ascending: false })
+            .limit(100);
+          if (ciData) setCheckins(ciData as CheckinEntry[]);
         } else if (activeTab === 'sos') {
           const res = await fetch(`/api/care/sos?senior_id=${seniorId}`);
           if (res.ok) setSosAlerts(await res.json());
@@ -126,12 +150,64 @@ export default function SeniorDetailPage() {
         Zurueck zur Uebersicht
       </Link>
 
-      {/* Header */}
-      <div>
-        <h1 className="text-2xl font-bold text-anthrazit">{seniorName}</h1>
-        <p className="text-sm text-muted-foreground mt-1">
-          {role === 'relative' ? 'Angehoerige/r' : role === 'care_service' ? 'Pflegedienst' : 'Helfer'}
-        </p>
+      {/* Header mit Refresh */}
+      <div className="flex items-start justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-anthrazit">{seniorName}</h1>
+          <p className="text-sm text-muted-foreground mt-1">
+            {role === 'relative' ? 'Angehoerige/r' : role === 'care_service' ? 'Pflegedienst' : 'Helfer'}
+          </p>
+        </div>
+        <button
+          onClick={async () => {
+            setRefreshing(true);
+            const res = await fetch(`/api/resident/status?resident_id=${seniorId}`);
+            if (res.ok) {
+              const data = await res.json();
+              setLastHeartbeat(data.last_heartbeat ?? null);
+              setLastCheckinStatus(data.last_checkin_status ?? null);
+            }
+            setRefreshing(false);
+          }}
+          className="rounded-lg p-2 text-muted-foreground hover:bg-muted"
+          aria-label="Aktualisieren"
+        >
+          <RefreshCw className={`h-4 w-4 ${refreshing ? 'animate-spin' : ''}`} />
+        </button>
+      </div>
+
+      {/* Status-Uebersicht + Heartbeat-Timeline */}
+      <div className="rounded-xl border border-gray-200 bg-white p-4 space-y-3">
+        <div className="flex items-center gap-2">
+          <Activity className="h-4 w-4 text-quartier-green" />
+          <span className="text-sm font-medium text-anthrazit">Aktivitaetsstatus</span>
+        </div>
+        {lastHeartbeat && (
+          <div className="flex items-center justify-between text-sm">
+            <span className="text-muted-foreground">Letzte Aktivitaet</span>
+            <span className="font-medium text-anthrazit">
+              {(() => {
+                const diff = Date.now() - new Date(lastHeartbeat).getTime();
+                const min = Math.floor(diff / 60000);
+                const h = Math.floor(diff / 3600000);
+                const d = Math.floor(diff / 86400000);
+                if (min < 2) return 'eben erst';
+                if (min < 60) return `vor ${min} Min.`;
+                if (h < 24) return `vor ${h}h`;
+                return `vor ${d} Tagen`;
+              })()}
+            </span>
+          </div>
+        )}
+        {lastCheckinStatus && (
+          <div className="flex items-center justify-between text-sm">
+            <span className="text-muted-foreground">Letzter Check-in</span>
+            <span className="font-medium text-anthrazit">
+              {lastCheckinStatus === 'ok' ? 'Alles gut' : lastCheckinStatus === 'not_well' ? 'Geht so' : 'Braucht Hilfe'}
+            </span>
+          </div>
+        )}
+        <HeartbeatTimeline residentId={seniorId} />
       </div>
 
       {/* Tabs */}
@@ -197,11 +273,11 @@ export default function SeniorDetailPage() {
           {activeTab === 'checkins' && (
             <div className="space-y-3">
               <h2 className="text-sm font-medium text-muted-foreground">
-                Heutige Check-ins
+                Check-in-Historie (30 Tage)
               </h2>
               {checkins.length === 0 ? (
                 <p className="text-sm text-muted-foreground py-4 text-center">
-                  Noch keine Check-ins fuer heute.
+                  Keine Check-ins in den letzten 30 Tagen.
                 </p>
               ) : (
                 checkins.map((ci) => (

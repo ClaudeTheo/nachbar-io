@@ -141,40 +141,42 @@ export default function ReportsPage() {
         {DISCLAIMERS.reportCreate}
       </div>
 
-      {/* Kategorie-Filter */}
-      <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
-        <button
-          onClick={() => setActiveFilter(null)}
-          className={`flex h-[44px] min-w-[80px] items-center justify-center gap-1 rounded-full px-3 py-1.5 text-xs font-medium transition-colors ${
-            activeFilter === null
-              ? "bg-anthrazit text-white"
-              : "bg-white text-anthrazit shadow-soft hover:bg-gray-50"
-          }`}
-        >
-          Alle
-          {reports.length > 0 && (
-            <span className="ml-0.5 text-[10px] opacity-70">({reports.length})</span>
-          )}
-        </button>
-        {REPORT_CATEGORIES.map((cat) => {
-          const count = reports.filter((r) => r.category === cat.id).length;
-          return (
-            <button
-              key={cat.id}
-              onClick={() => setActiveFilter(activeFilter === cat.id ? null : cat.id)}
-              className={`flex h-[44px] min-w-[80px] items-center justify-center gap-1 whitespace-nowrap rounded-full px-3 py-1.5 text-xs font-medium transition-colors ${
-                activeFilter === cat.id
-                  ? "bg-anthrazit text-white"
-                  : "bg-white text-anthrazit shadow-soft hover:bg-gray-50"
-              }`}
-            >
-              <span aria-hidden="true">{cat.icon}</span> {cat.label}
-              {count > 0 && (
-                <span className="ml-0.5 text-[10px] opacity-70">({count})</span>
-              )}
-            </button>
-          );
-        })}
+      {/* Kategorie-Filter — horizontal scrollbar */}
+      <div className="-mx-4 px-4">
+        <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
+          <button
+            onClick={() => setActiveFilter(null)}
+            className={`flex h-[44px] shrink-0 items-center justify-center gap-1 rounded-full px-4 py-1.5 text-xs font-medium transition-colors ${
+              activeFilter === null
+                ? "bg-anthrazit text-white"
+                : "bg-white text-anthrazit shadow-soft hover:bg-gray-50"
+            }`}
+          >
+            Alle
+            {reports.length > 0 && (
+              <span className="ml-0.5 text-[10px] opacity-70">({reports.length})</span>
+            )}
+          </button>
+          {REPORT_CATEGORIES.map((cat) => {
+            const count = reports.filter((r) => r.category === cat.id).length;
+            return (
+              <button
+                key={cat.id}
+                onClick={() => setActiveFilter(activeFilter === cat.id ? null : cat.id)}
+                className={`flex h-[44px] shrink-0 items-center justify-center gap-1 whitespace-nowrap rounded-full px-4 py-1.5 text-xs font-medium transition-colors ${
+                  activeFilter === cat.id
+                    ? "bg-anthrazit text-white"
+                    : "bg-white text-anthrazit shadow-soft hover:bg-gray-50"
+                }`}
+              >
+                <span aria-hidden="true">{cat.icon}</span> {cat.label}
+                {count > 0 && (
+                  <span className="ml-0.5 text-[10px] opacity-70">({count})</span>
+                )}
+              </button>
+            );
+          })}
+        </div>
       </div>
 
       {/* Ladezustand — Skeleton-Karten */}

@@ -1,15 +1,69 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
-import { ArrowLeft, Search } from "lucide-react";
-import { SERVICE_LINK_CATEGORIES, WIKI_CATEGORIES, DISCLAIMERS } from "@/lib/municipal";
+import { ArrowLeft, Search, Pin, ExternalLink } from "lucide-react";
+import { createClient } from "@/lib/supabase/client";
+import { useQuarter } from "@/lib/quarters";
+import {
+  SERVICE_LINK_CATEGORIES,
+  WIKI_CATEGORIES,
+  ANNOUNCEMENT_CATEGORIES,
+  DISCLAIMERS,
+} from "@/lib/municipal";
+import type { MunicipalAnnouncement, AnnouncementCategory } from "@/lib/municipal";
 
 type TabId = "services" | "wiki" | "announcements";
+
+// Deutsches Datumsformat
+function formatDateDE(iso: string): string {
+  return new Date(iso).toLocaleDateString("de-DE", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  });
+}
+
+// Kategorie-Config Hilfsfunktion
+function getCategoryConfig(catId: AnnouncementCategory) {
+  return ANNOUNCEMENT_CATEGORIES.find((c) => c.id === catId) ?? ANNOUNCEMENT_CATEGORIES[5];
+}
 
 export default function CityServicesPage() {
   const [activeTab, setActiveTab] = useState<TabId>("services");
   const [searchQuery, setSearchQuery] = useState("");
+  const { currentQuarter } = useQuarter();
+
+  // Bekanntmachungen aus Supabase laden
+  const [announcements, setAnnouncements] = useState<MunicipalAnnouncement[]>([]);
+  const [announcementsLoading, setAnnouncementsLoading] = useState(false);
+
+  useEffect(() => {
+    if (activeTab !== "announcements" || !currentQuarter) return;
+    let cancelled = false;
+
+    const supabase = createClient();
+    const now = new Date().toISOString();
+
+    supabase
+      .from("municipal_announcements")
+      .select("*")
+      .eq("quarter_id", currentQuarter.id)
+      .lte("published_at", now)
+      .order("pinned", { ascending: false })
+      .order("published_at", { ascending: false })
+      .then(({ data }) => {
+        if (cancelled) return;
+        // Client-seitig abgelaufene filtern (expires_at IS NULL oder > now)
+        const filtered = (data ?? []).filter(
+          (a) => !a.expires_at || new Date(a.expires_at) > new Date()
+        );
+        setAnnouncements(filtered);
+        setAnnouncementsLoading(false);
+      });
+
+    return () => { cancelled = true; };
+  }, [activeTab, currentQuarter]);
 
   const tabs: { id: TabId; label: string }[] = [
     { id: "services", label: "Services" },
@@ -105,14 +159,75 @@ export default function CityServicesPage() {
       {/* Tab: Bekanntmachungen */}
       {activeTab === "announcements" && (
         <div className="space-y-3">
+          {/* Ladezustand */}
+          {announcementsLoading && (
+            <div className="flex min-h-[100px] items-center justify-center">
+              <div className="h-6 w-6 animate-spin rounded-full border-3 border-[#4CAF87] border-t-transparent" />
+            </div>
+          )}
+
+          {/* Bekanntmachungen anzeigen */}
+          {!announcementsLoading && announcements.length > 0 && (
+            <>
+              {announcements.map((a) => {
+                const cat = getCategoryConfig(a.category);
+                return (
+                  <div
+                    key={a.id}
+                    className="rounded-xl bg-white p-4 shadow-soft animate-fade-in-up"
+                  >
+                    {/* Badges */}
+                    <div className="mb-1.5 flex flex-wrap items-center gap-1.5">
+                      {a.pinned && (
+                        <span className="inline-flex items-center gap-0.5 rounded-full bg-amber-50 px-2 py-0.5 text-[10px] font-medium text-amber-700">
+                          <Pin className="h-3 w-3" /> Angepinnt
+                        </span>
+                      )}
+                      <span className="inline-flex items-center gap-0.5 rounded-full bg-gray-100 px-2 py-0.5 text-[10px] font-medium text-anthrazit">
+                        {cat.icon} {cat.label}
+                      </span>
+                    </div>
+
+                    {/* Titel */}
+                    <h3 className="text-sm font-bold text-anthrazit">{a.title}</h3>
+
+                    {/* Text */}
+                    {a.body && (
+                      <p className="mt-1 text-xs text-muted-foreground leading-relaxed">
+                        {a.body}
+                      </p>
+                    )}
+
+                    {/* Footer: Datum + Quelle */}
+                    <div className="mt-2 flex flex-wrap items-center gap-3 text-[10px] text-gray-400">
+                      <span>{formatDateDE(a.published_at)}</span>
+                      {a.source_url && (
+                        <a
+                          href={a.source_url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-0.5 text-quartier-green hover:underline"
+                        >
+                          <ExternalLink className="h-3 w-3" /> Quelle
+                        </a>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </>
+          )}
+
           {/* Leerzustand */}
-          <div className="flex flex-col items-center py-8 text-center">
-            <div className="mb-3 text-4xl" aria-hidden="true">📢</div>
-            <h2 className="text-lg font-semibold text-anthrazit">Keine Bekanntmachungen</h2>
-            <p className="mt-1 max-w-xs text-sm text-muted-foreground">
-              Aktuelle Bekanntmachungen für Ihr Quartier erscheinen hier.
-            </p>
-          </div>
+          {!announcementsLoading && announcements.length === 0 && (
+            <div className="flex flex-col items-center py-8 text-center">
+              <div className="mb-3 text-4xl" aria-hidden="true">📢</div>
+              <h2 className="text-lg font-semibold text-anthrazit">Keine Bekanntmachungen</h2>
+              <p className="mt-1 max-w-xs text-sm text-muted-foreground">
+                Aktuelle Bekanntmachungen für Ihr Quartier erscheinen hier.
+              </p>
+            </div>
+          )}
 
           {/* Disclaimer */}
           <p className="text-center text-[10px] text-muted-foreground">

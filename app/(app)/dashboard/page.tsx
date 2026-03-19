@@ -15,6 +15,7 @@ import { DailyCheckinButton } from "@/components/care/DailyCheckinButton";
 import { RedeemCodeBanner } from "@/components/care/RedeemCodeBanner";
 import { CaregiverDashboard } from "@/components/care/CaregiverDashboard";
 import { QuartierServicesSection } from "@/components/municipal/QuartierServicesSection";
+import { FeatureGate } from "@/components/FeatureGate";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { createClient } from "@/lib/supabase/client";
@@ -290,8 +291,10 @@ export default function DashboardPage() {
         Nachbar einladen — 50 Punkte erhalten
       </button>
 
-      {/* Quartier-Services (Kommunal-Modul) */}
-      <QuartierServicesSection />
+      {/* Quartier-Services (Kommunal-Modul) — hinter Feature-Flag */}
+      <FeatureGate feature="KOMMUNAL_MODULE">
+        <QuartierServicesSection />
+      </FeatureGate>
 
       {/* Hilfe-Boerse */}
       {helpRequests.length > 0 && (

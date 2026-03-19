@@ -22,6 +22,7 @@ const FLAG_DESCRIPTIONS: Record<string, string> = {
   EVENTS: "Veranstaltungen-Modul",
   NEWS_AI: "KI-Nachrichtenzusammenfassung",
   PUSH_NOTIFICATIONS: "Push-Benachrichtigungen",
+  KOMMUNAL_MODULE: "Kommunal-Modul (Mängelmelder, Müllkalender, Rathaus)",
 };
 
 /**

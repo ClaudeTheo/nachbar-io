@@ -12,6 +12,8 @@ const ORG_TABS = [
   { href: "/org/members", label: "Mitglieder" },
   { href: "/org/audit", label: "Audit-Log" },
   { href: "/org/escalations", label: "Eskalationen" },
+  { href: "/org/reports", label: "Meldungen" },
+  { href: "/org/announcements", label: "Bekanntmachungen" },
 ] as const;
 
 export default function OrgLayout({ children }: { children: ReactNode }) {

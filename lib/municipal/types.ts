@@ -2,8 +2,10 @@
 
 // --- Enums (passend zu DB-Enums) ---
 
-export type WasteType = "restmuell" | "biomuell" | "papier" | "gelber_sack" | "gruenschnitt" | "sperrmuell";
-export type WasteSource = "manual" | "ical" | "api";
+export type WasteType = "restmuell" | "biomuell" | "papier" | "gelber_sack" | "gruenschnitt" | "sperrmuell" | "altglas" | "elektroschrott" | "sondermuell";
+export type WasteSource = "manual" | "ical" | "api" | "csv" | "scraper";
+export type ConnectorType = "ics" | "api" | "csv" | "scraper" | "manual";
+export type SyncStatus = "running" | "success" | "partial" | "error";
 export type WasteRemindTime = "evening_before" | "morning_of";
 
 export type ReportCategory = "street" | "lighting" | "greenery" | "waste" | "vandalism" | "other";
@@ -51,6 +53,86 @@ export interface WasteSchedule {
   notes: string | null;
   source: WasteSource;
   created_at: string;
+}
+
+// --- Source-Driven Muellkalender (Mig. 102) ---
+
+export interface WasteSourceRegistry {
+  id: string;
+  name: string;
+  slug: string;
+  region: string;
+  connector_type: ConnectorType;
+  connector_config: Record<string, unknown>;
+  sync_enabled: boolean;
+  sync_interval_hours: number;
+  last_sync_at: string | null;
+  last_sync_status: SyncStatus | null;
+  last_sync_error: string | null;
+  last_sync_dates_count: number;
+  next_sync_at: string | null;
+  coverage_description: string | null;
+  website_url: string | null;
+  contact_info: Record<string, string> | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface WasteCollectionArea {
+  id: string;
+  source_id: string;
+  area_name: string;
+  area_code: string | null;
+  municipality: string;
+  district: string | null;
+  postal_code: string | null;
+  street_patterns: string[] | null;
+  ics_url: string | null;
+  created_at: string;
+}
+
+export interface WasteCollectionDate {
+  id: string;
+  source_id: string;
+  area_id: string;
+  waste_type: WasteType;
+  collection_date: string; // ISO date (YYYY-MM-DD)
+  notes: string | null;
+  time_hint: string | null;
+  is_cancelled: boolean;
+  replacement_date: string | null;
+  sync_batch_id: string | null;
+  raw_data: Record<string, unknown> | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface WasteSyncLog {
+  id: string;
+  source_id: string;
+  batch_id: string;
+  started_at: string;
+  finished_at: string | null;
+  status: SyncStatus;
+  dates_fetched: number;
+  dates_inserted: number;
+  dates_updated: number;
+  dates_unchanged: number;
+  dates_cancelled: number;
+  error_message: string | null;
+  has_changes: boolean;
+}
+
+/** Ergebnis der quarter_collection_areas View */
+export interface QuarterCollectionArea {
+  quarter_id: string;
+  quarter_name: string;
+  area_id: string;
+  area_name: string;
+  ics_url: string | null;
+  source_id: string;
+  source_name: string;
+  source_slug: string;
 }
 
 export interface WasteReminder {

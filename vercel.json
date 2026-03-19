@@ -82,6 +82,10 @@
     {
       "path": "/api/cron/waste-reminder",
       "schedule": "0 18 * * *"
+    },
+    {
+      "path": "/api/cron/waste-sync",
+      "schedule": "0 2 * * *"
     }
   ],
   "headers": [

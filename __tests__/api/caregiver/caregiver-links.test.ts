@@ -94,7 +94,6 @@ function createLinksPatchMock(callResults: Array<{ data: unknown; error: unknown
 describe('GET /api/caregiver/links', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.resetModules();
     mockUser = { id: 'user-1', email: 'test@test.de' };
   });
 
@@ -150,7 +149,6 @@ describe('GET /api/caregiver/links', () => {
 describe('PATCH /api/caregiver/links/[id]', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.resetModules();
     mockUser = { id: 'resident-1', email: 'senior@test.de' };
   });
 

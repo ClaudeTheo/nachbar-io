@@ -76,7 +76,6 @@ function makePatchRequest(body: Record<string, unknown>): NextRequest {
 describe('GET /api/caregiver/auto-answer', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.resetModules();
     mockUser = { id: 'cg-1', email: 'lisa@test.de' };
   });
 
@@ -132,7 +131,6 @@ describe('GET /api/caregiver/auto-answer', () => {
 describe('PATCH /api/caregiver/auto-answer', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.resetModules();
     mockUser = { id: 'cg-1', email: 'lisa@test.de' };
   });
 

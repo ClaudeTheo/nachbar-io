@@ -75,7 +75,6 @@ function makeRequest(body: Record<string, unknown>) {
 describe('POST /api/caregiver/redeem', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.resetModules();
     mockUser = { id: 'caregiver-1', email: 'tochter@test.de' };
   });
 

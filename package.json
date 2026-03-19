@@ -16,7 +16,8 @@
     "test:e2e:multi:ui": "playwright test --config=tests/e2e/playwright.config.ts --ui",
     "test:e2e:smoke": "playwright test --config=tests/e2e/playwright.config.ts --project=smoke",
     "test:e2e:agents": "playwright test --config=tests/e2e/playwright.config.ts --project=multi-agent",
-    "test:e2e:senior": "playwright test --config=tests/e2e/playwright.config.ts --project=senior-terminal"
+    "test:e2e:senior": "playwright test --config=tests/e2e/playwright.config.ts --project=senior-terminal",
+    "seed:quarter": "npx tsx scripts/seed-quarter.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.78.0",

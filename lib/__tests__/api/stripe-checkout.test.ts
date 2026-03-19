@@ -7,7 +7,7 @@ import { NextRequest } from 'next/server';
 
 // Supabase Auth Mock
 const mockGetUser = vi.fn();
-const mockSupabaseFrom = vi.fn(() => ({
+const _mockSupabaseFrom = vi.fn(() => ({
   select: vi.fn(() => ({
     eq: vi.fn(() => ({
       maybeSingle: vi.fn(() => ({ data: null })),

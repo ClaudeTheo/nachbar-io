@@ -1,5 +1,6 @@
 // __tests__/api/push-subscribe.test.ts
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+import type { NextRequest } from 'next/server';
 
 // Mocks
 const mockGetUser = vi.fn();
@@ -34,7 +35,7 @@ describe('POST /api/push/subscribe', () => {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({}),
     });
-    const res = await POST(req as any);
+    const res = await POST(req as unknown as NextRequest);
     expect(res.status).toBe(401);
   });
 
@@ -47,7 +48,7 @@ describe('POST /api/push/subscribe', () => {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ endpoint: 'https://push.example.com' }),
     });
-    const res = await POST(req as any);
+    const res = await POST(req as unknown as NextRequest);
     expect(res.status).toBe(400);
   });
 
@@ -63,7 +64,7 @@ describe('POST /api/push/subscribe', () => {
         keys: { p256dh: 'abc', auth: 'def' },
       }),
     });
-    const res = await POST(req as any);
+    const res = await POST(req as unknown as NextRequest);
     expect(res.status).toBe(400);
     const body = await res.json();
     expect(body.error).toContain('HTTPS');
@@ -82,7 +83,7 @@ describe('POST /api/push/subscribe', () => {
         keys: { p256dh: 'p256dh-key', auth: 'auth-key' },
       }),
     });
-    const res = await POST(req as any);
+    const res = await POST(req as unknown as NextRequest);
     expect(res.status).toBe(200);
     expect(mockInsert).toHaveBeenCalledWith({
       user_id: 'u1',
@@ -108,7 +109,7 @@ describe('DELETE /api/push/subscribe', () => {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ endpoint: 'https://push.example.com/v1/sub123' }),
     });
-    const res = await DELETE(req as any);
+    const res = await DELETE(req as unknown as NextRequest);
     expect(res.status).toBe(401);
   });
 });

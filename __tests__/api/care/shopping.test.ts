@@ -7,8 +7,8 @@ const mockRequireAuth = vi.fn();
 const mockRequireSubscription = vi.fn();
 
 vi.mock('@/lib/care/api-helpers', () => ({
-  requireAuth: (...args: any[]) => mockRequireAuth(...args),
-  requireSubscription: (...args: any[]) => mockRequireSubscription(...args),
+  requireAuth: (...args: unknown[]) => mockRequireAuth(...args),
+  requireSubscription: (...args: unknown[]) => mockRequireSubscription(...args),
   unauthorizedResponse: () => NextResponse.json({ error: 'Nicht autorisiert' }, { status: 401 }),
 }));
 
@@ -27,7 +27,7 @@ describe('GET /api/care/shopping', () => {
 
     const { GET } = await import('@/app/api/care/shopping/route');
     const req = new NextRequest('http://localhost/api/care/shopping');
-    const res = await GET(req as any);
+    const res = await GET(req as unknown as NextRequest);
     expect(res.status).toBe(401);
   });
 
@@ -40,7 +40,7 @@ describe('GET /api/care/shopping', () => {
 
     const { GET } = await import('@/app/api/care/shopping/route');
     const req = new NextRequest('http://localhost/api/care/shopping');
-    const res = await GET(req as any);
+    const res = await GET(req as unknown as NextRequest);
     expect(res.status).toBe(403);
   });
 
@@ -49,12 +49,12 @@ describe('GET /api/care/shopping', () => {
       { id: 's1', items: ['Milch', 'Brot'], status: 'open' },
     ];
     // Universeller chainable Mock
-    const chain: any = {};
+    const chain: Record<string, unknown> = {};
     chain.select = vi.fn().mockReturnValue(chain);
     chain.eq = vi.fn().mockReturnValue(chain);
     chain.order = vi.fn().mockReturnValue(chain);
     chain.limit = vi.fn().mockReturnValue(chain);
-    chain.then = (resolve: any) => resolve({ data: mockData, error: null });
+    chain.then = (resolve: (value: { data: typeof mockData; error: null }) => void) => resolve({ data: mockData, error: null });
 
     const mockSupabase = { from: vi.fn().mockReturnValue(chain) };
     mockRequireAuth.mockResolvedValue({ supabase: mockSupabase, user: { id: 'u1' } });
@@ -62,7 +62,7 @@ describe('GET /api/care/shopping', () => {
 
     const { GET } = await import('@/app/api/care/shopping/route');
     const req = new NextRequest('http://localhost/api/care/shopping');
-    const res = await GET(req as any);
+    const res = await GET(req as unknown as NextRequest);
     expect(res.status).toBe(200);
     const body = await res.json();
     expect(body).toHaveLength(1);
@@ -84,7 +84,7 @@ describe('POST /api/care/shopping', () => {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ items: ['Milch'] }),
     });
-    const res = await POST(req as any);
+    const res = await POST(req as unknown as NextRequest);
     expect(res.status).toBe(401);
   });
 });

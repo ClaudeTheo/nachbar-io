@@ -29,7 +29,7 @@ export default function AGBPage() {
               Diese Allgemeinen Geschäftsbedingungen regeln die Nutzung der
               Plattform QuartierApp (quartierapp.de), betrieben von Thomas Theobald,
               Purkersdorfer Straße 35, 79713 Bad Säckingen (nachfolgend
-              „Betreiber"). Sie gelten für alle Zugangswege: Web-App,
+              &bdquo;Betreiber&ldquo;). Sie gelten für alle Zugangswege: Web-App,
               Arzt-Portal und Pi-Kiosk-Terminal.
             </p>
             <p className="mt-2">

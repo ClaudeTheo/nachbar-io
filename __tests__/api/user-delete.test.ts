@@ -1,5 +1,6 @@
 // __tests__/api/user-delete.test.ts
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+import type { NextRequest } from 'next/server';
 
 // Mocks
 const mockGetUser = vi.fn();
@@ -45,7 +46,7 @@ describe('POST /api/user/delete', () => {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ confirmText: 'KONTO LÖSCHEN' }),
     });
-    const res = await POST(req as any);
+    const res = await POST(req as unknown as NextRequest);
     expect(res.status).toBe(401);
   });
 
@@ -58,7 +59,7 @@ describe('POST /api/user/delete', () => {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ confirmText: 'bitte löschen' }),
     });
-    const res = await POST(req as any);
+    const res = await POST(req as unknown as NextRequest);
     expect(res.status).toBe(400);
   });
 
@@ -69,7 +70,7 @@ describe('POST /api/user/delete', () => {
     const req = new Request('http://localhost/api/user/delete', {
       method: 'POST',
     });
-    const res = await POST(req as any);
+    const res = await POST(req as unknown as NextRequest);
     expect(res.status).toBe(400);
   });
 
@@ -83,7 +84,7 @@ describe('POST /api/user/delete', () => {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ confirmText: 'KONTO LÖSCHEN' }),
     });
-    const res = await POST(req as any);
+    const res = await POST(req as unknown as NextRequest);
     expect(res.status).toBe(500);
   });
 });

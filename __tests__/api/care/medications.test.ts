@@ -5,12 +5,12 @@ import { NextRequest, NextResponse } from 'next/server';
 // Mocks
 const mockRequireAuth = vi.fn();
 const mockRequireSubscription = vi.fn();
-const mockSelect = vi.fn();
-const mockInsert = vi.fn();
+const _mockSelect = vi.fn();
+const _mockInsert = vi.fn();
 
 vi.mock('@/lib/care/api-helpers', () => ({
-  requireAuth: (...args: any[]) => mockRequireAuth(...args),
-  requireSubscription: (...args: any[]) => mockRequireSubscription(...args),
+  requireAuth: (...args: unknown[]) => mockRequireAuth(...args),
+  requireSubscription: (...args: unknown[]) => mockRequireSubscription(...args),
   unauthorizedResponse: () => NextResponse.json({ error: 'Nicht autorisiert' }, { status: 401 }),
   requireCareAccess: vi.fn().mockResolvedValue('caregiver'),
 }));
@@ -20,8 +20,8 @@ vi.mock('@/lib/care/audit', () => ({
 }));
 
 vi.mock('@/lib/care/field-encryption', () => ({
-  encryptFields: vi.fn((data: any) => data),
-  decryptFieldsArray: vi.fn((data: any) => data),
+  encryptFields: vi.fn((data: unknown) => data),
+  decryptFieldsArray: vi.fn((data: unknown) => data),
   CARE_MEDICATIONS_ENCRYPTED_FIELDS: ['name', 'dosage', 'schedule', 'instructions'],
 }));
 
@@ -36,7 +36,7 @@ describe('GET /api/care/medications', () => {
 
     const { GET } = await import('@/app/api/care/medications/route');
     const req = new NextRequest('http://localhost/api/care/medications');
-    const res = await GET(req as any);
+    const res = await GET(req as unknown as NextRequest);
     expect(res.status).toBe(401);
   });
 
@@ -49,7 +49,7 @@ describe('GET /api/care/medications', () => {
 
     const { GET } = await import('@/app/api/care/medications/route');
     const req = new NextRequest('http://localhost/api/care/medications');
-    const res = await GET(req as any);
+    const res = await GET(req as unknown as NextRequest);
     expect(res.status).toBe(403);
   });
 
@@ -58,12 +58,12 @@ describe('GET /api/care/medications', () => {
       { id: 'm1', name: 'Aspirin', dosage: '100mg', active: true },
     ];
     // Universeller chainable Mock
-    const chain: any = {};
+    const chain: Record<string, unknown> = {};
     chain.select = vi.fn().mockReturnValue(chain);
     chain.eq = vi.fn().mockReturnValue(chain);
     chain.order = vi.fn().mockReturnValue(chain);
     chain.limit = vi.fn().mockReturnValue(chain);
-    chain.then = (resolve: any) => resolve({ data: mockMeds, error: null });
+    chain.then = (resolve: (value: { data: typeof mockMeds; error: null }) => void) => resolve({ data: mockMeds, error: null });
 
     const mockSupabase = { from: vi.fn().mockReturnValue(chain) };
     mockRequireAuth.mockResolvedValue({ supabase: mockSupabase, user: { id: 'u1' } });
@@ -71,7 +71,7 @@ describe('GET /api/care/medications', () => {
 
     const { GET } = await import('@/app/api/care/medications/route');
     const req = new NextRequest('http://localhost/api/care/medications');
-    const res = await GET(req as any);
+    const res = await GET(req as unknown as NextRequest);
     expect(res.status).toBe(200);
     const body = await res.json();
     expect(body).toHaveLength(1);
@@ -93,7 +93,7 @@ describe('POST /api/care/medications', () => {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ name: 'Aspirin', dosage: '100mg' }),
     });
-    const res = await POST(req as any);
+    const res = await POST(req as unknown as NextRequest);
     expect(res.status).toBe(401);
   });
 });

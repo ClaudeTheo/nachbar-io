@@ -8,7 +8,7 @@ const mockGetUser = vi.fn();
 function createChainMock() {
   const result = { data: [], error: null };
   const singleResult = { data: null, error: null };
-  const chain: Record<string, any> = {};
+  const chain: Record<string, unknown> = {};
   chain.select = vi.fn().mockReturnValue(chain);
   chain.eq = vi.fn().mockReturnValue(chain);
   chain.in = vi.fn().mockReturnValue(chain);
@@ -16,7 +16,7 @@ function createChainMock() {
   chain.limit = vi.fn().mockReturnValue(chain);
   chain.single = vi.fn().mockResolvedValue(singleResult);
   // Ohne single() am Ende: Promise.all() erwartet thenables
-  chain.then = (resolve: any) => resolve(result);
+  chain.then = (resolve: (value: { data: never[]; error: null }) => void) => resolve(result);
   return chain;
 }
 

@@ -29,6 +29,7 @@ export default function VouchingPage() {
     setLoading(false);
   }
 
+  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => { loadNeighbors(); }, []);
 
   async function handleVouch(targetId: string) {

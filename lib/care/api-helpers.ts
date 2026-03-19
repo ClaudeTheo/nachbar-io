@@ -144,21 +144,17 @@ export async function requireSubscription(
 
   let plan: CareSubscriptionPlan;
   let status: string;
-  let reason: string;
 
   if (subscription) {
     plan = subscription.plan;
     status = subscription.status;
-    reason = 'from_record';
   } else if (process.env.PILOT_MODE === 'true') {
     plan = 'pro';
     status = 'active';
-    reason = 'pilot_fallback';
     careLog('gate', 'pilot_fallback', { userId });
   } else {
     plan = 'free';
     status = 'active';
-    reason = 'no_subscription';
   }
 
   // Abgelaufene/gekuendigte Abos blockieren

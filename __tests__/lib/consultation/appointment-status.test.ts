@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import {
   canTransition,
   getAvailableActions,
-  type AppointmentStatus,
+  type AppointmentStatus as _AppointmentStatus,
 } from "@/lib/consultation/appointment-status";
 
 describe("canTransition", () => {

@@ -382,7 +382,7 @@ export default function DatenschutzPage() {
             </h2>
             <p>
               Sie können Ihr Konto jederzeit in den Profileinstellungen unter
-              „Konto löschen" selbständig löschen. Bei Löschung Ihres Kontos werden
+              &bdquo;Konto löschen&ldquo; selbständig löschen. Bei Löschung Ihres Kontos werden
               alle personenbezogenen Daten innerhalb von 30 Tagen unwiderruflich
               gelöscht. Dies umfasst:
             </p>

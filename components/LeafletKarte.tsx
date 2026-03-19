@@ -6,7 +6,7 @@ import { useQuarter } from "@/lib/quarters";
 import { useMapStatuses } from "@/lib/hooks/useMapStatuses";
 import { MapFilterBar } from "@/components/MapFilterBar";
 import { HouseInfoPanel } from "@/components/HouseInfoPanel";
-import type { GeoMapHouseData, LampColor } from "@/lib/map-houses";
+import type { GeoMapHouseData } from "@/lib/map-houses";
 
 // Leaflet muss client-side geladen werden (kein SSR)
 const LeafletMapInner = dynamic(() => import("./LeafletMapInner"), { ssr: false });

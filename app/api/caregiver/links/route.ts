@@ -2,7 +2,7 @@
 // Nachbar.io — Caregiver-Links auflisten
 
 import { NextRequest, NextResponse } from 'next/server';
-import { requireAuth, requireSubscription, unauthorizedResponse, errorResponse, successResponse } from '@/lib/care/api-helpers';
+import { requireAuth, requireSubscription, unauthorizedResponse, successResponse } from '@/lib/care/api-helpers';
 
 export async function GET(_request: NextRequest) {
   // Auth

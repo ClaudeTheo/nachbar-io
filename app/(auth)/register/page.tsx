@@ -56,10 +56,11 @@ function RegisterForm() {
   // UI-State
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const router = useRouter();
+  const _router = useRouter();
   const searchParams = useSearchParams();
 
   // === URL-Parameter: Invite-Code und Referrer aus QR-Code/Link ===
+  /* eslint-disable react-hooks/set-state-in-effect -- URL-Params einmalig in State uebernehmen */
   useEffect(() => {
     const invite = searchParams.get("invite");
     const ref = searchParams.get("ref");
@@ -73,6 +74,7 @@ function RegisterForm() {
       setVerificationMethod("neighbor_invite");
     }
   }, [searchParams]);
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   // === Photon API (OpenStreetMap) fuer Adress-Autocomplete ===
   const searchAddress = useCallback(async (query: string) => {

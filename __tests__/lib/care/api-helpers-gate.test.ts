@@ -1,7 +1,7 @@
 // __tests__/lib/care/api-helpers-gate.test.ts
 // Tests fuer server-seitige Feature-Gate Hilfsfunktionen
 
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, vi, afterEach } from 'vitest';
 import { NextResponse } from 'next/server';
 import {
   featureGateResponse,

@@ -65,6 +65,7 @@ export default function KioskManagementPage() {
     } finally {
       setLoading(false);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- error wird nur gelesen, nicht als Trigger
   }, []);
 
   useEffect(() => {

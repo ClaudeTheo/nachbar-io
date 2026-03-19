@@ -1,5 +1,6 @@
 // __tests__/api/alerts.test.ts
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+import type { NextRequest } from 'next/server';
 
 // Mocks
 const mockGetUser = vi.fn();
@@ -67,7 +68,7 @@ describe('POST /api/alerts', () => {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({}),
     });
-    const res = await POST(req as any);
+    const res = await POST(req as unknown as NextRequest);
     expect(res.status).toBe(401);
   });
 
@@ -80,7 +81,7 @@ describe('POST /api/alerts', () => {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ category: 'invalid', title: 'Test Alert' }),
     });
-    const res = await POST(req as any);
+    const res = await POST(req as unknown as NextRequest);
     expect(res.status).toBe(400);
   });
 
@@ -93,7 +94,7 @@ describe('POST /api/alerts', () => {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ category: 'noise', title: 'AB' }),
     });
-    const res = await POST(req as any);
+    const res = await POST(req as unknown as NextRequest);
     expect(res.status).toBe(400);
   });
 });

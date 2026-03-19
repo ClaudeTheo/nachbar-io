@@ -43,7 +43,9 @@ export default function ConsultationsPage() {
   }, []);
 
   useEffect(() => {
-    loadSlots();
+    // Initiales Laden — setState in async Callback ist gewollt
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    void loadSlots();
   }, [loadSlots]);
 
   // Gefilterte Slots nach Tab

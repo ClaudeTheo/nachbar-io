@@ -200,7 +200,6 @@ export async function POST(request: NextRequest) {
 
 // Plan-spezifische Ressourcen erstellen (org_member, doctor_profile etc.)
 // Wird von Checkout (Early Adopter) und Webhook (Stripe) aufgerufen
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function provisionPlanResources(
   adminDb: ReturnType<typeof getAdminSupabase>,
   userId: string,

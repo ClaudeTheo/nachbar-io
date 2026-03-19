@@ -60,7 +60,8 @@ export function useGpioBridge(): UseGpioBridgeReturn {
     }
   }, []);
 
-  // Verbindung herstellen
+  // Verbindung herstellen (connectRef fuer rekursiven Reconnect)
+  const connectRef = useRef<() => void>(() => {});
   const connect = useCallback(() => {
     // Verhindern, dass mehrere Verbindungen gleichzeitig laufen
     if (wsRef.current?.readyState === WebSocket.OPEN ||
@@ -106,7 +107,7 @@ export function useGpioBridge(): UseGpioBridgeReturn {
         console.debug(`[GPIO-Bridge] Reconnect in ${delay}ms...`);
 
         reconnectTimeoutRef.current = setTimeout(() => {
-          if (mountedRef.current) connect();
+          if (mountedRef.current) connectRef.current();
         }, delay);
       };
 
@@ -124,6 +125,7 @@ export function useGpioBridge(): UseGpioBridgeReturn {
 
   // Verbindung bei Mount, Cleanup bei Unmount
   useEffect(() => {
+    connectRef.current = connect;
     mountedRef.current = true;
     connect();
 

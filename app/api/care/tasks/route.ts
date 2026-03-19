@@ -24,7 +24,7 @@ export async function GET(request: NextRequest) {
   const sub = await requireSubscription(auth.supabase, auth.user.id, 'plus');
   if (sub instanceof NextResponse) return sub;
 
-  const { supabase, user } = auth;
+  const { supabase } = auth;
 
   const { searchParams } = request.nextUrl;
   const status = searchParams.get('status') ?? 'open';

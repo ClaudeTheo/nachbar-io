@@ -18,7 +18,7 @@ test.describe("Videosprechstunde", () => {
     await expect(page.getByText("Vergangene")).toBeVisible();
   });
 
-  test("Termin-Verhandlung: Vorschlag → Gegenvorschlag → Bestätigung", async ({ page }) => {
+  test("Termin-Verhandlung: Vorschlag → Gegenvorschlag → Bestätigung", async ({ page: _page }) => {
     // Dieser Test braucht Auth-Setup und Test-Daten
     // Implementierung haengt von bestehendem E2E-Auth-Setup ab
     test.skip();

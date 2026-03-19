@@ -14,7 +14,7 @@ vi.mock('next/headers', () => ({
 }));
 
 // Chainable Supabase-Query-Builder
-function createChainableMock(resolvedValue: { data: unknown; error: unknown }) {
+function _createChainableMock(resolvedValue: { data: unknown; error: unknown }) {
   const chain: Record<string, ReturnType<typeof vi.fn>> = {};
   const methods = ['from', 'select', 'insert', 'update', 'eq', 'is', 'single'];
   for (const method of methods) {

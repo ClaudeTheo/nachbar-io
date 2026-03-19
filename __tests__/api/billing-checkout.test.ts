@@ -1,5 +1,6 @@
 // __tests__/api/billing-checkout.test.ts
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+import type { NextRequest } from 'next/server';
 
 // Mocks
 const mockGetUser = vi.fn();
@@ -11,7 +12,7 @@ vi.mock('@/lib/supabase/server', () => ({
 }));
 
 // Admin Supabase Mock (fuer Early-Adopter-Check)
-const mockCountResult = vi.fn();
+const _mockCountResult = vi.fn();
 vi.mock('@supabase/supabase-js', () => ({
   createClient: vi.fn(() => ({
     from: vi.fn(() => ({
@@ -61,7 +62,7 @@ describe('POST /api/billing/checkout', () => {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ planType: 'plus' }),
     });
-    const res = await POST(req as any);
+    const res = await POST(req as unknown as NextRequest);
     expect(res.status).toBe(401);
   });
 
@@ -74,7 +75,7 @@ describe('POST /api/billing/checkout', () => {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ planType: 'premium_gold' }),
     });
-    const res = await POST(req as any);
+    const res = await POST(req as unknown as NextRequest);
     expect(res.status).toBe(400);
     const body = await res.json();
     expect(body.error).toContain('Plan');
@@ -89,7 +90,7 @@ describe('POST /api/billing/checkout', () => {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ planType: 'pro_community' }),
     });
-    const res = await POST(req as any);
+    const res = await POST(req as unknown as NextRequest);
     expect(res.status).toBe(400);
     const body = await res.json();
     expect(body.error).toContain('quarterId');
@@ -102,7 +103,7 @@ describe('POST /api/billing/checkout', () => {
     const req = new Request('http://localhost/api/billing/checkout', {
       method: 'POST',
     });
-    const res = await POST(req as any);
+    const res = await POST(req as unknown as NextRequest);
     expect(res.status).toBe(400);
   });
 });

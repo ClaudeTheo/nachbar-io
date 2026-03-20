@@ -1,11 +1,13 @@
 "use client";
 
-import { Clock, MapPin, User } from "lucide-react";
+import { Clock, MapPin, User } from "@phosphor-icons/react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ReputationBadge } from "@/components/ReputationBadge";
+import { CategoryIcon } from "@/components/CategoryIcon";
 import { ALERT_CATEGORIES } from "@/lib/constants";
+import { ALERT_ICON_MAP, FALLBACK_ICON } from "@/lib/category-icons";
 import type { Alert } from "@/lib/supabase/types";
 import { formatDistanceToNow } from "date-fns";
 import { de } from "date-fns/locale";
@@ -46,15 +48,19 @@ export function AlertCard({ alert, onHelp, onView, compact = false, reputationLe
       <CardContent className={compact ? "p-3" : "p-4"}>
         <div className="flex items-start gap-3">
           {/* Kategorie-Icon mit Puls bei offenen Alerts */}
-          <div
-            className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-lg text-2xl ${
-              alert.status === "open"
-                ? "bg-alert-amber/10 animate-pulse-alert"
-                : "bg-muted"
-            }`}
-          >
-            {category?.icon ?? "❓"}
-          </div>
+          {(() => {
+            const iconConfig = ALERT_ICON_MAP[alert.category] ?? FALLBACK_ICON;
+            const isOpen = alert.status === "open";
+            return (
+              <CategoryIcon
+                icon={iconConfig.icon}
+                bgColor={isOpen ? iconConfig.bgColor : "bg-muted"}
+                iconColor={isOpen ? iconConfig.iconColor : "text-muted-foreground"}
+                size="lg"
+                className={isOpen ? "animate-pulse-alert" : ""}
+              />
+            );
+          })()}
 
           {/* Inhalt */}
           <div className="min-w-0 flex-1">
@@ -77,17 +83,17 @@ export function AlertCard({ alert, onHelp, onView, compact = false, reputationLe
             <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
               {alert.household && (
                 <span className="flex items-center gap-1">
-                  <MapPin className="h-3 w-3" />
+                  <MapPin size={12} />
                   {alert.household.street_name} {alert.household.house_number}
                 </span>
               )}
               <span className="flex items-center gap-1">
-                <Clock className="h-3 w-3" />
+                <Clock size={12} />
                 {timeAgo}
               </span>
               {alert.user && (
                 <span className="flex items-center gap-1">
-                  <User className="h-3 w-3" />
+                  <User size={12} />
                   {alert.user.display_name}
                   {reputationLevel && reputationLevel >= 2 && (
                     <ReputationBadge level={reputationLevel} size="sm" />

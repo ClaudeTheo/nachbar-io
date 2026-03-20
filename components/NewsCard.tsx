@@ -1,8 +1,10 @@
 "use client";
 
-import { ExternalLink } from "lucide-react";
+import { ArrowSquareOut } from "@phosphor-icons/react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { CategoryIcon } from "@/components/CategoryIcon";
+import { NEWS_ICON_MAP, FALLBACK_ICON } from "@/lib/category-icons";
 import type { NewsItem } from "@/lib/supabase/types";
 import { format } from "date-fns";
 import { de } from "date-fns/locale";
@@ -45,9 +47,17 @@ export function NewsCard({ item }: NewsCardProps) {
     <Card className="card-interactive shadow-soft">
       <CardContent className="p-4">
         <div className="flex items-start gap-3">
-          <span className="text-2xl" aria-hidden="true">
-            {cat.icon}
-          </span>
+          {(() => {
+            const iconConfig = NEWS_ICON_MAP[item.category] ?? FALLBACK_ICON;
+            return (
+              <CategoryIcon
+                icon={iconConfig.icon}
+                bgColor={iconConfig.bgColor}
+                iconColor={iconConfig.iconColor}
+                size="md"
+              />
+            );
+          })()}
           <div className="min-w-0 flex-1">
             <div className="mb-1 flex items-center gap-2 flex-wrap">
               <Badge variant="secondary" className="text-xs">
@@ -70,7 +80,7 @@ export function NewsCard({ item }: NewsCardProps) {
                 className="mt-2 inline-flex items-center gap-1 text-xs text-info-blue hover:underline"
                 onClick={(e) => e.stopPropagation()}
               >
-                <ExternalLink className="h-3 w-3" />
+                <ArrowSquareOut size={12} />
                 Originalquelle
               </a>
             )}

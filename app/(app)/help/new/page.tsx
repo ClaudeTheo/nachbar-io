@@ -8,7 +8,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { HELP_CATEGORIES, HELP_SUBCATEGORIES } from "@/lib/constants";
+import { HELP_CATEGORIES, HELP_SUBCATEGORIES, HELP_EXPIRY_DAYS } from "@/lib/constants";
 import { createClient } from "@/lib/supabase/client";
 import { useQuarter } from "@/lib/quarters";
 
@@ -80,6 +80,10 @@ export default function NewHelpPage() {
         return;
       }
 
+      // Auto-Expire basierend auf Kategorie-Dringlichkeit
+      const expiryDays = HELP_EXPIRY_DAYS[category] ?? 3;
+      const expiresAt = new Date(Date.now() + expiryDays * 24 * 60 * 60 * 1000).toISOString();
+
       const { error: insertError } = await supabase.from("help_requests").insert({
         user_id: user.id,
         quarter_id: currentQuarter?.id,
@@ -89,6 +93,7 @@ export default function NewHelpPage() {
         title: title.trim(),
         description: description.trim() || null,
         status: "active",
+        expires_at: expiresAt,
       });
 
       if (insertError) {

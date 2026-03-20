@@ -159,12 +159,12 @@ describe('checkInviteLimit', () => {
     const supabase = createMockSupabase({ count: 2 });
     const result = await checkInviteLimit(supabase as never, 'user-1', 'free');
     expect(result.allowed).toBe(true);
-    expect(result.remaining).toBe(3);
-    expect(result.limit).toBe(5);
+    expect(result.remaining).toBe(13);
+    expect(result.limit).toBe(15);
   });
 
-  it('blockiert wenn Limit erreicht (free = 5)', async () => {
-    const supabase = createMockSupabase({ count: 5 });
+  it('blockiert wenn Limit erreicht (free = 15)', async () => {
+    const supabase = createMockSupabase({ count: 15 });
     const result = await checkInviteLimit(supabase as never, 'user-1', 'free');
     expect(result.allowed).toBe(false);
     expect(result.remaining).toBe(0);

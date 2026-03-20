@@ -147,6 +147,24 @@ export const HELP_SUBCATEGORIES: Record<string, readonly { id: string; label: st
   ],
 } as const;
 
+// Auto-Expire-Tage pro Hilfe-Kategorie (je nach Dringlichkeit)
+// Dringend (1 Tag): Einkaufen, Fahrdienst, Paketannahme
+// Mittel (3 Tage): Garten, Handwerk, IT, Tierbetreuung
+// Langfristig (7 Tage): Kinderbetreuung, Nachhilfe, Gesellschaft, Sonstiges
+export const HELP_EXPIRY_DAYS: Record<string, number> = {
+  shopping: 1,
+  transport: 1,
+  package: 1,
+  garden: 3,
+  handwork: 3,
+  tech: 3,
+  pet_care: 3,
+  childcare: 7,
+  tutoring: 7,
+  company: 7,
+  other: 3,
+};
+
 // Marktplatz-Typen
 export const MARKETPLACE_TYPES = [
   { id: "sell", label: "Verkaufen", icon: "💰" },

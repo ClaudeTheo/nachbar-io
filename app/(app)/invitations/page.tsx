@@ -45,12 +45,21 @@ export default function InvitationsPage() {
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   async function loadInvitations() {
     setLoading(true);
     const supabase = createClient();
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
+
+    // Admin-Status prüfen (kein Einladelimit für Admins)
+    const { data: profile } = await supabase
+      .from("users")
+      .select("is_admin")
+      .eq("id", user.id)
+      .single();
+    if (profile?.is_admin) setIsAdmin(true);
 
     const { data } = await supabase
       .from("neighbor_invitations")
@@ -87,9 +96,9 @@ export default function InvitationsPage() {
   const expiredCount = invitations.filter((i) => i.status === "expired").length;
   const pointsEarned = acceptedCount * 50;
 
-  // Einladelimit: PILOT_MODE hebt Free-Limit auf 50 an
+  // Einladelimit: Admin = unbegrenzt, PILOT_MODE = 50, Free = 15
   const isPilot = process.env.NEXT_PUBLIC_PILOT_MODE === "true";
-  const inviteLimit = isPilot ? 50 : 5;
+  const inviteLimit = isAdmin ? Infinity : isPilot ? 50 : 15;
 
   function getStatusIcon(status: string) {
     switch (status) {

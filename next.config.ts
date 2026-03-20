@@ -24,6 +24,11 @@ const cspDirectives = [
 ];
 
 const nextConfig: NextConfig = {
+  // App-Version aus package.json im Client verfuegbar machen
+  env: {
+    NEXT_PUBLIC_APP_VERSION: process.env.npm_package_version || require("./package.json").version,
+  },
+
   // Next.js-Header nicht exponieren
   poweredByHeader: false,
 

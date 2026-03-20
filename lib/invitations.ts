@@ -30,7 +30,7 @@ export interface InviteResult {
 
 // Rate-Limits je Plan
 const INVITE_LIMITS: Record<string, number> = {
-  free: 5,
+  free: 15,
   plus: 50,
   pro_community: 200,
   pro_medical: 200,
@@ -40,16 +40,27 @@ const PILOT_MODE = process.env.NEXT_PUBLIC_PILOT_MODE === 'true';
 
 /**
  * Prueft wie viele offene Einladungen ein Nutzer hat und ob das Limit erreicht ist.
- * PILOT_MODE: Free-Limit wird auf 50 angehoben.
+ * Admin = unbegrenzt, PILOT_MODE = min. 50, sonst planbasiert.
  */
 export async function checkInviteLimit(
   supabase: SupabaseClient,
   userId: string,
   userPlan: string
 ): Promise<{ allowed: boolean; remaining: number; limit: number }> {
+  // Admin hat kein Limit
+  const { data: profile } = await supabase
+    .from('users')
+    .select('is_admin')
+    .eq('id', userId)
+    .single();
+
+  if (profile?.is_admin) {
+    return { allowed: true, remaining: 9999, limit: 9999 };
+  }
+
   const limit = PILOT_MODE
-    ? Math.max(INVITE_LIMITS[userPlan] ?? 5, 50)
-    : (INVITE_LIMITS[userPlan] ?? 5);
+    ? Math.max(INVITE_LIMITS[userPlan] ?? 15, 50)
+    : (INVITE_LIMITS[userPlan] ?? 15);
 
   const { count } = await supabase
     .from('neighbor_invitations')

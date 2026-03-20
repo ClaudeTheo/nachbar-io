@@ -319,6 +319,12 @@ export interface CommunityTip {
   created_at: string;
   user?: Pick<User, "display_name" | "avatar_url">;
   my_confirmation?: boolean;
+  // Handwerker-Erweiterungen (nur bei category = 'craftsmen')
+  phone?: string | null;
+  email?: string | null;
+  service_area?: string | null;
+  service_radius_km?: number | null;
+  subcategories?: string[];
 }
 
 export interface TipConfirmation {
@@ -326,6 +332,50 @@ export interface TipConfirmation {
   tip_id: string;
   user_id: string;
   created_at: string;
+}
+
+// Handwerker-Empfehlung (Ja/Nein + Aspekte)
+export interface CraftsmanRecommendation {
+  id: string;
+  tip_id: string;
+  user_id: string;
+  recommends: boolean;
+  confirmed_usage: boolean;
+  aspects: CraftsmanAspects | null;
+  comment: string | null;
+  created_at: string;
+  updated_at: string;
+  user?: Pick<User, "display_name" | "avatar_url">;
+  same_street?: boolean; // Query-time abgeleitet, nie gespeichert
+}
+
+export interface CraftsmanAspects {
+  quality?: number;      // 1-5
+  price?: number;        // 1-5
+  punctuality?: number;  // 1-5
+  cleanliness?: number;  // 1-5
+}
+
+// Nutzungs-Event (mehrfach pro User pro Handwerker)
+export interface CraftsmanUsageEvent {
+  id: string;
+  tip_id: string;
+  user_id: string;
+  used_at: string;
+  note: string | null;
+  created_at: string;
+}
+
+// Trust-Score (berechnet, nicht gespeichert)
+export interface CraftsmanTrustScore {
+  total_recommendations: number;
+  positive_recommendations: number;
+  weighted_score: number;           // 0.0 - 1.0
+  display_score: number;            // z.B. 8 (von 10)
+  has_minimum: boolean;             // >= 3 Empfehlungen
+  total_usage_events: number;
+  last_used_at: string | null;
+  unique_users_count: number;
 }
 
 // Karten-Konfiguration (Admin Map Editor)

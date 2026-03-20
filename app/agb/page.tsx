@@ -192,6 +192,23 @@ export default function AGBPage() {
             </p>
           </section>
 
+          {/* 5.5 Einwilligung Care-Modul */}
+          <section>
+            <h3 className="mb-1 font-semibold text-anthrazit">
+              5.5 Einwilligung für das Care-Modul
+            </h3>
+            <p>
+              Die Nutzung des Care-Moduls (Pflege & Seniorenhilfe) erfordert Ihre
+              ausdrückliche Einwilligung in die Verarbeitung von Gesundheitsdaten
+              gemäß Art. 9 DSGVO. Sie können für einzelne Bereiche
+              (SOS-Hilferufe, Check-in, Medikamente, Pflegeprofil, Notfallkontakte)
+              getrennt einwilligen. Details finden Sie in unserer{' '}
+              <a href="/datenschutz" className="text-quartier-green underline">
+                Datenschutzerklärung §5.9
+              </a>.
+            </p>
+          </section>
+
           {/* 6. Verfügbarkeit */}
           <section>
             <h2 className="mb-2 text-lg font-semibold text-anthrazit">

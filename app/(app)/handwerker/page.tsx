@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Plus, Search } from "lucide-react";
 import { CRAFTSMAN_SUBCATEGORIES } from "@/lib/constants";
@@ -67,30 +67,29 @@ function HandwerkerContent() {
   }, [searchQuery]);
 
   // Daten laden
-  const load = useCallback(async () => {
-    setLoading(true);
-    try {
-      const result = await loadCraftsmenList({
-        subcategory: filterSubcategory,
-        search: debouncedSearch || null,
-        page,
-        pageSize: PAGE_SIZE,
-      });
-      setTips(result.data);
-      setHasMore(result.hasMore);
-
-      // Trust-Scores berechnen
-      const scores = await loadTrustScores(result.data);
-      setTrustScores(scores);
-    } catch (err) {
-      console.error("Handwerker laden fehlgeschlagen:", err);
-    }
-    setLoading(false);
-  }, [filterSubcategory, debouncedSearch, page]);
-
   useEffect(() => {
+    async function load() {
+      setLoading(true);
+      try {
+        const result = await loadCraftsmenList({
+          subcategory: filterSubcategory,
+          search: debouncedSearch || null,
+          page,
+          pageSize: PAGE_SIZE,
+        });
+        setTips(result.data);
+        setHasMore(result.hasMore);
+
+        // Trust-Scores berechnen
+        const scores = await loadTrustScores(result.data);
+        setTrustScores(scores);
+      } catch (err) {
+        console.error("Handwerker laden fehlgeschlagen:", err);
+      }
+      setLoading(false);
+    }
     load();
-  }, [load]);
+  }, [filterSubcategory, debouncedSearch, page]);
 
   // Filter-Reset bei Suche/Kategorie
   const handleSubcategoryFilter = (subcatId: string) => {

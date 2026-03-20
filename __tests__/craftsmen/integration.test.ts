@@ -6,6 +6,7 @@ import {
 } from "@/lib/craftsmen/trust-score";
 import { validateSubcategories } from "@/lib/craftsmen/hooks";
 import { CRAFTSMAN_SUBCATEGORIES, TRUST_SCORE_CONFIG } from "@/lib/constants";
+import type { CraftsmanTrustScore } from "@/lib/supabase/types";
 
 describe("Handwerker-Portal Integration", () => {
   describe("Trust-Score End-to-End Pipeline", () => {
@@ -169,22 +170,22 @@ describe("Handwerker-Portal Integration", () => {
 
   describe("formatTrustDisplay alle Varianten", () => {
     it("positive: >= 0.8", () => {
-      expect(formatTrustDisplay({ has_minimum: true, weighted_score: 0.8, display_score: 8, total_recommendations: 5 } as any).variant).toBe("positive");
-      expect(formatTrustDisplay({ has_minimum: true, weighted_score: 1.0, display_score: 10, total_recommendations: 5 } as any).variant).toBe("positive");
+      expect(formatTrustDisplay({ has_minimum: true, weighted_score: 0.8, display_score: 8, total_recommendations: 5 } as CraftsmanTrustScore).variant).toBe("positive");
+      expect(formatTrustDisplay({ has_minimum: true, weighted_score: 1.0, display_score: 10, total_recommendations: 5 } as CraftsmanTrustScore).variant).toBe("positive");
     });
 
     it("neutral: 0.5-0.79", () => {
-      expect(formatTrustDisplay({ has_minimum: true, weighted_score: 0.5, display_score: 5, total_recommendations: 5 } as any).variant).toBe("neutral");
-      expect(formatTrustDisplay({ has_minimum: true, weighted_score: 0.79, display_score: 8, total_recommendations: 5 } as any).variant).toBe("neutral");
+      expect(formatTrustDisplay({ has_minimum: true, weighted_score: 0.5, display_score: 5, total_recommendations: 5 } as CraftsmanTrustScore).variant).toBe("neutral");
+      expect(formatTrustDisplay({ has_minimum: true, weighted_score: 0.79, display_score: 8, total_recommendations: 5 } as CraftsmanTrustScore).variant).toBe("neutral");
     });
 
     it("low: < 0.5", () => {
-      expect(formatTrustDisplay({ has_minimum: true, weighted_score: 0.49, display_score: 5, total_recommendations: 5 } as any).variant).toBe("low");
-      expect(formatTrustDisplay({ has_minimum: true, weighted_score: 0.0, display_score: 0, total_recommendations: 5 } as any).variant).toBe("low");
+      expect(formatTrustDisplay({ has_minimum: true, weighted_score: 0.49, display_score: 5, total_recommendations: 5 } as CraftsmanTrustScore).variant).toBe("low");
+      expect(formatTrustDisplay({ has_minimum: true, weighted_score: 0.0, display_score: 0, total_recommendations: 5 } as CraftsmanTrustScore).variant).toBe("low");
     });
 
     it("muted: has_minimum = false", () => {
-      expect(formatTrustDisplay({ has_minimum: false } as any).variant).toBe("muted");
+      expect(formatTrustDisplay({ has_minimum: false } as CraftsmanTrustScore).variant).toBe("muted");
     });
   });
 });

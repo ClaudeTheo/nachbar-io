@@ -23,7 +23,6 @@ vi.mock("@/lib/supabase/client", () => ({
 
 import {
   loadCraftsmenList,
-  loadCraftsmanDetail,
   submitRecommendation,
   logUsageEvent,
 } from "@/lib/craftsmen/hooks";
@@ -38,7 +37,7 @@ describe("loadCraftsmenList", () => {
       order: vi.fn().mockReturnThis(),
       range: vi.fn().mockResolvedValue({ data: [], error: null }),
     };
-    mockFrom.mockReturnValue(mockChain);
+    mockFrom.mockReturnValue(mockChain as unknown as ReturnType<typeof mockFrom>);
 
     await loadCraftsmenList({});
     expect(mockFrom).toHaveBeenCalledWith("community_tips");
@@ -52,10 +51,24 @@ describe("submitRecommendation", () => {
 
   it("validiert subcategories gegen erlaubte IDs", async () => {
     mockGetUser.mockResolvedValue({ data: { user: { id: "u1" } } });
-    const mockChain = {
+    const recChain = {
       upsert: vi.fn().mockResolvedValue({ error: null }),
+      select: vi.fn().mockReturnValue({
+        eq: vi.fn().mockReturnValue({
+          eq: vi.fn().mockReturnValue({
+            maybeSingle: vi.fn().mockResolvedValue({ data: null }),
+          }),
+        }),
+      }),
     };
-    mockFrom.mockReturnValue(mockChain);
+    const reputationChain = {
+      insert: vi.fn().mockResolvedValue({ error: null }),
+    };
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    mockFrom.mockImplementation(((table: string) => {
+      if (table === "reputation_points") return reputationChain;
+      return recChain;
+    }) as any);
 
     await submitRecommendation({
       tipId: "t1",
@@ -66,7 +79,7 @@ describe("submitRecommendation", () => {
     });
 
     expect(mockFrom).toHaveBeenCalledWith("craftsman_recommendations");
-    expect(mockChain.upsert).toHaveBeenCalledWith(
+    expect(recChain.upsert).toHaveBeenCalledWith(
       expect.objectContaining({
         tip_id: "t1",
         recommends: true,
@@ -85,7 +98,7 @@ describe("logUsageEvent", () => {
     const mockChain = {
       insert: vi.fn().mockResolvedValue({ error: null }),
     };
-    mockFrom.mockReturnValue(mockChain);
+    mockFrom.mockReturnValue(mockChain as unknown as ReturnType<typeof mockFrom>);
 
     await logUsageEvent({ tipId: "t1", note: "Badezimmer renoviert" });
 

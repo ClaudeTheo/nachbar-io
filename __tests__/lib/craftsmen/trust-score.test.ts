@@ -5,6 +5,7 @@ import {
   formatTrustDisplay,
   type TrustScoreInput,
 } from "@/lib/craftsmen/trust-score";
+import type { CraftsmanTrustScore } from "@/lib/supabase/types";
 
 describe("calculateTrustScore", () => {
   it("gibt has_minimum=false bei weniger als 3 Empfehlungen", () => {
@@ -97,7 +98,7 @@ describe("calculateTrustScore", () => {
 
 describe("formatTrustDisplay", () => {
   it("zeigt 'Noch wenige Bewertungen' unter Minimum", () => {
-    const result = formatTrustDisplay({ has_minimum: false } as any);
+    const result = formatTrustDisplay({ has_minimum: false } as CraftsmanTrustScore);
     expect(result.label).toBe("Noch wenige Bewertungen");
     expect(result.variant).toBe("muted");
   });
@@ -108,7 +109,7 @@ describe("formatTrustDisplay", () => {
       display_score: 9,
       weighted_score: 0.9,
       total_recommendations: 10,
-    } as any);
+    } as CraftsmanTrustScore);
     expect(result.label).toBe("9 von 10 Nachbarn empfehlen");
     expect(result.variant).toBe("positive");
   });
@@ -119,7 +120,7 @@ describe("formatTrustDisplay", () => {
       display_score: 6,
       weighted_score: 0.6,
       total_recommendations: 10,
-    } as any);
+    } as CraftsmanTrustScore);
     expect(result.variant).toBe("neutral");
   });
 
@@ -129,7 +130,7 @@ describe("formatTrustDisplay", () => {
       display_score: 3,
       weighted_score: 0.3,
       total_recommendations: 10,
-    } as any);
+    } as CraftsmanTrustScore);
     expect(result.variant).toBe("low");
   });
 });

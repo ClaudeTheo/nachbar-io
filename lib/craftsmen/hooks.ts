@@ -8,7 +8,7 @@ import type {
   CraftsmanAspects,
 } from "@/lib/supabase/types";
 
-const VALID_SUBCATEGORY_IDS = new Set(CRAFTSMAN_SUBCATEGORIES.map((s) => s.id));
+const VALID_SUBCATEGORY_IDS = new Set<string>(CRAFTSMAN_SUBCATEGORIES.map((s) => s.id));
 
 // Subcategory-Validierung
 export function validateSubcategories(ids: string[]): string[] {

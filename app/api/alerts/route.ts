@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { getUserQuarterId } from "@/lib/quarters/helpers";
+import { validateLocationData } from "@/lib/alerts/validate-location";
 
 // GET /api/alerts — Alle aktiven Alerts abrufen (authentifiziert)
 export async function GET() {
@@ -49,7 +50,7 @@ export async function POST(request: NextRequest) {
   } catch {
     return NextResponse.json({ error: "Ungueltiges Anfrage-Format" }, { status: 400 });
   }
-  const { category, title, description, household_id, is_emergency } = body;
+  const { category, title, description, household_id, is_emergency, location_lat, location_lng, location_source } = body;
 
   // Input-Validierung
   const VALID_CATEGORIES = ["noise", "package", "security", "fire", "health_concern", "medical", "crime", "other"];
@@ -62,6 +63,12 @@ export async function POST(request: NextRequest) {
   // SICHERHEIT (H8): Beschreibung begrenzen
   if (description && (typeof description !== "string" || description.length > 2000)) {
     return NextResponse.json({ error: "Beschreibung darf maximal 2000 Zeichen lang sein" }, { status: 400 });
+  }
+
+  // GPS-Validierung
+  const locValidation = validateLocationData(location_lat, location_lng, location_source);
+  if (!locValidation.valid) {
+    return NextResponse.json({ error: locValidation.error }, { status: 400 });
   }
 
   // Household-Ownership pruefen (falls angegeben)
@@ -89,6 +96,9 @@ export async function POST(request: NextRequest) {
       category,
       title,
       description: description || null,
+      location_lat: location_source && location_source !== "none" ? location_lat : null,
+      location_lng: location_source && location_source !== "none" ? location_lng : null,
+      location_source: location_source || "none",
       status: "open",
       is_emergency: is_emergency || false,
       current_radius: 1,

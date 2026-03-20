@@ -3,9 +3,10 @@
 
 import { useEffect, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
-import { Heart, AlertTriangle, Clock, ArrowRight, Pill, CalendarDays, Users, FileText, CreditCard, ScrollText, BarChart3, UserCog } from 'lucide-react';
+import { Heart, AlertTriangle, Clock, ArrowRight, Pill, CalendarDays, Users, FileText, CreditCard, ScrollText, BarChart3, UserCog, Shield } from 'lucide-react';
 import Link from 'next/link';
 import { SosButton } from '@/components/care/SosButton';
+import { CareConsentGate } from '@/components/care/CareConsentGate';
 import { SosAlertCard } from '@/components/care/SosAlertCard';
 import type { CareSosAlert, CareAppointment, CareSubscriptionPlan, CareHelperRole } from '@/lib/care/types';
 import { PLAN_FEATURES } from '@/lib/care/constants';
@@ -180,6 +181,7 @@ export default function CareDashboardPage() {
   }
 
   return (
+    <CareConsentGate>
     <div className="px-4 py-6 space-y-6">
       {/* Header */}
       <div>
@@ -456,6 +458,13 @@ export default function CareDashboardPage() {
             Profil
           </Link>
           <Link
+            href="/care/consent"
+            className="rounded-lg border bg-card p-3 text-sm font-medium text-anthrazit hover:bg-gray-50 flex items-center gap-2"
+          >
+            <Shield className="h-4 w-4 text-quartier-green" />
+            Einwilligungen
+          </Link>
+          <Link
             href="/care/subscription"
             className="rounded-lg border bg-card p-3 text-sm font-medium text-anthrazit hover:bg-gray-50 flex items-center gap-2"
           >
@@ -491,5 +500,6 @@ export default function CareDashboardPage() {
         </p>
       </div>
     </div>
+    </CareConsentGate>
   );
 }

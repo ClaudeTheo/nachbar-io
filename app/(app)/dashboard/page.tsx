@@ -4,12 +4,15 @@ import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Bell, ChevronRight, Plus, UserPlus } from "lucide-react";
+import { CategoryIcon } from "@/components/CategoryIcon";
+import { GREETING_ICON_MAP } from "@/lib/category-icons";
 import { AlertCard } from "@/components/AlertCard";
 import { NewsCard } from "@/components/NewsCard";
 import { PullToRefresh } from "@/components/PullToRefresh";
 import { ReputationBadge } from "@/components/ReputationBadge";
 import { ProfileCompletionBanner } from "@/components/ProfileCompletionBanner";
 import { FloatingHelpButton } from "@/components/FloatingHelpButton";
+import { HeroCard } from "@/components/HeroCard";
 import { InviteNeighborModal } from "@/components/InviteNeighborModal";
 import { DailyCheckinButton } from "@/components/care/DailyCheckinButton";
 import { RedeemCodeBanner } from "@/components/care/RedeemCodeBanner";
@@ -26,13 +29,13 @@ import { toast } from "sonner";
 import type { Alert, NewsItem, HelpRequest, MarketplaceItem } from "@/lib/supabase/types";
 
 // Tageszeit-abhaengige Begruessung
-function getGreeting(): { text: string; emoji: string } {
+function getGreeting(): { text: string; timeKey: string } {
   const hour = new Date().getHours();
-  if (hour >= 6 && hour < 11) return { text: "Guten Morgen", emoji: "☀️" };
-  if (hour >= 11 && hour < 14) return { text: "Mahlzeit", emoji: "🍴" };
-  if (hour >= 14 && hour < 18) return { text: "Guten Tag", emoji: "🌤️" };
-  if (hour >= 18 && hour < 22) return { text: "Guten Abend", emoji: "🌙" };
-  return { text: "Gute Nacht", emoji: "✨" };
+  if (hour >= 6 && hour < 11) return { text: "Guten Morgen", timeKey: "morning" };
+  if (hour >= 11 && hour < 14) return { text: "Mahlzeit", timeKey: "lunch" };
+  if (hour >= 14 && hour < 18) return { text: "Guten Tag", timeKey: "afternoon" };
+  if (hour >= 18 && hour < 22) return { text: "Guten Abend", timeKey: "evening" };
+  return { text: "Gute Nacht", timeKey: "night" };
 }
 
 export default function DashboardPage() {
@@ -204,18 +207,27 @@ export default function DashboardPage() {
     );
   }
 
+  const greeting = getGreeting();
+  const greetingIcon = GREETING_ICON_MAP[greeting.timeKey];
+
   return (
     <>
     <PullToRefresh onRefresh={loadDashboard}>
     <div className="space-y-6 animate-fade-in-up">
-      {/* Header mit Tageszeit-Gradient */}
-      <div className="-mx-4 -mt-4 mb-2 rounded-b-2xl bg-gradient-to-b from-quartier-green/5 to-transparent px-4 pb-4 pt-4">
+      {/* Hero-Bereich: Begruessung + Check-in */}
+      <HeroCard>
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-anthrazit" data-testid="dashboard-greeting">
+            <h1 className="flex items-center gap-2 text-2xl font-bold text-anthrazit" data-testid="dashboard-greeting">
               {userName ? (
                 <>
-                  {getGreeting().emoji} {getGreeting().text}, {userName}
+                  <CategoryIcon
+                    icon={greetingIcon.icon}
+                    bgColor={greetingIcon.bgColor}
+                    iconColor={greetingIcon.iconColor}
+                    size="lg"
+                  />
+                  {greeting.text}, {userName}
                 </>
               ) : "QuartierApp"}
               {reputationLevel >= 2 && (
@@ -224,7 +236,7 @@ export default function DashboardPage() {
                 </span>
               )}
             </h1>
-            <p className="text-sm text-muted-foreground">Ihr Quartier auf einen Blick</p>
+            <p className="text-sm text-muted-foreground mt-1">Ihr Quartier auf einen Blick</p>
           </div>
           <Link
             href="/notifications"
@@ -240,10 +252,10 @@ export default function DashboardPage() {
             )}
           </Link>
         </div>
-      </div>
-
-      {/* Taeglicher Check-in Button (Care-Modul) */}
-      <DailyCheckinButton />
+        <div className="mt-4">
+          <DailyCheckinButton />
+        </div>
+      </HeroCard>
 
       {/* Einladungs-Code Banner (Caregiver/Plus) */}
       <RedeemCodeBanner />
@@ -307,7 +319,7 @@ export default function DashboardPage() {
                 <Link
                   key={req.id}
                   href={`/help/${req.id}`}
-                  className="card-interactive flex items-center justify-between rounded-lg bg-white p-3 shadow-soft"
+                  className="card-interactive flex items-center justify-between rounded-xl bg-card p-3 shadow-soft"
                 >
                   <div>
                     <p className="font-medium text-anthrazit">{req.title}</p>
@@ -335,7 +347,7 @@ export default function DashboardPage() {
               <Link
                 key={item.id}
                 href={`/marketplace/${item.id}`}
-                className="card-interactive flex items-center justify-between rounded-lg bg-white p-3 shadow-soft"
+                className="card-interactive flex items-center justify-between rounded-xl bg-card p-3 shadow-soft"
               >
                 <div>
                   <p className="font-medium text-anthrazit">{item.title}</p>
@@ -493,15 +505,15 @@ export default function DashboardPage() {
 // Section-Header Komponente
 function SectionHeader({ title, href, count }: { title: string; href: string; count?: number }) {
   return (
-    <div className="mb-2 flex items-center justify-between">
-      <h2 className="font-semibold text-anthrazit">
+    <div className="mb-3 flex items-center justify-between">
+      <h2 className="text-lg font-bold text-anthrazit">
         {title}
         {count !== undefined && count > 0 && (
-          <span className="ml-2 text-sm text-alert-amber">({count})</span>
+          <span className="ml-2 text-sm font-normal text-alert-amber">({count})</span>
         )}
       </h2>
-      <Link href={href} className="flex items-center text-xs text-quartier-green hover:underline">
-        Alle anzeigen <ChevronRight className="h-3 w-3" />
+      <Link href={href} className="flex items-center text-sm font-semibold text-quartier-green hover:underline">
+        Alle anzeigen <ChevronRight className="h-3.5 w-3.5" />
       </Link>
     </div>
   );

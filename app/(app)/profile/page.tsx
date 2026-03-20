@@ -190,6 +190,19 @@ export default function ProfilePage() {
           <Separator />
 
           <Link
+            href="/profile/location"
+            className="flex items-center justify-between p-4 hover:bg-muted/50"
+          >
+            <div className="flex items-center gap-3">
+              <MapPin className="h-5 w-5 text-muted-foreground" />
+              <span>Standortfreigabe bei Hilferufen</span>
+            </div>
+            <ChevronRight className="h-4 w-4 text-muted-foreground" />
+          </Link>
+
+          <Separator />
+
+          <Link
             href="/profile/vacation"
             className="flex items-center justify-between p-4 hover:bg-muted/50"
           >

@@ -2,17 +2,17 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { House, MapTrifold, HandHeart, Heartbeat, ChatCircle, UserCircle } from "@phosphor-icons/react";
+import { Home, Map, AlertTriangle, Heart, Bell, User } from "lucide-react";
 import { useUnreadCount } from "@/lib/useUnreadCount";
 import { haptic } from "@/lib/haptics";
 
 const navItems = [
-  { href: "/dashboard", label: "Home", icon: House },
-  { href: "/map", label: "Karte", icon: MapTrifold },
-  { href: "/alerts/new", label: "Hilfe", icon: HandHeart },
-  { href: "/care", label: "Pflege", icon: Heartbeat },
-  { href: "/notifications", label: "Inbox", icon: ChatCircle },
-  { href: "/profile", label: "Profil", icon: UserCircle },
+  { href: "/dashboard", label: "Home", icon: Home },
+  { href: "/map", label: "Karte", icon: Map },
+  { href: "/alerts/new", label: "Hilfe", icon: AlertTriangle },
+  { href: "/care", label: "Pflege", icon: Heart },
+  { href: "/notifications", label: "Inbox", icon: Bell },
+  { href: "/profile", label: "Profil", icon: User },
 ];
 
 export function BottomNav() {
@@ -45,13 +45,11 @@ export function BottomNav() {
             >
               <div className="relative">
                 <Icon
-                  size={20}
-                  weight={isActive ? "duotone" : "regular"}
-                  className={
+                  className={`h-5 w-5 ${
                     item.href === "/alerts/new" && !isActive
                       ? "text-alert-amber"
                       : ""
-                  }
+                  }`}
                 />
                 {item.href === "/notifications" && unreadCount > 0 && (
                   <span className="animate-badge-pop absolute -right-2 -top-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-emergency-red text-[10px] font-bold text-white">

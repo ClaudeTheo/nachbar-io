@@ -39,6 +39,9 @@ export default function AppLayout({
           </TestModeProvider>
         </ExternalLinkProvider>
       </QuarterProvider>
+      <span className="fixed bottom-[68px] left-2 text-[10px] text-muted-foreground/40 z-10">
+        V{process.env.NEXT_PUBLIC_APP_VERSION?.split('.').slice(0, 2).join('.')}
+      </span>
       <BottomNav />
       <InstallPrompt />
     </div>

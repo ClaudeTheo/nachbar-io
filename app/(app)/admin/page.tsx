@@ -22,7 +22,7 @@ import type { Alert, User, Household } from "@/lib/supabase/types";
 // Tab-Gruppen
 const SYSTEM_TAB_VALUES = [
   "push", "codes", "map", "quarters", "system",
-  "external", "database", "api", "devops", "tests", "flags", "kpi", "bugs",
+  "external", "database", "api", "devops", "tests", "flags", "kpi",
 ] as const;
 
 // Admin-Komponenten
@@ -311,7 +311,7 @@ export default function AdminPage() {
               <SelectValue placeholder="System & Werkzeuge..." />
             </div>
           </SelectTrigger>
-          <SelectContent>
+          <SelectContent alignItemWithTrigger={false}>
             <SelectGroup>
               <SelectLabel>System & Werkzeuge</SelectLabel>
               <SelectItem value="push"><Megaphone className="h-3.5 w-3.5 text-muted-foreground" />Push</SelectItem>
@@ -326,10 +326,22 @@ export default function AdminPage() {
               <SelectItem value="tests"><ClipboardList className="h-3.5 w-3.5 text-muted-foreground" />Tests</SelectItem>
               <SelectItem value="flags"><Settings2 className="h-3.5 w-3.5 text-muted-foreground" />Feature Flags</SelectItem>
               <SelectItem value="kpi"><BarChart3 className="h-3.5 w-3.5 text-muted-foreground" />KPI-Dashboard</SelectItem>
-              <SelectItem value="bugs"><AlertTriangle className="h-3.5 w-3.5 text-muted-foreground" />Bug-Reports</SelectItem>
             </SelectGroup>
           </SelectContent>
         </Select>
+
+        {/* Bug-Reports als eigener Button (base-ui Select hat 12-Item-Limit) */}
+        <button
+          onClick={() => setActiveTab("bugs")}
+          className={`flex w-full items-center gap-2 rounded-lg border px-3 py-1.5 text-xs transition-colors ${
+            activeTab === "bugs"
+              ? "border-alert-amber bg-alert-amber/10 text-alert-amber font-medium"
+              : "border-input bg-transparent text-muted-foreground hover:bg-muted/50"
+          }`}
+        >
+          <AlertTriangle className="h-3.5 w-3.5" />
+          Bug-Reports
+        </button>
       </div>
 
       {/* QuarterWizard Dialog (fuer Super-Admins) */}

@@ -488,7 +488,15 @@ export function TestModeProvider({ children }: { children: ReactNode }) {
         timestamp: new Date().toISOString(),
       };
 
-      // 4. Bug-Report in DB speichern
+      // 4. Admin-Check: eigene Reports direkt freigeben
+      const { data: profileCheck } = await supabase
+        .from("users")
+        .select("is_admin")
+        .eq("id", user.id)
+        .single();
+      const isAdmin = profileCheck?.is_admin === true;
+
+      // 5. Bug-Report in DB speichern
       const { error: insertError } = await supabase
         .from("bug_reports")
         .insert({
@@ -501,6 +509,7 @@ export function TestModeProvider({ children }: { children: ReactNode }) {
           browser_info: browserInfo,
           page_meta: pageMeta,
           user_comment: comment?.trim() || null,
+          status: isAdmin ? "approved" : "new",
         });
 
       if (insertError) throw insertError;

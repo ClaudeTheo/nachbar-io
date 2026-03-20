@@ -44,6 +44,7 @@ export function decryptField(value: string | null | undefined): string | null {
 export const CARE_PROFILES_ENCRYPTED_FIELDS = [
   'medical_notes',
   'preferred_hospital',
+  'insurance_number',
 ] as const;
 
 /**

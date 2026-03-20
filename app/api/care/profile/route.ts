@@ -110,6 +110,7 @@ export async function PUT(request: NextRequest) {
     emergency_contacts,
     medical_notes,
     preferred_hospital,
+    insurance_number,
     checkin_times,
     checkin_enabled,
     escalation_config,
@@ -169,6 +170,7 @@ export async function PUT(request: NextRequest) {
   if (emergency_contacts !== undefined) updateData.emergency_contacts = emergency_contacts;
   if (medical_notes !== undefined) updateData.medical_notes = medical_notes || null;
   if (preferred_hospital !== undefined) updateData.preferred_hospital = preferred_hospital || null;
+  if (insurance_number !== undefined) updateData.insurance_number = insurance_number || null;
   if (checkin_times !== undefined) updateData.checkin_times = checkin_times;
   if (checkin_enabled !== undefined) updateData.checkin_enabled = !!checkin_enabled;
   if (escalation_config !== undefined) updateData.escalation_config = escalation_config;

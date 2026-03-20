@@ -143,6 +143,24 @@ describe('Verschluesselte Felder-Konfiguration', () => {
   it('definiert korrekte Felder fuer care_profiles', () => {
     expect(CARE_PROFILES_ENCRYPTED_FIELDS).toContain('medical_notes');
     expect(CARE_PROFILES_ENCRYPTED_FIELDS).toContain('preferred_hospital');
+    expect(CARE_PROFILES_ENCRYPTED_FIELDS).toContain('insurance_number');
+  });
+
+  it('verschluesselt insurance_number im Profil-Kontext (DSFA M3b)', () => {
+    const profile = {
+      user_id: 'user-123',
+      medical_notes: 'Bluthochdruck',
+      preferred_hospital: 'St. Blasien',
+      insurance_number: 'AOK-123456789',
+      care_level: '2',
+    };
+
+    const encrypted = encryptFields(profile, [...CARE_PROFILES_ENCRYPTED_FIELDS]);
+    expect(isEncrypted(encrypted.insurance_number as string)).toBe(true);
+    expect(encrypted.care_level).toBe('2'); // Nicht verschluesselt
+
+    const decrypted = decryptFields(encrypted, [...CARE_PROFILES_ENCRYPTED_FIELDS]);
+    expect(decrypted.insurance_number).toBe('AOK-123456789');
   });
 
   it('definiert korrekte Felder fuer care_medications', () => {

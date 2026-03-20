@@ -40,7 +40,7 @@ export default function AppLayout({
         </ExternalLinkProvider>
       </QuarterProvider>
       <span className="fixed bottom-[68px] left-2 text-[10px] text-muted-foreground/40 z-10">
-        V{process.env.NEXT_PUBLIC_APP_VERSION?.split('.').slice(0, 2).join('.')}
+        V{(process.env.NEXT_PUBLIC_APP_VERSION || '1.0.0').split('.').slice(0, 2).join('.')}
       </span>
       <BottomNav />
       <InstallPrompt />

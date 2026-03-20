@@ -203,6 +203,22 @@ export default function ProfilePage() {
           <Separator />
 
           <Link
+            href="/care/consent"
+            className="flex items-center justify-between p-4 hover:bg-muted/50"
+          >
+            <div className="flex items-center gap-3">
+              <Shield className="h-5 w-5 text-quartier-green" />
+              <div>
+                <p className="font-medium text-anthrazit">Care-Einwilligungen</p>
+                <p className="text-sm text-muted-foreground">Gesundheitsdaten-Einwilligungen verwalten</p>
+              </div>
+            </div>
+            <ChevronRight className="h-4 w-4 text-muted-foreground" />
+          </Link>
+
+          <Separator />
+
+          <Link
             href="/profile/vacation"
             className="flex items-center justify-between p-4 hover:bg-muted/50"
           >

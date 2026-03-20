@@ -53,6 +53,16 @@ export async function GET(request: Request) {
     const html = await pageResponse.text();
     const pdfUrls = extractPdfUrls(html);
 
+    // Neuestes PDF zuerst: nach Jahr + Ausgabenummer absteigend sortieren
+    pdfUrls.sort((a, b) => {
+      const aInfo = parseAmtsblattFilename(a);
+      const bInfo = parseAmtsblattFilename(b);
+      if (!aInfo || !bInfo) return 0;
+      const aKey = `${aInfo.year}_${aInfo.issueNumber}`;
+      const bKey = `${bInfo.year}_${bInfo.issueNumber}`;
+      return bKey.localeCompare(aKey);
+    });
+
     if (pdfUrls.length === 0) {
       console.log(`${LOG_PREFIX} Keine PDF-URLs gefunden`);
       return NextResponse.json({ message: "Keine PDFs gefunden", imported: 0 });
@@ -165,7 +175,7 @@ export async function GET(request: Request) {
           },
           body: JSON.stringify({
             model: "claude-haiku-4-5-20251001",
-            max_tokens: 8000,
+            max_tokens: 16000,
             system: EXTRACTION_SYSTEM_PROMPT,
             messages: [
               { role: "user", content: buildExtractionPrompt(rawText) },

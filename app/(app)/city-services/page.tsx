@@ -329,6 +329,11 @@ export default function CityServicesPage() {
                       <span className="inline-flex items-center gap-0.5 rounded-full bg-gray-100 px-2 py-0.5 text-[10px] font-medium text-anthrazit">
                         {cat.icon} {cat.label}
                       </span>
+                      {a.amtsblatt_issue_id && (
+                        <span className="inline-flex items-center gap-0.5 rounded-full bg-blue-50 px-2 py-0.5 text-[10px] font-medium text-blue-700">
+                          📰 Amtsblatt
+                        </span>
+                      )}
                     </div>
 
                     {/* Titel */}
@@ -372,10 +377,20 @@ export default function CityServicesPage() {
             </div>
           )}
 
-          {/* Disclaimer */}
-          <p className="text-center text-[10px] text-muted-foreground">
-            {DISCLAIMERS.announcements}
-          </p>
+          {/* Disclaimer + Amtsblatt-Link */}
+          <div className="space-y-1 text-center">
+            <p className="text-[10px] text-muted-foreground">
+              {DISCLAIMERS.announcements}
+            </p>
+            <a
+              href="https://www.bad-saeckingen.de/unsere-stadt/stadt-bad-saeckingen/amtsblatt"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1 text-[10px] text-quartier-green hover:underline"
+            >
+              <ExternalLink className="h-3 w-3" /> Original-Amtsblatt auf bad-saeckingen.de
+            </a>
+          </div>
         </div>
       )}
     </div>

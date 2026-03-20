@@ -86,6 +86,10 @@
     {
       "path": "/api/cron/waste-sync",
       "schedule": "0 2 * * *"
+    },
+    {
+      "path": "/api/cron/amtsblatt-sync",
+      "schedule": "0 8 * * 6"
     }
   ],
   "headers": [

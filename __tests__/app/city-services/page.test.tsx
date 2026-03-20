@@ -769,6 +769,8 @@ describe('CityServicesPage — Disclaimers', () => {
     render(<CityServicesPage />);
     fireEvent.click(screen.getByText('Bekanntmachungen'));
     const disclaimer = screen.getByText(DISCLAIMERS.announcements);
-    expect(disclaimer.className).toContain('text-center');
+    // text-center ist auf dem Parent-Wrapper (div), nicht auf dem p-Element
+    const wrapper = disclaimer.closest('div');
+    expect(wrapper?.className).toContain('text-center');
   });
 });

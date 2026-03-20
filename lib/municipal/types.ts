@@ -11,7 +11,7 @@ export type WasteRemindTime = "evening_before" | "morning_of";
 export type ReportCategory = "street" | "lighting" | "greenery" | "waste" | "vandalism" | "other";
 export type ReportStatus = "open" | "acknowledged" | "in_progress" | "resolved";
 
-export type AnnouncementCategory = "verkehr" | "baustelle" | "veranstaltung" | "verwaltung" | "warnung" | "sonstiges";
+export type AnnouncementCategory = "verkehr" | "baustelle" | "veranstaltung" | "verwaltung" | "warnung" | "sonstiges" | "verein" | "soziales" | "entsorgung";
 
 // --- Interfaces ---
 
@@ -187,6 +187,29 @@ export interface MunicipalAnnouncement {
   expires_at: string | null;
   created_at: string;
   updated_at: string;
+  amtsblatt_issue_id: string | null;
   // Joins
   author?: { display_name: string };
+}
+
+// --- Amtsblatt-Integration (Mig. 105) ---
+
+export interface AmtsblattIssue {
+  id: string;
+  quarter_id: string;
+  issue_number: string;
+  issue_date: string; // ISO date
+  pdf_url: string;
+  pages: number | null;
+  extracted_count: number;
+  status: "pending" | "processing" | "done" | "error";
+  error_message: string | null;
+  created_at: string;
+}
+
+/** Struktur einer vom KI extrahierten Amtsblatt-Meldung */
+export interface AmtsblattExtractedItem {
+  title: string;
+  body: string;
+  category: AnnouncementCategory;
 }

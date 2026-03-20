@@ -61,6 +61,9 @@ export const ANNOUNCEMENT_CATEGORIES: {
   { id: "verwaltung", label: "Verwaltung", icon: "🏛️" },
   { id: "warnung", label: "Warnung", icon: "⚠️" },
   { id: "sonstiges", label: "Sonstiges", icon: "📢" },
+  { id: "verein", label: "Verein", icon: "⚽" },
+  { id: "soziales", label: "Soziales", icon: "🤝" },
+  { id: "entsorgung", label: "Entsorgung", icon: "♻️" },
 ] as const;
 
 // --- Quicklink-Kategorien ---
@@ -89,5 +92,6 @@ export const DISCLAIMERS = {
   reportPhoto: "Bitte fotografieren Sie nur den Mangel selbst. Vermeiden Sie Personen und Kfz-Kennzeichen.",
   reportRathaus: "Sie können diesen Mangel auch direkt beim Rathaus melden.",
   wasteCalendar: "Alle Angaben ohne Gewähr. Verbindliche Termine finden Sie bei der Abfallwirtschaft.",
-  announcements: "Alle amtlichen Bekanntmachungen finden Sie im Amtsblatt der Stadt.",
+  announcements: "Diese Zusammenfassungen wurden automatisch aus dem Amtsblatt der Stadt Bad Säckingen erstellt. Verbindlich ist ausschließlich das Original-Amtsblatt.",
+  amtsblattSource: "Quelle: Amtsblatt \u201ETrompeterbl\u00E4ttle\u201C der Stadt Bad S\u00E4ckingen",
 } as const;

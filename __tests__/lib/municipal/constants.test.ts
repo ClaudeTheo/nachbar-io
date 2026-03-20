@@ -79,14 +79,17 @@ describe('WASTE_TYPES', () => {
 });
 
 describe('ANNOUNCEMENT_CATEGORIES', () => {
-  it('enthaelt 6 Kategorien', () => {
-    expect(ANNOUNCEMENT_CATEGORIES).toHaveLength(6);
+  it('enthaelt 9 Kategorien (6 Basis + 3 Amtsblatt)', () => {
+    expect(ANNOUNCEMENT_CATEGORIES).toHaveLength(9);
   });
 
   it('hat IDs als deutsche Begriffe', () => {
     const ids = ANNOUNCEMENT_CATEGORIES.map((c) => c.id);
     expect(ids).toContain('verkehr');
     expect(ids).toContain('baustelle');
+    expect(ids).toContain('verein');
+    expect(ids).toContain('soziales');
+    expect(ids).toContain('entsorgung');
     expect(ids).toContain('veranstaltung');
   });
 });

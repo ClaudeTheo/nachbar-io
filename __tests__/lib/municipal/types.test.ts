@@ -158,6 +158,7 @@ describe('Kommunal-Modul Typen (Compile-Time)', () => {
       expires_at: '2026-04-19T00:00:00Z',
       created_at: '2026-03-19T00:00:00Z',
       updated_at: '2026-03-19T00:00:00Z',
+      amtsblatt_issue_id: null,
     };
     expect(announcement.category).toBe('verkehr');
     expect(announcement.pinned).toBe(false);

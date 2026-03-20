@@ -14,31 +14,83 @@ vi.mock('next/link', () => ({
 }));
 
 // Supabase Mock — konfigurierbar pro Test
-const mockSelect = vi.fn();
-const mockEq = vi.fn();
-const mockLte = vi.fn();
-const mockOrder = vi.fn();
-const mockThen = vi.fn();
+// Zwei getrennte Chains: municipal_config (.single()) und municipal_announcements (.order())
 
-function setupSupabaseChain(data: unknown[] | null = [], error: unknown = null) {
-  mockSelect.mockReturnValue({ eq: mockEq });
-  mockEq.mockReturnValue({ lte: mockLte });
-  mockLte.mockReturnValue({ order: mockOrder });
-  // Erster order-Aufruf (pinned) gibt Objekt mit weiterem order zurueck
-  mockOrder.mockReturnValueOnce({ order: mockOrder });
-  // Zweiter order-Aufruf (published_at) gibt Objekt mit then zurueck
-  mockOrder.mockReturnValueOnce({ then: mockThen });
-  mockThen.mockImplementation((cb: (result: { data: unknown[] | null; error: unknown }) => void) => {
-    cb({ data, error });
+const mockConfigData: { data: unknown; error: unknown } = { data: null, error: null };
+const mockAnnouncementsData: { data: unknown[] | null; error: unknown } = { data: [], error: null };
+
+// Config-Chain: select → eq → single → then
+const mockConfigSingle = vi.fn(() => ({
+  then: vi.fn((cb: (result: { data: unknown; error: unknown }) => void) => {
+    cb(mockConfigData);
     return { catch: vi.fn() };
-  });
+  }),
+}));
+const mockConfigEq = vi.fn(() => ({ single: mockConfigSingle }));
+const mockConfigSelect = vi.fn(() => ({ eq: mockConfigEq }));
+
+// Announcements-Chain: select → eq → lte → order → order → then
+const mockAnnouncementsThen = vi.fn((cb: (result: { data: unknown[] | null; error: unknown }) => void) => {
+  cb(mockAnnouncementsData);
+  return { catch: vi.fn() };
+});
+const mockAnnouncementsOrder2 = vi.fn(() => ({ then: mockAnnouncementsThen }));
+const mockAnnouncementsOrder1 = vi.fn(() => ({ order: mockAnnouncementsOrder2 }));
+const mockAnnouncementsLte = vi.fn(() => ({ order: mockAnnouncementsOrder1 }));
+const mockAnnouncementsEq = vi.fn(() => ({ lte: mockAnnouncementsLte }));
+const mockAnnouncementsSelect = vi.fn(() => ({ eq: mockAnnouncementsEq }));
+
+const mockFrom = vi.fn((table: string) => {
+  if (table === 'municipal_config') return { select: mockConfigSelect };
+  if (table === 'municipal_announcements') return { select: mockAnnouncementsSelect };
+  return { select: mockAnnouncementsSelect };
+});
+
+function setupSupabaseChain(announcements: unknown[] | null = [], config: unknown = null) {
+  mockAnnouncementsData.data = announcements;
+  mockAnnouncementsData.error = null;
+  mockConfigData.data = config;
+  mockConfigData.error = null;
 }
+
+// Standard-Config fuer Bad Saeckingen
+const DEFAULT_CONFIG = {
+  id: 'config-1',
+  quarter_id: 'quarter-bs',
+  city_name: 'Bad Säckingen',
+  state: 'Baden-Württemberg',
+  rathaus_url: 'https://www.bad-saeckingen.de',
+  rathaus_phone: '07761 51-0',
+  rathaus_email: 'info@bad-saeckingen.de',
+  opening_hours: {
+    mo: '8:00–12:00, 14:00–16:00',
+    di: '8:00–12:00',
+    mi: '8:00–12:00',
+    do: '8:00–12:00, 14:00–18:00',
+    fr: '8:00–12:00',
+  },
+  features: { reports: true, waste_calendar: true, announcements: true },
+  service_links: [
+    { label: 'Rathaus Bad Säckingen', url: 'https://www.bad-saeckingen.de', icon: 'building', category: 'kontakt' },
+    { label: 'Bürgerbüro', url: 'https://www.bad-saeckingen.de/buergerbuero', icon: 'users', category: 'kontakt' },
+    { label: 'Fundbüro', url: 'https://www.bad-saeckingen.de/fundbuero', icon: 'search', category: 'service' },
+    { label: 'Formulare & Anträge', url: 'https://www.bad-saeckingen.de/formulare', icon: 'clipboard', category: 'formulare' },
+    { label: 'Polizei Bad Säckingen', url: 'https://www.polizei-bw.de', icon: 'shield', category: 'notfall' },
+    { label: 'Stadtwerke Bad Säckingen', url: 'https://www.stadtwerke-bad-saeckingen.de', icon: 'zap', category: 'versorgung' },
+  ],
+  wiki_entries: [
+    { question: 'Wo melde ich ein Schlagloch?', answer: 'Beim Bauhof der Stadt.', category: 'infrastruktur', links: [{ label: 'Rathaus', url: 'https://www.bad-saeckingen.de' }] },
+    { question: 'Wann wird mein Müll abgeholt?', answer: 'Siehe Müllkalender.', category: 'entsorgung', links: [] },
+    { question: 'Wie melde ich meinen Wohnsitz an?', answer: 'Im Bürgerbüro.', category: 'verwaltung', links: [] },
+    { question: 'Wo melde ich Ruhestörung?', answer: 'Bei der Polizei.', category: 'ordnung', links: [] },
+  ],
+  created_at: '2026-03-19T00:00:00Z',
+  updated_at: '2026-03-19T00:00:00Z',
+};
 
 vi.mock('@/lib/supabase/client', () => ({
   createClient: vi.fn(() => ({
-    from: vi.fn(() => ({
-      select: mockSelect,
-    })),
+    from: mockFrom,
   })),
 }));
 
@@ -69,7 +121,7 @@ import { DISCLAIMERS, SERVICE_LINK_CATEGORIES, WIKI_CATEGORIES } from '@/lib/mun
 
 beforeEach(() => {
   vi.clearAllMocks();
-  setupSupabaseChain([]);
+  setupSupabaseChain([], DEFAULT_CONFIG);
 });
 
 afterEach(() => {
@@ -88,8 +140,9 @@ describe('CityServicesPage — Grundlegendes Rendering', () => {
 
   it('rendert den Zurueck-Link zum Dashboard', () => {
     render(<CityServicesPage />);
-    const link = screen.getByRole('link');
-    expect(link.getAttribute('href')).toBe('/dashboard');
+    const links = screen.getAllByRole('link');
+    const dashboardLink = links.find((l) => l.getAttribute('href') === '/dashboard');
+    expect(dashboardLink).toBeDefined();
   });
 
   it('rendert das Zurueck-Pfeil-Icon', () => {
@@ -120,49 +173,64 @@ describe('CityServicesPage — Grundlegendes Rendering', () => {
 // ============================================================
 
 describe('CityServicesPage — Services-Tab', () => {
-  it('zeigt Rathaus Bad Saeckingen Ueberschrift', () => {
+  it('zeigt Rathaus-Ueberschrift mit Stadtname aus DB', async () => {
     render(<CityServicesPage />);
-    expect(screen.getByText('Rathaus Bad Säckingen')).toBeDefined();
+    await waitFor(() => {
+      // Heading ist "Rathaus {cityName}" — kann gesplittet gerendert werden
+      const heading = screen.getByRole('heading', { level: 2 });
+      expect(heading.textContent).toContain('Rathaus');
+      expect(heading.textContent).toContain('Bad Säckingen');
+    });
   });
 
-  it('zeigt Telefonnummer', () => {
+  it('zeigt Telefonnummer als klickbaren Link', async () => {
     render(<CityServicesPage />);
-    expect(screen.getByText('Tel. 07761 51-0')).toBeDefined();
+    await waitFor(() => {
+      const phoneLink = screen.getByText('07761 51-0');
+      expect(phoneLink.closest('a')?.getAttribute('href')).toBe('tel:0776151-0');
+    });
   });
 
-  it('zeigt E-Mail-Adresse', () => {
+  it('zeigt E-Mail-Adresse als klickbaren Link', async () => {
     render(<CityServicesPage />);
-    expect(screen.getByText('info@bad-saeckingen.de')).toBeDefined();
+    await waitFor(() => {
+      const emailLink = screen.getByText('info@bad-saeckingen.de');
+      expect(emailLink.closest('a')?.getAttribute('href')).toBe('mailto:info@bad-saeckingen.de');
+    });
   });
 
-  it('zeigt Oeffnungszeiten Montag', () => {
+  it('zeigt Oeffnungszeiten aus DB-Config', async () => {
     render(<CityServicesPage />);
-    expect(screen.getByText('Mo: 8–12, 14–16 Uhr')).toBeDefined();
+    await waitFor(() => {
+      expect(screen.getByText(/8:00–12:00, 14:00–16:00/)).toBeDefined();
+    });
   });
 
-  it('zeigt Oeffnungszeiten Dienstag-Mittwoch-Freitag', () => {
+  it('zeigt Website-Link wenn rathaus_url vorhanden', async () => {
     render(<CityServicesPage />);
-    expect(screen.getByText('Di–Mi, Fr: 8–12 Uhr')).toBeDefined();
+    await waitFor(() => {
+      const websiteLink = screen.getByText('Website');
+      expect(websiteLink.closest('a')?.getAttribute('href')).toBe('https://www.bad-saeckingen.de');
+    });
   });
 
-  it('zeigt Oeffnungszeiten Donnerstag', () => {
+  it('zeigt alle Service-Link-Kategorien', async () => {
     render(<CityServicesPage />);
-    expect(screen.getByText('Do: 8–12, 14–18 Uhr')).toBeDefined();
+    await waitFor(() => {
+      for (const cat of SERVICE_LINK_CATEGORIES) {
+        const elements = screen.getAllByText(cat.label);
+        expect(elements.length).toBeGreaterThanOrEqual(1);
+      }
+    });
   });
 
-  it('zeigt alle Service-Link-Kategorien', () => {
+  it('zeigt Service-Links aus DB', async () => {
     render(<CityServicesPage />);
-    for (const cat of SERVICE_LINK_CATEGORIES) {
-      // "Services" kommt doppelt vor (Tab + Kategorie)
-      const elements = screen.getAllByText(cat.label);
-      expect(elements.length).toBeGreaterThanOrEqual(1);
-    }
-  });
-
-  it('zeigt Platzhalter-Text fuer Service-Links', () => {
-    render(<CityServicesPage />);
-    const placeholders = screen.getAllByText('Links werden nach DB-Einrichtung geladen.');
-    expect(placeholders.length).toBe(SERVICE_LINK_CATEGORIES.length);
+    await waitFor(() => {
+      expect(screen.getByText('Bürgerbüro')).toBeDefined();
+      expect(screen.getByText('Fundbüro')).toBeDefined();
+      expect(screen.getByText('Polizei Bad Säckingen')).toBeDefined();
+    });
   });
 });
 
@@ -185,14 +253,16 @@ describe('CityServicesPage — Tab-Wechsel', () => {
     expect(screen.getByText('Keine Bekanntmachungen')).toBeDefined();
   });
 
-  it('wechselt zurueck zum Services-Tab', () => {
+  it('wechselt zurueck zum Services-Tab', async () => {
     render(<CityServicesPage />);
     // Zu Wiki wechseln
     fireEvent.click(screen.getByText('Hilfe / Wiki'));
-    expect(screen.queryByText('Rathaus Bad Säckingen')).toBeNull();
     // Zurueck zu Services
-    fireEvent.click(screen.getByText('Services'));
-    expect(screen.getByText('Rathaus Bad Säckingen')).toBeDefined();
+    fireEvent.click(screen.getAllByText('Services').find(el => el.tagName === 'BUTTON')!);
+    await waitFor(() => {
+      const heading = screen.getByRole('heading', { level: 2 });
+      expect(heading.textContent).toContain('Rathaus');
+    });
   });
 
   it('aktualisiert aktiven Tab-Stil bei Wechsel', () => {
@@ -227,17 +297,21 @@ describe('CityServicesPage — Wiki-Tab', () => {
     expect(screen.getByTestId('icon-search')).toBeDefined();
   });
 
-  it('zeigt alle Wiki-Kategorien', () => {
+  it('zeigt Wiki-Kategorien mit Eintraegen', async () => {
     renderWikiTab();
-    for (const cat of WIKI_CATEGORIES) {
-      expect(screen.getByText(cat.label)).toBeDefined();
-    }
+    await waitFor(() => {
+      // Kategorien werden als Ueberschriften gezeigt wenn Eintraege vorhanden
+      expect(screen.getByText('Infrastruktur')).toBeDefined();
+      expect(screen.getByText('Entsorgung & Müll')).toBeDefined();
+    });
   });
 
-  it('zeigt Platzhalter fuer Wiki-Eintraege', () => {
+  it('zeigt Wiki-Fragen als Details-Elemente', async () => {
     renderWikiTab();
-    const placeholders = screen.getAllByText('Einträge werden nach DB-Einrichtung geladen.');
-    expect(placeholders.length).toBe(WIKI_CATEGORIES.length);
+    await waitFor(() => {
+      expect(screen.getByText('Wo melde ich ein Schlagloch?')).toBeDefined();
+      expect(screen.getByText('Wann wird mein Müll abgeholt?')).toBeDefined();
+    });
   });
 
   it('Suchfeld ist editierbar', () => {
@@ -316,7 +390,7 @@ describe('CityServicesPage — Bekanntmachungen mit Daten', () => {
   ];
 
   function renderAnnouncementsWithData() {
-    setupSupabaseChain(mockAnnouncements);
+    setupSupabaseChain(mockAnnouncements, DEFAULT_CONFIG);
     render(<CityServicesPage />);
     fireEvent.click(screen.getByText('Bekanntmachungen'));
   }
@@ -445,7 +519,7 @@ describe('CityServicesPage — Abgelaufene Bekanntmachungen', () => {
       },
     ];
 
-    setupSupabaseChain(announcements);
+    setupSupabaseChain(announcements, DEFAULT_CONFIG);
     render(<CityServicesPage />);
     fireEvent.click(screen.getByText('Bekanntmachungen'));
 
@@ -473,7 +547,7 @@ describe('CityServicesPage — Abgelaufene Bekanntmachungen', () => {
       },
     ];
 
-    setupSupabaseChain(announcements);
+    setupSupabaseChain(announcements, DEFAULT_CONFIG);
     render(<CityServicesPage />);
     fireEvent.click(screen.getByText('Bekanntmachungen'));
 
@@ -488,47 +562,44 @@ describe('CityServicesPage — Abgelaufene Bekanntmachungen', () => {
 // ============================================================
 
 describe('CityServicesPage — Supabase-Abfrage', () => {
-  it('fragt Daten ab beim Tab-Wechsel zu Bekanntmachungen', () => {
-    setupSupabaseChain([]);
+  it('fragt municipal_config beim Laden ab', () => {
     render(<CityServicesPage />);
-    fireEvent.click(screen.getByText('Bekanntmachungen'));
-
-    // select('*') wird aufgerufen wenn Tab gewechselt wird
-    expect(mockSelect).toHaveBeenCalledWith('*');
+    expect(mockFrom).toHaveBeenCalledWith('municipal_config');
   });
 
-  it('filtert nach quarter_id', () => {
+  it('fragt municipal_announcements beim Tab-Wechsel ab', () => {
     render(<CityServicesPage />);
     fireEvent.click(screen.getByText('Bekanntmachungen'));
+    expect(mockFrom).toHaveBeenCalledWith('municipal_announcements');
+  });
 
-    expect(mockEq).toHaveBeenCalledWith('quarter_id', 'quarter-bs');
+  it('filtert Announcements nach quarter_id', () => {
+    render(<CityServicesPage />);
+    fireEvent.click(screen.getByText('Bekanntmachungen'));
+    expect(mockAnnouncementsEq).toHaveBeenCalledWith('quarter_id', 'quarter-bs');
   });
 
   it('filtert nach published_at <= jetzt', () => {
     render(<CityServicesPage />);
     fireEvent.click(screen.getByText('Bekanntmachungen'));
-
-    expect(mockLte).toHaveBeenCalledWith('published_at', expect.any(String));
+    expect(mockAnnouncementsLte).toHaveBeenCalledWith('published_at', expect.any(String));
   });
 
   it('sortiert zuerst nach pinned (absteigend)', () => {
     render(<CityServicesPage />);
     fireEvent.click(screen.getByText('Bekanntmachungen'));
-
-    expect(mockOrder).toHaveBeenCalledWith('pinned', { ascending: false });
+    expect(mockAnnouncementsOrder1).toHaveBeenCalledWith('pinned', { ascending: false });
   });
 
   it('sortiert danach nach published_at (absteigend)', () => {
     render(<CityServicesPage />);
     fireEvent.click(screen.getByText('Bekanntmachungen'));
-
-    expect(mockOrder).toHaveBeenCalledWith('published_at', { ascending: false });
+    expect(mockAnnouncementsOrder2).toHaveBeenCalledWith('published_at', { ascending: false });
   });
 
-  it('laedt Daten NICHT wenn Services-Tab aktiv', () => {
+  it('fragt Config mit .single() ab', () => {
     render(<CityServicesPage />);
-    // Kein Tab-Wechsel — select sollte nicht aufgerufen werden
-    expect(mockSelect).not.toHaveBeenCalled();
+    expect(mockConfigSingle).toHaveBeenCalled();
   });
 });
 
@@ -538,7 +609,7 @@ describe('CityServicesPage — Supabase-Abfrage', () => {
 
 describe('CityServicesPage — Edge Cases', () => {
   it('behandelt null-Daten von Supabase', async () => {
-    setupSupabaseChain(null);
+    setupSupabaseChain(null, null);
     render(<CityServicesPage />);
     fireEvent.click(screen.getByText('Bekanntmachungen'));
 
@@ -565,7 +636,7 @@ describe('CityServicesPage — Edge Cases', () => {
       },
     ];
 
-    setupSupabaseChain(announcements);
+    setupSupabaseChain(announcements, DEFAULT_CONFIG);
     render(<CityServicesPage />);
     fireEvent.click(screen.getByText('Bekanntmachungen'));
 
@@ -594,7 +665,7 @@ describe('CityServicesPage — Edge Cases', () => {
       },
     ];
 
-    setupSupabaseChain(announcements);
+    setupSupabaseChain(announcements, DEFAULT_CONFIG);
     render(<CityServicesPage />);
     fireEvent.click(screen.getByText('Bekanntmachungen'));
 
@@ -621,9 +692,9 @@ describe('CityServicesPage — Edge Cases', () => {
 describe('CityServicesPage — Barrierefreiheit', () => {
   it('Zurueck-Link ist klickbar (kein toter Link)', () => {
     render(<CityServicesPage />);
-    const link = screen.getByRole('link');
-    expect(link).toBeDefined();
-    expect(link.getAttribute('href')).toBe('/dashboard');
+    const links = screen.getAllByRole('link');
+    const dashboardLink = links.find((l) => l.getAttribute('href') === '/dashboard');
+    expect(dashboardLink).toBeDefined();
   });
 
   it('Tabs sind als Buttons gerendert', () => {
@@ -659,7 +730,7 @@ describe('CityServicesPage — Barrierefreiheit', () => {
       },
     ];
 
-    setupSupabaseChain(announcements);
+    setupSupabaseChain(announcements, DEFAULT_CONFIG);
     render(<CityServicesPage />);
     fireEvent.click(screen.getByText('Bekanntmachungen'));
 

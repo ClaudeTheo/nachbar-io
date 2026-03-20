@@ -11,9 +11,12 @@ import {
   ANNOUNCEMENT_CATEGORIES,
   DISCLAIMERS,
 } from "@/lib/municipal";
-import type { MunicipalAnnouncement, AnnouncementCategory } from "@/lib/municipal";
+import type { MunicipalAnnouncement, MunicipalConfig, ServiceLink, WikiEntry, AnnouncementCategory } from "@/lib/municipal";
 
 type TabId = "services" | "wiki" | "announcements";
+
+// Lucide-Icon-Mapping fuer Service-Links
+const ICON_MAP: Record<string, React.ElementType> = {};
 
 // Deutsches Datumsformat
 function formatDateDE(iso: string): string {
@@ -33,6 +36,29 @@ export default function CityServicesPage() {
   const [activeTab, setActiveTab] = useState<TabId>("services");
   const [searchQuery, setSearchQuery] = useState("");
   const { currentQuarter } = useQuarter();
+
+  // Kommunale Konfiguration aus Supabase laden
+  const [config, setConfig] = useState<MunicipalConfig | null>(null);
+  const [configLoading, setConfigLoading] = useState(true);
+
+  useEffect(() => {
+    if (!currentQuarter) return;
+    let cancelled = false;
+
+    const supabase = createClient();
+    supabase
+      .from("municipal_config")
+      .select("*")
+      .eq("quarter_id", currentQuarter.id)
+      .single()
+      .then(({ data }) => {
+        if (cancelled) return;
+        setConfig(data);
+        setConfigLoading(false);
+      });
+
+    return () => { cancelled = true; };
+  }, [currentQuarter]);
 
   // Bekanntmachungen aus Supabase laden
   const [announcements, setAnnouncements] = useState<MunicipalAnnouncement[]>([]);
@@ -54,7 +80,6 @@ export default function CityServicesPage() {
       .order("published_at", { ascending: false })
       .then(({ data }) => {
         if (cancelled) return;
-        // Client-seitig abgelaufene filtern (expires_at IS NULL oder > now)
         const filtered = (data ?? []).filter(
           (a) => !a.expires_at || new Date(a.expires_at) > new Date()
         );
@@ -64,6 +89,27 @@ export default function CityServicesPage() {
 
     return () => { cancelled = true; };
   }, [activeTab, currentQuarter]);
+
+  // Service-Links nach Kategorie gruppieren
+  const serviceLinks = (config?.service_links ?? []) as ServiceLink[];
+  const linksByCategory = SERVICE_LINK_CATEGORIES.map((cat) => ({
+    ...cat,
+    links: serviceLinks.filter((l) => l.category === cat.id),
+  }));
+
+  // Wiki-Eintraege mit Suchfilter
+  const wikiEntries = (config?.wiki_entries ?? []) as WikiEntry[];
+  const filteredWiki = searchQuery.trim()
+    ? wikiEntries.filter(
+        (e) =>
+          e.question.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          e.answer.toLowerCase().includes(searchQuery.toLowerCase())
+      )
+    : wikiEntries;
+  const wikiByCategory = WIKI_CATEGORIES.map((cat) => ({
+    ...cat,
+    entries: filteredWiki.filter((e) => e.category === cat.id),
+  })).filter((cat) => cat.entries.length > 0);
 
   const tabs: { id: TabId; label: string }[] = [
     { id: "services", label: "Services" },
@@ -103,29 +149,85 @@ export default function CityServicesPage() {
         <div className="space-y-4">
           {/* Rathaus-Info-Karte */}
           <div className="rounded-xl bg-gradient-to-r from-blue-50 to-transparent p-4">
-            <h2 className="font-semibold text-anthrazit">Rathaus Bad Säckingen</h2>
-            <p className="mt-1 text-sm text-muted-foreground">Tel. 07761 51-0</p>
-            <p className="text-sm text-muted-foreground">info@bad-saeckingen.de</p>
-            <div className="mt-2 text-xs text-muted-foreground">
-              <p>Mo: 8–12, 14–16 Uhr</p>
-              <p>Di–Mi, Fr: 8–12 Uhr</p>
-              <p>Do: 8–12, 14–18 Uhr</p>
-            </div>
+            <h2 className="font-semibold text-anthrazit">
+              Rathaus {config?.city_name ?? "Bad Säckingen"}
+            </h2>
+            {(config?.rathaus_phone ?? "07761 51-0") && (
+              <p className="mt-1 text-sm text-muted-foreground">
+                Tel.{" "}
+                <a href={`tel:${(config?.rathaus_phone ?? "07761 51-0").replace(/\s/g, "")}`} className="text-quartier-green hover:underline">
+                  {config?.rathaus_phone ?? "07761 51-0"}
+                </a>
+              </p>
+            )}
+            {(config?.rathaus_email ?? "info@bad-saeckingen.de") && (
+              <p className="text-sm text-muted-foreground">
+                <a href={`mailto:${config?.rathaus_email ?? "info@bad-saeckingen.de"}`} className="text-quartier-green hover:underline">
+                  {config?.rathaus_email ?? "info@bad-saeckingen.de"}
+                </a>
+              </p>
+            )}
+            {config?.opening_hours && Object.keys(config.opening_hours).length > 0 ? (
+              <div className="mt-2 text-xs text-muted-foreground">
+                {Object.entries(config.opening_hours).map(([day, hours]) => (
+                  <p key={day}><span className="font-medium capitalize">{day}:</span> {hours}</p>
+                ))}
+              </div>
+            ) : (
+              <div className="mt-2 text-xs text-muted-foreground">
+                <p>Mo: 8–12, 14–16 Uhr</p>
+                <p>Di–Mi, Fr: 8–12 Uhr</p>
+                <p>Do: 8–12, 14–18 Uhr</p>
+              </div>
+            )}
+            {config?.rathaus_url && (
+              <a
+                href={config.rathaus_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mt-2 inline-flex items-center gap-1 text-xs text-quartier-green hover:underline"
+              >
+                <ExternalLink className="h-3 w-3" /> Website
+              </a>
+            )}
           </div>
 
-          {/* Quicklinks — Platzhalter */}
-          <div className="space-y-3">
-            {SERVICE_LINK_CATEGORIES.map((cat) => (
-              <div key={cat.id}>
-                <h3 className="mb-1.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                  {cat.label}
-                </h3>
-                <div className="flex flex-col items-center rounded-lg bg-white py-4 shadow-soft">
-                  <p className="text-xs text-muted-foreground">Links werden nach DB-Einrichtung geladen.</p>
+          {/* Quicklinks nach Kategorie */}
+          {configLoading ? (
+            <div className="flex min-h-[100px] items-center justify-center">
+              <div className="h-6 w-6 animate-spin rounded-full border-3 border-[#4CAF87] border-t-transparent" />
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {linksByCategory.map((cat) => (
+                <div key={cat.id}>
+                  <h3 className="mb-1.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                    {cat.label}
+                  </h3>
+                  {cat.links.length > 0 ? (
+                    <div className="space-y-1">
+                      {cat.links.map((link, i) => (
+                        <a
+                          key={`${cat.id}-${i}`}
+                          href={link.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center gap-3 rounded-lg bg-white px-3 py-2.5 shadow-soft transition-colors hover:bg-gray-50"
+                        >
+                          <ExternalLink className="h-4 w-4 shrink-0 text-quartier-green" />
+                          <span className="text-sm text-anthrazit">{link.label}</span>
+                        </a>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="flex flex-col items-center rounded-lg bg-white py-4 shadow-soft">
+                      <p className="text-xs text-muted-foreground">Keine Links in dieser Kategorie.</p>
+                    </div>
+                  )}
                 </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </div>
       )}
 
@@ -144,15 +246,56 @@ export default function CityServicesPage() {
             />
           </div>
 
-          {/* Wiki-Kategorien — Platzhalter */}
-          {WIKI_CATEGORIES.map((cat) => (
-            <div key={cat.id} className="rounded-lg bg-white p-3 shadow-soft">
-              <h3 className="text-sm font-semibold text-anthrazit">{cat.label}</h3>
-              <p className="mt-1 text-xs text-muted-foreground">
-                Einträge werden nach DB-Einrichtung geladen.
+          {/* Wiki-Eintraege nach Kategorie */}
+          {configLoading ? (
+            <div className="flex min-h-[100px] items-center justify-center">
+              <div className="h-6 w-6 animate-spin rounded-full border-3 border-[#4CAF87] border-t-transparent" />
+            </div>
+          ) : wikiByCategory.length > 0 ? (
+            wikiByCategory.map((cat) => (
+              <div key={cat.id} className="space-y-1.5">
+                <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  {cat.label}
+                </h3>
+                {cat.entries.map((entry, i) => (
+                  <details
+                    key={`${cat.id}-${i}`}
+                    className="group rounded-lg bg-white shadow-soft"
+                  >
+                    <summary className="cursor-pointer px-3 py-2.5 text-sm font-medium text-anthrazit hover:bg-gray-50 rounded-lg list-none flex items-center justify-between">
+                      <span>{entry.question}</span>
+                      <span className="text-muted-foreground transition-transform group-open:rotate-180">▾</span>
+                    </summary>
+                    <div className="px-3 pb-3 pt-0">
+                      <p className="text-xs text-muted-foreground leading-relaxed">{entry.answer}</p>
+                      {entry.links && entry.links.length > 0 && (
+                        <div className="mt-2 flex flex-wrap gap-2">
+                          {entry.links.map((link, j) => (
+                            <a
+                              key={j}
+                              href={link.url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center gap-1 rounded-full bg-quartier-green/10 px-2.5 py-1 text-[11px] font-medium text-quartier-green hover:bg-quartier-green/20"
+                            >
+                              <ExternalLink className="h-3 w-3" /> {link.label}
+                            </a>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </details>
+                ))}
+              </div>
+            ))
+          ) : (
+            <div className="flex flex-col items-center py-8 text-center">
+              <div className="mb-3 text-4xl" aria-hidden="true">🔍</div>
+              <p className="text-sm text-muted-foreground">
+                {searchQuery.trim() ? "Keine Einträge gefunden." : "Noch keine Wiki-Einträge vorhanden."}
               </p>
             </div>
-          ))}
+          )}
         </div>
       )}
 

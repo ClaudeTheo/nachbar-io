@@ -3,6 +3,7 @@
 import { ArrowSquareOut } from "@phosphor-icons/react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { ExternalLink } from "@/components/ExternalLink";
 import { CategoryIcon } from "@/components/CategoryIcon";
 import { NEWS_ICON_MAP, FALLBACK_ICON } from "@/lib/category-icons";
 import type { NewsItem } from "@/lib/supabase/types";
@@ -73,16 +74,14 @@ export function NewsCard({ item }: NewsCardProps) {
             </h3>
             <p className="text-sm text-muted-foreground">{item.ai_summary}</p>
             {item.source_url && (
-              <a
+              <ExternalLink
                 href={item.source_url}
-                target="_blank"
-                rel="noopener noreferrer"
+                title="Originalquelle"
                 className="mt-2 inline-flex items-center gap-1 text-xs text-info-blue hover:underline"
-                onClick={(e) => e.stopPropagation()}
               >
                 <ArrowSquareOut size={12} />
                 Originalquelle
-              </a>
+              </ExternalLink>
             )}
           </div>
         </div>

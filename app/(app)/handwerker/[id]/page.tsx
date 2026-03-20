@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
+import { ExternalLink } from "@/components/ExternalLink";
 import {
   ArrowLeft,
   MapPin,
@@ -181,15 +182,14 @@ export default function HandwerkerDetailPage() {
                 </a>
               )}
               {(tip as CommunityTip & { website_url?: string }).website_url && (
-                <a
+                <ExternalLink
                   href={(tip as CommunityTip & { website_url: string }).website_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
+                  title="Website"
                   className="flex items-center gap-2 text-sm text-quartier-green hover:underline min-h-[44px]"
                 >
                   <Globe className="h-4 w-4 shrink-0" />
                   Website besuchen
-                </a>
+                </ExternalLink>
               )}
               {tip.location_hint && (
                 <p className="flex items-center gap-2 text-sm text-muted-foreground">

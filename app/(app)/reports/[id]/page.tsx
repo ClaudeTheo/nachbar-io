@@ -3,8 +3,9 @@
 import { useEffect, useState, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
+import { ExternalLink } from "@/components/ExternalLink";
 import Image from "next/image";
-import { ArrowLeft, MapPin, ExternalLink, Send, MessageCircle } from "lucide-react";
+import { ArrowLeft, MapPin, ExternalLink as ExternalLinkIcon, Send, MessageCircle } from "lucide-react";
 import { toast } from "sonner";
 import { createClient } from "@/lib/supabase/client";
 
@@ -324,15 +325,14 @@ export default function ReportDetailPage() {
             <div className="flex-1 text-xs text-muted-foreground">
               {coords.lat.toFixed(5)}° N, {coords.lng.toFixed(5)}° E
             </div>
-            <a
+            <ExternalLink
               href={`https://www.openstreetmap.org/?mlat=${coords.lat}&mlon=${coords.lng}#map=17/${coords.lat}/${coords.lng}`}
-              target="_blank"
-              rel="noopener noreferrer"
+              title="OpenStreetMap"
               className="flex h-[44px] items-center gap-1 rounded-lg bg-quartier-green/10 px-3 py-2 text-xs font-medium text-quartier-green transition-colors hover:bg-quartier-green/20"
             >
-              <ExternalLink className="h-3.5 w-3.5" />
+              <ExternalLinkIcon className="h-3.5 w-3.5" />
               Auf OpenStreetMap anzeigen
-            </a>
+            </ExternalLink>
           </div>
         </div>
       )}
@@ -342,15 +342,14 @@ export default function ReportDetailPage() {
         <p className="mb-3 text-xs text-muted-foreground">
           {DISCLAIMERS.reportRathaus}
         </p>
-        <a
+        <ExternalLink
           href="https://www.bad-saeckingen.de/kontakt"
-          target="_blank"
-          rel="noopener noreferrer"
+          title="Rathaus Kontakt"
           className="flex h-[48px] items-center justify-center gap-2 rounded-lg border border-alert-amber/30 bg-white px-4 py-2 text-sm font-medium text-anthrazit transition-colors hover:bg-gray-50"
         >
-          <ExternalLink className="h-4 w-4" />
+          <ExternalLinkIcon className="h-4 w-4" />
           Beim Rathaus melden
-        </a>
+        </ExternalLink>
       </div>
 
       {/* Kommentare */}

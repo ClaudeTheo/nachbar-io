@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { ArrowLeft, Search, Pin, ExternalLink } from "lucide-react";
+import { ArrowLeft, Search, Pin, ExternalLink as ExternalLinkIcon } from "lucide-react";
+import { ExternalLink } from "@/components/ExternalLink";
 import { createClient } from "@/lib/supabase/client";
 import { useQuarter } from "@/lib/quarters";
 import {
@@ -181,14 +182,13 @@ export default function CityServicesPage() {
               </div>
             )}
             {config?.rathaus_url && (
-              <a
+              <ExternalLink
                 href={config.rathaus_url}
-                target="_blank"
-                rel="noopener noreferrer"
+                title="Rathaus Website"
                 className="mt-2 inline-flex items-center gap-1 text-xs text-quartier-green hover:underline"
               >
-                <ExternalLink className="h-3 w-3" /> Website
-              </a>
+                <ExternalLinkIcon className="h-3 w-3" /> Website
+              </ExternalLink>
             )}
           </div>
 
@@ -207,16 +207,15 @@ export default function CityServicesPage() {
                   {cat.links.length > 0 ? (
                     <div className="space-y-1">
                       {cat.links.map((link, i) => (
-                        <a
+                        <ExternalLink
                           key={`${cat.id}-${i}`}
                           href={link.url}
-                          target="_blank"
-                          rel="noopener noreferrer"
+                          title={link.label}
                           className="flex items-center gap-3 rounded-lg bg-white px-3 py-2.5 shadow-soft transition-colors hover:bg-gray-50"
                         >
-                          <ExternalLink className="h-4 w-4 shrink-0 text-quartier-green" />
+                          <ExternalLinkIcon className="h-4 w-4 shrink-0 text-quartier-green" />
                           <span className="text-sm text-anthrazit">{link.label}</span>
-                        </a>
+                        </ExternalLink>
                       ))}
                     </div>
                   ) : (
@@ -271,15 +270,14 @@ export default function CityServicesPage() {
                       {entry.links && entry.links.length > 0 && (
                         <div className="mt-2 flex flex-wrap gap-2">
                           {entry.links.map((link, j) => (
-                            <a
+                            <ExternalLink
                               key={j}
                               href={link.url}
-                              target="_blank"
-                              rel="noopener noreferrer"
+                              title={link.label}
                               className="inline-flex items-center gap-1 rounded-full bg-quartier-green/10 px-2.5 py-1 text-[11px] font-medium text-quartier-green hover:bg-quartier-green/20"
                             >
-                              <ExternalLink className="h-3 w-3" /> {link.label}
-                            </a>
+                              <ExternalLinkIcon className="h-3 w-3" /> {link.label}
+                            </ExternalLink>
                           ))}
                         </div>
                       )}
@@ -350,14 +348,13 @@ export default function CityServicesPage() {
                     <div className="mt-2 flex flex-wrap items-center gap-3 text-[10px] text-gray-400">
                       <span>{formatDateDE(a.published_at)}</span>
                       {a.source_url && (
-                        <a
+                        <ExternalLink
                           href={a.source_url}
-                          target="_blank"
-                          rel="noopener noreferrer"
+                          title="Quelle"
                           className="inline-flex items-center gap-0.5 text-quartier-green hover:underline"
                         >
-                          <ExternalLink className="h-3 w-3" /> Quelle
-                        </a>
+                          <ExternalLinkIcon className="h-3 w-3" /> Quelle
+                        </ExternalLink>
                       )}
                     </div>
                   </div>
@@ -382,14 +379,13 @@ export default function CityServicesPage() {
             <p className="text-[10px] text-muted-foreground">
               {DISCLAIMERS.announcements}
             </p>
-            <a
+            <ExternalLink
               href="https://www.bad-saeckingen.de/unsere-stadt/stadt-bad-saeckingen/amtsblatt"
-              target="_blank"
-              rel="noopener noreferrer"
+              title="Amtsblatt"
               className="inline-flex items-center gap-1 text-[10px] text-quartier-green hover:underline"
             >
-              <ExternalLink className="h-3 w-3" /> Original-Amtsblatt auf bad-saeckingen.de
-            </a>
+              <ExternalLinkIcon className="h-3 w-3" /> Original-Amtsblatt auf bad-saeckingen.de
+            </ExternalLink>
           </div>
         </div>
       )}

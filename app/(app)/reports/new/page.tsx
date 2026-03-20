@@ -6,6 +6,7 @@
 import { useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, MapPin, CheckCircle2, Loader2 } from "lucide-react";
+import { ExternalLink } from "@/components/ExternalLink";
 import { toast } from "sonner";
 import { createClient } from "@/lib/supabase/client";
 import { useQuarter } from "@/lib/quarters";
@@ -300,14 +301,13 @@ function StepSummary({
       {/* Disclaimer: Rathaus */}
       <div className="rounded-lg border border-gray-200 bg-gray-50 p-3 text-xs text-muted-foreground">
         {DISCLAIMERS.reportRathaus}{" "}
-        <a
+        <ExternalLink
           href="https://www.bad-saeckingen.de/kontakt"
-          target="_blank"
-          rel="noopener noreferrer"
+          title="Rathaus Kontaktformular"
           className="font-medium text-quartier-green underline"
         >
           Zum Rathaus-Kontaktformular
-        </a>
+        </ExternalLink>
       </div>
 
       {/* Checkbox */}

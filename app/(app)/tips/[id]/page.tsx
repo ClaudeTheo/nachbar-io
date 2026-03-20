@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
+import { ExternalLink } from "@/components/ExternalLink";
 import { ArrowLeft, MapPin, Phone, CheckCircle2, Clock, Tag, User, Globe, CalendarClock, Crown } from "lucide-react";
 import { BusinessReview } from "@/components/BusinessReview";
 import { Button } from "@/components/ui/button";
@@ -211,14 +212,13 @@ export default function TipDetailPage() {
             {(tip as CommunityTip & { website_url?: string }).website_url && (
               <p className="mt-2 flex items-center gap-2 text-sm text-muted-foreground">
                 <Globe className="h-4 w-4 shrink-0" />
-                <a
+                <ExternalLink
                   href={(tip as CommunityTip & { website_url: string }).website_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
+                  title="Website"
                   className="text-quartier-green hover:underline"
                 >
                   Website besuchen
-                </a>
+                </ExternalLink>
               </p>
             )}
 

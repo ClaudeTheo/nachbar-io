@@ -6,6 +6,7 @@ import { QuarterProvider } from "@/lib/quarters";
 import { TestModeProvider } from "@/components/testing/TestModeProvider";
 import { TesterWelcomeDialog } from "@/components/testing/TesterWelcomeDialog";
 import { BugReportButton } from "@/components/testing/BugReportButton";
+import { ExternalLinkProvider } from "@/components/ExternalLinkProvider";
 
 // Layout fuer den aktiven Modus — mit Bottom-Navigation + Test-Modus
 export default function AppLayout({
@@ -28,13 +29,15 @@ export default function AppLayout({
       </div>
       {/* Quartier-Kontext + Hauptinhalt mit Padding fuer Bottom-Nav + Test-Modus Provider */}
       <QuarterProvider>
-        <TestModeProvider>
-          <HeartbeatProvider>
-            <main id="main-content" className="mx-auto max-w-lg px-4 pt-4">{children}</main>
-          </HeartbeatProvider>
-          <TesterWelcomeDialog />
-          <BugReportButton />
-        </TestModeProvider>
+        <ExternalLinkProvider>
+          <TestModeProvider>
+            <HeartbeatProvider>
+              <main id="main-content" className="mx-auto max-w-lg px-4 pt-4">{children}</main>
+            </HeartbeatProvider>
+            <TesterWelcomeDialog />
+            <BugReportButton />
+          </TestModeProvider>
+        </ExternalLinkProvider>
       </QuarterProvider>
       <BottomNav />
       <InstallPrompt />

@@ -87,6 +87,10 @@ export default function InvitationsPage() {
   const expiredCount = invitations.filter((i) => i.status === "expired").length;
   const pointsEarned = acceptedCount * 50;
 
+  // Einladelimit: PILOT_MODE hebt Free-Limit auf 50 an
+  const isPilot = process.env.NEXT_PUBLIC_PILOT_MODE === "true";
+  const inviteLimit = isPilot ? 50 : 5;
+
   function getStatusIcon(status: string) {
     switch (status) {
       case "sent":
@@ -193,7 +197,7 @@ export default function InvitationsPage() {
       </div>
 
       {/* Info-Hinweis */}
-      {openCount < 5 && invitations.length === 0 && !loading && (
+      {openCount < inviteLimit && invitations.length === 0 && !loading && (
         <div className="rounded-lg bg-blue-50 p-4 text-sm text-blue-700">
           <p className="font-medium">Nachbarn einladen</p>
           <p className="mt-1 text-xs">
@@ -204,11 +208,11 @@ export default function InvitationsPage() {
       )}
 
       {/* Spam-Limit Hinweis */}
-      {openCount >= 5 && (
+      {openCount >= inviteLimit && (
         <div className="rounded-lg bg-amber-50 p-3 text-sm text-amber-700">
           <p className="font-medium">Limit erreicht</p>
           <p className="mt-1 text-xs">
-            Sie haben 5 offene Einladungen. Neue Einladungen sind möglich, sobald bestehende angenommen oder abgelaufen sind.
+            Sie haben {inviteLimit} offene Einladungen. Neue Einladungen sind möglich, sobald bestehende angenommen oder abgelaufen sind.
           </p>
         </div>
       )}

@@ -10,10 +10,18 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { AvatarPicker } from "@/components/AvatarPicker";
 import { createClient } from "@/lib/supabase/client";
+import { useQuarter } from "@/lib/quarters";
 import type { User } from "@/lib/supabase/types";
+
+interface HouseholdOption {
+  id: string;
+  street_name: string;
+  house_number: string;
+}
 
 export default function ProfileEditPage() {
   const router = useRouter();
+  const { currentQuarter } = useQuarter();
   const [user, setUser] = useState<User | null>(null);
   const [displayName, setDisplayName] = useState("");
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
@@ -23,6 +31,10 @@ export default function ProfileEditPage() {
   const [saving, setSaving] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // Adresse
+  const [currentHouseholdId, setCurrentHouseholdId] = useState<string | null>(null);
+  const [selectedHouseholdId, setSelectedHouseholdId] = useState<string | null>(null);
+  const [households, setHouseholds] = useState<HouseholdOption[]>([]);
   // Passwort-Aenderung
   const [showPasswordForm, setShowPasswordForm] = useState(false);
   const [currentPassword, setCurrentPassword] = useState("");
@@ -51,6 +63,17 @@ export default function ProfileEditPage() {
         setPhone(data.phone || "");
       }
 
+      // Haushalt laden
+      const { data: membership } = await supabase
+        .from("household_members")
+        .select("household_id")
+        .eq("user_id", authUser.id)
+        .maybeSingle();
+      if (membership?.household_id) {
+        setCurrentHouseholdId(membership.household_id);
+        setSelectedHouseholdId(membership.household_id);
+      }
+
       // Skills pruefen
       const { count } = await supabase
         .from("skills")
@@ -61,11 +84,29 @@ export default function ProfileEditPage() {
     load();
   }, []);
 
+  // Alle Häuser im Quartier laden
+  useEffect(() => {
+    if (!currentQuarter) return;
+    async function loadHouseholds() {
+      const supabase = createClient();
+      const { data } = await supabase
+        .from("households")
+        .select("id, street_name, house_number")
+        .eq("quarter_id", currentQuarter!.id)
+        .order("street_name")
+        .order("house_number");
+      if (data) setHouseholds(data);
+    }
+    loadHouseholds();
+  }, [currentQuarter]);
+
+  const addressChanged = selectedHouseholdId !== null && selectedHouseholdId !== currentHouseholdId;
   const hasChanges = user && (
     displayName.trim() !== user.display_name ||
     avatarUrl !== user.avatar_url ||
     bio.trim() !== (user.bio || "") ||
-    phone.trim() !== (user.phone || "")
+    phone.trim() !== (user.phone || "") ||
+    addressChanged
   );
 
   // Profil-Vollstaendigkeit
@@ -100,6 +141,21 @@ export default function ProfileEditPage() {
         setError("Speichern fehlgeschlagen.");
         setSaving(false);
         return;
+      }
+
+      // Adresse aendern falls geaendert
+      if (addressChanged && selectedHouseholdId) {
+        const { error: addrError } = await supabase
+          .from("household_members")
+          .update({ household_id: selectedHouseholdId })
+          .eq("user_id", user.id);
+        if (addrError) {
+          toast.error("Adresse konnte nicht geändert werden.");
+          setError("Adresse konnte nicht geändert werden.");
+          setSaving(false);
+          return;
+        }
+        setCurrentHouseholdId(selectedHouseholdId);
       }
 
       toast.success("Profil gespeichert!");
@@ -261,6 +317,34 @@ export default function ProfileEditPage() {
           />
           <p className="text-xs text-muted-foreground">
             Nur für Nachbarn sichtbar, wenn Sie es wünschen.
+          </p>
+        </div>
+
+        {/* Adresse */}
+        <div className="space-y-2">
+          <label htmlFor="address" className="text-sm font-medium text-anthrazit">Adresse</label>
+          {households.length > 0 ? (
+            <select
+              id="address"
+              value={selectedHouseholdId ?? ""}
+              onChange={(e) => setSelectedHouseholdId(e.target.value || null)}
+              className="w-full rounded-lg border border-input bg-white px-3 py-2 text-sm text-anthrazit focus:border-quartier-green focus:outline-none focus:ring-1 focus:ring-quartier-green"
+            >
+              <option value="">Bitte wählen...</option>
+              {households.map((h) => (
+                <option key={h.id} value={h.id}>
+                  {h.street_name} {h.house_number}
+                </option>
+              ))}
+            </select>
+          ) : (
+            <Input
+              value={currentHouseholdId ? "Wird geladen..." : "Keine Adresse hinterlegt"}
+              disabled
+            />
+          )}
+          <p className="text-xs text-muted-foreground">
+            Wählen Sie Ihre aktuelle Adresse im Quartier.
           </p>
         </div>
 

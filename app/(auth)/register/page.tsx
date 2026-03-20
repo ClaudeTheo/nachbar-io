@@ -178,7 +178,11 @@ function RegisterForm() {
       }
 
       setHouseholdId(result.householdId);
-      setVerificationMethod(referrerId ? "neighbor_invite" : "invite_code");
+      // referrerId kann aus URL (?ref=) oder aus API-Antwort kommen
+      if (result.referrerId && !referrerId) {
+        setReferrerId(result.referrerId);
+      }
+      setVerificationMethod((referrerId || result.referrerId) ? "neighbor_invite" : "invite_code");
       setLoading(false);
       setStep("identity");
     } catch (err) {

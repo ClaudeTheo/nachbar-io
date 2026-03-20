@@ -354,3 +354,35 @@ export interface EscalationEvent {
 
 // === Feature-Gate Response Codes ===
 export type GateCode = 'PLAN_REQUIRED' | 'ROLE_REQUIRED' | 'TENANT_ACCESS_REQUIRED';
+
+// === Art. 9 Einwilligungsmanagement (DSFA M12) ===
+
+export const CONSENT_FEATURES = ['sos', 'checkin', 'medications', 'care_profile', 'emergency_contacts'] as const;
+export type CareConsentFeature = (typeof CONSENT_FEATURES)[number];
+
+export interface CareConsent {
+  id: string;
+  user_id: string;
+  feature: CareConsentFeature;
+  granted: boolean;
+  consent_version: string;
+  granted_at: string | null;
+  revoked_at: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface CareConsentHistory {
+  id: string;
+  consent_id: string;
+  user_id: string;
+  feature: CareConsentFeature;
+  action: 'granted' | 'revoked';
+  consent_version: string;
+  created_at: string;
+}
+
+// Abhaengigkeitsregel: emergency_contacts erfordert sos
+export const CONSENT_DEPENDENCIES: Partial<Record<CareConsentFeature, CareConsentFeature>> = {
+  emergency_contacts: 'sos',
+};

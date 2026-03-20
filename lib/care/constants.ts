@@ -1,7 +1,7 @@
 // lib/care/constants.ts
 // Nachbar.io — Pflege-Modul Konstanten
 
-import type { CareSosCategory, CareHelperRole, CareAuditEventType, CareSubscriptionPlan, CaregiverRelationshipType } from './types';
+import type { CareSosCategory, CareHelperRole, CareAuditEventType, CareSubscriptionPlan, CaregiverRelationshipType, CareConsentFeature } from './types';
 
 // SOS-Kategorien mit UI-Metadaten
 export const CARE_SOS_CATEGORIES: Array<{
@@ -162,3 +162,27 @@ export const INVITE_CODE_EXPIRY_HOURS = 24;
 
 // Heartbeat-Retention in Tagen
 export const HEARTBEAT_RETENTION_DAYS = 90;
+
+// === Art. 9 Einwilligungsmanagement ===
+
+export const CARE_CONSENT_FEATURES: CareConsentFeature[] = [
+  'sos', 'checkin', 'medications', 'care_profile', 'emergency_contacts',
+];
+
+export const CARE_CONSENT_LABELS: Record<CareConsentFeature, string> = {
+  sos: 'SOS-Hilferufe',
+  checkin: 'Täglicher Check-in',
+  medications: 'Medikamenten-Verwaltung',
+  care_profile: 'Pflegeprofil',
+  emergency_contacts: 'Notfallkontakte & Eskalation',
+};
+
+export const CARE_CONSENT_DESCRIPTIONS: Record<CareConsentFeature, string> = {
+  sos: 'Kategorien, Freitext-Notizen und GPS-Standort bei Hilferufen',
+  checkin: 'Tägliche Stimmungsabfrage und persönliche Notizen',
+  medications: 'Medikamentennamen, Dosierungen und Einnahmezeiten',
+  care_profile: 'Pflegegrad, medizinische Notizen und Versicherungsnummer',
+  emergency_contacts: 'Telefonnummern und Beziehungen Ihrer Notfallkontakte (erfordert SOS-Einwilligung)',
+};
+
+export const CURRENT_CONSENT_VERSION = '1.0';

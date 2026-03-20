@@ -54,21 +54,18 @@ export function parseAmtsblattFilename(url: string): {
 // --- Text-Extraktion ---
 
 /**
- * Extrahiert Rohtext aus einem PDF-Buffer via pdf-parse.
+ * Extrahiert Rohtext aus einem PDF-Buffer via unpdf (serverless-kompatibel).
  * Gibt den Text und die Seitenanzahl zurueck.
  */
 export async function extractTextFromPdf(
   pdfBuffer: Buffer
 ): Promise<{ text: string; pages: number }> {
-  // Dynamischer Import damit pdf-parse nur server-seitig geladen wird
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
-  const pdfParse = (await import("pdf-parse")) as unknown as
-    (buf: Buffer) => Promise<{ text: string; numpages: number }>;
-  const result = await pdfParse(pdfBuffer);
-  return {
-    text: result.text,
-    pages: result.numpages,
-  };
+  const { extractText, getDocumentProxy } = await import("unpdf");
+  const uint8 = new Uint8Array(pdfBuffer);
+  const pdf = await getDocumentProxy(uint8);
+  const { text } = await extractText(pdf, { mergePages: true });
+  const pages = pdf.numPages;
+  return { text, pages };
 }
 
 // --- KI-Strukturierung ---

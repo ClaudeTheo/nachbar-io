@@ -77,8 +77,10 @@ export async function GET(request: Request) {
 
     let totalImported = 0;
 
-    // 3. Jede PDF-URL pruefen und ggf. importieren
-    for (const pdfUrl of pdfUrls) {
+    // 3. Nur das NEUESTE PDF verarbeiten (Amtsblatt erscheint 14-taegig)
+    // URLs sind chronologisch, neueste zuerst → nur pdfUrls[0]
+    const latestPdfs = pdfUrls.slice(0, 1);
+    for (const pdfUrl of latestPdfs) {
       const fileInfo = parseAmtsblattFilename(pdfUrl);
       if (!fileInfo) {
         console.log(`${LOG_PREFIX} Unbekanntes Dateiformat: ${pdfUrl}`);

@@ -9,6 +9,8 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { EmergencyBanner } from "@/components/EmergencyBanner";
 import { ALERT_CATEGORIES, EMERGENCY_CATEGORIES } from "@/lib/constants";
+import { CategoryIcon } from "@/components/CategoryIcon";
+import { ALERT_ICON_MAP, FALLBACK_ICON } from "@/lib/category-icons";
 import { createClient } from "@/lib/supabase/client";
 import { useQuarter } from "@/lib/quarters";
 
@@ -113,9 +115,14 @@ export default function NewAlertPage() {
             <button
               key={cat.id}
               onClick={() => handleCategorySelect(cat.id)}
-              className="flex flex-col items-center gap-2 rounded-xl border-2 border-border bg-white p-4 transition-all hover:border-quartier-green hover:shadow-md active:scale-95"
+              className="flex flex-col items-center gap-2 rounded-2xl bg-card p-4 shadow-soft transition-all hover:shadow-soft-hover active:scale-95"
             >
-              <span className="text-3xl">{cat.icon}</span>
+              <CategoryIcon
+                icon={(ALERT_ICON_MAP[cat.id] ?? FALLBACK_ICON).icon}
+                bgColor={(ALERT_ICON_MAP[cat.id] ?? FALLBACK_ICON).bgColor}
+                iconColor={(ALERT_ICON_MAP[cat.id] ?? FALLBACK_ICON).iconColor}
+                size="lg"
+              />
               <span className="text-sm font-medium text-anthrazit">{cat.label}</span>
             </button>
           ))}

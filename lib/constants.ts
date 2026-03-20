@@ -244,6 +244,42 @@ export const TIP_CATEGORIES = [
 
 export type TipCategory = (typeof TIP_CATEGORIES)[number]["id"];
 
+// Handwerker-Gewerke (Subcategories fuer category = 'craftsmen')
+export const CRAFTSMAN_SUBCATEGORIES = [
+  { id: "elektro", parent: "craftsmen", label: "Elektro & Beleuchtung", icon: "⚡" },
+  { id: "sanitaer", parent: "craftsmen", label: "Sanitär & Heizung", icon: "🚿" },
+  { id: "maler", parent: "craftsmen", label: "Maler & Lackierer", icon: "🎨" },
+  { id: "schreiner", parent: "craftsmen", label: "Schreiner & Tischler", icon: "🪚" },
+  { id: "dachdecker", parent: "craftsmen", label: "Dachdecker", icon: "🏠" },
+  { id: "maurer", parent: "craftsmen", label: "Maurer & Betonbau", icon: "🧱" },
+  { id: "fliesen", parent: "craftsmen", label: "Fliesen & Bodenleger", icon: "🔲" },
+  { id: "garten", parent: "craftsmen", label: "Garten- & Landschaftsbau", icon: "🌿" },
+  { id: "pool", parent: "craftsmen", label: "Pool & Schwimmbadbau", icon: "🏊" },
+  { id: "reinigung", parent: "craftsmen", label: "Reinigung & Hausmeister", icon: "🧹" },
+  { id: "schluesseldienst", parent: "craftsmen", label: "Schlüsseldienst", icon: "🔑" },
+  { id: "it_technik", parent: "craftsmen", label: "IT & Technik", icon: "💻" },
+  { id: "alarm_sicherheit", parent: "craftsmen", label: "Alarm & Sicherheit", icon: "🔒" },
+  { id: "sonstige", parent: "craftsmen", label: "Sonstiges Handwerk", icon: "🔧" },
+] as const;
+
+export type CraftsmanSubcategory = (typeof CRAFTSMAN_SUBCATEGORIES)[number]["id"];
+
+// Aspekt-Bewertung Kategorien
+export const CRAFTSMAN_ASPECTS = [
+  { id: "quality", label: "Qualität", icon: "⭐" },
+  { id: "price", label: "Preis-Leistung", icon: "💰" },
+  { id: "punctuality", label: "Pünktlichkeit", icon: "⏰" },
+  { id: "cleanliness", label: "Sauberkeit", icon: "✨" },
+] as const;
+
+// Trust-Score Konfiguration
+export const TRUST_SCORE_CONFIG = {
+  MIN_RECOMMENDATIONS: 3,          // Mindestanzahl fuer Score-Anzeige
+  CONFIRMED_USAGE_WEIGHT: 2.0,     // Gewicht bei bestaetigter Nutzung
+  DEFAULT_WEIGHT: 1.0,             // Gewicht ohne bestaetigte Nutzung
+  LOYALTY_THRESHOLD: 3,            // Usage-Events fuer "Stammkunde"-Badge
+} as const;
+
 // Leihboerse-Kategorien
 export const LEIHBOERSE_CATEGORIES = [
   { id: "tools", label: "Werkzeug", icon: "🔧" },

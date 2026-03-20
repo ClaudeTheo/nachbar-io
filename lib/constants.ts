@@ -90,6 +90,14 @@ export type AlertCategory = (typeof ALERT_CATEGORIES)[number]["id"];
 // Notfall-Kategorien die den Emergency-Banner auslösen
 export const EMERGENCY_CATEGORIES = ["fire", "health_concern", "crime"] as const;
 
+// GPS-fähige Alert-Kategorien (Standort wird bei Erstellung erfasst)
+// WICHTIG: Nur diese Kategorien — nicht door_lock, shopping, tech_help, pet, other
+export const GPS_ALERT_CATEGORIES = [
+  "fire", "health_concern", "crime", "fall", "water_damage", "power_outage",
+] as const;
+
+export type GpsAlertCategory = (typeof GPS_ALERT_CATEGORIES)[number];
+
 // Hilfe-Börse Kategorien
 export const HELP_CATEGORIES = [
   { id: "garden", label: "Garten / Rasen", icon: "🌿" },

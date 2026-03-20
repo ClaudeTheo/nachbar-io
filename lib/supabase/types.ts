@@ -112,6 +112,8 @@ export interface ReputationPoint {
   created_at: string;
 }
 
+export type LocationSource = "gps" | "household" | "none";
+
 export interface Alert {
   id: string;
   quarter_id?: string;
@@ -123,6 +125,10 @@ export interface Alert {
   status: AlertStatus;
   is_emergency: boolean;
   current_radius: number;
+  // GPS-Standort (nur bei GPS_ALERT_CATEGORIES, DSGVO: auto-gelöscht bei resolved)
+  location_lat: number | null;
+  location_lng: number | null;
+  location_source: LocationSource | null;
   created_at: string;
   resolved_at: string | null;
   // Joined Felder

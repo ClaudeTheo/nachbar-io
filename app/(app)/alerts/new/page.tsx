@@ -8,11 +8,14 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { EmergencyBanner } from "@/components/EmergencyBanner";
-import { ALERT_CATEGORIES, EMERGENCY_CATEGORIES } from "@/lib/constants";
+import { ALERT_CATEGORIES, EMERGENCY_CATEGORIES, GPS_ALERT_CATEGORIES } from "@/lib/constants";
 import { CategoryIcon } from "@/components/CategoryIcon";
 import { ALERT_ICON_MAP, FALLBACK_ICON } from "@/lib/category-icons";
 import { createClient } from "@/lib/supabase/client";
 import { useQuarter } from "@/lib/quarters";
+import { useGeolocation } from "@/hooks/useGeolocation";
+import { LocationConsentDialog } from "@/components/alerts/LocationConsentDialog";
+import { AlertLocationCheckbox } from "@/components/alerts/AlertLocationCheckbox";
 
 type Step = "category" | "emergency" | "description" | "sent";
 
@@ -23,6 +26,9 @@ export default function NewAlertPage() {
   const [loading, setLoading] = useState(false);
   const router = useRouter();
   const { currentQuarter } = useQuarter();
+  const [shareLocation, setShareLocation] = useState(true);
+  const [showConsent, setShowConsent] = useState(false);
+  const { position: gpsPosition, loading: gpsLoading, requestPosition } = useGeolocation();
 
   // Prüfen ob es eine Notfall-Kategorie ist
   const isEmergency = selectedCategory && EMERGENCY_CATEGORIES.includes(selectedCategory as typeof EMERGENCY_CATEGORIES[number]);
@@ -36,10 +42,35 @@ export default function NewAlertPage() {
     } else {
       setStep("description");
     }
+
+    // GPS-Kategorie: Consent prüfen und Position anfordern
+    const isGpsCategory = GPS_ALERT_CATEGORIES.includes(categoryId as typeof GPS_ALERT_CATEGORIES[number]);
+    if (isGpsCategory) {
+      const consented = localStorage.getItem("nachbar-gps-consented");
+      if (consented === null) {
+        setShowConsent(true);
+      } else if (consented === "true") {
+        requestPosition();
+      } else {
+        setShareLocation(false);
+      }
+    }
   }
 
   function handleEmergencyAcknowledge() {
     setStep("description");
+  }
+
+  function handleConsentAccept() {
+    localStorage.setItem("nachbar-gps-consented", "true");
+    setShowConsent(false);
+    requestPosition();
+  }
+
+  function handleConsentDecline() {
+    localStorage.setItem("nachbar-gps-consented", "false");
+    setShowConsent(false);
+    setShareLocation(false);
   }
 
   async function handleSubmit() {
@@ -66,6 +97,32 @@ export default function NewAlertPage() {
 
     const category = ALERT_CATEGORIES.find((c) => c.id === selectedCategory);
 
+    // GPS-Daten bestimmen
+    const isGpsCategory = GPS_ALERT_CATEGORIES.includes(selectedCategory as typeof GPS_ALERT_CATEGORIES[number]);
+    let locationLat: number | null = null;
+    let locationLng: number | null = null;
+    let locationSource = "none";
+
+    if (isGpsCategory && shareLocation) {
+      if (gpsPosition) {
+        locationLat = gpsPosition.lat;
+        locationLng = gpsPosition.lng;
+        locationSource = "gps";
+      } else if (membership) {
+        // Fallback: Haushalt-Position
+        const { data: hh } = await supabase
+          .from("households")
+          .select("lat, lng")
+          .eq("id", membership.household_id)
+          .single();
+        if (hh?.lat && hh?.lng) {
+          locationLat = hh.lat;
+          locationLng = hh.lng;
+          locationSource = "household";
+        }
+      }
+    }
+
     const { error } = await supabase.from("alerts").insert({
       user_id: user.id,
       household_id: membership.household_id,
@@ -76,6 +133,9 @@ export default function NewAlertPage() {
       status: "open",
       is_emergency: isEmergency ?? false,
       current_radius: 1,
+      location_lat: locationLat,
+      location_lng: locationLng,
+      location_source: locationSource,
     });
 
     if (error) {
@@ -91,6 +151,16 @@ export default function NewAlertPage() {
 
   return (
     <div>
+      {/* GPS Consent-Dialog */}
+      {showConsent && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
+          <LocationConsentDialog
+            onAccept={handleConsentAccept}
+            onDecline={handleConsentDecline}
+          />
+        </div>
+      )}
+
       {/* Emergency-Banner (überlagert alles) */}
       {step === "emergency" && (
         <EmergencyBanner onAcknowledge={handleEmergencyAcknowledge} />
@@ -148,6 +218,14 @@ export default function NewAlertPage() {
               {description.length}/500
             </p>
           </div>
+
+          {GPS_ALERT_CATEGORIES.includes(selectedCategory as typeof GPS_ALERT_CATEGORIES[number]) && (
+            <AlertLocationCheckbox
+              checked={shareLocation}
+              onChange={setShareLocation}
+              gpsLoading={gpsLoading}
+            />
+          )}
 
           <Button
             onClick={handleSubmit}

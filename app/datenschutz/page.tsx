@@ -186,6 +186,22 @@ export default function DatenschutzPage() {
               <li>Push-Subscription-Daten (Endpoint, Schlüssel) für Benachrichtigungen</li>
               <li>Gerätetyp und Browser (für Kompatibilität, nicht für Tracking)</li>
             </ul>
+
+            <h4 className="mt-3 text-sm font-semibold">5.8 Standortdaten bei Hilferufen</h4>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Bei der Erstellung eines Hilferufs können Sie freiwillig Ihren GPS-Standort
+              (Breitengrad, Längengrad) teilen. Die Erfassung erfolgt über die Geolocation-API
+              Ihres Browsers.
+            </p>
+            <ul className="mt-1 list-disc pl-5 text-sm text-muted-foreground space-y-1">
+              <li><strong>Rechtsgrundlage:</strong> Art. 6 Abs. 1 lit. a DSGVO (Einwilligung)</li>
+              <li><strong>Zweck:</strong> Nachbarschaftliche Koordination bei Hilferufen</li>
+              <li><strong>Speicherdauer:</strong> Bis der Hilferuf als erledigt markiert wird, dann sofortige automatische Löschung</li>
+              <li><strong>Empfänger:</strong> Je nach Abo-Stufe — Angehörige (Plus) sehen den genauen Standort, Organisationen (Pro Community) und Ärzte (Pro Medical) sehen zunächst einen ungefähren Bereich (~50m), nach Helfer-Bestätigung den genauen Standort</li>
+              <li><strong>Freie Nutzer:</strong> Sehen keinen Standort, nur den Straßennamen</li>
+              <li><strong>Widerruf:</strong> Jederzeit in den Profileinstellungen oder per Checkbox bei jedem einzelnen Hilferuf. Alternativ genügt eine E-Mail an ThomasTh@gmx.de</li>
+              <li><strong>Fallback:</strong> Wenn Sie GPS verweigern, wird die hinterlegte Haushaltsadresse als ungefährer Standort verwendet (sofern Standortfreigabe aktiv)</li>
+            </ul>
           </section>
 
           {/* 6. Empfänger und Datenweitergabe */}

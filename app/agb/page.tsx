@@ -179,6 +179,17 @@ export default function AGBPage() {
               <li>Schäden durch Nichtbeachtung des Hinweises, in Notfällen den offiziellen Notruf zu nutzen</li>
               <li>vorübergehende Nichterreichbarkeit der Plattform (siehe §6)</li>
             </ul>
+
+            <h3 className="mt-4 text-base font-semibold">5.4 Standortdaten bei Hilferufen</h3>
+            <p className="mt-2 text-sm text-muted-foreground">
+              Bei Erstellung eines Hilferufs können Sie optional Ihren Standort teilen. Dieser dient
+              ausschließlich der nachbarschaftlichen Koordination und wird automatisch gelöscht, sobald
+              der Hilferuf als erledigt markiert wird. Die Standortfreigabe ersetzt nicht die Ortung
+              durch Rettungsdienste (112/110). Die Sichtbarkeit Ihres Standorts richtet sich nach der
+              Abo-Stufe der Empfänger: Angehörige (Plus) sehen den genauen Standort, Organisationen
+              (Pro) sehen zunächst nur einen ungefähren Bereich. Sie können die Standortfreigabe
+              jederzeit in Ihren Profileinstellungen oder bei jedem einzelnen Hilferuf deaktivieren.
+            </p>
           </section>
 
           {/* 6. Verfügbarkeit */}

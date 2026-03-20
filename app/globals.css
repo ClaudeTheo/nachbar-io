@@ -12,9 +12,9 @@
   --font-mono: var(--font-geist-mono);
 
   /* Nachbar.io Custom Colors — Warm & Persoenlich */
-  --color-quartier-green: #4CAF87;
+  --color-quartier-green: #389568;
   --color-quartier-green-light: #6BC4A1;
-  --color-quartier-green-dark: #3A8F6D;
+  --color-quartier-green-dark: #2D7A54;
   --color-anthrazit: #3D3D50;
   --color-anthrazit-light: #56566E;
   --color-warmwhite: #FDF8F3;
@@ -79,7 +79,7 @@
   --card-foreground: #3D3D50;
   --popover: #FFFCF9;
   --popover-foreground: #3D3D50;
-  --primary: #4CAF87;
+  --primary: #389568;
   --primary-foreground: #FFFFFF;
   --secondary: #F5F0EB;
   --secondary-foreground: #3D3D50;
@@ -90,8 +90,8 @@
   --destructive: #EF4444;
   --border: #EBE5DD;
   --input: #EBE5DD;
-  --ring: #4CAF87;
-  --chart-1: #4CAF87;
+  --ring: #389568;
+  --chart-1: #389568;
   --chart-2: #F59E0B;
   --chart-3: #3B82F6;
   --chart-4: #8B5CF6;
@@ -99,12 +99,12 @@
   --radius: 0.625rem;
   --sidebar: #FDF8F3;
   --sidebar-foreground: #3D3D50;
-  --sidebar-primary: #4CAF87;
+  --sidebar-primary: #389568;
   --sidebar-primary-foreground: #FFFFFF;
   --sidebar-accent: #F5F0EB;
   --sidebar-accent-foreground: #3D3D50;
   --sidebar-border: #EBE5DD;
-  --sidebar-ring: #4CAF87;
+  --sidebar-ring: #389568;
 }
 
 @layer base {
@@ -260,7 +260,7 @@ h1, h2, h3, h4 {
 
 /* Keyboard-Focus für Barrierefreiheit */
 :focus-visible {
-  outline: 2px solid #4CAF87;
+  outline: 2px solid #389568;
   outline-offset: 2px;
   border-radius: 4px;
 }
@@ -364,7 +364,7 @@ h1, h2, h3, h4 {
 }
 @keyframes window-glow {
   0% { background-color: transparent; box-shadow: none; }
-  100% { background-color: #4CAF87; box-shadow: 0 0 8px rgba(76,175,135,0.5); }
+  100% { background-color: #389568; box-shadow: 0 0 8px rgba(56,149,104,0.5); }
 }
 .animate-house-build { animation: house-build 0.7s ease-out both; }
 .animate-window-glow { animation: window-glow 0.4s ease-out both; }
@@ -452,8 +452,8 @@ h1, h2, h3, h4 {
   100% { transform: translate(var(--x), var(--y)) rotate(var(--r)) scale(0); opacity: 0; }
 }
 @keyframes glow-pulse-ring {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(76,175,135,0.4); }
-  50% { box-shadow: 0 0 0 14px rgba(76,175,135,0); }
+  0%, 100% { box-shadow: 0 0 0 0 rgba(56,149,104,0.4); }
+  50% { box-shadow: 0 0 0 14px rgba(56,149,104,0); }
 }
 .animate-glow-pulse { animation: glow-pulse-ring 2s ease-in-out infinite; }
 

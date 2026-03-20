@@ -147,7 +147,10 @@ export default function NotificationsInboxPage() {
   if (loading) {
     return (
       <div className="space-y-4 animate-fade-in-up">
-        <h1 className="text-xl font-bold text-anthrazit">Benachrichtigungen</h1>
+        <div>
+          <h1 className="text-xl font-bold text-anthrazit">Benachrichtigungen</h1>
+          <p className="text-sm text-muted-foreground mt-0.5">Ihre Nachrichten und Updates</p>
+        </div>
         {[1, 2, 3].map((i) => (
           <div key={i} className="h-16 animate-pulse rounded-lg bg-muted" />
         ))}
@@ -160,7 +163,10 @@ export default function NotificationsInboxPage() {
   return (
     <div className="space-y-4 animate-fade-in-up">
       <div className="flex items-center justify-between">
-        <h1 className="text-xl font-bold text-anthrazit">Benachrichtigungen</h1>
+        <div>
+          <h1 className="text-xl font-bold text-anthrazit">Benachrichtigungen</h1>
+          <p className="text-sm text-muted-foreground mt-0.5">Ihre Nachrichten und Updates</p>
+        </div>
         {unreadExists && (
           <Button
             variant="ghost"

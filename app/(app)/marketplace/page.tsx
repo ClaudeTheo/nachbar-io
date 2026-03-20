@@ -44,7 +44,10 @@ export default function MarketplacePage() {
   return (
     <div>
       <div className="mb-4 flex items-center justify-between">
-        <h1 className="text-xl font-bold text-anthrazit">Marktplatz</h1>
+        <div>
+          <h1 className="text-xl font-bold text-anthrazit">Marktplatz</h1>
+          <p className="text-sm text-muted-foreground mt-0.5">Kaufen, verschenken, tauschen</p>
+        </div>
         <Link
           href="/marketplace/new"
           className="flex items-center gap-1 rounded-lg bg-quartier-green px-3 py-2 text-sm font-semibold text-white hover:bg-quartier-green-dark"

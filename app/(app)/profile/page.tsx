@@ -74,7 +74,10 @@ export default function ProfilePage() {
 
   return (
     <div className="space-y-4">
-      <h1 className="text-xl font-bold text-anthrazit">Mein Profil</h1>
+      <div>
+        <h1 className="text-xl font-bold text-anthrazit">Mein Profil</h1>
+        <p className="text-sm text-muted-foreground mt-0.5">Einstellungen und Übersicht</p>
+      </div>
 
       {/* Profil-Card */}
       <Card>

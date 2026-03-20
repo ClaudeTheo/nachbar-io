@@ -94,6 +94,8 @@ export const AUDIT_EVENT_LABELS: Record<CareAuditEventType, string> = {
   heartbeat_toggle: 'Aktivitaetsstatus geaendert',
   escalation_triggered: 'Eskalation ausgeloest',
   escalation_resolved: 'Eskalation aufgeloest',
+  consent_updated: 'Einwilligung geändert',
+  consent_revoked: 'Einwilligung widerrufen',
 } as const;
 
 // Subscription-Plan-Features (Feature-Gates)

@@ -49,7 +49,8 @@ export type CareAuditEventType =
   | 'task_completed' | 'task_confirmed' | 'task_cancelled' | 'task_deleted'
   | 'document_generated' | 'profile_updated' | 'subscription_changed'
   | 'caregiver_invited' | 'caregiver_linked' | 'caregiver_revoked'
-  | 'heartbeat_toggle' | 'escalation_triggered' | 'escalation_resolved';
+  | 'heartbeat_toggle' | 'escalation_triggered' | 'escalation_resolved'
+  | 'consent_updated' | 'consent_revoked';
 
 export type CareDocumentType =
   | 'care_report_daily' | 'care_report_weekly' | 'care_report_monthly'

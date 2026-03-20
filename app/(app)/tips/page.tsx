@@ -28,6 +28,7 @@ export default function TipsPage() {
         .from("community_tips")
         .select("*, user:users(display_name, avatar_url)")
         .eq("status", "active")
+        .neq("category", "craftsmen")
         .order("created_at", { ascending: false })
         .range(page * TIPS_PER_PAGE, (page + 1) * TIPS_PER_PAGE);
 
@@ -104,6 +105,15 @@ export default function TipsPage() {
           ))}
         </div>
       )}
+
+      {/* Verweis auf Handwerker-Portal */}
+      <Link
+        href="/handwerker"
+        className="mb-4 flex items-center gap-2 rounded-lg border border-quartier-green/20 bg-quartier-green/5 p-3 text-sm text-quartier-green hover:bg-quartier-green/10"
+      >
+        🔧 Handwerker-Empfehlungen finden Sie jetzt im neuen Handwerker-Portal
+        <ChevronRight className="h-4 w-4 ml-auto" />
+      </Link>
 
       {/* Tipps-Liste */}
       {loading ? (

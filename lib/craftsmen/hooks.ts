@@ -92,6 +92,14 @@ export async function submitRecommendation(opts: {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { error: "Nicht angemeldet." };
 
+  // Prüfe ob es ein Insert oder Update ist (für Reputation-Punkte)
+  const { data: existing } = await supabase
+    .from("craftsman_recommendations")
+    .select("id")
+    .eq("tip_id", opts.tipId)
+    .eq("user_id", user.id)
+    .maybeSingle();
+
   const { error } = await supabase
     .from("craftsman_recommendations")
     .upsert(
@@ -108,6 +116,17 @@ export async function submitRecommendation(opts: {
     );
 
   if (error) return { error: error.message };
+
+  // Erstempfehlung: Reputation-Punkte vergeben
+  if (!existing) {
+    await supabase.from("reputation_points").insert({
+      user_id: user.id,
+      points: 5,
+      reason: "craftsman_recommendation",
+      reference_id: opts.tipId,
+    });
+  }
+
   return { error: null };
 }
 

@@ -5,6 +5,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { writeAuditLog } from '@/lib/care/audit';
 import { requireAuth, requireSubscription, unauthorizedResponse, requireCareAccess } from '@/lib/care/api-helpers';
 import { encryptFields, decryptFieldsArray, CARE_MEDICATIONS_ENCRYPTED_FIELDS } from '@/lib/care/field-encryption';
+import { checkCareConsent } from '@/lib/care/consent';
 import type { MedicationSchedule } from '@/lib/care/types';
 
 // GET /api/care/medications — Aktive Medikamente abrufen
@@ -60,6 +61,12 @@ export async function POST(request: NextRequest) {
   if (sub instanceof NextResponse) return sub;
 
   const { supabase, user } = auth;
+
+  // Art. 9 DSGVO: Einwilligung prüfen
+  const hasConsent = await checkCareConsent(supabase, user.id, 'medications');
+  if (!hasConsent) {
+    return NextResponse.json({ error: 'Einwilligung erforderlich', feature: 'medications' }, { status: 403 });
+  }
 
   let body: { name?: string; dosage?: string; schedule?: MedicationSchedule; instructions?: string; senior_id?: string };
   try { body = await request.json(); } catch {

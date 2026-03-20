@@ -10,6 +10,7 @@ import { requireCareAccess } from '@/lib/care/api-helpers';
 import { encryptField, decryptFields, CARE_SOS_ALERTS_ENCRYPTED_FIELDS, CARE_SOS_RESPONSES_ENCRYPTED_FIELDS } from '@/lib/care/field-encryption';
 import { CARE_SOS_CATEGORIES, ESCALATION_LEVELS } from '@/lib/care/constants';
 import { createCareLogger } from '@/lib/care/logger';
+import { checkCareConsent } from '@/lib/care/consent';
 import { getUserQuarterId } from '@/lib/quarters/helpers';
 import type { CareSosCategory, CareSosSource } from '@/lib/care/types';
 
@@ -36,6 +37,12 @@ export async function POST(request: NextRequest) {
     log.warn('auth_failed');
     log.done(401);
     return NextResponse.json({ error: 'Nicht authentifiziert' }, { status: 401 });
+  }
+
+  // Art. 9 DSGVO: Einwilligung prüfen
+  const hasConsent = await checkCareConsent(supabase, user.id, 'sos');
+  if (!hasConsent) {
+    return NextResponse.json({ error: 'Einwilligung erforderlich', feature: 'sos' }, { status: 403 });
   }
 
   // Request-Body einlesen und validieren

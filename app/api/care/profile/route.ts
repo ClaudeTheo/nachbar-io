@@ -6,6 +6,7 @@ import { createClient } from '@/lib/supabase/server';
 import { writeAuditLog } from '@/lib/care/audit';
 import { requireCareAccess } from '@/lib/care/api-helpers';
 import { encryptFields, decryptFields, CARE_PROFILES_ENCRYPTED_FIELDS } from '@/lib/care/field-encryption';
+import { checkCareConsent } from '@/lib/care/consent';
 import type { CareLevel, EscalationConfig, EmergencyContact } from '@/lib/care/types';
 
 // Gueltige Pflegestufen
@@ -88,6 +89,12 @@ export async function PUT(request: NextRequest) {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) {
     return NextResponse.json({ error: 'Nicht authentifiziert' }, { status: 401 });
+  }
+
+  // Art. 9 DSGVO: Einwilligung prüfen
+  const hasConsent = await checkCareConsent(supabase, user.id, 'care_profile');
+  if (!hasConsent) {
+    return NextResponse.json({ error: 'Einwilligung erforderlich', feature: 'care_profile' }, { status: 403 });
   }
 
   // Request-Body einlesen

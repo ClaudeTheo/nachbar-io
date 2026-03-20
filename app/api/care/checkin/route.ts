@@ -8,6 +8,7 @@ import { sendCareNotification } from '@/lib/care/notifications';
 import { requireCareAccess } from '@/lib/care/api-helpers';
 import { encryptField, decryptFields, decryptFieldsArray, CARE_CHECKINS_ENCRYPTED_FIELDS } from '@/lib/care/field-encryption';
 import { createCareLogger } from '@/lib/care/logger';
+import { checkCareConsent } from '@/lib/care/consent';
 import { getUserQuarterId } from '@/lib/quarters/helpers';
 import type { CareCheckinStatus, CareCheckinMood } from '@/lib/care/types';
 
@@ -31,6 +32,12 @@ export async function POST(request: NextRequest) {
     log.warn('auth_failed');
     log.done(401);
     return NextResponse.json({ error: 'Nicht authentifiziert' }, { status: 401 });
+  }
+
+  // Art. 9 DSGVO: Einwilligung prüfen
+  const hasConsent = await checkCareConsent(supabase, user.id, 'checkin');
+  if (!hasConsent) {
+    return NextResponse.json({ error: 'Einwilligung erforderlich', feature: 'checkin' }, { status: 403 });
   }
 
   // Request-Body einlesen und validieren

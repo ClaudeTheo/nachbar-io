@@ -204,6 +204,42 @@ export default function DatenschutzPage() {
             </ul>
           </section>
 
+          {/* 5.9 Einwilligungsmanagement Care-Modul */}
+          <section>
+            <h3 className="mb-1 font-semibold text-anthrazit">
+              5.9 Einwilligungsmanagement im Care-Modul
+            </h3>
+            <p>
+              Das Care-Modul verarbeitet besondere Kategorien personenbezogener Daten
+              (Gesundheitsdaten) gemäß Art. 9 Abs. 1 DSGVO. Die Verarbeitung erfolgt
+              ausschließlich auf Grundlage Ihrer ausdrücklichen Einwilligung
+              (Art. 9 Abs. 2 lit. a DSGVO).
+            </p>
+            <p className="mt-2">
+              Sie können für folgende Bereiche einzeln einwilligen oder die Einwilligung
+              widerrufen:
+            </p>
+            <ul className="mt-1 list-disc pl-5 space-y-1">
+              <li><strong>SOS-Hilferufe:</strong> Kategorie, Freitext-Notizen, GPS-Standort</li>
+              <li><strong>Täglicher Check-in:</strong> Stimmungsabfrage, persönliche Notizen</li>
+              <li><strong>Medikamenten-Verwaltung:</strong> Medikamentennamen, Dosierungen, Einnahmezeiten</li>
+              <li><strong>Pflegeprofil:</strong> Pflegegrad, medizinische Notizen, Versicherungsnummer</li>
+              <li><strong>Notfallkontakte:</strong> Telefonnummern und Beziehungen (erfordert SOS-Einwilligung)</li>
+            </ul>
+            <p className="mt-2">
+              <strong>Widerruf:</strong> Sie können jede Einwilligung jederzeit unter
+              „Care-Modul → Einwilligungen" widerrufen. Der Widerruf gilt ab sofort
+              und berührt nicht die Rechtmäßigkeit der bis dahin erfolgten Verarbeitung
+              (Art. 7 Abs. 3 DSGVO). Bei Widerruf können Sie optional auch die
+              zugehörigen Daten löschen lassen.
+            </p>
+            <p className="mt-2">
+              <strong>Nachweispflicht:</strong> Zeitpunkt und Version jeder Einwilligung
+              werden protokolliert (Art. 7 Abs. 1 DSGVO). Die Protokolle werden
+              10 Jahre aufbewahrt.
+            </p>
+          </section>
+
           {/* 6. Empfänger und Datenweitergabe */}
           <section>
             <h2 className="mb-2 text-lg font-semibold text-anthrazit">

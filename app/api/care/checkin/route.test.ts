@@ -37,6 +37,10 @@ vi.mock('@/lib/care/logger', () => ({
   }),
 }));
 
+vi.mock('@/lib/care/consent', () => ({
+  checkCareConsent: vi.fn().mockResolvedValue(true),
+}));
+
 import { POST, GET } from './route';
 import { writeAuditLog } from '@/lib/care/audit';
 import { sendCareNotification } from '@/lib/care/notifications';

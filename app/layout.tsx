@@ -1,13 +1,22 @@
 import type { Metadata, Viewport } from "next";
-import { Inter } from "next/font/google";
+import { Nunito, Nunito_Sans } from "next/font/google";
 import { Toaster } from "@/components/ui/sonner";
 import { ServiceWorkerRegistration } from "@/components/ServiceWorkerRegistration";
 import { CapacitorInit } from "@/components/CapacitorInit";
 import "./globals.css";
 
-const inter = Inter({
+const nunito = Nunito({
+  variable: "--font-heading",
+  subsets: ["latin"],
+  weight: ["700", "800"],
+  display: "swap",
+});
+
+const nunitoSans = Nunito_Sans({
   variable: "--font-sans",
   subsets: ["latin"],
+  weight: ["400", "600"],
+  display: "swap",
 });
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://nachbar-io.vercel.app";
@@ -62,7 +71,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="de">
-      <body className={`${inter.variable} font-sans antialiased`}>
+      <body className={`${nunito.variable} ${nunitoSans.variable} font-sans antialiased`}>
         {children}
         <Toaster position="top-center" />
         <ServiceWorkerRegistration />

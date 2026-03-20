@@ -8,21 +8,31 @@
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --font-sans: var(--font-sans);
+  --font-heading: var(--font-heading);
   --font-mono: var(--font-geist-mono);
 
-  /* Nachbar.io Custom Colors */
+  /* Nachbar.io Custom Colors — Warm & Persoenlich */
   --color-quartier-green: #4CAF87;
   --color-quartier-green-light: #6BC4A1;
   --color-quartier-green-dark: #3A8F6D;
-  --color-anthrazit: #2D3142;
-  --color-anthrazit-light: #4A4F63;
-  --color-warmwhite: #FAFAF8;
-  --color-lightgray: #F0F0EC;
+  --color-anthrazit: #3D3D50;
+  --color-anthrazit-light: #56566E;
+  --color-warmwhite: #FDF8F3;
+  --color-lightgray: #F5F0EB;
   --color-alert-amber: #F59E0B;
   --color-alert-amber-light: #FCD34D;
   --color-emergency-red: #EF4444;
   --color-success-green: #22C55E;
   --color-info-blue: #3B82F6;
+
+  /* Icon Circle Backgrounds */
+  --color-icon-bg-blue: #DBEAFE;
+  --color-icon-bg-green: #DCFCE7;
+  --color-icon-bg-orange: #FFEDD5;
+  --color-icon-bg-purple: #EDE9FE;
+  --color-icon-bg-gray: #F3F4F6;
+  --color-icon-bg-red: #FEE2E2;
+  --color-icon-bg-amber: #FEF3C7;
 
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
@@ -63,23 +73,23 @@
 }
 
 :root {
-  --background: #FAFAF8;
-  --foreground: #2D3142;
-  --card: #FFFFFF;
-  --card-foreground: #2D3142;
-  --popover: #FFFFFF;
-  --popover-foreground: #2D3142;
+  --background: #FDF8F3;
+  --foreground: #3D3D50;
+  --card: #FFFCF9;
+  --card-foreground: #3D3D50;
+  --popover: #FFFCF9;
+  --popover-foreground: #3D3D50;
   --primary: #4CAF87;
   --primary-foreground: #FFFFFF;
-  --secondary: #F0F0EC;
-  --secondary-foreground: #2D3142;
-  --muted: #F0F0EC;
+  --secondary: #F5F0EB;
+  --secondary-foreground: #3D3D50;
+  --muted: #F5F0EB;
   --muted-foreground: #9CA3AF;
-  --accent: #F0F0EC;
-  --accent-foreground: #2D3142;
+  --accent: #F5F0EB;
+  --accent-foreground: #3D3D50;
   --destructive: #EF4444;
-  --border: #E5E5E0;
-  --input: #E5E5E0;
+  --border: #EBE5DD;
+  --input: #EBE5DD;
   --ring: #4CAF87;
   --chart-1: #4CAF87;
   --chart-2: #F59E0B;
@@ -87,13 +97,13 @@
   --chart-4: #8B5CF6;
   --chart-5: #EC4899;
   --radius: 0.625rem;
-  --sidebar: #FAFAF8;
-  --sidebar-foreground: #2D3142;
+  --sidebar: #FDF8F3;
+  --sidebar-foreground: #3D3D50;
   --sidebar-primary: #4CAF87;
   --sidebar-primary-foreground: #FFFFFF;
-  --sidebar-accent: #F0F0EC;
-  --sidebar-accent-foreground: #2D3142;
-  --sidebar-border: #E5E5E0;
+  --sidebar-accent: #F5F0EB;
+  --sidebar-accent-foreground: #3D3D50;
+  --sidebar-border: #EBE5DD;
   --sidebar-ring: #4CAF87;
 }
 
@@ -110,30 +120,55 @@
 }
 
 /* ============================================================
-   DESIGN TOKENS — 2026 Modernisierung
+   DESIGN TOKENS — 2026 Warm & Persoenlich
    ============================================================ */
+
+/* Nunito fuer alle Ueberschriften */
+h1, h2, h3, h4 {
+  font-family: var(--font-heading), var(--font-sans), sans-serif;
+}
 
 /* Tap-Highlight auf Mobile deaktivieren */
 * {
   -webkit-tap-highlight-color: transparent;
 }
 
-/* Weiche Schatten */
+/* Warme Schatten (Anthrazit-getönt statt Schwarz) */
 .shadow-soft {
-  box-shadow: 0 1px 3px rgba(0,0,0,0.04), 0 1px 2px rgba(0,0,0,0.06);
+  box-shadow: 0 1px 4px rgba(61,61,80,0.04);
 }
 
 .shadow-soft-hover {
-  box-shadow: 0 4px 12px rgba(0,0,0,0.08), 0 2px 4px rgba(0,0,0,0.04);
+  box-shadow: 0 4px 12px rgba(61,61,80,0.08);
 }
 
-/* Glassmorphism Navigation */
+.shadow-hero {
+  box-shadow: 0 2px 8px rgba(61,61,80,0.06);
+}
+
+.shadow-nav {
+  box-shadow: 0 -1px 8px rgba(61,61,80,0.06);
+}
+
+/* Glassmorphism Navigation — warm */
 .glass-nav {
-  background: rgba(255,255,255,0.7);
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
-  border-top: 1px solid rgba(255,255,255,0.2);
-  box-shadow: 0 -4px 30px rgba(0,0,0,0.05);
+  background: rgba(253,248,243,0.85);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-top: 1px solid rgba(235,229,221,0.5);
+  box-shadow: 0 -1px 8px rgba(61,61,80,0.06);
+}
+
+/* Content-Card Basis — borderlos mit warmem Schatten */
+.card-content {
+  background: var(--card);
+  border-radius: 1rem;
+  border: none;
+  box-shadow: 0 1px 4px rgba(61,61,80,0.04);
+  transition: box-shadow 0.15s ease;
+}
+.card-content:hover {
+  box-shadow: 0 4px 12px rgba(61,61,80,0.08);
 }
 
 /* Interaktive Card-Klasse — GPU-beschleunigt */
@@ -147,7 +182,7 @@
 @media (hover: hover) {
   .card-interactive:hover {
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0,0,0,0.08), 0 2px 4px rgba(0,0,0,0.04);
+    box-shadow: 0 4px 12px rgba(61,61,80,0.08);
   }
 }
 
@@ -295,7 +330,7 @@
 }
 
 .animate-shimmer {
-  background: linear-gradient(90deg, #f0f0ec 25%, #e5e5e0 50%, #f0f0ec 75%);
+  background: linear-gradient(90deg, #F5F0EB 25%, #EBE5DD 50%, #F5F0EB 75%);
   background-size: 200% 100%;
   animation: shimmer 1s ease-in-out infinite;
 }
@@ -468,6 +503,6 @@
   .glass-nav {
     backdrop-filter: none;
     -webkit-backdrop-filter: none;
-    background: rgba(255,255,255,0.9);
+    background: rgba(253,248,243,0.95);
   }
 }

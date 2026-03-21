@@ -75,7 +75,7 @@ afterEach(() => {
   cleanup();
 });
 
-describe('VoiceAssistantFAB (Redesign)', () => {
+describe('VoiceAssistantFAB (Push-to-Talk)', () => {
   it('rendert nichts wenn kein SpeechEngine verfuegbar', async () => {
     shouldReturnEngine = false;
     const { VoiceAssistantFAB } = await import('@/components/VoiceAssistantFAB');
@@ -97,28 +97,88 @@ describe('VoiceAssistantFAB (Redesign)', () => {
     expect(btn.style.minHeight).toBe('56px');
   });
 
-  it('oeffnet Sheet und startet Engine bei Klick', async () => {
+  it('oeffnet Sheet im idle-State bei FAB-Klick (keine Aufnahme)', async () => {
     const { VoiceAssistantFAB } = await import('@/components/VoiceAssistantFAB');
     const { getByTestId } = render(<VoiceAssistantFAB />);
     fireEvent.click(getByTestId('voice-assistant-fab'));
-    expect(mockStartListening).toHaveBeenCalled();
+    // Aufnahme startet NICHT automatisch
+    expect(mockStartListening).not.toHaveBeenCalled();
+    // Push-to-Talk Button ist sichtbar
+    expect(getByTestId('push-to-talk-btn')).toBeDefined();
     expect(getByTestId('sheet')).toBeDefined();
+  });
+
+  it('zeigt grossen Mikrofon-Button im idle-State nach FAB-Klick', async () => {
+    const { VoiceAssistantFAB } = await import('@/components/VoiceAssistantFAB');
+    const { getByTestId } = render(<VoiceAssistantFAB />);
+    fireEvent.click(getByTestId('voice-assistant-fab'));
+    const pushBtn = getByTestId('push-to-talk-btn');
+    expect(pushBtn).toBeDefined();
+    expect(pushBtn.style.width).toBe('120px');
+    expect(pushBtn.style.height).toBe('120px');
+  });
+
+  it('zeigt Anweisung "Halten Sie gedrückt zum Sprechen"', async () => {
+    const { VoiceAssistantFAB } = await import('@/components/VoiceAssistantFAB');
+    const { getByTestId, getByText } = render(<VoiceAssistantFAB />);
+    fireEvent.click(getByTestId('voice-assistant-fab'));
+    expect(getByText('Halten Sie gedrückt zum Sprechen')).toBeDefined();
+  });
+
+  it('startet Aufnahme bei mousedown auf Push-to-Talk Button', async () => {
+    const { VoiceAssistantFAB } = await import('@/components/VoiceAssistantFAB');
+    const { getByTestId } = render(<VoiceAssistantFAB />);
+    fireEvent.click(getByTestId('voice-assistant-fab'));
+    fireEvent.mouseDown(getByTestId('push-to-talk-btn'));
+    expect(mockStartListening).toHaveBeenCalledTimes(1);
+  });
+
+  it('stoppt Aufnahme bei mouseup auf Push-to-Talk Button', async () => {
+    const { VoiceAssistantFAB } = await import('@/components/VoiceAssistantFAB');
+    const { getByTestId } = render(<VoiceAssistantFAB />);
+    fireEvent.click(getByTestId('voice-assistant-fab'));
+    const pushBtn = getByTestId('push-to-talk-btn');
+    // Aufnahme starten
+    fireEvent.mouseDown(pushBtn);
+    expect(mockStartListening).toHaveBeenCalledTimes(1);
+    // Genuegend Zeit simulieren (>500ms) — Date.now wird im Recording-Button ausgelesen
+    // Da mouseDown sofort recordingStartTimeRef setzt, muessen wir Date.now mocken
+    const originalNow = Date.now;
+    Date.now = () => originalNow() + 1000;
+    // Loslassen — Recording-Button ist jetzt im recording-State sichtbar
+    fireEvent.mouseUp(getByTestId('push-to-talk-btn'));
+    expect(mockStopListening).toHaveBeenCalledTimes(1);
+    Date.now = originalNow;
+  });
+
+  it('startet Aufnahme bei touchstart', async () => {
+    const { VoiceAssistantFAB } = await import('@/components/VoiceAssistantFAB');
+    const { getByTestId } = render(<VoiceAssistantFAB />);
+    fireEvent.click(getByTestId('voice-assistant-fab'));
+    fireEvent.touchStart(getByTestId('push-to-talk-btn'));
+    expect(mockStartListening).toHaveBeenCalledTimes(1);
+  });
+
+  it('stoppt Aufnahme bei touchend', async () => {
+    const { VoiceAssistantFAB } = await import('@/components/VoiceAssistantFAB');
+    const { getByTestId } = render(<VoiceAssistantFAB />);
+    fireEvent.click(getByTestId('voice-assistant-fab'));
+    fireEvent.touchStart(getByTestId('push-to-talk-btn'));
+    const originalNow = Date.now;
+    Date.now = () => originalNow() + 1000;
+    fireEvent.touchEnd(getByTestId('push-to-talk-btn'));
+    expect(mockStopListening).toHaveBeenCalledTimes(1);
+    Date.now = originalNow;
   });
 
   it('zeigt AudioWaveform im Sheet waehrend Aufnahme', async () => {
     const { VoiceAssistantFAB } = await import('@/components/VoiceAssistantFAB');
     const { getByTestId } = render(<VoiceAssistantFAB />);
+    // FAB klicken → idle
     fireEvent.click(getByTestId('voice-assistant-fab'));
+    // Push-to-Talk druecken → recording
+    fireEvent.mouseDown(getByTestId('push-to-talk-btn'));
     expect(getByTestId('audio-waveform')).toBeDefined();
-  });
-
-  it('zeigt roten Stopp-Button waehrend Aufnahme', async () => {
-    const { VoiceAssistantFAB } = await import('@/components/VoiceAssistantFAB');
-    const { getByTestId, getByRole } = render(<VoiceAssistantFAB />);
-    fireEvent.click(getByTestId('voice-assistant-fab'));
-    const stopBtn = getByRole('button', { name: 'Aufnahme stoppen' });
-    expect(stopBtn).toBeDefined();
-    expect(stopBtn.className).toContain('bg-red');
   });
 
   it('ruft /api/voice/assistant auf nach Transkription', async () => {
@@ -132,6 +192,7 @@ describe('VoiceAssistantFAB (Redesign)', () => {
     const { VoiceAssistantFAB } = await import('@/components/VoiceAssistantFAB');
     const { getByTestId } = render(<VoiceAssistantFAB />);
     fireEvent.click(getByTestId('voice-assistant-fab'));
+    fireEvent.mouseDown(getByTestId('push-to-talk-btn'));
 
     const callbacks = mockStartListening.mock.calls[0][0];
     await act(async () => { callbacks.onTranscript('Hilfe beim Einkaufen'); });
@@ -155,6 +216,7 @@ describe('VoiceAssistantFAB (Redesign)', () => {
     const { VoiceAssistantFAB } = await import('@/components/VoiceAssistantFAB');
     const { getByTestId, getByText } = render(<VoiceAssistantFAB />);
     fireEvent.click(getByTestId('voice-assistant-fab'));
+    fireEvent.mouseDown(getByTestId('push-to-talk-btn'));
 
     const callbacks = mockStartListening.mock.calls[0][0];
     await act(async () => { callbacks.onTranscript('Hilfe'); });
@@ -173,6 +235,7 @@ describe('VoiceAssistantFAB (Redesign)', () => {
     const { VoiceAssistantFAB } = await import('@/components/VoiceAssistantFAB');
     const { getByTestId, getByText } = render(<VoiceAssistantFAB />);
     fireEvent.click(getByTestId('voice-assistant-fab'));
+    fireEvent.mouseDown(getByTestId('push-to-talk-btn'));
 
     const callbacks = mockStartListening.mock.calls[0][0];
     await act(async () => { callbacks.onTranscript('Hilfe'); });
@@ -180,7 +243,7 @@ describe('VoiceAssistantFAB (Redesign)', () => {
     await waitFor(() => { expect(getByText(/Nochmal sprechen/)).toBeDefined(); });
   });
 
-  it('"Nochmal sprechen" startet neue Aufnahme', async () => {
+  it('"Nochmal sprechen" kehrt zum idle-State zurueck', async () => {
     mockFetch
       .mockResolvedValueOnce({
         ok: true,
@@ -191,6 +254,7 @@ describe('VoiceAssistantFAB (Redesign)', () => {
     const { VoiceAssistantFAB } = await import('@/components/VoiceAssistantFAB');
     const { getByTestId, getByText } = render(<VoiceAssistantFAB />);
     fireEvent.click(getByTestId('voice-assistant-fab'));
+    fireEvent.mouseDown(getByTestId('push-to-talk-btn'));
 
     const callbacks = mockStartListening.mock.calls[0][0];
     await act(async () => { callbacks.onTranscript('Hilfe'); });
@@ -198,8 +262,9 @@ describe('VoiceAssistantFAB (Redesign)', () => {
     await waitFor(() => { expect(getByText(/Nochmal sprechen/)).toBeDefined(); });
 
     fireEvent.click(getByText(/Nochmal sprechen/));
-    expect(mockStartListening).toHaveBeenCalledTimes(2);
-    expect(getByTestId('sheet')).toBeDefined();
+    // Startet NICHT automatisch die Aufnahme — kehrt zum idle zurueck
+    expect(mockStartListening).toHaveBeenCalledTimes(1); // nur der erste mouseDown-Aufruf
+    expect(getByTestId('push-to-talk-btn')).toBeDefined();
   });
 
   it('Sheet schliesst bei "Schließen" Button', async () => {
@@ -213,6 +278,7 @@ describe('VoiceAssistantFAB (Redesign)', () => {
     const { VoiceAssistantFAB } = await import('@/components/VoiceAssistantFAB');
     const { getByTestId, getByText, queryByTestId } = render(<VoiceAssistantFAB />);
     fireEvent.click(getByTestId('voice-assistant-fab'));
+    fireEvent.mouseDown(getByTestId('push-to-talk-btn'));
 
     const callbacks = mockStartListening.mock.calls[0][0];
     await act(async () => { callbacks.onTranscript('Test'); });
@@ -234,6 +300,7 @@ describe('VoiceAssistantFAB (Redesign)', () => {
     const { VoiceAssistantFAB } = await import('@/components/VoiceAssistantFAB');
     const { getByTestId, getByText } = render(<VoiceAssistantFAB />);
     fireEvent.click(getByTestId('voice-assistant-fab'));
+    fireEvent.mouseDown(getByTestId('push-to-talk-btn'));
 
     const callbacks = mockStartListening.mock.calls[0][0];
     await act(async () => { callbacks.onTranscript('Einkaufen'); });
@@ -248,6 +315,7 @@ describe('VoiceAssistantFAB (Redesign)', () => {
     const { VoiceAssistantFAB } = await import('@/components/VoiceAssistantFAB');
     const { getByTestId, getByText } = render(<VoiceAssistantFAB />);
     fireEvent.click(getByTestId('voice-assistant-fab'));
+    fireEvent.mouseDown(getByTestId('push-to-talk-btn'));
 
     const callbacks = mockStartListening.mock.calls[0][0];
     await act(async () => { callbacks.onError('not-allowed'); });
@@ -273,6 +341,7 @@ describe('VoiceAssistantFAB (Redesign)', () => {
     const { VoiceAssistantFAB } = await import('@/components/VoiceAssistantFAB');
     const { getByTestId } = render(<VoiceAssistantFAB />);
     fireEvent.click(getByTestId('voice-assistant-fab'));
+    fireEvent.mouseDown(getByTestId('push-to-talk-btn'));
 
     const callbacks = mockStartListening.mock.calls[0][0];
     await act(async () => { callbacks.onTranscript('Hilfe'); });
@@ -302,6 +371,7 @@ describe('VoiceAssistantFAB (Redesign)', () => {
     const { VoiceAssistantFAB } = await import('@/components/VoiceAssistantFAB');
     const { getByTestId, getByText } = render(<VoiceAssistantFAB />);
     fireEvent.click(getByTestId('voice-assistant-fab'));
+    fireEvent.mouseDown(getByTestId('push-to-talk-btn'));
 
     const callbacks = mockStartListening.mock.calls[0][0];
     await act(async () => { callbacks.onTranscript('Test'); });
@@ -329,6 +399,7 @@ describe('VoiceAssistantFAB (Redesign)', () => {
     const { VoiceAssistantFAB } = await import('@/components/VoiceAssistantFAB');
     const { getByTestId, getByText } = render(<VoiceAssistantFAB />);
     fireEvent.click(getByTestId('voice-assistant-fab'));
+    fireEvent.mouseDown(getByTestId('push-to-talk-btn'));
 
     const callbacks = mockStartListening.mock.calls[0][0];
     await act(async () => { callbacks.onTranscript('Hilfe'); });

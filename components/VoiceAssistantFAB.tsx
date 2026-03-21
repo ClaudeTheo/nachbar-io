@@ -6,7 +6,7 @@
 
 import { useState, useRef, useCallback, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Mic, Loader2, HelpCircle, AlertTriangle, MapPin, MessageCircle, Navigation, Search, Square, RotateCcw, X, Volume2, VolumeX } from 'lucide-react';
+import { Mic, Loader2, HelpCircle, AlertTriangle, MessageCircle, Navigation, Search, RotateCcw, X, Volume2, VolumeX } from 'lucide-react';
 import {
   Sheet,
   SheetContent,
@@ -22,7 +22,7 @@ import type { SpeechEngine, SpeechEngineCallbacks } from '@/lib/voice/speech-eng
 import type { AssistantAction, AssistantResult } from '@/lib/voice/assistant-classify';
 
 /** Sheet-Zustaende */
-type SheetState = 'closed' | 'recording' | 'processing' | 'speaking' | 'result' | 'error';
+type SheetState = 'closed' | 'idle' | 'recording' | 'processing' | 'speaking' | 'result' | 'error';
 
 /** Aktions-Konfiguration fuer das Bottom-Sheet */
 interface ActionConfig {
@@ -75,6 +75,8 @@ export function VoiceAssistantFAB() {
   const [errorMessage, setErrorMessage] = useState('');
   const [previousAction, setPreviousAction] = useState<{ action: string; transcript: string } | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  // Push-to-Talk: Startzeitpunkt fuer Mindestdauer-Pruefung
+  const recordingStartTimeRef = useRef<number>(0);
 
   // Cleanup bei Unmount
   useEffect(() => {
@@ -212,13 +214,39 @@ export function VoiceAssistantFAB() {
     engineRef.current?.stopListening();
   }, []);
 
-  // FAB-Klick: Sheet oeffnen + Aufnahme starten
+  // FAB-Klick: Sheet oeffnen im idle-State (Push-to-Talk)
   const handleFabClick = useCallback(() => {
     if (sheetState === 'closed') {
       setPreviousAction(null);
-      startRecording();
+      setSheetState('idle');
     }
-  }, [sheetState, startRecording]);
+  }, [sheetState]);
+
+  // Push-to-Talk: Druecken startet Aufnahme
+  const handlePushStart = useCallback((e: React.MouseEvent | React.TouchEvent) => {
+    if ('touches' in e) e.preventDefault(); // Ghost-Clicks verhindern
+    recordingStartTimeRef.current = Date.now();
+    startRecording();
+    // Haptisches Feedback
+    if (typeof navigator !== 'undefined' && navigator.vibrate) {
+      navigator.vibrate(50);
+    }
+  }, [startRecording]);
+
+  // Push-to-Talk: Loslassen stoppt Aufnahme (mit Mindestdauer-Pruefung)
+  const handlePushEnd = useCallback((e: React.MouseEvent | React.TouchEvent) => {
+    if ('touches' in e) e.preventDefault();
+    if (sheetState !== 'recording') return;
+    const elapsed = Date.now() - recordingStartTimeRef.current;
+    if (elapsed < 500) {
+      // Zu kurz — abbrechen
+      engineRef.current?.cleanup();
+      setSheetState('idle');
+      toast.error('Bitte etwas länger gedrückt halten');
+    } else {
+      stopRecording();
+    }
+  }, [sheetState, stopRecording]);
 
   // Sprachausgabe stoppen
   const handleStopSpeaking = useCallback(() => {
@@ -229,7 +257,7 @@ export function VoiceAssistantFAB() {
     setSheetState('result');
   }, []);
 
-  // "Nochmal sprechen": Vorherige Aktion speichern, neue Aufnahme
+  // "Nochmal sprechen": Vorherige Aktion speichern, zurueck zum idle-State
   const handleRetry = useCallback(() => {
     if (audioRef.current) {
       audioRef.current.pause();
@@ -240,8 +268,8 @@ export function VoiceAssistantFAB() {
     }
     setResult(null);
     setTranscript('');
-    startRecording();
-  }, [result, transcript, startRecording]);
+    setSheetState('idle');
+  }, [result, transcript]);
 
   // Aktions-Button: Navigieren + Sheet schliessen
   const handleAction = useCallback(() => {
@@ -295,6 +323,12 @@ export function VoiceAssistantFAB() {
         <SheetContent side="bottom" className="mx-auto max-w-lg rounded-t-2xl">
           <SheetHeader>
             <SheetTitle className="flex items-center gap-2 text-[#2D3142]">
+              {sheetState === 'idle' && (
+                <>
+                  <Mic className="h-5 w-5 text-[#4CAF87]" />
+                  Sprachassistent
+                </>
+              )}
               {sheetState === 'recording' && (
                 <>
                   <Mic className="h-5 w-5 text-[#4CAF87]" />
@@ -327,6 +361,7 @@ export function VoiceAssistantFAB() {
               )}
             </SheetTitle>
             <SheetDescription>
+              {sheetState === 'idle' && 'Bereit zum Sprechen'}
               {sheetState === 'recording' && 'Sprechen Sie jetzt...'}
               {sheetState === 'processing' && 'Ihre Anfrage wird analysiert...'}
               {sheetState === 'speaking' && (result?.spokenResponse || result?.message || '')}
@@ -336,20 +371,51 @@ export function VoiceAssistantFAB() {
           </SheetHeader>
 
           <div className="mt-4 space-y-4">
-            {/* RECORDING: Waveform + Stopp-Button */}
-            {sheetState === 'recording' && (
-              <>
-                <AudioWaveform audioLevel={audioLevel} isActive={true} />
+            {/* IDLE: Push-to-Talk Button */}
+            {sheetState === 'idle' && (
+              <div className="flex flex-col items-center gap-4 py-4">
                 <button
-                  onClick={stopRecording}
-                  className="w-full flex items-center justify-center gap-2 rounded-xl bg-red-500 text-white font-medium text-base transition-all hover:bg-red-600 active:scale-95"
-                  style={{ minHeight: '80px', touchAction: 'manipulation' }}
-                  aria-label="Aufnahme stoppen"
+                  data-testid="push-to-talk-btn"
+                  onMouseDown={handlePushStart}
+                  onMouseUp={handlePushEnd}
+                  onMouseLeave={handlePushEnd}
+                  onTouchStart={handlePushStart}
+                  onTouchEnd={handlePushEnd}
+                  className="flex items-center justify-center rounded-full bg-[#4CAF87] text-white shadow-lg select-none"
+                  style={{ width: '120px', height: '120px', touchAction: 'none' }}
+                  aria-label="Gedrückt halten zum Sprechen"
                 >
-                  <Square className="h-6 w-6" />
-                  Aufnahme stoppen
+                  <Mic className="h-12 w-12" />
                 </button>
-              </>
+                <p className="text-base text-[#2D3142] font-medium text-center">
+                  Halten Sie gedrückt zum Sprechen
+                </p>
+              </div>
+            )}
+
+            {/* RECORDING: Push-to-Talk aktiv (pulsierender Button + Waveform) */}
+            {sheetState === 'recording' && (
+              <div className="flex flex-col items-center gap-4 py-4">
+                <div className="relative flex items-center justify-center">
+                  {/* Pulsierender Ring */}
+                  <div className="absolute rounded-full bg-[#4CAF87]/20 animate-pulse" style={{ width: '150px', height: '150px' }} />
+                  <button
+                    data-testid="push-to-talk-btn"
+                    onMouseUp={handlePushEnd}
+                    onMouseLeave={handlePushEnd}
+                    onTouchEnd={handlePushEnd}
+                    className="relative flex items-center justify-center rounded-full bg-[#4CAF87] text-white shadow-lg select-none"
+                    style={{ width: '130px', height: '130px', touchAction: 'none' }}
+                    aria-label="Loslassen zum Senden"
+                  >
+                    <Mic className="h-14 w-14" />
+                  </button>
+                </div>
+                <p className="text-base text-[#4CAF87] font-medium text-center">
+                  Lassen Sie los zum Senden
+                </p>
+                <AudioWaveform audioLevel={audioLevel} isActive={true} />
+              </div>
             )}
 
             {/* PROCESSING: Spinner */}

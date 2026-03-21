@@ -6,8 +6,8 @@ import { ArrowLeft, Bell, ChevronLeft, ChevronRight, Loader2, X } from "lucide-r
 import { toast } from "sonner";
 import { createClient } from "@/lib/supabase/client";
 import { useQuarter } from "@/lib/quarters";
-import { WASTE_TYPES, DISCLAIMERS } from "@/lib/municipal";
-import type { WasteSchedule, WasteReminder, WasteType, WasteCollectionDate } from "@/lib/municipal";
+import { WASTE_TYPES, DISCLAIMERS, ANNOUNCEMENT_CALENDAR_COLORS, ANNOUNCEMENT_CATEGORIES } from "@/lib/municipal";
+import type { WasteSchedule, WasteReminder, WasteType, WasteCollectionDate, CalendarAnnouncementEvent } from "@/lib/municipal";
 
 // --- Hilfsfunktionen ---
 
@@ -88,6 +88,9 @@ function getCalendarDays(year: number, month: number): { date: string; inMonth: 
 /** Waste-Type Lookup Map */
 const wasteTypeMap = new Map(WASTE_TYPES.map((t) => [t.id, t]));
 
+/** Announcement-Kategorie Lookup Map */
+const announcementCategoryMap = new Map(ANNOUNCEMENT_CATEGORIES.map((c) => [c.id, c]));
+
 // --- Hauptkomponente ---
 
 export default function WasteCalendarPage() {
@@ -103,6 +106,10 @@ export default function WasteCalendarPage() {
   const [reminders, setReminders] = useState<WasteReminder[]>([]);
   const [loadingData, setLoadingData] = useState(true);
   const [savingType, setSavingType] = useState<WasteType | null>(null);
+
+  // Amtsblatt-Termine
+  const [announcements, setAnnouncements] = useState<CalendarAnnouncementEvent[]>([]);
+  const [showAnnouncements, setShowAnnouncements] = useState(true);
 
   // Tooltip fuer Kalendertag
   const [selectedDay, setSelectedDay] = useState<string | null>(null);
@@ -126,8 +133,8 @@ export default function WasteCalendarPage() {
 
       const areaIds = (areaLinks ?? []).map((a: { area_id: string }) => a.area_id);
 
-      // 2. Termine + Erinnerungen parallel laden
-      const [newSchedulesRes, legacyRes, remindersRes] = await Promise.all([
+      // 2. Termine + Erinnerungen + Amtsblatt parallel laden
+      const [newSchedulesRes, legacyRes, remindersRes, announcementsRes] = await Promise.all([
         // Neue Tabelle (source-driven)
         areaIds.length > 0
           ? supabase
@@ -151,6 +158,12 @@ export default function WasteCalendarPage() {
               .select("*")
               .eq("user_id", user.id)
           : Promise.resolve({ data: null }),
+        // Amtsblatt-Termine (Bekanntmachungen)
+        supabase
+          .from("municipal_announcements")
+          .select("id, title, category, published_at, expires_at, source_url")
+          .eq("quarter_id", quarterId)
+          .order("published_at"),
       ]);
 
       if (cancelled) return;
@@ -160,6 +173,7 @@ export default function WasteCalendarPage() {
       const legacyDates = legacyRes.data ?? [];
       setSchedules(newDates.length > 0 ? newDates : legacyDates);
       if (remindersRes.data) setReminders(remindersRes.data);
+      setAnnouncements((announcementsRes.data ?? []) as CalendarAnnouncementEvent[]);
       setLoadingData(false);
     }
 
@@ -185,6 +199,19 @@ export default function WasteCalendarPage() {
     }
     return map;
   }, [schedules]);
+
+  // --- Amtsblatt-Termine nach Datum gruppiert (fuer Kalender) ---
+  const announcementsByDate = useMemo(() => {
+    const map = new Map<string, CalendarAnnouncementEvent[]>();
+    for (const a of announcements) {
+      // published_at ist ein Timestamp, wir brauchen nur das Datum (YYYY-MM-DD)
+      const dateKey = a.published_at.slice(0, 10);
+      const list = map.get(dateKey) ?? [];
+      list.push(a);
+      map.set(dateKey, list);
+    }
+    return map;
+  }, [announcements]);
 
   // --- Kalender-Tage ---
   const calendarDays = useMemo(
@@ -300,7 +327,10 @@ export default function WasteCalendarPage() {
           >
             <ArrowLeft className="h-5 w-5 text-anthrazit" />
           </Link>
-          <h1 className="text-xl font-bold text-anthrazit">Müllkalender</h1>
+          <div>
+            <h1 className="text-xl font-bold text-anthrazit">Quartier-Kalender</h1>
+            <p className="text-xs text-muted-foreground">Mülltermine & Veranstaltungen in Ihrem Quartier</p>
+          </div>
         </div>
         <Link
           href="/waste-calendar#reminders"
@@ -361,18 +391,47 @@ export default function WasteCalendarPage() {
         )}
       </div>
 
-      {/* Muellarten-Legende */}
-      <div className="flex flex-wrap gap-2">
-        {WASTE_TYPES.map((type) => (
-          <span
-            key={type.id}
-            className="flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-medium"
-            style={{ backgroundColor: `${type.color}15`, color: type.color }}
-          >
-            <span aria-hidden="true">{type.icon}</span>
-            {type.label}
+      {/* Legende + Amtsblatt-Toggle */}
+      <div className="space-y-2">
+        <div className="flex flex-wrap gap-2">
+          {WASTE_TYPES.map((type) => (
+            <span
+              key={type.id}
+              className="flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-medium"
+              style={{ backgroundColor: `${type.color}15`, color: type.color }}
+            >
+              <span aria-hidden="true">{type.icon}</span>
+              {type.label}
+            </span>
+          ))}
+        </div>
+        {/* Toggle fuer Amtsblatt-Termine */}
+        <button
+          onClick={() => setShowAnnouncements((v) => !v)}
+          className="flex items-center justify-between w-full rounded-lg bg-gray-50 px-3 py-2.5 min-h-[44px] hover:bg-gray-100 transition-colors"
+          aria-label={`Amtsblatt-Termine ${showAnnouncements ? "ausblenden" : "einblenden"}`}
+          data-testid="announcement-toggle"
+        >
+          <span className="flex items-center gap-2 text-sm text-anthrazit">
+            <span aria-hidden="true">📰</span>
+            Amtsblatt-Termine anzeigen
           </span>
-        ))}
+          <div
+            className={`
+              w-11 h-6 rounded-full transition-colors relative
+              ${showAnnouncements ? "bg-quartier-green" : "bg-gray-300"}
+            `}
+            role="switch"
+            aria-checked={showAnnouncements}
+          >
+            <div
+              className={`
+                absolute top-0.5 h-5 w-5 rounded-full bg-white shadow-sm transition-transform
+                ${showAnnouncements ? "translate-x-[22px]" : "translate-x-0.5"}
+              `}
+            />
+          </div>
+        </button>
       </div>
 
       {/* Monatskalender */}
@@ -412,36 +471,39 @@ export default function WasteCalendarPage() {
         <div className="grid grid-cols-7 gap-px relative">
           {calendarDays.map(({ date, inMonth }) => {
             const dayCollections = schedulesByDate.get(date) ?? [];
+            const dayAnnouncements = showAnnouncements ? (announcementsByDate.get(date) ?? []) : [];
             const isToday = date === today;
             const hasCollections = dayCollections.length > 0;
+            const hasAnnouncements = dayAnnouncements.length > 0;
+            const hasEvents = hasCollections || hasAnnouncements;
             const dayNum = parseInt(date.split("-")[2], 10);
 
             return (
               <div key={date} className="relative">
                 <button
                   onClick={() => {
-                    if (hasCollections) {
+                    if (hasEvents) {
                       setSelectedDay(selectedDay === date ? null : date);
                     }
                   }}
-                  disabled={!hasCollections}
+                  disabled={!hasEvents}
                   className={`
                     w-full aspect-square flex flex-col items-center justify-center gap-0.5 rounded-lg text-sm
                     transition-colors min-h-[44px]
                     ${!inMonth ? "text-gray-300" : "text-anthrazit"}
                     ${isToday ? "bg-quartier-green/10 font-bold ring-1 ring-quartier-green/30" : ""}
-                    ${hasCollections && inMonth ? "hover:bg-gray-50 cursor-pointer" : ""}
+                    ${hasEvents && inMonth ? "hover:bg-gray-50 cursor-pointer" : ""}
                     ${selectedDay === date ? "bg-quartier-green/15" : ""}
                   `}
                   aria-label={
-                    hasCollections
-                      ? `${dayNum}. — ${dayCollections.length} Abholung(en)`
+                    hasEvents
+                      ? `${dayNum}. — ${dayCollections.length} Abholung(en)${hasAnnouncements ? `, ${dayAnnouncements.length} Veranstaltung(en)` : ""}`
                       : `${dayNum}.`
                   }
                 >
                   <span>{dayNum}</span>
-                  {hasCollections && (
-                    <div className="flex gap-0.5">
+                  {hasEvents && (
+                    <div className="flex gap-0.5 flex-wrap justify-center">
                       {dayCollections.map((c) => {
                         const wt = wasteTypeMap.get(c.waste_type);
                         return (
@@ -453,15 +515,23 @@ export default function WasteCalendarPage() {
                           />
                         );
                       })}
+                      {dayAnnouncements.map((a) => (
+                        <span
+                          key={a.id}
+                          className="block h-1.5 w-1.5 rounded-sm"
+                          style={{ backgroundColor: ANNOUNCEMENT_CALENDAR_COLORS[a.category] ?? "#9CA3AF" }}
+                          aria-hidden="true"
+                        />
+                      ))}
                     </div>
                   )}
                 </button>
 
                 {/* Tooltip/Popup fuer ausgewaehlten Tag */}
-                {selectedDay === date && hasCollections && (
+                {selectedDay === date && hasEvents && (
                   <div
                     ref={tooltipRef}
-                    className="absolute z-20 left-1/2 -translate-x-1/2 top-full mt-1 w-52 rounded-lg bg-white border border-gray-200 shadow-lg p-3"
+                    className="absolute z-20 left-1/2 -translate-x-1/2 top-full mt-1 w-56 rounded-lg bg-white border border-gray-200 shadow-lg p-3"
                   >
                     <div className="flex items-center justify-between mb-2">
                       <p className="text-xs font-semibold text-anthrazit">
@@ -476,6 +546,7 @@ export default function WasteCalendarPage() {
                       </button>
                     </div>
                     <div className="space-y-1.5">
+                      {/* Muell-Abholungen */}
                       {dayCollections.map((c) => {
                         const wt = wasteTypeMap.get(c.waste_type);
                         return (
@@ -492,6 +563,44 @@ export default function WasteCalendarPage() {
                                 {c.notes}
                               </span>
                             )}
+                          </div>
+                        );
+                      })}
+                      {/* Amtsblatt-Termine */}
+                      {dayAnnouncements.length > 0 && dayCollections.length > 0 && (
+                        <hr className="border-gray-100" />
+                      )}
+                      {dayAnnouncements.map((a) => {
+                        const cat = announcementCategoryMap.get(a.category);
+                        return (
+                          <div key={a.id} className="space-y-0.5">
+                            <div className="flex items-center gap-2">
+                              <span
+                                className="block h-2.5 w-2.5 rounded-sm shrink-0"
+                                style={{ backgroundColor: ANNOUNCEMENT_CALENDAR_COLORS[a.category] ?? "#9CA3AF" }}
+                              />
+                              <span className="text-xs text-anthrazit truncate flex-1">
+                                {cat?.icon} {a.title}
+                              </span>
+                            </div>
+                            <div className="flex items-center gap-1 pl-[18px]">
+                              <span
+                                className="text-[10px] px-1.5 py-0.5 rounded-full font-medium"
+                                style={{
+                                  backgroundColor: `${ANNOUNCEMENT_CALENDAR_COLORS[a.category] ?? "#9CA3AF"}15`,
+                                  color: ANNOUNCEMENT_CALENDAR_COLORS[a.category] ?? "#9CA3AF",
+                                }}
+                              >
+                                {cat?.label ?? a.category}
+                              </span>
+                              <Link
+                                href="/city-services?tab=announcements"
+                                className="text-[10px] text-quartier-green hover:underline ml-auto"
+                                onClick={(e) => e.stopPropagation()}
+                              >
+                                Zum Artikel
+                              </Link>
+                            </div>
                           </div>
                         );
                       })}

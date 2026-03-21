@@ -47,7 +47,7 @@ export function QuartierServicesSection({
           <div className="flex h-10 w-10 items-center justify-center rounded-full bg-quartier-green/10">
             <Trash2 className="h-5 w-5 text-quartier-green" />
           </div>
-          <span className="text-xs font-medium text-anthrazit">Müllkalender</span>
+          <span className="text-xs font-medium text-anthrazit">Quartier-Kalender</span>
           {nextWasteInfo && (
             <span className="text-[10px] text-muted-foreground truncate max-w-full">
               {nextWasteInfo}

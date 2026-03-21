@@ -66,6 +66,20 @@ export const ANNOUNCEMENT_CATEGORIES: {
   { id: "entsorgung", label: "Entsorgung", icon: "♻️" },
 ] as const;
 
+// --- Amtsblatt-Kalenderfarben ---
+
+export const ANNOUNCEMENT_CALENDAR_COLORS: Partial<Record<AnnouncementCategory, string>> = {
+  veranstaltung: "#8B5CF6",
+  verkehr: "#F97316",
+  baustelle: "#F97316",
+  warnung: "#EF4444",
+  soziales: "#EC4899",
+  verein: "#06B6D4",
+  entsorgung: "#059669",
+  verwaltung: "#6B7280",
+  sonstiges: "#9CA3AF",
+};
+
 // --- Quicklink-Kategorien ---
 
 export const SERVICE_LINK_CATEGORIES = [

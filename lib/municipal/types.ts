@@ -213,3 +213,13 @@ export interface AmtsblattExtractedItem {
   body: string;
   category: AnnouncementCategory;
 }
+
+/** Amtsblatt-Termin im Quartier-Kalender */
+export interface CalendarAnnouncementEvent {
+  id: string;
+  title: string;
+  category: AnnouncementCategory;
+  published_at: string;
+  expires_at: string | null;
+  source_url: string | null;
+}

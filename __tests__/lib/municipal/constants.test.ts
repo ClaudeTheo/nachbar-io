@@ -7,6 +7,7 @@ import {
   REPORT_STATUS_CONFIG,
   WASTE_TYPES,
   ANNOUNCEMENT_CATEGORIES,
+  ANNOUNCEMENT_CALENDAR_COLORS,
   SERVICE_LINK_CATEGORIES,
   WIKI_CATEGORIES,
   DISCLAIMERS,
@@ -91,6 +92,25 @@ describe('ANNOUNCEMENT_CATEGORIES', () => {
     expect(ids).toContain('soziales');
     expect(ids).toContain('entsorgung');
     expect(ids).toContain('veranstaltung');
+  });
+});
+
+describe('ANNOUNCEMENT_CALENDAR_COLORS', () => {
+  it('deckt alle 9 AnnouncementCategory-Werte ab', () => {
+    const categoryIds = ANNOUNCEMENT_CATEGORIES.map((c) => c.id);
+    for (const id of categoryIds) {
+      expect(ANNOUNCEMENT_CALENDAR_COLORS[id]).toBeDefined();
+    }
+  });
+
+  it('alle Farbwerte sind gueltige Hex-Codes', () => {
+    for (const color of Object.values(ANNOUNCEMENT_CALENDAR_COLORS)) {
+      expect(color).toMatch(/^#[0-9A-Fa-f]{6}$/);
+    }
+  });
+
+  it('warnung ist rot (#EF4444)', () => {
+    expect(ANNOUNCEMENT_CALENDAR_COLORS.warnung).toBe('#EF4444');
   });
 });
 

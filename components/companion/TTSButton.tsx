@@ -4,7 +4,7 @@
 'use client';
 
 import { useState, useRef, useCallback } from 'react';
-import { Volume2, Loader2 } from 'lucide-react';
+import { Volume2, Loader2, Lock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 
@@ -12,15 +12,25 @@ interface TTSButtonProps {
   text: string;
 }
 
+// Pilot-Modus: TTS fuer alle Nutzer freigeschalten
+const PILOT_MODE = process.env.NEXT_PUBLIC_PILOT_MODE === 'true';
+
 /**
  * Spricht den uebergebenen Text via OpenAI TTS vor.
- * In der Pilot-Phase ist TTS fuer alle Nutzer verfuegbar.
- * Spaeter: Nur Plus/Pro (useSubscription-Check einbauen).
+ * Feature-Gate: In der Pilot-Phase ist TTS fuer alle Nutzer verfuegbar.
+ * Nach Pilot: Nur Plus/Pro Nutzer (useSubscription-Check).
+ *
+ * TODO: Feature-Gate nach Pilot-Phase — useSubscription() einbinden
+ * und Free-Nutzer mit Upgrade-Hinweis blockieren.
  */
 export function TTSButton({ text }: TTSButtonProps) {
   const [loading, setLoading] = useState(false);
   const [playing, setPlaying] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
+
+  // Feature-Gate: Im Pilot-Modus ist TTS fuer alle freigeschaltet.
+  // Nach Pilot: useSubscription() pruefen (Plus/Pro erforderlich).
+  const isTtsAvailable = PILOT_MODE || true; // TODO: nach Pilot → useSubscription().plan !== 'free'
 
   const handlePlay = useCallback(async () => {
     // Wenn bereits abspielend → stoppen
@@ -74,6 +84,23 @@ export function TTSButton({ text }: TTSButtonProps) {
       setLoading(false);
     }
   }, [text, playing]);
+
+  // Gesperrte Anzeige fuer Free-Nutzer (nach Pilot-Phase)
+  if (!isTtsAvailable) {
+    return (
+      <Button
+        data-testid="tts-button-locked"
+        variant="ghost"
+        size="sm"
+        disabled
+        className="mt-1 h-8 gap-1 text-xs text-muted-foreground opacity-60"
+        aria-label="Vorlesen — nur mit QuartierApp Plus"
+      >
+        <Lock className="h-3.5 w-3.5" />
+        Vorlesen — mit QuartierApp Plus
+      </Button>
+    );
+  }
 
   return (
     <Button

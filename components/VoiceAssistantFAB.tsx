@@ -6,7 +6,7 @@
 
 import { useState, useRef, useCallback, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Mic, Loader2, HelpCircle, AlertTriangle, MapPin, MessageCircle, Navigation, Search, Square, RotateCcw, X } from 'lucide-react';
+import { Mic, Loader2, HelpCircle, AlertTriangle, MapPin, MessageCircle, Navigation, Search, Square, RotateCcw, X, Volume2, VolumeX } from 'lucide-react';
 import {
   Sheet,
   SheetContent,
@@ -17,11 +17,12 @@ import {
 import { toast } from 'sonner';
 import { createSpeechEngine } from '@/lib/voice/create-speech-engine';
 import { AudioWaveform } from '@/components/voice/AudioWaveform';
+import { SpeakerAnimation } from '@/components/voice/SpeakerAnimation';
 import type { SpeechEngine, SpeechEngineCallbacks } from '@/lib/voice/speech-engine';
 import type { AssistantAction, AssistantResult } from '@/lib/voice/assistant-classify';
 
 /** Sheet-Zustaende */
-type SheetState = 'closed' | 'recording' | 'processing' | 'result' | 'error';
+type SheetState = 'closed' | 'recording' | 'processing' | 'speaking' | 'result' | 'error';
 
 /** Aktions-Konfiguration fuer das Bottom-Sheet */
 interface ActionConfig {
@@ -73,11 +74,16 @@ export function VoiceAssistantFAB() {
   const [transcript, setTranscript] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
   const [previousAction, setPreviousAction] = useState<{ action: string; transcript: string } | null>(null);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
 
   // Cleanup bei Unmount
   useEffect(() => {
     return () => {
       engineRef.current?.cleanup();
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current = null;
+      }
     };
   }, []);
 
@@ -120,10 +126,47 @@ export function VoiceAssistantFAB() {
           return;
         }
 
-        // Ergebnis anzeigen
+        // Ergebnis speichern + TTS starten
         setResult(data);
         setTranscript(text);
-        setSheetState('result');
+        setSheetState('speaking');
+
+        // TTS: Antwort vorlesen
+        const ttsText = data.spokenResponse || data.message;
+        try {
+          const ttsRes = await fetch('/api/voice/tts', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ text: ttsText }),
+          });
+
+          if (ttsRes.ok) {
+            const audioBlob = await ttsRes.blob();
+            const audioUrl = URL.createObjectURL(audioBlob);
+            const audio = new Audio(audioUrl);
+            audioRef.current = audio;
+
+            audio.onended = () => {
+              URL.revokeObjectURL(audioUrl);
+              audioRef.current = null;
+              setSheetState('result');
+            };
+
+            audio.onerror = () => {
+              URL.revokeObjectURL(audioUrl);
+              audioRef.current = null;
+              setSheetState('result');
+            };
+
+            await audio.play();
+          } else {
+            // TTS fehlgeschlagen — direkt zu result
+            setSheetState('result');
+          }
+        } catch {
+          // TTS fehlgeschlagen — direkt zu result
+          setSheetState('result');
+        }
       } catch (err) {
         console.error('[VoiceAssistantFAB] Klassifizierung fehlgeschlagen:', err);
         setErrorMessage('Sprachassistent konnte die Anfrage nicht verarbeiten.');
@@ -177,8 +220,21 @@ export function VoiceAssistantFAB() {
     }
   }, [sheetState, startRecording]);
 
+  // Sprachausgabe stoppen
+  const handleStopSpeaking = useCallback(() => {
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current = null;
+    }
+    setSheetState('result');
+  }, []);
+
   // "Nochmal sprechen": Vorherige Aktion speichern, neue Aufnahme
   const handleRetry = useCallback(() => {
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current = null;
+    }
     if (result && transcript) {
       setPreviousAction({ action: result.action, transcript });
     }
@@ -202,6 +258,10 @@ export function VoiceAssistantFAB() {
   // Sheet schliessen
   const handleClose = useCallback(() => {
     engineRef.current?.stopListening();
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current = null;
+    }
     setSheetState('closed');
     setResult(null);
     setTranscript('');
@@ -247,6 +307,12 @@ export function VoiceAssistantFAB() {
                   Verarbeite...
                 </>
               )}
+              {sheetState === 'speaking' && (
+                <>
+                  <Volume2 className="h-5 w-5 text-[#4CAF87]" />
+                  Sprachausgabe
+                </>
+              )}
               {sheetState === 'result' && (
                 <>
                   {config?.icon}
@@ -263,6 +329,7 @@ export function VoiceAssistantFAB() {
             <SheetDescription>
               {sheetState === 'recording' && 'Sprechen Sie jetzt...'}
               {sheetState === 'processing' && 'Ihre Anfrage wird analysiert...'}
+              {sheetState === 'speaking' && (result?.spokenResponse || result?.message || '')}
               {sheetState === 'result' && (result?.message || '')}
               {sheetState === 'error' && errorMessage}
             </SheetDescription>
@@ -290,6 +357,24 @@ export function VoiceAssistantFAB() {
               <div className="flex justify-center py-8">
                 <Loader2 className="h-10 w-10 text-[#F59E0B] animate-spin" />
               </div>
+            )}
+
+            {/* SPEAKING: Lautsprecher-Animation + Text + Stopp */}
+            {sheetState === 'speaking' && (
+              <>
+                <SpeakerAnimation isPlaying={true} />
+                <p className="text-center text-lg font-medium text-[#2D3142]">
+                  {result?.spokenResponse || result?.message}
+                </p>
+                <button
+                  onClick={handleStopSpeaking}
+                  className="w-full flex items-center justify-center gap-2 rounded-xl border border-gray-200 text-[#2D3142] font-medium text-base transition-all hover:bg-gray-50 active:scale-95"
+                  style={{ minHeight: '48px', touchAction: 'manipulation' }}
+                >
+                  <VolumeX className="h-5 w-5" />
+                  Vorlesen stoppen
+                </button>
+              </>
             )}
 
             {/* RESULT: Ergebnis + Buttons */}

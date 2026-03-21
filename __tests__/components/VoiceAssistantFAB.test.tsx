@@ -44,6 +44,12 @@ vi.mock('@/lib/voice/create-speech-engine', () => ({
   createSpeechEngine: () => shouldReturnEngine ? mockEngine : null,
 }));
 
+vi.mock('@/components/voice/SpeakerAnimation', () => ({
+  SpeakerAnimation: ({ isPlaying }: { isPlaying: boolean }) => (
+    <div data-testid="speaker-animation" data-playing={isPlaying}>Speaker</div>
+  ),
+}));
+
 vi.mock('@/components/voice/AudioWaveform', () => ({
   AudioWaveform: ({ audioLevel, isActive }: { audioLevel: number; isActive: boolean }) => (
     <div data-testid="audio-waveform" data-level={audioLevel} data-active={isActive}>
@@ -116,10 +122,12 @@ describe('VoiceAssistantFAB (Redesign)', () => {
   });
 
   it('ruft /api/voice/assistant auf nach Transkription', async () => {
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      json: async () => ({ action: 'help_request', params: {}, message: 'Hilfe' }),
-    });
+    mockFetch
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ action: 'help_request', params: {}, message: 'Hilfe' }),
+      })
+      .mockResolvedValueOnce({ ok: false, status: 500 }); // TTS fallback
 
     const { VoiceAssistantFAB } = await import('@/components/VoiceAssistantFAB');
     const { getByTestId } = render(<VoiceAssistantFAB />);
@@ -137,10 +145,12 @@ describe('VoiceAssistantFAB (Redesign)', () => {
   });
 
   it('zeigt Ergebnis mit Aktions-Button nach API-Antwort', async () => {
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      json: async () => ({ action: 'help_request', params: {}, message: 'Erkannt' }),
-    });
+    mockFetch
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ action: 'help_request', params: {}, message: 'Erkannt' }),
+      })
+      .mockResolvedValueOnce({ ok: false, status: 500 }); // TTS fallback
 
     const { VoiceAssistantFAB } = await import('@/components/VoiceAssistantFAB');
     const { getByTestId, getByText } = render(<VoiceAssistantFAB />);
@@ -153,10 +163,12 @@ describe('VoiceAssistantFAB (Redesign)', () => {
   });
 
   it('zeigt "Nochmal sprechen" Button nach Ergebnis', async () => {
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      json: async () => ({ action: 'help_request', params: {}, message: 'OK' }),
-    });
+    mockFetch
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ action: 'help_request', params: {}, message: 'OK' }),
+      })
+      .mockResolvedValueOnce({ ok: false, status: 500 }); // TTS fallback
 
     const { VoiceAssistantFAB } = await import('@/components/VoiceAssistantFAB');
     const { getByTestId, getByText } = render(<VoiceAssistantFAB />);
@@ -169,10 +181,12 @@ describe('VoiceAssistantFAB (Redesign)', () => {
   });
 
   it('"Nochmal sprechen" startet neue Aufnahme', async () => {
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      json: async () => ({ action: 'help_request', params: {}, message: 'OK' }),
-    });
+    mockFetch
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ action: 'help_request', params: {}, message: 'OK' }),
+      })
+      .mockResolvedValueOnce({ ok: false, status: 500 }); // TTS fallback
 
     const { VoiceAssistantFAB } = await import('@/components/VoiceAssistantFAB');
     const { getByTestId, getByText } = render(<VoiceAssistantFAB />);
@@ -189,10 +203,12 @@ describe('VoiceAssistantFAB (Redesign)', () => {
   });
 
   it('Sheet schliesst bei "Schließen" Button', async () => {
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      json: async () => ({ action: 'general', params: {}, message: 'Test' }),
-    });
+    mockFetch
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ action: 'general', params: {}, message: 'Test' }),
+      })
+      .mockResolvedValueOnce({ ok: false, status: 500 }); // TTS fallback
 
     const { VoiceAssistantFAB } = await import('@/components/VoiceAssistantFAB');
     const { getByTestId, getByText, queryByTestId } = render(<VoiceAssistantFAB />);
@@ -208,10 +224,12 @@ describe('VoiceAssistantFAB (Redesign)', () => {
   });
 
   it('navigiert bei Aktions-Button und schliesst Sheet', async () => {
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      json: async () => ({ action: 'help_request', params: {}, message: 'Hilfe' }),
-    });
+    mockFetch
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ action: 'help_request', params: {}, message: 'Hilfe' }),
+      })
+      .mockResolvedValueOnce({ ok: false, status: 500 }); // TTS fallback
 
     const { VoiceAssistantFAB } = await import('@/components/VoiceAssistantFAB');
     const { getByTestId, getByText } = render(<VoiceAssistantFAB />);
@@ -235,5 +253,89 @@ describe('VoiceAssistantFAB (Redesign)', () => {
     await act(async () => { callbacks.onError('not-allowed'); });
 
     await waitFor(() => { expect(getByText(/Bitte Mikrofon freigeben/)).toBeDefined(); });
+  });
+
+  it('zeigt Speaking-State mit SpeakerAnimation nach Klassifizierung', async () => {
+    // assistant API antwortet, TTS haengt (pending promise)
+    let resolveTts: (value: unknown) => void;
+    mockFetch
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          action: 'help_request',
+          params: {},
+          message: 'Hilfe',
+          spokenResponse: 'Ich erstelle eine Hilfsanfrage für Sie.',
+        }),
+      })
+      .mockImplementationOnce(() => new Promise(resolve => { resolveTts = resolve; }));
+
+    const { VoiceAssistantFAB } = await import('@/components/VoiceAssistantFAB');
+    const { getByTestId } = render(<VoiceAssistantFAB />);
+    fireEvent.click(getByTestId('voice-assistant-fab'));
+
+    const callbacks = mockStartListening.mock.calls[0][0];
+    await act(async () => { callbacks.onTranscript('Hilfe'); });
+
+    await waitFor(() => {
+      expect(getByTestId('speaker-animation')).toBeDefined();
+    });
+
+    // Cleanup: TTS promise aufloesen damit kein offener Handle bleibt
+    resolveTts!({ ok: false, status: 500 });
+  });
+
+  it('zeigt "Vorlesen stoppen" Button waehrend Speaking', async () => {
+    let resolveTts: (value: unknown) => void;
+    mockFetch
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          action: 'general',
+          params: {},
+          message: 'OK',
+          spokenResponse: 'Alles klar!',
+        }),
+      })
+      .mockImplementationOnce(() => new Promise(resolve => { resolveTts = resolve; }));
+
+    const { VoiceAssistantFAB } = await import('@/components/VoiceAssistantFAB');
+    const { getByTestId, getByText } = render(<VoiceAssistantFAB />);
+    fireEvent.click(getByTestId('voice-assistant-fab'));
+
+    const callbacks = mockStartListening.mock.calls[0][0];
+    await act(async () => { callbacks.onTranscript('Test'); });
+
+    await waitFor(() => {
+      expect(getByText(/Vorlesen stoppen/)).toBeDefined();
+    });
+
+    resolveTts!({ ok: false, status: 500 });
+  });
+
+  it('wechselt zu result-State nach TTS-Fehler (graceful fallback)', async () => {
+    mockFetch
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          action: 'help_request',
+          params: {},
+          message: 'Hilfe',
+          spokenResponse: 'Test',
+        }),
+      })
+      .mockResolvedValueOnce({ ok: false, status: 500 }); // TTS fail
+
+    const { VoiceAssistantFAB } = await import('@/components/VoiceAssistantFAB');
+    const { getByTestId, getByText } = render(<VoiceAssistantFAB />);
+    fireEvent.click(getByTestId('voice-assistant-fab'));
+
+    const callbacks = mockStartListening.mock.calls[0][0];
+    await act(async () => { callbacks.onTranscript('Hilfe'); });
+
+    // Bei TTS-Fehler direkt zu result
+    await waitFor(() => {
+      expect(getByText('Hilfsanfrage')).toBeDefined();
+    });
   });
 });

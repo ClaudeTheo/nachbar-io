@@ -216,6 +216,119 @@ describe('WhisperEngine', () => {
     expect(errorMsg).toContain('Mikrofon');
   });
 
+  it('iOS-Fallback: transkribiert nach 2s Timeout wenn onstop nicht feuert', async () => {
+    vi.useFakeTimers();
+    mockGetUserMedia.mockResolvedValueOnce(mockStream);
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({ text: 'Hallo' }),
+    });
+
+    const { WhisperEngine } = await import('@/lib/voice/whisper-engine');
+    const engine = new WhisperEngine();
+
+    const callbacks = {
+      onTranscript: vi.fn(),
+      onAudioLevel: vi.fn(),
+      onStateChange: vi.fn(),
+      onError: vi.fn(),
+    };
+
+    engine.startListening(callbacks);
+
+    // getUserMedia Promise aufloesen
+    await vi.advanceTimersByTimeAsync(100);
+
+    expect(mockMediaRecorderInstance).not.toBeNull();
+
+    // Simuliere dass ondataavailable Daten liefert
+    mockMediaRecorderInstance!.ondataavailable?.({ data: new Blob(['audio'], { type: 'audio/webm' }) });
+
+    // stop() ueberschreiben — onstop feuert NICHT (iOS-Bug)
+    const origStop = mockMediaRecorderInstance!.stop.bind(mockMediaRecorderInstance);
+    mockMediaRecorderInstance!.stop = vi.fn(() => {
+      mockMediaRecorderInstance!.state = 'inactive';
+      // onstop wird absichtlich NICHT aufgerufen
+    });
+
+    engine.stopListening();
+
+    // 2s Timeout abwarten
+    await vi.advanceTimersByTimeAsync(2100);
+
+    // Fallback sollte transcribe aufgerufen haben
+    expect(mockFetch).toHaveBeenCalledWith(
+      '/api/voice/transcribe',
+      expect.objectContaining({ method: 'POST' })
+    );
+
+    vi.useRealTimers();
+  });
+
+  it('iOS-Fallback: ruft onError wenn keine Chunks und onstop nicht feuert', async () => {
+    vi.useFakeTimers();
+    mockGetUserMedia.mockResolvedValueOnce(mockStream);
+
+    const { WhisperEngine } = await import('@/lib/voice/whisper-engine');
+    const engine = new WhisperEngine();
+
+    const callbacks = {
+      onTranscript: vi.fn(),
+      onAudioLevel: vi.fn(),
+      onStateChange: vi.fn(),
+      onError: vi.fn(),
+    };
+
+    engine.startListening(callbacks);
+    await vi.advanceTimersByTimeAsync(100);
+
+    // stop() ueberschreiben — onstop feuert NICHT, keine Chunks vorhanden
+    mockMediaRecorderInstance!.stop = vi.fn(() => {
+      mockMediaRecorderInstance!.state = 'inactive';
+    });
+
+    engine.stopListening();
+    await vi.advanceTimersByTimeAsync(2100);
+
+    expect(callbacks.onError).toHaveBeenCalledWith('Aufnahme konnte nicht verarbeitet werden.');
+    expect(callbacks.onStateChange).toHaveBeenCalledWith('idle');
+
+    vi.useRealTimers();
+  });
+
+  it('normaler Stop raeumt Fallback-Timer auf', async () => {
+    vi.useFakeTimers();
+    mockGetUserMedia.mockResolvedValueOnce(mockStream);
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({ text: 'Normal' }),
+    });
+
+    const { WhisperEngine } = await import('@/lib/voice/whisper-engine');
+    const engine = new WhisperEngine();
+
+    const callbacks = {
+      onTranscript: vi.fn(),
+      onAudioLevel: vi.fn(),
+      onStateChange: vi.fn(),
+      onError: vi.fn(),
+    };
+
+    engine.startListening(callbacks);
+    await vi.advanceTimersByTimeAsync(100);
+
+    engine.stopListening();
+
+    // onstop sofort feuern (normales Verhalten) — passiert im Mock automatisch via stop()
+    // fetch sollte genau 1x aufgerufen werden (nicht 2x durch Fallback)
+    await vi.advanceTimersByTimeAsync(2100);
+
+    // Nur ein einziger fetch-Aufruf (kein doppelter durch Fallback)
+    expect(mockFetch).toHaveBeenCalledTimes(1);
+
+    vi.useRealTimers();
+  });
+
   it('ruft onError bei Whisper-API-Fehler auf', async () => {
     mockGetUserMedia.mockResolvedValueOnce(mockStream);
     mockFetch.mockResolvedValueOnce({ ok: false, status: 502 });

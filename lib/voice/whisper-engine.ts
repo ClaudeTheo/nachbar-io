@@ -43,6 +43,26 @@ export class WhisperEngine implements SpeechEngine {
     }
 
     if (this.mediaRecorder && this.mediaRecorder.state === 'recording') {
+      // iOS-Fix: Timeout-Fallback falls onstop nicht feuert
+      const fallbackTimer = setTimeout(() => {
+        this.stopAudioAnalysis();
+        if (this.chunks.length > 0 && this.callbacks) {
+          const audioBlob = new Blob(this.chunks, { type: 'audio/webm' });
+          this.chunks = [];
+          this.transcribe(audioBlob, this.callbacks);
+        } else if (this.callbacks) {
+          this.callbacks.onError('Aufnahme konnte nicht verarbeitet werden.');
+          this.callbacks.onStateChange('idle');
+        }
+      }, 2000);
+
+      // Normaler Stop — onstop raeumt Timeout auf
+      const originalOnStop = this.mediaRecorder.onstop;
+      this.mediaRecorder.onstop = () => {
+        clearTimeout(fallbackTimer);
+        if (originalOnStop) originalOnStop.call(this.mediaRecorder);
+      };
+
       this.mediaRecorder.stop();
     } else {
       this.stopAudioAnalysis();

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import { AlertTriangle, RefreshCw } from "lucide-react";
+import { TriangleAlert, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export default function Error({
@@ -18,7 +18,7 @@ export default function Error({
   return (
     <div className="flex min-h-[50vh] flex-col items-center justify-center gap-4 text-center">
       <div className="rounded-full bg-emergency-red/10 p-4">
-        <AlertTriangle className="h-8 w-8 text-emergency-red" />
+        <TriangleAlert className="h-8 w-8 text-emergency-red" />
       </div>
       <h2 className="text-lg font-semibold text-anthrazit">
         Etwas ist schiefgelaufen

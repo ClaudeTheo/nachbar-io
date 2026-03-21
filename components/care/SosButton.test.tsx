@@ -15,7 +15,7 @@ vi.mock('next/navigation', () => ({
 }));
 
 vi.mock('lucide-react', () => ({
-  AlertTriangle: (props: Record<string, unknown>) => <svg data-testid="alert-icon" {...props} />,
+  TriangleAlert: (props: Record<string, unknown>) => <svg data-testid="alert-icon" {...props} />,
 }));
 
 afterEach(() => {
@@ -70,7 +70,7 @@ describe('SosButton', () => {
     expect(btn.style.touchAction).toBe('manipulation');
   });
 
-  it('zeigt AlertTriangle Icon', () => {
+  it('zeigt TriangleAlert Icon', () => {
     render(<SosButton />);
     expect(screen.getByTestId('alert-icon')).toBeInTheDocument();
   });

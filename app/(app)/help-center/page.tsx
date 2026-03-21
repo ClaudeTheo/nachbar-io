@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
   ArrowLeft, Search, Rocket, MapPin, MessageCircle,
-  AlertTriangle, User, Shield, ChevronDown,
+  TriangleAlert, User, Shield, ChevronDown,
 } from "lucide-react";
 import { HELP_CATEGORIES, type HelpCategory } from "@/lib/help-content";
 
@@ -14,7 +14,7 @@ const ICON_MAP: Record<string, React.ElementType> = {
   rocket: Rocket,
   map: MapPin,
   message: MessageCircle,
-  alert: AlertTriangle,
+  alert: TriangleAlert,
   user: User,
   shield: Shield,
 };

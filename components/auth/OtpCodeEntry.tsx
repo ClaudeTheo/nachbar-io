@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { CheckCircle2 } from "lucide-react";
+import { CircleCheckBig } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/client";
 
@@ -133,7 +133,7 @@ export function OtpCodeEntry({ email, redirectTo = "/welcome", onBack, onResend 
     <div className="space-y-5 text-center">
       {/* Erfolgs-Icon */}
       <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-quartier-green/10">
-        <CheckCircle2 className="h-8 w-8 text-quartier-green" />
+        <CircleCheckBig className="h-8 w-8 text-quartier-green" />
       </div>
 
       {/* Erklaerung */}

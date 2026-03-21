@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { Smile, Meh, Frown, CheckCircle, ArrowLeft } from "lucide-react";
+import { Smile, Meh, Frown, CircleCheck, ArrowLeft } from "lucide-react";
 import { useTerminal } from "@/lib/terminal/TerminalContext";
 
 /**
@@ -45,7 +45,7 @@ export default function CheckinScreen() {
   if (state === "done") {
     return (
       <div className="flex flex-1 flex-col items-center justify-center gap-8 p-8">
-        <CheckCircle className="h-40 w-40 text-success-green" />
+        <CircleCheck className="h-40 w-40 text-success-green" />
         <p className="text-5xl font-bold text-anthrazit">
           Vielen Dank!
         </p>

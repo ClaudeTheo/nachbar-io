@@ -2,7 +2,7 @@
 'use client';
 
 import { useState } from 'react';
-import { AlertTriangle } from 'lucide-react';
+import { TriangleAlert } from 'lucide-react';
 
 interface Props {
   featureLabel: string;
@@ -18,7 +18,7 @@ export function RevokeDialog({ featureLabel, onConfirm, onCancel }: Props) {
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
         <div className="bg-white rounded-2xl p-6 max-w-md w-full space-y-4">
           <div className="flex items-center gap-2 text-amber-600">
-            <AlertTriangle className="h-6 w-6" />
+            <TriangleAlert className="h-6 w-6" />
             <h3 className="text-xl font-bold">Endgültig löschen?</h3>
           </div>
           <p className="text-muted-foreground">

@@ -6,7 +6,7 @@ import {
   RefreshCw,
   ExternalLink,
   Table2,
-  AlertTriangle,
+  TriangleAlert,
   ChevronDown,
   ChevronRight,
 } from "lucide-react";
@@ -178,7 +178,7 @@ export function DatabaseOverview() {
 
                           {table.error ? (
                             <span className="flex items-center gap-1 text-[10px] text-amber-600">
-                              <AlertTriangle className="h-3 w-3" />
+                              <TriangleAlert className="h-3 w-3" />
                               {table.error}
                             </span>
                           ) : (

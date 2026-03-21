@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, Clock, User, Trash2, CheckCircle, MessageCircle } from "lucide-react";
+import { ArrowLeft, Clock, User, Trash2, CircleCheck, MessageCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { createClient } from "@/lib/supabase/client";
@@ -138,7 +138,7 @@ export default function MarketplaceDetailPage() {
       {isOwner && item.status === "active" && (
         <div className="flex gap-3">
           <Button variant="outline" onClick={handleMarkDone} className="flex-1">
-            <CheckCircle className="mr-2 h-4 w-4" />
+            <CircleCheck className="mr-2 h-4 w-4" />
             Als erledigt markieren
           </Button>
           <Button

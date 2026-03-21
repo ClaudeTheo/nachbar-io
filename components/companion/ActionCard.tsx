@@ -1,7 +1,7 @@
 // components/companion/ActionCard.tsx
 // Zeigt eine ausgefuehrte KI-Aktion als kleine Karte im Chat an
 
-import { CheckCircle, XCircle } from 'lucide-react';
+import { CircleCheck, CircleX } from 'lucide-react';
 
 interface ActionCardProps {
   tool: string;
@@ -22,9 +22,9 @@ export function ActionCard({ tool, summary, success }: ActionCardProps) {
     >
       <div className="flex items-start gap-2">
         {success ? (
-          <CheckCircle className="mt-0.5 h-4 w-4 shrink-0 text-quartier-green" />
+          <CircleCheck className="mt-0.5 h-4 w-4 shrink-0 text-quartier-green" />
         ) : (
-          <XCircle className="mt-0.5 h-4 w-4 shrink-0 text-red-500" />
+          <CircleX className="mt-0.5 h-4 w-4 shrink-0 text-red-500" />
         )}
         <div>
           <p className="font-medium text-anthrazit">{tool}</p>

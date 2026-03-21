@@ -6,7 +6,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Calendar, Clock, CheckCircle, ArrowLeft, Video, MapPin } from 'lucide-react';
+import { Calendar, Clock, CircleCheck, ArrowLeft, Video, MapPin } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import { toast } from 'sonner';
 
@@ -303,7 +303,7 @@ export function BookingCalendar({ doctorId, doctorName, videoEnabled }: BookingC
         {/* Schritt 5: Erfolg */}
         {step === 'done' && (
           <div className="text-center py-6 space-y-3">
-            <CheckCircle className="mx-auto h-12 w-12 text-[#4CAF87]" />
+            <CircleCheck className="mx-auto h-12 w-12 text-[#4CAF87]" />
             <h3 className="text-lg font-semibold text-[#2D3142]">Termin gebucht!</h3>
             <p className="text-sm text-gray-500">
               Sie erhalten eine Bestaetigung. Der Arzt wird ueber Ihren Termin informiert.

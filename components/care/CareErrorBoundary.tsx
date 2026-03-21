@@ -3,7 +3,7 @@
 'use client';
 
 import React from 'react';
-import { AlertTriangle, RefreshCw } from 'lucide-react';
+import { TriangleAlert, RefreshCw } from 'lucide-react';
 
 interface Props {
   children: React.ReactNode;
@@ -50,7 +50,7 @@ export class CareErrorBoundary extends React.Component<Props, State> {
     if (this.state.hasError) {
       return (
         <div className="rounded-xl border border-red-200 bg-red-50 p-6 text-center">
-          <AlertTriangle className="mx-auto h-10 w-10 text-red-500 mb-3" />
+          <TriangleAlert className="mx-auto h-10 w-10 text-red-500 mb-3" />
           <h3 className="text-lg font-semibold text-[#2D3142] mb-2">
             Etwas ist schiefgelaufen
           </h3>

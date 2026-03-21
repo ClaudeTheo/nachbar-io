@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Plus, ArrowLeft, BarChart3, CheckCircle2 } from "lucide-react";
+import { Plus, ArrowLeft, BarChart3, CircleCheckBig } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { createClient } from "@/lib/supabase/client";
 import { useQuarter } from "@/lib/quarters";
@@ -127,7 +127,7 @@ function PollCard({ poll }: { poll: Poll }) {
     >
       <div className="flex items-start gap-3">
         <div className={`mt-1 flex h-10 w-10 shrink-0 items-center justify-center rounded-lg ${isClosed ? "bg-muted" : "bg-quartier-green/10"}`}>
-          {isClosed ? <CheckCircle2 className="h-5 w-5 text-muted-foreground" /> : <BarChart3 className="h-5 w-5 text-quartier-green" />}
+          {isClosed ? <CircleCheckBig className="h-5 w-5 text-muted-foreground" /> : <BarChart3 className="h-5 w-5 text-quartier-green" />}
         </div>
         <div className="min-w-0 flex-1">
           <h3 className="font-semibold text-anthrazit">{poll.question}</h3>

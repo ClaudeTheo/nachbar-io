@@ -3,7 +3,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { ShieldCheck, Users, CheckCircle, ArrowLeft } from 'lucide-react';
+import { ShieldCheck, Users, CircleCheck, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 
 interface UnverifiedNeighbor {
@@ -111,7 +111,7 @@ export default function VouchingPage() {
 
               {neighbor.already_vouched ? (
                 <span className="flex items-center gap-1 text-sm text-quartier-green font-medium flex-shrink-0">
-                  <CheckCircle className="h-4 w-4" />
+                  <CircleCheck className="h-4 w-4" />
                   Bestaetigt
                 </span>
               ) : (

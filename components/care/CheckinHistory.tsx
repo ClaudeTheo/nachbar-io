@@ -1,6 +1,6 @@
 'use client';
 
-import { Clock, CheckCircle, AlertTriangle, XCircle } from 'lucide-react';
+import { Clock, CircleCheck, TriangleAlert, CircleX } from 'lucide-react';
 import type { CareCheckin } from '@/lib/care/types';
 
 interface CheckinHistoryProps {
@@ -8,11 +8,11 @@ interface CheckinHistoryProps {
   loading?: boolean;
 }
 
-const STATUS_META: Record<string, { icon: typeof CheckCircle; color: string; label: string }> = {
-  ok: { icon: CheckCircle, color: 'text-quartier-green', label: 'Gut' },
-  not_well: { icon: AlertTriangle, color: 'text-alert-amber', label: 'Nicht so gut' },
-  need_help: { icon: XCircle, color: 'text-emergency-red', label: 'Hilfe noetig' },
-  missed: { icon: XCircle, color: 'text-emergency-red', label: 'Verpasst' },
+const STATUS_META: Record<string, { icon: typeof CircleCheck; color: string; label: string }> = {
+  ok: { icon: CircleCheck, color: 'text-quartier-green', label: 'Gut' },
+  not_well: { icon: TriangleAlert, color: 'text-alert-amber', label: 'Nicht so gut' },
+  need_help: { icon: CircleX, color: 'text-emergency-red', label: 'Hilfe noetig' },
+  missed: { icon: CircleX, color: 'text-emergency-red', label: 'Verpasst' },
   reminded: { icon: Clock, color: 'text-muted-foreground', label: 'Ausstehend' },
 };
 

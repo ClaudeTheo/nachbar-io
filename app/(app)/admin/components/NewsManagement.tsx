@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Newspaper, Plus, Trash2, Edit, Globe, Sparkles, X, Save, Download, CheckCircle, AlertCircle, Loader2, Clock, Rss } from "lucide-react";
+import { Newspaper, Plus, Trash2, Edit, Globe, Sparkles, X, Save, Download, CircleCheck, CircleAlert, Loader2, Clock, Rss } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -269,8 +269,8 @@ export function NewsManagement() {
           <CardContent className="p-3">
             <div className="flex items-start gap-2">
               {scrapeResult.status === "running" && <Loader2 className="h-4 w-4 text-blue-500 animate-spin mt-0.5" />}
-              {scrapeResult.status === "success" && <CheckCircle className="h-4 w-4 text-quartier-green mt-0.5" />}
-              {scrapeResult.status === "error" && <AlertCircle className="h-4 w-4 text-red-500 mt-0.5" />}
+              {scrapeResult.status === "success" && <CircleCheck className="h-4 w-4 text-quartier-green mt-0.5" />}
+              {scrapeResult.status === "error" && <CircleAlert className="h-4 w-4 text-red-500 mt-0.5" />}
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium text-anthrazit">
                   {scrapeResult.status === "running" && "Scraper laeuft..."}

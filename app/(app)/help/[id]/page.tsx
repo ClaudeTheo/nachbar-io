@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, Clock, Tag, User, Trash2, CheckCircle, MessageCircle } from "lucide-react";
+import { ArrowLeft, Clock, Tag, User, Trash2, CircleCheck, MessageCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
@@ -250,7 +250,7 @@ export default function HelpDetailPage() {
             onClick={handleClose}
             className="flex-1"
           >
-            <CheckCircle className="mr-2 h-4 w-4" />
+            <CircleCheck className="mr-2 h-4 w-4" />
             Als erledigt markieren
           </Button>
           <Button

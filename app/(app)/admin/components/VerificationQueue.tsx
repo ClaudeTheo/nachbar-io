@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { CheckCircle, XCircle, Clock, MapPin, User, RefreshCw } from "lucide-react";
+import { CircleCheck, CircleX, Clock, MapPin, User, RefreshCw } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -126,7 +126,7 @@ export function VerificationQueue() {
       {/* Ausstehende Anfragen */}
       {pendingRequests.length === 0 ? (
         <div className="flex items-center gap-2 rounded-lg border border-dashed px-3 py-2">
-          <CheckCircle className="h-4 w-4 text-quartier-green/50" />
+          <CircleCheck className="h-4 w-4 text-quartier-green/50" />
           <p className="text-xs text-muted-foreground">
             Keine ausstehenden Verifizierungen
           </p>
@@ -174,7 +174,7 @@ export function VerificationQueue() {
                     disabled={processing === req.id}
                     onClick={() => handleAction(req.id, "approve")}
                   >
-                    <CheckCircle className="h-4 w-4 mr-1" />
+                    <CircleCheck className="h-4 w-4 mr-1" />
                     Genehmigen
                   </Button>
                   <Button
@@ -184,7 +184,7 @@ export function VerificationQueue() {
                     disabled={processing === req.id}
                     onClick={() => handleAction(req.id, "reject")}
                   >
-                    <XCircle className="h-4 w-4 mr-1" />
+                    <CircleX className="h-4 w-4 mr-1" />
                     Ablehnen
                   </Button>
                 </div>

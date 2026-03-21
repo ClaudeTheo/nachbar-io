@@ -6,7 +6,7 @@ import {
   Shield, Users, Home, RefreshCw, HandHelping, ShoppingBag,
   TrendingUp, QrCode, FileText, Activity, Megaphone,
   Newspaper, Calendar, BarChart3, ArrowUpRight, ArrowDownRight, Minus,
-  AlertTriangle, Eye, MapPin, Globe, ExternalLink, Database, Terminal, Wrench,
+  TriangleAlert, Eye, MapPin, Globe, ExternalLink, Database, Terminal, Wrench,
   Settings2,
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
@@ -239,7 +239,7 @@ export default function AdminPage() {
   const quickStats: QuickStat[] = stats ? [
     { icon: <Users className="h-5 w-5" />, label: "Nutzer gesamt", value: stats.totalUsers, trend: stats.signupTrend },
     { icon: <Home className="h-5 w-5" />, label: "Belegungsquote", value: `${occupancyRate}%`, color: occupancyRate > 50 ? "text-quartier-green" : "text-alert-amber" },
-    { icon: <AlertTriangle className="h-5 w-5 text-alert-amber" />, label: "Offene Meldungen", value: stats.openAlerts, highlight: stats.openAlerts > 0, trend: stats.alertTrend },
+    { icon: <TriangleAlert className="h-5 w-5 text-alert-amber" />, label: "Offene Meldungen", value: stats.openAlerts, highlight: stats.openAlerts > 0, trend: stats.alertTrend },
     { icon: <HandHelping className="h-5 w-5 text-blue-500" />, label: "Aktive Hilfegesuche", value: stats.activeHelpRequests, trend: stats.helpTrend },
     { icon: <ShoppingBag className="h-5 w-5 text-purple-500" />, label: "Marktplatz-Inserate", value: stats.activeMarketplace },
     { icon: <Calendar className="h-5 w-5 text-indigo-500" />, label: "Anstehende Events", value: stats.activeEvents },
@@ -337,7 +337,7 @@ export default function AdminPage() {
               : "border-input bg-transparent text-muted-foreground hover:bg-muted/50"
           }`}
         >
-          <AlertTriangle className="h-3.5 w-3.5" />
+          <TriangleAlert className="h-3.5 w-3.5" />
           Bug-Reports
         </button>
       </div>
@@ -408,7 +408,7 @@ export default function AdminPage() {
 
             {/* Schnellzugriff */}
             <div className="grid grid-cols-2 gap-2">
-              <QuickActionCard icon={<AlertTriangle className="h-5 w-5 text-alert-amber" />} label="Offene Meldungen" count={stats.openAlerts} onClick={() => setActiveTab("content")} urgent={stats.openAlerts > 0} />
+              <QuickActionCard icon={<TriangleAlert className="h-5 w-5 text-alert-amber" />} label="Offene Meldungen" count={stats.openAlerts} onClick={() => setActiveTab("content")} urgent={stats.openAlerts > 0} />
               <QuickActionCard icon={<Users className="h-5 w-5 text-quartier-green" />} label="Nutzer verwalten" count={stats.totalUsers} onClick={() => setActiveTab("users")} />
               <QuickActionCard icon={<Megaphone className="h-5 w-5 text-blue-500" />} label="Push senden" onClick={() => setActiveTab("push")} />
               <QuickActionCard icon={<Newspaper className="h-5 w-5 text-rose-500" />} label="News erstellen" onClick={() => setActiveTab("news")} />

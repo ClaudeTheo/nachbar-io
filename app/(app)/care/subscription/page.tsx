@@ -3,7 +3,7 @@
 
 import { Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { CreditCard, CheckCircle2, XCircle, Gift } from 'lucide-react';
+import { CreditCard, CircleCheckBig, CircleX, Gift } from 'lucide-react';
 import { useSubscription } from '@/lib/care/hooks/useSubscription';
 import { SubscriptionCard } from '@/components/care/SubscriptionCard';
 import { SubscriptionPlans } from '@/components/care/SubscriptionPlans';
@@ -31,7 +31,7 @@ function SubscriptionContent() {
       {/* Checkout-Feedback */}
       {checkout === 'success' && (
         <div className="rounded-xl bg-green-50 border border-green-200 p-4 text-sm text-[#2D3142] flex items-start gap-3">
-          <CheckCircle2 className="h-5 w-5 text-[#4CAF87] shrink-0 mt-0.5" />
+          <CircleCheckBig className="h-5 w-5 text-[#4CAF87] shrink-0 mt-0.5" />
           <div>
             <p className="font-medium">Zahlung erfolgreich!</p>
             <p className="mt-1 text-muted-foreground">
@@ -42,7 +42,7 @@ function SubscriptionContent() {
       )}
       {checkout === 'cancelled' && (
         <div className="rounded-xl bg-amber-50 border border-amber-200 p-4 text-sm text-[#2D3142] flex items-start gap-3">
-          <XCircle className="h-5 w-5 text-amber-500 shrink-0 mt-0.5" />
+          <CircleX className="h-5 w-5 text-amber-500 shrink-0 mt-0.5" />
           <div>
             <p className="font-medium">Zahlung abgebrochen</p>
             <p className="mt-1 text-muted-foreground">

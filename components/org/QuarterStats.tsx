@@ -6,7 +6,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Users, Heart, Activity, AlertTriangle, TrendingUp, MessageSquare } from 'lucide-react';
+import { Users, Heart, Activity, TriangleAlert, TrendingUp, MessageSquare } from 'lucide-react';
 
 type QuarterSnapshot = {
   snapshot_date: string;
@@ -178,7 +178,7 @@ export function QuarterStats({ quarterIds }: QuarterStatsProps) {
           color="bg-indigo-500"
         />
         <StatCard
-          icon={<AlertTriangle className="h-4 w-4 text-white" />}
+          icon={<TriangleAlert className="h-4 w-4 text-white" />}
           label="Offene Eskalationen"
           value={aggregated.escalations}
           color={aggregated.escalations > 0 ? 'bg-[#F59E0B]' : 'bg-gray-400'}
@@ -190,7 +190,7 @@ export function QuarterStats({ quarterIds }: QuarterStatsProps) {
         <Card className="border-[#F59E0B]/30 bg-[#F59E0B]/5">
           <CardContent className="py-4">
             <div className="flex items-center gap-2">
-              <AlertTriangle className="h-4 w-4 text-[#F59E0B]" />
+              <TriangleAlert className="h-4 w-4 text-[#F59E0B]" />
               <p className="text-sm font-medium text-[#2D3142]">
                 {inactiveUsers} Bewohner ohne Aktivitaet in den letzten 7 Tagen
               </p>

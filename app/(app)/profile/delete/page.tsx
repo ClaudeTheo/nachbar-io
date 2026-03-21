@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, Trash2, AlertTriangle, Download } from "lucide-react";
+import { ArrowLeft, Trash2, TriangleAlert, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
@@ -127,7 +127,7 @@ export default function DeleteAccountPage() {
             <>
               <div className="rounded-lg bg-amber-50 p-3 text-xs text-amber-700 space-y-1.5">
                 <p className="font-medium flex items-center gap-1">
-                  <AlertTriangle className="h-3.5 w-3.5" />
+                  <TriangleAlert className="h-3.5 w-3.5" />
                   Was wird gelöscht:
                 </p>
                 <ul className="ml-5 list-disc space-y-0.5">

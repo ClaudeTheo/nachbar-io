@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, Bell, BellOff, Smartphone, CheckCircle } from "lucide-react";
+import { ArrowLeft, Bell, BellOff, Smartphone, CircleCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   isPushSupported,
@@ -117,7 +117,7 @@ export default function NotificationsPage() {
         {pushState === "subscribed" && (
           <div className="flex items-start gap-4">
             <div className="rounded-full bg-green-100 p-3">
-              <CheckCircle className="h-6 w-6 text-quartier-green" />
+              <CircleCheck className="h-6 w-6 text-quartier-green" />
             </div>
             <div>
               <h2 className="font-semibold text-anthrazit">

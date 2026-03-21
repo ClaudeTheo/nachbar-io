@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { AlertTriangle } from 'lucide-react';
+import { TriangleAlert } from 'lucide-react';
 
 interface SosButtonProps {
   href?: string;
@@ -22,7 +22,7 @@ export function SosButton({ href = '/care/sos/new', compact = false }: SosButton
       aria-label="SOS — Ich brauche Hilfe"
     >
       <span className="flex items-center justify-center gap-3">
-        <AlertTriangle className={compact ? 'h-6 w-6' : 'h-10 w-10'} />
+        <TriangleAlert className={compact ? 'h-6 w-6' : 'h-10 w-10'} />
         {compact ? 'SOS' : '🆘 Ich brauche Hilfe'}
       </span>
     </button>

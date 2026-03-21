@@ -2,7 +2,7 @@
 
 // Zeigt eine einzelne Helfer-Karte mit Avatar, Rolle, Verifikations-Status, Skills und Statistiken
 
-import { CheckCircle, Clock, ShieldOff, Star } from 'lucide-react';
+import { CircleCheck, Clock, ShieldOff, Star } from 'lucide-react';
 import type { CareHelper, CareHelperRole, CareHelperVerification } from '@/lib/care/types';
 
 interface HelperCardProps {
@@ -24,7 +24,7 @@ const ROLE_CONFIG: Record<CareHelperRole, { label: string; className: string }> 
 // Verifikations-Badge: Farbe und Label je nach Status
 const VERIFICATION_CONFIG: Record<CareHelperVerification, { label: string; className: string; Icon: React.ComponentType<{ className?: string }> }> = {
   pending:  { label: 'Ausstehend', className: 'bg-amber-100 text-alert-amber',   Icon: Clock },
-  verified: { label: 'Verifiziert', className: 'bg-green-100 text-quartier-green', Icon: CheckCircle },
+  verified: { label: 'Verifiziert', className: 'bg-green-100 text-quartier-green', Icon: CircleCheck },
   revoked:  { label: 'Gesperrt',   className: 'bg-red-100 text-red-600',          Icon: ShieldOff },
 };
 

@@ -8,7 +8,7 @@ import {
   Video,
   Camera,
   Loader2,
-  AlertTriangle,
+  TriangleAlert,
 } from "lucide-react";
 import { useTerminal, type TerminalScreen } from "@/lib/terminal/TerminalContext";
 import CheckinScreen from "@/components/terminal/screens/CheckinScreen";
@@ -98,7 +98,7 @@ function DashboardGrid() {
   if (error) {
     return (
       <div className="flex flex-col items-center justify-center h-full gap-4">
-        <AlertTriangle className="h-20 w-20 text-alert-amber" />
+        <TriangleAlert className="h-20 w-20 text-alert-amber" />
         <p className="text-[32px] text-anthrazit font-medium">Verbindungsfehler</p>
         <p className="text-[24px] text-anthrazit/70">{error}</p>
       </div>

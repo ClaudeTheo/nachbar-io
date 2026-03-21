@@ -3,7 +3,7 @@
 
 import { useEffect, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
-import { Heart, AlertTriangle, Clock, ArrowRight, Pill, CalendarDays, Users, FileText, CreditCard, ScrollText, BarChart3, UserCog, Shield } from 'lucide-react';
+import { Heart, TriangleAlert, Clock, ArrowRight, Pill, CalendarDays, Users, FileText, CreditCard, ScrollText, BarChart3, UserCog, Shield } from 'lucide-react';
 import Link from 'next/link';
 import { SosButton } from '@/components/care/SosButton';
 import { CareConsentGate } from '@/components/care/CareConsentGate';
@@ -253,7 +253,7 @@ export default function CareDashboardPage() {
           className="rounded-xl border bg-card p-4 hover:bg-gray-50 transition-colors"
         >
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <AlertTriangle className="h-4 w-4" />
+            <TriangleAlert className="h-4 w-4" />
             Hilfeanfragen
           </div>
           {activeAlerts.length > 0 ? (
@@ -392,7 +392,7 @@ export default function CareDashboardPage() {
             href="/care/sos"
             className="rounded-lg border bg-card p-3 text-sm font-medium text-anthrazit hover:bg-gray-50 flex items-center gap-2"
           >
-            <AlertTriangle className="h-4 w-4 text-alert-amber" />
+            <TriangleAlert className="h-4 w-4 text-alert-amber" />
             SOS-Uebersicht
           </Link>
           <Link

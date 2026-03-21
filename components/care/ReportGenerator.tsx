@@ -3,7 +3,7 @@
 'use client';
 
 import { useState } from 'react';
-import { FileText, Loader2, CheckCircle } from 'lucide-react';
+import { FileText, Loader2, CircleCheck } from 'lucide-react';
 import type { CareDocumentType } from '@/lib/care/types';
 
 const REPORT_TYPES: Array<{ value: CareDocumentType; label: string }> = [
@@ -114,7 +114,7 @@ export function ReportGenerator({ seniorId, onGenerated }: ReportGeneratorProps)
 
       {success && viewUrl && (
         <div className="flex items-center gap-2 text-xs text-quartier-green">
-          <CheckCircle className="h-4 w-4" />
+          <CircleCheck className="h-4 w-4" />
           <span>Bericht erstellt!</span>
           <a href={viewUrl} className="underline font-medium">Ansehen</a>
         </div>

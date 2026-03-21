@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Eye, Database, Server, Shield, Clock, AlertTriangle, CheckCircle, XCircle, Download, MapPin, RefreshCw, Loader2 } from "lucide-react";
+import { Eye, Database, Server, Shield, Clock, TriangleAlert, CircleCheck, CircleX, Download, MapPin, RefreshCw, Loader2 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -221,7 +221,7 @@ export function SystemHealth({ stats, users, households }: SystemHealthProps) {
               ))}
             </div>
             <p className="text-[10px] text-muted-foreground mt-2 flex items-center gap-1">
-              <AlertTriangle className="h-3 w-3" />
+              <TriangleAlert className="h-3 w-3" />
               Bei FEHLER-Status wird automatisch ein Admin-Alert ausgeloest (FMEA FM-SYS-01)
             </p>
           </CardContent>
@@ -244,9 +244,9 @@ export function SystemHealth({ stats, users, households }: SystemHealthProps) {
                 <div key={check.key} className="flex items-center justify-between text-sm">
                   <div className="flex items-center gap-2">
                     {isSet ? (
-                      <CheckCircle className="h-4 w-4 text-quartier-green" />
+                      <CircleCheck className="h-4 w-4 text-quartier-green" />
                     ) : (
-                      <XCircle className={`h-4 w-4 ${check.critical ? "text-emergency-red" : "text-alert-amber"}`} />
+                      <CircleX className={`h-4 w-4 ${check.critical ? "text-emergency-red" : "text-alert-amber"}`} />
                     )}
                     <span>{check.label}</span>
                   </div>
@@ -329,27 +329,27 @@ export function SystemHealth({ stats, users, households }: SystemHealthProps) {
           </h3>
           <div className="space-y-1.5 text-xs text-muted-foreground">
             <p className="flex items-center gap-2">
-              <CheckCircle className="h-3.5 w-3.5 text-quartier-green shrink-0" />
+              <CircleCheck className="h-3.5 w-3.5 text-quartier-green shrink-0" />
               Datenbank in EU Frankfurt (Supabase)
             </p>
             <p className="flex items-center gap-2">
-              <CheckCircle className="h-3.5 w-3.5 text-quartier-green shrink-0" />
+              <CircleCheck className="h-3.5 w-3.5 text-quartier-green shrink-0" />
               Kein Google Analytics / Tracking-Pixel
             </p>
             <p className="flex items-center gap-2">
-              <CheckCircle className="h-3.5 w-3.5 text-quartier-green shrink-0" />
+              <CircleCheck className="h-3.5 w-3.5 text-quartier-green shrink-0" />
               Nur technisch notwendige Cookies
             </p>
             <p className="flex items-center gap-2">
-              <CheckCircle className="h-3.5 w-3.5 text-quartier-green shrink-0" />
+              <CircleCheck className="h-3.5 w-3.5 text-quartier-green shrink-0" />
               E-Mail als Hash gespeichert
             </p>
             <p className="flex items-center gap-2">
-              <CheckCircle className="h-3.5 w-3.5 text-quartier-green shrink-0" />
+              <CircleCheck className="h-3.5 w-3.5 text-quartier-green shrink-0" />
               RLS auf allen Tabellen
             </p>
             <p className="flex items-center gap-2">
-              <CheckCircle className="h-3.5 w-3.5 text-quartier-green shrink-0" />
+              <CircleCheck className="h-3.5 w-3.5 text-quartier-green shrink-0" />
               Datenschutzerklaerung / Impressum oeffentlich
             </p>
           </div>

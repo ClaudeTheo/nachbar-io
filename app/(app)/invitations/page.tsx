@@ -6,8 +6,8 @@ import {
   ArrowLeft,
   UserPlus,
   Clock,
-  CheckCircle2,
-  XCircle,
+  CircleCheckBig,
+  CircleX,
   Copy,
   Check,
   MessageCircle,
@@ -106,9 +106,9 @@ export default function InvitationsPage() {
         return <Clock className="h-4 w-4 text-alert-amber" />;
       case "accepted":
       case "converted":
-        return <CheckCircle2 className="h-4 w-4 text-quartier-green" />;
+        return <CircleCheckBig className="h-4 w-4 text-quartier-green" />;
       case "expired":
-        return <XCircle className="h-4 w-4 text-muted-foreground" />;
+        return <CircleX className="h-4 w-4 text-muted-foreground" />;
       default:
         return null;
     }

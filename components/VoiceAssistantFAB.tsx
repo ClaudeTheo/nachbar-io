@@ -6,7 +6,7 @@
 
 import { useState, useRef, useCallback, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Mic, Loader2, AlertTriangle, MessageCircle, Navigation, RotateCcw, X, Volume2, VolumeX, Check, ArrowRight } from 'lucide-react';
+import { Mic, Loader2, TriangleAlert, MessageCircle, Navigation, RotateCcw, X, Volume2, VolumeX, Check, ArrowRight } from 'lucide-react';
 import {
   Sheet,
   SheetContent,
@@ -372,7 +372,7 @@ export function VoiceAssistantFAB() {
               )}
               {sheetState === 'error' && (
                 <>
-                  <AlertTriangle className="h-5 w-5 text-[#F59E0B]" />
+                  <TriangleAlert className="h-5 w-5 text-[#F59E0B]" />
                   Mikrofon-Fehler
                 </>
               )}
@@ -502,7 +502,7 @@ export function VoiceAssistantFAB() {
                     {toolResults.map((result, i) => (
                       <div key={i} className="rounded-lg border p-3 flex items-start gap-3">
                         <div className={`mt-0.5 ${result.success ? 'text-[#4CAF87]' : 'text-[#F59E0B]'}`}>
-                          {result.success ? <Check className="h-5 w-5" /> : <AlertTriangle className="h-5 w-5" />}
+                          {result.success ? <Check className="h-5 w-5" /> : <TriangleAlert className="h-5 w-5" />}
                         </div>
                         <div className="flex-1">
                           <p className="text-sm text-[#2D3142]">{result.summary}</p>

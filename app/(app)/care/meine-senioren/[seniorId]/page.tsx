@@ -4,7 +4,7 @@
 
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { ArrowLeft, Pill, Clock, AlertTriangle, Plus, Activity, RefreshCw, MessageCircle, UserCog } from 'lucide-react';
+import { ArrowLeft, Pill, Clock, TriangleAlert, Plus, Activity, RefreshCw, MessageCircle, UserCog } from 'lucide-react';
 import Link from 'next/link';
 import { useCareRole } from '@/lib/care/hooks/useCareRole';
 import { createClient } from '@/lib/supabase/client';
@@ -136,7 +136,7 @@ export default function SeniorDetailPage() {
   const tabs: { key: Tab; label: string; icon: React.ReactNode }[] = [
     { key: 'medikamente', label: 'Medikamente', icon: <Pill className="h-4 w-4" /> },
     { key: 'checkins', label: 'Check-ins', icon: <Clock className="h-4 w-4" /> },
-    { key: 'sos', label: 'SOS-Verlauf', icon: <AlertTriangle className="h-4 w-4" /> },
+    { key: 'sos', label: 'SOS-Verlauf', icon: <TriangleAlert className="h-4 w-4" /> },
   ];
 
   return (

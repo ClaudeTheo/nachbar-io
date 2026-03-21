@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useCallback } from "react";
-import { ThumbsUp, ThumbsDown, CheckCircle, Star, RefreshCw, MapPin } from "lucide-react";
+import { ThumbsUp, ThumbsDown, CircleCheck, Star, RefreshCw, MapPin } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { de } from "date-fns/locale";
 import { toast } from "sonner";
@@ -127,7 +127,7 @@ export function CraftsmanRecommendation({
       {myRecommendation && (
         <div className="rounded-lg border border-quartier-green/20 bg-quartier-green/5 p-4">
           <div className="flex items-center gap-2 text-quartier-green font-medium">
-            <CheckCircle className="h-5 w-5" />
+            <CircleCheck className="h-5 w-5" />
             <span>Sie empfehlen diesen Handwerker</span>
           </div>
           {myRecommendation.comment && (

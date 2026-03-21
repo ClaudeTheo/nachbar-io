@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import {
-  Globe, Users, Home, AlertTriangle, HandHelping,
+  Globe, Users, Home, TriangleAlert, HandHelping,
   RefreshCw, MapPin, Clock, ArrowRight, Plus, Eye,
   Activity,
 } from "lucide-react";
@@ -104,7 +104,7 @@ export function SuperAdminOverview({ onOpenWizard, onSwitchTab }: SuperAdminOver
       <Card className="border-red-200 bg-red-50">
         <CardContent className="p-4">
           <div className="flex items-center gap-2 text-red-700">
-            <AlertTriangle className="h-5 w-5" />
+            <TriangleAlert className="h-5 w-5" />
             <span className="font-medium">Fehler beim Laden der Daten</span>
           </div>
           <p className="mt-1 text-sm text-red-600">{error}</p>
@@ -151,7 +151,7 @@ export function SuperAdminOverview({ onOpenWizard, onSwitchTab }: SuperAdminOver
           highlight={totalHelpRequests > 0}
         />
         <TopStatCard
-          icon={<AlertTriangle className="h-5 w-5 text-alert-amber" />}
+          icon={<TriangleAlert className="h-5 w-5 text-alert-amber" />}
           label="Aktive Alerts"
           value={totalAlerts}
           highlight={totalAlerts > 0}
@@ -298,7 +298,7 @@ function QuarterMiniCard({
             value={stats.householdCount}
           />
           <MetricItem
-            icon={<AlertTriangle className="h-3.5 w-3.5" />}
+            icon={<TriangleAlert className="h-3.5 w-3.5" />}
             label="Alerts"
             value={stats.activeAlerts}
             highlight={stats.activeAlerts > 0}

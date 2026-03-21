@@ -5,7 +5,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Mail, Trash2, AlertTriangle, CheckCircle, Loader2 } from "lucide-react";
+import { Mail, Trash2, TriangleAlert, CircleCheck, Loader2 } from "lucide-react";
 
 type Step = "email" | "otp" | "confirm" | "done";
 
@@ -95,7 +95,7 @@ export default function AccountLoeschenPage() {
 
           <div className="rounded-lg bg-amber-50 border border-amber-200 p-4 text-sm text-amber-800">
             <div className="flex items-start gap-2">
-              <AlertTriangle className="h-4 w-4 mt-0.5 flex-shrink-0" />
+              <TriangleAlert className="h-4 w-4 mt-0.5 flex-shrink-0" />
               <div>
                 <p className="font-medium">Diese Aktion kann nicht rückgängig gemacht werden.</p>
                 <p className="mt-1">Alle Ihre Daten werden innerhalb von 30 Tagen unwiderruflich gelöscht: Profil, Beiträge, Marktplatz-Anzeigen, Nachrichten und Bewertungen.</p>
@@ -196,7 +196,7 @@ export default function AccountLoeschenPage() {
         <section className="rounded-xl border bg-white p-6 text-center space-y-4">
           <div className="flex justify-center">
             <div className="flex h-12 w-12 items-center justify-center rounded-full bg-green-50">
-              <CheckCircle className="h-6 w-6 text-green-600" />
+              <CircleCheck className="h-6 w-6 text-green-600" />
             </div>
           </div>
           <h2 className="font-semibold text-[#2D3142]">Löschung beantragt</h2>

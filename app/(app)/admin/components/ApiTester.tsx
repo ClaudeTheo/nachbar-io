@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Play, Clock, CheckCircle2, XCircle, AlertTriangle, Trash2 } from "lucide-react";
+import { Play, Clock, CircleCheckBig, CircleX, TriangleAlert, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface ApiRoute {
@@ -148,10 +148,10 @@ export function ApiTester() {
   }
 
   function getStatusIcon(status: number) {
-    if (status === 0) return <XCircle className="h-4 w-4 text-red-500" />;
-    if (status >= 200 && status < 300) return <CheckCircle2 className="h-4 w-4 text-green-600" />;
-    if (status >= 400 && status < 500) return <AlertTriangle className="h-4 w-4 text-amber-500" />;
-    return <XCircle className="h-4 w-4 text-red-500" />;
+    if (status === 0) return <CircleX className="h-4 w-4 text-red-500" />;
+    if (status >= 200 && status < 300) return <CircleCheckBig className="h-4 w-4 text-green-600" />;
+    if (status >= 400 && status < 500) return <TriangleAlert className="h-4 w-4 text-amber-500" />;
+    return <CircleX className="h-4 w-4 text-red-500" />;
   }
 
   return (

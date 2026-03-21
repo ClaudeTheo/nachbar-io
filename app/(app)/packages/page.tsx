@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, Package, MapPin, Send, CheckCircle, Users } from "lucide-react";
+import { ArrowLeft, Package, MapPin, Send, CircleCheck, Users } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -471,7 +471,7 @@ function RequestList({
                 className="mt-3 w-full bg-quartier-green text-white hover:bg-quartier-green-dark"
                 size="sm"
               >
-                <CheckCircle className="mr-2 h-4 w-4" />
+                <CircleCheck className="mr-2 h-4 w-4" />
                 {respondingTo === req.id ? "Wird gesendet..." : "Ich nehme es an"}
               </Button>
             </div>

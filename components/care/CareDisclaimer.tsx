@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { AlertTriangle } from 'lucide-react';
+import { TriangleAlert } from 'lucide-react';
 
 const STORAGE_KEY = 'care_disclaimer_accepted';
 
@@ -45,7 +45,7 @@ export function CareDisclaimer({ children }: { children: React.ReactNode }) {
 
           <div className="space-y-3 mb-6">
             <div className="flex gap-3 rounded-lg bg-amber-50 p-3">
-              <AlertTriangle className="h-5 w-5 text-alert-amber shrink-0 mt-0.5" />
+              <TriangleAlert className="h-5 w-5 text-alert-amber shrink-0 mt-0.5" />
               <div>
                 <p className="text-sm font-medium text-anthrazit">Kein Ersatz für Notruf</p>
                 <p className="text-xs text-muted-foreground">
@@ -55,7 +55,7 @@ export function CareDisclaimer({ children }: { children: React.ReactNode }) {
             </div>
 
             <div className="flex gap-3 rounded-lg bg-amber-50 p-3">
-              <AlertTriangle className="h-5 w-5 text-alert-amber shrink-0 mt-0.5" />
+              <TriangleAlert className="h-5 w-5 text-alert-amber shrink-0 mt-0.5" />
               <div>
                 <p className="text-sm font-medium text-anthrazit">Keine medizinische Beratung</p>
                 <p className="text-xs text-muted-foreground">
@@ -66,7 +66,7 @@ export function CareDisclaimer({ children }: { children: React.ReactNode }) {
             </div>
 
             <div className="flex gap-3 rounded-lg bg-amber-50 p-3">
-              <AlertTriangle className="h-5 w-5 text-alert-amber shrink-0 mt-0.5" />
+              <TriangleAlert className="h-5 w-5 text-alert-amber shrink-0 mt-0.5" />
               <div>
                 <p className="text-sm font-medium text-anthrazit">Freiwillige Organisationshilfe</p>
                 <p className="text-xs text-muted-foreground">

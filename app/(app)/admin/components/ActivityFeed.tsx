@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { AlertTriangle, HandHelping, ShoppingBag, MapPin, UserPlus, Calendar, Clock, RefreshCw } from "lucide-react";
+import { TriangleAlert, HandHelping, ShoppingBag, MapPin, UserPlus, Calendar, Clock, RefreshCw } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/client";
@@ -19,7 +19,7 @@ interface ActivityItem {
 }
 
 const ACTIVITY_ICONS: Record<ActivityType, React.ReactNode> = {
-  alert: <AlertTriangle className="h-4 w-4 text-alert-amber" />,
+  alert: <TriangleAlert className="h-4 w-4 text-alert-amber" />,
   help_request: <HandHelping className="h-4 w-4 text-blue-500" />,
   marketplace: <ShoppingBag className="h-4 w-4 text-purple-500" />,
   lost_found: <MapPin className="h-4 w-4 text-orange-500" />,

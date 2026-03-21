@@ -4,8 +4,8 @@ import { use, useState, useEffect, useCallback } from "react";
 import {
   Heart,
   Clock,
-  AlertTriangle,
-  CheckCircle,
+  TriangleAlert,
+  CircleCheck,
   RefreshCw,
   Shield,
   Loader2,
@@ -107,7 +107,7 @@ export default function FamilyDashboard({
     return (
       <div className="flex min-h-screen items-center justify-center bg-warmwhite p-6">
         <div className="flex max-w-md flex-col items-center gap-4 text-center">
-          <AlertTriangle className="h-12 w-12 text-alert-amber" />
+          <TriangleAlert className="h-12 w-12 text-alert-amber" />
           <h1 className="text-2xl font-bold text-anthrazit">
             Verbindungsfehler
           </h1>
@@ -196,7 +196,7 @@ export default function FamilyDashboard({
           <div className="rounded-2xl bg-white p-5 shadow-soft">
             <div className="flex items-center gap-3">
               {data?.isOnline ? (
-                <CheckCircle className="h-6 w-6 text-quartier-green" />
+                <CircleCheck className="h-6 w-6 text-quartier-green" />
               ) : (
                 <Clock className="h-6 w-6 text-anthrazit/30" />
               )}

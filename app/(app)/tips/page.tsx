@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Plus, ChevronRight, Filter, CheckCircle2 } from "lucide-react";
+import { Plus, ChevronRight, Filter, CircleCheckBig } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { TIP_CATEGORIES } from "@/lib/constants";
 import type { CommunityTip } from "@/lib/supabase/types";
@@ -196,7 +196,7 @@ function TipCard({ tip }: { tip: CommunityTip }) {
               <>
                 <span>·</span>
                 <span className="flex items-center gap-1 text-quartier-green">
-                  <CheckCircle2 className="h-3 w-3" />
+                  <CircleCheckBig className="h-3 w-3" />
                   {tip.confirmation_count} bestätigt
                 </span>
               </>

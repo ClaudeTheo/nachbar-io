@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
-import { ArrowLeft, AlertTriangle } from 'lucide-react';
+import { ArrowLeft, TriangleAlert } from 'lucide-react';
 import Link from 'next/link';
 import { SosAlertCard } from '@/components/care/SosAlertCard';
 import type { CareSosAlert } from '@/lib/care/types';
@@ -47,7 +47,7 @@ export default function SosOverviewPage() {
           Zurueck
         </Link>
         <h1 className="text-2xl font-bold text-anthrazit flex items-center gap-2">
-          <AlertTriangle className="h-6 w-6 text-alert-amber" />
+          <TriangleAlert className="h-6 w-6 text-alert-amber" />
           SOS-Alarme
         </h1>
       </div>

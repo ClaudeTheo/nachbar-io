@@ -2,9 +2,9 @@
 
 import { useEffect, useState } from "react";
 import {
-  CheckCircle2,
-  XCircle,
-  AlertTriangle,
+  CircleCheckBig,
+  CircleX,
+  TriangleAlert,
   RefreshCw,
   Play,
   Clock,
@@ -193,9 +193,9 @@ export function DevOpsPanel() {
             }`}>
               <div className="flex items-center gap-2 font-medium">
                 {migrationStatus.migrationApplied ? (
-                  <CheckCircle2 className="h-4 w-4" />
+                  <CircleCheckBig className="h-4 w-4" />
                 ) : (
-                  <AlertTriangle className="h-4 w-4" />
+                  <TriangleAlert className="h-4 w-4" />
                 )}
                 {migrationStatus.summary}
               </div>
@@ -213,9 +213,9 @@ export function DevOpsPanel() {
                   }`}
                 >
                   {t.status === "ok" ? (
-                    <CheckCircle2 className="h-2.5 w-2.5 shrink-0" />
+                    <CircleCheckBig className="h-2.5 w-2.5 shrink-0" />
                   ) : (
-                    <XCircle className="h-2.5 w-2.5 shrink-0" />
+                    <CircleX className="h-2.5 w-2.5 shrink-0" />
                   )}
                   {t.type}
                 </div>
@@ -289,11 +289,11 @@ export function DevOpsPanel() {
                       className="flex items-center gap-2 rounded-md px-2 py-1.5 text-xs hover:bg-muted/30"
                     >
                       {v.isSet ? (
-                        <CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-green-600" />
+                        <CircleCheckBig className="h-3.5 w-3.5 shrink-0 text-green-600" />
                       ) : v.critical ? (
-                        <XCircle className="h-3.5 w-3.5 shrink-0 text-red-500" />
+                        <CircleX className="h-3.5 w-3.5 shrink-0 text-red-500" />
                       ) : (
-                        <AlertTriangle className="h-3.5 w-3.5 shrink-0 text-amber-500" />
+                        <TriangleAlert className="h-3.5 w-3.5 shrink-0 text-amber-500" />
                       )}
                       <span className="flex-1 font-medium">{v.label}</span>
                       <code className="text-[10px] text-muted-foreground font-mono">{v.key}</code>

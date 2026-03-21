@@ -4,7 +4,7 @@ import { useEffect, useState, useCallback } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import { ExternalLink } from "@/components/ExternalLink";
-import { ArrowLeft, MapPin, Phone, CheckCircle2, Clock, Tag, User, Globe, CalendarClock, Crown } from "lucide-react";
+import { ArrowLeft, MapPin, Phone, CircleCheckBig, Clock, Tag, User, Globe, CalendarClock, Crown } from "lucide-react";
 import { BusinessReview } from "@/components/BusinessReview";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -265,7 +265,7 @@ export default function TipDetailPage() {
       {/* Bestätigungs-Bereich */}
       <div className="rounded-xl border-2 border-border bg-white p-5 text-center">
         <div className="mb-3 flex items-center justify-center gap-2 text-lg font-bold text-anthrazit">
-          <CheckCircle2 className={`h-6 w-6 ${confirmCount > 0 ? "text-quartier-green" : "text-muted-foreground"}`} />
+          <CircleCheckBig className={`h-6 w-6 ${confirmCount > 0 ? "text-quartier-green" : "text-muted-foreground"}`} />
           {confirmCount} {confirmCount === 1 ? "Bestätigung" : "Bestätigungen"}
         </div>
 
@@ -286,7 +286,7 @@ export default function TipDetailPage() {
                 : "bg-quartier-green hover:bg-quartier-green-dark"
             }
           >
-            <CheckCircle2 className="mr-2 h-4 w-4" />
+            <CircleCheckBig className="mr-2 h-4 w-4" />
             {confirming
               ? "Wird gespeichert..."
               : hasConfirmed

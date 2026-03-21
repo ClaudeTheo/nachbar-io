@@ -3,7 +3,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Heart, Users, AlertTriangle, Clock, Activity } from 'lucide-react';
+import { Heart, Users, TriangleAlert, Clock, Activity } from 'lucide-react';
 
 interface OverviewData {
   platform: { totalUsers: number; activeSeniors: number; registeredHelpers: number; verifiedHelpers: number; helperCoverageRatio: number; };
@@ -50,7 +50,7 @@ export function SystemOverview() {
   const metrics = [
     { label: 'Aktive Senioren', value: data.platform.activeSeniors, icon: Heart, color: 'text-[#4CAF87]', bgColor: 'bg-[#4CAF87]/10' },
     { label: 'Verifizierte Helfer', value: `${data.platform.verifiedHelpers} (${data.platform.helperCoverageRatio}x)`, icon: Users, color: 'text-blue-600', bgColor: 'bg-blue-50' },
-    { label: 'SOS Aufloesungsrate', value: `${data.operations.sosAlerts.resolutionRate}%`, icon: AlertTriangle, color: 'text-amber-600', bgColor: 'bg-amber-50' },
+    { label: 'SOS Aufloesungsrate', value: `${data.operations.sosAlerts.resolutionRate}%`, icon: TriangleAlert, color: 'text-amber-600', bgColor: 'bg-amber-50' },
     { label: 'Check-in Compliance', value: `${data.operations.checkins.complianceRate}%`, icon: Clock, color: 'text-[#4CAF87]', bgColor: 'bg-[#4CAF87]/10' },
   ];
 

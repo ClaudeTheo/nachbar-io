@@ -3,7 +3,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Camera, Mic, Wifi, CheckCircle, XCircle } from 'lucide-react';
+import { Camera, Mic, Wifi, CircleCheck, CircleX } from 'lucide-react';
 
 interface Props {
   onReady: () => void;
@@ -71,9 +71,9 @@ export function TechCheck({ onReady, onFailed }: Props) {
       return <div className="h-8 w-8 rounded-full bg-anthrazit/20 animate-pulse" />;
     }
     if (status === 'ok') {
-      return <CheckCircle className="h-8 w-8 text-quartier-green" />;
+      return <CircleCheck className="h-8 w-8 text-quartier-green" />;
     }
-    return <XCircle className="h-8 w-8 text-red-500" />;
+    return <CircleX className="h-8 w-8 text-red-500" />;
   }
 
   return (

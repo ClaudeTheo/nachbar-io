@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { Pill, CheckCircle, ArrowLeft, Clock } from "lucide-react";
+import { Pill, CircleCheck, ArrowLeft, Clock } from "lucide-react";
 import { useTerminal } from "@/lib/terminal/TerminalContext";
 
 /**
@@ -66,7 +66,7 @@ export default function MedicationsScreen() {
       {/* Erfolgsmeldung wenn alle eingenommen */}
       {allTaken && (
         <div className="flex items-center gap-4 rounded-2xl bg-quartier-green/15 p-5">
-          <CheckCircle className="h-12 w-12 text-quartier-green flex-shrink-0" />
+          <CircleCheck className="h-12 w-12 text-quartier-green flex-shrink-0" />
           <p className="text-3xl font-bold text-quartier-green">
             Alle Medikamente eingenommen!
           </p>
@@ -107,7 +107,7 @@ export default function MedicationsScreen() {
             >
               {med.taken ? (
                 <span className="flex items-center gap-2">
-                  <CheckCircle className="h-8 w-8" />
+                  <CircleCheck className="h-8 w-8" />
                   Eingenommen
                 </span>
               ) : (

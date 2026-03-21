@@ -5,7 +5,7 @@
 
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { ArrowLeft, Save, UserCog, ShieldCheck, AlertTriangle } from 'lucide-react';
+import { ArrowLeft, Save, UserCog, ShieldCheck, TriangleAlert } from 'lucide-react';
 import Link from 'next/link';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
@@ -122,7 +122,7 @@ export default function SeniorProfileEditPage() {
   if (!canEdit) {
     return (
       <div className="space-y-4 py-8 text-center">
-        <AlertTriangle className="mx-auto h-12 w-12 text-alert-amber" />
+        <TriangleAlert className="mx-auto h-12 w-12 text-alert-amber" />
         <h1 className="text-lg font-semibold text-anthrazit">Keine Berechtigung</h1>
         <p className="text-sm text-muted-foreground">
           Sie sind nicht berechtigt, dieses Profil zu bearbeiten.

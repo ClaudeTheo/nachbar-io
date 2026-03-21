@@ -5,7 +5,7 @@
 
 import { useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, MapPin, CheckCircle2, Loader2 } from "lucide-react";
+import { ArrowLeft, MapPin, CircleCheckBig, Loader2 } from "lucide-react";
 import { ExternalLink } from "@/components/ExternalLink";
 import { toast } from "sonner";
 import { createClient } from "@/lib/supabase/client";
@@ -546,7 +546,7 @@ export default function NewReportPage() {
               </>
             ) : step === 5 ? (
               <>
-                <CheckCircle2 className="h-4 w-4" />
+                <CircleCheckBig className="h-4 w-4" />
                 Meldung absenden
               </>
             ) : (

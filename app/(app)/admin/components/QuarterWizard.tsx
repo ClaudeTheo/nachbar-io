@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import {
-  MapPin, Settings, Map, CheckCircle2, ChevronRight,
+  MapPin, Settings, Map, CircleCheckBig, ChevronRight,
   ChevronLeft, Loader2, FileText, PartyPopper,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -107,7 +107,7 @@ const STEPS = [
   { label: "Standort", icon: MapPin },
   { label: "Konfiguration", icon: Settings },
   { label: "Karte", icon: Map },
-  { label: "Uebersicht", icon: CheckCircle2 },
+  { label: "Uebersicht", icon: CircleCheckBig },
 ];
 
 // -------------------------------------------------------------------
@@ -404,7 +404,7 @@ function StepIndicator({ currentStep }: { currentStep: number }) {
                 }`}
               >
                 {isDone ? (
-                  <CheckCircle2 className="h-4 w-4" />
+                  <CircleCheckBig className="h-4 w-4" />
                 ) : (
                   <Icon className="h-4 w-4" />
                 )}

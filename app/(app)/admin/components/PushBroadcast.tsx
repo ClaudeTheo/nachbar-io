@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Megaphone, Send, Users, MapPin, AlertTriangle, Info, CheckCircle, History, Clock } from "lucide-react";
+import { Megaphone, Send, Users, MapPin, TriangleAlert, Info, CircleCheck, History, Clock } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -224,7 +224,7 @@ export function PushBroadcast() {
                 className="text-xs h-8"
                 onClick={() => setUrgency("important")}
               >
-                <AlertTriangle className="h-3.5 w-3.5 mr-1" />
+                <TriangleAlert className="h-3.5 w-3.5 mr-1" />
                 Wichtig
               </Button>
               <Button
@@ -321,7 +321,7 @@ export function PushBroadcast() {
                       </span>
                     </div>
                   </div>
-                  <CheckCircle className="h-4 w-4 text-quartier-green shrink-0 mt-0.5" />
+                  <CircleCheck className="h-4 w-4 text-quartier-green shrink-0 mt-0.5" />
                 </div>
               </Card>
             ))}

@@ -1,6 +1,6 @@
 "use client";
 
-import { CheckCircle2, Clock, Users } from "lucide-react";
+import { CircleCheckBig, Clock, Users } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { de } from "date-fns/locale";
 import { formatTrustDisplay } from "@/lib/craftsmen/trust-score";
@@ -30,7 +30,7 @@ export function TrustScoreBadge({ score, showRecency, showUsageCount, size = "md
     <div className="space-y-1">
       {/* Haupt-Badge */}
       <div className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 ${textSize} font-medium ${styles}`}>
-        <CheckCircle2 className={size === "sm" ? "h-3 w-3" : "h-4 w-4"} />
+        <CircleCheckBig className={size === "sm" ? "h-3 w-3" : "h-4 w-4"} />
         {display.label}
       </div>
 

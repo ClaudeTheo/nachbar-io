@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { QrCode, CheckCircle, XCircle, Search, ChevronDown, ChevronUp, UserMinus, MapPin, Pencil, Save, X, Globe } from "lucide-react";
+import { QrCode, CircleCheck, CircleX, Search, ChevronDown, ChevronUp, UserMinus, MapPin, Pencil, Save, X, Globe } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -317,7 +317,7 @@ export function HouseholdManagement({ households, onRefresh }: HouseholdManageme
                             </a>
                             {h.verified && (
                               <span className="inline-flex items-center gap-0.5 text-green-600">
-                                <CheckCircle className="h-3 w-3" /> Verifiziert
+                                <CircleCheck className="h-3 w-3" /> Verifiziert
                               </span>
                             )}
                             {/* Quartier-Badge */}
@@ -419,9 +419,9 @@ export function HouseholdManagement({ households, onRefresh }: HouseholdManageme
                                 onClick={() => toggleVerified(h.id, h.verified)}
                               >
                                 {h.verified ? (
-                                  <><CheckCircle className="h-3 w-3 mr-1" /> Verifiziert</>
+                                  <><CircleCheck className="h-3 w-3 mr-1" /> Verifiziert</>
                                 ) : (
-                                  <><XCircle className="h-3 w-3 mr-1" /> Verifizieren</>
+                                  <><CircleX className="h-3 w-3 mr-1" /> Verifizieren</>
                                 )}
                               </Button>
                             </div>

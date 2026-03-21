@@ -6,7 +6,7 @@ import { render, screen, fireEvent, cleanup } from '@testing-library/react';
 import { CareErrorBoundary } from './CareErrorBoundary';
 
 vi.mock('lucide-react', () => ({
-  AlertTriangle: (props: Record<string, unknown>) => <svg data-testid="alert-icon" {...props} />,
+  TriangleAlert: (props: Record<string, unknown>) => <svg data-testid="alert-icon" {...props} />,
   RefreshCw: (props: Record<string, unknown>) => <svg data-testid="refresh-icon" {...props} />,
 }));
 

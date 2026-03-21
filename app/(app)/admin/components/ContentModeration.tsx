@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { AlertTriangle, HandHelping, ShoppingBag, MapPin, ChevronDown, ChevronUp, Save, Edit } from "lucide-react";
+import { TriangleAlert, HandHelping, ShoppingBag, MapPin, ChevronDown, ChevronUp, Save, Edit } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -25,7 +25,7 @@ interface ContentItem {
 }
 
 const CONTENT_TYPES: { id: ContentType; label: string; icon: React.ReactNode }[] = [
-  { id: "alerts", label: "Meldungen", icon: <AlertTriangle className="h-4 w-4" /> },
+  { id: "alerts", label: "Meldungen", icon: <TriangleAlert className="h-4 w-4" /> },
   { id: "help_requests", label: "Hilfe-Boerse", icon: <HandHelping className="h-4 w-4" /> },
   { id: "marketplace_items", label: "Marktplatz", icon: <ShoppingBag className="h-4 w-4" /> },
   { id: "lost_found", label: "Fundbuero", icon: <MapPin className="h-4 w-4" /> },

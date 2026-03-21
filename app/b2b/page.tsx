@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import {
   Heart, Shield, BarChart3, Users, Phone,
-  Building2, Stethoscope, CheckCircle, ArrowRight,
+  Building2, Stethoscope, CircleCheck, ArrowRight,
 } from 'lucide-react';
 
 // --- Hero Section ---
@@ -72,7 +72,7 @@ const BENEFITS = [
     description: 'KBV-zertifizierte Telemedizin fuer Aerzte im Quartier. Online-Terminbuchung, digitale Anamneseboegen, GDT-Schnittstelle.',
   },
   {
-    icon: <CheckCircle className="h-6 w-6" />,
+    icon: <CircleCheck className="h-6 w-6" />,
     title: 'DSGVO-konform',
     description: 'Hosting in Frankfurt (EU). AES-256-Verschluesselung fuer sensible Daten. Row-Level Security auf allen Tabellen. AVV verfuegbar.',
   },
@@ -165,7 +165,7 @@ function PricingSection() {
               <ul className="mt-6 space-y-3">
                 {plan.features.map((f) => (
                   <li key={f} className="flex items-start gap-2 text-sm text-gray-600">
-                    <CheckCircle className="mt-0.5 h-4 w-4 flex-shrink-0 text-[#4CAF87]" />
+                    <CircleCheck className="mt-0.5 h-4 w-4 flex-shrink-0 text-[#4CAF87]" />
                     {f}
                   </li>
                 ))}

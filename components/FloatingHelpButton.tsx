@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { AlertTriangle } from "lucide-react";
+import { TriangleAlert } from "lucide-react";
 import { haptic } from "@/lib/haptics";
 
 export function FloatingHelpButton() {
@@ -13,7 +13,7 @@ export function FloatingHelpButton() {
       style={{ bottom: "calc(4.5rem + env(safe-area-inset-bottom, 0px))" }}
       aria-label="Schnell-Hilfe anfragen"
     >
-      <AlertTriangle className="h-6 w-6 text-white" />
+      <TriangleAlert className="h-6 w-6 text-white" />
     </Link>
   );
 }

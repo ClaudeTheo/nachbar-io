@@ -148,9 +148,9 @@ describe('WebSpeechEngine', () => {
 
   it('ruft onTranscript callback auf bei finalem Ergebnis', async () => {
     enableSpeechRecognition();
-    let instance: MockSpeechRecognition | null = null;
-    const OrigCtor = MockSpeechRecognition;
-    class TrackableSR extends OrigCtor {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let instance: any = null;
+    class TrackableSR extends MockSpeechRecognition {
       constructor() { super(); instance = this; }
     }
     (globalThis as Record<string, unknown>).SpeechRecognition = TrackableSR;
@@ -181,7 +181,8 @@ describe('WebSpeechEngine', () => {
 
   it('ruft onError callback auf bei SpeechRecognition-Fehler', async () => {
     enableSpeechRecognition();
-    let instance: MockSpeechRecognition | null = null;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let instance: any = null;
     class TrackableSR extends MockSpeechRecognition {
       constructor() { super(); instance = this; }
     }

@@ -147,14 +147,17 @@ export class WhisperEngine implements SpeechEngine {
       const ACtor = (typeof window !== 'undefined' ? window : globalThis as any).AudioContext;
       if (!ACtor) return;
 
-      this.audioContext = new ACtor();
-      this.analyser = this.audioContext.createAnalyser();
-      this.analyser.fftSize = 256;
+      const ctx = new ACtor() as AudioContext;
+      this.audioContext = ctx;
+      const analyser = ctx.createAnalyser();
+      this.analyser = analyser;
+      analyser.fftSize = 256;
 
-      this.sourceNode = this.audioContext.createMediaStreamSource(stream);
-      this.sourceNode.connect(this.analyser);
+      const source = ctx.createMediaStreamSource(stream);
+      this.sourceNode = source;
+      source.connect(analyser);
 
-      const dataArray = new Uint8Array(this.analyser.frequencyBinCount);
+      const dataArray = new Uint8Array(analyser.frequencyBinCount);
 
       const updateLevel = () => {
         if (!this.analyser) return;

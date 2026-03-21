@@ -53,6 +53,7 @@ vi.mock('lucide-react', () => ({
   ChevronRight: (props: Record<string, unknown>) => <svg data-testid="icon-chevron-right" {...props} />,
   Filter: (props: Record<string, unknown>) => <svg data-testid="icon-filter" {...props} />,
   Repeat: (props: Record<string, unknown>) => <svg data-testid="icon-repeat" {...props} />,
+  UtensilsCrossed: (props: Record<string, unknown>) => <svg data-testid="icon-utensils-crossed" {...props} />,
 }));
 
 // shadcn/ui Tabs als einfache Wrapper

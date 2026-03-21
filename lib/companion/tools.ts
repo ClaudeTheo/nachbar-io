@@ -162,7 +162,38 @@ export const companionTools: CompanionToolDefinition[] = [
     },
   },
 
+  {
+    name: 'create_meal',
+    description: 'Erstellt ein neues Mitess-Angebot (Portionen abgeben oder zum Essen einladen).',
+    input_schema: {
+      type: 'object',
+      properties: {
+        title: { type: 'string', description: 'Was gibt es? (z.B. "Lasagne", "Grillabend")' },
+        type: {
+          type: 'string',
+          enum: ['portion', 'invitation'],
+          description: 'Art: portion (Portionen abgeben) oder invitation (zum Essen einladen)',
+        },
+        servings: { type: 'number', description: 'Anzahl Portionen oder Plaetze' },
+        description: { type: 'string', description: 'Beschreibung (optional)' },
+        meal_date: { type: 'string', description: 'Datum im Format YYYY-MM-DD' },
+        meal_time: { type: 'string', description: 'Uhrzeit im Format HH:MM (optional)' },
+        cost_hint: { type: 'string', description: 'Unkostenbeitrag (optional, z.B. "3 EUR")' },
+      },
+      required: ['title', 'type', 'servings', 'meal_date'],
+    },
+  },
+
   // ── Read-Tools (sofortige Ausfuehrung) ─────────────────────────
+
+  {
+    name: 'list_meals',
+    description: 'Zeigt aktuelle Mitess-Angebote im Quartier an (Portionen und Einladungen).',
+    input_schema: {
+      type: 'object',
+      properties: {},
+    },
+  },
 
   {
     name: 'get_waste_dates',
@@ -209,4 +240,5 @@ export const WRITE_TOOLS = new Set([
   'update_help_offers',
   'send_message',
   'update_profile',
+  'create_meal',
 ]);

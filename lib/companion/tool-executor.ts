@@ -238,7 +238,90 @@ export async function executeCompanionTool(
         return { success: true, summary: 'Profil wurde aktualisiert.' };
       }
 
+      case 'create_meal': {
+        const ctx = await getUserContext(supabase, userId);
+        if (!ctx) return { success: false, summary: 'Quartier-Zuordnung nicht gefunden.' };
+
+        const mealType = params.type as string;
+        const mealDate = params.meal_date as string;
+        const mealTime = (params.meal_time as string | undefined) ?? null;
+        const servingsNum = params.servings as number;
+
+        // expires_at berechnen
+        let expiresAt: string;
+        if (mealType === 'portion') {
+          const d = new Date(mealDate);
+          d.setDate(d.getDate() + 1);
+          expiresAt = d.toISOString();
+        } else {
+          if (mealTime) {
+            expiresAt = new Date(`${mealDate}T${mealTime}:00`).toISOString();
+          } else {
+            const d = new Date(mealDate);
+            d.setHours(23, 59, 59);
+            expiresAt = d.toISOString();
+          }
+        }
+
+        const { error } = await supabase.from('shared_meals').insert({
+          user_id: userId,
+          quarter_id: ctx.quarterId,
+          type: mealType,
+          title: (params.title as string).trim(),
+          description: (params.description as string | undefined)?.trim() ?? null,
+          servings: servingsNum,
+          meal_date: mealDate,
+          meal_time: mealTime,
+          cost_hint: (params.cost_hint as string | undefined)?.trim() ?? null,
+          expires_at: expiresAt,
+          status: 'active',
+        });
+
+        if (error) return { success: false, summary: `Fehler: ${error.message}` };
+        const typeLabel = mealType === 'portion' ? 'Portionen' : 'Plaetze';
+        return {
+          success: true,
+          summary: `Angebot "${params.title}" erstellt — ${servingsNum} ${typeLabel} am ${formatDateDE(mealDate)}${mealTime ? ` um ${mealTime} Uhr` : ''}.`,
+        };
+      }
+
       // ── Read-Tools ───────────────────────────────────────────────
+
+      case 'list_meals': {
+        const ctx = await getUserContext(supabase, userId);
+        if (!ctx) return { success: false, summary: 'Quartier-Zuordnung nicht gefunden.' };
+
+        const todayStr = new Date().toISOString().split('T')[0];
+        const { data: meals } = await supabase
+          .from('shared_meals')
+          .select('title, type, servings, meal_date, meal_time, cost_hint, user:users(display_name)')
+          .eq('quarter_id', ctx.quarterId)
+          .eq('status', 'active')
+          .gte('meal_date', todayStr)
+          .order('meal_date', { ascending: true })
+          .limit(10);
+
+        if (!meals || meals.length === 0) {
+          return { success: true, summary: 'Aktuell keine Mitess-Angebote im Quartier.', data: [] };
+        }
+
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const lines = (meals as any[]).map((m, i: number) => {
+          const user = Array.isArray(m.user) ? m.user[0] : m.user;
+          let line = `${i + 1}. ${m.title} (${m.servings} ${m.type === 'portion' ? 'Portionen' : 'Plaetze'})`;
+          if (m.meal_time) line += ` ab ${String(m.meal_time).slice(0, 5)} Uhr`;
+          line += ` am ${formatDateDE(m.meal_date)}`;
+          if (m.cost_hint) line += ` — ${m.cost_hint}`;
+          if (user?.display_name) line += ` — von ${user.display_name}`;
+          return line;
+        });
+
+        return {
+          success: true,
+          summary: `Aktuelle Mitess-Angebote:\n${lines.join('\n')}`,
+          data: meals,
+        };
+      }
 
       case 'get_waste_dates': {
         const ctx = await getUserContext(supabase, userId);

@@ -2,8 +2,8 @@ import { describe, it, expect } from 'vitest';
 import { companionTools, WRITE_TOOLS } from '@/lib/companion/tools';
 
 describe('companionTools', () => {
-  it('definiert genau 11 Tools', () => {
-    expect(companionTools).toHaveLength(11);
+  it('definiert genau 13 Tools', () => {
+    expect(companionTools).toHaveLength(13);
   });
 
   it('jedes Tool hat gueltiges Anthropic-Format (name, description, input_schema)', () => {
@@ -64,8 +64,8 @@ describe('companionTools', () => {
 });
 
 describe('WRITE_TOOLS', () => {
-  it('enthaelt genau 8 Write-Tool-Namen', () => {
-    expect(WRITE_TOOLS.size).toBe(8);
+  it('enthaelt genau 9 Write-Tool-Namen', () => {
+    expect(WRITE_TOOLS.size).toBe(9);
   });
 
   it('enthaelt alle Write-Tools', () => {

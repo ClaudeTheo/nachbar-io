@@ -7,6 +7,7 @@ export interface QuarterContext {
   wasteDate: { date: string; type: string }[];
   events: { title: string; date: string }[];
   bulletinPosts: { title: string; category: string }[];
+  meals?: { title: string; type: string; servings: number; meal_date: string }[];
 }
 
 /**

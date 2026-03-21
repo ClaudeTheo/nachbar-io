@@ -15,6 +15,7 @@ export async function loadQuarterContext(userId: string): Promise<QuarterContext
     wasteDate: [],
     events: [],
     bulletinPosts: [],
+    meals: [],
   };
 
   try {
@@ -54,7 +55,7 @@ export async function loadQuarterContext(userId: string): Promise<QuarterContext
 
     const areaIds = (areaLinks ?? []).map((a: { area_id: string }) => a.area_id);
 
-    const [wasteRes, eventsRes, postsRes] = await Promise.all([
+    const [wasteRes, eventsRes, postsRes, mealsRes] = await Promise.all([
       // Naechste 3 Muelltermine (source-driven)
       areaIds.length > 0
         ? supabase
@@ -84,6 +85,16 @@ export async function loadQuarterContext(userId: string): Promise<QuarterContext
         .eq('status', 'active')
         .order('created_at', { ascending: false })
         .limit(5),
+
+      // Aktive Mitess-Angebote (max 3)
+      supabase
+        .from('shared_meals')
+        .select('title, type, servings, meal_date')
+        .eq('quarter_id', quarterId)
+        .eq('status', 'active')
+        .gte('meal_date', todayStr)
+        .order('meal_date', { ascending: true })
+        .limit(3),
     ]);
 
     // Ergebnisse zusammenbauen
@@ -102,7 +113,14 @@ export async function loadQuarterContext(userId: string): Promise<QuarterContext
       category: p.category,
     }));
 
-    return { quarterName, wasteDate, events, bulletinPosts };
+    const meals = (mealsRes.data ?? []).map((m: { title: string; type: string; servings: number; meal_date: string }) => ({
+      title: m.title,
+      type: m.type,
+      servings: m.servings,
+      meal_date: m.meal_date,
+    }));
+
+    return { quarterName, wasteDate, events, bulletinPosts, meals };
   } catch (error) {
     console.error('[companion/context-loader] Fehler beim Laden des Quartier-Kontexts:', error);
     return defaults;

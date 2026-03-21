@@ -14,13 +14,13 @@ describe('Companion Integration', () => {
     }
   });
 
-  it('should mark exactly 8 tools as write tools', () => {
-    expect(WRITE_TOOLS.size).toBe(8);
+  it('should mark exactly 9 tools as write tools', () => {
+    expect(WRITE_TOOLS.size).toBe(9);
   });
 
-  it('should have 3 read-only tools', () => {
+  it('should have 4 read-only tools', () => {
     const readTools = companionTools.filter(t => !isWriteTool(t.name));
-    expect(readTools.length).toBe(3);
+    expect(readTools.length).toBe(4);
   });
 
   it('should build system prompt with all context types', () => {
@@ -46,8 +46,8 @@ describe('Companion Integration', () => {
     }
   });
 
-  it('should have exactly 11 tools total', () => {
-    expect(companionTools.length).toBe(11);
+  it('should have exactly 13 tools total', () => {
+    expect(companionTools.length).toBe(13);
   });
 
   it('should have unique tool names', () => {

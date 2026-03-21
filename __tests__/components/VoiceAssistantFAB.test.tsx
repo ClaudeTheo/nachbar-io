@@ -8,184 +8,232 @@ vi.mock('next/navigation', () => ({
   useRouter: () => ({ push: mockPush }),
 }));
 
-// shadcn Sheet: Einfache div-Wrapper die open pruefen
+// shadcn Sheet
 vi.mock('@/components/ui/sheet', () => ({
   Sheet: ({ children, open }: { children: React.ReactNode; open: boolean }) =>
     open ? <div data-testid="sheet">{children}</div> : null,
   SheetContent: ({ children }: { children: React.ReactNode }) => (
     <div data-testid="sheet-content">{children}</div>
   ),
-  SheetHeader: ({ children }: { children: React.ReactNode }) => (
-    <div>{children}</div>
-  ),
-  SheetTitle: ({ children }: { children: React.ReactNode }) => (
-    <div>{children}</div>
-  ),
-  SheetDescription: ({ children }: { children: React.ReactNode }) => (
-    <div>{children}</div>
-  ),
+  SheetHeader: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
+  SheetTitle: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
+  SheetDescription: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
 }));
 
-// Toast mock
 vi.mock('sonner', () => ({
-  toast: {
-    success: vi.fn(),
-    error: vi.fn(),
-  },
+  toast: { success: vi.fn(), error: vi.fn() },
 }));
 
-// --- SpeechRecognition Mock ---
+// --- SpeechEngine Mock (konfigurierbar) ---
 
-class MockSpeechRecognition {
-  lang = '';
-  continuous = false;
-  interimResults = false;
-  onstart: (() => void) | null = null;
-  onresult: ((event: unknown) => void) | null = null;
-  onerror: ((event: unknown) => void) | null = null;
-  onend: (() => void) | null = null;
-  start() { this.onstart?.(); }
-  stop() { this.onend?.(); }
-  abort() { this.onend?.(); }
-}
+const mockStartListening = vi.fn();
+const mockStopListening = vi.fn();
+const mockCleanup = vi.fn();
 
-function enableSpeechRecognition(ctor: unknown = MockSpeechRecognition) {
-  (window as unknown as Record<string, unknown>).SpeechRecognition = ctor;
-}
+const mockEngine = {
+  isAvailable: vi.fn().mockReturnValue(true),
+  startListening: mockStartListening,
+  stopListening: mockStopListening,
+  cleanup: mockCleanup,
+};
 
-function disableSpeechRecognition() {
-  delete (window as unknown as Record<string, unknown>).SpeechRecognition;
-  delete (window as unknown as Record<string, unknown>).webkitSpeechRecognition;
-}
+// Steuerbar: null = keine Engine
+let shouldReturnEngine = true;
 
-// Fetch-Mock
+vi.mock('@/lib/voice/create-speech-engine', () => ({
+  createSpeechEngine: () => shouldReturnEngine ? mockEngine : null,
+}));
+
+vi.mock('@/components/voice/AudioWaveform', () => ({
+  AudioWaveform: ({ audioLevel, isActive }: { audioLevel: number; isActive: boolean }) => (
+    <div data-testid="audio-waveform" data-level={audioLevel} data-active={isActive}>
+      Waveform
+    </div>
+  ),
+}));
+
 const mockFetch = vi.fn();
 
 beforeEach(() => {
   mockPush.mockClear();
   mockFetch.mockClear();
+  mockStartListening.mockClear();
+  mockStopListening.mockClear();
+  mockCleanup.mockClear();
+  shouldReturnEngine = true;
   global.fetch = mockFetch;
-  // Modul-Cache leeren damit jeder Test frisch importiert
   vi.resetModules();
 });
 
 afterEach(() => {
   cleanup();
-  disableSpeechRecognition();
 });
 
-describe('VoiceAssistantFAB', () => {
-  it('rendert nichts wenn SpeechRecognition nicht verfuegbar', async () => {
-    disableSpeechRecognition();
+describe('VoiceAssistantFAB (Redesign)', () => {
+  it('rendert nichts wenn kein SpeechEngine verfuegbar', async () => {
+    shouldReturnEngine = false;
     const { VoiceAssistantFAB } = await import('@/components/VoiceAssistantFAB');
     const { container } = render(<VoiceAssistantFAB />);
     expect(container.innerHTML).toBe('');
   });
 
-  it('rendert FAB mit aria-label "Sprachassistent" wenn SpeechRecognition verfuegbar', async () => {
-    enableSpeechRecognition();
-    const { VoiceAssistantFAB } = await import('@/components/VoiceAssistantFAB');
-    const { getByRole } = render(<VoiceAssistantFAB />);
-    expect(getByRole('button', { name: 'Sprachassistent' })).toBeDefined();
-  });
-
-  it('hat min 56px Groesse (minWidth + minHeight)', async () => {
-    enableSpeechRecognition();
+  it('rendert FAB wenn Engine verfuegbar', async () => {
     const { VoiceAssistantFAB } = await import('@/components/VoiceAssistantFAB');
     const { getByTestId } = render(<VoiceAssistantFAB />);
-    const button = getByTestId('voice-assistant-fab');
-    expect(button.style.minWidth).toBe('56px');
-    expect(button.style.minHeight).toBe('56px');
+    expect(getByTestId('voice-assistant-fab')).toBeDefined();
   });
 
-  it('hat CSS-Klassen fixed bottom-24 right-4 fuer Positionierung', async () => {
-    enableSpeechRecognition();
+  it('hat min 56px Groesse', async () => {
     const { VoiceAssistantFAB } = await import('@/components/VoiceAssistantFAB');
     const { getByTestId } = render(<VoiceAssistantFAB />);
-    const button = getByTestId('voice-assistant-fab');
-    expect(button.className).toContain('fixed');
-    expect(button.className).toContain('bottom-24');
-    expect(button.className).toContain('right-4');
+    const btn = getByTestId('voice-assistant-fab');
+    expect(btn.style.minWidth).toBe('56px');
+    expect(btn.style.minHeight).toBe('56px');
   });
 
-  it('startet Aufnahme bei Klick (Label wechselt zu "Aufnahme stoppen")', async () => {
-    enableSpeechRecognition();
+  it('oeffnet Sheet und startet Engine bei Klick', async () => {
+    const { VoiceAssistantFAB } = await import('@/components/VoiceAssistantFAB');
+    const { getByTestId } = render(<VoiceAssistantFAB />);
+    fireEvent.click(getByTestId('voice-assistant-fab'));
+    expect(mockStartListening).toHaveBeenCalled();
+    expect(getByTestId('sheet')).toBeDefined();
+  });
+
+  it('zeigt AudioWaveform im Sheet waehrend Aufnahme', async () => {
+    const { VoiceAssistantFAB } = await import('@/components/VoiceAssistantFAB');
+    const { getByTestId } = render(<VoiceAssistantFAB />);
+    fireEvent.click(getByTestId('voice-assistant-fab'));
+    expect(getByTestId('audio-waveform')).toBeDefined();
+  });
+
+  it('zeigt roten Stopp-Button waehrend Aufnahme', async () => {
     const { VoiceAssistantFAB } = await import('@/components/VoiceAssistantFAB');
     const { getByTestId, getByRole } = render(<VoiceAssistantFAB />);
-
     fireEvent.click(getByTestId('voice-assistant-fab'));
-
-    expect(getByRole('button', { name: 'Aufnahme stoppen' })).toBeDefined();
+    const stopBtn = getByRole('button', { name: 'Aufnahme stoppen' });
+    expect(stopBtn).toBeDefined();
+    expect(stopBtn.className).toContain('bg-red');
   });
 
-  it('ruft /api/voice/assistant auf nach Spracherkennung', async () => {
-    let instance: MockSpeechRecognition | null = null;
-    class TrackableSR extends MockSpeechRecognition {
-      constructor() { super(); instance = this; }
-    }
-    enableSpeechRecognition(TrackableSR);
+  it('ruft /api/voice/assistant auf nach Transkription', async () => {
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({ action: 'help_request', params: {}, message: 'Hilfe' }),
+    });
 
+    const { VoiceAssistantFAB } = await import('@/components/VoiceAssistantFAB');
+    const { getByTestId } = render(<VoiceAssistantFAB />);
+    fireEvent.click(getByTestId('voice-assistant-fab'));
+
+    const callbacks = mockStartListening.mock.calls[0][0];
+    await act(async () => { callbacks.onTranscript('Hilfe beim Einkaufen'); });
+
+    await waitFor(() => {
+      expect(mockFetch).toHaveBeenCalledWith(
+        '/api/voice/assistant',
+        expect.objectContaining({ method: 'POST' })
+      );
+    });
+  });
+
+  it('zeigt Ergebnis mit Aktions-Button nach API-Antwort', async () => {
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({ action: 'help_request', params: {}, message: 'Erkannt' }),
+    });
+
+    const { VoiceAssistantFAB } = await import('@/components/VoiceAssistantFAB');
+    const { getByTestId, getByText } = render(<VoiceAssistantFAB />);
+    fireEvent.click(getByTestId('voice-assistant-fab'));
+
+    const callbacks = mockStartListening.mock.calls[0][0];
+    await act(async () => { callbacks.onTranscript('Hilfe'); });
+
+    await waitFor(() => { expect(getByText('Hilfsanfrage')).toBeDefined(); });
+  });
+
+  it('zeigt "Nochmal sprechen" Button nach Ergebnis', async () => {
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({ action: 'help_request', params: {}, message: 'OK' }),
+    });
+
+    const { VoiceAssistantFAB } = await import('@/components/VoiceAssistantFAB');
+    const { getByTestId, getByText } = render(<VoiceAssistantFAB />);
+    fireEvent.click(getByTestId('voice-assistant-fab'));
+
+    const callbacks = mockStartListening.mock.calls[0][0];
+    await act(async () => { callbacks.onTranscript('Hilfe'); });
+
+    await waitFor(() => { expect(getByText(/Nochmal sprechen/)).toBeDefined(); });
+  });
+
+  it('"Nochmal sprechen" startet neue Aufnahme', async () => {
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({ action: 'help_request', params: {}, message: 'OK' }),
+    });
+
+    const { VoiceAssistantFAB } = await import('@/components/VoiceAssistantFAB');
+    const { getByTestId, getByText } = render(<VoiceAssistantFAB />);
+    fireEvent.click(getByTestId('voice-assistant-fab'));
+
+    const callbacks = mockStartListening.mock.calls[0][0];
+    await act(async () => { callbacks.onTranscript('Hilfe'); });
+
+    await waitFor(() => { expect(getByText(/Nochmal sprechen/)).toBeDefined(); });
+
+    fireEvent.click(getByText(/Nochmal sprechen/));
+    expect(mockStartListening).toHaveBeenCalledTimes(2);
+    expect(getByTestId('sheet')).toBeDefined();
+  });
+
+  it('Sheet schliesst bei "Schließen" Button', async () => {
     mockFetch.mockResolvedValueOnce({
       ok: true,
       json: async () => ({ action: 'general', params: {}, message: 'Test' }),
     });
 
     const { VoiceAssistantFAB } = await import('@/components/VoiceAssistantFAB');
-    const { getByTestId } = render(<VoiceAssistantFAB />);
-
+    const { getByTestId, getByText, queryByTestId } = render(<VoiceAssistantFAB />);
     fireEvent.click(getByTestId('voice-assistant-fab'));
 
-    // Finale Spracheingabe simulieren
-    await act(async () => {
-      instance?.onresult?.({
-        results: [{ isFinal: true, 0: { transcript: 'Hilfe beim Einkaufen', confidence: 0.9 }, length: 1 }],
-        resultIndex: 0,
-        length: 1,
-      });
-    });
+    const callbacks = mockStartListening.mock.calls[0][0];
+    await act(async () => { callbacks.onTranscript('Test'); });
 
-    await waitFor(() => {
-      expect(mockFetch).toHaveBeenCalledWith(
-        '/api/voice/assistant',
-        expect.objectContaining({
-          method: 'POST',
-          body: JSON.stringify({ text: 'Hilfe beim Einkaufen' }),
-        })
-      );
-    });
+    await waitFor(() => { expect(getByText(/Schließen/)).toBeDefined(); });
+
+    fireEvent.click(getByText(/Schließen/));
+    expect(queryByTestId('sheet')).toBeNull();
   });
 
-  it('navigiert bei action "navigate" mit router.push', async () => {
-    let instance: MockSpeechRecognition | null = null;
-    class TrackableSR extends MockSpeechRecognition {
-      constructor() { super(); instance = this; }
-    }
-    enableSpeechRecognition(TrackableSR);
-
+  it('navigiert bei Aktions-Button und schliesst Sheet', async () => {
     mockFetch.mockResolvedValueOnce({
       ok: true,
-      json: async () => ({
-        action: 'navigate',
-        params: { route: '/dashboard' },
-        message: 'Öffne Dashboard',
-      }),
+      json: async () => ({ action: 'help_request', params: {}, message: 'Hilfe' }),
     });
 
     const { VoiceAssistantFAB } = await import('@/components/VoiceAssistantFAB');
-    const { getByTestId } = render(<VoiceAssistantFAB />);
-
+    const { getByTestId, getByText } = render(<VoiceAssistantFAB />);
     fireEvent.click(getByTestId('voice-assistant-fab'));
 
-    await act(async () => {
-      instance?.onresult?.({
-        results: [{ isFinal: true, 0: { transcript: 'Öffne Dashboard', confidence: 0.9 }, length: 1 }],
-        resultIndex: 0,
-        length: 1,
-      });
-    });
+    const callbacks = mockStartListening.mock.calls[0][0];
+    await act(async () => { callbacks.onTranscript('Einkaufen'); });
 
-    await waitFor(() => {
-      expect(mockPush).toHaveBeenCalledWith('/dashboard');
-    });
+    await waitFor(() => { expect(getByText('Hilfsanfrage erstellen')).toBeDefined(); });
+
+    fireEvent.click(getByText('Hilfsanfrage erstellen'));
+    expect(mockPush).toHaveBeenCalledWith('/care/tasks');
+  });
+
+  it('zeigt Mikrofon-Hinweis bei Fehler', async () => {
+    const { VoiceAssistantFAB } = await import('@/components/VoiceAssistantFAB');
+    const { getByTestId, getByText } = render(<VoiceAssistantFAB />);
+    fireEvent.click(getByTestId('voice-assistant-fab'));
+
+    const callbacks = mockStartListening.mock.calls[0][0];
+    await act(async () => { callbacks.onError('not-allowed'); });
+
+    await waitFor(() => { expect(getByText(/Bitte Mikrofon freigeben/)).toBeDefined(); });
   });
 });

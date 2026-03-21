@@ -2,12 +2,11 @@
 
 // components/VoiceAssistantFAB.tsx
 // Nachbar.io — Floating Action Button fuer den KI-Sprach-Assistenten
-// Nutzt Web Speech API + /api/voice/assistant fuer Klassifizierung
-// Senior-Mode: 56px Button, Bottom-Sheet fuer Ergebnis-Anzeige
+// Redesign: Hybrid Speech Engine, AudioWaveform, Dialog-Flow (B+)
 
 import { useState, useRef, useCallback, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Mic, MicOff, Loader2, HelpCircle, AlertTriangle, MapPin, MessageCircle, Navigation, Search } from 'lucide-react';
+import { Mic, Loader2, HelpCircle, AlertTriangle, MapPin, MessageCircle, Navigation, Search, Square, RotateCcw, X } from 'lucide-react';
 import {
   Sheet,
   SheetContent,
@@ -16,62 +15,13 @@ import {
   SheetDescription,
 } from '@/components/ui/sheet';
 import { toast } from 'sonner';
+import { createSpeechEngine } from '@/lib/voice/create-speech-engine';
+import { AudioWaveform } from '@/components/voice/AudioWaveform';
+import type { SpeechEngine, SpeechEngineCallbacks } from '@/lib/voice/speech-engine';
 import type { AssistantAction, AssistantResult } from '@/lib/voice/assistant-classify';
 
-// Web Speech API Typen (nicht in allen TS-Konfigurationen enthalten)
-interface SpeechRecognitionResult {
-  readonly isFinal: boolean;
-  readonly length: number;
-  [index: number]: { transcript: string; confidence: number };
-}
-
-interface SpeechRecognitionResultList {
-  readonly length: number;
-  [index: number]: SpeechRecognitionResult;
-}
-
-interface SpeechRecognitionEventLike {
-  readonly results: SpeechRecognitionResultList;
-  readonly resultIndex: number;
-}
-
-interface SpeechRecognitionErrorLike {
-  readonly error: string;
-}
-
-interface SpeechRecognitionLike {
-  lang: string;
-  continuous: boolean;
-  interimResults: boolean;
-  onstart: (() => void) | null;
-  onresult: ((event: SpeechRecognitionEventLike) => void) | null;
-  onerror: ((event: SpeechRecognitionErrorLike) => void) | null;
-  onend: (() => void) | null;
-  start(): void;
-  stop(): void;
-  abort(): void;
-}
-
-/** Zustaende des FAB */
-type FabState = 'idle' | 'listening' | 'processing';
-
-/** Prueft ob die Web Speech API verfuegbar ist */
-function isSpeechRecognitionAvailable(): boolean {
-  return (
-    typeof window !== 'undefined' &&
-    ('SpeechRecognition' in window || 'webkitSpeechRecognition' in window)
-  );
-}
-
-/** Erstellt eine SpeechRecognition-Instanz (mit webkit-Fallback) */
-function createRecognition(): SpeechRecognitionLike | null {
-  if (typeof window === 'undefined') return null;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const win = window as any;
-  const Ctor = win.SpeechRecognition ?? win.webkitSpeechRecognition;
-  if (!Ctor) return null;
-  return new Ctor() as SpeechRecognitionLike;
-}
+/** Sheet-Zustaende */
+type SheetState = 'closed' | 'recording' | 'processing' | 'result' | 'error';
 
 /** Aktions-Konfiguration fuer das Bottom-Sheet */
 interface ActionConfig {
@@ -110,61 +60,43 @@ const ACTION_CONFIG: Partial<Record<AssistantAction, ActionConfig>> = {
 
 export function VoiceAssistantFAB() {
   const router = useRouter();
-  const [state, setState] = useState<FabState>('idle');
-  const [sheetOpen, setSheetOpen] = useState(false);
+  // Engine lazy initialisieren (vor erstem Render verfuegbar)
+  const engineRef = useRef<SpeechEngine | null | undefined>(undefined);
+  if (engineRef.current === undefined) {
+    engineRef.current = createSpeechEngine();
+  }
+
+  // State
+  const [sheetState, setSheetState] = useState<SheetState>('closed');
+  const [audioLevel, setAudioLevel] = useState(0);
   const [result, setResult] = useState<AssistantResult | null>(null);
   const [transcript, setTranscript] = useState('');
-  const recognitionRef = useRef<SpeechRecognitionLike | null>(null);
-  const silenceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [errorMessage, setErrorMessage] = useState('');
+  const [previousAction, setPreviousAction] = useState<{ action: string; transcript: string } | null>(null);
 
-  // Aufraumen bei Unmount
+  // Cleanup bei Unmount
   useEffect(() => {
     return () => {
-      if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current);
-      if (recognitionRef.current) {
-        try { recognitionRef.current.abort(); } catch { /* ignorieren */ }
-      }
+      engineRef.current?.cleanup();
     };
   }, []);
 
-  // Ergebnis verarbeiten: Navigation oder Sheet oeffnen
-  const handleResult = useCallback(
-    (assistantResult: AssistantResult, spokenText: string) => {
-      const { action, params } = assistantResult;
-
-      // Notfall: Sofort zur Alert-Seite
-      if (action === 'emergency_info') {
-        router.push('/alerts');
-        setState('idle');
-        return;
-      }
-
-      // Navigation: Sofort navigieren, Toast anzeigen
-      if (action === 'navigate' && params.route) {
-        router.push(params.route);
-        toast.success(assistantResult.message || 'Navigation...');
-        setState('idle');
-        return;
-      }
-
-      // Alle anderen: Sheet oeffnen
-      setResult(assistantResult);
-      setTranscript(spokenText);
-      setSheetOpen(true);
-      setState('idle');
-    },
-    [router]
-  );
-
-  // API-Aufruf nach Spracherkennung
+  // API-Aufruf nach Transkription
   const classifyText = useCallback(
-    async (text: string) => {
-      setState('processing');
+    async (text: string, prevAction?: { action: string; transcript: string } | null) => {
+      setSheetState('processing');
+      setAudioLevel(0);
+
       try {
+        const body: Record<string, unknown> = { text };
+        if (prevAction) {
+          body.previousAction = prevAction;
+        }
+
         const res = await fetch('/api/voice/assistant', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ text }),
+          body: JSON.stringify(body),
         });
 
         if (!res.ok) {
@@ -172,183 +104,248 @@ export function VoiceAssistantFAB() {
         }
 
         const data: AssistantResult = await res.json();
-        handleResult(data, text);
-      } catch (err) {
-        console.error('[VoiceAssistantFAB] Klassifizierung fehlgeschlagen:', err);
-        toast.error('Sprachassistent konnte die Anfrage nicht verarbeiten.');
-        setState('idle');
-      }
-    },
-    [handleResult]
-  );
 
-  // Stille-Timer: 15 Sekunden
-  const resetSilenceTimer = useCallback(() => {
-    if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current);
-    silenceTimerRef.current = setTimeout(() => {
-      if (recognitionRef.current) {
-        try { recognitionRef.current.stop(); } catch { /* ignorieren */ }
-      }
-    }, 15_000);
-  }, []);
-
-  // Aufnahme starten
-  const startListening = useCallback(() => {
-    const recognition = createRecognition();
-    if (!recognition) return;
-
-    recognitionRef.current = recognition;
-    recognition.lang = 'de-DE';
-    recognition.continuous = false;
-    recognition.interimResults = false;
-
-    recognition.onstart = () => {
-      setState('listening');
-      resetSilenceTimer();
-    };
-
-    recognition.onresult = (event: SpeechRecognitionEventLike) => {
-      resetSilenceTimer();
-      for (let i = 0; i < event.results.length; i++) {
-        const r = event.results[i];
-        if (r.isFinal) {
-          const text = r[0].transcript.trim();
-          if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current);
-          if (text) {
-            classifyText(text);
-          } else {
-            setState('idle');
-          }
+        // Notfall: Sofort navigieren
+        if (data.action === 'emergency_info') {
+          router.push('/alerts');
+          setSheetState('closed');
           return;
         }
+
+        // Navigation: Sofort navigieren
+        if (data.action === 'navigate' && data.params.route) {
+          router.push(data.params.route);
+          toast.success(data.message || 'Navigation...');
+          setSheetState('closed');
+          return;
+        }
+
+        // Ergebnis anzeigen
+        setResult(data);
+        setTranscript(text);
+        setSheetState('result');
+      } catch (err) {
+        console.error('[VoiceAssistantFAB] Klassifizierung fehlgeschlagen:', err);
+        setErrorMessage('Sprachassistent konnte die Anfrage nicht verarbeiten.');
+        setSheetState('error');
       }
+    },
+    [router]
+  );
+
+  // Engine starten
+  const startRecording = useCallback(() => {
+    const engine = engineRef.current;
+    if (!engine) return;
+
+    setSheetState('recording');
+    setAudioLevel(0);
+    setErrorMessage('');
+
+    const callbacks: SpeechEngineCallbacks = {
+      onTranscript: (text: string) => {
+        classifyText(text, previousAction);
+      },
+      onAudioLevel: (level: number) => {
+        setAudioLevel(level);
+      },
+      onStateChange: () => {
+        // State wird ueber sheetState gesteuert
+      },
+      onError: (message: string) => {
+        const userMessage = message.includes('not-allowed') || message.includes('Mikrofon')
+          ? 'Bitte Mikrofon freigeben in den Browser-Einstellungen.'
+          : 'Spracherkennung nicht verfügbar.';
+        setErrorMessage(userMessage);
+        setSheetState('error');
+      },
     };
 
-    recognition.onerror = () => {
-      if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current);
-      setState('idle');
-    };
+    engine.startListening(callbacks);
+  }, [classifyText, previousAction]);
 
-    recognition.onend = () => {
-      if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current);
-      setState((prev) => (prev === 'listening' ? 'idle' : prev));
-    };
-
-    try {
-      recognition.start();
-    } catch {
-      setState('idle');
-    }
-  }, [classifyText, resetSilenceTimer]);
-
-  // Aufnahme stoppen
-  const stopListening = useCallback(() => {
-    if (recognitionRef.current) {
-      try { recognitionRef.current.stop(); } catch { /* ignorieren */ }
-    }
-    if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current);
+  // Engine stoppen
+  const stopRecording = useCallback(() => {
+    engineRef.current?.stopListening();
   }, []);
 
-  // Klick-Handler: Toggle Aufnahme
-  const handleClick = useCallback(() => {
-    if (state === 'listening') {
-      stopListening();
-    } else if (state === 'idle') {
-      startListening();
+  // FAB-Klick: Sheet oeffnen + Aufnahme starten
+  const handleFabClick = useCallback(() => {
+    if (sheetState === 'closed') {
+      setPreviousAction(null);
+      startRecording();
     }
-    // Bei processing: nichts tun
-  }, [state, startListening, stopListening]);
+  }, [sheetState, startRecording]);
 
-  // Aktions-Button im Sheet: Zur passenden Route navigieren
-  const handleSheetAction = useCallback(() => {
+  // "Nochmal sprechen": Vorherige Aktion speichern, neue Aufnahme
+  const handleRetry = useCallback(() => {
+    if (result && transcript) {
+      setPreviousAction({ action: result.action, transcript });
+    }
+    setResult(null);
+    setTranscript('');
+    startRecording();
+  }, [result, transcript, startRecording]);
+
+  // Aktions-Button: Navigieren + Sheet schliessen
+  const handleAction = useCallback(() => {
     if (!result) return;
     const config = ACTION_CONFIG[result.action];
     if (config?.route) {
       router.push(config.route);
     }
-    setSheetOpen(false);
+    setSheetState('closed');
     setResult(null);
+    setPreviousAction(null);
   }, [result, router]);
 
-  // Graceful Degradation: Nichts rendern wenn API nicht verfuegbar
-  if (!isSpeechRecognitionAvailable()) {
+  // Sheet schliessen
+  const handleClose = useCallback(() => {
+    engineRef.current?.stopListening();
+    setSheetState('closed');
+    setResult(null);
+    setTranscript('');
+    setPreviousAction(null);
+    setAudioLevel(0);
+  }, []);
+
+  // Nichts rendern wenn keine Engine verfuegbar
+  if (!engineRef.current) {
     return null;
   }
 
-  // FAB-Styling je nach Zustand
-  const fabClasses = [
-    'fixed bottom-24 right-4 z-40',
-    'flex items-center justify-center rounded-full shadow-lg',
-    'transition-all hover:scale-110 active:scale-95',
-    state === 'idle' && 'bg-[#4CAF87]',
-    state === 'listening' && 'bg-red-500 animate-pulse',
-    state === 'processing' && 'bg-[#F59E0B]',
-  ]
-    .filter(Boolean)
-    .join(' ');
-
-  const ariaLabel = state === 'listening' ? 'Aufnahme stoppen' : 'Sprachassistent';
+  const sheetOpen = sheetState !== 'closed';
   const config = result ? ACTION_CONFIG[result.action] : null;
 
   return (
     <>
-      {/* Floating Action Button */}
+      {/* Floating Action Button — immer gruen */}
       <button
-        onClick={handleClick}
-        className={fabClasses}
+        onClick={handleFabClick}
+        className="fixed bottom-24 right-4 z-40 flex items-center justify-center rounded-full shadow-lg bg-[#4CAF87] transition-all hover:scale-110 active:scale-95"
         style={{ minWidth: '56px', minHeight: '56px', touchAction: 'manipulation' }}
-        aria-label={ariaLabel}
+        aria-label="Sprachassistent"
         data-testid="voice-assistant-fab"
       >
-        {state === 'idle' && <Mic className="h-6 w-6 text-white" />}
-        {state === 'listening' && <MicOff className="h-6 w-6 text-white" />}
-        {state === 'processing' && <Loader2 className="h-6 w-6 text-white animate-spin" />}
+        <Mic className="h-6 w-6 text-white" />
       </button>
 
-      {/* Ergebnis-Sheet von unten */}
-      <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
+      {/* Bottom-Sheet */}
+      <Sheet open={sheetOpen} onOpenChange={(open) => { if (!open) handleClose(); }}>
         <SheetContent side="bottom" className="mx-auto max-w-lg rounded-t-2xl">
           <SheetHeader>
             <SheetTitle className="flex items-center gap-2 text-[#2D3142]">
-              {config?.icon}
-              {config?.label || 'Sprachassistent'}
+              {sheetState === 'recording' && (
+                <>
+                  <Mic className="h-5 w-5 text-[#4CAF87]" />
+                  Sprachassistent
+                </>
+              )}
+              {sheetState === 'processing' && (
+                <>
+                  <Loader2 className="h-5 w-5 text-[#F59E0B] animate-spin" />
+                  Verarbeite...
+                </>
+              )}
+              {sheetState === 'result' && (
+                <>
+                  {config?.icon}
+                  {config?.label || 'Sprachassistent'}
+                </>
+              )}
+              {sheetState === 'error' && (
+                <>
+                  <AlertTriangle className="h-5 w-5 text-[#F59E0B]" />
+                  Mikrofon-Fehler
+                </>
+              )}
             </SheetTitle>
             <SheetDescription>
-              {result?.message || 'Verarbeitung...'}
+              {sheetState === 'recording' && 'Sprechen Sie jetzt...'}
+              {sheetState === 'processing' && 'Ihre Anfrage wird analysiert...'}
+              {sheetState === 'result' && (result?.message || '')}
+              {sheetState === 'error' && errorMessage}
             </SheetDescription>
           </SheetHeader>
 
           <div className="mt-4 space-y-4">
-            {/* Transkript anzeigen */}
-            {transcript && (
-              <div className="rounded-lg bg-muted/50 p-3 text-sm text-muted-foreground italic">
-                „{transcript}"
+            {/* RECORDING: Waveform + Stopp-Button */}
+            {sheetState === 'recording' && (
+              <>
+                <AudioWaveform audioLevel={audioLevel} isActive={true} />
+                <button
+                  onClick={stopRecording}
+                  className="w-full flex items-center justify-center gap-2 rounded-xl bg-red-500 text-white font-medium text-base transition-all hover:bg-red-600 active:scale-95"
+                  style={{ minHeight: '80px', touchAction: 'manipulation' }}
+                  aria-label="Aufnahme stoppen"
+                >
+                  <Square className="h-6 w-6" />
+                  Aufnahme stoppen
+                </button>
+              </>
+            )}
+
+            {/* PROCESSING: Spinner */}
+            {sheetState === 'processing' && (
+              <div className="flex justify-center py-8">
+                <Loader2 className="h-10 w-10 text-[#F59E0B] animate-spin" />
               </div>
             )}
 
-            {/* Aktions-Button (Senior-Mode: gross + gruen) */}
-            {config?.route && (
-              <button
-                onClick={handleSheetAction}
-                className="w-full flex items-center justify-center gap-2 rounded-xl bg-[#4CAF87] text-white font-medium text-base transition-all hover:bg-[#4CAF87]/90 active:scale-95"
-                style={{ minHeight: '56px', touchAction: 'manipulation' }}
-              >
-                <Navigation className="h-5 w-5" />
-                {config.buttonLabel}
-              </button>
+            {/* RESULT: Ergebnis + Buttons */}
+            {sheetState === 'result' && (
+              <>
+                {/* Transkript */}
+                {transcript && (
+                  <div className="rounded-lg bg-muted/50 p-3 text-sm text-muted-foreground italic">
+                    „{transcript}"
+                  </div>
+                )}
+
+                {/* Aktions-Button (Senior-Mode: gross + gruen) */}
+                {config?.route && (
+                  <button
+                    onClick={handleAction}
+                    className="w-full flex items-center justify-center gap-2 rounded-xl bg-[#4CAF87] text-white font-medium text-base transition-all hover:bg-[#4CAF87]/90 active:scale-95"
+                    style={{ minHeight: '56px', touchAction: 'manipulation' }}
+                  >
+                    <Navigation className="h-5 w-5" />
+                    {config.buttonLabel}
+                  </button>
+                )}
+
+                {/* Nochmal sprechen */}
+                <button
+                  onClick={handleRetry}
+                  className="w-full flex items-center justify-center gap-2 rounded-xl border border-[#4CAF87] text-[#4CAF87] font-medium text-base transition-all hover:bg-[#4CAF87]/10 active:scale-95"
+                  style={{ minHeight: '48px', touchAction: 'manipulation' }}
+                >
+                  <RotateCcw className="h-4 w-4" />
+                  Nochmal sprechen
+                </button>
+
+                {/* Schliessen */}
+                <button
+                  onClick={handleClose}
+                  className="w-full flex items-center justify-center gap-2 rounded-xl border border-gray-200 text-[#2D3142] font-medium text-base transition-all hover:bg-gray-50 active:scale-95"
+                  style={{ minHeight: '48px', touchAction: 'manipulation' }}
+                >
+                  <X className="h-4 w-4" />
+                  Schließen
+                </button>
+              </>
             )}
 
-            {/* Schliessen-Button */}
-            <button
-              onClick={() => {
-                setSheetOpen(false);
-                setResult(null);
-              }}
-              className="w-full flex items-center justify-center rounded-xl border border-gray-200 text-[#2D3142] font-medium text-base transition-all hover:bg-gray-50 active:scale-95"
-              style={{ minHeight: '48px', touchAction: 'manipulation' }}
-            >
-              Schließen
-            </button>
+            {/* ERROR: Fehler + Schliessen */}
+            {sheetState === 'error' && (
+              <button
+                onClick={handleClose}
+                className="w-full flex items-center justify-center rounded-xl border border-gray-200 text-[#2D3142] font-medium text-base transition-all hover:bg-gray-50 active:scale-95"
+                style={{ minHeight: '48px', touchAction: 'manipulation' }}
+              >
+                Schließen
+              </button>
+            )}
           </div>
         </SheetContent>
       </Sheet>

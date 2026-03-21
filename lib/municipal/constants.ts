@@ -83,6 +83,7 @@ export const WIKI_CATEGORIES = [
   { id: "entsorgung", label: "Entsorgung & Müll" },
   { id: "verwaltung", label: "Verwaltung" },
   { id: "ordnung", label: "Ordnung & Sicherheit" },
+  { id: "hilfe", label: "Hilfe & Beratung" },
 ] as const;
 
 // --- Disclaimer-Texte ---

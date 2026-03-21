@@ -111,6 +111,18 @@ describe('WIKI_CATEGORIES', () => {
   it('enthaelt mindestens 3 Kategorien', () => {
     expect(WIKI_CATEGORIES.length).toBeGreaterThanOrEqual(3);
   });
+
+  it('enthaelt Kategorie "hilfe" fuer Hilfe & Beratung', () => {
+    const ids = WIKI_CATEGORIES.map((c) => c.id);
+    expect(ids).toContain('hilfe');
+    const hilfe = WIKI_CATEGORIES.find((c) => c.id === 'hilfe');
+    expect(hilfe?.label).toBe('Hilfe & Beratung');
+  });
+
+  it('hat korrekte IDs in richtiger Reihenfolge', () => {
+    const ids = WIKI_CATEGORIES.map((c) => c.id);
+    expect(ids).toEqual(['infrastruktur', 'entsorgung', 'verwaltung', 'ordnung', 'hilfe']);
+  });
 });
 
 describe('DISCLAIMERS', () => {

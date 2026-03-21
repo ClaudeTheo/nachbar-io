@@ -117,6 +117,34 @@ describe('parseAssistantResponse', () => {
     expect(result.message).toBe('Zeig mir die Admin-Seite');
   });
 
+  it('parst spokenResponse aus gueltiger Antwort', () => {
+    const json = JSON.stringify({
+      action: 'navigate',
+      params: { route: '/waste-calendar' },
+      message: 'Müllkalender',
+      spokenResponse: 'Ich öffne den Müllkalender für Sie.',
+    });
+
+    const result = parseAssistantResponse(json, 'Zeig Müllkalender');
+    expect(result.spokenResponse).toBe('Ich öffne den Müllkalender für Sie.');
+  });
+
+  it('nutzt message als Fallback wenn spokenResponse fehlt', () => {
+    const json = JSON.stringify({
+      action: 'general',
+      params: {},
+      message: 'Hallo, wie kann ich helfen?',
+    });
+
+    const result = parseAssistantResponse(json, 'Hallo');
+    expect(result.spokenResponse).toBe('Hallo, wie kann ich helfen?');
+  });
+
+  it('Fallback-Result hat spokenResponse gleich text', () => {
+    const result = parseAssistantResponse('kein JSON', 'Originaltext');
+    expect(result.spokenResponse).toBe('Originaltext');
+  });
+
   it('erkennt alle 6 gueltigen Aktionen', () => {
     const validActions: AssistantAction[] = [
       'help_request',

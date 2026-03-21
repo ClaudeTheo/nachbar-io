@@ -17,6 +17,7 @@ export interface AssistantResult {
   action: AssistantAction;
   params: Record<string, string>;
   message: string;
+  spokenResponse: string; // Freundlicher Text fuer TTS-Ausgabe (Siez-Form)
 }
 
 /** Alle gueltigen Aktionen fuer Validierung */
@@ -56,8 +57,10 @@ Aktionen:
 
 WICHTIG: Bei Notfall-Schlüsselwörtern (Feuer, Brand, Unfall, Herzinfarkt, Einbruch, Überfall, Hilfe Notfall, Krankenwagen, Polizei) IMMER emergency_info verwenden.
 
-Antworte NUR als JSON-Objekt mit den Feldern: action, params, message
-Kein Markdown, keine Erklärungen — nur JSON.`;
+Antworte NUR als JSON-Objekt mit den Feldern: action, params, message, spokenResponse
+Das Feld "spokenResponse" ist ein freundlicher, gesprochener Satz fuer die Sprachausgabe (Siez-Form, max 3 Saetze, z.B. "Ich öffne den Müllkalender für Sie.").
+Bei Notfall: "Bitte rufen Sie sofort die 112 an!"
+Kein Markdown, keine Erklaerungen — nur JSON.`;
 
 /**
  * Parst die KI-Antwort und validiert Aktion + Parameter.
@@ -83,6 +86,9 @@ export function parseAssistantResponse(
         ? (parsed.params as Record<string, string>)
         : {};
     const message = typeof parsed.message === 'string' ? parsed.message : originalText;
+    const spokenResponse = typeof parsed.spokenResponse === 'string'
+      ? parsed.spokenResponse
+      : message; // Fallback: message als gesprochene Antwort
 
     // Aktion validieren
     if (!VALID_ACTIONS.includes(action as AssistantAction)) {
@@ -101,6 +107,7 @@ export function parseAssistantResponse(
       action: action as AssistantAction,
       params,
       message,
+      spokenResponse,
     };
   } catch {
     return fallbackResult(originalText);
@@ -123,7 +130,7 @@ export async function classifyAssistantAction(
 ): Promise<AssistantResult> {
   // Leerer Text → Fallback
   if (!text.trim()) {
-    return { action: 'general', params: {}, message: '' };
+    return { action: 'general', params: {}, message: '', spokenResponse: '' };
   }
 
   const apiKey = process.env.ANTHROPIC_API_KEY;
@@ -167,5 +174,6 @@ function fallbackResult(text: string): AssistantResult {
     action: 'general',
     params: {},
     message: text,
+    spokenResponse: text,
   };
 }

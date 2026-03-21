@@ -66,7 +66,7 @@ export default function HelpersPage() {
 
       <div>
         <h2 className="text-sm font-medium text-muted-foreground mb-3">Registrierte Helfer</h2>
-        <HelperList key={listKey} showPending={true} />
+        <HelperList key={listKey} showPending={true} currentUserId={userId} />
       </div>
     </div>
   );

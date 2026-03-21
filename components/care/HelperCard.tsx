@@ -10,6 +10,8 @@ interface HelperCardProps {
   showVerifyButton?: boolean;
   onVerify?: (id: string) => void;
   onRevoke?: (id: string) => void;
+  /** Aktueller Nutzer — eigene Eintraege koennen nicht selbst verifiziert werden */
+  currentUserId?: string;
 }
 
 // Rollen-Badge: Farbe je nach Rolle
@@ -39,7 +41,7 @@ function InitialsAvatar({ name }: { name: string }) {
   );
 }
 
-export function HelperCard({ helper, showVerifyButton, onVerify, onRevoke }: HelperCardProps) {
+export function HelperCard({ helper, showVerifyButton, onVerify, onRevoke, currentUserId }: HelperCardProps) {
   const displayName = helper.user?.display_name ?? 'Unbekannt';
   const roleConfig = ROLE_CONFIG[helper.role];
   const verConfig = VERIFICATION_CONFIG[helper.verification_status];
@@ -109,8 +111,8 @@ export function HelperCard({ helper, showVerifyButton, onVerify, onRevoke }: Hel
         </div>
       )}
 
-      {/* Aktions-Buttons (Verifizieren / Sperren) */}
-      {showVerifyButton && (
+      {/* Aktions-Buttons (Verifizieren / Sperren) — nicht fuer eigenen Eintrag */}
+      {showVerifyButton && currentUserId !== helper.user_id && (
         <div className="flex gap-2 pt-1">
           {helper.verification_status === 'pending' && onVerify && (
             <button

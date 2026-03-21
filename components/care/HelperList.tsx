@@ -14,6 +14,8 @@ interface HelperListProps {
   seniorId?: string;
   /** Wenn true: alle Helfer inkl. pending anzeigen (Admin-Modus) */
   showPending?: boolean;
+  /** Aktueller Nutzer — wird an HelperCard weitergereicht */
+  currentUserId?: string;
 }
 
 // Ladezustand: Platzhalter-Skelett
@@ -55,7 +57,7 @@ function groupByRole(helpers: CareHelper[]): Map<CareHelperRole, CareHelper[]> {
   return map;
 }
 
-export function HelperList({ seniorId, showPending = false }: HelperListProps) {
+export function HelperList({ seniorId, showPending = false, currentUserId }: HelperListProps) {
   const { helpers, loading, refetch } = useHelpers(seniorId);
   // ID des Helpers, bei dem gerade eine Verifikations-Aktion laeuft
   const [processingId, setProcessingId] = useState<string | null>(null);
@@ -130,6 +132,7 @@ export function HelperList({ seniorId, showPending = false }: HelperListProps) {
                   key={helper.id}
                   helper={helper}
                   showVerifyButton={showPending}
+                  currentUserId={currentUserId}
                   onVerify={processingId === null ? handleVerify : undefined}
                   onRevoke={processingId === null ? handleRevoke : undefined}
                 />

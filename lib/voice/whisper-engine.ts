@@ -60,9 +60,9 @@ export class WhisperEngine implements SpeechEngine {
 
       // Normaler Stop — onstop raeumt Timeout auf
       const originalOnStop = this.mediaRecorder.onstop;
-      this.mediaRecorder.onstop = () => {
+      this.mediaRecorder.onstop = (ev: Event) => {
         clearTimeout(fallbackTimer);
-        if (originalOnStop) originalOnStop.call(this.mediaRecorder);
+        if (originalOnStop) originalOnStop.call(this.mediaRecorder!, ev);
       };
 
       this.mediaRecorder.stop();

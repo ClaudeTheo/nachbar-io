@@ -9,17 +9,19 @@ import { Button } from "@/components/ui/button";
 import { ProgressDots } from "./ProgressDots";
 import { ConfettiEffect } from "./ConfettiEffect";
 
-// Reduzierte Slides: nur die 3 wichtigsten kontextuellen Funktionen
+// Reduzierte Slides: 4 kontextuelle Funktionen inkl. Video
 import { SlideWelcome } from "./slides/SlideWelcome";
 import { SlideEmergency } from "./slides/SlideEmergency";
+import SlideVideo from "./slides/SlideVideo";
 import { SlideReady } from "./slides/SlideReady";
 
-const TOTAL_SLIDES = 3;
+const TOTAL_SLIDES = 4;
 const SWIPE_THRESHOLD = 50;
 
 const BUTTON_LABELS = [
   "Weiter",           // Willkommen
   "Verstanden",       // Notfall-System
+  "Weiter",           // Video
   "Zum Dashboard",    // Fertig
 ];
 
@@ -29,7 +31,8 @@ const BUTTON_LABELS = [
  * Konzept: Nur das Wichtigste zeigen — den Rest entdeckt der Nutzer selbst.
  * 1. Willkommen (personalisiert)
  * 2. Notfall-System (KRITISCH — muss jeder kennen)
- * 3. Fertig (mit Konfetti)
+ * 3. Promo-Video (emotionaler Einstieg)
+ * 4. Fertig (mit Konfetti)
  *
  * Die restlichen Funktionen (Marktplatz, Karte, Community, Push, Position)
  * werden kontextuell im Dashboard erklaert, wenn der Nutzer sie erstmals aufruft.
@@ -145,7 +148,8 @@ export function OnboardingFlow() {
     switch (currentSlide) {
       case 0: return <SlideWelcome />;
       case 1: return <SlideEmergency />;
-      case 2: return <SlideReady displayName={displayName} />;
+      case 2: return <SlideVideo variant="welcome" />;
+      case 3: return <SlideReady displayName={displayName} />;
       default: return null;
     }
   }

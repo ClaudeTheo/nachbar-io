@@ -61,6 +61,13 @@ export default function DashboardPage() {
     settings: Record<string, unknown> | null;
   } | null>(null);
 
+  // Angehörige (caregiver_links)
+  const [caregivers, setCaregivers] = useState<Array<{
+    caregiver_id: string;
+    display_name?: string;
+    avatar_url?: string;
+  }>>([]);
+
   const loadDashboard = useCallback(async () => {
     if (!currentQuarter) return;
     const supabase = createClient();
@@ -105,6 +112,31 @@ export default function DashboardPage() {
             hasSkills: (skillCount ?? 0) > 0,
             settings,
           });
+
+          // Angehörige laden (caregiver_links ohne Join, da Profile-Tabelle "users" heisst)
+          const { data: caregiverLinks } = await supabase
+            .from("caregiver_links")
+            .select("caregiver_id")
+            .eq("resident_id", user.id)
+            .is("revoked_at", null)
+            .limit(5);
+
+          if (caregiverLinks && caregiverLinks.length > 0) {
+            // Angehörigen-Profile nachladen
+            const caregiverIds = caregiverLinks.map((l: { caregiver_id: string }) => l.caregiver_id);
+            const { data: caregiverProfiles } = await supabase
+              .from("users")
+              .select("id, display_name, avatar_url")
+              .in("id", caregiverIds);
+
+            if (caregiverProfiles) {
+              setCaregivers(caregiverProfiles.map((p: { id: string; display_name: string; avatar_url: string | null }) => ({
+                caregiver_id: p.id,
+                display_name: p.display_name,
+                avatar_url: p.avatar_url ?? undefined,
+              })));
+            }
+          }
         }
       }
 
@@ -217,26 +249,44 @@ export default function DashboardPage() {
       {/* Hero-Bereich: Begruessung + Check-in */}
       <HeroCard>
         <div className="flex items-center justify-between">
-          <div>
-            <h1 className="flex items-center gap-2 text-2xl font-bold text-anthrazit" data-testid="dashboard-greeting">
-              {userName ? (
-                <>
-                  <CategoryIcon
-                    icon={greetingIcon.icon}
-                    bgColor={greetingIcon.bgColor}
-                    iconColor={greetingIcon.iconColor}
-                    size="lg"
-                  />
-                  {greeting.text}, {userName}
-                </>
-              ) : "QuartierApp"}
-              {reputationLevel >= 2 && (
-                <span className="ml-1.5 align-middle">
-                  <ReputationBadge level={reputationLevel} size="sm" />
-                </span>
-              )}
-            </h1>
-            <p className="text-sm text-muted-foreground mt-1">Ihr Quartier auf einen Blick</p>
+          <div className="flex items-center gap-3">
+            {/* Avatar: Profilbild oder Initialen-Fallback */}
+            {profileData?.avatarUrl ? (
+              <img
+                src={profileData.avatarUrl}
+                alt="Profilbild"
+                className="h-12 w-12 rounded-full object-cover border-2 border-quartier-green/20 flex-shrink-0"
+                data-testid="dashboard-avatar"
+              />
+            ) : (
+              <div
+                className="h-12 w-12 rounded-full bg-anthrazit text-white font-bold text-lg flex items-center justify-center flex-shrink-0"
+                data-testid="dashboard-avatar"
+              >
+                {userName ? userName.charAt(0).toUpperCase() : "?"}
+              </div>
+            )}
+            <div>
+              <h1 className="flex items-center gap-2 text-2xl font-bold text-anthrazit" data-testid="dashboard-greeting">
+                {userName ? (
+                  <>
+                    <CategoryIcon
+                      icon={greetingIcon.icon}
+                      bgColor={greetingIcon.bgColor}
+                      iconColor={greetingIcon.iconColor}
+                      size="lg"
+                    />
+                    {greeting.text}, {userName}
+                  </>
+                ) : "QuartierApp"}
+                {reputationLevel >= 2 && (
+                  <span className="ml-1.5 align-middle">
+                    <ReputationBadge level={reputationLevel} size="sm" />
+                  </span>
+                )}
+              </h1>
+              <p className="text-sm text-muted-foreground mt-1">Ihr Quartier auf einen Blick</p>
+            </div>
           </div>
           <Link
             href="/notifications"
@@ -256,6 +306,29 @@ export default function DashboardPage() {
           <DailyCheckinButton />
         </div>
       </HeroCard>
+
+      {/* Angehörige-Schnellzugriff */}
+      {caregivers.length > 0 && (
+        <div data-testid="dashboard-caregivers" className="flex items-center gap-3 px-1 mb-4">
+          <span className="text-xs text-muted-foreground">Angehörige:</span>
+          <div className="flex -space-x-2">
+            {caregivers.map((cg) => (
+              <Link
+                key={cg.caregiver_id}
+                href={`/messages/${cg.caregiver_id}`}
+                className="flex h-9 w-9 items-center justify-center rounded-full bg-quartier-green/10 border-2 border-white text-xs font-semibold text-quartier-green hover:ring-2 hover:ring-quartier-green/30 transition-all"
+                title={cg.display_name || 'Angehöriger'}
+              >
+                {cg.avatar_url ? (
+                  <img src={cg.avatar_url} alt="" className="h-full w-full rounded-full object-cover" />
+                ) : (
+                  (cg.display_name || '?').charAt(0).toUpperCase()
+                )}
+              </Link>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Einladungs-Code Banner (Caregiver/Plus) */}
       <RedeemCodeBanner />

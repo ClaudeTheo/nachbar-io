@@ -23,7 +23,7 @@ const ALLOWED_ROUTES = [
   '/dashboard', '/alerts', '/alerts/new', '/board', '/marketplace',
   '/marketplace/new', '/events', '/events/new', '/help', '/help/new',
   '/waste-calendar', '/map', '/profile', '/messages', '/experts',
-  '/settings', '/amtsblatt',
+  '/settings', '/amtsblatt', '/mitessen', '/mitessen/neu',
 ] as const;
 
 /**

@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Plus, HandHelping, Search, ChevronRight, Filter, Repeat } from "lucide-react";
+import { Plus, HandHelping, Search, ChevronRight, Filter, Repeat, UtensilsCrossed } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -140,6 +140,10 @@ export default function HelpPage() {
               <Repeat className="mr-1 h-4 w-4" />
               Leihen
             </TabsTrigger>
+            <TabsTrigger value="mitessen" className="flex-1" data-testid="tab-mitessen">
+              <UtensilsCrossed className="mr-1 h-4 w-4" />
+              Mitessen
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="needs" className="mt-4 space-y-3">
@@ -173,6 +177,20 @@ export default function HelpPage() {
               >
                 <Repeat className="h-4 w-4" />
                 Zur Leihbörse
+              </Link>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="mitessen" className="mt-4">
+            <div className="text-center py-6">
+              <p className="text-muted-foreground mb-3">Portionen teilen oder zum Essen einladen</p>
+              <Link
+                href="/mitessen"
+                className="inline-flex items-center gap-2 rounded-lg bg-quartier-green px-4 py-2.5 text-sm font-semibold text-white hover:bg-quartier-green-dark"
+                data-testid="mitessen-link"
+              >
+                <UtensilsCrossed className="h-4 w-4" />
+                Zu den Mitess-Plätzen
               </Link>
             </div>
           </TabsContent>

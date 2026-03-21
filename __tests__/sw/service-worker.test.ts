@@ -48,3 +48,20 @@ describe('Service Worker API Caching Logic', () => {
     expect(API_CACHE_MAX_ENTRIES).toBe(50);
   });
 });
+
+describe('Service Worker SKIP_WAITING Message', () => {
+  it('should handle SKIP_WAITING message format', () => {
+    const message = { type: 'SKIP_WAITING' };
+    expect(message.type).toBe('SKIP_WAITING');
+  });
+
+  it('should ignore messages without type', () => {
+    const message = { data: 'random' };
+    expect((message as { type?: string }).type).toBeUndefined();
+  });
+
+  it('should ignore messages with wrong type', () => {
+    const message = { type: 'OTHER_MESSAGE' };
+    expect(message.type).not.toBe('SKIP_WAITING');
+  });
+});

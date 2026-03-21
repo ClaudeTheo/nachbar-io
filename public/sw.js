@@ -207,6 +207,13 @@ self.addEventListener("push", (event) => {
   );
 });
 
+// Update-Steuerung: Client kann SKIP_WAITING senden, um wartenden SW zu aktivieren
+self.addEventListener("message", (event) => {
+  if (event.data?.type === "SKIP_WAITING") {
+    self.skipWaiting();
+  }
+});
+
 self.addEventListener("notificationclick", (event) => {
   event.notification.close();
 

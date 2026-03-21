@@ -518,3 +518,39 @@ export interface ExpertProfile {
   review_count: number;
   endorsement_count: number;
 }
+
+// Mitess-Plätze
+export type MealType = 'portion' | 'invitation';
+export type MealStatus = 'active' | 'full' | 'expired' | 'cancelled';
+export type SignupStatus = 'confirmed' | 'cancelled';
+
+export interface SharedMeal {
+  id: string;
+  user_id: string;
+  quarter_id: string | null;
+  type: MealType;
+  title: string;
+  description: string | null;
+  image_url: string | null;
+  servings: number;
+  cost_hint: string | null;
+  pickup_info: string | null;
+  meal_date: string;
+  meal_time: string | null;
+  expires_at: string | null;
+  status: MealStatus;
+  created_at: string;
+  user?: Pick<User, 'display_name' | 'avatar_url'>;
+  signup_count?: number;
+  my_signup?: SignupStatus | null;
+}
+
+export interface MealSignup {
+  id: string;
+  meal_id: string;
+  user_id: string;
+  portions: number;
+  status: SignupStatus;
+  created_at: string;
+  user?: Pick<User, 'display_name' | 'avatar_url'>;
+}

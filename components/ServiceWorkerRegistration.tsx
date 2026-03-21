@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { UpdateBanner } from "@/components/UpdateBanner";
 
-const UPDATE_CHECK_INTERVAL_MS = 24 * 60 * 60 * 1000; // 24 Stunden
+const UPDATE_CHECK_INTERVAL_MS = 1 * 60 * 60 * 1000; // 1 Stunde
 const LAST_CHECK_KEY = "pwa-last-update-check";
 
 export function ServiceWorkerRegistration() {

@@ -1,9 +1,9 @@
 // Nachbar.io — Service Worker
 // Performance-Caching (Cache-first fuer Static Assets), Offline-Fallback, Push-Notifications
 
-const CACHE_NAME = "nachbar-io-v3";
-const STATIC_CACHE_NAME = "nachbar-io-static-v1";
-const API_CACHE_NAME = "nachbar-io-api-v1";
+const CACHE_NAME = "nachbar-io-v4";
+const STATIC_CACHE_NAME = "nachbar-io-static-v2";
+const API_CACHE_NAME = "nachbar-io-api-v2";
 const OFFLINE_URL = "/offline.html";
 
 const PRECACHE_URLS = [

@@ -41,6 +41,7 @@ describe('CalendarAnnouncementEvent Type', () => {
       title: 'Sperrung B34',
       category: 'verkehr',
       published_at: '2026-03-15T10:00:00Z',
+      event_date: '2026-03-20',
       expires_at: '2026-04-01T00:00:00Z',
       source_url: 'https://example.com',
     };
@@ -55,6 +56,7 @@ describe('CalendarAnnouncementEvent Type', () => {
       title: 'Vereinsversammlung',
       category: 'verein',
       published_at: '2026-03-20T08:00:00Z',
+      event_date: null,
       expires_at: null,
       source_url: null,
     };

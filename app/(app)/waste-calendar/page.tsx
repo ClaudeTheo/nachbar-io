@@ -161,7 +161,7 @@ export default function WasteCalendarPage() {
         // Amtsblatt-Termine (Bekanntmachungen)
         supabase
           .from("municipal_announcements")
-          .select("id, title, category, published_at, expires_at, source_url")
+          .select("id, title, category, published_at, event_date, expires_at, source_url")
           .eq("quarter_id", quarterId)
           .order("published_at"),
       ]);
@@ -204,8 +204,8 @@ export default function WasteCalendarPage() {
   const announcementsByDate = useMemo(() => {
     const map = new Map<string, CalendarAnnouncementEvent[]>();
     for (const a of announcements) {
-      // published_at ist ein Timestamp, wir brauchen nur das Datum (YYYY-MM-DD)
-      const dateKey = a.published_at.slice(0, 10);
+      // event_date bevorzugen (Veranstaltungsdatum), Fallback auf published_at
+      const dateKey = (a.event_date ?? a.published_at).slice(0, 10);
       const list = map.get(dateKey) ?? [];
       list.push(a);
       map.set(dateKey, list);

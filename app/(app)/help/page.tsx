@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Plus, HandHelping, Search, ChevronRight, Filter } from "lucide-react";
+import { Plus, HandHelping, Search, ChevronRight, Filter, Repeat } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -136,6 +136,10 @@ export default function HelpPage() {
               <HandHelping className="mr-1 h-4 w-4" />
               Bietet Hilfe ({offers.length})
             </TabsTrigger>
+            <TabsTrigger value="lending" className="flex-1">
+              <Repeat className="mr-1 h-4 w-4" />
+              Leihen
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="needs" className="mt-4 space-y-3">
@@ -158,6 +162,19 @@ export default function HelpPage() {
             ) : (
               offers.map((req) => <HelpCard key={req.id} request={req} />)
             )}
+          </TabsContent>
+
+          <TabsContent value="lending" className="mt-4">
+            <div className="text-center py-6">
+              <p className="text-muted-foreground mb-3">Dinge leihen und verleihen im Quartier</p>
+              <Link
+                href="/leihboerse"
+                className="inline-flex items-center gap-2 rounded-lg bg-quartier-green px-4 py-2.5 text-sm font-semibold text-white hover:bg-quartier-green-dark"
+              >
+                <Repeat className="h-4 w-4" />
+                Zur Leihbörse
+              </Link>
+            </div>
           </TabsContent>
         </Tabs>
       )}

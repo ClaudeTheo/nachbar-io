@@ -5,7 +5,6 @@
 import { useState } from 'react';
 import type { TaskCategory, TaskUrgency } from './TaskCard';
 import { CATEGORY_CONFIG } from './TaskCard';
-import { VoiceInput } from './VoiceInput';
 
 interface TaskFormProps {
   onSuccess?: () => void;
@@ -57,48 +56,10 @@ export function TaskForm({ onSuccess, onCancel }: TaskFormProps) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Spracheingabe-Zustand
-  const [voiceLoading, setVoiceLoading] = useState(false);
-  const [voiceConfirmation, setVoiceConfirmation] = useState<string | null>(null);
 
   // Validierung: Titel 3-200 Zeichen
   const titleTrimmed = title.trim();
   const isValid = titleTrimmed.length >= 3 && titleTrimmed.length <= 200;
-
-  // Spracheingabe verarbeiten: KI-Klassifizierung aufrufen
-  async function handleVoiceTranscript(text: string) {
-    setVoiceLoading(true);
-    setVoiceConfirmation(null);
-    setError(null);
-
-    try {
-      const res = await fetch('/api/care/classify-task', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text }),
-      });
-
-      if (!res.ok) {
-        // Fallback: Rohtext ins Titelfeld
-        setTitle(text.slice(0, 200));
-        return;
-      }
-
-      const data = await res.json() as { category: TaskCategory; title: string; description: string };
-      setCategory(data.category);
-      if (data.title) setTitle(data.title);
-      if (data.description) setDescription(data.description);
-
-      // Bestaetigungsanzeige
-      const categoryLabel = CATEGORY_CONFIG[data.category]?.label ?? data.category;
-      setVoiceConfirmation(`Kategorie erkannt: ${categoryLabel} ✓`);
-    } catch {
-      // Fallback bei Netzwerkfehler
-      setTitle(text.slice(0, 200));
-    } finally {
-      setVoiceLoading(false);
-    }
-  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -155,25 +116,6 @@ export function TaskForm({ onSuccess, onCancel }: TaskFormProps) {
           className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm text-anthrazit placeholder:text-gray-400 focus:border-[#4CAF87] focus:outline-none focus:ring-1 focus:ring-[#4CAF87]"
         />
         <p className="text-xs text-muted-foreground">{titleTrimmed.length}/200 Zeichen (mind. 3)</p>
-      </div>
-
-      {/* Spracheingabe */}
-      <div className="space-y-1.5">
-        <label className="block text-sm font-medium text-anthrazit">
-          Oder per Sprache:
-        </label>
-        <VoiceInput
-          onTranscript={handleVoiceTranscript}
-          disabled={loading || voiceLoading}
-        />
-        {voiceLoading && (
-          <p className="text-sm text-[#F59E0B] animate-pulse">KI analysiert Ihre Eingabe...</p>
-        )}
-        {voiceConfirmation && (
-          <p className="text-sm text-[#4CAF87] font-medium" data-testid="voice-confirmation">
-            {voiceConfirmation}
-          </p>
-        )}
       </div>
 
       {/* Kategorie-Raster (4 Spalten) */}

@@ -24,6 +24,12 @@ const cspDirectives = [
 ];
 
 const nextConfig: NextConfig = {
+  // Turbopack: Barrel-Exports fuer grosse Icon-Libraries optimieren
+  // Verhindert "module factory is not available" Fehler mit lucide-react
+  experimental: {
+    optimizePackageImports: ['lucide-react'],
+  },
+
   // App-Version aus package.json im Client verfuegbar machen
   env: {
     NEXT_PUBLIC_APP_VERSION: process.env.npm_package_version || require("./package.json").version,

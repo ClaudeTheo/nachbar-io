@@ -3,8 +3,8 @@ import React from "react";
 import { cleanup } from "@testing-library/react";
 
 vi.mock("react-leaflet", () => ({
-  Circle: ({ children, ...props }: Record<string, unknown>) => <div data-testid="circle" data-center={JSON.stringify(props.center)} data-radius={props.radius}>{children}</div>,
-  Marker: ({ children, ...props }: Record<string, unknown>) => <div data-testid="marker" data-position={JSON.stringify(props.position)}>{children}</div>,
+  Circle: ({ children, ...props }: Record<string, unknown> & { children?: React.ReactNode }) => <div data-testid="circle" data-center={JSON.stringify(props.center)} data-radius={props.radius}>{children}</div>,
+  Marker: ({ children, ...props }: Record<string, unknown> & { children?: React.ReactNode }) => <div data-testid="marker" data-position={JSON.stringify(props.position)}>{children}</div>,
   Popup: ({ children }: { children: React.ReactNode }) => <div data-testid="popup">{children}</div>,
 }));
 

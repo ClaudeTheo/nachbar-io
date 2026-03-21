@@ -14,13 +14,15 @@ import { SlideWelcome } from "./slides/SlideWelcome";
 import { SlideEmergency } from "./slides/SlideEmergency";
 import SlideVideo from "./slides/SlideVideo";
 import { SlideReady } from "./slides/SlideReady";
+import { SlideSkills } from "./SlideSkills";
 
-const TOTAL_SLIDES = 4;
+const TOTAL_SLIDES = 5;
 const SWIPE_THRESHOLD = 50;
 
 const BUTTON_LABELS = [
   "Weiter",           // Willkommen
   "Verstanden",       // Notfall-System
+  "Weiter",           // Hilfsangebote
   "Weiter",           // Video
   "Zum Dashboard",    // Fertig
 ];
@@ -44,6 +46,15 @@ export function OnboardingFlow() {
   const [showConfetti, setShowConfetti] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
   const [slideKey, setSlideKey] = useState(0);
+  const [selectedSkills, setSelectedSkills] = useState<string[]>([]);
+
+  function toggleSkill(skillId: string) {
+    setSelectedSkills(prev =>
+      prev.includes(skillId)
+        ? prev.filter(s => s !== skillId)
+        : [...prev, skillId]
+    );
+  }
 
   // Touch-State
   const [touchStart, setTouchStart] = useState<number | null>(null);
@@ -95,6 +106,35 @@ export function OnboardingFlow() {
 
   // Weiter-Button Handler
   async function handleNext() {
+    // Skills speichern beim Verlassen der Hilfsangebote-Slide
+    if (currentSlide === 2 && selectedSkills.length > 0) {
+      try {
+        const supabase = createClient();
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          const { data: membership } = await supabase
+            .from("quarter_memberships")
+            .select("quarter_id")
+            .eq("user_id", user.id)
+            .single();
+
+          if (membership) {
+            const inserts = selectedSkills.map(cat => ({
+              user_id: user.id,
+              quarter_id: membership.quarter_id,
+              category: cat,
+              is_public: true,
+            }));
+            await supabase.from("skills").upsert(inserts, {
+              onConflict: "user_id,category",
+              ignoreDuplicates: true,
+            });
+          }
+        }
+      } catch {
+        // Nicht-blockierend — Skills koennen spaeter nachgetragen werden
+      }
+    }
     goToSlide(currentSlide + 1);
   }
 
@@ -148,8 +188,9 @@ export function OnboardingFlow() {
     switch (currentSlide) {
       case 0: return <SlideWelcome />;
       case 1: return <SlideEmergency />;
-      case 2: return <SlideVideo variant="welcome" />;
-      case 3: return <SlideReady displayName={displayName} />;
+      case 2: return <SlideSkills selectedSkills={selectedSkills} onToggle={toggleSkill} />;
+      case 3: return <SlideVideo variant="welcome" />;
+      case 4: return <SlideReady displayName={displayName} />;
       default: return null;
     }
   }
@@ -212,7 +253,9 @@ export function OnboardingFlow() {
           }`}
           style={{ minHeight: "56px" }}
         >
-          {BUTTON_LABELS[currentSlide]}
+          {currentSlide === 2 && selectedSkills.length === 0
+            ? "Überspringen"
+            : BUTTON_LABELS[currentSlide]}
         </Button>
       </div>
 

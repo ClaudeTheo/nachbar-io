@@ -1,7 +1,11 @@
 "use client";
 
-import { createContext, useContext, useState, useCallback, useRef } from "react";
-import { X, ExternalLink as ExternalLinkIcon, Globe, AlertTriangle } from "lucide-react";
+// components/ExternalLinkProvider.tsx
+// Nachbar.io — Externe Links sicher im Browser oeffnen
+// Zeigt kurzen Disclaimer + Domain vor dem Oeffnen
+
+import { createContext, useContext, useState, useCallback } from "react";
+import { ExternalLink as ExternalLinkIcon, Globe, X } from "lucide-react";
 
 // --- Context ---
 
@@ -26,139 +30,83 @@ function extractDomain(url: string): string {
   }
 }
 
-// --- Provider + Overlay ---
+// --- Provider + Bestaetigungs-Dialog ---
 
 export function ExternalLinkProvider({ children }: { children: React.ReactNode }) {
-  const [overlayUrl, setOverlayUrl] = useState<string | null>(null);
-  const [overlayTitle, setOverlayTitle] = useState<string>("");
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(false);
-  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [pendingUrl, setPendingUrl] = useState<string | null>(null);
+  const [pendingTitle, setPendingTitle] = useState<string>("");
 
   const openExternal = useCallback((url: string, title?: string) => {
-    // mailto: und tel: Links nativ oeffnen
+    // mailto: und tel: Links direkt oeffnen
     if (url.startsWith("mailto:") || url.startsWith("tel:")) {
       window.open(url, "_blank");
       return;
     }
-    setOverlayUrl(url);
-    setOverlayTitle(title ?? extractDomain(url));
-    setLoading(true);
-    setError(false);
-
-    // Timeout: Falls iFrame nach 8s nicht laedt
-    timeoutRef.current = setTimeout(() => {
-      setError(true);
-      setLoading(false);
-    }, 8000);
+    setPendingUrl(url);
+    setPendingTitle(title ?? extractDomain(url));
   }, []);
 
-  const closeOverlay = useCallback(() => {
-    setOverlayUrl(null);
-    setOverlayTitle("");
-    setLoading(true);
-    setError(false);
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current);
-      timeoutRef.current = null;
-    }
-  }, []);
-
-  const handleIframeLoad = useCallback(() => {
-    setLoading(false);
-    setError(false);
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current);
-      timeoutRef.current = null;
-    }
+  const closeDialog = useCallback(() => {
+    setPendingUrl(null);
+    setPendingTitle("");
   }, []);
 
   const openInBrowser = useCallback(() => {
-    if (overlayUrl) {
-      window.open(overlayUrl, "_blank", "noopener,noreferrer");
+    if (pendingUrl) {
+      window.open(pendingUrl, "_blank", "noopener,noreferrer");
     }
-  }, [overlayUrl]);
+    closeDialog();
+  }, [pendingUrl, closeDialog]);
 
   return (
     <ExternalLinkContext.Provider value={{ openExternal }}>
       {children}
 
-      {/* Fullscreen Overlay */}
-      {overlayUrl && (
-        <div className="fixed inset-0 z-50 flex flex-col bg-white animate-fade-in-up">
-          {/* Header */}
-          <div className="flex items-center justify-between border-b bg-gray-50 px-3 py-2.5">
-            <button
-              onClick={closeOverlay}
-              className="flex items-center gap-1.5 rounded-lg p-1.5 text-sm font-medium text-anthrazit hover:bg-gray-200"
-              aria-label="Schließen"
-            >
-              <X className="h-5 w-5" />
-              <span className="hidden sm:inline">Schließen</span>
-            </button>
-
-            <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-              <Globe className="h-3.5 w-3.5" />
-              <span className="max-w-[180px] truncate">{extractDomain(overlayUrl)}</span>
+      {/* Bestaetigungs-Dialog */}
+      {pendingUrl && (
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/40 animate-fade-in-up">
+          <div className="w-full max-w-lg rounded-t-2xl sm:rounded-2xl bg-white p-5 shadow-xl">
+            {/* Header */}
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-2 text-anthrazit font-semibold">
+                <Globe className="h-5 w-5 text-quartier-green" />
+                Externe Seite
+              </div>
+              <button
+                onClick={closeDialog}
+                className="rounded-full p-1.5 hover:bg-gray-100"
+                aria-label="Schließen"
+              >
+                <X className="h-5 w-5 text-muted-foreground" />
+              </button>
             </div>
 
-            <button
-              onClick={openInBrowser}
-              className="flex items-center gap-1 rounded-lg p-1.5 text-xs text-quartier-green hover:bg-quartier-green/10"
-              aria-label="Im Browser öffnen"
-            >
-              <ExternalLinkIcon className="h-3.5 w-3.5" />
-              <span className="hidden sm:inline">Browser</span>
-            </button>
-          </div>
+            {/* Domain + Hinweis */}
+            <div className="rounded-lg bg-blue-50 border border-blue-100 px-4 py-3 mb-4">
+              <p className="text-sm font-medium text-blue-900 truncate">
+                {extractDomain(pendingUrl)}
+              </p>
+              <p className="text-xs text-blue-700 mt-1">
+                Sie verlassen die QuartierApp. Es gelten die Datenschutzbestimmungen des Anbieters.
+              </p>
+            </div>
 
-          {/* Disclaimer */}
-          <div className="border-b bg-blue-50 px-3 py-1.5 text-center text-[11px] text-blue-700">
-            Diese Seite wird von <strong>{extractDomain(overlayUrl)}</strong> bereitgestellt. Es gelten deren Datenschutzbestimmungen.
-          </div>
-
-          {/* Inhalt */}
-          <div className="relative flex-1">
-            {/* Loading Spinner */}
-            {loading && !error && (
-              <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-white">
-                <div className="h-8 w-8 animate-spin rounded-full border-3 border-quartier-green border-t-transparent" />
-                <p className="text-sm text-muted-foreground">
-                  {overlayTitle} wird geladen...
-                </p>
-              </div>
-            )}
-
-            {/* Fehler-Fallback */}
-            {error && (
-              <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 bg-white px-6 text-center">
-                <AlertTriangle className="h-12 w-12 text-alert-amber" />
-                <div>
-                  <p className="font-semibold text-anthrazit">Seite konnte nicht geladen werden</p>
-                  <p className="mt-1 text-sm text-muted-foreground">
-                    Die Seite blockiert möglicherweise die Einbettung.
-                  </p>
-                </div>
-                <button
-                  onClick={openInBrowser}
-                  className="flex items-center gap-2 rounded-lg bg-quartier-green px-4 py-2.5 text-sm font-semibold text-white hover:bg-quartier-green-dark"
-                >
-                  <ExternalLinkIcon className="h-4 w-4" />
-                  Im Browser öffnen
-                </button>
-              </div>
-            )}
-
-            {/* iFrame */}
-            <iframe
-              src={overlayUrl}
-              title={overlayTitle}
-              className={`h-full w-full border-0 ${loading || error ? "invisible" : "visible"}`}
-              sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
-              referrerPolicy="no-referrer"
-              onLoad={handleIframeLoad}
-              onError={() => setError(true)}
-            />
+            {/* Aktionen */}
+            <div className="flex gap-3">
+              <button
+                onClick={closeDialog}
+                className="flex-1 rounded-xl border border-gray-200 px-4 py-3 text-sm font-medium text-muted-foreground hover:bg-gray-50"
+              >
+                Abbrechen
+              </button>
+              <button
+                onClick={openInBrowser}
+                className="flex-1 flex items-center justify-center gap-2 rounded-xl bg-quartier-green px-4 py-3 text-sm font-semibold text-white hover:bg-quartier-green-dark"
+              >
+                <ExternalLinkIcon className="h-4 w-4" />
+                Öffnen
+              </button>
+            </div>
           </div>
         </div>
       )}

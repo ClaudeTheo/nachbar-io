@@ -61,28 +61,41 @@ export default function CityServicesPage() {
     return () => { cancelled = true; };
   }, [currentQuarter]);
 
-  // Bekanntmachungen aus Supabase laden
+  // Bekanntmachungen aus Supabase laden (stadtweit — Amtsblatt gilt fuer alle Quartiere einer Stadt)
   const [announcements, setAnnouncements] = useState<MunicipalAnnouncement[]>([]);
   const [announcementsLoading, setAnnouncementsLoading] = useState(false);
 
   useEffect(() => {
     if (activeTab !== "announcements" || !currentQuarter) return;
     let cancelled = false;
+    setAnnouncementsLoading(true);
 
     const supabase = createClient();
     const now = new Date().toISOString();
 
+    // Alle Quartier-IDs derselben Stadt holen, dann Bekanntmachungen laden
     supabase
-      .from("municipal_announcements")
-      .select("*")
-      .eq("quarter_id", currentQuarter.id)
-      .lte("published_at", now)
-      .order("pinned", { ascending: false })
-      .order("published_at", { ascending: false })
-      .then(({ data }) => {
+      .from("quarters")
+      .select("id, city")
+      .eq("city", currentQuarter.city ?? "")
+      .then(({ data: cityQuarters }) => {
         if (cancelled) return;
-        const filtered = (data ?? []).filter(
-          (a) => !a.expires_at || new Date(a.expires_at) > new Date()
+        const quarterIds = (cityQuarters ?? []).map((q) => q.id);
+        // Fallback: nur eigenes Quartier falls city leer
+        if (quarterIds.length === 0) quarterIds.push(currentQuarter.id);
+
+        return supabase
+          .from("municipal_announcements")
+          .select("*")
+          .in("quarter_id", quarterIds)
+          .lte("published_at", now)
+          .order("pinned", { ascending: false })
+          .order("published_at", { ascending: false });
+      })
+      .then((res) => {
+        if (cancelled || !res) return;
+        const filtered = (res.data ?? []).filter(
+          (a: MunicipalAnnouncement) => !a.expires_at || new Date(a.expires_at) > new Date()
         );
         setAnnouncements(filtered);
         setAnnouncementsLoading(false);

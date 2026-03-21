@@ -129,7 +129,7 @@ export default function DashboardPage() {
           .select("*, user:users(display_name, avatar_url)")
           .eq("quarter_id", currentQuarter.id)
           .eq("status", "active")
-          .or(`expires_at.is.null,expires_at.gte.${new Date().toISOString()}`)
+          .gte("expires_at", new Date().toISOString())
           .order("type", { ascending: true }) // 'need' vor 'offer' (Prioritaet)
           .order("created_at", { ascending: false })
           .limit(5),

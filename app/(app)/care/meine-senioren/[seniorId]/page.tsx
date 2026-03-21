@@ -4,7 +4,7 @@
 
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { ArrowLeft, Pill, Clock, AlertTriangle, Plus, Activity, RefreshCw, MessageCircle } from 'lucide-react';
+import { ArrowLeft, Pill, Clock, AlertTriangle, Plus, Activity, RefreshCw, MessageCircle, UserCog } from 'lucide-react';
 import Link from 'next/link';
 import { useCareRole } from '@/lib/care/hooks/useCareRole';
 import { createClient } from '@/lib/supabase/client';
@@ -193,8 +193,15 @@ export default function SeniorDetailPage() {
           className="flex flex-1 items-center justify-center gap-2 rounded-xl border border-border bg-white py-3 text-sm font-medium text-anthrazit hover:bg-muted"
         >
           <MessageCircle className="h-4 w-4" />
-          Nachricht senden
+          Nachricht
         </button>
+        <Link
+          href={`/care/meine-senioren/${seniorId}/edit`}
+          className="flex flex-1 items-center justify-center gap-2 rounded-xl border border-border bg-white py-3 text-sm font-medium text-anthrazit hover:bg-muted"
+        >
+          <UserCog className="h-4 w-4" />
+          Profil bearbeiten
+        </Link>
       </div>
 
       {/* Status-Uebersicht + Heartbeat-Timeline */}

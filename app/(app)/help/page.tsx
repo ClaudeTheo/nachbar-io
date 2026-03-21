@@ -32,6 +32,7 @@ export default function HelpPage() {
           .select("*, user:users(display_name, avatar_url)")
           .eq("quarter_id", currentQuarter!.id)
           .eq("status", "active")
+          .gte("expires_at", new Date().toISOString())
           .order("created_at", { ascending: false });
         if (error) {
           toast.error("Hilfe-Börse konnte nicht geladen werden.");

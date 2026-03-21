@@ -39,7 +39,7 @@ type FilterStatus = "all" | "new" | "approved" | "rejected" | "seen";
 export function BugReports() {
   const [reports, setReports] = useState<BugReport[]>([]);
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState<FilterStatus>("new");
+  const [filter, setFilter] = useState<FilterStatus>("approved");
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [adminNotes, setAdminNotes] = useState<Record<string, string>>({});
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);

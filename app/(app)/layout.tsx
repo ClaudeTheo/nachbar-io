@@ -3,12 +3,10 @@ import { HeartbeatProvider } from "@/components/HeartbeatProvider";
 import { InstallPrompt } from "@/components/InstallPrompt";
 import { PendingVerificationBanner } from "@/components/PendingVerificationBanner";
 import { QuarterProvider } from "@/lib/quarters";
-import { TestModeProvider } from "@/components/testing/TestModeProvider";
-import { TesterWelcomeDialog } from "@/components/testing/TesterWelcomeDialog";
-import { BugReportButton } from "@/components/testing/BugReportButton";
+import { BugReportButton } from "@/components/BugReportButton";
 import { ExternalLinkProvider } from "@/components/ExternalLinkProvider";
 
-// Layout fuer den aktiven Modus — mit Bottom-Navigation + Test-Modus
+// Layout fuer den aktiven Modus — mit Bottom-Navigation + Bug-Report
 export default function AppLayout({
   children,
 }: {
@@ -27,16 +25,13 @@ export default function AppLayout({
       <div className="mx-auto max-w-lg pt-4">
         <PendingVerificationBanner />
       </div>
-      {/* Quartier-Kontext + Hauptinhalt mit Padding fuer Bottom-Nav + Test-Modus Provider */}
+      {/* Quartier-Kontext + Hauptinhalt */}
       <QuarterProvider>
         <ExternalLinkProvider>
-          <TestModeProvider>
-            <HeartbeatProvider>
-              <main id="main-content" className="mx-auto max-w-lg px-4 pt-4">{children}</main>
-            </HeartbeatProvider>
-            <TesterWelcomeDialog />
-            <BugReportButton />
-          </TestModeProvider>
+          <HeartbeatProvider>
+            <main id="main-content" className="mx-auto max-w-lg px-4 pt-4">{children}</main>
+          </HeartbeatProvider>
+          <BugReportButton />
         </ExternalLinkProvider>
       </QuarterProvider>
       <span className="fixed bottom-[68px] left-2 text-[10px] text-muted-foreground/40 z-10">

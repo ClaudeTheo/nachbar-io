@@ -29,7 +29,7 @@ const mockConfigSingle = vi.fn(() => ({
 const mockConfigEq = vi.fn(() => ({ single: mockConfigSingle }));
 const mockConfigSelect = vi.fn(() => ({ eq: mockConfigEq }));
 
-// Announcements-Chain: select → eq → lte → order → order → then
+// Announcements-Chain: select → in → lte → order → order → then
 const mockAnnouncementsThen = vi.fn((cb: (result: { data: unknown[] | null; error: unknown }) => void) => {
   cb(mockAnnouncementsData);
   return { catch: vi.fn() };
@@ -37,11 +37,28 @@ const mockAnnouncementsThen = vi.fn((cb: (result: { data: unknown[] | null; erro
 const mockAnnouncementsOrder2 = vi.fn(() => ({ then: mockAnnouncementsThen }));
 const mockAnnouncementsOrder1 = vi.fn(() => ({ order: mockAnnouncementsOrder2 }));
 const mockAnnouncementsLte = vi.fn(() => ({ order: mockAnnouncementsOrder1 }));
-const mockAnnouncementsEq = vi.fn(() => ({ lte: mockAnnouncementsLte }));
-const mockAnnouncementsSelect = vi.fn(() => ({ eq: mockAnnouncementsEq }));
+const mockAnnouncementsIn = vi.fn(() => ({ lte: mockAnnouncementsLte }));
+const mockAnnouncementsSelect = vi.fn(() => ({ in: mockAnnouncementsIn }));
+
+// Quarters-Chain (stadtweit-Lookup): select → eq → then
+const mockQuartersThen = vi.fn((cb: (result: { data: unknown[] | null; error: unknown }) => void) => {
+  cb({ data: [{ id: 'quarter-bs', city: 'Bad Säckingen' }], error: null });
+  // Chain: then liefert Promise-aehnliches Objekt mit .then() fuer die nächste Query
+  return {
+    then: (cb2: (res: { data: unknown[] | null; error: unknown } | undefined) => void) => {
+      // Die Announcements-Abfrage wurde synchron gemacht
+      cb2({ data: mockAnnouncementsData.data, error: mockAnnouncementsData.error });
+      return { catch: vi.fn() };
+    },
+    catch: vi.fn(),
+  };
+});
+const mockQuartersEq = vi.fn(() => ({ then: mockQuartersThen }));
+const mockQuartersSelect = vi.fn(() => ({ eq: mockQuartersEq }));
 
 const mockFrom = vi.fn((table: string) => {
   if (table === 'municipal_config') return { select: mockConfigSelect };
+  if (table === 'quarters') return { select: mockQuartersSelect };
   if (table === 'municipal_announcements') return { select: mockAnnouncementsSelect };
   return { select: mockAnnouncementsSelect };
 });
@@ -100,6 +117,7 @@ const mockCurrentQuarter = {
   name: 'Bad Säckingen — Altstadt',
   center_lat: 47.5535,
   center_lng: 7.964,
+  city: 'Bad Säckingen',
 };
 
 vi.mock('@/lib/quarters', () => ({
@@ -574,10 +592,12 @@ describe('CityServicesPage — Supabase-Abfrage', () => {
     expect(mockFrom).toHaveBeenCalledWith('municipal_announcements');
   });
 
-  it('filtert Announcements nach quarter_id', () => {
+  it('filtert Announcements stadtweit ueber quarters-Lookup', () => {
     render(<CityServicesPage />);
     fireEvent.click(screen.getByText('Bekanntmachungen'));
-    expect(mockAnnouncementsEq).toHaveBeenCalledWith('quarter_id', 'quarter-bs');
+    // Stadtweit: erst quarters nach city abfragen, dann announcements mit .in()
+    expect(mockFrom).toHaveBeenCalledWith('quarters');
+    expect(mockQuartersEq).toHaveBeenCalledWith('city', 'Bad Säckingen');
   });
 
   it('filtert nach published_at <= jetzt', () => {

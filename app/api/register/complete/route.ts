@@ -224,7 +224,6 @@ export async function POST(request: NextRequest) {
       display_name: displayName.trim(),
       ui_mode: uiMode || "active",
       role: "resident",  // Vier-Versionen-Modell: Standard-Rolle fuer Bewohner
-      is_tester: true,  // Pilotphase: alle Nutzer sind Tester
       trust_level: trustLevel,
     });
 

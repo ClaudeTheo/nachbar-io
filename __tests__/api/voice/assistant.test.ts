@@ -89,6 +89,38 @@ describe('POST /api/voice/assistant', () => {
     expect(res.status).toBe(400);
   });
 
+  it('akzeptiert previousAction Parameter und gibt ihn weiter', async () => {
+    mockRequireAuth.mockResolvedValue({
+      supabase: {},
+      user: { id: 'u1' },
+    });
+
+    const mockResult = {
+      action: 'help_request',
+      params: { category: 'einkaufen' },
+      message: 'Einkaufshilfe erstellt',
+    };
+    mockClassifyAssistantAction.mockResolvedValue(mockResult);
+
+    const { POST } = await import('@/app/api/voice/assistant/route');
+    const req = new NextRequest('http://localhost/api/voice/assistant', {
+      method: 'POST',
+      body: JSON.stringify({
+        text: 'Nein, Einkaufen',
+        previousAction: { action: 'help_request', transcript: 'Fahrt zum Arzt' },
+      }),
+      headers: { 'Content-Type': 'application/json' },
+    });
+    const res = await POST(req);
+    expect(res.status).toBe(200);
+
+    // classifyAssistantAction wurde mit previousAction aufgerufen
+    expect(mockClassifyAssistantAction).toHaveBeenCalledWith(
+      'Nein, Einkaufen',
+      { action: 'help_request', transcript: 'Fahrt zum Arzt' }
+    );
+  });
+
   it('klassifiziert Text erfolgreich', async () => {
     mockRequireAuth.mockResolvedValue({
       supabase: {},

@@ -111,7 +111,16 @@ export function parseAssistantResponse(
  * Klassifiziert eine Spracheingabe ueber Claude Haiku.
  * Fallback bei Fehler oder fehlendem API-Key: general + Rohtext.
  */
-export async function classifyAssistantAction(text: string): Promise<AssistantResult> {
+/** Optionaler Kontext der vorherigen Aktion (fuer "Nochmal sprechen") */
+export interface PreviousAction {
+  action: string;
+  transcript: string;
+}
+
+export async function classifyAssistantAction(
+  text: string,
+  previousAction?: PreviousAction
+): Promise<AssistantResult> {
   // Leerer Text → Fallback
   if (!text.trim()) {
     return { action: 'general', params: {}, message: '' };
@@ -132,7 +141,9 @@ export async function classifyAssistantAction(text: string): Promise<AssistantRe
       messages: [
         {
           role: 'user',
-          content: `Klassifiziere diese Spracheingabe:\n\n"${text}"`,
+          content: previousAction
+            ? `Vorherige Anfrage des Nutzers: "${previousAction.transcript}" → Aktion: ${previousAction.action}\nDer Nutzer korrigiert oder stellt eine neue Anfrage.\n\nKlassifiziere diese Spracheingabe:\n\n"${text}"`
+            : `Klassifiziere diese Spracheingabe:\n\n"${text}"`,
         },
       ],
     });

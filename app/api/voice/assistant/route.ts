@@ -14,7 +14,7 @@ export async function POST(request: NextRequest) {
   if (!auth) return unauthorizedResponse();
 
   // Body parsen
-  let body: { text?: unknown };
+  let body: { text?: unknown; previousAction?: unknown };
   try {
     body = await request.json();
   } catch {
@@ -31,8 +31,17 @@ export async function POST(request: NextRequest) {
     return errorResponse('Text ist zu lang (max. 2000 Zeichen).', 400);
   }
 
+  // Optionaler Kontext der vorherigen Aktion
+  let previousAction: { action: string; transcript: string } | undefined;
+  if (body.previousAction && typeof body.previousAction === 'object') {
+    const pa = body.previousAction as Record<string, unknown>;
+    if (typeof pa.action === 'string' && typeof pa.transcript === 'string') {
+      previousAction = { action: pa.action, transcript: pa.transcript };
+    }
+  }
+
   try {
-    const result = await classifyAssistantAction(text);
+    const result = await classifyAssistantAction(text, previousAction);
     return NextResponse.json(result);
   } catch (err) {
     console.error('[voice/assistant] Unerwarteter Fehler:', err);

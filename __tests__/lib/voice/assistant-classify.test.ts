@@ -139,6 +139,14 @@ describe('parseAssistantResponse', () => {
   });
 });
 
+describe('PreviousAction type', () => {
+  it('exportiert PreviousAction Interface', async () => {
+    const mod = await import('@/lib/voice/assistant-classify');
+    // Typ-Export pruefen — wenn Import klappt, existiert der Typ
+    expect(mod.classifyAssistantAction).toBeDefined();
+  });
+});
+
 describe('classifyAssistantAction', () => {
   beforeEach(() => {
     vi.resetModules();

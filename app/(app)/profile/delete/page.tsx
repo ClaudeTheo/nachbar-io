@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { toast } from "sonner";
+import { revokeAppleToken } from "@/lib/auth/apple";
 
 export default function DeleteAccountPage() {
   const router = useRouter();
@@ -48,6 +49,9 @@ export default function DeleteAccountPage() {
     setDeleting(true);
 
     try {
+      // Apple Token widerrufen (Guideline 5.1.1(v))
+      await revokeAppleToken();
+
       const response = await fetch("/api/user/delete", {
         method: "POST",
         headers: { "Content-Type": "application/json" },

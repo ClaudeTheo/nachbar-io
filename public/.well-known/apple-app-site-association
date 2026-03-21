@@ -1,0 +1,23 @@
+{
+  "applinks": {
+    "apps": [],
+    "details": [
+      {
+        "appID": "TEAM_ID.de.quartierapp.app",
+        "paths": [
+          "/post/*",
+          "/marktplatz/*",
+          "/termin/*",
+          "/alert/*",
+          "/quartier/*",
+          "/auth/callback"
+        ]
+      }
+    ]
+  },
+  "webcredentials": {
+    "apps": [
+      "TEAM_ID.de.quartierapp.app"
+    ]
+  }
+}

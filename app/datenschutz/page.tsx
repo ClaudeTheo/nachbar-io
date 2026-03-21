@@ -308,6 +308,18 @@ export default function DatenschutzPage() {
               Übermittlung auf Grundlage von SCCs.
             </p>
 
+            <h4 className="mt-2 font-medium">Anthropic (KI-gestützte Inhaltsmoderation)</h4>
+            <p>
+              Anthropic PBC, USA. Texte von Beiträgen, Marktplatzanzeigen und
+              Chat-Nachrichten werden zur automatisierten Erkennung von
+              Regelverstoßen (Spam, Belästigung, Betrug) an Anthropic übermittelt.
+              Die Prüfung erfolgt in Echtzeit; Inhalte werden von Anthropic
+              <strong> nicht dauerhaft gespeichert</strong> und nicht zum Training
+              von KI-Modellen verwendet (Auftragsverarbeitung gemäß Art. 28 DSGVO).
+              Rechtsgrundlage: Art. 6 Abs. 1 lit. f DSGVO (berechtigtes Interesse
+              an Community-Schutz). Übermittlung auf Grundlage von SCCs.
+            </p>
+
             <h4 className="mt-2 font-medium">Metered Networks (TURN-Server)</h4>
             <p>
               Metered Networks Inc. Stellt TURN-Server für die Verbindungsherstellung

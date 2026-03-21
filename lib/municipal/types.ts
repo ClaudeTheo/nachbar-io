@@ -212,6 +212,7 @@ export interface AmtsblattExtractedItem {
   title: string;
   body: string;
   category: AnnouncementCategory;
+  event_date?: string; // YYYY-MM-DD oder null
 }
 
 /** Amtsblatt-Termin im Quartier-Kalender */
@@ -220,6 +221,7 @@ export interface CalendarAnnouncementEvent {
   title: string;
   category: AnnouncementCategory;
   published_at: string;
+  event_date: string | null;
   expires_at: string | null;
   source_url: string | null;
 }

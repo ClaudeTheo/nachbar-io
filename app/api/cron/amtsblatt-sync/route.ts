@@ -206,6 +206,7 @@ export async function GET(request: Request) {
             amtsblatt_issue_id: issue.id,
             pinned: false,
             published_at: issueDate,
+            event_date: item.event_date || null,
           }));
 
           const { error: insertError } = await supabase

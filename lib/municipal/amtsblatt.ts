@@ -90,7 +90,8 @@ Für jede Meldung erstelle ein JSON-Objekt:
 {
   "title": "Kurzer prägnanter Titel (max 80 Zeichen)",
   "body": "Zusammenfassung in 1-3 Sätzen. Siezen. Wichtige Details (Datum, Ort, Uhrzeit) beibehalten.",
-  "category": "eine der obigen Kategorien"
+  "category": "eine der obigen Kategorien",
+  "event_date": "YYYY-MM-DD — das Datum der Veranstaltung/Frist/Termin. null wenn kein konkretes Datum erkennbar."
 }
 
 Regeln:
@@ -98,7 +99,11 @@ Regeln:
 - Ignoriere: Impressum, Seitenzahlen, Kopfzeilen, reine Werbeanzeigen, Todesanzeigen
 - Fasse NICHT mehrere Meldungen zusammen — jede Meldung einzeln
 - Antworte NUR mit dem JSON-Array, kein Markdown, keine Erklärungen
-- Body darf maximal 480 Zeichen haben`;
+- Body darf maximal 480 Zeichen haben
+- Extrahiere das VERANSTALTUNGSDATUM (event_date) — wann findet etwas statt oder bis wann gilt eine Frist?
+- Falls mehrere Daten: nimm das erste/nächste relevante Datum
+- Falls kein konkretes Datum erkennbar: event_date = null
+- Format: YYYY-MM-DD (z.B. 2026-04-15)`;
 
 /**
  * Bereitet den User-Prompt mit dem extrahierten Text vor.
@@ -143,8 +148,14 @@ export function parseExtractionResponse(
     const title = typeof obj.title === "string" ? obj.title.trim() : "";
     const body = typeof obj.body === "string" ? obj.body.trim() : "";
     const category = typeof obj.category === "string" ? obj.category.trim() : "sonstiges";
+    const eventDate = typeof obj.event_date === "string" ? obj.event_date.trim() : undefined;
 
     if (!title || !body) continue;
+
+    // event_date validieren: muss YYYY-MM-DD sein
+    const validEventDate = eventDate && /^\d{4}-\d{2}-\d{2}$/.test(eventDate)
+      ? eventDate
+      : undefined;
 
     items.push({
       title: title.slice(0, 80),
@@ -152,6 +163,7 @@ export function parseExtractionResponse(
       category: VALID_CATEGORIES.includes(category as AnnouncementCategory)
         ? (category as AnnouncementCategory)
         : "sonstiges",
+      event_date: validEventDate,
     });
   }
 

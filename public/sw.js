@@ -134,31 +134,25 @@ self.addEventListener("fetch", (event) => {
   // 3) Andere API-Calls: nicht cachen
   if (url.includes("/api/")) return;
 
-  // 4) Seitennavigation: Stale-while-revalidate (sofort aus Cache, Update im Hintergrund)
+  // 4) Seitennavigation: Network-first (wichtig fuer Auth-Session)
+  // Kein Stale-while-revalidate — sonst werden gecachte Login-Redirects
+  // sofort zurueckgegeben, bevor die Session geprueft wird
   if (isNavigationRequest(event.request)) {
     event.respondWith(
-      caches.open(CACHE_NAME).then(async (cache) => {
-        const cachedResponse = await cache.match(event.request);
-
-        const fetchPromise = fetch(event.request)
-          .then((networkResponse) => {
-            if (networkResponse.ok) {
+      fetch(event.request)
+        .then((networkResponse) => {
+          if (networkResponse.ok) {
+            caches.open(CACHE_NAME).then((cache) => {
               cache.put(event.request, networkResponse.clone());
-            }
-            return networkResponse;
-          })
-          .catch(() => {
-            return cachedResponse || caches.match(OFFLINE_URL);
-          });
-
-        // Sofort aus Cache liefern, Update im Hintergrund
-        if (cachedResponse) {
-          event.waitUntil(fetchPromise);
-          return cachedResponse;
-        }
-
-        return fetchPromise;
-      })
+            });
+          }
+          return networkResponse;
+        })
+        .catch(() => {
+          // Offline-Fallback: Cache oder Offline-Seite
+          return caches.match(event.request)
+            .then((cached) => cached || caches.match(OFFLINE_URL));
+        })
     );
     return;
   }

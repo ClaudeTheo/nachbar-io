@@ -15,6 +15,7 @@ import {
   SheetDescription,
 } from '@/components/ui/sheet';
 import { toast } from 'sonner';
+import { createClient } from '@/lib/supabase/client';
 import { createSpeechEngine } from '@/lib/voice/create-speech-engine';
 import { AudioWaveform } from '@/components/voice/AudioWaveform';
 import { SpeakerAnimation } from '@/components/voice/SpeakerAnimation';
@@ -50,6 +51,12 @@ const ACTION_CONFIG: Partial<Record<AssistantAction, ActionConfig>> = {
     label: 'Nachbarn finden',
     buttonLabel: 'Zum Marktplatz',
     route: '/marketplace',
+  },
+  set_help_offers: {
+    icon: <HelpCircle className="h-6 w-6 text-[#4CAF87]" />,
+    label: 'Hilfsangebote',
+    buttonLabel: 'Zum Profil',
+    route: '/profile',
   },
   general: {
     icon: <MessageCircle className="h-6 w-6 text-[#2D3142]" />,
@@ -126,6 +133,45 @@ export function VoiceAssistantFAB() {
           toast.success(data.message || 'Navigation...');
           setSheetState('closed');
           return;
+        }
+
+        // Hilfsangebote setzen: Skills in Supabase speichern
+        if (data.action === 'set_help_offers') {
+          const skills = data.params.skills;
+          if (Array.isArray(skills) && skills.length > 0) {
+            try {
+              const supabase = createClient();
+              const { data: userData } = await supabase.auth.getUser();
+              const user = userData?.user;
+              if (user) {
+                // Bestehende Skills laden um Duplikate zu vermeiden
+                const { data: existing } = await supabase
+                  .from('skills')
+                  .select('category')
+                  .eq('user_id', user.id);
+                const existingCats = new Set((existing ?? []).map((s: { category: string }) => s.category));
+                const newSkills = skills.filter((s: string) => !existingCats.has(s));
+
+                if (newSkills.length > 0) {
+                  const { data: quarter } = await supabase
+                    .from('quarter_memberships')
+                    .select('quarter_id')
+                    .eq('user_id', user.id)
+                    .single();
+
+                  const inserts = newSkills.map((cat: string) => ({
+                    user_id: user.id,
+                    quarter_id: quarter?.quarter_id,
+                    category: cat,
+                    is_public: true,
+                  }));
+                  await supabase.from('skills').insert(inserts);
+                }
+              }
+            } catch (err) {
+              console.error('[VoiceAssistantFAB] Skills speichern fehlgeschlagen:', err);
+            }
+          }
         }
 
         // Ergebnis speichern + TTS starten

@@ -10,6 +10,7 @@ export type AssistantAction =
   | 'emergency_info'
   | 'navigate'
   | 'find_neighbor'
+  | 'set_help_offers'
   | 'general';
 
 /** Ergebnis der Assistenten-Klassifizierung */
@@ -27,6 +28,7 @@ const VALID_ACTIONS: AssistantAction[] = [
   'emergency_info',
   'navigate',
   'find_neighbor',
+  'set_help_offers',
   'general',
 ];
 
@@ -53,6 +55,7 @@ Aktionen:
 - emergency_info — Notfall (Feuer, Unfall, Einbruch, medizinischer Notfall). Params: number (112 oder 110)
 - navigate — Navigation zu einer App-Seite. Params: route (z.B. /dashboard, /waste-calendar, /map, /profile, /inbox, /care/tasks, /care, /city-services, /marketplace, /notifications)
 - find_neighbor — Suche nach Nachbarn oder Kontakten. Params: query
+- set_help_offers — Bewohner sagt, was er/sie anbieten kann (z.B. "Ich kann beim Einkaufen helfen und Hunde ausführen"). Params: skills (Array von Kategorie-IDs: medical, legal, electrical, it, garden, handwork, transport, cooking, music, languages, childcare, pet_care). Erkenne die passenden Kategorien aus der Spracheingabe.
 - general — Allgemeine Frage oder Konversation. Params: leer
 
 WICHTIG: Bei Notfall-Schlüsselwörtern (Feuer, Brand, Unfall, Herzinfarkt, Einbruch, Überfall, Hilfe Notfall, Krankenwagen, Polizei) IMMER emergency_info verwenden.

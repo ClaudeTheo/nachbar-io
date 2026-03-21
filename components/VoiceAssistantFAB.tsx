@@ -2,11 +2,11 @@
 
 // components/VoiceAssistantFAB.tsx
 // Nachbar.io — Floating Action Button fuer den KI-Sprach-Assistenten
-// Redesign: Hybrid Speech Engine, AudioWaveform, Dialog-Flow (B+)
+// Companion-Integration: Nutzt /api/companion/chat mit Konversations-Modus
 
 import { useState, useRef, useCallback, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Mic, Loader2, HelpCircle, AlertTriangle, MessageCircle, Navigation, Search, RotateCcw, X, Volume2, VolumeX } from 'lucide-react';
+import { Mic, Loader2, AlertTriangle, MessageCircle, Navigation, RotateCcw, X, Volume2, VolumeX, Check, ArrowRight } from 'lucide-react';
 import {
   Sheet,
   SheetContent,
@@ -15,56 +15,44 @@ import {
   SheetDescription,
 } from '@/components/ui/sheet';
 import { toast } from 'sonner';
-import { createClient } from '@/lib/supabase/client';
 import { createSpeechEngine } from '@/lib/voice/create-speech-engine';
 import { AudioWaveform } from '@/components/voice/AudioWaveform';
 import { SpeakerAnimation } from '@/components/voice/SpeakerAnimation';
 import type { SpeechEngine, SpeechEngineCallbacks } from '@/lib/voice/speech-engine';
-import type { AssistantAction, AssistantResult } from '@/lib/voice/assistant-classify';
 
 /** Sheet-Zustaende */
 type SheetState = 'closed' | 'idle' | 'recording' | 'processing' | 'speaking' | 'result' | 'error';
 
-/** Aktions-Konfiguration fuer das Bottom-Sheet */
-interface ActionConfig {
-  icon: React.ReactNode;
-  label: string;
-  buttonLabel: string;
-  route: string;
+/** Chat-Nachricht fuer den Companion */
+interface ChatMessage {
+  role: 'user' | 'assistant';
+  content: string;
 }
 
-const ACTION_CONFIG: Partial<Record<AssistantAction, ActionConfig>> = {
-  help_request: {
-    icon: <HelpCircle className="h-6 w-6 text-[#4CAF87]" />,
-    label: 'Hilfsanfrage',
-    buttonLabel: 'Hilfsanfrage erstellen',
-    route: '/care/tasks',
-  },
-  report_issue: {
-    icon: <AlertTriangle className="h-6 w-6 text-[#F59E0B]" />,
-    label: 'Mängelmelder',
-    buttonLabel: 'Mangel melden',
-    route: '/city-services',
-  },
-  find_neighbor: {
-    icon: <Search className="h-6 w-6 text-[#4CAF87]" />,
-    label: 'Nachbarn finden',
-    buttonLabel: 'Zum Marktplatz',
-    route: '/marketplace',
-  },
-  set_help_offers: {
-    icon: <HelpCircle className="h-6 w-6 text-[#4CAF87]" />,
-    label: 'Hilfsangebote',
-    buttonLabel: 'Zum Profil',
-    route: '/profile',
-  },
-  general: {
-    icon: <MessageCircle className="h-6 w-6 text-[#2D3142]" />,
-    label: 'Allgemeine Anfrage',
-    buttonLabel: 'Verstanden',
-    route: '',
-  },
-};
+/** Tool-Ergebnis vom Companion */
+interface CompanionToolResult {
+  success: boolean;
+  summary: string;
+  data?: unknown;
+  route?: string;
+}
+
+/** Tool-Bestaetigung (Write-Tool) */
+interface CompanionConfirmation {
+  tool: string;
+  params: Record<string, unknown>;
+  description: string;
+}
+
+/** Antwort vom /api/companion/chat Endpoint */
+interface CompanionResponse {
+  message: string;
+  toolResults?: CompanionToolResult[];
+  confirmations?: CompanionConfirmation[];
+}
+
+/** Maximale Anzahl an Austauschen bevor "Weiterplaudern?"-Hinweis */
+const MAX_EXCHANGES = 5;
 
 export function VoiceAssistantFAB() {
   const router = useRouter();
@@ -77,10 +65,13 @@ export function VoiceAssistantFAB() {
   // State
   const [sheetState, setSheetState] = useState<SheetState>('closed');
   const [audioLevel, setAudioLevel] = useState(0);
-  const [result, setResult] = useState<AssistantResult | null>(null);
+  const [responseMessage, setResponseMessage] = useState('');
   const [transcript, setTranscript] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
-  const [previousAction, setPreviousAction] = useState<{ action: string; transcript: string } | null>(null);
+  const [sheetMessages, setSheetMessages] = useState<ChatMessage[]>([]);
+  const [toolResults, setToolResults] = useState<CompanionToolResult[]>([]);
+  const [confirmations, setConfirmations] = useState<CompanionConfirmation[]>([]);
+  const [exchangeCount, setExchangeCount] = useState(0);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   // Push-to-Talk: Startzeitpunkt fuer Mindestdauer-Pruefung
   const recordingStartTimeRef = useRef<number>(0);
@@ -96,19 +87,27 @@ export function VoiceAssistantFAB() {
     };
   }, []);
 
-  // API-Aufruf nach Transkription
-  const classifyText = useCallback(
-    async (text: string, prevAction?: { action: string; transcript: string } | null) => {
+  // Companion-API-Aufruf nach Transkription
+  const sendToCompanion = useCallback(
+    async (text: string, confirmTool?: { tool: string; params: Record<string, unknown> }) => {
       setSheetState('processing');
       setAudioLevel(0);
 
       try {
-        const body: Record<string, unknown> = { text };
-        if (prevAction) {
-          body.previousAction = prevAction;
+        // Nachrichten-Array aufbauen (bestehende + neue User-Nachricht)
+        const newMessages: ChatMessage[] = confirmTool
+          ? sheetMessages // Bei Bestaetigung keine neue User-Nachricht
+          : [...sheetMessages, { role: 'user' as const, content: text }];
+
+        // Auf max 10 Nachrichten (5 Austausche) begrenzen
+        const limitedMessages = newMessages.slice(-(MAX_EXCHANGES * 2));
+
+        const body: Record<string, unknown> = { messages: limitedMessages };
+        if (confirmTool) {
+          body.confirmTool = confirmTool;
         }
 
-        const res = await fetch('/api/voice/assistant', {
+        const res = await fetch('/api/companion/chat', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(body),
@@ -118,74 +117,42 @@ export function VoiceAssistantFAB() {
           throw new Error(`API-Fehler: ${res.status}`);
         }
 
-        const data: AssistantResult = await res.json();
+        const data: CompanionResponse = await res.json();
 
-        // Notfall: Sofort navigieren
-        if (data.action === 'emergency_info') {
-          router.push('/alerts');
-          setSheetState('closed');
-          return;
-        }
-
-        // Navigation: Sofort navigieren
-        if (data.action === 'navigate' && data.params.route) {
-          router.push(data.params.route);
+        // Navigation aus Tool-Ergebnissen pruefen
+        const navResult = data.toolResults?.find(r => r.route);
+        if (navResult?.route) {
+          router.push(navResult.route);
           toast.success(data.message || 'Navigation...');
           setSheetState('closed');
           return;
         }
 
-        // Hilfsangebote setzen: Skills in Supabase speichern
-        if (data.action === 'set_help_offers') {
-          const skills = data.params.skills;
-          if (Array.isArray(skills) && skills.length > 0) {
-            try {
-              const supabase = createClient();
-              const { data: userData } = await supabase.auth.getUser();
-              const user = userData?.user;
-              if (user) {
-                // Bestehende Skills laden um Duplikate zu vermeiden
-                const { data: existing } = await supabase
-                  .from('skills')
-                  .select('category')
-                  .eq('user_id', user.id);
-                const existingCats = new Set((existing ?? []).map((s: { category: string }) => s.category));
-                const newSkills = skills.filter((s: string) => !existingCats.has(s));
+        // Nachrichten-History aktualisieren
+        const updatedMessages: ChatMessage[] = [
+          ...limitedMessages,
+          { role: 'assistant' as const, content: data.message },
+        ];
+        setSheetMessages(updatedMessages);
 
-                if (newSkills.length > 0) {
-                  const { data: quarter } = await supabase
-                    .from('quarter_memberships')
-                    .select('quarter_id')
-                    .eq('user_id', user.id)
-                    .single();
-
-                  const inserts = newSkills.map((cat: string) => ({
-                    user_id: user.id,
-                    quarter_id: quarter?.quarter_id,
-                    category: cat,
-                    is_public: true,
-                  }));
-                  await supabase.from('skills').insert(inserts);
-                }
-              }
-            } catch (err) {
-              console.error('[VoiceAssistantFAB] Skills speichern fehlgeschlagen:', err);
-            }
-          }
+        // Exchange-Counter erhoehen (nur bei neuer User-Nachricht)
+        if (!confirmTool) {
+          setExchangeCount(prev => prev + 1);
         }
 
-        // Ergebnis speichern + TTS starten
-        setResult(data);
+        // Ergebnis speichern
+        setResponseMessage(data.message);
         setTranscript(text);
+        setToolResults(data.toolResults ?? []);
+        setConfirmations(data.confirmations ?? []);
         setSheetState('speaking');
 
         // TTS: Antwort vorlesen
-        const ttsText = data.spokenResponse || data.message;
         try {
           const ttsRes = await fetch('/api/voice/tts', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ text: ttsText }),
+            body: JSON.stringify({ text: data.message }),
           });
 
           if (ttsRes.ok) {
@@ -216,12 +183,12 @@ export function VoiceAssistantFAB() {
           setSheetState('result');
         }
       } catch (err) {
-        console.error('[VoiceAssistantFAB] Klassifizierung fehlgeschlagen:', err);
+        console.error('[VoiceAssistantFAB] Companion-Anfrage fehlgeschlagen:', err);
         setErrorMessage('Sprachassistent konnte die Anfrage nicht verarbeiten.');
         setSheetState('error');
       }
     },
-    [router]
+    [router, sheetMessages]
   );
 
   // Engine starten
@@ -235,7 +202,7 @@ export function VoiceAssistantFAB() {
 
     const callbacks: SpeechEngineCallbacks = {
       onTranscript: (text: string) => {
-        classifyText(text, previousAction);
+        sendToCompanion(text);
       },
       onAudioLevel: (level: number) => {
         setAudioLevel(level);
@@ -253,7 +220,7 @@ export function VoiceAssistantFAB() {
     };
 
     engine.startListening(callbacks);
-  }, [classifyText, previousAction]);
+  }, [sendToCompanion]);
 
   // Engine stoppen
   const stopRecording = useCallback(() => {
@@ -263,7 +230,9 @@ export function VoiceAssistantFAB() {
   // FAB-Klick: Sheet oeffnen im idle-State (Push-to-Talk)
   const handleFabClick = useCallback(() => {
     if (sheetState === 'closed') {
-      setPreviousAction(null);
+      // Neue Session: Konversation zuruecksetzen
+      setSheetMessages([]);
+      setExchangeCount(0);
       setSheetState('idle');
     }
   }, [sheetState]);
@@ -304,31 +273,29 @@ export function VoiceAssistantFAB() {
     setSheetState('result');
   }, []);
 
-  // "Nochmal sprechen": Vorherige Aktion speichern, zurueck zum idle-State
+  // Tool-Bestaetigung: Write-Action ausfuehren
+  const handleConfirm = useCallback((confirmation: CompanionConfirmation) => {
+    sendToCompanion(transcript, { tool: confirmation.tool, params: confirmation.params });
+  }, [sendToCompanion, transcript]);
+
+  // "Nochmal sprechen": Zurueck zum idle-State (Konversation bleibt erhalten)
   const handleRetry = useCallback(() => {
     if (audioRef.current) {
       audioRef.current.pause();
       audioRef.current = null;
     }
-    if (result && transcript) {
-      setPreviousAction({ action: result.action, transcript });
-    }
-    setResult(null);
+    setResponseMessage('');
     setTranscript('');
+    setToolResults([]);
+    setConfirmations([]);
     setSheetState('idle');
-  }, [result, transcript]);
+  }, []);
 
-  // Aktions-Button: Navigieren + Sheet schliessen
-  const handleAction = useCallback(() => {
-    if (!result) return;
-    const config = ACTION_CONFIG[result.action];
-    if (config?.route) {
-      router.push(config.route);
-    }
+  // Navigation zu einem Tool-Ergebnis mit Route
+  const handleNavigate = useCallback((route: string) => {
+    router.push(route);
     setSheetState('closed');
-    setResult(null);
-    setPreviousAction(null);
-  }, [result, router]);
+  }, [router]);
 
   // Sheet schliessen
   const handleClose = useCallback(() => {
@@ -338,9 +305,12 @@ export function VoiceAssistantFAB() {
       audioRef.current = null;
     }
     setSheetState('closed');
-    setResult(null);
+    setResponseMessage('');
     setTranscript('');
-    setPreviousAction(null);
+    setToolResults([]);
+    setConfirmations([]);
+    setSheetMessages([]);
+    setExchangeCount(0);
     setAudioLevel(0);
   }, []);
 
@@ -350,7 +320,7 @@ export function VoiceAssistantFAB() {
   }
 
   const sheetOpen = sheetState !== 'closed';
-  const config = result ? ACTION_CONFIG[result.action] : null;
+  const showContinueHint = exchangeCount >= MAX_EXCHANGES;
 
   return (
     <>
@@ -373,13 +343,13 @@ export function VoiceAssistantFAB() {
               {sheetState === 'idle' && (
                 <>
                   <Mic className="h-5 w-5 text-[#4CAF87]" />
-                  Sprachassistent
+                  Quartier-Lotse
                 </>
               )}
               {sheetState === 'recording' && (
                 <>
                   <Mic className="h-5 w-5 text-[#4CAF87]" />
-                  Sprachassistent
+                  Quartier-Lotse
                 </>
               )}
               {sheetState === 'processing' && (
@@ -396,8 +366,8 @@ export function VoiceAssistantFAB() {
               )}
               {sheetState === 'result' && (
                 <>
-                  {config?.icon}
-                  {config?.label || 'Sprachassistent'}
+                  <MessageCircle className="h-5 w-5 text-[#4CAF87]" />
+                  Quartier-Lotse
                 </>
               )}
               {sheetState === 'error' && (
@@ -411,15 +381,15 @@ export function VoiceAssistantFAB() {
               {sheetState === 'idle' && 'Bereit zum Sprechen'}
               {sheetState === 'recording' && 'Sprechen Sie jetzt...'}
               {sheetState === 'processing' && 'Ihre Anfrage wird analysiert...'}
-              {sheetState === 'speaking' && (result?.spokenResponse || result?.message || '')}
-              {sheetState === 'result' && (result?.message || '')}
+              {sheetState === 'speaking' && (responseMessage || '')}
+              {sheetState === 'result' && (responseMessage || '')}
               {sheetState === 'error' && errorMessage}
             </SheetDescription>
           </SheetHeader>
 
           <div className="mt-4 space-y-4">
             {/* IDLE: Push-to-Talk Button */}
-            {sheetState === 'idle' && (
+            {sheetState === 'idle' && !showContinueHint && (
               <div className="flex flex-col items-center gap-4 py-4">
                 <button
                   data-testid="push-to-talk-btn"
@@ -437,6 +407,32 @@ export function VoiceAssistantFAB() {
                 <p className="text-base text-[#2D3142] font-medium text-center">
                   Halten Sie gedrückt zum Sprechen
                 </p>
+              </div>
+            )}
+
+            {/* IDLE + MAX_EXCHANGES erreicht: Weiterplaudern-Hinweis */}
+            {sheetState === 'idle' && showContinueHint && (
+              <div className="flex flex-col items-center gap-4 py-4" data-testid="continue-hint">
+                <p className="text-base text-[#2D3142] font-medium text-center">
+                  Möchten Sie weiterplaudern?
+                </p>
+                <button
+                  onClick={() => router.push('/companion')}
+                  className="w-full flex items-center justify-center gap-2 rounded-xl bg-[#4CAF87] text-white font-medium text-base transition-all hover:bg-[#4CAF87]/90 active:scale-95"
+                  style={{ minHeight: '56px', touchAction: 'manipulation' }}
+                  data-testid="companion-link"
+                >
+                  <ArrowRight className="h-5 w-5" />
+                  Zum Quartier-Lotsen
+                </button>
+                <button
+                  onClick={handleClose}
+                  className="w-full flex items-center justify-center gap-2 rounded-xl border border-gray-200 text-[#2D3142] font-medium text-base transition-all hover:bg-gray-50 active:scale-95"
+                  style={{ minHeight: '48px', touchAction: 'manipulation' }}
+                >
+                  <X className="h-4 w-4" />
+                  Schließen
+                </button>
               </div>
             )}
 
@@ -477,7 +473,7 @@ export function VoiceAssistantFAB() {
               <>
                 <SpeakerAnimation isPlaying={true} />
                 <p className="text-center text-lg font-medium text-[#2D3142]">
-                  {result?.spokenResponse || result?.message}
+                  {responseMessage}
                 </p>
                 <button
                   onClick={handleStopSpeaking}
@@ -490,7 +486,7 @@ export function VoiceAssistantFAB() {
               </>
             )}
 
-            {/* RESULT: Ergebnis + Buttons */}
+            {/* RESULT: Ergebnis + Tool-Results + Bestaetigungen + Buttons */}
             {sheetState === 'result' && (
               <>
                 {/* Transkript */}
@@ -500,16 +496,49 @@ export function VoiceAssistantFAB() {
                   </div>
                 )}
 
-                {/* Aktions-Button (Senior-Mode: gross + gruen) */}
-                {config?.route && (
-                  <button
-                    onClick={handleAction}
-                    className="w-full flex items-center justify-center gap-2 rounded-xl bg-[#4CAF87] text-white font-medium text-base transition-all hover:bg-[#4CAF87]/90 active:scale-95"
-                    style={{ minHeight: '56px', touchAction: 'manipulation' }}
-                  >
-                    <Navigation className="h-5 w-5" />
-                    {config.buttonLabel}
-                  </button>
+                {/* Tool-Ergebnisse (ActionCards) */}
+                {toolResults.length > 0 && (
+                  <div className="space-y-2" data-testid="tool-results">
+                    {toolResults.map((result, i) => (
+                      <div key={i} className="rounded-lg border p-3 flex items-start gap-3">
+                        <div className={`mt-0.5 ${result.success ? 'text-[#4CAF87]' : 'text-[#F59E0B]'}`}>
+                          {result.success ? <Check className="h-5 w-5" /> : <AlertTriangle className="h-5 w-5" />}
+                        </div>
+                        <div className="flex-1">
+                          <p className="text-sm text-[#2D3142]">{result.summary}</p>
+                          {result.route && (
+                            <button
+                              onClick={() => handleNavigate(result.route!)}
+                              className="mt-2 flex items-center gap-1 text-sm text-[#4CAF87] font-medium hover:underline"
+                            >
+                              <Navigation className="h-4 w-4" />
+                              Zur Seite
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* Bestaetigungen (ConfirmationCards) */}
+                {confirmations.length > 0 && (
+                  <div className="space-y-2" data-testid="confirmations">
+                    {confirmations.map((conf, i) => (
+                      <div key={i} className="rounded-lg border border-[#F59E0B]/30 bg-[#F59E0B]/5 p-3">
+                        <p className="text-sm text-[#2D3142] mb-2">{conf.description}</p>
+                        <button
+                          onClick={() => handleConfirm(conf)}
+                          data-testid={`confirm-btn-${i}`}
+                          className="w-full flex items-center justify-center gap-2 rounded-xl bg-[#4CAF87] text-white font-medium text-sm transition-all hover:bg-[#4CAF87]/90 active:scale-95"
+                          style={{ minHeight: '44px', touchAction: 'manipulation' }}
+                        >
+                          <Check className="h-4 w-4" />
+                          Bestätigen
+                        </button>
+                      </div>
+                    ))}
+                  </div>
                 )}
 
                 {/* Nochmal sprechen */}

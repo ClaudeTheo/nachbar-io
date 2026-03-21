@@ -28,6 +28,18 @@ const URGENCY_STYLES: Record<TaskUrgency, { active: string; inactive: string }> 
 // Alle Kategorien als Array
 const CATEGORIES = Object.entries(CATEGORY_CONFIG) as [TaskCategory, { emoji: string; label: string }][];
 
+// Kontextbezogene Platzhalter je nach Kategorie
+const CATEGORY_PLACEHOLDERS: Record<TaskCategory, { title: string; description: string }> = {
+  transport:     { title: 'z.B. Arzttermin am Dienstag, 14 Uhr',        description: 'Wohin? Wann? Rückfahrt nötig?' },
+  shopping:      { title: 'z.B. Brot, Milch und Obst vom REWE',         description: 'Was wird benötigt? Welcher Laden?' },
+  companionship: { title: 'z.B. Spaziergang im Park am Nachmittag',     description: 'Wann? Wie lange? Besonderes zu beachten?' },
+  garden:        { title: 'z.B. Rasen mähen, Hecke schneiden',          description: 'Welche Arbeiten? Werkzeug vorhanden?' },
+  tech_help:     { title: 'z.B. WLAN einrichten, Drucker anschließen',  description: 'Was funktioniert nicht? Welches Gerät?' },
+  pet_care:      { title: 'z.B. Hund ausführen, Katze füttern',         description: 'Welches Tier? Wie oft? Besonderheiten?' },
+  household:     { title: 'z.B. Glühbirne wechseln, Paket annehmen',    description: 'Wo genau? Was wird benötigt?' },
+  other:         { title: 'z.B. Blumen gießen im Urlaub',               description: 'Weitere Details zur Aufgabe...' },
+};
+
 // Heutiges Datum als YYYY-MM-DD fuer min-Attribut
 function todayISO(): string {
   const d = new Date();
@@ -99,7 +111,7 @@ export function TaskForm({ onSuccess, onCancel }: TaskFormProps) {
           maxLength={200}
           value={title}
           onChange={(e) => setTitle(e.target.value)}
-          placeholder="z.B. Einkauf fuer Frau Mueller"
+          placeholder={CATEGORY_PLACEHOLDERS[category].title}
           className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm text-anthrazit placeholder:text-gray-400 focus:border-[#4CAF87] focus:outline-none focus:ring-1 focus:ring-[#4CAF87]"
         />
         <p className="text-xs text-muted-foreground">{titleTrimmed.length}/200 Zeichen (mind. 3)</p>
@@ -164,7 +176,7 @@ export function TaskForm({ onSuccess, onCancel }: TaskFormProps) {
           onChange={(e) => setDescription(e.target.value)}
           maxLength={1000}
           rows={3}
-          placeholder="Weitere Details zur Aufgabe..."
+          placeholder={CATEGORY_PLACEHOLDERS[category].description}
           className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm text-anthrazit placeholder:text-gray-400 focus:border-[#4CAF87] focus:outline-none focus:ring-1 focus:ring-[#4CAF87] resize-none"
         />
       </div>

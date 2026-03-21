@@ -13,6 +13,7 @@ import { de } from "date-fns/locale";
 import type { HelpRequest } from "@/lib/supabase/types";
 import { BoardComments } from "@/components/BoardComments";
 import { validateImageFile, compressImage, MAX_DIMENSION } from "@/lib/storage";
+import { GuidelinesGate } from "@/components/moderation/GuidelinesAcceptance";
 
 export default function BoardPage() {
   const [posts, setPosts] = useState<HelpRequest[]>([]);
@@ -182,6 +183,7 @@ export default function BoardPage() {
   }
 
   return (
+    <GuidelinesGate>
     <div className="space-y-6">
       <div className="flex items-center gap-3">
         <Link href="/dashboard" className="rounded-lg p-2 hover:bg-muted">
@@ -302,5 +304,6 @@ export default function BoardPage() {
         </div>
       )}
     </div>
+    </GuidelinesGate>
   );
 }

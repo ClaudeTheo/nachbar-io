@@ -16,6 +16,7 @@ import { useQuarter } from "@/lib/quarters";
 import { useGeolocation } from "@/hooks/useGeolocation";
 import { LocationConsentDialog } from "@/components/alerts/LocationConsentDialog";
 import { AlertLocationCheckbox } from "@/components/alerts/AlertLocationCheckbox";
+import { GuidelinesGate } from "@/components/moderation/GuidelinesAcceptance";
 
 type Step = "category" | "emergency" | "description" | "sent";
 
@@ -28,7 +29,7 @@ export default function NewAlertPage() {
   const { currentQuarter } = useQuarter();
   const [shareLocation, setShareLocation] = useState(true);
   const [showConsent, setShowConsent] = useState(false);
-  const { position: gpsPosition, loading: gpsLoading, requestPosition } = useGeolocation();
+  const { position: gpsPosition, loading: gpsLoading, requestPosition, needsDisclosure, acceptDisclosure, declineDisclosure } = useGeolocation("emergency");
 
   // Prüfen ob es eine Notfall-Kategorie ist
   const isEmergency = selectedCategory && EMERGENCY_CATEGORIES.includes(selectedCategory as typeof EMERGENCY_CATEGORIES[number]);
@@ -150,6 +151,7 @@ export default function NewAlertPage() {
   }
 
   return (
+    <GuidelinesGate>
     <div>
       {/* GPS Consent-Dialog */}
       {showConsent && (
@@ -277,5 +279,6 @@ export default function NewAlertPage() {
         </div>
       )}
     </div>
+    </GuidelinesGate>
   );
 }

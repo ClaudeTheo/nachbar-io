@@ -13,6 +13,7 @@ import { uploadCategoryImage } from "@/lib/storage";
 import { createClient } from "@/lib/supabase/client";
 import { useQuarter } from "@/lib/quarters";
 import { MARKETPLACE_TYPES, MARKETPLACE_CATEGORIES } from "@/lib/constants";
+import { GuidelinesGate } from "@/components/moderation/GuidelinesAcceptance";
 
 export default function MarketplaceNewPage() {
   const router = useRouter();
@@ -103,6 +104,7 @@ export default function MarketplaceNewPage() {
   }
 
   return (
+    <GuidelinesGate>
     <div className="space-y-6">
       {uploading && <UploadingOverlay />}
 
@@ -277,5 +279,6 @@ export default function MarketplaceNewPage() {
         </div>
       )}
     </div>
+    </GuidelinesGate>
   );
 }

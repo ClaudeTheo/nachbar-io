@@ -55,5 +55,7 @@ docs/superpowers/
 
 # Android signing
 android/keystore.properties
+android/key.properties
 android/*.jks
 android/*.keystore
+*.keystore

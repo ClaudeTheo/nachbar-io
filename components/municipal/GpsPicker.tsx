@@ -6,6 +6,8 @@
 import { useState, useCallback } from "react";
 import { MapPin, Loader2, Navigation, ExternalLink } from "lucide-react";
 import { toast } from "sonner";
+import { isLocationDisclosed, markLocationDisclosed } from "@/components/permissions/LocationDisclosure";
+import { LocationDisclosure } from "@/components/permissions/LocationDisclosure";
 
 // --- Typen ---
 
@@ -27,11 +29,12 @@ export function GpsPicker({
   onTextChange,
 }: GpsPickerProps) {
   const [locating, setLocating] = useState(false);
+  const [showDisclosure, setShowDisclosure] = useState(false);
 
   const hasCoords = lat !== null && lng !== null;
 
-  // GPS-Position automatisch erkennen
-  const handleAutoDetect = useCallback(() => {
+  // GPS-Position tatsaechlich abrufen (nach Disclosure)
+  const fetchGps = useCallback(() => {
     if (!navigator.geolocation) {
       toast.error("Standortbestimmung wird von Ihrem Gerät nicht unterstützt.");
       return;
@@ -60,6 +63,15 @@ export function GpsPicker({
     );
   }, [onLocationChange]);
 
+  // GPS-Position mit Prominent Disclosure (Google Play Policy)
+  const handleAutoDetect = useCallback(() => {
+    if (!isLocationDisclosed("report")) {
+      setShowDisclosure(true);
+      return;
+    }
+    fetchGps();
+  }, [fetchGps]);
+
   // OpenStreetMap-Link generieren
   const osmUrl = hasCoords
     ? `https://www.openstreetmap.org/?mlat=${lat!.toFixed(5)}&mlon=${lng!.toFixed(5)}#map=17/${lat!.toFixed(5)}/${lng!.toFixed(5)}`
@@ -67,6 +79,21 @@ export function GpsPicker({
 
   return (
     <div className="space-y-3">
+      {/* Google Play Prominent Disclosure */}
+      {showDisclosure && (
+        <LocationDisclosure
+          purpose="report"
+          onAccept={() => {
+            setShowDisclosure(false);
+            fetchGps();
+          }}
+          onDecline={() => {
+            setShowDisclosure(false);
+            toast.info("Standortbestimmung wurde abgelehnt.");
+          }}
+        />
+      )}
+
       {/* GPS-Button — Senior-Mode: min 80px Hoehe */}
       <button
         onClick={handleAutoDetect}

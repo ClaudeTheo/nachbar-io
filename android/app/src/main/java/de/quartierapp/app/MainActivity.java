@@ -1,4 +1,4 @@
-package io.nachbar.app;
+package de.quartierapp.app;
 
 import com.getcapacitor.BridgeActivity;
 

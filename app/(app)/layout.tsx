@@ -4,6 +4,7 @@ import { InstallPrompt } from "@/components/InstallPrompt";
 import { PendingVerificationBanner } from "@/components/PendingVerificationBanner";
 import { QuarterProvider } from "@/lib/quarters";
 import { BugReportButton } from "@/components/BugReportButton";
+import { VoiceAssistantFAB } from "@/components/VoiceAssistantFAB";
 import { ExternalLinkProvider } from "@/components/ExternalLinkProvider";
 
 // Layout fuer den aktiven Modus — mit Bottom-Navigation + Bug-Report
@@ -32,6 +33,7 @@ export default function AppLayout({
             <main id="main-content" className="mx-auto max-w-lg px-4 pt-4">{children}</main>
           </HeartbeatProvider>
           <BugReportButton />
+          <VoiceAssistantFAB />
         </ExternalLinkProvider>
       </QuarterProvider>
       <span className="fixed bottom-[68px] left-2 text-[10px] text-muted-foreground/40 z-10">

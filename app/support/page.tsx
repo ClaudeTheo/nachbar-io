@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { Mail, Clock, HelpCircle, Shield, FileText } from 'lucide-react';
+import { Mail, Clock, CircleHelp, Shield, FileText } from 'lucide-react';
 
 export const metadata: Metadata = {
   title: 'Support — QuartierApp',
@@ -42,7 +42,7 @@ export default function SupportPage() {
       {/* FAQ */}
       <section className="mb-8">
         <h2 className="text-lg font-semibold text-anthrazit mb-4 flex items-center gap-2">
-          <HelpCircle className="h-5 w-5" />
+          <CircleHelp className="h-5 w-5" />
           Häufige Fragen
         </h2>
         <div className="space-y-4">

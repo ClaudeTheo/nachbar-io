@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { HelpCircle, X } from "lucide-react";
+import { CircleHelp, X } from "lucide-react";
 
 interface HelpTipProps {
   title: string;
@@ -32,7 +32,7 @@ export function HelpTip({ title, content }: HelpTipProps) {
         className="inline-flex h-5 w-5 items-center justify-center rounded-full text-muted-foreground/60 transition-colors hover:bg-muted hover:text-muted-foreground"
         aria-label={`Hilfe: ${title}`}
       >
-        <HelpCircle className="h-3.5 w-3.5" />
+        <CircleHelp className="h-3.5 w-3.5" />
       </button>
 
       {open && (

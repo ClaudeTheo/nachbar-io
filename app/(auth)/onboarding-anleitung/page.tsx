@@ -1,6 +1,6 @@
 "use client";
 
-import { Smartphone, QrCode, UserPlus, Home, HelpCircle, Phone } from "lucide-react";
+import { Smartphone, QrCode, UserPlus, Home, CircleHelp, Phone } from "lucide-react";
 
 export default function OnboardingAnleitungPage() {
   return (
@@ -133,7 +133,7 @@ export default function OnboardingAnleitungPage() {
       {/* Seniorenmodus Hinweis */}
       <div className="mb-6 rounded-xl border bg-gray-50 p-5 print:bg-white">
         <h2 className="mb-2 flex items-center gap-2 text-lg font-semibold text-anthrazit">
-          <HelpCircle className="h-5 w-5 text-quartier-green" />
+          <CircleHelp className="h-5 w-5 text-quartier-green" />
           Tipp: Seniorenmodus
         </h2>
         <p className="text-base text-gray-700">

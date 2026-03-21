@@ -22,7 +22,14 @@ const API_CACHE_MAX_ENTRIES = 50;
 const STATIC_CACHE_MAX_ENTRIES = 200;
 
 // Static Assets: Cache-first (haben Content-Hash im Dateinamen, aendern sich nie)
+// WICHTIG: _next/static/chunks im Dev-Modus (Turbopack HMR) NICHT cachen,
+// sonst werden veraltete Module serviert → "module factory is not available" Fehler
 function isStaticAsset(url) {
+  // Dev-Modus erkennen: Turbopack-Chunks enthalten "[turbopack]" oder "turbopack-" im Pfad
+  if (url.includes("/_next/static/chunks/") &&
+      (url.includes("%5Bturbopack%5D") || url.includes("turbopack-") || url.includes("[turbopack]"))) {
+    return false;
+  }
   return url.includes("/_next/static/") ||
     url.includes("/icons/") ||
     url.endsWith(".svg") ||

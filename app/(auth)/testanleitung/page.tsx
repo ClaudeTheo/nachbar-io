@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowLeft, CheckSquare, Users, Bell, Shield, Smartphone, MessageCircle, HelpCircle } from "lucide-react";
+import { ArrowLeft, CheckSquare, Users, Bell, Shield, Smartphone, MessageCircle, CircleHelp } from "lucide-react";
 
 export default function TestanleitungPage() {
   return (
@@ -279,7 +279,7 @@ export default function TestanleitungPage() {
       {/* Tipps */}
       <div className="mb-6 rounded-xl border bg-blue-50 p-5 text-sm text-blue-800">
         <h3 className="mb-2 flex items-center gap-2 font-semibold">
-          <HelpCircle className="h-4 w-4" />
+          <CircleHelp className="h-4 w-4" />
           Tipps zum Testen
         </h3>
         <ul className="list-inside list-disc space-y-2">

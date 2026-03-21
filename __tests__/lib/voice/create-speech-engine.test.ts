@@ -1,29 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 
-// Mock SpeechRecognition
-class MockSpeechRecognition {
-  lang = '';
-  continuous = false;
-  interimResults = false;
-  onstart = null;
-  onresult = null;
-  onerror = null;
-  onend = null;
-  start() {}
-  stop() {}
-  abort() {}
-}
-
-function enableSpeechRecognition() {
-  (globalThis as Record<string, unknown>).SpeechRecognition = MockSpeechRecognition;
-}
-
-function disableSpeechRecognition() {
-  delete (globalThis as Record<string, unknown>).SpeechRecognition;
-  delete (globalThis as Record<string, unknown>).webkitSpeechRecognition;
-}
-
-// Mock MediaRecorder
 class MockMediaRecorder {
   state = 'inactive';
   ondataavailable = null;
@@ -36,9 +12,7 @@ class MockMediaRecorder {
 
 beforeEach(() => {
   vi.resetModules();
-  disableSpeechRecognition();
   delete (globalThis as Record<string, unknown>).MediaRecorder;
-
   Object.defineProperty(globalThis, 'navigator', {
     value: { mediaDevices: undefined },
     writable: true,
@@ -47,26 +21,11 @@ beforeEach(() => {
 });
 
 afterEach(() => {
-  disableSpeechRecognition();
   delete (globalThis as Record<string, unknown>).MediaRecorder;
 });
 
-describe('createSpeechEngine', () => {
-  it('gibt WebSpeechEngine zurueck wenn SpeechRecognition verfuegbar', async () => {
-    enableSpeechRecognition();
-
-    const { createSpeechEngine } = await import('@/lib/voice/create-speech-engine');
-    const engine = createSpeechEngine();
-
-    expect(engine).not.toBeNull();
-    // WebSpeechEngine hat isAvailable() === true
-    expect(engine!.isAvailable()).toBe(true);
-  });
-
-  it('gibt WhisperEngine zurueck wenn nur getUserMedia verfuegbar', async () => {
-    disableSpeechRecognition();
-
-    // getUserMedia + MediaRecorder verfuegbar
+describe('createSpeechEngine (Whisper-Only)', () => {
+  it('gibt WhisperEngine zurueck wenn getUserMedia + MediaRecorder verfuegbar', async () => {
     Object.defineProperty(globalThis, 'navigator', {
       value: { mediaDevices: { getUserMedia: vi.fn() } },
       writable: true,
@@ -81,13 +40,17 @@ describe('createSpeechEngine', () => {
     expect(engine!.isAvailable()).toBe(true);
   });
 
-  it('gibt null zurueck wenn nichts verfuegbar', async () => {
-    disableSpeechRecognition();
-    // Kein getUserMedia, kein MediaRecorder
+  it('gibt null zurueck wenn getUserMedia nicht verfuegbar', async () => {
+    const { createSpeechEngine } = await import('@/lib/voice/create-speech-engine');
+    const engine = createSpeechEngine();
+    expect(engine).toBeNull();
+  });
+
+  it('gibt null zurueck wenn nur MediaRecorder aber kein getUserMedia', async () => {
+    (globalThis as Record<string, unknown>).MediaRecorder = MockMediaRecorder;
 
     const { createSpeechEngine } = await import('@/lib/voice/create-speech-engine');
     const engine = createSpeechEngine();
-
     expect(engine).toBeNull();
   });
 });

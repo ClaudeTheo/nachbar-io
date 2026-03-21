@@ -240,8 +240,9 @@ export function VoiceAssistantFAB() {
     const elapsed = Date.now() - recordingStartTimeRef.current;
     if (elapsed < 500) {
       // Zu kurz — abbrechen
-      engineRef.current?.cleanup();
+      engineRef.current?.stopListening();
       setSheetState('idle');
+      setAudioLevel(0);
       toast.error('Bitte etwas länger gedrückt halten');
     } else {
       stopRecording();

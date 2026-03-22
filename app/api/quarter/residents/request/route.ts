@@ -2,22 +2,11 @@
 // Nachbar.io — Kontaktanfrage senden (Chat-Anfrage-Browser)
 // Spam-Schutz: max. 3 ausstehende Anfragen pro Nutzer
 // Hash-Aufloesung: Anonyme ID → echter User via HMAC-Vergleich
+// Quarter-Scope: Haushalt wird nur im eigenen Quartier gesucht (Cross-Quarter-Schutz)
 
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import { createHmac } from "crypto";
-
-// Hash-Geheimnis — muss identisch sein mit GET /api/quarter/residents
-const HASH_SECRET =
-  process.env.RESIDENT_HASH_SECRET || "nachbar-io-resident-hash-2026";
-
-/** Erzeugt eine anonymisierte 16-Zeichen-Hex-ID aus der User-UUID */
-function hashUserId(userId: string): string {
-  return createHmac("sha256", HASH_SECRET)
-    .update(userId)
-    .digest("hex")
-    .slice(0, 16);
-}
+import { hashUserId, hashHouseholdId } from "@/lib/quarter/resident-hash";
 
 // Maximale Anzahl gleichzeitig offener Anfragen
 const MAX_PENDING_REQUESTS = 3;
@@ -93,11 +82,64 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  // 4. Hash aufloesen: Alle Bewohner des Haushalts laden und Hash vergleichen
+  // 4. Eigenes Quartier ermitteln (Cross-Quarter-Schutz)
+  const { data: requesterMembership } = await supabase
+    .from("household_members")
+    .select("household_id, households(quarter_id)")
+    .eq("user_id", user.id)
+    .limit(1)
+    .single();
+
+  if (!requesterMembership) {
+    return NextResponse.json(
+      { error: "Sie gehören keinem Haushalt an" },
+      { status: 403 }
+    );
+  }
+
+  const quarterId = (
+    requesterMembership.households as { quarter_id?: string } | null
+  )?.quarter_id;
+
+  if (!quarterId) {
+    return NextResponse.json(
+      { error: "Quartier nicht gefunden" },
+      { status: 404 }
+    );
+  }
+
+  // 5. Alle Haushalte im eigenen Quartier laden und gehashte householdId aufloesen
+  const { data: quarterHouseholds } = await supabase
+    .from("households")
+    .select("id")
+    .eq("quarter_id", quarterId);
+
+  if (!quarterHouseholds || quarterHouseholds.length === 0) {
+    return NextResponse.json(
+      { error: "Haushalt nicht gefunden" },
+      { status: 404 }
+    );
+  }
+
+  // Haushalt finden, dessen Hash mit der uebergebenen householdId uebereinstimmt
+  const targetHousehold = quarterHouseholds.find(
+    (hh) => hashHouseholdId(hh.id) === householdId
+  );
+
+  if (!targetHousehold) {
+    return NextResponse.json(
+      { error: "Haushalt nicht gefunden" },
+      { status: 404 }
+    );
+  }
+
+  const realHouseholdId = targetHousehold.id;
+
+  // 6. Hash aufloesen: Alle Bewohner des Haushalts laden und Hash vergleichen
   const { data: householdMembers } = await supabase
     .from("household_members")
     .select("user_id")
-    .eq("household_id", householdId);
+    .eq("household_id", realHouseholdId);
 
   if (!householdMembers || householdMembers.length === 0) {
     return NextResponse.json(
@@ -118,7 +160,7 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  // 5. Selbst-Anfrage verhindern
+  // 7. Selbst-Anfrage verhindern
   if (targetMember.user_id === user.id) {
     return NextResponse.json(
       { error: "Sie können sich nicht selbst eine Anfrage senden" },
@@ -126,14 +168,14 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  // 6. Verbindung erstellen
+  // 8. Verbindung erstellen (mit echter Household-ID)
   const { data: connection, error: insertError } = await supabase
     .from("neighbor_connections")
     .insert({
       requester_id: user.id,
       target_id: targetMember.user_id,
       message: message.trim(),
-      target_household_id: householdId,
+      target_household_id: realHouseholdId,
       status: "pending",
     })
     .select("id")
@@ -158,7 +200,7 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  // 7. Notification senden (fire-and-forget)
+  // 9. Notification senden (fire-and-forget)
   // Nutzt die interne /api/notifications/create Route (gleiche Session/Cookies)
   const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
   fetch(`${appUrl}/api/notifications/create`, {

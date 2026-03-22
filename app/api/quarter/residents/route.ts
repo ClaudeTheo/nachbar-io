@@ -5,19 +5,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import { createHmac } from "crypto";
-
-// Hash-Geheimnis fuer Bewohner-IDs (anonymisiert, nicht rueckverfolgbar ohne Secret)
-const HASH_SECRET =
-  process.env.RESIDENT_HASH_SECRET || "nachbar-io-resident-hash-2026";
-
-/** Erzeugt eine anonymisierte 16-Zeichen-Hex-ID aus der User-UUID */
-function hashUserId(userId: string): string {
-  return createHmac("sha256", HASH_SECRET)
-    .update(userId)
-    .digest("hex")
-    .slice(0, 16);
-}
+import { hashUserId, hashHouseholdId } from "@/lib/quarter/resident-hash";
 
 export async function GET(_request: NextRequest) {
   // 1. Authentifizierung pruefen
@@ -105,13 +93,14 @@ export async function GET(_request: NextRequest) {
   // 6. Adressen mit anonymisierten Bewohnern aufbauen
   const addresses = households
     .map((household) => {
-      // Bewohner dieses Haushalts filtern
+      // Bewohner dieses Haushalts filtern + nach user_id sortieren (stabile Nummerierung)
       const residents = members
         .filter(
           (m) =>
             m.household_id === household.id &&
             !excludedUserIds.has(m.user_id)
         )
+        .sort((a, b) => a.user_id.localeCompare(b.user_id))
         .map((m, index) => ({
           number: index + 1,
           id: hashUserId(m.user_id),
@@ -121,7 +110,7 @@ export async function GET(_request: NextRequest) {
 
       return {
         address: `${household.street_name} ${household.house_number}`,
-        householdId: household.id,
+        householdId: hashHouseholdId(household.id),
         residents,
       };
     })

@@ -15,6 +15,7 @@ vi.mock('@/lib/supabase/server', () => ({
 }));
 
 import { GET } from '@/app/api/quarter/residents/route';
+import { hashHouseholdId } from '@/lib/quarter/resident-hash';
 
 // --- Konstanten ---
 
@@ -190,5 +191,128 @@ describe('GET /api/quarter/residents', () => {
     expect(resident.id).not.toBe(OTHER_USER_1);
     // Hat eine Nummer
     expect(resident.number).toBe(1);
+  });
+
+  it('gibt gehashte Household-IDs zurueck statt echter UUIDs', async () => {
+    mockSupabase.setUser({ id: USER_ID, email: 'test@test.de' });
+
+    // 1. Eigener Haushalt
+    mockSupabase.addResponse('household_members', {
+      data: { household_id: USER_HOUSEHOLD, households: { quarter_id: QUARTER_ID } },
+      error: null,
+    });
+
+    // 2. Haushalte
+    mockSupabase.addResponse('households', {
+      data: [
+        { id: OTHER_HOUSEHOLD, street_name: 'Oberer Rebberg', house_number: '5' },
+      ],
+      error: null,
+    });
+
+    // 3. Mitglieder
+    mockSupabase.addResponse('household_members', {
+      data: [
+        { household_id: OTHER_HOUSEHOLD, user_id: OTHER_USER_1 },
+      ],
+      error: null,
+    });
+
+    // 4. Keine Verbindungen
+    mockSupabase.addResponse('neighbor_connections', {
+      data: [],
+      error: null,
+    });
+
+    const res = await GET(createGetRequest());
+    const json = await res.json();
+
+    const addr = json.addresses[0];
+    // householdId muss gehasht sein, nicht die echte UUID
+    expect(addr.householdId).not.toBe(OTHER_HOUSEHOLD);
+    expect(addr.householdId).toBe(hashHouseholdId(OTHER_HOUSEHOLD));
+    expect(addr.householdId).toHaveLength(16);
+    expect(addr.householdId).toMatch(/^[0-9a-f]{16}$/);
+  });
+
+  it('sortiert Bewohner stabil nach user_id', async () => {
+    mockSupabase.setUser({ id: USER_ID, email: 'test@test.de' });
+
+    // 1. Eigener Haushalt
+    mockSupabase.addResponse('household_members', {
+      data: { household_id: USER_HOUSEHOLD, households: { quarter_id: QUARTER_ID } },
+      error: null,
+    });
+
+    // 2. Haushalte
+    mockSupabase.addResponse('households', {
+      data: [
+        { id: OTHER_HOUSEHOLD, street_name: 'Sanarystraße', house_number: '1' },
+      ],
+      error: null,
+    });
+
+    // 3. Mitglieder in NICHT-alphabetischer Reihenfolge
+    mockSupabase.addResponse('household_members', {
+      data: [
+        { household_id: OTHER_HOUSEHOLD, user_id: 'user-zzz' },
+        { household_id: OTHER_HOUSEHOLD, user_id: 'user-aaa' },
+        { household_id: OTHER_HOUSEHOLD, user_id: 'user-mmm' },
+      ],
+      error: null,
+    });
+
+    // 4. Keine Verbindungen
+    mockSupabase.addResponse('neighbor_connections', {
+      data: [],
+      error: null,
+    });
+
+    const res = await GET(createGetRequest());
+    const json = await res.json();
+
+    const residents = json.addresses[0].residents;
+    expect(residents).toHaveLength(3);
+    // Nummerierung muss stabil sein (sortiert nach user_id)
+    // user-aaa → 1, user-mmm → 2, user-zzz → 3
+    expect(residents[0].number).toBe(1);
+    expect(residents[1].number).toBe(2);
+    expect(residents[2].number).toBe(3);
+
+    // Zweiter Aufruf muss gleiche Reihenfolge liefern
+    mockSupabase.reset();
+    mockSupabase.setUser({ id: USER_ID, email: 'test@test.de' });
+    mockSupabase.addResponse('household_members', {
+      data: { household_id: USER_HOUSEHOLD, households: { quarter_id: QUARTER_ID } },
+      error: null,
+    });
+    mockSupabase.addResponse('households', {
+      data: [
+        { id: OTHER_HOUSEHOLD, street_name: 'Sanarystraße', house_number: '1' },
+      ],
+      error: null,
+    });
+    // Gleiche Mitglieder, andere Reihenfolge im Array
+    mockSupabase.addResponse('household_members', {
+      data: [
+        { household_id: OTHER_HOUSEHOLD, user_id: 'user-mmm' },
+        { household_id: OTHER_HOUSEHOLD, user_id: 'user-zzz' },
+        { household_id: OTHER_HOUSEHOLD, user_id: 'user-aaa' },
+      ],
+      error: null,
+    });
+    mockSupabase.addResponse('neighbor_connections', {
+      data: [],
+      error: null,
+    });
+
+    const res2 = await GET(createGetRequest());
+    const json2 = await res2.json();
+    const residents2 = json2.addresses[0].residents;
+
+    // Gleiche gehashte IDs in gleicher Reihenfolge
+    expect(residents2[0].id).toBe(residents[0].id);
+    expect(residents2[1].id).toBe(residents[1].id);
+    expect(residents2[2].id).toBe(residents[2].id);
   });
 });

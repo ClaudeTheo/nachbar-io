@@ -1,8 +1,11 @@
 import { renderHook, act } from '@testing-library/react'
-import { describe, it, expect, vi } from 'vitest'
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { useDialogMode } from '@/hooks/useDialogMode'
 
 describe('useDialogMode', () => {
+  beforeEach(() => { vi.useFakeTimers() })
+  afterEach(() => { vi.useRealTimers() })
+
   it('startet im idle-State', () => {
     const { result } = renderHook(() => useDialogMode())
     expect(result.current.state).toBe('idle')
@@ -89,5 +92,49 @@ describe('useDialogMode', () => {
       result.current.setSpeakingDone()
     })
     expect(result.current.state).toBe('listening')
+  })
+
+  it('triggerSilenceCheck wechselt zu silence_check', async () => {
+    const { result } = renderHook(() => useDialogMode())
+    await act(async () => {
+      result.current.startDialog()
+    })
+    act(() => { vi.advanceTimersByTime(1500) }) // greeting -> listening
+    act(() => {
+      result.current.triggerSilenceCheck()
+    })
+    expect(result.current.state).toBe('silence_check')
+  })
+
+  it('beendet Dialog nach silence_check + 3s ohne Antwort', async () => {
+    const { result } = renderHook(() => useDialogMode())
+    await act(async () => {
+      result.current.startDialog()
+    })
+    act(() => { vi.advanceTimersByTime(1500) }) // greeting -> listening
+    act(() => {
+      result.current.triggerSilenceCheck()
+    })
+    expect(result.current.state).toBe('silence_check')
+    // 3s warten ohne Antwort -> idle
+    act(() => { vi.advanceTimersByTime(3000) })
+    expect(result.current.state).toBe('idle')
+  })
+
+  it('silence_check -> listening wenn Transcript kommt', async () => {
+    const { result } = renderHook(() => useDialogMode())
+    await act(async () => {
+      result.current.startDialog()
+    })
+    act(() => { vi.advanceTimersByTime(1500) })
+    act(() => {
+      result.current.triggerSilenceCheck()
+    })
+    expect(result.current.state).toBe('silence_check')
+    // Neue Frage -> processing
+    act(() => {
+      result.current.handleTranscript('Wie wird das Wetter?')
+    })
+    expect(result.current.state).toBe('processing')
   })
 })

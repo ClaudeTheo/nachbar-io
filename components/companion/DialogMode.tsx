@@ -90,7 +90,8 @@ export function DialogMode({ onMessage }: DialogModeProps) {
       silenceThreshold: 0.05,
       silenceDurationMs: 3000,
       onSilence: () => {
-        // Wird in Task 13 erweitert (Farewell-Flow)
+        // Nach 3s Stille: "Noch etwas?" fragen
+        dialog.triggerSilenceCheck()
       },
       onLevelChange: (level) => {
         dialog.setAudioLevel(level)

@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Settings, LogOut, Star, Shield, ChevronRight, Pencil, Bell, TrendingUp, Plane, MapPin, CircleHelp, BarChart3, Package, UserPlus, Download } from "lucide-react";
+import { Settings, LogOut, Star, Shield, ChevronRight, Pencil, Bell, TrendingUp, Plane, MapPin, CircleHelp, BarChart3, Package, UserPlus, Download, Mic } from "lucide-react";
 import { PageHeader } from "@/components/ui/page-header";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -15,10 +15,13 @@ import { createClient } from "@/lib/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { getCachedReputation, getReputationLevel } from "@/lib/reputation";
 import { getProfile, getHouseholdForUser, toggleUiMode as toggleUiModeService } from "@/lib/services";
+import { VoiceSettings } from "@/components/companion/VoiceSettings";
+import { useVoicePreferences } from "@/hooks/useVoicePreferences";
 import type { User, Household, ReputationStats } from "@/lib/supabase/types";
 
 export default function ProfilePage() {
   const { user: authUser } = useAuth();
+  const { preferences: voicePrefs, updatePreferences: updateVoicePrefs } = useVoicePreferences();
   const [user, setUser] = useState<User | null>(null);
   const [household, setHousehold] = useState<Household | null>(null);
   const [reputation, setReputation] = useState<ReputationStats | null>(null);
@@ -340,6 +343,17 @@ export default function ProfilePage() {
             </div>
             <ChevronRight className="h-4 w-4 text-muted-foreground" />
           </Link>
+
+          <Separator />
+
+          {/* KI-Stimme Einstellungen */}
+          <div className="p-4">
+            <div className="flex items-center gap-3 mb-3">
+              <Mic className="h-5 w-5 text-muted-foreground" />
+              <span className="font-medium text-anthrazit">KI-Stimme</span>
+            </div>
+            <VoiceSettings settings={voicePrefs} onChange={updateVoicePrefs} />
+          </div>
 
           <Separator />
 

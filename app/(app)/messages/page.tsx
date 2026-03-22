@@ -11,6 +11,11 @@ import { createClient } from "@/lib/supabase/client";
 import { createNotification } from "@/lib/notifications";
 import { useQuarter } from "@/lib/quarters";
 import type { Conversation, NeighborConnection } from "@/lib/supabase/types";
+
+// Erweiterte Anfrage mit Adressinformation
+interface PendingRequestWithAddress extends NeighborConnection {
+  requesterAddress?: string;
+}
 import { formatDistanceToNow } from "date-fns";
 import { de } from "date-fns/locale";
 import { toast } from "sonner";
@@ -20,7 +25,7 @@ export default function MessagesPage() {
   const router = useRouter();
   const { currentQuarter } = useQuarter();
   const [conversations, setConversations] = useState<Conversation[]>([]);
-  const [pendingRequests, setPendingRequests] = useState<NeighborConnection[]>([]);
+  const [pendingRequests, setPendingRequests] = useState<PendingRequestWithAddress[]>([]);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [showResidentBrowser, setShowResidentBrowser] = useState(false);
@@ -86,7 +91,7 @@ export default function MessagesPage() {
     setLoading(false);
   }, []);
 
-  // Offene Verbindungsanfragen laden
+  // Offene Verbindungsanfragen laden (inkl. Adresse des Anfragenden)
   const loadPendingRequests = useCallback(async (userId: string) => {
     const supabase = createClient();
     const { data } = await supabase
@@ -96,11 +101,35 @@ export default function MessagesPage() {
       .eq("status", "pending")
       .order("created_at", { ascending: false });
 
-    if (data) {
+    if (data && data.length > 0) {
+      // Adressen der Anfragenden laden
+      const requesterIds = data.map((r) => r.requester_id);
+      const { data: requesterHouseholds } = await supabase
+        .from("household_members")
+        .select("user_id, households(street_name, house_number)")
+        .in("user_id", requesterIds);
+
+      // Adress-Map erstellen: user_id → "Straße Hausnummer"
+      const addressMap = new Map<string, string>();
+      if (requesterHouseholds) {
+        for (const hm of requesterHouseholds) {
+          const household = hm.households as { street_name?: string; house_number?: string } | null;
+          if (household?.street_name) {
+            addressMap.set(
+              hm.user_id,
+              `${household.street_name} ${household.house_number || ""}`.trim()
+            );
+          }
+        }
+      }
+
       setPendingRequests(data.map(d => ({
         ...d,
         requester: d.requester as unknown as NeighborConnection["requester"],
+        requesterAddress: addressMap.get(d.requester_id),
       })));
+    } else {
+      setPendingRequests([]);
     }
   }, []);
 
@@ -306,12 +335,20 @@ export default function MessagesPage() {
                     {/* Inhalt */}
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium text-anthrazit">{name}</p>
-                      {req.message && (
-                        <p className="mt-0.5 text-xs text-muted-foreground line-clamp-2">
-                          &ldquo;{req.message}&rdquo;
-                        </p>
+                      {req.requesterAddress && (
+                        <div className="mt-0.5 flex items-center gap-1 text-xs text-muted-foreground">
+                          <MapPin className="h-3 w-3 text-quartier-green shrink-0" />
+                          <span>{req.requesterAddress}</span>
+                        </div>
                       )}
-                      <p className="mt-0.5 text-xs text-muted-foreground/60">
+                      {req.message && (
+                        <div className="mt-1.5 rounded-lg bg-muted/50 p-3">
+                          <p className="text-xs text-anthrazit/80 line-clamp-3">
+                            &ldquo;{req.message}&rdquo;
+                          </p>
+                        </div>
+                      )}
+                      <p className="mt-1 text-xs text-muted-foreground/60">
                         {formatDistanceToNow(new Date(req.created_at), { addSuffix: true, locale: de })}
                       </p>
                     </div>

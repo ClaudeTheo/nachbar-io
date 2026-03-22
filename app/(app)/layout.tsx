@@ -7,6 +7,7 @@ import { BugReportButton } from "@/components/BugReportButton";
 import { VoiceAssistantFAB } from "@/components/VoiceAssistantFAB";
 import { ExternalLinkProvider } from "@/components/ExternalLinkProvider";
 import { AuthSessionProvider } from "@/components/AuthSessionProvider";
+import { AuthProvider } from "@/components/providers/auth-provider";
 
 // Layout fuer den aktiven Modus — mit Bottom-Navigation + Bug-Report
 export default function AppLayout({
@@ -28,6 +29,7 @@ export default function AppLayout({
         <PendingVerificationBanner />
       </div>
       {/* Quartier-Kontext + Hauptinhalt */}
+      <AuthProvider>
       <AuthSessionProvider>
       <QuarterProvider>
         <ExternalLinkProvider>
@@ -39,6 +41,7 @@ export default function AppLayout({
         </ExternalLinkProvider>
       </QuarterProvider>
       </AuthSessionProvider>
+      </AuthProvider>
       <span className="fixed bottom-[68px] left-2 text-[10px] text-muted-foreground/40 z-10">
         V{(process.env.NEXT_PUBLIC_APP_VERSION || '1.0.0').split('.').slice(0, 2).join('.')}
       </span>

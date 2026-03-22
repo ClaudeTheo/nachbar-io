@@ -8,7 +8,7 @@ import Image from "next/image";
 import { ArrowLeft, MapPin, ExternalLink as ExternalLinkIcon, Send, MessageCircle } from "lucide-react";
 import { toast } from "sonner";
 import { createClient } from "@/lib/supabase/client";
-import { getCachedUser } from "@/lib/supabase/cached-auth";
+import { useAuth } from "@/hooks/use-auth";
 
 import type { MunicipalReport, MunicipalReportComment, ReportCategory } from "@/lib/municipal";
 import { REPORT_CATEGORIES, REPORT_STATUS_CONFIG, DISCLAIMERS } from "@/lib/municipal";
@@ -84,6 +84,7 @@ function DetailSkeleton() {
 export default function ReportDetailPage() {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
+  const { user } = useAuth();
 
   const [report, setReport] = useState<MunicipalReport | null>(null);
   const [comments, setComments] = useState<MunicipalReportComment[]>([]);
@@ -141,15 +142,12 @@ export default function ReportDetailPage() {
 
     setSubmitting(true);
     try {
-      const supabase = createClient();
-
-      // Aktuellen Benutzer pruefen
-      const { user } = await getCachedUser(supabase);
       if (!user) {
         toast.error("Bitte melden Sie sich an.");
         return;
       }
 
+      const supabase = createClient();
       const { error } = await supabase
         .from("municipal_report_comments")
         .insert({

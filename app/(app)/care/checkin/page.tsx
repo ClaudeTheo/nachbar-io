@@ -5,27 +5,19 @@
 import { useEffect, useState, useCallback } from 'react';
 import { ArrowLeft, Clock, ArrowRight } from 'lucide-react';
 import Link from 'next/link';
-import { createClient } from '@/lib/supabase/client';
 import { CheckinDialog } from '@/components/care/CheckinDialog';
 import { CheckinHistory } from '@/components/care/CheckinHistory';
 import type { CareCheckin } from '@/lib/care/types';
-import { getCachedUser } from "@/lib/supabase/cached-auth";
+import { useAuth } from '@/hooks/use-auth';
 
 export default function CheckinPage() {
-  const [userId, setUserId] = useState<string | null>(null);
+  const { user } = useAuth();
   const [recentCheckins, setRecentCheckins] = useState<CareCheckin[]>([]);
   const [loadingHistory, setLoadingHistory] = useState(true);
 
-  useEffect(() => {
-    const supabase = createClient();
-    getCachedUser(supabase).then(({ user }) => {
-      setUserId(user?.id ?? null);
-    });
-  }, []);
-
   // Check-in-Verlauf laden
   const loadHistory = useCallback(async () => {
-    if (!userId) return;
+    if (!user) return;
     setLoadingHistory(true);
     try {
       const res = await fetch(`/api/care/checkin?limit=5`);
@@ -35,14 +27,14 @@ export default function CheckinPage() {
       }
     } catch { /* silent */ }
     setLoadingHistory(false);
-  }, [userId]);
+  }, [user]);
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     loadHistory();
   }, [loadHistory]);
 
-  if (!userId) {
+  if (!user) {
     return (
       <div className="px-4 py-6">
         <div className="animate-pulse space-y-4">

@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { AvatarPicker } from "@/components/AvatarPicker";
 import { createClient } from "@/lib/supabase/client";
-import { getCachedUser } from "@/lib/supabase/cached-auth";
+import { useAuth } from "@/hooks/use-auth";
 import { useQuarter } from "@/lib/quarters";
 import type { User } from "@/lib/supabase/types";
 
@@ -23,6 +23,7 @@ interface HouseholdOption {
 export default function ProfileEditPage() {
   const router = useRouter();
   const { currentQuarter } = useQuarter();
+  const { user: authUser } = useAuth();
   const [user, setUser] = useState<User | null>(null);
   const [displayName, setDisplayName] = useState("");
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
@@ -45,9 +46,8 @@ export default function ProfileEditPage() {
 
   useEffect(() => {
     async function load() {
-      const supabase = createClient();
-      const { user: authUser } = await getCachedUser(supabase);
       if (!authUser) return;
+      const supabase = createClient();
 
       const { data } = await supabase
         .from("users")
@@ -81,7 +81,7 @@ export default function ProfileEditPage() {
       setHasSkills((count ?? 0) > 0);
     }
     load();
-  }, []);
+  }, [authUser]);
 
   // Alle Häuser im Quartier laden
   useEffect(() => {
@@ -198,7 +198,6 @@ export default function ProfileEditPage() {
       const supabase = createClient();
 
       // Aktuelles Passwort pruefen: Re-Authentifizierung via signInWithPassword
-      const { user: authUser } = await getCachedUser(supabase);
       if (authUser?.email) {
         const { error: signInError } = await supabase.auth.signInWithPassword({
           email: authUser.email,

@@ -8,25 +8,24 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { createClient } from "@/lib/supabase/client";
-import { getCachedUser } from "@/lib/supabase/cached-auth";
+import { useAuth } from '@/hooks/use-auth';
 import { createNotification } from "@/lib/notifications";
 import type { Poll, PollOption, PollVote } from "@/lib/supabase/types";
 import { formatDistanceToNow } from "date-fns";
 import { de } from "date-fns/locale";
 
 export default function PollDetailPage() {
+  const { user } = useAuth();
   const { id } = useParams();
   const [poll, setPoll] = useState<Poll | null>(null);
   const [options, setOptions] = useState<(PollOption & { vote_count: number })[]>([]);
   const [myVotes, setMyVotes] = useState<string[]>([]);
-  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+
   const [totalVotes, setTotalVotes] = useState(0);
   const [loading, setLoading] = useState(true);
 
   const loadPoll = useCallback(async () => {
     const supabase = createClient();
-    const { user } = await getCachedUser(supabase);
-    if (user) setCurrentUserId(user.id);
 
     // Umfrage laden
     const { data: pollData } = await supabase
@@ -80,7 +79,7 @@ export default function PollDetailPage() {
   useEffect(() => { loadPoll(); }, [loadPoll]);
 
   async function vote(optionId: string) {
-    if (!currentUserId || !poll || poll.status === "closed") return;
+    if (!user?.id || !poll || poll.status === "closed") return;
     if (!poll.multiple_choice && myVotes.length > 0) return;
     if (myVotes.includes(optionId)) return;
 
@@ -88,7 +87,7 @@ export default function PollDetailPage() {
     const { error } = await supabase.from("poll_votes").insert({
       poll_id: poll.id,
       option_id: optionId,
-      user_id: currentUserId,
+      user_id: user?.id,
     });
 
     if (error) {
@@ -132,7 +131,7 @@ export default function PollDetailPage() {
   const hasVoted = myVotes.length > 0;
   const showResults = hasVoted || poll.status === "closed";
   const maxVotes = Math.max(...options.map((o) => o.vote_count), 1);
-  const isOwner = currentUserId === poll.user_id;
+  const isOwner = user?.id === poll.user_id;
   const timeAgo = formatDistanceToNow(new Date(poll.created_at), { addSuffix: true, locale: de });
 
   return (

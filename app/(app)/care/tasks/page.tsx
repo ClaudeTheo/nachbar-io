@@ -3,33 +3,24 @@
 // Aufgabentafel-Seite: Aufgaben anzeigen, filtern und erstellen
 
 import { useCallback, useEffect, useState } from 'react';
-import { createClient } from '@/lib/supabase/client';
 import { ArrowLeft, Plus, X } from 'lucide-react';
 import Link from 'next/link';
 import { TaskCard } from '@/components/care/TaskCard';
 import { TaskForm } from '@/components/care/TaskForm';
 import type { CareTask, TaskCategory } from '@/components/care/TaskCard';
 import { CATEGORY_CONFIG } from '@/components/care/TaskCard';
-import { getCachedUser } from "@/lib/supabase/cached-auth";
+import { useAuth } from '@/hooks/use-auth';
 
 // Alle Kategorien fuer den Filter
 const ALL_CATEGORIES = Object.entries(CATEGORY_CONFIG) as [TaskCategory, { emoji: string; label: string }][];
 
 export default function TasksPage() {
-  const [userId, setUserId] = useState<string | null>(null);
+  const { user } = useAuth();
   const [showForm, setShowForm] = useState(false);
   const [tasks, setTasks] = useState<CareTask[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [categoryFilter, setCategoryFilter] = useState<TaskCategory | null>(null);
-
-  // Benutzer laden
-  useEffect(() => {
-    const supabase = createClient();
-    getCachedUser(supabase).then(({ user }) => {
-      setUserId(user?.id ?? null);
-    });
-  }, []);
 
   // Aufgaben vom API laden
   const loadTasks = useCallback(async () => {
@@ -59,12 +50,12 @@ export default function TasksPage() {
     }
   }, [categoryFilter]);
 
-  // Aufgaben laden wenn userId oder Filter sich aendert
+  // Aufgaben laden wenn user oder Filter sich aendert
   useEffect(() => {
-    if (userId) {
+    if (user) {
       loadTasks();
     }
-  }, [userId, loadTasks]);
+  }, [user, loadTasks]);
 
   function handleFormSuccess() {
     setShowForm(false);
@@ -72,7 +63,7 @@ export default function TasksPage() {
   }
 
   // Lade-Zustand (noch kein User)
-  if (!userId) {
+  if (!user) {
     return (
       <div className="px-4 py-6">
         <div className="animate-pulse space-y-4">
@@ -189,7 +180,7 @@ export default function TasksPage() {
             <TaskCard
               key={task.id}
               task={task}
-              currentUserId={userId}
+              currentUserId={user.id}
               onAction={loadTasks}
             />
           ))}

@@ -1,31 +1,23 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { createClient } from '@/lib/supabase/client';
+import { useState } from 'react';
 import { Calendar, List, Plus, X } from 'lucide-react';
 import { AppointmentList } from '@/components/care/AppointmentList';
 import { AppointmentCalendar } from '@/components/care/AppointmentCalendar';
 import { AppointmentForm } from '@/components/care/AppointmentForm';
 import { useAppointments } from '@/lib/care/hooks/useAppointments';
-import { getCachedUser } from "@/lib/supabase/cached-auth";
+import { useAuth } from '@/hooks/use-auth';
 
 type ViewMode = 'calendar' | 'list';
 
 export default function AppointmentsPage() {
-  const [userId, setUserId] = useState<string | null>(null);
+  const { user } = useAuth();
   const [showForm, setShowForm] = useState(false);
   const [listKey, setListKey] = useState(0);
   const [viewMode, setViewMode] = useState<ViewMode>('calendar');
 
-  useEffect(() => {
-    const supabase = createClient();
-    getCachedUser(supabase).then(({ user }) => {
-      setUserId(user?.id ?? null);
-    });
-  }, []);
-
   // Alle Termine laden (nicht nur anstehende) fuer Kalenderansicht
-  const { appointments, refetch } = useAppointments(userId ?? undefined, false);
+  const { appointments, refetch } = useAppointments(user?.id, false);
 
   function handleSuccess() {
     setShowForm(false);
@@ -33,7 +25,7 @@ export default function AppointmentsPage() {
     refetch();
   }
 
-  if (!userId) {
+  if (!user) {
     return (
       <div className="px-4 py-6">
         <div className="animate-pulse space-y-4">
@@ -95,7 +87,7 @@ export default function AppointmentsPage() {
       {showForm && (
         <div className="rounded-xl border bg-card p-4">
           <AppointmentForm
-            seniorId={userId}
+            seniorId={user.id}
             onSuccess={handleSuccess}
             onCancel={() => setShowForm(false)}
           />
@@ -107,7 +99,7 @@ export default function AppointmentsPage() {
       ) : (
         <div>
           <h2 className="text-sm font-medium text-muted-foreground mb-3">Anstehende Termine</h2>
-          <AppointmentList key={listKey} seniorId={userId} />
+          <AppointmentList key={listKey} seniorId={user.id} />
         </div>
       )}
     </div>

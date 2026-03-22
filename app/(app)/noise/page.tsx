@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
 import { createClient } from "@/lib/supabase/client";
-import { getCachedUser } from "@/lib/supabase/cached-auth";
+import { useAuth } from "@/hooks/use-auth";
 import { useQuarter } from "@/lib/quarters";
 import { NOISE_CATEGORIES, NOISE_DURATIONS } from "@/lib/constants";
 import { haversineDistance, RADIUS_DIRECT } from "@/lib/geo";
@@ -21,8 +21,9 @@ import type { HelpRequest } from "@/lib/supabase/types";
 type UserPosMap = Map<string, { lat: number; lng: number }>;
 
 export default function NoisePage() {
+  const { user } = useAuth();
   const [warnings, setWarnings] = useState<HelpRequest[]>([]);
-  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
 
@@ -40,9 +41,7 @@ export default function NoisePage() {
   const loadData = useCallback(async () => {
     if (!currentQuarter) return;
     const supabase = createClient();
-    const { user } = await getCachedUser(supabase);
     if (!user) return;
-    setCurrentUserId(user.id);
 
     try {
       const [warningsResult, householdsResult, membersResult] = await Promise.all([
@@ -103,7 +102,7 @@ export default function NoisePage() {
   }
 
   async function submitWarning() {
-    if (!currentUserId || !selectedCategory) return;
+    if (!user?.id || !selectedCategory) return;
     setSending(true);
 
     const cat = NOISE_CATEGORIES.find((c) => c.id === selectedCategory);
@@ -122,7 +121,7 @@ export default function NoisePage() {
     const { data, error } = await supabase
       .from("help_requests")
       .insert({
-        user_id: currentUserId,
+        user_id: user?.id,
         quarter_id: currentQuarter?.id,
         type: "offer",
         category: "noise",
@@ -156,8 +155,8 @@ export default function NoisePage() {
   }
 
   // Aufteilen: meine Warnungen vs. andere
-  const myWarnings = warnings.filter((w) => w.user_id === currentUserId);
-  const otherWarnings = warnings.filter((w) => w.user_id !== currentUserId);
+  const myWarnings = warnings.filter((w) => w.user_id === user?.id);
+  const otherWarnings = warnings.filter((w) => w.user_id !== user?.id);
   const directWarnings = otherWarnings.filter((w) => isDirect(w.user_id));
   const widerWarnings = otherWarnings.filter((w) => !isDirect(w.user_id));
 

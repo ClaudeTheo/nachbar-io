@@ -7,21 +7,21 @@ import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
 import { SystemOverview } from '@/components/care/SystemOverview';
 import { PilotMetrics } from '@/components/care/PilotMetrics';
-import { getCachedUser } from "@/lib/supabase/cached-auth";
+import { useAuth } from '@/hooks/use-auth';
 
 export default function AdminOverviewPage() {
+  const { user } = useAuth();
   const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
 
   useEffect(() => {
+    if (!user) { setIsAdmin(false); return; }
+    const supabase = createClient();
     async function checkAdmin() {
-      const supabase = createClient();
-      const { user } = await getCachedUser(supabase);
-      if (!user) { setIsAdmin(false); return; }
-      const { data } = await supabase.from('users').select('is_admin').eq('id', user.id).single();
+      const { data } = await supabase.from('users').select('is_admin').eq('id', user!.id).single();
       setIsAdmin(data?.is_admin === true);
     }
     checkAdmin();
-  }, []);
+  }, [user]);
 
   if (isAdmin === null) {
     return (

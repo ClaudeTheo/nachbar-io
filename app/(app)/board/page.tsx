@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
 import { createClient } from "@/lib/supabase/client";
-import { getCachedUser } from "@/lib/supabase/cached-auth";
+import { useAuth } from "@/hooks/use-auth";
 import { useQuarter } from "@/lib/quarters";
 import { formatDistanceToNow } from "date-fns";
 import { de } from "date-fns/locale";
@@ -17,8 +17,8 @@ import { validateImageFile, compressImage, MAX_DIMENSION } from "@/lib/storage";
 import { GuidelinesGate } from "@/components/moderation/GuidelinesAcceptance";
 
 export default function BoardPage() {
+  const { user } = useAuth();
   const [posts, setPosts] = useState<HelpRequest[]>([]);
-  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
   const [newPost, setNewPost] = useState("");
@@ -27,11 +27,8 @@ export default function BoardPage() {
   const { currentQuarter } = useQuarter();
 
   const loadPosts = useCallback(async () => {
-    if (!currentQuarter) return;
+    if (!currentQuarter || !user) return;
     const supabase = createClient();
-    const { user } = await getCachedUser(supabase);
-    if (!user) return;
-    setCurrentUserId(user.id);
 
     try {
       // Letzte 7 Tage laden
@@ -54,7 +51,7 @@ export default function BoardPage() {
     } finally {
       setLoading(false);
     }
-  }, [currentQuarter]);
+  }, [currentQuarter, user]);
 
   useEffect(() => {
     loadPosts();
@@ -93,7 +90,7 @@ export default function BoardPage() {
   }
 
   async function submitPost() {
-    if (!currentUserId || !newPost.trim()) return;
+    if (!user?.id || !newPost.trim()) return;
     setSending(true);
 
     const supabase = createClient();
@@ -129,7 +126,7 @@ export default function BoardPage() {
     const { data, error } = await supabase
       .from("help_requests")
       .insert({
-        user_id: currentUserId,
+        user_id: user.id,
         quarter_id: currentQuarter?.id,
         type: "offer",
         category: "board",
@@ -283,9 +280,9 @@ export default function BoardPage() {
                     />
                   )}
                   {/* Kommentare */}
-                  <BoardComments postId={post.id} currentUserId={currentUserId} />
+                  <BoardComments postId={post.id} currentUserId={user?.id ?? null} />
                 </div>
-                {post.user_id === currentUserId && (
+                {post.user_id === user?.id && (
                   <button
                     onClick={() => deletePost(post.id)}
                     className="shrink-0 rounded-lg p-1.5 text-muted-foreground hover:bg-muted hover:text-anthrazit"

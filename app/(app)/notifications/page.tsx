@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { Bell, CheckCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/client";
-import { getCachedUser } from "@/lib/supabase/cached-auth";
+import { useAuth } from "@/hooks/use-auth";
 import { useUnreadCount } from "@/lib/useUnreadCount";
 import { formatDistanceToNow } from "date-fns";
 import { de } from "date-fns/locale";
@@ -55,15 +55,15 @@ const TYPE_ROUTES: Record<string, string> = {
 
 export default function NotificationsInboxPage() {
   const router = useRouter();
+  const { user } = useAuth();
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(true);
   const { refresh: refreshUnread } = useUnreadCount();
 
   useEffect(() => {
     async function load() {
-      const supabase = createClient();
-      const { user } = await getCachedUser(supabase);
       if (!user) return;
+      const supabase = createClient();
 
       const { data } = await supabase
         .from("notifications")
@@ -76,7 +76,7 @@ export default function NotificationsInboxPage() {
       setLoading(false);
     }
     load();
-  }, []);
+  }, [user]);
 
   async function markAsRead(notif: Notification) {
     if (!notif.read) {
@@ -101,9 +101,8 @@ export default function NotificationsInboxPage() {
   }
 
   async function markAllAsRead() {
-    const supabase = createClient();
-    const { user } = await getCachedUser(supabase);
     if (!user) return;
+    const supabase = createClient();
 
     await supabase
       .from("notifications")

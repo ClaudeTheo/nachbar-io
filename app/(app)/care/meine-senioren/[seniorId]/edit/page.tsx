@@ -14,7 +14,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { AvatarPicker } from '@/components/AvatarPicker';
 import { useCareRole } from '@/lib/care/hooks/useCareRole';
 import { createClient } from '@/lib/supabase/client';
-import { getCachedUser } from "@/lib/supabase/cached-auth";
+import { useAuth } from '@/hooks/use-auth';
 
 interface SeniorProfile {
   id: string;
@@ -30,6 +30,7 @@ export default function SeniorProfileEditPage() {
   const seniorId = params.seniorId as string;
   const { role, loading: roleLoading } = useCareRole(seniorId);
 
+  const { user } = useAuth();
   const [senior, setSenior] = useState<SeniorProfile | null>(null);
   const [displayName, setDisplayName] = useState('');
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
@@ -71,9 +72,8 @@ export default function SeniorProfileEditPage() {
     setSaving(true);
 
     try {
-      const supabase = createClient();
-      const { user } = await getCachedUser(supabase);
       if (!user) throw new Error('Nicht eingeloggt');
+      const supabase = createClient();
 
       // Profil-Update
       const { error: updateError } = await supabase

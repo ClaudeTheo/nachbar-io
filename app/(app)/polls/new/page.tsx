@@ -8,10 +8,11 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { createClient } from "@/lib/supabase/client";
-import { getCachedUser } from "@/lib/supabase/cached-auth";
+import { useAuth } from '@/hooks/use-auth';
 import { useQuarter } from "@/lib/quarters";
 
 export default function PollNewPage() {
+  const { user } = useAuth();
   const router = useRouter();
   const { currentQuarter } = useQuarter();
   const [step, setStep] = useState(1);
@@ -45,7 +46,6 @@ export default function PollNewPage() {
 
     try {
       const supabase = createClient();
-      const { user } = await getCachedUser(supabase);
       if (!user) {
         setError("Nicht angemeldet.");
         setSaving(false);

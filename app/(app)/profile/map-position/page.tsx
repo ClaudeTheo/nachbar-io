@@ -3,7 +3,7 @@
 import { useEffect, useState, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
-import { getCachedUser } from "@/lib/supabase/cached-auth";
+import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Save } from "lucide-react";
 import {
@@ -14,6 +14,7 @@ import { toast } from "sonner";
 
 export default function MapPositionPage() {
   const router = useRouter();
+  const { user } = useAuth();
   const svgRef = useRef<SVGSVGElement>(null);
   const [houses, setHouses] = useState<MapHouseData[]>(DEFAULT_HOUSES);
   const [myHouse, setMyHouse] = useState<MapHouseData | null>(null);
@@ -34,9 +35,8 @@ export default function MapPositionPage() {
 
   useEffect(() => {
     async function init() {
+      if (!user) return;
       const supabase = createClient();
-      const { user } = await getCachedUser(supabase);
-      if (!user) { setLoading(false); return; }
 
       // Haeuser laden
       const { data: mapData } = await supabase
@@ -108,7 +108,7 @@ export default function MapPositionPage() {
       setLoading(false);
     }
     init();
-  }, []);
+  }, [user]);
 
   // SVG-Koordinaten aus Mouse/Touch-Event berechnen
   const toSvgCoords = useCallback((clientX: number, clientY: number) => {

@@ -19,19 +19,19 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { createClient } from "@/lib/supabase/client";
-import { getCachedUser } from "@/lib/supabase/cached-auth";
+import { useAuth } from '@/hooks/use-auth';
 import { useQuarter } from "@/lib/quarters";
 import { createNotification } from "@/lib/notifications";
 import { SKILL_CATEGORIES, TRUST_LEVELS } from "@/lib/constants";
 import type { Skill, ExpertReview, ExpertEndorsement, User } from "@/lib/supabase/types";
 
 export default function ExpertDetailPage() {
+  const { user } = useAuth();
   const params = useParams();
   const router = useRouter();
   const { currentQuarter } = useQuarter();
   const expertUserId = params.userId as string;
 
-  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [expert, setExpert] = useState<User | null>(null);
   const [skills, setSkills] = useState<Skill[]>([]);
   const [reviews, setReviews] = useState<ExpertReview[]>([]);
@@ -54,14 +54,12 @@ export default function ExpertDetailPage() {
   // Reviews auf-/zuklappen
   const [showAllReviews, setShowAllReviews] = useState(false);
 
-  const isOwnProfile = currentUserId === expertUserId;
+  const isOwnProfile = user?.id === expertUserId;
 
   const loadExpertData = useCallback(async () => {
     const supabase = createClient();
 
     // Aktuellen User holen
-    const { user } = await getCachedUser(supabase);
-    if (user) setCurrentUserId(user.id);
 
     // Experten-Profil laden
     const { data: userData } = await supabase
@@ -130,14 +128,14 @@ export default function ExpertDetailPage() {
 
   // Bewertung abschicken
   async function handleSubmitReview() {
-    if (!currentUserId || !reviewCategory || reviewRating === 0) return;
+    if (!user?.id || !reviewCategory || reviewRating === 0) return;
     setSubmittingReview(true);
 
     try {
       const supabase = createClient();
       const { error } = await supabase.from("expert_reviews").insert({
         expert_user_id: expertUserId,
-        reviewer_user_id: currentUserId,
+        reviewer_user_id: user?.id,
         skill_category: reviewCategory,
         rating: reviewRating,
         comment: reviewComment.trim() || null,
@@ -174,7 +172,7 @@ export default function ExpertDetailPage() {
 
   // Empfehlung toggen
   async function handleToggleEndorsement(skillCategory: string) {
-    if (!currentUserId || isOwnProfile) return;
+    if (!user?.id || isOwnProfile) return;
     setEndorsing(true);
 
     try {
@@ -187,13 +185,13 @@ export default function ExpertDetailPage() {
           .from("expert_endorsements")
           .delete()
           .eq("expert_user_id", expertUserId)
-          .eq("endorser_user_id", currentUserId)
+          .eq("endorser_user_id", user?.id)
           .eq("skill_category", skillCategory);
       } else {
         // Empfehlung abgeben
         await supabase.from("expert_endorsements").insert({
           expert_user_id: expertUserId,
-          endorser_user_id: currentUserId,
+          endorser_user_id: user?.id,
           skill_category: skillCategory,
         });
 
@@ -218,7 +216,7 @@ export default function ExpertDetailPage() {
 
   // Kontakt herstellen (DM oeffnen)
   async function handleContact() {
-    if (!currentUserId || isOwnProfile) return;
+    if (!user?.id || isOwnProfile) return;
 
     const supabase = createClient();
 
@@ -227,7 +225,7 @@ export default function ExpertDetailPage() {
       .from("conversations")
       .select("id")
       .or(
-        `and(participant_1.eq.${currentUserId},participant_2.eq.${expertUserId}),and(participant_1.eq.${expertUserId},participant_2.eq.${currentUserId})`
+        `and(participant_1.eq.${user?.id},participant_2.eq.${expertUserId}),and(participant_1.eq.${expertUserId},participant_2.eq.${user?.id})`
       )
       .maybeSingle();
 
@@ -238,7 +236,7 @@ export default function ExpertDetailPage() {
       const { data: newConv } = await supabase
         .from("conversations")
         .insert({
-          participant_1: currentUserId,
+          participant_1: user?.id,
           participant_2: expertUserId,
           quarter_id: currentQuarter?.id,
         })

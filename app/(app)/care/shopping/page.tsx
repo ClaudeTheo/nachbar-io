@@ -3,31 +3,22 @@
 // Einkaufshilfe-Seite: Einkaufsanfragen erstellen, ansehen und verwalten
 
 import { useCallback, useEffect, useState } from 'react';
-import { createClient } from '@/lib/supabase/client';
 import { ArrowLeft, Plus, ShoppingCart, X } from 'lucide-react';
 import Link from 'next/link';
 import { ShoppingRequestForm } from '@/components/care/ShoppingRequestForm';
 import { ShoppingRequestCard } from '@/components/care/ShoppingRequestCard';
 import type { ShoppingRequest } from '@/components/care/ShoppingRequestCard';
-import { getCachedUser } from "@/lib/supabase/cached-auth";
+import { useAuth } from '@/hooks/use-auth';
 
 type FilterTab = 'open' | 'mine' | 'all';
 
 export default function ShoppingPage() {
-  const [userId, setUserId] = useState<string | null>(null);
+  const { user } = useAuth();
   const [showForm, setShowForm] = useState(false);
   const [activeTab, setActiveTab] = useState<FilterTab>('open');
   const [requests, setRequests] = useState<ShoppingRequest[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
-  // Benutzer-ID laden
-  useEffect(() => {
-    const supabase = createClient();
-    getCachedUser(supabase).then(({ user }) => {
-      setUserId(user?.id ?? null);
-    });
-  }, []);
 
   // Anfragen laden
   const loadRequests = useCallback(async () => {
@@ -55,10 +46,10 @@ export default function ShoppingPage() {
   }, [activeTab]);
 
   useEffect(() => {
-    if (userId) {
+    if (user) {
       loadRequests();
     }
-  }, [userId, loadRequests]);
+  }, [user, loadRequests]);
 
   // Formular-Erfolg: Formular schliessen und Liste aktualisieren
   function handleSuccess() {
@@ -68,9 +59,9 @@ export default function ShoppingPage() {
 
   // Gefilterte Anfragen: "Meine" filtert client-seitig
   const filteredRequests =
-    activeTab === 'mine' && userId
+    activeTab === 'mine' && user
       ? requests.filter(
-          (r) => r.requester_id === userId || r.claimed_by === userId
+          (r) => r.requester_id === user.id || r.claimed_by === user.id
         )
       : requests;
 
@@ -82,7 +73,7 @@ export default function ShoppingPage() {
   ];
 
   // Ladeanimation
-  if (!userId) {
+  if (!user) {
     return (
       <div className="px-4 py-6">
         <div className="animate-pulse space-y-4">
@@ -201,7 +192,7 @@ export default function ShoppingPage() {
             <ShoppingRequestCard
               key={req.id}
               request={req}
-              currentUserId={userId}
+              currentUserId={user.id}
               onUpdate={loadRequests}
             />
           ))}

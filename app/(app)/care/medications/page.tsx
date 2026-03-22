@@ -1,27 +1,19 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { createClient } from '@/lib/supabase/client';
+import { useState } from 'react';
 import { ArrowLeft, Pill, Plus } from 'lucide-react';
 import Link from 'next/link';
 import { MedicationList } from '@/components/care/MedicationList';
 import { MedicationManagementList } from '@/components/care/MedicationManagementList';
-import { getCachedUser } from "@/lib/supabase/cached-auth";
+import { useAuth } from '@/hooks/use-auth';
 
 type TabView = 'due' | 'all';
 
 export default function MedicationsPage() {
-  const [userId, setUserId] = useState<string | null>(null);
+  const { user } = useAuth();
   const [activeTab, setActiveTab] = useState<TabView>('due');
 
-  useEffect(() => {
-    const supabase = createClient();
-    getCachedUser(supabase).then(({ user }) => {
-      setUserId(user?.id ?? null);
-    });
-  }, []);
-
-  if (!userId) {
+  if (!user) {
     return (
       <div className="px-4 py-6">
         <div className="animate-pulse space-y-4">
@@ -89,12 +81,12 @@ export default function MedicationsPage() {
       {activeTab === 'due' ? (
         <div>
           <h2 className="text-sm font-medium text-muted-foreground mb-3">Heute faellig</h2>
-          <MedicationList seniorId={userId} />
+          <MedicationList seniorId={user.id} />
         </div>
       ) : (
         <div>
           <h2 className="text-sm font-medium text-muted-foreground mb-3">Alle aktiven Medikamente</h2>
-          <MedicationManagementList seniorId={userId} />
+          <MedicationManagementList seniorId={user.id} />
         </div>
       )}
     </div>

@@ -4,7 +4,7 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { getCachedUser } from "@/lib/supabase/cached-auth";
+import { useAuth } from '@/hooks/use-auth';
 import { toast } from "sonner";
 import type { MunicipalReport, ReportStatus } from "@/lib/municipal";
 import { REPORT_CATEGORIES, REPORT_STATUS_CONFIG } from "@/lib/municipal";
@@ -19,6 +19,7 @@ const STATUS_FILTERS: { value: ReportStatus | "all"; label: string }[] = [
 ];
 
 export default function OrgReportsPage() {
+  const { user } = useAuth();
   const [reports, setReports] = useState<MunicipalReport[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -40,12 +41,10 @@ export default function OrgReportsPage() {
       setError(null);
 
       // Aktuellen Nutzer holen
-      const { user } = await getCachedUser(supabase);
       if (!user) {
         setError("Nicht angemeldet.");
         return;
       }
-      setUserId(user.id);
 
       // Org-Mitgliedschaft pruefen (nur Admins)
       const { data: membership, error: memberError } = await supabase

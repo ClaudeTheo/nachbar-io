@@ -22,7 +22,7 @@ import { FeatureGate } from "@/components/FeatureGate";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { createClient } from "@/lib/supabase/client";
-import { getCachedUser } from "@/lib/supabase/cached-auth";
+import { useAuth } from "@/hooks/use-auth";
 import { useQuarter } from "@/lib/quarters";
 import { getCachedReputation } from "@/lib/reputation";
 import { useUnreadCount } from "@/lib/useUnreadCount";
@@ -41,6 +41,7 @@ function getGreeting(): { text: string; timeKey: string } {
 
 export default function DashboardPage() {
   const router = useRouter();
+  const { user } = useAuth();
   const [alerts, setAlerts] = useState<Alert[]>([]);
   const [news, setNews] = useState<NewsItem[]>([]);
   const [helpRequests, setHelpRequests] = useState<HelpRequest[]>([]);
@@ -70,14 +71,11 @@ export default function DashboardPage() {
   }>>([]);
 
   const loadDashboard = useCallback(async () => {
-    if (!currentQuarter) return;
+    if (!currentQuarter || !user) return;
     const supabase = createClient();
 
     try {
-      // Nutzerprofil laden + Onboarding-Pruefung
-      const { user } = await getCachedUser(supabase);
-      if (user) {
-        const { data: profile } = await supabase
+      const { data: profile } = await supabase
           .from("users")
           .select("id, display_name, avatar_url, bio, phone, settings, created_at")
           .eq("id", user.id)
@@ -136,7 +134,6 @@ export default function DashboardPage() {
             }
           }
         }
-      }
 
       // Parallele Datenabfragen (statt sequentiell)
       const [alertResult, newsResult, helpResult, marketResult] = await Promise.all([
@@ -181,7 +178,7 @@ export default function DashboardPage() {
     } finally {
       setLoading(false);
     }
-  }, [router, currentQuarter]);
+  }, [router, currentQuarter, user]);
 
   useEffect(() => {
     loadDashboard();

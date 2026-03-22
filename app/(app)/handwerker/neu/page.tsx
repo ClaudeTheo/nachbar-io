@@ -11,7 +11,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { CRAFTSMAN_SUBCATEGORIES } from "@/lib/constants";
 import { validateSubcategories } from "@/lib/craftsmen/hooks";
 import { createClient } from "@/lib/supabase/client";
-import { getCachedUser } from "@/lib/supabase/cached-auth";
+import { useAuth } from '@/hooks/use-auth';
 import { useQuarter } from "@/lib/quarters";
 
 type Step = "subcategory" | "details" | "done";
@@ -20,6 +20,7 @@ type Step = "subcategory" | "details" | "done";
 const MAX_ENTRIES_PER_DAY = 3;
 
 export default function NewHandwerkerPage() {
+  const { user } = useAuth();
   const [step, setStep] = useState<Step>("subcategory");
   const [selectedSubcategories, setSelectedSubcategories] = useState<string[]>([]);
   const [title, setTitle] = useState("");
@@ -76,7 +77,6 @@ export default function NewHandwerkerPage() {
 
     try {
       const supabase = createClient();
-      const { user } = await getCachedUser(supabase);
       if (!user) {
         setError("Bitte melden Sie sich erneut an.");
         setLoading(false);

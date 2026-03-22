@@ -7,7 +7,7 @@ import { ArrowLeft, MessageCircle, Clock, Tag } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/client";
-import { getCachedUser } from "@/lib/supabase/cached-auth";
+import { useAuth } from '@/hooks/use-auth';
 import { createNotification } from "@/lib/notifications";
 import { useQuarter } from "@/lib/quarters";
 import { LEIHBOERSE_CATEGORIES } from "@/lib/constants";
@@ -16,18 +16,17 @@ import { formatDistanceToNow } from "date-fns";
 import { de } from "date-fns/locale";
 
 export default function LeihboerseDetailPage() {
+  const { user } = useAuth();
   const { id } = useParams();
   const router = useRouter();
   const { currentQuarter } = useQuarter();
   const [item, setItem] = useState<LeihboerseItem | null>(null);
-  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function load() {
       const supabase = createClient();
-      const { user } = await getCachedUser(supabase);
-      if (user) setCurrentUserId(user.id);
 
       const { data } = await supabase
         .from("leihboerse_items")
@@ -57,7 +56,7 @@ export default function LeihboerseDetailPage() {
   }
 
   const category = LEIHBOERSE_CATEGORIES.find((c) => c.id === item.category);
-  const isOwner = currentUserId === item.user_id;
+  const isOwner = user?.id === item.user_id;
   const timeAgo = formatDistanceToNow(new Date(item.created_at), { addSuffix: true, locale: de });
 
   return (
@@ -121,7 +120,7 @@ export default function LeihboerseDetailPage() {
       {!isOwner && item.status === "active" && (
         <Button
           onClick={async () => {
-            if (!currentUserId || !item) return;
+            if (!user?.id || !item) return;
             const supabase = createClient();
 
             // Bestehende Konversation suchen oder neue erstellen
@@ -129,7 +128,7 @@ export default function LeihboerseDetailPage() {
               .from("conversations")
               .select("id")
               .or(
-                `and(participant_1.eq.${currentUserId},participant_2.eq.${item.user_id}),and(participant_1.eq.${item.user_id},participant_2.eq.${currentUserId})`
+                `and(participant_1.eq.${user?.id},participant_2.eq.${item.user_id}),and(participant_1.eq.${item.user_id},participant_2.eq.${user?.id})`
               )
               .maybeSingle();
 
@@ -140,8 +139,8 @@ export default function LeihboerseDetailPage() {
               const { data: newConv } = await supabase
                 .from("conversations")
                 .insert({
-                  participant_1: currentUserId < item.user_id ? currentUserId : item.user_id,
-                  participant_2: currentUserId < item.user_id ? item.user_id : currentUserId,
+                  participant_1: user?.id < item.user_id ? user?.id : item.user_id,
+                  participant_2: user?.id < item.user_id ? item.user_id : user?.id,
                   quarter_id: currentQuarter?.id,
                 })
                 .select("id")

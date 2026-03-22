@@ -8,17 +8,18 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { createClient } from "@/lib/supabase/client";
-import { getCachedUser } from "@/lib/supabase/cached-auth";
+import { useAuth } from '@/hooks/use-auth';
 import { createNotification } from "@/lib/notifications";
 import type { DirectMessage } from "@/lib/supabase/types";
 import { format, isToday, isYesterday } from "date-fns";
 import { de } from "date-fns/locale";
 
 export default function ChatPage() {
+  const { user } = useAuth();
   const { id: conversationId } = useParams();
   const router = useRouter();
   const [messages, setMessages] = useState<DirectMessage[]>([]);
-  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+
   const [otherUserId, setOtherUserId] = useState<string | null>(null);
   const [otherUserName, setOtherUserName] = useState<string>("Nachbar");
   const [otherUserAvatar, setOtherUserAvatar] = useState<string | null>(null);
@@ -53,12 +54,10 @@ export default function ChatPage() {
       const supabase = createClient();
 
       // Aktuellen Benutzer laden
-      const { user } = await getCachedUser(supabase);
       if (!user) {
         router.push("/login");
         return;
       }
-      setCurrentUserId(user.id);
 
       // Konversation laden und Berechtigung pruefen
       const { data: conv, error: convError } = await supabase
@@ -124,7 +123,7 @@ export default function ChatPage() {
 
   // Supabase Realtime: neue Nachrichten in dieser Konversation empfangen
   useEffect(() => {
-    if (!currentUserId || !conversationId) return;
+    if (!user?.id || !conversationId) return;
 
     const supabase = createClient();
     const channel = supabase
@@ -161,8 +160,8 @@ export default function ChatPage() {
           });
 
           // Empfangene Nachrichten sofort als gelesen markieren
-          if (newMsg.sender_id !== currentUserId) {
-            await markAsRead(currentUserId);
+          if (newMsg.sender_id !== user?.id) {
+            await markAsRead(user?.id);
           }
         }
       )
@@ -171,11 +170,11 @@ export default function ChatPage() {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [currentUserId, conversationId, markAsRead]);
+  }, [user?.id, conversationId, markAsRead]);
 
   // Nachricht senden
   async function handleSend() {
-    if (!inputValue.trim() || !currentUserId || sending) return;
+    if (!inputValue.trim() || !user?.id || sending) return;
 
     const content = inputValue.trim();
     setInputValue("");
@@ -189,7 +188,7 @@ export default function ChatPage() {
         .from("direct_messages")
         .insert({
           conversation_id: conversationId as string,
-          sender_id: currentUserId,
+          sender_id: user?.id,
           content,
         })
         .select("*, sender:users(display_name, avatar_url)")
@@ -304,7 +303,7 @@ export default function ChatPage() {
         ) : (
           <div className="space-y-1">
             {messages.map((msg, index) => {
-              const isOwn = msg.sender_id === currentUserId;
+              const isOwn = msg.sender_id === user?.id;
               const prevMsg = index > 0 ? messages[index - 1] : null;
               const nextMsg = index < messages.length - 1 ? messages[index + 1] : null;
 

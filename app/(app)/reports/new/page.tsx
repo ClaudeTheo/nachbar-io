@@ -9,7 +9,7 @@ import { ArrowLeft, MapPin, CircleCheckBig, Loader2 } from "lucide-react";
 import { ExternalLink } from "@/components/ExternalLink";
 import { toast } from "sonner";
 import { createClient } from "@/lib/supabase/client";
-import { getCachedUser } from "@/lib/supabase/cached-auth";
+import { useAuth } from "@/hooks/use-auth";
 import { useQuarter } from "@/lib/quarters";
 import type { ReportCategory } from "@/lib/municipal";
 import { REPORT_CATEGORIES, DISCLAIMERS } from "@/lib/municipal";
@@ -329,6 +329,7 @@ function StepSummary({
 
 export default function NewReportPage() {
   const router = useRouter();
+  const { user } = useAuth();
   const { currentQuarter } = useQuarter();
 
   // Formular-State
@@ -381,14 +382,13 @@ export default function NewReportPage() {
     setSubmitting(true);
 
     try {
-      const supabase = createClient();
-      const { user } = await getCachedUser(supabase);
-
       if (!user) {
         toast.error("Bitte melden Sie sich an.");
         setSubmitting(false);
         return;
       }
+
+      const supabase = createClient();
 
       // Eintrag in municipal_reports einfuegen
       const insertData: Record<string, unknown> = {
@@ -433,7 +433,7 @@ export default function NewReportPage() {
     } finally {
       setSubmitting(false);
     }
-  }, [formData, currentQuarter, router]);
+  }, [formData, currentQuarter, router, user]);
 
   // --- Render ---
 

@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { createClient } from "@/lib/supabase/client";
-import { getCachedUser } from "@/lib/supabase/cached-auth";
+import { useAuth } from '@/hooks/use-auth';
 import { createNotification } from "@/lib/notifications";
 import { useQuarter } from "@/lib/quarters";
 import type { Conversation, NeighborConnection } from "@/lib/supabase/types";
@@ -23,11 +23,12 @@ import { toast } from "sonner";
 import { ResidentBrowser } from "@/components/chat/ResidentBrowser";
 
 export default function MessagesPage() {
+  const { user } = useAuth();
   const router = useRouter();
   const { currentQuarter } = useQuarter();
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [pendingRequests, setPendingRequests] = useState<PendingRequestWithAddress[]>([]);
-  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+
   const [loading, setLoading] = useState(true);
   const [showResidentBrowser, setShowResidentBrowser] = useState(false);
 
@@ -137,14 +138,12 @@ export default function MessagesPage() {
   useEffect(() => {
     async function init() {
       const supabase = createClient();
-      const { user } = await getCachedUser(supabase);
 
       if (!user) {
         setLoading(false);
         return;
       }
 
-      setCurrentUserId(user.id);
       await Promise.all([
         loadConversations(user.id),
         loadPendingRequests(user.id),
@@ -155,7 +154,7 @@ export default function MessagesPage() {
 
   // Supabase Realtime: bei neuen Nachrichten automatisch aktualisieren
   useEffect(() => {
-    if (!currentUserId) return;
+    if (!user?.id) return;
 
     const supabase = createClient();
     const channel = supabase
@@ -169,7 +168,7 @@ export default function MessagesPage() {
         },
         () => {
           // Bei jeder neuen Nachricht Konversationen neu laden
-          loadConversations(currentUserId);
+          loadConversations(user!.id);
         }
       )
       .on(
@@ -180,7 +179,7 @@ export default function MessagesPage() {
           table: "neighbor_connections",
         },
         () => {
-          loadPendingRequests(currentUserId);
+          loadPendingRequests(user!.id);
         }
       )
       .subscribe();
@@ -188,11 +187,11 @@ export default function MessagesPage() {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [currentUserId, loadConversations, loadPendingRequests]);
+  }, [user?.id, loadConversations, loadPendingRequests]);
 
   // Verbindungsanfrage annehmen
   async function acceptRequest(connectionId: string, requesterId: string) {
-    if (!currentUserId) return;
+    if (!user?.id) return;
     const supabase = createClient();
 
     // Anfrage annehmen
@@ -202,14 +201,14 @@ export default function MessagesPage() {
       .eq("id", connectionId);
 
     // Konversation erstellen/oeffnen
-    const p1 = currentUserId < requesterId ? currentUserId : requesterId;
-    const p2 = currentUserId < requesterId ? requesterId : currentUserId;
+    const p1 = user?.id < requesterId ? user?.id : requesterId;
+    const p2 = user?.id < requesterId ? requesterId : user?.id;
 
     const { data: existing } = await supabase
       .from("conversations")
       .select("id")
       .or(
-        `and(participant_1.eq.${currentUserId},participant_2.eq.${requesterId}),and(participant_1.eq.${requesterId},participant_2.eq.${currentUserId})`
+        `and(participant_1.eq.${user?.id},participant_2.eq.${requesterId}),and(participant_1.eq.${requesterId},participant_2.eq.${user?.id})`
       )
       .maybeSingle();
 
@@ -237,8 +236,8 @@ export default function MessagesPage() {
       referenceType: "conversation",
     });
 
-    await loadPendingRequests(currentUserId);
-    await loadConversations(currentUserId);
+    await loadPendingRequests(user!.id);
+    await loadConversations(user!.id);
 
     if (convId) {
       router.push(`/messages/${convId}`);
@@ -247,7 +246,7 @@ export default function MessagesPage() {
 
   // Verbindungsanfrage ablehnen
   async function declineRequest(connectionId: string) {
-    if (!currentUserId) return;
+    if (!user?.id) return;
     const supabase = createClient();
 
     await supabase
@@ -256,7 +255,7 @@ export default function MessagesPage() {
       .eq("id", connectionId);
 
     toast("Anfrage abgelehnt");
-    await loadPendingRequests(currentUserId);
+    await loadPendingRequests(user!.id);
   }
 
   // Ladezustand
@@ -421,9 +420,9 @@ export default function MessagesPage() {
         open={showResidentBrowser}
         onClose={() => setShowResidentBrowser(false)}
         onRequestSent={() => {
-          if (currentUserId) {
-            loadPendingRequests(currentUserId);
-            loadConversations(currentUserId);
+          if (user?.id) {
+            loadPendingRequests(user!.id);
+            loadConversations(user!.id);
           }
         }}
       />

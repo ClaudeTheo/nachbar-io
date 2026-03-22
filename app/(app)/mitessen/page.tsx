@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
 import { createClient } from "@/lib/supabase/client";
-import { getCachedUser } from "@/lib/supabase/cached-auth";
+import { useAuth } from '@/hooks/use-auth';
 import { useQuarter } from "@/lib/quarters";
 import { availableServings, isNewMeal, formatMealTime } from "@/lib/meals";
 import type { SharedMeal } from "@/lib/supabase/types";
@@ -17,6 +17,7 @@ import { de } from "date-fns/locale";
 import { toast } from "sonner";
 
 export default function MitessenPage() {
+  const { user } = useAuth();
   const [meals, setMeals] = useState<SharedMeal[]>([]);
   const [loading, setLoading] = useState(true);
   const { currentQuarter } = useQuarter();
@@ -61,7 +62,6 @@ export default function MitessenPage() {
           }
 
           // Eigene Signups pruefen
-          const { user } = await getCachedUser(supabase);
           let mySignups = new Map<string, string>();
           if (user && mealIds.length > 0) {
             const { data: myData } = await supabase

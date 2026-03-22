@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { createClient } from "@/lib/supabase/client";
-import { getCachedUser } from "@/lib/supabase/cached-auth";
+import { useAuth } from "@/hooks/use-auth";
 import { useQuarter } from "@/lib/quarters";
 import { EVENT_CATEGORIES } from "@/lib/constants";
 import { RECURRENCE_LABELS, type RecurrenceRule } from "@/lib/recurring-events";
@@ -18,6 +18,7 @@ type Step = 1 | 2 | 3 | 4;
 
 export default function NewEventPage() {
   const router = useRouter();
+  const { user } = useAuth();
   const { currentQuarter } = useQuarter();
   const [step, setStep] = useState<Step>(1);
   const [category, setCategory] = useState<string | null>(null);
@@ -53,15 +54,13 @@ export default function NewEventPage() {
     setSaving(true);
 
     try {
-      const supabase = createClient();
-      const { user } = await getCachedUser(supabase);
-
       if (!user) {
         toast.error("Bitte melden Sie sich erneut an.");
         setSaving(false);
         return;
       }
 
+      const supabase = createClient();
       const { error: insertError } = await supabase.from("events").insert({
         user_id: user.id,
         quarter_id: currentQuarter?.id,

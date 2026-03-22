@@ -11,11 +11,12 @@ import { TrustBadge } from "@/components/TrustBadge";
 import { resolveAvatarUrl } from "@/lib/storage";
 import { ReputationBadge } from "@/components/ReputationBadge";
 import { createClient } from "@/lib/supabase/client";
-import { getCachedUser } from "@/lib/supabase/cached-auth";
+import { useAuth } from "@/hooks/use-auth";
 import { getCachedReputation, getReputationLevel } from "@/lib/reputation";
 import type { User, Household, ReputationStats } from "@/lib/supabase/types";
 
 export default function ProfilePage() {
+  const { user: authUser } = useAuth();
   const [user, setUser] = useState<User | null>(null);
   const [household, setHousehold] = useState<Household | null>(null);
   const [reputation, setReputation] = useState<ReputationStats | null>(null);
@@ -25,17 +26,11 @@ export default function ProfilePage() {
 
   useEffect(() => {
     async function load() {
+      if (!authUser) return;
       setIsLoading(true);
       setLoadError(null);
       try {
         const supabase = createClient();
-        const { user: authUser, error: authError } = await getCachedUser(supabase);
-
-        if (authError || !authUser) {
-          console.error("[Profile] Auth fehlgeschlagen:", authError?.message || "Kein User");
-          router.push("/login");
-          return;
-        }
 
         const { data: userData, error: userError } = await supabase
           .from("users")
@@ -79,7 +74,7 @@ export default function ProfilePage() {
       }
     }
     load();
-  }, [router]);
+  }, [authUser, router]);
 
   async function handleLogout() {
     const supabase = createClient();

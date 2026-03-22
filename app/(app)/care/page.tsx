@@ -10,7 +10,7 @@ import { CareConsentGate } from '@/components/care/CareConsentGate';
 import { SosAlertCard } from '@/components/care/SosAlertCard';
 import type { CareSosAlert, CareAppointment, CareSubscriptionPlan, CareHelperRole } from '@/lib/care/types';
 import { PLAN_FEATURES } from '@/lib/care/constants';
-import { getCachedUser } from "@/lib/supabase/cached-auth";
+import { useAuth } from '@/hooks/use-auth';
 
 interface CheckinStatus {
   completedCount: number;
@@ -26,7 +26,7 @@ interface MedicationDueStatus {
 }
 
 export default function CareDashboardPage() {
-  const [_userId, setUserId] = useState<string | null>(null);
+  const { user, loading: authLoading } = useAuth();
   const [loading, setLoading] = useState(true);
   const [checkinStatus, setCheckinStatus] = useState<CheckinStatus | null>(null);
   const [activeAlerts, setActiveAlerts] = useState<CareSosAlert[]>([]);
@@ -42,28 +42,27 @@ export default function CareDashboardPage() {
   // Feature-Pruefung: Ist ein Feature im aktuellen Plan verfuegbar?
   const hasFeature = (feature: string) => planFeatures.includes(feature);
 
-  // Aktuellen Nutzer laden + Admin-Check + Plan-Features laden
+  // Admin-Check + Plan-Features laden
   useEffect(() => {
+    if (!user) return;
     const supabase = createClient();
-    getCachedUser(supabase).then(async ({ user }) => {
-      setUserId(user?.id ?? null);
-      if (user) {
-        const { data } = await supabase.from('users').select('is_admin, trust_level').eq('id', user.id).single();
-        setIsAdmin(data?.is_admin === true);
-        setTrustLevel(data?.trust_level ?? 'verified');
+    async function loadUserData() {
+      const { data } = await supabase.from('users').select('is_admin, trust_level').eq('id', user!.id).single();
+      setIsAdmin(data?.is_admin === true);
+      setTrustLevel(data?.trust_level ?? 'verified');
 
-        // Abo-Plan laden fuer Feature-Gating
-        const { data: subscription } = await supabase
-          .from('care_subscriptions')
-          .select('plan, status')
-          .eq('user_id', user.id)
-          .maybeSingle();
-        const plan: CareSubscriptionPlan = subscription?.plan ?? 'free';
-        const isActive = !subscription || subscription.status === 'active' || subscription.status === 'trial';
-        setPlanFeatures(isActive ? (PLAN_FEATURES[plan] ?? []) : []);
-      }
-    });
-  }, []);
+      // Abo-Plan laden fuer Feature-Gating
+      const { data: subscription } = await supabase
+        .from('care_subscriptions')
+        .select('plan, status')
+        .eq('user_id', user!.id)
+        .maybeSingle();
+      const plan: CareSubscriptionPlan = subscription?.plan ?? 'free';
+      const isActive = !subscription || subscription.status === 'active' || subscription.status === 'trial';
+      setPlanFeatures(isActive ? (PLAN_FEATURES[plan] ?? []) : []);
+    }
+    loadUserData();
+  }, [user]);
 
   // Check-in Status laden
   useEffect(() => {
@@ -151,13 +150,13 @@ export default function CareDashboardPage() {
 
   // Eigenen Helfer-Status laden (fuer "Meine Senioren" Link)
   useEffect(() => {
+    if (!user) return;
     const supabase = createClient();
-    getCachedUser(supabase).then(async ({ user }) => {
-      if (!user) return;
+    async function loadHelperStatus() {
       const { data: helper } = await supabase
         .from('care_helpers')
         .select('role, verification_status, assigned_seniors')
-        .eq('user_id', user.id)
+        .eq('user_id', user!.id)
         .maybeSingle();
       if (helper) {
         setHelperRole(helper.role as CareHelperRole);
@@ -166,10 +165,11 @@ export default function CareDashboardPage() {
           (helper.assigned_seniors?.length ?? 0) > 0
         );
       }
-    });
-  }, []);
+    }
+    loadHelperStatus();
+  }, [user]);
 
-  if (loading) {
+  if (loading || authLoading) {
     return (
       <div className="px-4 py-6">
         <div className="animate-pulse space-y-4">

@@ -25,7 +25,7 @@ import { loadCraftsmanDetail } from "@/lib/craftsmen/hooks";
 import { calculateTrustScore } from "@/lib/craftsmen/trust-score";
 import { CRAFTSMAN_SUBCATEGORIES } from "@/lib/constants";
 import { createClient } from "@/lib/supabase/client";
-import { getCachedUser } from "@/lib/supabase/cached-auth";
+import { useAuth } from '@/hooks/use-auth';
 import type {
   CommunityTip,
   CraftsmanRecommendation as CraftsmanRec,
@@ -34,12 +34,13 @@ import type {
 } from "@/lib/supabase/types";
 
 export default function HandwerkerDetailPage() {
+  const { user } = useAuth();
   const { id } = useParams();
   const [tip, setTip] = useState<CommunityTip | null>(null);
   const [recommendations, setRecommendations] = useState<CraftsmanRec[]>([]);
   const [usageEvents, setUsageEvents] = useState<CraftsmanUsageEvent[]>([]);
   const [trustScore, setTrustScore] = useState<CraftsmanTrustScore | null>(null);
-  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+
   const [sameStreetCount, setSameStreetCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -50,8 +51,6 @@ export default function HandwerkerDetailPage() {
       const supabase = createClient();
 
       // Aktuellen Benutzer laden
-      const { user } = await getCachedUser(supabase);
-      if (user) setCurrentUserId(user.id);
 
       // Detail laden
       const detail = await loadCraftsmanDetail(id as string);
@@ -88,7 +87,7 @@ export default function HandwerkerDetailPage() {
     .map((subId) => CRAFTSMAN_SUBCATEGORIES.find((s) => s.id === subId))
     .filter(Boolean);
 
-  const isOwner = currentUserId !== null && tip?.user_id === currentUserId;
+  const isOwner = user?.id !== null && tip?.user_id === user?.id;
 
   if (loading) {
     return (
@@ -287,12 +286,12 @@ export default function HandwerkerDetailPage() {
       )}
 
       {/* Empfehlungen */}
-      {currentUserId && (
+      {user?.id && (
         <div className="rounded-xl border-2 border-border bg-white p-5">
           <h3 className="mb-4 text-base font-bold text-anthrazit">Empfehlungen</h3>
           <CraftsmanRecommendation
             tipId={tip.id}
-            currentUserId={currentUserId}
+            currentUserId={user?.id ?? null}
             isOwner={isOwner}
             recommendations={recommendations}
             onUpdate={loadData}

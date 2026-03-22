@@ -17,7 +17,7 @@ import {
   SelectLabel, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import { createClient } from "@/lib/supabase/client";
-import { getCachedUser } from "@/lib/supabase/cached-auth";
+import { useAuth } from "@/hooks/use-auth";
 import type { Alert, User, Household } from "@/lib/supabase/types";
 
 // Tab-Gruppen
@@ -86,6 +86,7 @@ interface QuickStat {
 // HAUPTKOMPONENTE
 // ============================================================
 export default function AdminPage() {
+  const { user } = useAuth();
   const [isAdmin, setIsAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState<Stats | null>(null);
@@ -204,9 +205,8 @@ export default function AdminPage() {
   // Admin-Pruefung + Daten laden
   useEffect(() => {
     async function init() {
+      if (!user) return;
       const supabase = createClient();
-      const { user } = await getCachedUser(supabase);
-      if (!user) { router.push("/login"); return; }
 
       const { data: profile } = await supabase
         .from("users")
@@ -220,7 +220,7 @@ export default function AdminPage() {
       await loadData();
     }
     init();
-  }, [router, loadData]);
+  }, [router, loadData, user]);
 
   if (!isAdmin) {
     return (

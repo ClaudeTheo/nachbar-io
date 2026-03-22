@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { HELP_CATEGORIES, HELP_SUBCATEGORIES, HELP_EXPIRY_DAYS } from "@/lib/constants";
 import { createClient } from "@/lib/supabase/client";
-import { getCachedUser } from "@/lib/supabase/cached-auth";
+import { useAuth } from "@/hooks/use-auth";
 import { useQuarter } from "@/lib/quarters";
 
 type Step = "type" | "category" | "subcategory" | "details" | "done";
@@ -25,6 +25,7 @@ export default function NewHelpPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
+  const { user } = useAuth();
   const { currentQuarter } = useQuarter();
 
   // Prüfen ob gewählte Kategorie Unterkategorien hat
@@ -73,13 +74,13 @@ export default function NewHelpPage() {
     setError(null);
 
     try {
-      const supabase = createClient();
-      const { user } = await getCachedUser(supabase);
       if (!user) {
         setError("Bitte melden Sie sich erneut an.");
         setLoading(false);
         return;
       }
+
+      const supabase = createClient();
 
       // Auto-Expire basierend auf Kategorie-Dringlichkeit
       const expiryDays = HELP_EXPIRY_DAYS[category] ?? 3;

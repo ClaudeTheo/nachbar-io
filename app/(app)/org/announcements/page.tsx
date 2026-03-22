@@ -4,7 +4,7 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { getCachedUser } from "@/lib/supabase/cached-auth";
+import { useAuth } from '@/hooks/use-auth';
 import { toast } from "sonner";
 import {
   ANNOUNCEMENT_CATEGORIES,
@@ -45,6 +45,7 @@ function formatDateDE(iso: string): string {
 }
 
 export default function OrgAnnouncementsPage() {
+  const { user } = useAuth();
   const [announcements, setAnnouncements] = useState<MunicipalAnnouncement[]>([]);
   const [loading, setLoading] = useState(true);
   const [filterCategory, setFilterCategory] = useState<AnnouncementCategory | "all">("all");
@@ -65,9 +66,9 @@ export default function OrgAnnouncementsPage() {
     let cancelled = false;
     const supabase = createClient();
 
-    getCachedUser(supabase).then(({ user }) => {
+    // user from useAuth
+    Promise.resolve({ user }).then(({ user }) => {
       if (cancelled || !user) return;
-      setUserId(user.id);
 
       supabase
         .from("org_members")

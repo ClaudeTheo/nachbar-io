@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { createClient } from "@/lib/supabase/client";
-import { getCachedUser } from "@/lib/supabase/cached-auth";
+import { useAuth } from '@/hooks/use-auth';
 import { useQuarter } from "@/lib/quarters";
 import { calculateExpiry } from "@/lib/meals";
 import { validateImageFile, compressImage, MAX_DIMENSION } from "@/lib/storage";
@@ -18,6 +18,7 @@ import type { MealType } from "@/lib/supabase/types";
 type Step = 1 | 2 | 3 | 4;
 
 export default function NewMealPage() {
+  const { user } = useAuth();
   const router = useRouter();
   const { currentQuarter } = useQuarter();
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -74,7 +75,6 @@ export default function NewMealPage() {
 
     try {
       const supabase = createClient();
-      const { user } = await getCachedUser(supabase);
 
       if (!user) {
         toast.error("Bitte melden Sie sich erneut an.");

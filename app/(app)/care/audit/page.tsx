@@ -1,23 +1,14 @@
 // app/(app)/care/audit/page.tsx
 'use client';
 
-import { useEffect, useState } from 'react';
 import { ScrollText } from 'lucide-react';
-import { createClient } from '@/lib/supabase/client';
 import { AuditLogViewer } from '@/components/care/AuditLogViewer';
-import { getCachedUser } from "@/lib/supabase/cached-auth";
+import { useAuth } from '@/hooks/use-auth';
 
 export default function AuditLogPage() {
-  const [userId, setUserId] = useState<string | null>(null);
+  const { user } = useAuth();
 
-  useEffect(() => {
-    const supabase = createClient();
-    getCachedUser(supabase).then(({ user }) => {
-      setUserId(user?.id ?? null);
-    });
-  }, []);
-
-  if (!userId) {
+  if (!user) {
     return (
       <div className="px-4 py-6">
         <div className="animate-pulse space-y-4">
@@ -40,7 +31,7 @@ export default function AuditLogPage() {
         </p>
       </div>
 
-      <AuditLogViewer seniorId={userId} />
+      <AuditLogViewer seniorId={user.id} />
     </div>
   );
 }

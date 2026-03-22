@@ -1,29 +1,21 @@
 // app/(app)/care/reports/page.tsx
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 import { FileText } from 'lucide-react';
-import { createClient } from '@/lib/supabase/client';
 import { ReportGenerator } from '@/components/care/ReportGenerator';
 import { ReportList } from '@/components/care/ReportList';
-import { getCachedUser } from "@/lib/supabase/cached-auth";
+import { useAuth } from '@/hooks/use-auth';
 
 export default function ReportsPage() {
-  const [userId, setUserId] = useState<string | null>(null);
+  const { user } = useAuth();
   const [refreshKey, setRefreshKey] = useState(0);
-
-  useEffect(() => {
-    const supabase = createClient();
-    getCachedUser(supabase).then(({ user }) => {
-      setUserId(user?.id ?? null);
-    });
-  }, []);
 
   const handleGenerated = useCallback(() => {
     setRefreshKey(k => k + 1);
   }, []);
 
-  if (!userId) {
+  if (!user) {
     return (
       <div className="px-4 py-6">
         <div className="animate-pulse space-y-4">
@@ -46,11 +38,11 @@ export default function ReportsPage() {
         </p>
       </div>
 
-      <ReportGenerator seniorId={userId} onGenerated={handleGenerated} />
+      <ReportGenerator seniorId={user.id} onGenerated={handleGenerated} />
 
       <div>
         <h2 className="text-sm font-medium text-muted-foreground mb-3">Erstellte Berichte</h2>
-        <ReportList key={refreshKey} seniorId={userId} />
+        <ReportList key={refreshKey} seniorId={user.id} />
       </div>
     </div>
   );

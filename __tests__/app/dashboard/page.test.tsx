@@ -97,6 +97,15 @@ vi.mock('@/lib/useUnreadCount', () => ({
   useUnreadCount: () => ({ count: 0 }),
 }));
 
+// useAuth-Mock (Dashboard nutzt jetzt useAuth() statt getCachedUser)
+vi.mock('@/hooks/use-auth', () => ({
+  useAuth: () => ({
+    user: { id: 'user-001' },
+    loading: false,
+    refreshUser: vi.fn(),
+  }),
+}));
+
 // useQuarter Mock
 const mockCurrentQuarter = {
   id: 'quarter-bs',

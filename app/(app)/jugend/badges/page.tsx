@@ -4,8 +4,8 @@
 
 import { useEffect, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
+import { useAuth } from '@/hooks/use-auth';
 import { BadgeCard } from '@/components/youth/BadgeCard';
-import { getCachedUser } from "@/lib/supabase/cached-auth";
 
 interface Badge {
   id: string;
@@ -17,6 +17,7 @@ interface Badge {
 }
 
 export default function JugendBadges() {
+  const { user } = useAuth();
   const [badges, setBadges] = useState<Badge[]>([]);
   const [earnedIds, setEarnedIds] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
@@ -24,7 +25,6 @@ export default function JugendBadges() {
   useEffect(() => {
     async function loadBadges() {
       const supabase = createClient();
-      const { user } = await getCachedUser(supabase);
 
       // Alle Badges laden
       const { data: allBadges } = await supabase

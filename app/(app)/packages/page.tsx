@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { createClient } from "@/lib/supabase/client";
-import { getCachedUser } from "@/lib/supabase/cached-auth";
+import { useAuth } from "@/hooks/use-auth";
 import { useQuarter } from "@/lib/quarters";
 import { haversineDistance, RADIUS_DIRECT } from "@/lib/geo";
 import type { Paketannahme, HelpRequest } from "@/lib/supabase/types";
@@ -26,9 +26,9 @@ interface HouseholdPos {
 type UserPosMap = Map<string, { lat: number; lng: number }>;
 
 export default function PackagesPage() {
+  const { user } = useAuth();
   const [available, setAvailable] = useState<Paketannahme[]>([]);
   const [myEntry, setMyEntry] = useState<Paketannahme | null>(null);
-  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [note, setNote] = useState("");
   const [saving, setSaving] = useState(false);
 
@@ -51,10 +51,8 @@ export default function PackagesPage() {
   useEffect(() => {
     if (!currentQuarter) return;
     async function load() {
-      const supabase = createClient();
-      const { user } = await getCachedUser(supabase);
       if (!user) return;
-      setCurrentUserId(user.id);
+      const supabase = createClient();
 
       // Alles parallel laden
       const [availResult, requestResult, householdsResult, membersResult] = await Promise.all([
@@ -111,7 +109,7 @@ export default function PackagesPage() {
     }
     load();
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [today, currentQuarter?.id]);
+  }, [today, currentQuarter?.id, user]);
 
   // Distanz eines Users zu mir berechnen
   function distanceTo(userId: string): number | null {
@@ -129,7 +127,7 @@ export default function PackagesPage() {
   }
 
   async function toggleAvailability() {
-    if (!currentUserId) return;
+    if (!user?.id) return;
     setSaving(true);
 
     const supabase = createClient();
@@ -143,7 +141,7 @@ export default function PackagesPage() {
       const { data, error } = await supabase
         .from("paketannahme")
         .insert({
-          user_id: currentUserId,
+          user_id: user?.id,
           quarter_id: currentQuarter?.id,
           available_date: today,
           note: note.trim() || null,
@@ -167,14 +165,14 @@ export default function PackagesPage() {
   }
 
   async function submitRequest() {
-    if (!currentUserId || !requestDescription.trim()) return;
+    if (!user?.id || !requestDescription.trim()) return;
     setSendingRequest(true);
 
     const supabase = createClient();
     const { data, error } = await supabase
       .from("help_requests")
       .insert({
-        user_id: currentUserId,
+        user_id: user?.id,
         quarter_id: currentQuarter?.id,
         type: "need",
         category: "package",
@@ -204,7 +202,7 @@ export default function PackagesPage() {
   }
 
   async function acceptRequest(requestId: string) {
-    if (!currentUserId) return;
+    if (!user?.id) return;
     setRespondingTo(requestId);
 
     const supabase = createClient();
@@ -212,7 +210,7 @@ export default function PackagesPage() {
     const [responseResult, statusResult] = await Promise.all([
       supabase.from("help_responses").insert({
         help_request_id: requestId,
-        responder_user_id: currentUserId,
+        responder_user_id: user?.id,
         message: "Ich nehme Ihr Paket an!",
       }),
       supabase
@@ -235,12 +233,12 @@ export default function PackagesPage() {
   }
 
   // Aufteilen nach Distanz
-  const othersAvailable = available.filter((a) => a.user_id !== currentUserId);
+  const othersAvailable = available.filter((a) => a.user_id !== user?.id);
   const directAvailable = othersAvailable.filter((a) => isDirect(a.user_id));
   const widerAvailable = othersAvailable.filter((a) => !isDirect(a.user_id));
 
-  const myRequests = requests.filter((r) => r.user_id === currentUserId);
-  const otherActiveRequests = requests.filter((r) => r.user_id !== currentUserId && r.status === "active");
+  const myRequests = requests.filter((r) => r.user_id === user?.id);
+  const otherActiveRequests = requests.filter((r) => r.user_id !== user?.id && r.status === "active");
 
   // Anfragen anderer: direkte Nachbarn sehen alles, weitere nur wenn subcategory === "all"
   const directRequests = otherActiveRequests.filter((r) => isDirect(r.user_id));

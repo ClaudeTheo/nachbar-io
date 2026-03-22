@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
 import { createClient } from "@/lib/supabase/client";
-import { getCachedUser } from "@/lib/supabase/cached-auth";
+import { useAuth } from "@/hooks/use-auth";
 import { useQuarter } from "@/lib/quarters";
 import { haversineDistance, RADIUS_DIRECT } from "@/lib/geo";
 import { formatDistanceToNow } from "date-fns";
@@ -40,9 +40,9 @@ interface WhoHasResponse {
 type UserPosMap = Map<string, { lat: number; lng: number }>;
 
 export default function WhoHasPage() {
+  const { user } = useAuth();
   const [questions, setQuestions] = useState<HelpRequest[]>([]);
   const [responses, setResponses] = useState<Map<string, WhoHasResponse[]>>(new Map());
-  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
   const [respondingTo, setRespondingTo] = useState<string | null>(null);
@@ -55,11 +55,8 @@ export default function WhoHasPage() {
   const { currentQuarter } = useQuarter();
 
   const loadData = useCallback(async () => {
-    if (!currentQuarter) return;
+    if (!currentQuarter || !user) return;
     const supabase = createClient();
-    const { user } = await getCachedUser(supabase);
-    if (!user) return;
-    setCurrentUserId(user.id);
 
     try {
       // Nur letzte 24h
@@ -119,7 +116,7 @@ export default function WhoHasPage() {
     } finally {
       setLoading(false);
     }
-  }, [currentQuarter]);
+  }, [currentQuarter, user]);
 
   useEffect(() => {
     loadData();
@@ -139,7 +136,7 @@ export default function WhoHasPage() {
   }
 
   async function submitQuestion() {
-    if (!currentUserId || !newQuestion.trim()) return;
+    if (!user?.id || !newQuestion.trim()) return;
     setSending(true);
 
     const expiresAt = new Date();
@@ -149,7 +146,7 @@ export default function WhoHasPage() {
     const { data, error } = await supabase
       .from("help_requests")
       .insert({
-        user_id: currentUserId,
+        user_id: user?.id,
         quarter_id: currentQuarter?.id,
         type: "need",
         category: "whohas",
@@ -174,13 +171,13 @@ export default function WhoHasPage() {
   }
 
   async function respondIch(questionId: string) {
-    if (!currentUserId) return;
+    if (!user?.id) return;
     setRespondingTo(questionId);
 
     const supabase = createClient();
     const { error } = await supabase.from("help_responses").insert({
       help_request_id: questionId,
-      responder_user_id: currentUserId,
+      responder_user_id: user?.id,
       message: "Ich!",
     });
 
@@ -194,7 +191,7 @@ export default function WhoHasPage() {
     const newResp: WhoHasResponse = {
       id: crypto.randomUUID(),
       help_request_id: questionId,
-      responder_user_id: currentUserId,
+      responder_user_id: user?.id,
       message: "Ich!",
       created_at: new Date().toISOString(),
     };
@@ -215,8 +212,8 @@ export default function WhoHasPage() {
   }
 
   // Aufteilen
-  const myQuestions = questions.filter((q) => q.user_id === currentUserId);
-  const otherQuestions = questions.filter((q) => q.user_id !== currentUserId);
+  const myQuestions = questions.filter((q) => q.user_id === user?.id);
+  const otherQuestions = questions.filter((q) => q.user_id !== user?.id);
   const directQuestions = otherQuestions.filter((q) => isDirect(q.user_id));
   const widerQuestions = otherQuestions.filter((q) => !isDirect(q.user_id));
 
@@ -341,7 +338,7 @@ export default function WhoHasPage() {
           title="Direkte Nachbarn fragen"
           questions={directQuestions}
           responses={responses}
-          currentUserId={currentUserId}
+          currentUserId={user?.id ?? null}
           respondingTo={respondingTo}
           onRespond={respondIch}
           distanceFn={distanceTo}
@@ -354,7 +351,7 @@ export default function WhoHasPage() {
           title="Weitere Nachbarn fragen"
           questions={widerQuestions}
           responses={responses}
-          currentUserId={currentUserId}
+          currentUserId={user?.id ?? null}
           respondingTo={respondingTo}
           onRespond={respondIch}
           distanceFn={distanceTo}

@@ -1,30 +1,22 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { createClient } from '@/lib/supabase/client';
+import { useState } from 'react';
 import { Users, Plus, X } from 'lucide-react';
 import { HelperList } from '@/components/care/HelperList';
 import { HelperRegistrationForm } from '@/components/care/HelperRegistrationForm';
-import { getCachedUser } from "@/lib/supabase/cached-auth";
+import { useAuth } from '@/hooks/use-auth';
 
 export default function HelpersPage() {
-  const [userId, setUserId] = useState<string | null>(null);
+  const { user } = useAuth();
   const [showForm, setShowForm] = useState(false);
   const [listKey, setListKey] = useState(0);
-
-  useEffect(() => {
-    const supabase = createClient();
-    getCachedUser(supabase).then(({ user }) => {
-      setUserId(user?.id ?? null);
-    });
-  }, []);
 
   function handleSuccess() {
     setShowForm(false);
     setListKey((k) => k + 1);
   }
 
-  if (!userId) {
+  if (!user) {
     return (
       <div className="px-4 py-6">
         <div className="animate-pulse space-y-4">
@@ -58,7 +50,7 @@ export default function HelpersPage() {
       {showForm && (
         <div className="rounded-xl border bg-card p-4">
           <HelperRegistrationForm
-            seniorId={userId}
+            seniorId={user!.id}
             onSuccess={handleSuccess}
             onCancel={() => setShowForm(false)}
           />
@@ -67,7 +59,7 @@ export default function HelpersPage() {
 
       <div>
         <h2 className="text-sm font-medium text-muted-foreground mb-3">Registrierte Helfer</h2>
-        <HelperList key={listKey} showPending={true} currentUserId={userId} />
+        <HelperList key={listKey} showPending={true} currentUserId={user!.id} />
       </div>
     </div>
   );

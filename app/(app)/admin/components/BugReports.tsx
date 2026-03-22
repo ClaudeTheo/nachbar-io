@@ -13,7 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { createClient } from "@/lib/supabase/client";
-import { getCachedUser } from "@/lib/supabase/cached-auth";
+import { useAuth } from "@/hooks/use-auth";
 import { toast } from "sonner";
 
 interface BugReport {
@@ -38,20 +38,16 @@ interface BugReport {
 type FilterStatus = "all" | "new" | "approved" | "rejected" | "seen" | "fixed" | "wont_fix";
 
 export function BugReports() {
+  const { user } = useAuth();
   const [reports, setReports] = useState<BugReport[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<FilterStatus>("new");
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [adminNotes, setAdminNotes] = useState<Record<string, string>>({});
-  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
 
   const loadReports = useCallback(async () => {
     setLoading(true);
     const supabase = createClient();
-
-    // Aktuellen User ermitteln
-    const { user } = await getCachedUser(supabase);
-    if (user) setCurrentUserId(user.id);
 
     let query = supabase
       .from("bug_reports")
@@ -190,7 +186,7 @@ export function BugReports() {
         <div className="space-y-3">
           {reports.map((report) => {
             const isExpanded = expandedId === report.id;
-            const isOwnReport = report.user_id === currentUserId;
+            const isOwnReport = report.user_id === user?.id;
 
             return (
               <Card key={report.id} className={isOwnReport ? "border-l-4 border-l-quartier-green" : ""}>

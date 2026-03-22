@@ -2,24 +2,15 @@
 
 // Pflege-Profil Seite: Pflegestufe, Notfallkontakte, Check-in-Zeiten, Eskalation konfigurieren
 
-import { useEffect, useState } from 'react';
 import { ArrowLeft, Heart } from 'lucide-react';
 import Link from 'next/link';
-import { createClient } from '@/lib/supabase/client';
 import { CareProfileForm } from '@/components/care/CareProfileForm';
-import { getCachedUser } from "@/lib/supabase/cached-auth";
+import { useAuth } from '@/hooks/use-auth';
 
 export default function CareProfilePage() {
-  const [userId, setUserId] = useState<string | null>(null);
+  const { user } = useAuth();
 
-  useEffect(() => {
-    const supabase = createClient();
-    getCachedUser(supabase).then(({ user }) => {
-      setUserId(user?.id ?? null);
-    });
-  }, []);
-
-  if (!userId) {
+  if (!user) {
     return (
       <div className="px-4 py-6">
         <div className="animate-pulse space-y-4">
@@ -54,7 +45,7 @@ export default function CareProfilePage() {
       </div>
 
       {/* Formular */}
-      <CareProfileForm userId={userId} />
+      <CareProfileForm userId={user.id} />
     </div>
   );
 }

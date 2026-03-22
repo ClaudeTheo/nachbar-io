@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { TIP_CATEGORIES } from "@/lib/constants";
 import { createClient } from "@/lib/supabase/client";
-import { getCachedUser } from "@/lib/supabase/cached-auth";
+import { useAuth } from "@/hooks/use-auth";
 import { useQuarter } from "@/lib/quarters";
 
 type Step = "category" | "details" | "done";
@@ -29,6 +29,7 @@ export default function NewTipPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
+  const { user } = useAuth();
   const { currentQuarter } = useQuarter();
 
   function handleCategorySelect(catId: string) {
@@ -42,13 +43,13 @@ export default function NewTipPage() {
     setError(null);
 
     try {
-      const supabase = createClient();
-      const { user } = await getCachedUser(supabase);
       if (!user) {
         setError("Bitte melden Sie sich erneut an.");
         setLoading(false);
         return;
       }
+
+      const supabase = createClient();
 
       // Rate-Limit prüfen: max 3 Tipps pro Tag
       const today = new Date();

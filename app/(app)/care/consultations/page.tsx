@@ -11,7 +11,7 @@ import { ConsultationSlotCard } from '@/components/care/ConsultationSlotCard';
 import { createClient } from '@/lib/supabase/client';
 import type { ConsultationSlot } from '@/lib/care/types';
 import type { AppointmentAction } from '@/lib/consultation/appointment-status';
-import { getCachedUser } from "@/lib/supabase/cached-auth";
+import { useAuth } from '@/hooks/use-auth';
 
 type TabKey = 'open' | 'confirmed' | 'past';
 
@@ -22,15 +22,15 @@ const TABS: { key: TabKey; label: string }[] = [
 ];
 
 export default function ConsultationsPage() {
+  const { user } = useAuth();
   const [slots, setSlots] = useState<ConsultationSlot[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<TabKey>('open');
   const [counterSlotId, setCounterSlotId] = useState<string | null>(null);
 
   const loadSlots = useCallback(async () => {
-    const supabase = createClient();
-    const { user } = await getCachedUser(supabase);
     if (!user) return;
+    const supabase = createClient();
 
     // Alle Termine laden, bei denen der Nutzer Patient ist oder gebucht hat
     const { data } = await supabase
@@ -41,7 +41,7 @@ export default function ConsultationsPage() {
 
     if (data) setSlots(data as unknown as ConsultationSlot[]);
     setLoading(false);
-  }, []);
+  }, [user]);
 
   useEffect(() => {
     // Initiales Laden — setState in async Callback ist gewollt

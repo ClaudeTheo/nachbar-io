@@ -21,7 +21,7 @@ import { Separator } from "@/components/ui/separator";
 import { InviteNeighborModal } from "@/components/InviteNeighborModal";
 import { formatCode } from "@/lib/invite-codes";
 import { createClient } from "@/lib/supabase/client";
-import { getCachedUser } from "@/lib/supabase/cached-auth";
+import { useAuth } from '@/hooks/use-auth';
 import { toast } from "sonner";
 
 interface Invitation {
@@ -42,6 +42,7 @@ interface Invitation {
 }
 
 export default function InvitationsPage() {
+  const { user } = useAuth();
   const [invitations, setInvitations] = useState<Invitation[]>([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
@@ -51,7 +52,6 @@ export default function InvitationsPage() {
   async function loadInvitations() {
     setLoading(true);
     const supabase = createClient();
-    const { user } = await getCachedUser(supabase);
     if (!user) return;
 
     // Admin-Status prüfen (kein Einladelimit für Admins)

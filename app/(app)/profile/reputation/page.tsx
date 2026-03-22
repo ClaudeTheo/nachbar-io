@@ -6,7 +6,7 @@ import { ArrowLeft, TrendingUp, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { createClient } from "@/lib/supabase/client";
-import { getCachedUser } from "@/lib/supabase/cached-auth";
+import { useAuth } from "@/hooks/use-auth";
 import {
   REPUTATION_LEVELS,
   ACTIVITY_BADGES,
@@ -16,14 +16,14 @@ import {
 import type { ReputationStats } from "@/lib/supabase/types";
 
 export default function ReputationPage() {
+  const { user } = useAuth();
   const [stats, setStats] = useState<ReputationStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
   async function loadStats() {
-    const supabase = createClient();
-    const { user } = await getCachedUser(supabase);
     if (!user) return;
+    const supabase = createClient();
 
     try {
       const computed = await computeReputationStats(supabase, user.id);
@@ -34,9 +34,11 @@ export default function ReputationPage() {
   }
 
   useEffect(() => {
+    if (!user) return;
     // eslint-disable-next-line react-hooks/set-state-in-effect
     loadStats().finally(() => setLoading(false));
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user]);
 
   async function handleRefresh() {
     setRefreshing(true);

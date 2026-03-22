@@ -6,7 +6,7 @@ import Link from "next/link";
 import dynamic from "next/dynamic";
 import { AlertCard } from "@/components/AlertCard";
 import { createClient } from "@/lib/supabase/client";
-import { getCachedUser } from "@/lib/supabase/cached-auth";
+import { useAuth } from '@/hooks/use-auth';
 import type { Alert } from "@/lib/supabase/types";
 
 const FamilyAlertMap = dynamic(() => import("@/components/alerts/FamilyAlertMap"), {
@@ -19,6 +19,7 @@ interface FamilyAlert extends Alert {
 }
 
 export default function FamilyAlertsPage() {
+  const { user } = useAuth();
   const [alerts, setAlerts] = useState<FamilyAlert[]>([]);
   const [loading, setLoading] = useState(true);
   const [hasLinkedResidents, setHasLinkedResidents] = useState(false);
@@ -26,7 +27,6 @@ export default function FamilyAlertsPage() {
   useEffect(() => {
     async function load() {
       const supabase = createClient();
-      const { user } = await getCachedUser(supabase);
       if (!user) {
         setLoading(false);
         return;
@@ -80,7 +80,6 @@ export default function FamilyAlertsPage() {
 
   async function handleHelp(alertId: string) {
     const supabase = createClient();
-    const { user } = await getCachedUser(supabase);
     if (!user) return;
 
     await supabase.from("alert_responses").insert({

@@ -9,7 +9,7 @@ import { BusinessReview } from "@/components/BusinessReview";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { createClient } from "@/lib/supabase/client";
-import { getCachedUser } from "@/lib/supabase/cached-auth";
+import { useAuth } from "@/hooks/use-auth";
 import { createNotification } from "@/lib/notifications";
 import { TIP_CATEGORIES } from "@/lib/constants";
 import type { CommunityTip } from "@/lib/supabase/types";
@@ -18,8 +18,8 @@ import { de } from "date-fns/locale";
 
 export default function TipDetailPage() {
   const { id } = useParams();
+  const { user } = useAuth();
   const [tip, setTip] = useState<CommunityTip | null>(null);
-  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [hasConfirmed, setHasConfirmed] = useState(false);
   const [confirmCount, setConfirmCount] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -27,11 +27,8 @@ export default function TipDetailPage() {
   const [error, setError] = useState<string | null>(null);
 
   const loadTip = useCallback(async () => {
+    if (!user) return;
     const supabase = createClient();
-
-    // Aktuellen Benutzer laden
-    const { user } = await getCachedUser(supabase);
-    if (user) setCurrentUserId(user.id);
 
     // Tipp laden
     const { data, error: fetchError } = await supabase
@@ -63,7 +60,7 @@ export default function TipDetailPage() {
     }
 
     setLoading(false);
-  }, [id]);
+  }, [id, user]);
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -72,7 +69,7 @@ export default function TipDetailPage() {
 
   // Bestätigung toggle
   async function handleToggleConfirmation() {
-    if (!currentUserId || !tip) return;
+    if (!user?.id || !tip) return;
     setConfirming(true);
 
     try {
@@ -84,7 +81,7 @@ export default function TipDetailPage() {
           .from("tip_confirmations")
           .delete()
           .eq("tip_id", tip.id)
-          .eq("user_id", currentUserId);
+          .eq("user_id", user?.id);
 
         setHasConfirmed(false);
         setConfirmCount((prev) => Math.max(0, prev - 1));
@@ -94,7 +91,7 @@ export default function TipDetailPage() {
           .from("tip_confirmations")
           .insert({
             tip_id: tip.id,
-            user_id: currentUserId,
+            user_id: user?.id,
           });
 
         if (insertError) {
@@ -126,7 +123,7 @@ export default function TipDetailPage() {
   }
 
   const cat = tip ? TIP_CATEGORIES.find((c) => c.id === tip.category) : null;
-  const isOwner = currentUserId && tip?.user_id === currentUserId;
+  const isOwner = user?.id && tip?.user_id === user?.id;
 
   if (loading) {
     return (
@@ -276,7 +273,7 @@ export default function TipDetailPage() {
             : `${confirmCount} ${confirmCount === 1 ? "Nachbar hat" : "Nachbarn haben"} diesen Tipp bestätigt.`}
         </p>
 
-        {currentUserId && !isOwner && (
+        {user?.id && !isOwner && (
           <Button
             onClick={handleToggleConfirmation}
             disabled={confirming}
@@ -304,7 +301,7 @@ export default function TipDetailPage() {
       </div>
 
       {/* Bewertungen */}
-      <BusinessReview tipId={tip.id} currentUserId={currentUserId} />
+      <BusinessReview tipId={tip.id} currentUserId={user?.id ?? null} />
 
       {error && <p className="text-sm text-emergency-red">{error}</p>}
     </div>

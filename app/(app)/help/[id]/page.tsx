@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { createClient } from "@/lib/supabase/client";
-import { getCachedUser } from "@/lib/supabase/cached-auth";
+import { useAuth } from "@/hooks/use-auth";
 import { createNotification } from "@/lib/notifications";
 import { HELP_CATEGORIES, HELP_SUBCATEGORIES } from "@/lib/constants";
 import type { HelpRequest } from "@/lib/supabase/types";
@@ -27,9 +27,9 @@ interface HelpResponse {
 export default function HelpDetailPage() {
   const { id } = useParams();
   const router = useRouter();
+  const { user } = useAuth();
   const [request, setRequest] = useState<HelpRequest | null>(null);
   const [responses, setResponses] = useState<HelpResponse[]>([]);
-  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [message, setMessage] = useState("");
   const [sending, setSending] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -37,11 +37,8 @@ export default function HelpDetailPage() {
 
   useEffect(() => {
     async function load() {
+      if (!user) return;
       const supabase = createClient();
-
-      // Aktuellen Benutzer laden
-      const { user } = await getCachedUser(supabase);
-      if (user) setCurrentUserId(user.id);
 
       // Hilfe-Eintrag laden
       const { data, error: fetchError } = await supabase
@@ -74,9 +71,9 @@ export default function HelpDetailPage() {
       setLoading(false);
     }
     load();
-  }, [id]);
+  }, [id, user]);
 
-  const isOwner = currentUserId && request?.user_id === currentUserId;
+  const isOwner = user?.id && request?.user_id === user?.id;
   const cat = request ? HELP_CATEGORIES.find((c) => c.id === request.category) : null;
   const subLabel = request?.subcategory
     ? HELP_SUBCATEGORIES[request.category]?.find((s) => s.id === request.subcategory)?.label
@@ -84,14 +81,14 @@ export default function HelpDetailPage() {
 
   // Nachricht senden
   async function handleSendMessage() {
-    if (!message.trim() || !request) return;
+    if (!message.trim() || !request || !user) return;
     setSending(true);
 
     try {
       const supabase = createClient();
       const { error: insertError } = await supabase.from("help_responses").insert({
         help_request_id: request.id,
-        responder_user_id: currentUserId,
+        responder_user_id: user?.id,
         message: message.trim(),
       });
 
@@ -111,7 +108,7 @@ export default function HelpDetailPage() {
       const { data: profile } = await supabase
         .from("users")
         .select("display_name, avatar_url")
-        .eq("id", currentUserId!)
+        .eq("id", user.id)
         .single();
 
       setResponses((prev) => [
@@ -119,7 +116,7 @@ export default function HelpDetailPage() {
         {
           id: crypto.randomUUID(),
           help_request_id: request.id,
-          responder_user_id: currentUserId!,
+          responder_user_id: user.id,
           message: message.trim(),
           created_at: new Date().toISOString(),
           responder: profile ? { display_name: profile.display_name, avatar_url: profile.avatar_url } : undefined,
@@ -281,7 +278,7 @@ export default function HelpDetailPage() {
               <div
                 key={resp.id}
                 className={`rounded-lg p-3 ${
-                  resp.responder_user_id === currentUserId
+                  resp.responder_user_id === user?.id
                     ? "bg-quartier-green/10 ml-8"
                     : "bg-muted mr-8"
                 }`}
@@ -302,7 +299,7 @@ export default function HelpDetailPage() {
         )}
 
         {/* Nachricht schreiben (nur wenn nicht eigener Eintrag oder für Kommunikation) */}
-        {currentUserId && request.status === "active" && (
+        {user?.id && request.status === "active" && (
           <div className="space-y-2">
             <Textarea
               value={message}

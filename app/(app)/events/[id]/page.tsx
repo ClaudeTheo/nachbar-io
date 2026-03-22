@@ -19,7 +19,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { createClient } from "@/lib/supabase/client";
-import { getCachedUser } from "@/lib/supabase/cached-auth";
+import { useAuth } from "@/hooks/use-auth";
 import { createNotification } from "@/lib/notifications";
 import { EVENT_CATEGORIES } from "@/lib/constants";
 import type { Event, EventParticipant } from "@/lib/supabase/types";
@@ -29,9 +29,9 @@ import { EventRecap } from "@/components/EventRecap";
 
 export default function EventDetailPage() {
   const { id } = useParams();
+  const { user } = useAuth();
   const [event, setEvent] = useState<Event | null>(null);
   const [participants, setParticipants] = useState<EventParticipant[]>([]);
-  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [myStatus, setMyStatus] = useState<"going" | "interested" | null>(null);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
@@ -40,12 +40,8 @@ export default function EventDetailPage() {
     let cancelled = false;
 
     async function load() {
+      if (!user) return;
       const supabase = createClient();
-
-      // Aktuellen Benutzer laden
-      const { user } = await getCachedUser(supabase);
-      if (cancelled) return;
-      if (user) setCurrentUserId(user.id);
 
       // Event laden
       const { data: eventData, error: eventError } = await supabase
@@ -90,11 +86,11 @@ export default function EventDetailPage() {
     load();
 
     return () => { cancelled = true; };
-  }, [id]);
+  }, [id, user]);
 
   // Teilnahme-Status setzen
   async function handleParticipate(status: "going" | "interested") {
-    if (!event || !currentUserId) return;
+    if (!event || !user?.id) return;
     setActionLoading(true);
 
     try {
@@ -105,7 +101,7 @@ export default function EventDetailPage() {
         .from("event_participants")
         .select("id")
         .eq("event_id", event.id)
-        .eq("user_id", currentUserId)
+        .eq("user_id", user?.id)
         .maybeSingle();
 
       if (existing) {
@@ -114,7 +110,7 @@ export default function EventDetailPage() {
           .from("event_participants")
           .update({ status })
           .eq("event_id", event.id)
-          .eq("user_id", currentUserId);
+          .eq("user_id", user?.id);
 
         if (error) {
           toast.error("Status konnte nicht geaendert werden.");
@@ -136,7 +132,7 @@ export default function EventDetailPage() {
         // Neuen Eintrag erstellen
         const { error } = await supabase.from("event_participants").insert({
           event_id: event.id,
-          user_id: currentUserId,
+          user_id: user?.id,
           status,
         });
 
@@ -187,7 +183,7 @@ export default function EventDetailPage() {
 
   // Teilnahme zurueckziehen
   async function handleCancel() {
-    if (!event || !currentUserId) return;
+    if (!event || !user?.id) return;
     setActionLoading(true);
 
     try {
@@ -196,7 +192,7 @@ export default function EventDetailPage() {
         .from("event_participants")
         .update({ status: "cancelled" })
         .eq("event_id", event.id)
-        .eq("user_id", currentUserId);
+        .eq("user_id", user?.id);
 
       if (error) {
         toast.error("Abmeldung fehlgeschlagen.");
@@ -208,7 +204,7 @@ export default function EventDetailPage() {
       toast.success("Sie haben sich erfolgreich abgemeldet.");
 
       // Teilnehmer-Liste aktualisieren (entfernt abgemeldete)
-      setParticipants((prev) => prev.filter((p) => p.user_id !== currentUserId));
+      setParticipants((prev) => prev.filter((p) => p.user_id !== user?.id));
     } catch {
       toast.error("Netzwerkfehler. Bitte versuchen Sie es erneut.");
     }
@@ -221,7 +217,7 @@ export default function EventDetailPage() {
   const goingParticipants = participants.filter((p) => p.status === "going");
   const interestedParticipants = participants.filter((p) => p.status === "interested");
   const goingCount = goingParticipants.length;
-  const isOrganizer = currentUserId && event?.user_id === currentUserId;
+  const isOrganizer = user?.id && event?.user_id === user?.id;
   const isFull =
     event?.max_participants != null && goingCount >= event.max_participants;
 
@@ -351,7 +347,7 @@ export default function EventDetailPage() {
       </div>
 
       {/* Teilnahme-Aktionen */}
-      {currentUserId && !isOrganizer && (
+      {user?.id && !isOrganizer && (
         <div className="space-y-3">
           {myStatus ? (
             <>
@@ -508,7 +504,7 @@ export default function EventDetailPage() {
       <EventRecap
         eventId={event.id}
         eventDate={event.event_date}
-        currentUserId={currentUserId}
+        currentUserId={user?.id ?? null}
       />
     </div>
   );

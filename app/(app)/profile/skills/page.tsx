@@ -7,14 +7,14 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { createClient } from "@/lib/supabase/client";
-import { getCachedUser } from "@/lib/supabase/cached-auth";
+import { useAuth } from "@/hooks/use-auth";
 import { useQuarter } from "@/lib/quarters";
 import { SKILL_CATEGORIES } from "@/lib/constants";
 import type { Skill } from "@/lib/supabase/types";
 
 export default function SkillsPage() {
+  const { user } = useAuth();
   const [skills, setSkills] = useState<Skill[]>([]);
-  const [userId, setUserId] = useState<string | null>(null);
   const { currentQuarter } = useQuarter();
   const [adding, setAdding] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
@@ -23,10 +23,8 @@ export default function SkillsPage() {
 
   useEffect(() => {
     async function load() {
-      const supabase = createClient();
-      const { user } = await getCachedUser(supabase);
       if (!user) return;
-      setUserId(user.id);
+      const supabase = createClient();
 
       const { data } = await supabase
         .from("skills")
@@ -36,10 +34,10 @@ export default function SkillsPage() {
       if (data) setSkills(data as Skill[]);
     }
     load();
-  }, []);
+  }, [user]);
 
   async function handleAdd() {
-    if (!selectedCategory || !userId) return;
+    if (!selectedCategory || !user) return;
     setSaving(true);
 
     try {
@@ -47,7 +45,7 @@ export default function SkillsPage() {
       const { data, error } = await supabase
         .from("skills")
         .insert({
-          user_id: userId,
+          user_id: user.id,
           quarter_id: currentQuarter?.id,
           category: selectedCategory,
           description: description.trim() || null,

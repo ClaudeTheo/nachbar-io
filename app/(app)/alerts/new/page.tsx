@@ -12,7 +12,7 @@ import { ALERT_CATEGORIES, EMERGENCY_CATEGORIES, GPS_ALERT_CATEGORIES } from "@/
 import { CategoryIcon } from "@/components/CategoryIcon";
 import { ALERT_ICON_MAP, FALLBACK_ICON } from "@/lib/category-icons";
 import { createClient } from "@/lib/supabase/client";
-import { getCachedUser } from "@/lib/supabase/cached-auth";
+import { useAuth } from "@/hooks/use-auth";
 import { useQuarter } from "@/lib/quarters";
 import { useGeolocation } from "@/hooks/useGeolocation";
 import { LocationConsentDialog } from "@/components/alerts/LocationConsentDialog";
@@ -22,6 +22,7 @@ import { GuidelinesGate } from "@/components/moderation/GuidelinesAcceptance";
 type Step = "category" | "emergency" | "description" | "sent";
 
 export default function NewAlertPage() {
+  const { user } = useAuth();
   const [step, setStep] = useState<Step>("category");
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [description, setDescription] = useState("");
@@ -76,12 +77,10 @@ export default function NewAlertPage() {
   }
 
   async function handleSubmit() {
-    if (!selectedCategory) return;
+    if (!selectedCategory || !user) return;
     setLoading(true);
 
     const supabase = createClient();
-    const { user } = await getCachedUser(supabase);
-    if (!user) return;
 
     // Haushalt des Nutzers ermitteln
     const { data: membership } = await supabase

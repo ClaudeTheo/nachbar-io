@@ -6,17 +6,17 @@ import Link from "next/link";
 import { toast } from "sonner";
 import { Card, CardContent } from "@/components/ui/card";
 import { createClient } from "@/lib/supabase/client";
-import { getCachedUser } from "@/lib/supabase/cached-auth";
+import { useAuth } from "@/hooks/use-auth";
 
 export default function LocationSettingsPage() {
+  const { user } = useAuth();
   const [enabled, setEnabled] = useState(true);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function load() {
-      const supabase = createClient();
-      const { user } = await getCachedUser(supabase);
       if (!user) return;
+      const supabase = createClient();
 
       const { data } = await supabase
         .from("users")
@@ -28,12 +28,11 @@ export default function LocationSettingsPage() {
       setLoading(false);
     }
     load();
-  }, []);
+  }, [user]);
 
   async function toggle() {
-    const supabase = createClient();
-    const { user } = await getCachedUser(supabase);
     if (!user) return;
+    const supabase = createClient();
 
     const newValue = !enabled;
     await supabase.from("users").update({ share_location_on_alert: newValue }).eq("id", user.id);

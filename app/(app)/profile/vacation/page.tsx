@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
-import { getCachedUser } from "@/lib/supabase/cached-auth";
+import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -15,7 +15,7 @@ import { toast } from "sonner";
 
 export default function VacationPage() {
   const router = useRouter();
-  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const { user } = useAuth();
   const [vacations, setVacations] = useState<VacationMode[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
@@ -40,18 +40,12 @@ export default function VacationPage() {
   }, []);
 
   useEffect(() => {
-    async function init() {
-      const supabase = createClient();
-      const { user } = await getCachedUser(supabase);
-      if (!user) { setLoading(false); return; }
-      setCurrentUserId(user.id);
-      await loadVacations(user.id);
-    }
-    init();
-  }, [loadVacations]);
+    if (!user) return;
+    loadVacations(user.id);
+  }, [user, loadVacations]);
 
   async function handleSave() {
-    if (!currentUserId || !startDate || !endDate) return;
+    if (!user || !startDate || !endDate) return;
     if (new Date(endDate) < new Date(startDate)) {
       toast.error("Enddatum muss nach dem Startdatum liegen.");
       return;
@@ -60,7 +54,7 @@ export default function VacationPage() {
 
     const supabase = createClient();
     const { error } = await supabase.from("vacation_modes").insert({
-      user_id: currentUserId,
+      user_id: user.id,
       start_date: startDate,
       end_date: endDate,
       note: note.trim() || null,
@@ -75,17 +69,17 @@ export default function VacationPage() {
       setStartDate("");
       setEndDate("");
       setNote("");
-      await loadVacations(currentUserId);
+      await loadVacations(user.id);
     }
     setSaving(false);
   }
 
   async function handleDelete(id: string) {
-    if (!currentUserId) return;
+    if (!user) return;
     const supabase = createClient();
     await supabase.from("vacation_modes").delete().eq("id", id);
     toast("Urlaub gelöscht");
-    await loadVacations(currentUserId);
+    await loadVacations(user.id);
   }
 
   const today = new Date().toISOString().split("T")[0];

@@ -496,4 +496,31 @@ describe('VoiceAssistantFAB (Push-to-Talk + Companion)', () => {
       expect(secondBody.confirmTool.tool).toBe('create_bulletin_post');
     });
   });
+
+  it('zeigt Retry-Button im error-State', async () => {
+    const { VoiceAssistantFAB } = await import('@/components/VoiceAssistantFAB');
+    const screen = render(<VoiceAssistantFAB />);
+
+    // FAB klicken -> Sheet oeffnen
+    const fab = screen.getByTestId('voice-assistant-fab');
+    act(() => { fireEvent.click(fab); });
+
+    // Error-State simulieren: onError aufrufen
+    const onError = mockStartListening.mock.calls[0]?.[0]?.onError;
+    if (onError) {
+      act(() => { onError('not-allowed'); });
+    } else {
+      // Push-to-Talk starten um Engine zu triggern
+      const pttBtn = screen.getByTestId('push-to-talk-btn');
+      act(() => { fireEvent.mouseDown(pttBtn); });
+      const errorCb = mockStartListening.mock.calls[0]?.[0]?.onError;
+      if (errorCb) act(() => { errorCb('not-allowed'); });
+    }
+
+    await waitFor(() => {
+      expect(screen.getByTestId('error-retry-btn')).toBeInTheDocument();
+      expect(screen.getByText(/Nochmal versuchen/i)).toBeInTheDocument();
+      expect(screen.getByText(/Schließen/i)).toBeInTheDocument();
+    });
+  });
 });

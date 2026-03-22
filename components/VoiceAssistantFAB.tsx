@@ -610,15 +610,26 @@ export function VoiceAssistantFAB() {
               </>
             )}
 
-            {/* ERROR: Fehler + Schliessen */}
+            {/* ERROR: Fehler + Nochmal versuchen + Schliessen */}
             {sheetState === 'error' && (
-              <button
-                onClick={handleClose}
-                className="w-full flex items-center justify-center rounded-xl border border-gray-200 text-[#2D3142] font-medium text-base transition-all hover:bg-gray-50 active:scale-95"
-                style={{ minHeight: '48px', touchAction: 'manipulation' }}
-              >
-                Schließen
-              </button>
+              <div className="flex flex-col gap-2">
+                <button
+                  onClick={handleRetry}
+                  data-testid="error-retry-btn"
+                  className="w-full flex items-center justify-center gap-2 rounded-xl bg-[#4CAF87] text-white font-medium text-base transition-all hover:bg-[#4CAF87]/90 active:scale-95"
+                  style={{ minHeight: '48px', touchAction: 'manipulation' }}
+                >
+                  <RotateCcw className="h-4 w-4" />
+                  Nochmal versuchen
+                </button>
+                <button
+                  onClick={handleClose}
+                  className="w-full flex items-center justify-center rounded-xl border border-gray-200 text-[#2D3142] font-medium text-base transition-all hover:bg-gray-50 active:scale-95"
+                  style={{ minHeight: '48px', touchAction: 'manipulation' }}
+                >
+                  Schließen
+                </button>
+              </div>
             )}
           </div>
         </SheetContent>

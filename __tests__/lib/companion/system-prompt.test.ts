@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { buildSystemPrompt, type QuarterContext } from '@/lib/companion/system-prompt';
+import { buildSystemPrompt, type QuarterContext, type PromptOptions } from '@/lib/companion/system-prompt';
 
 // Vollen Kontext fuer Tests
 function fullContext(): QuarterContext {
@@ -34,7 +34,7 @@ describe('buildSystemPrompt', () => {
   it('enthaelt Siezen (Sie) im Prompt', () => {
     const prompt = buildSystemPrompt(fullContext());
     expect(prompt).toContain('Sie');
-    expect(prompt).toContain('siezt');
+    expect(prompt).toContain('Sieze');
   });
 
   it('enthaelt den Quartier-Namen', () => {
@@ -89,5 +89,26 @@ describe('buildSystemPrompt', () => {
   it('enthaelt Quartier-Name auch bei leerem Kontext', () => {
     const prompt = buildSystemPrompt(emptyContext());
     expect(prompt).toContain('Testquartier');
+  });
+
+  // Formality-Tests (Task 18)
+  it('System-Prompt enthaelt "Sieze" bei formality=formal (Default)', () => {
+    const prompt = buildSystemPrompt(fullContext());
+    expect(prompt).toContain('Sieze');
+    expect(prompt).toContain('Sie/Ihnen/Ihr');
+  });
+
+  it('System-Prompt enthaelt "Duze" bei formality=informal', () => {
+    const prompt = buildSystemPrompt(fullContext(), { formality: 'informal' });
+    expect(prompt).toContain('Duze');
+    expect(prompt).toContain('du/dein/dir');
+    // Sollte NICHT Siezen enthalten
+    expect(prompt).not.toContain('Sie/Ihnen/Ihr');
+  });
+
+  it('Default-Formality ist formal (Siezen)', () => {
+    const promptDefault = buildSystemPrompt(fullContext());
+    const promptFormal = buildSystemPrompt(fullContext(), { formality: 'formal' });
+    expect(promptDefault).toBe(promptFormal);
   });
 });

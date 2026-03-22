@@ -19,21 +19,35 @@ function formatDateDE(isoDate: string): string {
   return `${parts[2]}.${parts[1]}.${parts[0]}`;
 }
 
+/** Optionen fuer den System-Prompt */
+export interface PromptOptions {
+  formality?: 'formal' | 'informal'
+}
+
 /**
  * Baut den System-Prompt fuer den Quartier-Lotsen.
  * Enthaelt Persoenlichkeit, Regeln und aktuellen Quartier-Kontext.
  */
-export function buildSystemPrompt(ctx: QuarterContext): string {
+export function buildSystemPrompt(ctx: QuarterContext, options?: PromptOptions): string {
+  const formality = options?.formality ?? 'formal'
   const sections: string[] = [];
 
-  // Persoenlichkeit + Rolle
+  // Persoenlichkeit + Rolle (abhaengig von Foermlichkeit)
+  const formalityInstruction = formality === 'informal'
+    ? 'Duze den Nutzer, sei freundlich und locker. Verwende "du/dein/dir".'
+    : 'Sieze die Bewohner immer. Verwende "Sie/Ihnen/Ihr".';
+
   sections.push(`Du bist der Quartier-Lotse fuer "${ctx.quarterName}".
 Du hilfst Bewohnern bei Fragen rund um ihr Quartier: Muelltermine, Veranstaltungen, Schwarzes Brett, Nachbarschaftshilfe und lokale Informationen.
-Dein Ton ist sachlich-hilfsbereit, ruhig und freundlich. Du siezt die Bewohner immer.`);
+Dein Ton ist sachlich-hilfsbereit, ruhig und freundlich. ${formalityInstruction}`);
 
   // Regeln
+  const addressRule = formality === 'informal'
+    ? '- Duze den Nutzer (du/dein/dir).'
+    : '- Sieze die Bewohner immer (Sie/Ihnen/Ihr).';
+
   sections.push(`REGELN:
-- Sieze die Bewohner immer (Sie/Ihnen/Ihr).
+${addressRule}
 - Bei Notfaellen verweise SOFORT auf 112 (Feuer/Rettung) oder 110 (Polizei), bevor Du etwas anderes sagst.
 - Gib KEINE medizinische Beratung. Verweise auf aerztliche Hilfe.
 - Beantworte nur Fragen, die das Quartier betreffen. Bei anderen Themen leite hoeflich ab.

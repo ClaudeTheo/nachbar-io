@@ -1,6 +1,7 @@
 // Nachbar.io — Multi-Agent E2E Test Konfiguration
 import { defineConfig, devices } from "@playwright/test";
 import * as path from "path";
+import { authFile } from "./helpers/auth-paths";
 
 // .env.test laden falls vorhanden
 import "dotenv/config";
@@ -31,7 +32,7 @@ export default defineConfig({
   },
 
   projects: [
-    // Setup: Testdaten seeden
+    // ─── Phase 0: Testdaten seeden ───
     {
       name: "setup",
       testMatch: /global-setup\.ts/,
@@ -42,10 +43,28 @@ export default defineConfig({
       testMatch: /global-teardown\.ts/,
     },
 
-    // Multi-Agent Szenarien (Desktop Chrome)
+    // ─── Phase 1: Auth-States erzeugen (storageState) ───
+    {
+      name: "auth",
+      testMatch: /auth-setup\.ts/,
+      dependencies: ["setup"],
+    },
+
+    // ─── Phase 2a: Authentifizierte Flows (Nachbar A) ───
+    {
+      name: "authenticated",
+      testMatch: /scenarios\/auth-.*\.spec\.ts/,
+      dependencies: ["auth"],
+      use: {
+        ...devices["Desktop Chrome"],
+        storageState: authFile("nachbar_a"),
+      },
+    },
+
+    // ─── Phase 2b: Multi-Agent Szenarien (eigene Sessions) ───
     {
       name: "multi-agent",
-      testMatch: /scenarios\/.*\.spec\.ts/,
+      testMatch: /scenarios\/s[0-46-9].*\.spec\.ts/,
       dependencies: ["setup"],
       use: {
         ...devices["Desktop Chrome"],
@@ -53,7 +72,7 @@ export default defineConfig({
       },
     },
 
-    // Senioren-Terminal (Mobile Viewport — grosse Touch-Targets)
+    // ─── Phase 2c: Senioren-Terminal (Mobile Viewport) ───
     {
       name: "senior-terminal",
       testMatch: /scenarios\/s5-.*\.spec\.ts/,
@@ -64,7 +83,7 @@ export default defineConfig({
       },
     },
 
-    // Smoke Tests (schnell, kein Seed noetig)
+    // ─── Smoke Tests (kein Seed noetig, kein Auth) ───
     {
       name: "smoke",
       testMatch: /scenarios\/s7-.*\.spec\.ts/,

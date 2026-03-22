@@ -15,15 +15,17 @@ import type { SpeechEngine } from '@/lib/voice/speech-engine'
 
 interface DialogModeProps {
   onMessage?: (role: 'user' | 'assistant', content: string) => void
+  onMicError?: () => void // Callback wenn Mikrofon verweigert -> Tab-Wechsel zu Chat
 }
 
 // DialogMode — Sprach-Dialog-Modus mit State-Machine
 // Nutzt useDialogMode fuer States, SilenceDetector, SentenceStreamTTS
-export function DialogMode({ onMessage }: DialogModeProps) {
+export function DialogMode({ onMessage, onMicError }: DialogModeProps) {
   const dialog = useDialogMode()
   const { streamingText, isStreaming, sendStreaming } = useStreamingChat()
   const [textInput, setTextInput] = useState('')
   const [currentResponse, setCurrentResponse] = useState('')
+  const [micBlocked, setMicBlocked] = useState(false)
 
   const engineRef = useRef<SpeechEngine | null>(null)
   const silenceRef = useRef<SilenceDetector | null>(null)
@@ -111,10 +113,17 @@ export function DialogMode({ onMessage }: DialogModeProps) {
           silenceRef.current?.feedAudioLevel(level)
         },
         onStateChange: () => {},
-        onError: () => {},
+        onError: (msg) => {
+          // Mikrofon verweigert -> Fallback auf Text-Chat
+          if (msg.includes('not-allowed') || msg.includes('Mikrofon')) {
+            setMicBlocked(true)
+            dialog.stopDialog()
+            onMicError?.()
+          }
+        },
       })
     }
-  }, [dialog, sendMessage])
+  }, [dialog, sendMessage, onMicError])
 
   // Dialog stoppen
   const handleStop = useCallback(() => {
@@ -140,8 +149,8 @@ export function DialogMode({ onMessage }: DialogModeProps) {
 
   return (
     <div className="flex h-full flex-col items-center justify-center gap-6 p-4">
-      {/* Idle: Grosser Start-Button */}
-      {!isActive && (
+      {/* Idle: Grosser Start-Button oder Mikrofon-Hinweis */}
+      {!isActive && !micBlocked && (
         <Button
           onClick={handleStart}
           className="min-h-[80px] w-full max-w-sm rounded-2xl bg-[#4CAF87] text-lg font-semibold text-white hover:bg-[#4CAF87]/90"
@@ -150,6 +159,16 @@ export function DialogMode({ onMessage }: DialogModeProps) {
           <Mic className="mr-3 h-6 w-6" />
           Gespräch starten
         </Button>
+      )}
+      {!isActive && micBlocked && (
+        <div className="w-full max-w-sm rounded-2xl border border-[#F59E0B]/30 bg-[#F59E0B]/5 p-4 text-center" data-testid="mic-blocked-hint">
+          <p className="text-sm font-medium text-[#2D3142]">
+            Mikrofon nicht verfügbar.
+          </p>
+          <p className="mt-1 text-xs text-[#2D3142]/60">
+            Bitte nutzen Sie den Text-Chat.
+          </p>
+        </div>
       )}
 
       {/* Aktiv: Dialog-UI */}

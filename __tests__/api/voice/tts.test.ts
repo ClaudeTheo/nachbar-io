@@ -95,6 +95,60 @@ describe('POST /api/voice/tts', () => {
     expect(res.headers.get('content-type')).toBe('audio/mpeg');
   });
 
+  it('sendet voice und speed an OpenAI API', async () => {
+    const audioData = new Uint8Array([0xFF, 0xFB, 0x90, 0x00]);
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      body: new ReadableStream({
+        start(controller) {
+          controller.enqueue(audioData);
+          controller.close();
+        },
+      }),
+      headers: new Headers({ 'content-type': 'audio/mpeg' }),
+    });
+
+    const { POST } = await import('@/app/api/voice/tts/route');
+    const req = new Request('http://localhost/api/voice/tts', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text: 'Test', voice: 'onyx', speed: 0.85 }),
+    });
+    const res = await POST(req as never);
+    expect(res.status).toBe(200);
+
+    // Pruefe dass OpenAI mit den richtigen Parametern aufgerufen wurde
+    const callBody = JSON.parse(mockFetch.mock.calls[0][1].body);
+    expect(callBody.voice).toBe('onyx');
+    expect(callBody.speed).toBe(0.85);
+  });
+
+  it('nutzt Default-Speed 1.0 wenn kein speed angegeben', async () => {
+    const audioData = new Uint8Array([0xFF, 0xFB, 0x90, 0x00]);
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      body: new ReadableStream({
+        start(controller) {
+          controller.enqueue(audioData);
+          controller.close();
+        },
+      }),
+      headers: new Headers({ 'content-type': 'audio/mpeg' }),
+    });
+
+    const { POST } = await import('@/app/api/voice/tts/route');
+    const req = new Request('http://localhost/api/voice/tts', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text: 'Test' }),
+    });
+    await POST(req as never);
+
+    const callBody = JSON.parse(mockFetch.mock.calls[0][1].body);
+    expect(callBody.voice).toBe('nova');
+    expect(callBody.speed).toBe(1.0);
+  });
+
   it('gibt 502 zurueck wenn OpenAI API fehlschlaegt', async () => {
     mockFetch.mockResolvedValueOnce({ ok: false, status: 500 });
     const { POST } = await import('@/app/api/voice/tts/route');

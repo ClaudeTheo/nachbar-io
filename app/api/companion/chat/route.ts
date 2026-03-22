@@ -74,15 +74,18 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    // Quartier-Kontext laden und System-Prompt bauen
-    const context = await loadQuarterContext(userId);
-    const systemPrompt = buildSystemPrompt(context);
+    // Quartier-Kontext laden (parallel zur Message-Validierung)
+    const contextPromise = loadQuarterContext(userId);
 
     // Nachrichten auf die letzten MAX_MESSAGES begrenzen (Session-Gedaechtnis)
     const recentMessages = messages.slice(-MAX_MESSAGES).map((m) => ({
       role: m.role as 'user' | 'assistant',
       content: m.content,
     }));
+
+    // Context-Promise awaiten und System-Prompt bauen
+    const context = await contextPromise;
+    const systemPrompt = buildSystemPrompt(context);
 
     // Streaming-Modus: SSE-Response mit ReadableStream
     if (stream) {

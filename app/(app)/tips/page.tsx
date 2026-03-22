@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Plus, ChevronRight, Filter, CircleCheckBig } from "lucide-react";
+import { PageHeader } from "@/components/ui/page-header";
 import { createClient } from "@/lib/supabase/client";
 import { TIP_CATEGORIES } from "@/lib/constants";
 import type { CommunityTip } from "@/lib/supabase/types";
@@ -49,27 +50,31 @@ export default function TipsPage() {
   return (
     <div>
       {/* Header */}
-      <div className="mb-4 flex items-center justify-between">
-        <h1 className="text-xl font-bold text-anthrazit">Nachbarschafts-Tipps</h1>
-        <div className="flex items-center gap-2">
-          <button
-            onClick={() => setShowFilter(!showFilter)}
-            className={`rounded-lg p-2 transition-colors ${
-              filterCategory ? "bg-quartier-green/10 text-quartier-green" : "hover:bg-muted"
-            }`}
-            aria-label="Filter"
-          >
-            <Filter className="h-4 w-4" />
-          </button>
-          <Link
-            href="/tips/new"
-            className="flex items-center gap-1 rounded-lg bg-quartier-green px-3 py-2 text-sm font-semibold text-white hover:bg-quartier-green-dark"
-          >
-            <Plus className="h-4 w-4" />
-            Tipp teilen
-          </Link>
-        </div>
-      </div>
+      <PageHeader
+        title="Nachbarschafts-Tipps"
+        backHref="/dashboard"
+        className="mb-4"
+        actions={
+          <>
+            <button
+              onClick={() => setShowFilter(!showFilter)}
+              className={`rounded-lg p-2 transition-colors ${
+                filterCategory ? "bg-quartier-green/10 text-quartier-green" : "hover:bg-muted"
+              }`}
+              aria-label="Filter"
+            >
+              <Filter className="h-4 w-4" />
+            </button>
+            <Link
+              href="/tips/new"
+              className="flex items-center gap-1 rounded-lg bg-quartier-green px-3 py-2 text-sm font-semibold text-white hover:bg-quartier-green-dark"
+            >
+              <Plus className="h-4 w-4" />
+              Tipp teilen
+            </Link>
+          </>
+        }
+      />
 
       {/* Beschreibung */}
       <p className="mb-4 text-sm text-muted-foreground">

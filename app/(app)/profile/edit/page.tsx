@@ -2,8 +2,9 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Save, ChevronRight, Lock } from "lucide-react";
+import { Save, ChevronRight, Lock } from "lucide-react";
 import Link from "next/link";
+import { PageHeader } from "@/components/ui/page-header";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -232,12 +233,7 @@ export default function ProfileEditPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center gap-3">
-        <Link href="/profile" className="rounded-lg p-2 hover:bg-muted">
-          <ArrowLeft className="h-5 w-5" />
-        </Link>
-        <h1 className="text-xl font-bold text-anthrazit">Profil bearbeiten</h1>
-      </div>
+      <PageHeader title="Profil bearbeiten" backHref="/profile" />
 
       {/* Profil-Vollstaendigkeit */}
       {completedCount < 4 && (

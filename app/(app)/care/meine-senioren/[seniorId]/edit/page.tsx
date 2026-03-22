@@ -7,6 +7,7 @@ import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { ArrowLeft, Save, UserCog, ShieldCheck, TriangleAlert } from 'lucide-react';
 import Link from 'next/link';
+import { PageHeader } from '@/components/ui/page-header';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -143,18 +144,11 @@ export default function SeniorProfileEditPage() {
   return (
     <div className="space-y-5">
       {/* Header */}
-      <div className="flex items-center gap-3">
-        <Link
-          href={`/care/meine-senioren/${seniorId}`}
-          className="flex h-10 w-10 items-center justify-center rounded-xl bg-muted hover:bg-muted/80"
-        >
-          <ArrowLeft className="h-5 w-5 text-anthrazit" />
-        </Link>
-        <div className="flex-1">
-          <h1 className="text-lg font-bold text-anthrazit">Profil bearbeiten</h1>
-          <p className="text-xs text-muted-foreground">für {senior?.display_name}</p>
-        </div>
-      </div>
+      <PageHeader
+        title="Profil bearbeiten"
+        subtitle={`für ${senior?.display_name ?? ''}`}
+        backHref={`/care/meine-senioren/${seniorId}`}
+      />
 
       {/* Hinweis-Banner: Wessen Profil wird bearbeitet */}
       <div className="flex items-start gap-3 rounded-xl border border-blue-200 bg-blue-50 p-4">

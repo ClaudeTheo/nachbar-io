@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Plus, Filter, ChevronRight, MapPin, Clock, Users, CalendarDays } from "lucide-react";
+import { PageHeader } from "@/components/ui/page-header";
 import { createClient } from "@/lib/supabase/client";
 import { useQuarter } from "@/lib/quarters";
 import { EVENT_CATEGORIES } from "@/lib/constants";
@@ -68,27 +69,31 @@ export default function EventsPage() {
   return (
     <div className="animate-fade-in-up">
       {/* Header */}
-      <div className="mb-4 flex items-center justify-between">
-        <h1 className="text-xl font-bold text-anthrazit">Veranstaltungen</h1>
-        <div className="flex items-center gap-2">
-          <button
-            onClick={() => setShowFilter(!showFilter)}
-            className={`rounded-lg p-2 transition-colors ${
-              filterCategory ? "bg-quartier-green/10 text-quartier-green" : "hover:bg-muted"
-            }`}
-            aria-label="Filter"
-          >
-            <Filter className="h-4 w-4" />
-          </button>
-          <Link
-            href="/events/new"
-            className="flex items-center gap-1 rounded-lg bg-quartier-green px-3 py-2 text-sm font-semibold text-white hover:bg-quartier-green-dark"
-          >
-            <Plus className="h-4 w-4" />
-            Neues Event
-          </Link>
-        </div>
-      </div>
+      <PageHeader
+        title="Veranstaltungen"
+        backHref="/dashboard"
+        className="mb-4"
+        actions={
+          <>
+            <button
+              onClick={() => setShowFilter(!showFilter)}
+              className={`rounded-lg p-2 transition-colors ${
+                filterCategory ? "bg-quartier-green/10 text-quartier-green" : "hover:bg-muted"
+              }`}
+              aria-label="Filter"
+            >
+              <Filter className="h-4 w-4" />
+            </button>
+            <Link
+              href="/events/new"
+              className="flex items-center gap-1 rounded-lg bg-quartier-green px-3 py-2 text-sm font-semibold text-white hover:bg-quartier-green-dark"
+            >
+              <Plus className="h-4 w-4" />
+              Neues Event
+            </Link>
+          </>
+        }
+      />
 
       {/* Kategorie-Filter */}
       {showFilter && (

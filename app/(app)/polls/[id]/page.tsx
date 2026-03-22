@@ -3,7 +3,8 @@
 import { useEffect, useState, useCallback } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, Lock, Users } from "lucide-react";
+import { Lock, Users } from "lucide-react";
+import { PageHeader } from "@/components/ui/page-header";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
@@ -136,12 +137,7 @@ export default function PollDetailPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center gap-3">
-        <Link href="/polls" className="rounded-lg p-2 hover:bg-muted">
-          <ArrowLeft className="h-5 w-5" />
-        </Link>
-        <h1 className="text-xl font-bold text-anthrazit">Umfrage</h1>
-      </div>
+      <PageHeader title="Umfrage" backHref="/polls" />
 
       {/* Frage */}
       <div className="rounded-xl border border-border bg-white p-5 shadow-sm">

@@ -3,8 +3,7 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
-import { ArrowLeft } from 'lucide-react';
-import Link from 'next/link';
+import { PageHeader } from '@/components/ui/page-header';
 import { AppointmentCard } from '@/components/consultation/AppointmentCard';
 import { CounterProposeModal } from '@/components/consultation/CounterProposeModal';
 import { ConsultationSlotCard } from '@/components/care/ConsultationSlotCard';
@@ -125,12 +124,10 @@ export default function ConsultationsPage() {
 
   return (
     <div className="space-y-6 pb-24">
-      <div className="flex items-center gap-3">
-        <Link href="/care" className="p-2 rounded-xl hover:bg-anthrazit/5">
-          <ArrowLeft className="h-6 w-6 text-anthrazit" />
-        </Link>
-        <h1 className="text-2xl font-bold text-anthrazit">Meine Termine</h1>
-      </div>
+      <PageHeader
+        title="Meine Termine"
+        backHref="/care"
+      />
 
       {loading && <p className="text-anthrazit/50">Laden...</p>}
 

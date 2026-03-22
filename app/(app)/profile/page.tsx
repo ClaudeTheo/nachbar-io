@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Settings, LogOut, Star, Shield, ChevronRight, Pencil, Bell, TrendingUp, Plane, MapPin, CircleHelp, BarChart3, Package, UserPlus, Download } from "lucide-react";
+import { PageHeader } from "@/components/ui/page-header";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
@@ -119,10 +120,11 @@ export default function ProfilePage() {
 
   return (
     <div className="space-y-4">
-      <div>
-        <h1 className="text-xl font-bold text-anthrazit">Mein Profil</h1>
-        <p className="text-sm text-muted-foreground mt-0.5">Einstellungen und Übersicht</p>
-      </div>
+      <PageHeader
+        title="Mein Profil"
+        subtitle="Einstellungen und Übersicht"
+        backHref="/dashboard"
+      />
 
       {/* Profil-Card */}
       <Card>

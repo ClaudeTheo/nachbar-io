@@ -2,8 +2,8 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
-import { ArrowLeft, Trash2, TriangleAlert, Download } from "lucide-react";
+import { Trash2, TriangleAlert, Download } from "lucide-react";
+import { PageHeader } from "@/components/ui/page-header";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
@@ -77,12 +77,7 @@ export default function DeleteAccountPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center gap-3">
-        <Link href="/profile" className="rounded-lg p-2 hover:bg-muted">
-          <ArrowLeft className="h-5 w-5" />
-        </Link>
-        <h1 className="text-xl font-bold text-anthrazit">Konto & Daten</h1>
-      </div>
+      <PageHeader title="Konto & Daten" backHref="/profile" />
 
       {/* Datenexport */}
       <Card>

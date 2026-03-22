@@ -19,6 +19,7 @@ import {
 import { formatDistanceToNow } from "date-fns";
 import { de } from "date-fns/locale";
 import { Badge } from "@/components/ui/badge";
+import { PageHeader } from "@/components/ui/page-header";
 import { TrustScoreBadge } from "@/components/craftsmen/TrustScoreBadge";
 import { CraftsmanRecommendation } from "@/components/craftsmen/CraftsmanRecommendation";
 import { loadCraftsmanDetail } from "@/lib/craftsmen/hooks";
@@ -127,12 +128,7 @@ export default function HandwerkerDetailPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center gap-3">
-        <Link href="/handwerker" className="rounded-lg p-2 hover:bg-muted">
-          <ArrowLeft className="h-5 w-5" />
-        </Link>
-        <h1 className="text-xl font-bold text-anthrazit">Handwerker-Details</h1>
-      </div>
+      <PageHeader title="Handwerker-Details" backHref="/handwerker" />
 
       {/* Profil-Karte */}
       <div className="rounded-xl border-2 border-border bg-white p-5">

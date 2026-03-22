@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Plus, Search } from "lucide-react";
+import { PageHeader } from "@/components/ui/page-header";
 import { CRAFTSMAN_SUBCATEGORIES } from "@/lib/constants";
 import { loadCraftsmenList } from "@/lib/craftsmen/hooks";
 import { calculateTrustScore } from "@/lib/craftsmen/trust-score";
@@ -111,16 +112,20 @@ function HandwerkerContent() {
   return (
     <div>
       {/* Header */}
-      <div className="mb-4 flex items-center justify-between">
-        <h1 className="text-xl font-bold text-anthrazit">Handwerker & Betriebe</h1>
-        <Link
-          href="/handwerker/neu"
-          className="flex items-center gap-1 rounded-lg bg-quartier-green px-3 py-2 text-sm font-semibold text-white hover:bg-quartier-green-dark"
-        >
-          <Plus className="h-4 w-4" />
-          Handwerker eintragen
-        </Link>
-      </div>
+      <PageHeader
+        title="Handwerker & Betriebe"
+        backHref="/dashboard"
+        className="mb-4"
+        actions={
+          <Link
+            href="/handwerker/neu"
+            className="flex items-center gap-1 rounded-lg bg-quartier-green px-3 py-2 text-sm font-semibold text-white hover:bg-quartier-green-dark"
+          >
+            <Plus className="h-4 w-4" />
+            Handwerker eintragen
+          </Link>
+        }
+      />
 
       {/* Suchfeld */}
       <div className="relative mb-4">

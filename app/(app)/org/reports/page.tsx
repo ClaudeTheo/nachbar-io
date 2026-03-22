@@ -8,6 +8,7 @@ import { useAuth } from '@/hooks/use-auth';
 import { toast } from "sonner";
 import type { MunicipalReport, ReportStatus } from "@/lib/municipal";
 import { REPORT_CATEGORIES, REPORT_STATUS_CONFIG } from "@/lib/municipal";
+import { PageHeader } from "@/components/ui/page-header";
 
 // Alle Status-Optionen fuer den Filter
 const STATUS_FILTERS: { value: ReportStatus | "all"; label: string }[] = [
@@ -260,12 +261,10 @@ export default function OrgReportsPage() {
 
   return (
     <div className="space-y-4 animate-fade-in-up">
-      {/* Kopfzeile */}
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <h1 className="text-xl font-semibold text-[#2D3142]">
-          Mängelmelder — Meldungen ({filteredReports.length})
-        </h1>
-      </div>
+      <PageHeader
+        title={`Mängelmelder — Meldungen (${filteredReports.length})`}
+        backHref="/dashboard"
+      />
 
       {/* Status-Filter */}
       <div className="flex flex-wrap gap-2">

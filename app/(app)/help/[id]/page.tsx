@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, Clock, Tag, User, Trash2, CircleCheck, MessageCircle } from "lucide-react";
+import { PageHeader } from "@/components/ui/page-header";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
@@ -186,14 +187,10 @@ export default function HelpDetailPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center gap-3">
-        <Link href="/help" className="rounded-lg p-2 hover:bg-muted">
-          <ArrowLeft className="h-5 w-5" />
-        </Link>
-        <h1 className="text-xl font-bold text-anthrazit">
-          {request.type === "need" ? "Hilfegesuch" : "Hilfsangebot"}
-        </h1>
-      </div>
+      <PageHeader
+        title={request.type === "need" ? "Hilfegesuch" : "Hilfsangebot"}
+        backHref="/help"
+      />
 
       {/* Hauptkarte */}
       <div className="rounded-xl border-2 border-border bg-white p-5">

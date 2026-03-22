@@ -3,7 +3,8 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, MessageCircle, Clock, Tag } from "lucide-react";
+import { MessageCircle, Clock, Tag } from "lucide-react";
+import { PageHeader } from "@/components/ui/page-header";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/client";
@@ -61,12 +62,7 @@ export default function LeihboerseDetailPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center gap-3">
-        <Link href="/leihboerse" className="rounded-lg p-2 hover:bg-muted">
-          <ArrowLeft className="h-5 w-5" />
-        </Link>
-        <h1 className="text-xl font-bold text-anthrazit">Detail</h1>
-      </div>
+      <PageHeader title="Detail" backHref="/leihboerse" />
 
       <div className="rounded-xl border border-border bg-white p-5 shadow-sm">
         {/* Kategorie-Icon */}

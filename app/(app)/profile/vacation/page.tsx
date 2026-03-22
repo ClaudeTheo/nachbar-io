@@ -9,7 +9,8 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Plane, Trash2, Plus, Calendar } from "lucide-react";
+import { Plane, Trash2, Plus, Calendar } from "lucide-react";
+import { PageHeader } from "@/components/ui/page-header";
 import type { VacationMode } from "@/lib/supabase/types";
 import { toast } from "sonner";
 
@@ -105,17 +106,12 @@ export default function VacationPage() {
   return (
     <div className="animate-fade-in-up">
       {/* Header */}
-      <div className="mb-4 flex items-center gap-3">
-        <Button variant="ghost" size="icon-sm" onClick={() => router.push("/profile")}>
-          <ArrowLeft className="h-5 w-5" />
-        </Button>
-        <div>
-          <h1 className="text-xl font-bold text-anthrazit">Urlaub-Modus</h1>
-          <p className="text-sm text-muted-foreground">
-            Informieren Sie Ihre Nachbarn, wenn Sie verreisen
-          </p>
-        </div>
-      </div>
+      <PageHeader
+        title="Urlaub-Modus"
+        subtitle="Informieren Sie Ihre Nachbarn, wenn Sie verreisen"
+        backHref="/profile"
+        className="mb-4"
+      />
 
       {/* Info-Box */}
       <div className="mb-4 rounded-lg border border-blue-200 bg-blue-50 p-3">

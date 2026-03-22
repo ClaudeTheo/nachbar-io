@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, Clock, User, Trash2, CircleCheck, MessageCircle } from "lucide-react";
+import { PageHeader } from "@/components/ui/page-header";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { createClient } from "@/lib/supabase/client";
@@ -82,12 +83,7 @@ export default function MarketplaceDetailPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center gap-3">
-        <Link href="/marketplace" className="rounded-lg p-2 hover:bg-muted">
-          <ArrowLeft className="h-5 w-5" />
-        </Link>
-        <h1 className="text-xl font-bold text-anthrazit">Inserat</h1>
-      </div>
+      <PageHeader title="Inserat" backHref="/marketplace" />
 
       {/* Bild / Platzhalter */}
       <div className="flex h-48 items-center justify-center rounded-xl bg-muted text-6xl">

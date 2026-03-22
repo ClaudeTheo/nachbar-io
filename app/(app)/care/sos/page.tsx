@@ -2,8 +2,9 @@
 
 import { useEffect, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
-import { ArrowLeft, TriangleAlert } from 'lucide-react';
+import { TriangleAlert } from 'lucide-react';
 import Link from 'next/link';
+import { PageHeader } from '@/components/ui/page-header';
 import { SosAlertCard } from '@/components/care/SosAlertCard';
 import type { CareSosAlert } from '@/lib/care/types';
 
@@ -41,16 +42,10 @@ export default function SosOverviewPage() {
 
   return (
     <div className="px-4 py-6 space-y-4">
-      <div>
-        <Link href="/care" className="mb-2 inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-anthrazit">
-          <ArrowLeft className="h-4 w-4" />
-          Zurueck
-        </Link>
-        <h1 className="text-2xl font-bold text-anthrazit flex items-center gap-2">
-          <TriangleAlert className="h-6 w-6 text-alert-amber" />
-          SOS-Alarme
-        </h1>
-      </div>
+      <PageHeader
+        title={<><TriangleAlert className="h-6 w-6 text-alert-amber" /> SOS-Alarme</>}
+        backHref="/care"
+      />
       {alerts.length === 0 ? (
         <div className="rounded-xl border bg-card p-6 text-center text-muted-foreground">
           Keine aktiven SOS-Alarme

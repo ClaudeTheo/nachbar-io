@@ -1,8 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { ArrowLeft } from "lucide-react";
-import Link from "next/link";
+import { PageHeader } from "@/components/ui/page-header";
 import dynamic from "next/dynamic";
 import { AlertCard } from "@/components/AlertCard";
 import { createClient } from "@/lib/supabase/client";
@@ -91,15 +90,12 @@ export default function FamilyAlertsPage() {
 
   return (
     <div>
-      <div className="mb-6 flex items-center gap-3">
-        <Link href="/dashboard" className="rounded-lg p-2 hover:bg-muted">
-          <ArrowLeft className="h-5 w-5" />
-        </Link>
-        <div>
-          <h1 className="text-xl font-bold text-anthrazit">Meine Familie</h1>
-          <p className="text-sm text-muted-foreground">Hilferufe Ihrer Angehörigen</p>
-        </div>
-      </div>
+      <PageHeader
+        title="Meine Familie"
+        subtitle="Hilferufe Ihrer Angehörigen"
+        backHref="/dashboard"
+        className="mb-6"
+      />
 
       {/* Karte mit Familien-Alerts */}
       {alertsWithGps.length > 0 && (

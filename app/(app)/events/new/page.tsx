@@ -2,8 +2,8 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
-import { ArrowLeft, Check } from "lucide-react";
+import { Check } from "lucide-react";
+import { PageHeader } from "@/components/ui/page-header";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -97,17 +97,14 @@ export default function NewEventPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center gap-3">
-        <Link href="/events" className="rounded-lg p-2 hover:bg-muted">
-          <ArrowLeft className="h-5 w-5" />
-        </Link>
-        <h1 className="text-xl font-bold text-anthrazit">
-          {step === 1 && "Kategorie waehlen"}
-          {step === 2 && "Details angeben"}
-          {step === 3 && "Zusammenfassung"}
-          {step === 4 && "Erstellt!"}
-        </h1>
-      </div>
+      <PageHeader
+        title={
+          step === 1 ? "Kategorie wählen" :
+          step === 2 ? "Details angeben" :
+          step === 3 ? "Zusammenfassung" : "Erstellt!"
+        }
+        backHref="/events"
+      />
 
       {/* Schrittanzeige */}
       {step < 4 && (

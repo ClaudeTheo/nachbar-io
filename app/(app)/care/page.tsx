@@ -4,6 +4,7 @@
 import { useEffect, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { Heart, TriangleAlert, Clock, ArrowRight, Pill, CalendarDays, Users, FileText, CreditCard, ScrollText, BarChart3, UserCog, Shield } from 'lucide-react';
+import { PageHeader } from '@/components/ui/page-header';
 import Link from 'next/link';
 import { SosButton } from '@/components/care/SosButton';
 import { CareConsentGate } from '@/components/care/CareConsentGate';
@@ -185,13 +186,12 @@ export default function CareDashboardPage() {
     <CareConsentGate>
     <div className="px-4 py-6 space-y-6">
       {/* Header */}
-      <div>
-        <h1 className="text-2xl font-bold text-anthrazit flex items-center gap-2">
-          <Heart className="h-6 w-6 text-quartier-green" />
-          Pflege & Seniorenhilfe
-        </h1>
-        <p className="text-muted-foreground mt-1">Ihr persoenliches Pflege-Dashboard</p>
-      </div>
+      <PageHeader
+        title={<><Heart className="h-6 w-6 text-quartier-green" /> Pflege &amp; Seniorenhilfe</>}
+        subtitle="Ihr persoenliches Pflege-Dashboard"
+        backHref="/dashboard"
+        backLabel="Zurück zum Dashboard"
+      />
 
       {/* Verifikations-Hinweis fuer neue Nutzer */}
       {trustLevel === 'new' && (

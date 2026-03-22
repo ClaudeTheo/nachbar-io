@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
-import { ArrowLeft, TrendingUp, RefreshCw } from "lucide-react";
+import { TrendingUp, RefreshCw } from "lucide-react";
+import { PageHeader } from "@/components/ui/page-header";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { createClient } from "@/lib/supabase/client";
@@ -78,22 +78,20 @@ export default function ReputationPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <Link href="/profile" className="rounded-lg p-2 hover:bg-muted">
-            <ArrowLeft className="h-5 w-5" />
-          </Link>
-          <h1 className="text-xl font-bold text-anthrazit">Meine Reputation</h1>
-        </div>
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={handleRefresh}
-          disabled={refreshing}
-        >
-          <RefreshCw className={`h-4 w-4 ${refreshing ? "animate-spin" : ""}`} />
-        </Button>
-      </div>
+      <PageHeader
+        title="Meine Reputation"
+        backHref="/profile"
+        actions={
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleRefresh}
+            disabled={refreshing}
+          >
+            <RefreshCw className={`h-4 w-4 ${refreshing ? "animate-spin" : ""}`} />
+          </Button>
+        }
+      />
 
       {/* Level-Karte */}
       <Card className="overflow-hidden">

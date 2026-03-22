@@ -1,8 +1,9 @@
 'use client';
 
 import { useState } from 'react';
-import { ArrowLeft, Pill, Plus } from 'lucide-react';
+import { Pill, Plus } from 'lucide-react';
 import Link from 'next/link';
+import { PageHeader } from '@/components/ui/page-header';
 import { MedicationList } from '@/components/care/MedicationList';
 import { MedicationManagementList } from '@/components/care/MedicationManagementList';
 import { useAuth } from '@/hooks/use-auth';
@@ -26,32 +27,21 @@ export default function MedicationsPage() {
 
   return (
     <div className="px-4 py-6 space-y-6">
-      {/* Zurueck-Link */}
-      <Link
-        href="/care"
-        className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-anthrazit"
-      >
-        <ArrowLeft className="h-4 w-4" />
-        Zurueck
-      </Link>
-
       {/* Header mit Hinzufuegen-Button */}
-      <div className="flex items-start justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-anthrazit flex items-center gap-2">
-            <Pill className="h-6 w-6 text-quartier-green" />
-            Erinnerungen
-          </h1>
-          <p className="text-muted-foreground mt-1">Verwaltung und Alltags-Protokoll</p>
-        </div>
-        <Link
-          href="/care/medications/new"
-          className="flex items-center gap-1 rounded-lg bg-quartier-green px-3 py-2 text-sm font-medium text-white hover:opacity-90 transition-opacity"
-        >
-          <Plus className="h-4 w-4" />
-          Neu
-        </Link>
-      </div>
+      <PageHeader
+        title={<><Pill className="h-6 w-6 text-quartier-green" /> Erinnerungen</>}
+        subtitle="Verwaltung und Alltags-Protokoll"
+        backHref="/care"
+        actions={
+          <Link
+            href="/care/medications/new"
+            className="flex items-center gap-1 rounded-lg bg-quartier-green px-3 py-2 text-sm font-medium text-white hover:opacity-90 transition-opacity"
+          >
+            <Plus className="h-4 w-4" />
+            Neu
+          </Link>
+        }
+      />
 
       {/* Tab-Umschalter */}
       <div className="flex gap-2">

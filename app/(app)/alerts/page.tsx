@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Plus } from "lucide-react";
+import { PageHeader } from "@/components/ui/page-header";
 import { AlertCard } from "@/components/AlertCard";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { getAlertsByQuarter, respondToAlert } from "@/lib/services";
@@ -62,19 +63,21 @@ export default function AlertsPage() {
 
   return (
     <div>
-      <div className="mb-4 flex items-center justify-between">
-        <div>
-          <h1 className="text-xl font-bold text-anthrazit">Hilfeanfragen</h1>
-          <p className="text-sm text-muted-foreground mt-0.5">Nachbarn helfen Nachbarn</p>
-        </div>
-        <Link
-          href="/alerts/new"
-          className="flex items-center gap-1 rounded-lg bg-alert-amber px-3 py-2 text-sm font-semibold text-white hover:bg-amber-600"
-        >
-          <Plus className="h-4 w-4" />
-          Neue Anfrage
-        </Link>
-      </div>
+      <PageHeader
+        title="Hilfeanfragen"
+        subtitle="Nachbarn helfen Nachbarn"
+        backHref="/dashboard"
+        className="mb-4"
+        actions={
+          <Link
+            href="/alerts/new"
+            className="flex items-center gap-1 rounded-lg bg-alert-amber px-3 py-2 text-sm font-semibold text-white hover:bg-amber-600"
+          >
+            <Plus className="h-4 w-4" />
+            Neue Anfrage
+          </Link>
+        }
+      />
 
       <Tabs defaultValue="open">
         <TabsList className="w-full">

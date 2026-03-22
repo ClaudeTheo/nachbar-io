@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Plus, Clock, Users, ChevronRight, CalendarDays, MapPin } from "lucide-react";
+import { PageHeader } from "@/components/ui/page-header";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -97,17 +98,21 @@ export default function MitessenPage() {
   return (
     <div className="animate-fade-in-up">
       {/* Header */}
-      <div className="mb-4 flex items-center justify-between">
-        <h1 className="text-xl font-bold text-anthrazit">Mitess-Plätze</h1>
-        <Link
-          href="/mitessen/neu"
-          className="flex items-center gap-1 rounded-lg bg-quartier-green px-3 py-2 text-sm font-semibold text-white hover:bg-quartier-green-dark"
-          data-testid="create-meal-button"
-        >
-          <Plus className="h-4 w-4" />
-          Anbieten
-        </Link>
-      </div>
+      <PageHeader
+        title="Mitess-Plätze"
+        backHref="/dashboard"
+        className="mb-4"
+        actions={
+          <Link
+            href="/mitessen/neu"
+            className="flex items-center gap-1 rounded-lg bg-quartier-green px-3 py-2 text-sm font-semibold text-white hover:bg-quartier-green-dark"
+            data-testid="create-meal-button"
+          >
+            <Plus className="h-4 w-4" />
+            Anbieten
+          </Link>
+        }
+      />
 
       {loading ? (
         <div className="mt-4 space-y-3">

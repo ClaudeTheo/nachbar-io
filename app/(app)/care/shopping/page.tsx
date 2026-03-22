@@ -3,8 +3,8 @@
 // Einkaufshilfe-Seite: Einkaufsanfragen erstellen, ansehen und verwalten
 
 import { useCallback, useEffect, useState } from 'react';
-import { ArrowLeft, Plus, ShoppingCart, X } from 'lucide-react';
-import Link from 'next/link';
+import { Plus, ShoppingCart, X } from 'lucide-react';
+import { PageHeader } from '@/components/ui/page-header';
 import { ShoppingRequestForm } from '@/components/care/ShoppingRequestForm';
 import { ShoppingRequestCard } from '@/components/care/ShoppingRequestCard';
 import type { ShoppingRequest } from '@/components/care/ShoppingRequestCard';
@@ -87,34 +87,22 @@ export default function ShoppingPage() {
   return (
     <div className="px-4 py-6 space-y-6">
       {/* Header */}
-      <div className="flex items-start justify-between">
-        <div>
-          <Link
-            href="/care"
-            className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-anthrazit mb-2"
+      <PageHeader
+        title={<><ShoppingCart className="h-6 w-6 text-quartier-green" /> Einkaufshilfe</>}
+        subtitle="Einkaufsanfragen erstellen und Nachbarn helfen"
+        backHref="/care"
+        actions={
+          <button
+            onClick={() => setShowForm((v) => !v)}
+            className="min-h-[80px] min-w-[80px] flex flex-col items-center justify-center gap-1 rounded-xl border bg-card px-3 py-2 text-sm font-medium text-anthrazit hover:bg-muted transition-colors"
+            aria-label={showForm ? 'Formular schliessen' : 'Neue Einkaufsliste erstellen'}
             style={{ touchAction: 'manipulation' }}
           >
-            <ArrowLeft className="h-4 w-4" />
-            Zurueck
-          </Link>
-          <h1 className="text-2xl font-bold text-anthrazit flex items-center gap-2">
-            <ShoppingCart className="h-6 w-6 text-quartier-green" />
-            Einkaufshilfe
-          </h1>
-          <p className="text-muted-foreground mt-1">
-            Einkaufsanfragen erstellen und Nachbarn helfen
-          </p>
-        </div>
-        <button
-          onClick={() => setShowForm((v) => !v)}
-          className="min-h-[80px] min-w-[80px] flex flex-col items-center justify-center gap-1 rounded-xl border bg-card px-3 py-2 text-sm font-medium text-anthrazit hover:bg-muted transition-colors"
-          aria-label={showForm ? 'Formular schliessen' : 'Neue Einkaufsliste erstellen'}
-          style={{ touchAction: 'manipulation' }}
-        >
-          {showForm ? <X className="h-5 w-5" /> : <Plus className="h-5 w-5" />}
-          {showForm ? 'Schliessen' : '+ Neue Liste'}
-        </button>
-      </div>
+            {showForm ? <X className="h-5 w-5" /> : <Plus className="h-5 w-5" />}
+            {showForm ? 'Schliessen' : '+ Neue Liste'}
+          </button>
+        }
+      />
 
       {/* Formular (toggle) */}
       {showForm && (

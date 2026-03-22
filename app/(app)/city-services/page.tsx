@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { ArrowLeft, Search, Pin, ExternalLink as ExternalLinkIcon } from "lucide-react";
+import { Search, Pin, ExternalLink as ExternalLinkIcon } from "lucide-react";
+import { PageHeader } from "@/components/ui/page-header";
 import { ExternalLink } from "@/components/ExternalLink";
 import { createClient } from "@/lib/supabase/client";
 import { useQuarter } from "@/lib/quarters";
@@ -134,12 +135,7 @@ export default function CityServicesPage() {
   return (
     <div className="space-y-4 animate-fade-in-up">
       {/* Header */}
-      <div className="flex items-center gap-2">
-        <Link href="/dashboard" className="rounded-full p-1 hover:bg-gray-100">
-          <ArrowLeft className="h-5 w-5 text-anthrazit" />
-        </Link>
-        <h1 className="text-xl font-bold text-anthrazit">Rathaus & Infos</h1>
-      </div>
+      <PageHeader title="Rathaus & Infos" backHref="/dashboard" />
 
       {/* Tabs */}
       <div className="flex rounded-lg bg-gray-100 p-1">

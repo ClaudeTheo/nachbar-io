@@ -3,8 +3,8 @@
 // Aufgabentafel-Seite: Aufgaben anzeigen, filtern und erstellen
 
 import { useCallback, useEffect, useState } from 'react';
-import { ArrowLeft, Plus, X } from 'lucide-react';
-import Link from 'next/link';
+import { Plus, X } from 'lucide-react';
+import { PageHeader } from '@/components/ui/page-header';
 import { TaskCard } from '@/components/care/TaskCard';
 import { TaskForm } from '@/components/care/TaskForm';
 import type { CareTask, TaskCategory } from '@/components/care/TaskCard';
@@ -77,31 +77,23 @@ export default function TasksPage() {
 
   return (
     <div className="px-4 py-6 space-y-6">
-      {/* Kopfzeile: Zurueck-Link + Titel + Neu-Button */}
-      <div className="flex items-start justify-between">
-        <div>
-          <Link
-            href="/care"
-            className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-anthrazit mb-2"
+      {/* Kopfzeile: Titel + Neu-Button */}
+      <PageHeader
+        title="Aufgabentafel"
+        subtitle="Helfen Sie Ihren Nachbarn oder bitten Sie um Unterstuetzung"
+        backHref="/care"
+        actions={
+          <button
+            onClick={() => setShowForm((v) => !v)}
+            className="min-h-[80px] min-w-[80px] flex flex-col items-center justify-center gap-1 rounded-xl border bg-card px-3 py-2 text-sm font-medium text-anthrazit hover:bg-muted transition-colors"
+            aria-label={showForm ? 'Formular schliessen' : 'Neue Aufgabe erstellen'}
+            style={{ touchAction: 'manipulation' }}
           >
-            <ArrowLeft className="h-4 w-4" />
-            Zurueck
-          </Link>
-          <h1 className="text-2xl font-bold text-anthrazit">Aufgabentafel</h1>
-          <p className="text-muted-foreground mt-1">
-            Helfen Sie Ihren Nachbarn oder bitten Sie um Unterstuetzung
-          </p>
-        </div>
-        <button
-          onClick={() => setShowForm((v) => !v)}
-          className="min-h-[80px] min-w-[80px] flex flex-col items-center justify-center gap-1 rounded-xl border bg-card px-3 py-2 text-sm font-medium text-anthrazit hover:bg-muted transition-colors"
-          aria-label={showForm ? 'Formular schliessen' : 'Neue Aufgabe erstellen'}
-          style={{ touchAction: 'manipulation' }}
-        >
-          {showForm ? <X className="h-5 w-5" /> : <Plus className="h-5 w-5" />}
-          {showForm ? 'Schliessen' : 'Neue Aufgabe'}
-        </button>
-      </div>
+            {showForm ? <X className="h-5 w-5" /> : <Plus className="h-5 w-5" />}
+            {showForm ? 'Schliessen' : 'Neue Aufgabe'}
+          </button>
+        }
+      />
 
       {/* Formular (ein-/ausblendbar) */}
       {showForm && (

@@ -7,6 +7,7 @@ import { useParams, useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { useYouthProfile } from '@/lib/youth/hooks';
 import { YouthGuard } from '@/components/youth/YouthGuard';
+import { PageHeader } from "@/components/ui/page-header";
 
 interface TaskDetail {
   id: string;
@@ -70,11 +71,7 @@ export default function AufgabeDetail() {
 
   return (
     <div className="p-6 space-y-6">
-      <button onClick={() => router.back()} className="text-green-600 font-medium" type="button">
-        ← Zurück
-      </button>
-
-      <h1 className="text-2xl font-bold text-anthrazit">{task.title}</h1>
+      <PageHeader title={task.title} backHref="/jugend/aufgaben" />
       <p className="text-gray-600">{task.description}</p>
 
       <div className="flex flex-wrap gap-3">

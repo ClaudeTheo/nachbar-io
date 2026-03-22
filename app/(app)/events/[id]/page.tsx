@@ -15,6 +15,7 @@ import {
   UserMinus,
   Star,
 } from "lucide-react";
+import { PageHeader } from "@/components/ui/page-header";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -263,12 +264,7 @@ export default function EventDetailPage() {
   return (
     <div className="space-y-6 animate-fade-in-up">
       {/* Header */}
-      <div className="flex items-center gap-3">
-        <Link href="/events" className="rounded-lg p-2 hover:bg-muted">
-          <ArrowLeft className="h-5 w-5" />
-        </Link>
-        <h1 className="text-xl font-bold text-anthrazit">Veranstaltung</h1>
-      </div>
+      <PageHeader title="Veranstaltung" backHref="/events" />
 
       {/* Hauptkarte */}
       <div className="rounded-xl border-2 border-border bg-white p-5">

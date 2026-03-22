@@ -2,6 +2,7 @@
 'use client';
 
 import { ScrollText } from 'lucide-react';
+import { PageHeader } from '@/components/ui/page-header';
 import { AuditLogViewer } from '@/components/care/AuditLogViewer';
 import { useAuth } from '@/hooks/use-auth';
 
@@ -21,15 +22,11 @@ export default function AuditLogPage() {
 
   return (
     <div className="px-4 py-6 space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-[#2D3142] flex items-center gap-2">
-          <ScrollText className="h-6 w-6 text-quartier-green" />
-          Aktivitaetsprotokoll
-        </h1>
-        <p className="text-muted-foreground mt-1">
-          Lueckenloses Protokoll aller Pflege-Aktivitaeten.
-        </p>
-      </div>
+      <PageHeader
+        title={<><ScrollText className="h-6 w-6 text-quartier-green" /> Aktivitaetsprotokoll</>}
+        subtitle="Lueckenloses Protokoll aller Pflege-Aktivitaeten."
+        backHref="/care"
+      />
 
       <AuditLogViewer seniorId={user.id} />
     </div>

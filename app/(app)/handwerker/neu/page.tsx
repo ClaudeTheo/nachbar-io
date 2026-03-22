@@ -2,8 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
+import { PageHeader } from "@/components/ui/page-header";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -141,16 +140,14 @@ export default function NewHandwerkerPage() {
   return (
     <div>
       {/* Header */}
-      <div className="mb-6 flex items-center gap-3">
-        <Link href="/handwerker" className="rounded-lg p-2 hover:bg-muted">
-          <ArrowLeft className="h-5 w-5" />
-        </Link>
-        <h1 className="text-xl font-bold text-anthrazit">
-          {step === "subcategory" && "Gewerk wählen"}
-          {step === "details" && "Handwerker eintragen"}
-          {step === "done" && "Eingetragen!"}
-        </h1>
-      </div>
+      <PageHeader
+        title={
+          step === "subcategory" ? "Gewerk wählen" :
+          step === "details" ? "Handwerker eintragen" : "Eingetragen!"
+        }
+        backHref="/handwerker"
+        className="mb-6"
+      />
 
       {/* Fortschrittsbalken */}
       {step !== "done" && (

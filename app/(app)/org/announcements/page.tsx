@@ -11,6 +11,7 @@ import {
 } from "@/lib/municipal";
 import type { MunicipalAnnouncement, AnnouncementCategory } from "@/lib/municipal";
 import { Pin, PinOff, Pencil, Trash2, Plus, X, ExternalLink } from "lucide-react";
+import { PageHeader } from "@/components/ui/page-header";
 
 // Formular-Zustand fuer Erstellen/Bearbeiten
 interface AnnouncementForm {
@@ -288,17 +289,19 @@ export default function OrgAnnouncementsPage() {
 
   return (
     <div className="space-y-4 animate-fade-in-up">
-      {/* Kopfzeile */}
-      <div className="flex items-center justify-between">
-        <h1 className="text-lg font-bold text-[#2D3142]">Bekanntmachungen</h1>
-        <button
-          onClick={handleCreate}
-          className="inline-flex min-h-[44px] items-center gap-2 rounded-lg bg-[#4CAF87] px-4 py-2 text-sm font-medium text-white shadow-sm transition-colors hover:bg-[#3d9a73]"
-        >
-          <Plus className="h-4 w-4" />
-          Neue Bekanntmachung
-        </button>
-      </div>
+      <PageHeader
+        title="Bekanntmachungen"
+        backHref="/dashboard"
+        actions={
+          <button
+            onClick={handleCreate}
+            className="inline-flex min-h-[44px] items-center gap-2 rounded-lg bg-[#4CAF87] px-4 py-2 text-sm font-medium text-white shadow-sm transition-colors hover:bg-[#3d9a73]"
+          >
+            <Plus className="h-4 w-4" />
+            Neue Bekanntmachung
+          </button>
+        }
+      />
 
       {/* Kategorie-Filter */}
       <div className="flex flex-wrap gap-2">

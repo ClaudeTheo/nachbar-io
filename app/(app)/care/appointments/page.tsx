@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { Calendar, List, Plus, X } from 'lucide-react';
+import { PageHeader } from '@/components/ui/page-header';
 import { AppointmentList } from '@/components/care/AppointmentList';
 import { AppointmentCalendar } from '@/components/care/AppointmentCalendar';
 import { AppointmentForm } from '@/components/care/AppointmentForm';
@@ -38,23 +39,21 @@ export default function AppointmentsPage() {
 
   return (
     <div className="px-4 py-6 space-y-6">
-      <div className="flex items-start justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-anthrazit flex items-center gap-2">
-            <Calendar className="h-6 w-6 text-quartier-green" />
-            Termine
-          </h1>
-          <p className="text-muted-foreground mt-1">Arzttermine und Pflegetermine verwalten</p>
-        </div>
-        <button
-          onClick={() => setShowForm((v) => !v)}
-          className="min-h-[80px] min-w-[80px] flex flex-col items-center justify-center gap-1 rounded-xl border bg-card px-3 py-2 text-sm font-medium text-anthrazit hover:bg-muted transition-colors"
-          aria-label={showForm ? 'Formular schliessen' : 'Neuen Termin erstellen'}
-        >
-          {showForm ? <X className="h-5 w-5" /> : <Plus className="h-5 w-5" />}
-          {showForm ? 'Schliessen' : 'Neuer Termin'}
-        </button>
-      </div>
+      <PageHeader
+        title={<><Calendar className="h-6 w-6 text-quartier-green" /> Termine</>}
+        subtitle="Arzttermine und Pflegetermine verwalten"
+        backHref="/care"
+        actions={
+          <button
+            onClick={() => setShowForm((v) => !v)}
+            className="min-h-[80px] min-w-[80px] flex flex-col items-center justify-center gap-1 rounded-xl border bg-card px-3 py-2 text-sm font-medium text-anthrazit hover:bg-muted transition-colors"
+            aria-label={showForm ? 'Formular schliessen' : 'Neuen Termin erstellen'}
+          >
+            {showForm ? <X className="h-5 w-5" /> : <Plus className="h-5 w-5" />}
+            {showForm ? 'Schliessen' : 'Neuer Termin'}
+          </button>
+        }
+      />
 
       {/* Ansicht-Umschalter: Kalender / Liste */}
       <div className="flex gap-1 rounded-lg border border-gray-200 bg-gray-50 p-1 w-fit">

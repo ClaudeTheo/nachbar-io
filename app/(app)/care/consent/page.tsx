@@ -3,8 +3,9 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, Shield, Info } from 'lucide-react';
+import { Shield, Info } from 'lucide-react';
 import Link from 'next/link';
+import { PageHeader } from '@/components/ui/page-header';
 import { ConsentFeatureCard } from '@/components/care/ConsentFeatureCard';
 import { RevokeDialog } from '@/components/care/RevokeDialog';
 import { CARE_CONSENT_FEATURES, CARE_CONSENT_LABELS, CARE_CONSENT_DESCRIPTIONS } from '@/lib/care/constants';
@@ -128,21 +129,11 @@ export default function CareConsentPage() {
 
   return (
     <div className="px-4 py-6 space-y-6 max-w-lg mx-auto">
-      <Link
-        href={isFirstTime ? '/' : '/care'}
-        className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-anthrazit"
-      >
-        <ArrowLeft className="h-4 w-4" />
-        Zurück
-      </Link>
-
-      <div>
-        <h1 className="text-2xl font-bold text-anthrazit flex items-center gap-2">
-          <Shield className="h-6 w-6 text-quartier-green" />
-          Datenschutz-Einwilligungen
-        </h1>
-        <p className="text-muted-foreground mt-1">Care-Modul — Gesundheitsdaten</p>
-      </div>
+      <PageHeader
+        title={<><Shield className="h-6 w-6 text-quartier-green" /> Datenschutz-Einwilligungen</>}
+        subtitle="Care-Modul — Gesundheitsdaten"
+        backHref={isFirstTime ? '/' : '/care'}
+      />
 
       <div className="rounded-2xl bg-quartier-green/10 border border-quartier-green/20 p-4 flex gap-3">
         <Info className="h-5 w-5 text-quartier-green flex-shrink-0 mt-0.5" />

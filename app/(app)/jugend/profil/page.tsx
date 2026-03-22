@@ -5,6 +5,7 @@
 import { useYouthProfile } from '@/lib/youth/hooks';
 import { AccessLevelBanner } from '@/components/youth/AccessLevelBanner';
 import { PointsDisplay } from '@/components/youth/PointsDisplay';
+import { PageHeader } from "@/components/ui/page-header";
 
 export default function JugendProfil() {
   const { profile, loading } = useYouthProfile();
@@ -19,7 +20,7 @@ export default function JugendProfil() {
 
   return (
     <div className="p-6 space-y-6">
-      <h1 className="text-2xl font-bold text-anthrazit">Mein Profil</h1>
+      <PageHeader title="Mein Profil" backHref="/jugend" />
 
       <AccessLevelBanner level={profile.access_level} showUpgradeHint />
 

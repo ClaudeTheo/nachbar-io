@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Plus, HandHelping, Search, ChevronRight, Filter, Repeat, UtensilsCrossed } from "lucide-react";
+import { PageHeader } from "@/components/ui/page-header";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -57,29 +58,33 @@ export default function HelpPage() {
 
   return (
     <div>
-      <div className="mb-4 flex items-center justify-between">
-        <h1 className="text-xl font-bold text-anthrazit">Hilfe-Börse</h1>
-        <div className="flex items-center gap-2">
-          <button
-            onClick={() => setShowFilter(!showFilter)}
-            className={`rounded-lg p-2 transition-colors ${
-              filterCategory ? "bg-quartier-green/10 text-quartier-green" : "hover:bg-muted"
-            }`}
-            aria-label="Filter"
-            data-testid="help-filter-button"
-          >
-            <Filter className="h-4 w-4" />
-          </button>
-          <Link
-            href="/help/new"
-            className="flex items-center gap-1 rounded-lg bg-quartier-green px-3 py-2 text-sm font-semibold text-white hover:bg-quartier-green-dark"
-            data-testid="create-help-button"
-          >
-            <Plus className="h-4 w-4" />
-            Neuer Eintrag
-          </Link>
-        </div>
-      </div>
+      <PageHeader
+        title="Hilfe-Börse"
+        backHref="/dashboard"
+        className="mb-4"
+        actions={
+          <>
+            <button
+              onClick={() => setShowFilter(!showFilter)}
+              className={`rounded-lg p-2 transition-colors ${
+                filterCategory ? "bg-quartier-green/10 text-quartier-green" : "hover:bg-muted"
+              }`}
+              aria-label="Filter"
+              data-testid="help-filter-button"
+            >
+              <Filter className="h-4 w-4" />
+            </button>
+            <Link
+              href="/help/new"
+              className="flex items-center gap-1 rounded-lg bg-quartier-green px-3 py-2 text-sm font-semibold text-white hover:bg-quartier-green-dark"
+              data-testid="create-help-button"
+            >
+              <Plus className="h-4 w-4" />
+              Neuer Eintrag
+            </Link>
+          </>
+        }
+      />
 
       {/* Kategorie-Filter */}
       {showFilter && (

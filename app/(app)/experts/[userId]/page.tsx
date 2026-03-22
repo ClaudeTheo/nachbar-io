@@ -4,7 +4,6 @@ import { useEffect, useState, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import {
-  ArrowLeft,
   Star,
   ThumbsUp,
   MessageCircle,
@@ -18,6 +17,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
+import { PageHeader } from "@/components/ui/page-header";
 import { createClient } from "@/lib/supabase/client";
 import { useAuth } from '@/hooks/use-auth';
 import { useQuarter } from "@/lib/quarters";
@@ -287,12 +287,7 @@ export default function ExpertDetailPage() {
   return (
     <div className="space-y-6 animate-fade-in-up">
       {/* Header */}
-      <div className="flex items-center gap-3">
-        <Link href="/experts" className="rounded-lg p-2 hover:bg-muted">
-          <ArrowLeft className="h-5 w-5" />
-        </Link>
-        <h1 className="text-xl font-bold text-anthrazit">Experten-Profil</h1>
-      </div>
+      <PageHeader title="Experten-Profil" backHref="/experts" />
 
       {/* Profil-Header */}
       <div className="rounded-xl border border-border bg-white p-5 shadow-sm">

@@ -4,6 +4,7 @@
 import { Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { CreditCard, CircleCheckBig, CircleX, Gift } from 'lucide-react';
+import { PageHeader } from '@/components/ui/page-header';
 import { useSubscription } from '@/lib/care/hooks/useSubscription';
 import { SubscriptionCard } from '@/components/care/SubscriptionCard';
 import { SubscriptionPlans } from '@/components/care/SubscriptionPlans';
@@ -18,15 +19,11 @@ function SubscriptionContent() {
 
   return (
     <div className="px-4 py-6 space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-[#2D3142] flex items-center gap-2">
-          <CreditCard className="h-6 w-6 text-quartier-green" />
-          Ihr Abo-Plan
-        </h1>
-        <p className="text-muted-foreground mt-1">
-          Verwalten Sie Ihren QuartierApp Pflege-Plan.
-        </p>
-      </div>
+      <PageHeader
+        title={<><CreditCard className="h-6 w-6 text-quartier-green" /> Ihr Abo-Plan</>}
+        subtitle="Verwalten Sie Ihren QuartierApp Pflege-Plan."
+        backHref="/care"
+      />
 
       {/* Checkout-Feedback */}
       {checkout === 'success' && (

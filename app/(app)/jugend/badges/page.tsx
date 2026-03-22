@@ -6,6 +6,7 @@ import { useEffect, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { useAuth } from '@/hooks/use-auth';
 import { BadgeCard } from '@/components/youth/BadgeCard';
+import { PageHeader } from "@/components/ui/page-header";
 
 interface Badge {
   id: string;
@@ -60,8 +61,7 @@ export default function JugendBadges() {
 
   return (
     <div className="p-6 space-y-4">
-      <h1 className="text-2xl font-bold text-anthrazit">Meine Badges</h1>
-      <p className="text-gray-500">Sammle Badges durch Aufgaben und Engagement.</p>
+      <PageHeader title="Meine Badges" subtitle="Sammle Badges durch Aufgaben und Engagement." backHref="/jugend" />
 
       <div className="space-y-3">
         {badges.map(badge => (

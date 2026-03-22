@@ -1,13 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
-  ArrowLeft, Search, Rocket, MapPin, MessageCircle,
+  Search, Rocket, MapPin, MessageCircle,
   TriangleAlert, User, Shield, ChevronDown,
 } from "lucide-react";
+import { PageHeader } from "@/components/ui/page-header";
 import { HELP_CATEGORIES, type HelpCategory } from "@/lib/help-content";
 
 const ICON_MAP: Record<string, React.ElementType> = {
@@ -20,7 +19,6 @@ const ICON_MAP: Record<string, React.ElementType> = {
 };
 
 export default function HelpCenterPage() {
-  const router = useRouter();
   const [search, setSearch] = useState("");
   const [openItems, setOpenItems] = useState<Record<string, boolean>>({});
 
@@ -45,17 +43,12 @@ export default function HelpCenterPage() {
   return (
     <div className="animate-fade-in-up">
       {/* Header */}
-      <div className="mb-4 flex items-center gap-3">
-        <Button variant="ghost" size="icon-sm" onClick={() => router.back()}>
-          <ArrowLeft className="h-5 w-5" />
-        </Button>
-        <div>
-          <h1 className="text-xl font-bold text-anthrazit">Hilfecenter</h1>
-          <p className="text-sm text-muted-foreground">
-            Antworten auf häufige Fragen
-          </p>
-        </div>
-      </div>
+      <PageHeader
+        title="Hilfecenter"
+        subtitle="Antworten auf häufige Fragen"
+        backHref="/dashboard"
+        className="mb-4"
+      />
 
       {/* Suchfeld */}
       <div className="relative mb-5">

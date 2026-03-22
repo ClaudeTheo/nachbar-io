@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { MessageCircle, UserPlus, Check, X, MapPin } from "lucide-react";
+import { PageHeader } from "@/components/ui/page-header";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -284,9 +285,7 @@ export default function MessagesPage() {
   return (
     <div className="animate-fade-in-up">
       {/* Header */}
-      <div className="mb-4">
-        <h1 className="text-xl font-bold text-anthrazit">Nachrichten</h1>
-      </div>
+      <PageHeader title="Nachrichten" backHref="/dashboard" className="mb-4" />
 
       {/* Bewohner kontaktieren */}
       <Button

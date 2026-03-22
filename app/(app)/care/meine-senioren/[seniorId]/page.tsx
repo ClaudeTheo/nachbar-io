@@ -4,8 +4,9 @@
 
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { ArrowLeft, Pill, Clock, TriangleAlert, Plus, Activity, RefreshCw, MessageCircle, UserCog } from 'lucide-react';
+import { Pill, Clock, TriangleAlert, Plus, Activity, RefreshCw, MessageCircle, UserCog } from 'lucide-react';
 import Link from 'next/link';
+import { PageHeader } from '@/components/ui/page-header';
 import { useCareRole } from '@/lib/care/hooks/useCareRole';
 import { createClient } from '@/lib/supabase/client';
 import { HeartbeatTimeline } from '@/components/care/HeartbeatTimeline';
@@ -141,40 +142,31 @@ export default function SeniorDetailPage() {
 
   return (
     <div className="px-4 py-6 space-y-6">
-      {/* Zurueck-Link */}
-      <Link
-        href="/care/meine-senioren"
-        className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-anthrazit"
-      >
-        <ArrowLeft className="h-4 w-4" />
-        Zurueck zur Uebersicht
-      </Link>
-
       {/* Header mit Refresh */}
-      <div className="flex items-start justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-anthrazit">{seniorName}</h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            {role === 'relative' ? 'Angehoerige/r' : role === 'care_service' ? 'Pflegedienst' : 'Helfer'}
-          </p>
-        </div>
-        <button
-          onClick={async () => {
-            setRefreshing(true);
-            const res = await fetch(`/api/resident/status?resident_id=${seniorId}`);
-            if (res.ok) {
-              const data = await res.json();
-              setLastHeartbeat(data.last_heartbeat ?? null);
-              setLastCheckinStatus(data.last_checkin_status ?? null);
-            }
-            setRefreshing(false);
-          }}
-          className="rounded-lg p-2 text-muted-foreground hover:bg-muted"
-          aria-label="Aktualisieren"
-        >
-          <RefreshCw className={`h-4 w-4 ${refreshing ? 'animate-spin' : ''}`} />
-        </button>
-      </div>
+      <PageHeader
+        title={seniorName}
+        subtitle={role === 'relative' ? 'Angehoerige/r' : role === 'care_service' ? 'Pflegedienst' : 'Helfer'}
+        backHref="/care/meine-senioren"
+        backLabel="Zurück zur Übersicht"
+        actions={
+          <button
+            onClick={async () => {
+              setRefreshing(true);
+              const res = await fetch(`/api/resident/status?resident_id=${seniorId}`);
+              if (res.ok) {
+                const data = await res.json();
+                setLastHeartbeat(data.last_heartbeat ?? null);
+                setLastCheckinStatus(data.last_checkin_status ?? null);
+              }
+              setRefreshing(false);
+            }}
+            className="rounded-lg p-2 text-muted-foreground hover:bg-muted"
+            aria-label="Aktualisieren"
+          >
+            <RefreshCw className={`h-4 w-4 ${refreshing ? 'animate-spin' : ''}`} />
+          </button>
+        }
+      />
 
       {/* Schnellaktionen */}
       <div className="flex gap-2">

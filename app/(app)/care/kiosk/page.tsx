@@ -5,6 +5,7 @@
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { ArrowLeft, Camera, Bell, Monitor, Loader2 } from "lucide-react";
+import { PageHeader } from "@/components/ui/page-header";
 import { KioskPhotoUpload } from "@/components/care/KioskPhotoUpload";
 import { KioskReminderForm } from "@/components/care/KioskReminderForm";
 
@@ -136,25 +137,13 @@ export default function KioskManagementPage() {
 
   return (
     <div className="px-4 py-6 space-y-6">
-      {/* Zurück-Link */}
-      <Link
-        href="/care"
-        className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-anthrazit"
-      >
-        <ArrowLeft className="h-4 w-4" />
-        Zurück zum Pflege-Dashboard
-      </Link>
-
       {/* Header */}
-      <div>
-        <h1 className="text-2xl font-bold text-anthrazit flex items-center gap-2">
-          <Monitor className="h-6 w-6 text-quartier-green" />
-          Kiosk verwalten
-        </h1>
-        <p className="text-muted-foreground mt-1">
-          Fotos und Erinnerungen für das Terminal von {residentName}
-        </p>
-      </div>
+      <PageHeader
+        title={<><Monitor className="h-6 w-6 text-quartier-green" /> Kiosk verwalten</>}
+        subtitle={`Fotos und Erinnerungen für das Terminal von ${residentName}`}
+        backHref="/care"
+        backLabel="Zurück zum Pflege-Dashboard"
+      />
 
       {/* Tab-Navigation */}
       <div className="flex border-b">

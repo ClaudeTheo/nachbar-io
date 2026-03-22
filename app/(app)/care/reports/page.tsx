@@ -3,6 +3,7 @@
 
 import { useState, useCallback } from 'react';
 import { FileText } from 'lucide-react';
+import { PageHeader } from '@/components/ui/page-header';
 import { ReportGenerator } from '@/components/care/ReportGenerator';
 import { ReportList } from '@/components/care/ReportList';
 import { useAuth } from '@/hooks/use-auth';
@@ -28,15 +29,11 @@ export default function ReportsPage() {
 
   return (
     <div className="px-4 py-6 space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-[#2D3142] flex items-center gap-2">
-          <FileText className="h-6 w-6 text-quartier-green" />
-          Berichte
-        </h1>
-        <p className="text-muted-foreground mt-1">
-          Erstellen und verwalten Sie Pflegeberichte.
-        </p>
-      </div>
+      <PageHeader
+        title={<><FileText className="h-6 w-6 text-quartier-green" /> Berichte</>}
+        subtitle="Erstellen und verwalten Sie Pflegeberichte."
+        backHref="/care"
+      />
 
       <ReportGenerator seniorId={user.id} onGenerated={handleGenerated} />
 

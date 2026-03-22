@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, Plus, Trash2, Eye, EyeOff, ChevronRight } from "lucide-react";
+import { Plus, Trash2, Eye, EyeOff, ChevronRight } from "lucide-react";
+import { PageHeader } from "@/components/ui/page-header";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
@@ -92,12 +93,7 @@ export default function SkillsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center gap-3">
-        <Link href="/profile" className="rounded-lg p-2 hover:bg-muted">
-          <ArrowLeft className="h-5 w-5" />
-        </Link>
-        <h1 className="text-xl font-bold text-anthrazit">Meine Kompetenzen</h1>
-      </div>
+      <PageHeader title="Meine Kompetenzen" backHref="/profile" />
 
       <p className="text-sm text-muted-foreground">
         Teilen Sie Ihre Fähigkeiten mit der Nachbarschaft. Andere können Sie bei

@@ -4,6 +4,7 @@
 import { useEffect, useState } from 'react';
 import { BarChart3, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
+import { PageHeader } from '@/components/ui/page-header';
 import { createClient } from '@/lib/supabase/client';
 import { SystemOverview } from '@/components/care/SystemOverview';
 import { PilotMetrics } from '@/components/care/PilotMetrics';
@@ -47,15 +48,11 @@ export default function AdminOverviewPage() {
 
   return (
     <div className="px-4 py-6 space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-[#2D3142] flex items-center gap-2">
-          <BarChart3 className="h-6 w-6 text-[#4CAF87]" />
-          Plattform-Uebersicht
-        </h1>
-        <p className="text-muted-foreground mt-1">
-          Kennzahlen fuer Pilot-Betrieb und Investoren.
-        </p>
-      </div>
+      <PageHeader
+        title={<><BarChart3 className="h-6 w-6 text-[#4CAF87]" /> Plattform-Uebersicht</>}
+        subtitle="Kennzahlen fuer Pilot-Betrieb und Investoren."
+        backHref="/care"
+      />
 
       <SystemOverview />
 

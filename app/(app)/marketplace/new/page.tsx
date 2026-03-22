@@ -2,8 +2,8 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
-import { ArrowLeft, Check } from "lucide-react";
+import { Check } from "lucide-react";
+import { PageHeader } from "@/components/ui/page-header";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -107,12 +107,7 @@ export default function MarketplaceNewPage() {
     <div className="space-y-6">
       {uploading && <UploadingOverlay />}
 
-      <div className="flex items-center gap-3">
-        <Link href="/marketplace" className="rounded-lg p-2 hover:bg-muted">
-          <ArrowLeft className="h-5 w-5" />
-        </Link>
-        <h1 className="text-xl font-bold text-anthrazit">Neues Inserat</h1>
-      </div>
+      <PageHeader title="Neues Inserat" backHref="/marketplace" />
 
       {/* Schrittanzeige */}
       <div className="flex gap-1">

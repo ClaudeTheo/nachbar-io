@@ -6,6 +6,7 @@ import Link from "next/link";
 import { ExternalLink } from "@/components/ExternalLink";
 import Image from "next/image";
 import { ArrowLeft, MapPin, ExternalLink as ExternalLinkIcon, Send, MessageCircle } from "lucide-react";
+import { PageHeader } from "@/components/ui/page-header";
 import { toast } from "sonner";
 import { createClient } from "@/lib/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
@@ -234,23 +235,15 @@ export default function ReportDetailPage() {
   return (
     <div className="space-y-4 animate-fade-in-up">
       {/* Header: Zurueck-Pfeil, Titel, Status-Badge */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <Link
-            href="/reports"
-            className="flex h-10 w-10 items-center justify-center rounded-full hover:bg-gray-100"
-            aria-label="Zurück zur Übersicht"
-          >
-            <ArrowLeft className="h-5 w-5 text-anthrazit" />
-          </Link>
-          <h1 className="text-lg font-bold text-anthrazit">
-            {getCategoryLabel(report.category)}
-          </h1>
-        </div>
-        <span className={`rounded-full px-3 py-1 text-xs font-medium ${statusCfg.color} ${statusCfg.bgColor}`}>
-          {statusCfg.label}
-        </span>
-      </div>
+      <PageHeader
+        title={getCategoryLabel(report.category)}
+        backHref="/reports"
+        actions={
+          <span className={`rounded-full px-3 py-1 text-xs font-medium ${statusCfg.color} ${statusCfg.bgColor}`}>
+            {statusCfg.label}
+          </span>
+        }
+      />
 
       {/* Foto oder Kategorie-Icon */}
       {report.photo_url ? (

@@ -1,8 +1,8 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { ArrowLeft, Stethoscope } from 'lucide-react';
-import Link from 'next/link';
+import { Stethoscope } from 'lucide-react';
+import { PageHeader } from '@/components/ui/page-header';
 import { DoctorCard } from '@/components/consultation/DoctorCard';
 import { RequestAppointmentModal } from '@/components/consultation/RequestAppointmentModal';
 
@@ -52,16 +52,11 @@ export default function SprechstundeDoctorsPage() {
 
   return (
     <div className="space-y-6 pb-24">
-      <div className="flex items-center gap-3">
-        <Link href="/care" className="p-2 rounded-xl hover:bg-anthrazit/5">
-          <ArrowLeft className="h-6 w-6 text-anthrazit" />
-        </Link>
-        <h1 className="text-2xl font-bold text-anthrazit">Ärzte im Quartier</h1>
-      </div>
-
-      <p className="text-sm text-anthrazit/60">
-        Finden Sie Ärzte in Ihrer Nähe und senden Sie einen Terminwunsch für eine Videosprechstunde.
-      </p>
+      <PageHeader
+        title="Ärzte im Quartier"
+        subtitle="Finden Sie Ärzte in Ihrer Nähe und senden Sie einen Terminwunsch für eine Videosprechstunde."
+        backHref="/care"
+      />
 
       {/* Erfolgsmeldung */}
       {successMessage && (

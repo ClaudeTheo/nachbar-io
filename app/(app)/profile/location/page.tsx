@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { ArrowLeft, MapPin, Shield } from "lucide-react";
-import Link from "next/link";
+import { MapPin, Shield } from "lucide-react";
+import { PageHeader } from "@/components/ui/page-header";
 import { toast } from "sonner";
 import { Card, CardContent } from "@/components/ui/card";
 import { createClient } from "@/lib/supabase/client";
@@ -45,12 +45,7 @@ export default function LocationSettingsPage() {
 
   return (
     <div>
-      <div className="mb-6 flex items-center gap-3">
-        <Link href="/profile" className="rounded-lg p-2 hover:bg-muted">
-          <ArrowLeft className="h-5 w-5" />
-        </Link>
-        <h1 className="text-xl font-bold text-anthrazit">Standortfreigabe</h1>
-      </div>
+      <PageHeader title="Standortfreigabe" backHref="/profile" className="mb-6" />
 
       <Card>
         <CardContent className="p-4">

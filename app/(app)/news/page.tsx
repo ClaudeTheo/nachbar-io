@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { RefreshCw, Clock } from "lucide-react";
+import { PageHeader } from "@/components/ui/page-header";
 import { NewsCard } from "@/components/NewsCard";
 import { createClient } from "@/lib/supabase/client";
 import { useQuarter } from "@/lib/quarters";
@@ -49,17 +50,21 @@ export default function NewsPage() {
   return (
     <div>
       {/* Header */}
-      <div className="mb-4 flex items-center justify-between">
-        <h1 className="text-xl font-bold text-anthrazit">Quartiersnews</h1>
-        <button
-          onClick={loadNews}
-          disabled={loading}
-          className="rounded-lg p-2 hover:bg-muted disabled:opacity-50"
-          aria-label="Aktualisieren"
-        >
-          <RefreshCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} />
-        </button>
-      </div>
+      <PageHeader
+        title="Quartiersnews"
+        backHref="/dashboard"
+        className="mb-4"
+        actions={
+          <button
+            onClick={loadNews}
+            disabled={loading}
+            className="rounded-lg p-2 hover:bg-muted disabled:opacity-50"
+            aria-label="Aktualisieren"
+          >
+            <RefreshCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} />
+          </button>
+        }
+      />
 
       <p className="mb-3 text-sm text-muted-foreground">
         Automatisch aufbereitete lokale Nachrichten für Ihr Quartier.

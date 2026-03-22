@@ -44,6 +44,7 @@ vi.mock('lucide-react', () => {
     Package: iconStub('package'),
     UserPlus: iconStub('user-plus'),
     Download: iconStub('download'),
+    ArrowLeft: iconStub('arrow-left'),
   };
 });
 

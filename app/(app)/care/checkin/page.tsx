@@ -3,8 +3,9 @@
 // Aktive Check-in Seite: Taeglicher Check-in + letzte Eintraege
 
 import { useEffect, useState, useCallback } from 'react';
-import { ArrowLeft, Clock, ArrowRight } from 'lucide-react';
+import { Clock, ArrowRight } from 'lucide-react';
 import Link from 'next/link';
+import { PageHeader } from '@/components/ui/page-header';
 import { CheckinDialog } from '@/components/care/CheckinDialog';
 import { CheckinHistory } from '@/components/care/CheckinHistory';
 import type { CareCheckin } from '@/lib/care/types';
@@ -47,25 +48,12 @@ export default function CheckinPage() {
 
   return (
     <div className="px-4 py-6 space-y-6">
-      {/* Zurueck-Link */}
-      <Link
-        href="/care"
-        className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-anthrazit"
-      >
-        <ArrowLeft className="h-4 w-4" />
-        Zurueck
-      </Link>
-
       {/* Header */}
-      <div>
-        <h1 className="text-2xl font-bold text-anthrazit flex items-center gap-2">
-          <Clock className="h-6 w-6 text-quartier-green" />
-          Taeglicher Check-in
-        </h1>
-        <p className="text-muted-foreground mt-1">
-          Melden Sie uns kurz, wie es Ihnen geht
-        </p>
-      </div>
+      <PageHeader
+        title={<><Clock className="h-6 w-6 text-quartier-green" /> Taeglicher Check-in</>}
+        subtitle="Melden Sie uns kurz, wie es Ihnen geht"
+        backHref="/care"
+      />
 
       {/* Check-in Dialog (3 Mood-Buttons + Notiz) */}
       <div className="rounded-xl border bg-card p-6">

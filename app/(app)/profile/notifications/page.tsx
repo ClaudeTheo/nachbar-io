@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
-import { ArrowLeft, Bell, BellOff, Smartphone, CircleCheck } from "lucide-react";
+import { Bell, BellOff, Smartphone, CircleCheck } from "lucide-react";
+import { PageHeader } from "@/components/ui/page-header";
 import { Button } from "@/components/ui/button";
 import {
   isPushSupported,
@@ -63,12 +63,7 @@ export default function NotificationsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center gap-3">
-        <Link href="/profile" className="rounded-lg p-2 hover:bg-muted">
-          <ArrowLeft className="h-5 w-5" />
-        </Link>
-        <h1 className="text-xl font-bold text-anthrazit">Benachrichtigungen</h1>
-      </div>
+      <PageHeader title="Benachrichtigungen" backHref="/profile" />
 
       {/* Status-Karte */}
       <div className="rounded-xl border-2 border-border bg-white p-6">

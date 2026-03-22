@@ -2,8 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowLeft } from "lucide-react";
-import Link from "next/link";
+import { PageHeader } from "@/components/ui/page-header";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -160,16 +159,15 @@ export default function NewAlertPage() {
       )}
 
       {/* Header */}
-      <div className="mb-6 flex items-center gap-3">
-        <Link href="/dashboard" className="rounded-lg p-2 hover:bg-muted">
-          <ArrowLeft className="h-5 w-5" />
-        </Link>
-        <h1 className="text-xl font-bold text-anthrazit">
-          {step === "category" && "Was ist passiert?"}
-          {step === "description" && (ALERT_CATEGORIES.find(c => c.id === selectedCategory)?.label ?? "Beschreibung")}
-          {step === "sent" && "Hilferuf gesendet"}
-        </h1>
-      </div>
+      <PageHeader
+        title={
+          step === "category" ? "Was ist passiert?" :
+          step === "description" ? (ALERT_CATEGORIES.find(c => c.id === selectedCategory)?.label ?? "Beschreibung") :
+          "Hilferuf gesendet"
+        }
+        backHref="/dashboard"
+        className="mb-6"
+      />
 
       {/* Schritt 1: Kategorie wählen */}
       {step === "category" && (

@@ -8,6 +8,8 @@ import { cn } from "@/lib/utils";
 interface PageHeaderProps {
   /** Seitentitel (h1) */
   title: React.ReactNode;
+  /** Optionaler Untertitel unter dem Titel */
+  subtitle?: string;
   /** Zurueck-Link Ziel (z.B. "/dashboard") */
   backHref: string;
   /** Aria-Label fuer Zurueck-Button (Standard: "Zurück") */
@@ -28,6 +30,7 @@ interface PageHeaderProps {
  */
 export function PageHeader({
   title,
+  subtitle,
   backHref,
   backLabel = "Zurück",
   actions,
@@ -48,7 +51,12 @@ export function PageHeader({
         >
           <ArrowLeft className="h-5 w-5" />
         </Link>
-        <h1 className="text-xl font-bold text-anthrazit">{title}</h1>
+        <div>
+          <h1 className="text-xl font-bold text-anthrazit">{title}</h1>
+          {subtitle && (
+            <p className="text-sm text-muted-foreground mt-0.5">{subtitle}</p>
+          )}
+        </div>
       </div>
       {actions && <div className="flex items-center gap-2">{actions}</div>}
     </div>

@@ -5,7 +5,8 @@ import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Save } from "lucide-react";
+import { Save } from "lucide-react";
+import { PageHeader } from "@/components/ui/page-header";
 import {
   MAP_W, MAP_H, STREET_LABELS, STREET_CODE_TO_NAME, COLOR_CFG, DEFAULT_HOUSES,
   type MapHouseData, type LampColor, type StreetCode,
@@ -197,20 +198,15 @@ export default function MapPositionPage() {
   return (
     <div className="animate-fade-in-up">
       {/* Header */}
-      <div className="mb-4 flex items-center gap-3">
-        <Button variant="ghost" size="icon-sm" onClick={() => router.push("/profile")}>
-          <ArrowLeft className="h-5 w-5" />
-        </Button>
-        <div>
-          <h1 className="text-xl font-bold text-anthrazit">Kartenposition</h1>
-          <p className="text-sm text-muted-foreground">
-            {isNewEntry
-              ? "Setzen Sie die Position Ihres Hauses auf der Karte"
-              : "Passen Sie die Position Ihres Hauses auf der Karte an"
-            }
-          </p>
-        </div>
-      </div>
+      <PageHeader
+        title="Kartenposition"
+        subtitle={isNewEntry
+          ? "Setzen Sie die Position Ihres Hauses auf der Karte"
+          : "Passen Sie die Position Ihres Hauses auf der Karte an"
+        }
+        backHref="/profile"
+        className="mb-4"
+      />
 
       {!myHouse ? (
         <div className="rounded-lg border border-border bg-muted/30 p-6 text-center">

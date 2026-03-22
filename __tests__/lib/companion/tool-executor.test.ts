@@ -136,17 +136,17 @@ describe('executeCompanionTool', () => {
   });
 
   describe('send_message', () => {
-    it('gibt Fehler zurueck (noch nicht implementiert)', async () => {
+    it('gibt Fehler zurueck ohne Empfaenger oder Text', async () => {
       const mock = buildMockSupabase();
       vi.mocked(createClient).mockResolvedValue(mock as unknown as Awaited<ReturnType<typeof createClient>>);
 
       const result = await executeCompanionTool(
         'send_message',
-        { recipient_name: 'Max', text: 'Hallo' },
+        { recipient_name: '', text: '' },
         'user-1'
       );
       expect(result.success).toBe(false);
-      expect(result.summary).toContain('nicht');
+      expect(result.summary).toContain('Empfänger');
     });
   });
 

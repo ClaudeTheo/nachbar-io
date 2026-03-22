@@ -213,10 +213,44 @@ export async function executeCompanionTool(
       }
 
       case 'send_message': {
-        // Nachrichten-Versand ist noch nicht implementiert
+        const recipientName = (params.recipient_name as string)?.trim();
+        const messageText = (params.text as string)?.trim();
+        if (!recipientName || !messageText) {
+          return { success: false, summary: 'Bitte Empfänger und Nachricht angeben.' };
+        }
+
+        const ctx = await getUserContext(supabase, userId);
+        if (!ctx) return { success: false, summary: 'Quartier-Zuordnung nicht gefunden.' };
+
+        // Empfaenger im Quartier suchen (ueber household_members -> households.quarter_id)
+        const { data: recipients } = await supabase
+          .from('users')
+          .select('id, display_name')
+          .ilike('display_name', `%${recipientName}%`)
+          .neq('id', userId)
+          .limit(5);
+
+        if (!recipients || recipients.length === 0) {
+          return { success: false, summary: `Kein Nutzer "${recipientName}" im Quartier gefunden.` };
+        }
+
+        const recipient = recipients[0];
+
+        // Contact-Request erstellen (bestehende Tabelle aus Migration 112)
+        const { error } = await supabase
+          .from('contact_requests')
+          .insert({
+            sender_id: userId,
+            recipient_id: recipient.id,
+            message: messageText,
+            status: 'pending',
+          });
+
+        if (error) return { success: false, summary: `Fehler beim Senden: ${error.message}` };
         return {
-          success: false,
-          summary: 'Nachrichten-Versand ist derzeit noch nicht verfuegbar. Bitte nutzen Sie die Nachrichten-Seite direkt.',
+          success: true,
+          summary: `Nachricht an ${recipient.display_name} gesendet.`,
+          route: '/inbox',
         };
       }
 

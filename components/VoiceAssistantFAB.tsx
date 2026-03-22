@@ -18,6 +18,8 @@ import { toast } from 'sonner';
 import { createSpeechEngine } from '@/lib/voice/create-speech-engine';
 import { AudioWaveform } from '@/components/voice/AudioWaveform';
 import { SpeakerAnimation } from '@/components/voice/SpeakerAnimation';
+import { StreamingTextDisplay } from '@/components/companion/StreamingTextDisplay';
+import { useStreamingChat } from '@/hooks/useStreamingChat';
 import type { SpeechEngine, SpeechEngineCallbacks } from '@/lib/voice/speech-engine';
 
 /** Sheet-Zustaende */
@@ -51,8 +53,8 @@ interface CompanionResponse {
   confirmations?: CompanionConfirmation[];
 }
 
-/** Maximale Anzahl an Austauschen bevor "Weiterplaudern?"-Hinweis */
-const MAX_EXCHANGES = 5;
+/** Maximale Anzahl an Austauschen bevor "Zum Quartier-Lotsen"-Hinweis */
+const MAX_EXCHANGES = 2;
 
 export function VoiceAssistantFAB() {
   const router = useRouter();
@@ -75,6 +77,32 @@ export function VoiceAssistantFAB() {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   // Push-to-Talk: Startzeitpunkt fuer Mindestdauer-Pruefung
   const recordingStartTimeRef = useRef<number>(0);
+  // Streaming Tool-Ergebnisse und Bestaetigungen sammeln
+  const streamToolResultsRef = useRef<CompanionToolResult[]>([]);
+  const streamConfirmationsRef = useRef<CompanionConfirmation[]>([]);
+
+  // Streaming-Chat Hook fuer SSE-basierte Antworten
+  const {
+    streamingText,
+    isStreaming: isStreamingChat,
+    sendStreaming,
+  } = useStreamingChat({
+    onToolResult: (event) => {
+      const result = event.result as CompanionToolResult;
+      streamToolResultsRef.current.push({
+        success: result.success,
+        summary: result.summary,
+        route: result.route,
+      });
+    },
+    onConfirmation: (event) => {
+      streamConfirmationsRef.current.push({
+        tool: event.tool,
+        params: event.params,
+        description: event.description,
+      });
+    },
+  });
 
   // Cleanup bei Unmount
   useEffect(() => {
@@ -87,72 +115,89 @@ export function VoiceAssistantFAB() {
     };
   }, []);
 
-  // Companion-API-Aufruf nach Transkription
+  // Companion-API-Aufruf nach Transkription (Streaming)
   const sendToCompanion = useCallback(
     async (text: string, confirmTool?: { tool: string; params: Record<string, unknown> }) => {
       setSheetState('processing');
       setAudioLevel(0);
 
+      // Streaming-Refs zuruecksetzen
+      streamToolResultsRef.current = [];
+      streamConfirmationsRef.current = [];
+
       try {
-        // Nachrichten-Array aufbauen (bestehende + neue User-Nachricht)
-        const newMessages: ChatMessage[] = confirmTool
-          ? sheetMessages // Bei Bestaetigung keine neue User-Nachricht
-          : [...sheetMessages, { role: 'user' as const, content: text }];
-
-        // Auf max 10 Nachrichten (5 Austausche) begrenzen
-        const limitedMessages = newMessages.slice(-(MAX_EXCHANGES * 2));
-
-        const body: Record<string, unknown> = { messages: limitedMessages };
+        // Bei Tool-Bestaetigung: Nicht-Streaming (einfacher JSON-Request)
         if (confirmTool) {
-          body.confirmTool = confirmTool;
-        }
+          const res = await fetch('/api/companion/chat', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              messages: sheetMessages,
+              confirmTool,
+            }),
+          });
+          if (!res.ok) throw new Error(`API-Fehler: ${res.status}`);
+          const data: CompanionResponse = await res.json();
 
-        const res = await fetch('/api/companion/chat', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(body),
-        });
-
-        if (!res.ok) {
-          throw new Error(`API-Fehler: ${res.status}`);
-        }
-
-        const data: CompanionResponse = await res.json();
-
-        // Navigation aus Tool-Ergebnissen pruefen
-        const navResult = data.toolResults?.find(r => r.route);
-        if (navResult?.route) {
-          router.push(navResult.route);
-          toast.success(data.message || 'Navigation...');
-          setSheetState('closed');
+          setSheetMessages(prev => [...prev, { role: 'assistant', content: data.message }]);
+          setResponseMessage(data.message);
+          setToolResults(data.toolResults ?? []);
+          setConfirmations(data.confirmations ?? []);
+          setSheetState('result');
           return;
         }
 
-        // Nachrichten-History aktualisieren
-        const updatedMessages: ChatMessage[] = [
-          ...limitedMessages,
-          { role: 'assistant' as const, content: data.message },
+        // Nachrichten-Array aufbauen mit neuer User-Nachricht
+        const newMessages: ChatMessage[] = [
+          ...sheetMessages,
+          { role: 'user' as const, content: text },
         ];
-        setSheetMessages(updatedMessages);
+        const limitedMessages = newMessages.slice(-(MAX_EXCHANGES * 2));
 
-        // Exchange-Counter erhoehen (nur bei neuer User-Nachricht)
-        if (!confirmTool) {
-          setExchangeCount(prev => prev + 1);
-        }
+        // Streaming-Request
+        setSheetState('speaking'); // Sofort auf speaking (zeigt StreamingTextDisplay)
+        await sendStreaming(limitedMessages);
 
-        // Ergebnis speichern
-        setResponseMessage(data.message);
-        setTranscript(text);
-        setToolResults(data.toolResults ?? []);
-        setConfirmations(data.confirmations ?? []);
-        setSheetState('speaking');
+        // Stream beendet — finalen Text aus Hook lesen
+        // (streamingText ist im Hook nach sendStreaming-Resolve final)
+        // Wir verwenden einen kurzen Delay damit React den State aktualisiert
+      } catch (err) {
+        console.error('[VoiceAssistantFAB] Companion-Anfrage fehlgeschlagen:', err);
+        setErrorMessage('Sprachassistent konnte die Anfrage nicht verarbeiten.');
+        setSheetState('error');
+      }
+    },
+    [sheetMessages, sendStreaming]
+  );
 
-        // TTS: Antwort vorlesen
+  // Wenn Streaming endet -> TTS starten und zu result wechseln
+  const prevStreamingRef = useRef(false);
+  useEffect(() => {
+    if (prevStreamingRef.current && !isStreamingChat && streamingText && sheetState === 'speaking') {
+      // Nachrichten-History aktualisieren
+      setSheetMessages(prev => [...prev, { role: 'assistant', content: streamingText }]);
+      setExchangeCount(prev => prev + 1);
+      setResponseMessage(streamingText);
+      setToolResults([...streamToolResultsRef.current]);
+      setConfirmations([...streamConfirmationsRef.current]);
+
+      // Navigation pruefen
+      const navResult = streamToolResultsRef.current.find(r => r.route);
+      if (navResult?.route) {
+        router.push(navResult.route);
+        toast.success(streamingText || 'Navigation...');
+        setSheetState('closed');
+        prevStreamingRef.current = isStreamingChat;
+        return;
+      }
+
+      // TTS: Antwort vorlesen
+      (async () => {
         try {
           const ttsRes = await fetch('/api/voice/tts', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ text: data.message }),
+            body: JSON.stringify({ text: streamingText }),
           });
 
           if (ttsRes.ok) {
@@ -175,21 +220,15 @@ export function VoiceAssistantFAB() {
 
             await audio.play();
           } else {
-            // TTS fehlgeschlagen — direkt zu result
             setSheetState('result');
           }
         } catch {
-          // TTS fehlgeschlagen — direkt zu result
           setSheetState('result');
         }
-      } catch (err) {
-        console.error('[VoiceAssistantFAB] Companion-Anfrage fehlgeschlagen:', err);
-        setErrorMessage('Sprachassistent konnte die Anfrage nicht verarbeiten.');
-        setSheetState('error');
-      }
-    },
-    [router, sheetMessages]
-  );
+      })();
+    }
+    prevStreamingRef.current = isStreamingChat;
+  }, [isStreamingChat, streamingText, sheetState, router]);
 
   // Engine starten
   const startRecording = useCallback(() => {
@@ -468,13 +507,21 @@ export function VoiceAssistantFAB() {
               </div>
             )}
 
-            {/* SPEAKING: Lautsprecher-Animation + Text + Stopp */}
+            {/* SPEAKING: Streaming-Text oder Lautsprecher-Animation + Text + Stopp */}
             {sheetState === 'speaking' && (
               <>
-                <SpeakerAnimation isPlaying={true} />
-                <p className="text-center text-lg font-medium text-[#2D3142]">
-                  {responseMessage}
-                </p>
+                {isStreamingChat ? (
+                  <div className="text-center text-lg font-medium text-[#2D3142]">
+                    <StreamingTextDisplay text={streamingText} isStreaming={true} />
+                  </div>
+                ) : (
+                  <>
+                    <SpeakerAnimation isPlaying={true} />
+                    <p className="text-center text-lg font-medium text-[#2D3142]">
+                      {responseMessage}
+                    </p>
+                  </>
+                )}
                 <button
                   onClick={handleStopSpeaking}
                   className="w-full flex items-center justify-center gap-2 rounded-xl border border-gray-200 text-[#2D3142] font-medium text-base transition-all hover:bg-gray-50 active:scale-95"

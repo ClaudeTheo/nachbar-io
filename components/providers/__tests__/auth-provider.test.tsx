@@ -5,6 +5,7 @@ import { AuthProvider, useAuth } from '../auth-provider'
 
 // Mock: Supabase Client
 const mockGetUser = vi.fn()
+const mockGetSession = vi.fn()
 const mockOnAuthStateChange = vi.fn()
 const mockUnsubscribe = vi.fn()
 
@@ -12,6 +13,7 @@ vi.mock('@/lib/supabase/client', () => ({
   createClient: () => ({
     auth: {
       getUser: mockGetUser,
+      getSession: mockGetSession,
       onAuthStateChange: mockOnAuthStateChange,
     },
   }),
@@ -33,6 +35,7 @@ describe('AuthProvider', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     mockGetUser.mockResolvedValue({ data: { user: null }, error: null })
+    mockGetSession.mockResolvedValue({ data: { session: null }, error: null })
     mockOnAuthStateChange.mockReturnValue({
       data: { subscription: { unsubscribe: mockUnsubscribe } },
     })
@@ -78,7 +81,7 @@ describe('AuthProvider', () => {
 
   it('liefert den User wenn eingeloggt', async () => {
     const fakeUser = { id: '123', email: 'test@example.com' }
-    mockGetUser.mockResolvedValue({ data: { user: fakeUser }, error: null })
+    mockGetSession.mockResolvedValue({ data: { session: { user: fakeUser } }, error: null })
 
     render(
       <AuthProvider>
@@ -133,7 +136,7 @@ describe('AuthProvider', () => {
 
   it('setzt user auf null bei SIGNED_OUT', async () => {
     const fakeUser = { id: '123', email: 'test@example.com' }
-    mockGetUser.mockResolvedValue({ data: { user: fakeUser }, error: null })
+    mockGetSession.mockResolvedValue({ data: { session: { user: fakeUser } }, error: null })
 
     let authCallback: (event: string, session: null) => void = () => {}
     mockOnAuthStateChange.mockImplementation((cb: typeof authCallback) => {
@@ -160,7 +163,9 @@ describe('AuthProvider', () => {
   })
 
   it('refreshUser laedt den User neu', async () => {
-    mockGetUser.mockResolvedValueOnce({ data: { user: null }, error: null })
+    // Throttle umgehen: Date.now() so manipulieren, dass der Abstand >30s ist
+    const originalNow = Date.now
+    let nowValue = 1000000
 
     render(
       <AuthProvider>
@@ -178,6 +183,9 @@ describe('AuthProvider', () => {
       error: null,
     })
 
+    // Throttle-Sperre umgehen: Zeit 60s vorspulen
+    Date.now = () => nowValue + 60_000
+
     // Refresh ausloesen
     await act(async () => {
       screen.getByRole('button', { name: 'Refresh' }).click()
@@ -186,6 +194,8 @@ describe('AuthProvider', () => {
     await waitFor(() => {
       expect(screen.getByTestId('user').textContent).toBe('refresh@example.com')
     })
+
+    Date.now = originalNow
   })
 })
 

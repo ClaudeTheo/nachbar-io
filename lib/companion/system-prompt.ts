@@ -81,6 +81,14 @@ ${addressRule}
     contextParts.push(`Aktuelle Beitraege (Schwarzes Brett):\n${postLines}`);
   }
 
+  // Mitess-Plaetze
+  if (ctx.meals && ctx.meals.length > 0) {
+    const mealLines = ctx.meals
+      .map(m => `- ${m.title} (${m.type}, ${m.servings} verfügbar) — ${formatDateDE(m.meal_date)}`)
+      .join('\n');
+    contextParts.push(`Aktuelle Mitess-Angebote:\n${mealLines}`);
+  }
+
   if (contextParts.length > 0) {
     sections.push(`AKTUELLER QUARTIER-KONTEXT:\n${contextParts.join('\n\n')}`);
   } else {

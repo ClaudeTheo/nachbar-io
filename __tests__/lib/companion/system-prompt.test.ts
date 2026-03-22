@@ -106,6 +106,27 @@ describe('buildSystemPrompt', () => {
     expect(prompt).not.toContain('Sie/Ihnen/Ihr');
   });
 
+  // Meals-Tests (Task 21)
+  it('enthaelt Mitess-Plaetze im System-Prompt wenn vorhanden', () => {
+    const ctx = {
+      ...fullContext(),
+      meals: [
+        { title: 'Gulaschsuppe', type: 'Portion', servings: 3, meal_date: '2026-03-25' },
+        { title: 'Kuchen', type: 'Stück', servings: 5, meal_date: '2026-03-26' },
+      ],
+    };
+    const prompt = buildSystemPrompt(ctx);
+    expect(prompt).toContain('Gulaschsuppe');
+    expect(prompt).toContain('25.03.2026');
+    expect(prompt).toContain('Kuchen');
+    expect(prompt).toContain('Mitess-Angebote');
+  });
+
+  it('enthaelt keine Meals-Sektion wenn keine Meals', () => {
+    const prompt = buildSystemPrompt(fullContext());
+    expect(prompt).not.toContain('Mitess-Angebote');
+  });
+
   it('Default-Formality ist formal (Siezen)', () => {
     const promptDefault = buildSystemPrompt(fullContext());
     const promptFormal = buildSystemPrompt(fullContext(), { formality: 'formal' });

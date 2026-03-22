@@ -59,9 +59,18 @@ export async function POST(request: NextRequest) {
     const userId = auth.user.id;
 
     // Tool-Bestaetigung ausfuehren (wenn vorhanden)
-    let confirmResult: ToolResult | undefined;
+    // Bei Bestaetigung: Tool direkt ausfuehren und Ergebnis zurueckgeben
+    // KEIN erneuter Claude-Call noetig — spart Latenz und verhindert doppelte Tool-Calls
     if (confirmTool?.tool && confirmTool?.params) {
-      confirmResult = await executeCompanionTool(confirmTool.tool, confirmTool.params, userId);
+      const confirmResult = await executeCompanionTool(confirmTool.tool, confirmTool.params, userId);
+      const confirmMessage = confirmResult.success
+        ? confirmResult.summary
+        : `Leider ist ein Fehler aufgetreten: ${confirmResult.summary}`;
+
+      return NextResponse.json({
+        message: confirmMessage,
+        toolResults: [confirmResult],
+      });
     }
 
     // Quartier-Kontext laden und System-Prompt bauen
@@ -88,11 +97,6 @@ export async function POST(request: NextRequest) {
     let message = '';
     const toolResults: ToolResult[] = [];
     const confirmations: ToolConfirmation[] = [];
-
-    // Bestaetigungsergebnis anfuegen (wenn vorhanden)
-    if (confirmResult) {
-      toolResults.push(confirmResult);
-    }
 
     for (const block of response.content) {
       if (block.type === 'text') {
@@ -160,6 +164,8 @@ function formatToolDescription(toolName: string, params: Record<string, unknown>
       return `Nachricht an "${params.recipient_name}" senden`;
     case 'update_profile':
       return `Profil aktualisieren`;
+    case 'create_meal':
+      return `Mitess-Angebot "${params.title}" erstellen`;
     default:
       return `${toolName} ausfuehren`;
   }

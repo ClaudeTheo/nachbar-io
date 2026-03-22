@@ -5,6 +5,7 @@
 'use client';
 
 import { useState, useEffect, useRef, useCallback } from 'react';
+import { useRouter } from 'next/navigation';
 import { Send, Mic, Bot, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
@@ -21,6 +22,7 @@ interface ToolResult {
   tool: string;
   summary: string;
   success: boolean;
+  route?: string; // Fuer navigate_to
 }
 
 /** Tool-Bestaetigung (Write-Aktion) */
@@ -89,6 +91,7 @@ function saveMessages(msgs: ChatMessage[]) {
 }
 
 export function CompanionChat() {
+  const router = useRouter();
   const [messages, setMessages] = useState<ChatMessage[]>([WELCOME_MESSAGE]);
   const [inputValue, setInputValue] = useState('');
   const [sending, setSending] = useState(false);
@@ -177,6 +180,13 @@ export function CompanionChat() {
       };
 
       setMessages((prev) => [...prev, assistantMsg]);
+
+      // Navigation ausfuehren wenn navigate_to Tool eine Route zurueckgibt
+      const navResult = data.toolResults?.find((r) => r.route);
+      if (navResult?.route) {
+        // Kurz warten damit die Nachricht sichtbar wird, dann navigieren
+        setTimeout(() => router.push(navResult.route!), 600);
+      }
     } catch {
       toast.error('Verbindungsfehler. Bitte versuchen Sie es erneut.');
 

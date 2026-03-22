@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { QrCode, CircleCheck, CircleX, Search, ChevronDown, ChevronUp, UserMinus, MapPin, Pencil, Save, X, Globe } from "lucide-react";
+import { CircleCheck, CircleX, Search, ChevronDown, ChevronUp, UserMinus, MapPin, Pencil, Save, X, Globe } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -306,15 +306,6 @@ export function HouseholdManagement({ households, onRefresh }: HouseholdManageme
                           </p>
                           <div className="flex items-center gap-2 text-[10px] text-muted-foreground flex-wrap">
                             <span className="font-mono">{h.invite_code}</span>
-                            <a
-                              href={`/api/qr?code=${h.invite_code}&size=400`}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="inline-flex items-center gap-0.5 text-quartier-green hover:underline"
-                              onClick={(e) => e.stopPropagation()}
-                            >
-                              <QrCode className="h-3 w-3" /> QR
-                            </a>
                             {h.verified && (
                               <span className="inline-flex items-center gap-0.5 text-green-600">
                                 <CircleCheck className="h-3 w-3" /> Verifiziert

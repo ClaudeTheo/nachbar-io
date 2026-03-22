@@ -1,6 +1,6 @@
 "use client";
 
-import { Smartphone, QrCode, UserPlus, Home, CircleHelp, Phone } from "lucide-react";
+import { Smartphone, KeyRound, UserPlus, Home, CircleHelp, Phone } from "lucide-react";
 
 export default function OnboardingAnleitungPage() {
   return (
@@ -33,21 +33,16 @@ export default function OnboardingAnleitungPage() {
         So melden Sie sich an — in 3 Schritten
       </h2>
 
-      <Step number={1} icon={<QrCode className="h-5 w-5" />} title="QR-Code scannen oder Adresse eingeben">
+      <Step number={1} icon={<KeyRound className="h-5 w-5" />} title="Einladungscode eingeben">
         <ol className="list-inside list-decimal space-y-3 text-base">
           <li>
-            Öffnen Sie die <strong>Kamera</strong> auf Ihrem Handy
+            Öffnen Sie im Browser: <strong>nachbar-io.vercel.app</strong>
           </li>
           <li>
-            Halten Sie die Kamera auf den <strong>QR-Code</strong> auf Ihrem persönlichen Zettel
+            Tippen Sie auf &quot;Registrieren&quot;
           </li>
           <li>
-            Es erscheint ein Link — tippen Sie darauf
-          </li>
-          <li>
-            <em>Alternativ:</em> Geben Sie im Browser ein: <strong>nachbar-io.vercel.app</strong>
-            {" "}und tippen Sie auf &quot;Registrieren&quot;. Geben Sie dann Ihren
-            <strong> Einladungscode</strong> ein (steht auf Ihrem Zettel).
+            Geben Sie Ihren <strong>Einladungscode</strong> ein (steht auf Ihrem persönlichen Zettel)
           </li>
         </ol>
       </Step>

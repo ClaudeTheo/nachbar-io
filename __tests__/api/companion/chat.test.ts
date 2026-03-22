@@ -262,7 +262,8 @@ describe('POST /api/companion/chat', () => {
     expect(res.status).toBe(200);
 
     const data = await res.json();
-    expect(data.message).toBe('Der Beitrag wurde erfolgreich veroeffentlicht!');
+    // Nach Fix: Bestaetigung gibt direkt das Tool-Ergebnis zurueck (kein erneuter Claude-Call)
+    expect(data.message).toContain('Strassenfest');
     expect(data.toolResults).toHaveLength(1);
     expect(data.toolResults[0].success).toBe(true);
 
@@ -272,6 +273,9 @@ describe('POST /api/companion/chat', () => {
       { title: 'Strassenfest', text: 'Am Samstag findet ein Fest statt.' },
       'u1'
     );
+
+    // Kein erneuter Claude-Call nach Bestaetigung (Performance-Fix)
+    expect(mockAnthropicCreate).not.toHaveBeenCalled();
   });
 
   it('gibt 500 mit KI-Fehler bei Anthropic-Fehlern zurueck', async () => {

@@ -64,7 +64,7 @@ export default async function HaushalteQrPage({
     <div className="mx-auto max-w-[210mm] px-4 py-8 print:p-0">
       {/* Screen-only Header */}
       <div className="mb-6 print:hidden">
-        <h1 className="text-2xl font-bold text-anthrazit">QR-Code-Karten für Pilot-Haushalte</h1>
+        <h1 className="text-2xl font-bold text-anthrazit">Einladungskarten für Pilot-Haushalte</h1>
         <p className="mt-1 text-muted-foreground">{households.length} Haushalte gefunden</p>
         <div className="mt-4 flex flex-wrap gap-2">
           <PrintButton />
@@ -118,34 +118,23 @@ export default async function HaushalteQrPage({
               {h.street_name} {h.house_number}
             </p>
 
-            {/* QR Code */}
-            <div className="mx-auto mb-4 flex justify-center">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={`/api/qr?code=${encodeURIComponent(h.invite_code)}&size=400`}
-                alt={`QR-Code für ${h.street_name} ${h.house_number}`}
-                width={200}
-                height={200}
-                className="print:h-[180px] print:w-[180px]"
-              />
-            </div>
-
             {/* Code */}
-            <p className="mb-4 font-mono text-2xl font-bold tracking-widest text-quartier-green">
-              {displayCode(h.invite_code)}
-            </p>
+            <div className="mx-auto mb-4 rounded-xl border-2 border-quartier-green/20 bg-quartier-green/5 px-8 py-4">
+              <p className="text-xs text-muted-foreground mb-1">Ihr Einladungscode:</p>
+              <p className="font-mono text-3xl font-bold tracking-widest text-quartier-green">
+                {displayCode(h.invite_code)}
+              </p>
+            </div>
 
             {/* Kurzanleitung */}
             <div className="mx-auto max-w-sm text-left text-sm text-gray-600">
               <p className="mb-2 font-semibold text-anthrazit">So geht&apos;s:</p>
               <ol className="list-inside list-decimal space-y-1">
-                <li>QR-Code mit der Handy-Kamera scannen</li>
+                <li>Im Browser öffnen: <strong>{appUrl}/register</strong></li>
+                <li>Einladungscode eingeben</li>
                 <li>Name und E-Mail eingeben</li>
                 <li>Bestätigungs-E-Mail öffnen — fertig!</li>
               </ol>
-              <p className="mt-3 text-xs text-gray-400">
-                Oder im Browser: {appUrl}/register
-              </p>
             </div>
           </div>
         ))}

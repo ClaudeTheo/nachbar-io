@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { QrCode, Plus, Copy, Check, Printer, Trash2, RotateCcw, Filter } from "lucide-react";
+import { Plus, Copy, Check, Trash2, RotateCcw, Filter } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -176,50 +176,6 @@ export function InviteCodeManager({ households, onRefresh }: InviteCodeManagerPr
     }
   }
 
-  // Alle QR-Codes als Druckansicht oeffnen
-  function openPrintView(street?: string) {
-    const codes = street
-      ? filteredHouseholds.filter(h => h.street_name === street)
-      : filteredHouseholds;
-
-    const html = `
-      <!DOCTYPE html>
-      <html>
-      <head>
-        <title>QR-Codes${street ? ` — ${street}` : ""} — QuartierApp</title>
-        <style>
-          body { font-family: Arial, sans-serif; margin: 20px; }
-          .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
-          .card { border: 1px solid #ddd; border-radius: 8px; padding: 16px; text-align: center; page-break-inside: avoid; }
-          .card img { width: 150px; height: 150px; }
-          .card h3 { margin: 8px 0 4px; font-size: 14px; }
-          .card p { margin: 0; font-size: 12px; color: #666; }
-          .code { font-family: monospace; font-size: 18px; font-weight: bold; color: #4CAF87; }
-          @media print { .no-print { display: none; } }
-        </style>
-      </head>
-      <body>
-        <h1>QuartierApp — Einladungs-Codes${street ? ` fuer ${street}` : ""}</h1>
-        <p class="no-print"><button onclick="window.print()">Drucken</button></p>
-        <div class="grid">
-          ${codes.map(h => `
-            <div class="card">
-              <img src="/api/qr?code=${formatCode(h.invite_code)}&size=300" alt="QR ${formatCode(h.invite_code)}" />
-              <h3>${h.street_name} ${h.house_number}</h3>
-              <p class="code">${formatCode(h.invite_code)}</p>
-              <p>Scannen zum Registrieren</p>
-            </div>
-          `).join("")}
-        </div>
-      </body>
-      </html>
-    `;
-
-    const blob = new Blob([html], { type: "text/html" });
-    const url = URL.createObjectURL(blob);
-    window.open(url, "_blank");
-  }
-
   // Strassen gruppieren (nur gefilterte Haushalte)
   const streets = [...new Set(filteredHouseholds.map(h => h.street_name))];
   const unusedHouseholds = filteredHouseholds.filter(h => h.memberCount === 0);
@@ -331,36 +287,6 @@ export function InviteCodeManager({ households, onRefresh }: InviteCodeManagerPr
             >
               {creating ? "Wird erstellt..." : "Haushalt + Code erstellen"}
             </Button>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* QR-Batch-Druck */}
-      <Card>
-        <CardContent className="p-4 space-y-2">
-          <p className="text-sm font-semibold text-anthrazit flex items-center gap-2">
-            <Printer className="h-4 w-4" /> QR-Codes drucken
-          </p>
-          <div className="flex flex-wrap gap-1.5">
-            <Button
-              size="sm"
-              variant="outline"
-              className="text-xs h-7"
-              onClick={() => openPrintView()}
-            >
-              <QrCode className="h-3 w-3 mr-1" /> Alle ({filteredHouseholds.length})
-            </Button>
-            {streets.map((street) => (
-              <Button
-                key={street}
-                size="sm"
-                variant="outline"
-                className="text-xs h-7"
-                onClick={() => openPrintView(street)}
-              >
-                {street.replace("Straße", "Str.").replace("Strasse", "Str.")}
-              </Button>
-            ))}
           </div>
         </CardContent>
       </Card>

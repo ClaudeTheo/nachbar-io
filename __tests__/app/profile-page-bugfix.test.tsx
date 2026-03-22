@@ -45,8 +45,21 @@ vi.mock('lucide-react', () => {
     UserPlus: iconStub('user-plus'),
     Download: iconStub('download'),
     ArrowLeft: iconStub('arrow-left'),
+    Mic: iconStub('mic'),
   };
 });
+
+// VoiceSettings + Hook Mock
+vi.mock('@/components/companion/VoiceSettings', () => ({
+  VoiceSettings: () => <div data-testid="voice-settings">VoiceSettings</div>,
+}));
+vi.mock('@/hooks/useVoicePreferences', () => ({
+  useVoicePreferences: () => ({
+    preferences: { voice: 'nova', speed: 1.0, formality: 'formal' },
+    updatePreferences: vi.fn(),
+    isLoading: false,
+  }),
+}));
 
 // shadcn UI-Stubs
 vi.mock('@/components/ui/card', () => ({

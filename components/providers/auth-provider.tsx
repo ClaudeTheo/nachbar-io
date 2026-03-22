@@ -2,9 +2,10 @@
 
 // Zentraler AuthProvider — stellt den aktuellen Supabase-User per Context bereit.
 // Nutzt onAuthStateChange fuer reaktive Updates (Login, Logout, Token-Refresh).
-// Initiales Laden per getUser() (Server-validiert, sicherer als getSession()).
+// Initiales Laden per getSession() (lokal, kein API-Call — Middleware validiert bereits mit getUser()).
+// refreshUser() nutzt getUser() fuer explizite Server-Validierung (z.B. nach Profil-Update).
 
-import { createContext, useContext, useEffect, useState, useCallback } from 'react'
+import { createContext, useContext, useEffect, useState, useCallback, useRef } from 'react'
 import type { User } from '@supabase/supabase-js'
 import { createClient } from '@/lib/supabase/client'
 
@@ -23,11 +24,19 @@ const AuthContext = createContext<AuthContextType>({
   refreshUser: async () => {},
 })
 
+// Throttle: getUser() maximal alle 30 Sekunden aufrufen (schuetzt vor HMR-Spam)
+const REFRESH_THROTTLE_MS = 30_000
+
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
+  const lastRefreshRef = useRef(0)
 
   const refreshUser = useCallback(async () => {
+    const now = Date.now()
+    if (now - lastRefreshRef.current < REFRESH_THROTTLE_MS) return
+    lastRefreshRef.current = now
+
     const supabase = createClient()
     const { data: { user: freshUser } } = await supabase.auth.getUser()
     setUser(freshUser)
@@ -35,18 +44,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [])
 
   useEffect(() => {
-    // Initialer Auth-Check
-    refreshUser()
+    // Initialer Auth-Check per getSession() — liest aus lokalem Cookie, kein API-Call.
+    // Middleware validiert bereits mit getUser() auf jedem Server-Request.
+    const supabase = createClient()
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user ?? null)
+      setLoading(false)
+    })
 
     // Reaktiv auf Auth-Aenderungen lauschen
-    const supabase = createClient()
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user ?? null)
       setLoading(false)
     })
 
     return () => subscription.unsubscribe()
-  }, [refreshUser])
+  }, [])
 
   return (
     <AuthContext.Provider value={{ user, loading, refreshUser }}>

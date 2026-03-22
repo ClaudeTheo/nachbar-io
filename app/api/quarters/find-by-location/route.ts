@@ -47,11 +47,11 @@ export async function GET(request: NextRequest) {
     });
   }
 
-  // 2) Keim (seeding) im Umkreis 300m?
+  // 2) Aktives oder keimendes Quartier im Umkreis 2km?
   const { data: nearbySeeding } = await supabase.rpc("find_nearest_seeding_quarter", {
     p_lat: lat,
     p_lng: lng,
-    p_radius_m: 300,
+    p_radius_m: 2000,
   });
 
   if (nearbySeeding && nearbySeeding.length > 0) {

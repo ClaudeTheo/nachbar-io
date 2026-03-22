@@ -1,15 +1,16 @@
 "use client";
 
-import { Suspense, useState, useEffect, useCallback, useRef } from "react";
+import { Suspense, useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Mail, MapPin, Search, Navigation, ArrowLeft } from "lucide-react";
+import { Mail, MapPin, Navigation, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { createClient } from "@/lib/supabase/client";
 import { normalizeCode, formatCode } from "@/lib/invite-codes";
 import { OtpCodeEntry } from "@/components/auth/OtpCodeEntry";
+import { PILOT_QUARTIER_STREETS } from "@/lib/constants";
 
 
 // Schritt-Typen fuer den neuen 2-Schritt-Flow
@@ -35,19 +36,8 @@ function RegisterForm() {
   const [verificationMethod, setVerificationMethod] = useState<string>("invite_code");
 
   // Adress-State
-  const [addressQuery, setAddressQuery] = useState("");
-  const [addressSuggestions, setAddressSuggestions] = useState<Array<{
-    street: string;
-    houseNumber: string;
-    display: string;
-    postcode?: string;
-  }>>([]);
-  const [showSuggestions, setShowSuggestions] = useState(false);
-  const [addressSelected, setAddressSelected] = useState(false);
   const [selectedStreet, setSelectedStreet] = useState("");
   const [houseNumber, setHouseNumber] = useState("");
-  const suggestionsRef = useRef<HTMLDivElement>(null);
-  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Geo-State
   const [geoLoading, setGeoLoading] = useState(false);
@@ -75,78 +65,6 @@ function RegisterForm() {
     }
   }, [searchParams]);
   /* eslint-enable react-hooks/set-state-in-effect */
-
-  // === Photon API (OpenStreetMap) fuer Adress-Autocomplete ===
-  const searchAddress = useCallback(async (query: string) => {
-    if (query.length < 2) {
-      setAddressSuggestions([]);
-      return;
-    }
-
-    try {
-      const params = new URLSearchParams({
-        q: `${query}, Bad Säckingen`,
-        lat: "47.5535",
-        lon: "7.9640",
-        limit: "8",
-        lang: "de",
-        layer: "house",
-      });
-
-      const res = await fetch(`https://photon.komoot.io/api/?${params}`);
-      const data = await res.json();
-
-      if (!data.features) {
-        setAddressSuggestions([]);
-        return;
-      }
-
-      const suggestions = data.features
-        .filter((f: { properties: { city?: string; postcode?: string; street?: string; housenumber?: string } }) => {
-          const p = f.properties;
-          return p.street && p.housenumber && (
-            p.city === "Bad Säckingen" ||
-            p.postcode === "79713"
-          );
-        })
-        .map((f: { properties: { street: string; housenumber: string; postcode?: string } }) => ({
-          street: f.properties.street,
-          houseNumber: f.properties.housenumber,
-          display: `${f.properties.street} ${f.properties.housenumber}`,
-          postcode: f.properties.postcode,
-        }))
-        .filter((s: { display: string }, i: number, arr: Array<{ display: string }>) =>
-          arr.findIndex((a) => a.display === s.display) === i
-        );
-
-      setAddressSuggestions(suggestions);
-    } catch {
-      setAddressSuggestions([]);
-    }
-  }, []);
-
-  // Debounced Suche bei Texteingabe
-  useEffect(() => {
-    if (!addressQuery || addressSelected) return;
-    if (debounceRef.current) clearTimeout(debounceRef.current);
-    debounceRef.current = setTimeout(() => {
-      searchAddress(addressQuery);
-    }, 300);
-    return () => {
-      if (debounceRef.current) clearTimeout(debounceRef.current);
-    };
-  }, [addressQuery, addressSelected, searchAddress]);
-
-  // Klick ausserhalb der Vorschlaege schliesst die Liste
-  useEffect(() => {
-    function handleClickOutside(e: MouseEvent) {
-      if (suggestionsRef.current && !suggestionsRef.current.contains(e.target as Node)) {
-        setShowSuggestions(false);
-      }
-    }
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
 
   // === Fortschrittsberechnung ===
   const totalSteps = 2;
@@ -197,13 +115,14 @@ function RegisterForm() {
     e.preventDefault();
     setError(null);
 
-    if (!selectedStreet || !houseNumber.trim()) {
-      setError("Bitte wählen Sie eine Adresse aus den Vorschlägen.");
+    if (!selectedStreet) {
+      setError("Bitte wählen Sie eine Straße aus.");
       return;
     }
-
-    // Haushalt-Suche: Server-seitig im /api/register/complete erledigt
-    // (Client-seitige Suche scheitert an RLS fuer unauthentifizierte Nutzer)
+    if (!houseNumber.trim()) {
+      setError("Bitte geben Sie Ihre Hausnummer ein.");
+      return;
+    }
 
     setVerificationMethod("address_manual");
     setStep("identity");
@@ -226,10 +145,10 @@ function RegisterForm() {
         setVerificationMethod("address_manual");
         setStep("identity");
       } else {
-        setError("Kein Quartier in Ihrer Nähe gefunden. Bitte geben Sie Ihre Adresse manuell ein.");
+        setError("Kein Quartier in Ihrer Nähe gefunden. Bitte wählen Sie stattdessen Ihre Straße aus der Liste.");
       }
     } catch {
-      setError("Standort konnte nicht ermittelt werden. Bitte erlauben Sie den Zugriff oder geben Sie Ihre Adresse ein.");
+      setError("Standort konnte nicht ermittelt werden. Bitte erlauben Sie den Zugriff oder wählen Sie Ihre Straße aus der Liste.");
     }
     setGeoLoading(false);
   }
@@ -461,7 +380,7 @@ function RegisterForm() {
         {step === "address" && (
           <form onSubmit={handleAddressSelection} className="space-y-4">
             <p className="text-sm text-muted-foreground">
-              Geben Sie Ihre Adresse ein oder teilen Sie Ihren Standort.
+              Wählen Sie Ihre Straße und Hausnummer oder teilen Sie Ihren Standort.
             </p>
 
             {/* Standort-Button */}
@@ -485,64 +404,47 @@ function RegisterForm() {
               <div className="h-px flex-1 bg-border" />
             </div>
 
-            {/* Adress-Suche mit Photon Autocomplete */}
-            <div className="relative" ref={suggestionsRef}>
-              <label htmlFor="address_search" className="mb-1 block text-sm font-medium">
-                Adresse
+            {/* Straßen-Auswahl */}
+            <div>
+              <label htmlFor="street_select" className="mb-1 block text-sm font-medium">
+                Straße
               </label>
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                <Input
-                  id="address_search"
-                  type="text"
-                  value={addressQuery}
-                  onChange={(e) => {
-                    setAddressQuery(e.target.value);
-                    setAddressSelected(false);
-                    setShowSuggestions(true);
-                  }}
-                  onFocus={() => setShowSuggestions(true)}
-                  placeholder="z.B. Purkersdorfer Straße 33"
-                  autoComplete="off"
-                  className="pl-9"
-                />
-              </div>
-
-              {/* Live-Vorschlaege aus Photon API */}
-              {showSuggestions && addressSuggestions.length > 0 && (
-                <div className="absolute z-10 mt-1 max-h-56 w-full overflow-y-auto rounded-md border border-input bg-white shadow-lg">
-                  {addressSuggestions.map((s, i) => (
-                    <button
-                      key={`${s.display}-${i}`}
-                      type="button"
-                      className="flex w-full items-center gap-2.5 px-3 py-2.5 text-left text-sm transition-colors hover:bg-quartier-green/10"
-                      onClick={() => {
-                        setSelectedStreet(s.street);
-                        setHouseNumber(s.houseNumber);
-                        setAddressQuery(s.display);
-                        setAddressSelected(true);
-                        setShowSuggestions(false);
-                      }}
-                    >
-                      <MapPin className="h-4 w-4 shrink-0 text-quartier-green" />
-                      <div>
-                        <span className="font-medium text-anthrazit">{s.display}</span>
-                        {s.postcode && (
-                          <span className="ml-1.5 text-xs text-muted-foreground">{s.postcode} Bad Säckingen</span>
-                        )}
-                      </div>
-                    </button>
-                  ))}
-                </div>
-              )}
+              <select
+                id="street_select"
+                value={selectedStreet}
+                onChange={(e) => setSelectedStreet(e.target.value)}
+                className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-quartier-green focus:ring-offset-2"
+                style={{ minHeight: "44px" }}
+              >
+                <option value="">Straße wählen...</option>
+                {PILOT_QUARTIER_STREETS.map((street) => (
+                  <option key={street} value={street}>{street}</option>
+                ))}
+              </select>
             </div>
 
-            {/* Gewaehlte Adresse anzeigen */}
-            {addressSelected && selectedStreet && houseNumber && (
+            {/* Hausnummer */}
+            <div>
+              <label htmlFor="house_number" className="mb-1 block text-sm font-medium">
+                Hausnummer
+              </label>
+              <Input
+                id="house_number"
+                type="text"
+                value={houseNumber}
+                onChange={(e) => setHouseNumber(e.target.value)}
+                placeholder="z.B. 35"
+                autoComplete="off"
+                style={{ minHeight: "44px" }}
+              />
+            </div>
+
+            {/* Adress-Vorschau mit PLZ + Stadt */}
+            {selectedStreet && houseNumber.trim() && (
               <div className="flex items-center gap-2 rounded-lg border border-quartier-green/30 bg-quartier-green/5 p-3">
                 <MapPin className="h-4 w-4 shrink-0 text-quartier-green" />
                 <div className="text-sm">
-                  <span className="font-semibold text-anthrazit">{selectedStreet} {houseNumber}</span>
+                  <span className="font-semibold text-anthrazit">{selectedStreet} {houseNumber.trim()}</span>
                   <span className="ml-1 text-muted-foreground">· 79713 Bad Säckingen</span>
                 </div>
               </div>

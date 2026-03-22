@@ -28,6 +28,22 @@ vi.mock('@/lib/voice/create-speech-engine', () => ({
 // Fetch Mock
 const mockFetch = vi.fn();
 
+// Hilfsfunktion: Mock-SSE-Response fuer Streaming
+function mockSSEResponse(events: string[]) {
+  const encoder = new TextEncoder();
+  const stream = new ReadableStream({
+    start(controller) {
+      for (const event of events) {
+        controller.enqueue(encoder.encode(event + '\n\n'));
+      }
+      controller.close();
+    }
+  });
+  return new Response(stream, {
+    headers: { 'content-type': 'text/event-stream' }
+  });
+}
+
 beforeEach(() => {
   mockStartListening.mockClear();
   mockStopListening.mockClear();
@@ -99,11 +115,14 @@ describe('CompanionChat', () => {
     expect(getByText('Quartier-Lotse')).toBeDefined();
   });
 
-  it('sendet Nachricht bei Klick auf Senden', async () => {
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      json: async () => ({ message: 'Test-Antwort vom Lotsen' }),
-    });
+  it('sendet Nachricht bei Klick auf Senden (Streaming)', async () => {
+    mockFetch.mockResolvedValueOnce(
+      mockSSEResponse([
+        'event: text\ndata: {"delta":"Test-Antwort "}',
+        'event: text\ndata: {"delta":"vom Lotsen"}',
+        'event: done\ndata: {"full_reply":"Test-Antwort vom Lotsen"}'
+      ])
+    );
 
     const { CompanionChat } = await import(
       '@/components/companion/CompanionChat'
@@ -120,15 +139,30 @@ describe('CompanionChat', () => {
     // User-Nachricht sichtbar
     expect(getByText('Wann ist der naechste Muelltermin?')).toBeDefined();
 
-    // KI-Antwort nach fetch
+    // KI-Antwort nach Streaming
     await waitFor(() => {
       expect(getByText('Test-Antwort vom Lotsen')).toBeDefined();
     });
   });
 
-  it('zeigt Tipp-Indikator waehrend Senden', async () => {
-    // Fetch nie resolven → Indikator bleibt sichtbar
-    mockFetch.mockReturnValue(new Promise(() => {}));
+  it('zeigt Tipp-Indikator waehrend Warten auf Stream', async () => {
+    // Langsamer SSE-Stream der erst nach einer Pause Text liefert
+    const encoder = new TextEncoder();
+    let streamStarted = false;
+    const stream = new ReadableStream({
+      start(controller) {
+        streamStarted = true;
+        // Stream offen lassen ohne Daten -> typing indicator bleibt sichtbar
+        // Cleanup nach Test
+        setTimeout(() => {
+          controller.enqueue(encoder.encode('event: done\ndata: {"full_reply":"OK"}\n\n'));
+          controller.close();
+        }, 5000);
+      }
+    });
+    mockFetch.mockResolvedValueOnce(new Response(stream, {
+      headers: { 'content-type': 'text/event-stream' }
+    }));
 
     const { CompanionChat } = await import(
       '@/components/companion/CompanionChat'
@@ -142,6 +176,7 @@ describe('CompanionChat', () => {
     fireEvent.click(getByTestId('companion-send'));
 
     await waitFor(() => {
+      expect(streamStarted).toBe(true);
       expect(getByTestId('typing-indicator')).toBeDefined();
     });
   });
@@ -154,6 +189,40 @@ describe('CompanionChat', () => {
 
     const sendBtn = getByTestId('companion-send') as HTMLButtonElement;
     expect(sendBtn.disabled).toBe(true);
+  });
+
+  it('zeigt Streaming-Text waehrend Antwort', async () => {
+    // Langsamer Stream der nicht sofort resolved
+    let resolveStream: () => void;
+    const streamPromise = new Promise<void>((r) => { resolveStream = r; });
+    const encoder = new TextEncoder();
+    const stream = new ReadableStream({
+      async start(controller) {
+        controller.enqueue(encoder.encode('event: text\ndata: {"delta":"Streaming..."}\n\n'));
+        await streamPromise; // Warten bis wir den Stream schliessen
+        controller.enqueue(encoder.encode('event: done\ndata: {"full_reply":"Streaming..."}\n\n'));
+        controller.close();
+      }
+    });
+    mockFetch.mockResolvedValueOnce(new Response(stream, {
+      headers: { 'content-type': 'text/event-stream' }
+    }));
+
+    const { CompanionChat } = await import(
+      '@/components/companion/CompanionChat'
+    );
+    const { getByTestId, getByText } = render(<CompanionChat />);
+
+    fireEvent.change(getByTestId('companion-input'), { target: { value: 'Test' } });
+    fireEvent.click(getByTestId('companion-send'));
+
+    // Streaming-Text sichtbar
+    await waitFor(() => {
+      expect(getByText('Streaming...')).toBeDefined();
+    });
+
+    // Stream beenden
+    resolveStream!();
   });
 
   it('zeigt Fehlermeldung bei Netzwerkfehler', async () => {

@@ -11,6 +11,8 @@ import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { createSpeechEngine } from '@/lib/voice/create-speech-engine';
 import type { SpeechEngine, SpeechEngineState } from '@/lib/voice/speech-engine';
+import { useStreamingChat } from '@/hooks/useStreamingChat';
+import { StreamingTextDisplay } from './StreamingTextDisplay';
 import { ActionCard } from './ActionCard';
 import { ConfirmationCard } from './ConfirmationCard';
 import { TTSButton } from './TTSButton';
@@ -98,10 +100,31 @@ export function CompanionChat() {
   const [confirmLoading, setConfirmLoading] = useState<string | null>(null);
   const [recording, setRecording] = useState(false);
   const [speechState, setSpeechState] = useState<SpeechEngineState>('idle');
+  // Streaming-State: Ergebnisse und Bestaetigungen die waehrend Streaming reinkommen
+  const streamingToolResults = useRef<ToolResult[]>([]);
+  const streamingConfirmations = useRef<ToolConfirmation[]>([]);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const engineRef = useRef<SpeechEngine | null>(null);
+
+  // Streaming-Chat Hook fuer SSE-basierte Antworten
+  const { streamingText, isStreaming, error: streamingError, sendStreaming } = useStreamingChat({
+    onToolResult: (event) => {
+      streamingToolResults.current.push({
+        tool: event.name,
+        summary: event.result.summary,
+        success: event.result.success,
+      });
+    },
+    onConfirmation: (event) => {
+      streamingConfirmations.current.push({
+        tool: event.tool,
+        params: event.params,
+        description: event.description,
+      });
+    },
+  });
 
   // SessionStorage beim Mount laden
   useEffect(() => {
@@ -133,13 +156,17 @@ export function CompanionChat() {
     scrollToBottom();
   }, [messages, scrollToBottom]);
 
-  // --- Chat senden ---
+  // --- Chat senden (Streaming) ---
   const handleSend = useCallback(async (text?: string) => {
     const content = (text ?? inputValue).trim();
     if (!content || sending) return;
 
     setInputValue('');
     setSending(true);
+
+    // Streaming-Ergebnisse zuruecksetzen
+    streamingToolResults.current = [];
+    streamingConfirmations.current = [];
 
     // User-Nachricht hinzufuegen
     const userMsg: ChatMessage = {
@@ -157,40 +184,47 @@ export function CompanionChat() {
         .filter((m) => m.id !== 'welcome')
         .map((m) => ({ role: m.role, content: m.content }));
 
-      const res = await fetch('/api/companion/chat', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ messages: apiMessages }),
-      });
+      // Streaming-Request — sendStreaming resolved wenn Stream beendet
+      await sendStreaming(apiMessages);
 
-      if (!res.ok) {
-        throw new Error(`Fehler: ${res.status}`);
-      }
+      // Nach Streaming: finale Nachricht aus useStreamingChat-State erstellen
+      // streamingText wird ueber den Hook aktualisiert, wir lesen den Ref-Wert
+      // direkt nach sendStreaming weil der Hook-State schon final ist
+    } catch {
+      // Fehler: useStreamingChat setzt error, wir fangen hier ab
+    }
 
-      const data: ChatResponse = await res.json();
+    setSending(false);
+  }, [inputValue, sending, messages, sendStreaming]);
 
-      // KI-Antwort als Nachricht hinzufuegen
+  // Wenn Streaming beendet ist (isStreaming false, war aber aktiv) -> finale Nachricht
+  const prevStreamingRef = useRef(false);
+  useEffect(() => {
+    // Nur wenn Streaming gerade geendet hat (war true, jetzt false) und Text vorhanden
+    if (prevStreamingRef.current && !isStreaming && streamingText) {
       const assistantMsg: ChatMessage = {
         id: generateId(),
         role: 'assistant',
-        content: data.message || '',
-        toolResults: data.toolResults,
-        confirmations: data.confirmations,
+        content: streamingText,
+        toolResults: streamingToolResults.current.length > 0 ? [...streamingToolResults.current] : undefined,
+        confirmations: streamingConfirmations.current.length > 0 ? [...streamingConfirmations.current] : undefined,
         timestamp: Date.now(),
       };
-
       setMessages((prev) => [...prev, assistantMsg]);
 
       // Navigation ausfuehren wenn navigate_to Tool eine Route zurueckgibt
-      const navResult = data.toolResults?.find((r) => r.route);
+      const navResult = streamingToolResults.current.find((r) => r.route);
       if (navResult?.route) {
-        // Kurz warten damit die Nachricht sichtbar wird, dann navigieren
         setTimeout(() => router.push(navResult.route!), 600);
       }
-    } catch {
-      toast.error('Verbindungsfehler. Bitte versuchen Sie es erneut.');
+    }
+    prevStreamingRef.current = isStreaming;
+  }, [isStreaming, streamingText, router]);
 
-      // Fehlernachricht vom Assistenten
+  // Streaming-Fehler behandeln
+  useEffect(() => {
+    if (streamingError) {
+      toast.error('Verbindungsfehler. Bitte versuchen Sie es erneut.');
       const errorMsg: ChatMessage = {
         id: generateId(),
         role: 'assistant',
@@ -199,9 +233,7 @@ export function CompanionChat() {
       };
       setMessages((prev) => [...prev, errorMsg]);
     }
-
-    setSending(false);
-  }, [inputValue, sending, messages]);
+  }, [streamingError]);
 
   // --- Tool-Bestaetigung ---
   const handleConfirmTool = useCallback(async (confirmation: ToolConfirmation, msgId: string) => {
@@ -407,8 +439,17 @@ export function CompanionChat() {
             );
           })}
 
-          {/* Tipp-Indikator waehrend KI arbeitet */}
-          {sending && (
+          {/* Streaming-Antwort waehrend KI antwortet */}
+          {isStreaming && streamingText && (
+            <div className="flex justify-start" data-testid="streaming-message">
+              <div className="max-w-[85%] rounded-2xl border border-border bg-white px-4 py-3 text-sm text-anthrazit">
+                <StreamingTextDisplay text={streamingText} isStreaming={true} />
+              </div>
+            </div>
+          )}
+
+          {/* Tipp-Indikator waehrend Warten auf erste Antwort */}
+          {(sending || isStreaming) && !streamingText && (
             <div className="flex justify-start" data-testid="typing-indicator">
               <div className="flex items-center gap-2 rounded-2xl border border-border bg-white px-4 py-3">
                 <Loader2 className="h-4 w-4 animate-spin text-quartier-green" />

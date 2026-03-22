@@ -16,6 +16,8 @@ import { StreamingTextDisplay } from './StreamingTextDisplay';
 import { ActionCard } from './ActionCard';
 import { ConfirmationCard } from './ConfirmationCard';
 import { TTSButton } from './TTSButton';
+import { createClient } from '@/lib/supabase/client';
+import { useAuth } from '@/hooks/use-auth';
 
 // --- Typen ---
 
@@ -92,8 +94,46 @@ function saveMessages(msgs: ChatMessage[]) {
   }
 }
 
+/** Max 20 Nachrichten in Supabase persistieren (Upsert) */
+async function persistToSupabase(userId: string, msgs: ChatMessage[]) {
+  try {
+    const supabase = createClient();
+    // Nur die letzten 20 Nachrichten speichern (ohne Welcome-Message)
+    const toStore = msgs.filter(m => m.id !== 'welcome').slice(-20);
+    await supabase
+      .from('companion_chat_history')
+      .upsert({
+        user_id: userId,
+        messages: toStore,
+        updated_at: new Date().toISOString(),
+      }, { onConflict: 'user_id' });
+  } catch (err) {
+    console.warn('[CompanionChat] Supabase-Persist fehlgeschlagen:', err);
+  }
+}
+
+/** Nachrichten aus Supabase laden */
+async function loadFromSupabase(userId: string): Promise<ChatMessage[] | null> {
+  try {
+    const supabase = createClient();
+    const { data } = await supabase
+      .from('companion_chat_history')
+      .select('messages')
+      .eq('user_id', userId)
+      .single();
+
+    if (data?.messages && Array.isArray(data.messages) && data.messages.length > 0) {
+      return [WELCOME_MESSAGE, ...(data.messages as ChatMessage[])];
+    }
+  } catch {
+    // Kein Eintrag oder Fehler
+  }
+  return null;
+}
+
 export function CompanionChat() {
   const router = useRouter();
+  const { user } = useAuth();
   const [messages, setMessages] = useState<ChatMessage[]>([WELCOME_MESSAGE]);
   const [inputValue, setInputValue] = useState('');
   const [sending, setSending] = useState(false);
@@ -126,16 +166,30 @@ export function CompanionChat() {
     },
   });
 
-  // SessionStorage beim Mount laden
+  // Beim Mount: Supabase-History laden, Fallback auf sessionStorage
   useEffect(() => {
-    const loaded = loadMessages();
-    setMessages(loaded);
-  }, []);
+    async function loadHistory() {
+      if (user?.id) {
+        const supabaseMessages = await loadFromSupabase(user.id);
+        if (supabaseMessages) {
+          setMessages(supabaseMessages);
+          return;
+        }
+      }
+      const loaded = loadMessages();
+      setMessages(loaded);
+    }
+    loadHistory();
+  }, [user?.id]);
 
-  // Nachrichten in sessionStorage persistieren
+  // Nachrichten in sessionStorage + Supabase persistieren
   useEffect(() => {
     saveMessages(messages);
-  }, [messages]);
+    // Supabase: nur wenn User eingeloggt und mehr als Welcome-Message
+    if (user?.id && messages.length > 1) {
+      persistToSupabase(user.id, messages);
+    }
+  }, [messages, user?.id]);
 
   // Speech Engine initialisieren
   useEffect(() => {

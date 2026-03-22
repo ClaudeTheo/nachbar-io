@@ -312,7 +312,7 @@ describe('POST /api/companion/chat', () => {
 
     const callArgs = mockAnthropicCreate.mock.calls[0][0];
     expect(callArgs.model).toBe('claude-haiku-4-5-20251001');
-    expect(callArgs.max_tokens).toBe(512);
+    expect(callArgs.max_tokens).toBe(768);
     expect(callArgs.system).toBe('Test-System-Prompt');
     expect(callArgs.tools).toBeDefined();
     expect(callArgs.messages).toHaveLength(1);

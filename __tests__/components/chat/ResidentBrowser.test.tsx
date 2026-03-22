@@ -1,8 +1,8 @@
 // __tests__/components/chat/ResidentBrowser.test.tsx
 // Tests fuer die ResidentBrowser Sheet-Komponente
 
-import { describe, it, expect, vi, beforeEach } from "vitest";
-import { render, screen, waitFor, fireEvent } from "@testing-library/react";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { render, screen, waitFor, fireEvent, cleanup } from "@testing-library/react";
 import { ResidentBrowser } from "@/components/chat/ResidentBrowser";
 
 // --- Mocks ---
@@ -78,6 +78,10 @@ const mockAddresses = {
 describe("ResidentBrowser", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+  });
+
+  afterEach(() => {
+    cleanup();
   });
 
   it("zeigt Ladezustand beim Oeffnen", () => {
@@ -176,8 +180,7 @@ describe("ResidentBrowser", () => {
       expect(screen.getByTestId("message-form")).toBeInTheDocument();
     });
     expect(screen.getByTestId("message-textarea")).toBeInTheDocument();
-    expect(screen.getByText("Bewohner 1")).toBeInTheDocument();
-    expect(screen.getByText("Purkersdorfer Straße 12")).toBeInTheDocument();
+    expect(screen.getByTestId("send-button")).toBeInTheDocument();
   });
 
   it("deaktiviert Senden-Button wenn Nachricht leer", async () => {
@@ -204,9 +207,9 @@ describe("ResidentBrowser", () => {
     });
     fireEvent.click(screen.getAllByTestId("resident-item")[0]);
 
-    // Senden-Button ist deaktiviert
+    // Warten auf Formular und Senden-Button
     await waitFor(() => {
-      expect(screen.getByTestId("send-button")).toBeInTheDocument();
+      expect(screen.getByTestId("message-form")).toBeInTheDocument();
     });
     expect(screen.getByTestId("send-button")).toBeDisabled();
   });

@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { Clock, Shield } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
+import { getCachedUser } from "@/lib/supabase/cached-auth";
 
 /**
  * Banner fuer Nutzer mit ausstehender Adress-Verifizierung.
@@ -18,7 +19,7 @@ export function PendingVerificationBanner() {
   useEffect(() => {
     async function check() {
       const supabase = createClient();
-      const { data: { user } } = await supabase.auth.getUser();
+      const { user } = await getCachedUser(supabase);
       if (!user) return;
 
       // User-Profil pruefen

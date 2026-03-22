@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { getCachedUser } from "@/lib/supabase/cached-auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -41,7 +42,7 @@ export default function VacationPage() {
   useEffect(() => {
     async function init() {
       const supabase = createClient();
-      const { data: { user } } = await supabase.auth.getUser();
+      const { user } = await getCachedUser(supabase);
       if (!user) { setLoading(false); return; }
       setCurrentUserId(user.id);
       await loadVacations(user.id);

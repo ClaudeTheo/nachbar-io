@@ -2,6 +2,7 @@
 
 import { createContext, useContext, useState, useEffect, ReactNode, useCallback } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { getCachedUser } from "@/lib/supabase/cached-auth";
 import type { Quarter } from "./types";
 
 interface QuarterContextType {
@@ -21,7 +22,7 @@ export function QuarterProvider({ children }: { children: ReactNode }) {
 
   const loadQuarter = useCallback(async () => {
     const supabase = createClient();
-    const { data: { user } } = await supabase.auth.getUser();
+    const { user } = await getCachedUser(supabase);
     if (!user) { setLoading(false); return; }
 
     const { data: profile } = await supabase

@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { getCachedUser } from "@/lib/supabase/cached-auth";
 
 interface UseGuidelinesAcceptedReturn {
   /** true wenn Richtlinien akzeptiert wurden */
@@ -21,7 +22,7 @@ export function useGuidelinesAccepted(): UseGuidelinesAcceptedReturn {
     async function checkAcceptance() {
       try {
         const supabase = createClient();
-        const { data: { user } } = await supabase.auth.getUser();
+        const { user } = await getCachedUser(supabase);
         if (!user) {
           setLoading(false);
           return;

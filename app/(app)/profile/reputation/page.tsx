@@ -6,6 +6,7 @@ import { ArrowLeft, TrendingUp, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { createClient } from "@/lib/supabase/client";
+import { getCachedUser } from "@/lib/supabase/cached-auth";
 import {
   REPUTATION_LEVELS,
   ACTIVITY_BADGES,
@@ -21,9 +22,7 @@ export default function ReputationPage() {
 
   async function loadStats() {
     const supabase = createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+    const { user } = await getCachedUser(supabase);
     if (!user) return;
 
     try {

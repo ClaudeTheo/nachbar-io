@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { createClient } from "@/lib/supabase/client";
+import { getCachedUser } from "@/lib/supabase/cached-auth";
 import { toast } from "sonner";
 
 interface BugReport {
@@ -49,7 +50,7 @@ export function BugReports() {
     const supabase = createClient();
 
     // Aktuellen User ermitteln
-    const { data: { user } } = await supabase.auth.getUser();
+    const { user } = await getCachedUser(supabase);
     if (user) setCurrentUserId(user.id);
 
     let query = supabase

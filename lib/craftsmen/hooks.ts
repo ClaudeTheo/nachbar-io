@@ -1,5 +1,6 @@
 // lib/craftsmen/hooks.ts
 import { createClient } from "@/lib/supabase/client";
+import { getCachedUser } from "@/lib/supabase/cached-auth";
 import { CRAFTSMAN_SUBCATEGORIES } from "@/lib/constants";
 import type {
   CommunityTip,
@@ -89,7 +90,7 @@ export async function submitRecommendation(opts: {
   aspects: CraftsmanAspects | null;
 }): Promise<{ error: string | null }> {
   const supabase = createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const { user } = await getCachedUser(supabase);
   if (!user) return { error: "Nicht angemeldet." };
 
   // Prüfe ob es ein Insert oder Update ist (für Reputation-Punkte)
@@ -136,7 +137,7 @@ export async function logUsageEvent(opts: {
   note?: string | null;
 }): Promise<{ error: string | null }> {
   const supabase = createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const { user } = await getCachedUser(supabase);
   if (!user) return { error: "Nicht angemeldet." };
 
   const { error } = await supabase

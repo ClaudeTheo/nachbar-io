@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { SeniorButton } from "@/components/SeniorButton";
 import { createClient } from "@/lib/supabase/client";
+import { getCachedUser } from "@/lib/supabase/cached-auth";
 
 /**
  * Seniorenmodus — Täglicher Check-in
@@ -22,7 +23,7 @@ export default function SeniorCheckinPage() {
     setLoading(true);
 
     const supabase = createClient();
-    const { data: { user } } = await supabase.auth.getUser();
+    const { user } = await getCachedUser(supabase);
     if (!user) return;
 
     await supabase.from("senior_checkins").insert({

@@ -7,6 +7,7 @@
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
+import { invalidateUserCache } from '@/lib/supabase/cached-auth';
 
 export function AuthSessionProvider({ children }: { children: React.ReactNode }) {
   const router = useRouter();
@@ -29,10 +30,12 @@ export function AuthSessionProvider({ children }: { children: React.ReactNode })
     // Auf Auth-Aenderungen lauschen (Token Refresh, Sign Out, etc.)
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === 'SIGNED_OUT') {
+        invalidateUserCache();
         router.replace('/login');
       }
 
       if (event === 'TOKEN_REFRESHED' || event === 'SIGNED_IN') {
+        invalidateUserCache();
         // Session erfolgreich erneuert — Router aktualisieren damit
         // Server-Seite die neuen Cookies bekommt
         router.refresh();

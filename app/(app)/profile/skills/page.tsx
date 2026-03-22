@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { createClient } from "@/lib/supabase/client";
+import { getCachedUser } from "@/lib/supabase/cached-auth";
 import { useQuarter } from "@/lib/quarters";
 import { SKILL_CATEGORIES } from "@/lib/constants";
 import type { Skill } from "@/lib/supabase/types";
@@ -23,9 +24,7 @@ export default function SkillsPage() {
   useEffect(() => {
     async function load() {
       const supabase = createClient();
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
+      const { user } = await getCachedUser(supabase);
       if (!user) return;
       setUserId(user.id);
 

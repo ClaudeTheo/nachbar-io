@@ -6,6 +6,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { SeniorMedicationScreen } from '@/components/care/senior/SeniorMedicationScreen';
 import type { CareMedication } from '@/lib/care/types';
+import { getCachedUser } from "@/lib/supabase/cached-auth";
 
 interface DueMed {
   medication: CareMedication;
@@ -21,7 +22,7 @@ export default function SeniorMedicationsPage() {
 
   useEffect(() => {
     const supabase = createClient();
-    supabase.auth.getUser().then(({ data: { user } }) => {
+    getCachedUser(supabase).then(({ user }) => {
       setUserId(user?.id ?? null);
     });
   }, []);

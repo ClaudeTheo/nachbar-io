@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { createClient } from "@/lib/supabase/client";
+import { getCachedUser } from "@/lib/supabase/cached-auth";
 import { createNotification } from "@/lib/notifications";
 import type { DirectMessage } from "@/lib/supabase/types";
 import { format, isToday, isYesterday } from "date-fns";
@@ -52,9 +53,7 @@ export default function ChatPage() {
       const supabase = createClient();
 
       // Aktuellen Benutzer laden
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
+      const { user } = await getCachedUser(supabase);
       if (!user) {
         router.push("/login");
         return;

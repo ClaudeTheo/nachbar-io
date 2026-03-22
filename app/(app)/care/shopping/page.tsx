@@ -9,6 +9,7 @@ import Link from 'next/link';
 import { ShoppingRequestForm } from '@/components/care/ShoppingRequestForm';
 import { ShoppingRequestCard } from '@/components/care/ShoppingRequestCard';
 import type { ShoppingRequest } from '@/components/care/ShoppingRequestCard';
+import { getCachedUser } from "@/lib/supabase/cached-auth";
 
 type FilterTab = 'open' | 'mine' | 'all';
 
@@ -23,7 +24,7 @@ export default function ShoppingPage() {
   // Benutzer-ID laden
   useEffect(() => {
     const supabase = createClient();
-    supabase.auth.getUser().then(({ data: { user } }) => {
+    getCachedUser(supabase).then(({ user }) => {
       setUserId(user?.id ?? null);
     });
   }, []);

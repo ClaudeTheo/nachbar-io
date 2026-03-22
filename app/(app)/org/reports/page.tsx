@@ -4,6 +4,7 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { getCachedUser } from "@/lib/supabase/cached-auth";
 import { toast } from "sonner";
 import type { MunicipalReport, ReportStatus } from "@/lib/municipal";
 import { REPORT_CATEGORIES, REPORT_STATUS_CONFIG } from "@/lib/municipal";
@@ -39,9 +40,7 @@ export default function OrgReportsPage() {
       setError(null);
 
       // Aktuellen Nutzer holen
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
+      const { user } = await getCachedUser(supabase);
       if (!user) {
         setError("Nicht angemeldet.");
         return;

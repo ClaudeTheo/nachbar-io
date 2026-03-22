@@ -12,6 +12,7 @@ import { ALERT_CATEGORIES, EMERGENCY_CATEGORIES, GPS_ALERT_CATEGORIES } from "@/
 import { CategoryIcon } from "@/components/CategoryIcon";
 import { ALERT_ICON_MAP, FALLBACK_ICON } from "@/lib/category-icons";
 import { createClient } from "@/lib/supabase/client";
+import { getCachedUser } from "@/lib/supabase/cached-auth";
 import { useQuarter } from "@/lib/quarters";
 import { useGeolocation } from "@/hooks/useGeolocation";
 import { LocationConsentDialog } from "@/components/alerts/LocationConsentDialog";
@@ -79,7 +80,7 @@ export default function NewAlertPage() {
     setLoading(true);
 
     const supabase = createClient();
-    const { data: { user } } = await supabase.auth.getUser();
+    const { user } = await getCachedUser(supabase);
     if (!user) return;
 
     // Haushalt des Nutzers ermitteln

@@ -6,6 +6,7 @@ import Link from "next/link";
 import { toast } from "sonner";
 import { Card, CardContent } from "@/components/ui/card";
 import { createClient } from "@/lib/supabase/client";
+import { getCachedUser } from "@/lib/supabase/cached-auth";
 
 export default function LocationSettingsPage() {
   const [enabled, setEnabled] = useState(true);
@@ -14,7 +15,7 @@ export default function LocationSettingsPage() {
   useEffect(() => {
     async function load() {
       const supabase = createClient();
-      const { data: { user } } = await supabase.auth.getUser();
+      const { user } = await getCachedUser(supabase);
       if (!user) return;
 
       const { data } = await supabase
@@ -31,7 +32,7 @@ export default function LocationSettingsPage() {
 
   async function toggle() {
     const supabase = createClient();
-    const { data: { user } } = await supabase.auth.getUser();
+    const { user } = await getCachedUser(supabase);
     if (!user) return;
 
     const newValue = !enabled;

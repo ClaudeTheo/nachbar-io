@@ -11,6 +11,7 @@ import { ConsultationSlotCard } from '@/components/care/ConsultationSlotCard';
 import { createClient } from '@/lib/supabase/client';
 import type { ConsultationSlot } from '@/lib/care/types';
 import type { AppointmentAction } from '@/lib/consultation/appointment-status';
+import { getCachedUser } from "@/lib/supabase/cached-auth";
 
 type TabKey = 'open' | 'confirmed' | 'past';
 
@@ -28,7 +29,7 @@ export default function ConsultationsPage() {
 
   const loadSlots = useCallback(async () => {
     const supabase = createClient();
-    const { data: { user } } = await supabase.auth.getUser();
+    const { user } = await getCachedUser(supabase);
     if (!user) return;
 
     // Alle Termine laden, bei denen der Nutzer Patient ist oder gebucht hat

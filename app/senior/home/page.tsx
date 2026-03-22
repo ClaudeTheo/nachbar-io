@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { SeniorButton } from "@/components/SeniorButton";
 import { createClient } from "@/lib/supabase/client";
+import { getCachedUser } from "@/lib/supabase/cached-auth";
 
 export default function SeniorHomePage() {
   const [userName, setUserName] = useState("");
@@ -12,7 +13,7 @@ export default function SeniorHomePage() {
   useEffect(() => {
     async function loadName() {
       const supabase = createClient();
-      const { data: { user } } = await supabase.auth.getUser();
+      const { user } = await getCachedUser(supabase);
       if (user) {
         const { data } = await supabase
           .from("users")

@@ -22,6 +22,7 @@ import { FeatureGate } from "@/components/FeatureGate";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { createClient } from "@/lib/supabase/client";
+import { getCachedUser } from "@/lib/supabase/cached-auth";
 import { useQuarter } from "@/lib/quarters";
 import { getCachedReputation } from "@/lib/reputation";
 import { useUnreadCount } from "@/lib/useUnreadCount";
@@ -74,7 +75,7 @@ export default function DashboardPage() {
 
     try {
       // Nutzerprofil laden + Onboarding-Pruefung
-      const { data: { user } } = await supabase.auth.getUser();
+      const { user } = await getCachedUser(supabase);
       if (user) {
         const { data: profile } = await supabase
           .from("users")

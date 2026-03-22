@@ -7,6 +7,7 @@ import { ArrowLeft, MessageCircle, Clock, Tag } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/client";
+import { getCachedUser } from "@/lib/supabase/cached-auth";
 import { createNotification } from "@/lib/notifications";
 import { useQuarter } from "@/lib/quarters";
 import { LEIHBOERSE_CATEGORIES } from "@/lib/constants";
@@ -25,7 +26,7 @@ export default function LeihboerseDetailPage() {
   useEffect(() => {
     async function load() {
       const supabase = createClient();
-      const { data: { user } } = await supabase.auth.getUser();
+      const { user } = await getCachedUser(supabase);
       if (user) setCurrentUserId(user.id);
 
       const { data } = await supabase

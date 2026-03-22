@@ -5,13 +5,14 @@ import { useEffect, useState } from 'react';
 import { ScrollText } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import { AuditLogViewer } from '@/components/care/AuditLogViewer';
+import { getCachedUser } from "@/lib/supabase/cached-auth";
 
 export default function AuditLogPage() {
   const [userId, setUserId] = useState<string | null>(null);
 
   useEffect(() => {
     const supabase = createClient();
-    supabase.auth.getUser().then(({ data: { user } }) => {
+    getCachedUser(supabase).then(({ user }) => {
       setUserId(user?.id ?? null);
     });
   }, []);

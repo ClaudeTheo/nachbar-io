@@ -10,6 +10,7 @@ import { CareConsentGate } from '@/components/care/CareConsentGate';
 import { SosAlertCard } from '@/components/care/SosAlertCard';
 import type { CareSosAlert, CareAppointment, CareSubscriptionPlan, CareHelperRole } from '@/lib/care/types';
 import { PLAN_FEATURES } from '@/lib/care/constants';
+import { getCachedUser } from "@/lib/supabase/cached-auth";
 
 interface CheckinStatus {
   completedCount: number;
@@ -44,7 +45,7 @@ export default function CareDashboardPage() {
   // Aktuellen Nutzer laden + Admin-Check + Plan-Features laden
   useEffect(() => {
     const supabase = createClient();
-    supabase.auth.getUser().then(async ({ data: { user } }) => {
+    getCachedUser(supabase).then(async ({ user }) => {
       setUserId(user?.id ?? null);
       if (user) {
         const { data } = await supabase.from('users').select('is_admin, trust_level').eq('id', user.id).single();
@@ -151,7 +152,7 @@ export default function CareDashboardPage() {
   // Eigenen Helfer-Status laden (fuer "Meine Senioren" Link)
   useEffect(() => {
     const supabase = createClient();
-    supabase.auth.getUser().then(async ({ data: { user } }) => {
+    getCachedUser(supabase).then(async ({ user }) => {
       if (!user) return;
       const { data: helper } = await supabase
         .from('care_helpers')

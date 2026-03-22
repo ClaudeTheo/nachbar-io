@@ -9,6 +9,7 @@ import { BusinessReview } from "@/components/BusinessReview";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { createClient } from "@/lib/supabase/client";
+import { getCachedUser } from "@/lib/supabase/cached-auth";
 import { createNotification } from "@/lib/notifications";
 import { TIP_CATEGORIES } from "@/lib/constants";
 import type { CommunityTip } from "@/lib/supabase/types";
@@ -29,7 +30,7 @@ export default function TipDetailPage() {
     const supabase = createClient();
 
     // Aktuellen Benutzer laden
-    const { data: { user } } = await supabase.auth.getUser();
+    const { user } = await getCachedUser(supabase);
     if (user) setCurrentUserId(user.id);
 
     // Tipp laden

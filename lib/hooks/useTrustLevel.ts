@@ -4,6 +4,7 @@
 
 import { useEffect, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
+import { getCachedUser } from "@/lib/supabase/cached-auth";
 
 export type TrustLevel = 'new' | 'verified' | 'trusted' | 'lotse' | 'admin';
 
@@ -29,7 +30,7 @@ export function useTrustLevel(): UseTrustLevelResult {
 
   useEffect(() => {
     const supabase = createClient();
-    supabase.auth.getUser().then(async ({ data: { user } }) => {
+    getCachedUser(supabase).then(async ({ user }) => {
       if (user) {
         const { data } = await supabase
           .from('users')

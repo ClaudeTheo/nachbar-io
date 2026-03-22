@@ -19,6 +19,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { createClient } from "@/lib/supabase/client";
+import { getCachedUser } from "@/lib/supabase/cached-auth";
 import { createNotification } from "@/lib/notifications";
 import { EVENT_CATEGORIES } from "@/lib/constants";
 import type { Event, EventParticipant } from "@/lib/supabase/types";
@@ -42,9 +43,7 @@ export default function EventDetailPage() {
       const supabase = createClient();
 
       // Aktuellen Benutzer laden
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
+      const { user } = await getCachedUser(supabase);
       if (cancelled) return;
       if (user) setCurrentUserId(user.id);
 

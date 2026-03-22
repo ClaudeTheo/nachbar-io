@@ -2,6 +2,7 @@
 // Registriert den Service Worker und verwaltet Push-Subscriptions via VAPID
 
 import { createClient } from "@/lib/supabase/client";
+import { getCachedUser } from "@/lib/supabase/cached-auth";
 
 const VAPID_PUBLIC_KEY = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
 
@@ -79,9 +80,7 @@ export async function subscribeToPush(): Promise<boolean> {
 
     // Subscription in Supabase speichern
     const supabase = createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+    const { user } = await getCachedUser(supabase);
 
     if (!user) {
       console.error("Nicht angemeldet — Push-Subscription nicht gespeichert");

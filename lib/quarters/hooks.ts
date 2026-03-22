@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { getCachedUser } from "@/lib/supabase/cached-auth";
 import type { UserRole } from "./types";
 
 // Hook fuer Benutzerrolle mit Hilfsfunktionen
@@ -12,7 +13,7 @@ export function useUserRole() {
   useEffect(() => {
     async function load() {
       const supabase = createClient();
-      const { data: { user } } = await supabase.auth.getUser();
+      const { user } = await getCachedUser(supabase);
       if (user) {
         const { data } = await supabase
           .from("users")

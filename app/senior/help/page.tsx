@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { SeniorButton } from "@/components/SeniorButton";
 import { createClient } from "@/lib/supabase/client";
+import { getCachedUser } from "@/lib/supabase/cached-auth";
 
 /**
  * Seniorenmodus — Hilfe anfragen
@@ -41,7 +42,7 @@ export default function SeniorHelpPage() {
     setLoading(true);
 
     const supabase = createClient();
-    const { data: { user } } = await supabase.auth.getUser();
+    const { user } = await getCachedUser(supabase);
     if (!user) return;
 
     const { data: membership } = await supabase

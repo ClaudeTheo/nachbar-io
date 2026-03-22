@@ -19,6 +19,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { createClient } from "@/lib/supabase/client";
+import { getCachedUser } from "@/lib/supabase/cached-auth";
 import { useQuarter } from "@/lib/quarters";
 import { createNotification } from "@/lib/notifications";
 import { SKILL_CATEGORIES, TRUST_LEVELS } from "@/lib/constants";
@@ -59,9 +60,7 @@ export default function ExpertDetailPage() {
     const supabase = createClient();
 
     // Aktuellen User holen
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+    const { user } = await getCachedUser(supabase);
     if (user) setCurrentUserId(user.id);
 
     // Experten-Profil laden

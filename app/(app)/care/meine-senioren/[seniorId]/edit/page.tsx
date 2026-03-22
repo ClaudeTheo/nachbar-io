@@ -14,6 +14,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { AvatarPicker } from '@/components/AvatarPicker';
 import { useCareRole } from '@/lib/care/hooks/useCareRole';
 import { createClient } from '@/lib/supabase/client';
+import { getCachedUser } from "@/lib/supabase/cached-auth";
 
 interface SeniorProfile {
   id: string;
@@ -71,7 +72,7 @@ export default function SeniorProfileEditPage() {
 
     try {
       const supabase = createClient();
-      const { data: { user } } = await supabase.auth.getUser();
+      const { user } = await getCachedUser(supabase);
       if (!user) throw new Error('Nicht eingeloggt');
 
       // Profil-Update

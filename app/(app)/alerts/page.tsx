@@ -6,6 +6,7 @@ import { Plus } from "lucide-react";
 import { AlertCard } from "@/components/AlertCard";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { createClient } from "@/lib/supabase/client";
+import { getCachedUser } from "@/lib/supabase/cached-auth";
 import { useQuarter } from "@/lib/quarters";
 import { createNotification } from "@/lib/notifications";
 import type { Alert } from "@/lib/supabase/types";
@@ -37,7 +38,7 @@ export default function AlertsPage() {
 
   async function handleHelp(alertId: string) {
     const supabase = createClient();
-    const { data: { user } } = await supabase.auth.getUser();
+    const { user } = await getCachedUser(supabase);
     if (!user) return;
 
     // Hilfe-Antwort erstellen

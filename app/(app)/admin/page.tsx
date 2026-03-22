@@ -17,6 +17,7 @@ import {
   SelectLabel, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import { createClient } from "@/lib/supabase/client";
+import { getCachedUser } from "@/lib/supabase/cached-auth";
 import type { Alert, User, Household } from "@/lib/supabase/types";
 
 // Tab-Gruppen
@@ -204,7 +205,7 @@ export default function AdminPage() {
   useEffect(() => {
     async function init() {
       const supabase = createClient();
-      const { data: { user } } = await supabase.auth.getUser();
+      const { user } = await getCachedUser(supabase);
       if (!user) { router.push("/login"); return; }
 
       const { data: profile } = await supabase

@@ -7,6 +7,7 @@ import { ArrowLeft, Clock, User, Trash2, CircleCheck, MessageCircle } from "luci
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { createClient } from "@/lib/supabase/client";
+import { getCachedUser } from "@/lib/supabase/cached-auth";
 import { createNotification } from "@/lib/notifications";
 import { useQuarter } from "@/lib/quarters";
 import { MARKETPLACE_TYPES, MARKETPLACE_CATEGORIES } from "@/lib/constants";
@@ -25,7 +26,7 @@ export default function MarketplaceDetailPage() {
   useEffect(() => {
     async function load() {
       const supabase = createClient();
-      const { data: { user } } = await supabase.auth.getUser();
+      const { user } = await getCachedUser(supabase);
       if (user) setCurrentUserId(user.id);
 
       const { data } = await supabase

@@ -9,6 +9,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Calendar, Clock, CircleCheck, ArrowLeft, Video, MapPin } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import { toast } from 'sonner';
+import { getCachedUser } from "@/lib/supabase/cached-auth";
 
 type TimeSlot = {
   time: string;      // HH:MM
@@ -114,7 +115,7 @@ export function BookingCalendar({ doctorId, doctorName, videoEnabled }: BookingC
     setBooking(true);
 
     const supabase = createClient();
-    const { data: { user } } = await supabase.auth.getUser();
+    const { user } = await getCachedUser(supabase);
 
     if (!user) {
       toast.error('Bitte melden Sie sich an, um einen Termin zu buchen.');

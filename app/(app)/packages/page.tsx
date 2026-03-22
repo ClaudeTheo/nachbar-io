@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { createClient } from "@/lib/supabase/client";
+import { getCachedUser } from "@/lib/supabase/cached-auth";
 import { useQuarter } from "@/lib/quarters";
 import { haversineDistance, RADIUS_DIRECT } from "@/lib/geo";
 import type { Paketannahme, HelpRequest } from "@/lib/supabase/types";
@@ -51,7 +52,7 @@ export default function PackagesPage() {
     if (!currentQuarter) return;
     async function load() {
       const supabase = createClient();
-      const { data: { user } } = await supabase.auth.getUser();
+      const { user } = await getCachedUser(supabase);
       if (!user) return;
       setCurrentUserId(user.id);
 

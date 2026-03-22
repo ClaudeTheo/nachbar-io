@@ -11,6 +11,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { ImageUpload, UploadingOverlay, type PendingImage } from "@/components/ImageUpload";
 import { uploadCategoryImage } from "@/lib/storage";
 import { createClient } from "@/lib/supabase/client";
+import { getCachedUser } from "@/lib/supabase/cached-auth";
 import { useQuarter } from "@/lib/quarters";
 import { MARKETPLACE_TYPES, MARKETPLACE_CATEGORIES } from "@/lib/constants";
 import { GuidelinesGate } from "@/components/moderation/GuidelinesAcceptance";
@@ -36,9 +37,7 @@ export default function MarketplaceNewPage() {
 
     try {
       const supabase = createClient();
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
+      const { user } = await getCachedUser(supabase);
       if (!user) {
         setError("Nicht angemeldet.");
         setSaving(false);

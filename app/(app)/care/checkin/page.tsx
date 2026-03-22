@@ -9,6 +9,7 @@ import { createClient } from '@/lib/supabase/client';
 import { CheckinDialog } from '@/components/care/CheckinDialog';
 import { CheckinHistory } from '@/components/care/CheckinHistory';
 import type { CareCheckin } from '@/lib/care/types';
+import { getCachedUser } from "@/lib/supabase/cached-auth";
 
 export default function CheckinPage() {
   const [userId, setUserId] = useState<string | null>(null);
@@ -17,7 +18,7 @@ export default function CheckinPage() {
 
   useEffect(() => {
     const supabase = createClient();
-    supabase.auth.getUser().then(({ data: { user } }) => {
+    getCachedUser(supabase).then(({ user }) => {
       setUserId(user?.id ?? null);
     });
   }, []);

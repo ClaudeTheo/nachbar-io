@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { createClient } from "@/lib/supabase/client";
+import { getCachedUser } from "@/lib/supabase/cached-auth";
 import { useQuarter } from "@/lib/quarters";
 import { calculateExpiry } from "@/lib/meals";
 import { validateImageFile, compressImage, MAX_DIMENSION } from "@/lib/storage";
@@ -73,7 +74,7 @@ export default function NewMealPage() {
 
     try {
       const supabase = createClient();
-      const { data: { user } } = await supabase.auth.getUser();
+      const { user } = await getCachedUser(supabase);
 
       if (!user) {
         toast.error("Bitte melden Sie sich erneut an.");

@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/client';
 import { Users, Plus, X } from 'lucide-react';
 import { HelperList } from '@/components/care/HelperList';
 import { HelperRegistrationForm } from '@/components/care/HelperRegistrationForm';
+import { getCachedUser } from "@/lib/supabase/cached-auth";
 
 export default function HelpersPage() {
   const [userId, setUserId] = useState<string | null>(null);
@@ -13,7 +14,7 @@ export default function HelpersPage() {
 
   useEffect(() => {
     const supabase = createClient();
-    supabase.auth.getUser().then(({ data: { user } }) => {
+    getCachedUser(supabase).then(({ user }) => {
       setUserId(user?.id ?? null);
     });
   }, []);

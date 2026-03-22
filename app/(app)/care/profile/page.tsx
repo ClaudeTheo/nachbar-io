@@ -7,13 +7,14 @@ import { ArrowLeft, Heart } from 'lucide-react';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
 import { CareProfileForm } from '@/components/care/CareProfileForm';
+import { getCachedUser } from "@/lib/supabase/cached-auth";
 
 export default function CareProfilePage() {
   const [userId, setUserId] = useState<string | null>(null);
 
   useEffect(() => {
     const supabase = createClient();
-    supabase.auth.getUser().then(({ data: { user } }) => {
+    getCachedUser(supabase).then(({ user }) => {
       setUserId(user?.id ?? null);
     });
   }, []);

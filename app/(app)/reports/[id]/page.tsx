@@ -8,6 +8,7 @@ import Image from "next/image";
 import { ArrowLeft, MapPin, ExternalLink as ExternalLinkIcon, Send, MessageCircle } from "lucide-react";
 import { toast } from "sonner";
 import { createClient } from "@/lib/supabase/client";
+import { getCachedUser } from "@/lib/supabase/cached-auth";
 
 import type { MunicipalReport, MunicipalReportComment, ReportCategory } from "@/lib/municipal";
 import { REPORT_CATEGORIES, REPORT_STATUS_CONFIG, DISCLAIMERS } from "@/lib/municipal";
@@ -143,7 +144,7 @@ export default function ReportDetailPage() {
       const supabase = createClient();
 
       // Aktuellen Benutzer pruefen
-      const { data: { user } } = await supabase.auth.getUser();
+      const { user } = await getCachedUser(supabase);
       if (!user) {
         toast.error("Bitte melden Sie sich an.");
         return;

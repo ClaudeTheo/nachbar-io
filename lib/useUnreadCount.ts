@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { getCachedUser } from "@/lib/supabase/cached-auth";
 
 // Globaler Cache fuer komponentenuebergreifenden Zugriff
 let globalCount = 0;
@@ -17,7 +18,7 @@ export function useUnreadCount() {
 
   const refresh = useCallback(async () => {
     const supabase = createClient();
-    const { data: { user } } = await supabase.auth.getUser();
+    const { user } = await getCachedUser(supabase);
     if (!user) return;
 
     const { count: c } = await supabase

@@ -19,6 +19,15 @@ vi.mock("@/lib/supabase/client", () => ({
   })),
 }));
 
+// getCachedUser Mock: leitet direkt an mockGetUser weiter (kein Cache im Test)
+vi.mock("@/lib/supabase/cached-auth", () => ({
+  getCachedUser: vi.fn(async (supabase: { auth: { getUser: () => Promise<{ data: { user: unknown }; error: unknown }> } }) => {
+    const { data, error } = await supabase.auth.getUser();
+    return { user: data.user, error };
+  }),
+  invalidateUserCache: vi.fn(),
+}));
+
 describe("useUserRole", () => {
   beforeEach(() => {
     vi.clearAllMocks();

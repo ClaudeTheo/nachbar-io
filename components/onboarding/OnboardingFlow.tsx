@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
+import { getCachedUser } from "@/lib/supabase/cached-auth";
 import { completeOnboarding } from "@/lib/onboarding";
 import { Button } from "@/components/ui/button";
 import { ProgressDots } from "./ProgressDots";
@@ -64,7 +65,7 @@ export function OnboardingFlow() {
   useEffect(() => {
     async function loadData() {
       const supabase = createClient();
-      const { data: { user } } = await supabase.auth.getUser();
+      const { user } = await getCachedUser(supabase);
       if (!user) return;
 
       const { data: profile } = await supabase
@@ -110,7 +111,7 @@ export function OnboardingFlow() {
     if (currentSlide === 2 && selectedSkills.length > 0) {
       try {
         const supabase = createClient();
-        const { data: { user } } = await supabase.auth.getUser();
+        const { user } = await getCachedUser(supabase);
         if (user) {
           const { data: membership } = await supabase
             .from("quarter_memberships")

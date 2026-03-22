@@ -11,6 +11,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { ImageUpload, UploadingOverlay, type PendingImage } from "@/components/ImageUpload";
 import { uploadCategoryImage } from "@/lib/storage";
 import { createClient } from "@/lib/supabase/client";
+import { getCachedUser } from "@/lib/supabase/cached-auth";
 import { useQuarter } from "@/lib/quarters";
 
 const LOST_FOUND_CATEGORIES = [
@@ -44,7 +45,7 @@ export default function LostFoundNewPage() {
 
     try {
       const supabase = createClient();
-      const { data: { user } } = await supabase.auth.getUser();
+      const { user } = await getCachedUser(supabase);
       if (!user) {
         setError("Nicht angemeldet.");
         setSaving(false);

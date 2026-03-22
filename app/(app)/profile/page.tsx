@@ -11,6 +11,7 @@ import { TrustBadge } from "@/components/TrustBadge";
 import { resolveAvatarUrl } from "@/lib/storage";
 import { ReputationBadge } from "@/components/ReputationBadge";
 import { createClient } from "@/lib/supabase/client";
+import { getCachedUser } from "@/lib/supabase/cached-auth";
 import { getCachedReputation, getReputationLevel } from "@/lib/reputation";
 import type { User, Household, ReputationStats } from "@/lib/supabase/types";
 
@@ -28,7 +29,7 @@ export default function ProfilePage() {
       setLoadError(null);
       try {
         const supabase = createClient();
-        const { data: { user: authUser }, error: authError } = await supabase.auth.getUser();
+        const { user: authUser, error: authError } = await getCachedUser(supabase);
 
         if (authError || !authUser) {
           console.error("[Profile] Auth fehlgeschlagen:", authError?.message || "Kein User");

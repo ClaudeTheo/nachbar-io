@@ -5,6 +5,7 @@
 import { useEffect, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import type { CareHelperRole } from '../types';
+import { getCachedUser } from "@/lib/supabase/cached-auth";
 
 export interface SeniorInfo {
   id: string;
@@ -37,7 +38,7 @@ export function useAssignedSeniors(): UseAssignedSeniorsResult {
       setError(null);
 
       try {
-        const { data: { user } } = await supabase.auth.getUser();
+        const { user } = await getCachedUser(supabase);
         if (!user) {
           setLoading(false);
           return;

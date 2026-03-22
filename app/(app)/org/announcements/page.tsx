@@ -4,6 +4,7 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { getCachedUser } from "@/lib/supabase/cached-auth";
 import { toast } from "sonner";
 import {
   ANNOUNCEMENT_CATEGORIES,
@@ -64,7 +65,7 @@ export default function OrgAnnouncementsPage() {
     let cancelled = false;
     const supabase = createClient();
 
-    supabase.auth.getUser().then(({ data: { user } }) => {
+    getCachedUser(supabase).then(({ user }) => {
       if (cancelled || !user) return;
       setUserId(user.id);
 

@@ -5,6 +5,7 @@ import Link from "next/link";
 import { ArrowLeft, Bell, ChevronLeft, ChevronRight, Loader2, X } from "lucide-react";
 import { toast } from "sonner";
 import { createClient } from "@/lib/supabase/client";
+import { getCachedUser } from "@/lib/supabase/cached-auth";
 import { useQuarter } from "@/lib/quarters";
 import { WASTE_TYPES, DISCLAIMERS, ANNOUNCEMENT_CALENDAR_COLORS, ANNOUNCEMENT_CATEGORIES } from "@/lib/municipal";
 import type { WasteSchedule, WasteReminder, WasteType, WasteCollectionDate, CalendarAnnouncementEvent } from "@/lib/municipal";
@@ -123,7 +124,7 @@ export default function WasteCalendarPage() {
 
     async function loadData() {
       setLoadingData(true);
-      const { data: { user } } = await supabase.auth.getUser();
+      const { user } = await getCachedUser(supabase);
 
       // 1. Abfuhrgebiete fuer dieses Quartier ermitteln (source-driven)
       const { data: areaLinks } = await supabase
@@ -247,7 +248,7 @@ export default function WasteCalendarPage() {
 
   // --- Erinnerung toggeln ---
   const toggleReminder = async (wasteType: WasteType) => {
-    const { data: { user } } = await supabase.auth.getUser();
+    const { user } = await getCachedUser(supabase);
     if (!user) {
       toast.error("Bitte melden Sie sich an.");
       return;

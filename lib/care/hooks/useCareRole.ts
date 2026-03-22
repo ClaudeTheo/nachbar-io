@@ -4,6 +4,7 @@
 import { useEffect, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import type { CareUserRole } from '../types';
+import { getCachedUser } from "@/lib/supabase/cached-auth";
 
 /**
  * Ermittelt die Care-Rolle des aktuellen Users
@@ -21,7 +22,7 @@ export function useCareRole(seniorId?: string) {
 
     async function load() {
       setLoading(true);
-      const { data: { user } } = await supabase.auth.getUser();
+      const { user } = await getCachedUser(supabase);
       if (!user) { setRole('none'); setLoading(false); return; }
 
       // Senior selbst?

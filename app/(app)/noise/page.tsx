@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
 import { createClient } from "@/lib/supabase/client";
+import { getCachedUser } from "@/lib/supabase/cached-auth";
 import { useQuarter } from "@/lib/quarters";
 import { NOISE_CATEGORIES, NOISE_DURATIONS } from "@/lib/constants";
 import { haversineDistance, RADIUS_DIRECT } from "@/lib/geo";
@@ -39,7 +40,7 @@ export default function NoisePage() {
   const loadData = useCallback(async () => {
     if (!currentQuarter) return;
     const supabase = createClient();
-    const { data: { user } } = await supabase.auth.getUser();
+    const { user } = await getCachedUser(supabase);
     if (!user) return;
     setCurrentUserId(user.id);
 

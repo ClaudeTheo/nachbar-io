@@ -25,6 +25,7 @@ import { loadCraftsmanDetail } from "@/lib/craftsmen/hooks";
 import { calculateTrustScore } from "@/lib/craftsmen/trust-score";
 import { CRAFTSMAN_SUBCATEGORIES } from "@/lib/constants";
 import { createClient } from "@/lib/supabase/client";
+import { getCachedUser } from "@/lib/supabase/cached-auth";
 import type {
   CommunityTip,
   CraftsmanRecommendation as CraftsmanRec,
@@ -49,7 +50,7 @@ export default function HandwerkerDetailPage() {
       const supabase = createClient();
 
       // Aktuellen Benutzer laden
-      const { data: { user } } = await supabase.auth.getUser();
+      const { user } = await getCachedUser(supabase);
       if (user) setCurrentUserId(user.id);
 
       // Detail laden

@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Bell, CheckCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/client";
+import { getCachedUser } from "@/lib/supabase/cached-auth";
 import { useUnreadCount } from "@/lib/useUnreadCount";
 import { formatDistanceToNow } from "date-fns";
 import { de } from "date-fns/locale";
@@ -61,7 +62,7 @@ export default function NotificationsInboxPage() {
   useEffect(() => {
     async function load() {
       const supabase = createClient();
-      const { data: { user } } = await supabase.auth.getUser();
+      const { user } = await getCachedUser(supabase);
       if (!user) return;
 
       const { data } = await supabase
@@ -101,7 +102,7 @@ export default function NotificationsInboxPage() {
 
   async function markAllAsRead() {
     const supabase = createClient();
-    const { data: { user } } = await supabase.auth.getUser();
+    const { user } = await getCachedUser(supabase);
     if (!user) return;
 
     await supabase

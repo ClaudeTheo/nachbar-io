@@ -10,6 +10,7 @@ import { TaskCard } from '@/components/care/TaskCard';
 import { TaskForm } from '@/components/care/TaskForm';
 import type { CareTask, TaskCategory } from '@/components/care/TaskCard';
 import { CATEGORY_CONFIG } from '@/components/care/TaskCard';
+import { getCachedUser } from "@/lib/supabase/cached-auth";
 
 // Alle Kategorien fuer den Filter
 const ALL_CATEGORIES = Object.entries(CATEGORY_CONFIG) as [TaskCategory, { emoji: string; label: string }][];
@@ -25,7 +26,7 @@ export default function TasksPage() {
   // Benutzer laden
   useEffect(() => {
     const supabase = createClient();
-    supabase.auth.getUser().then(({ data: { user } }) => {
+    getCachedUser(supabase).then(({ user }) => {
       setUserId(user?.id ?? null);
     });
   }, []);

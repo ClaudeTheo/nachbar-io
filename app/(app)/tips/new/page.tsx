@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { TIP_CATEGORIES } from "@/lib/constants";
 import { createClient } from "@/lib/supabase/client";
+import { getCachedUser } from "@/lib/supabase/cached-auth";
 import { useQuarter } from "@/lib/quarters";
 
 type Step = "category" | "details" | "done";
@@ -42,7 +43,7 @@ export default function NewTipPage() {
 
     try {
       const supabase = createClient();
-      const { data: { user } } = await supabase.auth.getUser();
+      const { user } = await getCachedUser(supabase);
       if (!user) {
         setError("Bitte melden Sie sich erneut an.");
         setLoading(false);

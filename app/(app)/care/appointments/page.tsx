@@ -7,6 +7,7 @@ import { AppointmentList } from '@/components/care/AppointmentList';
 import { AppointmentCalendar } from '@/components/care/AppointmentCalendar';
 import { AppointmentForm } from '@/components/care/AppointmentForm';
 import { useAppointments } from '@/lib/care/hooks/useAppointments';
+import { getCachedUser } from "@/lib/supabase/cached-auth";
 
 type ViewMode = 'calendar' | 'list';
 
@@ -18,7 +19,7 @@ export default function AppointmentsPage() {
 
   useEffect(() => {
     const supabase = createClient();
-    supabase.auth.getUser().then(({ data: { user } }) => {
+    getCachedUser(supabase).then(({ user }) => {
       setUserId(user?.id ?? null);
     });
   }, []);

@@ -11,6 +11,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { ImageUpload, UploadingOverlay, type PendingImage } from "@/components/ImageUpload";
 import { uploadCategoryImage } from "@/lib/storage";
 import { createClient } from "@/lib/supabase/client";
+import { getCachedUser } from "@/lib/supabase/cached-auth";
 import { useQuarter } from "@/lib/quarters";
 import { LEIHBOERSE_CATEGORIES } from "@/lib/constants";
 
@@ -40,7 +41,7 @@ export default function LeihboerseNewPage() {
 
     try {
       const supabase = createClient();
-      const { data: { user } } = await supabase.auth.getUser();
+      const { user } = await getCachedUser(supabase);
       if (!user) {
         setError("Nicht angemeldet.");
         setSaving(false);

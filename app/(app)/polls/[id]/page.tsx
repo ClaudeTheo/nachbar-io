@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { createClient } from "@/lib/supabase/client";
+import { getCachedUser } from "@/lib/supabase/cached-auth";
 import { createNotification } from "@/lib/notifications";
 import type { Poll, PollOption, PollVote } from "@/lib/supabase/types";
 import { formatDistanceToNow } from "date-fns";
@@ -24,7 +25,7 @@ export default function PollDetailPage() {
 
   const loadPoll = useCallback(async () => {
     const supabase = createClient();
-    const { data: { user } } = await supabase.auth.getUser();
+    const { user } = await getCachedUser(supabase);
     if (user) setCurrentUserId(user.id);
 
     // Umfrage laden

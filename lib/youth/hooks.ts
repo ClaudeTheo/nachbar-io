@@ -5,6 +5,7 @@
 import { useState, useEffect } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import type { AccessLevel } from './profile';
+import { getCachedUser } from "@/lib/supabase/cached-auth";
 
 export interface YouthProfileData {
   access_level: AccessLevel;
@@ -21,7 +22,7 @@ export function useYouthProfile() {
   useEffect(() => {
     async function loadProfile() {
       const supabase = createClient();
-      const { data: { user } } = await supabase.auth.getUser();
+      const { user } = await getCachedUser(supabase);
       if (!user) {
         setLoading(false);
         return;

@@ -6,6 +6,7 @@ import { FileText } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import { ReportGenerator } from '@/components/care/ReportGenerator';
 import { ReportList } from '@/components/care/ReportList';
+import { getCachedUser } from "@/lib/supabase/cached-auth";
 
 export default function ReportsPage() {
   const [userId, setUserId] = useState<string | null>(null);
@@ -13,7 +14,7 @@ export default function ReportsPage() {
 
   useEffect(() => {
     const supabase = createClient();
-    supabase.auth.getUser().then(({ data: { user } }) => {
+    getCachedUser(supabase).then(({ user }) => {
       setUserId(user?.id ?? null);
     });
   }, []);

@@ -5,6 +5,7 @@
 
 import { useEffect, useRef } from 'react';
 import { createClient } from '@/lib/supabase/client';
+import { getCachedUser } from "@/lib/supabase/cached-auth";
 
 // Heartbeat maximal alle 60 Sekunden senden (Rate-Limit Client-seitig)
 const HEARTBEAT_INTERVAL_MS = 60_000;
@@ -28,7 +29,7 @@ export function useHeartbeat() {
     const sendHeartbeat = async () => {
       try {
         const supabase = createClient();
-        const { data: { user } } = await supabase.auth.getUser();
+        const { user } = await getCachedUser(supabase);
         if (!user) return;
 
         await fetch('/api/heartbeat', {

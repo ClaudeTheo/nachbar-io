@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
 import { createClient } from "@/lib/supabase/client";
+import { getCachedUser } from "@/lib/supabase/cached-auth";
 import { useQuarter } from "@/lib/quarters";
 import { formatDistanceToNow } from "date-fns";
 import { de } from "date-fns/locale";
@@ -28,7 +29,7 @@ export default function BoardPage() {
   const loadPosts = useCallback(async () => {
     if (!currentQuarter) return;
     const supabase = createClient();
-    const { data: { user } } = await supabase.auth.getUser();
+    const { user } = await getCachedUser(supabase);
     if (!user) return;
     setCurrentUserId(user.id);
 

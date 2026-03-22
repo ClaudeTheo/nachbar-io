@@ -7,6 +7,7 @@ import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
 import { SystemOverview } from '@/components/care/SystemOverview';
 import { PilotMetrics } from '@/components/care/PilotMetrics';
+import { getCachedUser } from "@/lib/supabase/cached-auth";
 
 export default function AdminOverviewPage() {
   const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
@@ -14,7 +15,7 @@ export default function AdminOverviewPage() {
   useEffect(() => {
     async function checkAdmin() {
       const supabase = createClient();
-      const { data: { user } } = await supabase.auth.getUser();
+      const { user } = await getCachedUser(supabase);
       if (!user) { setIsAdmin(false); return; }
       const { data } = await supabase.from('users').select('is_admin').eq('id', user.id).single();
       setIsAdmin(data?.is_admin === true);

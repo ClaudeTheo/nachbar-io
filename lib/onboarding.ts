@@ -1,9 +1,10 @@
 import { createClient } from "@/lib/supabase/client";
+import { getCachedUser } from "@/lib/supabase/cached-auth";
 
 // Onboarding-Status pruefen
 export async function isOnboardingCompleted(): Promise<boolean> {
   const supabase = createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const { user } = await getCachedUser(supabase);
   if (!user) return true;
 
   const { data } = await supabase
@@ -19,7 +20,7 @@ export async function isOnboardingCompleted(): Promise<boolean> {
 // Onboarding als abgeschlossen markieren
 export async function completeOnboarding(): Promise<void> {
   const supabase = createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const { user } = await getCachedUser(supabase);
   if (!user) return;
 
   // Bestehende Settings lesen und mergen

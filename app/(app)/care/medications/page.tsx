@@ -6,6 +6,7 @@ import { ArrowLeft, Pill, Plus } from 'lucide-react';
 import Link from 'next/link';
 import { MedicationList } from '@/components/care/MedicationList';
 import { MedicationManagementList } from '@/components/care/MedicationManagementList';
+import { getCachedUser } from "@/lib/supabase/cached-auth";
 
 type TabView = 'due' | 'all';
 
@@ -15,7 +16,7 @@ export default function MedicationsPage() {
 
   useEffect(() => {
     const supabase = createClient();
-    supabase.auth.getUser().then(({ data: { user } }) => {
+    getCachedUser(supabase).then(({ user }) => {
       setUserId(user?.id ?? null);
     });
   }, []);

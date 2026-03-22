@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { createClient } from "@/lib/supabase/client";
+import { getCachedUser } from "@/lib/supabase/cached-auth";
 import { createNotification } from "@/lib/notifications";
 import { useQuarter } from "@/lib/quarters";
 import type { Conversation, NeighborConnection } from "@/lib/supabase/types";
@@ -136,9 +137,7 @@ export default function MessagesPage() {
   useEffect(() => {
     async function init() {
       const supabase = createClient();
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
+      const { user } = await getCachedUser(supabase);
 
       if (!user) {
         setLoading(false);

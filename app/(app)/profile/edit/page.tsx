@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { AvatarPicker } from "@/components/AvatarPicker";
 import { createClient } from "@/lib/supabase/client";
+import { getCachedUser } from "@/lib/supabase/cached-auth";
 import { useQuarter } from "@/lib/quarters";
 import type { User } from "@/lib/supabase/types";
 
@@ -45,9 +46,7 @@ export default function ProfileEditPage() {
   useEffect(() => {
     async function load() {
       const supabase = createClient();
-      const {
-        data: { user: authUser },
-      } = await supabase.auth.getUser();
+      const { user: authUser } = await getCachedUser(supabase);
       if (!authUser) return;
 
       const { data } = await supabase
@@ -199,7 +198,7 @@ export default function ProfileEditPage() {
       const supabase = createClient();
 
       // Aktuelles Passwort pruefen: Re-Authentifizierung via signInWithPassword
-      const { data: { user: authUser } } = await supabase.auth.getUser();
+      const { user: authUser } = await getCachedUser(supabase);
       if (authUser?.email) {
         const { error: signInError } = await supabase.auth.signInWithPassword({
           email: authUser.email,

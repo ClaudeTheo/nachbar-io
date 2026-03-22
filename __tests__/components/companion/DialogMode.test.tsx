@@ -7,24 +7,26 @@ vi.mock('@/lib/voice/create-speech-engine', () => ({
   createSpeechEngine: vi.fn().mockReturnValue(null)
 }))
 
-vi.mock('@/lib/voice/silence-detector', () => ({
-  SilenceDetector: vi.fn().mockImplementation(() => ({
-    feedAudioLevel: vi.fn(),
-    reset: vi.fn(),
-    cleanup: vi.fn(),
-    currentLevel: 0,
-  }))
-}))
+vi.mock('@/lib/voice/silence-detector', () => {
+  const SilenceDetector = vi.fn().mockImplementation(function (this: Record<string, unknown>) {
+    this.feedAudioLevel = vi.fn()
+    this.reset = vi.fn()
+    this.cleanup = vi.fn()
+    this.currentLevel = 0
+  })
+  return { SilenceDetector }
+})
 
-vi.mock('@/lib/voice/sentence-stream-tts', () => ({
-  SentenceStreamTTS: vi.fn().mockImplementation(() => ({
-    feedText: vi.fn().mockReturnValue([]),
-    flush: vi.fn().mockReturnValue([]),
-    speakSentence: vi.fn().mockResolvedValue(undefined),
-    playQueue: vi.fn().mockResolvedValue(undefined),
-    stop: vi.fn(),
-  }))
-}))
+vi.mock('@/lib/voice/sentence-stream-tts', () => {
+  const SentenceStreamTTS = vi.fn().mockImplementation(function (this: Record<string, unknown>) {
+    this.feedText = vi.fn().mockReturnValue([])
+    this.flush = vi.fn().mockReturnValue([])
+    this.speakSentence = vi.fn().mockResolvedValue(undefined)
+    this.playQueue = vi.fn().mockResolvedValue(undefined)
+    this.stop = vi.fn()
+  })
+  return { SentenceStreamTTS }
+})
 
 vi.mock('@/hooks/useStreamingChat', () => ({
   useStreamingChat: vi.fn().mockReturnValue({

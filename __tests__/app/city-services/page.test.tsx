@@ -265,11 +265,13 @@ describe('CityServicesPage — Tab-Wechsel', () => {
     expect(screen.getByPlaceholderText('Suche: z.B. Schlagloch, Müll, Parkausweis...')).toBeDefined();
   });
 
-  it('wechselt zum Bekanntmachungen-Tab bei Klick', () => {
+  it('wechselt zum Bekanntmachungen-Tab bei Klick', async () => {
     render(<CityServicesPage />);
     fireEvent.click(screen.getByText('Bekanntmachungen'));
-    // Sollte Leerzustand zeigen (keine Bekanntmachungen)
-    expect(screen.getByText('Keine Bekanntmachungen')).toBeDefined();
+    // Sollte Leerzustand zeigen (keine Bekanntmachungen) — async wegen Supabase-Call
+    await waitFor(() => {
+      expect(screen.getByText('Keine Bekanntmachungen')).toBeDefined();
+    });
   });
 
   it('wechselt zurueck zum Services-Tab', async () => {
@@ -346,28 +348,31 @@ describe('CityServicesPage — Wiki-Tab', () => {
 // ============================================================
 
 describe('CityServicesPage — Bekanntmachungen Leerzustand', () => {
-  function renderAnnouncementsTab() {
+  async function renderAnnouncementsTab() {
     render(<CityServicesPage />);
     fireEvent.click(screen.getByText('Bekanntmachungen'));
+    await waitFor(() => {
+      expect(screen.getByText('Keine Bekanntmachungen')).toBeDefined();
+    });
   }
 
-  it('zeigt "Keine Bekanntmachungen" Ueberschrift', () => {
-    renderAnnouncementsTab();
+  it('zeigt "Keine Bekanntmachungen" Ueberschrift', async () => {
+    await renderAnnouncementsTab();
     expect(screen.getByText('Keine Bekanntmachungen')).toBeDefined();
   });
 
-  it('zeigt Erklaerungstext im Leerzustand', () => {
-    renderAnnouncementsTab();
+  it('zeigt Erklaerungstext im Leerzustand', async () => {
+    await renderAnnouncementsTab();
     expect(screen.getByText('Aktuelle Bekanntmachungen für Ihr Quartier erscheinen hier.')).toBeDefined();
   });
 
-  it('zeigt Megafon-Emoji', () => {
-    renderAnnouncementsTab();
+  it('zeigt Megafon-Emoji', async () => {
+    await renderAnnouncementsTab();
     expect(screen.getByText('📢')).toBeDefined();
   });
 
-  it('zeigt Disclaimer-Text', () => {
-    renderAnnouncementsTab();
+  it('zeigt Disclaimer-Text', async () => {
+    await renderAnnouncementsTab();
     expect(screen.getByText(DISCLAIMERS.announcements)).toBeDefined();
   });
 });

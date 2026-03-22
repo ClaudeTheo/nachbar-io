@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { NextRequest } from 'next/server'
 
 // Mock Anthropic SDK mit Stream-Support
 vi.mock('@anthropic-ai/sdk', () => {
@@ -58,7 +59,7 @@ describe('POST /api/companion/chat (streaming)', () => {
 
   it('returns SSE stream with text/event-stream content type', async () => {
     const { POST } = await import('@/app/api/companion/chat/route')
-    const req = new Request('http://localhost/api/companion/chat', {
+    const req = new NextRequest('http://localhost/api/companion/chat', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -73,7 +74,7 @@ describe('POST /api/companion/chat (streaming)', () => {
 
   it('still supports non-streaming mode (backwards compatible)', async () => {
     const { POST } = await import('@/app/api/companion/chat/route')
-    const req = new Request('http://localhost/api/companion/chat', {
+    const req = new NextRequest('http://localhost/api/companion/chat', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -88,7 +89,7 @@ describe('POST /api/companion/chat (streaming)', () => {
 
   it('SSE stream contains text and done events', async () => {
     const { POST } = await import('@/app/api/companion/chat/route')
-    const req = new Request('http://localhost/api/companion/chat', {
+    const req = new NextRequest('http://localhost/api/companion/chat', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({

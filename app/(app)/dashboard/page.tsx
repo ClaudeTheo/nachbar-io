@@ -87,15 +87,12 @@ export default function DashboardPage() {
           const cached = getCachedReputation(profile.settings as Record<string, unknown> | null);
           if (cached && cached.level >= 2) setReputationLevel(cached.level);
 
-          // Onboarding: Neue Nutzer (< 24h) zur Tour weiterleiten
+          // Onboarding: Nutzer ohne abgeschlossenes Onboarding zur Tour weiterleiten
+          // Kein Zeitlimit — Onboarding bleibt offen bis abgeschlossen oder uebersprungen
           const settings = profile.settings as Record<string, unknown> | null;
           if (!settings?.onboarding_completed) {
-            const createdAt = new Date(profile.created_at);
-            const hoursSince = (Date.now() - createdAt.getTime()) / (1000 * 60 * 60);
-            if (hoursSince < 24) {
-              router.push("/welcome");
-              return;
-            }
+            router.push("/welcome");
+            return;
           }
 
           // Profilvervollstaendigung pruefen

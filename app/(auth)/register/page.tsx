@@ -202,21 +202,8 @@ function RegisterForm() {
       return;
     }
 
-    // Bestehenden Haushalt suchen
-    try {
-      const supabase = createClient();
-      const { data: household } = await supabase
-        .from("households")
-        .select("id")
-        .eq("street_name", selectedStreet)
-        .eq("house_number", houseNumber.trim())
-        .maybeSingle();
-      if (household) {
-        setHouseholdId(household.id);
-      }
-    } catch {
-      // Nicht blockierend — Server erstellt Haushalt im Fallback
-    }
+    // Haushalt-Suche: Server-seitig im /api/register/complete erledigt
+    // (Client-seitige Suche scheitert an RLS fuer unauthentifizierte Nutzer)
 
     setVerificationMethod("address_manual");
     setStep("identity");

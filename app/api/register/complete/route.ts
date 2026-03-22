@@ -52,7 +52,7 @@ export async function POST(request: NextRequest) {
     }
 
     const adminDb = getAdminSupabase();
-    let userId: string;
+    let userId = "";
 
     // User serverseitig per Admin-API erstellen
     // Passwort ist seit Magic-Link-Umstellung optional:
@@ -82,28 +82,58 @@ export async function POST(request: NextRequest) {
       if (createError) {
         console.error("User-Erstellung fehlgeschlagen:", createError);
 
-        // Benutzerfreundliche Fehlermeldungen
+        // Spezialfall: E-Mail bereits in auth.users aber KEIN Profil (orphaned)
+        // → Auth-User wiederverwenden statt Fehler
         if (createError.message?.includes("already been registered")) {
+          const { data: existingUsers } = await adminDb.auth.admin.listUsers();
+          const existingUser = existingUsers?.users?.find(
+            (u: { email?: string }) => u.email?.toLowerCase() === email.toLowerCase()
+          );
+
+          if (existingUser) {
+            // Pruefen ob ein Profil existiert
+            const { data: existingProfile } = await adminDb
+              .from("users")
+              .select("id")
+              .eq("id", existingUser.id)
+              .maybeSingle();
+
+            if (!existingProfile) {
+              // Orphaned Auth-User: Profil fehlt → wiederverwenden
+              console.warn(`[Register] Orphaned Auth-User ${existingUser.id} wird repariert`);
+              userId = existingUser.id;
+              // Weiter mit Profil-Erstellung unten
+            } else {
+              // Vollstaendig registrierter User → Login empfehlen
+              return NextResponse.json(
+                { error: "Diese E-Mail-Adresse ist bereits registriert. Bitte melden Sie sich an." },
+                { status: 409 }
+              );
+            }
+          } else {
+            return NextResponse.json(
+              { error: "Diese E-Mail-Adresse ist bereits registriert. Bitte melden Sie sich an." },
+              { status: 409 }
+            );
+          }
+        } else {
           return NextResponse.json(
-            { error: "Diese E-Mail-Adresse ist bereits registriert. Bitte melden Sie sich an." },
-            { status: 409 }
+            { error: `Registrierung fehlgeschlagen: ${createError.message}` },
+            { status: 500 }
           );
         }
-
-        return NextResponse.json(
-          { error: `Registrierung fehlgeschlagen: ${createError.message}` },
-          { status: 500 }
-        );
       }
 
-      if (!newUser?.user) {
-        return NextResponse.json(
-          { error: "User konnte nicht erstellt werden." },
-          { status: 500 }
-        );
+      // userId kann bereits gesetzt sein (Orphan-Repair-Pfad)
+      if (!userId) {
+        if (!newUser?.user) {
+          return NextResponse.json(
+            { error: "User konnte nicht erstellt werden." },
+            { status: 500 }
+          );
+        }
+        userId = newUser.user.id;
       }
-
-      userId = newUser.user.id;
     } else {
       return NextResponse.json(
         { error: "E-Mail-Adresse ist erforderlich." },
@@ -193,16 +223,69 @@ export async function POST(request: NextRequest) {
           }
         }
       } else if (trimmedHouseNumber) {
-        // Fallback: Straßenname nicht in STREET_COORDS (z.B. Tippfehler)
-        // Trotzdem versuchen, bestehenden Haushalt zu finden
-        console.warn(`Unbekannter Straßenname: "${streetName}" — versuche Haushalt-Suche`);
+        // Straßenname nicht in STREET_COORDS (andere Straße in Bad Saeckingen)
+        // Trotzdem Haushalt erstellen mit Quartier-Fallback-Koordinaten
+        console.warn(`Straße nicht in Pilotgebiet: "${streetName}" — erstelle Haushalt mit Fallback-Koordinaten`);
+
+        // Quartier-ID ermitteln
+        let quarterId: string | null = bodyQuarterId || null;
+        if (!quarterId) {
+          const { data: quarter } = await adminDb
+            .from("quarters")
+            .select("id")
+            .limit(1)
+            .single();
+          if (quarter) quarterId = quarter.id;
+        }
+
+        // Bestehenden Haushalt suchen
         const { data: existing } = await adminDb
           .from("households")
           .select("id")
           .eq("street_name", streetName)
-          .eq("house_number", String(houseNumber).trim())
+          .eq("house_number", trimmedHouseNumber)
           .maybeSingle();
-        if (existing) householdId = existing.id;
+
+        if (existing) {
+          householdId = existing.id;
+        } else {
+          // Neuen Haushalt mit Quartier-Zentrum als Fallback-Koordinaten erstellen
+          const defaultLat = 47.5535; // Bad Saeckingen Zentrum
+          const defaultLng = 7.9640;
+          const newInviteCode = generateSecureCode();
+
+          const insertData: Record<string, unknown> = {
+            street_name: streetName,
+            house_number: trimmedHouseNumber,
+            lat: defaultLat,
+            lng: defaultLng,
+            verified: false,
+            invite_code: newInviteCode,
+          };
+          if (quarterId) insertData.quarter_id = quarterId;
+
+          const { data: newHousehold, error: insertError } = await adminDb
+            .from("households")
+            .insert(insertData)
+            .select("id")
+            .single();
+
+          if (insertError) {
+            if (insertError.code === "23505") {
+              const { data: retry } = await adminDb
+                .from("households")
+                .select("id")
+                .eq("street_name", streetName)
+                .eq("house_number", trimmedHouseNumber)
+                .maybeSingle();
+              if (retry) householdId = retry.id;
+            } else {
+              console.error("Haushalt-Erstellung (Fallback) fehlgeschlagen:", insertError);
+            }
+          } else if (newHousehold) {
+            householdId = newHousehold.id;
+          }
+        }
       }
     }
 
@@ -229,6 +312,14 @@ export async function POST(request: NextRequest) {
 
     if (profileError) {
       console.error("Profil-Fehler:", profileError);
+      // Auth-User wieder loeschen, damit kein verwaister Account zurueckbleibt
+      // (sonst: "Email bereits registriert" bei erneutem Versuch)
+      try {
+        await adminDb.auth.admin.deleteUser(userId);
+        console.warn(`[Register] Auth-User ${userId} nach Profil-Fehler bereinigt`);
+      } catch (cleanupErr) {
+        console.error("[Register] Auth-User-Cleanup fehlgeschlagen:", cleanupErr);
+      }
       return NextResponse.json(
         { error: `Profil konnte nicht erstellt werden: ${profileError.message}` },
         { status: 500 }

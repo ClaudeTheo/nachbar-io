@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Settings, LogOut, Star, Shield, ChevronRight, Pencil, Bell, TrendingUp, Plane, MapPin, CircleHelp, BarChart3, Package, UserPlus, Download } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { TrustBadge } from "@/components/TrustBadge";
 import { resolveAvatarUrl } from "@/lib/storage";
@@ -17,35 +18,67 @@ export default function ProfilePage() {
   const [user, setUser] = useState<User | null>(null);
   const [household, setHousehold] = useState<Household | null>(null);
   const [reputation, setReputation] = useState<ReputationStats | null>(null);
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
 
   useEffect(() => {
     async function load() {
-      const supabase = createClient();
-      const { data: { user: authUser } } = await supabase.auth.getUser();
-      if (!authUser) return;
+      setIsLoading(true);
+      setLoadError(null);
+      try {
+        const supabase = createClient();
+        const { data: { user: authUser }, error: authError } = await supabase.auth.getUser();
 
-      const { data: userData } = await supabase
-        .from("users")
-        .select("*")
-        .eq("id", authUser.id)
-        .single();
-      if (userData) {
+        if (authError || !authUser) {
+          console.error("[Profile] Auth fehlgeschlagen:", authError?.message || "Kein User");
+          router.push("/login");
+          return;
+        }
+
+        const { data: userData, error: userError } = await supabase
+          .from("users")
+          .select("*")
+          .eq("id", authUser.id)
+          .single();
+
+        if (userError || !userData) {
+          console.error("[Profile] Profil nicht gefunden:", userError?.message || "Kein Profil-Eintrag");
+          setLoadError(
+            "Ihr Profil konnte nicht geladen werden. " +
+            "Möglicherweise wurde die Registrierung nicht vollständig abgeschlossen. " +
+            "Bitte versuchen Sie es erneut oder melden Sie sich neu an."
+          );
+          setIsLoading(false);
+          return;
+        }
+
         setUser(userData as User);
         // Gecachte Reputation laden
         const cached = getCachedReputation(userData.settings as Record<string, unknown> | null);
         if (cached) setReputation(cached);
-      }
 
-      const { data: membership } = await supabase
-        .from("household_members")
-        .select("household:households(*)")
-        .eq("user_id", authUser.id)
-        .maybeSingle();
-      if (membership?.household) setHousehold(membership.household as unknown as Household);
+        // Haushalt-Daten laden (optional, Fehler nicht kritisch)
+        try {
+          const { data: membership } = await supabase
+            .from("household_members")
+            .select("household:households(*)")
+            .eq("user_id", authUser.id)
+            .maybeSingle();
+          if (membership?.household) setHousehold(membership.household as unknown as Household);
+        } catch (householdErr) {
+          console.warn("[Profile] Haushalt konnte nicht geladen werden:", householdErr);
+          // Nicht kritisch — Profil wird trotzdem angezeigt
+        }
+      } catch (err) {
+        console.error("[Profile] Unerwarteter Fehler:", err);
+        setLoadError("Ein unerwarteter Fehler ist aufgetreten. Bitte laden Sie die Seite neu.");
+      } finally {
+        setIsLoading(false);
+      }
     }
     load();
-  }, []);
+  }, [router]);
 
   async function handleLogout() {
     const supabase = createClient();
@@ -56,7 +89,7 @@ export default function ProfilePage() {
   async function toggleUiMode() {
     if (!user) return;
     const supabase = createClient();
-    const newMode = user.ui_mode === "active" ? "senior" : "active";
+    const newMode = (user.ui_mode || "active") === "active" ? "senior" : "active";
     await supabase.from("users").update({ ui_mode: newMode }).eq("id", user.id);
     setUser({ ...user, ui_mode: newMode });
 
@@ -68,7 +101,32 @@ export default function ProfilePage() {
     }
   }
 
-  if (!user) {
+  // Fehler-Zustand: klare Meldung + Retry + Logout
+  if (loadError) {
+    return (
+      <div className="py-12 text-center space-y-4">
+        <p className="text-sm text-emergency-red">{loadError}</p>
+        <div className="flex gap-2 justify-center">
+          <Button
+            variant="outline"
+            onClick={() => window.location.reload()}
+          >
+            Seite neu laden
+          </Button>
+          <Button
+            variant="outline"
+            onClick={handleLogout}
+            className="text-emergency-red"
+          >
+            <LogOut className="h-4 w-4 mr-1" />
+            Abmelden
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  if (isLoading || !user) {
     return <div className="py-12 text-center text-muted-foreground">Laden...</div>;
   }
 
@@ -93,7 +151,7 @@ export default function ProfilePage() {
               })()}
             </div>
             <div>
-              <h2 className="text-lg font-semibold text-anthrazit">{user.display_name}</h2>
+              <h2 className="text-lg font-semibold text-anthrazit">{user.display_name || "Unbekannt"}</h2>
               <div className="flex items-center gap-2 flex-wrap">
                 <TrustBadge level={user.trust_level} showLabel size="md" />
                 {reputation && reputation.points > 0 && (
@@ -303,7 +361,7 @@ export default function ProfilePage() {
             <div className="flex items-center gap-3">
               <Settings className="h-5 w-5 text-muted-foreground" />
               <span>
-                {user.ui_mode === "active"
+                {(user.ui_mode || "active") === "active"
                   ? "Zum einfachen Modus wechseln"
                   : "Zum aktiven Modus wechseln"}
               </span>

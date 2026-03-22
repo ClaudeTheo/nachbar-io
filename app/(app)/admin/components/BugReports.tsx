@@ -34,12 +34,12 @@ interface BugReport {
   user?: { display_name: string } | null;
 }
 
-type FilterStatus = "all" | "new" | "approved" | "rejected" | "seen";
+type FilterStatus = "all" | "new" | "approved" | "rejected" | "seen" | "fixed" | "wont_fix";
 
 export function BugReports() {
   const [reports, setReports] = useState<BugReport[]>([]);
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState<FilterStatus>("approved");
+  const [filter, setFilter] = useState<FilterStatus>("new");
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [adminNotes, setAdminNotes] = useState<Record<string, string>>({});
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
@@ -91,7 +91,11 @@ export function BugReports() {
       toast.error("Status konnte nicht geändert werden");
       return;
     }
-    toast.success(`Bug-Report ${newStatus === "approved" ? "freigegeben" : newStatus === "rejected" ? "abgelehnt" : "aktualisiert"}`);
+    const statusLabels: Record<string, string> = {
+      approved: "bestätigt", rejected: "abgelehnt", seen: "als gesehen markiert",
+      fixed: "als behoben markiert", wont_fix: "als 'kein Fix' markiert",
+    };
+    toast.success(`Bug-Report ${statusLabels[newStatus] || "aktualisiert"}`);
     loadReports();
   }
 
@@ -116,9 +120,11 @@ export function BugReports() {
   const statusBadge = (status: string) => {
     switch (status) {
       case "new": return <Badge variant="default" className="bg-alert-amber text-white">Neu</Badge>;
-      case "approved": return <Badge variant="default" className="bg-quartier-green text-white">Freigegeben</Badge>;
+      case "approved": return <Badge variant="default" className="bg-quartier-green text-white">Bestätigt</Badge>;
       case "rejected": return <Badge variant="destructive">Abgelehnt</Badge>;
       case "seen": return <Badge variant="secondary">Gesehen</Badge>;
+      case "fixed": return <Badge variant="default" className="bg-blue-500 text-white">Behoben</Badge>;
+      case "wont_fix": return <Badge variant="outline">Kein Fix</Badge>;
       default: return <Badge variant="outline">{status}</Badge>;
     }
   };
@@ -146,19 +152,25 @@ export function BugReports() {
 
       {/* Filter-Chips */}
       <div className="flex gap-2 overflow-x-auto pb-1">
-        {(["new", "approved", "rejected", "seen", "all"] as FilterStatus[]).map((s) => (
-          <button
-            key={s}
-            onClick={() => setFilter(s)}
-            className={`shrink-0 rounded-full px-3 py-1.5 text-xs font-medium transition-colors ${
-              filter === s
-                ? "bg-anthrazit text-white"
-                : "bg-muted text-muted-foreground hover:bg-muted/80"
-            }`}
-          >
-            {s === "new" ? "Neu" : s === "approved" ? "Freigegeben" : s === "rejected" ? "Abgelehnt" : s === "seen" ? "Gesehen" : "Alle"}
-          </button>
-        ))}
+        {(["new", "seen", "approved", "rejected", "fixed", "wont_fix", "all"] as FilterStatus[]).map((s) => {
+          const labels: Record<FilterStatus, string> = {
+            new: "Neu", seen: "Gesehen", approved: "Bestätigt", rejected: "Abgelehnt",
+            fixed: "Behoben", wont_fix: "Kein Fix", all: "Alle",
+          };
+          return (
+            <button
+              key={s}
+              onClick={() => setFilter(s)}
+              className={`shrink-0 rounded-full px-3 py-1.5 text-xs font-medium transition-colors ${
+                filter === s
+                  ? "bg-anthrazit text-white"
+                  : "bg-muted text-muted-foreground hover:bg-muted/80"
+              }`}
+            >
+              {labels[s]}
+            </button>
+          );
+        })}
       </div>
 
       {/* Liste */}
@@ -299,6 +311,16 @@ export function BugReports() {
                             onClick={() => updateStatus(report.id, "seen")}
                           >
                             <Eye className="h-3.5 w-3.5 mr-1" /> Gesehen
+                          </Button>
+                        )}
+                        {report.status !== "fixed" && (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="text-blue-600 border-blue-300"
+                            onClick={() => updateStatus(report.id, "fixed")}
+                          >
+                            <Check className="h-3.5 w-3.5 mr-1" /> Behoben
                           </Button>
                         )}
                         <Button

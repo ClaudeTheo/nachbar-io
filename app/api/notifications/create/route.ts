@@ -76,6 +76,7 @@ export async function POST(request: NextRequest) {
       message: "/messages",
       alert: "/alerts",
       help_match: "/help",
+      connection_request: "/messages",
       connection_accepted: "/messages",
       event_participation: "/events",
     };

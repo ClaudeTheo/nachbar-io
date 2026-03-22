@@ -11,7 +11,7 @@ import { EmergencyBanner } from "@/components/EmergencyBanner";
 import { ALERT_CATEGORIES, EMERGENCY_CATEGORIES, GPS_ALERT_CATEGORIES } from "@/lib/constants";
 import { CategoryIcon } from "@/components/CategoryIcon";
 import { ALERT_ICON_MAP, FALLBACK_ICON } from "@/lib/category-icons";
-import { createClient } from "@/lib/supabase/client";
+import { createAlert, getMembership, getHousehold } from "@/lib/services";
 import { useAuth } from "@/hooks/use-auth";
 import { useQuarter } from "@/lib/quarters";
 import { useGeolocation } from "@/hooks/useGeolocation";
@@ -80,15 +80,8 @@ export default function NewAlertPage() {
     if (!selectedCategory || !user) return;
     setLoading(true);
 
-    const supabase = createClient();
-
     // Haushalt des Nutzers ermitteln
-    const { data: membership } = await supabase
-      .from("household_members")
-      .select("household_id")
-      .eq("user_id", user.id)
-      .not("verified_at", "is", null)
-      .maybeSingle();
+    const membership = await getMembership(user.id);
 
     if (!membership) {
       toast.error("Ihr Haushalt konnte nicht ermittelt werden. Bitte kontaktieren Sie den Admin.");
@@ -102,7 +95,7 @@ export default function NewAlertPage() {
     const isGpsCategory = GPS_ALERT_CATEGORIES.includes(selectedCategory as typeof GPS_ALERT_CATEGORIES[number]);
     let locationLat: number | null = null;
     let locationLng: number | null = null;
-    let locationSource = "none";
+    let locationSource: "none" | "gps" | "household" = "none";
 
     if (isGpsCategory && shareLocation) {
       if (gpsPosition) {
@@ -110,36 +103,34 @@ export default function NewAlertPage() {
         locationLng = gpsPosition.lng;
         locationSource = "gps";
       } else if (membership) {
-        // Fallback: Haushalt-Position
-        const { data: hh } = await supabase
-          .from("households")
-          .select("lat, lng")
-          .eq("id", membership.household_id)
-          .single();
-        if (hh?.lat && hh?.lng) {
-          locationLat = hh.lat;
-          locationLng = hh.lng;
-          locationSource = "household";
+        // Fallback: Haushalt-Position (via Service)
+        try {
+          const hh = await getHousehold(membership.household_id);
+          if (hh?.lat && hh?.lng) {
+            locationLat = hh.lat;
+            locationLng = hh.lng;
+            locationSource = "household";
+          }
+        } catch {
+          // Fallback ignorieren — Alert wird ohne GPS erstellt
         }
       }
     }
 
-    const { error } = await supabase.from("alerts").insert({
-      user_id: user.id,
-      household_id: membership.household_id,
-      quarter_id: currentQuarter?.id,
-      category: selectedCategory,
-      title: category?.label ?? "Hilfeanfrage",
-      description: description.trim() || null,
-      status: "open",
-      is_emergency: isEmergency ?? false,
-      current_radius: 1,
-      location_lat: locationLat,
-      location_lng: locationLng,
-      location_source: locationSource,
-    });
-
-    if (error) {
+    try {
+      await createAlert({
+        userId: user.id,
+        householdId: membership.household_id,
+        quarterId: currentQuarter?.id ?? "",
+        category: selectedCategory as Parameters<typeof createAlert>[0]["category"],
+        title: category?.label ?? "Hilfeanfrage",
+        description: description.trim() || null,
+        isEmergency: !!isEmergency,
+        locationLat,
+        locationLng,
+        locationSource,
+      });
+    } catch {
       toast.error("Fehler beim Senden der Hilfeanfrage.");
       setLoading(false);
       return;

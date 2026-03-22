@@ -13,6 +13,7 @@ import { ReputationBadge } from "@/components/ReputationBadge";
 import { createClient } from "@/lib/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { getCachedReputation, getReputationLevel } from "@/lib/reputation";
+import { getProfile, getHouseholdForUser, toggleUiMode as toggleUiModeService } from "@/lib/services";
 import type { User, Household, ReputationStats } from "@/lib/supabase/types";
 
 export default function ProfilePage() {
@@ -30,16 +31,11 @@ export default function ProfilePage() {
       setIsLoading(true);
       setLoadError(null);
       try {
-        const supabase = createClient();
-
-        const { data: userData, error: userError } = await supabase
-          .from("users")
-          .select("*")
-          .eq("id", authUser.id)
-          .single();
-
-        if (userError || !userData) {
-          console.error("[Profile] Profil nicht gefunden:", userError?.message || "Kein Profil-Eintrag");
+        let userData: User;
+        try {
+          userData = await getProfile(authUser.id);
+        } catch (profileErr) {
+          console.error("[Profile] Profil nicht gefunden:", profileErr);
           setLoadError(
             "Ihr Profil konnte nicht geladen werden. " +
             "Möglicherweise wurde die Registrierung nicht vollständig abgeschlossen. " +
@@ -49,19 +45,15 @@ export default function ProfilePage() {
           return;
         }
 
-        setUser(userData as User);
+        setUser(userData);
         // Gecachte Reputation laden
         const cached = getCachedReputation(userData.settings as Record<string, unknown> | null);
         if (cached) setReputation(cached);
 
         // Haushalt-Daten laden (optional, Fehler nicht kritisch)
         try {
-          const { data: membership } = await supabase
-            .from("household_members")
-            .select("household:households(*)")
-            .eq("user_id", authUser.id)
-            .maybeSingle();
-          if (membership?.household) setHousehold(membership.household as unknown as Household);
+          const householdData = await getHouseholdForUser(authUser.id);
+          if (householdData) setHousehold(householdData);
         } catch (householdErr) {
           console.warn("[Profile] Haushalt konnte nicht geladen werden:", householdErr);
           // Nicht kritisch — Profil wird trotzdem angezeigt
@@ -82,11 +74,10 @@ export default function ProfilePage() {
     router.push("/");
   }
 
-  async function toggleUiMode() {
+  async function handleToggleUiMode() {
     if (!user) return;
-    const supabase = createClient();
-    const newMode = (user.ui_mode || "active") === "active" ? "senior" : "active";
-    await supabase.from("users").update({ ui_mode: newMode }).eq("id", user.id);
+    const currentMode = user.ui_mode || "active";
+    const newMode = await toggleUiModeService(user.id, currentMode);
     setUser({ ...user, ui_mode: newMode });
 
     // Zur passenden Startseite wechseln
@@ -351,7 +342,7 @@ export default function ProfilePage() {
           <Separator />
 
           <button
-            onClick={toggleUiMode}
+            onClick={handleToggleUiMode}
             className="flex w-full items-center justify-between p-4 hover:bg-muted/50"
           >
             <div className="flex items-center gap-3">

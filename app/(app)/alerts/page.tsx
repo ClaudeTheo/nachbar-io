@@ -5,7 +5,7 @@ import Link from "next/link";
 import { Plus } from "lucide-react";
 import { AlertCard } from "@/components/AlertCard";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { createClient } from "@/lib/supabase/client";
+import { getAlertsByQuarter, respondToAlert } from "@/lib/services";
 import { useAuth } from "@/hooks/use-auth";
 import { useQuarter } from "@/lib/quarters";
 import { createNotification } from "@/lib/notifications";
@@ -19,15 +19,12 @@ export default function AlertsPage() {
 
   async function loadAlerts() {
     if (!currentQuarter) return;
-    const supabase = createClient();
-    const { data } = await supabase
-      .from("alerts")
-      .select("*, user:users(display_name, avatar_url), household:households(street_name, house_number, lat, lng), responses:alert_responses(*, responder:users(display_name, avatar_url))")
-      .eq("quarter_id", currentQuarter.id)
-      .order("created_at", { ascending: false })
-      .limit(50);
-
-    if (data) setAlerts(data as unknown as Alert[]);
+    try {
+      const data = await getAlertsByQuarter(currentQuarter.id);
+      setAlerts(data);
+    } catch {
+      // Fehler still ignorieren — leere Liste bleibt
+    }
     setLoading(false);
   }
 
@@ -39,17 +36,9 @@ export default function AlertsPage() {
 
   async function handleHelp(alertId: string) {
     if (!user) return;
-    const supabase = createClient();
 
-    // Hilfe-Antwort erstellen
-    await supabase.from("alert_responses").insert({
-      alert_id: alertId,
-      responder_user_id: user.id,
-      response_type: "help",
-    });
-
-    // Alert-Status aktualisieren
-    await supabase.from("alerts").update({ status: "help_coming" }).eq("id", alertId);
+    // Hilfe-Antwort erstellen + Status aktualisieren (via Service)
+    await respondToAlert(alertId, user.id);
 
     // Alert-Ersteller benachrichtigen
     const alert = alerts.find((a) => a.id === alertId);

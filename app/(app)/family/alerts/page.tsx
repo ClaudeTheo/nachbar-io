@@ -6,6 +6,7 @@ import Link from "next/link";
 import dynamic from "next/dynamic";
 import { AlertCard } from "@/components/AlertCard";
 import { createClient } from "@/lib/supabase/client";
+import { respondToAlert } from "@/lib/services";
 import { useAuth } from '@/hooks/use-auth';
 import type { Alert } from "@/lib/supabase/types";
 
@@ -79,16 +80,10 @@ export default function FamilyAlertsPage() {
   }, []);
 
   async function handleHelp(alertId: string) {
-    const supabase = createClient();
     if (!user) return;
 
-    await supabase.from("alert_responses").insert({
-      alert_id: alertId,
-      responder_user_id: user.id,
-      response_type: "help",
-    });
-
-    await supabase.from("alerts").update({ status: "help_coming" }).eq("id", alertId);
+    // Hilfe-Antwort erstellen + Status aktualisieren (via Service)
+    await respondToAlert(alertId, user.id);
     window.location.reload();
   }
 

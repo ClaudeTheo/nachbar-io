@@ -126,6 +126,9 @@ vi.mock('@/lib/supabase/client', () => ({
         return {
           select: () => ({
             eq: () => ({
+              not: () => ({
+                maybeSingle: mockHouseholdSelect,
+              }),
               maybeSingle: mockHouseholdSelect,
             }),
           }),

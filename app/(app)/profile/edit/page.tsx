@@ -12,6 +12,7 @@ import { AvatarPicker } from "@/components/AvatarPicker";
 import { createClient } from "@/lib/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { useQuarter } from "@/lib/quarters";
+import { getProfile, updateProfile } from "@/lib/services";
 import type { User } from "@/lib/supabase/types";
 
 interface HouseholdOption {
@@ -49,17 +50,15 @@ export default function ProfileEditPage() {
       if (!authUser) return;
       const supabase = createClient();
 
-      const { data } = await supabase
-        .from("users")
-        .select("*")
-        .eq("id", authUser.id)
-        .single();
-      if (data) {
-        setUser(data as User);
+      try {
+        const data = await getProfile(authUser.id);
+        setUser(data);
         setDisplayName(data.display_name);
         setAvatarUrl(data.avatar_url);
         setBio(data.bio || "");
         setPhone(data.phone || "");
+      } catch {
+        // Profil konnte nicht geladen werden
       }
 
       // Haushalt laden
@@ -124,18 +123,14 @@ export default function ProfileEditPage() {
     setSuccess(false);
 
     try {
-      const supabase = createClient();
-      const { error: updateError } = await supabase
-        .from("users")
-        .update({
+      try {
+        await updateProfile(user.id, {
           display_name: displayName.trim(),
           avatar_url: avatarUrl,
           bio: bio.trim() || null,
           phone: phone.trim() || null,
-        })
-        .eq("id", user.id);
-
-      if (updateError) {
+        });
+      } catch {
         toast.error("Speichern fehlgeschlagen.");
         setError("Speichern fehlgeschlagen.");
         setSaving(false);
@@ -144,6 +139,7 @@ export default function ProfileEditPage() {
 
       // Adresse aendern falls geaendert
       if (addressChanged && selectedHouseholdId) {
+        const supabase = createClient();
         const { error: addrError } = await supabase
           .from("household_members")
           .update({ household_id: selectedHouseholdId })

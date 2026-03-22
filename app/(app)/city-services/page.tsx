@@ -71,36 +71,51 @@ export default function CityServicesPage() {
     let cancelled = false;
     setAnnouncementsLoading(true);
 
-    const supabase = createClient();
-    const now = new Date().toISOString();
+    const quarter = currentQuarter;
 
-    // Alle Quartier-IDs derselben Stadt holen, dann Bekanntmachungen laden
-    supabase
-      .from("quarters")
-      .select("id, city")
-      .eq("city", currentQuarter.city ?? "")
-      .then(({ data: cityQuarters }) => {
+    async function loadAnnouncements() {
+      try {
+        const supabase = createClient();
+        const now = new Date().toISOString();
+
+        // Quartier-IDs derselben Stadt ermitteln (stadtweit — Amtsblatt gilt fuer alle Quartiere)
+        let quarterIds: string[] = [];
+        if (quarter.city) {
+          const { data: cityQuarters } = await supabase
+            .from("quarters")
+            .select("id")
+            .eq("city", quarter.city);
+          quarterIds = (cityQuarters ?? []).map((q) => q.id);
+        }
+        // Fallback: nur eigenes Quartier falls city leer oder keine Treffer
+        if (quarterIds.length === 0) {
+          quarterIds = [quarter.id];
+        }
+
         if (cancelled) return;
-        const quarterIds = (cityQuarters ?? []).map((q) => q.id);
-        // Fallback: nur eigenes Quartier falls city leer
-        if (quarterIds.length === 0) quarterIds.push(currentQuarter.id);
 
-        return supabase
+        const { data } = await supabase
           .from("municipal_announcements")
           .select("*")
           .in("quarter_id", quarterIds)
           .lte("published_at", now)
           .order("pinned", { ascending: false })
           .order("published_at", { ascending: false });
-      })
-      .then((res) => {
-        if (cancelled || !res) return;
-        const filtered = (res.data ?? []).filter(
+
+        if (cancelled) return;
+
+        const filtered = (data ?? []).filter(
           (a: MunicipalAnnouncement) => !a.expires_at || new Date(a.expires_at) > new Date()
         );
         setAnnouncements(filtered);
-        setAnnouncementsLoading(false);
-      });
+      } catch (err) {
+        console.error("[city-services] Fehler beim Laden der Bekanntmachungen:", err);
+      } finally {
+        if (!cancelled) setAnnouncementsLoading(false);
+      }
+    }
+
+    loadAnnouncements();
 
     return () => { cancelled = true; };
   }, [activeTab, currentQuarter]);

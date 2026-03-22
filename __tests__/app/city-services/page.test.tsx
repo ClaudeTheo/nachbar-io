@@ -14,46 +14,46 @@ vi.mock('next/link', () => ({
 }));
 
 // Supabase Mock — konfigurierbar pro Test
-// Zwei getrennte Chains: municipal_config (.single()) und municipal_announcements (.order())
+// Drei getrennte Chains: municipal_config, quarters, municipal_announcements
+// Alle Chains muessen thenable/awaitable sein (async/await kompatibel)
 
 const mockConfigData: { data: unknown; error: unknown } = { data: null, error: null };
 const mockAnnouncementsData: { data: unknown[] | null; error: unknown } = { data: [], error: null };
+const mockQuartersData: { data: unknown[] | null; error: unknown } = {
+  data: [{ id: 'quarter-bs', city: 'Bad Säckingen' }],
+  error: null,
+};
 
-// Config-Chain: select → eq → single → then
-const mockConfigSingle = vi.fn(() => ({
-  then: vi.fn((cb: (result: { data: unknown; error: unknown }) => void) => {
-    cb(mockConfigData);
-    return { catch: vi.fn() };
-  }),
-}));
+// Hilfs-Funktion: thenable-Objekt das auch mit await funktioniert
+function makeThenable<T>(value: T) {
+  return {
+    then: (resolve: (v: T) => unknown, reject?: (e: unknown) => unknown) => {
+      try {
+        const result = resolve(value);
+        return Promise.resolve(result);
+      } catch (err) {
+        if (reject) return Promise.resolve(reject(err));
+        return Promise.reject(err);
+      }
+    },
+    catch: vi.fn(),
+  };
+}
+
+// Config-Chain: select → eq → single (thenable)
+const mockConfigSingle = vi.fn(() => makeThenable(mockConfigData));
 const mockConfigEq = vi.fn(() => ({ single: mockConfigSingle }));
 const mockConfigSelect = vi.fn(() => ({ eq: mockConfigEq }));
 
-// Announcements-Chain: select → in → lte → order → order → then
-const mockAnnouncementsThen = vi.fn((cb: (result: { data: unknown[] | null; error: unknown }) => void) => {
-  cb(mockAnnouncementsData);
-  return { catch: vi.fn() };
-});
-const mockAnnouncementsOrder2 = vi.fn(() => ({ then: mockAnnouncementsThen }));
+// Announcements-Chain: select → in → lte → order → order (thenable)
+const mockAnnouncementsOrder2 = vi.fn(() => makeThenable(mockAnnouncementsData));
 const mockAnnouncementsOrder1 = vi.fn(() => ({ order: mockAnnouncementsOrder2 }));
 const mockAnnouncementsLte = vi.fn(() => ({ order: mockAnnouncementsOrder1 }));
 const mockAnnouncementsIn = vi.fn(() => ({ lte: mockAnnouncementsLte }));
 const mockAnnouncementsSelect = vi.fn(() => ({ in: mockAnnouncementsIn }));
 
-// Quarters-Chain (stadtweit-Lookup): select → eq → then
-const mockQuartersThen = vi.fn((cb: (result: { data: unknown[] | null; error: unknown }) => void) => {
-  cb({ data: [{ id: 'quarter-bs', city: 'Bad Säckingen' }], error: null });
-  // Chain: then liefert Promise-aehnliches Objekt mit .then() fuer die nächste Query
-  return {
-    then: (cb2: (res: { data: unknown[] | null; error: unknown } | undefined) => void) => {
-      // Die Announcements-Abfrage wurde synchron gemacht
-      cb2({ data: mockAnnouncementsData.data, error: mockAnnouncementsData.error });
-      return { catch: vi.fn() };
-    },
-    catch: vi.fn(),
-  };
-});
-const mockQuartersEq = vi.fn(() => ({ then: mockQuartersThen }));
+// Quarters-Chain (stadtweit-Lookup): select → eq (thenable)
+const mockQuartersEq = vi.fn(() => makeThenable(mockQuartersData));
 const mockQuartersSelect = vi.fn(() => ({ eq: mockQuartersEq }));
 
 const mockFrom = vi.fn((table: string) => {
@@ -586,36 +586,46 @@ describe('CityServicesPage — Supabase-Abfrage', () => {
     expect(mockFrom).toHaveBeenCalledWith('municipal_config');
   });
 
-  it('fragt municipal_announcements beim Tab-Wechsel ab', () => {
+  it('fragt municipal_announcements beim Tab-Wechsel ab', async () => {
     render(<CityServicesPage />);
     fireEvent.click(screen.getByText('Bekanntmachungen'));
-    expect(mockFrom).toHaveBeenCalledWith('municipal_announcements');
+    await waitFor(() => {
+      expect(mockFrom).toHaveBeenCalledWith('municipal_announcements');
+    });
   });
 
-  it('filtert Announcements stadtweit ueber quarters-Lookup', () => {
+  it('filtert Announcements stadtweit ueber quarters-Lookup', async () => {
     render(<CityServicesPage />);
     fireEvent.click(screen.getByText('Bekanntmachungen'));
     // Stadtweit: erst quarters nach city abfragen, dann announcements mit .in()
-    expect(mockFrom).toHaveBeenCalledWith('quarters');
-    expect(mockQuartersEq).toHaveBeenCalledWith('city', 'Bad Säckingen');
+    await waitFor(() => {
+      expect(mockFrom).toHaveBeenCalledWith('quarters');
+      expect(mockQuartersEq).toHaveBeenCalledWith('city', 'Bad Säckingen');
+    });
   });
 
-  it('filtert nach published_at <= jetzt', () => {
+  it('filtert nach published_at <= jetzt', async () => {
     render(<CityServicesPage />);
     fireEvent.click(screen.getByText('Bekanntmachungen'));
-    expect(mockAnnouncementsLte).toHaveBeenCalledWith('published_at', expect.any(String));
+    await waitFor(() => {
+      expect(mockAnnouncementsLte).toHaveBeenCalledWith('published_at', expect.any(String));
+    });
   });
 
-  it('sortiert zuerst nach pinned (absteigend)', () => {
+  it('sortiert zuerst nach pinned (absteigend)', async () => {
     render(<CityServicesPage />);
     fireEvent.click(screen.getByText('Bekanntmachungen'));
-    expect(mockAnnouncementsOrder1).toHaveBeenCalledWith('pinned', { ascending: false });
+    await waitFor(() => {
+      expect(mockAnnouncementsOrder1).toHaveBeenCalledWith('pinned', { ascending: false });
+    });
   });
 
-  it('sortiert danach nach published_at (absteigend)', () => {
+  it('sortiert danach nach published_at (absteigend)', async () => {
     render(<CityServicesPage />);
     fireEvent.click(screen.getByText('Bekanntmachungen'));
-    expect(mockAnnouncementsOrder2).toHaveBeenCalledWith('published_at', { ascending: false });
+    await waitFor(() => {
+      expect(mockAnnouncementsOrder2).toHaveBeenCalledWith('published_at', { ascending: false });
+    });
   });
 
   it('fragt Config mit .single() ab', () => {

@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { MessageCircle, UserPlus, Check, X } from "lucide-react";
+import { MessageCircle, UserPlus, Check, X, MapPin } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -14,6 +14,7 @@ import type { Conversation, NeighborConnection } from "@/lib/supabase/types";
 import { formatDistanceToNow } from "date-fns";
 import { de } from "date-fns/locale";
 import { toast } from "sonner";
+import { ResidentBrowser } from "@/components/chat/ResidentBrowser";
 
 export default function MessagesPage() {
   const router = useRouter();
@@ -22,6 +23,7 @@ export default function MessagesPage() {
   const [pendingRequests, setPendingRequests] = useState<NeighborConnection[]>([]);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [showResidentBrowser, setShowResidentBrowser] = useState(false);
 
   // Konversationen laden
   const loadConversations = useCallback(async (userId: string) => {
@@ -259,6 +261,15 @@ export default function MessagesPage() {
         <h1 className="text-xl font-bold text-anthrazit">Nachrichten</h1>
       </div>
 
+      {/* Bewohner kontaktieren */}
+      <Button
+        onClick={() => setShowResidentBrowser(true)}
+        className="w-full min-h-[52px] bg-[#4CAF87] hover:bg-[#3d9a74] text-white mb-4"
+      >
+        <MapPin className="h-4 w-4 mr-2" />
+        Bewohner kontaktieren
+      </Button>
+
       {/* Offene Nachbar-Anfragen */}
       {pendingRequests.length > 0 && (
         <div className="mb-4">
@@ -368,6 +379,18 @@ export default function MessagesPage() {
           </p>
         </div>
       )}
+
+      {/* Bewohner-Browser Sheet */}
+      <ResidentBrowser
+        open={showResidentBrowser}
+        onClose={() => setShowResidentBrowser(false)}
+        onRequestSent={() => {
+          if (currentUserId) {
+            loadPendingRequests(currentUserId);
+            loadConversations(currentUserId);
+          }
+        }}
+      />
     </div>
   );
 }

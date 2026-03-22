@@ -3,8 +3,8 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { ShieldCheck, Users, CircleCheck, ArrowLeft } from 'lucide-react';
-import Link from 'next/link';
+import { ShieldCheck, Users, CircleCheck } from 'lucide-react';
+import { PageHeader } from "@/components/ui/page-header";
 
 interface UnverifiedNeighbor {
   id: string;
@@ -49,26 +49,22 @@ export default function VouchingPage() {
 
   return (
     <div className="px-4 py-6 space-y-6">
-      {/* Zurueck-Link */}
-      <Link
-        href="/dashboard"
-        className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-anthrazit"
-      >
-        <ArrowLeft className="h-4 w-4" />
-        Zurueck
-      </Link>
-
       {/* Header */}
-      <div>
-        <h1 className="text-2xl font-bold text-anthrazit flex items-center gap-2">
-          <ShieldCheck className="h-6 w-6 text-quartier-green" />
-          Nachbar-Verifikation
-        </h1>
-        <p className="text-sm text-muted-foreground mt-1">
-          Bestaetigen Sie Nachbarn, die Sie persoenlich kennen. Nach 2 Bestaetigungen
-          wird die Adresse verifiziert.
-        </p>
-      </div>
+      <PageHeader
+        title={
+          <div>
+            <div className="text-2xl font-bold text-anthrazit flex items-center gap-2">
+              <ShieldCheck className="h-6 w-6 text-quartier-green" />
+              Nachbar-Verifikation
+            </div>
+            <p className="text-sm font-normal text-muted-foreground mt-1">
+              Bestaetigen Sie Nachbarn, die Sie persoenlich kennen. Nach 2 Bestaetigungen
+              wird die Adresse verifiziert.
+            </p>
+          </div>
+        }
+        backHref="/dashboard"
+      />
 
       {/* Liste */}
       {loading ? (

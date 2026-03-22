@@ -3,7 +3,8 @@
 import { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { ArrowLeft, Plus, RefreshCw, MapPin } from "lucide-react";
+import { Plus, RefreshCw, MapPin } from "lucide-react";
+import { PageHeader } from "@/components/ui/page-header";
 import { createClient } from "@/lib/supabase/client";
 import { useQuarter } from "@/lib/quarters";
 import type { MunicipalReport, ReportCategory } from "@/lib/municipal";
@@ -105,36 +106,29 @@ export default function ReportsPage() {
   return (
     <div className="space-y-4 animate-fade-in-up">
       {/* Header mit Zurueck-Pfeil und Melden-Button */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <Link
-            href="/dashboard"
-            className="flex h-10 w-10 items-center justify-center rounded-full hover:bg-gray-100"
-            aria-label="Zurück zum Dashboard"
-          >
-            <ArrowLeft className="h-5 w-5 text-anthrazit" />
-          </Link>
-          <h1 className="text-xl font-bold text-anthrazit">Mängelmelder</h1>
-        </div>
-        <div className="flex items-center gap-2">
-          {/* Manuell aktualisieren */}
-          <button
-            onClick={() => fetchReports(true)}
-            disabled={refreshing}
-            className="flex h-10 w-10 items-center justify-center rounded-full hover:bg-gray-100 disabled:opacity-50"
-            aria-label="Meldungen aktualisieren"
-          >
-            <RefreshCw className={`h-4 w-4 text-anthrazit ${refreshing ? "animate-spin" : ""}`} />
-          </button>
-          <Link
-            href="/reports/new"
-            className="flex h-[44px] items-center gap-1 rounded-lg bg-quartier-green px-3 py-2 text-sm font-medium text-white transition-all hover:bg-quartier-green/90 active:scale-[0.97]"
-          >
-            <Plus className="h-4 w-4" />
-            Melden
-          </Link>
-        </div>
-      </div>
+      <PageHeader
+        title="Mängelmelder"
+        backHref="/dashboard"
+        actions={
+          <>
+            <button
+              onClick={() => fetchReports(true)}
+              disabled={refreshing}
+              className="flex h-10 w-10 items-center justify-center rounded-full hover:bg-gray-100 disabled:opacity-50"
+              aria-label="Meldungen aktualisieren"
+            >
+              <RefreshCw className={`h-4 w-4 text-anthrazit ${refreshing ? "animate-spin" : ""}`} />
+            </button>
+            <Link
+              href="/reports/new"
+              className="flex h-[44px] items-center gap-1 rounded-lg bg-quartier-green px-3 py-2 text-sm font-medium text-white transition-all hover:bg-quartier-green/90 active:scale-[0.97]"
+            >
+              <Plus className="h-4 w-4" />
+              Melden
+            </Link>
+          </>
+        }
+      />
 
       {/* Disclaimer-Banner */}
       <div className="rounded-lg border border-alert-amber/30 bg-alert-amber/5 p-3 text-xs text-muted-foreground">

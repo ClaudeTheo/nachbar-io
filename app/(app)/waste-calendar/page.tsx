@@ -2,7 +2,8 @@
 
 import { useState, useEffect, useMemo, useRef } from "react";
 import Link from "next/link";
-import { ArrowLeft, Bell, ChevronLeft, ChevronRight, Loader2, X } from "lucide-react";
+import { Bell, ChevronLeft, ChevronRight, Loader2, X } from "lucide-react";
+import { PageHeader } from "@/components/ui/page-header";
 import { toast } from "sonner";
 import { createClient } from "@/lib/supabase/client";
 import { useAuth } from '@/hooks/use-auth';
@@ -319,27 +320,24 @@ export default function WasteCalendarPage() {
   return (
     <div className="space-y-4 animate-fade-in-up">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <Link
-            href="/dashboard"
-            className="rounded-full p-2 hover:bg-gray-100 min-w-[44px] min-h-[44px] flex items-center justify-center"
-          >
-            <ArrowLeft className="h-5 w-5 text-anthrazit" />
-          </Link>
+      <PageHeader
+        title={
           <div>
-            <h1 className="text-xl font-bold text-anthrazit">Quartier-Kalender</h1>
-            <p className="text-xs text-muted-foreground">Mülltermine & Veranstaltungen in Ihrem Quartier</p>
+            <div className="text-xl font-bold text-anthrazit">Quartier-Kalender</div>
+            <p className="text-xs font-normal text-muted-foreground">Mülltermine & Veranstaltungen in Ihrem Quartier</p>
           </div>
-        </div>
-        <Link
-          href="/waste-calendar#reminders"
-          className="rounded-full p-2 hover:bg-gray-100 min-w-[44px] min-h-[44px] flex items-center justify-center"
-          aria-label="Zu den Erinnerungen"
-        >
-          <Bell className="h-5 w-5 text-anthrazit" />
-        </Link>
-      </div>
+        }
+        backHref="/dashboard"
+        actions={
+          <Link
+            href="/waste-calendar#reminders"
+            className="rounded-full p-2 hover:bg-gray-100 min-w-[44px] min-h-[44px] flex items-center justify-center"
+            aria-label="Zu den Erinnerungen"
+          >
+            <Bell className="h-5 w-5 text-anthrazit" />
+          </Link>
+        }
+      />
 
       {/* Naechste Abholungen */}
       <div className="rounded-xl bg-gradient-to-r from-quartier-green/5 to-transparent p-4">

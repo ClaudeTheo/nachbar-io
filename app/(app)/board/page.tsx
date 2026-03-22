@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import Link from "next/link";
-import { ArrowLeft, Pin, Send, Trash2, ImageIcon, X } from "lucide-react";
+import { Pin, Send, Trash2, ImageIcon, X } from "lucide-react";
+import { PageHeader } from "@/components/ui/page-header";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
@@ -183,12 +183,7 @@ export default function BoardPage() {
   return (
     <GuidelinesGate>
     <div className="space-y-6">
-      <div className="flex items-center gap-3">
-        <Link href="/dashboard" className="rounded-lg p-2 hover:bg-muted">
-          <ArrowLeft className="h-5 w-5" />
-        </Link>
-        <h1 className="text-xl font-bold text-anthrazit">Schwarzes Brett</h1>
-      </div>
+      <PageHeader title="Schwarzes Brett" backHref="/dashboard" />
 
       {/* Info */}
       <div className="rounded-xl border-2 border-purple-200 bg-purple-50 p-4">

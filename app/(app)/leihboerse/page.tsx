@@ -2,7 +2,8 @@
 
 import { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
-import { Plus, ArrowLeft, RefreshCw } from "lucide-react";
+import { Plus, RefreshCw } from "lucide-react";
+import { PageHeader } from "@/components/ui/page-header";
 import { Badge } from "@/components/ui/badge";
 import { LEIHBOERSE_CATEGORIES } from "@/lib/constants";
 import { createClient } from "@/lib/supabase/client";
@@ -67,30 +68,29 @@ export default function LeihboersePage() {
 
   return (
     <div>
-      <div className="mb-4 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <Link href="/profile" className="rounded-lg p-2 hover:bg-muted">
-            <ArrowLeft className="h-5 w-5" />
-          </Link>
-          <h1 className="text-xl font-bold text-anthrazit">Leihbörse</h1>
-        </div>
-        <div className="flex items-center gap-2">
-          <button
-            onClick={load}
-            className="rounded-lg p-2 text-muted-foreground hover:bg-muted"
-            title="Aktualisieren"
-          >
-            <RefreshCw className="h-4 w-4" />
-          </button>
-          <Link
-            href="/leihboerse/new"
-            className="flex items-center gap-1 rounded-lg bg-quartier-green px-3 py-2 text-sm font-semibold text-white hover:bg-quartier-green-dark"
-          >
-            <Plus className="h-4 w-4" />
-            Neu
-          </Link>
-        </div>
-      </div>
+      <PageHeader
+        title="Leihbörse"
+        backHref="/profile"
+        className="mb-4"
+        actions={
+          <>
+            <button
+              onClick={load}
+              className="rounded-lg p-2 text-muted-foreground hover:bg-muted"
+              title="Aktualisieren"
+            >
+              <RefreshCw className="h-4 w-4" />
+            </button>
+            <Link
+              href="/leihboerse/new"
+              className="flex items-center gap-1 rounded-lg bg-quartier-green px-3 py-2 text-sm font-semibold text-white hover:bg-quartier-green-dark"
+            >
+              <Plus className="h-4 w-4" />
+              Neu
+            </Link>
+          </>
+        }
+      />
 
       {/* Typ-Filter */}
       <div className="mb-3 flex gap-2 overflow-x-auto pb-1">

@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import Link from "next/link";
-import { ArrowLeft, Volume2, Clock, Send } from "lucide-react";
+import { Volume2, Clock, Send } from "lucide-react";
+import { PageHeader } from "@/components/ui/page-header";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -174,12 +174,7 @@ export default function NoisePage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center gap-3">
-        <Link href="/dashboard" className="rounded-lg p-2 hover:bg-muted">
-          <ArrowLeft className="h-5 w-5" />
-        </Link>
-        <h1 className="text-xl font-bold text-anthrazit">Lärm-Warnung</h1>
-      </div>
+      <PageHeader title="Lärm-Warnung" backHref="/dashboard" />
 
       {/* Info */}
       <div className="rounded-xl border-2 border-blue-200 bg-blue-50 p-4">

@@ -1,9 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
 import {
-  ArrowLeft,
   UserPlus,
   Clock,
   CircleCheckBig,
@@ -15,6 +13,7 @@ import {
   RefreshCw,
   Smartphone,
 } from "lucide-react";
+import { PageHeader } from "@/components/ui/page-header";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
@@ -167,22 +166,20 @@ export default function InvitationsPage() {
   return (
     <div className="space-y-4">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <Link href="/dashboard" className="rounded-lg p-2 hover:bg-muted">
-            <ArrowLeft className="h-5 w-5" />
-          </Link>
-          <h1 className="text-xl font-bold text-anthrazit">Meine Einladungen</h1>
-        </div>
-        <Button
-          size="sm"
-          className="bg-quartier-green hover:bg-quartier-green-dark"
-          onClick={() => setShowModal(true)}
-        >
-          <UserPlus className="mr-1.5 h-4 w-4" />
-          Einladen
-        </Button>
-      </div>
+      <PageHeader
+        title="Meine Einladungen"
+        backHref="/dashboard"
+        actions={
+          <Button
+            size="sm"
+            className="bg-quartier-green hover:bg-quartier-green-dark"
+            onClick={() => setShowModal(true)}
+          >
+            <UserPlus className="mr-1.5 h-4 w-4" />
+            Einladen
+          </Button>
+        }
+      />
 
       {/* Statistiken */}
       <div className="grid grid-cols-3 gap-3">

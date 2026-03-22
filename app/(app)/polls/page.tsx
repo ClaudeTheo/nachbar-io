@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Plus, ArrowLeft, BarChart3, CircleCheckBig } from "lucide-react";
+import { Plus, BarChart3, CircleCheckBig } from "lucide-react";
+import { PageHeader } from "@/components/ui/page-header";
 import { Badge } from "@/components/ui/badge";
 import { createClient } from "@/lib/supabase/client";
 import { useQuarter } from "@/lib/quarters";
@@ -52,21 +53,20 @@ export default function PollsPage() {
 
   return (
     <div>
-      <div className="mb-4 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <Link href="/profile" className="rounded-lg p-2 hover:bg-muted">
-            <ArrowLeft className="h-5 w-5" />
+      <PageHeader
+        title="Umfragen"
+        backHref="/profile"
+        className="mb-4"
+        actions={
+          <Link
+            href="/polls/new"
+            className="flex items-center gap-1 rounded-lg bg-quartier-green px-3 py-2 text-sm font-semibold text-white hover:bg-quartier-green-dark"
+          >
+            <Plus className="h-4 w-4" />
+            Neu
           </Link>
-          <h1 className="text-xl font-bold text-anthrazit">Umfragen</h1>
-        </div>
-        <Link
-          href="/polls/new"
-          className="flex items-center gap-1 rounded-lg bg-quartier-green px-3 py-2 text-sm font-semibold text-white hover:bg-quartier-green-dark"
-        >
-          <Plus className="h-4 w-4" />
-          Neu
-        </Link>
-      </div>
+        }
+      />
 
       {/* Filter */}
       <div className="mb-4 flex gap-2">

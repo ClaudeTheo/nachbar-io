@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Settings, LogOut, Star, Shield, ChevronRight, Pencil, Bell, TrendingUp, Plane, MapPin, CircleHelp, BarChart3, Package, UserPlus, Download, Mic } from "lucide-react";
+import { Settings, LogOut, Star, Shield, ChevronRight, Pencil, Bell, TrendingUp, Plane, MapPin, CircleHelp, BarChart3, Package, UserPlus, Download, Mic, Fingerprint } from "lucide-react";
 import { PageHeader } from "@/components/ui/page-header";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -233,6 +233,19 @@ export default function ProfilePage() {
             <div className="flex items-center gap-3">
               <Bell className="h-5 w-5 text-muted-foreground" />
               <span>Benachrichtigungen</span>
+            </div>
+            <ChevronRight className="h-4 w-4 text-muted-foreground" />
+          </Link>
+
+          <Separator />
+
+          <Link
+            href="/profile/passkey"
+            className="flex items-center justify-between p-4 hover:bg-muted/50"
+          >
+            <div className="flex items-center gap-3">
+              <Fingerprint className="h-5 w-5 text-muted-foreground" />
+              <span>Biometrische Anmeldung</span>
             </div>
             <ChevronRight className="h-4 w-4 text-muted-foreground" />
           </Link>

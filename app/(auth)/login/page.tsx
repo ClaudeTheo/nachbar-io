@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Mail, KeyRound } from "lucide-react";
+import { Mail, KeyRound, Fingerprint } from "lucide-react";
 import { signInWithApple } from "@/lib/auth/apple";
 
 // Apple-Logo SVG nach Apple HIG (kein Lucide — das waere ein Frucht-Apfel)
@@ -36,6 +36,7 @@ export default function LoginPage() {
   const [error, setError] = useState<string | null>(null);
   const [mode, setMode] = useState<LoginMode>("magic_link");
   const [sendCooldown, setSendCooldown] = useState(0);
+  const [supportsPasskey, setSupportsPasskey] = useState(false);
   const router = useRouter();
 
   // Cooldown-Timer nach OTP-Versand (verhindert Supabase Rate Limit)
@@ -44,6 +45,54 @@ export default function LoginPage() {
     const timer = setTimeout(() => setSendCooldown(sendCooldown - 1), 1000);
     return () => clearTimeout(timer);
   }, [sendCooldown]);
+
+  // Passkey-Support erkennen (nur Client-Side)
+  useEffect(() => {
+    import("@simplewebauthn/browser").then(({ browserSupportsWebAuthn }) => {
+      setSupportsPasskey(browserSupportsWebAuthn());
+    }).catch(() => {});
+  }, []);
+
+  // Passkey-Login
+  async function handlePasskeyLogin() {
+    setLoading(true);
+    setError(null);
+    try {
+      // Login-Challenge anfordern
+      const beginRes = await fetch("/api/auth/passkey/login-begin", { method: "POST" });
+      if (!beginRes.ok) throw new Error("Challenge fehlgeschlagen");
+      const options = await beginRes.json();
+
+      // WebAuthn Assertion
+      const { startAuthentication } = await import("@simplewebauthn/browser");
+      const assertion = await startAuthentication({ optionsJSON: options });
+
+      // Assertion verifizieren + Session erzeugen
+      const completeRes = await fetch("/api/auth/passkey/login-complete", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ response: assertion }),
+      });
+
+      if (!completeRes.ok) throw new Error("Verifizierung fehlgeschlagen");
+      const { redirect, session } = await completeRes.json();
+
+      // Session-Tokens setzen
+      if (session?.access_token) {
+        const supabase = createClient();
+        await supabase.auth.setSession({
+          access_token: session.access_token,
+          refresh_token: session.refresh_token,
+        });
+      }
+
+      router.push(redirect || "/dashboard");
+    } catch (err) {
+      // Stiller Fallback — kein Error-Banner, Nutzer kann Magic Link nutzen
+      console.warn("[Passkey] Login fehlgeschlagen:", err);
+      setLoading(false);
+    }
+  }
 
   // Magic Link senden
   async function handleMagicLink(e: React.FormEvent) {
@@ -138,6 +187,22 @@ export default function LoginPage() {
         )}
       </CardHeader>
       <CardContent>
+
+        {/* === Passkey / Biometrische Anmeldung === */}
+        {mode === "magic_link" && supportsPasskey && (
+          <div className="mb-4">
+            <Button
+              type="button"
+              onClick={handlePasskeyLogin}
+              disabled={loading}
+              className="w-full bg-anthrazit text-white hover:bg-anthrazit/90"
+              style={{ minHeight: '48px' }}
+            >
+              <Fingerprint className="mr-2 h-5 w-5" />
+              Mit Fingerabdruck / Gesicht anmelden
+            </Button>
+          </div>
+        )}
 
         {/* === Sign in with Apple (Guideline 4.8) === */}
         {mode === "magic_link" && (

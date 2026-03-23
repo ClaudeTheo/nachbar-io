@@ -1,9 +1,9 @@
 // Photon Geocoding Client (komoot.de)
 // DSGVO-konform, kostenlos, OSM-basiert
 // Browser-Requests laufen ueber /api/geo/* Proxy (CORS/DNS),
-// Server-Requests gehen direkt an photon.komoot.de
+// Server-Requests gehen direkt an photon.komoot.io
 
-const PHOTON_DIRECT = 'https://photon.komoot.de'
+const PHOTON_DIRECT = 'https://photon.komoot.io'
 const TIMEOUT_MS = 3000
 const MIN_QUERY_LENGTH = 3
 

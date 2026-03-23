@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 
-const PHOTON_BASE = 'https://photon.komoot.de'
+const PHOTON_BASE = 'https://photon.komoot.io'
 const TIMEOUT_MS = 5000
 
 /**

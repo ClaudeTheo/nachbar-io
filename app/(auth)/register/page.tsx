@@ -39,6 +39,8 @@ function RegisterForm() {
   // Adress-State
   const [selectedAddress, setSelectedAddress] = useState<AddressSuggestion | null>(null);
   const [houseNumber, setHouseNumber] = useState("");
+  const [postalCode, setPostalCode] = useState("");
+  const [city, setCity] = useState("");
 
   // Geo-State
   const [geoLoading, setGeoLoading] = useState(false);
@@ -117,11 +119,19 @@ function RegisterForm() {
     setError(null);
 
     if (!selectedAddress) {
-      setError("Bitte wählen Sie eine Adresse aus.");
+      setError("Bitte wählen Sie eine Adresse aus der Liste aus.");
       return;
     }
     if (!houseNumber.trim()) {
       setError("Bitte geben Sie Ihre Hausnummer ein.");
+      return;
+    }
+    if (!postalCode.trim() || postalCode.trim().length < 4) {
+      setError("Bitte geben Sie eine gültige Postleitzahl ein.");
+      return;
+    }
+    if (!city.trim()) {
+      setError("Bitte geben Sie Ihren Ort ein.");
       return;
     }
 
@@ -186,8 +196,8 @@ function RegisterForm() {
           houseNumber: houseNumber.trim() || undefined,
           lat: selectedAddress?.lat || undefined,
           lng: selectedAddress?.lng || undefined,
-          postalCode: selectedAddress?.postalCode || undefined,
-          city: selectedAddress?.city || undefined,
+          postalCode: postalCode.trim() || selectedAddress?.postalCode || undefined,
+          city: city.trim() || selectedAddress?.city || undefined,
           verificationMethod,
           inviteCode: inviteCode ? normalizeCode(inviteCode) : undefined,
           referrerId,
@@ -412,37 +422,74 @@ function RegisterForm() {
             {/* Adress-Suche via Photon Geocoding */}
             <div>
               <label className="mb-1 block text-sm font-medium">
-                Adresse
+                Straße
               </label>
               <AddressAutocomplete
-                onSelect={setSelectedAddress}
-                placeholder="Straße und Ort eingeben..."
+                onSelect={(addr) => {
+                  setSelectedAddress(addr);
+                  // PLZ + Stadt automatisch ausfuellen
+                  if (addr.postalCode) setPostalCode(addr.postalCode);
+                  if (addr.city) setCity(addr.city);
+                }}
+                placeholder="Straße eingeben..."
               />
             </div>
 
-            {/* Hausnummer */}
+            {/* Hausnummer + PLZ in einer Zeile */}
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label htmlFor="house_number" className="mb-1 block text-sm font-medium">
+                  Hausnummer
+                </label>
+                <Input
+                  id="house_number"
+                  type="text"
+                  value={houseNumber}
+                  onChange={(e) => setHouseNumber(e.target.value)}
+                  placeholder="z.B. 35"
+                  autoComplete="off"
+                  style={{ minHeight: "52px" }}
+                />
+              </div>
+              <div>
+                <label htmlFor="postal_code" className="mb-1 block text-sm font-medium">
+                  PLZ
+                </label>
+                <Input
+                  id="postal_code"
+                  type="text"
+                  value={postalCode}
+                  onChange={(e) => setPostalCode(e.target.value)}
+                  placeholder="z.B. 79713"
+                  maxLength={5}
+                  inputMode="numeric"
+                  style={{ minHeight: "52px" }}
+                />
+              </div>
+            </div>
+
+            {/* Stadt */}
             <div>
-              <label htmlFor="house_number" className="mb-1 block text-sm font-medium">
-                Hausnummer
+              <label htmlFor="city" className="mb-1 block text-sm font-medium">
+                Stadt / Ort
               </label>
               <Input
-                id="house_number"
+                id="city"
                 type="text"
-                value={houseNumber}
-                onChange={(e) => setHouseNumber(e.target.value)}
-                placeholder="z.B. 35"
-                autoComplete="off"
-                style={{ minHeight: "44px" }}
+                value={city}
+                onChange={(e) => setCity(e.target.value)}
+                placeholder="z.B. Bad Säckingen"
+                style={{ minHeight: "52px" }}
               />
             </div>
 
-            {/* Adress-Vorschau mit PLZ + Stadt */}
-            {selectedAddress && houseNumber.trim() && (
+            {/* Adress-Vorschau */}
+            {selectedAddress && houseNumber.trim() && postalCode && city && (
               <div className="flex items-center gap-2 rounded-lg border border-quartier-green/30 bg-quartier-green/5 p-3">
                 <MapPin className="h-4 w-4 shrink-0 text-quartier-green" />
                 <div className="text-sm">
                   <span className="font-semibold text-anthrazit">{selectedAddress.street} {houseNumber.trim()}</span>
-                  <span className="ml-1 text-muted-foreground">· {selectedAddress.postalCode} {selectedAddress.city}</span>
+                  <span className="ml-1 text-muted-foreground">· {postalCode} {city}</span>
                 </div>
               </div>
             )}
@@ -451,7 +498,7 @@ function RegisterForm() {
 
             <Button
               type="submit"
-              disabled={loading || !selectedAddress || !houseNumber.trim()}
+              disabled={loading || !selectedAddress || !houseNumber.trim() || !postalCode.trim() || !city.trim()}
               className="w-full bg-quartier-green hover:bg-quartier-green-dark"
             >
               Weiter

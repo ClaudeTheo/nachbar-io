@@ -9,14 +9,12 @@ import "leaflet/dist/leaflet.css";
 import { useEffect } from "react";
 
 // Leaflet Marker-Icon Fix fuer Next.js (webpack bricht Standard-Icons)
+// Icons lokal aus /public/leaflet/ statt CDN — keine externe Abhaengigkeit
 delete (L.Icon.Default.prototype as unknown as Record<string, unknown>)._getIconUrl;
 L.Icon.Default.mergeOptions({
-  iconRetinaUrl:
-    "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon-2x.png",
-  iconUrl:
-    "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon.png",
-  shadowUrl:
-    "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png",
+  iconRetinaUrl: "/leaflet/marker-icon-2x.png",
+  iconUrl: "/leaflet/marker-icon.png",
+  shadowUrl: "/leaflet/marker-shadow.png",
 });
 
 // --- Typen ---
@@ -52,14 +50,17 @@ function InvalidateSizeOnMount() {
   const map = useMap();
 
   useEffect(() => {
-    // Leaflet berechnet die Container-Groesse beim Mount falsch,
-    // wenn der Container in einem aufklappbaren Element steckt.
-    // Mehrfach invalidieren: sofort, nach Animation, und nochmal sicherheitshalber.
+    // ResizeObserver reagiert zuverlaessig auf Container-Groessenaenderungen
+    // (z.B. bei aufklappbaren Elementen) — besser als mehrfache Timeouts
+    const container = map.getContainer();
     map.invalidateSize();
-    const t1 = setTimeout(() => map.invalidateSize(), 150);
-    const t2 = setTimeout(() => map.invalidateSize(), 400);
-    const t3 = setTimeout(() => map.invalidateSize(), 800);
-    return () => { clearTimeout(t1); clearTimeout(t2); clearTimeout(t3); };
+
+    const observer = new ResizeObserver(() => {
+      map.invalidateSize();
+    });
+    observer.observe(container);
+
+    return () => observer.disconnect();
   }, [map]);
 
   return null;

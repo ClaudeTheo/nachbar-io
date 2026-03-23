@@ -36,6 +36,9 @@ jobs:
 
       - name: Build application
         run: npm run build
+        env:
+          NODE_ENV: production
+          RESIDENT_HASH_SECRET: ci-test-secret-not-real
 
       - name: Run Smoke Tests
         run: npx playwright test --config=tests/e2e/playwright.config.ts --project=smoke
@@ -72,6 +75,9 @@ jobs:
 
       - name: Build application
         run: npm run build
+        env:
+          NODE_ENV: production
+          RESIDENT_HASH_SECRET: ci-test-secret-not-real
 
       - name: Run Multi-Agent Tests
         run: npx playwright test --config=tests/e2e/playwright.config.ts --project=multi-agent --project=senior-terminal

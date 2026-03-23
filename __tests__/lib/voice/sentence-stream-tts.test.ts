@@ -37,9 +37,8 @@ describe('SentenceStreamTTS', () => {
 
   it('startet TTS fuer ersten Satz sofort', async () => {
     const audioBlob = new Blob(['audio-data'], { type: 'audio/mpeg' })
-    const mockResponse = new Response(audioBlob)
-    // Sicherstellen, dass blob() funktioniert (Node.js Kompatibilitaet)
-    vi.spyOn(mockResponse, 'blob').mockResolvedValue(audioBlob)
+    // Response komplett mocken (Node.js 20 crasht bei new Response(Blob) wegen fehlendem stream())
+    const mockResponse = { ok: true, blob: () => Promise.resolve(audioBlob) } as unknown as Response
     const mockFetch = vi.spyOn(globalThis, 'fetch').mockResolvedValue(mockResponse)
     const tts = new SentenceStreamTTS()
     // speakSentence braucht Audio-Kontext, testen wir nur den fetch
@@ -63,8 +62,7 @@ describe('SentenceStreamTTS', () => {
 
   it('uebergibt konfigurierte Stimme an TTS API', async () => {
     const audioBlob = new Blob(['audio-data'], { type: 'audio/mpeg' })
-    const mockResponse = new Response(audioBlob)
-    vi.spyOn(mockResponse, 'blob').mockResolvedValue(audioBlob)
+    const mockResponse = { ok: true, blob: () => Promise.resolve(audioBlob) } as unknown as Response
     const mockFetch = vi.spyOn(globalThis, 'fetch').mockResolvedValue(mockResponse)
     const tts = new SentenceStreamTTS({ voice: 'alloy' })
     await tts.speakSentence('Test.')

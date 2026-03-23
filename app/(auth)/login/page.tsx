@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Mail, KeyRound, Fingerprint } from "lucide-react";
 import { signInWithApple } from "@/lib/auth/apple";
+import { handlePasskeyLogin as doPasskeyLogin } from "@/lib/auth/passkey-login";
 // simplewebauthn/browser Referenzen (werden im useEffect geladen)
 type WebAuthnModule = typeof import("@simplewebauthn/browser");
 let _webauthnModule: WebAuthnModule | null = null;
@@ -62,46 +63,15 @@ export default function LoginPage() {
     });
   }, []);
 
-  // Passkey-Login
+  // Passkey-Login (Logik extrahiert nach lib/auth/passkey-login.ts)
   async function handlePasskeyLogin() {
-    setLoading(true);
-    setError(null);
-    try {
-      // Login-Challenge anfordern
-      const beginRes = await fetch("/api/auth/passkey/login-begin", { method: "POST" });
-      if (!beginRes.ok) throw new Error("Challenge fehlgeschlagen");
-      const options = await beginRes.json();
-      const { challengeId, ...webauthnOptions } = options;
-
-      // WebAuthn Assertion
-      if (!_webauthnModule) throw new Error("WebAuthn nicht geladen");
-      const assertion = await _webauthnModule.startAuthentication({ optionsJSON: webauthnOptions });
-
-      // Assertion verifizieren + Session erzeugen
-      const completeRes = await fetch("/api/auth/passkey/login-complete", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ response: assertion, challengeId }),
-      });
-
-      if (!completeRes.ok) throw new Error("Verifizierung fehlgeschlagen");
-      const { redirect, session } = await completeRes.json();
-
-      // Session-Tokens setzen
-      if (session?.access_token) {
-        const supabase = createClient();
-        await supabase.auth.setSession({
-          access_token: session.access_token,
-          refresh_token: session.refresh_token,
-        });
-      }
-
-      router.push(redirect || "/dashboard");
-    } catch (err) {
-      // Stiller Fallback — kein Error-Banner, Nutzer kann Magic Link nutzen
-      console.warn("[Passkey] Login fehlgeschlagen:", err);
-      setLoading(false);
-    }
+    await doPasskeyLogin({
+      webauthnModule: _webauthnModule,
+      setError,
+      setLoading,
+      createClient,
+      router,
+    });
   }
 
   // Magic Link senden

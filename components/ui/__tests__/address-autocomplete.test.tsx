@@ -1,5 +1,5 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { render, screen, fireEvent, waitFor } from '@testing-library/react'
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
+import { render, screen, fireEvent, waitFor, cleanup } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { AddressAutocomplete } from '../address-autocomplete'
 import * as photon from '@/lib/geo/photon-client'
@@ -9,6 +9,10 @@ const mockSearch = vi.mocked(photon.searchAddress)
 
 describe('AddressAutocomplete', () => {
   const mockOnSelect = vi.fn()
+
+  afterEach(() => {
+    cleanup()
+  })
 
   beforeEach(() => {
     vi.clearAllMocks()

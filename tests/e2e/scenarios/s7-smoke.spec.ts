@@ -1,7 +1,10 @@
 // Nachbar.io — S7: Stress / Regression Quick Pack (Smoke Tests)
 // Schnelle Tests: Landing laed, Auth funktioniert, Core Pages rendern, keine Konsolen-Fehler.
 import { test, expect } from "@playwright/test";
-import { createConsoleErrorCollector, waitForStableUI } from "../helpers/observer";
+import {
+  createConsoleErrorCollector,
+  waitForStableUI,
+} from "../helpers/observer";
 import { TIMEOUTS } from "../helpers/test-config";
 
 test.describe("S7: Smoke / Regression Quick Pack", () => {
@@ -12,7 +15,9 @@ test.describe("S7: Smoke / Regression Quick Pack", () => {
     await waitForStableUI(page);
     errors.stop();
 
-    console.log(`[SMOKE] / → ${response?.status()} (${errors.errors.length} Konsolenfehler)`);
+    console.log(
+      `[SMOKE] / → ${response?.status()} (${errors.errors.length} Konsolenfehler)`,
+    );
     expect(errors.errors).toHaveLength(0);
   });
 
@@ -21,12 +26,13 @@ test.describe("S7: Smoke / Regression Quick Pack", () => {
     const response = await page.goto("/login");
     expect(response?.status()).toBeLessThan(500);
 
-    await expect(page.getByText("Anmelden", { exact: true }).first()).toBeVisible({
+    await expect(
+      page.getByText("Anmelden", { exact: true }).first(),
+    ).toBeVisible({
       timeout: TIMEOUTS.pageLoad,
     });
+    // Default-Modus ist Magic Link — E-Mail-Feld sichtbar, Passwort-Feld ausgeblendet
     await expect(page.getByLabel("E-Mail-Adresse")).toBeVisible();
-    await expect(page.getByLabel("Passwort")).toBeVisible();
-    await expect(page.getByRole("button", { name: "Anmelden" })).toBeVisible();
 
     errors.stop();
     expect(errors.errors).toHaveLength(0);
@@ -38,8 +44,9 @@ test.describe("S7: Smoke / Regression Quick Pack", () => {
     const response = await page.goto("/register");
     expect(response?.status()).toBeLessThan(500);
 
-    await expect(page.getByText("Registrieren")).toBeVisible({ timeout: TIMEOUTS.pageLoad });
-    await expect(page.getByText("Schritt 1 von 4")).toBeVisible();
+    await expect(page.getByText("Willkommen bei QuartierApp")).toBeVisible({
+      timeout: TIMEOUTS.pageLoad,
+    });
 
     errors.stop();
     expect(errors.errors).toHaveLength(0);
@@ -70,7 +77,13 @@ test.describe("S7: Smoke / Regression Quick Pack", () => {
   });
 
   test("S7.7 — Keine 500-Fehler auf oeffentlichen Seiten", async ({ page }) => {
-    const publicPages = ["/", "/login", "/register", "/datenschutz", "/impressum"];
+    const publicPages = [
+      "/",
+      "/login",
+      "/register",
+      "/datenschutz",
+      "/impressum",
+    ];
     const results: Array<{ path: string; status: number }> = [];
 
     for (const path of publicPages) {
@@ -100,8 +113,8 @@ test.describe("S7: Smoke / Regression Quick Pack", () => {
       await page.goto(path);
       // Entweder Redirect zu Login ODER Seite laed (wenn Dev-Mode ohne Auth)
       const url = page.url();
-      const isLoginOrPage = url.includes("/login") ||
-        url.includes(path.replace("/", ""));
+      const isLoginOrPage =
+        url.includes("/login") || url.includes(path.replace("/", ""));
       expect(isLoginOrPage).toBeTruthy();
     }
 

@@ -46,6 +46,7 @@ vi.mock('lucide-react', () => {
     Download: iconStub('download'),
     ArrowLeft: iconStub('arrow-left'),
     Mic: iconStub('mic'),
+    Fingerprint: iconStub('fingerprint'),
   };
 });
 

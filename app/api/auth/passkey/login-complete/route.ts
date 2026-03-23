@@ -3,8 +3,8 @@ import { verifyAuthenticationResponse } from '@simplewebauthn/server';
 import type { AuthenticatorTransport } from '@simplewebauthn/server';
 import { isoBase64URL } from '@simplewebauthn/server/helpers';
 import { getAdminSupabase } from '@/lib/supabase/admin';
-import { getPasskeyConfig } from '@/lib/auth/passkey';
-import { decryptField } from '@/lib/care/field-encryption';
+import { getPasskeyConfig, generatePasskeySecret } from '@/lib/auth/passkey';
+import { decryptField, encryptField } from '@/lib/care/field-encryption';
 import { createClient as createBrowserClient } from '@supabase/supabase-js';
 
 export async function POST(req: NextRequest) {
@@ -32,6 +32,8 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Challenge nicht gefunden. Bitte erneut versuchen.' }, { status: 400 });
     }
 
+    console.info('[Passkey] login-complete: Challenge geladen OK');
+
     // Challenge abgelaufen?
     if (new Date(challengeRow.expires_at) < new Date()) {
       await admin.from('passkey_challenges').delete().eq('id', challengeId);
@@ -51,6 +53,8 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Passkey nicht gefunden' }, { status: 401 });
     }
 
+    console.info('[Passkey] login-complete: Credential gefunden OK, user:', credential.user_id);
+
     const config = getPasskeyConfig();
 
     const verification = await verifyAuthenticationResponse({
@@ -69,6 +73,8 @@ export async function POST(req: NextRequest) {
     if (!verification.verified) {
       return NextResponse.json({ error: 'Verifizierung fehlgeschlagen' }, { status: 401 });
     }
+
+    console.info('[Passkey] login-complete: Verifikation OK');
 
     await admin
       .from('passkey_credentials')
@@ -98,21 +104,57 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Entschluesselung fehlgeschlagen' }, { status: 500 });
     }
 
+    console.info('[Passkey] login-complete: Decrypt OK');
+
     // Supabase-Session erzeugen via Anon-Key Client
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
     const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
     const supabase = createBrowserClient(supabaseUrl, supabaseAnonKey);
 
-    const { data: session, error: signInError } = await supabase.auth.signInWithPassword({
+    let signInResult = await supabase.auth.signInWithPassword({
       email: authUser.user.email,
       password: secret,
     });
 
-    if (signInError || !session) {
-      console.error('[Passkey] signInWithPassword fehlgeschlagen:', signInError);
-      return NextResponse.json({ error: 'Session-Erzeugung fehlgeschlagen' }, { status: 500 });
+    // Secret-Recovery: Wenn Passwort nicht passt (z.B. manuell geaendert),
+    // neues Secret generieren und als Passwort setzen
+    if (signInResult.error) {
+      console.warn('[Passkey] signInWithPassword fehlgeschlagen, versuche Secret-Recovery:', signInResult.error.message);
+
+      const newSecret = generatePasskeySecret();
+      const { error: updatePwError } = await admin.auth.admin.updateUserById(
+        credential.user_id,
+        { password: newSecret }
+      );
+
+      if (updatePwError) {
+        console.error('[Passkey] Secret-Recovery: Passwort-Update fehlgeschlagen:', updatePwError);
+        return NextResponse.json({ error: 'Session-Erzeugung fehlgeschlagen' }, { status: 500 });
+      }
+
+      // Neues Secret verschluesselt speichern
+      await admin
+        .from('users')
+        .update({ passkey_secret: encryptField(newSecret) })
+        .eq('id', credential.user_id);
+
+      // Retry mit neuem Secret
+      signInResult = await supabase.auth.signInWithPassword({
+        email: authUser.user.email,
+        password: newSecret,
+      });
+
+      if (signInResult.error) {
+        console.error('[Passkey] Secret-Recovery: Retry fehlgeschlagen:', signInResult.error);
+        return NextResponse.json({ error: 'Session-Erzeugung fehlgeschlagen' }, { status: 500 });
+      }
+
+      console.info('[Passkey] Secret-Recovery erfolgreich fuer User:', credential.user_id);
     }
 
+    console.info('[Passkey] login-complete: Session erzeugt OK');
+
+    const session = signInResult.data;
     const redirect = profile.ui_mode === 'senior' ? '/senior/home' : '/dashboard';
 
     return NextResponse.json({

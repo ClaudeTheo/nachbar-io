@@ -216,7 +216,7 @@ describe('Consultation confirm Seiteneffekte', () => {
     return PATCH(req, { params: Promise.resolve({ id: 'slot-1' }) });
   }
 
-  it('confirm setzt provider_type=community und generiert join_url', async () => {
+  it('confirm generiert join_url, aendert aber NICHT provider_type', async () => {
     const slot = {
       id: 'slot-1',
       host_user_id: 'doctor-1',
@@ -224,20 +224,55 @@ describe('Consultation confirm Seiteneffekte', () => {
       status: 'proposed',
       proposed_by: 'doctor-1',
       scheduled_at: '2026-04-01T10:00:00Z',
-      provider_type: 'medical', // ACHTUNG: War medical
+      provider_type: 'medical',
     };
 
     const res = await setupAndPatch(slot, 'confirm');
     expect(res.status).toBe(200);
 
-    // Pruefe: update wurde mit provider_type=community aufgerufen
     expect(mockUpdate).toHaveBeenCalled();
     const updateArg = mockUpdate.mock.calls[0][0];
     expect(updateArg.status).toBe('confirmed');
     expect(updateArg.join_url).toMatch(/^https:\/\/meet\.jit\.si\/nachbar-/);
-    // BEKANNTES VERHALTEN: confirm ueberschreibt provider_type auf community
-    // Dies ist ein Seiteneffekt der in der Route hart codiert ist
-    expect(updateArg.provider_type).toBe('community');
+    // provider_type darf NICHT im Update enthalten sein
+    expect(updateArg.provider_type).toBeUndefined();
+  });
+
+  it('community-Slot bleibt nach confirm community', async () => {
+    const slot = {
+      id: 'slot-2',
+      host_user_id: 'doctor-1',
+      booked_by: 'patient-1',
+      status: 'proposed',
+      proposed_by: 'doctor-1',
+      scheduled_at: '2026-04-01T10:00:00Z',
+      provider_type: 'community',
+    };
+
+    const res = await setupAndPatch(slot, 'confirm');
+    expect(res.status).toBe(200);
+
+    const updateArg = mockUpdate.mock.calls[0][0];
+    // provider_type wird nicht angefasst — bleibt was es war
+    expect(updateArg.provider_type).toBeUndefined();
+  });
+
+  it('medical-Slot bleibt nach confirm medical', async () => {
+    const slot = {
+      id: 'slot-3',
+      host_user_id: 'doctor-1',
+      booked_by: 'patient-1',
+      status: 'proposed',
+      proposed_by: 'doctor-1',
+      scheduled_at: '2026-04-01T10:00:00Z',
+      provider_type: 'medical',
+    };
+
+    const res = await setupAndPatch(slot, 'confirm');
+    expect(res.status).toBe(200);
+
+    const updateArg = mockUpdate.mock.calls[0][0];
+    expect(updateArg.provider_type).toBeUndefined();
   });
 
   it('counter_propose setzt proposed_by und neues Datum', async () => {

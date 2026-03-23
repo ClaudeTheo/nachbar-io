@@ -90,9 +90,9 @@ export async function PATCH(
 
   if (action === "confirm") {
     // Jitsi-Raum-URL setzen bei Bestaetigung
+    // provider_type wird NICHT geaendert — gehoert zur Identitaet des Slots
     const roomId = `nachbar-${id.slice(0, 8)}`;
     updateData.join_url = `https://meet.jit.si/${roomId}`;
-    updateData.provider_type = "community";
   }
 
   if (action === "cancel") {

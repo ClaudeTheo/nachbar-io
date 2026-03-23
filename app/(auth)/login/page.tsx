@@ -23,6 +23,7 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { createClient } from "@/lib/supabase/client";
 import { OtpCodeEntry } from "@/components/auth/OtpCodeEntry";
+import { BugReportButton } from "@/components/BugReportButton";
 
 type LoginMode = "magic_link" | "password" | "magic_link_sent";
 
@@ -154,6 +155,7 @@ export default function LoginPage() {
   }
 
   return (
+    <>
     <Card className="border-0 shadow-lg">
       <CardHeader className="text-center">
         <div className="mb-2 text-4xl">🏘️</div>
@@ -356,5 +358,9 @@ export default function LoginPage() {
         )}
       </CardContent>
     </Card>
+
+    {/* Bug-Report Button (anonym, fuer Login-Bugs) */}
+    <BugReportButton anonymous />
+    </>
   );
 }

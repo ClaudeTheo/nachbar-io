@@ -26,22 +26,18 @@ jobs:
         with:
           node-version: 20
           cache: npm
-          cache-dependency-path: nachbar-io/package-lock.json
+          cache-dependency-path: package-lock.json
 
       - name: Install dependencies
-        working-directory: nachbar-io
         run: npm ci
 
       - name: Install Playwright browsers
-        working-directory: nachbar-io
         run: npx playwright install --with-deps chromium
 
       - name: Build application
-        working-directory: nachbar-io
         run: npm run build
 
       - name: Run Smoke Tests
-        working-directory: nachbar-io
         run: npx playwright test --config=tests/e2e/playwright.config.ts --project=smoke
 
       - name: Upload test report
@@ -50,8 +46,8 @@ jobs:
         with:
           name: smoke-test-report
           path: |
-            nachbar-io/playwright-report/
-            nachbar-io/test-results/
+            playwright-report/
+            test-results/
           retention-days: 14
 
   e2e-multi-agent:
@@ -59,8 +55,6 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     needs: e2e-smoke
-    # Nur wenn Supabase-Secrets vorhanden sind
-    if: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL != '' }}
     steps:
       - uses: actions/checkout@v4
 
@@ -68,22 +62,18 @@ jobs:
         with:
           node-version: 20
           cache: npm
-          cache-dependency-path: nachbar-io/package-lock.json
+          cache-dependency-path: package-lock.json
 
       - name: Install dependencies
-        working-directory: nachbar-io
         run: npm ci
 
       - name: Install Playwright browsers
-        working-directory: nachbar-io
         run: npx playwright install --with-deps chromium
 
       - name: Build application
-        working-directory: nachbar-io
         run: npm run build
 
       - name: Run Multi-Agent Tests
-        working-directory: nachbar-io
         run: npx playwright test --config=tests/e2e/playwright.config.ts --project=multi-agent --project=senior-terminal
 
       - name: Upload test report
@@ -92,8 +82,8 @@ jobs:
         with:
           name: multi-agent-test-report
           path: |
-            nachbar-io/playwright-report/
-            nachbar-io/test-results/
+            playwright-report/
+            test-results/
           retention-days: 14
 
       - name: Upload JUnit XML
@@ -101,5 +91,5 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: junit-results
-          path: nachbar-io/test-results/junit.xml
+          path: test-results/junit.xml
           retention-days: 14

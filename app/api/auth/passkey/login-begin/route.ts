@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { generateAuthenticationOptions } from '@simplewebauthn/server';
-import { getPasskeyConfig, CHALLENGE_COOKIE, CHALLENGE_MAX_AGE } from '@/lib/auth/passkey';
+import { getPasskeyConfig } from '@/lib/auth/passkey';
+import { getAdminSupabase } from '@/lib/supabase/admin';
 
 export async function POST() {
   try {
@@ -11,16 +12,24 @@ export async function POST() {
       userVerification: 'preferred',
     });
 
-    const response = NextResponse.json(options);
-    response.cookies.set(CHALLENGE_COOKIE, options.challenge, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
-      maxAge: CHALLENGE_MAX_AGE,
-      path: '/api/auth/passkey',
-    });
+    // Challenge in DB speichern statt Cookie (iOS-Kompatibilitaet)
+    const admin = getAdminSupabase();
+    const { data: row, error } = await admin
+      .from('passkey_challenges')
+      .insert({
+        challenge: options.challenge,
+        expires_at: new Date(Date.now() + 120_000).toISOString(),
+      })
+      .select('id')
+      .single();
 
-    return response;
+    if (error || !row) {
+      console.error('[Passkey] Challenge speichern fehlgeschlagen:', error);
+      return NextResponse.json({ error: 'Interner Fehler' }, { status: 500 });
+    }
+
+    // Challenge-ID im Response mitgeben (Client sendet sie bei login-complete zurueck)
+    return NextResponse.json({ ...options, challengeId: row.id });
   } catch (err) {
     console.error('[Passkey] login-begin Fehler:', err);
     return NextResponse.json({ error: 'Interner Fehler' }, { status: 500 });

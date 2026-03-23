@@ -3,25 +3,44 @@ import { verifyAuthenticationResponse } from '@simplewebauthn/server';
 import type { AuthenticatorTransport } from '@simplewebauthn/server';
 import { isoBase64URL } from '@simplewebauthn/server/helpers';
 import { getAdminSupabase } from '@/lib/supabase/admin';
-import { getPasskeyConfig, CHALLENGE_COOKIE } from '@/lib/auth/passkey';
+import { getPasskeyConfig } from '@/lib/auth/passkey';
 import { decryptField } from '@/lib/care/field-encryption';
 import { createClient as createBrowserClient } from '@supabase/supabase-js';
 
 export async function POST(req: NextRequest) {
   try {
-    const challenge = req.cookies.get(CHALLENGE_COOKIE)?.value;
-    if (!challenge) {
-      return NextResponse.json({ error: 'Challenge abgelaufen' }, { status: 400 });
-    }
-
     const body = await req.json();
-    const { response: authResponse } = body;
+    const { response: authResponse, challengeId } = body;
 
     if (!authResponse?.id) {
       return NextResponse.json({ error: 'Assertion fehlt' }, { status: 400 });
     }
 
+    if (!challengeId) {
+      return NextResponse.json({ error: 'Challenge-ID fehlt' }, { status: 400 });
+    }
+
+    // Challenge aus DB lesen statt Cookie (iOS-Kompatibilitaet)
     const admin = getAdminSupabase();
+    const { data: challengeRow, error: challengeError } = await admin
+      .from('passkey_challenges')
+      .select('challenge, expires_at')
+      .eq('id', challengeId)
+      .single();
+
+    if (challengeError || !challengeRow) {
+      return NextResponse.json({ error: 'Challenge nicht gefunden. Bitte erneut versuchen.' }, { status: 400 });
+    }
+
+    // Challenge abgelaufen?
+    if (new Date(challengeRow.expires_at) < new Date()) {
+      await admin.from('passkey_challenges').delete().eq('id', challengeId);
+      return NextResponse.json({ error: 'Challenge abgelaufen. Bitte erneut versuchen.' }, { status: 400 });
+    }
+
+    // Challenge aufraeumen (einmalig verwendbar)
+    await admin.from('passkey_challenges').delete().eq('id', challengeId);
+
     const { data: credential, error: credError } = await admin
       .from('passkey_credentials')
       .select('user_id, credential_id, public_key, counter, transports')
@@ -36,7 +55,7 @@ export async function POST(req: NextRequest) {
 
     const verification = await verifyAuthenticationResponse({
       response: authResponse,
-      expectedChallenge: challenge,
+      expectedChallenge: challengeRow.challenge,
       expectedOrigin: config.origin,
       expectedRPID: config.rpID,
       credential: {
@@ -96,7 +115,7 @@ export async function POST(req: NextRequest) {
 
     const redirect = profile.ui_mode === 'senior' ? '/senior/home' : '/dashboard';
 
-    const response = NextResponse.json({
+    return NextResponse.json({
       success: true,
       redirect,
       session: {
@@ -104,9 +123,6 @@ export async function POST(req: NextRequest) {
         refresh_token: session.session?.refresh_token,
       },
     });
-    response.cookies.delete(CHALLENGE_COOKIE);
-
-    return response;
   } catch (err) {
     console.error('[Passkey] login-complete Fehler:', err);
     return NextResponse.json({ error: 'Interner Fehler' }, { status: 500 });

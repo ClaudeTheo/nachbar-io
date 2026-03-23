@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { generateRegistrationOptions } from '@simplewebauthn/server';
 import type { AuthenticatorTransport } from '@simplewebauthn/server';
 import { createClient } from '@/lib/supabase/server';
-import { getPasskeyConfig, CHALLENGE_COOKIE, CHALLENGE_MAX_AGE } from '@/lib/auth/passkey';
+import { getPasskeyConfig } from '@/lib/auth/passkey';
 
 export async function POST() {
   try {
@@ -36,16 +36,18 @@ export async function POST() {
       },
     });
 
-    const response = NextResponse.json(options);
-    response.cookies.set(CHALLENGE_COOKIE, options.challenge, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
-      maxAge: CHALLENGE_MAX_AGE,
-      path: '/api/auth/passkey',
-    });
+    // Challenge in DB speichern statt Cookie (iOS-Kompatibilitaet)
+    // Cookies gehen auf iPhone Chrome nach Face-ID-Dialog verloren
+    const expiresAt = new Date(Date.now() + 120_000).toISOString(); // 2 Minuten
+    await supabase
+      .from('users')
+      .update({
+        passkey_challenge: options.challenge,
+        passkey_challenge_expires_at: expiresAt,
+      })
+      .eq('id', user.id);
 
-    return response;
+    return NextResponse.json(options);
   } catch (err) {
     console.error('[Passkey] register-begin Fehler:', err);
     return NextResponse.json({ error: 'Interner Fehler' }, { status: 500 });

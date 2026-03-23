@@ -71,16 +71,17 @@ export default function LoginPage() {
       const beginRes = await fetch("/api/auth/passkey/login-begin", { method: "POST" });
       if (!beginRes.ok) throw new Error("Challenge fehlgeschlagen");
       const options = await beginRes.json();
+      const { challengeId, ...webauthnOptions } = options;
 
       // WebAuthn Assertion
       if (!_webauthnModule) throw new Error("WebAuthn nicht geladen");
-      const assertion = await _webauthnModule.startAuthentication({ optionsJSON: options });
+      const assertion = await _webauthnModule.startAuthentication({ optionsJSON: webauthnOptions });
 
       // Assertion verifizieren + Session erzeugen
       const completeRes = await fetch("/api/auth/passkey/login-complete", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ response: assertion }),
+        body: JSON.stringify({ response: assertion, challengeId }),
       });
 
       if (!completeRes.ok) throw new Error("Verifizierung fehlgeschlagen");

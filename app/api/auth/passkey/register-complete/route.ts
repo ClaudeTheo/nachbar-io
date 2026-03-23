@@ -3,7 +3,7 @@ import { verifyRegistrationResponse } from '@simplewebauthn/server';
 import { isoBase64URL } from '@simplewebauthn/server/helpers';
 import { createClient } from '@/lib/supabase/server';
 import { getAdminSupabase } from '@/lib/supabase/admin';
-import { getPasskeyConfig, generatePasskeySecret, CHALLENGE_COOKIE } from '@/lib/auth/passkey';
+import { getPasskeyConfig, generatePasskeySecret } from '@/lib/auth/passkey';
 import { encryptField } from '@/lib/care/field-encryption';
 
 export async function POST(req: NextRequest) {
@@ -15,9 +15,28 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Nicht angemeldet' }, { status: 401 });
     }
 
-    const challenge = req.cookies.get(CHALLENGE_COOKIE)?.value;
+    // Challenge aus DB lesen statt Cookie (iOS-Kompatibilitaet)
+    const { data: profile } = await supabase
+      .from('users')
+      .select('passkey_challenge, passkey_challenge_expires_at, passkey_secret')
+      .eq('id', user.id)
+      .single();
+
+    const challenge = profile?.passkey_challenge;
+    const expiresAt = profile?.passkey_challenge_expires_at;
+
     if (!challenge) {
-      return NextResponse.json({ error: 'Challenge abgelaufen' }, { status: 400 });
+      return NextResponse.json({ error: 'Keine Challenge vorhanden. Bitte erneut versuchen.' }, { status: 400 });
+    }
+
+    // Challenge abgelaufen?
+    if (expiresAt && new Date(expiresAt) < new Date()) {
+      // Challenge aufraeumen
+      await supabase.from('users').update({
+        passkey_challenge: null,
+        passkey_challenge_expires_at: null,
+      }).eq('id', user.id);
+      return NextResponse.json({ error: 'Challenge abgelaufen. Bitte erneut versuchen.' }, { status: 400 });
     }
 
     const body = await req.json();
@@ -58,13 +77,13 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Speichern fehlgeschlagen' }, { status: 500 });
     }
 
-    // passkey_secret generieren (falls noch nicht vorhanden)
-    const { data: profile } = await supabase
-      .from('users')
-      .select('passkey_secret')
-      .eq('id', user.id)
-      .single();
+    // Challenge aufraeumen
+    await supabase.from('users').update({
+      passkey_challenge: null,
+      passkey_challenge_expires_at: null,
+    }).eq('id', user.id);
 
+    // passkey_secret generieren (falls noch nicht vorhanden)
     if (!profile?.passkey_secret) {
       const secret = generatePasskeySecret();
       const encrypted = encryptField(secret);
@@ -80,13 +99,10 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    const response = NextResponse.json({
+    return NextResponse.json({
       success: true,
       device_name: deviceName || 'Unbekanntes Geraet',
     });
-    response.cookies.delete(CHALLENGE_COOKIE);
-
-    return response;
   } catch (err) {
     console.error('[Passkey] register-complete Fehler:', err);
     return NextResponse.json({ error: 'Interner Fehler' }, { status: 500 });

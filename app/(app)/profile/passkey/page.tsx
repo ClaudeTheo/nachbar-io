@@ -66,16 +66,15 @@ export default function PasskeyPage() {
   // Registrierte Geraete laden
   const loadCredentials = useCallback(async () => {
     setLoading(true);
-    setErrorMessage(null);
     try {
       const res = await fetch("/api/auth/passkey/credentials");
       if (!res.ok) {
         throw new Error(`Fehler beim Laden der Geraete (${res.status})`);
       }
       const json = await res.json();
-      // API gibt { credentials: [...] } zurueck
       const data: PasskeyCredential[] = Array.isArray(json) ? json : (json.credentials || []);
       setCredentials(data);
+      setErrorMessage(null);
     } catch (err) {
       console.error("[Passkey] Laden fehlgeschlagen:", err);
       setErrorMessage(
@@ -142,7 +141,13 @@ export default function PasskeyPage() {
       }
 
       setSuccessMessage(`"${name}" wurde erfolgreich registriert.`);
-      await loadCredentials();
+      // Kurzer Delay: register-complete setzt ggf. ein neues Passwort,
+      // was die Session kurz invalidiert. 1s warten bevor wir nachladen.
+      await new Promise(r => setTimeout(r, 1000));
+      await loadCredentials().catch(() => {
+        // Nachladen kann nach Passwort-Aenderung 401 geben — ignorieren,
+        // beim naechsten Seitenaufruf werden die Credentials korrekt geladen
+      });
     } catch (err) {
       console.error("[Passkey] Registrierung fehlgeschlagen:", err);
       // WebAuthn-spezifische Fehlermeldungen eingedeutscht

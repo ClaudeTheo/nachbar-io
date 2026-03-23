@@ -19,8 +19,9 @@ describe('photon-client', () => {
 
       await searchAddress('Bahnhofstraße Hamburg')
 
+      // Im jsdom-Environment wird der lokale Proxy verwendet
       expect(mockFetch).toHaveBeenCalledWith(
-        expect.stringContaining('photon.komoot.de/api/?q=Bahnhofstra'),
+        expect.stringContaining('/api/geo/search?q=Bahnhofstra'),
         expect.objectContaining({ signal: expect.any(AbortSignal) })
       )
     })

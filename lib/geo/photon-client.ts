@@ -1,9 +1,16 @@
 // Photon Geocoding Client (komoot.de)
 // DSGVO-konform, kostenlos, OSM-basiert
+// Browser-Requests laufen ueber /api/geo/* Proxy (CORS/DNS),
+// Server-Requests gehen direkt an photon.komoot.de
 
-const PHOTON_BASE = 'https://photon.komoot.de'
+const PHOTON_DIRECT = 'https://photon.komoot.de'
 const TIMEOUT_MS = 3000
 const MIN_QUERY_LENGTH = 3
+
+// Im Browser den lokalen Proxy verwenden, auf dem Server direkt Photon
+function isServer(): boolean {
+  return typeof window === 'undefined'
+}
 
 export interface AddressSuggestion {
   street: string
@@ -68,14 +75,14 @@ export async function searchAddress(
       q: query,
       lang,
       limit: String(limit),
-      layer: 'house,street',
     })
-    // Photon unterstuetzt kein country-Filter nativ,
-    // aber wir filtern clientseitig
     const controller = new AbortController()
     const timeout = setTimeout(() => controller.abort(), TIMEOUT_MS)
 
-    const res = await fetch(`${PHOTON_BASE}/api/?${params}`, {
+    const url = isServer()
+      ? `${PHOTON_DIRECT}/api/?${params}`
+      : `/api/geo/search?${params}`
+    const res = await fetch(url, {
       signal: controller.signal,
     })
     clearTimeout(timeout)
@@ -127,7 +134,10 @@ export async function reverseGeocode(
     const controller = new AbortController()
     const timeout = setTimeout(() => controller.abort(), TIMEOUT_MS)
 
-    const res = await fetch(`${PHOTON_BASE}/reverse?${params}`, {
+    const url = isServer()
+      ? `${PHOTON_DIRECT}/reverse?${params}`
+      : `/api/geo/reverse?lat=${lat}&lng=${lng}&lang=${lang}`
+    const res = await fetch(url, {
       signal: controller.signal,
     })
     clearTimeout(timeout)

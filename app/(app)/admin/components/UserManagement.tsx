@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { createClient } from "@/lib/supabase/client";
-import { TRUST_LEVELS, QUARTIER_STREETS } from "@/lib/constants";
+import { TRUST_LEVELS } from "@/lib/constants";
 import type { User, TrustLevel } from "@/lib/supabase/types";
 import { toast } from "sonner";
 import { VerificationQueue } from "./VerificationQueue";
@@ -209,16 +209,11 @@ export function UserManagement({ users, onRefresh }: UserManagementProps) {
                 onChange={(e) => setNewUserName(e.target.value)}
               />
               <div className="grid grid-cols-2 gap-2">
-                <select
+                <Input
+                  placeholder="Strasse..."
                   value={newUserStreet}
                   onChange={(e) => setNewUserStreet(e.target.value)}
-                  className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                >
-                  <option value="">Strasse...</option>
-                  {QUARTIER_STREETS.map((s) => (
-                    <option key={s} value={s}>{s}</option>
-                  ))}
-                </select>
+                />
                 <Input
                   placeholder="Hausnr."
                   value={newUserHouseNumber}

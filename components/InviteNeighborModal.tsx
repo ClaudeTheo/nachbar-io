@@ -5,7 +5,7 @@ import { X, Mail, MessageCircle, Copy, Check, UserPlus, MapPin, Phone, Smartphon
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
-import { QUARTIER_STREETS } from "@/lib/constants";
+
 import { formatCode } from "@/lib/invite-codes";
 import { toast } from "sonner";
 
@@ -234,16 +234,11 @@ export function InviteNeighborModal({ open, onClose }: InviteNeighborModalProps)
                 <MapPin className="h-4 w-4 text-muted-foreground" />
                 Adresse des Nachbarn
               </label>
-              <select
+              <Input
+                placeholder="Straße (z.B. Purkersdorfer Straße)"
                 value={street}
                 onChange={(e) => setStreet(e.target.value)}
-                className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-              >
-                <option value="">Straße wählen...</option>
-                {QUARTIER_STREETS.map((s) => (
-                  <option key={s} value={s}>{s}</option>
-                ))}
-              </select>
+              />
               <Input
                 placeholder="Hausnummer"
                 value={houseNumber}

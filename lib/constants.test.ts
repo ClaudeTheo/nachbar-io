@@ -6,10 +6,6 @@ import {
   ALERT_CATEGORIES,
   NOTIFICATION_RADIUS,
   PUSH_LIMITS,
-  QUARTIER_STREETS,
-  QUARTIER_CENTER,
-  PILOT_QUARTIER_STREETS,
-  PILOT_QUARTIER_CENTER,
 } from "./constants";
 import { REPUTATION_LEVELS } from "./reputation";
 
@@ -74,35 +70,6 @@ describe("PUSH_LIMITS", () => {
   it("Ruhezeiten sind 22:00 bis 07:00", () => {
     expect(PUSH_LIMITS.quietHoursStart).toBe(22);
     expect(PUSH_LIMITS.quietHoursEnd).toBe(7);
-  });
-});
-
-describe("PILOT_QUARTIER_STREETS", () => {
-  it("enthaelt genau 3 Strassen", () => {
-    expect(PILOT_QUARTIER_STREETS).toHaveLength(3);
-  });
-
-  it("enthaelt die bekannten Quartiersstrassen", () => {
-    expect(PILOT_QUARTIER_STREETS).toContain("Purkersdorfer Straße");
-    expect(PILOT_QUARTIER_STREETS).toContain("Sanarystraße");
-    expect(PILOT_QUARTIER_STREETS).toContain("Oberer Rebberg");
-  });
-
-  it("QUARTIER_STREETS Alias verweist auf PILOT_QUARTIER_STREETS", () => {
-    expect(QUARTIER_STREETS).toBe(PILOT_QUARTIER_STREETS);
-  });
-});
-
-describe("PILOT_QUARTIER_CENTER", () => {
-  it("liegt im erwarteten Bereich (Bad Saeckingen)", () => {
-    expect(PILOT_QUARTIER_CENTER.lat).toBeGreaterThan(47.5);
-    expect(PILOT_QUARTIER_CENTER.lat).toBeLessThan(47.6);
-    expect(PILOT_QUARTIER_CENTER.lng).toBeGreaterThan(7.9);
-    expect(PILOT_QUARTIER_CENTER.lng).toBeLessThan(8.0);
-  });
-
-  it("QUARTIER_CENTER Alias verweist auf PILOT_QUARTIER_CENTER", () => {
-    expect(QUARTIER_CENTER).toBe(PILOT_QUARTIER_CENTER);
   });
 });
 

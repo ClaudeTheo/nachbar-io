@@ -6,7 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { QUARTIER_STREETS } from "@/lib/constants";
+
 import { toast } from "sonner";
 
 type Audience = "all" | "street" | "seniors";
@@ -192,16 +192,12 @@ export function PushBroadcast() {
             </div>
 
             {audience === "street" && (
-              <select
+              <Input
+                className="mt-2"
+                placeholder="Strasse eingeben..."
                 value={street}
                 onChange={(e) => setStreet(e.target.value)}
-                className="mt-2 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-              >
-                <option value="">Strasse waehlen...</option>
-                {QUARTIER_STREETS.map((s) => (
-                  <option key={s} value={s}>{s}</option>
-                ))}
-              </select>
+              />
             )}
           </div>
 

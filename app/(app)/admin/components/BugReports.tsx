@@ -28,6 +28,7 @@ interface BugReport {
   page_meta: Record<string, unknown> | null;
   user_comment: string | null;
   status: string;
+  source: string; // 'authenticated' | 'anonymous'
   admin_notes: string | null;
   created_at: string;
   reviewed_at: string | null;
@@ -42,6 +43,7 @@ export function BugReports() {
   const [reports, setReports] = useState<BugReport[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<FilterStatus>("new");
+  const [sourceFilter, setSourceFilter] = useState<'all' | 'authenticated' | 'anonymous'>('all');
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [adminNotes, setAdminNotes] = useState<Record<string, string>>({});
 
@@ -58,6 +60,11 @@ export function BugReports() {
       query = query.eq("status", filter);
     }
 
+    // Quellen-Filter (authentifiziert / anonym)
+    if (sourceFilter !== 'all') {
+      query = query.eq('source', sourceFilter);
+    }
+
     const { data, error } = await query;
     if (error) {
       toast.error("Bug-Reports konnten nicht geladen werden");
@@ -65,7 +72,7 @@ export function BugReports() {
     }
     setReports((data as unknown as BugReport[]) ?? []);
     setLoading(false);
-  }, [filter]);
+  }, [filter, sourceFilter]);
 
   useEffect(() => {
     loadReports();
@@ -170,6 +177,26 @@ export function BugReports() {
         })}
       </div>
 
+      {/* Quellen-Filter */}
+      <div className="flex gap-2 pb-1">
+        {(['all', 'authenticated', 'anonymous'] as const).map((s) => {
+          const labels = { all: 'Alle Quellen', authenticated: 'Eingeloggt', anonymous: 'Anonym' };
+          return (
+            <button
+              key={s}
+              onClick={() => setSourceFilter(s)}
+              className={`shrink-0 rounded-full px-3 py-1.5 text-xs font-medium transition-colors ${
+                sourceFilter === s
+                  ? 'bg-anthrazit text-white'
+                  : 'bg-muted text-muted-foreground hover:bg-muted/80'
+              }`}
+            >
+              {labels[s]}
+            </button>
+          );
+        })}
+      </div>
+
       {/* Liste */}
       {loading ? (
         <div className="space-y-3">
@@ -203,6 +230,11 @@ export function BugReports() {
                           <Clock className="h-3 w-3" />
                           {formatDate(report.created_at)}
                         </span>
+                        {report.source === 'anonymous' && (
+                          <Badge variant="outline" className="text-orange-600 border-orange-300">
+                            Anonym
+                          </Badge>
+                        )}
                         {isOwnReport && (
                           <span className="text-xs text-quartier-green font-medium">Eigener</span>
                         )}
@@ -213,9 +245,11 @@ export function BugReports() {
                       <p className="mt-0.5 text-xs text-muted-foreground flex items-center gap-1">
                         <ExternalLink className="h-3 w-3" />
                         {extractPath(report.page_url)}
-                        {report.user?.display_name && (
+                        {report.user?.display_name ? (
                           <span> · {report.user.display_name}</span>
-                        )}
+                        ) : report.source === 'anonymous' ? (
+                          <span className="text-orange-600"> · Anonym</span>
+                        ) : null}
                       </p>
                     </div>
                     {isExpanded ? (

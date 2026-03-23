@@ -3,12 +3,6 @@ import { createClient } from "@supabase/supabase-js";
 import { createClient as createServerClient } from "@/lib/supabase/server";
 import { generateSecureCode } from "@/lib/invite-codes";
 
-// Ungefaehre Koordinaten pro Strasse (Mitte der Strasse)
-const STREET_COORDS: Record<string, { lat: number; lng: number }> = {
-  "Purkersdorfer Straße": { lat: 47.5631, lng: 7.9480 },
-  "Sanarystraße": { lat: 47.5619, lng: 7.9480 },
-  "Oberer Rebberg": { lat: 47.5604, lng: 7.9480 },
-};
 
 /**
  * POST /api/household/find-or-create
@@ -31,7 +25,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { streetName, houseNumber } = body;
+    const { streetName, houseNumber, lat, lng } = body;
 
     if (!streetName || !houseNumber) {
       return NextResponse.json(
@@ -44,15 +38,6 @@ export async function POST(request: NextRequest) {
     if (!trimmedHouseNumber) {
       return NextResponse.json(
         { error: "Hausnummer darf nicht leer sein." },
-        { status: 400 }
-      );
-    }
-
-    // Strasse validieren
-    const validStreets = Object.keys(STREET_COORDS);
-    if (!validStreets.includes(streetName)) {
-      return NextResponse.json(
-        { error: "Unbekannte Straße." },
         { status: 400 }
       );
     }
@@ -88,30 +73,38 @@ export async function POST(request: NextRequest) {
     }
 
     // 2. Neuen Haushalt anlegen
-    const coords = STREET_COORDS[streetName];
-    // Leicht versetzten Laengengrad basierend auf Hausnummer fuer Kartenspread
-    const houseNum = parseInt(trimmedHouseNumber, 10) || 0;
-    const lngOffset = houseNum * 0.0005;
-
+    const hasCoords = typeof lat === 'number' && typeof lng === 'number';
     const inviteCode = generateSecureCode();
 
-    // Quartier-ID fuer den Pilotquartier ermitteln
-    const { data: pilotQuarter } = await supabase
-      .from("quarters")
-      .select("id")
-      .eq("slug", "bad-saeckingen-pilot")
-      .single();
+    // Quartier-ID ermitteln: via PostGIS Clustering oder Fallback
+    let quarterId: string | null = null;
+    if (hasCoords) {
+      const { assignUserToQuarter } = await import('@/lib/geo/quarter-clustering');
+      try {
+        quarterId = await assignUserToQuarter(lat, lng);
+      } catch (err) {
+        console.error('Quartier-Clustering fehlgeschlagen:', err);
+      }
+    }
+    if (!quarterId) {
+      const { data: fallback } = await supabase
+        .from("quarters")
+        .select("id")
+        .limit(1)
+        .single();
+      if (fallback) quarterId = fallback.id;
+    }
 
     const { data: newHousehold, error: insertError } = await supabase
       .from("households")
       .insert({
         street_name: streetName,
         house_number: trimmedHouseNumber,
-        lat: coords.lat,
-        lng: coords.lng + lngOffset,
+        lat: hasCoords ? lat : 0,
+        lng: hasCoords ? lng : 0,
         verified: false,
         invite_code: inviteCode,
-        quarter_id: pilotQuarter?.id,
+        quarter_id: quarterId,
       })
       .select("id, street_name, house_number")
       .single();

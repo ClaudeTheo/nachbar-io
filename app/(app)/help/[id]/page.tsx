@@ -80,12 +80,41 @@ export default function HelpDetailPage() {
     ? HELP_SUBCATEGORIES[request.category]?.find((s) => s.id === request.subcategory)?.label
     : null;
 
-  // Nachricht senden
+  // Nachricht senden (mit KI-Moderation)
   async function handleSendMessage() {
     if (!message.trim() || !request || !user) return;
     setSending(true);
 
     try {
+      // KI-Moderation: Nachricht pruefen bevor sie gespeichert wird
+      try {
+        const modResponse = await fetch("/api/moderation/moderate", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            text: message.trim(),
+            channel: "chat",
+            contentType: "help_response",
+          }),
+        });
+
+        if (modResponse.ok) {
+          const modResult = await modResponse.json();
+          if (modResult.score === "red") {
+            setError("Ihre Nachricht verstoesst gegen unsere Richtlinien. Bitte formulieren Sie sie anders.");
+            setSending(false);
+            return;
+          }
+          if (modResult.score === "yellow") {
+            // Warnung, aber nicht blockieren — wird in Moderation-Queue eingetragen
+            console.log("[help] Nachricht zur Moderation vorgemerkt:", modResult.reason);
+          }
+        }
+      } catch {
+        // Moderation-Fehler blockiert nicht das Senden
+        console.log("[help] Moderation nicht verfuegbar, Nachricht wird trotzdem gesendet");
+      }
+
       const supabase = createClient();
       const { error: insertError } = await supabase.from("help_responses").insert({
         help_request_id: request.id,

@@ -18,6 +18,7 @@ import { DailyCheckinButton } from "@/components/care/DailyCheckinButton";
 import { RedeemCodeBanner } from "@/components/care/RedeemCodeBanner";
 import { CaregiverDashboard } from "@/components/care/CaregiverDashboard";
 import { QuartierServicesSection } from "@/components/municipal/QuartierServicesSection";
+import { HelpRequestsSection } from "@/components/dashboard/help-requests-section";
 import { FeatureGate } from "@/components/FeatureGate";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -250,12 +251,12 @@ export default function DashboardPage() {
               <img
                 src={profileData.avatarUrl}
                 alt="Profilbild"
-                className="h-12 w-12 rounded-full object-cover border-2 border-quartier-green/20 flex-shrink-0"
+                className="h-16 w-16 rounded-full object-cover border-2 border-quartier-green/20 flex-shrink-0"
                 data-testid="dashboard-avatar"
               />
             ) : (
               <div
-                className="h-12 w-12 rounded-full bg-anthrazit text-white font-bold text-lg flex items-center justify-center flex-shrink-0"
+                className="h-16 w-16 rounded-full bg-anthrazit text-white font-bold text-xl flex items-center justify-center flex-shrink-0"
                 data-testid="dashboard-avatar"
               >
                 {userName ? userName.charAt(0).toUpperCase() : "?"}
@@ -376,34 +377,9 @@ export default function DashboardPage() {
         <QuartierServicesSection />
       </FeatureGate>
 
-      {/* Hilfe-Boerse */}
+      {/* Hilfe-Boerse — nur letzte 24h, wegwischbar */}
       {helpRequests.length > 0 && (
-        <section>
-          <SectionHeader title="Hilfe-Börse" href="/help" />
-          <div className="space-y-2">
-            {helpRequests.map((req) => {
-              const hoursAgo = Math.floor((Date.now() - new Date(req.created_at).getTime()) / (1000 * 60 * 60));
-              return (
-                <Link
-                  key={req.id}
-                  href={`/help/${req.id}`}
-                  className="card-interactive flex items-center justify-between rounded-xl bg-card p-3 shadow-soft"
-                >
-                  <div>
-                    <p className="font-medium text-anthrazit">{req.title}</p>
-                    <p className="text-xs text-muted-foreground">
-                      {req.user?.display_name} · {req.type === "need" ? "Sucht Hilfe" : "Bietet Hilfe"}
-                      {hoursAgo < 2 && <span className="ml-1 text-quartier-green font-medium">· Neu</span>}
-                    </p>
-                  </div>
-                  <Badge variant={req.type === "need" ? "default" : "secondary"}>
-                    {req.type === "need" ? "Gesucht" : "Angebot"}
-                  </Badge>
-                </Link>
-              );
-            })}
-          </div>
-        </section>
+        <HelpRequestsSection requests={helpRequests} />
       )}
 
       {/* Marktplatz */}

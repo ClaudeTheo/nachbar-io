@@ -3,18 +3,20 @@
 // 1. Regulaerer User: status='new'
 // 2. Admin-User: status='approved'
 // 3. FAB ist klickbar und Sheet oeffnet sich
+// 4. Anonymer Modus: Honeypot-Feld + API-Endpoint
 
 import React from 'react';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, fireEvent, cleanup, waitFor } from '@testing-library/react';
 
 // --- Hoisted Mocks (muessen VOR vi.mock deklariert werden) ---
-const { mockToastSuccess, mockToastError, mockGetUser, mockProfileSelect, mockBugReportInsert } = vi.hoisted(() => ({
+const { mockToastSuccess, mockToastError, mockGetUser, mockProfileSelect, mockBugReportInsert, mockFetch } = vi.hoisted(() => ({
   mockToastSuccess: vi.fn(),
   mockToastError: vi.fn(),
   mockGetUser: vi.fn(),
   mockProfileSelect: vi.fn(),
   mockBugReportInsert: vi.fn(),
+  mockFetch: vi.fn(),
 }));
 
 // --- Mocks ---
@@ -97,10 +99,14 @@ vi.mock('html2canvas', () => ({
   }),
 }));
 
+// QuarterContext als React.createContext Mock (gibt null zurueck ohne Provider)
 vi.mock('@/lib/quarters', () => ({
-  useQuarter: () => ({
+  QuarterContext: React.createContext({
     currentQuarter: { id: 'quarter-bs', name: 'Bad Säckingen' },
+    allQuarters: [],
     loading: false,
+    switchQuarter: () => {},
+    refreshQuarter: async () => {},
   }),
 }));
 
@@ -238,6 +244,127 @@ describe('BugReportButton', () => {
 
     await waitFor(() => {
       expect(mockToastError).toHaveBeenCalledWith('Bug-Report konnte nicht gesendet werden.');
+    });
+  });
+
+  // --- Anonymer Modus Tests ---
+
+  describe('anonymer Modus', () => {
+    it('rendert FAB-Button mit anonymous-Prop', () => {
+      render(<BugReportButton anonymous />);
+
+      const fab = screen.getByTestId('bug-report-fab');
+      expect(fab).toBeDefined();
+      expect(fab.getAttribute('aria-label')).toBe('Bug melden');
+    });
+
+    it('zeigt Honeypot-Feld wenn anonymous=true', () => {
+      render(<BugReportButton anonymous />);
+
+      // Sheet oeffnen
+      fireEvent.click(screen.getByTestId('bug-report-fab'));
+
+      // Honeypot-Feld muss vorhanden sein
+      const honeypot = screen.getByTestId('honeypot-field');
+      expect(honeypot).toBeDefined();
+      expect(honeypot.getAttribute('name')).toBe('website');
+      expect(honeypot.getAttribute('aria-hidden')).toBe('true');
+      expect(honeypot.getAttribute('tabindex')).toBe('-1');
+    });
+
+    it('zeigt kein Honeypot-Feld wenn anonymous=false', () => {
+      render(<BugReportButton />);
+
+      // Sheet oeffnen
+      fireEvent.click(screen.getByTestId('bug-report-fab'));
+
+      // Honeypot-Feld darf NICHT vorhanden sein
+      expect(screen.queryByTestId('honeypot-field')).toBeNull();
+    });
+
+    it('sendet an /api/bug-reports/anonymous wenn anonymous=true', async () => {
+      // fetch mocken
+      const originalFetch = global.fetch;
+      global.fetch = mockFetch;
+      mockFetch.mockResolvedValue({
+        ok: true,
+        json: () => Promise.resolve({ success: true }),
+      });
+
+      render(<BugReportButton anonymous />);
+
+      // Sheet oeffnen + Submit
+      fireEvent.click(screen.getByTestId('bug-report-fab'));
+      const submitBtn = screen.getAllByText('Bug melden').find(el => el.closest('button'));
+      fireEvent.click(submitBtn!);
+
+      await waitFor(() => {
+        expect(mockFetch).toHaveBeenCalledWith(
+          '/api/bug-reports/anonymous',
+          expect.objectContaining({
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+          })
+        );
+      });
+
+      // Erfolgs-Toast
+      await waitFor(() => {
+        expect(mockToastSuccess).toHaveBeenCalledWith('Bug-Report gesendet! Vielen Dank.');
+      });
+
+      // Supabase direct insert darf NICHT aufgerufen werden
+      expect(mockBugReportInsert).not.toHaveBeenCalled();
+
+      global.fetch = originalFetch;
+    });
+
+    it('zeigt Fehler-Toast bei API-Fehler im anonymen Modus', async () => {
+      const originalFetch = global.fetch;
+      global.fetch = mockFetch;
+      mockFetch.mockResolvedValue({
+        ok: false,
+        json: () => Promise.resolve({ error: 'Zu viele Bug-Reports' }),
+      });
+
+      render(<BugReportButton anonymous />);
+
+      fireEvent.click(screen.getByTestId('bug-report-fab'));
+      const submitBtn = screen.getAllByText('Bug melden').find(el => el.closest('button'));
+      fireEvent.click(submitBtn!);
+
+      await waitFor(() => {
+        expect(mockToastError).toHaveBeenCalledWith('Bug-Report konnte nicht gesendet werden.');
+      });
+
+      global.fetch = originalFetch;
+    });
+
+    it('sendet Honeypot-Wert im Request-Body mit', async () => {
+      const originalFetch = global.fetch;
+      global.fetch = mockFetch;
+      mockFetch.mockResolvedValue({
+        ok: true,
+        json: () => Promise.resolve({ success: true }),
+      });
+
+      render(<BugReportButton anonymous />);
+
+      fireEvent.click(screen.getByTestId('bug-report-fab'));
+
+      // Request-Body pruefen — website-Feld muss leer sein (nicht ausgefuellt)
+      const submitBtn = screen.getAllByText('Bug melden').find(el => el.closest('button'));
+      fireEvent.click(submitBtn!);
+
+      await waitFor(() => {
+        expect(mockFetch).toHaveBeenCalled();
+        const callArgs = mockFetch.mock.calls[0];
+        const body = JSON.parse(callArgs[1].body);
+        expect(body.website).toBe('');
+        expect(body.page_url).toBeDefined();
+      });
+
+      global.fetch = originalFetch;
     });
   });
 });

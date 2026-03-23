@@ -3,8 +3,9 @@
 // components/BugReportButton.tsx
 // Nachbar.io — Floating Bug-Report Button fuer alle Nutzer
 // Sammelt automatisch Console-Errors, Browser-Info und sendet Bug-Report
+// Unterstuetzt anonymen Modus (ohne Login) fuer Login-/Onboarding-Seiten
 
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback, useContext } from "react";
 import { Bug, Send, Loader2, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -17,7 +18,7 @@ import {
 } from "@/components/ui/sheet";
 import { createClient } from "@/lib/supabase/client";
 import { getCachedUser } from "@/lib/supabase/cached-auth";
-import { useQuarter } from "@/lib/quarters";
+import { QuarterContext } from "@/lib/quarters";
 import { toast } from "sonner";
 
 // Konsolen-Fehler global erfassen
@@ -27,11 +28,20 @@ interface CapturedError {
   timestamp: string;
 }
 
-export function BugReportButton() {
-  const { currentQuarter } = useQuarter();
+interface BugReportButtonProps {
+  anonymous?: boolean;
+}
+
+export function BugReportButton({ anonymous = false }: BugReportButtonProps) {
+  // Sicherer Quartier-Zugriff: useContext gibt null zurueck wenn kein Provider
+  // (im Gegensatz zu useQuarter() das wirft). Fuer Login-/Onboarding-Seiten.
+  const quarterCtx = useContext(QuarterContext);
+  const quarterId = anonymous ? null : (quarterCtx?.currentQuarter?.id ?? null);
+
   const [open, setOpen] = useState(false);
   const [comment, setComment] = useState("");
   const [loading, setLoading] = useState(false);
+  const [honeypot, setHoneypot] = useState("");
   const consoleErrorsRef = useRef<CapturedError[]>([]);
   const originalConsoleError = useRef<typeof console.error | null>(null);
 
@@ -62,75 +72,143 @@ export function BugReportButton() {
     };
   }, []);
 
-  const handleSubmit = useCallback(async () => {
+  // Screenshot erstellen (gemeinsame Logik)
+  const captureScreenshot = useCallback(async (): Promise<Blob | null> => {
+    try {
+      const html2canvas = (await import("html2canvas")).default;
+      const canvas = await html2canvas(document.documentElement, {
+        scale: 0.75,
+        useCORS: true,
+        allowTaint: true,
+        logging: false,
+        width: window.innerWidth,
+        height: window.innerHeight,
+        x: window.scrollX,
+        y: window.scrollY,
+        windowWidth: window.innerWidth,
+        windowHeight: window.innerHeight,
+      });
+      const blob = await new Promise<Blob | null>(resolve =>
+        canvas.toBlob(resolve, "image/jpeg", 0.6)
+      );
+      return blob;
+    } catch (err) {
+      console.error("[BugReport] Screenshot fehlgeschlagen:", err);
+      return null;
+    }
+  }, []);
+
+  // Browser- und Seiten-Info sammeln (gemeinsam)
+  const collectMetadata = useCallback(() => {
+    const browserInfo = {
+      userAgent: navigator.userAgent,
+      language: navigator.language,
+      viewport: { width: window.innerWidth, height: window.innerHeight },
+      screenSize: { width: screen.width, height: screen.height },
+      devicePixelRatio: window.devicePixelRatio,
+      online: navigator.onLine,
+      platform: navigator.platform,
+    };
+
+    const pageMeta = {
+      scrollX: window.scrollX,
+      scrollY: window.scrollY,
+      pathname: window.location.pathname,
+      search: window.location.search,
+      referrer: document.referrer,
+      timestamp: new Date().toISOString(),
+    };
+
+    return { browserInfo, pageMeta };
+  }, []);
+
+  // Anonymer Submit-Handler
+  const handleAnonymousSubmit = useCallback(async () => {
+    setLoading(true);
+    try {
+      // Screenshot als Base64 Data-URL (kein Storage-Zugriff ohne Auth)
+      let screenshotUrl: string | null = null;
+      const blob = await captureScreenshot();
+      if (blob) {
+        // Max 500KB — groessere Screenshots ueberspringen
+        if (blob.size <= 500 * 1024) {
+          const reader = new FileReader();
+          const dataUrl = await new Promise<string>((resolve) => {
+            reader.onloadend = () => resolve(reader.result as string);
+            reader.readAsDataURL(blob);
+          });
+          screenshotUrl = dataUrl;
+        } else {
+          console.error("[BugReport] Screenshot zu gross fuer anonymen Report:", blob.size);
+        }
+      }
+
+      const { browserInfo, pageMeta } = collectMetadata();
+
+      // POST an anonymen Endpoint
+      const res = await fetch("/api/bug-reports/anonymous", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          page_url: window.location.href,
+          page_title: document.title,
+          screenshot_url: screenshotUrl,
+          console_errors: consoleErrorsRef.current,
+          browser_info: browserInfo,
+          page_meta: pageMeta,
+          user_comment: comment?.trim() || null,
+          website: honeypot, // Honeypot-Feld fuer Spam-Schutz
+        }),
+      });
+
+      if (!res.ok) {
+        const errBody = await res.json().catch(() => ({}));
+        throw new Error(errBody.error || "Bug-Report fehlgeschlagen");
+      }
+
+      toast.success("Bug-Report gesendet! Vielen Dank.");
+      setComment("");
+      setOpen(false);
+    } catch (err) {
+      console.error("[BugReport] Fehler:", err);
+      toast.error("Bug-Report konnte nicht gesendet werden.");
+    } finally {
+      setLoading(false);
+    }
+  }, [comment, honeypot, captureScreenshot, collectMetadata]);
+
+  // Authentifizierter Submit-Handler (bestehende Logik)
+  const handleAuthenticatedSubmit = useCallback(async () => {
     setLoading(true);
     try {
       const supabase = createClient();
       const { user } = await getCachedUser(supabase);
       if (!user) throw new Error("Nicht eingeloggt");
 
-      // 1. Screenshot via html2canvas
+      // 1. Screenshot via html2canvas + Supabase Storage
       let screenshotUrl: string | undefined;
-      try {
-        const html2canvas = (await import("html2canvas")).default;
-        const canvas = await html2canvas(document.documentElement, {
-          scale: 0.75,
-          useCORS: true,
-          allowTaint: true,
-          logging: false,
-          width: window.innerWidth,
-          height: window.innerHeight,
-          x: window.scrollX,
-          y: window.scrollY,
-          windowWidth: window.innerWidth,
-          windowHeight: window.innerHeight,
-        });
-        const blob = await new Promise<Blob | null>(resolve =>
-          canvas.toBlob(resolve, "image/jpeg", 0.6)
-        );
+      const blob = await captureScreenshot();
+      if (blob) {
+        const uuid = crypto.randomUUID();
+        const path = `bug-reports/${user.id}/${uuid}.jpg`;
+        const { error: uploadError } = await supabase.storage
+          .from("images")
+          .upload(path, blob, { contentType: "image/jpeg" });
 
-        if (blob) {
-          const uuid = crypto.randomUUID();
-          const path = `bug-reports/${user.id}/${uuid}.jpg`;
-          const { error: uploadError } = await supabase.storage
+        if (uploadError) {
+          console.error("[BugReport] Storage-Upload fehlgeschlagen:", uploadError.message);
+        } else {
+          const { data: urlData } = supabase.storage
             .from("images")
-            .upload(path, blob, { contentType: "image/jpeg" });
-
-          if (uploadError) {
-            console.error("[BugReport] Storage-Upload fehlgeschlagen:", uploadError.message);
-          } else {
-            const { data: urlData } = supabase.storage
-              .from("images")
-              .getPublicUrl(path);
-            screenshotUrl = urlData.publicUrl;
-          }
+            .getPublicUrl(path);
+          screenshotUrl = urlData.publicUrl;
         }
-      } catch (screenshotErr) {
-        console.error("[BugReport] Screenshot fehlgeschlagen:", screenshotErr);
       }
 
-      // 2. Browser-Info sammeln
-      const browserInfo = {
-        userAgent: navigator.userAgent,
-        language: navigator.language,
-        viewport: { width: window.innerWidth, height: window.innerHeight },
-        screenSize: { width: screen.width, height: screen.height },
-        devicePixelRatio: window.devicePixelRatio,
-        online: navigator.onLine,
-        platform: navigator.platform,
-      };
+      // 2. Metadaten sammeln
+      const { browserInfo, pageMeta } = collectMetadata();
 
-      // 3. Seiten-Meta sammeln
-      const pageMeta = {
-        scrollX: window.scrollX,
-        scrollY: window.scrollY,
-        pathname: window.location.pathname,
-        search: window.location.search,
-        referrer: document.referrer,
-        timestamp: new Date().toISOString(),
-      };
-
-      // 4. Admin-Check: eigene Reports direkt freigeben
+      // 3. Admin-Check: eigene Reports direkt freigeben
       const { data: profileCheck } = await supabase
         .from("users")
         .select("is_admin")
@@ -138,12 +216,12 @@ export function BugReportButton() {
         .single();
       const isAdmin = profileCheck?.is_admin === true;
 
-      // 5. Bug-Report in DB speichern
+      // 4. Bug-Report in DB speichern
       const { error: insertError } = await supabase
         .from("bug_reports")
         .insert({
           user_id: user.id,
-          quarter_id: currentQuarter?.id,
+          quarter_id: quarterId,
           page_url: window.location.href,
           page_title: document.title,
           screenshot_url: screenshotUrl,
@@ -165,7 +243,10 @@ export function BugReportButton() {
     } finally {
       setLoading(false);
     }
-  }, [currentQuarter?.id, comment]);
+  }, [quarterId, comment, captureScreenshot, collectMetadata]);
+
+  // Handler-Auswahl basierend auf anonymous-Prop
+  const handleSubmit = anonymous ? handleAnonymousSubmit : handleAuthenticatedSubmit;
 
   return (
     <>
@@ -194,6 +275,21 @@ export function BugReportButton() {
           </SheetHeader>
 
           <div className="mt-4 space-y-4">
+            {/* Honeypot-Feld fuer Spam-Schutz (nur im anonymen Modus) */}
+            {anonymous && (
+              <input
+                name="website"
+                type="text"
+                value={honeypot}
+                onChange={(e) => setHoneypot(e.target.value)}
+                tabIndex={-1}
+                autoComplete="off"
+                style={{ position: "absolute", left: "-9999px", opacity: 0, height: 0 }}
+                aria-hidden="true"
+                data-testid="honeypot-field"
+              />
+            )}
+
             {/* Optionaler Kommentar */}
             <Textarea
               value={comment}

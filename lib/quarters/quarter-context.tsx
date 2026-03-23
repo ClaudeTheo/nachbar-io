@@ -13,7 +13,8 @@ interface QuarterContextType {
   refreshQuarter: () => Promise<void>;
 }
 
-const QuarterContext = createContext<QuarterContextType | null>(null);
+// Exportiert fuer direkten useContext-Zugriff (z.B. BugReportButton anonymous-Modus)
+export const QuarterContext = createContext<QuarterContextType | null>(null);
 
 export function QuarterProvider({ children }: { children: ReactNode }) {
   const [currentQuarter, setCurrentQuarter] = useState<Quarter | null>(null);

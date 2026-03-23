@@ -301,7 +301,7 @@ export default function NewHandwerkerPage() {
               id="location"
               value={locationHint}
               onChange={(e) => setLocationHint(e.target.value)}
-              placeholder="z.B. Hauptstraße 12, Bad Säckingen"
+              placeholder="z.B. Hauptstraße 12"
               maxLength={200}
             />
           </div>
@@ -342,7 +342,7 @@ export default function NewHandwerkerPage() {
                 id="area"
                 value={serviceArea}
                 onChange={(e) => setServiceArea(e.target.value)}
-                placeholder="z.B. Bad Säckingen"
+                placeholder="z.B. Musterstadt"
                 maxLength={100}
               />
             </div>

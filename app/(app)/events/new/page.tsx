@@ -185,7 +185,7 @@ export default function NewEventPage() {
               id="location"
               value={location}
               onChange={(e) => setLocation(e.target.value)}
-              placeholder="z.B. Spielplatz Sanarystrasse"
+              placeholder="z.B. Spielplatz am Park"
               maxLength={100}
             />
           </div>

@@ -193,7 +193,7 @@ function B2BFooter() {
           QuartierApp — Ein Projekt von nachbar.io
         </p>
         <p className="mt-2 text-xs text-gray-300">
-          Kontakt: thomasth@gmx.de | Pilotquartier: Bad Saeckingen
+          Kontakt: thomasth@gmx.de | nachbar.io
         </p>
         <div className="mt-4 flex justify-center gap-4 text-xs text-gray-400">
           <Link href="/impressum" className="hover:text-[#2D3142]">Impressum</Link>

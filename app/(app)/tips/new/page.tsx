@@ -200,7 +200,7 @@ export default function NewTipPage() {
               id="location"
               value={locationHint}
               onChange={(e) => setLocationHint(e.target.value)}
-              placeholder="z.B. Hauptstraße 12, Bad Säckingen"
+              placeholder="z.B. Hauptstraße 12"
               maxLength={200}
             />
           </div>

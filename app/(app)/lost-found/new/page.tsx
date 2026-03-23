@@ -179,7 +179,7 @@ export default function LostFoundNewPage() {
           />
 
           <Input
-            placeholder="📍 Wo ungefähr? (z.B. 'Purkersdorfer Str. Höhe Nr. 5')"
+            placeholder="📍 Wo ungefähr? (z.B. 'Hauptstraße Höhe Nr. 5')"
             value={locationHint}
             onChange={(e) => setLocationHint(e.target.value)}
             maxLength={100}

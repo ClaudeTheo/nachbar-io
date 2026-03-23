@@ -16,7 +16,7 @@ export default function LandingPage() {
       {/* Beschreibung */}
       <p className="mb-8 max-w-sm text-muted-foreground">
         Nachbarschaftshilfe, lokale Informationen und Vertrauen für Ihr
-        Quartier in Bad Säckingen.
+        Quartier.
       </p>
 
       {/* Buttons */}
@@ -39,7 +39,7 @@ export default function LandingPage() {
       <p className="mt-12 text-xs text-muted-foreground">
         Exklusiv für Bewohner des Quartiers
         <br />
-        Purkersdorfer Str. · Sanarystr. · Oberer Rebberg
+        nachbar.io
       </p>
 
       {/* Rechtliche Links (DSGVO / TMG) */}

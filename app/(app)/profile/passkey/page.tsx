@@ -5,6 +5,7 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { Fingerprint, Plus, Trash2, Smartphone } from "lucide-react";
+// simplewebauthn/browser wird im handleRegister dynamisch geladen
 import { PageHeader } from "@/components/ui/page-header";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";

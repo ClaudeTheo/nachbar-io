@@ -1,10 +1,13 @@
 "use client";
-// v2: Apple-Logo als inline SVG (nicht lucide Apple)
+// v3: Apple-Logo + Passkey/WebAuthn Support
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Mail, KeyRound, Fingerprint } from "lucide-react";
 import { signInWithApple } from "@/lib/auth/apple";
+// simplewebauthn/browser Referenzen (werden im useEffect geladen)
+type WebAuthnModule = typeof import("@simplewebauthn/browser");
+let _webauthnModule: WebAuthnModule | null = null;
 
 // Apple-Logo SVG nach Apple HIG (kein Lucide — das waere ein Frucht-Apfel)
 function AppleLogo({ className }: { className?: string }) {
@@ -48,9 +51,15 @@ export default function LoginPage() {
 
   // Passkey-Support erkennen (nur Client-Side)
   useEffect(() => {
-    import("@simplewebauthn/browser").then(({ browserSupportsWebAuthn }) => {
-      setSupportsPasskey(browserSupportsWebAuthn());
-    }).catch(() => {});
+    console.log('[Passkey] useEffect gestartet');
+    import("@simplewebauthn/browser").then(mod => {
+      _webauthnModule = mod;
+      const supported = mod.browserSupportsWebAuthn();
+      console.log('[Passkey] WebAuthn supported:', supported);
+      setSupportsPasskey(supported);
+    }).catch(err => {
+      console.error('[Passkey] Import fehlgeschlagen:', err);
+    });
   }, []);
 
   // Passkey-Login
@@ -64,8 +73,8 @@ export default function LoginPage() {
       const options = await beginRes.json();
 
       // WebAuthn Assertion
-      const { startAuthentication } = await import("@simplewebauthn/browser");
-      const assertion = await startAuthentication({ optionsJSON: options });
+      if (!_webauthnModule) throw new Error("WebAuthn nicht geladen");
+      const assertion = await _webauthnModule.startAuthentication({ optionsJSON: options });
 
       // Assertion verifizieren + Session erzeugen
       const completeRes = await fetch("/api/auth/passkey/login-complete", {

@@ -109,7 +109,21 @@ export default function DatenschutzPage() {
               <li>Haushaltszuordnung via Einladungscode oder Standortangabe</li>
             </ul>
 
-            <h3 className="mt-3 font-semibold">5.2 Nutzung der Plattform</h3>
+            <h3 className="mt-3 font-semibold">5.2 Biometrische Anmeldung (Passkeys)</h3>
+            <p className="mb-1">
+              Sie können optional eine biometrische Anmeldung (Face ID, Touch ID,
+              Windows Hello) aktivieren. Dabei werden <strong>keine biometrischen
+              Daten</strong> an unseren Server übermittelt. Die Prüfung von
+              Fingerabdruck oder Gesicht erfolgt ausschließlich auf Ihrem Gerät.
+            </p>
+            <ul className="ml-4 list-disc space-y-1">
+              <li>Gespeichert wird nur ein kryptographischer Schlüssel (Public Key), ein Gerätename und ein Signatur-Zähler</li>
+              <li>Rechtsgrundlage: Art. 6 Abs. 1 lit. b DSGVO (Vertragsdurchführung) — die Aktivierung erfolgt freiwillig durch Sie</li>
+              <li>Löschung: Jederzeit in den Profileinstellungen unter &bdquo;Biometrische Anmeldung&ldquo;</li>
+              <li>Bei Kontolöschung werden alle Passkey-Daten automatisch mitgelöscht</li>
+            </ul>
+
+            <h3 className="mt-3 font-semibold">5.3 Nutzung der Plattform</h3>
             <ul className="ml-4 list-disc space-y-1">
               <li>Hilfeanfragen und -antworten</li>
               <li>Marktplatz-Einträge und Leihbörse</li>
@@ -121,7 +135,7 @@ export default function DatenschutzPage() {
               <li>Reputationsdaten (aggregierte Statistiken Ihrer Aktivitäten)</li>
             </ul>
 
-            <h3 className="mt-3 font-semibold">5.3 Koordinationsfunktionen</h3>
+            <h3 className="mt-3 font-semibold">5.4 Koordinationsfunktionen</h3>
             <p className="mb-1">
               Die folgenden Funktionen sind optional und werden nur bei aktiver
               Nutzung durch Sie erhoben:
@@ -149,7 +163,7 @@ export default function DatenschutzPage() {
               </li>
             </ul>
 
-            <h3 className="mt-3 font-semibold">5.4 Video-Anrufe</h3>
+            <h3 className="mt-3 font-semibold">5.5 Video-Anrufe</h3>
             <ul className="ml-4 list-disc space-y-1">
               <li>
                 <strong>Angehörigen-Videoanrufe:</strong> Peer-to-Peer-Verbindung
@@ -164,7 +178,7 @@ export default function DatenschutzPage() {
               </li>
             </ul>
 
-            <h3 className="mt-3 font-semibold">5.5 Arzt-Portal</h3>
+            <h3 className="mt-3 font-semibold">5.6 Arzt-Portal</h3>
             <ul className="ml-4 list-disc space-y-1">
               <li>Arztprofil (Fachrichtung, Beschreibung, Quartierszuordnung)</li>
               <li>Terminbuchungen (Datum, Uhrzeit, Status)</li>
@@ -172,7 +186,7 @@ export default function DatenschutzPage() {
               <li>Patientenbewertungen</li>
             </ul>
 
-            <h3 className="mt-3 font-semibold">5.6 Zahlungsdaten</h3>
+            <h3 className="mt-3 font-semibold">5.7 Zahlungsdaten</h3>
             <p>
               Für kostenpflichtige Funktionen (Plus, Pro) werden Zahlungsdaten
               ausschließlich durch unseren Zahlungsdienstleister Stripe verarbeitet.
@@ -180,14 +194,14 @@ export default function DatenschutzPage() {
               Stripe lediglich eine Referenz-ID sowie den Zahlungsstatus.
             </p>
 
-            <h3 className="mt-3 font-semibold">5.7 Technische Daten</h3>
+            <h3 className="mt-3 font-semibold">5.8 Technische Daten</h3>
             <ul className="ml-4 list-disc space-y-1">
               <li>IP-Adresse (temporär, für Sicherheitszwecke)</li>
               <li>Push-Subscription-Daten (Endpoint, Schlüssel) für Benachrichtigungen</li>
               <li>Gerätetyp und Browser (für Kompatibilität, nicht für Tracking)</li>
             </ul>
 
-            <h4 className="mt-3 text-sm font-semibold">5.8 Standortdaten bei Hilferufen</h4>
+            <h4 className="mt-3 text-sm font-semibold">5.9 Standortdaten bei Hilferufen</h4>
             <p className="mt-1 text-sm text-muted-foreground">
               Bei der Erstellung eines Hilferufs können Sie freiwillig Ihren GPS-Standort
               (Breitengrad, Längengrad) teilen. Die Erfassung erfolgt über die Geolocation-API
@@ -204,10 +218,10 @@ export default function DatenschutzPage() {
             </ul>
           </section>
 
-          {/* 5.9 Einwilligungsmanagement Care-Modul */}
+          {/* 5.10 Einwilligungsmanagement Care-Modul */}
           <section>
             <h3 className="mb-1 font-semibold text-anthrazit">
-              5.9 Einwilligungsmanagement im Care-Modul
+              5.10 Einwilligungsmanagement im Care-Modul
             </h3>
             <p>
               Das Care-Modul verarbeitet besondere Kategorien personenbezogener Daten

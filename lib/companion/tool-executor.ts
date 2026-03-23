@@ -84,14 +84,27 @@ export async function executeCompanionTool(
         const ctx = await getUserContext(supabase, userId);
         if (!ctx) return { success: false, summary: 'Quartier-Zuordnung nicht gefunden.' };
 
+        // Kategorie-Mapping: Companion-Kategorien auf alerts-Tabellen-Constraint mappen
+        // alerts_category_check erlaubt: fire, medical, crime, water_damage, power_outage,
+        // door_lock, fall, shopping, tech_help, pet, other
+        const categoryMap: Record<string, string> = {
+          info: 'other', help: 'other', event: 'other', offer: 'other',
+          fire: 'fire', medical: 'medical', crime: 'crime',
+          water_damage: 'water_damage', power_outage: 'power_outage',
+          door_lock: 'door_lock', fall: 'fall', shopping: 'shopping',
+          tech_help: 'tech_help', pet: 'pet', other: 'other',
+        };
+        const rawCat = (params.category as string) ?? 'other';
+        const mappedCategory = categoryMap[rawCat] ?? 'other';
+
         const { error } = await supabase.from('alerts').insert({
           user_id: userId,
           quarter_id: ctx.quarterId,
           household_id: ctx.householdId,
           title: params.title as string,
           description: params.text as string,
-          category: (params.category as string) ?? 'info',
-          status: 'active',
+          category: mappedCategory,
+          status: 'open',
           is_emergency: false,
           current_radius: 1,
         });

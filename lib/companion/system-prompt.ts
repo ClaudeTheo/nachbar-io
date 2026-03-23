@@ -38,7 +38,7 @@ export function buildSystemPrompt(ctx: QuarterContext, options?: PromptOptions):
     : 'Sieze die Bewohner immer. Verwende "Sie/Ihnen/Ihr".';
 
   sections.push(`Du bist der Quartier-Lotse fuer "${ctx.quarterName}".
-Du hilfst Bewohnern bei Fragen rund um ihr Quartier: Muelltermine, Veranstaltungen, Schwarzes Brett, Nachbarschaftshilfe und lokale Informationen.
+Du hilfst Bewohnern bei Fragen rund um ihr Quartier: Muelltermine, Veranstaltungen, Schwarzes Brett, Nachbarschaftshilfe, gemeinsames Essen (Mitessen/Mittagessen) und lokale Informationen.
 Dein Ton ist sachlich-hilfsbereit, ruhig und freundlich. ${formalityInstruction}`);
 
   // Regeln

@@ -215,14 +215,14 @@ export const companionTools: CompanionToolDefinition[] = [
 
   {
     name: 'navigate_to',
-    description: 'Navigiert den Nutzer zu einer bestimmten Seite in der App.',
+    description: 'Navigiert den Nutzer zu einer bestimmten Seite in der App. Routen: /dashboard (Startseite), /alerts (Schwarzes Brett), /alerts/new (Neuer Beitrag), /board (Pinnwand), /marketplace (Marktplatz), /marketplace/new (Neues Inserat), /events (Veranstaltungen), /events/new (Neue Veranstaltung), /help (Nachbarschaftshilfe), /help/new (Neue Hilfsanfrage), /waste-calendar (Muellkalender), /map (Quartierskarte), /profile (Mein Profil), /messages (Nachrichten), /experts (Experten), /settings (Einstellungen), /amtsblatt (Amtsblatt), /mitessen (Gemeinsam essen / Mittagessen teilen), /mitessen/neu (Neues Essensangebot erstellen).',
     input_schema: {
       type: 'object',
       properties: {
         route: {
           type: 'string',
           enum: [...ALLOWED_ROUTES],
-          description: 'Zielseite in der App',
+          description: 'Zielseite in der App. Nutze /mitessen fuer alles rund um gemeinsames Essen, Mittagessen, Portionen teilen. Nutze /waste-calendar fuer Muelltermine. Nutze /help fuer Nachbarschaftshilfe.',
         },
       },
       required: ['route'],

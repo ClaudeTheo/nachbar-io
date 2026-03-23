@@ -1,7 +1,7 @@
 // Wetter-Daten von Open-Meteo API (kostenlos, kein API-Key, DSGVO-konform)
 
-const BAD_SAECKINGEN_LAT = 47.5535;
-const BAD_SAECKINGEN_LON = 7.9640;
+const DEFAULT_LAT = 47.5535;
+const DEFAULT_LON = 7.9640;
 
 // Deutsche Wochentags-Kuerzel (Index 0 = Sonntag)
 const DAY_NAMES_DE = ["So", "Mo", "Di", "Mi", "Do", "Fr", "Sa"] as const;
@@ -40,7 +40,7 @@ function dateToDayName(dateStr: string): string {
 export async function getWeather(): Promise<WeatherData> {
   try {
     // Aktuelles Wetter + 4 Tage Vorhersage (heute + 3 Folgetage)
-    const url = `https://api.open-meteo.com/v1/forecast?latitude=${BAD_SAECKINGEN_LAT}&longitude=${BAD_SAECKINGEN_LON}&current=temperature_2m,weather_code&daily=temperature_2m_max,weather_code&forecast_days=4&timezone=Europe/Berlin`;
+    const url = `https://api.open-meteo.com/v1/forecast?latitude=${DEFAULT_LAT}&longitude=${DEFAULT_LON}&current=temperature_2m,weather_code&daily=temperature_2m_max,weather_code&forecast_days=4&timezone=Europe/Berlin`;
     const res = await fetch(url, { next: { revalidate: 1800 } });
     if (!res.ok) {
       console.error("[weather] Open-Meteo API Fehler:", res.status, res.statusText);

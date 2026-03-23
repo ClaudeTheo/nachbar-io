@@ -24,7 +24,7 @@ const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://nachbar-io.vercel.a
 export const metadata: Metadata = {
   title: "QuartierApp — Ihr digitaler Dorfplatz",
   description:
-    "Nachbarschaftshilfe, lokale Informationen und soziale Interaktion für Ihr Quartier in Bad Säckingen.",
+    "Nachbarschaftshilfe, lokale Informationen und soziale Interaktion für Ihr Quartier.",
   manifest: "/manifest.json",
   metadataBase: new URL(siteUrl),
   openGraph: {
@@ -34,7 +34,7 @@ export const metadata: Metadata = {
     siteName: "QuartierApp",
     title: "QuartierApp — Ihr digitaler Dorfplatz",
     description:
-      "Nachbarschaftshilfe, lokale Informationen und Quartiersleben in Bad Säckingen. Jetzt mitmachen!",
+      "Nachbarschaftshilfe, lokale Informationen und Quartiersleben. Jetzt mitmachen!",
     images: [
       {
         url: "/og-image.svg",
@@ -48,7 +48,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "QuartierApp — Ihr digitaler Dorfplatz",
     description:
-      "Nachbarschaftshilfe, lokale Informationen und Quartiersleben in Bad Säckingen.",
+      "Nachbarschaftshilfe, lokale Informationen und Quartiersleben.",
     images: ["/og-image.svg"],
   },
   appleWebApp: {

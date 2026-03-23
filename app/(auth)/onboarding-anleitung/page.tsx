@@ -21,7 +21,7 @@ export default function OnboardingAnleitungPage() {
           Was ist QuartierApp?
         </h2>
         <p className="text-base leading-relaxed text-gray-700">
-          QuartierApp ist eine Internetseite speziell für unsere Nachbarschaft in Bad Säckingen.
+          QuartierApp ist eine Internetseite speziell für Ihre Nachbarschaft.
           Sie funktioniert wie eine App auf Ihrem Handy — direkt im Internet-Browser.
           Hier können Sie Nachbarn kennenlernen, Hilfe anbieten oder suchen,
           und immer wissen, was in der Nachbarschaft los ist.
@@ -141,7 +141,7 @@ export default function OnboardingAnleitungPage() {
       {/* Footer */}
       <div className="text-center text-sm text-muted-foreground print:mt-8">
         <p>QuartierApp — Ihre digitale Nachbarschaft</p>
-        <p className="mt-1">Bad Säckingen · Purkersdorfer Straße · Sanarystraße · Oberer Rebberg</p>
+        <p className="mt-1">nachbar.io</p>
       </div>
     </div>
   );

@@ -257,10 +257,10 @@ describe('POST /api/register/complete — Bugfixes', () => {
   });
 
   // =========================================================================
-  // Bug 3: Non-Pilot-Street — Haushalt mit Fallback-Koordinaten
+  // Bug 3: Haushalt-Erstellung mit Client-Koordinaten (Photon Geocoding)
   // =========================================================================
-  describe('Non-Pilot-Street (Haushalt mit Fallback-Koordinaten)', () => {
-    it('erstellt Haushalt mit Default-Koordinaten fuer unbekannte Strasse', async () => {
+  describe('Haushalt-Erstellung mit Photon-Koordinaten', () => {
+    it('erstellt Haushalt mit uebergebenen Koordinaten', async () => {
       mockCreateUser.mockResolvedValue({
         data: { user: { id: 'user-street-1' } },
         error: null,
@@ -320,26 +320,27 @@ describe('POST /api/register/complete — Bugfixes', () => {
       const { POST } = await import('@/app/api/register/complete/route');
       const res = await POST(makeRequest({
         ...baseBody,
-        streetName: 'Wallbacher Straße',  // NICHT in STREET_COORDS
+        streetName: 'Wallbacher Straße',
         houseNumber: '5',
+        lat: 47.5540,
+        lng: 7.9650,
       }));
 
       expect(res.status).toBe(200);
 
-      // Haushalt muss mit Fallback-Koordinaten erstellt worden sein
+      // Haushalt muss mit uebergebenen Koordinaten erstellt worden sein
       expect(householdInsert).toHaveBeenCalledWith(
         expect.objectContaining({
           street_name: 'Wallbacher Straße',
           house_number: '5',
-          lat: 47.5535,   // Bad Saeckingen Zentrum
-          lng: 7.9640,    // Bad Saeckingen Zentrum
+          lat: 47.5540,
+          lng: 7.9650,
           verified: false,
-          quarter_id: 'quarter-bs',
         })
       );
     });
 
-    it('verwendet Pilot-Strassen-Koordinaten fuer bekannte Strasse', async () => {
+    it('erstellt Haushalt ohne Koordinaten mit lat/lng 0', async () => {
       mockCreateUser.mockResolvedValue({
         data: { user: { id: 'user-street-2' } },
         error: null,
@@ -399,19 +400,21 @@ describe('POST /api/register/complete — Bugfixes', () => {
       const { POST } = await import('@/app/api/register/complete/route');
       const res = await POST(makeRequest({
         ...baseBody,
-        streetName: 'Purkersdorfer Straße',  // IST in STREET_COORDS
+        streetName: 'Purkersdorfer Straße',
         houseNumber: '10',
+        // Keine lat/lng — Fallback auf 0/0
       }));
 
       expect(res.status).toBe(200);
 
-      // Haushalt muss mit Pilot-Koordinaten erstellt worden sein (mit Offset)
       expect(householdInsert).toHaveBeenCalledWith(
         expect.objectContaining({
           street_name: 'Purkersdorfer Straße',
           house_number: '10',
-          lat: 47.5631,               // Purkersdorfer Str. lat
-          lng: 7.9480 + 10 * 0.0005,  // Basis + Hausnummer-Offset
+          lat: 0,
+          lng: 0,
+          verified: false,
+          quarter_id: 'quarter-bs',
         })
       );
     });

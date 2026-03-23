@@ -37,6 +37,10 @@ export async function POST(request: NextRequest) {
       uiMode,
       streetName,
       houseNumber,
+      lat,
+      lng,
+      postalCode,
+      city,
       verificationMethod,
       inviteCode,
       referrerId,
@@ -143,18 +147,22 @@ export async function POST(request: NextRequest) {
 
     // 0. Haushalt suchen oder erstellen (bei Adress-Registrierung ohne Invite-Code)
     if (!householdId && streetName && houseNumber) {
-      const STREET_COORDS: Record<string, { lat: number; lng: number }> = {
-        "Purkersdorfer Straße": { lat: 47.5631, lng: 7.9480 },
-        "Sanarystraße": { lat: 47.5619, lng: 7.9480 },
-        "Oberer Rebberg": { lat: 47.5604, lng: 7.9480 },
-      };
-
       const trimmedHouseNumber = String(houseNumber).trim();
-      const coords = STREET_COORDS[streetName];
+      // Koordinaten kommen vom Client (Photon Geocoding)
+      const hasCoords = typeof lat === 'number' && typeof lng === 'number';
 
-      if (coords && trimmedHouseNumber) {
-        // Quartier-ID ermitteln: aus Body (Geo-Zuweisung) oder Fallback (Pilot: erstes Quartier)
+      if (trimmedHouseNumber) {
+        // Quartier-ID ermitteln: aus Body, via PostGIS Clustering, oder Fallback
         let quarterId: string | null = bodyQuarterId || null;
+        if (!quarterId && hasCoords) {
+          // Automatische Quartier-Zuweisung via PostGIS Clustering
+          const { assignUserToQuarter } = await import('@/lib/geo/quarter-clustering');
+          try {
+            quarterId = await assignUserToQuarter(lat, lng);
+          } catch (err) {
+            console.error('Quartier-Clustering fehlgeschlagen:', err);
+          }
+        }
         if (!quarterId) {
           const { data: quarter } = await adminDb
             .from("quarters")
@@ -176,15 +184,13 @@ export async function POST(request: NextRequest) {
           householdId = existing.id;
         } else {
           // Neuen Haushalt anlegen
-          const houseNum = parseInt(trimmedHouseNumber, 10) || 0;
-          const lngOffset = houseNum * 0.0005;
           const newInviteCode = generateSecureCode();
 
           const insertData: Record<string, unknown> = {
             street_name: streetName,
             house_number: trimmedHouseNumber,
-            lat: coords.lat,
-            lng: coords.lng + lngOffset,
+            lat: hasCoords ? lat : 0,
+            lng: hasCoords ? lng : 0,
             verified: false,
             invite_code: newInviteCode,
           };

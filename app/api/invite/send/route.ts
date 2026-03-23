@@ -14,13 +14,6 @@ import {
   type InviteChannel,
 } from "@/lib/invitations";
 
-// Ungefaehre Koordinaten pro Strasse
-const STREET_COORDS: Record<string, { lat: number; lng: number }> = {
-  "Purkersdorfer Straße": { lat: 47.5631, lng: 7.9480 },
-  "Sanarystraße": { lat: 47.5619, lng: 7.9480 },
-  "Oberer Rebberg": { lat: 47.5604, lng: 7.9480 },
-};
-
 const VALID_METHODS: InviteChannel[] = ["email", "whatsapp", "code", "sms"];
 
 /**
@@ -121,6 +114,9 @@ export async function POST(request: NextRequest) {
     );
   }
 
+  // Quartier-ID des Einladenden ermitteln (fuer Haushalt + Einladung)
+  const inviterQuarterId = await getUserQuarterId(supabase, user.id);
+
   // Haushalt suchen oder automatisch anlegen
   let householdId: string;
   const { data: existingHousehold } = await supabase
@@ -139,19 +135,30 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Server-Konfigurationsfehler" }, { status: 500 });
     }
     const adminDb = createAdminClient(supabaseUrl, serviceKey);
-    const coords = STREET_COORDS[street];
-    if (!coords) {
-      return NextResponse.json({ error: "Unbekannte Straße" }, { status: 400 });
+
+    // Koordinaten aus dem Quartier des Einladenden ermitteln
+    let baseLat = 47.5535;
+    let baseLng = 7.9640;
+    if (inviterQuarterId) {
+      const { data: quarter } = await supabase
+        .from("quarters")
+        .select("center_lat, center_lng")
+        .eq("id", inviterQuarterId)
+        .single();
+      if (quarter) {
+        baseLat = quarter.center_lat;
+        baseLng = quarter.center_lng;
+      }
     }
-    const inviterQuarterId = await getUserQuarterId(supabase, user.id);
+
     const houseNum = parseInt(String(houseNumber), 10) || 0;
     const { data: newHH, error: hhErr } = await adminDb
       .from("households")
       .insert({
         street_name: street,
         house_number: String(houseNumber).trim(),
-        lat: coords.lat,
-        lng: coords.lng + houseNum * 0.0005,
+        lat: baseLat,
+        lng: baseLng + houseNum * 0.0005,
         verified: false,
         invite_code: generateSecureCode(),
         quarter_id: inviterQuarterId,
@@ -168,7 +175,6 @@ export async function POST(request: NextRequest) {
 
   // Einladungscode generieren
   const inviteCode = generateSecureCode();
-  const inviterQuarterId = await getUserQuarterId(supabase, user.id);
 
   // Registrierungs-URL generieren
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://quartierapp.de";

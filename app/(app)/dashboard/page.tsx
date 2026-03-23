@@ -430,7 +430,7 @@ export default function DashboardPage() {
               Willkommen in Ihrem Quartier
             </h2>
             <p className="mt-1 text-sm text-muted-foreground">
-              Purkersdorfer Str. · Sanarystr. · Oberer Rebberg
+              {currentQuarter?.name ?? 'Ihr Quartier'}
             </p>
           </div>
 
@@ -442,7 +442,7 @@ export default function DashboardPage() {
                 <div className="flex items-center gap-2 text-xs text-muted-foreground">
                   <span aria-hidden="true">🏗️</span><span>Infrastruktur</span><span>·</span><span>Heute</span>
                 </div>
-                <p className="mt-1 font-medium text-anthrazit">Kanalarbeiten Sanarystraße ab Montag</p>
+                <p className="mt-1 font-medium text-anthrazit">Kanalarbeiten in Ihrem Quartier ab Montag</p>
                 <p className="mt-0.5 text-sm text-muted-foreground">Halbseitige Sperrung für ca. 3 Tage.</p>
               </div>
               <div className="rounded-lg bg-white p-3 shadow-soft">

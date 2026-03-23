@@ -6,8 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-// createClient-Import entfernt (nicht verwendet)
-import { QUARTIER_STREETS } from "@/lib/constants";
+
 import type { User, Household } from "@/lib/supabase/types";
 import { toast } from "sonner";
 
@@ -80,8 +79,9 @@ export function SystemHealth({ stats, users, households }: SystemHealthProps) {
     { label: "Anthropic API Key", key: "ANTHROPIC_API_KEY", critical: false },
   ];
 
-  // Quartiersabdeckung pro Strasse berechnen
-  const streetStats = QUARTIER_STREETS.map(street => {
+  // Quartiersabdeckung pro Strasse berechnen (dynamisch aus Haushalten)
+  const uniqueStreets = [...new Set(households.map(h => h.street_name))].sort();
+  const streetStats = uniqueStreets.map(street => {
     const total = households.filter(h => h.street_name === street).length;
     const occupied = households.filter(h => h.street_name === street && h.memberCount > 0).length;
     return { street, total, occupied, rate: total > 0 ? Math.round((occupied / total) * 100) : 0 };

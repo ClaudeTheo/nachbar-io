@@ -242,7 +242,7 @@ function getInvitationEmailHtml(params: {
             <td style="background-color:#f8f8fa; padding:20px 32px; text-align:center; border-top:1px solid #eee;">
               <p style="margin:0; color:#999; font-size:11px; line-height:1.5;">
                 Diese E-Mail wurde im Auftrag von ${escapeHtml(params.inviterName)} gesendet.<br>
-                QuartierApp — Quartiers-App Bad Säckingen<br>
+                QuartierApp — Ihre digitale Nachbarschaft<br>
                 Der Code ist 30 Tage gültig.
               </p>
             </td>
@@ -284,7 +284,7 @@ Was ist QuartierApp?
 Der Code ist 30 Tage gültig.
 
 —
-QuartierApp — Quartiers-App Bad Säckingen`;
+QuartierApp — Ihre digitale Nachbarschaft`;
 }
 
 // ============================================================
@@ -330,7 +330,7 @@ function getVerificationEmailHtml(params: {
           </tr>
           <tr>
             <td style="background-color:#f8f8fa; padding:16px 32px; text-align:center;">
-              <p style="margin:0; color:#999; font-size:11px;">QuartierApp — Quartiers-App Bad Säckingen</p>
+              <p style="margin:0; color:#999; font-size:11px;">QuartierApp — Ihre digitale Nachbarschaft</p>
             </td>
           </tr>
         </table>
@@ -369,7 +369,7 @@ function getVerificationEmailHtml(params: {
           </tr>
           <tr>
             <td style="background-color:#f8f8fa; padding:16px 32px; text-align:center;">
-              <p style="margin:0; color:#999; font-size:11px;">QuartierApp — Quartiers-App Bad Säckingen</p>
+              <p style="margin:0; color:#999; font-size:11px;">QuartierApp — Ihre digitale Nachbarschaft</p>
             </td>
           </tr>
         </table>
@@ -394,7 +394,7 @@ Sie können ab sofort alle Funktionen von QuartierApp nutzen.
 Zum Dashboard: ${process.env.NEXT_PUBLIC_SITE_URL || "https://quartierapp.de"}/dashboard
 
 —
-QuartierApp — Quartiers-App Bad Säckingen`;
+QuartierApp — Ihre digitale Nachbarschaft`;
   }
 
   return `Guten Tag ${params.userName},
@@ -405,7 +405,7 @@ ${params.adminNote ? `Hinweis: ${params.adminNote}` : ""}
 Bitte wenden Sie sich an einen Admin, wenn Sie Fragen haben.
 
 —
-QuartierApp — Quartiers-App Bad Säckingen`;
+QuartierApp — Ihre digitale Nachbarschaft`;
 }
 
 // ============================================================

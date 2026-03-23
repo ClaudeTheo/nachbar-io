@@ -10,7 +10,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { createClient } from "@/lib/supabase/client";
 import { normalizeCode, formatCode } from "@/lib/invite-codes";
 import { OtpCodeEntry } from "@/components/auth/OtpCodeEntry";
-import { PILOT_QUARTIER_STREETS } from "@/lib/constants";
+import { AddressAutocomplete } from "@/components/ui/address-autocomplete";
+import type { AddressSuggestion } from "@/lib/geo/photon-client";
 
 
 // Schritt-Typen fuer den neuen 2-Schritt-Flow
@@ -36,7 +37,7 @@ function RegisterForm() {
   const [verificationMethod, setVerificationMethod] = useState<string>("invite_code");
 
   // Adress-State
-  const [selectedStreet, setSelectedStreet] = useState("");
+  const [selectedAddress, setSelectedAddress] = useState<AddressSuggestion | null>(null);
   const [houseNumber, setHouseNumber] = useState("");
 
   // Geo-State
@@ -115,8 +116,8 @@ function RegisterForm() {
     e.preventDefault();
     setError(null);
 
-    if (!selectedStreet) {
-      setError("Bitte wählen Sie eine Straße aus.");
+    if (!selectedAddress) {
+      setError("Bitte wählen Sie eine Adresse aus.");
       return;
     }
     if (!houseNumber.trim()) {
@@ -181,8 +182,12 @@ function RegisterForm() {
           displayName: displayName.trim(),
           uiMode: "active", // UI-Modus wird spaeter im Onboarding gewaehlt
           householdId,
-          streetName: selectedStreet || undefined,
+          streetName: selectedAddress?.street || undefined,
           houseNumber: houseNumber.trim() || undefined,
+          lat: selectedAddress?.lat || undefined,
+          lng: selectedAddress?.lng || undefined,
+          postalCode: selectedAddress?.postalCode || undefined,
+          city: selectedAddress?.city || undefined,
           verificationMethod,
           inviteCode: inviteCode ? normalizeCode(inviteCode) : undefined,
           referrerId,
@@ -404,23 +409,15 @@ function RegisterForm() {
               <div className="h-px flex-1 bg-border" />
             </div>
 
-            {/* Straßen-Auswahl */}
+            {/* Adress-Suche via Photon Geocoding */}
             <div>
-              <label htmlFor="street_select" className="mb-1 block text-sm font-medium">
-                Straße
+              <label className="mb-1 block text-sm font-medium">
+                Adresse
               </label>
-              <select
-                id="street_select"
-                value={selectedStreet}
-                onChange={(e) => setSelectedStreet(e.target.value)}
-                className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-quartier-green focus:ring-offset-2"
-                style={{ minHeight: "44px" }}
-              >
-                <option value="">Straße wählen...</option>
-                {PILOT_QUARTIER_STREETS.map((street) => (
-                  <option key={street} value={street}>{street}</option>
-                ))}
-              </select>
+              <AddressAutocomplete
+                onSelect={setSelectedAddress}
+                placeholder="Straße und Ort eingeben..."
+              />
             </div>
 
             {/* Hausnummer */}
@@ -440,12 +437,12 @@ function RegisterForm() {
             </div>
 
             {/* Adress-Vorschau mit PLZ + Stadt */}
-            {selectedStreet && houseNumber.trim() && (
+            {selectedAddress && houseNumber.trim() && (
               <div className="flex items-center gap-2 rounded-lg border border-quartier-green/30 bg-quartier-green/5 p-3">
                 <MapPin className="h-4 w-4 shrink-0 text-quartier-green" />
                 <div className="text-sm">
-                  <span className="font-semibold text-anthrazit">{selectedStreet} {houseNumber.trim()}</span>
-                  <span className="ml-1 text-muted-foreground">· 79713 Bad Säckingen</span>
+                  <span className="font-semibold text-anthrazit">{selectedAddress.street} {houseNumber.trim()}</span>
+                  <span className="ml-1 text-muted-foreground">· {selectedAddress.postalCode} {selectedAddress.city}</span>
                 </div>
               </div>
             )}
@@ -454,7 +451,7 @@ function RegisterForm() {
 
             <Button
               type="submit"
-              disabled={loading || !selectedStreet || !houseNumber.trim()}
+              disabled={loading || !selectedAddress || !houseNumber.trim()}
               className="w-full bg-quartier-green hover:bg-quartier-green-dark"
             >
               Weiter

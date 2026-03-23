@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { createClient } from "@/lib/supabase/client";
 import type { Household } from "@/lib/supabase/types";
-import { QUARTIER_STREETS } from "@/lib/constants";
+
 import { generateSecureCode, generateQuarterCode, formatCode, extractQuarterPrefix } from "@/lib/invite-codes";
 import type { Quarter } from "@/lib/quarters/types";
 import { toast } from "sonner";
@@ -253,7 +253,7 @@ export function InviteCodeManager({ households, onRefresh }: InviteCodeManagerPr
               className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
             >
               <option value="">Strasse waehlen...</option>
-              {QUARTIER_STREETS.map((s) => (
+              {streets.map((s) => (
                 <option key={s} value={s}>{s}</option>
               ))}
             </select>

@@ -155,6 +155,7 @@ export function CompanionChat() {
         tool: event.name,
         summary: event.result.summary,
         success: event.result.success,
+        route: event.result.route,
       });
     },
     onConfirmation: (event) => {

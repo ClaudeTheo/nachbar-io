@@ -70,7 +70,12 @@ export async function POST(request: NextRequest) {
 
       return NextResponse.json({
         message: confirmMessage,
-        toolResults: [confirmResult],
+        toolResults: [{
+          tool: confirmTool.tool,
+          summary: confirmResult.summary,
+          success: confirmResult.success,
+          route: confirmResult.route,
+        }],
       });
     }
 

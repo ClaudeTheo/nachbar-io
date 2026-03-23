@@ -5,7 +5,7 @@ import { useState, useCallback, useRef } from 'react'
 // SSE-Event Typen vom Companion Chat API
 interface ToolResultEvent {
   name: string
-  result: { success: boolean; summary: string }
+  result: { success: boolean; summary: string; route?: string }
 }
 
 interface ConfirmationEvent {

@@ -39,8 +39,6 @@ const API_ROUTES: ApiRoute[] = [
   // Care
   { method: "GET", path: "/api/care/stats", label: "Care-Statistiken", requiresBody: false },
   { method: "GET", path: "/api/care/stats/overview", label: "Care-Uebersicht", requiresBody: false },
-  // QR
-  { method: "GET", path: "/api/qr?code=TEST-CODE&size=200", label: "QR-Code generieren (Test)", requiresBody: false },
   // User
   { method: "GET", path: "/api/user/export", label: "DSGVO-Datenexport", requiresBody: false },
   // Push (Broadcast)

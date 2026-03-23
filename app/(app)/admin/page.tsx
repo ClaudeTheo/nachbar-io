@@ -4,7 +4,7 @@ import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import {
   Shield, Users, Home, RefreshCw, HandHelping, ShoppingBag,
-  TrendingUp, QrCode, FileText, Activity, Megaphone,
+  TrendingUp, KeyRound, FileText, Activity, Megaphone,
   Newspaper, Calendar, BarChart3, ArrowUpRight, ArrowDownRight, Minus,
   TriangleAlert, Eye, MapPin, Globe, ExternalLink, Database, Terminal, Wrench,
   Settings2,
@@ -315,7 +315,7 @@ export default function AdminPage() {
             <SelectGroup>
               <SelectLabel>System & Werkzeuge</SelectLabel>
               <SelectItem value="push"><Megaphone className="h-3.5 w-3.5 text-muted-foreground" />Push</SelectItem>
-              <SelectItem value="codes"><QrCode className="h-3.5 w-3.5 text-muted-foreground" />Codes</SelectItem>
+              <SelectItem value="codes"><KeyRound className="h-3.5 w-3.5 text-muted-foreground" />Einladungen</SelectItem>
               <SelectItem value="map"><MapPin className="h-3.5 w-3.5 text-muted-foreground" />Karte</SelectItem>
               <SelectItem value="quarters"><Globe className="h-3.5 w-3.5 text-muted-foreground" />Quartiere</SelectItem>
               <SelectItem value="system"><Eye className="h-3.5 w-3.5 text-muted-foreground" />System-Health</SelectItem>

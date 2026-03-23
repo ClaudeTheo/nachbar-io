@@ -1,10 +1,11 @@
 "use client";
 
 // Passkey-Verwaltungsseite — Biometrische Anmeldung (Face ID, Touch ID, Windows Hello)
-// Nutzt WebAuthn / SimpleWebAuthn für passwortlose Registrierung und Löschung
+// Nutzt WebAuthn / SimpleWebAuthn fuer passwortlose Registrierung und Loeschung
+// v2 — Inline-Input, WebAuthn-Check, iOS-Fehlermeldungen
 
-import { useEffect, useState, useCallback } from "react";
-import { Fingerprint, Plus, Trash2, Smartphone } from "lucide-react";
+import { useEffect, useState, useCallback, useRef } from "react";
+import { Fingerprint, Plus, Trash2, Smartphone, X, AlertTriangle } from "lucide-react";
 // simplewebauthn/browser wird im handleRegister dynamisch geladen
 import { PageHeader } from "@/components/ui/page-header";
 import { Card, CardContent } from "@/components/ui/card";
@@ -28,6 +29,27 @@ function formatDate(isoString: string): string {
   });
 }
 
+// Pruefen ob WebAuthn im Browser unterstuetzt wird
+function isWebAuthnSupported(): boolean {
+  return (
+    typeof window !== "undefined" &&
+    !!window.PublicKeyCredential &&
+    typeof window.PublicKeyCredential === "function"
+  );
+}
+
+// Automatischen Geraetenamen ermitteln
+function getDefaultDeviceName(): string {
+  if (typeof navigator === "undefined") return "Mein Geraet";
+  const ua = navigator.userAgent;
+  if (/iPhone/.test(ua)) return "Mein iPhone";
+  if (/iPad/.test(ua)) return "Mein iPad";
+  if (/Android/.test(ua)) return "Mein Android";
+  if (/Mac/.test(ua)) return "Mein Mac";
+  if (/Windows/.test(ua)) return "Mein Windows-PC";
+  return "Mein Geraet";
+}
+
 export default function PasskeyPage() {
   const { user: authUser } = useAuth();
   const [credentials, setCredentials] = useState<PasskeyCredential[]>([]);
@@ -36,6 +58,10 @@ export default function PasskeyPage() {
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  // Inline-Eingabefeld statt window.prompt (mobil-freundlich)
+  const [showNameInput, setShowNameInput] = useState(false);
+  const [deviceName, setDeviceName] = useState("");
+  const nameInputRef = useRef<HTMLInputElement>(null);
 
   // Registrierte Geraete laden
   const loadCredentials = useCallback(async () => {
@@ -46,7 +72,9 @@ export default function PasskeyPage() {
       if (!res.ok) {
         throw new Error(`Fehler beim Laden der Geraete (${res.status})`);
       }
-      const data: PasskeyCredential[] = await res.json();
+      const json = await res.json();
+      // API gibt { credentials: [...] } zurueck
+      const data: PasskeyCredential[] = Array.isArray(json) ? json : (json.credentials || []);
       setCredentials(data);
     } catch (err) {
       console.error("[Passkey] Laden fehlgeschlagen:", err);
@@ -65,31 +93,33 @@ export default function PasskeyPage() {
     loadCredentials();
   }, [authUser, loadCredentials]);
 
-  // Neues Geraet registrieren
-  async function handleAddPasskey() {
+  // Eingabefeld fuer Geraetename oeffnen
+  function handleShowNameInput() {
+    setSuccessMessage(null);
+    setErrorMessage(null);
+    setDeviceName(getDefaultDeviceName());
+    setShowNameInput(true);
+    // Fokus auf Input nach Render
+    setTimeout(() => nameInputRef.current?.focus(), 100);
+  }
+
+  // Registrierung starten (nach Namenseingabe)
+  async function handleRegisterPasskey() {
+    const name = deviceName.trim() || getDefaultDeviceName();
+    setShowNameInput(false);
     setAdding(true);
     setSuccessMessage(null);
     setErrorMessage(null);
 
     try {
-      // Geraetename vom Nutzer abfragen
-      const deviceName = window.prompt(
-        'Geraetename (z.B. "Mein iPhone")',
-        "Mein Geraet"
-      );
-      if (!deviceName) {
-        // Nutzer hat abgebrochen
-        setAdding(false);
-        return;
-      }
-
       // Schritt 1: Registrierungs-Optionen vom Server holen
       const beginRes = await fetch("/api/auth/passkey/register-begin", {
         method: "POST",
       });
       if (!beginRes.ok) {
+        const errorData = await beginRes.json().catch(() => null);
         throw new Error(
-          `Registrierung konnte nicht gestartet werden (${beginRes.status})`
+          errorData?.error || `Registrierung konnte nicht gestartet werden (${beginRes.status})`
         );
       }
       const options = await beginRes.json();
@@ -102,15 +132,16 @@ export default function PasskeyPage() {
       const completeRes = await fetch("/api/auth/passkey/register-complete", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ response: result, deviceName }),
+        body: JSON.stringify({ response: result, deviceName: name }),
       });
       if (!completeRes.ok) {
+        const errorData = await completeRes.json().catch(() => null);
         throw new Error(
-          `Registrierung konnte nicht abgeschlossen werden (${completeRes.status})`
+          errorData?.error || `Registrierung konnte nicht abgeschlossen werden (${completeRes.status})`
         );
       }
 
-      setSuccessMessage(`"${deviceName}" wurde erfolgreich registriert.`);
+      setSuccessMessage(`"${name}" wurde erfolgreich registriert.`);
       await loadCredentials();
     } catch (err) {
       console.error("[Passkey] Registrierung fehlgeschlagen:", err);
@@ -118,11 +149,24 @@ export default function PasskeyPage() {
       if (err instanceof Error) {
         if (err.name === "NotAllowedError") {
           setErrorMessage(
-            "Die Registrierung wurde abgebrochen oder Ihr Geraet hat die Anfrage abgelehnt."
+            "Die biometrische Freigabe wurde abgebrochen oder von Ihrem Geraet abgelehnt. " +
+            "Bitte stellen Sie sicher, dass Face ID / Touch ID in Ihren Geraeteeinstellungen aktiviert ist."
+          );
+        } else if (err.name === "NotSupportedError") {
+          setErrorMessage(
+            "Ihr Browser unterstuetzt keine Passkeys. Bitte verwenden Sie Safari auf dem iPhone oder Chrome auf dem Desktop."
           );
         } else if (err.name === "InvalidStateError") {
           setErrorMessage(
             "Dieses Geraet ist bereits registriert."
+          );
+        } else if (err.name === "AbortError") {
+          setErrorMessage(
+            "Die Registrierung wurde abgebrochen. Bitte versuchen Sie es erneut."
+          );
+        } else if (err.name === "SecurityError") {
+          setErrorMessage(
+            "Sicherheitsfehler: Passkeys funktionieren nur ueber eine sichere Verbindung (HTTPS)."
           );
         } else {
           setErrorMessage(err.message);
@@ -136,9 +180,9 @@ export default function PasskeyPage() {
   }
 
   // Geraet loeschen
-  async function handleDeletePasskey(id: string, deviceName: string) {
+  async function handleDeletePasskey(id: string, name: string) {
     const confirmed = window.confirm(
-      `Moechten Sie "${deviceName}" wirklich entfernen? Sie koennen sich danach nicht mehr mit diesem Geraet anmelden.`
+      `Moechten Sie "${name}" wirklich entfernen? Sie koennen sich danach nicht mehr mit diesem Geraet anmelden.`
     );
     if (!confirmed) return;
 
@@ -153,7 +197,7 @@ export default function PasskeyPage() {
       if (!res.ok) {
         throw new Error(`Geraet konnte nicht entfernt werden (${res.status})`);
       }
-      setSuccessMessage(`"${deviceName}" wurde entfernt.`);
+      setSuccessMessage(`"${name}" wurde entfernt.`);
       await loadCredentials();
     } catch (err) {
       console.error("[Passkey] Loeschen fehlgeschlagen:", err);
@@ -174,6 +218,7 @@ export default function PasskeyPage() {
     (authUser as { ui_mode?: string }).ui_mode === "senior";
 
   const buttonMinHeight = isSenior ? "min-h-[80px]" : "min-h-[44px]";
+  const webAuthnSupported = isWebAuthnSupported();
 
   if (loading) {
     return (
@@ -195,6 +240,24 @@ export default function PasskeyPage() {
         subtitle="Face ID, Touch ID oder Windows Hello"
         backHref="/profile"
       />
+
+      {/* WebAuthn nicht unterstuetzt */}
+      {!webAuthnSupported && (
+        <Card className="border-amber-300 bg-amber-50">
+          <CardContent className="p-4">
+            <div className="flex items-start gap-3">
+              <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-amber-600" />
+              <div className="text-sm text-anthrazit leading-relaxed">
+                <p className="font-medium">Passkeys werden in diesem Browser nicht unterstuetzt.</p>
+                <p className="mt-1">
+                  Bitte verwenden Sie <strong>Safari</strong> auf dem iPhone/iPad
+                  oder <strong>Chrome/Edge</strong> auf dem Desktop.
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* DSGVO-Infobox */}
       <Card className="border-quartier-green/30 bg-quartier-green/5">
@@ -280,21 +343,65 @@ export default function PasskeyPage() {
         </CardContent>
       </Card>
 
+      {/* Inline-Eingabefeld fuer Geraetename */}
+      {showNameInput && (
+        <Card className="border-quartier-green/50">
+          <CardContent className="p-4">
+            <label className="block text-sm font-medium text-anthrazit mb-2">
+              Wie soll dieses Geraet heissen?
+            </label>
+            <div className="flex gap-2">
+              <input
+                ref={nameInputRef}
+                type="text"
+                value={deviceName}
+                onChange={(e) => setDeviceName(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") handleRegisterPasskey();
+                  if (e.key === "Escape") setShowNameInput(false);
+                }}
+                placeholder="z.B. Mein iPhone"
+                className={`flex-1 rounded-lg border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-quartier-green ${buttonMinHeight}`}
+              />
+              <Button
+                onClick={handleRegisterPasskey}
+                className={`bg-quartier-green hover:bg-quartier-green/90 ${buttonMinHeight}`}
+              >
+                Weiter
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setShowNameInput(false)}
+                className={buttonMinHeight}
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
+            <p className="mt-2 text-xs text-muted-foreground">
+              Nach &quot;Weiter&quot; werden Sie aufgefordert, die biometrische Freigabe (Face ID / Touch ID / Fingerabdruck) zu bestaetigen.
+            </p>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Neues Geraet hinzufuegen */}
-      <Button
-        onClick={handleAddPasskey}
-        disabled={adding}
-        className={`w-full gap-2 bg-quartier-green hover:bg-quartier-green/90 ${buttonMinHeight}`}
-      >
-        {adding ? (
-          "Bitte warten..."
-        ) : (
-          <>
-            <Plus className="h-4 w-4" />
-            Neues Geraet hinzufuegen
-          </>
-        )}
-      </Button>
+      {!showNameInput && (
+        <Button
+          onClick={handleShowNameInput}
+          disabled={adding || !webAuthnSupported}
+          className={`w-full gap-2 bg-quartier-green hover:bg-quartier-green/90 ${buttonMinHeight}`}
+        >
+          {adding ? (
+            "Biometrische Freigabe laeuft..."
+          ) : (
+            <>
+              <Plus className="h-4 w-4" />
+              Neues Geraet hinzufuegen
+            </>
+          )}
+        </Button>
+      )}
 
       {/* Hinweis */}
       <div className="rounded-lg bg-muted/50 p-4 text-sm text-muted-foreground">

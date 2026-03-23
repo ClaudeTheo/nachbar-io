@@ -20,7 +20,7 @@ export async function GET() {
       return NextResponse.json({ error: 'Laden fehlgeschlagen' }, { status: 500 });
     }
 
-    return NextResponse.json({ credentials: credentials || [] });
+    return NextResponse.json(credentials || []);
   } catch (err) {
     console.error('[Passkey] credentials list Fehler:', err);
     return NextResponse.json({ error: 'Interner Fehler' }, { status: 500 });

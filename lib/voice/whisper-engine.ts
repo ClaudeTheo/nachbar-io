@@ -46,10 +46,11 @@ export class WhisperEngine implements SpeechEngine {
       // iOS-Fix: Timeout-Fallback falls onstop nicht feuert
       // callbacks lokal binden, um Race Condition bei erneutem startListening zu vermeiden
       const currentCallbacks = this.callbacks;
+      const currentMimeType = this.mediaRecorder?.mimeType || 'audio/webm';
       const fallbackTimer = setTimeout(() => {
         this.stopAudioAnalysis();
         if (this.chunks.length > 0 && currentCallbacks) {
-          const audioBlob = new Blob(this.chunks, { type: 'audio/webm' });
+          const audioBlob = new Blob(this.chunks, { type: currentMimeType });
           this.chunks = [];
           this.transcribe(audioBlob, currentCallbacks);
         } else if (currentCallbacks) {
@@ -86,12 +87,15 @@ export class WhisperEngine implements SpeechEngine {
       // Audio-Analyse starten (fuer Waveform)
       this.startAudioAnalysis(stream, callbacks);
 
-      // MediaRecorder starten
-      const mimeType = MediaRecorder.isTypeSupported('audio/webm;codecs=opus')
-        ? 'audio/webm;codecs=opus'
-        : 'audio/webm';
+      // MediaRecorder starten — iOS unterstuetzt kein audio/webm, nur audio/mp4
+      const mimeType = this.getBestMimeType();
+      const recorderOptions: MediaRecorderOptions = {};
+      if (mimeType) {
+        recorderOptions.mimeType = mimeType;
+      }
+      // Ohne mimeType waehlt der Browser automatisch das beste Format
 
-      this.mediaRecorder = new MediaRecorder(stream, { mimeType });
+      this.mediaRecorder = new MediaRecorder(stream, recorderOptions);
 
       this.mediaRecorder.ondataavailable = (event: { data: Blob }) => {
         if (event.data.size > 0) {
@@ -101,7 +105,13 @@ export class WhisperEngine implements SpeechEngine {
 
       this.mediaRecorder.onstop = () => {
         this.stopAudioAnalysis();
-        const audioBlob = new Blob(this.chunks, { type: 'audio/webm' });
+        if (this.chunks.length === 0) {
+          callbacks.onError('Keine Aufnahme empfangen. Bitte versuchen Sie es erneut.');
+          callbacks.onStateChange('idle');
+          return;
+        }
+        const blobType = this.mediaRecorder?.mimeType || mimeType || 'audio/webm';
+        const audioBlob = new Blob(this.chunks, { type: blobType });
         this.chunks = [];
         this.transcribe(audioBlob, callbacks);
       };
@@ -128,13 +138,35 @@ export class WhisperEngine implements SpeechEngine {
     }
   }
 
+  /** Bestes verfuegbares Audio-Format ermitteln (iOS: mp4, Rest: webm) */
+  private getBestMimeType(): string | null {
+    if (typeof MediaRecorder === 'undefined') return null;
+    // Bevorzugt: webm mit opus (Chrome/Edge/Firefox Desktop)
+    if (MediaRecorder.isTypeSupported('audio/webm;codecs=opus')) return 'audio/webm;codecs=opus';
+    if (MediaRecorder.isTypeSupported('audio/webm')) return 'audio/webm';
+    // iOS-Fallback: mp4/aac (Safari, Chrome iOS, alle iOS-Browser)
+    if (MediaRecorder.isTypeSupported('audio/mp4')) return 'audio/mp4';
+    if (MediaRecorder.isTypeSupported('audio/aac')) return 'audio/aac';
+    // Letzter Fallback: Browser waehlt selbst
+    return null;
+  }
+
+  /** Dateiendung aus MIME-Type ableiten */
+  private getFileExtension(blobType: string): string {
+    if (blobType.includes('mp4')) return 'mp4';
+    if (blobType.includes('aac')) return 'aac';
+    if (blobType.includes('ogg')) return 'ogg';
+    return 'webm';
+  }
+
   /** Sendet Audio-Blob an /api/voice/transcribe */
   private async transcribe(audioBlob: Blob, callbacks: SpeechEngineCallbacks): Promise<void> {
     callbacks.onStateChange('processing');
 
     try {
+      const ext = this.getFileExtension(audioBlob.type);
       const formData = new FormData();
-      formData.append('audio', audioBlob, 'audio.webm');
+      formData.append('audio', audioBlob, `audio.${ext}`);
 
       const res = await fetch('/api/voice/transcribe', {
         method: 'POST',

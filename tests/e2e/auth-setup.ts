@@ -77,39 +77,30 @@ async function loginAndSave(
 ) {
   console.log(`[AUTH] Login ${agentId} (${email})...`);
 
+  const baseURL = process.env.E2E_BASE_URL || "http://localhost:3000";
   const testSecret = process.env.E2E_TEST_SECRET || "e2e-test-secret-dev";
 
   // Erst eine Seite laden damit Cookies empfangen werden koennen
   await page.goto("/login");
 
-  // Test-Login-API aufrufen via Browser-Fetch (NICHT page.request.post!)
-  // page.request.post() setzt Cookies nur im HTTP-Context, nicht in document.cookie.
-  // AuthSessionProvider.getSession() braucht document.cookie um die Session zu finden.
-  const result = await page.evaluate(
-    async ({ email: e, password: p, secret: s }) => {
-      const response = await fetch("/api/test/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: e, password: p, secret: s }),
-        credentials: "same-origin",
-      });
+  // Test-Login-API aufrufen — setzt Session-Cookies via Supabase Server-Client
+  const response = await page.request.post(`${baseURL}/api/test/login`, {
+    data: { email, password, secret: testSecret },
+  });
 
-      if (!response.ok) {
-        const text = await response.text();
-        return { error: `${response.status} ${text}` };
-      }
-
-      return await response.json();
-    },
-    { email, password, secret: testSecret },
-  );
-
-  if (result.error) {
-    console.warn(`[AUTH] ${agentId} Login fehlgeschlagen: ${result.error}`);
+  if (!response.ok()) {
+    const text = await response.text();
+    console.warn(
+      `[AUTH] ${agentId} Login fehlgeschlagen: ${response.status()} ${text}`,
+    );
     return;
   }
 
+  const result = await response.json();
   console.log(`[AUTH] ${agentId} Test-Login OK → userId=${result.userId}`);
+
+  // Seite neu laden damit der Supabase-Browser-Client die Session-Cookies erkennt
+  await page.reload({ waitUntil: "domcontentloaded" });
 
   // Zur Zielseite navigieren
   await page.goto("/dashboard");

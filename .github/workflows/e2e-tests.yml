@@ -42,6 +42,8 @@ jobs:
 
       - name: Run Smoke Tests
         run: npx playwright test --config=tests/e2e/playwright.config.ts --project=smoke
+        env:
+          RESIDENT_HASH_SECRET: ci-test-secret-not-real
 
       - name: Upload test report
         if: always()
@@ -81,6 +83,8 @@ jobs:
 
       - name: Run Multi-Agent Tests
         run: npx playwright test --config=tests/e2e/playwright.config.ts --project=multi-agent --project=senior-terminal
+        env:
+          RESIDENT_HASH_SECRET: ci-test-secret-not-real
 
       - name: Upload test report
         if: always()

@@ -17,8 +17,17 @@ export default defineConfig({
   expect: { timeout: 10_000 },
 
   reporter: [
-    ["html", { outputFolder: path.resolve(__dirname, "../../playwright-report"), open: "never" }],
-    ["junit", { outputFile: path.resolve(__dirname, "../../test-results/junit.xml") }],
+    [
+      "html",
+      {
+        outputFolder: path.resolve(__dirname, "../../playwright-report"),
+        open: "never",
+      },
+    ],
+    [
+      "junit",
+      { outputFile: path.resolve(__dirname, "../../test-results/junit.xml") },
+    ],
     ["list"],
   ],
 
@@ -94,7 +103,8 @@ export default defineConfig({
   ],
 
   webServer: {
-    command: "npm run dev",
+    // In CI: Production-Build verwenden (vermeidet Hydration-Race-Conditions im Dev-Server)
+    command: process.env.CI ? "npm start" : "npm run dev",
     url: "http://localhost:3000",
     reuseExistingServer: !process.env.CI,
     timeout: 120_000,

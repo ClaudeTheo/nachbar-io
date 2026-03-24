@@ -12,7 +12,7 @@ export default defineConfig({
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 1,
-  workers: process.env.CI ? 2 : 4,
+  workers: process.env.CI ? 1 : 4, // CI: 1 Worker um Supabase Rate-Limiting zu vermeiden
   timeout: 60_000,
   expect: { timeout: 10_000 },
 

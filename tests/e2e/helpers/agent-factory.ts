@@ -116,24 +116,44 @@ export async function loginAgent(agent: TestAgent): Promise<void> {
   // Erst eine Seite laden damit der Context Cookies empfangen kann
   await page.goto("/login");
 
-  // Test-Login-API aufrufen — setzt Session-Cookies automatisch
-  const response = await page.request.post(`${baseURL}/api/test/login`, {
-    data: {
-      email: credentials.email,
-      password: credentials.password,
-      secret: testSecret,
-    },
-  });
+  // Test-Login-API aufrufen mit Retry bei Rate-Limiting (429)
+  let lastError = "";
+  for (let attempt = 0; attempt < 5; attempt++) {
+    if (attempt > 0) {
+      const delay = 2000 * attempt; // 2s, 4s, 6s, 8s
+      console.log(
+        `${prefix} Rate-Limited, warte ${delay}ms (Versuch ${attempt + 1}/5)`,
+      );
+      await page.waitForTimeout(delay);
+    }
 
-  if (!response.ok()) {
-    const text = await response.text();
-    throw new Error(
-      `${prefix} Test-Login fehlgeschlagen: ${response.status()} ${text}`,
-    );
+    const response = await page.request.post(`${baseURL}/api/test/login`, {
+      data: {
+        email: credentials.email,
+        password: credentials.password,
+        secret: testSecret,
+      },
+    });
+
+    if (response.ok()) {
+      const result = await response.json();
+      console.log(`${prefix} Test-Login OK → userId=${result.userId}`);
+      break;
+    }
+
+    lastError = await response.text();
+    if (response.status() !== 429) {
+      throw new Error(
+        `${prefix} Test-Login fehlgeschlagen: ${response.status()} ${lastError}`,
+      );
+    }
+
+    if (attempt === 4) {
+      throw new Error(
+        `${prefix} Test-Login: Rate-Limit nach 5 Versuchen: ${lastError}`,
+      );
+    }
   }
-
-  const result = await response.json();
-  console.log(`${prefix} Test-Login OK → userId=${result.userId}`);
 
   // Zur Zielseite navigieren (Cookies aus dem API-Call sind im Context)
   const target =

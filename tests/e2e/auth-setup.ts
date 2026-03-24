@@ -99,8 +99,10 @@ async function loginAndSave(
   const result = await response.json();
   console.log(`[AUTH] ${agentId} Test-Login OK → userId=${result.userId}`);
 
-  // Seite neu laden damit der Supabase-Browser-Client die Session-Cookies erkennt
-  await page.reload({ waitUntil: "domcontentloaded" });
+  // CareDisclaimer akzeptieren (blockiert sonst Care-Features mit Vollbild-Modal)
+  await page.evaluate(() => {
+    localStorage.setItem("care_disclaimer_accepted", "true");
+  });
 
   // Zur Zielseite navigieren
   await page.goto("/dashboard");

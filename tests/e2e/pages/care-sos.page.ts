@@ -38,34 +38,10 @@ export class CareSosNewPage {
 
   async goto() {
     await this.page.goto("/care/sos/new");
-    // Debug: URL nach Navigation loggen (Redirect zu /login pruefen)
-    console.log(`[SOS] URL nach goto: ${this.page.url()}`);
     await waitForStableUI(this.page);
-    console.log(`[SOS] URL nach waitForStableUI: ${this.page.url()}`);
   }
 
   async assertLoaded() {
-    // Debug: URL und Session-Status vor Assert loggen
-    console.log(`[SOS] URL vor assertLoaded: ${this.page.url()}`);
-
-    // Seiteninhalt pruefen um zu sehen was tatsaechlich gerendert wird
-    const sessionCheck = await this.page
-      .evaluate(() => {
-        const sbCookies = document.cookie
-          .split(";")
-          .filter((c) => c.trim().startsWith("sb-"));
-        const pageContent =
-          document.body?.innerText?.substring(0, 300) || "leer";
-        return {
-          cookieCount: sbCookies.length,
-          cookieNames: sbCookies.map((c) => c.trim().split("=")[0]),
-          pagePreview: pageContent,
-          url: window.location.href,
-        };
-      })
-      .catch((e) => ({ error: String(e) }));
-    console.log(`[SOS] Session-Check: ${JSON.stringify(sessionCheck)}`);
-
     await expect(this.heading).toBeVisible({ timeout: TIMEOUTS.pageLoad });
   }
 

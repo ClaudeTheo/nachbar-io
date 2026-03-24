@@ -117,6 +117,11 @@ export async function loginAgent(agent: TestAgent): Promise<void> {
   await page.goto("/login");
   await page.waitForLoadState("domcontentloaded");
 
+  // CareDisclaimer akzeptieren (blockiert sonst Care-Features mit Vollbild-Modal)
+  await page.evaluate(() => {
+    localStorage.setItem("care_disclaimer_accepted", "true");
+  });
+
   // Test-Login-API aufrufen mit Retry bei Rate-Limiting (429)
   let lastError = "";
   for (let attempt = 0; attempt < 5; attempt++) {
@@ -139,52 +144,6 @@ export async function loginAgent(agent: TestAgent): Promise<void> {
     if (response.ok()) {
       const result = await response.json();
       console.log(`${prefix} Test-Login OK → userId=${result.userId}`);
-
-      // Debug: Set-Cookie-Headers aus der API-Antwort loggen
-      const setCookieHeaders = response
-        .headersArray()
-        .filter((h) => h.name.toLowerCase() === "set-cookie");
-      console.log(`${prefix} Set-Cookie Headers: ${setCookieHeaders.length}`);
-      for (const h of setCookieHeaders) {
-        const cookieName = h.value.split("=")[0];
-        const isHttpOnly = h.value.toLowerCase().includes("httponly");
-        const isSecure = h.value.toLowerCase().includes("secure");
-        console.log(
-          `${prefix}   Cookie: ${cookieName} (httpOnly=${isHttpOnly}, secure=${isSecure})`,
-        );
-      }
-
-      // Debug: Playwright-Context-Cookies pruefen
-      const contextCookies = await page.context().cookies();
-      const sbCookies = contextCookies.filter((c) => c.name.startsWith("sb-"));
-      console.log(`${prefix} Context-Cookies (sb-*): ${sbCookies.length}`);
-      for (const c of sbCookies) {
-        console.log(
-          `${prefix}   ${c.name}: httpOnly=${c.httpOnly}, secure=${c.secure}, domain=${c.domain}`,
-        );
-      }
-
-      // Debug: document.cookie pruefen
-      const docCookies = await page.evaluate(() => document.cookie);
-      const docSbCookies = docCookies
-        .split(";")
-        .filter((c) => c.trim().startsWith("sb-"));
-      console.log(
-        `${prefix} document.cookie (sb-*): ${docSbCookies.length} (total: ${docCookies.length} chars)`,
-      );
-
-      // Seite neu laden (Versuch, Cookies in document.cookie zu propagieren)
-      await page.reload({ waitUntil: "domcontentloaded" });
-
-      // Debug: document.cookie NACH Reload
-      const docCookiesAfter = await page.evaluate(() => document.cookie);
-      const docSbCookiesAfter = docCookiesAfter
-        .split(";")
-        .filter((c) => c.trim().startsWith("sb-"));
-      console.log(
-        `${prefix} document.cookie nach Reload (sb-*): ${docSbCookiesAfter.length}`,
-      );
-
       break;
     }
 

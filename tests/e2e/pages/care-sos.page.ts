@@ -26,9 +26,9 @@ export class CareSosNewPage {
     this.visitWantedButton = page.getByText("Besuch gewuenscht");
     this.shoppingButton = page.getByText("Einkauf / Besorgung");
     this.medicationHelpButton = page.getByText("Erinnerungshilfe");
-    this.emergencyBanner = page.locator("[role='alertdialog']").or(
-      page.getByText("Wichtiger Hinweis")
-    );
+    this.emergencyBanner = page
+      .locator("[role='alertdialog']")
+      .or(page.getByText("Wichtiger Hinweis"));
     this.emergencyCall112 = page.locator("a[href='tel:112']");
     this.emergencyCall110 = page.locator("a[href='tel:110']");
     this.emergencyAckButton = page.getByText(/Ich habe 112\/110 angerufen/i);
@@ -38,10 +38,15 @@ export class CareSosNewPage {
 
   async goto() {
     await this.page.goto("/care/sos/new");
+    // Debug: URL nach Navigation loggen (Redirect zu /login pruefen)
+    console.log(`[SOS] URL nach goto: ${this.page.url()}`);
     await waitForStableUI(this.page);
+    console.log(`[SOS] URL nach waitForStableUI: ${this.page.url()}`);
   }
 
   async assertLoaded() {
+    // Debug: URL vor Assert loggen
+    console.log(`[SOS] URL vor assertLoaded: ${this.page.url()}`);
     await expect(this.heading).toBeVisible({ timeout: TIMEOUTS.pageLoad });
   }
 
@@ -55,7 +60,9 @@ export class CareSosNewPage {
 
   async selectMedicalEmergency() {
     await this.medicalEmergencyButton.click();
-    await expect(this.emergencyBanner).toBeVisible({ timeout: TIMEOUTS.elementVisible });
+    await expect(this.emergencyBanner).toBeVisible({
+      timeout: TIMEOUTS.elementVisible,
+    });
   }
 
   async acknowledgeEmergency() {
@@ -94,9 +101,9 @@ export class CareSosStatusPage {
 
   constructor(page: Page) {
     this.page = page;
-    this.statusText = page.locator("[data-testid='sos-status']").or(
-      page.getByText(/ausgelöst|benachrichtigt|angenommen|unterwegs/i)
-    );
+    this.statusText = page
+      .locator("[data-testid='sos-status']")
+      .or(page.getByText(/ausgelöst|benachrichtigt|angenommen|unterwegs/i));
     this.escalationLevel = page.getByText(/Stufe \d/);
     this.helperInfo = page.getByText(/Hilfe ist unterwegs/i);
   }
@@ -115,12 +122,12 @@ export class CareSosAlertPage {
 
   constructor(page: Page) {
     this.page = page;
-    this.acceptButton = page.getByText(/Ich helfe/).or(
-      page.locator("[data-testid='sos-accept']")
-    );
-    this.declineButton = page.getByText("Kann nicht").or(
-      page.locator("[data-testid='sos-decline']")
-    );
+    this.acceptButton = page
+      .getByText(/Ich helfe/)
+      .or(page.locator("[data-testid='sos-accept']"));
+    this.declineButton = page
+      .getByText("Kann nicht")
+      .or(page.locator("[data-testid='sos-decline']"));
     this.categoryLabel = page.locator("[data-testid='sos-category']");
     this.seniorName = page.locator("[data-testid='sos-senior-name']");
   }

@@ -6,7 +6,9 @@ import { createConsoleErrorCollector } from "../helpers/observer";
 import { TEST_AGENTS, TIMEOUTS } from "../helpers/test-config";
 
 test.describe("S1: Onboarding — 2-Schritt Magic-Link-Flow", () => {
-  test("S1.1 — Registrierung via Invite-Code bis Magic-Link-Bestaetigung", async ({ browser }) => {
+  test("S1.1 — Registrierung via Invite-Code bis Magic-Link-Bestaetigung", async ({
+    browser,
+  }) => {
     const context = await browser.newContext({ locale: "de-DE" });
     const page = await context.newPage();
     const errors = createConsoleErrorCollector(page);
@@ -28,12 +30,14 @@ test.describe("S1: Onboarding — 2-Schritt Magic-Link-Flow", () => {
     await registerPage.assertOnStep(2);
     await registerPage.fillIdentity(
       TEST_AGENTS.nachbar_a.displayName,
-      TEST_AGENTS.nachbar_a.email
+      TEST_AGENTS.nachbar_a.email,
     );
 
     // Bestaetigung: Magic Link gesendet
     await registerPage.assertMagicLinkSent(TEST_AGENTS.nachbar_a.email);
-    console.log("[A] Magic Link Registrierung erfolgreich — Bestaetigung angezeigt");
+    console.log(
+      "[A] Magic Link Registrierung erfolgreich — Bestaetigung angezeigt",
+    );
 
     // Keine fatalen Konsolenfehler
     errors.stop();
@@ -42,7 +46,9 @@ test.describe("S1: Onboarding — 2-Schritt Magic-Link-Flow", () => {
     await context.close();
   });
 
-  test("S1.2 — Registrierung mit ungueltigem Invite-Code wird abgelehnt", async ({ page }) => {
+  test("S1.2 — Registrierung mit ungueltigem Invite-Code wird abgelehnt", async ({
+    page,
+  }) => {
     const registerPage = new RegisterPage(page);
     await registerPage.goto();
 
@@ -65,8 +71,14 @@ test.describe("S1: Onboarding — 2-Schritt Magic-Link-Flow", () => {
     await registerPage.assertEntryVisible();
 
     // Beschreibungstexte pruefen
-    await expect(page.getByText("Per Brief, Aushang oder von einem Nachbarn erhalten")).toBeVisible();
-    await expect(page.getByText("Über Adresse oder Standort dem nächsten Quartier beitreten")).toBeVisible();
+    await expect(
+      page.getByText("Per Brief, Aushang oder von einem Nachbarn erhalten"),
+    ).toBeVisible();
+    await expect(
+      page.getByText(
+        "Über Adresse oder Standort dem nächsten Quartier beitreten",
+      ),
+    ).toBeVisible();
   });
 
   test("S1.4 — Zurueck-Button kehrt zum Entry zurueck", async ({ page }) => {
@@ -112,58 +124,39 @@ test.describe("S1: Onboarding — 2-Schritt Magic-Link-Flow", () => {
     await context.close();
   });
 
-  test("S1.6 — Login: Magic Link als Standard", async ({ page }) => {
+  test("S1.6 — Login: Magic Link als einzige Option (Pilot)", async ({
+    page,
+  }) => {
     const loginPage = new LoginPage(page);
     await loginPage.goto();
     await loginPage.assertVisible();
 
-    // Magic-Link-Button ist sichtbar, Passwort-Feld NICHT
+    // Magic-Link-Button ist sichtbar, Passwort-Feld und -Link NICHT (PILOT_HIDE_PASSWORD_LOGIN)
     await expect(loginPage.sendMagicLinkButton).toBeVisible();
     await expect(loginPage.passwordInput).not.toBeVisible();
-
-    // Passwort-Fallback-Link ist vorhanden
-    await expect(loginPage.switchToPasswordLink).toBeVisible();
+    await expect(loginPage.switchToPasswordLink).not.toBeVisible();
   });
 
-  test("S1.7 — Login: Wechsel zwischen Magic Link und Passwort-Modus", async ({ page }) => {
+  test("S1.7 — Login: E-Mail-Feld und Magic-Link-Button funktionieren", async ({
+    page,
+  }) => {
     const loginPage = new LoginPage(page);
     await loginPage.goto();
 
-    // Standard: Magic-Link-Modus
-    await expect(loginPage.sendMagicLinkButton).toBeVisible();
-    await expect(loginPage.passwordInput).not.toBeVisible();
+    // E-Mail eingeben und pruefen
+    await loginPage.emailInput.fill("test@example.com");
+    await expect(loginPage.emailInput).toHaveValue("test@example.com");
 
-    // Zu Passwort wechseln
-    await loginPage.switchToPasswordMode();
-    await expect(loginPage.passwordSubmitButton).toBeVisible();
-    await expect(loginPage.passwordInput).toBeVisible();
-
-    // Zurueck zu Magic Link
-    await loginPage.switchToMagicLinkLink.click();
-    await expect(loginPage.sendMagicLinkButton).toBeVisible({
-      timeout: TIMEOUTS.elementVisible,
-    });
-    await expect(loginPage.passwordInput).not.toBeVisible();
+    // Magic-Link-Button ist klickbar
+    await expect(loginPage.sendMagicLinkButton).toBeEnabled();
   });
 
-  test("S1.8 — Login mit Passwort-Fallback funktioniert", async ({ browser }) => {
-    const context = await browser.newContext({ locale: "de-DE" });
-    const page = await context.newPage();
-
+  test("S1.8 — Login: Registrierungs-Link vorhanden", async ({ page }) => {
     const loginPage = new LoginPage(page);
     await loginPage.goto();
 
-    // Passwort-Login (fuer bestehende Tester mit Passwort)
-    await loginPage.loginWithPassword(
-      TEST_AGENTS.nachbar_a.email,
-      TEST_AGENTS.nachbar_a.password
-    );
-
-    // Weiterleitung zum Dashboard oder Welcome
-    await page.waitForURL(/\/(dashboard|welcome|senior)/, { timeout: TIMEOUTS.pageLoad });
-    console.log("[A] Passwort-Login erfolgreich →", page.url());
-
-    await context.close();
+    // Register-Link ist sichtbar
+    await expect(loginPage.registerLink).toBeVisible();
   });
 
   test("S1.9 — Navigation Login <-> Registrierung", async ({ page }) => {

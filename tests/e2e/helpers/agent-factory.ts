@@ -89,7 +89,8 @@ export async function createAgent(
 }
 
 /**
- * Agent einloggen via UI (Login-Formular).
+ * Agent einloggen via Supabase Auth API (direkter Token-Login).
+ * Umgeht PILOT_HIDE_PASSWORD_LOGIN — Passwort-UI ist im Pilot ausgeblendet.
  * Setzt voraus, dass der Account bereits existiert (via Seeding).
  */
 export async function loginAgent(agent: TestAgent): Promise<void> {
@@ -99,26 +100,60 @@ export async function loginAgent(agent: TestAgent): Promise<void> {
     `${prefix} Login als ${credentials.displayName} (${credentials.email})`,
   );
 
-  await page.goto("/login");
-  // Auf Hydration warten (Login-Seite zeigt Magic-Link als Standard)
-  await page.getByText("Anmelden", { exact: true }).first().waitFor({
-    state: "visible",
-    timeout: TIMEOUTS.pageLoad,
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+  if (!supabaseUrl || !supabaseAnonKey) {
+    throw new Error(
+      "NEXT_PUBLIC_SUPABASE_URL und NEXT_PUBLIC_SUPABASE_ANON_KEY muessen gesetzt sein",
+    );
+  }
+
+  // Direkt-Login via Supabase Auth API (umgeht UI-Einschraenkungen)
+  const res = await fetch(`${supabaseUrl}/auth/v1/token?grant_type=password`, {
+    method: "POST",
+    headers: {
+      apikey: supabaseAnonKey,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      email: credentials.email,
+      password: credentials.password,
+    }),
   });
-  await page
-    .waitForLoadState("networkidle", { timeout: TIMEOUTS.networkIdle })
-    .catch(() => {});
 
-  // Zum Passwort-Modus wechseln (Magic Link ist Standard seit v3)
-  await page.getByText("Stattdessen mit Passwort anmelden").click();
-  await page
-    .getByLabel("Passwort")
-    .waitFor({ state: "visible", timeout: TIMEOUTS.elementVisible });
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(`${prefix} Login fehlgeschlagen: ${res.status} ${text}`);
+  }
 
-  // Passwort-Login
-  await page.locator("#email-pw").fill(credentials.email);
-  await page.getByLabel("Passwort").fill(credentials.password);
-  await page.getByRole("button", { name: "Anmelden" }).click();
+  const session = await res.json();
+  if (!session.access_token) {
+    throw new Error(`${prefix} Kein Access-Token erhalten`);
+  }
+
+  // Session in den Browser injizieren via Supabase localStorage
+  await page.goto("/login");
+  await page.evaluate(
+    ({ url, aToken, rToken }) => {
+      const storageKey = `sb-${new URL(url).hostname.split(".")[0]}-auth-token`;
+      localStorage.setItem(
+        storageKey,
+        JSON.stringify({
+          access_token: aToken,
+          refresh_token: rToken,
+          token_type: "bearer",
+          expires_in: 3600,
+          expires_at: Math.floor(Date.now() / 1000) + 3600,
+        }),
+      );
+    },
+    {
+      url: supabaseUrl,
+      aToken: session.access_token,
+      rToken: session.refresh_token,
+    },
+  );
 
   // Auf Weiterleitung warten
   if (credentials.uiMode === "senior") {

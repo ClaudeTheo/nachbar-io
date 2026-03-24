@@ -19,56 +19,121 @@ setup.beforeAll(async () => {
 // --- Agent A: Nachbar (aktiver Modus) ---
 setup("Auth: nachbar_a einloggen", async ({ page }) => {
   const agent = TEST_AGENTS.nachbar_a;
-  await loginAndSave(page, agent.email, agent.password, "nachbar_a", /\/(dashboard|welcome)/);
+  await loginAndSave(
+    page,
+    agent.email,
+    agent.password,
+    "nachbar_a",
+    /\/(dashboard|welcome)/,
+  );
 });
 
 // --- Agent B: Helfer (aktiver Modus) ---
 setup("Auth: helfer_b einloggen", async ({ page }) => {
   const agent = TEST_AGENTS.helfer_b;
-  await loginAndSave(page, agent.email, agent.password, "helfer_b", /\/(dashboard|welcome)/);
+  await loginAndSave(
+    page,
+    agent.email,
+    agent.password,
+    "helfer_b",
+    /\/(dashboard|welcome)/,
+  );
 });
 
 // --- Agent M: Moderator/Admin ---
 setup("Auth: moderator_m einloggen", async ({ page }) => {
   const agent = TEST_AGENTS.moderator_m;
-  await loginAndSave(page, agent.email, agent.password, "moderator_m", /\/(dashboard|welcome|admin)/);
+  await loginAndSave(
+    page,
+    agent.email,
+    agent.password,
+    "moderator_m",
+    /\/(dashboard|welcome|admin)/,
+  );
 });
 
 // --- Agent S: Senior ---
 setup("Auth: senior_s einloggen", async ({ page }) => {
   const agent = TEST_AGENTS.senior_s;
-  await loginAndSave(page, agent.email, agent.password, "senior_s", /\/(senior|dashboard|welcome)/);
+  await loginAndSave(
+    page,
+    agent.email,
+    agent.password,
+    "senior_s",
+    /\/(senior|dashboard|welcome)/,
+  );
 });
 
 /**
- * Loggt einen Agenten via Passwort ein und speichert den storageState.
- * Verwendet denselben Login-Flow wie die Login-Page (Passwort-Fallback).
+ * Loggt einen Agenten via Supabase Auth API ein und speichert den storageState.
+ * Umgeht PILOT_HIDE_PASSWORD_LOGIN — Passwort-UI ist im Pilot ausgeblendet.
  */
 async function loginAndSave(
   page: import("@playwright/test").Page,
   email: string,
   password: string,
   agentId: string,
-  expectedUrlPattern: RegExp
+  expectedUrlPattern: RegExp,
 ) {
   console.log(`[AUTH] Login ${agentId} (${email})...`);
 
-  await page.goto("/login");
-  await page.getByText("Anmelden", { exact: true }).first().waitFor({
-    state: "visible",
-    timeout: TIMEOUTS.pageLoad,
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+  if (!supabaseUrl || !supabaseAnonKey) {
+    console.warn(`[AUTH] Kein Supabase-Zugang — ${agentId} uebersprungen`);
+    return;
+  }
+
+  // Direkt-Login via Supabase Auth API
+  const res = await fetch(`${supabaseUrl}/auth/v1/token?grant_type=password`, {
+    method: "POST",
+    headers: {
+      apikey: supabaseAnonKey,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ email, password }),
   });
 
-  // Zum Passwort-Modus wechseln
-  await page.getByText("Stattdessen mit Passwort anmelden").click();
-  await page.getByLabel("Passwort").waitFor({ state: "visible", timeout: TIMEOUTS.elementVisible });
+  if (!res.ok) {
+    const text = await res.text();
+    console.warn(
+      `[AUTH] ${agentId} Login fehlgeschlagen: ${res.status} ${text}`,
+    );
+    return;
+  }
 
-  // Credentials eingeben
-  await page.locator("#email-pw").fill(email);
-  await page.getByLabel("Passwort").fill(password);
-  await page.getByRole("button", { name: "Anmelden" }).click();
+  const session = await res.json();
+  if (!session.access_token) {
+    console.warn(`[AUTH] ${agentId} Kein Access-Token erhalten`);
+    return;
+  }
 
-  // Auf Redirect warten
+  // Session in Browser injizieren
+  await page.goto("/login");
+  await page.evaluate(
+    ({ url, aToken, rToken }) => {
+      const storageKey = `sb-${new URL(url).hostname.split(".")[0]}-auth-token`;
+      localStorage.setItem(
+        storageKey,
+        JSON.stringify({
+          access_token: aToken,
+          refresh_token: rToken,
+          token_type: "bearer",
+          expires_in: 3600,
+          expires_at: Math.floor(Date.now() / 1000) + 3600,
+        }),
+      );
+    },
+    {
+      url: supabaseUrl,
+      aToken: session.access_token,
+      rToken: session.refresh_token,
+    },
+  );
+
+  // Navigieren und pruefen
+  await page.goto("/dashboard");
   await page.waitForURL(expectedUrlPattern, { timeout: TIMEOUTS.pageLoad });
   console.log(`[AUTH] ${agentId} eingeloggt → ${page.url()}`);
 

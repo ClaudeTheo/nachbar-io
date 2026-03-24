@@ -85,6 +85,7 @@ jobs:
         run: npx playwright test --config=tests/e2e/playwright.config.ts --project=multi-agent --project=senior-terminal
         env:
           RESIDENT_HASH_SECRET: ci-test-secret-not-real
+          E2E_TEST_SECRET: e2e-test-secret-dev
 
       - name: Upload test report
         if: always()

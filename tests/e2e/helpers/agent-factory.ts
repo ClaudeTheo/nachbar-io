@@ -109,65 +109,37 @@ export async function loginAgent(agent: TestAgent): Promise<void> {
     );
   }
 
-  // Direkt-Login via Supabase Auth API (umgeht UI-Einschraenkungen)
-  const res = await fetch(`${supabaseUrl}/auth/v1/token?grant_type=password`, {
-    method: "POST",
-    headers: {
-      apikey: supabaseAnonKey,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
+  // Login via Test-API-Route (setzt Session-Cookies korrekt via Supabase Server-Client)
+  const baseURL = process.env.E2E_BASE_URL || "http://localhost:3000";
+  const testSecret = process.env.E2E_TEST_SECRET || "e2e-test-secret-dev";
+
+  // Erst eine Seite laden damit der Context Cookies empfangen kann
+  await page.goto("/login");
+
+  // Test-Login-API aufrufen — setzt Session-Cookies automatisch
+  const response = await page.request.post(`${baseURL}/api/test/login`, {
+    data: {
       email: credentials.email,
       password: credentials.password,
-    }),
+      secret: testSecret,
+    },
   });
 
-  if (!res.ok) {
-    const text = await res.text();
-    throw new Error(`${prefix} Login fehlgeschlagen: ${res.status} ${text}`);
+  if (!response.ok()) {
+    const text = await response.text();
+    throw new Error(
+      `${prefix} Test-Login fehlgeschlagen: ${response.status()} ${text}`,
+    );
   }
 
-  const session = await res.json();
-  if (!session.access_token) {
-    throw new Error(`${prefix} Kein Access-Token erhalten`);
-  }
+  const result = await response.json();
+  console.log(`${prefix} Test-Login OK → userId=${result.userId}`);
 
-  // Session via Cookies injizieren (Supabase SSR liest Cookies, nicht localStorage)
-  const projectRef = new URL(supabaseUrl).hostname.split(".")[0];
-  const cookieBase = `sb-${projectRef}-auth-token`;
-  const baseURL = process.env.E2E_BASE_URL || "http://localhost:3000";
-  const cookieDomain = new URL(baseURL).hostname;
+  // Zur Zielseite navigieren (Cookies aus dem API-Call sind im Context)
+  const target =
+    credentials.uiMode === "senior" ? "/senior/home" : "/dashboard";
+  await page.goto(target);
 
-  // Supabase SSR @supabase/ssr chunkt die Session als URL-encoded JSON
-  const sessionPayload = JSON.stringify({
-    access_token: session.access_token,
-    refresh_token: session.refresh_token,
-    token_type: "bearer",
-    expires_in: session.expires_in || 3600,
-    expires_at: session.expires_at || Math.floor(Date.now() / 1000) + 3600,
-    user: session.user,
-  });
-
-  // Chunks: max ~3500 Zeichen pro Cookie (URL-encoded JSON, NICHT base64)
-  const chunkSize = 3500;
-  const chunks: string[] = [];
-  for (let i = 0; i < sessionPayload.length; i += chunkSize) {
-    chunks.push(sessionPayload.slice(i, i + chunkSize));
-  }
-
-  const cookieEntries = chunks.map((chunk, i) => ({
-    name: chunks.length === 1 ? cookieBase : `${cookieBase}.${i}`,
-    value: chunk,
-    domain: cookieDomain,
-    path: "/",
-    httpOnly: false,
-    secure: false,
-    sameSite: "Lax" as const,
-  }));
-
-  await agent.context.addCookies(cookieEntries);
-
-  // Auf Weiterleitung warten
   if (credentials.uiMode === "senior") {
     await page.waitForURL("**/senior/**", { timeout: TIMEOUTS.pageLoad });
   } else {

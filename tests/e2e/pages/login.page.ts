@@ -31,14 +31,20 @@ export class LoginPage {
 
     // Magic Link
     this.emailInput = page.getByLabel("E-Mail-Adresse").first();
-    this.sendMagicLinkButton = page.getByRole("button", { name: "Anmelde-Code senden" });
-    this.switchToPasswordLink = page.getByText("Stattdessen mit Passwort anmelden");
+    this.sendMagicLinkButton = page.getByRole("button", {
+      name: "Anmelde-Code senden",
+    });
+    this.switchToPasswordLink = page.getByText(
+      "Stattdessen mit Passwort anmelden",
+    );
 
     // Passwort
     this.passwordEmailInput = page.locator("#email-pw");
     this.passwordInput = page.getByLabel("Passwort");
     this.passwordSubmitButton = page.getByRole("button", { name: "Anmelden" });
-    this.switchToMagicLinkLink = page.getByText("Stattdessen Anmelde-Code per E-Mail erhalten");
+    this.switchToMagicLinkLink = page.getByText(
+      "Stattdessen Anmelde-Code per E-Mail erhalten",
+    );
 
     // Bestaetigung
     this.magicLinkSentHeading = page.getByText("Link gesendet!");
@@ -52,7 +58,14 @@ export class LoginPage {
 
   async goto() {
     await this.page.goto("/login");
-    await this.heading.waitFor({ state: "visible", timeout: TIMEOUTS.pageLoad });
+    await this.heading.waitFor({
+      state: "visible",
+      timeout: TIMEOUTS.pageLoad,
+    });
+    // Auf React-Hydration warten (Event-Handler muessen angebunden sein)
+    await this.page
+      .waitForLoadState("networkidle", { timeout: TIMEOUTS.networkIdle })
+      .catch(() => {});
   }
 
   // Magic Link senden (Standard-Login)
@@ -71,7 +84,10 @@ export class LoginPage {
   // Zum Passwort-Modus wechseln
   async switchToPasswordMode() {
     await this.switchToPasswordLink.click();
-    await this.passwordInput.waitFor({ state: "visible", timeout: TIMEOUTS.elementVisible });
+    await this.passwordInput.waitFor({
+      state: "visible",
+      timeout: TIMEOUTS.elementVisible,
+    });
   }
 
   // Passwort-Login (Fallback)
@@ -85,7 +101,9 @@ export class LoginPage {
   // Passwort-Login + Redirect zum Dashboard abwarten
   async loginAndWaitForDashboard(email: string, password: string) {
     await this.loginWithPassword(email, password);
-    await this.page.waitForURL("**/dashboard**", { timeout: TIMEOUTS.pageLoad });
+    await this.page.waitForURL("**/dashboard**", {
+      timeout: TIMEOUTS.pageLoad,
+    });
     await waitForStableUI(this.page);
   }
 
@@ -105,7 +123,9 @@ export class LoginPage {
 
   // Fehlermeldung pruefen
   async assertError(pattern: string | RegExp) {
-    await expect(this.errorMessage).toBeVisible({ timeout: TIMEOUTS.elementVisible });
+    await expect(this.errorMessage).toBeVisible({
+      timeout: TIMEOUTS.elementVisible,
+    });
     if (typeof pattern === "string") {
       await expect(this.errorMessage).toContainText(pattern);
     } else {

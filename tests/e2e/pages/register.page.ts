@@ -53,10 +53,14 @@ export class RegisterPage {
     // Identity
     this.displayNameInput = page.getByLabel("Anzeigename");
     this.emailInput = page.getByLabel("E-Mail-Adresse");
-    this.sendMagicLinkButton = page.getByRole("button", { name: "Anmelde-Code senden" });
+    this.sendMagicLinkButton = page.getByRole("button", {
+      name: "Anmelde-Code senden",
+    });
 
     // Bestaetigung
-    this.resendLinkButton = page.getByRole("button", { name: "Link erneut senden" });
+    this.resendLinkButton = page.getByRole("button", {
+      name: "Link erneut senden",
+    });
     this.confirmationIcon = page.locator(".bg-quartier-green\\/10");
 
     // Allgemein
@@ -72,6 +76,20 @@ export class RegisterPage {
       state: "visible",
       timeout: TIMEOUTS.pageLoad,
     });
+    // Auf React-Hydration warten: Buttons muessen klickbare Event-Handler haben
+    await this.page
+      .waitForFunction(
+        () =>
+          document
+            .querySelector("[data-reactroot], #__next")
+            ?.querySelector("button") !== null,
+        { timeout: TIMEOUTS.pageLoad },
+      )
+      .catch(() => {});
+    // Sicherheitspause fuer Event-Handler-Anbindung
+    await this.page
+      .waitForLoadState("networkidle", { timeout: TIMEOUTS.networkIdle })
+      .catch(() => {});
   }
 
   // Pruefen, auf welchem Schritt wir sind (1 oder 2)
@@ -84,13 +102,19 @@ export class RegisterPage {
   // Entry: Pfad "Einladungscode" waehlen
   async chooseInviteCodePath() {
     await this.inviteCodePathButton.click();
-    await this.inviteCodeInput.waitFor({ state: "visible", timeout: TIMEOUTS.elementVisible });
+    await this.inviteCodeInput.waitFor({
+      state: "visible",
+      timeout: TIMEOUTS.elementVisible,
+    });
   }
 
   // Entry: Pfad "Quartier finden" waehlen
   async chooseAddressPath() {
     await this.addressPathButton.click();
-    await this.addressSearchInput.waitFor({ state: "visible", timeout: TIMEOUTS.elementVisible });
+    await this.addressSearchInput.waitFor({
+      state: "visible",
+      timeout: TIMEOUTS.elementVisible,
+    });
   }
 
   // Invite-Code eingeben und pruefen
@@ -101,7 +125,10 @@ export class RegisterPage {
 
   // Identity: Name + E-Mail eingeben und Magic Link senden
   async fillIdentity(displayName: string, email: string) {
-    await this.displayNameInput.waitFor({ state: "visible", timeout: TIMEOUTS.elementVisible });
+    await this.displayNameInput.waitFor({
+      state: "visible",
+      timeout: TIMEOUTS.elementVisible,
+    });
     await this.displayNameInput.fill(displayName);
     await this.emailInput.fill(email);
     await this.sendMagicLinkButton.click();
@@ -130,13 +157,17 @@ export class RegisterPage {
 
   // Invite-Code Fehlermeldung pruefen
   async assertInviteCodeError() {
-    await expect(this.errorMessage).toBeVisible({ timeout: TIMEOUTS.elementVisible });
+    await expect(this.errorMessage).toBeVisible({
+      timeout: TIMEOUTS.elementVisible,
+    });
     await expect(this.errorMessage).toContainText(/ungültig|Einladungscode/i);
   }
 
   // Allgemeine Fehlermeldung pruefen
   async assertError(pattern: string | RegExp) {
-    await expect(this.errorMessage).toBeVisible({ timeout: TIMEOUTS.elementVisible });
+    await expect(this.errorMessage).toBeVisible({
+      timeout: TIMEOUTS.elementVisible,
+    });
     if (typeof pattern === "string") {
       await expect(this.errorMessage).toContainText(pattern);
     } else {
@@ -146,7 +177,9 @@ export class RegisterPage {
 
   // Entry-Ansicht pruefen (beide Pfade sichtbar)
   async assertEntryVisible() {
-    await expect(this.inviteCodePathButton).toBeVisible({ timeout: TIMEOUTS.elementVisible });
+    await expect(this.inviteCodePathButton).toBeVisible({
+      timeout: TIMEOUTS.elementVisible,
+    });
     await expect(this.addressPathButton).toBeVisible();
   }
 }

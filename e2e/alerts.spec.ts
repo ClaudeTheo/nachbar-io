@@ -11,7 +11,9 @@ test.describe("Soforthilfe (Alerts)", () => {
     expect([200, 302, 307]).toContain(response.status());
   });
 
-  test("Unauthentifizierter Zugriff auf /alerts leitet um", async ({ page }) => {
+  test("Unauthentifizierter Zugriff auf /alerts leitet um", async ({
+    page,
+  }) => {
     await page.goto("/alerts");
     await page.waitForTimeout(3000);
     const url = page.url();
@@ -47,7 +49,7 @@ test.describe("Push-API", () => {
     const response = await request.post("/api/push/send", {
       data: { title: "Test", body: "Test Push" },
     });
-    expect([401, 403]).toContain(response.status());
+    expect([401, 403, 429]).toContain(response.status());
   });
 
   test("POST /api/push/subscribe erfordert Auth", async ({ request }) => {

@@ -13,27 +13,20 @@ test.describe("Navigation & Öffentliche Seiten", () => {
     await expect(emailInput).toBeVisible({ timeout: 10000 });
     await expect(emailInput).toHaveAttribute("type", "email");
 
-    // Passwort-Feld
-    const passwordInput = page.getByLabel("Passwort");
-    await expect(passwordInput).toBeVisible();
-    await expect(passwordInput).toHaveAttribute("type", "password");
-
-    // Submit-Button
-    await expect(page.getByRole("button", { name: "Anmelden" })).toBeVisible();
+    // v3: Magic-Link-only — kein Passwort-Feld, stattdessen Anmelde-Code-Button
+    await expect(
+      page.getByRole("button", { name: /Anmelde-Code senden/ }),
+    ).toBeVisible();
   });
 
   test("Registrierungsschritte navigieren korrekt", async ({ page }) => {
     await page.goto("/register");
 
-    // Schritt 1: E-Mail & Passwort
-    await expect(page.getByText("Schritt 1 von 5")).toBeVisible({ timeout: 10000 });
-    await page.getByLabel("E-Mail-Adresse").fill("test@beispiel.de");
-    await page.getByLabel("Passwort").fill("sicherespasswort123");
-    await page.getByRole("button", { name: "Weiter" }).click();
-
-    // Schritt 2: Verifizierungsmethode waehlen
-    await expect(page.getByText("Schritt 2 von 5")).toBeVisible();
-    await expect(page.getByText(/Einladungscode eingeben/)).toBeVisible();
-    await expect(page.getByText(/Adresse manuell angeben/)).toBeVisible();
+    // Schritt 1: Einstieg (Einladungscode oder Quartier finden)
+    await expect(page.getByText("Schritt 1 von 2")).toBeVisible({
+      timeout: 10000,
+    });
+    await expect(page.getByText(/Einladungscode/)).toBeVisible();
+    await expect(page.getByText(/Quartier finden/)).toBeVisible();
   });
 });

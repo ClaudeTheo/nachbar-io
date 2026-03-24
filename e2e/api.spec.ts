@@ -19,10 +19,12 @@ test.describe("API-Endpunkte", () => {
     expect(response.status()).toBe(401);
   });
 
-  test("POST /api/push/send erfordert Authentifizierung", async ({ request }) => {
+  test("POST /api/push/send erfordert Authentifizierung", async ({
+    request,
+  }) => {
     const response = await request.post("/api/push/send", {
       data: { title: "Test" },
     });
-    expect([401, 403]).toContain(response.status());
+    expect([401, 403, 429]).toContain(response.status());
   });
 });

@@ -21,15 +21,22 @@ test.describe("Dashboard UI-Elemente (Landing Page Fallback)", () => {
     await expect(page.getByText(/digitaler Dorfplatz/i)).toBeVisible();
   });
 
-  test("Landing-Page zeigt Quartier-Strassen", async ({ page }) => {
+  test("Landing-Page zeigt Quartier-Hinweis", async ({ page }) => {
     await page.goto("/");
-    await expect(page.getByText(/Purkersdorfer/)).toBeVisible({ timeout: 10000 });
+    // Landing-Page hat allgemeinen Quartier-Hinweis (keine Strassen mehr)
+    await expect(page.getByText(/Bewohner des Quartiers/)).toBeVisible({
+      timeout: 10000,
+    });
   });
 
   test("Landing-Page hat Navigationslinks", async ({ page }) => {
     await page.goto("/");
-    await expect(page.getByRole("link", { name: "Anmelden" })).toBeVisible({ timeout: 10000 });
-    await expect(page.getByRole("link", { name: "Registrieren" })).toBeVisible();
+    await expect(page.getByRole("link", { name: "Anmelden" })).toBeVisible({
+      timeout: 10000,
+    });
+    await expect(
+      page.getByRole("link", { name: "Registrieren" }),
+    ).toBeVisible();
     await expect(page.getByRole("link", { name: "Impressum" })).toBeVisible();
     await expect(page.getByRole("link", { name: "Datenschutz" })).toBeVisible();
   });

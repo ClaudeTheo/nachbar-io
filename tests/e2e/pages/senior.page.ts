@@ -7,50 +7,53 @@ export class SeniorHomePage {
   readonly page: Page;
   readonly greeting: Locator;
   readonly helpButton: Locator;
-  readonly medicationsButton: Locator;
+  readonly newsButton: Locator;
   readonly checkinButton: Locator;
-  readonly sprechstundeButton: Locator;
+  readonly contactButton: Locator;
   readonly switchModeButton: Locator;
 
   constructor(page: Page) {
     this.page = page;
-    // Senior-Home hat keine Begruessung, sondern Uhrzeit/Datum
-    this.greeting = page.locator("[data-testid='senior-greeting']").or(
-      page.getByText(/Guten Tag|Guten Morgen|Guten Abend/i).first().or(
-        // Fallback: Datum-Anzeige als Lebenszeichen der Seite
-        page.locator(".text-4xl.font-bold").first()
-      )
-    );
-    // 4 Haupt-Buttons auf der Senior-Startseite
-    this.helpButton = page.getByText("Ich brauche Hilfe");
-    this.medicationsButton = page.getByText("Medikamente");
-    this.checkinButton = page.getByText("Mir geht es gut");
-    this.sprechstundeButton = page.getByText("Sprechstunde");
+    this.greeting = page
+      .locator("[data-testid='senior-greeting']")
+      .or(page.getByText(/Guten Tag|Guten Morgen|Guten Abend/i).first());
+    this.helpButton = page
+      .locator("[data-testid='senior-help-button']")
+      .or(page.getByText("Hilfe anfragen"));
+    this.newsButton = page
+      .locator("[data-testid='senior-news-button']")
+      .or(page.getByText("Nachrichten"));
+    this.checkinButton = page
+      .locator("[data-testid='senior-checkin-button']")
+      .or(page.getByText("Alles in Ordnung"));
+    this.contactButton = page
+      .locator("[data-testid='senior-contact-button']")
+      .or(page.getByText("Nachbarn kontaktieren"));
     this.switchModeButton = page.getByText("Zum normalen Modus");
   }
 
   async goto() {
-    // Route ist /senior (nicht /senior/home)
-    await this.page.goto("/senior");
+    await this.page.goto("/senior/home");
     await waitForStableUI(this.page);
   }
 
   async assertLoaded() {
     await expect(this.page).toHaveURL(/\/senior/);
-    // Warte auf Uhrzeit-Anzeige als Indikator dass Seite geladen ist
     await expect(this.greeting).toBeVisible({ timeout: TIMEOUTS.pageLoad });
   }
 
   async assertAllButtonsVisible() {
     await expect(this.helpButton).toBeVisible();
-    await expect(this.medicationsButton).toBeVisible();
+    await expect(this.newsButton).toBeVisible();
     await expect(this.checkinButton).toBeVisible();
-    await expect(this.sprechstundeButton).toBeVisible();
+    await expect(this.contactButton).toBeVisible();
   }
 
   /** Prueft ob Buttons mindestens 80px hoch sind (Senior-Accessibility) */
   async assertTouchTargetSize() {
-    const buttons = this.page.locator("button[style*='min-height'], a[style*='min-height']");
+    const buttons = this.page.locator(
+      "[data-testid^='senior-'] button, .senior-button",
+    );
     const count = await buttons.count();
 
     for (let i = 0; i < count; i++) {
@@ -63,17 +66,23 @@ export class SeniorHomePage {
 
   async clickHelp() {
     await this.helpButton.click();
-    await this.page.waitForURL("**/sos**", { timeout: TIMEOUTS.pageLoad });
+    await this.page.waitForURL("**/senior/help**", {
+      timeout: TIMEOUTS.pageLoad,
+    });
   }
 
   async clickCheckin() {
     await this.checkinButton.click();
-    await this.page.waitForURL("**/checkin**", { timeout: TIMEOUTS.pageLoad });
+    await this.page.waitForURL("**/senior/checkin**", {
+      timeout: TIMEOUTS.pageLoad,
+    });
   }
 
-  async clickMedications() {
-    await this.medicationsButton.click();
-    await this.page.waitForURL("**/medications**", { timeout: TIMEOUTS.pageLoad });
+  async clickNews() {
+    await this.newsButton.click();
+    await this.page.waitForURL("**/senior/news**", {
+      timeout: TIMEOUTS.pageLoad,
+    });
   }
 }
 
@@ -86,18 +95,21 @@ export class SeniorCheckinPage {
 
   constructor(page: Page) {
     this.page = page;
-    this.okButton = page.getByText(/Mir geht es gut/i).first().or(
-      page.locator("[data-testid='checkin-ok']")
-    );
-    this.notWellButton = page.getByText(/Nicht so gut/i).first().or(
-      page.locator("[data-testid='checkin-not-well']")
-    );
-    this.needHelpButton = page.getByText(/Brauche Hilfe/i).first().or(
-      page.locator("[data-testid='checkin-need-help']")
-    );
-    this.confirmMessage = page.locator("[data-testid='checkin-confirmed']").or(
-      page.getByText(/Danke|bestätigt|erfolgreich/i)
-    );
+    this.okButton = page
+      .getByText(/Mir geht es gut/i)
+      .first()
+      .or(page.locator("[data-testid='checkin-ok']"));
+    this.notWellButton = page
+      .getByText(/Nicht so gut/i)
+      .first()
+      .or(page.locator("[data-testid='checkin-not-well']"));
+    this.needHelpButton = page
+      .getByText(/Brauche Hilfe/i)
+      .first()
+      .or(page.locator("[data-testid='checkin-need-help']"));
+    this.confirmMessage = page
+      .locator("[data-testid='checkin-confirmed']")
+      .or(page.getByText(/Danke|bestätigt|erfolgreich/i));
   }
 
   async goto() {
@@ -113,7 +125,9 @@ export class SeniorCheckinPage {
   async assertCheckinConfirmed() {
     // Erfolgsbestaetigung oder Weiterleitung
     await expect(
-      this.confirmMessage.or(this.page.getByText(/bestätigt|danke|erfolgreich/i))
+      this.confirmMessage.or(
+        this.page.getByText(/bestätigt|danke|erfolgreich/i),
+      ),
     ).toBeVisible({ timeout: TIMEOUTS.elementVisible });
   }
 }
@@ -126,9 +140,9 @@ export class SeniorHelpPage {
   constructor(page: Page) {
     this.page = page;
     this.callButton = page.locator("[data-testid='senior-call']");
-    this.sosButton = page.locator("[data-testid='senior-sos']").or(
-      page.getByText(/SOS|Notruf|Notfall/i)
-    );
+    this.sosButton = page
+      .locator("[data-testid='senior-sos']")
+      .or(page.getByText(/SOS|Notruf|Notfall/i));
   }
 
   async goto() {

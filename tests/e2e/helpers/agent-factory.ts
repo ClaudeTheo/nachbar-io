@@ -157,7 +157,7 @@ export async function loginAgent(agent: TestAgent): Promise<void> {
 
   // Zur Zielseite navigieren (Cookies aus dem API-Call sind im Context)
   const target =
-    credentials.uiMode === "senior" ? "/senior" : "/dashboard";
+    credentials.uiMode === "senior" ? "/senior/home" : "/dashboard";
   await page.goto(target);
 
   if (credentials.uiMode === "senior") {

@@ -46,46 +46,49 @@ test.describe("S5: Senioren-Terminal Komplett-Test", () => {
     await withAgent(agentS, "Navigation pruefen", async ({ page }) => {
       const errors = createConsoleErrorCollector(page);
 
-      // Senior-Home (Route ist /senior, nicht /senior)
-      await page.goto("/senior");
+      // Senior-Home
+      await page.goto("/senior/home");
       await waitForStableUI(page);
-      await expect(page).toHaveURL(/\/senior/);
-      console.log("[S] → /senior OK");
+      await expect(page).toHaveURL(/\/senior\/home/);
+      console.log("[S] → /senior/home OK");
 
-      // Medikamente
-      const medsButton = page.getByText("Medikamente").first();
-      await medsButton.click();
-      await page.waitForURL("**/medications**", { timeout: TIMEOUTS.pageLoad });
+      // Nachrichten
+      const newsButton = page.getByText("Nachrichten").or(
+        page.locator("[data-testid='senior-news-button']")
+      );
+      await newsButton.click();
+      await page.waitForURL("**/senior/news**", { timeout: TIMEOUTS.pageLoad });
       await waitForStableUI(page);
-      console.log("[S] → /medications OK");
+      console.log("[S] → /senior/news OK");
 
       // Zurueck zu Home
       await page.goBack();
       await waitForStableUI(page);
 
-      // Check-in (Mir geht es gut)
-      const checkinButton = page.getByText("Mir geht es gut").first();
+      // Check-in
+      const checkinButton = page.getByText("Alles in Ordnung").or(
+        page.locator("[data-testid='senior-checkin-button']")
+      );
       await checkinButton.click();
-      await page.waitForURL("**/checkin**", { timeout: TIMEOUTS.pageLoad });
+      await page.waitForURL("**/senior/checkin**", { timeout: TIMEOUTS.pageLoad });
       await waitForStableUI(page);
-      console.log("[S] → /checkin OK");
+      console.log("[S] → /senior/checkin OK");
 
       // Zurueck zu Home
       await page.goBack();
       await waitForStableUI(page);
 
-      // SOS (Ich brauche Hilfe)
-      const helpButton = page.getByText("Ich brauche Hilfe").first();
+      // Hilfe anfragen
+      const helpButton = page.getByText("Hilfe anfragen").or(
+        page.locator("[data-testid='senior-help-button']")
+      );
       await helpButton.click();
-      await page.waitForURL("**/sos**", { timeout: TIMEOUTS.pageLoad });
+      await page.waitForURL("**/senior/help**", { timeout: TIMEOUTS.pageLoad });
       await waitForStableUI(page);
-      console.log("[S] → /sos OK");
+      console.log("[S] → /senior/help OK");
 
       errors.stop();
-      const criticalErrors = errors.errors.filter(
-        (e) => !e.includes("hydration") && !e.includes("Warning:")
-      );
-      expect(criticalErrors).toHaveLength(0);
+      expect(errors.errors).toHaveLength(0);
     });
   });
 
@@ -94,8 +97,8 @@ test.describe("S5: Senioren-Terminal Komplett-Test", () => {
       const checkinPage = new SeniorCheckinPage(page);
       await checkinPage.goto();
 
-      // "Mir geht es gut" Button klicken
-      const okButton = page.getByText(/Mir geht es gut/i).first().or(
+      // "Alles gut" / "In Ordnung" Button klicken
+      const okButton = page.getByText(/Alles gut|in Ordnung|Mir geht es gut/i).or(
         page.locator("[data-testid='checkin-ok']")
       );
       if (await okButton.isVisible().catch(() => false)) {
@@ -116,7 +119,7 @@ test.describe("S5: Senioren-Terminal Komplett-Test", () => {
 
   test("S5.4 — Touch-Target Groesse: Mindestens 76px", async () => {
     await withAgent(agentS, "Touch-Targets pruefen", async ({ page }) => {
-      await page.goto("/senior");
+      await page.goto("/senior/home");
       await waitForStableUI(page);
 
       // Alle interaktiven Elemente auf der Senior-Seite pruefen
@@ -144,7 +147,7 @@ test.describe("S5: Senioren-Terminal Komplett-Test", () => {
   test("S5.5 — Betreuer kann Dashboard normal nutzen, waehrend Senior in Senior-UI ist", async () => {
     // Parallel: Senior und Betreuer nutzen verschiedene UIs
     await withAgent(agentS, "Senior-UI", async ({ page }) => {
-      await page.goto("/senior");
+      await page.goto("/senior/home");
       await waitForStableUI(page);
       await expect(page).toHaveURL(/\/senior/);
       console.log("[S] Senior in Senior-UI");
@@ -164,7 +167,7 @@ test.describe("S5: Senioren-Terminal Komplett-Test", () => {
 
   test("S5.6 — Senior kann zum normalen Modus wechseln", async () => {
     await withAgent(agentS, "Modus-Wechsel", async ({ page }) => {
-      await page.goto("/senior");
+      await page.goto("/senior/home");
       await waitForStableUI(page);
 
       // "Zum normalen Modus" Button

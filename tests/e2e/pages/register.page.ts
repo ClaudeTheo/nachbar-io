@@ -46,7 +46,9 @@ export class RegisterPage {
     this.checkCodeButton = page.getByRole("button", { name: "Code prüfen" });
 
     // Adresse
-    this.addressSearchInput = page.getByLabel("Adresse");
+    this.addressSearchInput = page.getByPlaceholder(/Straße eingeben/i).or(
+      page.getByLabel("Straße")
+    );
     this.geoDetectButton = page.getByText("Standort automatisch erkennen");
     this.addressNextButton = page.getByRole("button", { name: "Weiter" });
 
@@ -57,9 +59,9 @@ export class RegisterPage {
       name: "Anmelde-Code senden",
     });
 
-    // Bestaetigung
+    // Bestaetigung (OTP-Code-Eingabe)
     this.resendLinkButton = page.getByRole("button", {
-      name: "Link erneut senden",
+      name: /Code erneut senden/,
     });
     this.confirmationIcon = page.locator(".bg-quartier-green\\/10");
 
@@ -134,9 +136,10 @@ export class RegisterPage {
     await this.sendMagicLinkButton.click();
   }
 
-  // Pruefen, dass Magic-Link-Bestaetigung angezeigt wird
+  // Pruefen, dass OTP-Code-Eingabe angezeigt wird (Magic-Link-Bestaetigung)
   async assertMagicLinkSent(email: string) {
-    await expect(this.page.getByText("Fast geschafft!")).toBeVisible({
+    // OTP-Seite zeigt "Wir haben einen Code an ... gesendet"
+    await expect(this.page.getByText("Wir haben einen Code an")).toBeVisible({
       timeout: TIMEOUTS.elementVisible,
     });
     await expect(this.page.getByText(email)).toBeVisible();

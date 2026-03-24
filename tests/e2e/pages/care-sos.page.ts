@@ -21,13 +21,13 @@ export class CareSosNewPage {
   constructor(page: Page) {
     this.page = page;
     this.heading = page.getByText("Was brauchen Sie?");
-    this.medicalEmergencyButton = page.getByText("Medizinischer Notfall");
+    this.medicalEmergencyButton = page.getByText("Dringende Hilfe benötigt");
     this.generalHelpButton = page.getByText("Allgemeine Hilfe");
     this.visitWantedButton = page.getByText("Besuch gewuenscht");
     this.shoppingButton = page.getByText("Einkauf / Besorgung");
-    this.medicationHelpButton = page.getByText("Medikamentenhilfe");
+    this.medicationHelpButton = page.getByText("Erinnerungshilfe");
     this.emergencyBanner = page.locator("[role='alertdialog']").or(
-      page.getByText("Notruf zuerst!")
+      page.getByText("Wichtiger Hinweis")
     );
     this.emergencyCall112 = page.locator("a[href='tel:112']");
     this.emergencyCall110 = page.locator("a[href='tel:110']");

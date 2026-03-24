@@ -84,7 +84,7 @@ test.describe("S6: Permission / Privacy Grenzen", () => {
     await page.goto("/register");
     await waitForStableUI(page);
     await expect(page).toHaveURL(/\/register/);
-    await expect(page.getByText("Registrieren")).toBeVisible();
+    await expect(page.getByText("Willkommen bei QuartierApp")).toBeVisible();
     console.log("[X] /register → oeffentlich ✓");
   });
 

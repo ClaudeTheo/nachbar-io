@@ -56,12 +56,12 @@ export class HelpNewPage {
 
   constructor(page: Page) {
     this.page = page;
-    this.needButton = page.getByText("Ich suche Hilfe");
-    this.offerButton = page.getByText("Ich biete Hilfe");
-    this.titleInput = page.locator("[data-testid='help-title-input']");
-    this.descriptionInput = page.locator("[data-testid='help-description-input']");
+    this.needButton = page.getByText("Hilfe suchen");
+    this.offerButton = page.getByText("Hilfe anbieten");
+    this.titleInput = page.getByLabel(/Titel/i);
+    this.descriptionInput = page.getByLabel(/Beschreibung/i);
     this.submitButton = page.getByRole("button", { name: /veröffentlichen|absenden|erstellen/i });
-    this.categoryButtons = page.locator("[data-testid='help-category']");
+    this.categoryButtons = page.locator("button").filter({ hasText: /Garten|Einkaufen|Fahrdienst|IT|Kinderbetreuung|Handwerk|Tierbetreuung|Nachhilfe|Gesellschaft|Paketannahme|Sonstiges/i });
   }
 
   async goto() {

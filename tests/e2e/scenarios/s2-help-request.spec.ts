@@ -34,38 +34,24 @@ test.describe("S2: Hilfe-Anfrage → Zustellung → Annahme", () => {
       await waitForStableUI(page);
 
       // Typ: "Ich suche Hilfe"
-      const needButton = page.getByText("Ich suche Hilfe").or(
+      const needButton = page.getByText("Hilfe suchen").or(
         page.locator("[data-testid='help-type-need']")
       );
       await needButton.click();
       await page.waitForTimeout(500);
 
-      // Erste Kategorie waehlen (z.B. Einkauf)
-      const categoryButton = page.locator("[data-testid='help-category']").first().or(
-        page.locator("button").filter({ hasText: /einkauf|haushalt|garten/i }).first()
-      );
+      // Erste Kategorie waehlen (z.B. Einkaufen)
+      const categoryButton = page.locator("button").filter({ hasText: /Einkaufen/i }).first();
       await categoryButton.click();
       await page.waitForTimeout(500);
 
-      // Unterkategorie: erste Option oder Skip
-      const subcatButton = page.locator("[data-testid='help-subcategory']").first();
-      if (await subcatButton.isVisible().catch(() => false)) {
-        await subcatButton.click();
-        await page.waitForTimeout(500);
-      }
-
-      // Titel anpassen
-      const titleInput = page.getByLabel(/Titel/i).or(
-        page.locator("[data-testid='help-title-input']").or(page.locator("input[type='text']").first())
-      );
-      if (await titleInput.isVisible().catch(() => false)) {
-        await titleInput.fill(testTitle);
-      }
+      // Titel eingeben (auf Details-Schritt)
+      const titleInput = page.getByLabel(/Titel/i);
+      await titleInput.waitFor({ state: "visible", timeout: TIMEOUTS.elementVisible });
+      await titleInput.fill(testTitle);
 
       // Beschreibung
-      const descInput = page.getByLabel(/Beschreibung|Details/i).or(
-        page.locator("[data-testid='help-description-input']").or(page.locator("textarea").first())
-      );
+      const descInput = page.getByLabel(/Beschreibung/i);
       if (await descInput.isVisible().catch(() => false)) {
         await descInput.fill("Ich brauche Hilfe beim Einkaufen. Circa 30 Minuten.");
       }
@@ -110,30 +96,21 @@ test.describe("S2: Hilfe-Anfrage → Zustellung → Annahme", () => {
       await page.goto("/help/new");
       await waitForStableUI(page);
 
-      const needButton = page.getByText("Ich suche Hilfe").or(
+      const needButton = page.getByText("Hilfe suchen").or(
         page.locator("[data-testid='help-type-need']")
       );
       await needButton.click();
       await page.waitForTimeout(500);
 
-      // Erste Kategorie
-      const categoryButton = page.locator("button").filter({ hasText: /einkauf|haushalt|garten/i }).first().or(
-        page.locator("[data-testid='help-category']").first()
-      );
+      // Erste Kategorie (Einkaufen hat keine Unterkategorien → direkt zu Details)
+      const categoryButton = page.locator("button").filter({ hasText: /Einkaufen/i }).first();
       await categoryButton.click();
       await page.waitForTimeout(500);
 
-      // Subcategory skip
-      const subcatButton = page.locator("[data-testid='help-subcategory']").first();
-      if (await subcatButton.isVisible().catch(() => false)) {
-        await subcatButton.click();
-        await page.waitForTimeout(500);
-      }
-
-      const titleInput = page.getByLabel(/Titel/i).or(page.locator("input[type='text']").first());
-      if (await titleInput.isVisible().catch(() => false)) {
-        await titleInput.fill(testTitle);
-      }
+      // Titel eingeben (auf Details-Schritt)
+      const titleInput = page.getByLabel(/Titel/i);
+      await titleInput.waitFor({ state: "visible", timeout: TIMEOUTS.elementVisible });
+      await titleInput.fill(testTitle);
 
       const submitBtn = page.getByRole("button", { name: /veröffentlichen|absenden|erstellen/i });
       await submitBtn.click();

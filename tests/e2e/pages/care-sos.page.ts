@@ -48,26 +48,14 @@ export class CareSosNewPage {
     // Debug: URL und Session-Status vor Assert loggen
     console.log(`[SOS] URL vor assertLoaded: ${this.page.url()}`);
 
-    // Supabase-Session im Browser pruefen
+    // Seiteninhalt pruefen um zu sehen was tatsaechlich gerendert wird
     const sessionCheck = await this.page
-      .evaluate(async () => {
-        try {
-          // @ts-expect-error: Supabase-Client ist global verfuegbar
-          const { createClient } =
-            await import("/node_modules/@supabase/ssr/dist/index.mjs").catch(
-              () => ({}),
-            );
-          if (!createClient) return { error: "import fehlgeschlagen" };
-        } catch {
-          /* ignore */
-        }
-
-        // Fallback: Cookie direkt pruefen
+      .evaluate(() => {
         const sbCookies = document.cookie
           .split(";")
           .filter((c) => c.trim().startsWith("sb-"));
         const pageContent =
-          document.body?.innerText?.substring(0, 200) || "leer";
+          document.body?.innerText?.substring(0, 300) || "leer";
         return {
           cookieCount: sbCookies.length,
           cookieNames: sbCookies.map((c) => c.trim().split("=")[0]),

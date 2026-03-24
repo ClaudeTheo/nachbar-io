@@ -45,8 +45,39 @@ export class CareSosNewPage {
   }
 
   async assertLoaded() {
-    // Debug: URL vor Assert loggen
+    // Debug: URL und Session-Status vor Assert loggen
     console.log(`[SOS] URL vor assertLoaded: ${this.page.url()}`);
+
+    // Supabase-Session im Browser pruefen
+    const sessionCheck = await this.page
+      .evaluate(async () => {
+        try {
+          // @ts-expect-error: Supabase-Client ist global verfuegbar
+          const { createClient } =
+            await import("/node_modules/@supabase/ssr/dist/index.mjs").catch(
+              () => ({}),
+            );
+          if (!createClient) return { error: "import fehlgeschlagen" };
+        } catch {
+          /* ignore */
+        }
+
+        // Fallback: Cookie direkt pruefen
+        const sbCookies = document.cookie
+          .split(";")
+          .filter((c) => c.trim().startsWith("sb-"));
+        const pageContent =
+          document.body?.innerText?.substring(0, 200) || "leer";
+        return {
+          cookieCount: sbCookies.length,
+          cookieNames: sbCookies.map((c) => c.trim().split("=")[0]),
+          pagePreview: pageContent,
+          url: window.location.href,
+        };
+      })
+      .catch((e) => ({ error: String(e) }));
+    console.log(`[SOS] Session-Check: ${JSON.stringify(sessionCheck)}`);
+
     await expect(this.heading).toBeVisible({ timeout: TIMEOUTS.pageLoad });
   }
 

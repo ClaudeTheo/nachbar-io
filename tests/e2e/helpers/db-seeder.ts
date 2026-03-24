@@ -15,7 +15,7 @@ async function supabaseAdmin(
   table: string,
   method: "GET" | "POST" | "DELETE" | "PATCH",
   body?: unknown,
-  query?: string
+  query?: string,
 ): Promise<{ data: unknown; error: string | null }> {
   if (!SUPABASE_URL || !SUPABASE_SERVICE_KEY) {
     console.warn("[SEED] Keine Supabase Credentials — Seeding uebersprungen");
@@ -55,7 +55,7 @@ async function supabaseAdmin(
  */
 async function createAuthUser(
   email: string,
-  password: string
+  password: string,
 ): Promise<{ userId: string | null; error: string | null }> {
   if (!SUPABASE_URL || !SUPABASE_SERVICE_KEY) {
     return { userId: null, error: "no_credentials" };
@@ -78,7 +78,10 @@ async function createAuthUser(
   if (!res.ok) {
     const text = await res.text();
     // Nutzer existiert bereits → ID auslesen
-    if (text.includes("already been registered") || text.includes("already exists")) {
+    if (
+      text.includes("already been registered") ||
+      text.includes("already exists")
+    ) {
       const listRes = await fetch(
         `${SUPABASE_URL}/auth/v1/admin/users?filter=email.eq.${encodeURIComponent(email)}`,
         {
@@ -86,14 +89,19 @@ async function createAuthUser(
             apikey: SUPABASE_SERVICE_KEY,
             Authorization: `Bearer ${SUPABASE_SERVICE_KEY}`,
           },
-        }
+        },
       );
       if (listRes.ok) {
         const listData = await listRes.json();
-        const user = listData.users?.find((u: { email: string }) => u.email === email);
+        const user = listData.users?.find(
+          (u: { email: string }) => u.email === email,
+        );
         if (user) return { userId: user.id, error: null };
       }
-      return { userId: null, error: `User exists but could not be found: ${text}` };
+      return {
+        userId: null,
+        error: `User exists but could not be found: ${text}`,
+      };
     }
     return { userId: null, error: `${res.status}: ${text}` };
   }
@@ -103,9 +111,60 @@ async function createAuthUser(
 }
 
 /**
+ * Pilotquartier-ID aus der DB holen (oder Test-Quartier anlegen).
+ */
+async function getOrCreateQuarterId(): Promise<string | null> {
+  // Pilotquartier suchen
+  const { data, error } = await supabaseAdmin(
+    "quarters",
+    "GET",
+    undefined,
+    "slug=eq.bad-saeckingen-pilot&select=id&limit=1",
+  );
+  if (!error && Array.isArray(data) && data.length > 0) {
+    const qid = (data[0] as { id: string }).id;
+    console.log(`[SEED] Pilotquartier gefunden: ${qid}`);
+    return qid;
+  }
+
+  // Fallback: Test-Quartier anlegen
+  const testQuarterId = "00000000-e2e0-4000-b001-000000000001";
+  const { error: createErr } = await supabaseAdmin("quarters", "POST", {
+    id: testQuarterId,
+    name: "E2E Test-Quartier",
+    slug: "e2e-test-quartier",
+    center_lat: 47.5535,
+    center_lng: 7.964,
+    zoom_level: 17,
+    bounds_sw_lat: 47.55,
+    bounds_sw_lng: 7.958,
+    bounds_ne_lat: 47.557,
+    bounds_ne_lng: 7.971,
+  });
+  if (
+    createErr &&
+    !createErr.includes("duplicate") &&
+    !createErr.includes("409")
+  ) {
+    console.warn(`[SEED] Test-Quartier anlegen: ${createErr}`);
+    return null;
+  }
+  console.log(`[SEED] Test-Quartier angelegt: ${testQuarterId}`);
+  return testQuarterId;
+}
+
+/**
  * Alle Test-Haushalte anlegen.
  */
 async function seedHouseholds(households: TestHousehold[]): Promise<void> {
+  const quarterId = await getOrCreateQuarterId();
+  if (!quarterId) {
+    console.warn(
+      "[SEED] Kein Quartier verfuegbar — Haushalte koennen nicht angelegt werden",
+    );
+    return;
+  }
+
   for (const hh of households) {
     const { error } = await supabaseAdmin("households", "POST", {
       id: hh.id,
@@ -115,13 +174,16 @@ async function seedHouseholds(households: TestHousehold[]): Promise<void> {
       lat: hh.lat,
       lng: hh.lng,
       verified: true,
+      quarter_id: quarterId,
     });
 
     if (error && !error.includes("duplicate") && !error.includes("409")) {
       console.warn(`[SEED] Haushalt ${hh.id}: ${error}`);
     }
   }
-  console.log(`[SEED] ${households.length} Haushalte angelegt/verifiziert`);
+  console.log(
+    `[SEED] ${households.length} Haushalte angelegt/verifiziert (quarter=${quarterId})`,
+  );
 }
 
 /**
@@ -129,10 +191,13 @@ async function seedHouseholds(households: TestHousehold[]): Promise<void> {
  */
 async function seedAgent(
   agentId: string,
-  creds: AgentCredentials
+  creds: AgentCredentials,
 ): Promise<string | null> {
   // 1. Auth-User erstellen
-  const { userId, error: authError } = await createAuthUser(creds.email, creds.password);
+  const { userId, error: authError } = await createAuthUser(
+    creds.email,
+    creds.password,
+  );
   if (authError || !userId) {
     console.warn(`[SEED] Agent ${agentId} Auth: ${authError}`);
     return null;
@@ -148,25 +213,41 @@ async function seedAgent(
     trust_level: creds.role === "unverified" ? "new" : "verified",
   });
 
-  if (profileError && !profileError.includes("duplicate") && !profileError.includes("409")) {
+  if (
+    profileError &&
+    !profileError.includes("duplicate") &&
+    !profileError.includes("409")
+  ) {
     console.warn(`[SEED] Agent ${agentId} Profil: ${profileError}`);
   }
 
   // 3. Haushalt-Zuordnung
-  const household = TEST_HOUSEHOLDS.find((h) => h.inviteCode === creds.inviteCode);
+  const household = TEST_HOUSEHOLDS.find(
+    (h) => h.inviteCode === creds.inviteCode,
+  );
   if (household) {
-    const { error: memberError } = await supabaseAdmin("household_members", "POST", {
-      household_id: household.id,
-      user_id: userId,
-      role: creds.isAdmin ? "owner" : "member",
-    });
+    const { error: memberError } = await supabaseAdmin(
+      "household_members",
+      "POST",
+      {
+        household_id: household.id,
+        user_id: userId,
+        role: creds.isAdmin ? "owner" : "member",
+      },
+    );
 
-    if (memberError && !memberError.includes("duplicate") && !memberError.includes("409")) {
+    if (
+      memberError &&
+      !memberError.includes("duplicate") &&
+      !memberError.includes("409")
+    ) {
       console.warn(`[SEED] Agent ${agentId} Mitgliedschaft: ${memberError}`);
     }
   }
 
-  console.log(`[SEED] Agent ${agentId} (${creds.displayName}) → userId=${userId}`);
+  console.log(
+    `[SEED] Agent ${agentId} (${creds.displayName}) → userId=${userId}`,
+  );
   return userId;
 }
 
@@ -208,19 +289,16 @@ export async function cleanupAll(): Promise<void> {
   // Test-Emails finden und Auth-User loeschen
   for (const creds of Object.values(TEST_AGENTS)) {
     try {
-      const listRes = await fetch(
-        `${SUPABASE_URL}/auth/v1/admin/users`,
-        {
-          headers: {
-            apikey: SUPABASE_SERVICE_KEY,
-            Authorization: `Bearer ${SUPABASE_SERVICE_KEY}`,
-          },
-        }
-      );
+      const listRes = await fetch(`${SUPABASE_URL}/auth/v1/admin/users`, {
+        headers: {
+          apikey: SUPABASE_SERVICE_KEY,
+          Authorization: `Bearer ${SUPABASE_SERVICE_KEY}`,
+        },
+      });
       if (listRes.ok) {
         const listData = await listRes.json();
         const user = listData.users?.find(
-          (u: { email: string }) => u.email === creds.email
+          (u: { email: string }) => u.email === creds.email,
         );
         if (user) {
           await fetch(`${SUPABASE_URL}/auth/v1/admin/users/${user.id}`, {

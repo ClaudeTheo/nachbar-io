@@ -136,27 +136,26 @@ export async function loginAgent(agent: TestAgent): Promise<void> {
   const projectRef = new URL(supabaseUrl).hostname.split(".")[0];
   const cookieBase = `sb-${projectRef}-auth-token`;
   const baseURL = process.env.E2E_BASE_URL || "http://localhost:3000";
+  const cookieDomain = new URL(baseURL).hostname;
 
-  // Supabase SSR speichert die Session als base64-kodierte Cookie-Chunks
+  // Supabase SSR @supabase/ssr chunkt die Session als URL-encoded JSON
   const sessionPayload = JSON.stringify({
     access_token: session.access_token,
     refresh_token: session.refresh_token,
     token_type: "bearer",
-    expires_in: 3600,
-    expires_at: Math.floor(Date.now() / 1000) + 3600,
+    expires_in: session.expires_in || 3600,
+    expires_at: session.expires_at || Math.floor(Date.now() / 1000) + 3600,
     user: session.user,
   });
 
-  // Supabase teilt grosse Cookies in Chunks auf (max ~3500 Bytes pro Cookie)
-  const encoded = Buffer.from(sessionPayload).toString("base64");
+  // Chunks: max ~3500 Zeichen pro Cookie (URL-encoded JSON, NICHT base64)
   const chunkSize = 3500;
-  const chunks = [];
-  for (let i = 0; i < encoded.length; i += chunkSize) {
-    chunks.push(encoded.slice(i, i + chunkSize));
+  const chunks: string[] = [];
+  for (let i = 0; i < sessionPayload.length; i += chunkSize) {
+    chunks.push(sessionPayload.slice(i, i + chunkSize));
   }
 
-  const cookieDomain = new URL(baseURL).hostname;
-  const cookies = chunks.map((chunk, i) => ({
+  const cookieEntries = chunks.map((chunk, i) => ({
     name: chunks.length === 1 ? cookieBase : `${cookieBase}.${i}`,
     value: chunk,
     domain: cookieDomain,
@@ -166,7 +165,7 @@ export async function loginAgent(agent: TestAgent): Promise<void> {
     sameSite: "Lax" as const,
   }));
 
-  await agent.context.addCookies(cookies);
+  await agent.context.addCookies(cookieEntries);
 
   // Auf Weiterleitung warten
   if (credentials.uiMode === "senior") {

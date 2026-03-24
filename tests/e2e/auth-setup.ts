@@ -117,16 +117,16 @@ async function loginAndSave(
     access_token: session.access_token,
     refresh_token: session.refresh_token,
     token_type: "bearer",
-    expires_in: 3600,
-    expires_at: Math.floor(Date.now() / 1000) + 3600,
+    expires_in: session.expires_in || 3600,
+    expires_at: session.expires_at || Math.floor(Date.now() / 1000) + 3600,
     user: session.user,
   });
 
-  const encoded = Buffer.from(sessionPayload).toString("base64");
+  // Chunks: max ~3500 Zeichen pro Cookie (URL-encoded JSON)
   const chunkSize = 3500;
   const chunks: string[] = [];
-  for (let i = 0; i < encoded.length; i += chunkSize) {
-    chunks.push(encoded.slice(i, i + chunkSize));
+  for (let i = 0; i < sessionPayload.length; i += chunkSize) {
+    chunks.push(sessionPayload.slice(i, i + chunkSize));
   }
 
   const cookies = chunks.map((chunk, i) => ({

@@ -46,9 +46,9 @@ export class RegisterPage {
     this.checkCodeButton = page.getByRole("button", { name: "Code prüfen" });
 
     // Adresse
-    this.addressSearchInput = page.getByPlaceholder(/Straße eingeben/i).or(
-      page.getByLabel("Straße")
-    );
+    this.addressSearchInput = page
+      .getByPlaceholder(/Straße eingeben/i)
+      .or(page.getByLabel("Straße"));
     this.geoDetectButton = page.getByText("Standort automatisch erkennen");
     this.addressNextButton = page.getByRole("button", { name: "Weiter" });
 
@@ -119,10 +119,29 @@ export class RegisterPage {
     });
   }
 
-  // Invite-Code eingeben und pruefen
+  // Invite-Code eingeben und auf API-Antwort warten
   async fillInviteCode(code: string) {
     await this.inviteCodeInput.fill(code);
-    await this.checkCodeButton.click();
+
+    // API-Antwort abfangen um Fehler zu diagnostizieren
+    const [response] = await Promise.all([
+      this.page.waitForResponse(
+        (resp) => resp.url().includes("/api/register/check-invite"),
+        { timeout: TIMEOUTS.elementVisible },
+      ),
+      this.checkCodeButton.click(),
+    ]);
+
+    const status = response.status();
+    if (status !== 200) {
+      const body = await response.text().catch(() => "unlesbar");
+      console.error(`[REG] check-invite HTTP ${status}: ${body}`);
+    } else {
+      const data = await response.json().catch(() => null);
+      console.log(
+        `[REG] check-invite Antwort: valid=${data?.valid}, householdId=${data?.householdId}`,
+      );
+    }
   }
 
   // Identity: Name + E-Mail eingeben und Magic Link senden

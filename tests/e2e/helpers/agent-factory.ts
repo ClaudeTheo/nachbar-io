@@ -110,50 +110,52 @@ export async function loginAgent(agent: TestAgent): Promise<void> {
   }
 
   // Login via Test-API-Route (setzt Session-Cookies korrekt via Supabase Server-Client)
-  const baseURL = process.env.E2E_BASE_URL || "http://localhost:3000";
   const testSecret = process.env.E2E_TEST_SECRET || "e2e-test-secret-dev";
 
   // Erst eine Seite laden damit der Context Cookies empfangen kann
   await page.goto("/login");
 
-  // Test-Login-API aufrufen mit Retry bei Rate-Limiting (429)
-  let lastError = "";
-  for (let attempt = 0; attempt < 5; attempt++) {
-    if (attempt > 0) {
-      const delay = 2000 * attempt; // 2s, 4s, 6s, 8s
-      console.log(
-        `${prefix} Rate-Limited, warte ${delay}ms (Versuch ${attempt + 1}/5)`,
-      );
-      await page.waitForTimeout(delay);
-    }
+  // Test-Login-API aufrufen via Browser-Fetch (NICHT page.request.post!)
+  // page.request.post() setzt Cookies im Playwright-HTTP-Context,
+  // aber NICHT in document.cookie — AuthSessionProvider.getSession() findet
+  // die Session dann nicht und leitet zu /login um.
+  // Browser-Fetch setzt Set-Cookie-Headers korrekt in den Browser-Cookie-Jar.
+  const loginResult = await page.evaluate(
+    async ({ email, password, secret }) => {
+      for (let attempt = 0; attempt < 5; attempt++) {
+        if (attempt > 0) {
+          await new Promise((r) => setTimeout(r, 2000 * attempt));
+        }
 
-    const response = await page.request.post(`${baseURL}/api/test/login`, {
-      data: {
-        email: credentials.email,
-        password: credentials.password,
-        secret: testSecret,
-      },
-    });
+        const response = await fetch("/api/test/login", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email, password, secret }),
+          credentials: "same-origin",
+        });
 
-    if (response.ok()) {
-      const result = await response.json();
-      console.log(`${prefix} Test-Login OK → userId=${result.userId}`);
-      break;
-    }
+        if (response.ok) {
+          return await response.json();
+        }
 
-    lastError = await response.text();
-    if (response.status() !== 429) {
-      throw new Error(
-        `${prefix} Test-Login fehlgeschlagen: ${response.status()} ${lastError}`,
-      );
-    }
+        const text = await response.text();
+        if (response.status !== 429) {
+          throw new Error(`Login fehlgeschlagen: ${response.status} ${text}`);
+        }
 
-    if (attempt === 4) {
-      throw new Error(
-        `${prefix} Test-Login: Rate-Limit nach 5 Versuchen: ${lastError}`,
-      );
-    }
-  }
+        if (attempt === 4) {
+          throw new Error(`Rate-Limit nach 5 Versuchen: ${text}`);
+        }
+      }
+    },
+    {
+      email: credentials.email,
+      password: credentials.password,
+      secret: testSecret,
+    },
+  );
+
+  console.log(`${prefix} Test-Login OK → userId=${loginResult.userId}`);
 
   // Zur Zielseite navigieren (Cookies aus dem API-Call sind im Context)
   const target =

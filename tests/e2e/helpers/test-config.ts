@@ -5,10 +5,10 @@ import type { AgentCredentials, TestHousehold } from "./types";
 export const TEST_PREFIX = "e2e_test_";
 export const TEST_DOMAIN = "test.nachbar.local";
 
-/** Test-Haushalte — korrespondieren mit dem Pilotquartier */
+/** Deterministische UUIDs fuer Test-Haushalte (DB erwartet uuid, keine Strings) */
 export const TEST_HOUSEHOLDS: TestHousehold[] = [
   {
-    id: `${TEST_PREFIX}hh_01`,
+    id: "00000000-e2e0-4000-a001-000000000001",
     streetName: "Purkersdorfer Straße",
     houseNumber: "1",
     inviteCode: "TEST0001",
@@ -16,7 +16,7 @@ export const TEST_HOUSEHOLDS: TestHousehold[] = [
     lng: 7.964,
   },
   {
-    id: `${TEST_PREFIX}hh_02`,
+    id: "00000000-e2e0-4000-a001-000000000002",
     streetName: "Purkersdorfer Straße",
     houseNumber: "3",
     inviteCode: "TEST0002",
@@ -24,7 +24,7 @@ export const TEST_HOUSEHOLDS: TestHousehold[] = [
     lng: 7.9642,
   },
   {
-    id: `${TEST_PREFIX}hh_03`,
+    id: "00000000-e2e0-4000-a001-000000000003",
     streetName: "Sanarystraße",
     houseNumber: "5",
     inviteCode: "TEST0003",
@@ -32,7 +32,7 @@ export const TEST_HOUSEHOLDS: TestHousehold[] = [
     lng: 7.9645,
   },
   {
-    id: `${TEST_PREFIX}hh_04`,
+    id: "00000000-e2e0-4000-a001-000000000004",
     streetName: "Oberer Rebberg",
     houseNumber: "12",
     inviteCode: "TEST0004",

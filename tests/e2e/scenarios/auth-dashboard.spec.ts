@@ -58,9 +58,9 @@ test.describe("Auth-Flow: Dashboard", () => {
     await dashboard.goto();
     await dashboard.assertLoaded();
 
-    // Zur Hilfe-Boerse navigieren
+    // Zur Hilfe-Boerse navigieren (BottomNav "Hilfe" → /alerts/new)
     await dashboard.navigateVia("help");
-    await expect(page).toHaveURL(/\/help/);
+    await expect(page).toHaveURL(/\/alerts/);
     await waitForStableUI(page);
 
     console.log("[AUTH] Hilfe-Boerse erreicht ✓");

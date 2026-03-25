@@ -110,6 +110,9 @@ test.describe("S10: Barrierefreiheit (WCAG 2.1 AA)", () => {
         const box = await buttons.nth(i).boundingBox();
         if (box && box.height < 44) {
           // WCAG 2.5.5 Target Size: mindestens 44px (AAA: 44px, unsere Vorgabe: 80px)
+          // Next.js Dev-Tools Button ignorieren (nur im Dev-Modus vorhanden)
+          const isDevTools = await buttons.nth(i).getAttribute("data-nextjs-dev-tools-button");
+          if (isDevTools) continue;
           smallButtons++;
           const text = await buttons.nth(i).textContent();
           console.log(`[axe] Kleiner Button: "${text}" — ${box.height}px (< 44px)`);

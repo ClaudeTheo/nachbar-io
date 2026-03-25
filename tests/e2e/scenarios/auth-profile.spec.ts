@@ -43,11 +43,20 @@ test.describe("Auth-Flow: Profil & Einstellungen", () => {
     await page.goto("/profile");
     await waitForStableUI(page);
 
-    const logoutBtn = page.getByRole("button", { name: /Abmelden|Logout|Ausloggen/i }).or(
-      page.getByText(/Abmelden/i)
-    );
-    const hasLogout = await logoutBtn.isVisible().catch(() => false);
-    expect(hasLogout).toBeTruthy();
+    // Warten bis Profil geladen ist (Lade-Spinner verschwindet)
+    // Die Profilseite zeigt "Laden..." bis User-Daten da sind,
+    // dann erst wird der Abmelde-Button gerendert.
+    await page.waitForFunction(
+      () => !document.body.textContent?.includes("Laden..."),
+      { timeout: 15_000 },
+    ).catch(() => {
+      // Fallback: Seite ist evtl. im Fehler-Zustand — dort gibt es auch einen Abmelde-Button
+    });
+    await waitForStableUI(page);
+
+    // Abmelde-Button: entweder im normalen Profil oder im Fehler-Zustand
+    const logoutBtn = page.getByRole("button", { name: /Abmelden/i }).first();
+    await expect(logoutBtn).toBeVisible({ timeout: 10_000 });
 
     console.log("[AUTH] Abmelde-Button vorhanden ✓");
   });

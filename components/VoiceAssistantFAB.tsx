@@ -1,33 +1,55 @@
-'use client';
+"use client";
 
 // components/VoiceAssistantFAB.tsx
 // Nachbar.io — Floating Action Button fuer den KI-Sprach-Assistenten
 // Companion-Integration: Nutzt /api/companion/chat mit Konversations-Modus
 
-import { useState, useRef, useCallback, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { Mic, Loader2, TriangleAlert, MessageCircle, Navigation, RotateCcw, X, Volume2, VolumeX, Check, ArrowRight } from 'lucide-react';
+import { useState, useRef, useCallback, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import {
+  Mic,
+  Loader2,
+  TriangleAlert,
+  MessageCircle,
+  Navigation,
+  RotateCcw,
+  X,
+  Volume2,
+  VolumeX,
+  Check,
+  ArrowRight,
+} from "lucide-react";
 import {
   Sheet,
   SheetContent,
   SheetHeader,
   SheetTitle,
   SheetDescription,
-} from '@/components/ui/sheet';
-import { toast } from 'sonner';
-import { createSpeechEngine } from '@/lib/voice/create-speech-engine';
-import { AudioWaveform } from '@/components/voice/AudioWaveform';
-import { SpeakerAnimation } from '@/components/voice/SpeakerAnimation';
-import { StreamingTextDisplay } from '@/components/companion/StreamingTextDisplay';
-import { useStreamingChat } from '@/hooks/useStreamingChat';
-import type { SpeechEngine, SpeechEngineCallbacks } from '@/lib/voice/speech-engine';
+} from "@/components/ui/sheet";
+import { toast } from "sonner";
+import { createSpeechEngine } from "@/lib/voice/create-speech-engine";
+import { AudioWaveform } from "@/components/voice/AudioWaveform";
+import { SpeakerAnimation } from "@/components/voice/SpeakerAnimation";
+import { StreamingTextDisplay } from "@/components/companion/StreamingTextDisplay";
+import { useStreamingChat } from "@/hooks/useStreamingChat";
+import type {
+  SpeechEngine,
+  SpeechEngineCallbacks,
+} from "@/lib/voice/speech-engine";
 
 /** Sheet-Zustaende */
-type SheetState = 'closed' | 'idle' | 'recording' | 'processing' | 'speaking' | 'result' | 'error';
+type SheetState =
+  | "closed"
+  | "idle"
+  | "recording"
+  | "processing"
+  | "speaking"
+  | "result"
+  | "error";
 
 /** Chat-Nachricht fuer den Companion */
 interface ChatMessage {
-  role: 'user' | 'assistant';
+  role: "user" | "assistant";
   content: string;
 }
 
@@ -58,21 +80,27 @@ const MAX_EXCHANGES = 2;
 
 export function VoiceAssistantFAB() {
   const router = useRouter();
-  // Engine lazy initialisieren (vor erstem Render verfuegbar)
+  // SSR-Guard: Verhindert Hydration-Mismatch (Server rendert null, Client rendert Button)
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+
+  // Engine lazy initialisieren (nur im Browser)
   const engineRef = useRef<SpeechEngine | null | undefined>(undefined);
-  if (engineRef.current === undefined) {
+  if (mounted && engineRef.current === undefined) {
     engineRef.current = createSpeechEngine();
   }
 
   // State
-  const [sheetState, setSheetState] = useState<SheetState>('closed');
+  const [sheetState, setSheetState] = useState<SheetState>("closed");
   const [audioLevel, setAudioLevel] = useState(0);
-  const [responseMessage, setResponseMessage] = useState('');
-  const [transcript, setTranscript] = useState('');
-  const [errorMessage, setErrorMessage] = useState('');
+  const [responseMessage, setResponseMessage] = useState("");
+  const [transcript, setTranscript] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
   const [sheetMessages, setSheetMessages] = useState<ChatMessage[]>([]);
   const [toolResults, setToolResults] = useState<CompanionToolResult[]>([]);
-  const [confirmations, setConfirmations] = useState<CompanionConfirmation[]>([]);
+  const [confirmations, setConfirmations] = useState<CompanionConfirmation[]>(
+    [],
+  );
   const [exchangeCount, setExchangeCount] = useState(0);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   // Push-to-Talk: Startzeitpunkt fuer Mindestdauer-Pruefung
@@ -117,8 +145,11 @@ export function VoiceAssistantFAB() {
 
   // Companion-API-Aufruf nach Transkription (Streaming)
   const sendToCompanion = useCallback(
-    async (text: string, confirmTool?: { tool: string; params: Record<string, unknown> }) => {
-      setSheetState('processing');
+    async (
+      text: string,
+      confirmTool?: { tool: string; params: Record<string, unknown> },
+    ) => {
+      setSheetState("processing");
       setAudioLevel(0);
 
       // Streaming-Refs zuruecksetzen
@@ -128,9 +159,9 @@ export function VoiceAssistantFAB() {
       try {
         // Bei Tool-Bestaetigung: Nicht-Streaming (einfacher JSON-Request)
         if (confirmTool) {
-          const res = await fetch('/api/companion/chat', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+          const res = await fetch("/api/companion/chat", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
               messages: sheetMessages,
               confirmTool,
@@ -139,54 +170,70 @@ export function VoiceAssistantFAB() {
           if (!res.ok) throw new Error(`API-Fehler: ${res.status}`);
           const data: CompanionResponse = await res.json();
 
-          setSheetMessages(prev => [...prev, { role: 'assistant', content: data.message }]);
+          setSheetMessages((prev) => [
+            ...prev,
+            { role: "assistant", content: data.message },
+          ]);
           setResponseMessage(data.message);
           setToolResults(data.toolResults ?? []);
           setConfirmations(data.confirmations ?? []);
-          setSheetState('result');
+          setSheetState("result");
           return;
         }
 
         // Nachrichten-Array aufbauen mit neuer User-Nachricht
         const newMessages: ChatMessage[] = [
           ...sheetMessages,
-          { role: 'user' as const, content: text },
+          { role: "user" as const, content: text },
         ];
         const limitedMessages = newMessages.slice(-(MAX_EXCHANGES * 2));
 
         // Streaming-Request
-        setSheetState('speaking'); // Sofort auf speaking (zeigt StreamingTextDisplay)
+        setSheetState("speaking"); // Sofort auf speaking (zeigt StreamingTextDisplay)
         await sendStreaming(limitedMessages);
 
         // Stream beendet — finalen Text aus Hook lesen
         // (streamingText ist im Hook nach sendStreaming-Resolve final)
         // Wir verwenden einen kurzen Delay damit React den State aktualisiert
       } catch (err) {
-        console.error('[VoiceAssistantFAB] Companion-Anfrage fehlgeschlagen:', err);
-        setErrorMessage('Sprachassistent konnte die Anfrage nicht verarbeiten.');
-        setSheetState('error');
+        console.error(
+          "[VoiceAssistantFAB] Companion-Anfrage fehlgeschlagen:",
+          err,
+        );
+        setErrorMessage(
+          "Sprachassistent konnte die Anfrage nicht verarbeiten.",
+        );
+        setSheetState("error");
       }
     },
-    [sheetMessages, sendStreaming]
+    [sheetMessages, sendStreaming],
   );
 
   // Wenn Streaming endet -> TTS starten und zu result wechseln
   const prevStreamingRef = useRef(false);
   useEffect(() => {
-    if (prevStreamingRef.current && !isStreamingChat && streamingText && sheetState === 'speaking') {
+    if (
+      prevStreamingRef.current &&
+      !isStreamingChat &&
+      streamingText &&
+      sheetState === "speaking"
+    ) {
       // Nachrichten-History aktualisieren
-      setSheetMessages(prev => [...prev, { role: 'assistant', content: streamingText }]);
-      setExchangeCount(prev => prev + 1);
+      setSheetMessages((prev) => [
+        ...prev,
+        { role: "assistant", content: streamingText },
+      ]);
+      setExchangeCount((prev) => prev + 1);
       setResponseMessage(streamingText);
       setToolResults([...streamToolResultsRef.current]);
       setConfirmations([...streamConfirmationsRef.current]);
 
       // Navigation pruefen
-      const navResult = streamToolResultsRef.current.find(r => r.route);
+      const navResult = streamToolResultsRef.current.find((r) => r.route);
       if (navResult?.route) {
         router.push(navResult.route);
-        toast.success(streamingText || 'Navigation...');
-        setSheetState('closed');
+        toast.success(streamingText || "Navigation...");
+        setSheetState("closed");
         prevStreamingRef.current = isStreamingChat;
         return;
       }
@@ -194,9 +241,9 @@ export function VoiceAssistantFAB() {
       // TTS: Antwort vorlesen
       (async () => {
         try {
-          const ttsRes = await fetch('/api/voice/tts', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+          const ttsRes = await fetch("/api/voice/tts", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ text: streamingText }),
           });
 
@@ -209,21 +256,21 @@ export function VoiceAssistantFAB() {
             audio.onended = () => {
               URL.revokeObjectURL(audioUrl);
               audioRef.current = null;
-              setSheetState('result');
+              setSheetState("result");
             };
 
             audio.onerror = () => {
               URL.revokeObjectURL(audioUrl);
               audioRef.current = null;
-              setSheetState('result');
+              setSheetState("result");
             };
 
             await audio.play();
           } else {
-            setSheetState('result');
+            setSheetState("result");
           }
         } catch {
-          setSheetState('result');
+          setSheetState("result");
         }
       })();
     }
@@ -235,9 +282,9 @@ export function VoiceAssistantFAB() {
     const engine = engineRef.current;
     if (!engine) return;
 
-    setSheetState('recording');
+    setSheetState("recording");
     setAudioLevel(0);
-    setErrorMessage('');
+    setErrorMessage("");
 
     const callbacks: SpeechEngineCallbacks = {
       onTranscript: (text: string) => {
@@ -250,11 +297,12 @@ export function VoiceAssistantFAB() {
         // State wird ueber sheetState gesteuert
       },
       onError: (message: string) => {
-        const userMessage = message.includes('not-allowed') || message.includes('Mikrofon')
-          ? 'Bitte Mikrofon freigeben in den Browser-Einstellungen.'
-          : 'Spracherkennung nicht verfügbar.';
+        const userMessage =
+          message.includes("not-allowed") || message.includes("Mikrofon")
+            ? "Bitte Mikrofon freigeben in den Browser-Einstellungen."
+            : "Spracherkennung nicht verfügbar.";
         setErrorMessage(userMessage);
-        setSheetState('error');
+        setSheetState("error");
       },
     };
 
@@ -268,40 +316,46 @@ export function VoiceAssistantFAB() {
 
   // FAB-Klick: Sheet oeffnen im idle-State (Push-to-Talk)
   const handleFabClick = useCallback(() => {
-    if (sheetState === 'closed') {
+    if (sheetState === "closed") {
       // Neue Session: Konversation zuruecksetzen
       setSheetMessages([]);
       setExchangeCount(0);
-      setSheetState('idle');
+      setSheetState("idle");
     }
   }, [sheetState]);
 
   // Push-to-Talk: Druecken startet Aufnahme
-  const handlePushStart = useCallback((e: React.MouseEvent | React.TouchEvent) => {
-    if ('touches' in e) e.preventDefault(); // Ghost-Clicks verhindern
-    recordingStartTimeRef.current = Date.now();
-    startRecording();
-    // Haptisches Feedback
-    if (typeof navigator !== 'undefined' && navigator.vibrate) {
-      navigator.vibrate(50);
-    }
-  }, [startRecording]);
+  const handlePushStart = useCallback(
+    (e: React.MouseEvent | React.TouchEvent) => {
+      if ("touches" in e) e.preventDefault(); // Ghost-Clicks verhindern
+      recordingStartTimeRef.current = Date.now();
+      startRecording();
+      // Haptisches Feedback
+      if (typeof navigator !== "undefined" && navigator.vibrate) {
+        navigator.vibrate(50);
+      }
+    },
+    [startRecording],
+  );
 
   // Push-to-Talk: Loslassen stoppt Aufnahme (mit Mindestdauer-Pruefung)
-  const handlePushEnd = useCallback((e: React.MouseEvent | React.TouchEvent) => {
-    if ('touches' in e) e.preventDefault();
-    if (sheetState !== 'recording') return;
-    const elapsed = Date.now() - recordingStartTimeRef.current;
-    if (elapsed < 500) {
-      // Zu kurz — abbrechen
-      engineRef.current?.stopListening();
-      setSheetState('idle');
-      setAudioLevel(0);
-      toast.error('Bitte etwas länger gedrückt halten');
-    } else {
-      stopRecording();
-    }
-  }, [sheetState, stopRecording]);
+  const handlePushEnd = useCallback(
+    (e: React.MouseEvent | React.TouchEvent) => {
+      if ("touches" in e) e.preventDefault();
+      if (sheetState !== "recording") return;
+      const elapsed = Date.now() - recordingStartTimeRef.current;
+      if (elapsed < 500) {
+        // Zu kurz — abbrechen
+        engineRef.current?.stopListening();
+        setSheetState("idle");
+        setAudioLevel(0);
+        toast.error("Bitte etwas länger gedrückt halten");
+      } else {
+        stopRecording();
+      }
+    },
+    [sheetState, stopRecording],
+  );
 
   // Sprachausgabe stoppen
   const handleStopSpeaking = useCallback(() => {
@@ -309,13 +363,19 @@ export function VoiceAssistantFAB() {
       audioRef.current.pause();
       audioRef.current = null;
     }
-    setSheetState('result');
+    setSheetState("result");
   }, []);
 
   // Tool-Bestaetigung: Write-Action ausfuehren
-  const handleConfirm = useCallback((confirmation: CompanionConfirmation) => {
-    sendToCompanion(transcript, { tool: confirmation.tool, params: confirmation.params });
-  }, [sendToCompanion, transcript]);
+  const handleConfirm = useCallback(
+    (confirmation: CompanionConfirmation) => {
+      sendToCompanion(transcript, {
+        tool: confirmation.tool,
+        params: confirmation.params,
+      });
+    },
+    [sendToCompanion, transcript],
+  );
 
   // "Nochmal sprechen": Zurueck zum idle-State (Konversation bleibt erhalten)
   const handleRetry = useCallback(() => {
@@ -323,18 +383,21 @@ export function VoiceAssistantFAB() {
       audioRef.current.pause();
       audioRef.current = null;
     }
-    setResponseMessage('');
-    setTranscript('');
+    setResponseMessage("");
+    setTranscript("");
     setToolResults([]);
     setConfirmations([]);
-    setSheetState('idle');
+    setSheetState("idle");
   }, []);
 
   // Navigation zu einem Tool-Ergebnis mit Route
-  const handleNavigate = useCallback((route: string) => {
-    router.push(route);
-    setSheetState('closed');
-  }, [router]);
+  const handleNavigate = useCallback(
+    (route: string) => {
+      router.push(route);
+      setSheetState("closed");
+    },
+    [router],
+  );
 
   // Sheet schliessen
   const handleClose = useCallback(() => {
@@ -343,9 +406,9 @@ export function VoiceAssistantFAB() {
       audioRef.current.pause();
       audioRef.current = null;
     }
-    setSheetState('closed');
-    setResponseMessage('');
-    setTranscript('');
+    setSheetState("closed");
+    setResponseMessage("");
+    setTranscript("");
     setToolResults([]);
     setConfirmations([]);
     setSheetMessages([]);
@@ -353,12 +416,13 @@ export function VoiceAssistantFAB() {
     setAudioLevel(0);
   }, []);
 
-  // Nichts rendern wenn keine Engine verfuegbar
-  if (!engineRef.current) {
+  // Nichts rendern wenn nicht gemountet oder keine Engine verfuegbar
+  // SSR-Guard: Server und Client rendern beide null → kein Hydration-Mismatch
+  if (!mounted || !engineRef.current) {
     return null;
   }
 
-  const sheetOpen = sheetState !== 'closed';
+  const sheetOpen = sheetState !== "closed";
   const showContinueHint = exchangeCount >= MAX_EXCHANGES;
 
   return (
@@ -367,7 +431,11 @@ export function VoiceAssistantFAB() {
       <button
         onClick={handleFabClick}
         className="fixed bottom-24 right-4 z-40 flex items-center justify-center rounded-full shadow-lg bg-[#4CAF87] transition-all hover:scale-110 active:scale-95"
-        style={{ minWidth: '56px', minHeight: '56px', touchAction: 'manipulation' }}
+        style={{
+          minWidth: "56px",
+          minHeight: "56px",
+          touchAction: "manipulation",
+        }}
         aria-label="Sprachassistent"
         data-testid="voice-assistant-fab"
       >
@@ -375,41 +443,46 @@ export function VoiceAssistantFAB() {
       </button>
 
       {/* Bottom-Sheet */}
-      <Sheet open={sheetOpen} onOpenChange={(open) => { if (!open) handleClose(); }}>
+      <Sheet
+        open={sheetOpen}
+        onOpenChange={(open) => {
+          if (!open) handleClose();
+        }}
+      >
         <SheetContent side="bottom" className="mx-auto max-w-lg rounded-t-2xl">
           <SheetHeader>
             <SheetTitle className="flex items-center gap-2 text-[#2D3142]">
-              {sheetState === 'idle' && (
+              {sheetState === "idle" && (
                 <>
                   <Mic className="h-5 w-5 text-[#4CAF87]" />
                   Quartier-Lotse
                 </>
               )}
-              {sheetState === 'recording' && (
+              {sheetState === "recording" && (
                 <>
                   <Mic className="h-5 w-5 text-[#4CAF87]" />
                   Quartier-Lotse
                 </>
               )}
-              {sheetState === 'processing' && (
+              {sheetState === "processing" && (
                 <>
                   <Loader2 className="h-5 w-5 text-[#F59E0B] animate-spin" />
                   Verarbeite...
                 </>
               )}
-              {sheetState === 'speaking' && (
+              {sheetState === "speaking" && (
                 <>
                   <Volume2 className="h-5 w-5 text-[#4CAF87]" />
                   Sprachausgabe
                 </>
               )}
-              {sheetState === 'result' && (
+              {sheetState === "result" && (
                 <>
                   <MessageCircle className="h-5 w-5 text-[#4CAF87]" />
                   Quartier-Lotse
                 </>
               )}
-              {sheetState === 'error' && (
+              {sheetState === "error" && (
                 <>
                   <TriangleAlert className="h-5 w-5 text-[#F59E0B]" />
                   Mikrofon-Fehler
@@ -417,18 +490,18 @@ export function VoiceAssistantFAB() {
               )}
             </SheetTitle>
             <SheetDescription>
-              {sheetState === 'idle' && 'Bereit zum Sprechen'}
-              {sheetState === 'recording' && 'Sprechen Sie jetzt...'}
-              {sheetState === 'processing' && 'Ihre Anfrage wird analysiert...'}
-              {sheetState === 'speaking' && (responseMessage || '')}
-              {sheetState === 'result' && (responseMessage || '')}
-              {sheetState === 'error' && errorMessage}
+              {sheetState === "idle" && "Bereit zum Sprechen"}
+              {sheetState === "recording" && "Sprechen Sie jetzt..."}
+              {sheetState === "processing" && "Ihre Anfrage wird analysiert..."}
+              {sheetState === "speaking" && (responseMessage || "")}
+              {sheetState === "result" && (responseMessage || "")}
+              {sheetState === "error" && errorMessage}
             </SheetDescription>
           </SheetHeader>
 
           <div className="mt-4 space-y-4">
             {/* IDLE: Push-to-Talk Button */}
-            {sheetState === 'idle' && !showContinueHint && (
+            {sheetState === "idle" && !showContinueHint && (
               <div className="flex flex-col items-center gap-4 py-4">
                 <button
                   data-testid="push-to-talk-btn"
@@ -438,7 +511,11 @@ export function VoiceAssistantFAB() {
                   onTouchStart={handlePushStart}
                   onTouchEnd={handlePushEnd}
                   className="flex items-center justify-center rounded-full bg-[#4CAF87] text-white shadow-lg select-none"
-                  style={{ width: '120px', height: '120px', touchAction: 'none' }}
+                  style={{
+                    width: "120px",
+                    height: "120px",
+                    touchAction: "none",
+                  }}
                   aria-label="Gedrückt halten zum Sprechen"
                 >
                   <Mic className="h-12 w-12" />
@@ -450,15 +527,18 @@ export function VoiceAssistantFAB() {
             )}
 
             {/* IDLE + MAX_EXCHANGES erreicht: Weiterplaudern-Hinweis */}
-            {sheetState === 'idle' && showContinueHint && (
-              <div className="flex flex-col items-center gap-4 py-4" data-testid="continue-hint">
+            {sheetState === "idle" && showContinueHint && (
+              <div
+                className="flex flex-col items-center gap-4 py-4"
+                data-testid="continue-hint"
+              >
                 <p className="text-base text-[#2D3142] font-medium text-center">
                   Möchten Sie weiterplaudern?
                 </p>
                 <button
-                  onClick={() => router.push('/companion')}
+                  onClick={() => router.push("/companion")}
                   className="w-full flex items-center justify-center gap-2 rounded-xl bg-[#4CAF87] text-white font-medium text-base transition-all hover:bg-[#4CAF87]/90 active:scale-95"
-                  style={{ minHeight: '56px', touchAction: 'manipulation' }}
+                  style={{ minHeight: "56px", touchAction: "manipulation" }}
                   data-testid="companion-link"
                 >
                   <ArrowRight className="h-5 w-5" />
@@ -467,7 +547,7 @@ export function VoiceAssistantFAB() {
                 <button
                   onClick={handleClose}
                   className="w-full flex items-center justify-center gap-2 rounded-xl border border-gray-200 text-[#2D3142] font-medium text-base transition-all hover:bg-gray-50 active:scale-95"
-                  style={{ minHeight: '48px', touchAction: 'manipulation' }}
+                  style={{ minHeight: "48px", touchAction: "manipulation" }}
                 >
                   <X className="h-4 w-4" />
                   Schließen
@@ -476,18 +556,25 @@ export function VoiceAssistantFAB() {
             )}
 
             {/* RECORDING: Push-to-Talk aktiv (pulsierender Button + Waveform) */}
-            {sheetState === 'recording' && (
+            {sheetState === "recording" && (
               <div className="flex flex-col items-center gap-4 py-4">
                 <div className="relative flex items-center justify-center">
                   {/* Pulsierender Ring */}
-                  <div className="absolute rounded-full bg-[#4CAF87]/20 animate-pulse" style={{ width: '150px', height: '150px' }} />
+                  <div
+                    className="absolute rounded-full bg-[#4CAF87]/20 animate-pulse"
+                    style={{ width: "150px", height: "150px" }}
+                  />
                   <button
                     data-testid="push-to-talk-btn"
                     onMouseUp={handlePushEnd}
                     onMouseLeave={handlePushEnd}
                     onTouchEnd={handlePushEnd}
                     className="relative flex items-center justify-center rounded-full bg-[#4CAF87] text-white shadow-lg select-none"
-                    style={{ width: '130px', height: '130px', touchAction: 'none' }}
+                    style={{
+                      width: "130px",
+                      height: "130px",
+                      touchAction: "none",
+                    }}
                     aria-label="Loslassen zum Senden"
                   >
                     <Mic className="h-14 w-14" />
@@ -501,18 +588,21 @@ export function VoiceAssistantFAB() {
             )}
 
             {/* PROCESSING: Spinner */}
-            {sheetState === 'processing' && (
+            {sheetState === "processing" && (
               <div className="flex justify-center py-8">
                 <Loader2 className="h-10 w-10 text-[#F59E0B] animate-spin" />
               </div>
             )}
 
             {/* SPEAKING: Streaming-Text oder Lautsprecher-Animation + Text + Stopp */}
-            {sheetState === 'speaking' && (
+            {sheetState === "speaking" && (
               <>
                 {isStreamingChat ? (
                   <div className="text-center text-lg font-medium text-[#2D3142]">
-                    <StreamingTextDisplay text={streamingText} isStreaming={true} />
+                    <StreamingTextDisplay
+                      text={streamingText}
+                      isStreaming={true}
+                    />
                   </div>
                 ) : (
                   <>
@@ -525,7 +615,7 @@ export function VoiceAssistantFAB() {
                 <button
                   onClick={handleStopSpeaking}
                   className="w-full flex items-center justify-center gap-2 rounded-xl border border-gray-200 text-[#2D3142] font-medium text-base transition-all hover:bg-gray-50 active:scale-95"
-                  style={{ minHeight: '48px', touchAction: 'manipulation' }}
+                  style={{ minHeight: "48px", touchAction: "manipulation" }}
                 >
                   <VolumeX className="h-5 w-5" />
                   Vorlesen stoppen
@@ -534,7 +624,7 @@ export function VoiceAssistantFAB() {
             )}
 
             {/* RESULT: Ergebnis + Tool-Results + Bestaetigungen + Buttons */}
-            {sheetState === 'result' && (
+            {sheetState === "result" && (
               <>
                 {/* Transkript */}
                 {transcript && (
@@ -547,12 +637,23 @@ export function VoiceAssistantFAB() {
                 {toolResults.length > 0 && (
                   <div className="space-y-2" data-testid="tool-results">
                     {toolResults.map((result, i) => (
-                      <div key={i} className="rounded-lg border p-3 flex items-start gap-3">
-                        <div className={`mt-0.5 ${result.success ? 'text-[#4CAF87]' : 'text-[#F59E0B]'}`}>
-                          {result.success ? <Check className="h-5 w-5" /> : <TriangleAlert className="h-5 w-5" />}
+                      <div
+                        key={i}
+                        className="rounded-lg border p-3 flex items-start gap-3"
+                      >
+                        <div
+                          className={`mt-0.5 ${result.success ? "text-[#4CAF87]" : "text-[#F59E0B]"}`}
+                        >
+                          {result.success ? (
+                            <Check className="h-5 w-5" />
+                          ) : (
+                            <TriangleAlert className="h-5 w-5" />
+                          )}
                         </div>
                         <div className="flex-1">
-                          <p className="text-sm text-[#2D3142]">{result.summary}</p>
+                          <p className="text-sm text-[#2D3142]">
+                            {result.summary}
+                          </p>
                           {result.route && (
                             <button
                               onClick={() => handleNavigate(result.route!)}
@@ -572,13 +673,21 @@ export function VoiceAssistantFAB() {
                 {confirmations.length > 0 && (
                   <div className="space-y-2" data-testid="confirmations">
                     {confirmations.map((conf, i) => (
-                      <div key={i} className="rounded-lg border border-[#F59E0B]/30 bg-[#F59E0B]/5 p-3">
-                        <p className="text-sm text-[#2D3142] mb-2">{conf.description}</p>
+                      <div
+                        key={i}
+                        className="rounded-lg border border-[#F59E0B]/30 bg-[#F59E0B]/5 p-3"
+                      >
+                        <p className="text-sm text-[#2D3142] mb-2">
+                          {conf.description}
+                        </p>
                         <button
                           onClick={() => handleConfirm(conf)}
                           data-testid={`confirm-btn-${i}`}
                           className="w-full flex items-center justify-center gap-2 rounded-xl bg-[#4CAF87] text-white font-medium text-sm transition-all hover:bg-[#4CAF87]/90 active:scale-95"
-                          style={{ minHeight: '44px', touchAction: 'manipulation' }}
+                          style={{
+                            minHeight: "44px",
+                            touchAction: "manipulation",
+                          }}
                         >
                           <Check className="h-4 w-4" />
                           Bestätigen
@@ -592,7 +701,7 @@ export function VoiceAssistantFAB() {
                 <button
                   onClick={handleRetry}
                   className="w-full flex items-center justify-center gap-2 rounded-xl border border-[#4CAF87] text-[#4CAF87] font-medium text-base transition-all hover:bg-[#4CAF87]/10 active:scale-95"
-                  style={{ minHeight: '48px', touchAction: 'manipulation' }}
+                  style={{ minHeight: "48px", touchAction: "manipulation" }}
                 >
                   <RotateCcw className="h-4 w-4" />
                   Nochmal sprechen
@@ -602,7 +711,7 @@ export function VoiceAssistantFAB() {
                 <button
                   onClick={handleClose}
                   className="w-full flex items-center justify-center gap-2 rounded-xl border border-gray-200 text-[#2D3142] font-medium text-base transition-all hover:bg-gray-50 active:scale-95"
-                  style={{ minHeight: '48px', touchAction: 'manipulation' }}
+                  style={{ minHeight: "48px", touchAction: "manipulation" }}
                 >
                   <X className="h-4 w-4" />
                   Schließen
@@ -611,13 +720,13 @@ export function VoiceAssistantFAB() {
             )}
 
             {/* ERROR: Fehler + Nochmal versuchen + Schliessen */}
-            {sheetState === 'error' && (
+            {sheetState === "error" && (
               <div className="flex flex-col gap-2">
                 <button
                   onClick={handleRetry}
                   data-testid="error-retry-btn"
                   className="w-full flex items-center justify-center gap-2 rounded-xl bg-[#4CAF87] text-white font-medium text-base transition-all hover:bg-[#4CAF87]/90 active:scale-95"
-                  style={{ minHeight: '48px', touchAction: 'manipulation' }}
+                  style={{ minHeight: "48px", touchAction: "manipulation" }}
                 >
                   <RotateCcw className="h-4 w-4" />
                   Nochmal versuchen
@@ -625,7 +734,7 @@ export function VoiceAssistantFAB() {
                 <button
                   onClick={handleClose}
                   className="w-full flex items-center justify-center rounded-xl border border-gray-200 text-[#2D3142] font-medium text-base transition-all hover:bg-gray-50 active:scale-95"
-                  style={{ minHeight: '48px', touchAction: 'manipulation' }}
+                  style={{ minHeight: "48px", touchAction: "manipulation" }}
                 >
                   Schließen
                 </button>

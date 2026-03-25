@@ -119,28 +119,48 @@ export class RegisterPage {
     });
   }
 
-  // Invite-Code eingeben und auf API-Antwort warten
+  // Invite-Code eingeben und auf Ergebnis warten (Step 2 oder Fehlermeldung)
   async fillInviteCode(code: string) {
     await this.inviteCodeInput.fill(code);
+    await this.checkCodeButton.click();
 
-    // API-Antwort abfangen um Fehler zu diagnostizieren
-    const [response] = await Promise.all([
-      this.page.waitForResponse(
-        (resp) => resp.url().includes("/api/register/check-invite"),
-        { timeout: TIMEOUTS.elementVisible },
-      ),
-      this.checkCodeButton.click(),
-    ]);
+    // Auf Step 2 (Identity) ODER Fehlermeldung warten
+    const successOrError = this.displayNameInput.or(this.errorMessage);
 
-    const status = response.status();
-    if (status !== 200) {
-      const body = await response.text().catch(() => "unlesbar");
-      console.error(`[REG] check-invite HTTP ${status}: ${body}`);
-    } else {
-      const data = await response.json().catch(() => null);
-      console.log(
-        `[REG] check-invite Antwort: valid=${data?.valid}, householdId=${data?.householdId}`,
-      );
+    try {
+      await successOrError.first().waitFor({
+        state: "visible",
+        timeout: TIMEOUTS.pageLoad,
+      });
+    } catch {
+      // Dev-Server verliert State nach erster API-Route-Kompilierung.
+      // Retry: zurueck zum Invite-Code-Schritt oder Entry und nochmal versuchen.
+      console.log("[REG] Kein Ergebnis — Retry nach State-Verlust");
+
+      // Pruefen wo wir sind und zum Invite-Code-Schritt navigieren
+      if (
+        await this.page
+          .getByText("Ich habe einen Einladungscode")
+          .isVisible({ timeout: 2000 })
+          .catch(() => false)
+      ) {
+        await this.page.getByText("Ich habe einen Einladungscode").click();
+        await this.inviteCodeInput.waitFor({
+          state: "visible",
+          timeout: TIMEOUTS.elementVisible,
+        });
+      }
+
+      // Code nochmal eingeben und per Enter absenden
+      if (await this.inviteCodeInput.isVisible().catch(() => false)) {
+        await this.inviteCodeInput.fill(code);
+        await this.inviteCodeInput.press("Enter");
+        await successOrError.first().waitFor({
+          state: "visible",
+          timeout: TIMEOUTS.pageLoad,
+        });
+        console.log("[REG] Retry erfolgreich");
+      }
     }
   }
 

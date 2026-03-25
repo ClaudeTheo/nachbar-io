@@ -174,7 +174,7 @@ async function seedHouseholds(households: TestHousehold[]): Promise<void> {
   }
 
   for (const hh of households) {
-    const { error } = await supabaseAdmin("households", "POST", {
+    const { data, error } = await supabaseAdmin("households", "POST", {
       id: hh.id,
       street_name: hh.streetName,
       house_number: hh.houseNumber,
@@ -185,8 +185,10 @@ async function seedHouseholds(households: TestHousehold[]): Promise<void> {
       quarter_id: quarterId,
     });
 
-    if (error && !error.includes("duplicate") && !error.includes("409")) {
-      console.warn(`[SEED] Haushalt ${hh.id}: ${error}`);
+    if (error) {
+      console.warn(`[SEED] Haushalt ${hh.id} (${hh.inviteCode}): ${error}`);
+    } else {
+      console.log(`[SEED] Haushalt ${hh.id} (${hh.inviteCode}): OK`);
     }
   }
   console.log(

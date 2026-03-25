@@ -1,4 +1,5 @@
-// Nachbar.io — Page Object: Login-Seite (Magic Link Standard + Passwort Fallback)
+// Nachbar.io — Page Object: Login-Seite (v3: Magic Link + Passkey + Apple)
+// Passwort-Login ist im Pilot ausgeblendet (PILOT_HIDE_PASSWORD_LOGIN = true)
 import { Page, Locator, expect } from "@playwright/test";
 import { TIMEOUTS } from "../helpers/test-config";
 import { waitForStableUI } from "../helpers/observer";
@@ -11,15 +12,22 @@ export class LoginPage {
   readonly sendMagicLinkButton: Locator;
   readonly switchToPasswordLink: Locator;
 
-  // Passwort Modus (Fallback)
+  // Passkey / Biometrische Anmeldung
+  readonly passkeyButton: Locator;
+
+  // Apple Sign-In
+  readonly appleButton: Locator;
+
+  // Passwort Modus (Fallback — im Pilot ausgeblendet)
   readonly passwordEmailInput: Locator;
   readonly passwordInput: Locator;
   readonly passwordSubmitButton: Locator;
   readonly switchToMagicLinkLink: Locator;
 
-  // Bestaetigung
-  readonly magicLinkSentHeading: Locator;
-  readonly retryButton: Locator;
+  // OTP-Code-Eingabe (nach Magic Link gesendet)
+  readonly otpHeading: Locator;
+  readonly otpCodeResendButton: Locator;
+  readonly otpSubmitButton: Locator;
 
   // Allgemein
   readonly errorMessage: Locator;
@@ -38,7 +46,17 @@ export class LoginPage {
       "Stattdessen mit Passwort anmelden",
     );
 
-    // Passwort
+    // Passkey
+    this.passkeyButton = page.getByRole("button", {
+      name: "Mit Fingerabdruck / Gesicht anmelden",
+    });
+
+    // Apple
+    this.appleButton = page.getByRole("button", {
+      name: "Mit Apple anmelden",
+    });
+
+    // Passwort (ausgeblendet im Pilot)
     this.passwordEmailInput = page.locator("#email-pw");
     this.passwordInput = page.getByLabel("Passwort");
     this.passwordSubmitButton = page.getByRole("button", { name: "Anmelden" });
@@ -46,9 +64,12 @@ export class LoginPage {
       "Stattdessen Anmelde-Code per E-Mail erhalten",
     );
 
-    // Bestaetigung
-    this.magicLinkSentHeading = page.getByText("Link gesendet!");
-    this.retryButton = page.getByRole("button", { name: "Erneut versuchen" });
+    // OTP-Code-Eingabe (ersetzt alte "Link gesendet!"-Seite)
+    this.otpHeading = page.getByText("Code eingeben");
+    this.otpCodeResendButton = page.getByRole("button", {
+      name: /Code erneut senden/,
+    });
+    this.otpSubmitButton = page.getByRole("button", { name: "Anmelden" });
 
     // Allgemein
     this.errorMessage = page.locator('[role="alert"]');
@@ -74,14 +95,15 @@ export class LoginPage {
     await this.sendMagicLinkButton.click();
   }
 
-  // Bestaetigung pruefen, dass Magic Link gesendet wurde
+  // Bestaetigung pruefen, dass OTP-Code-Eingabe angezeigt wird
   async assertMagicLinkSent() {
-    await expect(this.magicLinkSentHeading).toBeVisible({
+    await expect(this.otpHeading).toBeVisible({
       timeout: TIMEOUTS.elementVisible,
     });
+    await expect(this.otpCodeResendButton).toBeVisible();
   }
 
-  // Zum Passwort-Modus wechseln
+  // Zum Passwort-Modus wechseln (nur wenn PILOT_HIDE_PASSWORD_LOGIN = false)
   async switchToPasswordMode() {
     await this.switchToPasswordLink.click();
     await this.passwordInput.waitFor({
@@ -90,7 +112,7 @@ export class LoginPage {
     });
   }
 
-  // Passwort-Login (Fallback)
+  // Passwort-Login (Fallback — nur wenn PILOT_HIDE_PASSWORD_LOGIN = false)
   async loginWithPassword(email: string, password: string) {
     await this.switchToPasswordMode();
     await this.passwordEmailInput.fill(email);
@@ -114,7 +136,7 @@ export class LoginPage {
     await waitForStableUI(this.page);
   }
 
-  // Sichtbarkeit der Login-Seite pruefen (Magic-Link-Modus)
+  // Sichtbarkeit der Login-Seite pruefen (Magic-Link-Modus v3)
   async assertVisible() {
     await expect(this.heading).toBeVisible();
     await expect(this.emailInput).toBeVisible();

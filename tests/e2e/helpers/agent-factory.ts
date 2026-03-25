@@ -216,8 +216,11 @@ export async function loginAgent(agent: TestAgent): Promise<void> {
 }
 
 /**
- * Agent registrieren via UI (4-Schritt Registrierung).
+ * Agent registrieren via UI (2-Schritt Magic-Link-Flow).
+ * Flow: Entry → Invite-Code → Identity (Name+Email) → OTP-Bestaetigung
  * Hinweis: Nur fuer Agenten mit gueltigem Invite-Code.
+ * OTP-Verifizierung ist in E2E nicht moeglich (kein Zugriff auf E-Mail).
+ * Registrierung stoppt bei OTP-Bestaetigung.
  */
 export async function registerAgent(agent: TestAgent): Promise<void> {
   const { page, credentials, prefix } = agent;
@@ -226,44 +229,40 @@ export async function registerAgent(agent: TestAgent): Promise<void> {
 
   await page.goto("/register");
 
-  // Schritt 1: Credentials
-  await page.getByLabel("E-Mail-Adresse").fill(credentials.email);
-  await page.getByLabel("Passwort").fill(credentials.password);
-  await page.getByRole("button", { name: "Weiter" }).click();
+  // Auf Hydration warten
+  await page.getByText("Willkommen bei QuartierApp").waitFor({
+    state: "visible",
+    timeout: TIMEOUTS.pageLoad,
+  });
+  await page
+    .waitForLoadState("networkidle", { timeout: TIMEOUTS.networkIdle })
+    .catch(() => {});
 
-  // Schritt 2: Invite-Code
+  // Schritt 1a: Entry — Invite-Code-Pfad waehlen
+  await page.getByText("Ich habe einen Einladungscode").click();
+
+  // Schritt 1b: Invite-Code eingeben
   await page
     .getByLabel("Einladungscode")
     .waitFor({ state: "visible", timeout: TIMEOUTS.elementVisible });
   await page.getByLabel("Einladungscode").fill(credentials.inviteCode);
   await page.getByRole("button", { name: "Code prüfen" }).click();
 
-  // Schritt 3: Profil (Name)
+  // Schritt 2: Identity (Name + E-Mail)
   await page
     .getByLabel("Anzeigename")
-    .waitFor({ state: "visible", timeout: TIMEOUTS.elementVisible });
+    .waitFor({ state: "visible", timeout: TIMEOUTS.pageLoad });
   await page.getByLabel("Anzeigename").fill(credentials.displayName);
-  await page.getByRole("button", { name: "Weiter" }).click();
+  await page.getByLabel("E-Mail-Adresse").fill(credentials.email);
+  await page.getByRole("button", { name: "Anmelde-Code senden" }).click();
 
-  // Schritt 4: UI-Modus
-  await page
-    .getByText("Aktiver Modus")
-    .waitFor({ state: "visible", timeout: TIMEOUTS.elementVisible });
-  if (credentials.uiMode === "senior") {
-    await page.getByText("Einfacher Modus").click();
-  } else {
-    await page.getByText("Aktiver Modus").click();
-  }
-  await page.getByRole("button", { name: "Registrierung abschließen" }).click();
+  // OTP-Bestaetigung abwarten (Code eingeben ist in E2E nicht moeglich)
+  await page.getByText("Wir haben einen Code an").waitFor({
+    state: "visible",
+    timeout: TIMEOUTS.pageLoad,
+  });
 
-  // Auf Weiterleitung warten
-  if (credentials.uiMode === "senior") {
-    await page.waitForURL("**/senior/**", { timeout: TIMEOUTS.pageLoad });
-  } else {
-    await page.waitForURL("**/welcome**", { timeout: TIMEOUTS.pageLoad });
-  }
-
-  console.log(`${prefix} Registrierung abgeschlossen → ${page.url()}`);
+  console.log(`${prefix} Registrierung bis OTP-Bestaetigung → ${page.url()}`);
 }
 
 /**

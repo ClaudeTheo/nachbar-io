@@ -27,7 +27,10 @@ async function supabaseAdmin(
     apikey: SUPABASE_SERVICE_KEY,
     Authorization: `Bearer ${SUPABASE_SERVICE_KEY}`,
     "Content-Type": "application/json",
-    Prefer: method === "POST" ? "return=representation" : "return=minimal",
+    Prefer:
+      method === "POST"
+        ? "return=representation,resolution=merge-duplicates"
+        : "return=minimal",
   };
 
   try {

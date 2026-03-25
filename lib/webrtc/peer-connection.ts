@@ -48,6 +48,8 @@ export class PeerConnectionManager {
   private peerConnection: RTCPeerConnection | null = null;
   private localStream: MediaStream | null = null;
   private callState: CallState = 'idle';
+  private degradedSince: number | null = null;
+  private qualityInterval: ReturnType<typeof setInterval> | null = null;
 
   // Event-Callbacks fuer die UI-Schicht
   private remoteStreamCallback: SignalingCallback<MediaStream> | null = null;
@@ -153,13 +155,58 @@ export class PeerConnectionManager {
     });
   }
 
-  /** Aktuelle Verbindungsqualitaet abfragen */
+  /** Aktuelle Verbindungsqualitaet abfragen (State + Stats-basiert) */
   getConnectionQuality(): ConnectionQuality {
     if (!this.peerConnection) return 'failed';
     const state = this.peerConnection.connectionState;
-    if (state === 'connected') return 'good';
     if (state === 'disconnected') return 'degraded';
-    return 'failed';
+    if (state === 'failed' || state === 'closed') return 'failed';
+    // Stats-basiert: degradedSince trackt langsame Verbindung
+    if (this.degradedSince && (Date.now() - this.degradedSince > 10_000)) {
+      return 'degraded';
+    }
+    if (state === 'connected') return 'good';
+    return 'good'; // connecting, new → noch gut
+  }
+
+  /**
+   * Stats-basierte Qualitaetspruefung starten.
+   * Misst framesPerSecond und packetsLost alle 5 Sekunden.
+   * Setzt degradedSince wenn Video-Qualitaet schlecht ist.
+   */
+  startQualityMonitoring(onDegraded: () => void): void {
+    this.qualityInterval = setInterval(async () => {
+      if (!this.peerConnection) return;
+
+      try {
+        const stats = await this.peerConnection.getStats();
+        let videoFramesPerSecond = 0;
+        let hasInboundVideo = false;
+
+        stats.forEach((report) => {
+          if (report.type === 'inbound-rtp' && report.kind === 'video') {
+            hasInboundVideo = true;
+            videoFramesPerSecond = report.framesPerSecond ?? 0;
+          }
+        });
+
+        if (hasInboundVideo && videoFramesPerSecond < 5) {
+          // Schlechte Video-Qualitaet
+          if (!this.degradedSince) {
+            this.degradedSince = Date.now();
+          }
+          // Nach 10s degradiert → Callback
+          if (Date.now() - this.degradedSince > 10_000) {
+            onDegraded();
+          }
+        } else {
+          // Qualitaet wieder gut
+          this.degradedSince = null;
+        }
+      } catch {
+        // getStats() fehlgeschlagen — ignorieren
+      }
+    }, 5_000);
   }
 
   // --- Private Methoden ---
@@ -228,6 +275,12 @@ export class PeerConnectionManager {
 
   /** Aufraeumen: Tracks stoppen, Verbindung schliessen, Signaling zerstoeren */
   private cleanup(): void {
+    if (this.qualityInterval) {
+      clearInterval(this.qualityInterval);
+      this.qualityInterval = null;
+    }
+    this.degradedSince = null;
+
     if (this.localStream) {
       for (const track of this.localStream.getTracks()) {
         track.stop();

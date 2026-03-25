@@ -8,6 +8,8 @@ import { VoiceAssistantFAB } from "@/components/VoiceAssistantFAB";
 import { ExternalLinkProvider } from "@/components/ExternalLinkProvider";
 import { AuthSessionProvider } from "@/components/AuthSessionProvider";
 import { AuthProvider } from "@/components/providers/auth-provider";
+import { GlobalCallListener } from "@/components/video/GlobalCallListener";
+import { PresenceHeartbeat } from "@/components/video/PresenceHeartbeat";
 
 // Layout fuer den aktiven Modus — mit Bottom-Navigation + Bug-Report
 export default function AppLayout({
@@ -34,6 +36,8 @@ export default function AppLayout({
       <QuarterProvider>
         <ExternalLinkProvider>
           <HeartbeatProvider>
+            <GlobalCallListener />
+            <PresenceHeartbeat />
             <main id="main-content" className="mx-auto max-w-lg px-4 pt-4">{children}</main>
           </HeartbeatProvider>
           <BugReportButton />

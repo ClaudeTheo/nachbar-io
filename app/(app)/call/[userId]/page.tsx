@@ -1,28 +1,37 @@
 // app/(app)/call/[userId]/page.tsx
 // Nachbar Plus — Video-Anruf Seite
-// Startet einen P2P WebRTC Video-Anruf mit dem angegebenen Nutzer
+// Startet oder nimmt einen P2P WebRTC Video-Anruf an
 
 'use client';
 
 import { useCallback, useMemo } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { VideoCall } from '@/components/video/VideoCall';
 
 /**
  * CallPage — Seite fuer einen aktiven Video-Anruf.
  *
  * Route: /call/[userId]
- * - Extrahiert userId aus den URL-Parametern
- * - Generiert eine eindeutige callId (UUID)
- * - Rendert die VideoCall-Komponente im Vollbild
- * - Bei Auflegen: Navigation zurueck
+ * Query-Params:
+ * - callId: Bestehende Call-ID (bei eingehendem Anruf)
+ * - answer: "true" wenn eingehender Anruf angenommen wird
+ *
+ * Ohne Query-Params: Ausgehender Anruf (Initiator)
+ * Mit callId + answer=true: Eingehender Anruf annehmen
  */
 export default function CallPage() {
   const params = useParams<{ userId: string }>();
+  const searchParams = useSearchParams();
   const router = useRouter();
 
-  // callId einmalig generieren (stabil ueber Re-Renders)
-  const callId = useMemo(() => crypto.randomUUID(), []);
+  const isAnswering = searchParams.get('answer') === 'true';
+  const existingCallId = searchParams.get('callId');
+
+  // callId: bestehende (eingehend) oder neue generieren (ausgehend)
+  const callId = useMemo(
+    () => existingCallId || crypto.randomUUID(),
+    [existingCallId],
+  );
 
   const handleHangup = useCallback(() => {
     router.back();
@@ -41,7 +50,7 @@ export default function CallPage() {
       callId={callId}
       remoteUserId={params.userId}
       onHangup={handleHangup}
-      isInitiator
+      isInitiator={!isAnswering}
     />
   );
 }

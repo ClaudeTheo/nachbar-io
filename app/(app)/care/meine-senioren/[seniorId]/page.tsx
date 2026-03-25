@@ -4,12 +4,14 @@
 
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { Pill, Clock, TriangleAlert, Plus, Activity, RefreshCw, MessageCircle, UserCog } from 'lucide-react';
+import { Pill, Clock, TriangleAlert, Plus, Activity, RefreshCw, MessageCircle, UserCog, Phone } from 'lucide-react';
 import Link from 'next/link';
 import { PageHeader } from '@/components/ui/page-header';
 import { useCareRole } from '@/lib/care/hooks/useCareRole';
 import { createClient } from '@/lib/supabase/client';
 import { HeartbeatTimeline } from '@/components/care/HeartbeatTimeline';
+import { usePresence } from '@/lib/video-calls/usePresence';
+import { OnlineIndicator } from '@/components/video/OnlineIndicator';
 
 interface MedicationEntry {
   id: string;
@@ -52,6 +54,7 @@ export default function SeniorDetailPage() {
   const [lastHeartbeat, setLastHeartbeat] = useState<string | null>(null);
   const [lastCheckinStatus, setLastCheckinStatus] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
+  const { isOnline } = usePresence(seniorId);
 
   // Zugriffspruefung: Redirect wenn keine Berechtigung
   useEffect(() => {
@@ -187,12 +190,21 @@ export default function SeniorDetailPage() {
           <MessageCircle className="h-4 w-4" />
           Nachricht
         </button>
+        <button
+          onClick={() => router.push(`/call/${seniorId}`)}
+          className="flex flex-1 items-center justify-center gap-2 rounded-xl border border-border bg-white py-3 text-sm font-medium text-anthrazit hover:bg-muted"
+          aria-label={`Videoanruf mit ${seniorName}`}
+        >
+          <Phone className="h-4 w-4" />
+          <span>Anrufen</span>
+          <OnlineIndicator isOnline={isOnline} size="sm" />
+        </button>
         <Link
           href={`/care/meine-senioren/${seniorId}/edit`}
           className="flex flex-1 items-center justify-center gap-2 rounded-xl border border-border bg-white py-3 text-sm font-medium text-anthrazit hover:bg-muted"
         >
           <UserCog className="h-4 w-4" />
-          Profil bearbeiten
+          Bearbeiten
         </Link>
       </div>
 

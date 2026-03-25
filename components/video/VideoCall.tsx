@@ -54,6 +54,7 @@ export function VideoCall({
   const [isMicMuted, setIsMicMuted] = useState(false);
   const [isCamOff, setIsCamOff] = useState(false);
   const [connectionQuality, setConnectionQuality] = useState<ConnectionQuality>('good');
+  const [audioOnlyMode, setAudioOnlyMode] = useState(false);
 
   // Verbindung aufbauen
   useEffect(() => {
@@ -105,6 +106,14 @@ export function VideoCall({
         setConnectionQuality(quality);
       }
     }, 3000);
+
+    // Stats-basiertes Quality-Monitoring mit Auto-Audio-Only
+    manager.startQualityMonitoring(() => {
+      // Bei anhaltend schlechter Verbindung: Kamera automatisch aus
+      manager.setAudioOnly(true);
+      setIsCamOff(true);
+      setAudioOnlyMode(true);
+    });
 
     // Cleanup bei Unmount
     return () => {
@@ -203,6 +212,15 @@ export function VideoCall({
           )}
         </div>
       </div>
+
+      {/* Audio-Only Hinweis */}
+      {audioOnlyMode && (
+        <div className="absolute left-4 right-4 top-20 z-10 rounded-xl bg-amber-500/90 px-4 py-3 text-center">
+          <p className="text-sm font-medium text-white">
+            Schlechte Verbindung — nur Audio aktiv
+          </p>
+        </div>
+      )}
 
       {/* Steuerleiste unten */}
       <div className="absolute bottom-0 left-0 right-0 z-10 flex items-center justify-center gap-4 bg-gradient-to-t from-black/80 to-transparent p-6">

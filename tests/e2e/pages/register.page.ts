@@ -124,43 +124,51 @@ export class RegisterPage {
     await this.inviteCodeInput.fill(code);
     await this.checkCodeButton.click();
 
-    // Auf Step 2 (Identity) ODER Fehlermeldung warten
-    const successOrError = this.displayNameInput.or(this.errorMessage);
-
+    // Auf Step 2 (Identity) warten
     try {
-      await successOrError.first().waitFor({
+      await this.displayNameInput.waitFor({
         state: "visible",
         timeout: TIMEOUTS.pageLoad,
       });
+      console.log("[REG] Invite-Code akzeptiert — Identity-Schritt sichtbar");
+      return;
     } catch {
-      // Dev-Server verliert State nach erster API-Route-Kompilierung.
-      // Retry: zurueck zum Invite-Code-Schritt oder Entry und nochmal versuchen.
-      console.log("[REG] Kein Ergebnis — Retry nach State-Verlust");
+      // displayNameInput nicht sichtbar — pruefen ob Fehlermeldung angezeigt wird
+    }
 
-      // Pruefen wo wir sind und zum Invite-Code-Schritt navigieren
-      if (
-        await this.page
-          .getByText("Ich habe einen Einladungscode")
-          .isVisible({ timeout: 2000 })
-          .catch(() => false)
-      ) {
-        await this.page.getByText("Ich habe einen Einladungscode").click();
-        await this.inviteCodeInput.waitFor({
-          state: "visible",
-          timeout: TIMEOUTS.elementVisible,
-        });
-      }
+    // Fehlermeldung pruefen
+    if (await this.errorMessage.isVisible().catch(() => false)) {
+      const errorText = await this.errorMessage.textContent();
+      console.log(`[REG] Invite-Code Fehler: "${errorText}"`);
+    }
 
-      // Code nochmal eingeben und per Enter absenden
-      if (await this.inviteCodeInput.isVisible().catch(() => false)) {
-        await this.inviteCodeInput.fill(code);
-        await this.inviteCodeInput.press("Enter");
-        await successOrError.first().waitFor({
-          state: "visible",
-          timeout: TIMEOUTS.pageLoad,
-        });
-        console.log("[REG] Retry erfolgreich");
-      }
+    // Dev-Server verliert State nach erster API-Route-Kompilierung.
+    // Retry: zurueck zum Invite-Code-Schritt oder Entry und nochmal versuchen.
+    console.log("[REG] Kein Identity-Schritt — Retry nach State-Verlust");
+
+    // Pruefen wo wir sind und zum Invite-Code-Schritt navigieren
+    if (
+      await this.page
+        .getByText("Ich habe einen Einladungscode")
+        .isVisible({ timeout: 2000 })
+        .catch(() => false)
+    ) {
+      await this.page.getByText("Ich habe einen Einladungscode").click();
+      await this.inviteCodeInput.waitFor({
+        state: "visible",
+        timeout: TIMEOUTS.elementVisible,
+      });
+    }
+
+    // Code nochmal eingeben und per Enter absenden
+    if (await this.inviteCodeInput.isVisible().catch(() => false)) {
+      await this.inviteCodeInput.fill(code);
+      await this.inviteCodeInput.press("Enter");
+      await this.displayNameInput.waitFor({
+        state: "visible",
+        timeout: TIMEOUTS.pageLoad,
+      });
+      console.log("[REG] Retry erfolgreich");
     }
   }
 

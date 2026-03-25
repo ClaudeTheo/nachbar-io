@@ -1,6 +1,6 @@
 // __tests__/lib/consultation/provider.test.ts
 import { describe, it, expect } from 'vitest';
-import { JitsiProvider, getProvider } from '@/lib/consultation/provider';
+import { JitsiProvider, SprechstundeOnlineProvider, getProvider } from '@/lib/consultation/provider';
 
 describe('JitsiProvider', () => {
   const provider = new JitsiProvider();
@@ -30,8 +30,9 @@ describe('getProvider', () => {
     expect(provider.type).toBe('community');
   });
 
-  it('sollte MeetOneProvider fuer medical zurueckgeben', () => {
+  it('sollte SprechstundeOnlineProvider fuer medical zurueckgeben', () => {
     const provider = getProvider('medical');
     expect(provider.type).toBe('medical');
+    expect(provider.name).toBe('sprechstunde.online');
   });
 });

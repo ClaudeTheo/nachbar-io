@@ -216,7 +216,7 @@ describe('Consultation confirm Seiteneffekte', () => {
     return PATCH(req, { params: Promise.resolve({ id: 'slot-1' }) });
   }
 
-  it('confirm generiert join_url, aendert aber NICHT provider_type', async () => {
+  it('confirm setzt status auf confirmed, OHNE join_url (wird vom Arzt-Portal gesetzt)', async () => {
     const slot = {
       id: 'slot-1',
       host_user_id: 'doctor-1',
@@ -233,7 +233,8 @@ describe('Consultation confirm Seiteneffekte', () => {
     expect(mockUpdate).toHaveBeenCalled();
     const updateArg = mockUpdate.mock.calls[0][0];
     expect(updateArg.status).toBe('confirmed');
-    expect(updateArg.join_url).toMatch(/^https:\/\/meet\.jit\.si\/nachbar-/);
+    // join_url wird NICHT mehr vom Patient-Confirm gesetzt — Arzt-Portal setzt sie via sprechstunde.online
+    expect(updateArg.join_url).toBeUndefined();
     // provider_type darf NICHT im Update enthalten sein
     expect(updateArg.provider_type).toBeUndefined();
   });

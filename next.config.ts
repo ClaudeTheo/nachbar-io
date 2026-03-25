@@ -16,8 +16,8 @@ const cspDirectives = [
   "worker-src 'self'",
   "manifest-src 'self'",
   "object-src 'none'",
-  // Jitsi Meet fuer Videosprechstunde (Community), meet.jit.si als Default
-  `frame-src 'self' https://meet.jit.si ${process.env.JITSI_BASE_URL ? process.env.JITSI_BASE_URL : ''}`.trim(),
+  // Jitsi Meet (Community/Tests) + sprechstunde.online (aerztliche Videosprechstunde)
+  `frame-src 'self' https://meet.jit.si https://app.sprechstunde.online ${process.env.JITSI_BASE_URL ? process.env.JITSI_BASE_URL : ''}`.trim(),
   "frame-ancestors 'none'",
   "base-uri 'self'",
   "form-action 'self'",

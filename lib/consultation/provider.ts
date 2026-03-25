@@ -1,6 +1,6 @@
 // lib/consultation/provider.ts
 // Nachbar.io — Videosprechstunde Provider-Abstraction
-// Unterstuetzt: Jitsi Meet (community) + MeetOne (medical/KBV-zertifiziert)
+// Unterstuetzt: Jitsi Meet (community, nur fuer Tests) + sprechstunde.online (medical/KBV-zertifiziert)
 
 export interface ConsultationRoom {
   roomId: string;
@@ -15,7 +15,7 @@ export interface ConsultationProvider {
   endRoom(roomId: string): Promise<void>;
 }
 
-// Jitsi Meet — fuer Quartiers-Beratung (kostenlos, Self-Hosted moeglich)
+// Jitsi Meet — fuer Quartiers-Beratung (nur fuer Tests, Self-Hosted moeglich)
 export class JitsiProvider implements ConsultationProvider {
   name = 'Jitsi Meet';
   type = 'community' as const;
@@ -39,31 +39,28 @@ export class JitsiProvider implements ConsultationProvider {
   }
 }
 
-// MeetOne — fuer aerztliche Sprechstunden (KBV-zertifiziert)
-// Dokumentation: REST-API + OAuth 2.0
-// Login: https://app.meetone.io
-export class MeetOneProvider implements ConsultationProvider {
-  name = 'MeetOne';
+// sprechstunde.online — fuer aerztliche Sprechstunden (KBV-zertifiziert)
+// API-Aufrufe erfolgen im nachbar-arzt Portal, hier nur Provider-Abstraction
+export class SprechstundeOnlineProvider implements ConsultationProvider {
+  name = 'sprechstunde.online';
   type = 'medical' as const;
 
   async createRoom(slotId: string): Promise<ConsultationRoom> {
-    // Phase 1: MeetOne-Link manuell im Admin-UI eintragen (join_url Feld)
-    // Phase 2: MeetOne REST-API automatisch aufrufen (nach API-Docs von Stefan Botzenhart)
-    // POST https://api.meetone.io/v1/sessions (OAuth 2.0 Bearer Token)
+    // join_url wird vom Arzt-Portal (nachbar-arzt) via sprechstunde.online API gesetzt
     return {
-      roomId: `meetone-${slotId.slice(0, 8)}`,
-      joinUrl: '', // Wird manuell gesetzt oder via API
+      roomId: `sprechstunde-${slotId.slice(0, 8)}`,
+      joinUrl: '', // Wird vom Arzt-Portal gesetzt
       hostUrl: '',
     };
   }
 
   async endRoom(): Promise<void> {
-    // MeetOne beendet Sessions automatisch
+    // sprechstunde.online beendet Sessions automatisch
   }
 }
 
 // Factory-Funktion
 export function getProvider(type: 'community' | 'medical'): ConsultationProvider {
   if (type === 'community') return new JitsiProvider();
-  return new MeetOneProvider();
+  return new SprechstundeOnlineProvider();
 }

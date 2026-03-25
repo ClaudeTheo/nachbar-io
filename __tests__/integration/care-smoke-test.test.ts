@@ -278,7 +278,8 @@ describe('Care Module Smoke Test — Happy Path', () => {
     expect(mockUpdate).toHaveBeenCalled();
     const updateArg = mockUpdate.mock.calls[0][0];
     expect(updateArg.status).toBe('confirmed');
-    expect(updateArg.join_url).toMatch(/^https:\/\/meet\.jit\.si\//);
+    // join_url wird NICHT mehr vom Patient-Confirm gesetzt — Arzt-Portal setzt sie via sprechstunde.online
+    expect(updateArg.join_url).toBeUndefined();
 
     // Notifications wurden gesendet
     expect(mockSendAppointmentPush).toHaveBeenCalledWith(

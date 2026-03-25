@@ -69,7 +69,7 @@ export function ConsultationSlotForm({ quarterId }: Props) {
           className="w-full rounded-xl border border-anthrazit/20 p-3 text-lg"
         >
           <option value="community">Quartiers-Beratung (Jitsi)</option>
-          <option value="medical">Aerztliche Sprechstunde (MeetOne)</option>
+          <option value="medical">Aerztliche Sprechstunde (sprechstunde.online)</option>
         </select>
       </div>
 
@@ -126,17 +126,17 @@ export function ConsultationSlotForm({ quarterId }: Props) {
         </select>
       </div>
 
-      {/* MeetOne-Link (nur bei medical) */}
+      {/* sprechstunde.online-Link (nur bei medical) */}
       {providerType === 'medical' && (
         <div>
           <label className="block text-sm font-medium text-anthrazit mb-1">
-            MeetOne-Link (optional, wird sonst automatisch generiert)
+            sprechstunde.online-Link (optional, wird vom Arzt-Portal gesetzt)
           </label>
           <input
             type="url"
             value={joinUrl}
             onChange={e => setJoinUrl(e.target.value)}
-            placeholder="https://app.meetone.io/..."
+            placeholder="https://app.sprechstunde.online/..."
             className="w-full rounded-xl border border-anthrazit/20 p-3 text-lg"
           />
         </div>

@@ -89,10 +89,9 @@ export async function PATCH(
   }
 
   if (action === "confirm") {
-    // Jitsi-Raum-URL setzen bei Bestaetigung
+    // join_url wird NICHT mehr hier gesetzt — der Arzt startet die Sprechstunde
+    // im nachbar-arzt Portal, welches die join_url via sprechstunde.online API setzt.
     // provider_type wird NICHT geaendert — gehoert zur Identitaet des Slots
-    const roomId = `nachbar-${id.slice(0, 8)}`;
-    updateData.join_url = `https://meet.jit.si/${roomId}`;
   }
 
   if (action === "cancel") {

@@ -172,7 +172,7 @@ export default function DatenschutzPage() {
               </li>
               <li>
                 <strong>Ärztliche Videosprechstunde:</strong> Über einen
-                KBV-zertifizierten Drittanbieter (MeetOne). Für die Datenverarbeitung
+                KBV-zertifizierten Drittanbieter (sprechstunde.online). Für die Datenverarbeitung
                 innerhalb der Videosprechstunde gelten die Datenschutzhinweise des
                 Anbieters.
               </li>

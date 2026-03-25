@@ -80,11 +80,13 @@ jobs:
         env:
           NODE_ENV: production
           RESIDENT_HASH_SECRET: ci-test-secret-not-real
+          CARE_ENCRYPTION_KEY: ${{ secrets.CARE_ENCRYPTION_KEY }}
 
       - name: Run Multi-Agent Tests
         run: npx playwright test --config=tests/e2e/playwright.config.ts --project=multi-agent --project=senior-terminal
         env:
           RESIDENT_HASH_SECRET: ci-test-secret-not-real
+          CARE_ENCRYPTION_KEY: ${{ secrets.CARE_ENCRYPTION_KEY }}
           E2E_TEST_SECRET: e2e-test-secret-dev
 
       - name: Upload test report

@@ -26,40 +26,7 @@ test.describe("S1: Onboarding — 2-Schritt Magic-Link-Flow", () => {
     await registerPage.chooseInviteCodePath();
 
     // Invite-Code eingeben → weiter zu Identity
-    // Debug: Pruefen ob der Invite-Code in der DB existiert (via check-invite API)
-    const baseURL = process.env.E2E_BASE_URL || "http://localhost:3000";
-    const checkRes = await page.request.post(
-      `${baseURL}/api/register/check-invite`,
-      {
-        data: { inviteCode: TEST_AGENTS.nachbar_a.inviteCode },
-      },
-    );
-    const checkData = await checkRes.json();
-    console.log(
-      `[S1.1] check-invite API (${TEST_AGENTS.nachbar_a.inviteCode}): ${JSON.stringify(checkData)}`,
-    );
-
-    // Retry: Supabase REST upsert braucht manchmal ein paar Sekunden
-    // bis die Seeder-Daten propagiert sind (Invite-Code noch nicht sichtbar)
     await registerPage.fillInviteCode(TEST_AGENTS.nachbar_a.inviteCode);
-    for (let attempt = 0; attempt < 3; attempt++) {
-      if (
-        await page
-          .getByLabel("Anzeigename")
-          .isVisible()
-          .catch(() => false)
-      ) {
-        break; // Identity-Schritt erreicht
-      }
-      console.log(
-        `[S1.1] Invite-Code noch nicht akzeptiert — Retry ${attempt + 1}/3`,
-      );
-      await page.waitForTimeout(3000);
-      await page.goto("/register");
-      await registerPage.assertEntryVisible();
-      await registerPage.chooseInviteCodePath();
-      await registerPage.fillInviteCode(TEST_AGENTS.nachbar_a.inviteCode);
-    }
 
     // Schritt 2: Name + E-Mail (einzigartige E-Mail!)
     await registerPage.assertOnStep(2);

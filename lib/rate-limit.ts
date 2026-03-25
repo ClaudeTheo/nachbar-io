@@ -35,6 +35,13 @@ const RATE_LIMIT_CONFIG: RateLimitCategory[] = [
     skip: true,
   },
   // Auth: Streng begrenzen (Brute-Force-Schutz)
+  // check-invite ist readonly (nur DB-Lookup) → separates, grosszuegigeres Limit
+  {
+    name: "auth-check",
+    prefixes: ["/api/register/check-invite"],
+    limit: 30,
+    windowMs: 60_000,
+  },
   {
     name: "auth",
     prefixes: ["/api/register/"],
@@ -109,9 +116,7 @@ class RateLimiter {
 
     // Reset-Zeit berechnen: Wann wird der aelteste Request aus dem Fenster fallen?
     const resetMs =
-      timestamps.length > 0
-        ? timestamps[0] + windowMs - now
-        : windowMs;
+      timestamps.length > 0 ? timestamps[0] + windowMs - now : windowMs;
 
     if (count >= limit) {
       // Limit erreicht — Request ablehnen
@@ -151,7 +156,10 @@ class RateLimiter {
 
     for (const [key, timestamps] of this.store.entries()) {
       // Wenn der neueste Timestamp abgelaufen ist, Eintrag loeschen
-      if (timestamps.length === 0 || timestamps[timestamps.length - 1] <= expiry) {
+      if (
+        timestamps.length === 0 ||
+        timestamps[timestamps.length - 1] <= expiry
+      ) {
         this.store.delete(key);
       }
     }
@@ -169,11 +177,11 @@ const rateLimiter = new RateLimiter();
  * Gibt null zurueck wenn Rate Limiting uebersprungen werden soll.
  */
 export function getRouteCategory(
-  pathname: string
+  pathname: string,
 ): { name: string; limit: number; windowMs: number } | null {
   for (const category of RATE_LIMIT_CONFIG) {
     const matches = category.prefixes.some(
-      (prefix) => pathname === prefix || pathname.startsWith(prefix)
+      (prefix) => pathname === prefix || pathname.startsWith(prefix),
     );
 
     if (matches) {
@@ -196,7 +204,10 @@ export function getRouteCategory(
  */
 export function getClientKey(request: {
   headers: { get(name: string): string | null };
-  nextUrl?: { pathname: string; searchParams: { get(name: string): string | null } };
+  nextUrl?: {
+    pathname: string;
+    searchParams: { get(name: string): string | null };
+  };
   ip?: string | null;
 }): string {
   // Device-Endpoints: Token aus URL-Parameter verwenden
@@ -245,7 +256,7 @@ function extractIp(request: {
  */
 export function checkRateLimit(
   pathname: string,
-  clientKey: string
+  clientKey: string,
 ): RateLimitResult | null {
   const category = getRouteCategory(pathname);
   if (!category) return null; // Route wird uebersprungen

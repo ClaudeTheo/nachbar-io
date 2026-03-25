@@ -83,13 +83,15 @@ export default defineConfig({
     },
 
     // ─── Phase 2c: Senioren-Terminal (Mobile Viewport) ───
+    // Abhaengig von "auth" damit storageState fuer senior_s/betreuer_t bereitsteht
+    // (vermeidet Rate-Limiting durch wiederholte Logins nach multi-agent Tests)
     {
       name: "senior-terminal",
       testMatch: /scenarios\/s5-.*\.spec\.ts/,
-      dependencies: ["setup"],
+      dependencies: ["auth"],
       use: {
         ...devices["Pixel 5"],
-        storageState: undefined,
+        storageState: undefined, // Jeder Agent laedt eigene storageState in createAgent
       },
     },
 

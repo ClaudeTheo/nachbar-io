@@ -12,14 +12,25 @@ test.describe("S5: Senioren-Terminal Komplett-Test", () => {
   let agentT: TestAgent;
 
   test.beforeEach(async ({ browser }) => {
-    // Senior bekommt Mobile-Viewport
+    // Senior bekommt Mobile-Viewport + storageState aus auth-setup
+    // (vermeidet Rate-Limiting durch wiederholte Logins)
     agentS = await createAgent(browser, "senior_s", {
       viewport: { width: 393, height: 851 },
+      useStorageState: true,
     });
-    agentT = await createAgent(browser, "betreuer_t");
+    agentT = await createAgent(browser, "betreuer_t", {
+      useStorageState: true,
+    });
 
-    await loginAgent(agentS);
-    await loginAgent(agentT);
+    // Falls storageState nicht verfuegbar, Fallback auf loginAgent
+    const fs = await import("fs");
+    const { authFile } = await import("../helpers/auth-paths");
+    if (!fs.existsSync(authFile("senior_s"))) {
+      await loginAgent(agentS);
+    }
+    if (!fs.existsSync(authFile("betreuer_t"))) {
+      await loginAgent(agentT);
+    }
   });
 
   test.afterEach(async () => {

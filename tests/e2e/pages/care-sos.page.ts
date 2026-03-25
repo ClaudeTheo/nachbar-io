@@ -87,12 +87,14 @@ export class CareSosNewPage {
   }
 
   async assertTouchTargetSize() {
-    // Nur SOS-Kategorie-Buttons pruefen (nicht FABs oder andere Buttons)
-    const buttons = this.page.locator("button[style*='min-height: 80px']");
+    // Alle Buttons im SOS-Kategorien-Container pruefen (via boundingBox statt CSS-Selektor)
+    // Die Kategorie-Buttons enthalten ein span mit role="img" (Emoji-Icon)
+    const buttons = this.page.locator("button").filter({ has: this.page.locator("span[role='img']") });
     const count = await buttons.count();
     expect(count).toBeGreaterThanOrEqual(5); // 5 SOS-Kategorien
     for (let i = 0; i < count; i++) {
       const box = await buttons.nth(i).boundingBox();
+      expect(box).not.toBeNull();
       if (box) {
         expect(box.height).toBeGreaterThanOrEqual(76);
       }

@@ -1,7 +1,9 @@
 // Nachbar.io — Agent Factory: Erstellt isolierte Browser-Kontexte pro Rolle
 import { Browser, BrowserContext, Page } from "@playwright/test";
+import * as fs from "fs";
 import type { AgentCredentials, AgentRole } from "./types";
 import { TEST_AGENTS, TIMEOUTS } from "./test-config";
+import { authFile } from "../helpers/auth-paths";
 
 export interface TestAgent {
   id: string;
@@ -24,6 +26,8 @@ export async function createAgent(
     credentials?: AgentCredentials;
     baseURL?: string;
     viewport?: { width: number; height: number };
+    /** storageState aus auth-setup laden (vermeidet Rate-Limiting) */
+    useStorageState?: boolean;
   },
 ): Promise<TestAgent> {
   const credentials = options?.credentials || TEST_AGENTS[agentId];
@@ -53,6 +57,13 @@ export async function createAgent(
       ? { width: 393, height: 851 } // Pixel 5
       : { width: 1280, height: 720 }); // Desktop
 
+  // storageState aus auth-setup laden (falls vorhanden und angefordert)
+  const storagePath = options?.useStorageState ? authFile(agentId) : undefined;
+  const hasStorageState = storagePath && fs.existsSync(storagePath);
+  if (options?.useStorageState && !hasStorageState) {
+    console.warn(`[AGENT] storageState fuer ${agentId} nicht gefunden: ${storagePath}`);
+  }
+
   // Eigener Browser-Kontext = eigene Session/Cookies
   const context = await browser.newContext({
     baseURL:
@@ -61,8 +72,8 @@ export async function createAgent(
     locale: "de-DE",
     timezoneId: "Europe/Berlin",
     permissions: ["notifications"], // Push-Notifications erlauben
-    // Bildschirmaufloesung fuer Screenshots
     deviceScaleFactor: 1,
+    ...(hasStorageState ? { storageState: storagePath } : {}),
   });
 
   // Konsolen-Logs mit Agent-Prefix taggen

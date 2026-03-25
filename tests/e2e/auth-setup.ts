@@ -64,6 +64,18 @@ setup("Auth: senior_s einloggen", async ({ page }) => {
   );
 });
 
+// --- Agent T: Betreuer (fuer Senior-Terminal Tests S5) ---
+setup("Auth: betreuer_t einloggen", async ({ page }) => {
+  const agent = TEST_AGENTS.betreuer_t;
+  await loginAndSave(
+    page,
+    agent.email,
+    agent.password,
+    "betreuer_t",
+    /\/(dashboard|welcome)/,
+  );
+});
+
 /**
  * Loggt einen Agenten via Supabase Auth API ein und speichert den storageState.
  * Umgeht PILOT_HIDE_PASSWORD_LOGIN — Passwort-UI ist im Pilot ausgeblendet.

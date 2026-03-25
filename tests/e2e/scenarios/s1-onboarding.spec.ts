@@ -161,6 +161,7 @@ test.describe("S1: Onboarding — 2-Schritt Magic-Link-Flow", () => {
 
   test("S1.9 — Navigation Login <-> Registrierung", async ({ page }) => {
     await page.goto("/login");
+    await page.waitForLoadState("networkidle");
     await page.getByRole("link", { name: "Jetzt registrieren" }).click();
     await expect(page).toHaveURL(/\/register/);
 

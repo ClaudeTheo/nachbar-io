@@ -43,7 +43,16 @@ test.describe("S2: Hilfe-Anfrage → Zustellung → Annahme", () => {
       // Erste Kategorie waehlen (z.B. Einkaufen)
       const categoryButton = page.locator("button").filter({ hasText: /Einkaufen/i }).first();
       await categoryButton.click();
-      await page.waitForTimeout(500);
+      await waitForStableUI(page);
+
+      // Falls Unterkategorie-Schritt erscheint ("Genauer gesagt..."): ueberspringen
+      // Manche Kategorien haben Unterkategorien (shopping → Wocheneinkauf, Apotheke, etc.)
+      const subcatHeading = page.getByText("Genauer gesagt");
+      if (await subcatHeading.isVisible({ timeout: 3000 }).catch(() => false)) {
+        console.log("[A] Unterkategorie-Schritt erkannt → ueberspringen");
+        await page.click("button:has-text('Überspringen')");
+        await waitForStableUI(page);
+      }
 
       // Titel eingeben (auf Details-Schritt)
       const titleInput = page.getByLabel(/Titel/i);
@@ -102,10 +111,18 @@ test.describe("S2: Hilfe-Anfrage → Zustellung → Annahme", () => {
       await needButton.click();
       await page.waitForTimeout(500);
 
-      // Erste Kategorie (Einkaufen hat keine Unterkategorien → direkt zu Details)
+      // Kategorie waehlen (Einkaufen)
       const categoryButton = page.locator("button").filter({ hasText: /Einkaufen/i }).first();
       await categoryButton.click();
-      await page.waitForTimeout(500);
+      await waitForStableUI(page);
+
+      // Falls Unterkategorie-Schritt erscheint ("Genauer gesagt..."): ueberspringen
+      const subcatHeading = page.getByText("Genauer gesagt");
+      if (await subcatHeading.isVisible({ timeout: 3000 }).catch(() => false)) {
+        console.log("[A] Unterkategorie-Schritt erkannt → ueberspringen");
+        await page.click("button:has-text('Überspringen')");
+        await waitForStableUI(page);
+      }
 
       // Titel eingeben (auf Details-Schritt)
       const titleInput = page.getByLabel(/Titel/i);

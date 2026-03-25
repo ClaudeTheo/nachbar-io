@@ -117,10 +117,16 @@ export async function loginAgent(agent: TestAgent): Promise<void> {
   await page.goto("/login");
   await page.waitForLoadState("domcontentloaded");
 
-  // CareDisclaimer akzeptieren (blockiert sonst Care-Features mit Vollbild-Modal)
+  // CareDisclaimer akzeptieren + AlarmScreen deaktivieren (blockiert sonst Care-Seiten)
   await page.evaluate(() => {
     localStorage.setItem("care_disclaimer_accepted", "true");
+    localStorage.setItem("e2e_disable_alarm", "true");
+    localStorage.setItem("e2e_skip_onboarding", "true");
   });
+
+  // Onboarding-Redirect verhindern: settings.onboarding_completed via Service-Key sicherstellen
+  const supabaseUrlEnv = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
   // Test-Login-API aufrufen mit Retry bei Rate-Limiting (429)
   let lastError = "";
@@ -144,6 +150,20 @@ export async function loginAgent(agent: TestAgent): Promise<void> {
     if (response.ok()) {
       const result = await response.json();
       console.log(`${prefix} Test-Login OK → userId=${result.userId}`);
+
+      // Onboarding-Redirect verhindern
+      if (supabaseUrlEnv && serviceKey && result.userId) {
+        await fetch(`${supabaseUrlEnv}/rest/v1/users?id=eq.${result.userId}`, {
+          method: "PATCH",
+          headers: {
+            apikey: serviceKey,
+            Authorization: `Bearer ${serviceKey}`,
+            "Content-Type": "application/json",
+            Prefer: "return=minimal",
+          },
+          body: JSON.stringify({ settings: { onboarding_completed: true } }),
+        });
+      }
       break;
     }
 
@@ -169,7 +189,27 @@ export async function loginAgent(agent: TestAgent): Promise<void> {
   if (credentials.uiMode === "senior") {
     await page.waitForURL("**/senior/**", { timeout: TIMEOUTS.pageLoad });
   } else {
-    await page.waitForURL("**/dashboard**", { timeout: TIMEOUTS.pageLoad });
+    // Dashboard oder /welcome akzeptieren (Onboarding-Redirect moeglich)
+    await page.waitForURL(/\/(dashboard|welcome)/, {
+      timeout: TIMEOUTS.pageLoad,
+    });
+    // Falls auf /welcome gelandet, retry nach kurzer Pause
+    if (page.url().includes("/welcome")) {
+      console.log(`${prefix} auf /welcome gelandet, retry /dashboard...`);
+      await page.waitForTimeout(1000);
+      await page.goto("/dashboard");
+      await page.waitForURL(/\/(dashboard|welcome)/, {
+        timeout: TIMEOUTS.pageLoad,
+      });
+    }
+  }
+
+  // AlarmScreen abschalten falls aktiv (Check-in-Wecker blockiert sonst Care-Seiten)
+  const ausButton = page.getByText("Aus", { exact: true });
+  if (await ausButton.isVisible({ timeout: 2000 }).catch(() => false)) {
+    await ausButton.click();
+    await page.waitForTimeout(500);
+    console.log(`${prefix} AlarmScreen abgeschaltet`);
   }
 
   console.log(`${prefix} Login erfolgreich → ${page.url()}`);

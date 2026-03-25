@@ -28,8 +28,12 @@ test.describe("S3: Direktnachricht / Chat Zustellung", () => {
       await page.goto("/messages");
       await waitForStableUI(page);
       await expect(page).toHaveURL(/\/messages/);
-      // Seite laed ohne Fehler
-      const errorBanner = page.locator('[role="alert"]');
+
+      // Seite laed ohne Fehler — nur echte Fehler-Banner pruefen,
+      // nicht harmlose [role="alert"] Elemente (Sonner-Toasts, Next.js Dev-Overlay, etc.)
+      const errorBanner = page.locator('[role="alert"]').filter({
+        hasText: /fehler|error|fehlgeschlagen|nicht gefunden/i,
+      });
       const hasError = await errorBanner.isVisible().catch(() => false);
       expect(hasError).toBeFalsy();
     });

@@ -26,9 +26,7 @@ export class CareSosNewPage {
     this.visitWantedButton = page.getByText("Besuch gewuenscht");
     this.shoppingButton = page.getByText("Einkauf / Besorgung");
     this.medicationHelpButton = page.getByText("Erinnerungshilfe");
-    this.emergencyBanner = page
-      .locator("[role='alertdialog']")
-      .or(page.getByText("Wichtiger Hinweis"));
+    this.emergencyBanner = page.locator("[role='alertdialog']");
     this.emergencyCall112 = page.locator("a[href='tel:112']");
     this.emergencyCall110 = page.locator("a[href='tel:110']");
     this.emergencyAckButton = page.getByText(/Ich habe 112\/110 angerufen/i);
@@ -39,6 +37,18 @@ export class CareSosNewPage {
   async goto() {
     await this.page.goto("/care/sos/new");
     await waitForStableUI(this.page);
+    // AlarmScreen abschalten falls aktiv (Vollbild-Overlay mit z-100).
+    // Nur den echten AlarmScreen erkennen (hat "Check-in Zeit" Text).
+    const alarmScreen = this.page.getByText("Check-in Zeit");
+    if (await alarmScreen.isVisible({ timeout: 1000 }).catch(() => false)) {
+      const ausButton = this.page.getByText("Aus", { exact: true });
+      if (await ausButton.isVisible({ timeout: 500 }).catch(() => false)) {
+        await ausButton.click();
+        await this.page.waitForTimeout(500);
+      }
+      await this.page.goto("/care/sos/new");
+      await waitForStableUI(this.page);
+    }
   }
 
   async assertLoaded() {
@@ -77,8 +87,10 @@ export class CareSosNewPage {
   }
 
   async assertTouchTargetSize() {
-    const buttons = this.page.locator("button[style*='min-height']");
+    // Nur SOS-Kategorie-Buttons pruefen (nicht FABs oder andere Buttons)
+    const buttons = this.page.locator("button[style*='min-height: 80px']");
     const count = await buttons.count();
+    expect(count).toBeGreaterThanOrEqual(5); // 5 SOS-Kategorien
     for (let i = 0; i < count; i++) {
       const box = await buttons.nth(i).boundingBox();
       if (box) {

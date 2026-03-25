@@ -3,8 +3,9 @@ import { defineConfig, devices } from "@playwright/test";
 import * as path from "path";
 import { authFile } from "./helpers/auth-paths";
 
-// .env.test laden falls vorhanden
-import "dotenv/config";
+// .env.local laden (Next.js nutzt .env.local, dotenv/config laedt nur .env)
+import * as dotenv from "dotenv";
+dotenv.config({ path: path.resolve(__dirname, "../../.env.local") });
 
 export default defineConfig({
   testDir: path.resolve(__dirname),

@@ -81,32 +81,75 @@ async function loginAndSave(
   const testSecret = process.env.E2E_TEST_SECRET || "e2e-test-secret-dev";
 
   // Erst eine Seite laden damit Cookies empfangen werden koennen
+  // Zuerst /login laden, dann auf Stabilisierung warten (Redirect moeglich)
   await page.goto("/login");
+  await page.waitForLoadState("networkidle").catch(() => {});
 
-  // Test-Login-API aufrufen — setzt Session-Cookies via Supabase Server-Client
-  const response = await page.request.post(`${baseURL}/api/test/login`, {
-    data: { email, password, secret: testSecret },
-  });
-
-  if (!response.ok()) {
-    const text = await response.text();
-    console.warn(
-      `[AUTH] ${agentId} Login fehlgeschlagen: ${response.status()} ${text}`,
-    );
-    return;
-  }
-
-  const result = await response.json();
-  console.log(`[AUTH] ${agentId} Test-Login OK → userId=${result.userId}`);
-
-  // CareDisclaimer akzeptieren (blockiert sonst Care-Features mit Vollbild-Modal)
+  // CareDisclaimer akzeptieren + AlarmScreen deaktivieren + Onboarding-Skip
+  // (muss VOR dem Login gesetzt werden, damit storageState alle Flags enthaelt)
   await page.evaluate(() => {
     localStorage.setItem("care_disclaimer_accepted", "true");
+    localStorage.setItem("e2e_disable_alarm", "true");
+    localStorage.setItem("e2e_skip_onboarding", "true");
   });
+
+  // Test-Login-API aufrufen mit Retry bei Rate-Limiting (429)
+  let result: { userId?: string } = {};
+  for (let attempt = 0; attempt < 5; attempt++) {
+    if (attempt > 0) {
+      const delay = 2000 * attempt;
+      console.log(
+        `[AUTH] ${agentId} Rate-Limited, warte ${delay}ms (Versuch ${attempt + 1}/5)`,
+      );
+      await page.waitForTimeout(delay);
+    }
+
+    const response = await page.request.post(`${baseURL}/api/test/login`, {
+      data: { email, password, secret: testSecret },
+    });
+
+    if (response.ok()) {
+      result = await response.json();
+      break;
+    }
+
+    const text = await response.text();
+    if (response.status() !== 429 || attempt === 4) {
+      console.warn(
+        `[AUTH] ${agentId} Login fehlgeschlagen: ${response.status()} ${text}`,
+      );
+      return;
+    }
+  }
+  console.log(`[AUTH] ${agentId} Test-Login OK → userId=${result.userId}`);
+
+  // Onboarding-Redirect verhindern: settings.onboarding_completed via Service-Key sicherstellen
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (supabaseUrl && serviceKey && result.userId) {
+    await fetch(`${supabaseUrl}/rest/v1/users?id=eq.${result.userId}`, {
+      method: "PATCH",
+      headers: {
+        apikey: serviceKey,
+        Authorization: `Bearer ${serviceKey}`,
+        "Content-Type": "application/json",
+        Prefer: "return=minimal",
+      },
+      body: JSON.stringify({ settings: { onboarding_completed: true } }),
+    });
+  }
 
   // Zur Zielseite navigieren
   await page.goto("/dashboard");
   await page.waitForURL(expectedUrlPattern, { timeout: TIMEOUTS.pageLoad });
+
+  // Falls auf /welcome gelandet, nochmal /dashboard versuchen (Session-Race)
+  if (page.url().includes("/welcome")) {
+    console.log(`[AUTH] ${agentId} auf /welcome gelandet, retry /dashboard...`);
+    await page.waitForTimeout(1000);
+    await page.goto("/dashboard");
+    await page.waitForURL(expectedUrlPattern, { timeout: TIMEOUTS.pageLoad });
+  }
   console.log(`[AUTH] ${agentId} eingeloggt → ${page.url()}`);
 
   // Auth-State speichern

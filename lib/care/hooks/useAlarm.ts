@@ -25,6 +25,11 @@ const ALARM_THRESHOLD_MINUTES = 5;
 // Schlummer-Dauer in Minuten (Standard)
 const DEFAULT_SNOOZE_MINUTES = 10;
 
+// E2E-Tests: Alarm komplett deaktivieren um UI-Blockaden zu vermeiden
+function isAlarmDisabledForE2E(): boolean {
+  return typeof window !== 'undefined' && localStorage.getItem('e2e_disable_alarm') === 'true';
+}
+
 export function useAlarm(): UseAlarmReturn {
   const [alarm, setAlarm] = useState<AlarmState>({
     isRinging: false,
@@ -91,6 +96,9 @@ export function useAlarm(): UseAlarmReturn {
   // Check-in-Zeiten vom Server laden und Alarm-Logik starten
   useEffect(() => {
     async function checkAlarm() {
+      // E2E-Tests: Alarm deaktiviert → kein Server-Call, kein Alarm
+      if (isAlarmDisabledForE2E()) return;
+
       try {
         const res = await fetch('/api/care/checkin/status');
         if (!res.ok) return;

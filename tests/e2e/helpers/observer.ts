@@ -5,7 +5,10 @@ import { TIMEOUTS } from "./test-config";
 /**
  * Wartet bis die UI stabil ist (keine Netzwerk-Requests, keine Animationen).
  */
-export async function waitForStableUI(page: Page, options?: { timeout?: number }): Promise<void> {
+export async function waitForStableUI(
+  page: Page,
+  options?: { timeout?: number },
+): Promise<void> {
   const timeout = options?.timeout || TIMEOUTS.networkIdle;
 
   // Auf Netzwerk-Idle warten
@@ -18,16 +21,43 @@ export async function waitForStableUI(page: Page, options?: { timeout?: number }
 }
 
 /**
+ * Navigiert zu einer Care-Seite und schliesst ggf. den AlarmScreen.
+ * Der Alarm-Wecker blockiert sonst alle Care-Seiten mit einem Fullscreen-Overlay.
+ */
+export async function gotoCare(page: Page, path: string): Promise<void> {
+  await page.goto(path);
+  await waitForStableUI(page);
+
+  // AlarmScreen abschalten falls aktiv (Vollbild-Overlay mit z-100).
+  // WICHTIG: Nur den echten AlarmScreen erkennen (hat "Check-in Zeit" Text),
+  // nicht beliebige "Aus"-Buttons auf der Zielseite.
+  const alarmScreen = page.getByText("Check-in Zeit");
+  if (await alarmScreen.isVisible({ timeout: 1500 }).catch(() => false)) {
+    const ausButton = page.getByText("Aus", { exact: true });
+    if (await ausButton.isVisible({ timeout: 500 }).catch(() => false)) {
+      await ausButton.click();
+      await page.waitForTimeout(500);
+    }
+    // Nach Alarm-Abschaltung erneut navigieren
+    await page.goto(path);
+    await waitForStableUI(page);
+  }
+}
+
+/**
  * Wartet auf eine Toast-Nachricht (sonner) mit bestimmtem Text.
  */
 export async function waitForToast(
   page: Page,
   textPattern: string | RegExp,
-  options?: { timeout?: number }
+  options?: { timeout?: number },
 ): Promise<void> {
   const timeout = options?.timeout || TIMEOUTS.toast;
   const toastLocator = page.locator("[data-sonner-toast]", {
-    hasText: textPattern instanceof RegExp ? textPattern : new RegExp(textPattern, "i"),
+    hasText:
+      textPattern instanceof RegExp
+        ? textPattern
+        : new RegExp(textPattern, "i"),
   });
   await toastLocator.first().waitFor({ state: "visible", timeout });
 }
@@ -50,6 +80,10 @@ export function createConsoleErrorCollector(page: Page): {
     /AbortError/,
     /ResizeObserver loop/,
     /favicon\.ico/,
+    /Failed to load resource.*40[0-9]/, // Supabase 4xx (406 Not Acceptable, 403 Forbidden)
+    /the server responded with a status of 4/, // Generische 4xx Ressourcen-Fehler
+    /Failed to fetch/, // Supabase Auth Token-Refresh bei Navigation (harmlos)
+    /TypeError: Load failed/, // Webkit-Variante von Failed to fetch
   ];
 
   const handler = (msg: { type: () => string; text: () => string }) => {
@@ -75,7 +109,9 @@ export function createConsoleErrorCollector(page: Page): {
  */
 export async function getUnreadCount(page: Page): Promise<number> {
   // Unread-Badge in der BottomNav (Inbox)
-  const badge = page.locator('nav[aria-label="Hauptnavigation"] .bg-emergency-red');
+  const badge = page.locator(
+    'nav[aria-label="Hauptnavigation"] .bg-emergency-red',
+  );
   const isVisible = await badge.isVisible().catch(() => false);
   if (!isVisible) return 0;
 
@@ -92,13 +128,19 @@ export async function getUnreadCount(page: Page): Promise<number> {
 export async function waitForFeedItem(
   page: Page,
   textPattern: string | RegExp,
-  options?: { timeout?: number }
+  options?: { timeout?: number },
 ): Promise<void> {
   const timeout = options?.timeout || TIMEOUTS.realtimeDelivery;
   await page
-    .locator("[data-testid='feed-item'], [data-testid='help-card'], [data-testid='alert-card']", {
-      hasText: textPattern instanceof RegExp ? textPattern : new RegExp(textPattern, "i"),
-    })
+    .locator(
+      "[data-testid='feed-item'], [data-testid='help-card'], [data-testid='alert-card']",
+      {
+        hasText:
+          textPattern instanceof RegExp
+            ? textPattern
+            : new RegExp(textPattern, "i"),
+      },
+    )
     .first()
     .waitFor({ state: "visible", timeout });
 }
@@ -109,7 +151,7 @@ export async function waitForFeedItem(
 export async function waitForNotification(
   page: Page,
   textPattern: string | RegExp,
-  options?: { timeout?: number }
+  options?: { timeout?: number },
 ): Promise<void> {
   const timeout = options?.timeout || TIMEOUTS.realtimeDelivery;
 
@@ -120,7 +162,10 @@ export async function waitForNotification(
   // Auf Notification-Element warten
   await page
     .locator("[data-testid='notification-item']", {
-      hasText: textPattern instanceof RegExp ? textPattern : new RegExp(textPattern, "i"),
+      hasText:
+        textPattern instanceof RegExp
+          ? textPattern
+          : new RegExp(textPattern, "i"),
     })
     .first()
     .waitFor({ state: "visible", timeout });
@@ -131,7 +176,7 @@ export async function waitForNotification(
  */
 export async function assertCurrentRoute(
   page: Page,
-  pattern: string | RegExp
+  pattern: string | RegExp,
 ): Promise<void> {
   if (typeof pattern === "string") {
     await expect(page).toHaveURL(new RegExp(pattern));
@@ -144,7 +189,9 @@ export async function assertCurrentRoute(
  * Sammelt alle sichtbaren Fehler-Banner/Meldungen auf der Seite.
  */
 export async function getVisibleErrors(page: Page): Promise<string[]> {
-  const errorElements = page.locator('[role="alert"], .text-emergency-red, .text-destructive');
+  const errorElements = page.locator(
+    '[role="alert"], .text-emergency-red, .text-destructive',
+  );
   const count = await errorElements.count();
   const errors: string[] = [];
 
@@ -162,7 +209,7 @@ export async function getVisibleErrors(page: Page): Promise<string[]> {
 export async function takeAgentScreenshot(
   page: Page,
   agentPrefix: string,
-  name: string
+  name: string,
 ): Promise<string> {
   const path = `test-results/screenshots/${agentPrefix}_${name}_${Date.now()}.png`;
   await page.screenshot({ path, fullPage: true });
@@ -175,12 +222,15 @@ export async function takeAgentScreenshot(
 export async function waitForChatMessage(
   page: Page,
   textPattern: string | RegExp,
-  options?: { timeout?: number }
+  options?: { timeout?: number },
 ): Promise<void> {
   const timeout = options?.timeout || TIMEOUTS.realtimeDelivery;
   await page
     .locator("[data-testid='chat-message']", {
-      hasText: textPattern instanceof RegExp ? textPattern : new RegExp(textPattern, "i"),
+      hasText:
+        textPattern instanceof RegExp
+          ? textPattern
+          : new RegExp(textPattern, "i"),
     })
     .first()
     .waitFor({ state: "visible", timeout });

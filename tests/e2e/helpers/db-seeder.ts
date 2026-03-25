@@ -42,7 +42,8 @@ async function supabaseAdmin(
       return { data: null, error: `${res.status}: ${text}` };
     }
 
-    if (method === "DELETE") return { data: null, error: null };
+    if (method === "DELETE" || method === "PATCH")
+      return { data: null, error: null };
     const data = await res.json();
     return { data, error: null };
   } catch (err) {
@@ -77,30 +78,34 @@ async function createAuthUser(
 
   if (!res.ok) {
     const text = await res.text();
-    // Nutzer existiert bereits → ID auslesen
+    // Nutzer existiert bereits → ID via signInWithPassword holen
     if (
       text.includes("already been registered") ||
-      text.includes("already exists")
+      text.includes("already exists") ||
+      text.includes("email_exists")
     ) {
-      const listRes = await fetch(
-        `${SUPABASE_URL}/auth/v1/admin/users?filter=email.eq.${encodeURIComponent(email)}`,
+      const anonKey =
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || SUPABASE_SERVICE_KEY;
+      const signInRes = await fetch(
+        `${SUPABASE_URL}/auth/v1/token?grant_type=password`,
         {
+          method: "POST",
           headers: {
-            apikey: SUPABASE_SERVICE_KEY,
-            Authorization: `Bearer ${SUPABASE_SERVICE_KEY}`,
+            apikey: anonKey,
+            "Content-Type": "application/json",
           },
+          body: JSON.stringify({ email, password }),
         },
       );
-      if (listRes.ok) {
-        const listData = await listRes.json();
-        const user = listData.users?.find(
-          (u: { email: string }) => u.email === email,
-        );
-        if (user) return { userId: user.id, error: null };
+      if (signInRes.ok) {
+        const signInData = await signInRes.json();
+        if (signInData.user?.id) {
+          return { userId: signInData.user.id, error: null };
+        }
       }
       return {
         userId: null,
-        error: `User exists but could not be found: ${text}`,
+        error: `User exists but sign-in failed: ${text}`,
       };
     }
     return { userId: null, error: `${res.status}: ${text}` };
@@ -203,21 +208,30 @@ async function seedAgent(
     return null;
   }
 
-  // 2. Profil anlegen (upsert)
-  const { error: profileError } = await supabaseAdmin("users", "POST", {
+  // 2. Profil anlegen (upsert — bei Duplikat aktualisieren)
+  const profileData = {
     id: userId,
     email_hash: "",
     display_name: creds.displayName,
     ui_mode: creds.uiMode,
     is_admin: creds.isAdmin || false,
     trust_level: creds.role === "unverified" ? "new" : "verified",
-  });
+    settings: { onboarding_completed: true },
+  };
+  const { error: profileError } = await supabaseAdmin(
+    "users",
+    "POST",
+    profileData,
+  );
 
   if (
     profileError &&
-    !profileError.includes("duplicate") &&
-    !profileError.includes("409")
+    (profileError.includes("duplicate") || profileError.includes("409"))
   ) {
+    // Bestehenden User aktualisieren (ui_mode, trust_level etc.)
+    const { id: _id, ...updateData } = profileData;
+    await supabaseAdmin("users", "PATCH", updateData, `id=eq.${userId}`);
+  } else if (profileError) {
     console.warn(`[SEED] Agent ${agentId} Profil: ${profileError}`);
   }
 
@@ -226,6 +240,7 @@ async function seedAgent(
     (h) => h.inviteCode === creds.inviteCode,
   );
   if (household) {
+    const verifiedAt = new Date().toISOString();
     const { error: memberError } = await supabaseAdmin(
       "household_members",
       "POST",
@@ -233,15 +248,57 @@ async function seedAgent(
         household_id: household.id,
         user_id: userId,
         role: creds.isAdmin ? "owner" : "member",
+        verified_at: verifiedAt,
       },
     );
 
     if (
       memberError &&
-      !memberError.includes("duplicate") &&
-      !memberError.includes("409")
+      (memberError.includes("duplicate") || memberError.includes("409"))
     ) {
+      // Bestehende Zeile: verified_at sicherstellen (alter Datensatz hat evtl. NULL)
+      const { error: patchError } = await supabaseAdmin(
+        "household_members",
+        "PATCH",
+        { verified_at: verifiedAt },
+        `household_id=eq.${household.id}&user_id=eq.${userId}`,
+      );
+      if (patchError) {
+        console.warn(
+          `[SEED] Agent ${agentId} verified_at PATCH: ${patchError}`,
+        );
+      } else {
+        console.log(`[SEED] Agent ${agentId} verified_at aktualisiert`);
+      }
+    } else if (memberError) {
       console.warn(`[SEED] Agent ${agentId} Mitgliedschaft: ${memberError}`);
+    }
+  }
+
+  // 4. Care-Consent anlegen (Art. 9 DSGVO — noetig fuer Check-in, SOS, Medikamente)
+  const consentFeatures = ["checkin", "sos", "medications", "heartbeat"];
+  for (const feature of consentFeatures) {
+    const { error: consentError } = await supabaseAdmin(
+      "care_consents",
+      "POST",
+      {
+        user_id: userId,
+        feature,
+        granted: true,
+        consent_version: "e2e-test-v1",
+      },
+    );
+    if (
+      consentError &&
+      !consentError.includes("duplicate") &&
+      !consentError.includes("409")
+    ) {
+      // Tabelle existiert evtl. nicht — nur loggen, nicht abbrechen
+      if (!consentError.includes("404")) {
+        console.warn(
+          `[SEED] Agent ${agentId} Consent ${feature}: ${consentError}`,
+        );
+      }
     }
   }
 

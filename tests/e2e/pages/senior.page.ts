@@ -14,9 +14,11 @@ export class SeniorHomePage {
 
   constructor(page: Page) {
     this.page = page;
+    // .first() verhindert strict-mode-violation: data-testid UND inner <p> matchen beide
     this.greeting = page
       .locator("[data-testid='senior-greeting']")
-      .or(page.getByText(/Guten Tag|Guten Morgen|Guten Abend/i).first());
+      .or(page.getByText(/Guten Tag|Guten Morgen|Guten Abend/i).first())
+      .first();
     this.helpButton = page
       .locator("[data-testid='senior-help-button']")
       .or(page.getByText("Hilfe anfragen"));

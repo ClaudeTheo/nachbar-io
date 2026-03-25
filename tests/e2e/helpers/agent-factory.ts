@@ -128,13 +128,14 @@ export async function loginAgent(agent: TestAgent): Promise<void> {
   const supabaseUrlEnv = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
-  // Test-Login-API aufrufen mit Retry bei Rate-Limiting (429)
+  // Test-Login-API aufrufen mit Retry bei Rate-Limiting (429) oder temporaerem 401
+  // Supabase gibt manchmal 401 statt 429 bei IP-basiertem Rate-Limiting zurueck
   let lastError = "";
   for (let attempt = 0; attempt < 5; attempt++) {
     if (attempt > 0) {
       const delay = 2000 * attempt; // 2s, 4s, 6s, 8s
       console.log(
-        `${prefix} Rate-Limited, warte ${delay}ms (Versuch ${attempt + 1}/5)`,
+        `${prefix} Login-Retry, warte ${delay}ms (Versuch ${attempt + 1}/5)`,
       );
       await page.waitForTimeout(delay);
     }
@@ -168,9 +169,12 @@ export async function loginAgent(agent: TestAgent): Promise<void> {
     }
 
     lastError = await response.text();
-    if (response.status() !== 429) {
+    const status = response.status();
+    const isRetryable = status === 429 || (status === 401 && lastError.includes("Invalid login credentials"));
+
+    if (!isRetryable) {
       throw new Error(
-        `${prefix} Test-Login fehlgeschlagen: ${response.status()} ${lastError}`,
+        `${prefix} Test-Login fehlgeschlagen: ${status} ${lastError}`,
       );
     }
 

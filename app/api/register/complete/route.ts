@@ -307,14 +307,14 @@ export async function POST(request: NextRequest) {
         ? "verified"
         : "new";
 
-    const { error: profileError } = await adminDb.from("users").insert({
+    const { error: profileError } = await adminDb.from("users").upsert({
       id: userId,
       email_hash: "",
       display_name: displayName.trim(),
       ui_mode: uiMode || "active",
       role: "resident",  // Vier-Versionen-Modell: Standard-Rolle fuer Bewohner
       trust_level: trustLevel,
-    });
+    }, { onConflict: "id" });
 
     if (profileError) {
       console.error("Profil-Fehler:", profileError);

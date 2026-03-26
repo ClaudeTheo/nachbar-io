@@ -15,11 +15,27 @@ test.describe("S1: Onboarding — 2-Schritt Magic-Link-Flow", () => {
     // Supabase signInWithOtp mocken — verhindert echte E-Mail-Zustellung
     // und umgeht Supabase's eigenes Email-Rate-Limit (CI schlaegt sonst fehl)
     await page.route("**/auth/v1/otp", async (route) => {
+      console.log("[S1.1] OTP-Route intercepted:", route.request().url());
       await route.fulfill({
         status: 200,
         contentType: "application/json",
         body: JSON.stringify({}),
       });
+    });
+
+    // Debug: Alle API-Responses loggen
+    page.on("response", (response) => {
+      const url = response.url();
+      if (url.includes("/api/") || url.includes("/auth/")) {
+        console.log(`[S1.1] ${response.status()} ${url}`);
+      }
+    });
+
+    // Debug: Console-Fehler der Seite loggen
+    page.on("console", (msg) => {
+      if (msg.type() === "error") {
+        console.log(`[S1.1] CONSOLE ERROR: ${msg.text()}`);
+      }
     });
 
     const registerPage = new RegisterPage(page);
@@ -37,10 +53,18 @@ test.describe("S1: Onboarding — 2-Schritt Magic-Link-Flow", () => {
 
     // Invite-Code eingeben → weiter zu Identity
     await registerPage.fillInviteCode(TEST_AGENTS.nachbar_a.inviteCode);
+    console.log("[S1.1] Invite-Code geprueft, auf Identity-Step wartend...");
 
     // Schritt 2: Name + E-Mail (einzigartige E-Mail!)
     await registerPage.assertOnStep(2);
+    console.log("[S1.1] Identity-Step erreicht, fuelle Formular...");
     await registerPage.fillIdentity("E2E Testnutzer", uniqueEmail);
+    console.log("[S1.1] Formular abgeschickt, warte auf Bestaetigung...");
+
+    // Debug: Page-Inhalt vor Assertion loggen
+    await page.waitForTimeout(2000);
+    const pageText = await page.locator("body").innerText();
+    console.log("[S1.1] Page-Text nach Submit:", pageText.substring(0, 500));
 
     // Bestaetigung: Magic Link gesendet
     await registerPage.assertMagicLinkSent(uniqueEmail);

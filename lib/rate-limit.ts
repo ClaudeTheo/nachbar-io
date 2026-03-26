@@ -261,5 +261,8 @@ export function checkRateLimit(
   const category = getRouteCategory(pathname);
   if (!category) return null; // Route wird uebersprungen
 
-  return rateLimiter.check(clientKey, category.limit, category.windowMs);
+  // Key MUSS Kategorie enthalten — sonst teilen sich alle Routen
+  // einer IP denselben Bucket (z.B. "default" 60/min frisst "auth" 5/min auf)
+  const scopedKey = `${category.name}:${clientKey}`;
+  return rateLimiter.check(scopedKey, category.limit, category.windowMs);
 }

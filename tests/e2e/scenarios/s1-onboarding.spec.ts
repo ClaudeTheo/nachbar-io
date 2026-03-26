@@ -12,6 +12,16 @@ test.describe("S1: Onboarding — 2-Schritt Magic-Link-Flow", () => {
     const context = await browser.newContext({ locale: "de-DE" });
     const page = await context.newPage();
 
+    // Supabase signInWithOtp mocken — verhindert echte E-Mail-Zustellung
+    // und umgeht Supabase's eigenes Email-Rate-Limit (CI schlaegt sonst fehl)
+    await page.route("**/auth/v1/otp", async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({}),
+      });
+    });
+
     const registerPage = new RegisterPage(page);
     await registerPage.goto();
 

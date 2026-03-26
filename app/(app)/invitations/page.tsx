@@ -20,7 +20,7 @@ import { Separator } from "@/components/ui/separator";
 import { InviteNeighborModal } from "@/components/InviteNeighborModal";
 import { formatCode } from "@/lib/invite-codes";
 import { createClient } from "@/lib/supabase/client";
-import { useAuth } from '@/hooks/use-auth';
+import { useAuth } from "@/hooks/use-auth";
 import { toast } from "sonner";
 
 interface Invitation {
@@ -75,6 +75,7 @@ export default function InvitationsPage() {
 
   useEffect(() => {
     loadInvitations();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   async function copyCode(id: string, code: string) {
@@ -92,7 +93,9 @@ export default function InvitationsPage() {
 
   // Statistiken berechnen
   const openCount = invitations.filter((i) => i.status === "sent").length;
-  const acceptedCount = invitations.filter((i) => i.status === "accepted" || i.status === "converted").length;
+  const acceptedCount = invitations.filter(
+    (i) => i.status === "accepted" || i.status === "converted",
+  ).length;
   const expiredCount = invitations.filter((i) => i.status === "expired").length;
   const pointsEarned = acceptedCount * 50;
 
@@ -155,7 +158,6 @@ export default function InvitationsPage() {
   }
 
   function daysAgo(dateStr: string) {
-    // eslint-disable-next-line react-hooks/purity
     const diff = Date.now() - new Date(dateStr).getTime();
     const days = Math.floor(diff / (1000 * 60 * 60 * 24));
     if (days === 0) return "Heute";
@@ -191,13 +193,17 @@ export default function InvitationsPage() {
         </Card>
         <Card>
           <CardContent className="p-3 text-center">
-            <p className="text-2xl font-bold text-quartier-green">{acceptedCount}</p>
+            <p className="text-2xl font-bold text-quartier-green">
+              {acceptedCount}
+            </p>
             <p className="text-[11px] text-muted-foreground">Angenommen</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="p-3 text-center">
-            <p className="text-2xl font-bold text-quartier-green">{pointsEarned}</p>
+            <p className="text-2xl font-bold text-quartier-green">
+              {pointsEarned}
+            </p>
             <p className="text-[11px] text-muted-foreground">Punkte</p>
           </CardContent>
         </Card>
@@ -219,7 +225,8 @@ export default function InvitationsPage() {
         <div className="rounded-lg bg-amber-50 p-3 text-sm text-amber-700">
           <p className="font-medium">Limit erreicht</p>
           <p className="mt-1 text-xs">
-            Sie haben {inviteLimit} offene Einladungen. Neue Einladungen sind möglich, sobald bestehende angenommen oder abgelaufen sind.
+            Sie haben {inviteLimit} offene Einladungen. Neue Einladungen sind
+            möglich, sobald bestehende angenommen oder abgelaufen sind.
           </p>
         </div>
       )}
@@ -286,15 +293,19 @@ export default function InvitationsPage() {
                         className={`rounded-full px-1.5 py-0.5 text-[10px] font-medium ${
                           invitation.status === "sent"
                             ? "bg-amber-50 text-alert-amber"
-                            : (invitation.status === "accepted" || invitation.status === "converted")
-                            ? "bg-green-50 text-quartier-green"
-                            : "bg-gray-100 text-gray-500"
+                            : invitation.status === "accepted" ||
+                                invitation.status === "converted"
+                              ? "bg-green-50 text-quartier-green"
+                              : "bg-gray-100 text-gray-500"
                         }`}
                       >
                         {getStatusLabel(invitation.status)}
                       </span>
-                      {(invitation.status === "accepted" || invitation.status === "converted") && (
-                        <span className="text-quartier-green font-medium">+50 Punkte</span>
+                      {(invitation.status === "accepted" ||
+                        invitation.status === "converted") && (
+                        <span className="text-quartier-green font-medium">
+                          +50 Punkte
+                        </span>
                       )}
                     </div>
                   </div>
@@ -305,7 +316,9 @@ export default function InvitationsPage() {
                       size="sm"
                       variant="ghost"
                       className="ml-2 shrink-0"
-                      onClick={() => copyCode(invitation.id, invitation.invite_code)}
+                      onClick={() =>
+                        copyCode(invitation.id, invitation.invite_code)
+                      }
                     >
                       {copiedId === invitation.id ? (
                         <Check className="h-4 w-4 text-quartier-green" />
@@ -324,7 +337,8 @@ export default function InvitationsPage() {
       {/* Abgelaufen-Hinweis */}
       {expiredCount > 0 && (
         <p className="text-center text-xs text-muted-foreground">
-          {expiredCount} Einladung{expiredCount !== 1 ? "en" : ""} abgelaufen (30 Tage Gültigkeit)
+          {expiredCount} Einladung{expiredCount !== 1 ? "en" : ""} abgelaufen
+          (30 Tage Gültigkeit)
         </p>
       )}
 

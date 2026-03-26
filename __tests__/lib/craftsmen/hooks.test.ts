@@ -37,7 +37,9 @@ describe("loadCraftsmenList", () => {
       order: vi.fn().mockReturnThis(),
       range: vi.fn().mockResolvedValue({ data: [], error: null }),
     };
-    mockFrom.mockReturnValue(mockChain as unknown as ReturnType<typeof mockFrom>);
+    mockFrom.mockReturnValue(
+      mockChain as unknown as ReturnType<typeof mockFrom>,
+    );
 
     await loadCraftsmenList({});
     expect(mockFrom).toHaveBeenCalledWith("community_tips");
@@ -64,11 +66,12 @@ describe("submitRecommendation", () => {
     const reputationChain = {
       insert: vi.fn().mockResolvedValue({ error: null }),
     };
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    /* eslint-disable @typescript-eslint/no-explicit-any */
     mockFrom.mockImplementation(((table: string) => {
       if (table === "reputation_points") return reputationChain;
       return recChain;
     }) as any);
+    /* eslint-enable @typescript-eslint/no-explicit-any */
 
     await submitRecommendation({
       tipId: "t1",
@@ -85,7 +88,7 @@ describe("submitRecommendation", () => {
         recommends: true,
         confirmed_usage: false,
       }),
-      expect.objectContaining({ onConflict: "tip_id,user_id" })
+      expect.objectContaining({ onConflict: "tip_id,user_id" }),
     );
   });
 });
@@ -98,7 +101,9 @@ describe("logUsageEvent", () => {
     const mockChain = {
       insert: vi.fn().mockResolvedValue({ error: null }),
     };
-    mockFrom.mockReturnValue(mockChain as unknown as ReturnType<typeof mockFrom>);
+    mockFrom.mockReturnValue(
+      mockChain as unknown as ReturnType<typeof mockFrom>,
+    );
 
     await logUsageEvent({ tipId: "t1", note: "Badezimmer renoviert" });
 
@@ -108,7 +113,7 @@ describe("logUsageEvent", () => {
         tip_id: "t1",
         user_id: "u1",
         note: "Badezimmer renoviert",
-      })
+      }),
     );
   });
 });

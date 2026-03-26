@@ -25,8 +25,7 @@ import { CraftsmanRecommendation } from "@/components/craftsmen/CraftsmanRecomme
 import { loadCraftsmanDetail } from "@/lib/craftsmen/hooks";
 import { calculateTrustScore } from "@/lib/craftsmen/trust-score";
 import { CRAFTSMAN_SUBCATEGORIES } from "@/lib/constants";
-import { createClient } from "@/lib/supabase/client";
-import { useAuth } from '@/hooks/use-auth';
+import { useAuth } from "@/hooks/use-auth";
 import type {
   CommunityTip,
   CraftsmanRecommendation as CraftsmanRec,
@@ -40,7 +39,9 @@ export default function HandwerkerDetailPage() {
   const [tip, setTip] = useState<CommunityTip | null>(null);
   const [recommendations, setRecommendations] = useState<CraftsmanRec[]>([]);
   const [usageEvents, setUsageEvents] = useState<CraftsmanUsageEvent[]>([]);
-  const [trustScore, setTrustScore] = useState<CraftsmanTrustScore | null>(null);
+  const [trustScore, setTrustScore] = useState<CraftsmanTrustScore | null>(
+    null,
+  );
 
   const [sameStreetCount, setSameStreetCount] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -49,10 +50,6 @@ export default function HandwerkerDetailPage() {
   const loadData = useCallback(async () => {
     setLoading(true);
     try {
-      const supabase = createClient();
-
-      // Aktuellen Benutzer laden
-
       // Detail laden
       const detail = await loadCraftsmanDetail(id as string);
       setTip(detail.tip);
@@ -68,7 +65,7 @@ export default function HandwerkerDetailPage() {
 
       // Same-Street Badge: Empfehlungen aus gleicher Strasse zaehlen
       const sameStreet = detail.recommendations.filter(
-        (r) => (r as CraftsmanRec & { same_street?: boolean }).same_street
+        (r) => (r as CraftsmanRec & { same_street?: boolean }).same_street,
       ).length;
       setSameStreetCount(sameStreet);
     } catch (err) {
@@ -103,7 +100,10 @@ export default function HandwerkerDetailPage() {
   if (error && !tip) {
     return (
       <div className="space-y-4">
-        <Link href="/handwerker" className="flex items-center gap-2 text-sm text-muted-foreground hover:underline">
+        <Link
+          href="/handwerker"
+          className="flex items-center gap-2 text-sm text-muted-foreground hover:underline"
+        >
           <ArrowLeft className="h-4 w-4" /> Zurück zu Handwerker
         </Link>
         <p className="text-center text-muted-foreground">{error}</p>
@@ -119,7 +119,9 @@ export default function HandwerkerDetailPage() {
   });
 
   // Primaeres Subcategory-Icon
-  const primarySub = CRAFTSMAN_SUBCATEGORIES.find((s) => s.id === tip.subcategories?.[0]);
+  const primarySub = CRAFTSMAN_SUBCATEGORIES.find(
+    (s) => s.id === tip.subcategories?.[0],
+  );
   const icon = primarySub?.icon ?? "🔧";
 
   // Letzte 5 Usage-Events
@@ -155,7 +157,9 @@ export default function HandwerkerDetailPage() {
             )}
 
             {/* Beschreibung */}
-            <p className="mt-3 text-muted-foreground whitespace-pre-line">{tip.description}</p>
+            <p className="mt-3 text-muted-foreground whitespace-pre-line">
+              {tip.description}
+            </p>
 
             {/* Kontakt & Standort */}
             <div className="mt-4 space-y-2 rounded-lg bg-muted/50 p-3">
@@ -179,7 +183,9 @@ export default function HandwerkerDetailPage() {
               )}
               {(tip as CommunityTip & { website_url?: string }).website_url && (
                 <ExternalLink
-                  href={(tip as CommunityTip & { website_url: string }).website_url}
+                  href={
+                    (tip as CommunityTip & { website_url: string }).website_url
+                  }
                   title="Website"
                   className="flex items-center gap-2 text-sm text-quartier-green hover:underline min-h-[44px]"
                 >
@@ -193,10 +199,14 @@ export default function HandwerkerDetailPage() {
                   {tip.location_hint}
                 </p>
               )}
-              {(tip as CommunityTip & { opening_hours?: string }).opening_hours && (
+              {(tip as CommunityTip & { opening_hours?: string })
+                .opening_hours && (
                 <p className="flex items-center gap-2 text-sm text-muted-foreground">
                   <CalendarClock className="h-4 w-4 shrink-0" />
-                  {(tip as CommunityTip & { opening_hours: string }).opening_hours}
+                  {
+                    (tip as CommunityTip & { opening_hours: string })
+                      .opening_hours
+                  }
                 </p>
               )}
               {tip.service_area && (
@@ -209,17 +219,20 @@ export default function HandwerkerDetailPage() {
             </div>
 
             {/* Bilder */}
-            {((tip as CommunityTip & { images?: string[] }).images?.length ?? 0) > 0 && (
+            {((tip as CommunityTip & { images?: string[] }).images?.length ??
+              0) > 0 && (
               <div className="mt-3 flex gap-2 overflow-x-auto">
-                {(tip as CommunityTip & { images: string[] }).images.map((url: string, i: number) => (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
-                    key={i}
-                    src={url}
-                    alt={`Bild ${i + 1}`}
-                    className="h-32 w-32 rounded-lg object-cover flex-shrink-0"
-                  />
-                ))}
+                {(tip as CommunityTip & { images: string[] }).images.map(
+                  (url: string, i: number) => (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      key={i}
+                      src={url}
+                      alt={`Bild ${i + 1}`}
+                      className="h-32 w-32 rounded-lg object-cover flex-shrink-0"
+                    />
+                  ),
+                )}
               </div>
             )}
 
@@ -245,14 +258,23 @@ export default function HandwerkerDetailPage() {
       {/* Trust-Score Banner */}
       {trustScore && (
         <div className="rounded-xl border-2 border-border bg-white p-5 text-center">
-          <h3 className="mb-3 text-base font-bold text-anthrazit">Vertrauens-Score</h3>
+          <h3 className="mb-3 text-base font-bold text-anthrazit">
+            Vertrauens-Score
+          </h3>
           <div className="flex justify-center">
-            <TrustScoreBadge score={trustScore} size="md" showRecency showUsageCount />
+            <TrustScoreBadge
+              score={trustScore}
+              size="md"
+              showRecency
+              showUsageCount
+            />
           </div>
           {sameStreetCount > 0 && (
             <p className="mt-3 text-sm text-muted-foreground">
               <MapPin className="inline h-3.5 w-3.5 mr-1" />
-              {sameStreetCount} {sameStreetCount === 1 ? "Empfehlung" : "Empfehlungen"} aus Ihrer Straße
+              {sameStreetCount}{" "}
+              {sameStreetCount === 1 ? "Empfehlung" : "Empfehlungen"} aus Ihrer
+              Straße
             </p>
           )}
         </div>
@@ -261,10 +283,15 @@ export default function HandwerkerDetailPage() {
       {/* Letzte Nutzungen */}
       {recentUsage.length > 0 && (
         <div className="rounded-xl border-2 border-border bg-white p-5">
-          <h3 className="mb-3 text-base font-bold text-anthrazit">Letzte Beauftragungen</h3>
+          <h3 className="mb-3 text-base font-bold text-anthrazit">
+            Letzte Beauftragungen
+          </h3>
           <div className="space-y-2">
             {recentUsage.map((event) => (
-              <div key={event.id} className="flex items-center gap-2 text-sm text-muted-foreground">
+              <div
+                key={event.id}
+                className="flex items-center gap-2 text-sm text-muted-foreground"
+              >
                 <Clock className="h-3.5 w-3.5 shrink-0" />
                 <span>
                   {formatDistanceToNow(new Date(event.used_at), {
@@ -272,9 +299,7 @@ export default function HandwerkerDetailPage() {
                     locale: de,
                   })}
                 </span>
-                {event.note && (
-                  <span className="text-xs">— {event.note}</span>
-                )}
+                {event.note && <span className="text-xs">— {event.note}</span>}
               </div>
             ))}
           </div>
@@ -284,7 +309,9 @@ export default function HandwerkerDetailPage() {
       {/* Empfehlungen */}
       {user?.id && (
         <div className="rounded-xl border-2 border-border bg-white p-5">
-          <h3 className="mb-4 text-base font-bold text-anthrazit">Empfehlungen</h3>
+          <h3 className="mb-4 text-base font-bold text-anthrazit">
+            Empfehlungen
+          </h3>
           <CraftsmanRecommendation
             tipId={tip.id}
             currentUserId={user?.id ?? null}

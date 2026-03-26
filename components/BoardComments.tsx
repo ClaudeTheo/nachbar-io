@@ -31,10 +31,6 @@ export function BoardComments({ postId, currentUserId }: BoardCommentsProps) {
   const [sending, setSending] = useState(false);
   const [commentCount, setCommentCount] = useState(0);
 
-  useEffect(() => {
-    loadCommentCount();
-  }, [postId]);
-
   async function loadCommentCount() {
     const supabase = createClient();
     const { count } = await supabase
@@ -44,11 +40,18 @@ export function BoardComments({ postId, currentUserId }: BoardCommentsProps) {
     setCommentCount(count ?? 0);
   }
 
+  useEffect(() => {
+    loadCommentCount();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [postId]);
+
   async function loadComments() {
     const supabase = createClient();
     const { data } = await supabase
       .from("board_comments")
-      .select("id, user_id, text, created_at, user:users(display_name, avatar_url)")
+      .select(
+        "id, user_id, text, created_at, user:users(display_name, avatar_url)",
+      )
       .eq("post_id", postId)
       .order("created_at", { ascending: true })
       .limit(20);
@@ -75,7 +78,9 @@ export function BoardComments({ postId, currentUserId }: BoardCommentsProps) {
         user_id: currentUserId,
         text: newComment.trim(),
       })
-      .select("id, user_id, text, created_at, user:users(display_name, avatar_url)")
+      .select(
+        "id, user_id, text, created_at, user:users(display_name, avatar_url)",
+      )
       .single();
 
     if (error) {

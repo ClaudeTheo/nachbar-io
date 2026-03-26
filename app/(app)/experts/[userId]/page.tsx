@@ -19,11 +19,16 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { PageHeader } from "@/components/ui/page-header";
 import { createClient } from "@/lib/supabase/client";
-import { useAuth } from '@/hooks/use-auth';
+import { useAuth } from "@/hooks/use-auth";
 import { useQuarter } from "@/lib/quarters";
 import { createNotification } from "@/lib/notifications";
 import { SKILL_CATEGORIES, TRUST_LEVELS } from "@/lib/constants";
-import type { Skill, ExpertReview, ExpertEndorsement, User } from "@/lib/supabase/types";
+import type {
+  Skill,
+  ExpertReview,
+  ExpertEndorsement,
+  User,
+} from "@/lib/supabase/types";
 
 export default function ExpertDetailPage() {
   const { user } = useAuth();
@@ -81,7 +86,9 @@ export default function ExpertDetailPage() {
     // Reviews laden (mit Reviewer-Name)
     const { data: reviewsData } = await supabase
       .from("expert_reviews")
-      .select("*, reviewer:users!expert_reviews_reviewer_user_id_fkey(display_name, avatar_url)")
+      .select(
+        "*, reviewer:users!expert_reviews_reviewer_user_id_fkey(display_name, avatar_url)",
+      )
       .eq("expert_user_id", expertUserId)
       .order("created_at", { ascending: false });
     if (reviewsData) {
@@ -91,8 +98,11 @@ export default function ExpertDetailPage() {
       if (user) {
         const myRevCats = new Set(
           reviewsData
-            .filter((r: { reviewer_user_id: string }) => r.reviewer_user_id === user.id)
-            .map((r: { skill_category: string }) => r.skill_category)
+            .filter(
+              (r: { reviewer_user_id: string }) =>
+                r.reviewer_user_id === user.id,
+            )
+            .map((r: { skill_category: string }) => r.skill_category),
         );
         setMyReviews(myRevCats);
       }
@@ -101,7 +111,9 @@ export default function ExpertDetailPage() {
     // Endorsements laden
     const { data: endorsementsData } = await supabase
       .from("expert_endorsements")
-      .select("*, endorser:users!expert_endorsements_endorser_user_id_fkey(display_name, avatar_url)")
+      .select(
+        "*, endorser:users!expert_endorsements_endorser_user_id_fkey(display_name, avatar_url)",
+      )
       .eq("expert_user_id", expertUserId)
       .order("created_at", { ascending: false });
     if (endorsementsData) {
@@ -111,18 +123,21 @@ export default function ExpertDetailPage() {
       if (user) {
         const myEndCats = new Set(
           endorsementsData
-            .filter((e: { endorser_user_id: string }) => e.endorser_user_id === user.id)
-            .map((e: { skill_category: string }) => e.skill_category)
+            .filter(
+              (e: { endorser_user_id: string }) =>
+                e.endorser_user_id === user.id,
+            )
+            .map((e: { skill_category: string }) => e.skill_category),
         );
         setMyEndorsements(myEndCats);
       }
     }
 
     setLoading(false);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [expertUserId]);
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     loadExpertData();
   }, [loadExpertData]);
 
@@ -148,7 +163,9 @@ export default function ExpertDetailPage() {
       }
 
       // Experten ueber Bewertung benachrichtigen
-      const catLabel = SKILL_CATEGORIES.find((c) => c.id === reviewCategory)?.label ?? reviewCategory;
+      const catLabel =
+        SKILL_CATEGORIES.find((c) => c.id === reviewCategory)?.label ??
+        reviewCategory;
       createNotification({
         userId: expertUserId,
         type: "expert_review",
@@ -196,7 +213,9 @@ export default function ExpertDetailPage() {
         });
 
         // Experten ueber Empfehlung benachrichtigen (anonym — kein Name)
-        const catLabel = SKILL_CATEGORIES.find((c) => c.id === skillCategory)?.label ?? skillCategory;
+        const catLabel =
+          SKILL_CATEGORIES.find((c) => c.id === skillCategory)?.label ??
+          skillCategory;
         createNotification({
           userId: expertUserId,
           type: "expert_endorsement",
@@ -225,7 +244,7 @@ export default function ExpertDetailPage() {
       .from("conversations")
       .select("id")
       .or(
-        `and(participant_1.eq.${user?.id},participant_2.eq.${expertUserId}),and(participant_1.eq.${expertUserId},participant_2.eq.${user?.id})`
+        `and(participant_1.eq.${user?.id},participant_2.eq.${expertUserId}),and(participant_1.eq.${expertUserId},participant_2.eq.${user?.id})`,
       )
       .maybeSingle();
 
@@ -271,14 +290,18 @@ export default function ExpertDetailPage() {
     return (
       <div className="py-12 text-center">
         <p className="text-muted-foreground">Experte nicht gefunden.</p>
-        <Link href="/experts" className="mt-3 inline-block text-sm text-quartier-green hover:underline">
+        <Link
+          href="/experts"
+          className="mt-3 inline-block text-sm text-quartier-green hover:underline"
+        >
           Zurueck zur Übersicht
         </Link>
       </div>
     );
   }
 
-  const trustInfo = TRUST_LEVELS[expert.trust_level as keyof typeof TRUST_LEVELS];
+  const trustInfo =
+    TRUST_LEVELS[expert.trust_level as keyof typeof TRUST_LEVELS];
   const memberSince = new Date(expert.created_at).toLocaleDateString("de-DE", {
     month: "long",
     year: "numeric",
@@ -361,7 +384,7 @@ export default function ExpertDetailPage() {
           {skills.map((skill) => {
             const cat = SKILL_CATEGORIES.find((c) => c.id === skill.category);
             const endorseCount = endorsements.filter(
-              (e) => e.skill_category === skill.category
+              (e) => e.skill_category === skill.category,
             ).length;
             const isEndorsedByMe = myEndorsements.has(skill.category);
 
@@ -454,7 +477,7 @@ export default function ExpertDetailPage() {
                 .filter((s) => !myReviews.has(s.category))
                 .map((skill) => {
                   const cat = SKILL_CATEGORIES.find(
-                    (c) => c.id === skill.category
+                    (c) => c.id === skill.category,
                   );
                   return (
                     <button
@@ -550,7 +573,7 @@ export default function ExpertDetailPage() {
           <div className="space-y-3">
             {visibleReviews.map((review) => {
               const cat = SKILL_CATEGORIES.find(
-                (c) => c.id === review.skill_category
+                (c) => c.id === review.skill_category,
               );
               const reviewer = review.reviewer as unknown as Pick<
                 User,
@@ -565,16 +588,25 @@ export default function ExpertDetailPage() {
                   <div className="flex items-start justify-between">
                     <div className="flex items-center gap-2">
                       <div className="flex h-8 w-8 items-center justify-center rounded-full bg-lightgray text-xs font-bold text-anthrazit">
-                        {isOwnProfile ? "👤" : (reviewer?.display_name?.charAt(0) ?? "?")}
+                        {isOwnProfile
+                          ? "👤"
+                          : (reviewer?.display_name?.charAt(0) ?? "?")}
                       </div>
                       <div>
                         <p className="text-sm font-medium text-anthrazit">
-                          {isOwnProfile ? "Ein Nachbar" : (reviewer?.display_name ?? "Unbekannt")}
+                          {isOwnProfile
+                            ? "Ein Nachbar"
+                            : (reviewer?.display_name ?? "Unbekannt")}
                         </p>
                         <p className="text-[10px] text-muted-foreground">
-                          {new Date(review.created_at).toLocaleDateString("de-DE")}
+                          {new Date(review.created_at).toLocaleDateString(
+                            "de-DE",
+                          )}
                           {cat && (
-                            <> · {cat.icon} {cat.label}</>
+                            <>
+                              {" "}
+                              · {cat.icon} {cat.label}
+                            </>
                           )}
                         </p>
                       </div>
@@ -650,7 +682,10 @@ export default function ExpertDetailPage() {
           <p className="mt-1 text-xs text-muted-foreground">
             Andere Nachbarn können Sie hier finden, bewerten und kontaktieren.
             Verwalten Sie Ihre Kompetenzen unter{" "}
-            <Link href="/profile/skills" className="text-quartier-green hover:underline">
+            <Link
+              href="/profile/skills"
+              className="text-quartier-green hover:underline"
+            >
               Profil → Kompetenzen
             </Link>
             .

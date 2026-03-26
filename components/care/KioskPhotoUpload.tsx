@@ -44,7 +44,7 @@ export function KioskPhotoUpload({ householdId }: KioskPhotoUploadProps) {
     setError(null);
     try {
       const res = await fetch(
-        `/api/caregiver/kiosk-photos?household_id=${householdId}`
+        `/api/caregiver/kiosk-photos?household_id=${householdId}`,
       );
       if (!res.ok) {
         const data = await res.json();
@@ -124,7 +124,7 @@ export function KioskPhotoUpload({ householdId }: KioskPhotoUploadProps) {
   const togglePhotoFlag = async (
     photoId: string,
     field: "pinned" | "visible",
-    currentValue: boolean
+    currentValue: boolean,
   ) => {
     setError(null);
     try {
@@ -142,8 +142,8 @@ export function KioskPhotoUpload({ householdId }: KioskPhotoUploadProps) {
       // Lokal aktualisieren
       setPhotos((prev) =>
         prev.map((p) =>
-          p.id === photoId ? { ...p, [field]: !currentValue } : p
-        )
+          p.id === photoId ? { ...p, [field]: !currentValue } : p,
+        ),
       );
     } catch (err) {
       setError(err instanceof Error ? err.message : "Fehler");
@@ -226,9 +226,7 @@ export function KioskPhotoUpload({ householdId }: KioskPhotoUploadProps) {
       {photos.length === 0 && !error && (
         <div className="rounded-xl border-2 border-dashed border-muted p-8 text-center">
           <Camera className="h-12 w-12 text-muted-foreground mx-auto mb-3" />
-          <p className="text-lg font-medium text-anthrazit">
-            Noch keine Fotos
-          </p>
+          <p className="text-lg font-medium text-anthrazit">Noch keine Fotos</p>
           <p className="text-sm text-muted-foreground mt-1">
             Laden Sie Fotos hoch, die auf dem Kiosk-Terminal im Haushalt
             angezeigt werden.
@@ -246,6 +244,7 @@ export function KioskPhotoUpload({ householdId }: KioskPhotoUploadProps) {
             >
               {/* Bild */}
               {photo.url ? (
+                // eslint-disable-next-line @next/next/no-img-element
                 <img
                   src={photo.url}
                   alt={photo.caption ?? "Kiosk-Foto"}

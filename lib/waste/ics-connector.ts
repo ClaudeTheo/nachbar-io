@@ -15,16 +15,16 @@ export interface RawWasteDate {
 
 /** Konfiguration fuer den ICS-Connector */
 export interface IcsConnectorConfig {
-  url?: string;           // ICS-Feed URL (Subscription oder Download)
-  encoding?: string;      // Default: utf-8
-  file_content?: string;  // Alternativ: ICS-Inhalt direkt uebergeben (fuer Upload)
+  url?: string; // ICS-Feed URL (Subscription oder Download)
+  encoding?: string; // Default: utf-8
+  file_content?: string; // Alternativ: ICS-Inhalt direkt uebergeben (fuer Upload)
 }
 
 /** Ergebnis eines ICS-Fetches */
 export interface IcsFetchResult {
   success: boolean;
   dates: RawWasteDate[];
-  skipped: number;        // Events ohne erkannten Muelltyp
+  skipped: number; // Events ohne erkannten Muelltyp
   errors: string[];
   total_events: number;
 }
@@ -32,7 +32,7 @@ export interface IcsFetchResult {
 /** Geparster VEVENT-Block */
 interface ParsedVEvent {
   summary: string;
-  dtstart: string;       // Roh-Wert aus DTSTART
+  dtstart: string; // Roh-Wert aus DTSTART
   dtstart_is_date: boolean; // VALUE=DATE (ganztaegig)
   description: string | null;
 }
@@ -75,7 +75,12 @@ function parseIcsText(icsText: string): ParsedVEvent[] {
 
     if (line === "END:VEVENT") {
       if (inEvent && dtstart && summary) {
-        events.push({ summary, dtstart, dtstart_is_date: dtstartIsDate, description });
+        events.push({
+          summary,
+          dtstart,
+          dtstart_is_date: dtstartIsDate,
+          description,
+        });
       }
       inEvent = false;
       continue;
@@ -113,7 +118,7 @@ function parseIcsText(icsText: string): ParsedVEvent[] {
  * Wandelt DTSTART-Wert in YYYY-MM-DD um.
  * Formate: YYYYMMDD (ganztaegig) oder YYYYMMDDTHHmmss(Z)
  */
-function dtstartToDate(raw: string, isDate: boolean): string | null {
+function dtstartToDate(raw: string, _isDate: boolean): string | null {
   // Nur Ziffern und T/Z behalten
   const cleaned = raw.replace(/[^0-9TZ]/g, "");
   if (cleaned.length < 8) return null;
@@ -136,7 +141,7 @@ function dtstartToDate(raw: string, isDate: boolean): string | null {
  * Unterstuetzt sowohl URL-basierte Feeds als auch direkt uebergebene ICS-Inhalte.
  */
 export async function fetchIcsWasteDates(
-  config: IcsConnectorConfig
+  config: IcsConnectorConfig,
 ): Promise<IcsFetchResult> {
   const errors: string[] = [];
   const dates: RawWasteDate[] = [];

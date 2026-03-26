@@ -1,8 +1,11 @@
 // Nachbar.io — Auth-Flow 5: Profil & Einstellungen (authentifiziert via storageState)
 // Prueft: Profil laden, Name sichtbar, Logout-Button, Einstellungen
 import { test, expect } from "@playwright/test";
-import { createConsoleErrorCollector, waitForStableUI } from "../helpers/observer";
-import { TEST_AGENTS, TIMEOUTS } from "../helpers/test-config";
+import {
+  createConsoleErrorCollector,
+  waitForStableUI,
+} from "../helpers/observer";
+import { TEST_AGENTS } from "../helpers/test-config";
 
 test.describe("Auth-Flow: Profil & Einstellungen", () => {
   test("AF5.1 — Profil-Seite laed ohne Fehler", async ({ page }) => {
@@ -14,7 +17,7 @@ test.describe("Auth-Flow: Profil & Einstellungen", () => {
 
     errors.stop();
     const criticalErrors = errors.errors.filter(
-      (e) => !e.includes("hydration") && !e.includes("Warning:")
+      (e) => !e.includes("hydration") && !e.includes("Warning:"),
     );
     expect(criticalErrors).toHaveLength(0);
 
@@ -26,9 +29,9 @@ test.describe("Auth-Flow: Profil & Einstellungen", () => {
     await waitForStableUI(page);
 
     // Agent A = "Anna T."
-    const nameElement = page.getByText(TEST_AGENTS.nachbar_a.displayName).or(
-      page.getByText("Anna")
-    );
+    const nameElement = page
+      .getByText(TEST_AGENTS.nachbar_a.displayName)
+      .or(page.getByText("Anna"));
     const hasName = await nameElement.isVisible().catch(() => false);
 
     if (hasName) {
@@ -46,12 +49,13 @@ test.describe("Auth-Flow: Profil & Einstellungen", () => {
     // Warten bis Profil geladen ist (Lade-Spinner verschwindet)
     // Die Profilseite zeigt "Laden..." bis User-Daten da sind,
     // dann erst wird der Abmelde-Button gerendert.
-    await page.waitForFunction(
-      () => !document.body.textContent?.includes("Laden..."),
-      { timeout: 15_000 },
-    ).catch(() => {
-      // Fallback: Seite ist evtl. im Fehler-Zustand — dort gibt es auch einen Abmelde-Button
-    });
+    await page
+      .waitForFunction(() => !document.body.textContent?.includes("Laden..."), {
+        timeout: 15_000,
+      })
+      .catch(() => {
+        // Fallback: Seite ist evtl. im Fehler-Zustand — dort gibt es auch einen Abmelde-Button
+      });
     await waitForStableUI(page);
 
     // Abmelde-Button: entweder im normalen Profil oder im Fehler-Zustand
@@ -70,14 +74,16 @@ test.describe("Auth-Flow: Profil & Einstellungen", () => {
 
     errors.stop();
     const criticalErrors = errors.errors.filter(
-      (e) => !e.includes("hydration") && !e.includes("Warning:")
+      (e) => !e.includes("hydration") && !e.includes("Warning:"),
     );
     expect(criticalErrors).toHaveLength(0);
 
     console.log("[AUTH] Benachrichtigungen geladen ✓");
   });
 
-  test("AF5.5 — Datenschutz & Impressum sind auch eingeloggt erreichbar", async ({ page }) => {
+  test("AF5.5 — Datenschutz & Impressum sind auch eingeloggt erreichbar", async ({
+    page,
+  }) => {
     // Datenschutz
     const dsResponse = await page.goto("/datenschutz");
     expect(dsResponse?.status()).toBeLessThan(500);

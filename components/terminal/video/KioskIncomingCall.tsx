@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import { useState, useEffect, useCallback, useRef } from 'react';
-import { Phone, PhoneOff, X } from 'lucide-react';
+import { useState, useEffect, useCallback, useRef } from "react";
+import { Phone, PhoneOff, X } from "lucide-react";
 
 interface KioskIncomingCallProps {
   callerName: string;
@@ -28,7 +28,7 @@ export default function KioskIncomingCall({
   // Countdown-Timer
   useEffect(() => {
     const interval = setInterval(() => {
-      setCountdown(prev => {
+      setCountdown((prev) => {
         if (prev <= 1) {
           if (!resolvedRef.current) {
             resolvedRef.current = true;
@@ -57,7 +57,7 @@ export default function KioskIncomingCall({
       const ctx = new AudioContext();
 
       function playTone() {
-        if (ctx.state === 'closed') return;
+        if (ctx.state === "closed") return;
         const osc1 = ctx.createOscillator();
         const osc2 = ctx.createOscillator();
         const gain = ctx.createGain();
@@ -102,7 +102,12 @@ export default function KioskIncomingCall({
         <div className="absolute inset-0 animate-ping rounded-full bg-[#4CAF87]/30" />
         <div className="relative flex h-32 w-32 items-center justify-center rounded-full bg-white/20 text-5xl font-bold text-white">
           {callerAvatar ? (
-            <img src={callerAvatar} alt={callerName} className="h-full w-full rounded-full object-cover" />
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={callerAvatar}
+              alt={callerName}
+              className="h-full w-full rounded-full object-cover"
+            />
           ) : (
             callerName.charAt(0).toUpperCase()
           )}

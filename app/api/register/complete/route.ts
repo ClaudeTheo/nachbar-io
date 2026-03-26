@@ -39,8 +39,8 @@ export async function POST(request: NextRequest) {
       houseNumber,
       lat,
       lng,
-      postalCode,
-      city,
+      postalCode: _postalCode,
+      city: _city,
       verificationMethod,
       inviteCode,
       referrerId,
@@ -51,7 +51,7 @@ export async function POST(request: NextRequest) {
     if (!displayName?.trim()) {
       return NextResponse.json(
         { error: "Anzeigename ist erforderlich" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -77,11 +77,12 @@ export async function POST(request: NextRequest) {
       // registrieren, ohne den Besitz nachzuweisen.
       // Vor oeffentlichem Rollout: email_confirm auf false setzen und
       // Supabase E-Mail-Bestaetigung erzwingen (Confirm Signup Template).
-      const { data: newUser, error: createError } = await adminDb.auth.admin.createUser({
-        email,
-        password: userPassword,
-        email_confirm: true,
-      });
+      const { data: newUser, error: createError } =
+        await adminDb.auth.admin.createUser({
+          email,
+          password: userPassword,
+          email_confirm: true,
+        });
 
       if (createError) {
         console.error("User-Erstellung fehlgeschlagen:", createError);
@@ -91,7 +92,8 @@ export async function POST(request: NextRequest) {
         if (createError.message?.includes("already been registered")) {
           const { data: existingUsers } = await adminDb.auth.admin.listUsers();
           const existingUser = existingUsers?.users?.find(
-            (u: { email?: string }) => u.email?.toLowerCase() === email.toLowerCase()
+            (u: { email?: string }) =>
+              u.email?.toLowerCase() === email.toLowerCase(),
           );
 
           if (existingUser) {
@@ -104,26 +106,34 @@ export async function POST(request: NextRequest) {
 
             if (!existingProfile) {
               // Orphaned Auth-User: Profil fehlt → wiederverwenden
-              console.warn(`[Register] Orphaned Auth-User ${existingUser.id} wird repariert`);
+              console.warn(
+                `[Register] Orphaned Auth-User ${existingUser.id} wird repariert`,
+              );
               userId = existingUser.id;
               // Weiter mit Profil-Erstellung unten
             } else {
               // Vollstaendig registrierter User → Login empfehlen
               return NextResponse.json(
-                { error: "Diese E-Mail-Adresse ist bereits registriert. Bitte melden Sie sich an." },
-                { status: 409 }
+                {
+                  error:
+                    "Diese E-Mail-Adresse ist bereits registriert. Bitte melden Sie sich an.",
+                },
+                { status: 409 },
               );
             }
           } else {
             return NextResponse.json(
-              { error: "Diese E-Mail-Adresse ist bereits registriert. Bitte melden Sie sich an." },
-              { status: 409 }
+              {
+                error:
+                  "Diese E-Mail-Adresse ist bereits registriert. Bitte melden Sie sich an.",
+              },
+              { status: 409 },
             );
           }
         } else {
           return NextResponse.json(
             { error: `Registrierung fehlgeschlagen: ${createError.message}` },
-            { status: 500 }
+            { status: 500 },
           );
         }
       }
@@ -133,7 +143,7 @@ export async function POST(request: NextRequest) {
         if (!newUser?.user) {
           return NextResponse.json(
             { error: "User konnte nicht erstellt werden." },
-            { status: 500 }
+            { status: 500 },
           );
         }
         userId = newUser.user.id;
@@ -141,7 +151,7 @@ export async function POST(request: NextRequest) {
     } else {
       return NextResponse.json(
         { error: "E-Mail-Adresse ist erforderlich." },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -149,18 +159,19 @@ export async function POST(request: NextRequest) {
     if (!householdId && streetName && houseNumber) {
       const trimmedHouseNumber = String(houseNumber).trim();
       // Koordinaten kommen vom Client (Photon Geocoding)
-      const hasCoords = typeof lat === 'number' && typeof lng === 'number';
+      const hasCoords = typeof lat === "number" && typeof lng === "number";
 
       if (trimmedHouseNumber) {
         // Quartier-ID ermitteln: aus Body, via PostGIS Clustering, oder Fallback
         let quarterId: string | null = bodyQuarterId || null;
         if (!quarterId && hasCoords) {
           // Automatische Quartier-Zuweisung via PostGIS Clustering
-          const { assignUserToQuarter } = await import('@/lib/geo/quarter-clustering');
+          const { assignUserToQuarter } =
+            await import("@/lib/geo/quarter-clustering");
           try {
             quarterId = await assignUserToQuarter(lat, lng);
           } catch (err) {
-            console.error('Quartier-Clustering fehlgeschlagen:', err);
+            console.error("Quartier-Clustering fehlgeschlagen:", err);
           }
         }
         if (!quarterId) {
@@ -231,7 +242,9 @@ export async function POST(request: NextRequest) {
       } else if (trimmedHouseNumber) {
         // Straßenname nicht in STREET_COORDS (andere Straße in Bad Saeckingen)
         // Trotzdem Haushalt erstellen mit Quartier-Fallback-Koordinaten
-        console.warn(`Straße nicht in Pilotgebiet: "${streetName}" — erstelle Haushalt mit Fallback-Koordinaten`);
+        console.warn(
+          `Straße nicht in Pilotgebiet: "${streetName}" — erstelle Haushalt mit Fallback-Koordinaten`,
+        );
 
         // Quartier-ID ermitteln
         let quarterId: string | null = bodyQuarterId || null;
@@ -257,7 +270,7 @@ export async function POST(request: NextRequest) {
         } else {
           // Neuen Haushalt mit Quartier-Zentrum als Fallback-Koordinaten erstellen
           const defaultLat = 47.5535; // Bad Saeckingen Zentrum
-          const defaultLng = 7.9640;
+          const defaultLng = 7.964;
           const newInviteCode = generateSecureCode();
 
           const insertData: Record<string, unknown> = {
@@ -286,7 +299,10 @@ export async function POST(request: NextRequest) {
                 .maybeSingle();
               if (retry) householdId = retry.id;
             } else {
-              console.error("Haushalt-Erstellung (Fallback) fehlgeschlagen:", insertError);
+              console.error(
+                "Haushalt-Erstellung (Fallback) fehlgeschlagen:",
+                insertError,
+              );
             }
           } else if (newHousehold) {
             householdId = newHousehold.id;
@@ -303,18 +319,22 @@ export async function POST(request: NextRequest) {
     const pilotAutoVerify = process.env.PILOT_AUTO_VERIFY === "true";
     const trustLevel = pilotAutoVerify
       ? "verified"
-      : (verificationMethod === "invite_code" || verificationMethod === "neighbor_invite")
+      : verificationMethod === "invite_code" ||
+          verificationMethod === "neighbor_invite"
         ? "verified"
         : "new";
 
-    const { error: profileError } = await adminDb.from("users").upsert({
-      id: userId,
-      email_hash: "",
-      display_name: displayName.trim(),
-      ui_mode: uiMode || "active",
-      role: "resident",  // Vier-Versionen-Modell: Standard-Rolle fuer Bewohner
-      trust_level: trustLevel,
-    }, { onConflict: "id" });
+    const { error: profileError } = await adminDb.from("users").upsert(
+      {
+        id: userId,
+        email_hash: "",
+        display_name: displayName.trim(),
+        ui_mode: uiMode || "active",
+        role: "resident", // Vier-Versionen-Modell: Standard-Rolle fuer Bewohner
+        trust_level: trustLevel,
+      },
+      { onConflict: "id" },
+    );
 
     if (profileError) {
       console.error("Profil-Fehler:", profileError);
@@ -322,13 +342,20 @@ export async function POST(request: NextRequest) {
       // (sonst: "Email bereits registriert" bei erneutem Versuch)
       try {
         await adminDb.auth.admin.deleteUser(userId);
-        console.warn(`[Register] Auth-User ${userId} nach Profil-Fehler bereinigt`);
+        console.warn(
+          `[Register] Auth-User ${userId} nach Profil-Fehler bereinigt`,
+        );
       } catch (cleanupErr) {
-        console.error("[Register] Auth-User-Cleanup fehlgeschlagen:", cleanupErr);
+        console.error(
+          "[Register] Auth-User-Cleanup fehlgeschlagen:",
+          cleanupErr,
+        );
       }
       return NextResponse.json(
-        { error: `Profil konnte nicht erstellt werden: ${profileError.message}` },
-        { status: 500 }
+        {
+          error: `Profil konnte nicht erstellt werden: ${profileError.message}`,
+        },
+        { status: 500 },
       );
     }
 
@@ -336,12 +363,14 @@ export async function POST(request: NextRequest) {
     if (householdId) {
       // Pilotphase: Alle Nutzer werden sofort verifiziert (verified_at gesetzt)
       // Damit koennen sie die App direkt nutzen (RLS: is_verified_member())
-      const { error: memberError } = await adminDb.from("household_members").insert({
-        household_id: householdId,
-        user_id: userId,
-        verification_method: verificationMethod || "address_manual",
-        verified_at: new Date().toISOString(), // Pilot: sofort verifiziert
-      });
+      const { error: memberError } = await adminDb
+        .from("household_members")
+        .insert({
+          household_id: householdId,
+          user_id: userId,
+          verification_method: verificationMethod || "address_manual",
+          verified_at: new Date().toISOString(), // Pilot: sofort verifiziert
+        });
 
       if (memberError) {
         console.error("Mitglied-Fehler:", memberError);
@@ -350,13 +379,15 @@ export async function POST(request: NextRequest) {
 
       // 3. Bei manueller Adress-Verifikation: Anfrage trotzdem erstellen (fuer Admin-Uebersicht)
       if (verificationMethod === "address_manual") {
-        const { error: requestError } = await adminDb.from("verification_requests").insert({
-          user_id: userId,
-          household_id: householdId,
-          method: "address_manual",
-          status: "approved",  // Pilot: direkt approved
-          reviewed_at: new Date().toISOString(),
-        });
+        const { error: requestError } = await adminDb
+          .from("verification_requests")
+          .insert({
+            user_id: userId,
+            household_id: householdId,
+            method: "address_manual",
+            status: "approved", // Pilot: direkt approved
+            reviewed_at: new Date().toISOString(),
+          });
 
         if (requestError) {
           console.error("Verifizierungsanfrage-Fehler:", requestError);
@@ -390,12 +421,14 @@ export async function POST(request: NextRequest) {
 
         // Punkte fuer den Einladenden
         if (referrerId) {
-          const { error: pointsErr } = await adminDb.from("reputation_points").insert({
-            user_id: referrerId,
-            points: 50,
-            reason: "neighbor_invited",
-            reference_id: userId,
-          });
+          const { error: pointsErr } = await adminDb
+            .from("reputation_points")
+            .insert({
+              user_id: referrerId,
+              points: 50,
+              reason: "neighbor_invited",
+              reference_id: userId,
+            });
 
           if (pointsErr) {
             console.error("Reputationspunkte-Fehler:", pointsErr);
@@ -422,7 +455,7 @@ export async function POST(request: NextRequest) {
     console.error("Registrierung-Complete Fehler:", err);
     return NextResponse.json(
       { error: "Interner Serverfehler" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

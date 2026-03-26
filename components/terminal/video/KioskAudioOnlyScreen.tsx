@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import { PhoneOff, Video } from 'lucide-react';
+import { PhoneOff, Video } from "lucide-react";
 
 interface KioskAudioOnlyScreenProps {
   callerName: string;
@@ -24,7 +24,12 @@ export default function KioskAudioOnlyScreen({
       {/* Avatar */}
       <div className="mb-6 flex h-48 w-48 items-center justify-center rounded-full bg-white/20 text-7xl font-bold text-white">
         {callerAvatar ? (
-          <img src={callerAvatar} alt={callerName} className="h-full w-full rounded-full object-cover" />
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={callerAvatar}
+            alt={callerName}
+            className="h-full w-full rounded-full object-cover"
+          />
         ) : (
           callerName.charAt(0).toUpperCase()
         )}
@@ -38,7 +43,7 @@ export default function KioskAudioOnlyScreen({
             className="w-2 animate-pulse rounded-full bg-[#4CAF87]"
             style={{
               animationDelay: `${i * 150}ms`,
-              animationDuration: '0.8s',
+              animationDuration: "0.8s",
               height: `${16 + (i % 3) * 8}px`,
             }}
           />
@@ -47,7 +52,9 @@ export default function KioskAudioOnlyScreen({
 
       {/* Name + Status */}
       <h2 className="mb-1 text-3xl font-bold text-white">{callerName}</h2>
-      <p className="mb-10 text-lg text-white/60">Nur Ton — Verbindung reicht nicht für Video</p>
+      <p className="mb-10 text-lg text-white/60">
+        Nur Ton — Verbindung reicht nicht für Video
+      </p>
 
       {/* Buttons */}
       <div className="flex gap-6">

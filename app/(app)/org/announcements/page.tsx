@@ -4,13 +4,22 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { useAuth } from '@/hooks/use-auth';
+import { useAuth } from "@/hooks/use-auth";
 import { toast } from "sonner";
-import {
-  ANNOUNCEMENT_CATEGORIES,
+import { ANNOUNCEMENT_CATEGORIES } from "@/lib/municipal";
+import type {
+  MunicipalAnnouncement,
+  AnnouncementCategory,
 } from "@/lib/municipal";
-import type { MunicipalAnnouncement, AnnouncementCategory } from "@/lib/municipal";
-import { Pin, PinOff, Pencil, Trash2, Plus, X, ExternalLink } from "lucide-react";
+import {
+  Pin,
+  PinOff,
+  Pencil,
+  Trash2,
+  Plus,
+  X,
+  ExternalLink,
+} from "lucide-react";
 import { PageHeader } from "@/components/ui/page-header";
 
 // Formular-Zustand fuer Erstellen/Bearbeiten
@@ -47,9 +56,13 @@ function formatDateDE(iso: string): string {
 
 export default function OrgAnnouncementsPage() {
   const { user } = useAuth();
-  const [announcements, setAnnouncements] = useState<MunicipalAnnouncement[]>([]);
+  const [announcements, setAnnouncements] = useState<MunicipalAnnouncement[]>(
+    [],
+  );
   const [loading, setLoading] = useState(true);
-  const [filterCategory, setFilterCategory] = useState<AnnouncementCategory | "all">("all");
+  const [filterCategory, setFilterCategory] = useState<
+    AnnouncementCategory | "all"
+  >("all");
 
   // Formular-State
   const [showForm, setShowForm] = useState(false);
@@ -58,7 +71,6 @@ export default function OrgAnnouncementsPage() {
   const [saving, setSaving] = useState(false);
 
   // Nutzer- und Quartier-Daten
-  const [userId, setUserId] = useState<string | null>(null);
   const [orgId, setOrgId] = useState<string | null>(null);
   const [assignedQuarters, setAssignedQuarters] = useState<string[]>([]);
 
@@ -84,7 +96,10 @@ export default function OrgAnnouncementsPage() {
         });
     });
 
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Bekanntmachungen fuer zugewiesene Quartiere laden
@@ -108,7 +123,9 @@ export default function OrgAnnouncementsPage() {
         setLoading(false);
       });
 
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [assignedQuarters]);
 
   // Bekanntmachungen nach Aenderungen neu laden
@@ -129,12 +146,16 @@ export default function OrgAnnouncementsPage() {
   }, [assignedQuarters]);
 
   // Audit-Log schreiben
-  async function writeAuditLog(action: string, announcementId: string, title: string) {
-    if (!orgId || !userId) return;
+  async function writeAuditLog(
+    action: string,
+    announcementId: string,
+    title: string,
+  ) {
+    if (!orgId || !user?.id) return;
     const supabase = createClient();
     await supabase.from("org_audit_log").insert({
       org_id: orgId,
-      user_id: userId,
+      user_id: user.id,
       action,
       details: { announcement_id: announcementId, title },
     });
@@ -189,8 +210,12 @@ export default function OrgAnnouncementsPage() {
       category: form.category,
       source_url: form.source_url.trim() || null,
       pinned: form.pinned,
-      published_at: form.published_at ? new Date(form.published_at).toISOString() : new Date().toISOString(),
-      expires_at: form.expires_at ? new Date(form.expires_at).toISOString() : null,
+      published_at: form.published_at
+        ? new Date(form.published_at).toISOString()
+        : new Date().toISOString(),
+      expires_at: form.expires_at
+        ? new Date(form.expires_at).toISOString()
+        : null,
     };
 
     if (editingId) {
@@ -213,7 +238,7 @@ export default function OrgAnnouncementsPage() {
         .insert({
           ...payload,
           quarter_id: assignedQuarters[0],
-          author_id: userId!,
+          author_id: user!.id,
         })
         .select("id")
         .single();
@@ -234,7 +259,8 @@ export default function OrgAnnouncementsPage() {
 
   // Loeschen mit Bestaetigung
   async function handleDelete(a: MunicipalAnnouncement) {
-    if (!window.confirm(`Bekanntmachung "${a.title}" wirklich löschen?`)) return;
+    if (!window.confirm(`Bekanntmachung "${a.title}" wirklich löschen?`))
+      return;
 
     const supabase = createClient();
     const { error } = await supabase
@@ -269,7 +295,10 @@ export default function OrgAnnouncementsPage() {
 
   // Kategorie-Badge Hilfsfunktion
   function getCategoryConfig(catId: AnnouncementCategory) {
-    return ANNOUNCEMENT_CATEGORIES.find((c) => c.id === catId) ?? ANNOUNCEMENT_CATEGORIES[5];
+    return (
+      ANNOUNCEMENT_CATEGORIES.find((c) => c.id === catId) ??
+      ANNOUNCEMENT_CATEGORIES[5]
+    );
   }
 
   // Gefilterte Bekanntmachungen
@@ -338,7 +367,10 @@ export default function OrgAnnouncementsPage() {
               {editingId ? "Bekanntmachung bearbeiten" : "Neue Bekanntmachung"}
             </h2>
             <button
-              onClick={() => { setShowForm(false); setEditingId(null); }}
+              onClick={() => {
+                setShowForm(false);
+                setEditingId(null);
+              }}
               className="rounded-full p-1 hover:bg-gray-100"
               aria-label="Schließen"
             >
@@ -349,7 +381,10 @@ export default function OrgAnnouncementsPage() {
           <div className="space-y-3">
             {/* Titel */}
             <div>
-              <label htmlFor="ann-title" className="mb-1 block text-xs font-medium text-[#2D3142]">
+              <label
+                htmlFor="ann-title"
+                className="mb-1 block text-xs font-medium text-[#2D3142]"
+              >
                 Titel *
               </label>
               <input
@@ -365,13 +400,19 @@ export default function OrgAnnouncementsPage() {
 
             {/* Text mit Zeichenzaehler */}
             <div>
-              <label htmlFor="ann-body" className="mb-1 block text-xs font-medium text-[#2D3142]">
-                Text * <span className="text-gray-400">({form.body.length}/500)</span>
+              <label
+                htmlFor="ann-body"
+                className="mb-1 block text-xs font-medium text-[#2D3142]"
+              >
+                Text *{" "}
+                <span className="text-gray-400">({form.body.length}/500)</span>
               </label>
               <textarea
                 id="ann-body"
                 value={form.body}
-                onChange={(e) => setForm({ ...form, body: e.target.value.slice(0, 500) })}
+                onChange={(e) =>
+                  setForm({ ...form, body: e.target.value.slice(0, 500) })
+                }
                 placeholder="Beschreibung der Bekanntmachung..."
                 rows={4}
                 maxLength={500}
@@ -381,13 +422,21 @@ export default function OrgAnnouncementsPage() {
 
             {/* Kategorie */}
             <div>
-              <label htmlFor="ann-category" className="mb-1 block text-xs font-medium text-[#2D3142]">
+              <label
+                htmlFor="ann-category"
+                className="mb-1 block text-xs font-medium text-[#2D3142]"
+              >
                 Kategorie
               </label>
               <select
                 id="ann-category"
                 value={form.category}
-                onChange={(e) => setForm({ ...form, category: e.target.value as AnnouncementCategory })}
+                onChange={(e) =>
+                  setForm({
+                    ...form,
+                    category: e.target.value as AnnouncementCategory,
+                  })
+                }
                 className="w-full rounded-lg border bg-white px-3 py-2 text-sm text-[#2D3142] focus:border-[#4CAF87] focus:outline-none focus:ring-1 focus:ring-[#4CAF87]"
               >
                 {ANNOUNCEMENT_CATEGORIES.map((cat) => (
@@ -400,14 +449,19 @@ export default function OrgAnnouncementsPage() {
 
             {/* Quell-URL */}
             <div>
-              <label htmlFor="ann-url" className="mb-1 block text-xs font-medium text-[#2D3142]">
+              <label
+                htmlFor="ann-url"
+                className="mb-1 block text-xs font-medium text-[#2D3142]"
+              >
                 Quell-URL (optional)
               </label>
               <input
                 id="ann-url"
                 type="url"
                 value={form.source_url}
-                onChange={(e) => setForm({ ...form, source_url: e.target.value })}
+                onChange={(e) =>
+                  setForm({ ...form, source_url: e.target.value })
+                }
                 placeholder="https://..."
                 className="w-full rounded-lg border bg-white px-3 py-2 text-sm text-[#2D3142] placeholder:text-gray-400 focus:border-[#4CAF87] focus:outline-none focus:ring-1 focus:ring-[#4CAF87]"
               />
@@ -416,26 +470,36 @@ export default function OrgAnnouncementsPage() {
             {/* Datum-Zeile */}
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
               <div>
-                <label htmlFor="ann-published" className="mb-1 block text-xs font-medium text-[#2D3142]">
+                <label
+                  htmlFor="ann-published"
+                  className="mb-1 block text-xs font-medium text-[#2D3142]"
+                >
                   Veröffentlicht am
                 </label>
                 <input
                   id="ann-published"
                   type="datetime-local"
                   value={form.published_at}
-                  onChange={(e) => setForm({ ...form, published_at: e.target.value })}
+                  onChange={(e) =>
+                    setForm({ ...form, published_at: e.target.value })
+                  }
                   className="w-full rounded-lg border bg-white px-3 py-2 text-sm text-[#2D3142] focus:border-[#4CAF87] focus:outline-none focus:ring-1 focus:ring-[#4CAF87]"
                 />
               </div>
               <div>
-                <label htmlFor="ann-expires" className="mb-1 block text-xs font-medium text-[#2D3142]">
+                <label
+                  htmlFor="ann-expires"
+                  className="mb-1 block text-xs font-medium text-[#2D3142]"
+                >
                   Ablaufdatum (optional)
                 </label>
                 <input
                   id="ann-expires"
                   type="datetime-local"
                   value={form.expires_at}
-                  onChange={(e) => setForm({ ...form, expires_at: e.target.value })}
+                  onChange={(e) =>
+                    setForm({ ...form, expires_at: e.target.value })
+                  }
                   className="w-full rounded-lg border bg-white px-3 py-2 text-sm text-[#2D3142] focus:border-[#4CAF87] focus:outline-none focus:ring-1 focus:ring-[#4CAF87]"
                 />
               </div>
@@ -449,7 +513,9 @@ export default function OrgAnnouncementsPage() {
                 onChange={(e) => setForm({ ...form, pinned: e.target.checked })}
                 className="h-4 w-4 rounded border-gray-300 text-[#4CAF87] focus:ring-[#4CAF87]"
               />
-              <span className="text-sm text-[#2D3142]">Angepinnt (wird oben angezeigt)</span>
+              <span className="text-sm text-[#2D3142]">
+                Angepinnt (wird oben angezeigt)
+              </span>
             </label>
 
             {/* Aktionen */}
@@ -462,7 +528,10 @@ export default function OrgAnnouncementsPage() {
                 {saving ? "Speichert..." : "Speichern"}
               </button>
               <button
-                onClick={() => { setShowForm(false); setEditingId(null); }}
+                onClick={() => {
+                  setShowForm(false);
+                  setEditingId(null);
+                }}
                 className="inline-flex min-h-[44px] items-center rounded-lg border px-4 py-2 text-sm font-medium text-[#2D3142] transition-colors hover:bg-gray-50"
               >
                 Abbrechen
@@ -485,7 +554,8 @@ export default function OrgAnnouncementsPage() {
         <div className="space-y-3">
           {filtered.map((a) => {
             const cat = getCategoryConfig(a.category);
-            const isExpired = a.expires_at && new Date(a.expires_at) < new Date();
+            const isExpired =
+              a.expires_at && new Date(a.expires_at) < new Date();
 
             return (
               <div
@@ -514,11 +584,15 @@ export default function OrgAnnouncementsPage() {
                     </div>
 
                     {/* Titel */}
-                    <h3 className="text-sm font-semibold text-[#2D3142]">{a.title}</h3>
+                    <h3 className="text-sm font-semibold text-[#2D3142]">
+                      {a.title}
+                    </h3>
 
                     {/* Text (2 Zeilen Vorschau) */}
                     {a.body && (
-                      <p className="mt-1 line-clamp-2 text-xs text-gray-600">{a.body}</p>
+                      <p className="mt-1 line-clamp-2 text-xs text-gray-600">
+                        {a.body}
+                      </p>
                     )}
 
                     {/* Metadaten */}
@@ -548,7 +622,11 @@ export default function OrgAnnouncementsPage() {
                       title={a.pinned ? "Nicht mehr anpinnen" : "Anpinnen"}
                       aria-label={a.pinned ? "Nicht mehr anpinnen" : "Anpinnen"}
                     >
-                      {a.pinned ? <PinOff className="h-4 w-4" /> : <Pin className="h-4 w-4" />}
+                      {a.pinned ? (
+                        <PinOff className="h-4 w-4" />
+                      ) : (
+                        <Pin className="h-4 w-4" />
+                      )}
                     </button>
                     <button
                       onClick={() => handleEdit(a)}

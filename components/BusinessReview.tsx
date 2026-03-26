@@ -71,10 +71,6 @@ export function BusinessReview({ tipId, currentUserId }: BusinessReviewProps) {
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    loadReviews();
-  }, [tipId]);
-
   async function loadReviews() {
     const supabase = createClient();
     const { data } = await supabase
@@ -87,11 +83,17 @@ export function BusinessReview({ tipId, currentUserId }: BusinessReviewProps) {
     setReviews(reviewList);
 
     if (reviewList.length > 0) {
-      const avg = reviewList.reduce((sum, r) => sum + r.rating, 0) / reviewList.length;
+      const avg =
+        reviewList.reduce((sum, r) => sum + r.rating, 0) / reviewList.length;
       setAvgRating(Math.round(avg * 10) / 10);
     }
     setLoading(false);
   }
+
+  useEffect(() => {
+    loadReviews();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tipId]);
 
   const hasOwnReview = reviews.some((r) => r.user_id === currentUserId);
 
@@ -112,7 +114,9 @@ export function BusinessReview({ tipId, currentUserId }: BusinessReviewProps) {
 
     if (error) {
       if (error.message?.includes("7 days")) {
-        toast.error("Bewertungen sind erst 7 Tage nach der Registrierung möglich.");
+        toast.error(
+          "Bewertungen sind erst 7 Tage nach der Registrierung möglich.",
+        );
       } else {
         toast.error(`Fehler: ${error.message}`);
       }
@@ -138,7 +142,9 @@ export function BusinessReview({ tipId, currentUserId }: BusinessReviewProps) {
         {reviews.length > 0 && (
           <div className="flex items-center gap-1.5">
             <StarRating value={Math.round(avgRating)} readonly size="sm" />
-            <span className="text-sm font-medium text-anthrazit">{avgRating}</span>
+            <span className="text-sm font-medium text-anthrazit">
+              {avgRating}
+            </span>
             <span className="text-xs text-muted-foreground">
               ({reviews.length} Bewertung{reviews.length !== 1 ? "en" : ""})
             </span>
@@ -203,7 +209,11 @@ export function BusinessReview({ tipId, currentUserId }: BusinessReviewProps) {
           <div className="flex gap-2">
             <Button
               variant="outline"
-              onClick={() => { setShowForm(false); setNewRating(0); setNewText(""); }}
+              onClick={() => {
+                setShowForm(false);
+                setNewRating(0);
+                setNewText("");
+              }}
             >
               Abbrechen
             </Button>

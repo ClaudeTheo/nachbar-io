@@ -20,8 +20,14 @@ interface AlertCardProps {
   reputationLevel?: number; // Optionales Reputations-Level des Erstellers
 }
 
-export function AlertCard({ alert, onHelp, onView, compact = false, reputationLevel }: AlertCardProps) {
-  const category = ALERT_CATEGORIES.find((c) => c.id === alert.category);
+export function AlertCard({
+  alert,
+  onHelp,
+  onView,
+  compact = false,
+  reputationLevel,
+}: AlertCardProps) {
+  const _category = ALERT_CATEGORIES.find((c) => c.id === alert.category);
   const timeAgo = formatDistanceToNow(new Date(alert.created_at), {
     addSuffix: true,
     locale: de,
@@ -29,7 +35,10 @@ export function AlertCard({ alert, onHelp, onView, compact = false, reputationLe
 
   const statusConfig = {
     open: { label: "Offen", className: "bg-alert-amber text-white" },
-    help_coming: { label: "Hilfe unterwegs", className: "bg-quartier-green text-white" },
+    help_coming: {
+      label: "Hilfe unterwegs",
+      className: "bg-quartier-green text-white",
+    },
     resolved: { label: "Erledigt", className: "bg-gray-400 text-white" },
   };
 
@@ -55,7 +64,9 @@ export function AlertCard({ alert, onHelp, onView, compact = false, reputationLe
               <CategoryIcon
                 icon={iconConfig.icon}
                 bgColor={isOpen ? iconConfig.bgColor : "bg-muted"}
-                iconColor={isOpen ? iconConfig.iconColor : "text-muted-foreground"}
+                iconColor={
+                  isOpen ? iconConfig.iconColor : "text-muted-foreground"
+                }
                 size="lg"
                 className={isOpen ? "animate-pulse-alert" : ""}
               />
@@ -117,11 +128,13 @@ export function AlertCard({ alert, onHelp, onView, compact = false, reputationLe
             )}
 
             {/* Helfer anzeigen bei help_coming */}
-            {alert.status === "help_coming" && alert.responses && alert.responses.length > 0 && (
-              <p className="mt-2 text-sm font-medium text-quartier-green">
-                {alert.responses[0].responder?.display_name} ist unterwegs
-              </p>
-            )}
+            {alert.status === "help_coming" &&
+              alert.responses &&
+              alert.responses.length > 0 && (
+                <p className="mt-2 text-sm font-medium text-quartier-green">
+                  {alert.responses[0].responder?.display_name} ist unterwegs
+                </p>
+              )}
           </div>
         </div>
       </CardContent>

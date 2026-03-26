@@ -293,6 +293,7 @@ export default function DashboardPage() {
               <div className="flex items-center gap-3">
                 {/* Avatar: Profilbild oder Initialen-Fallback */}
                 {profileData?.avatarUrl ? (
+                  // eslint-disable-next-line @next/next/no-img-element
                   <img
                     src={profileData.avatarUrl}
                     alt="Profilbild"
@@ -374,6 +375,7 @@ export default function DashboardPage() {
                     title={cg.display_name || "Angehöriger"}
                   >
                     {cg.avatar_url ? (
+                      // eslint-disable-next-line @next/next/no-img-element
                       <img
                         src={cg.avatar_url}
                         alt=""

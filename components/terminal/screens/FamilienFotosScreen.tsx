@@ -21,7 +21,9 @@ export default function FamilienFotosScreen() {
   useEffect(() => {
     async function loadPhotos() {
       try {
-        const res = await fetch(`/api/device/photos?token=${encodeURIComponent(token)}`);
+        const res = await fetch(
+          `/api/device/photos?token=${encodeURIComponent(token)}`,
+        );
         if (!res.ok) throw new Error("Fehler beim Laden");
         const data = await res.json();
         setPhotos(data.photos ?? []);
@@ -44,7 +46,8 @@ export default function FamilienFotosScreen() {
 
   // Touch-Swipe Erkennung
   const [touchStartX, setTouchStartX] = useState<number | null>(null);
-  const handleTouchStart = (e: React.TouchEvent) => setTouchStartX(e.touches[0].clientX);
+  const handleTouchStart = (e: React.TouchEvent) =>
+    setTouchStartX(e.touches[0].clientX);
   const handleTouchEnd = (e: React.TouchEvent) => {
     if (touchStartX === null) return;
     const diff = e.changedTouches[0].clientX - touchStartX;
@@ -66,7 +69,9 @@ export default function FamilienFotosScreen() {
           >
             <ArrowLeft className="h-10 w-10" />
           </button>
-          <h1 className="text-[36px] font-bold text-anthrazit">Familienfotos</h1>
+          <h1 className="text-[36px] font-bold text-anthrazit">
+            Familienfotos
+          </h1>
         </div>
         <div className="flex flex-col items-center justify-center flex-1 gap-6">
           <Camera className="h-24 w-24 text-anthrazit-light/40" />
@@ -115,6 +120,7 @@ export default function FamilienFotosScreen() {
       {/* Foto */}
       <div className="flex-1 flex items-center justify-center">
         {photo?.url ? (
+          // eslint-disable-next-line @next/next/no-img-element
           <img
             src={photo.url}
             alt={photo.caption || "Familienfoto"}

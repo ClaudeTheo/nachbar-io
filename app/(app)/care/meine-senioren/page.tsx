@@ -1,11 +1,11 @@
 // app/(app)/care/meine-senioren/page.tsx
 // Uebersichtsseite: Zeigt dem Angehoerigen/Pflegedienst alle zugewiesenen Senioren
-'use client';
+"use client";
 
-import { ArrowRight, Users, UserPlus } from 'lucide-react';
-import Link from 'next/link';
-import { PageHeader } from '@/components/ui/page-header';
-import { useAssignedSeniors } from '@/lib/care/hooks/useAssignedSeniors';
+import { ArrowRight, Users, UserPlus } from "lucide-react";
+import Link from "next/link";
+import { PageHeader } from "@/components/ui/page-header";
+import { useAssignedSeniors } from "@/lib/care/hooks/useAssignedSeniors";
 
 export default function MeineSeniorenPage() {
   const { seniors, helperRole, loading, error } = useAssignedSeniors();
@@ -26,13 +26,17 @@ export default function MeineSeniorenPage() {
     <div className="px-4 py-6 space-y-6">
       {/* Header */}
       <PageHeader
-        title={<><Users className="h-6 w-6 text-quartier-green" /> Meine Senioren</>}
+        title={
+          <>
+            <Users className="h-6 w-6 text-quartier-green" /> Meine Senioren
+          </>
+        }
         subtitle={
-          helperRole === 'relative'
-            ? 'Ihre betreuten Angehoerigen'
-            : helperRole === 'care_service'
-              ? 'Ihre betreuten Klienten'
-              : 'Ihre zugewiesenen Senioren'
+          helperRole === "relative"
+            ? "Ihre betreuten Angehoerigen"
+            : helperRole === "care_service"
+              ? "Ihre betreuten Klienten"
+              : "Ihre zugewiesenen Senioren"
         }
         backHref="/care"
         backLabel="Zurück zum Pflege-Dashboard"
@@ -53,7 +57,8 @@ export default function MeineSeniorenPage() {
             Keine Senioren zugewiesen
           </p>
           <p className="text-sm text-muted-foreground mt-1 mb-4">
-            Sie sind noch keinem Senior zugewiesen. Registrieren Sie sich als Helfer, um Senioren betreuen zu koennen.
+            Sie sind noch keinem Senior zugewiesen. Registrieren Sie sich als
+            Helfer, um Senioren betreuen zu koennen.
           </p>
           <Link
             href="/care/helpers"
@@ -77,6 +82,7 @@ export default function MeineSeniorenPage() {
               {/* Avatar */}
               <div className="flex-shrink-0">
                 {senior.avatar_url ? (
+                  /* eslint-disable-next-line @next/next/no-img-element */
                   <img
                     src={senior.avatar_url}
                     alt={senior.display_name}

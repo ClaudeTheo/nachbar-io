@@ -41,7 +41,7 @@ function saveDismissedIds(ids: Set<string>) {
   if (typeof window === "undefined") return;
   localStorage.setItem(
     STORAGE_KEY,
-    JSON.stringify({ ids: [...ids], timestamp: Date.now() })
+    JSON.stringify({ ids: [...ids], timestamp: Date.now() }),
   );
 }
 
@@ -58,7 +58,10 @@ export function HelpRequestsSection({ requests }: { requests: HelpRequest[] }) {
   // Nur letzte 24h + nicht dismissed
   const visibleRequests = requests.filter((req) => {
     if (dismissedIds.has(req.id)) return false;
-    const hoursAgo = (Date.now() - new Date(req.created_at).getTime()) / (1000 * 60 * 60);
+    /* eslint-disable react-hooks/purity */
+    const hoursAgo =
+      (Date.now() - new Date(req.created_at).getTime()) / (1000 * 60 * 60);
+    /* eslint-enable react-hooks/purity */
     return hoursAgo <= MAX_AGE_HOURS;
   });
 
@@ -99,9 +102,12 @@ export function HelpRequestsSection({ requests }: { requests: HelpRequest[] }) {
       </Link>
       <div className="space-y-2">
         {visibleRequests.map((req) => {
+          /* eslint-disable react-hooks/purity */
           const hoursAgo = Math.floor(
-            (Date.now() - new Date(req.created_at).getTime()) / (1000 * 60 * 60)
+            (Date.now() - new Date(req.created_at).getTime()) /
+              (1000 * 60 * 60),
           );
+          /* eslint-enable react-hooks/purity */
           const isSwiping = swipingId === req.id;
 
           return (
@@ -123,21 +129,29 @@ export function HelpRequestsSection({ requests }: { requests: HelpRequest[] }) {
                 href={`/help/${req.id}`}
                 className="card-interactive flex items-center justify-between rounded-xl bg-card p-3 shadow-soft transition-transform"
                 style={{
-                  transform: isSwiping ? `translateX(${touchDeltaX.current}px)` : undefined,
+                  transform: isSwiping
+                    ? `translateX(${touchDeltaX.current}px)`
+                    : undefined,
                 }}
               >
                 <div className="flex-1 min-w-0">
-                  <p className="font-medium text-anthrazit truncate">{req.title}</p>
+                  <p className="font-medium text-anthrazit truncate">
+                    {req.title}
+                  </p>
                   <p className="text-xs text-muted-foreground">
                     {req.user?.display_name} ·{" "}
                     {req.type === "need" ? "Sucht Hilfe" : "Bietet Hilfe"}
                     {hoursAgo < 2 && (
-                      <span className="ml-1 text-quartier-green font-medium">· Neu</span>
+                      <span className="ml-1 text-quartier-green font-medium">
+                        · Neu
+                      </span>
                     )}
                   </p>
                 </div>
                 <div className="flex items-center gap-2 flex-shrink-0">
-                  <Badge variant={req.type === "need" ? "default" : "secondary"}>
+                  <Badge
+                    variant={req.type === "need" ? "default" : "secondary"}
+                  >
                     {req.type === "need" ? "Gesucht" : "Angebot"}
                   </Badge>
                   <button

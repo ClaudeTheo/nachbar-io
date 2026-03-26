@@ -1,24 +1,32 @@
 // app/(app)/care/admin/overview/page.tsx
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
-import { BarChart3, ArrowLeft } from 'lucide-react';
-import Link from 'next/link';
-import { PageHeader } from '@/components/ui/page-header';
-import { createClient } from '@/lib/supabase/client';
-import { SystemOverview } from '@/components/care/SystemOverview';
-import { PilotMetrics } from '@/components/care/PilotMetrics';
-import { useAuth } from '@/hooks/use-auth';
+import { useEffect, useState } from "react";
+import { BarChart3, ArrowLeft } from "lucide-react";
+import Link from "next/link";
+import { PageHeader } from "@/components/ui/page-header";
+import { createClient } from "@/lib/supabase/client";
+import { SystemOverview } from "@/components/care/SystemOverview";
+import { PilotMetrics } from "@/components/care/PilotMetrics";
+import { useAuth } from "@/hooks/use-auth";
 
 export default function AdminOverviewPage() {
   const { user } = useAuth();
   const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
 
   useEffect(() => {
-    if (!user) { setIsAdmin(false); return; }
+    if (!user) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setIsAdmin(false);
+      return;
+    }
     const supabase = createClient();
     async function checkAdmin() {
-      const { data } = await supabase.from('users').select('is_admin').eq('id', user!.id).single();
+      const { data } = await supabase
+        .from("users")
+        .select("is_admin")
+        .eq("id", user!.id)
+        .single();
       setIsAdmin(data?.is_admin === true);
     }
     checkAdmin();
@@ -38,8 +46,13 @@ export default function AdminOverviewPage() {
   if (!isAdmin) {
     return (
       <div className="px-4 py-6 text-center">
-        <p className="text-muted-foreground">Diese Seite ist nur fuer Administratoren zugaenglich.</p>
-        <Link href="/care" className="text-sm text-[#4CAF87] mt-2 inline-flex items-center gap-1">
+        <p className="text-muted-foreground">
+          Diese Seite ist nur fuer Administratoren zugaenglich.
+        </p>
+        <Link
+          href="/care"
+          className="text-sm text-[#4CAF87] mt-2 inline-flex items-center gap-1"
+        >
           <ArrowLeft className="h-4 w-4" /> Zurueck zum Dashboard
         </Link>
       </div>
@@ -49,7 +62,12 @@ export default function AdminOverviewPage() {
   return (
     <div className="px-4 py-6 space-y-6">
       <PageHeader
-        title={<><BarChart3 className="h-6 w-6 text-[#4CAF87]" /> Plattform-Uebersicht</>}
+        title={
+          <>
+            <BarChart3 className="h-6 w-6 text-[#4CAF87]" />{" "}
+            Plattform-Uebersicht
+          </>
+        }
         subtitle="Kennzahlen fuer Pilot-Betrieb und Investoren."
         backHref="/care"
       />
@@ -57,7 +75,9 @@ export default function AdminOverviewPage() {
       <SystemOverview />
 
       <div className="border-t pt-6">
-        <h2 className="text-lg font-semibold text-[#2D3142] mb-4">Pilot-Kennzahlen</h2>
+        <h2 className="text-lg font-semibold text-[#2D3142] mb-4">
+          Pilot-Kennzahlen
+        </h2>
         <PilotMetrics />
       </div>
 

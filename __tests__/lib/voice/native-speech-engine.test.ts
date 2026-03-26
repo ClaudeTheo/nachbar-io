@@ -1,10 +1,10 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 
 // Mock SpeechRecognition Instanz
 let mockRecognitionInstance: MockSpeechRecognition | null = null;
 
 class MockSpeechRecognition {
-  lang = '';
+  lang = "";
   interimResults = false;
   continuous = false;
   onresult: ((event: unknown) => void) | null = null;
@@ -15,6 +15,7 @@ class MockSpeechRecognition {
   abort = vi.fn();
 
   constructor() {
+    // eslint-disable-next-line @typescript-eslint/no-this-alias
     mockRecognitionInstance = this;
   }
 }
@@ -38,35 +39,39 @@ afterEach(() => {
   delete (globalThis as any).webkitSpeechRecognition;
 });
 
-describe('NativeSpeechEngine', () => {
-  it('isAvailable() gibt true zurueck wenn SpeechRecognition existiert', async () => {
-    const { NativeSpeechEngine } = await import('@/lib/voice/native-speech-engine');
+describe("NativeSpeechEngine", () => {
+  it("isAvailable() gibt true zurueck wenn SpeechRecognition existiert", async () => {
+    const { NativeSpeechEngine } =
+      await import("@/lib/voice/native-speech-engine");
     const engine = new NativeSpeechEngine();
     expect(engine.isAvailable()).toBe(true);
   });
 
-  it('isAvailable() gibt true zurueck wenn webkitSpeechRecognition existiert', async () => {
+  it("isAvailable() gibt true zurueck wenn webkitSpeechRecognition existiert", async () => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     delete (globalThis as any).SpeechRecognition;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (globalThis as any).webkitSpeechRecognition = MockSpeechRecognition;
 
-    const { NativeSpeechEngine } = await import('@/lib/voice/native-speech-engine');
+    const { NativeSpeechEngine } =
+      await import("@/lib/voice/native-speech-engine");
     const engine = new NativeSpeechEngine();
     expect(engine.isAvailable()).toBe(true);
   });
 
-  it('isAvailable() gibt false zurueck wenn SpeechRecognition fehlt', async () => {
+  it("isAvailable() gibt false zurueck wenn SpeechRecognition fehlt", async () => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     delete (globalThis as any).SpeechRecognition;
 
-    const { NativeSpeechEngine } = await import('@/lib/voice/native-speech-engine');
+    const { NativeSpeechEngine } =
+      await import("@/lib/voice/native-speech-engine");
     const engine = new NativeSpeechEngine();
     expect(engine.isAvailable()).toBe(false);
   });
 
-  it('setzt Sprache auf de-DE', async () => {
-    const { NativeSpeechEngine } = await import('@/lib/voice/native-speech-engine');
+  it("setzt Sprache auf de-DE", async () => {
+    const { NativeSpeechEngine } =
+      await import("@/lib/voice/native-speech-engine");
     const engine = new NativeSpeechEngine();
 
     const callbacks = {
@@ -79,13 +84,14 @@ describe('NativeSpeechEngine', () => {
     engine.startListening(callbacks);
 
     expect(mockRecognitionInstance).not.toBeNull();
-    expect(mockRecognitionInstance!.lang).toBe('de-DE');
+    expect(mockRecognitionInstance!.lang).toBe("de-DE");
     expect(mockRecognitionInstance!.interimResults).toBe(true);
     expect(mockRecognitionInstance!.continuous).toBe(false);
   });
 
-  it('startListening() setzt State auf listening', async () => {
-    const { NativeSpeechEngine } = await import('@/lib/voice/native-speech-engine');
+  it("startListening() setzt State auf listening", async () => {
+    const { NativeSpeechEngine } =
+      await import("@/lib/voice/native-speech-engine");
     const engine = new NativeSpeechEngine();
 
     const callbacks = {
@@ -98,11 +104,12 @@ describe('NativeSpeechEngine', () => {
     engine.startListening(callbacks);
 
     expect(mockRecognitionInstance!.start).toHaveBeenCalled();
-    expect(callbacks.onStateChange).toHaveBeenCalledWith('listening');
+    expect(callbacks.onStateChange).toHaveBeenCalledWith("listening");
   });
 
-  it('leitet finales Transkript an onTranscript weiter', async () => {
-    const { NativeSpeechEngine } = await import('@/lib/voice/native-speech-engine');
+  it("leitet finales Transkript an onTranscript weiter", async () => {
+    const { NativeSpeechEngine } =
+      await import("@/lib/voice/native-speech-engine");
     const engine = new NativeSpeechEngine();
 
     const callbacks = {
@@ -116,22 +123,27 @@ describe('NativeSpeechEngine', () => {
 
     // Simuliere finales Ergebnis
     const mockEvent = {
-      results: [{
-        isFinal: true,
-        length: 1,
-        0: { transcript: 'Hilfe beim Einkaufen', confidence: 0.95 },
-        item(i: number) { return this[i as unknown as keyof typeof this]; },
-      }],
+      results: [
+        {
+          isFinal: true,
+          length: 1,
+          0: { transcript: "Hilfe beim Einkaufen", confidence: 0.95 },
+          item(i: number) {
+            return this[i as unknown as keyof typeof this];
+          },
+        },
+      ],
       resultIndex: 0,
     };
 
     mockRecognitionInstance!.onresult?.(mockEvent);
 
-    expect(callbacks.onTranscript).toHaveBeenCalledWith('Hilfe beim Einkaufen');
+    expect(callbacks.onTranscript).toHaveBeenCalledWith("Hilfe beim Einkaufen");
   });
 
-  it('ignoriert Interim-Ergebnisse fuer onTranscript, nutzt sie fuer Audio-Level', async () => {
-    const { NativeSpeechEngine } = await import('@/lib/voice/native-speech-engine');
+  it("ignoriert Interim-Ergebnisse fuer onTranscript, nutzt sie fuer Audio-Level", async () => {
+    const { NativeSpeechEngine } =
+      await import("@/lib/voice/native-speech-engine");
     const engine = new NativeSpeechEngine();
 
     const callbacks = {
@@ -145,12 +157,16 @@ describe('NativeSpeechEngine', () => {
 
     // Simuliere Interim-Ergebnis
     const mockEvent = {
-      results: [{
-        isFinal: false,
-        length: 1,
-        0: { transcript: 'Hilfe', confidence: 0.5 },
-        item(i: number) { return this[i as unknown as keyof typeof this]; },
-      }],
+      results: [
+        {
+          isFinal: false,
+          length: 1,
+          0: { transcript: "Hilfe", confidence: 0.5 },
+          item(i: number) {
+            return this[i as unknown as keyof typeof this];
+          },
+        },
+      ],
       resultIndex: 0,
     };
 
@@ -165,8 +181,9 @@ describe('NativeSpeechEngine', () => {
     expect(level).toBeLessThanOrEqual(1);
   });
 
-  it('uebersetzt not-allowed Fehler in deutsche Meldung', async () => {
-    const { NativeSpeechEngine } = await import('@/lib/voice/native-speech-engine');
+  it("uebersetzt not-allowed Fehler in deutsche Meldung", async () => {
+    const { NativeSpeechEngine } =
+      await import("@/lib/voice/native-speech-engine");
     const engine = new NativeSpeechEngine();
 
     const callbacks = {
@@ -179,16 +196,17 @@ describe('NativeSpeechEngine', () => {
     engine.startListening(callbacks);
 
     // Simuliere Mikrofon-Verweigerung
-    mockRecognitionInstance!.onerror?.({ error: 'not-allowed' });
+    mockRecognitionInstance!.onerror?.({ error: "not-allowed" });
 
     expect(callbacks.onError).toHaveBeenCalledWith(
-      'Bitte Mikrofon freigeben in den Browser-Einstellungen.'
+      "Bitte Mikrofon freigeben in den Browser-Einstellungen.",
     );
-    expect(callbacks.onStateChange).toHaveBeenCalledWith('idle');
+    expect(callbacks.onStateChange).toHaveBeenCalledWith("idle");
   });
 
-  it('uebersetzt no-speech Fehler korrekt', async () => {
-    const { NativeSpeechEngine } = await import('@/lib/voice/native-speech-engine');
+  it("uebersetzt no-speech Fehler korrekt", async () => {
+    const { NativeSpeechEngine } =
+      await import("@/lib/voice/native-speech-engine");
     const engine = new NativeSpeechEngine();
 
     const callbacks = {
@@ -199,15 +217,16 @@ describe('NativeSpeechEngine', () => {
     };
 
     engine.startListening(callbacks);
-    mockRecognitionInstance!.onerror?.({ error: 'no-speech' });
+    mockRecognitionInstance!.onerror?.({ error: "no-speech" });
 
     expect(callbacks.onError).toHaveBeenCalledWith(
-      'Keine Sprache erkannt. Bitte nochmal versuchen.'
+      "Keine Sprache erkannt. Bitte nochmal versuchen.",
     );
   });
 
-  it('uebersetzt audio-capture Fehler korrekt', async () => {
-    const { NativeSpeechEngine } = await import('@/lib/voice/native-speech-engine');
+  it("uebersetzt audio-capture Fehler korrekt", async () => {
+    const { NativeSpeechEngine } =
+      await import("@/lib/voice/native-speech-engine");
     const engine = new NativeSpeechEngine();
 
     const callbacks = {
@@ -218,13 +237,14 @@ describe('NativeSpeechEngine', () => {
     };
 
     engine.startListening(callbacks);
-    mockRecognitionInstance!.onerror?.({ error: 'audio-capture' });
+    mockRecognitionInstance!.onerror?.({ error: "audio-capture" });
 
-    expect(callbacks.onError).toHaveBeenCalledWith('Kein Mikrofon gefunden.');
+    expect(callbacks.onError).toHaveBeenCalledWith("Kein Mikrofon gefunden.");
   });
 
-  it('uebersetzt network Fehler korrekt', async () => {
-    const { NativeSpeechEngine } = await import('@/lib/voice/native-speech-engine');
+  it("uebersetzt network Fehler korrekt", async () => {
+    const { NativeSpeechEngine } =
+      await import("@/lib/voice/native-speech-engine");
     const engine = new NativeSpeechEngine();
 
     const callbacks = {
@@ -235,15 +255,16 @@ describe('NativeSpeechEngine', () => {
     };
 
     engine.startListening(callbacks);
-    mockRecognitionInstance!.onerror?.({ error: 'network' });
+    mockRecognitionInstance!.onerror?.({ error: "network" });
 
     expect(callbacks.onError).toHaveBeenCalledWith(
-      'Netzwerkfehler bei der Spracherkennung.'
+      "Netzwerkfehler bei der Spracherkennung.",
     );
   });
 
-  it('ignoriert aborted-Fehler (manueller Stop)', async () => {
-    const { NativeSpeechEngine } = await import('@/lib/voice/native-speech-engine');
+  it("ignoriert aborted-Fehler (manueller Stop)", async () => {
+    const { NativeSpeechEngine } =
+      await import("@/lib/voice/native-speech-engine");
     const engine = new NativeSpeechEngine();
 
     const callbacks = {
@@ -257,14 +278,15 @@ describe('NativeSpeechEngine', () => {
     callbacks.onError.mockClear();
     callbacks.onStateChange.mockClear();
 
-    mockRecognitionInstance!.onerror?.({ error: 'aborted' });
+    mockRecognitionInstance!.onerror?.({ error: "aborted" });
 
     // Aborted wird ignoriert — kein Error-Callback
     expect(callbacks.onError).not.toHaveBeenCalled();
   });
 
-  it('stopListening() ruft recognition.stop() auf', async () => {
-    const { NativeSpeechEngine } = await import('@/lib/voice/native-speech-engine');
+  it("stopListening() ruft recognition.stop() auf", async () => {
+    const { NativeSpeechEngine } =
+      await import("@/lib/voice/native-speech-engine");
     const engine = new NativeSpeechEngine();
 
     const callbacks = {
@@ -280,8 +302,9 @@ describe('NativeSpeechEngine', () => {
     expect(mockRecognitionInstance!.stop).toHaveBeenCalled();
   });
 
-  it('cleanup() stoppt und raeumt Referenzen auf', async () => {
-    const { NativeSpeechEngine } = await import('@/lib/voice/native-speech-engine');
+  it("cleanup() stoppt und raeumt Referenzen auf", async () => {
+    const { NativeSpeechEngine } =
+      await import("@/lib/voice/native-speech-engine");
     const engine = new NativeSpeechEngine();
 
     const callbacks = {
@@ -300,8 +323,9 @@ describe('NativeSpeechEngine', () => {
     expect(() => engine.stopListening()).not.toThrow();
   });
 
-  it('onend setzt State auf idle und Audio-Level auf 0', async () => {
-    const { NativeSpeechEngine } = await import('@/lib/voice/native-speech-engine');
+  it("onend setzt State auf idle und Audio-Level auf 0", async () => {
+    const { NativeSpeechEngine } =
+      await import("@/lib/voice/native-speech-engine");
     const engine = new NativeSpeechEngine();
 
     const callbacks = {
@@ -318,14 +342,15 @@ describe('NativeSpeechEngine', () => {
     mockRecognitionInstance!.onend?.();
 
     expect(callbacks.onAudioLevel).toHaveBeenCalledWith(0);
-    expect(callbacks.onStateChange).toHaveBeenCalledWith('idle');
+    expect(callbacks.onStateChange).toHaveBeenCalledWith("idle");
   });
 
-  it('ruft onError wenn SpeechRecognition nicht verfuegbar', async () => {
+  it("ruft onError wenn SpeechRecognition nicht verfuegbar", async () => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     delete (globalThis as any).SpeechRecognition;
 
-    const { NativeSpeechEngine } = await import('@/lib/voice/native-speech-engine');
+    const { NativeSpeechEngine } =
+      await import("@/lib/voice/native-speech-engine");
     const engine = new NativeSpeechEngine();
 
     const callbacks = {
@@ -338,7 +363,7 @@ describe('NativeSpeechEngine', () => {
     engine.startListening(callbacks);
 
     expect(callbacks.onError).toHaveBeenCalledWith(
-      'Spracherkennung nicht verfügbar in diesem Browser.'
+      "Spracherkennung nicht verfügbar in diesem Browser.",
     );
   });
 });

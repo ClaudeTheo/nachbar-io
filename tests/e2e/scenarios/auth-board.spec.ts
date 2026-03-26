@@ -2,8 +2,10 @@
 // Prueft: Board laden, Tabs, Karten, Erstellen-Button
 import { test, expect } from "@playwright/test";
 import { HelpPage } from "../pages";
-import { createConsoleErrorCollector, waitForStableUI } from "../helpers/observer";
-import { TIMEOUTS } from "../helpers/test-config";
+import {
+  createConsoleErrorCollector,
+  waitForStableUI,
+} from "../helpers/observer";
 
 test.describe("Auth-Flow: Schwarzes Brett / Hilfe-Boerse", () => {
   test("AF3.1 — Hilfe-Boerse laed und zeigt Board", async ({ page }) => {
@@ -24,7 +26,7 @@ test.describe("Auth-Flow: Schwarzes Brett / Hilfe-Boerse", () => {
 
     // Erstellen-Button (FAB oder Link)
     const createBtn = helpPage.createButton.or(
-      page.getByRole("link", { name: /Hilfe anbieten|Erstellen|Neue/i })
+      page.getByRole("link", { name: /Hilfe anbieten|Erstellen|Neue/i }),
     );
     const isVisible = await createBtn.isVisible().catch(() => false);
     expect(isVisible).toBeTruthy();
@@ -32,7 +34,9 @@ test.describe("Auth-Flow: Schwarzes Brett / Hilfe-Boerse", () => {
     console.log("[AUTH] Erstellen-Button sichtbar ✓");
   });
 
-  test("AF3.3 — Hilfe-Boerse zeigt Karten oder Leerzustand", async ({ page }) => {
+  test("AF3.3 — Hilfe-Boerse zeigt Karten oder Leerzustand", async ({
+    page,
+  }) => {
     const helpPage = new HelpPage(page);
     await helpPage.goto();
     await helpPage.assertLoaded();
@@ -45,11 +49,15 @@ test.describe("Auth-Flow: Schwarzes Brett / Hilfe-Boerse", () => {
       // Leerzustand: Sollte freundlichen Hinweis zeigen
       const emptyState = page.getByText(/keine|leer|noch nichts/i).first();
       const hasEmptyState = await emptyState.isVisible().catch(() => false);
-      console.log(`[AUTH] Leerzustand: ${hasEmptyState ? "Hinweis angezeigt ✓" : "Kein Hinweis (evtl. OK)"}`);
+      console.log(
+        `[AUTH] Leerzustand: ${hasEmptyState ? "Hinweis angezeigt ✓" : "Kein Hinweis (evtl. OK)"}`,
+      );
     }
   });
 
-  test("AF3.4 — Navigation zu 'Neues Hilfsangebot erstellen'", async ({ page }) => {
+  test("AF3.4 — Navigation zu 'Neues Hilfsangebot erstellen'", async ({
+    page,
+  }) => {
     await page.goto("/help");
     await waitForStableUI(page);
 
@@ -64,7 +72,9 @@ test.describe("Auth-Flow: Schwarzes Brett / Hilfe-Boerse", () => {
     // Mindestens ein Formular-Element sichtbar
     const formElement = page.getByText(/Ich suche|Ich biete|Hilfe/i).first();
     const hasForm = await formElement.isVisible().catch(() => false);
-    console.log(`[AUTH] Hilfe-Formular: ${hasForm ? "✓" : "Element nicht gefunden"}`);
+    console.log(
+      `[AUTH] Hilfe-Formular: ${hasForm ? "✓" : "Element nicht gefunden"}`,
+    );
   });
 
   test("AF3.5 — Marketplace-Seite laed", async ({ page }) => {
@@ -76,7 +86,7 @@ test.describe("Auth-Flow: Schwarzes Brett / Hilfe-Boerse", () => {
 
     errors.stop();
     const criticalErrors = errors.errors.filter(
-      (e) => !e.includes("hydration") && !e.includes("Warning:")
+      (e) => !e.includes("hydration") && !e.includes("Warning:"),
     );
     expect(criticalErrors).toHaveLength(0);
 

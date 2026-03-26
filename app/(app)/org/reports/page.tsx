@@ -4,7 +4,7 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { useAuth } from '@/hooks/use-auth';
+import { useAuth } from "@/hooks/use-auth";
 import { toast } from "sonner";
 import type { MunicipalReport, ReportStatus } from "@/lib/municipal";
 import { REPORT_CATEGORIES, REPORT_STATUS_CONFIG } from "@/lib/municipal";
@@ -31,7 +31,9 @@ export default function OrgReportsPage() {
   // Status-Notizen pro Meldung
   const [statusNotes, setStatusNotes] = useState<Record<string, string>>({});
   // Lade-Zustand pro Meldung (fuer Button-Deaktivierung)
-  const [actionLoading, setActionLoading] = useState<Record<string, boolean>>({});
+  const [actionLoading, setActionLoading] = useState<Record<string, boolean>>(
+    {},
+  );
 
   const supabase = createClient();
 
@@ -61,6 +63,7 @@ export default function OrgReportsPage() {
       }
 
       setOrgId(membership.org_id);
+      setUserId(user.id);
       setAssignedQuarters(membership.assigned_quarters || []);
 
       if (!membership.assigned_quarters?.length) {
@@ -86,6 +89,7 @@ export default function OrgReportsPage() {
     } finally {
       setLoading(false);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [supabase]);
 
   useEffect(() => {
@@ -93,7 +97,10 @@ export default function OrgReportsPage() {
   }, [loadReports]);
 
   // Status einer Meldung aendern
-  async function handleStatusChange(report: MunicipalReport, newStatus: ReportStatus) {
+  async function handleStatusChange(
+    report: MunicipalReport,
+    newStatus: ReportStatus,
+  ) {
     if (!orgId || !userId) return;
     if (newStatus === report.status) return;
 
@@ -151,7 +158,9 @@ export default function OrgReportsPage() {
       // Notiz-Feld leeren
       setStatusNotes((prev) => ({ ...prev, [report.id]: "" }));
 
-      const statusLabel = REPORT_STATUS_CONFIG.find((s) => s.id === newStatus)?.label || newStatus;
+      const statusLabel =
+        REPORT_STATUS_CONFIG.find((s) => s.id === newStatus)?.label ||
+        newStatus;
       toast.success(`Status geändert: ${statusLabel}`);
     } catch {
       toast.error("Fehler beim Ändern des Status.");
@@ -209,7 +218,9 @@ export default function OrgReportsPage() {
 
   // Gefilterte Meldungen
   const filteredReports =
-    statusFilter === "all" ? reports : reports.filter((r) => r.status === statusFilter);
+    statusFilter === "all"
+      ? reports
+      : reports.filter((r) => r.status === statusFilter);
 
   // Kategorie-Info finden
   function getCategoryInfo(categoryId: string) {
@@ -254,7 +265,9 @@ export default function OrgReportsPage() {
   if (assignedQuarters.length === 0) {
     return (
       <div className="rounded-xl bg-white p-6 text-center shadow-sm">
-        <p className="text-gray-600">Keine Quartiere zugewiesen. Kontaktieren Sie Ihren Administrator.</p>
+        <p className="text-gray-600">
+          Keine Quartiere zugewiesen. Kontaktieren Sie Ihren Administrator.
+        </p>
       </div>
     );
   }
@@ -337,13 +350,16 @@ export default function OrgReportsPage() {
               {/* Ort */}
               {report.location_text && (
                 <p className="text-sm text-gray-600 mb-1">
-                  <span className="font-medium">Ort:</span> {report.location_text}
+                  <span className="font-medium">Ort:</span>{" "}
+                  {report.location_text}
                 </p>
               )}
 
               {/* Beschreibung */}
               {report.description && (
-                <p className="text-sm text-gray-700 mb-2">{report.description}</p>
+                <p className="text-sm text-gray-700 mb-2">
+                  {report.description}
+                </p>
               )}
 
               {/* Status-Notiz (falls vorhanden) */}
@@ -357,7 +373,10 @@ export default function OrgReportsPage() {
               <div className="flex flex-wrap items-end gap-2 mt-3 pt-3 border-t border-gray-100">
                 {/* Status aendern */}
                 <div className="flex flex-col gap-1">
-                  <label className="text-xs text-gray-500" htmlFor={`status-${report.id}`}>
+                  <label
+                    className="text-xs text-gray-500"
+                    htmlFor={`status-${report.id}`}
+                  >
                     Status ändern
                   </label>
                   <select
@@ -379,7 +398,10 @@ export default function OrgReportsPage() {
 
                 {/* Status-Notiz */}
                 <div className="flex flex-col gap-1 flex-1 min-w-[150px]">
-                  <label className="text-xs text-gray-500" htmlFor={`note-${report.id}`}>
+                  <label
+                    className="text-xs text-gray-500"
+                    htmlFor={`note-${report.id}`}
+                  >
                     Notiz (optional)
                   </label>
                   <input
@@ -389,7 +411,10 @@ export default function OrgReportsPage() {
                     value={statusNotes[report.id] || ""}
                     disabled={isProcessing}
                     onChange={(e) =>
-                      setStatusNotes((prev) => ({ ...prev, [report.id]: e.target.value }))
+                      setStatusNotes((prev) => ({
+                        ...prev,
+                        [report.id]: e.target.value,
+                      }))
                     }
                     className="min-h-[44px] rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-[#4CAF87] focus:outline-none focus:ring-1 focus:ring-[#4CAF87]"
                   />

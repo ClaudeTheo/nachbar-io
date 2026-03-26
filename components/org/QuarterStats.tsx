@@ -1,12 +1,19 @@
 // components/org/QuarterStats.tsx
 // Nachbar.io — Anonymisierte Quartier-Statistiken fuer B2B (Pro Community)
-'use client';
+"use client";
 
-import { useEffect, useState, useCallback } from 'react';
-import { createClient } from '@/lib/supabase/client';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Skeleton } from '@/components/ui/skeleton';
-import { Users, Heart, Activity, TriangleAlert, TrendingUp, MessageSquare } from 'lucide-react';
+import { useEffect, useState, useCallback } from "react";
+import { createClient } from "@/lib/supabase/client";
+import { Card, CardContent } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
+import {
+  Users,
+  Heart,
+  Activity,
+  TriangleAlert,
+  TrendingUp,
+  MessageSquare,
+} from "lucide-react";
 
 type QuarterSnapshot = {
   snapshot_date: string;
@@ -49,10 +56,14 @@ function StatCard({
         <p className="text-sm text-gray-500">{label}</p>
       </div>
       <p className="text-2xl font-bold text-[#2D3142]">
-        {typeof value === 'number' ? value.toLocaleString('de-DE') : value}
-        {unit && <span className="text-sm font-normal text-gray-400 ml-1">{unit}</span>}
+        {typeof value === "number" ? value.toLocaleString("de-DE") : value}
+        {unit && (
+          <span className="text-sm font-normal text-gray-400 ml-1">{unit}</span>
+        )}
       </p>
-      {description && <p className="mt-1 text-xs text-gray-400">{description}</p>}
+      {description && (
+        <p className="mt-1 text-xs text-gray-400">{description}</p>
+      )}
     </div>
   );
 }
@@ -71,10 +82,12 @@ export function QuarterStats({ quarterIds }: QuarterStatsProps) {
 
     // Neueste Snapshots fuer die zugewiesenen Quartiere laden
     const { data } = await supabase
-      .from('analytics_snapshots')
-      .select('snapshot_date, wah, total_users, active_users_7d, active_users_30d, posts_count, events_count, heartbeat_coverage, checkin_frequency, escalation_count, plus_subscribers')
-      .in('quarter_id', quarterIds)
-      .order('snapshot_date', { ascending: false })
+      .from("analytics_snapshots")
+      .select(
+        "snapshot_date, wah, total_users, active_users_7d, active_users_30d, posts_count, events_count, heartbeat_coverage, checkin_frequency, escalation_count, plus_subscribers",
+      )
+      .in("quarter_id", quarterIds)
+      .order("snapshot_date", { ascending: false })
       .limit(quarterIds.length);
 
     setSnapshots((data as QuarterSnapshot[]) ?? []);
@@ -82,6 +95,7 @@ export function QuarterStats({ quarterIds }: QuarterStatsProps) {
   }, [quarterIds]);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     loadStats();
   }, [loadStats]);
 
@@ -122,16 +136,27 @@ export function QuarterStats({ quarterIds }: QuarterStatsProps) {
       heartbeatCoverage: acc.heartbeatCoverage + s.heartbeat_coverage,
       count: acc.count + 1,
     }),
-    { totalUsers: 0, activeUsers7d: 0, wah: 0, posts: 0, events: 0, escalations: 0, heartbeatCoverage: 0, count: 0 }
+    {
+      totalUsers: 0,
+      activeUsers7d: 0,
+      wah: 0,
+      posts: 0,
+      events: 0,
+      escalations: 0,
+      heartbeatCoverage: 0,
+      count: 0,
+    },
   );
 
-  const avgHeartbeat = aggregated.count > 0
-    ? Math.round(aggregated.heartbeatCoverage / aggregated.count * 10) / 10
-    : 0;
+  const avgHeartbeat =
+    aggregated.count > 0
+      ? Math.round((aggregated.heartbeatCoverage / aggregated.count) * 10) / 10
+      : 0;
 
-  const activityRate = aggregated.totalUsers > 0
-    ? Math.round((aggregated.activeUsers7d / aggregated.totalUsers) * 100)
-    : 0;
+  const activityRate =
+    aggregated.totalUsers > 0
+      ? Math.round((aggregated.activeUsers7d / aggregated.totalUsers) * 100)
+      : 0;
 
   // Einsamkeits-Proxy: inaktive Nutzer (30d aktiv - 7d aktiv)
   const inactiveUsers = aggregated.totalUsers - aggregated.activeUsers7d;
@@ -181,7 +206,7 @@ export function QuarterStats({ quarterIds }: QuarterStatsProps) {
           icon={<TriangleAlert className="h-4 w-4 text-white" />}
           label="Offene Eskalationen"
           value={aggregated.escalations}
-          color={aggregated.escalations > 0 ? 'bg-[#F59E0B]' : 'bg-gray-400'}
+          color={aggregated.escalations > 0 ? "bg-[#F59E0B]" : "bg-gray-400"}
         />
       </div>
 

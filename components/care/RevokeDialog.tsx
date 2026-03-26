@@ -1,8 +1,8 @@
 // components/care/RevokeDialog.tsx
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { TriangleAlert } from 'lucide-react';
+import { useState } from "react";
+import { TriangleAlert } from "lucide-react";
 
 interface Props {
   featureLabel: string;
@@ -29,14 +29,14 @@ export function RevokeDialog({ featureLabel, onConfirm, onCancel }: Props) {
             <button
               onClick={() => onConfirm(true)}
               className="w-full h-[60px] rounded-xl bg-red-500 text-white text-lg font-semibold active:scale-95"
-              style={{ touchAction: 'manipulation' }}
+              style={{ touchAction: "manipulation" }}
             >
               Ja, endgültig löschen
             </button>
             <button
               onClick={onCancel}
               className="w-full h-[60px] rounded-xl border-2 border-border text-anthrazit text-lg font-semibold active:scale-95"
-              style={{ touchAction: 'manipulation' }}
+              style={{ touchAction: "manipulation" }}
             >
               Abbrechen
             </button>
@@ -49,23 +49,25 @@ export function RevokeDialog({ featureLabel, onConfirm, onCancel }: Props) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
       <div className="bg-white rounded-2xl p-6 max-w-md w-full space-y-4">
-        <h3 className="text-xl font-bold text-anthrazit">Einwilligung widerrufen</h3>
+        <h3 className="text-xl font-bold text-anthrazit">
+          Einwilligung widerrufen
+        </h3>
         <p className="text-muted-foreground">
-          Sie widerrufen die Einwilligung für „{featureLabel}".
-          Möchten Sie auch Ihre bestehenden Daten löschen?
+          Sie widerrufen die Einwilligung für „{featureLabel}&ldquo;. Möchten
+          Sie auch Ihre bestehenden Daten löschen?
         </p>
         <div className="space-y-3">
           <button
             onClick={() => onConfirm(false)}
             className="w-full h-[60px] rounded-xl bg-anthrazit text-white text-lg font-semibold active:scale-95"
-            style={{ touchAction: 'manipulation' }}
+            style={{ touchAction: "manipulation" }}
           >
             Nur deaktivieren
           </button>
           <button
             onClick={() => setShowDeleteConfirm(true)}
             className="w-full h-[60px] rounded-xl border-2 border-amber-500 text-amber-700 text-lg font-semibold active:scale-95"
-            style={{ touchAction: 'manipulation' }}
+            style={{ touchAction: "manipulation" }}
           >
             Deaktivieren und Daten löschen
           </button>

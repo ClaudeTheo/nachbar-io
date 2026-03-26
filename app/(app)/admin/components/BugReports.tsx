@@ -5,8 +5,16 @@
 
 import { useEffect, useState, useCallback } from "react";
 import {
-  Bug, Check, X, RefreshCw, ExternalLink, Clock,
-  ChevronDown, ChevronUp, Eye, Trash2,
+  Bug,
+  Check,
+  X,
+  RefreshCw,
+  ExternalLink,
+  Clock,
+  ChevronDown,
+  ChevronUp,
+  Eye,
+  Trash2,
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -36,14 +44,23 @@ interface BugReport {
   user?: { display_name: string } | null;
 }
 
-type FilterStatus = "all" | "new" | "approved" | "rejected" | "seen" | "fixed" | "wont_fix";
+type FilterStatus =
+  | "all"
+  | "new"
+  | "approved"
+  | "rejected"
+  | "seen"
+  | "fixed"
+  | "wont_fix";
 
 export function BugReports() {
   const { user } = useAuth();
   const [reports, setReports] = useState<BugReport[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<FilterStatus>("new");
-  const [sourceFilter, setSourceFilter] = useState<'all' | 'authenticated' | 'anonymous'>('all');
+  const [sourceFilter, setSourceFilter] = useState<
+    "all" | "authenticated" | "anonymous"
+  >("all");
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [adminNotes, setAdminNotes] = useState<Record<string, string>>({});
 
@@ -61,8 +78,8 @@ export function BugReports() {
     }
 
     // Quellen-Filter (authentifiziert / anonym)
-    if (sourceFilter !== 'all') {
-      query = query.eq('source', sourceFilter);
+    if (sourceFilter !== "all") {
+      query = query.eq("source", sourceFilter);
     }
 
     const { data, error } = await query;
@@ -75,6 +92,7 @@ export function BugReports() {
   }, [filter, sourceFilter]);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     loadReports();
   }, [loadReports]);
 
@@ -96,8 +114,11 @@ export function BugReports() {
       return;
     }
     const statusLabels: Record<string, string> = {
-      approved: "bestätigt", rejected: "abgelehnt", seen: "als gesehen markiert",
-      fixed: "als behoben markiert", wont_fix: "als 'kein Fix' markiert",
+      approved: "bestätigt",
+      rejected: "abgelehnt",
+      seen: "als gesehen markiert",
+      fixed: "als behoben markiert",
+      wont_fix: "als 'kein Fix' markiert",
     };
     toast.success(`Bug-Report ${statusLabels[newStatus] || "aktualisiert"}`);
     loadReports();
@@ -117,29 +138,57 @@ export function BugReports() {
   }
 
   // Zaehler pro Status
-  const counts = {
+  const _counts = {
     new: reports.length, // Wird separat gezaehlt wenn filter=all
   };
 
   const statusBadge = (status: string) => {
     switch (status) {
-      case "new": return <Badge variant="default" className="bg-alert-amber text-white">Neu</Badge>;
-      case "approved": return <Badge variant="default" className="bg-quartier-green text-white">Bestätigt</Badge>;
-      case "rejected": return <Badge variant="destructive">Abgelehnt</Badge>;
-      case "seen": return <Badge variant="secondary">Gesehen</Badge>;
-      case "fixed": return <Badge variant="default" className="bg-blue-500 text-white">Behoben</Badge>;
-      case "wont_fix": return <Badge variant="outline">Kein Fix</Badge>;
-      default: return <Badge variant="outline">{status}</Badge>;
+      case "new":
+        return (
+          <Badge variant="default" className="bg-alert-amber text-white">
+            Neu
+          </Badge>
+        );
+      case "approved":
+        return (
+          <Badge variant="default" className="bg-quartier-green text-white">
+            Bestätigt
+          </Badge>
+        );
+      case "rejected":
+        return <Badge variant="destructive">Abgelehnt</Badge>;
+      case "seen":
+        return <Badge variant="secondary">Gesehen</Badge>;
+      case "fixed":
+        return (
+          <Badge variant="default" className="bg-blue-500 text-white">
+            Behoben
+          </Badge>
+        );
+      case "wont_fix":
+        return <Badge variant="outline">Kein Fix</Badge>;
+      default:
+        return <Badge variant="outline">{status}</Badge>;
     }
   };
 
   const formatDate = (iso: string) => {
     const d = new Date(iso);
-    return d.toLocaleDateString("de-DE", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" });
+    return d.toLocaleDateString("de-DE", {
+      day: "2-digit",
+      month: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
   };
 
   const extractPath = (url: string) => {
-    try { return new URL(url).pathname; } catch { return url; }
+    try {
+      return new URL(url).pathname;
+    } catch {
+      return url;
+    }
   };
 
   return (
@@ -149,17 +198,37 @@ export function BugReports() {
           <Bug className="h-5 w-5 text-alert-amber" />
           Bug-Reports ({reports.length})
         </h2>
-        <Button variant="ghost" size="sm" onClick={loadReports} disabled={loading}>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={loadReports}
+          disabled={loading}
+        >
           <RefreshCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} />
         </Button>
       </div>
 
       {/* Filter-Chips */}
       <div className="flex gap-2 overflow-x-auto pb-1">
-        {(["new", "seen", "approved", "rejected", "fixed", "wont_fix", "all"] as FilterStatus[]).map((s) => {
+        {(
+          [
+            "new",
+            "seen",
+            "approved",
+            "rejected",
+            "fixed",
+            "wont_fix",
+            "all",
+          ] as FilterStatus[]
+        ).map((s) => {
           const labels: Record<FilterStatus, string> = {
-            new: "Neu", seen: "Gesehen", approved: "Bestätigt", rejected: "Abgelehnt",
-            fixed: "Behoben", wont_fix: "Kein Fix", all: "Alle",
+            new: "Neu",
+            seen: "Gesehen",
+            approved: "Bestätigt",
+            rejected: "Abgelehnt",
+            fixed: "Behoben",
+            wont_fix: "Kein Fix",
+            all: "Alle",
           };
           return (
             <button
@@ -179,16 +248,20 @@ export function BugReports() {
 
       {/* Quellen-Filter */}
       <div className="flex gap-2 pb-1">
-        {(['all', 'authenticated', 'anonymous'] as const).map((s) => {
-          const labels = { all: 'Alle Quellen', authenticated: 'Eingeloggt', anonymous: 'Anonym' };
+        {(["all", "authenticated", "anonymous"] as const).map((s) => {
+          const labels = {
+            all: "Alle Quellen",
+            authenticated: "Eingeloggt",
+            anonymous: "Anonym",
+          };
           return (
             <button
               key={s}
               onClick={() => setSourceFilter(s)}
               className={`shrink-0 rounded-full px-3 py-1.5 text-xs font-medium transition-colors ${
                 sourceFilter === s
-                  ? 'bg-anthrazit text-white'
-                  : 'bg-muted text-muted-foreground hover:bg-muted/80'
+                  ? "bg-anthrazit text-white"
+                  : "bg-muted text-muted-foreground hover:bg-muted/80"
               }`}
             >
               {labels[s]}
@@ -207,7 +280,10 @@ export function BugReports() {
       ) : reports.length === 0 ? (
         <div className="py-8 text-center text-muted-foreground">
           <Bug className="mx-auto h-8 w-8 mb-2 opacity-40" />
-          <p>Keine Bug-Reports mit Status &quot;{filter === "all" ? "alle" : filter}&quot;</p>
+          <p>
+            Keine Bug-Reports mit Status &quot;
+            {filter === "all" ? "alle" : filter}&quot;
+          </p>
         </div>
       ) : (
         <div className="space-y-3">
@@ -216,7 +292,12 @@ export function BugReports() {
             const isOwnReport = report.user_id === user?.id;
 
             return (
-              <Card key={report.id} className={isOwnReport ? "border-l-4 border-l-quartier-green" : ""}>
+              <Card
+                key={report.id}
+                className={
+                  isOwnReport ? "border-l-4 border-l-quartier-green" : ""
+                }
+              >
                 <CardContent className="p-4">
                   {/* Header */}
                   <button
@@ -230,13 +311,18 @@ export function BugReports() {
                           <Clock className="h-3 w-3" />
                           {formatDate(report.created_at)}
                         </span>
-                        {report.source === 'anonymous' && (
-                          <Badge variant="outline" className="text-orange-600 border-orange-300">
+                        {report.source === "anonymous" && (
+                          <Badge
+                            variant="outline"
+                            className="text-orange-600 border-orange-300"
+                          >
                             Anonym
                           </Badge>
                         )}
                         {isOwnReport && (
-                          <span className="text-xs text-quartier-green font-medium">Eigener</span>
+                          <span className="text-xs text-quartier-green font-medium">
+                            Eigener
+                          </span>
                         )}
                       </div>
                       <p className="mt-1 text-sm font-medium text-anthrazit line-clamp-2">
@@ -247,7 +333,7 @@ export function BugReports() {
                         {extractPath(report.page_url)}
                         {report.user?.display_name ? (
                           <span> · {report.user.display_name}</span>
-                        ) : report.source === 'anonymous' ? (
+                        ) : report.source === "anonymous" ? (
                           <span className="text-orange-600"> · Anonym</span>
                         ) : null}
                       </p>
@@ -265,7 +351,9 @@ export function BugReports() {
                       {/* Screenshot */}
                       {report.screenshot_url && (
                         <div>
-                          <p className="text-xs font-medium text-muted-foreground mb-1">Screenshot</p>
+                          <p className="text-xs font-medium text-muted-foreground mb-1">
+                            Screenshot
+                          </p>
                           <a
                             href={report.screenshot_url}
                             target="_blank"
@@ -278,37 +366,58 @@ export function BugReports() {
                       )}
 
                       {/* Console Errors */}
-                      {report.console_errors && Array.isArray(report.console_errors) && report.console_errors.length > 0 && (
-                        <div>
-                          <p className="text-xs font-medium text-muted-foreground mb-1">
-                            Console-Fehler ({report.console_errors.length})
-                          </p>
-                          <div className="rounded-lg bg-muted/50 p-2 text-xs font-mono max-h-32 overflow-y-auto">
-                            {report.console_errors.map((err, i) => (
-                              <div key={i} className="text-red-600 mb-1 break-all">
-                                {typeof err === "string" ? err : JSON.stringify(err)}
-                              </div>
-                            ))}
+                      {report.console_errors &&
+                        Array.isArray(report.console_errors) &&
+                        report.console_errors.length > 0 && (
+                          <div>
+                            <p className="text-xs font-medium text-muted-foreground mb-1">
+                              Console-Fehler ({report.console_errors.length})
+                            </p>
+                            <div className="rounded-lg bg-muted/50 p-2 text-xs font-mono max-h-32 overflow-y-auto">
+                              {report.console_errors.map((err, i) => (
+                                <div
+                                  key={i}
+                                  className="text-red-600 mb-1 break-all"
+                                >
+                                  {typeof err === "string"
+                                    ? err
+                                    : JSON.stringify(err)}
+                                </div>
+                              ))}
+                            </div>
                           </div>
-                        </div>
-                      )}
+                        )}
 
                       {/* Browser-Info */}
                       {report.browser_info && (
                         <div>
-                          <p className="text-xs font-medium text-muted-foreground mb-1">Browser</p>
+                          <p className="text-xs font-medium text-muted-foreground mb-1">
+                            Browser
+                          </p>
                           <p className="text-xs text-muted-foreground">
-                            {String((report.browser_info as Record<string, unknown>).userAgent ?? "").slice(0, 100)}
+                            {String(
+                              (report.browser_info as Record<string, unknown>)
+                                .userAgent ?? "",
+                            ).slice(0, 100)}
                           </p>
                         </div>
                       )}
 
                       {/* Admin-Notizen */}
                       <div>
-                        <p className="text-xs font-medium text-muted-foreground mb-1">Admin-Notizen</p>
+                        <p className="text-xs font-medium text-muted-foreground mb-1">
+                          Admin-Notizen
+                        </p>
                         <Textarea
-                          value={adminNotes[report.id] ?? report.admin_notes ?? ""}
-                          onChange={(e) => setAdminNotes({ ...adminNotes, [report.id]: e.target.value })}
+                          value={
+                            adminNotes[report.id] ?? report.admin_notes ?? ""
+                          }
+                          onChange={(e) =>
+                            setAdminNotes({
+                              ...adminNotes,
+                              [report.id]: e.target.value,
+                            })
+                          }
                           placeholder="Interne Notizen..."
                           className="min-h-[60px] text-sm"
                           maxLength={1000}

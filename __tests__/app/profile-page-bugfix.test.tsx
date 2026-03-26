@@ -7,86 +7,109 @@
 // 5. Null display_name → "Unbekannt" Fallback
 // 6. Null ui_mode → "active" Default
 
-import React from 'react';
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { render, screen, cleanup, waitFor } from '@testing-library/react';
+import React from "react";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { render, screen, cleanup, waitFor } from "@testing-library/react";
 
 // --- Router-Mock (steuerbar) ---
 const mockPush = vi.fn();
-vi.mock('next/navigation', () => ({
+vi.mock("next/navigation", () => ({
   useRouter: () => ({ push: mockPush }),
 }));
 
 // next/link
-vi.mock('next/link', () => ({
-  default: ({ children, href, ...props }: { children: React.ReactNode; href: string; [key: string]: unknown }) => (
-    <a href={href} {...props}>{children}</a>
+vi.mock("next/link", () => ({
+  default: ({
+    children,
+    href,
+    ...props
+  }: {
+    children: React.ReactNode;
+    href: string;
+    [key: string]: unknown;
+  }) => (
+    <a href={href} {...props}>
+      {children}
+    </a>
   ),
 }));
 
 // lucide-react — alle verwendeten Icons als einfache SVG-Stubs
-vi.mock('lucide-react', () => {
-  const iconStub = (name: string) =>
-    (props: Record<string, unknown>) => <svg data-testid={`icon-${name}`} {...props} />;
+vi.mock("lucide-react", () => {
+  const iconStub = (name: string) => {
+    const Icon = (props: Record<string, unknown>) => (
+      <svg data-testid={`icon-${name}`} {...props} />
+    );
+    Icon.displayName = `Icon_${name}`;
+    return Icon;
+  };
   return {
-    Settings: iconStub('settings'),
-    LogOut: iconStub('logout'),
-    Star: iconStub('star'),
-    Shield: iconStub('shield'),
-    ChevronRight: iconStub('chevron-right'),
-    Pencil: iconStub('pencil'),
-    Bell: iconStub('bell'),
-    TrendingUp: iconStub('trending-up'),
-    Plane: iconStub('plane'),
-    MapPin: iconStub('map-pin'),
-    CircleHelp: iconStub('circle-help'),
-    BarChart3: iconStub('bar-chart'),
-    Package: iconStub('package'),
-    UserPlus: iconStub('user-plus'),
-    Download: iconStub('download'),
-    ArrowLeft: iconStub('arrow-left'),
-    Mic: iconStub('mic'),
-    Fingerprint: iconStub('fingerprint'),
+    Settings: iconStub("settings"),
+    LogOut: iconStub("logout"),
+    Star: iconStub("star"),
+    Shield: iconStub("shield"),
+    ChevronRight: iconStub("chevron-right"),
+    Pencil: iconStub("pencil"),
+    Bell: iconStub("bell"),
+    TrendingUp: iconStub("trending-up"),
+    Plane: iconStub("plane"),
+    MapPin: iconStub("map-pin"),
+    CircleHelp: iconStub("circle-help"),
+    BarChart3: iconStub("bar-chart"),
+    Package: iconStub("package"),
+    UserPlus: iconStub("user-plus"),
+    Download: iconStub("download"),
+    ArrowLeft: iconStub("arrow-left"),
+    Mic: iconStub("mic"),
+    Fingerprint: iconStub("fingerprint"),
   };
 });
 
 // VoiceSettings + Hook Mock
-vi.mock('@/components/companion/VoiceSettings', () => ({
+vi.mock("@/components/companion/VoiceSettings", () => ({
   VoiceSettings: () => <div data-testid="voice-settings">VoiceSettings</div>,
 }));
-vi.mock('@/hooks/useVoicePreferences', () => ({
+vi.mock("@/hooks/useVoicePreferences", () => ({
   useVoicePreferences: () => ({
-    preferences: { voice: 'nova', speed: 1.0, formality: 'formal' },
+    preferences: { voice: "nova", speed: 1.0, formality: "formal" },
     updatePreferences: vi.fn(),
     isLoading: false,
   }),
 }));
 
 // shadcn UI-Stubs
-vi.mock('@/components/ui/card', () => ({
-  Card: ({ children, ...props }: React.ComponentProps<'div'>) => <div {...props}>{children}</div>,
-  CardContent: ({ children, ...props }: React.ComponentProps<'div'>) => <div {...props}>{children}</div>,
-}));
-vi.mock('@/components/ui/button', () => ({
-  Button: ({ children, onClick, ...props }: React.ComponentProps<'button'>) => (
-    <button onClick={onClick} {...props}>{children}</button>
+vi.mock("@/components/ui/card", () => ({
+  Card: ({ children, ...props }: React.ComponentProps<"div">) => (
+    <div {...props}>{children}</div>
+  ),
+  CardContent: ({ children, ...props }: React.ComponentProps<"div">) => (
+    <div {...props}>{children}</div>
   ),
 }));
-vi.mock('@/components/ui/separator', () => ({
+vi.mock("@/components/ui/button", () => ({
+  Button: ({ children, onClick, ...props }: React.ComponentProps<"button">) => (
+    <button onClick={onClick} {...props}>
+      {children}
+    </button>
+  ),
+}));
+vi.mock("@/components/ui/separator", () => ({
   Separator: () => <hr />,
 }));
 
 // Komponenten-Mocks
-vi.mock('@/components/TrustBadge', () => ({
-  TrustBadge: ({ level }: { level: string }) => <span data-testid="trust-badge">{level}</span>,
+vi.mock("@/components/TrustBadge", () => ({
+  TrustBadge: ({ level }: { level: string }) => (
+    <span data-testid="trust-badge">{level}</span>
+  ),
 }));
-vi.mock('@/components/ReputationBadge', () => ({
+vi.mock("@/components/ReputationBadge", () => ({
   ReputationBadge: () => <span data-testid="reputation-badge" />,
 }));
 
 // useAuth-Mock (Profile nutzt jetzt useAuth() statt getCachedUser)
-const mockAuthUser = { id: 'user-001' } as { id: string } | null;
-vi.mock('@/hooks/use-auth', () => ({
+const mockAuthUser = { id: "user-001" } as { id: string } | null;
+vi.mock("@/hooks/use-auth", () => ({
   useAuth: () => ({
     user: mockAuthUser,
     loading: false,
@@ -95,19 +118,19 @@ vi.mock('@/hooks/use-auth', () => ({
 }));
 
 // lib-Mocks
-vi.mock('@/lib/storage', () => ({
+vi.mock("@/lib/storage", () => ({
   resolveAvatarUrl: (url: string | null) => ({
-    type: 'emoji',
-    value: url || '👤',
+    type: "emoji",
+    value: url || "👤",
   }),
 }));
-vi.mock('@/lib/reputation', () => ({
+vi.mock("@/lib/reputation", () => ({
   getCachedReputation: () => null,
   getReputationLevel: () => ({
-    name: 'Starter',
-    icon: '🌱',
-    color: 'text-green-600',
-    bgColor: 'bg-green-100',
+    name: "Starter",
+    icon: "🌱",
+    color: "text-green-600",
+    bgColor: "bg-green-100",
   }),
 }));
 
@@ -118,14 +141,14 @@ const mockHouseholdSelect = vi.fn();
 const mockSignOut = vi.fn().mockResolvedValue({});
 const mockUserUpdate = vi.fn();
 
-vi.mock('@/lib/supabase/client', () => ({
+vi.mock("@/lib/supabase/client", () => ({
   createClient: vi.fn(() => ({
     auth: {
       getUser: mockAuthGetUser,
       signOut: mockSignOut,
     },
     from: (table: string) => {
-      if (table === 'users') {
+      if (table === "users") {
         return {
           select: () => ({
             eq: () => ({
@@ -137,7 +160,7 @@ vi.mock('@/lib/supabase/client', () => ({
           }),
         };
       }
-      if (table === 'household_members') {
+      if (table === "household_members") {
         return {
           select: () => ({
             eq: () => ({
@@ -161,11 +184,11 @@ vi.mock('@/lib/supabase/client', () => ({
 // --- Hilfsfunktion: Profil-Daten ---
 function makeProfile(overrides: Record<string, unknown> = {}) {
   return {
-    id: 'user-001',
-    display_name: 'Max Mustermann',
-    ui_mode: 'active',
-    trust_level: 'verified',
-    role: 'resident',
+    id: "user-001",
+    display_name: "Max Mustermann",
+    ui_mode: "active",
+    trust_level: "verified",
+    role: "resident",
     bio: null,
     phone: null,
     avatar_url: null,
@@ -179,11 +202,11 @@ function makeProfile(overrides: Record<string, unknown> = {}) {
 let ProfilePage: React.ComponentType;
 
 async function loadProfilePage() {
-  const mod = await import('@/app/(app)/profile/page');
+  const mod = await import("@/app/(app)/profile/page");
   ProfilePage = mod.default;
 }
 
-describe('ProfilePage — Error-Handling Bugfixes', () => {
+describe("ProfilePage — Error-Handling Bugfixes", () => {
   beforeEach(async () => {
     vi.clearAllMocks();
     await loadProfilePage();
@@ -196,7 +219,7 @@ describe('ProfilePage — Error-Handling Bugfixes', () => {
   // =========================================================================
   // 1. Kein Auth-User → Seite zeigt Lade-Zustand (Redirect macht AuthProvider)
   // =========================================================================
-  it('laedt keine Profildaten wenn kein Auth-User vorhanden', async () => {
+  it("laedt keine Profildaten wenn kein Auth-User vorhanden", async () => {
     // Hinweis: Auth-Redirects macht jetzt der AuthProvider, nicht die Seite selbst.
     // Wenn useAuth().user null ist, macht die Seite einfach nichts.
     // Dieser Test prueft, dass die Seite stabil bleibt (kein Crash, kein Query).
@@ -208,31 +231,33 @@ describe('ProfilePage — Error-Handling Bugfixes', () => {
   // =========================================================================
   // 2. Kein Profil → Fehlermeldung + Retry + Logout
   // =========================================================================
-  it('zeigt Fehlermeldung wenn Profil nicht existiert (orphaned Auth-User)', async () => {
+  it("zeigt Fehlermeldung wenn Profil nicht existiert (orphaned Auth-User)", async () => {
     // useAuth liefert User, aber Profil-Query gibt null zurueck
     mockUserSelect.mockResolvedValue({
       data: null,
-      error: { message: 'No rows found' },
+      error: { message: "No rows found" },
     });
 
     render(<ProfilePage />);
 
     // Fehlermeldung muss erscheinen
     await waitFor(() => {
-      expect(screen.getByText(/Profil konnte nicht geladen werden/)).toBeDefined();
+      expect(
+        screen.getByText(/Profil konnte nicht geladen werden/),
+      ).toBeDefined();
     });
 
     // Retry-Button vorhanden
-    expect(screen.getByText('Seite neu laden')).toBeDefined();
+    expect(screen.getByText("Seite neu laden")).toBeDefined();
 
     // Logout-Button vorhanden
-    expect(screen.getByText('Abmelden')).toBeDefined();
+    expect(screen.getByText("Abmelden")).toBeDefined();
   });
 
   // =========================================================================
   // 3. Erfolgreiches Laden → Profildaten anzeigen
   // =========================================================================
-  it('zeigt Profildaten bei erfolgreichem Laden', async () => {
+  it("zeigt Profildaten bei erfolgreichem Laden", async () => {
     mockUserSelect.mockResolvedValue({
       data: makeProfile(),
       error: null,
@@ -240,9 +265,9 @@ describe('ProfilePage — Error-Handling Bugfixes', () => {
     mockHouseholdSelect.mockResolvedValue({
       data: {
         household: {
-          id: 'hh-1',
-          street_name: 'Sanarystraße',
-          house_number: '5',
+          id: "hh-1",
+          street_name: "Sanarystraße",
+          house_number: "5",
         },
       },
       error: null,
@@ -252,30 +277,30 @@ describe('ProfilePage — Error-Handling Bugfixes', () => {
 
     // Name und Adresse muessen angezeigt werden
     await waitFor(() => {
-      expect(screen.getByText('Max Mustermann')).toBeDefined();
+      expect(screen.getByText("Max Mustermann")).toBeDefined();
     });
-    expect(screen.getByText('Sanarystraße 5')).toBeDefined();
-    expect(screen.getByText('Mein Profil')).toBeDefined();
+    expect(screen.getByText("Sanarystraße 5")).toBeDefined();
+    expect(screen.getByText("Mein Profil")).toBeDefined();
   });
 
   // =========================================================================
   // 4. Haushalt-Query-Fehler → Profil trotzdem anzeigen
   // =========================================================================
-  it('zeigt Profil auch wenn Haushalt-Query fehlschlaegt (graceful degradation)', async () => {
+  it("zeigt Profil auch wenn Haushalt-Query fehlschlaegt (graceful degradation)", async () => {
     mockUserSelect.mockResolvedValue({
       data: makeProfile(),
       error: null,
     });
     // Haushalt-Query wirft Fehler
-    mockHouseholdSelect.mockRejectedValue(new Error('Network error'));
+    mockHouseholdSelect.mockRejectedValue(new Error("Network error"));
 
     render(<ProfilePage />);
 
     // Profil muss trotzdem angezeigt werden
     await waitFor(() => {
-      expect(screen.getByText('Max Mustermann')).toBeDefined();
+      expect(screen.getByText("Max Mustermann")).toBeDefined();
     });
-    expect(screen.getByText('Mein Profil')).toBeDefined();
+    expect(screen.getByText("Mein Profil")).toBeDefined();
 
     // Keine Adresse sichtbar (Haushalt konnte nicht geladen werden)
     expect(screen.queryByText(/Sanarystraße/)).toBeNull();
@@ -294,7 +319,7 @@ describe('ProfilePage — Error-Handling Bugfixes', () => {
     render(<ProfilePage />);
 
     await waitFor(() => {
-      expect(screen.getByText('Unbekannt')).toBeDefined();
+      expect(screen.getByText("Unbekannt")).toBeDefined();
     });
   });
 
@@ -313,13 +338,13 @@ describe('ProfilePage — Error-Handling Bugfixes', () => {
     // Der Toggle-Button muss "Zum einfachen Modus wechseln" zeigen
     // (weil ui_mode || "active" === "active")
     await waitFor(() => {
-      expect(screen.getByText('Zum einfachen Modus wechseln')).toBeDefined();
+      expect(screen.getByText("Zum einfachen Modus wechseln")).toBeDefined();
     });
   });
 
   it('zeigt "Zum aktiven Modus wechseln" im Senior-Modus', async () => {
     mockUserSelect.mockResolvedValue({
-      data: makeProfile({ ui_mode: 'senior' }),
+      data: makeProfile({ ui_mode: "senior" }),
       error: null,
     });
     mockHouseholdSelect.mockResolvedValue({ data: null, error: null });
@@ -327,7 +352,7 @@ describe('ProfilePage — Error-Handling Bugfixes', () => {
     render(<ProfilePage />);
 
     await waitFor(() => {
-      expect(screen.getByText('Zum aktiven Modus wechseln')).toBeDefined();
+      expect(screen.getByText("Zum aktiven Modus wechseln")).toBeDefined();
     });
   });
 });

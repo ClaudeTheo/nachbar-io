@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import { Phone } from 'lucide-react';
+import { Phone } from "lucide-react";
 
 interface KioskContactCardProps {
   name: string;
@@ -26,7 +26,12 @@ export default function KioskContactCard({
       <div className="relative">
         <div className="flex h-16 w-16 items-center justify-center rounded-full bg-white/20 text-2xl font-bold text-white">
           {avatar ? (
-            <img src={avatar} alt={name} className="h-full w-full rounded-full object-cover" />
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={avatar}
+              alt={name}
+              className="h-full w-full rounded-full object-cover"
+            />
           ) : (
             name.charAt(0).toUpperCase()
           )}
@@ -35,7 +40,7 @@ export default function KioskContactCard({
         <div
           data-online={isOnline}
           className={`absolute bottom-0 right-0 h-4 w-4 rounded-full border-2 border-[#2D3142] ${
-            isOnline ? 'bg-[#4CAF87]' : 'bg-gray-500'
+            isOnline ? "bg-[#4CAF87]" : "bg-gray-500"
           }`}
         />
       </div>
@@ -47,7 +52,7 @@ export default function KioskContactCard({
           <p className="text-sm text-white/60">{autoAnswerInfo}</p>
         )}
         <p className="text-sm text-white/40">
-          {isOnline ? 'Online' : 'Offline'}
+          {isOnline ? "Online" : "Offline"}
         </p>
       </div>
 

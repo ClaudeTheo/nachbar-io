@@ -1,11 +1,21 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { render, screen, fireEvent, cleanup } from "@testing-library/react";
+import { render, screen, cleanup } from "@testing-library/react";
 import AccountLoeschenPage from "@/app/account-loeschen/page";
 
 // Mock next/link
 vi.mock("next/link", () => ({
-  default: ({ children, href, ...props }: { children: React.ReactNode; href: string; [key: string]: unknown }) => (
-    <a href={href} {...props}>{children}</a>
+  default: ({
+    children,
+    href,
+    ...props
+  }: {
+    children: React.ReactNode;
+    href: string;
+    [key: string]: unknown;
+  }) => (
+    <a href={href} {...props}>
+      {children}
+    </a>
   ),
 }));
 
@@ -24,7 +34,9 @@ describe("AccountLoeschenPage", () => {
 
   it("zeigt Warnung zu unwiderruflicher Loeschung", () => {
     render(<AccountLoeschenPage />);
-    expect(screen.getByText(/Diese Aktion kann nicht rückgängig gemacht werden/)).toBeTruthy();
+    expect(
+      screen.getByText(/Diese Aktion kann nicht rückgängig gemacht werden/),
+    ).toBeTruthy();
     expect(screen.getByText(/30 Tagen unwiderruflich gelöscht/)).toBeTruthy();
   });
 

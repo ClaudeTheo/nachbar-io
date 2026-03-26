@@ -8,18 +8,27 @@ import { Button } from "@/components/ui/button";
 import { Save } from "lucide-react";
 import { PageHeader } from "@/components/ui/page-header";
 import {
-  MAP_W, MAP_H, STREET_LABELS, STREET_CODE_TO_NAME, COLOR_CFG, DEFAULT_HOUSES,
-  type MapHouseData, type LampColor, type StreetCode,
+  MAP_W,
+  MAP_H,
+  STREET_LABELS,
+  STREET_CODE_TO_NAME,
+  COLOR_CFG,
+  DEFAULT_HOUSES,
+  type MapHouseData,
+  type LampColor,
+  type StreetCode,
 } from "@/lib/map-houses";
 import { toast } from "sonner";
 
 export default function MapPositionPage() {
-  const router = useRouter();
+  const _router = useRouter();
   const { user } = useAuth();
   const svgRef = useRef<SVGSVGElement>(null);
   const [houses, setHouses] = useState<MapHouseData[]>(DEFAULT_HOUSES);
   const [myHouse, setMyHouse] = useState<MapHouseData | null>(null);
-  const [position, setPosition] = useState<{ x: number; y: number } | null>(null);
+  const [position, setPosition] = useState<{ x: number; y: number } | null>(
+    null,
+  );
   const [dragging, setDragging] = useState(false);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -45,16 +54,17 @@ export default function MapPositionPage() {
         .select("id, house_number, street_code, x, y, default_color")
         .order("street_code");
 
-      const loadedHouses: MapHouseData[] = (mapData && mapData.length > 0)
-        ? mapData.map(h => ({
-            id: h.id,
-            num: h.house_number,
-            s: h.street_code as StreetCode,
-            x: h.x,
-            y: h.y,
-            defaultColor: h.default_color as LampColor,
-          }))
-        : DEFAULT_HOUSES;
+      const loadedHouses: MapHouseData[] =
+        mapData && mapData.length > 0
+          ? mapData.map((h) => ({
+              id: h.id,
+              num: h.house_number,
+              s: h.street_code as StreetCode,
+              x: h.x,
+              y: h.y,
+              defaultColor: h.default_color as LampColor,
+            }))
+          : DEFAULT_HOUSES;
 
       setHouses(loadedHouses);
 
@@ -68,10 +78,14 @@ export default function MapPositionPage() {
         .maybeSingle();
 
       if (membership) {
-        const hh = membership.households as unknown as { street_name: string; house_number: string } | null;
+        const hh = membership.households as unknown as {
+          street_name: string;
+          house_number: string;
+        } | null;
         if (hh) {
-          const code = (Object.entries(STREET_CODE_TO_NAME) as [StreetCode, string][])
-            .find(([, name]) => name === hh.street_name)?.[0];
+          const code = (
+            Object.entries(STREET_CODE_TO_NAME) as [StreetCode, string][]
+          ).find(([, name]) => name === hh.street_name)?.[0];
 
           if (code) {
             setHouseholdInfo({
@@ -82,7 +96,9 @@ export default function MapPositionPage() {
             });
 
             // Suche bestehendes Haus auf der Karte
-            const found = loadedHouses.find(h => h.s === code && h.num === hh.house_number);
+            const found = loadedHouses.find(
+              (h) => h.s === code && h.num === hh.house_number,
+            );
             if (found) {
               // Bestehender Eintrag — Update-Modus
               setMyHouse(found);
@@ -123,21 +139,27 @@ export default function MapPositionPage() {
     };
   }, []);
 
-  const handlePointerDown = useCallback((e: React.PointerEvent) => {
-    if (!myHouse) return;
-    e.preventDefault();
-    setDragging(true);
-    (e.target as SVGElement).setPointerCapture(e.pointerId);
-  }, [myHouse]);
+  const handlePointerDown = useCallback(
+    (e: React.PointerEvent) => {
+      if (!myHouse) return;
+      e.preventDefault();
+      setDragging(true);
+      (e.target as SVGElement).setPointerCapture(e.pointerId);
+    },
+    [myHouse],
+  );
 
-  const handlePointerMove = useCallback((e: React.PointerEvent) => {
-    if (!dragging) return;
-    const coords = toSvgCoords(e.clientX, e.clientY);
-    if (coords) {
-      setPosition(coords);
-      setHasChanged(true);
-    }
-  }, [dragging, toSvgCoords]);
+  const handlePointerMove = useCallback(
+    (e: React.PointerEvent) => {
+      if (!dragging) return;
+      const coords = toSvgCoords(e.clientX, e.clientY);
+      if (coords) {
+        setPosition(coords);
+        setHasChanged(true);
+      }
+    },
+    [dragging, toSvgCoords],
+  );
 
   const handlePointerUp = useCallback(() => {
     setDragging(false);
@@ -151,9 +173,8 @@ export default function MapPositionPage() {
 
     if (isNewEntry) {
       // Neuen Eintrag erstellen
-      const { error } = await supabase
-        .from("map_houses")
-        .upsert({
+      const { error } = await supabase.from("map_houses").upsert(
+        {
           id: myHouse.id,
           house_number: householdInfo.houseNumber,
           street_code: householdInfo.streetCode,
@@ -161,7 +182,9 @@ export default function MapPositionPage() {
           y: position.y,
           default_color: "green",
           household_id: householdInfo.householdId,
-        }, { onConflict: "id" });
+        },
+        { onConflict: "id" },
+      );
 
       if (error) {
         toast.error("Position konnte nicht gespeichert werden.");
@@ -200,9 +223,10 @@ export default function MapPositionPage() {
       {/* Header */}
       <PageHeader
         title="Kartenposition"
-        subtitle={isNewEntry
-          ? "Setzen Sie die Position Ihres Hauses auf der Karte"
-          : "Passen Sie die Position Ihres Hauses auf der Karte an"
+        subtitle={
+          isNewEntry
+            ? "Setzen Sie die Position Ihres Hauses auf der Karte"
+            : "Passen Sie die Position Ihres Hauses auf der Karte an"
         }
         backHref="/profile"
         className="mb-4"
@@ -219,8 +243,10 @@ export default function MapPositionPage() {
           {/* Info */}
           <div className="mb-3 rounded-lg border border-quartier-green/20 bg-quartier-green/5 p-3">
             <p className="text-sm text-quartier-green">
-              <strong>{STREET_LABELS[myHouse.s]} {myHouse.num}</strong> — Ziehen Sie den
-              grünen Punkt an die richtige Position.
+              <strong>
+                {STREET_LABELS[myHouse.s]} {myHouse.num}
+              </strong>{" "}
+              — Ziehen Sie den grünen Punkt an die richtige Position.
             </p>
           </div>
 
@@ -232,7 +258,14 @@ export default function MapPositionPage() {
               width="100%"
               className="block touch-none"
             >
-              <image href="/map-quartier.jpg" x={0} y={0} width={MAP_W} height={MAP_H} preserveAspectRatio="xMidYMid slice" />
+              <image
+                href="/map-quartier.jpg"
+                x={0}
+                y={0}
+                width={MAP_W}
+                height={MAP_H}
+                preserveAspectRatio="xMidYMid slice"
+              />
 
               {/* Alle Haeuser (gedimmt) */}
               {houses.map((h) => {
@@ -240,7 +273,9 @@ export default function MapPositionPage() {
                 return (
                   <circle
                     key={h.id}
-                    cx={h.x} cy={h.y} r={8}
+                    cx={h.x}
+                    cy={h.y}
+                    r={8}
                     fill="rgba(100,116,139,0.5)"
                     stroke="rgba(100,116,139,0.3)"
                     strokeWidth={1}
@@ -258,17 +293,41 @@ export default function MapPositionPage() {
                   style={{ cursor: dragging ? "grabbing" : "grab" }}
                 >
                   {/* Pulsierender Ring */}
-                  <circle cx={position.x} cy={position.y} r={24} fill="rgba(34,197,94,0.2)" style={{ pointerEvents: "none" }}>
-                    <animate attributeName="r" values="20;28;20" dur="2s" repeatCount="indefinite" />
-                    <animate attributeName="opacity" values="0.4;0.1;0.4" dur="2s" repeatCount="indefinite" />
+                  <circle
+                    cx={position.x}
+                    cy={position.y}
+                    r={24}
+                    fill="rgba(34,197,94,0.2)"
+                    style={{ pointerEvents: "none" }}
+                  >
+                    <animate
+                      attributeName="r"
+                      values="20;28;20"
+                      dur="2s"
+                      repeatCount="indefinite"
+                    />
+                    <animate
+                      attributeName="opacity"
+                      values="0.4;0.1;0.4"
+                      dur="2s"
+                      repeatCount="indefinite"
+                    />
                   </circle>
 
                   {/* Glow */}
-                  <circle cx={position.x} cy={position.y} r={20} fill={COLOR_CFG.green.glow} style={{ pointerEvents: "none" }} />
+                  <circle
+                    cx={position.x}
+                    cy={position.y}
+                    r={20}
+                    fill={COLOR_CFG.green.glow}
+                    style={{ pointerEvents: "none" }}
+                  />
 
                   {/* Haupt-Punkt */}
                   <circle
-                    cx={position.x} cy={position.y} r={14}
+                    cx={position.x}
+                    cy={position.y}
+                    r={14}
                     fill={COLOR_CFG.green.fill}
                     stroke="white"
                     strokeWidth={2.5}
@@ -277,7 +336,8 @@ export default function MapPositionPage() {
 
                   {/* Hausnummer */}
                   <text
-                    x={position.x} y={position.y + 4}
+                    x={position.x}
+                    y={position.y + 4}
                     textAnchor="middle"
                     fill="white"
                     fontSize={myHouse.num.length > 2 ? "8" : "10"}

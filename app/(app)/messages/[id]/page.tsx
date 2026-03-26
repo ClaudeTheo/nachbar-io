@@ -8,7 +8,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { createClient } from "@/lib/supabase/client";
-import { useAuth } from '@/hooks/use-auth';
+import { useAuth } from "@/hooks/use-auth";
 import { createNotification } from "@/lib/notifications";
 import type { DirectMessage } from "@/lib/supabase/types";
 import { format, isToday, isYesterday } from "date-fns";
@@ -45,7 +45,7 @@ export default function ChatPage() {
         .neq("sender_id", userId)
         .is("read_at", null);
     },
-    [conversationId]
+    [conversationId],
   );
 
   // Initiale Daten laden
@@ -81,7 +81,9 @@ export default function ChatPage() {
 
       // Anderen Teilnehmer bestimmen und Profil laden
       const resolvedOtherUserId =
-        conv.participant_1 === user.id ? conv.participant_2 : conv.participant_1;
+        conv.participant_1 === user.id
+          ? conv.participant_2
+          : conv.participant_1;
       setOtherUserId(resolvedOtherUserId);
 
       const { data: otherUser } = await supabase
@@ -112,6 +114,7 @@ export default function ChatPage() {
       setLoading(false);
     }
     load();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [conversationId, router, markAsRead]);
 
   // Nach dem Laden und bei neuen Nachrichten nach unten scrollen
@@ -149,7 +152,10 @@ export default function ChatPage() {
           const enrichedMsg: DirectMessage = {
             ...newMsg,
             sender: senderProfile
-              ? { display_name: senderProfile.display_name, avatar_url: senderProfile.avatar_url }
+              ? {
+                  display_name: senderProfile.display_name,
+                  avatar_url: senderProfile.avatar_url,
+                }
               : undefined,
           };
 
@@ -163,7 +169,7 @@ export default function ChatPage() {
           if (newMsg.sender_id !== user?.id) {
             await markAsRead(user?.id);
           }
-        }
+        },
       )
       .subscribe();
 
@@ -204,7 +210,10 @@ export default function ChatPage() {
       // Optimistisch zur Liste hinzufuegen (Realtime erkennt Duplikate)
       if (inserted) {
         setMessages((prev) => {
-          if (prev.some((m) => m.id === (inserted as unknown as DirectMessage).id)) return prev;
+          if (
+            prev.some((m) => m.id === (inserted as unknown as DirectMessage).id)
+          )
+            return prev;
           return [...prev, inserted as unknown as DirectMessage];
         });
       }
@@ -271,7 +280,11 @@ export default function ChatPage() {
     <div className="flex h-[calc(100vh-7rem)] flex-col">
       {/* Header */}
       <div className="flex items-center gap-3 border-b border-border pb-3">
-        <Link href="/messages" className="rounded-lg p-2 hover:bg-muted" data-testid="chat-back">
+        <Link
+          href="/messages"
+          className="rounded-lg p-2 hover:bg-muted"
+          data-testid="chat-back"
+        >
           <ArrowLeft className="h-5 w-5" />
         </Link>
         <div className="flex items-center gap-2">
@@ -288,7 +301,12 @@ export default function ChatPage() {
               (otherUserName[0] ?? "N").toUpperCase()
             )}
           </div>
-          <h1 className="text-lg font-bold text-anthrazit" data-testid="chat-partner-name">{otherUserName}</h1>
+          <h1
+            className="text-lg font-bold text-anthrazit"
+            data-testid="chat-partner-name"
+          >
+            {otherUserName}
+          </h1>
         </div>
       </div>
 
@@ -305,12 +323,15 @@ export default function ChatPage() {
             {messages.map((msg, index) => {
               const isOwn = msg.sender_id === user?.id;
               const prevMsg = index > 0 ? messages[index - 1] : null;
-              const nextMsg = index < messages.length - 1 ? messages[index + 1] : null;
+              const nextMsg =
+                index < messages.length - 1 ? messages[index + 1] : null;
 
               // Pruefen ob ein neuer Absender-Block beginnt
-              const isFirstInSequence = !prevMsg || prevMsg.sender_id !== msg.sender_id;
+              const isFirstInSequence =
+                !prevMsg || prevMsg.sender_id !== msg.sender_id;
               // Pruefen ob der aktuelle Block endet
-              const isLastInSequence = !nextMsg || nextMsg.sender_id !== msg.sender_id;
+              const isLastInSequence =
+                !nextMsg || nextMsg.sender_id !== msg.sender_id;
 
               // Datums-Trennlinie einfuegen
               const showDateSeparator =
@@ -333,7 +354,9 @@ export default function ChatPage() {
                       isFirstInSequence ? "mt-3" : "mt-0.5"
                     }`}
                   >
-                    <div className={`max-w-[80%] ${isOwn ? "items-end" : "items-start"}`}>
+                    <div
+                      className={`max-w-[80%] ${isOwn ? "items-end" : "items-start"}`}
+                    >
                       {/* Absender-Name (nur beim ersten in einer Sequenz, nur fuer andere) */}
                       {isFirstInSequence && !isOwn && (
                         <p className="mb-1 ml-3 text-xs font-medium text-muted-foreground">
@@ -379,10 +402,15 @@ export default function ChatPage() {
                             isOwn ? "mr-3 text-right" : "ml-3 text-left"
                           }`}
                         >
-                          {format(new Date(msg.created_at), "HH:mm", { locale: de })}
+                          {format(new Date(msg.created_at), "HH:mm", {
+                            locale: de,
+                          })}
                           {/* Lesebestaetigung fuer eigene Nachrichten */}
                           {isOwn && msg.read_at && (
-                            <span className="ml-1 text-quartier-green/70" data-testid="read-receipt">
+                            <span
+                              className="ml-1 text-quartier-green/70"
+                              data-testid="read-receipt"
+                            >
                               Gelesen
                             </span>
                           )}

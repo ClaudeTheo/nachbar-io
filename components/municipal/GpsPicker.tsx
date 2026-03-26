@@ -6,7 +6,7 @@
 import { useState, useCallback } from "react";
 import { MapPin, Loader2, Navigation, ExternalLink } from "lucide-react";
 import { toast } from "sonner";
-import { isLocationDisclosed, markLocationDisclosed } from "@/components/permissions/LocationDisclosure";
+import { isLocationDisclosed } from "@/components/permissions/LocationDisclosure";
 import { LocationDisclosure } from "@/components/permissions/LocationDisclosure";
 
 // --- Typen ---

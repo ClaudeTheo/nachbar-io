@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import { Star, Video, Calendar } from 'lucide-react';
+import { Star, Video, Calendar } from "lucide-react";
 
 interface DoctorProfile {
   id: string;
@@ -24,6 +24,7 @@ export function DoctorCard({ doctor, onRequestAppointment }: DoctorCardProps) {
         {/* Avatar */}
         <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-anthrazit/10 text-xl font-bold text-anthrazit">
           {doctor.avatar_url ? (
+            // eslint-disable-next-line @next/next/no-img-element
             <img
               src={doctor.avatar_url}
               alt=""
@@ -49,7 +50,9 @@ export function DoctorCard({ doctor, onRequestAppointment }: DoctorCardProps) {
 
           {/* Bio */}
           {doctor.bio && (
-            <p className="mt-2 text-sm text-anthrazit/70 line-clamp-2">{doctor.bio}</p>
+            <p className="mt-2 text-sm text-anthrazit/70 line-clamp-2">
+              {doctor.bio}
+            </p>
           )}
 
           {/* Badges */}

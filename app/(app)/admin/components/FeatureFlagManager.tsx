@@ -40,7 +40,9 @@ export function FeatureFlagManager() {
     const supabase = createClient();
     const { data, error } = await supabase
       .from("feature_flags")
-      .select("key, enabled, required_roles, required_plans, enabled_quarters, admin_override")
+      .select(
+        "key, enabled, required_roles, required_plans, enabled_quarters, admin_override",
+      )
       .order("key", { ascending: true });
 
     if (error) {
@@ -52,9 +54,15 @@ export function FeatureFlagManager() {
     const parsed: FeatureFlag[] = (data ?? []).map((row) => ({
       key: row.key,
       enabled: Boolean(row.enabled),
-      required_roles: Array.isArray(row.required_roles) ? row.required_roles : [],
-      required_plans: Array.isArray(row.required_plans) ? row.required_plans : [],
-      enabled_quarters: Array.isArray(row.enabled_quarters) ? row.enabled_quarters : [],
+      required_roles: Array.isArray(row.required_roles)
+        ? row.required_roles
+        : [],
+      required_plans: Array.isArray(row.required_plans)
+        ? row.required_plans
+        : [],
+      enabled_quarters: Array.isArray(row.enabled_quarters)
+        ? row.enabled_quarters
+        : [],
       admin_override: Boolean(row.admin_override),
     }));
 
@@ -63,6 +71,7 @@ export function FeatureFlagManager() {
   }, []);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     loadFlags();
   }, [loadFlags]);
 
@@ -85,9 +94,11 @@ export function FeatureFlagManager() {
     // Cache invalidieren und lokalen State aktualisieren
     invalidateFlagCache();
     setFlags((prev) =>
-      prev.map((f) => (f.key === flagKey ? { ...f, enabled: newValue } : f))
+      prev.map((f) => (f.key === flagKey ? { ...f, enabled: newValue } : f)),
     );
-    toast.success(`"${flagKey}" wurde ${newValue ? "aktiviert" : "deaktiviert"}.`);
+    toast.success(
+      `"${flagKey}" wurde ${newValue ? "aktiviert" : "deaktiviert"}.`,
+    );
     setUpdatingKey(null);
   };
 
@@ -98,10 +109,16 @@ export function FeatureFlagManager() {
         <CardContent className="p-4 space-y-3">
           <div className="flex items-center gap-2 mb-4">
             <Settings2 className="h-5 w-5 text-quartier-green" />
-            <h2 className="text-lg font-semibold text-anthrazit">Feature-Flags Verwaltung</h2>
+            <h2 className="text-lg font-semibold text-anthrazit">
+              Feature-Flags Verwaltung
+            </h2>
           </div>
           {[1, 2, 3, 4].map((i) => (
-            <div key={i} className="flex items-center gap-4" data-testid="flag-skeleton">
+            <div
+              key={i}
+              className="flex items-center gap-4"
+              data-testid="flag-skeleton"
+            >
               <Skeleton className="h-5 w-32" />
               <Skeleton className="h-5 w-48 flex-1" />
               <Skeleton className="h-5 w-10" />
@@ -119,9 +136,13 @@ export function FeatureFlagManager() {
         <CardContent className="p-4">
           <div className="flex items-center gap-2 mb-4">
             <Settings2 className="h-5 w-5 text-quartier-green" />
-            <h2 className="text-lg font-semibold text-anthrazit">Feature-Flags Verwaltung</h2>
+            <h2 className="text-lg font-semibold text-anthrazit">
+              Feature-Flags Verwaltung
+            </h2>
           </div>
-          <p className="text-sm text-muted-foreground">Keine Feature-Flags vorhanden.</p>
+          <p className="text-sm text-muted-foreground">
+            Keine Feature-Flags vorhanden.
+          </p>
         </CardContent>
       </Card>
     );
@@ -132,7 +153,9 @@ export function FeatureFlagManager() {
       <CardContent className="p-4">
         <div className="flex items-center gap-2 mb-4">
           <Settings2 className="h-5 w-5 text-quartier-green" />
-          <h2 className="text-lg font-semibold text-anthrazit">Feature-Flags Verwaltung</h2>
+          <h2 className="text-lg font-semibold text-anthrazit">
+            Feature-Flags Verwaltung
+          </h2>
         </div>
 
         {/* Tabelle */}
@@ -166,28 +189,40 @@ export function FeatureFlagManager() {
                   </td>
                   <td className="py-3 pr-4">
                     <div className="flex flex-wrap gap-1">
-                      {flag.required_roles.length > 0
-                        ? flag.required_roles.map((role) => (
-                            <Badge key={role} variant="secondary" className="text-[10px]">
-                              {role}
-                            </Badge>
-                          ))
-                        : <span className="text-xs text-muted-foreground">alle</span>}
+                      {flag.required_roles.length > 0 ? (
+                        flag.required_roles.map((role) => (
+                          <Badge
+                            key={role}
+                            variant="secondary"
+                            className="text-[10px]"
+                          >
+                            {role}
+                          </Badge>
+                        ))
+                      ) : (
+                        <span className="text-xs text-muted-foreground">
+                          alle
+                        </span>
+                      )}
                     </div>
                   </td>
                   <td className="py-3">
                     <div className="flex flex-wrap gap-1">
-                      {flag.required_plans.length > 0
-                        ? flag.required_plans.map((plan) => (
-                            <Badge
-                              key={plan}
-                              variant="secondary"
-                              className="text-[10px] bg-quartier-green/10 text-quartier-green border-quartier-green/20"
-                            >
-                              {plan}
-                            </Badge>
-                          ))
-                        : <span className="text-xs text-muted-foreground">alle</span>}
+                      {flag.required_plans.length > 0 ? (
+                        flag.required_plans.map((plan) => (
+                          <Badge
+                            key={plan}
+                            variant="secondary"
+                            className="text-[10px] bg-quartier-green/10 text-quartier-green border-quartier-green/20"
+                          >
+                            {plan}
+                          </Badge>
+                        ))
+                      ) : (
+                        <span className="text-xs text-muted-foreground">
+                          alle
+                        </span>
+                      )}
                     </div>
                   </td>
                 </tr>

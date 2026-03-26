@@ -1,12 +1,12 @@
 // components/doctor/DoctorProfile.tsx
 // Nachbar.io — Arzt-Profilkarte fuer Bewohner-Ansicht
-'use client';
+"use client";
 
-import { Card, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Star, Phone, Video, MapPin, Calendar } from 'lucide-react';
-import Link from 'next/link';
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Star, Video, MapPin, Calendar } from "lucide-react";
+import Link from "next/link";
 
 export type DoctorProfileData = {
   id: string;
@@ -27,7 +27,10 @@ type DoctorProfileProps = {
   showBookButton?: boolean;
 };
 
-export function DoctorProfile({ doctor, showBookButton = true }: DoctorProfileProps) {
+export function DoctorProfile({
+  doctor,
+  showBookButton = true,
+}: DoctorProfileProps) {
   return (
     <Card data-testid="doctor-profile">
       <CardContent className="p-5">
@@ -47,7 +50,9 @@ export function DoctorProfile({ doctor, showBookButton = true }: DoctorProfilePr
           {doctor.review_count > 0 && (
             <div className="flex items-center gap-1 text-sm">
               <Star className="h-4 w-4 fill-[#F59E0B] text-[#F59E0B]" />
-              <span className="font-semibold">{doctor.avg_rating.toFixed(1)}</span>
+              <span className="font-semibold">
+                {doctor.avg_rating.toFixed(1)}
+              </span>
               <span className="text-gray-400">({doctor.review_count})</span>
             </div>
           )}
@@ -55,7 +60,9 @@ export function DoctorProfile({ doctor, showBookButton = true }: DoctorProfilePr
 
         {/* Bio */}
         {doctor.bio && (
-          <p className="mt-3 text-sm text-gray-600 line-clamp-3">{doctor.bio}</p>
+          <p className="mt-3 text-sm text-gray-600 line-clamp-3">
+            {doctor.bio}
+          </p>
         )}
 
         {/* Status-Badges */}
@@ -77,7 +84,7 @@ export function DoctorProfile({ doctor, showBookButton = true }: DoctorProfilePr
         {doctor.quarter_names.length > 0 && (
           <div className="mt-3 flex items-center gap-1 text-xs text-gray-400">
             <MapPin className="h-3 w-3" />
-            {doctor.quarter_names.join(', ')}
+            {doctor.quarter_names.join(", ")}
           </div>
         )}
 

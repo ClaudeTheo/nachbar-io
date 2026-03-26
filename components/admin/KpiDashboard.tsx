@@ -1,12 +1,12 @@
-'use client';
+"use client";
 
-import { useEffect, useState, useCallback } from 'react';
-import { createClient } from '@/lib/supabase/client';
-import { KpiMetricCard } from './KpiMetricCard';
-import { KpiTrendChart, type TrendDataPoint } from './KpiTrendChart';
-import { Skeleton } from '@/components/ui/skeleton';
-import { Button } from '@/components/ui/button';
-import { RefreshCw } from 'lucide-react';
+import { useEffect, useState, useCallback } from "react";
+import { createClient } from "@/lib/supabase/client";
+import { KpiMetricCard } from "./KpiMetricCard";
+import { KpiTrendChart, type TrendDataPoint } from "./KpiTrendChart";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Button } from "@/components/ui/button";
+import { RefreshCw } from "lucide-react";
 
 type SnapshotRow = {
   snapshot_date: string;
@@ -40,15 +40,16 @@ export function KpiDashboard() {
     setLoading(true);
     const supabase = createClient();
     const { data } = await supabase
-      .from('analytics_snapshots')
-      .select('*')
-      .order('snapshot_date', { ascending: true })
+      .from("analytics_snapshots")
+      .select("*")
+      .order("snapshot_date", { ascending: true })
       .limit(30);
     setSnapshots((data as SnapshotRow[]) ?? []);
     setLoading(false);
   }, []);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     loadSnapshots();
   }, [loadSnapshots]);
 
@@ -66,25 +67,26 @@ export function KpiDashboard() {
   }
 
   const latest = snapshots[snapshots.length - 1];
-  const previous = snapshots.length > 1 ? snapshots[snapshots.length - 2] : undefined;
+  const previous =
+    snapshots.length > 1 ? snapshots[snapshots.length - 2] : undefined;
 
   // Trend-Daten fuer Charts
-  const wahTrend: TrendDataPoint[] = snapshots.map(s => ({
+  const wahTrend: TrendDataPoint[] = snapshots.map((s) => ({
     date: s.snapshot_date,
     value: s.wah,
   }));
 
-  const userTrend: TrendDataPoint[] = snapshots.map(s => ({
+  const userTrend: TrendDataPoint[] = snapshots.map((s) => ({
     date: s.snapshot_date,
     value: s.active_users_7d,
   }));
 
-  const postsTrend: TrendDataPoint[] = snapshots.map(s => ({
+  const postsTrend: TrendDataPoint[] = snapshots.map((s) => ({
     date: s.snapshot_date,
     value: s.posts_count,
   }));
 
-  const heartbeatTrend: TrendDataPoint[] = snapshots.map(s => ({
+  const heartbeatTrend: TrendDataPoint[] = snapshots.map((s) => ({
     date: s.snapshot_date,
     value: s.heartbeat_coverage,
   }));
@@ -94,7 +96,12 @@ export function KpiDashboard() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <h3 className="text-sm font-semibold text-anthrazit">KPI-Dashboard</h3>
-        <Button variant="ghost" size="sm" onClick={loadSnapshots} className="h-7">
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={loadSnapshots}
+          className="h-7"
+        >
           <RefreshCw className="h-3.5 w-3.5 mr-1" />
           Aktualisieren
         </Button>
@@ -102,7 +109,8 @@ export function KpiDashboard() {
 
       {!latest ? (
         <p className="text-sm text-muted-foreground text-center py-8">
-          Noch keine Analytics-Daten vorhanden. Der Cron-Job erstellt taeglich Snapshots.
+          Noch keine Analytics-Daten vorhanden. Der Cron-Job erstellt taeglich
+          Snapshots.
         </p>
       ) : (
         <>

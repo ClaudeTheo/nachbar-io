@@ -1,18 +1,25 @@
 // components/doctor/BookingCalendar.tsx
 // Nachbar.io — Terminbuchung Self-Service fuer Bewohner
-'use client';
+"use client";
 
-import { useState, useEffect, useCallback } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Skeleton } from '@/components/ui/skeleton';
-import { Calendar, Clock, CircleCheck, ArrowLeft, Video, MapPin } from 'lucide-react';
-import { createClient } from '@/lib/supabase/client';
-import { toast } from 'sonner';
+import { useState, useEffect, useCallback } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
+import {
+  Calendar,
+  Clock,
+  CircleCheck,
+  ArrowLeft,
+  Video,
+  MapPin,
+} from "lucide-react";
+import { createClient } from "@/lib/supabase/client";
+import { toast } from "sonner";
 import { getCachedUser } from "@/lib/supabase/cached-auth";
 
 type TimeSlot = {
-  time: string;      // HH:MM
+  time: string; // HH:MM
   available: boolean;
 };
 
@@ -44,28 +51,36 @@ function getDefaultSlots(): TimeSlot[] {
   const slots: TimeSlot[] = [];
   for (let h = 8; h <= 17; h++) {
     if (h === 12) continue; // Mittagspause
-    slots.push({ time: `${String(h).padStart(2, '0')}:00`, available: true });
+    slots.push({ time: `${String(h).padStart(2, "0")}:00`, available: true });
     if (h < 17) {
-      slots.push({ time: `${String(h).padStart(2, '0')}:30`, available: true });
+      slots.push({ time: `${String(h).padStart(2, "0")}:30`, available: true });
     }
   }
   return slots;
 }
 
 function formatDate(d: Date): string {
-  const days = ['So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa'];
+  const days = ["So", "Mo", "Di", "Mi", "Do", "Fr", "Sa"];
   return `${days[d.getDay()]}, ${d.getDate()}.${d.getMonth() + 1}.`;
 }
 
 function formatDateISO(d: Date): string {
-  return d.toISOString().split('T')[0];
+  return d.toISOString().split("T")[0];
 }
 
-export function BookingCalendar({ doctorId, doctorName, videoEnabled }: BookingCalendarProps) {
-  const [step, setStep] = useState<'date' | 'time' | 'type' | 'confirm' | 'done'>('date');
+export function BookingCalendar({
+  doctorId,
+  doctorName,
+  videoEnabled,
+}: BookingCalendarProps) {
+  const [step, setStep] = useState<
+    "date" | "time" | "type" | "confirm" | "done"
+  >("date");
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
-  const [appointmentType, setAppointmentType] = useState<'in_person' | 'video'>('in_person');
+  const [appointmentType, setAppointmentType] = useState<"in_person" | "video">(
+    "in_person",
+  );
   const [slots, setSlots] = useState<TimeSlot[]>([]);
   const [loading, setLoading] = useState(false);
   const [booking, setBooking] = useState(false);
@@ -73,38 +88,42 @@ export function BookingCalendar({ doctorId, doctorName, videoEnabled }: BookingC
   const weekdays = getWeekdays(10);
 
   // Verfuegbare Slots fuer gewaehlten Tag laden
-  const loadSlots = useCallback(async (date: Date) => {
-    setLoading(true);
-    const supabase = createClient();
-    const dateStr = formatDateISO(date);
+  const loadSlots = useCallback(
+    async (date: Date) => {
+      setLoading(true);
+      const supabase = createClient();
+      const dateStr = formatDateISO(date);
 
-    // Bestehende Termine an diesem Tag laden
-    const { data: existing } = await supabase
-      .from('appointments')
-      .select('scheduled_at')
-      .eq('doctor_id', doctorId)
-      .gte('scheduled_at', `${dateStr}T00:00:00`)
-      .lt('scheduled_at', `${dateStr}T23:59:59`)
-      .in('status', ['scheduled', 'confirmed']);
+      // Bestehende Termine an diesem Tag laden
+      const { data: existing } = await supabase
+        .from("appointments")
+        .select("scheduled_at")
+        .eq("doctor_id", doctorId)
+        .gte("scheduled_at", `${dateStr}T00:00:00`)
+        .lt("scheduled_at", `${dateStr}T23:59:59`)
+        .in("status", ["scheduled", "confirmed"]);
 
-    const bookedTimes = new Set(
-      (existing ?? []).map((a: { scheduled_at: string }) => {
-        const t = new Date(a.scheduled_at);
-        return `${String(t.getHours()).padStart(2, '0')}:${String(t.getMinutes()).padStart(2, '0')}`;
-      })
-    );
+      const bookedTimes = new Set(
+        (existing ?? []).map((a: { scheduled_at: string }) => {
+          const t = new Date(a.scheduled_at);
+          return `${String(t.getHours()).padStart(2, "0")}:${String(t.getMinutes()).padStart(2, "0")}`;
+        }),
+      );
 
-    const allSlots = getDefaultSlots().map(s => ({
-      ...s,
-      available: !bookedTimes.has(s.time),
-    }));
+      const allSlots = getDefaultSlots().map((s) => ({
+        ...s,
+        available: !bookedTimes.has(s.time),
+      }));
 
-    setSlots(allSlots);
-    setLoading(false);
-  }, [doctorId]);
+      setSlots(allSlots);
+      setLoading(false);
+    },
+    [doctorId],
+  );
 
   useEffect(() => {
     if (selectedDate) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       loadSlots(selectedDate);
     }
   }, [selectedDate, loadSlots]);
@@ -118,31 +137,31 @@ export function BookingCalendar({ doctorId, doctorName, videoEnabled }: BookingC
     const { user } = await getCachedUser(supabase);
 
     if (!user) {
-      toast.error('Bitte melden Sie sich an, um einen Termin zu buchen.');
+      toast.error("Bitte melden Sie sich an, um einen Termin zu buchen.");
       setBooking(false);
       return;
     }
 
     const scheduledAt = `${formatDateISO(selectedDate)}T${selectedTime}:00`;
 
-    const { error } = await supabase
-      .from('appointments')
-      .insert({
-        doctor_id: doctorId,
-        patient_id: user.id,
-        scheduled_at: scheduledAt,
-        type: appointmentType,
-        status: 'scheduled',
-      });
+    const { error } = await supabase.from("appointments").insert({
+      doctor_id: doctorId,
+      patient_id: user.id,
+      scheduled_at: scheduledAt,
+      type: appointmentType,
+      status: "scheduled",
+    });
 
     if (error) {
-      toast.error('Termin konnte nicht gebucht werden. Bitte versuchen Sie es erneut.');
+      toast.error(
+        "Termin konnte nicht gebucht werden. Bitte versuchen Sie es erneut.",
+      );
       setBooking(false);
       return;
     }
 
-    toast.success('Termin erfolgreich gebucht!');
-    setStep('done');
+    toast.success("Termin erfolgreich gebucht!");
+    setStep("done");
     setBooking(false);
   };
 
@@ -156,7 +175,7 @@ export function BookingCalendar({ doctorId, doctorName, videoEnabled }: BookingC
       </CardHeader>
       <CardContent>
         {/* Schritt 1: Datum waehlen */}
-        {step === 'date' && (
+        {step === "date" && (
           <div className="space-y-3">
             <p className="text-sm text-gray-500">Waehlen Sie einen Tag:</p>
             <div className="grid grid-cols-2 gap-2">
@@ -167,7 +186,7 @@ export function BookingCalendar({ doctorId, doctorName, videoEnabled }: BookingC
                   className="justify-start text-sm"
                   onClick={() => {
                     setSelectedDate(day);
-                    setStep('time');
+                    setStep("time");
                   }}
                 >
                   <Calendar className="mr-2 h-3.5 w-3.5 text-gray-400" />
@@ -179,10 +198,13 @@ export function BookingCalendar({ doctorId, doctorName, videoEnabled }: BookingC
         )}
 
         {/* Schritt 2: Uhrzeit waehlen */}
-        {step === 'time' && selectedDate && (
+        {step === "time" && selectedDate && (
           <div className="space-y-3">
             <button
-              onClick={() => { setStep('date'); setSelectedTime(null); }}
+              onClick={() => {
+                setStep("date");
+                setSelectedTime(null);
+              }}
               className="flex items-center gap-1 text-xs text-gray-400 hover:text-gray-600"
             >
               <ArrowLeft className="h-3 w-3" />
@@ -202,13 +224,13 @@ export function BookingCalendar({ doctorId, doctorName, videoEnabled }: BookingC
                 {slots.map((slot) => (
                   <Button
                     key={slot.time}
-                    variant={slot.available ? 'outline' : 'ghost'}
+                    variant={slot.available ? "outline" : "ghost"}
                     disabled={!slot.available}
-                    className={`text-sm ${!slot.available ? 'opacity-30 line-through' : ''}`}
+                    className={`text-sm ${!slot.available ? "opacity-30 line-through" : ""}`}
                     onClick={() => {
                       setSelectedTime(slot.time);
-                      setStep(videoEnabled ? 'type' : 'confirm');
-                      if (!videoEnabled) setAppointmentType('in_person');
+                      setStep(videoEnabled ? "type" : "confirm");
+                      if (!videoEnabled) setAppointmentType("in_person");
                     }}
                   >
                     <Clock className="mr-1 h-3 w-3" />
@@ -221,37 +243,49 @@ export function BookingCalendar({ doctorId, doctorName, videoEnabled }: BookingC
         )}
 
         {/* Schritt 3: Terminart (nur bei Video-Sprechstunde) */}
-        {step === 'type' && (
+        {step === "type" && (
           <div className="space-y-3">
             <button
-              onClick={() => setStep('time')}
+              onClick={() => setStep("time")}
               className="flex items-center gap-1 text-xs text-gray-400 hover:text-gray-600"
             >
               <ArrowLeft className="h-3 w-3" />
               Zurueck
             </button>
-            <p className="text-sm text-gray-500">Wie moechten Sie den Termin wahrnehmen?</p>
+            <p className="text-sm text-gray-500">
+              Wie moechten Sie den Termin wahrnehmen?
+            </p>
             <div className="grid grid-cols-1 gap-3">
               <Button
                 variant="outline"
                 className="justify-start h-auto py-3"
-                onClick={() => { setAppointmentType('in_person'); setStep('confirm'); }}
+                onClick={() => {
+                  setAppointmentType("in_person");
+                  setStep("confirm");
+                }}
               >
                 <MapPin className="mr-3 h-5 w-5 text-[#4CAF87]" />
                 <div className="text-left">
                   <p className="font-medium">Vor Ort</p>
-                  <p className="text-xs text-gray-400">Persoenlicher Besuch in der Praxis</p>
+                  <p className="text-xs text-gray-400">
+                    Persoenlicher Besuch in der Praxis
+                  </p>
                 </div>
               </Button>
               <Button
                 variant="outline"
                 className="justify-start h-auto py-3"
-                onClick={() => { setAppointmentType('video'); setStep('confirm'); }}
+                onClick={() => {
+                  setAppointmentType("video");
+                  setStep("confirm");
+                }}
               >
                 <Video className="mr-3 h-5 w-5 text-blue-500" />
                 <div className="text-left">
                   <p className="font-medium">Video-Sprechstunde</p>
-                  <p className="text-xs text-gray-400">Online-Termin (5 EUR Gebuehr)</p>
+                  <p className="text-xs text-gray-400">
+                    Online-Termin (5 EUR Gebuehr)
+                  </p>
                 </div>
               </Button>
             </div>
@@ -259,10 +293,10 @@ export function BookingCalendar({ doctorId, doctorName, videoEnabled }: BookingC
         )}
 
         {/* Schritt 4: Bestaetigung */}
-        {step === 'confirm' && selectedDate && selectedTime && (
+        {step === "confirm" && selectedDate && selectedTime && (
           <div className="space-y-4">
             <button
-              onClick={() => setStep(videoEnabled ? 'type' : 'time')}
+              onClick={() => setStep(videoEnabled ? "type" : "time")}
               className="flex items-center gap-1 text-xs text-gray-400 hover:text-gray-600"
             >
               <ArrowLeft className="h-3 w-3" />
@@ -286,7 +320,9 @@ export function BookingCalendar({ doctorId, doctorName, videoEnabled }: BookingC
                 <div className="flex gap-2">
                   <dt className="text-gray-500">Art:</dt>
                   <dd className="font-medium">
-                    {appointmentType === 'video' ? 'Video-Sprechstunde' : 'Vor Ort'}
+                    {appointmentType === "video"
+                      ? "Video-Sprechstunde"
+                      : "Vor Ort"}
                   </dd>
                 </div>
               </dl>
@@ -296,18 +332,21 @@ export function BookingCalendar({ doctorId, doctorName, videoEnabled }: BookingC
               disabled={booking}
               onClick={handleBook}
             >
-              {booking ? 'Wird gebucht...' : 'Termin verbindlich buchen'}
+              {booking ? "Wird gebucht..." : "Termin verbindlich buchen"}
             </Button>
           </div>
         )}
 
         {/* Schritt 5: Erfolg */}
-        {step === 'done' && (
+        {step === "done" && (
           <div className="text-center py-6 space-y-3">
             <CircleCheck className="mx-auto h-12 w-12 text-[#4CAF87]" />
-            <h3 className="text-lg font-semibold text-[#2D3142]">Termin gebucht!</h3>
+            <h3 className="text-lg font-semibold text-[#2D3142]">
+              Termin gebucht!
+            </h3>
             <p className="text-sm text-gray-500">
-              Sie erhalten eine Bestaetigung. Der Arzt wird ueber Ihren Termin informiert.
+              Sie erhalten eine Bestaetigung. Der Arzt wird ueber Ihren Termin
+              informiert.
             </p>
           </div>
         )}

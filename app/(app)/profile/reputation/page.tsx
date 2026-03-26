@@ -35,7 +35,6 @@ export default function ReputationPage() {
 
   useEffect(() => {
     if (!user) return;
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     loadStats().finally(() => setLoading(false));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
@@ -73,7 +72,9 @@ export default function ReputationPage() {
   }
 
   const progress = getProgressToNextLevel(stats.points);
-  const currentLevel = REPUTATION_LEVELS.find((l) => l.level === stats.level) ?? REPUTATION_LEVELS[0];
+  const currentLevel =
+    REPUTATION_LEVELS.find((l) => l.level === stats.level) ??
+    REPUTATION_LEVELS[0];
 
   return (
     <div className="space-y-6">
@@ -88,7 +89,9 @@ export default function ReputationPage() {
             onClick={handleRefresh}
             disabled={refreshing}
           >
-            <RefreshCw className={`h-4 w-4 ${refreshing ? "animate-spin" : ""}`} />
+            <RefreshCw
+              className={`h-4 w-4 ${refreshing ? "animate-spin" : ""}`}
+            />
           </Button>
         }
       />
@@ -97,7 +100,9 @@ export default function ReputationPage() {
       <Card className="overflow-hidden">
         <CardContent className="p-6">
           <div className="flex items-center gap-4">
-            <div className={`flex h-16 w-16 items-center justify-center rounded-2xl text-3xl ${currentLevel.bgColor}`}>
+            <div
+              className={`flex h-16 w-16 items-center justify-center rounded-2xl text-3xl ${currentLevel.bgColor}`}
+            >
               {currentLevel.icon}
             </div>
             <div className="flex-1 min-w-0">
@@ -117,7 +122,8 @@ export default function ReputationPage() {
                 <span>Level {stats.level}</span>
                 <span className="flex items-center gap-1">
                   <TrendingUp className="h-3 w-3" />
-                  Noch {progress.pointsToNext} Punkte bis Level {stats.level + 1}
+                  Noch {progress.pointsToNext} Punkte bis Level{" "}
+                  {stats.level + 1}
                 </span>
               </div>
               <div className="h-1 w-full overflow-hidden rounded-full bg-muted">
@@ -135,7 +141,8 @@ export default function ReputationPage() {
           {/* Max-Level erreicht */}
           {!progress.nextLevel && (
             <p className="mt-4 text-center text-sm text-muted-foreground">
-              Sie haben das hoechste Level erreicht — vielen Dank fuer Ihr Engagement!
+              Sie haben das hoechste Level erreicht — vielen Dank fuer Ihr
+              Engagement!
             </p>
           )}
         </CardContent>
@@ -171,7 +178,9 @@ export default function ReputationPage() {
       {/* Experten-Anerkennung */}
       {(stats.endorsementsReceived > 0 || stats.reviewsReceived > 0) && (
         <div>
-          <h3 className="mb-3 font-semibold text-anthrazit">Experten-Anerkennung</h3>
+          <h3 className="mb-3 font-semibold text-anthrazit">
+            Experten-Anerkennung
+          </h3>
           <div className="grid grid-cols-2 gap-3">
             <StatCard
               icon="👍"
@@ -205,7 +214,9 @@ export default function ReputationPage() {
               >
                 <span className="text-xl">{badge.icon}</span>
                 <div className="min-w-0">
-                  <p className={`text-sm font-medium ${earned ? "text-anthrazit" : "text-muted-foreground"}`}>
+                  <p
+                    className={`text-sm font-medium ${earned ? "text-anthrazit" : "text-muted-foreground"}`}
+                  >
                     {badge.label}
                   </p>
                   {earned && (
@@ -239,13 +250,15 @@ export default function ReputationPage() {
                   isActive
                     ? "border-quartier-green/50 bg-quartier-green/5"
                     : isReached
-                    ? "border-border bg-white"
-                    : "border-transparent bg-muted/30 opacity-50"
+                      ? "border-border bg-white"
+                      : "border-transparent bg-muted/30 opacity-50"
                 }`}
               >
                 <span className="text-xl">{lvl.icon}</span>
                 <div className="flex-1 min-w-0">
-                  <p className={`text-sm font-semibold ${isActive ? "text-anthrazit" : "text-muted-foreground"}`}>
+                  <p
+                    className={`text-sm font-semibold ${isActive ? "text-anthrazit" : "text-muted-foreground"}`}
+                  >
                     {lvl.name}
                   </p>
                   <p className="text-xs text-muted-foreground">
@@ -253,7 +266,9 @@ export default function ReputationPage() {
                   </p>
                 </div>
                 {isActive && (
-                  <span className="text-xs font-medium text-quartier-green">Aktuell</span>
+                  <span className="text-xs font-medium text-quartier-green">
+                    Aktuell
+                  </span>
                 )}
                 {isReached && !isActive && (
                   <span className="text-xs text-muted-foreground">✓</span>
@@ -266,15 +281,24 @@ export default function ReputationPage() {
 
       {/* Info-Text */}
       <p className="text-center text-xs text-muted-foreground">
-        Ihre Reputation wird aus Ihrem Engagement in der Nachbarschaft berechnet.
-        Helfen Sie Nachbarn, teilen Sie Artikel und besuchen Sie Events.
+        Ihre Reputation wird aus Ihrem Engagement in der Nachbarschaft
+        berechnet. Helfen Sie Nachbarn, teilen Sie Artikel und besuchen Sie
+        Events.
       </p>
     </div>
   );
 }
 
 // Statistik-Karte
-function StatCard({ icon, label, value }: { icon: string; label: string; value: number }) {
+function StatCard({
+  icon,
+  label,
+  value,
+}: {
+  icon: string;
+  label: string;
+  value: number;
+}) {
   return (
     <div className="flex items-center gap-3 rounded-lg border border-border bg-white p-3">
       <span className="text-xl">{icon}</span>

@@ -2,10 +2,10 @@
 // Nachbar Plus — Eingehender Anruf Overlay mit Klingelton
 // Senior-Modus: 80px Touch-Targets, hoher Kontrast
 
-'use client';
+"use client";
 
-import { useCallback, useEffect, useRef, useState } from 'react';
-import { Phone, PhoneOff } from 'lucide-react';
+import { useCallback, useEffect, useRef, useState } from "react";
+import { Phone, PhoneOff } from "lucide-react";
 
 interface IncomingCallProps {
   /** Name des Anrufers */
@@ -42,7 +42,10 @@ function createRingtone(): { start: () => void; stop: () => void } {
     gain.gain.value = 0.15;
     osc.start(audioContext.currentTime);
     osc.frequency.setValueAtTime(520, audioContext.currentTime + 0.15);
-    gain.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.5);
+    gain.gain.exponentialRampToValueAtTime(
+      0.001,
+      audioContext.currentTime + 0.5,
+    );
     osc.stop(audioContext.currentTime + 0.5);
   };
 
@@ -133,6 +136,7 @@ export function IncomingCall({
             data-testid="caller-avatar"
           >
             {callerAvatar ? (
+              // eslint-disable-next-line @next/next/no-img-element
               <img
                 src={callerAvatar}
                 alt={callerName}

@@ -2,8 +2,10 @@
 // Prueft: Laden, Begruessung, BottomNav, Sektionen, Navigation
 import { test, expect } from "@playwright/test";
 import { DashboardPage } from "../pages";
-import { createConsoleErrorCollector, waitForStableUI } from "../helpers/observer";
-import { TIMEOUTS } from "../helpers/test-config";
+import {
+  createConsoleErrorCollector,
+  waitForStableUI,
+} from "../helpers/observer";
 
 test.describe("Auth-Flow: Dashboard", () => {
   test("AF1.1 — Dashboard laed nach Login (storageState)", async ({ page }) => {
@@ -46,11 +48,13 @@ test.describe("Auth-Flow: Dashboard", () => {
     await waitForStableUI(page);
 
     // Karte sollte sichtbar sein (Leaflet Container)
-    const mapContainer = page.locator(".leaflet-container").or(
-      page.locator("[data-testid='quarter-map']")
-    );
+    const mapContainer = page
+      .locator(".leaflet-container")
+      .or(page.locator("[data-testid='quarter-map']"));
     const hasMap = await mapContainer.isVisible().catch(() => false);
-    console.log(`[AUTH] Karte geladen: ${hasMap ? "✓" : "Container nicht gefunden (evtl. anderer Selektor)"}`);
+    console.log(
+      `[AUTH] Karte geladen: ${hasMap ? "✓" : "Container nicht gefunden (evtl. anderer Selektor)"}`,
+    );
   });
 
   test("AF1.4 — Navigation via BottomNav zu Hilfe-Boerse", async ({ page }) => {
@@ -66,8 +70,16 @@ test.describe("Auth-Flow: Dashboard", () => {
     console.log("[AUTH] Hilfe-Boerse erreicht ✓");
   });
 
-  test("AF1.5 — Kein 500-Error auf authentifizierten Seiten", async ({ page }) => {
-    const authPages = ["/dashboard", "/help", "/map", "/profile", "/notifications"];
+  test("AF1.5 — Kein 500-Error auf authentifizierten Seiten", async ({
+    page,
+  }) => {
+    const authPages = [
+      "/dashboard",
+      "/help",
+      "/map",
+      "/profile",
+      "/notifications",
+    ];
     const results: Array<{ path: string; status: number }> = [];
 
     for (const pagePath of authPages) {

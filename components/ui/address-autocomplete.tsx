@@ -1,96 +1,101 @@
-'use client'
+"use client";
 
-import { useState, useRef, useCallback, useEffect } from 'react'
-import { searchAddress, type AddressSuggestion } from '@/lib/geo/photon-client'
-import { Search } from 'lucide-react'
+import { useState, useRef, useCallback, useEffect } from "react";
+import { searchAddress, type AddressSuggestion } from "@/lib/geo/photon-client";
+import { Search } from "lucide-react";
 
 interface AddressAutocompleteProps {
-  onSelect: (address: AddressSuggestion) => void
-  placeholder?: string
-  className?: string
-  disabled?: boolean
+  onSelect: (address: AddressSuggestion) => void;
+  placeholder?: string;
+  className?: string;
+  disabled?: boolean;
 }
 
 export function AddressAutocomplete({
   onSelect,
-  placeholder = 'Adresse eingeben...',
-  className = '',
+  placeholder = "Adresse eingeben...",
+  className = "",
   disabled = false,
 }: AddressAutocompleteProps) {
-  const [query, setQuery] = useState('')
-  const [suggestions, setSuggestions] = useState<AddressSuggestion[]>([])
-  const [isOpen, setIsOpen] = useState(false)
-  const [isLoading, setIsLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-  const [selectedIndex, setSelectedIndex] = useState(-1)
-  const debounceRef = useRef<ReturnType<typeof setTimeout>>(undefined)
-  const containerRef = useRef<HTMLDivElement>(null)
+  const [query, setQuery] = useState("");
+  const [suggestions, setSuggestions] = useState<AddressSuggestion[]>([]);
+  const [isOpen, setIsOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [selectedIndex, setSelectedIndex] = useState(-1);
+  const debounceRef = useRef<ReturnType<typeof setTimeout>>(undefined);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   // Klick ausserhalb schliesst Dropdown
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
-      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
-        setIsOpen(false)
+      if (
+        containerRef.current &&
+        !containerRef.current.contains(e.target as Node)
+      ) {
+        setIsOpen(false);
       }
     }
-    document.addEventListener('mousedown', handleClickOutside)
-    return () => document.removeEventListener('mousedown', handleClickOutside)
-  }, [])
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   const doSearch = useCallback(async (q: string) => {
     if (q.length < 3) {
-      setSuggestions([])
-      setIsOpen(false)
-      return
+      setSuggestions([]);
+      setIsOpen(false);
+      return;
     }
 
-    setIsLoading(true)
-    setError(null)
+    setIsLoading(true);
+    setError(null);
 
     try {
-      const results = await searchAddress(q, 'de', 5, 'DE')
-      setSuggestions(results)
-      setIsOpen(results.length > 0)
-      setSelectedIndex(-1)
+      const results = await searchAddress(q, "de", 5, "DE");
+      setSuggestions(results);
+      setIsOpen(results.length > 0);
+      setSelectedIndex(-1);
     } catch {
-      setError('Adresssuche vorübergehend nicht verfügbar, bitte versuche es gleich nochmal.')
-      setSuggestions([])
-      setIsOpen(false)
+      setError(
+        "Adresssuche vorübergehend nicht verfügbar, bitte versuche es gleich nochmal.",
+      );
+      setSuggestions([]);
+      setIsOpen(false);
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }, [])
+  }, []);
 
   const handleChange = (value: string) => {
-    setQuery(value)
-    if (debounceRef.current) clearTimeout(debounceRef.current)
-    debounceRef.current = setTimeout(() => doSearch(value), 300)
-  }
+    setQuery(value);
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => doSearch(value), 300);
+  };
 
   const handleSelect = (suggestion: AddressSuggestion) => {
-    setQuery(suggestion.displayText)
-    setSuggestions([])
-    setIsOpen(false)
-    setError(null)
-    onSelect(suggestion)
-  }
+    setQuery(suggestion.displayText);
+    setSuggestions([]);
+    setIsOpen(false);
+    setError(null);
+    onSelect(suggestion);
+  };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (!isOpen || suggestions.length === 0) return
+    if (!isOpen || suggestions.length === 0) return;
 
-    if (e.key === 'ArrowDown') {
-      e.preventDefault()
-      setSelectedIndex((prev) => Math.min(prev + 1, suggestions.length - 1))
-    } else if (e.key === 'ArrowUp') {
-      e.preventDefault()
-      setSelectedIndex((prev) => Math.max(prev - 1, 0))
-    } else if (e.key === 'Enter' && selectedIndex >= 0) {
-      e.preventDefault()
-      handleSelect(suggestions[selectedIndex])
-    } else if (e.key === 'Escape') {
-      setIsOpen(false)
+    if (e.key === "ArrowDown") {
+      e.preventDefault();
+      setSelectedIndex((prev) => Math.min(prev + 1, suggestions.length - 1));
+    } else if (e.key === "ArrowUp") {
+      e.preventDefault();
+      setSelectedIndex((prev) => Math.max(prev - 1, 0));
+    } else if (e.key === "Enter" && selectedIndex >= 0) {
+      e.preventDefault();
+      handleSelect(suggestions[selectedIndex]);
+    } else if (e.key === "Escape") {
+      setIsOpen(false);
     }
-  }
+  };
 
   return (
     <div ref={containerRef} className={`relative ${className}`}>
@@ -110,6 +115,7 @@ export function AddressAutocomplete({
                      min-h-[52px]"
           role="combobox"
           aria-expanded={isOpen}
+          aria-controls="address-autocomplete-listbox"
           aria-haspopup="listbox"
           aria-autocomplete="list"
         />
@@ -120,12 +126,11 @@ export function AddressAutocomplete({
         )}
       </div>
 
-      {error && (
-        <p className="mt-1 text-sm text-amber-600">{error}</p>
-      )}
+      {error && <p className="mt-1 text-sm text-amber-600">{error}</p>}
 
       {isOpen && suggestions.length > 0 && (
         <ul
+          id="address-autocomplete-listbox"
           role="listbox"
           className="absolute z-50 w-full mt-1 bg-white border border-gray-200
                      rounded-lg shadow-lg max-h-60 overflow-auto"
@@ -136,8 +141,8 @@ export function AddressAutocomplete({
               role="option"
               aria-selected={i === selectedIndex}
               className={`px-4 py-3 cursor-pointer text-sm
-                ${i === selectedIndex ? 'bg-gray-100' : 'hover:bg-gray-50'}
-                ${i > 0 ? 'border-t border-gray-100' : ''}`}
+                ${i === selectedIndex ? "bg-gray-100" : "hover:bg-gray-50"}
+                ${i > 0 ? "border-t border-gray-100" : ""}`}
               onClick={() => handleSelect(s)}
               onMouseEnter={() => setSelectedIndex(i)}
             >
@@ -147,5 +152,5 @@ export function AddressAutocomplete({
         </ul>
       )}
     </div>
-  )
+  );
 }

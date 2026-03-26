@@ -174,7 +174,7 @@ async function seedHouseholds(households: TestHousehold[]): Promise<void> {
   }
 
   for (const hh of households) {
-    const { data, error } = await supabaseAdmin("households", "POST", {
+    const { data: _data, error } = await supabaseAdmin("households", "POST", {
       id: hh.id,
       street_name: hh.streetName,
       house_number: hh.houseNumber,

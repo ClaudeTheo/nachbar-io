@@ -6,16 +6,24 @@ import dynamic from "next/dynamic";
 import { AlertCard } from "@/components/AlertCard";
 import { createClient } from "@/lib/supabase/client";
 import { respondToAlert } from "@/lib/services";
-import { useAuth } from '@/hooks/use-auth';
+import { useAuth } from "@/hooks/use-auth";
 import type { Alert } from "@/lib/supabase/types";
 
-const FamilyAlertMap = dynamic(() => import("@/components/alerts/FamilyAlertMap"), {
-  ssr: false,
-  loading: () => <div className="h-64 animate-pulse rounded-xl bg-muted" />,
-});
+const FamilyAlertMap = dynamic(
+  () => import("@/components/alerts/FamilyAlertMap"),
+  {
+    ssr: false,
+    loading: () => <div className="h-64 animate-pulse rounded-xl bg-muted" />,
+  },
+);
 
 interface FamilyAlert extends Alert {
-  location?: { lat: number; lng: number; exact: boolean; source: string } | null;
+  location?: {
+    lat: number;
+    lng: number;
+    exact: boolean;
+    source: string;
+  } | null;
 }
 
 export default function FamilyAlertsPage() {
@@ -50,7 +58,9 @@ export default function FamilyAlertsPage() {
       // Alerts der Familienmitglieder laden
       const { data: alertData } = await supabase
         .from("alerts")
-        .select("*, user:users(display_name, avatar_url), household:households(street_name, house_number, lat, lng)")
+        .select(
+          "*, user:users(display_name, avatar_url), household:households(street_name, house_number, lat, lng)",
+        )
         .in("user_id", residentIds)
         .in("status", ["open", "help_coming"])
         .order("created_at", { ascending: false });
@@ -76,6 +86,7 @@ export default function FamilyAlertsPage() {
       setLoading(false);
     }
     load();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   async function handleHelp(alertId: string) {
@@ -86,7 +97,9 @@ export default function FamilyAlertsPage() {
     window.location.reload();
   }
 
-  const alertsWithGps = alerts.filter((a) => a.location?.lat && a.location?.lng);
+  const alertsWithGps = alerts.filter(
+    (a) => a.location?.lat && a.location?.lng,
+  );
 
   return (
     <div>
@@ -115,7 +128,9 @@ export default function FamilyAlertsPage() {
 
       {/* Alert-Liste */}
       <div className="space-y-3">
-        {loading && <p className="py-8 text-center text-muted-foreground">Laden...</p>}
+        {loading && (
+          <p className="py-8 text-center text-muted-foreground">Laden...</p>
+        )}
 
         {!loading && alerts.length === 0 && (
           <div className="py-12 text-center">
@@ -129,7 +144,11 @@ export default function FamilyAlertsPage() {
         )}
 
         {alerts.map((alert) => (
-          <AlertCard key={alert.id} alert={alert} onHelp={alert.status === "open" ? handleHelp : undefined} />
+          <AlertCard
+            key={alert.id}
+            alert={alert}
+            onHelp={alert.status === "open" ? handleHelp : undefined}
+          />
         ))}
       </div>
     </div>

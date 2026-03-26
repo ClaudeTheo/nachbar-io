@@ -2,7 +2,13 @@
 // Tests fuer die ResidentBrowser Sheet-Komponente
 
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { render, screen, waitFor, fireEvent, cleanup } from "@testing-library/react";
+import {
+  render,
+  screen,
+  waitFor,
+  fireEvent,
+  cleanup,
+} from "@testing-library/react";
 import { ResidentBrowser } from "@/components/chat/ResidentBrowser";
 
 // --- Mocks ---
@@ -32,21 +38,21 @@ vi.mock("@/components/ui/sheet", () => ({
   }) => <div data-testid="sheet-content">{children}</div>,
   SheetHeader: ({
     children,
-    className,
+    className: _className,
   }: {
     children: React.ReactNode;
     className?: string;
   }) => <div>{children}</div>,
   SheetTitle: ({
     children,
-    className,
+    className: _className,
   }: {
     children: React.ReactNode;
     className?: string;
   }) => <h2>{children}</h2>,
   SheetDescription: ({
     children,
-    className,
+    className: _className,
   }: {
     children: React.ReactNode;
     className?: string;
@@ -89,11 +95,7 @@ describe("ResidentBrowser", () => {
     mockFetch.mockReturnValue(new Promise(() => {}));
 
     render(
-      <ResidentBrowser
-        open={true}
-        onClose={vi.fn()}
-        onRequestSent={vi.fn()}
-      />
+      <ResidentBrowser open={true} onClose={vi.fn()} onRequestSent={vi.fn()} />,
     );
 
     expect(screen.getByTestId("loading-state")).toBeInTheDocument();
@@ -106,11 +108,7 @@ describe("ResidentBrowser", () => {
     });
 
     render(
-      <ResidentBrowser
-        open={true}
-        onClose={vi.fn()}
-        onRequestSent={vi.fn()}
-      />
+      <ResidentBrowser open={true} onClose={vi.fn()} onRequestSent={vi.fn()} />,
     );
 
     await waitFor(() => {
@@ -131,11 +129,7 @@ describe("ResidentBrowser", () => {
     });
 
     render(
-      <ResidentBrowser
-        open={true}
-        onClose={vi.fn()}
-        onRequestSent={vi.fn()}
-      />
+      <ResidentBrowser open={true} onClose={vi.fn()} onRequestSent={vi.fn()} />,
     );
 
     await waitFor(() => {
@@ -143,7 +137,7 @@ describe("ResidentBrowser", () => {
     });
 
     expect(
-      screen.getByText("Keine Bewohner zum Kontaktieren verfügbar")
+      screen.getByText("Keine Bewohner zum Kontaktieren verfügbar"),
     ).toBeInTheDocument();
   });
 
@@ -154,11 +148,7 @@ describe("ResidentBrowser", () => {
     });
 
     render(
-      <ResidentBrowser
-        open={true}
-        onClose={vi.fn()}
-        onRequestSent={vi.fn()}
-      />
+      <ResidentBrowser open={true} onClose={vi.fn()} onRequestSent={vi.fn()} />,
     );
 
     // Warten auf Adressliste
@@ -190,11 +180,7 @@ describe("ResidentBrowser", () => {
     });
 
     render(
-      <ResidentBrowser
-        open={true}
-        onClose={vi.fn()}
-        onRequestSent={vi.fn()}
-      />
+      <ResidentBrowser open={true} onClose={vi.fn()} onRequestSent={vi.fn()} />,
     );
 
     // Adressliste laden → Adresse aufklappen → Bewohner waehlen

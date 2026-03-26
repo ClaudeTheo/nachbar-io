@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { createClient } from "@/lib/supabase/client";
-import { useAuth } from '@/hooks/use-auth';
+import { useAuth } from "@/hooks/use-auth";
 import { createNotification } from "@/lib/notifications";
 import { useQuarter } from "@/lib/quarters";
 import type { Conversation, NeighborConnection } from "@/lib/supabase/types";
@@ -28,7 +28,9 @@ export default function MessagesPage() {
   const router = useRouter();
   const { currentQuarter } = useQuarter();
   const [conversations, setConversations] = useState<Conversation[]>([]);
-  const [pendingRequests, setPendingRequests] = useState<PendingRequestWithAddress[]>([]);
+  const [pendingRequests, setPendingRequests] = useState<
+    PendingRequestWithAddress[]
+  >([]);
 
   const [loading, setLoading] = useState(true);
   const [showResidentBrowser, setShowResidentBrowser] = useState(false);
@@ -53,7 +55,9 @@ export default function MessagesPage() {
     const enriched = await Promise.all(
       data.map(async (conv) => {
         const otherUserId =
-          conv.participant_1 === userId ? conv.participant_2 : conv.participant_1;
+          conv.participant_1 === userId
+            ? conv.participant_2
+            : conv.participant_1;
 
         // Profilname des anderen Teilnehmers laden
         const { data: otherUser } = await supabase
@@ -82,12 +86,15 @@ export default function MessagesPage() {
         return {
           ...conv,
           other_user: otherUser
-            ? { display_name: otherUser.display_name, avatar_url: otherUser.avatar_url }
+            ? {
+                display_name: otherUser.display_name,
+                avatar_url: otherUser.avatar_url,
+              }
             : undefined,
           last_message: lastMsg?.content ?? undefined,
           unread_count: unreadCount ?? 0,
         } as Conversation;
-      })
+      }),
     );
 
     setConversations(enriched);
@@ -99,7 +106,9 @@ export default function MessagesPage() {
     const supabase = createClient();
     const { data } = await supabase
       .from("neighbor_connections")
-      .select("*, requester:users!neighbor_connections_requester_id_fkey(display_name, avatar_url)")
+      .select(
+        "*, requester:users!neighbor_connections_requester_id_fkey(display_name, avatar_url)",
+      )
       .eq("target_id", userId)
       .eq("status", "pending")
       .order("created_at", { ascending: false });
@@ -116,21 +125,26 @@ export default function MessagesPage() {
       const addressMap = new Map<string, string>();
       if (requesterHouseholds) {
         for (const hm of requesterHouseholds) {
-          const household = hm.households as { street_name?: string; house_number?: string } | null;
+          const household = hm.households as {
+            street_name?: string;
+            house_number?: string;
+          } | null;
           if (household?.street_name) {
             addressMap.set(
               hm.user_id,
-              `${household.street_name} ${household.house_number || ""}`.trim()
+              `${household.street_name} ${household.house_number || ""}`.trim(),
             );
           }
         }
       }
 
-      setPendingRequests(data.map(d => ({
-        ...d,
-        requester: d.requester as unknown as NeighborConnection["requester"],
-        requesterAddress: addressMap.get(d.requester_id),
-      })));
+      setPendingRequests(
+        data.map((d) => ({
+          ...d,
+          requester: d.requester as unknown as NeighborConnection["requester"],
+          requesterAddress: addressMap.get(d.requester_id),
+        })),
+      );
     } else {
       setPendingRequests([]);
     }
@@ -138,8 +152,6 @@ export default function MessagesPage() {
 
   useEffect(() => {
     async function init() {
-      const supabase = createClient();
-
       if (!user) {
         setLoading(false);
         return;
@@ -151,6 +163,7 @@ export default function MessagesPage() {
       ]);
     }
     init();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [loadConversations, loadPendingRequests]);
 
   // Supabase Realtime: bei neuen Nachrichten automatisch aktualisieren
@@ -170,7 +183,7 @@ export default function MessagesPage() {
         () => {
           // Bei jeder neuen Nachricht Konversationen neu laden
           loadConversations(user!.id);
-        }
+        },
       )
       .on(
         "postgres_changes",
@@ -181,13 +194,14 @@ export default function MessagesPage() {
         },
         () => {
           loadPendingRequests(user!.id);
-        }
+        },
       )
       .subscribe();
 
     return () => {
       supabase.removeChannel(channel);
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.id, loadConversations, loadPendingRequests]);
 
   // Verbindungsanfrage annehmen
@@ -209,7 +223,7 @@ export default function MessagesPage() {
       .from("conversations")
       .select("id")
       .or(
-        `and(participant_1.eq.${user?.id},participant_2.eq.${requesterId}),and(participant_1.eq.${requesterId},participant_2.eq.${user?.id})`
+        `and(participant_1.eq.${user?.id},participant_2.eq.${requesterId}),and(participant_1.eq.${requesterId},participant_2.eq.${user?.id})`,
       )
       .maybeSingle();
 
@@ -219,7 +233,11 @@ export default function MessagesPage() {
     } else {
       const { data: newConv } = await supabase
         .from("conversations")
-        .insert({ participant_1: p1, participant_2: p2, quarter_id: currentQuarter?.id })
+        .insert({
+          participant_1: p1,
+          participant_2: p2,
+          quarter_id: currentQuarter?.id,
+        })
         .select("id")
         .single();
       convId = newConv?.id ?? "";
@@ -268,7 +286,10 @@ export default function MessagesPage() {
         </div>
         <div className="space-y-3">
           {[1, 2, 3].map((i) => (
-            <div key={i} className="flex items-center gap-3 rounded-lg border border-border bg-white p-4">
+            <div
+              key={i}
+              className="flex items-center gap-3 rounded-lg border border-border bg-white p-4"
+            >
               <Skeleton className="h-12 w-12 shrink-0 rounded-full" />
               <div className="flex-1 space-y-2">
                 <Skeleton className="h-4 w-32" />
@@ -323,7 +344,11 @@ export default function MessagesPage() {
                     <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-quartier-green/10 text-sm font-bold text-quartier-green">
                       {req.requester?.avatar_url ? (
                         /* eslint-disable-next-line @next/next/no-img-element */
-                        <img src={req.requester.avatar_url} alt="" className="h-10 w-10 rounded-full object-cover" />
+                        <img
+                          src={req.requester.avatar_url}
+                          alt=""
+                          className="h-10 w-10 rounded-full object-cover"
+                        />
                       ) : (
                         initial
                       )}
@@ -331,7 +356,9 @@ export default function MessagesPage() {
 
                     {/* Inhalt */}
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-anthrazit">{name}</p>
+                      <p className="text-sm font-medium text-anthrazit">
+                        {name}
+                      </p>
                       {req.requesterAddress && (
                         <div className="mt-0.5 flex items-center gap-1 text-xs text-muted-foreground">
                           <MapPin className="h-3 w-3 text-quartier-green shrink-0" />
@@ -346,7 +373,10 @@ export default function MessagesPage() {
                         </div>
                       )}
                       <p className="mt-1 text-xs text-muted-foreground/60">
-                        {formatDistanceToNow(new Date(req.created_at), { addSuffix: true, locale: de })}
+                        {formatDistanceToNow(new Date(req.created_at), {
+                          addSuffix: true,
+                          locale: de,
+                        })}
                       </p>
                     </div>
 
@@ -387,12 +417,15 @@ export default function MessagesPage() {
           </div>
           <p className="mt-4 text-muted-foreground">Noch keine Nachrichten</p>
           <p className="mt-2 text-sm text-muted-foreground/70">
-            Klicken Sie auf ein Haus in der Quartierskarte, um sich mit Nachbarn zu verbinden.
+            Klicken Sie auf ein Haus in der Quartierskarte, um sich mit Nachbarn
+            zu verbinden.
           </p>
         </div>
       ) : conversations.length === 0 ? (
         <div className="py-8 text-center">
-          <p className="text-sm text-muted-foreground">Noch keine Konversationen</p>
+          <p className="text-sm text-muted-foreground">
+            Noch keine Konversationen
+          </p>
           <p className="mt-1 text-xs text-muted-foreground/60">
             Nach Annahme einer Anfrage wird automatisch ein Chat gestartet.
           </p>
@@ -480,23 +513,32 @@ function ConversationCard({
           <div className="flex items-center justify-between gap-2">
             <span
               className={`truncate text-sm ${
-                hasUnread ? "font-bold text-anthrazit" : "font-medium text-anthrazit"
+                hasUnread
+                  ? "font-bold text-anthrazit"
+                  : "font-medium text-anthrazit"
               }`}
             >
               {displayName}
             </span>
-            <span className="shrink-0 text-xs text-muted-foreground">{timeAgo}</span>
+            <span className="shrink-0 text-xs text-muted-foreground">
+              {timeAgo}
+            </span>
           </div>
           <div className="mt-0.5 flex items-center justify-between gap-2">
             <p
               className={`truncate text-sm ${
-                hasUnread ? "font-medium text-anthrazit" : "text-muted-foreground"
+                hasUnread
+                  ? "font-medium text-anthrazit"
+                  : "text-muted-foreground"
               }`}
             >
               {preview}
             </p>
             {hasUnread && (
-              <Badge className="shrink-0 bg-quartier-green text-white text-xs px-1.5 py-0.5 min-w-[1.25rem] text-center" data-testid="unread-count">
+              <Badge
+                className="shrink-0 bg-quartier-green text-white text-xs px-1.5 py-0.5 min-w-[1.25rem] text-center"
+                data-testid="unread-count"
+              >
                 {conversation.unread_count}
               </Badge>
             )}

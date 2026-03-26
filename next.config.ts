@@ -17,7 +17,7 @@ const cspDirectives = [
   "manifest-src 'self'",
   "object-src 'none'",
   // Jitsi Meet (Community/Tests) + sprechstunde.online (aerztliche Videosprechstunde)
-  `frame-src 'self' https://meet.jit.si https://app.sprechstunde.online ${process.env.JITSI_BASE_URL ? process.env.JITSI_BASE_URL : ''}`.trim(),
+  `frame-src 'self' https://meet.jit.si https://app.sprechstunde.online ${process.env.JITSI_BASE_URL ? process.env.JITSI_BASE_URL : ""}`.trim(),
   "frame-ancestors 'none'",
   "base-uri 'self'",
   "form-action 'self'",
@@ -27,12 +27,14 @@ const nextConfig: NextConfig = {
   // Turbopack: Barrel-Exports fuer grosse Icon-Libraries optimieren
   // Verhindert "module factory is not available" Fehler mit lucide-react
   experimental: {
-    optimizePackageImports: ['lucide-react'],
+    optimizePackageImports: ["lucide-react"],
   },
 
   // App-Version aus package.json im Client verfuegbar machen
   env: {
-    NEXT_PUBLIC_APP_VERSION: process.env.npm_package_version || require("./package.json").version,
+    NEXT_PUBLIC_APP_VERSION:
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
+      process.env.npm_package_version || require("./package.json").version,
   },
 
   // Next.js-Header nicht exponieren

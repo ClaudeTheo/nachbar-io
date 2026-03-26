@@ -9,11 +9,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { createClient } from "@/lib/supabase/client";
-import {
-  validateImageFile,
-  compressImage,
-  MAX_DIMENSION,
-} from "@/lib/storage";
+import { validateImageFile, compressImage, MAX_DIMENSION } from "@/lib/storage";
 
 interface EventRecapData {
   id: string;
@@ -30,7 +26,11 @@ interface EventRecapProps {
   currentUserId: string | null;
 }
 
-export function EventRecap({ eventId, eventDate, currentUserId }: EventRecapProps) {
+export function EventRecap({
+  eventId,
+  eventDate,
+  currentUserId,
+}: EventRecapProps) {
   const [recaps, setRecaps] = useState<EventRecapData[]>([]);
   const [showForm, setShowForm] = useState(false);
   const [text, setText] = useState("");
@@ -41,11 +41,6 @@ export function EventRecap({ eventId, eventDate, currentUserId }: EventRecapProp
 
   // Nur anzeigen wenn Event vorbei ist
   const isPast = new Date(eventDate + "T23:59:59") < new Date();
-
-  useEffect(() => {
-    if (!isPast) return;
-    loadRecaps();
-  }, [eventId, isPast]);
 
   async function loadRecaps() {
     const supabase = createClient();
@@ -58,6 +53,12 @@ export function EventRecap({ eventId, eventDate, currentUserId }: EventRecapProp
     setRecaps((data ?? []) as EventRecapData[]);
     setLoading(false);
   }
+
+  useEffect(() => {
+    if (!isPast) return;
+    loadRecaps();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [eventId, isPast]);
 
   // Eigener Nachbericht bereits vorhanden?
   const hasOwnRecap = recaps.some((r) => r.user_id === currentUserId);
@@ -96,7 +97,9 @@ export function EventRecap({ eventId, eventDate, currentUserId }: EventRecapProp
 
   async function handleSubmit() {
     if (!text.trim() && selectedFiles.length === 0) {
-      toast.error("Bitte geben Sie einen Text ein oder laden Sie ein Bild hoch.");
+      toast.error(
+        "Bitte geben Sie einen Text ein oder laden Sie ein Bild hoch.",
+      );
       return;
     }
 
@@ -176,6 +179,7 @@ export function EventRecap({ eventId, eventDate, currentUserId }: EventRecapProp
               {recap.images.length > 0 && (
                 <div className="flex gap-2 overflow-x-auto">
                   {recap.images.map((url, i) => (
+                    // eslint-disable-next-line @next/next/no-img-element
                     <img
                       key={i}
                       src={url}
@@ -223,6 +227,7 @@ export function EventRecap({ eventId, eventDate, currentUserId }: EventRecapProp
             <div className="flex gap-2 overflow-x-auto">
               {previews.map((preview, i) => (
                 <div key={i} className="relative flex-shrink-0">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src={preview}
                     alt={`Vorschau ${i + 1}`}

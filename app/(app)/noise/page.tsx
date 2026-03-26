@@ -44,22 +44,35 @@ export default function NoisePage() {
     if (!user) return;
 
     try {
-      const [warningsResult, householdsResult, membersResult] = await Promise.all([
-        supabase
-          .from("help_requests")
-          .select("*, user:users(display_name, avatar_url)")
-          .eq("quarter_id", currentQuarter.id)
-          .eq("category", "noise")
-          .eq("status", "active")
-          .order("created_at", { ascending: false }),
-        supabase.from("households").select("id, lat, lng"),
-        supabase.from("household_members").select("user_id, household_id").not("verified_at", "is", null),
-      ]);
+      const [warningsResult, householdsResult, membersResult] =
+        await Promise.all([
+          supabase
+            .from("help_requests")
+            .select("*, user:users(display_name, avatar_url)")
+            .eq("quarter_id", currentQuarter.id)
+            .eq("category", "noise")
+            .eq("status", "active")
+            .order("created_at", { ascending: false }),
+          supabase.from("households").select("id, lat, lng"),
+          supabase
+            .from("household_members")
+            .select("user_id, household_id")
+            .not("verified_at", "is", null),
+        ]);
 
       // Position-Mapping aufbauen
-      const households = (householdsResult.data ?? []) as { id: string; lat: number; lng: number }[];
-      const members = (membersResult.data ?? []) as { user_id: string; household_id: string }[];
-      const householdMap = new Map(households.map((h) => [h.id, { lat: h.lat, lng: h.lng }]));
+      const households = (householdsResult.data ?? []) as {
+        id: string;
+        lat: number;
+        lng: number;
+      }[];
+      const members = (membersResult.data ?? []) as {
+        user_id: string;
+        household_id: string;
+      }[];
+      const householdMap = new Map(
+        households.map((h) => [h.id, { lat: h.lat, lng: h.lng }]),
+      );
       const posMap: UserPosMap = new Map();
       for (const m of members) {
         const pos = householdMap.get(m.household_id);
@@ -71,7 +84,9 @@ export default function NoisePage() {
 
       // Abgelaufene Warnungen filtern (client-seitig)
       const now = new Date();
-      const active = ((warningsResult.data ?? []) as unknown as HelpRequest[]).filter((w) => {
+      const active = (
+        (warningsResult.data ?? []) as unknown as HelpRequest[]
+      ).filter((w) => {
         if (!w.expires_at) return true;
         return new Date(w.expires_at) > now;
       });
@@ -81,6 +96,7 @@ export default function NoisePage() {
     } finally {
       setLoading(false);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentQuarter]);
 
   useEffect(() => {
@@ -149,7 +165,10 @@ export default function NoisePage() {
 
   async function cancelWarning(id: string) {
     const supabase = createClient();
-    await supabase.from("help_requests").update({ status: "closed" }).eq("id", id);
+    await supabase
+      .from("help_requests")
+      .update({ status: "closed" })
+      .eq("id", id);
     setWarnings(warnings.filter((w) => w.id !== id));
     toast.success("Lärm-Warnung aufgehoben.");
   }
@@ -167,7 +186,9 @@ export default function NoisePage() {
           <Skeleton className="h-10 w-10 rounded-lg" />
           <Skeleton className="h-7 w-48" />
         </div>
-        {[1, 2, 3].map((i) => <Skeleton key={i} className="h-20 w-full rounded-lg" />)}
+        {[1, 2, 3].map((i) => (
+          <Skeleton key={i} className="h-20 w-full rounded-lg" />
+        ))}
       </div>
     );
   }
@@ -183,8 +204,8 @@ export default function NoisePage() {
           <div>
             <p className="font-medium text-blue-900">Höflich vorwarnen</p>
             <p className="mt-1 text-sm text-blue-700">
-              Informieren Sie Ihre Nachbarn vorab über Lärm. So vermeiden Sie Konflikte
-              und zeigen Rücksicht.
+              Informieren Sie Ihre Nachbarn vorab über Lärm. So vermeiden Sie
+              Konflikte und zeigen Rücksicht.
             </p>
           </div>
         </div>
@@ -206,7 +227,9 @@ export default function NoisePage() {
                   : "border-border text-muted-foreground hover:border-quartier-green/50"
               }`}
             >
-              <span className="text-lg" aria-hidden="true">{cat.icon}</span>
+              <span className="text-lg" aria-hidden="true">
+                {cat.icon}
+              </span>
               {cat.label}
             </button>
           ))}
@@ -258,17 +281,29 @@ export default function NoisePage() {
       {/* Meine aktiven Warnungen */}
       {myWarnings.length > 0 && (
         <div>
-          <h2 className="mb-3 font-semibold text-anthrazit">Ihre aktiven Warnungen</h2>
+          <h2 className="mb-3 font-semibold text-anthrazit">
+            Ihre aktiven Warnungen
+          </h2>
           <div className="space-y-2">
             {myWarnings.map((w) => (
-              <div key={w.id} className="flex items-center gap-3 rounded-lg border border-quartier-green/30 bg-quartier-green/5 p-3">
+              <div
+                key={w.id}
+                className="flex items-center gap-3 rounded-lg border border-quartier-green/30 bg-quartier-green/5 p-3"
+              >
                 <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-quartier-green/10 text-lg">
-                  {NOISE_CATEGORIES.find((c) => c.id === w.subcategory)?.icon ?? "🔊"}
+                  {NOISE_CATEGORIES.find((c) => c.id === w.subcategory)?.icon ??
+                    "🔊"}
                 </div>
                 <div className="min-w-0 flex-1">
                   <p className="font-medium text-anthrazit">{w.title}</p>
                   <p className="text-xs text-muted-foreground">
-                    {w.description} · Läuft ab {w.expires_at ? formatDistanceToNow(new Date(w.expires_at), { addSuffix: true, locale: de }) : ""}
+                    {w.description} · Läuft ab{" "}
+                    {w.expires_at
+                      ? formatDistanceToNow(new Date(w.expires_at), {
+                          addSuffix: true,
+                          locale: de,
+                        })
+                      : ""}
                   </p>
                 </div>
                 <Button
@@ -308,7 +343,9 @@ export default function NoisePage() {
       {/* Keine Warnungen */}
       {otherWarnings.length === 0 && myWarnings.length === 0 && (
         <div className="py-8 text-center">
-          <div className="mb-3 text-5xl" aria-hidden="true">🤫</div>
+          <div className="mb-3 text-5xl" aria-hidden="true">
+            🤫
+          </div>
           <p className="text-muted-foreground">Alles ruhig im Quartier</p>
         </div>
       )}
@@ -329,20 +366,29 @@ function WarningList({
       {warnings.map((w) => {
         const dist = distanceFn(w.user_id);
         const cat = NOISE_CATEGORIES.find((c) => c.id === w.subcategory);
-        // eslint-disable-next-line react-hooks/purity
-        const isExpiringSoon = w.expires_at && (new Date(w.expires_at).getTime() - Date.now()) < 3600000;
+        const isExpiringSoon =
+          w.expires_at &&
+          // eslint-disable-next-line react-hooks/purity
+          new Date(w.expires_at).getTime() - Date.now() < 3600000;
 
         return (
-          <div key={w.id} className="rounded-lg border border-border bg-white p-4">
+          <div
+            key={w.id}
+            className="rounded-lg border border-border bg-white p-4"
+          >
             <div className="flex items-start gap-3">
               <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-amber-100 text-lg">
                 {cat?.icon ?? "🔊"}
               </div>
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2">
-                  <p className="font-medium text-anthrazit">{w.user?.display_name ?? "Nachbar"}</p>
+                  <p className="font-medium text-anthrazit">
+                    {w.user?.display_name ?? "Nachbar"}
+                  </p>
                   {isExpiringSoon && (
-                    <Badge className="bg-green-100 text-green-700 text-xs">Bald vorbei</Badge>
+                    <Badge className="bg-green-100 text-green-700 text-xs">
+                      Bald vorbei
+                    </Badge>
                   )}
                 </div>
                 <p className="mt-0.5 text-sm text-anthrazit">{w.title}</p>
@@ -350,7 +396,10 @@ function WarningList({
                   {w.description}
                   {dist !== null ? ` · ~${Math.round(dist)}m entfernt` : ""}
                   {" · "}
-                  {formatDistanceToNow(new Date(w.created_at), { addSuffix: true, locale: de })}
+                  {formatDistanceToNow(new Date(w.created_at), {
+                    addSuffix: true,
+                    locale: de,
+                  })}
                 </p>
               </div>
             </div>

@@ -6,10 +6,21 @@ import { Bell, ChevronLeft, ChevronRight, Loader2, X } from "lucide-react";
 import { PageHeader } from "@/components/ui/page-header";
 import { toast } from "sonner";
 import { createClient } from "@/lib/supabase/client";
-import { useAuth } from '@/hooks/use-auth';
+import { useAuth } from "@/hooks/use-auth";
 import { useQuarter } from "@/lib/quarters";
-import { WASTE_TYPES, DISCLAIMERS, ANNOUNCEMENT_CALENDAR_COLORS, ANNOUNCEMENT_CATEGORIES } from "@/lib/municipal";
-import type { WasteSchedule, WasteReminder, WasteType, WasteCollectionDate, CalendarAnnouncementEvent } from "@/lib/municipal";
+import {
+  WASTE_TYPES,
+  DISCLAIMERS,
+  ANNOUNCEMENT_CALENDAR_COLORS,
+  ANNOUNCEMENT_CATEGORIES,
+} from "@/lib/municipal";
+import type {
+  WasteSchedule,
+  WasteReminder,
+  WasteType,
+  WasteCollectionDate,
+  CalendarAnnouncementEvent,
+} from "@/lib/municipal";
 
 // --- Hilfsfunktionen ---
 
@@ -41,7 +52,10 @@ function todayStr(): string {
 }
 
 /** Alle Tage eines Monats im Kalender-Grid (inkl. Offset-Tage davor/danach) */
-function getCalendarDays(year: number, month: number): { date: string; inMonth: boolean }[] {
+function getCalendarDays(
+  year: number,
+  month: number,
+): { date: string; inMonth: boolean }[] {
   const firstDay = new Date(year, month, 1);
   // Wochentag: 0=So -> wir brauchen Mo=0
   let startOffset = firstDay.getDay() - 1;
@@ -91,7 +105,9 @@ function getCalendarDays(year: number, month: number): { date: string; inMonth: 
 const wasteTypeMap = new Map(WASTE_TYPES.map((t) => [t.id, t]));
 
 /** Announcement-Kategorie Lookup Map */
-const announcementCategoryMap = new Map(ANNOUNCEMENT_CATEGORIES.map((c) => [c.id, c]));
+const announcementCategoryMap = new Map(
+  ANNOUNCEMENT_CATEGORIES.map((c) => [c.id, c]),
+);
 
 // --- Hauptkomponente ---
 
@@ -105,13 +121,17 @@ export default function WasteCalendarPage() {
   const [viewMonth, setViewMonth] = useState(() => new Date().getMonth());
 
   // Daten — primaer aus waste_collection_dates (source-driven), Fallback waste_schedules
-  const [schedules, setSchedules] = useState<(WasteSchedule | WasteCollectionDate)[]>([]);
+  const [schedules, setSchedules] = useState<
+    (WasteSchedule | WasteCollectionDate)[]
+  >([]);
   const [reminders, setReminders] = useState<WasteReminder[]>([]);
   const [loadingData, setLoadingData] = useState(true);
   const [savingType, setSavingType] = useState<WasteType | null>(null);
 
   // Amtsblatt-Termine
-  const [announcements, setAnnouncements] = useState<CalendarAnnouncementEvent[]>([]);
+  const [announcements, setAnnouncements] = useState<
+    CalendarAnnouncementEvent[]
+  >([]);
   const [showAnnouncements, setShowAnnouncements] = useState(true);
 
   // Tooltip fuer Kalendertag
@@ -133,40 +153,45 @@ export default function WasteCalendarPage() {
         .select("area_id")
         .eq("quarter_id", quarterId);
 
-      const areaIds = (areaLinks ?? []).map((a: { area_id: string }) => a.area_id);
+      const areaIds = (areaLinks ?? []).map(
+        (a: { area_id: string }) => a.area_id,
+      );
 
       // 2. Termine + Erinnerungen + Amtsblatt parallel laden
-      const [newSchedulesRes, legacyRes, remindersRes, announcementsRes] = await Promise.all([
-        // Neue Tabelle (source-driven)
-        areaIds.length > 0
-          ? supabase
-              .from("waste_collection_dates")
-              .select("*")
-              .in("area_id", areaIds)
-              .gte("collection_date", todayStr())
-              .eq("is_cancelled", false)
-              .order("collection_date", { ascending: true })
-          : Promise.resolve({ data: [] }),
-        // Fallback: alte Tabelle (quartierbezogen)
-        supabase
-          .from("waste_schedules")
-          .select("*")
-          .eq("quarter_id", quarterId)
-          .gte("collection_date", todayStr())
-          .order("collection_date", { ascending: true }),
-        user
-          ? supabase
-              .from("waste_reminders")
-              .select("*")
-              .eq("user_id", user.id)
-          : Promise.resolve({ data: null }),
-        // Amtsblatt-Termine (Bekanntmachungen)
-        supabase
-          .from("municipal_announcements")
-          .select("id, title, category, published_at, event_date, expires_at, source_url")
-          .eq("quarter_id", quarterId)
-          .order("published_at"),
-      ]);
+      const [newSchedulesRes, legacyRes, remindersRes, announcementsRes] =
+        await Promise.all([
+          // Neue Tabelle (source-driven)
+          areaIds.length > 0
+            ? supabase
+                .from("waste_collection_dates")
+                .select("*")
+                .in("area_id", areaIds)
+                .gte("collection_date", todayStr())
+                .eq("is_cancelled", false)
+                .order("collection_date", { ascending: true })
+            : Promise.resolve({ data: [] }),
+          // Fallback: alte Tabelle (quartierbezogen)
+          supabase
+            .from("waste_schedules")
+            .select("*")
+            .eq("quarter_id", quarterId)
+            .gte("collection_date", todayStr())
+            .order("collection_date", { ascending: true }),
+          user
+            ? supabase
+                .from("waste_reminders")
+                .select("*")
+                .eq("user_id", user.id)
+            : Promise.resolve({ data: null }),
+          // Amtsblatt-Termine (Bekanntmachungen)
+          supabase
+            .from("municipal_announcements")
+            .select(
+              "id, title, category, published_at, event_date, expires_at, source_url",
+            )
+            .eq("quarter_id", quarterId)
+            .order("published_at"),
+        ]);
 
       if (cancelled) return;
 
@@ -175,20 +200,23 @@ export default function WasteCalendarPage() {
       const legacyDates = legacyRes.data ?? [];
       setSchedules(newDates.length > 0 ? newDates : legacyDates);
       if (remindersRes.data) setReminders(remindersRes.data);
-      setAnnouncements((announcementsRes.data ?? []) as CalendarAnnouncementEvent[]);
+      setAnnouncements(
+        (announcementsRes.data ?? []) as CalendarAnnouncementEvent[],
+      );
       setLoadingData(false);
     }
 
     loadData();
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentQuarter?.id, supabase]);
 
   // --- Naechste 3 Abholungen ---
   const nextPickups = useMemo(() => {
     const today = todayStr();
-    return schedules
-      .filter((s) => s.collection_date >= today)
-      .slice(0, 3);
+    return schedules.filter((s) => s.collection_date >= today).slice(0, 3);
   }, [schedules]);
 
   // --- Termine nach Datum gruppiert (fuer Kalender) ---
@@ -218,13 +246,16 @@ export default function WasteCalendarPage() {
   // --- Kalender-Tage ---
   const calendarDays = useMemo(
     () => getCalendarDays(viewYear, viewMonth),
-    [viewYear, viewMonth]
+    [viewYear, viewMonth],
   );
 
-  const monthLabel = new Date(viewYear, viewMonth, 1).toLocaleDateString("de-DE", {
-    month: "long",
-    year: "numeric",
-  });
+  const monthLabel = new Date(viewYear, viewMonth, 1).toLocaleDateString(
+    "de-DE",
+    {
+      month: "long",
+      year: "numeric",
+    },
+  );
 
   // --- Monat navigieren ---
   const prevMonth = () => {
@@ -258,17 +289,15 @@ export default function WasteCalendarPage() {
     const existing = reminders.find((r) => r.waste_type === wasteType);
     const newEnabled = existing ? !existing.enabled : true;
 
-    const { error } = await supabase
-      .from("waste_reminders")
-      .upsert(
-        {
-          user_id: user.id,
-          waste_type: wasteType,
-          enabled: newEnabled,
-          remind_at: "evening_before",
-        },
-        { onConflict: "user_id,waste_type" }
-      );
+    const { error } = await supabase.from("waste_reminders").upsert(
+      {
+        user_id: user.id,
+        waste_type: wasteType,
+        enabled: newEnabled,
+        remind_at: "evening_before",
+      },
+      { onConflict: "user_id,waste_type" },
+    );
 
     if (error) {
       toast.error("Erinnerung konnte nicht gespeichert werden.");
@@ -294,7 +323,7 @@ export default function WasteCalendarPage() {
         ];
       });
       toast.success(
-        newEnabled ? "Erinnerung aktiviert" : "Erinnerung deaktiviert"
+        newEnabled ? "Erinnerung aktiviert" : "Erinnerung deaktiviert",
       );
     }
     setSavingType(null);
@@ -303,13 +332,17 @@ export default function WasteCalendarPage() {
   // --- Klick ausserhalb Tooltip schliesst ihn ---
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
-      if (tooltipRef.current && !tooltipRef.current.contains(e.target as Node)) {
+      if (
+        tooltipRef.current &&
+        !tooltipRef.current.contains(e.target as Node)
+      ) {
         setSelectedDay(null);
       }
     }
     if (selectedDay) {
       document.addEventListener("mousedown", handleClickOutside);
-      return () => document.removeEventListener("mousedown", handleClickOutside);
+      return () =>
+        document.removeEventListener("mousedown", handleClickOutside);
     }
   }, [selectedDay]);
 
@@ -323,8 +356,12 @@ export default function WasteCalendarPage() {
       <PageHeader
         title={
           <div>
-            <div className="text-xl font-bold text-anthrazit">Quartier-Kalender</div>
-            <p className="text-xs font-normal text-muted-foreground">Mülltermine & Veranstaltungen in Ihrem Quartier</p>
+            <div className="text-xl font-bold text-anthrazit">
+              Quartier-Kalender
+            </div>
+            <p className="text-xs font-normal text-muted-foreground">
+              Mülltermine & Veranstaltungen in Ihrem Quartier
+            </p>
           </div>
         }
         backHref="/dashboard"
@@ -348,7 +385,9 @@ export default function WasteCalendarPage() {
         {isLoading ? (
           <div className="flex items-center gap-2 mt-2">
             <Loader2 className="h-4 w-4 animate-spin text-quartier-green" />
-            <span className="text-sm text-muted-foreground">Termine werden geladen…</span>
+            <span className="text-sm text-muted-foreground">
+              Termine werden geladen…
+            </span>
           </div>
         ) : nextPickups.length === 0 ? (
           <div className="mt-1">
@@ -443,7 +482,9 @@ export default function WasteCalendarPage() {
           >
             <ChevronLeft className="h-5 w-5 text-anthrazit" />
           </button>
-          <h2 className="font-semibold text-anthrazit capitalize">{monthLabel}</h2>
+          <h2 className="font-semibold text-anthrazit capitalize">
+            {monthLabel}
+          </h2>
           <button
             onClick={nextMonth}
             className="rounded-full p-2 hover:bg-gray-100 min-w-[44px] min-h-[44px] flex items-center justify-center"
@@ -469,7 +510,9 @@ export default function WasteCalendarPage() {
         <div className="grid grid-cols-7 gap-px relative">
           {calendarDays.map(({ date, inMonth }) => {
             const dayCollections = schedulesByDate.get(date) ?? [];
-            const dayAnnouncements = showAnnouncements ? (announcementsByDate.get(date) ?? []) : [];
+            const dayAnnouncements = showAnnouncements
+              ? (announcementsByDate.get(date) ?? [])
+              : [];
             const isToday = date === today;
             const hasCollections = dayCollections.length > 0;
             const hasAnnouncements = dayAnnouncements.length > 0;
@@ -517,7 +560,11 @@ export default function WasteCalendarPage() {
                         <span
                           key={a.id}
                           className="block h-1.5 w-1.5 rounded-sm"
-                          style={{ backgroundColor: ANNOUNCEMENT_CALENDAR_COLORS[a.category] ?? "#9CA3AF" }}
+                          style={{
+                            backgroundColor:
+                              ANNOUNCEMENT_CALENDAR_COLORS[a.category] ??
+                              "#9CA3AF",
+                          }}
                           aria-hidden="true"
                         />
                       ))}
@@ -565,9 +612,10 @@ export default function WasteCalendarPage() {
                         );
                       })}
                       {/* Amtsblatt-Termine */}
-                      {dayAnnouncements.length > 0 && dayCollections.length > 0 && (
-                        <hr className="border-gray-100" />
-                      )}
+                      {dayAnnouncements.length > 0 &&
+                        dayCollections.length > 0 && (
+                          <hr className="border-gray-100" />
+                        )}
                       {dayAnnouncements.map((a) => {
                         const cat = announcementCategoryMap.get(a.category);
                         return (
@@ -575,7 +623,11 @@ export default function WasteCalendarPage() {
                             <div className="flex items-center gap-2">
                               <span
                                 className="block h-2.5 w-2.5 rounded-sm shrink-0"
-                                style={{ backgroundColor: ANNOUNCEMENT_CALENDAR_COLORS[a.category] ?? "#9CA3AF" }}
+                                style={{
+                                  backgroundColor:
+                                    ANNOUNCEMENT_CALENDAR_COLORS[a.category] ??
+                                    "#9CA3AF",
+                                }}
                               />
                               <span className="text-xs text-anthrazit truncate flex-1">
                                 {cat?.icon} {a.title}
@@ -586,7 +638,9 @@ export default function WasteCalendarPage() {
                                 className="text-[10px] px-1.5 py-0.5 rounded-full font-medium"
                                 style={{
                                   backgroundColor: `${ANNOUNCEMENT_CALENDAR_COLORS[a.category] ?? "#9CA3AF"}15`,
-                                  color: ANNOUNCEMENT_CALENDAR_COLORS[a.category] ?? "#9CA3AF",
+                                  color:
+                                    ANNOUNCEMENT_CALENDAR_COLORS[a.category] ??
+                                    "#9CA3AF",
                                 }}
                               >
                                 {cat?.label ?? a.category}
@@ -612,7 +666,10 @@ export default function WasteCalendarPage() {
       </div>
 
       {/* Erinnerungen */}
-      <div id="reminders" className="rounded-xl bg-white p-4 shadow-soft scroll-mt-4">
+      <div
+        id="reminders"
+        className="rounded-xl bg-white p-4 shadow-soft scroll-mt-4"
+      >
         <h2 className="mb-3 font-semibold text-anthrazit">Erinnerungen</h2>
         <div className="space-y-2">
           {WASTE_TYPES.filter((t) => t.id !== "sperrmuell").map((type) => {

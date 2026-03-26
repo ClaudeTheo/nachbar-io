@@ -629,7 +629,7 @@ export function VoiceAssistantFAB() {
                 {/* Transkript */}
                 {transcript && (
                   <div className="rounded-lg bg-muted/50 p-3 text-sm text-muted-foreground italic">
-                    „{transcript}"
+                    „{transcript}&ldquo;
                   </div>
                 )}
 

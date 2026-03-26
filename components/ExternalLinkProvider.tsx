@@ -32,9 +32,13 @@ function extractDomain(url: string): string {
 
 // --- Provider + Bestaetigungs-Dialog ---
 
-export function ExternalLinkProvider({ children }: { children: React.ReactNode }) {
+export function ExternalLinkProvider({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   const [pendingUrl, setPendingUrl] = useState<string | null>(null);
-  const [pendingTitle, setPendingTitle] = useState<string>("");
+  const [_pendingTitle, setPendingTitle] = useState<string>("");
 
   const openExternal = useCallback((url: string, title?: string) => {
     // mailto: und tel: Links direkt oeffnen
@@ -87,7 +91,8 @@ export function ExternalLinkProvider({ children }: { children: React.ReactNode }
                 {extractDomain(pendingUrl)}
               </p>
               <p className="text-xs text-blue-700 mt-1">
-                Sie verlassen die QuartierApp. Es gelten die Datenschutzbestimmungen des Anbieters.
+                Sie verlassen die QuartierApp. Es gelten die
+                Datenschutzbestimmungen des Anbieters.
               </p>
             </div>
 

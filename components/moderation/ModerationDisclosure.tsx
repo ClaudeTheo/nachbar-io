@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import Link from 'next/link';
+import { useState, useEffect } from "react";
+import Link from "next/link";
 import {
   Dialog,
   DialogContent,
@@ -9,28 +9,25 @@ import {
   DialogTitle,
   DialogDescription,
   DialogFooter,
-} from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
 
-const STORAGE_KEY = 'moderation_disclosure_accepted';
+const STORAGE_KEY = "moderation_disclosure_accepted";
 
 /**
  * Einmaliger Hinweis auf KI-gestuetzte Inhaltsmoderation.
  * Wird vor dem ersten Beitrag angezeigt (Apple Guideline 5.1.1(i)).
  * Zustimmung in localStorage gespeichert.
  */
-export function ModerationDisclosure({
-  onAccept,
-}: {
-  onAccept?: () => void;
-}) {
+export function ModerationDisclosure({ onAccept }: { onAccept?: () => void }) {
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
     // Nur anzeigen wenn noch nicht akzeptiert
-    if (typeof window !== 'undefined') {
+    if (typeof window !== "undefined") {
       const accepted = localStorage.getItem(STORAGE_KEY);
       if (!accepted) {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setOpen(true);
       }
     }
@@ -46,7 +43,12 @@ export function ModerationDisclosure({
   if (!open) return null;
 
   return (
-    <Dialog open={open} onOpenChange={(val) => { if (!val) handleAccept(); }}>
+    <Dialog
+      open={open}
+      onOpenChange={(val) => {
+        if (!val) handleAccept();
+      }}
+    >
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>Hinweis zur Inhaltsmoderation</DialogTitle>
@@ -68,15 +70,19 @@ export function ModerationDisclosure({
             nicht zum KI-Training verwendet.
           </p>
           <p>
-            Weitere Informationen finden Sie in unserer{' '}
+            Weitere Informationen finden Sie in unserer{" "}
             <Link href="/datenschutz" className="text-quartier-green underline">
               Datenschutzerklärung
-            </Link>.
+            </Link>
+            .
           </p>
         </div>
 
         <DialogFooter>
-          <Button onClick={handleAccept} className="w-full bg-quartier-green hover:bg-quartier-green-dark">
+          <Button
+            onClick={handleAccept}
+            className="w-full bg-quartier-green hover:bg-quartier-green-dark"
+          >
             Verstanden
           </Button>
         </DialogFooter>
@@ -90,6 +96,6 @@ export function ModerationDisclosure({
  * Nutzbar in Formularen: Erst Disclosure anzeigen, dann Post erlauben.
  */
 export function isModerationDisclosureAccepted(): boolean {
-  if (typeof window === 'undefined') return true;
+  if (typeof window === "undefined") return true;
   return localStorage.getItem(STORAGE_KEY) !== null;
 }

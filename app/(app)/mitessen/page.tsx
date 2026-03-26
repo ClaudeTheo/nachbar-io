@@ -3,13 +3,13 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Plus, Clock, Users, ChevronRight, CalendarDays, MapPin } from "lucide-react";
+import { Plus, Clock, Users, MapPin } from "lucide-react";
 import { PageHeader } from "@/components/ui/page-header";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
 import { createClient } from "@/lib/supabase/client";
-import { useAuth } from '@/hooks/use-auth';
+import { useAuth } from "@/hooks/use-auth";
 import { useQuarter } from "@/lib/quarters";
 import { availableServings, isNewMeal, formatMealTime } from "@/lib/meals";
 import type { SharedMeal } from "@/lib/supabase/types";
@@ -49,13 +49,14 @@ export default function MitessenPage() {
           const mealIds = typedMeals.map((m) => m.id);
 
           // Signup-Counts in einer Abfrage laden (N+1 vermeiden)
-          const { data: signupData } = mealIds.length > 0
-            ? await supabase
-                .from("meal_signups")
-                .select("meal_id")
-                .in("meal_id", mealIds)
-                .eq("status", "confirmed")
-            : { data: [] };
+          const { data: signupData } =
+            mealIds.length > 0
+              ? await supabase
+                  .from("meal_signups")
+                  .select("meal_id")
+                  .in("meal_id", mealIds)
+                  .eq("status", "confirmed")
+              : { data: [] };
 
           const countMap = new Map<string, number>();
           for (const row of signupData ?? []) {
@@ -63,7 +64,7 @@ export default function MitessenPage() {
           }
 
           // Eigene Signups pruefen
-          let mySignups = new Map<string, string>();
+          const mySignups = new Map<string, string>();
           if (user && mealIds.length > 0) {
             const { data: myData } = await supabase
               .from("meal_signups")
@@ -78,7 +79,8 @@ export default function MitessenPage() {
           const mealsWithCounts = typedMeals.map((meal) => ({
             ...meal,
             signup_count: countMap.get(meal.id) ?? 0,
-            my_signup: (mySignups.get(meal.id) as SharedMeal["my_signup"]) ?? null,
+            my_signup:
+              (mySignups.get(meal.id) as SharedMeal["my_signup"]) ?? null,
           }));
           setMeals(mealsWithCounts);
         }
@@ -89,7 +91,7 @@ export default function MitessenPage() {
       }
     }
     load();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentQuarter?.id]);
 
   const portions = meals.filter((m) => m.type === "portion");
@@ -117,7 +119,10 @@ export default function MitessenPage() {
       {loading ? (
         <div className="mt-4 space-y-3">
           {[1, 2, 3].map((i) => (
-            <div key={i} className="rounded-lg border border-border bg-white p-4">
+            <div
+              key={i}
+              className="rounded-lg border border-border bg-white p-4"
+            >
               <div className="flex items-start gap-3">
                 <Skeleton className="h-12 w-12 rounded-lg" />
                 <div className="flex-1 space-y-2">
@@ -132,10 +137,18 @@ export default function MitessenPage() {
       ) : (
         <Tabs defaultValue="portions">
           <TabsList className="w-full">
-            <TabsTrigger value="portions" className="flex-1" data-testid="tab-portions">
+            <TabsTrigger
+              value="portions"
+              className="flex-1"
+              data-testid="tab-portions"
+            >
               🍲 Portionen ({portions.length})
             </TabsTrigger>
-            <TabsTrigger value="invitations" className="flex-1" data-testid="tab-invitations">
+            <TabsTrigger
+              value="invitations"
+              className="flex-1"
+              data-testid="tab-invitations"
+            >
               🍽️ Einladungen ({invitations.length})
             </TabsTrigger>
           </TabsList>
@@ -196,7 +209,9 @@ function MealCard({ meal }: { meal: SharedMeal }) {
         toast.error(result.error || "Anmeldung fehlgeschlagen.");
         return;
       }
-      toast.success(meal.type === "portion" ? "Portion gesichert!" : "Anmeldung bestätigt!");
+      toast.success(
+        meal.type === "portion" ? "Portion gesichert!" : "Anmeldung bestätigt!",
+      );
       // Seite neu laden fuer aktuellen Stand
       router.refresh();
       window.location.reload();
@@ -217,6 +232,7 @@ function MealCard({ meal }: { meal: SharedMeal }) {
       <div className="flex items-start gap-3">
         {/* Bild oder Emoji */}
         {meal.image_url ? (
+          // eslint-disable-next-line @next/next/no-img-element
           <img
             src={meal.image_url}
             alt={meal.title}
@@ -231,15 +247,26 @@ function MealCard({ meal }: { meal: SharedMeal }) {
         {/* Inhalt */}
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
-            <h3 className="font-semibold text-anthrazit truncate">{meal.title}</h3>
+            <h3 className="font-semibold text-anthrazit truncate">
+              {meal.title}
+            </h3>
             {isNew && !isFull && (
-              <Badge className="bg-quartier-green text-white shrink-0">Neu</Badge>
+              <Badge className="bg-quartier-green text-white shrink-0">
+                Neu
+              </Badge>
             )}
             {isFull && (
-              <Badge variant="secondary" className="shrink-0">Vergeben</Badge>
+              <Badge variant="secondary" className="shrink-0">
+                Vergeben
+              </Badge>
             )}
             {alreadySignedUp && (
-              <Badge variant="outline" className="shrink-0 border-quartier-green text-quartier-green">Angemeldet</Badge>
+              <Badge
+                variant="outline"
+                className="shrink-0 border-quartier-green text-quartier-green"
+              >
+                Angemeldet
+              </Badge>
             )}
           </div>
 
@@ -300,7 +327,15 @@ function MealCard({ meal }: { meal: SharedMeal }) {
   );
 }
 
-function EmptyState({ emoji, text, subtext }: { emoji: string; text: string; subtext?: string }) {
+function EmptyState({
+  emoji,
+  text,
+  subtext,
+}: {
+  emoji: string;
+  text: string;
+  subtext?: string;
+}) {
   return (
     <div className="py-12 text-center">
       <div className="text-5xl">{emoji}</div>

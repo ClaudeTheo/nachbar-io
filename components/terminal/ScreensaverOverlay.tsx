@@ -4,21 +4,48 @@ import { useState, useEffect, useRef } from "react";
 import { useTerminal } from "@/lib/terminal/TerminalContext";
 import { useIdleTimer } from "@/lib/terminal/useIdleTimer";
 import {
-  Sun, Cloud, CloudRain, CloudSnow, CloudLightning, CloudFog,
+  Sun,
+  Cloud,
+  CloudRain,
+  CloudSnow,
+  CloudLightning,
+  CloudFog,
 } from "lucide-react";
 
-const WEATHER_ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
-  sun: Sun, cloud: Cloud, rain: CloudRain,
-  snow: CloudSnow, storm: CloudLightning, fog: CloudFog,
+const WEATHER_ICONS: Record<
+  string,
+  React.ComponentType<{ className?: string }>
+> = {
+  sun: Sun,
+  cloud: Cloud,
+  rain: CloudRain,
+  snow: CloudSnow,
+  storm: CloudLightning,
+  fog: CloudFog,
 };
 
 const WEEKDAYS = [
-  "Sonntag", "Montag", "Dienstag", "Mittwoch",
-  "Donnerstag", "Freitag", "Samstag",
+  "Sonntag",
+  "Montag",
+  "Dienstag",
+  "Mittwoch",
+  "Donnerstag",
+  "Freitag",
+  "Samstag",
 ];
 const MONTHS = [
-  "Januar", "Februar", "März", "April", "Mai", "Juni",
-  "Juli", "August", "September", "Oktober", "November", "Dezember",
+  "Januar",
+  "Februar",
+  "März",
+  "April",
+  "Mai",
+  "Juni",
+  "Juli",
+  "August",
+  "September",
+  "Oktober",
+  "November",
+  "Dezember",
 ];
 
 const SLIDE_INTERVAL_MS = 15 * 1000;
@@ -99,7 +126,10 @@ export default function ScreensaverOverlay() {
 
   if (!isIdle) return null;
 
-  const timeStr = time.toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" });
+  const timeStr = time.toLocaleTimeString("de-DE", {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
   const dateStr = `${WEEKDAYS[time.getDay()]}, ${time.getDate()}. ${MONTHS[time.getMonth()]} ${time.getFullYear()}`;
   const weatherIcon = data?.weather?.icon ?? "cloud";
   const WeatherIcon = WEATHER_ICONS[weatherIcon] ?? Cloud;
@@ -112,12 +142,18 @@ export default function ScreensaverOverlay() {
       onClick={wake}
       onTouchStart={wake}
       className="fixed inset-0 z-40 flex flex-col cursor-pointer select-none overflow-hidden"
-      style={!hasPhotos ? {
-        background: "linear-gradient(135deg, #2D3142 0%, #3A8F6E 50%, #4CAF87 100%)",
-      } : { background: "#000" }}
+      style={
+        !hasPhotos
+          ? {
+              background:
+                "linear-gradient(135deg, #2D3142 0%, #3A8F6E 50%, #4CAF87 100%)",
+            }
+          : { background: "#000" }
+      }
     >
       {/* Foto-Hintergrund (Vollbild mit Crossfade) */}
       {hasPhotos && (
+        // eslint-disable-next-line @next/next/no-img-element
         <img
           src={currentPhoto.url!}
           alt={currentPhoto.caption || ""}
@@ -131,9 +167,7 @@ export default function ScreensaverOverlay() {
           <span className="text-[120px] font-bold text-white leading-none mb-4">
             {timeStr}
           </span>
-          <span className="text-[32px] text-white/80 mb-8">
-            {dateStr}
-          </span>
+          <span className="text-[32px] text-white/80 mb-8">{dateStr}</span>
           <div className="flex items-center gap-4 bg-white/10 rounded-2xl px-8 py-4">
             <WeatherIcon className="h-10 w-10 text-white/90" />
             <span className="text-[28px] font-semibold text-white">
@@ -154,7 +188,10 @@ export default function ScreensaverOverlay() {
         {stickies.length > 0 && (
           <div className="px-6 pt-3 flex gap-4">
             {stickies.map((s) => (
-              <div key={s.id} className="flex-1 bg-alert-amber/90 rounded-xl px-4 py-2">
+              <div
+                key={s.id}
+                className="flex-1 bg-alert-amber/90 rounded-xl px-4 py-2"
+              >
                 <p className="text-[20px] font-medium text-anthrazit truncate">
                   📌 {s.title}
                 </p>

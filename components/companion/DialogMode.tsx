@@ -1,91 +1,97 @@
-'use client'
+"use client";
 
-import { useState, useRef, useCallback, useEffect } from 'react'
-import { Mic, Square, Send } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { useDialogMode } from '@/hooks/useDialogMode'
-import { useStreamingChat } from '@/hooks/useStreamingChat'
-import { AutoListenIndicator } from './AutoListenIndicator'
-import { StreamingTextDisplay } from './StreamingTextDisplay'
-import { SpeakerAnimation } from '@/components/voice/SpeakerAnimation'
-import { createSpeechEngine } from '@/lib/voice/create-speech-engine'
-import { SilenceDetector } from '@/lib/voice/silence-detector'
-import { SentenceStreamTTS } from '@/lib/voice/sentence-stream-tts'
-import type { SpeechEngine } from '@/lib/voice/speech-engine'
+import { useState, useRef, useCallback, useEffect } from "react";
+import { Mic, Square, Send } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { useDialogMode } from "@/hooks/useDialogMode";
+import { useStreamingChat } from "@/hooks/useStreamingChat";
+import { AutoListenIndicator } from "./AutoListenIndicator";
+import { StreamingTextDisplay } from "./StreamingTextDisplay";
+import { SpeakerAnimation } from "@/components/voice/SpeakerAnimation";
+import { createSpeechEngine } from "@/lib/voice/create-speech-engine";
+import { SilenceDetector } from "@/lib/voice/silence-detector";
+import { SentenceStreamTTS } from "@/lib/voice/sentence-stream-tts";
+import type { SpeechEngine } from "@/lib/voice/speech-engine";
 
 interface DialogModeProps {
-  onMessage?: (role: 'user' | 'assistant', content: string) => void
-  onMicError?: () => void // Callback wenn Mikrofon verweigert -> Tab-Wechsel zu Chat
+  onMessage?: (role: "user" | "assistant", content: string) => void;
+  onMicError?: () => void; // Callback wenn Mikrofon verweigert -> Tab-Wechsel zu Chat
 }
 
 // DialogMode — Sprach-Dialog-Modus mit State-Machine
 // Nutzt useDialogMode fuer States, SilenceDetector, SentenceStreamTTS
 export function DialogMode({ onMessage, onMicError }: DialogModeProps) {
-  const dialog = useDialogMode()
-  const { streamingText, isStreaming, sendStreaming } = useStreamingChat()
-  const [textInput, setTextInput] = useState('')
-  const [currentResponse, setCurrentResponse] = useState('')
-  const [micBlocked, setMicBlocked] = useState(false)
+  const dialog = useDialogMode();
+  const { streamingText, isStreaming, sendStreaming } = useStreamingChat();
+  const [textInput, setTextInput] = useState("");
+  const [currentResponse, setCurrentResponse] = useState("");
+  const [micBlocked, setMicBlocked] = useState(false);
 
-  const engineRef = useRef<SpeechEngine | null>(null)
-  const silenceRef = useRef<SilenceDetector | null>(null)
-  const ttsRef = useRef<SentenceStreamTTS | null>(null)
-  const messagesRef = useRef<Array<{ role: 'user' | 'assistant'; content: string }>>([])
+  const engineRef = useRef<SpeechEngine | null>(null);
+  const silenceRef = useRef<SilenceDetector | null>(null);
+  const ttsRef = useRef<SentenceStreamTTS | null>(null);
+  const messagesRef = useRef<
+    Array<{ role: "user" | "assistant"; content: string }>
+  >([]);
 
   // Speech Engine einmalig initialisieren
   useEffect(() => {
-    engineRef.current = createSpeechEngine()
-    return () => engineRef.current?.cleanup()
-  }, [])
+    engineRef.current = createSpeechEngine();
+    return () => engineRef.current?.cleanup();
+  }, []);
 
   // Streaming-Text verarbeiten: Saetze extrahieren und an TTS weiterleiten
-  const prevStreamingRef = useRef(false)
+  const prevStreamingRef = useRef(false);
   useEffect(() => {
     if (isStreaming && streamingText) {
-      setCurrentResponse(streamingText)
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setCurrentResponse(streamingText);
     }
 
     // Stream beendet
     if (prevStreamingRef.current && !isStreaming && streamingText) {
-      setCurrentResponse(streamingText)
-      onMessage?.('assistant', streamingText)
-      messagesRef.current.push({ role: 'assistant', content: streamingText })
+      setCurrentResponse(streamingText);
+      onMessage?.("assistant", streamingText);
+      messagesRef.current.push({ role: "assistant", content: streamingText });
 
       // TTS fuer restlichen Text
       if (ttsRef.current) {
-        const remaining = ttsRef.current.flush()
+        const remaining = ttsRef.current.flush();
         if (remaining.length > 0) {
-          ttsRef.current.playQueue(remaining)
+          ttsRef.current.playQueue(remaining);
         }
       }
 
-      dialog.setResponse(streamingText)
+      dialog.setResponse(streamingText);
     }
-    prevStreamingRef.current = isStreaming
-  }, [isStreaming, streamingText, dialog, onMessage])
+    prevStreamingRef.current = isStreaming;
+  }, [isStreaming, streamingText, dialog, onMessage]);
 
   // Nachricht an API senden
-  const sendMessage = useCallback(async (text: string) => {
-    onMessage?.('user', text)
-    messagesRef.current.push({ role: 'user', content: text })
-    setCurrentResponse('')
+  const sendMessage = useCallback(
+    async (text: string) => {
+      onMessage?.("user", text);
+      messagesRef.current.push({ role: "user", content: text });
+      setCurrentResponse("");
 
-    // TTS vorbereiten
-    ttsRef.current = new SentenceStreamTTS({
-      onSpeakingDone: () => dialog.setSpeakingDone()
-    })
+      // TTS vorbereiten
+      ttsRef.current = new SentenceStreamTTS({
+        onSpeakingDone: () => dialog.setSpeakingDone(),
+      });
 
-    dialog.handleTranscript(text)
+      dialog.handleTranscript(text);
 
-    // Falls Abschied erkannt, nicht senden
-    if (dialog.isFarewell(text)) return
+      // Falls Abschied erkannt, nicht senden
+      if (dialog.isFarewell(text)) return;
 
-    await sendStreaming(messagesRef.current)
-  }, [dialog, onMessage, sendStreaming])
+      await sendStreaming(messagesRef.current);
+    },
+    [dialog, onMessage, sendStreaming],
+  );
 
   // Dialog starten
   const handleStart = useCallback(() => {
-    dialog.startDialog()
+    dialog.startDialog();
 
     // Silence Detector starten
     silenceRef.current = new SilenceDetector({
@@ -93,59 +99,59 @@ export function DialogMode({ onMessage, onMicError }: DialogModeProps) {
       silenceDurationMs: 3000,
       onSilence: () => {
         // Nach 3s Stille: "Noch etwas?" fragen
-        dialog.triggerSilenceCheck()
+        dialog.triggerSilenceCheck();
       },
       onLevelChange: (level) => {
-        dialog.setAudioLevel(level)
-      }
-    })
+        dialog.setAudioLevel(level);
+      },
+    });
 
     // Spracheingabe starten wenn verfuegbar
-    const engine = engineRef.current
+    const engine = engineRef.current;
     if (engine) {
       engine.startListening({
         onTranscript: (text) => {
           if (text.trim()) {
-            sendMessage(text.trim())
+            sendMessage(text.trim());
           }
         },
         onAudioLevel: (level) => {
-          silenceRef.current?.feedAudioLevel(level)
+          silenceRef.current?.feedAudioLevel(level);
         },
         onStateChange: () => {},
         onError: (msg) => {
           // Mikrofon verweigert -> Fallback auf Text-Chat
-          if (msg.includes('not-allowed') || msg.includes('Mikrofon')) {
-            setMicBlocked(true)
-            dialog.stopDialog()
-            onMicError?.()
+          if (msg.includes("not-allowed") || msg.includes("Mikrofon")) {
+            setMicBlocked(true);
+            dialog.stopDialog();
+            onMicError?.();
           }
         },
-      })
+      });
     }
-  }, [dialog, sendMessage, onMicError])
+  }, [dialog, sendMessage, onMicError]);
 
   // Dialog stoppen
   const handleStop = useCallback(() => {
-    dialog.stopDialog()
-    engineRef.current?.stopListening()
-    silenceRef.current?.cleanup()
-    silenceRef.current = null
-    ttsRef.current?.stop()
-    ttsRef.current = null
-    setCurrentResponse('')
-  }, [dialog])
+    dialog.stopDialog();
+    engineRef.current?.stopListening();
+    silenceRef.current?.cleanup();
+    silenceRef.current = null;
+    ttsRef.current?.stop();
+    ttsRef.current = null;
+    setCurrentResponse("");
+  }, [dialog]);
 
   // Text-Fallback: Enter zum Senden
   const handleTextSubmit = useCallback(() => {
-    const text = textInput.trim()
-    if (!text) return
-    setTextInput('')
-    sendMessage(text)
-  }, [textInput, sendMessage])
+    const text = textInput.trim();
+    if (!text) return;
+    setTextInput("");
+    sendMessage(text);
+  }, [textInput, sendMessage]);
 
   // --- Render ---
-  const isActive = dialog.state !== 'idle'
+  const isActive = dialog.state !== "idle";
 
   return (
     <div className="flex h-full flex-col items-center justify-center gap-6 p-4">
@@ -161,7 +167,10 @@ export function DialogMode({ onMessage, onMicError }: DialogModeProps) {
         </Button>
       )}
       {!isActive && micBlocked && (
-        <div className="w-full max-w-sm rounded-2xl border border-[#F59E0B]/30 bg-[#F59E0B]/5 p-4 text-center" data-testid="mic-blocked-hint">
+        <div
+          className="w-full max-w-sm rounded-2xl border border-[#F59E0B]/30 bg-[#F59E0B]/5 p-4 text-center"
+          data-testid="mic-blocked-hint"
+        >
           <p className="text-sm font-medium text-[#2D3142]">
             Mikrofon nicht verfügbar.
           </p>
@@ -175,27 +184,35 @@ export function DialogMode({ onMessage, onMicError }: DialogModeProps) {
       {isActive && (
         <div className="flex w-full max-w-sm flex-col items-center gap-4">
           {/* State: greeting/speaking — KI spricht */}
-          {(dialog.state === 'greeting' || dialog.state === 'speaking') && (
+          {(dialog.state === "greeting" || dialog.state === "speaking") && (
             <div className="flex w-full flex-col items-center gap-3">
               <SpeakerAnimation isPlaying={true} />
               {currentResponse && (
                 <div className="w-full rounded-2xl border border-border bg-white px-4 py-3 text-sm text-[#2D3142]">
-                  <StreamingTextDisplay text={currentResponse} isStreaming={isStreaming} />
+                  <StreamingTextDisplay
+                    text={currentResponse}
+                    isStreaming={isStreaming}
+                  />
                 </div>
               )}
-              {dialog.state === 'greeting' && !currentResponse && (
-                <p className="text-sm text-[#2D3142]/70">Hallo, wie kann ich Ihnen helfen?</p>
+              {dialog.state === "greeting" && !currentResponse && (
+                <p className="text-sm text-[#2D3142]/70">
+                  Hallo, wie kann ich Ihnen helfen?
+                </p>
               )}
             </div>
           )}
 
           {/* State: listening — Zuhoeren */}
-          {dialog.state === 'listening' && (
-            <AutoListenIndicator isListening={true} audioLevel={dialog.audioLevel} />
+          {dialog.state === "listening" && (
+            <AutoListenIndicator
+              isListening={true}
+              audioLevel={dialog.audioLevel}
+            />
           )}
 
           {/* State: processing — Verarbeiten */}
-          {dialog.state === 'processing' && (
+          {dialog.state === "processing" && (
             <div className="flex flex-col items-center gap-3">
               <div className="h-12 w-12 animate-spin rounded-full border-4 border-[#4CAF87]/30 border-t-[#4CAF87]" />
               <p className="text-sm text-[#2D3142]/70">Verarbeite...</p>
@@ -203,7 +220,7 @@ export function DialogMode({ onMessage, onMicError }: DialogModeProps) {
           )}
 
           {/* State: silence_check */}
-          {dialog.state === 'silence_check' && (
+          {dialog.state === "silence_check" && (
             <p className="text-base font-medium text-[#2D3142]">Noch etwas?</p>
           )}
 
@@ -223,7 +240,7 @@ export function DialogMode({ onMessage, onMicError }: DialogModeProps) {
               type="text"
               value={textInput}
               onChange={(e) => setTextInput(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && handleTextSubmit()}
+              onKeyDown={(e) => e.key === "Enter" && handleTextSubmit()}
               placeholder="Text eingeben..."
               className="flex-1 rounded-xl border border-border bg-white px-3 py-2 text-sm focus:border-[#4CAF87] focus:outline-none focus:ring-1 focus:ring-[#4CAF87]"
             />
@@ -240,5 +257,5 @@ export function DialogMode({ onMessage, onMicError }: DialogModeProps) {
         </div>
       )}
     </div>
-  )
+  );
 }

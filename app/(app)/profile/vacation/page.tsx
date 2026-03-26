@@ -15,7 +15,7 @@ import type { VacationMode } from "@/lib/supabase/types";
 import { toast } from "sonner";
 
 export default function VacationPage() {
-  const router = useRouter();
+  const _router = useRouter();
   const { user } = useAuth();
   const [vacations, setVacations] = useState<VacationMode[]>([]);
   const [loading, setLoading] = useState(true);
@@ -42,6 +42,7 @@ export default function VacationPage() {
 
   useEffect(() => {
     if (!user) return;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     loadVacations(user.id);
   }, [user, loadVacations]);
 
@@ -86,12 +87,14 @@ export default function VacationPage() {
   const today = new Date().toISOString().split("T")[0];
 
   // Aktive/vergangene trennen
-  const active = vacations.filter(v => v.end_date >= today);
-  const past = vacations.filter(v => v.end_date < today);
+  const active = vacations.filter((v) => v.end_date >= today);
+  const past = vacations.filter((v) => v.end_date < today);
 
   function formatDate(dateStr: string) {
     return new Date(dateStr).toLocaleDateString("de-DE", {
-      day: "2-digit", month: "2-digit", year: "numeric",
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
     });
   }
 
@@ -120,8 +123,9 @@ export default function VacationPage() {
           <div className="text-sm text-blue-800">
             <p className="font-medium">Wie funktioniert der Urlaub-Modus?</p>
             <p className="mt-1 text-blue-700">
-              Ihr Haus wird auf der Quartierskarte blau markiert. So wissen Ihre Nachbarn,
-              dass sie ein Auge auf Ihr Zuhause werfen sollten und verdächtige Dinge eher auffallen.
+              Ihr Haus wird auf der Quartierskarte blau markiert. So wissen Ihre
+              Nachbarn, dass sie ein Auge auf Ihr Zuhause werfen sollten und
+              verdächtige Dinge eher auffallen.
             </p>
           </div>
         </div>
@@ -138,11 +142,15 @@ export default function VacationPage() {
         </Button>
       ) : (
         <div className="mb-4 rounded-lg border border-border bg-white p-4">
-          <h3 className="mb-3 text-sm font-semibold text-anthrazit">Neuer Urlaub</h3>
+          <h3 className="mb-3 text-sm font-semibold text-anthrazit">
+            Neuer Urlaub
+          </h3>
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="mb-1 block text-xs font-medium text-muted-foreground">Von</label>
+              <label className="mb-1 block text-xs font-medium text-muted-foreground">
+                Von
+              </label>
               <Input
                 type="date"
                 value={startDate}
@@ -151,7 +159,9 @@ export default function VacationPage() {
               />
             </div>
             <div>
-              <label className="mb-1 block text-xs font-medium text-muted-foreground">Bis</label>
+              <label className="mb-1 block text-xs font-medium text-muted-foreground">
+                Bis
+              </label>
               <Input
                 type="date"
                 value={endDate}
@@ -181,11 +191,17 @@ export default function VacationPage() {
               onChange={(e) => setNotifyNeighbors(e.target.checked)}
               className="h-4 w-4 rounded border-gray-300"
             />
-            <span className="text-muted-foreground">Nachbarn auf der Karte informieren</span>
+            <span className="text-muted-foreground">
+              Nachbarn auf der Karte informieren
+            </span>
           </label>
 
           <div className="mt-3 flex justify-end gap-2">
-            <Button variant="ghost" size="sm" onClick={() => setShowForm(false)}>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setShowForm(false)}
+            >
               Abbrechen
             </Button>
             <Button
@@ -266,16 +282,23 @@ function VacationCard({
   formatDate: (d: string) => string;
 }) {
   return (
-    <div className={`rounded-lg border p-3 ${isActive ? "border-blue-200 bg-blue-50/50" : "border-border bg-white"}`}>
+    <div
+      className={`rounded-lg border p-3 ${isActive ? "border-blue-200 bg-blue-50/50" : "border-border bg-white"}`}
+    >
       <div className="flex items-start justify-between gap-2">
         <div className="flex items-center gap-2">
-          <Calendar className={`h-4 w-4 ${isActive ? "text-blue-600" : "text-muted-foreground"}`} />
+          <Calendar
+            className={`h-4 w-4 ${isActive ? "text-blue-600" : "text-muted-foreground"}`}
+          />
           <div>
             <p className="text-sm font-medium text-anthrazit">
-              {formatDate(vacation.start_date)} — {formatDate(vacation.end_date)}
+              {formatDate(vacation.start_date)} —{" "}
+              {formatDate(vacation.end_date)}
             </p>
             {vacation.note && (
-              <p className="mt-0.5 text-xs text-muted-foreground">{vacation.note}</p>
+              <p className="mt-0.5 text-xs text-muted-foreground">
+                {vacation.note}
+              </p>
             )}
           </div>
         </div>

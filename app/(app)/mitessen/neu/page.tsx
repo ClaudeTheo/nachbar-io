@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { createClient } from "@/lib/supabase/client";
-import { useAuth } from '@/hooks/use-auth';
+import { useAuth } from "@/hooks/use-auth";
 import { useQuarter } from "@/lib/quarters";
 import { calculateExpiry } from "@/lib/meals";
 import { validateImageFile, compressImage, MAX_DIMENSION } from "@/lib/storage";
@@ -98,7 +98,9 @@ export default function NewMealPage() {
           if (uploadError) {
             console.error("Upload-Fehler:", uploadError);
           } else {
-            const { data: urlData } = supabase.storage.from("images").getPublicUrl(path);
+            const { data: urlData } = supabase.storage
+              .from("images")
+              .getPublicUrl(path);
             imageUrl = urlData.publicUrl;
           }
         } catch (err) {
@@ -108,21 +110,23 @@ export default function NewMealPage() {
 
       const expiresAt = calculateExpiry(mealType, mealDate, mealTime || null);
 
-      const { error: insertError } = await supabase.from("shared_meals").insert({
-        user_id: user.id,
-        quarter_id: currentQuarter?.id,
-        type: mealType,
-        title: title.trim(),
-        description: description.trim() || null,
-        image_url: imageUrl,
-        servings: parseInt(servings, 10),
-        cost_hint: costHint.trim() || null,
-        pickup_info: pickupInfo.trim() || null,
-        meal_date: mealDate,
-        meal_time: mealTime || null,
-        expires_at: expiresAt,
-        status: "active",
-      });
+      const { error: insertError } = await supabase
+        .from("shared_meals")
+        .insert({
+          user_id: user.id,
+          quarter_id: currentQuarter?.id,
+          type: mealType,
+          title: title.trim(),
+          description: description.trim() || null,
+          image_url: imageUrl,
+          servings: parseInt(servings, 10),
+          cost_hint: costHint.trim() || null,
+          pickup_info: pickupInfo.trim() || null,
+          meal_date: mealDate,
+          meal_time: mealTime || null,
+          expires_at: expiresAt,
+          status: "active",
+        });
 
       if (insertError) {
         console.error("Erstellung Fehler:", insertError);
@@ -131,9 +135,10 @@ export default function NewMealPage() {
         return;
       }
 
-      toast.success(mealType === "portion"
-        ? "Portion erfolgreich angeboten!"
-        : "Einladung erfolgreich erstellt!"
+      toast.success(
+        mealType === "portion"
+          ? "Portion erfolgreich angeboten!"
+          : "Einladung erfolgreich erstellt!",
       );
       setStep(4);
     } catch (err) {
@@ -176,7 +181,8 @@ export default function NewMealPage() {
       {step === 1 && (
         <div className="space-y-4">
           <p className="text-muted-foreground">
-            Wählen Sie, ob Sie Portionen abgeben oder zum Essen einladen möchten.
+            Wählen Sie, ob Sie Portionen abgeben oder zum Essen einladen
+            möchten.
           </p>
           <div className="grid grid-cols-1 gap-4">
             <button
@@ -186,7 +192,9 @@ export default function NewMealPage() {
             >
               <span className="text-4xl">🍲</span>
               <div className="text-left">
-                <span className="text-lg font-semibold text-anthrazit">Portionen abgeben</span>
+                <span className="text-lg font-semibold text-anthrazit">
+                  Portionen abgeben
+                </span>
                 <p className="text-sm text-muted-foreground mt-0.5">
                   Schnell und spontan — Nachbarn holen ab
                 </p>
@@ -199,7 +207,9 @@ export default function NewMealPage() {
             >
               <span className="text-4xl">🍽️</span>
               <div className="text-left">
-                <span className="text-lg font-semibold text-anthrazit">Zum Essen einladen</span>
+                <span className="text-lg font-semibold text-anthrazit">
+                  Zum Essen einladen
+                </span>
                 <p className="text-sm text-muted-foreground mt-0.5">
                   Geplant und gesellig — gemeinsam am Tisch
                 </p>
@@ -220,7 +230,11 @@ export default function NewMealPage() {
               id="title"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              placeholder={mealType === "portion" ? "z.B. Lasagne, 3 Portionen" : "z.B. Grillabend im Garten"}
+              placeholder={
+                mealType === "portion"
+                  ? "z.B. Lasagne, 3 Portionen"
+                  : "z.B. Grillabend im Garten"
+              }
               required
               maxLength={100}
               data-testid="input-title"
@@ -228,16 +242,20 @@ export default function NewMealPage() {
           </div>
 
           <div>
-            <label htmlFor="description" className="mb-1 block text-sm font-medium">
+            <label
+              htmlFor="description"
+              className="mb-1 block text-sm font-medium"
+            >
               Beschreibung (optional)
             </label>
             <Textarea
               id="description"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              placeholder={mealType === "portion"
-                ? "z.B. Vegetarisch, enthält Nüsse"
-                : "z.B. Jeder bringt etwas mit, Getränke sind da"
+              placeholder={
+                mealType === "portion"
+                  ? "z.B. Vegetarisch, enthält Nüsse"
+                  : "z.B. Jeder bringt etwas mit, Getränke sind da"
               }
               rows={3}
               maxLength={500}
@@ -249,7 +267,10 @@ export default function NewMealPage() {
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label htmlFor="servings" className="mb-1 block text-sm font-medium">
+              <label
+                htmlFor="servings"
+                className="mb-1 block text-sm font-medium"
+              >
                 {mealType === "portion" ? "Portionen *" : "Plätze *"}
               </label>
               <Input
@@ -264,7 +285,10 @@ export default function NewMealPage() {
               />
             </div>
             <div>
-              <label htmlFor="meal-date" className="mb-1 block text-sm font-medium">
+              <label
+                htmlFor="meal-date"
+                className="mb-1 block text-sm font-medium"
+              >
                 Datum *
               </label>
               <Input
@@ -280,7 +304,10 @@ export default function NewMealPage() {
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label htmlFor="meal-time" className="mb-1 block text-sm font-medium">
+              <label
+                htmlFor="meal-time"
+                className="mb-1 block text-sm font-medium"
+              >
                 {mealType === "portion" ? "Ab wann abholen?" : "Uhrzeit"}
               </label>
               <Input
@@ -291,7 +318,10 @@ export default function NewMealPage() {
               />
             </div>
             <div>
-              <label htmlFor="cost-hint" className="mb-1 block text-sm font-medium">
+              <label
+                htmlFor="cost-hint"
+                className="mb-1 block text-sm font-medium"
+              >
                 Unkostenbeitrag
               </label>
               <Input
@@ -306,7 +336,10 @@ export default function NewMealPage() {
 
           {mealType === "portion" && (
             <div>
-              <label htmlFor="pickup-info" className="mb-1 block text-sm font-medium">
+              <label
+                htmlFor="pickup-info"
+                className="mb-1 block text-sm font-medium"
+              >
                 Abholinfo
               </label>
               <Input
@@ -321,9 +354,12 @@ export default function NewMealPage() {
 
           {/* Foto-Upload */}
           <div>
-            <label className="mb-1 block text-sm font-medium">Foto (optional)</label>
+            <label className="mb-1 block text-sm font-medium">
+              Foto (optional)
+            </label>
             {imagePreview ? (
               <div className="relative inline-block">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={imagePreview}
                   alt="Vorschau"
@@ -355,7 +391,11 @@ export default function NewMealPage() {
           </div>
 
           <div className="flex gap-3 pt-2">
-            <Button variant="outline" onClick={() => setStep(1)} className="flex-1">
+            <Button
+              variant="outline"
+              onClick={() => setStep(1)}
+              className="flex-1"
+            >
               Zurück
             </Button>
             <Button
@@ -373,17 +413,22 @@ export default function NewMealPage() {
       {/* Schritt 3: Vorschau */}
       {step === 3 && (
         <div className="space-y-4">
-          <p className="text-muted-foreground">Bitte prüfen Sie Ihre Angaben:</p>
+          <p className="text-muted-foreground">
+            Bitte prüfen Sie Ihre Angaben:
+          </p>
 
           <div className="rounded-xl border-2 border-border bg-white p-5 space-y-3">
             <div className="flex items-center gap-2">
-              <span className="text-2xl">{mealType === "portion" ? "🍲" : "🍽️"}</span>
+              <span className="text-2xl">
+                {mealType === "portion" ? "🍲" : "🍽️"}
+              </span>
               <span className="text-sm font-medium text-muted-foreground">
                 {mealType === "portion" ? "Portionen abgeben" : "Einladung"}
               </span>
             </div>
 
             {imagePreview && (
+              // eslint-disable-next-line @next/next/no-img-element
               <img
                 src={imagePreview}
                 alt="Vorschau"
@@ -400,11 +445,14 @@ export default function NewMealPage() {
             <div className="flex flex-wrap gap-3 text-sm">
               <span className="font-medium text-anthrazit">
                 {mealDate
-                  ? new Date(mealDate + "T00:00:00").toLocaleDateString("de-DE", {
-                      weekday: "long",
-                      day: "numeric",
-                      month: "long",
-                    })
+                  ? new Date(mealDate + "T00:00:00").toLocaleDateString(
+                      "de-DE",
+                      {
+                        weekday: "long",
+                        day: "numeric",
+                        month: "long",
+                      },
+                    )
                   : ""}
               </span>
               {mealTime && (
@@ -413,7 +461,8 @@ export default function NewMealPage() {
             </div>
 
             <p className="text-sm text-muted-foreground">
-              {parseInt(servings, 10)} {mealType === "portion" ? "Portionen" : "Plätze"}
+              {parseInt(servings, 10)}{" "}
+              {mealType === "portion" ? "Portionen" : "Plätze"}
             </p>
 
             {costHint && (
@@ -430,7 +479,11 @@ export default function NewMealPage() {
           </div>
 
           <div className="flex gap-3">
-            <Button variant="outline" onClick={() => setStep(2)} className="flex-1">
+            <Button
+              variant="outline"
+              onClick={() => setStep(2)}
+              className="flex-1"
+            >
               Zurück
             </Button>
             <Button
@@ -452,7 +505,9 @@ export default function NewMealPage() {
             <Check className="h-8 w-8 text-quartier-green" />
           </div>
           <h2 className="text-lg font-bold text-anthrazit">
-            {mealType === "portion" ? "Portion angeboten!" : "Einladung erstellt!"}
+            {mealType === "portion"
+              ? "Portion angeboten!"
+              : "Einladung erstellt!"}
           </h2>
           <p className="mt-2 text-muted-foreground">
             Ihre Nachbarn können sich jetzt anmelden.

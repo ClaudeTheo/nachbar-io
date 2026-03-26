@@ -2,8 +2,7 @@
 // Neuer Flow: Entry → [Invite-Code ODER Adresse] → Name+Email → Magic Link gesendet
 import { test, expect } from "@playwright/test";
 import { RegisterPage, LoginPage } from "../pages";
-import { createConsoleErrorCollector } from "../helpers/observer";
-import { TEST_AGENTS, TIMEOUTS } from "../helpers/test-config";
+import { TEST_AGENTS } from "../helpers/test-config";
 
 test.describe("S1: Onboarding — 2-Schritt Magic-Link-Flow", () => {
   test("S1.1 — Registrierung via Invite-Code bis Magic-Link-Bestaetigung", async ({

@@ -1,10 +1,10 @@
 // lib/feature-flags.ts
 // Nachbar.io — DB-getriebenes Feature-Flag System
 // Ersetzt statische Feature-Gates durch dynamische, aus der DB geladene Flags.
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { createClient } from '@/lib/supabase/client';
+import { useState, useEffect } from "react";
+import { createClient } from "@/lib/supabase/client";
 
 // --- Typen ---
 
@@ -53,8 +53,10 @@ export async function getFeatureFlags(): Promise<FeatureFlag[]> {
 
   const supabase = createClient();
   const { data, error } = await supabase
-    .from('feature_flags')
-    .select('key, enabled, required_roles, required_plans, enabled_quarters, admin_override');
+    .from("feature_flags")
+    .select(
+      "key, enabled, required_roles, required_plans, enabled_quarters, admin_override",
+    );
 
   if (error || !data) {
     // Bei Fehler: leeres Array zurueckgeben (kein Feature aktiv)
@@ -67,7 +69,9 @@ export async function getFeatureFlags(): Promise<FeatureFlag[]> {
     enabled: Boolean(row.enabled),
     required_roles: Array.isArray(row.required_roles) ? row.required_roles : [],
     required_plans: Array.isArray(row.required_plans) ? row.required_plans : [],
-    enabled_quarters: Array.isArray(row.enabled_quarters) ? row.enabled_quarters : [],
+    enabled_quarters: Array.isArray(row.enabled_quarters)
+      ? row.enabled_quarters
+      : [],
     admin_override: Boolean(row.admin_override),
   }));
 
@@ -90,7 +94,10 @@ export async function getFeatureFlags(): Promise<FeatureFlag[]> {
  * 7. enabled_quarters nicht leer + User-Quartier nicht enthalten → false
  * 8. Sonst → true
  */
-export async function checkFeatureAccess(flagKey: string, user: UserContext): Promise<boolean> {
+export async function checkFeatureAccess(
+  flagKey: string,
+  user: UserContext,
+): Promise<boolean> {
   const flags = await getFeatureFlags();
   const flag = flags.find((f) => f.key === flagKey);
 
@@ -101,19 +108,25 @@ export async function checkFeatureAccess(flagKey: string, user: UserContext): Pr
   if (!flag.enabled) return false;
 
   // 3. PILOT_MODE Bypass
-  const pilotMode = process.env.NEXT_PUBLIC_PILOT_MODE === 'true';
+  const pilotMode = process.env.NEXT_PUBLIC_PILOT_MODE === "true";
   if (pilotMode) return true;
 
   // 4. Admin-Override
-  if (flag.admin_override && user.role === 'admin') return true;
+  if (flag.admin_override && user.role === "admin") return true;
 
   // 5. Rollen-Pruefung
-  if (flag.required_roles.length > 0 && !flag.required_roles.includes(user.role)) {
+  if (
+    flag.required_roles.length > 0 &&
+    !flag.required_roles.includes(user.role)
+  ) {
     return false;
   }
 
   // 6. Plan-Pruefung
-  if (flag.required_plans.length > 0 && !flag.required_plans.includes(user.plan)) {
+  if (
+    flag.required_plans.length > 0 &&
+    !flag.required_plans.includes(user.plan)
+  ) {
     return false;
   }
 
@@ -144,7 +157,10 @@ export function useFeatureFlag(flagKey: string, user: UserContext): boolean {
       if (!cancelled) setEnabled(result);
     });
 
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [flagKey, user.role, user.plan, user.quarter_id]);
 
   return enabled;

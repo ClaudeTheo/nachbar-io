@@ -103,13 +103,13 @@ describe("POST /api/register/complete — Bugfixes", () => {
         error: null,
       });
 
-      // Profil-Insert schlaegt fehl
+      // Profil-Upsert schlaegt fehl
       const usersInsert = vi.fn().mockResolvedValue({
         error: { message: "Duplicate key violation" },
       });
       mockFrom.mockImplementation((table: string) => {
         if (table === "users") {
-          return { insert: usersInsert };
+          return { upsert: usersInsert };
         }
         // Fallback fuer andere Tabellen
         return chainBuilder();
@@ -137,7 +137,7 @@ describe("POST /api/register/complete — Bugfixes", () => {
       mockFrom.mockImplementation((table: string) => {
         if (table === "users") {
           return {
-            insert: vi.fn().mockResolvedValue({
+            upsert: vi.fn().mockResolvedValue({
               error: { message: "DB Error" },
             }),
           };
@@ -193,7 +193,7 @@ describe("POST /api/register/complete — Bugfixes", () => {
                 maybeSingle: profileCheck,
               }),
             }),
-            insert: profileInsert,
+            upsert: profileInsert,
           };
         }
         if (table === "household_members") {
@@ -222,6 +222,7 @@ describe("POST /api/register/complete — Bugfixes", () => {
       // Profil muss mit der orphan-ID erstellt worden sein
       expect(profileInsert).toHaveBeenCalledWith(
         expect.objectContaining({ id: "orphan-user-1" }),
+        { onConflict: "id" },
       );
     });
 
@@ -317,7 +318,7 @@ describe("POST /api/register/complete — Bugfixes", () => {
           };
         }
         if (table === "users") {
-          return { insert: profileInsert };
+          return { upsert: profileInsert };
         }
         if (table === "household_members") {
           return { insert: memberInsert };
@@ -401,7 +402,7 @@ describe("POST /api/register/complete — Bugfixes", () => {
           };
         }
         if (table === "users") {
-          return { insert: profileInsert };
+          return { upsert: profileInsert };
         }
         if (table === "household_members") {
           return { insert: memberInsert };
@@ -451,7 +452,7 @@ describe("POST /api/register/complete — Bugfixes", () => {
 
       mockFrom.mockImplementation((table: string) => {
         if (table === "users") {
-          return { insert: profileInsert };
+          return { upsert: profileInsert };
         }
         return chainBuilder();
       });
@@ -479,6 +480,7 @@ describe("POST /api/register/complete — Bugfixes", () => {
           display_name: "Geo User",
           ui_mode: "senior",
         }),
+        { onConflict: "id" },
       );
     });
   });

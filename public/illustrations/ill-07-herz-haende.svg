@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 200" fill="none" stroke="#2D3142" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+  <!-- Haende (Schale) -->
+  <path d="M120 130 Q130 160 200 165 Q270 160 280 130" stroke-width="2" />
+  <path d="M120 130 Q110 120 115 110 Q120 100 135 105" />
+  <path d="M280 130 Q290 120 285 110 Q280 100 265 105" />
+  <!-- Herz -->
+  <path d="M170 85 Q170 60 195 60 Q210 60 210 80 Q210 60 225 60 Q250 60 250 85 Q250 110 210 135 Q170 110 170 85 Z" stroke="#EF4444" stroke-width="2" fill="none" />
+  <!-- Kleine Herzen drumherum -->
+  <path d="M130 70 Q132 64 136 70 Q140 64 142 70 Q142 76 136 82 Q130 76 130 70" stroke="#EF4444" stroke-width="1" opacity="0.5" />
+  <path d="M260 75 Q262 69 266 75 Q270 69 272 75 Q272 81 266 87 Q260 81 260 75" stroke="#EF4444" stroke-width="1" opacity="0.5" />
+  <!-- Strahlen -->
+  <line x1="210" y1="45" x2="210" y2="35" stroke="#F59E0B" stroke-width="1" opacity="0.6" />
+  <line x1="180" y1="50" x2="175" y2="40" stroke="#F59E0B" stroke-width="1" opacity="0.6" />
+  <line x1="240" y1="50" x2="245" y2="40" stroke="#F59E0B" stroke-width="1" opacity="0.6" />
+</svg>

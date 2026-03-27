@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 200" fill="none" stroke="#2D3142" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+  <!-- Baum -->
+  <line x1="280" y1="160" x2="280" y2="60" />
+  <circle cx="260" cy="50" r="25" fill="none" stroke="#4CAF87" stroke-width="1.5" />
+  <circle cx="295" cy="45" r="20" fill="none" stroke="#4CAF87" stroke-width="1.5" />
+  <circle cx="275" cy="30" r="18" fill="none" stroke="#4CAF87" stroke-width="1.5" />
+  <!-- Bank -->
+  <rect x="80" y="120" width="120" height="6" rx="3" />
+  <path d="M90 126 L85 126 L85 100 L90 100" />
+  <path d="M190 126 L195 126 L195 100 L190 100" />
+  <rect x="80" y="95" width="120" height="6" rx="3" />
+  <line x1="95" y1="126" x2="90" y2="155" />
+  <line x1="185" y1="126" x2="190" y2="155" />
+  <!-- Boden -->
+  <line x1="40" y1="160" x2="360" y2="160" stroke-dasharray="4 4" opacity="0.4" />
+  <!-- Vogel -->
+  <path d="M120 70 Q125 62 130 70" stroke="#4CAF87" stroke-width="1.5" />
+  <path d="M130 70 Q135 62 140 70" stroke="#4CAF87" stroke-width="1.5" />
+</svg>

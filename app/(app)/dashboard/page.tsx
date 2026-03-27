@@ -8,6 +8,10 @@ import { CategoryIcon } from "@/components/CategoryIcon";
 import { GREETING_ICON_MAP } from "@/lib/category-icons";
 import { AlertCard } from "@/components/AlertCard";
 import { NewsCard } from "@/components/NewsCard";
+import { isUxRedesignEnabled } from "@/lib/ux-flags";
+import { DashboardHero } from "@/components/dashboard/DashboardHero";
+import { QuickActions } from "@/components/dashboard/QuickActions";
+import { DiscoverGrid } from "@/components/dashboard/DiscoverGrid";
 import { PullToRefresh } from "@/components/PullToRefresh";
 import { ReputationBadge } from "@/components/ReputationBadge";
 import { ProfileCompletionBanner } from "@/components/ProfileCompletionBanner";
@@ -288,76 +292,85 @@ export default function DashboardPage() {
       <PullToRefresh onRefresh={loadDashboard}>
         <div className="space-y-6 animate-fade-in-up">
           {/* Hero-Bereich: Begruessung + Check-in */}
-          <HeroCard>
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                {/* Avatar: Profilbild oder Initialen-Fallback */}
-                {profileData?.avatarUrl ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
-                    src={profileData.avatarUrl}
-                    alt="Profilbild"
-                    className="h-16 w-16 rounded-full object-cover border-2 border-quartier-green/20 flex-shrink-0"
-                    data-testid="dashboard-avatar"
-                  />
-                ) : (
-                  <div
-                    className="h-16 w-16 rounded-full bg-anthrazit text-white font-bold text-xl flex items-center justify-center flex-shrink-0"
-                    data-testid="dashboard-avatar"
-                  >
-                    {userName ? userName.charAt(0).toUpperCase() : "?"}
+          {isUxRedesignEnabled("UX_REDESIGN_DASHBOARD") ? (
+            <DashboardHero
+              userName={userName}
+              avatarUrl={profileData?.avatarUrl ?? null}
+              reputationLevel={reputationLevel}
+              greeting={greeting}
+              greetingIcon={greetingIcon}
+            />
+          ) : (
+            <HeroCard>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  {profileData?.avatarUrl ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={profileData.avatarUrl}
+                      alt="Profilbild"
+                      className="h-16 w-16 rounded-full object-cover border-2 border-quartier-green/20 flex-shrink-0"
+                      data-testid="dashboard-avatar"
+                    />
+                  ) : (
+                    <div
+                      className="h-16 w-16 rounded-full bg-anthrazit text-white font-bold text-xl flex items-center justify-center flex-shrink-0"
+                      data-testid="dashboard-avatar"
+                    >
+                      {userName ? userName.charAt(0).toUpperCase() : "?"}
+                    </div>
+                  )}
+                  <div>
+                    <h1
+                      className="flex items-center gap-2 text-2xl font-bold text-anthrazit"
+                      data-testid="dashboard-greeting"
+                    >
+                      {userName ? (
+                        <>
+                          <CategoryIcon
+                            icon={greetingIcon.icon}
+                            bgColor={greetingIcon.bgColor}
+                            iconColor={greetingIcon.iconColor}
+                            size="lg"
+                          />
+                          {greeting.text}, {userName}
+                        </>
+                      ) : (
+                        "QuartierApp"
+                      )}
+                      {reputationLevel >= 2 && (
+                        <span className="ml-1.5 align-middle">
+                          <ReputationBadge level={reputationLevel} size="sm" />
+                        </span>
+                      )}
+                    </h1>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      Ihr Quartier auf einen Blick
+                    </p>
                   </div>
-                )}
-                <div>
-                  <h1
-                    className="flex items-center gap-2 text-2xl font-bold text-anthrazit"
-                    data-testid="dashboard-greeting"
-                  >
-                    {userName ? (
-                      <>
-                        <CategoryIcon
-                          icon={greetingIcon.icon}
-                          bgColor={greetingIcon.bgColor}
-                          iconColor={greetingIcon.iconColor}
-                          size="lg"
-                        />
-                        {greeting.text}, {userName}
-                      </>
-                    ) : (
-                      "QuartierApp"
-                    )}
-                    {reputationLevel >= 2 && (
-                      <span className="ml-1.5 align-middle">
-                        <ReputationBadge level={reputationLevel} size="sm" />
-                      </span>
-                    )}
-                  </h1>
-                  <p className="text-sm text-muted-foreground mt-1">
-                    Ihr Quartier auf einen Blick
-                  </p>
                 </div>
+                <Link
+                  href="/notifications"
+                  className="relative rounded-full p-2 transition-colors hover:bg-white/50"
+                  aria-label="Benachrichtigungen"
+                  data-testid="notification-bell"
+                >
+                  <Bell className="h-6 w-6 text-anthrazit" aria-hidden="true" />
+                  {unreadCount > 0 && (
+                    <span
+                      className="animate-badge-pop absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-emergency-red text-xs font-bold text-white"
+                      data-testid="unread-badge"
+                    >
+                      {unreadCount > 9 ? "9+" : unreadCount}
+                    </span>
+                  )}
+                </Link>
               </div>
-              <Link
-                href="/notifications"
-                className="relative rounded-full p-2 transition-colors hover:bg-white/50"
-                aria-label="Benachrichtigungen"
-                data-testid="notification-bell"
-              >
-                <Bell className="h-6 w-6 text-anthrazit" aria-hidden="true" />
-                {unreadCount > 0 && (
-                  <span
-                    className="animate-badge-pop absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-emergency-red text-xs font-bold text-white"
-                    data-testid="unread-badge"
-                  >
-                    {unreadCount > 9 ? "9+" : unreadCount}
-                  </span>
-                )}
-              </Link>
-            </div>
-            <div className="mt-4">
-              <DailyCheckinButton />
-            </div>
-          </HeroCard>
+              <div className="mt-4">
+                <DailyCheckinButton />
+              </div>
+            </HeroCard>
+          )}
 
           {/* Angehörige-Schnellzugriff */}
           {caregivers.length > 0 && (
@@ -496,8 +509,17 @@ export default function DashboardPage() {
           {/* Angehoerigen-Dashboard (Caregiver/Plus) */}
           <CaregiverDashboard />
 
-          {/* Leer-Zustand mit Demo-Vorschau */}
-          {alerts.length === 0 &&
+          {/* UX-Redesign: QuickActions + DiscoverGrid */}
+          {isUxRedesignEnabled("UX_REDESIGN_DASHBOARD") && (
+            <>
+              <QuickActions />
+              <DiscoverGrid />
+            </>
+          )}
+
+          {/* Leer-Zustand mit Demo-Vorschau (nur ohne UX-Redesign) */}
+          {!isUxRedesignEnabled("UX_REDESIGN_DASHBOARD") &&
+            alerts.length === 0 &&
             news.length === 0 &&
             helpRequests.length === 0 &&
             marketplaceItems.length === 0 && (

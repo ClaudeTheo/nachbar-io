@@ -2,7 +2,7 @@
 
 import { ChevronLeft } from 'lucide-react';
 import Link from 'next/link';
-import { getAvailableStates } from '@/lib/hilfe/federal-states';
+import { getAllStates } from '@/lib/hilfe/federal-states';
 
 const steps = [
   {
@@ -58,7 +58,9 @@ const steps = [
 ];
 
 export default function AnleitungHelferPage() {
-  const availableStates = getAvailableStates();
+  const allStates = getAllStates();
+  const verifiedStates = allStates.filter((s) => s.research_status === 'checked_official_sources');
+  const pendingStates = allStates.filter((s) => s.research_status === 'pending_research');
 
   return (
     <div className="min-h-screen bg-white pb-24">
@@ -116,10 +118,10 @@ export default function AnleitungHelferPage() {
           ))}
         </div>
 
-        {/* Bundesland-Links */}
+        {/* Bundesland-Links — geprueft */}
         <h2 className="text-lg font-semibold text-gray-900 mb-3">Regeln in Ihrem Bundesland</h2>
-        <div className="space-y-2 mb-6">
-          {availableStates.map((state) => (
+        <div className="space-y-2 mb-4">
+          {verifiedStates.map((state) => (
             <Link
               key={state.state_code}
               href={`/hilfe/anleitung/bundesland/${state.state_code}`}
@@ -138,6 +140,24 @@ export default function AnleitungHelferPage() {
             </Link>
           ))}
         </div>
+
+        {/* Bundesland-Links — noch nicht geprueft */}
+        {pendingStates.length > 0 && (
+          <div className="mb-6">
+            <h3 className="text-sm font-medium text-gray-500 mb-2">Weitere Bundeslaender (Daten werden recherchiert)</h3>
+            <div className="grid grid-cols-2 gap-2">
+              {pendingStates.map((state) => (
+                <Link
+                  key={state.state_code}
+                  href={`/hilfe/anleitung/bundesland/${state.state_code}`}
+                  className="rounded-lg border border-gray-100 px-3 py-2 text-sm text-gray-500 hover:border-gray-300 transition-colors"
+                >
+                  {state.state_name}
+                </Link>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Disclaimer */}
         <div className="rounded-xl bg-gray-50 p-4 mb-4">

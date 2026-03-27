@@ -22,10 +22,14 @@ export const HELP_CATEGORY_LABELS: Record<HelpCategory, string> = {
 export type HelpRequestStatus = "open" | "matched" | "completed" | "cancelled";
 export type HelpSessionStatus = "draft" | "signed" | "receipt_created";
 
+export type ResearchStatus = 'checked_official_sources' | 'pending_research';
+
 export interface FederalStateRule {
   state_code: string;
   state_name: string;
   is_available: boolean;
+  research_status: ResearchStatus;
+  last_checked: string | null;
   training_required: boolean;
   training_hours: number | null;
   min_age: number;
@@ -36,6 +40,27 @@ export interface FederalStateRule {
   registration_authority: string | null;
   official_form_url: string | null;
   notes: string | null;
+  // Neue Felder aus Pflege-Matrix
+  recognition_type: string | null;
+  formal_pre_registration: boolean | null;
+  hourly_rate_min_cents: number | null;
+  hourly_rate_max_cents: number | null;
+  hourly_rate_note: string | null;
+  reimbursement_principle: string | null;
+  direct_payment_possible: boolean | null;
+  // Erlaubte Taetigkeiten
+  allowed_household: boolean | null;
+  allowed_cleaning: boolean | null;
+  allowed_shopping: boolean | null;
+  allowed_escort: boolean | null;
+  allowed_leisure: boolean | null;
+  allowed_snow_removal: boolean | null;
+  allowed_lawn_mowing: boolean | null;
+  // Hinweise
+  insurance_note: string | null;
+  tax_note: string | null;
+  primary_official_url: string | null;
+  secondary_official_url: string | null;
 }
 
 export interface CareProfileHilfe {

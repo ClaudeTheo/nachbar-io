@@ -46,7 +46,26 @@ export default function SubscriptionManager() {
 
   if (loading)
     return <div className="animate-pulse h-40 bg-gray-100 rounded-xl" />;
-  if (!sub) return null;
+  if (!sub)
+    return (
+      <div className="rounded-2xl border border-gray-200 p-6 text-center space-y-4">
+        <div className="text-4xl">🤝</div>
+        <h3 className="font-semibold text-gray-900">
+          Noch kein Helfer-Profil vorhanden
+        </h3>
+        <p className="text-sm text-gray-500">
+          Um das Abrechnungs-Modul nutzen zu koennen, registrieren Sie sich
+          zuerst als Nachbarschaftshelfer.
+        </p>
+        <a
+          href="/hilfe/helfer-werden"
+          className="inline-block rounded-xl bg-[#4CAF87] px-6 py-3 text-white font-semibold
+                     min-h-[52px] leading-[52px] active:scale-[0.98] transition-transform"
+        >
+          Jetzt Helfer werden
+        </a>
+      </div>
+    );
 
   return (
     <div className="space-y-6">

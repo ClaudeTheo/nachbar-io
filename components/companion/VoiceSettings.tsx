@@ -122,7 +122,7 @@ export function VoiceSettings({ settings, onChange }: VoiceSettingsProps) {
       audioRef.current = audio
 
       audio.onended = () => {
-        URL.revokeObjectURL(url)
+        setTimeout(() => URL.revokeObjectURL(url), 3000)
         setPreviewState('idle')
         audioRef.current = null
       }
@@ -133,7 +133,12 @@ export function VoiceSettings({ settings, onChange }: VoiceSettingsProps) {
         audioRef.current = null
       }
 
-      await audio.play()
+      await audio.play().catch((playErr) => {
+        // Safari/iOS blockiert audio.play() bei stummem Modus oder fehlender User-Geste
+        URL.revokeObjectURL(url)
+        audioRef.current = null
+        throw playErr
+      })
       setPreviewState('playing')
     } catch (err) {
       // AbortError ignorieren (Nutzer hat abgebrochen)

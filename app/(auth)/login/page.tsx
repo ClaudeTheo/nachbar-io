@@ -33,6 +33,10 @@ type LoginMode = "magic_link" | "password" | "magic_link_sent";
 // Reaktivierung: auf false setzen ODER Recovery-Flow implementieren
 // und dann "Passwort vergessen"-Link einfuegen (siehe Go-Live Audit B-2).
 const PILOT_HIDE_PASSWORD_LOGIN = true;
+// Passkey-Backend (API-Routen) noch nicht implementiert — Button ausblenden
+const PILOT_HIDE_PASSKEY_LOGIN = true;
+// Apple Sign-In erst sinnvoll mit nativer App — vorlaeufig ausblenden
+const PILOT_HIDE_APPLE_SIGNIN = true;
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -171,7 +175,7 @@ export default function LoginPage() {
       <CardContent>
 
         {/* === Passkey / Biometrische Anmeldung === */}
-        {mode === "magic_link" && supportsPasskey && (
+        {mode === "magic_link" && supportsPasskey && !PILOT_HIDE_PASSKEY_LOGIN && (
           <div className="mb-4">
             <Button
               type="button"
@@ -187,7 +191,7 @@ export default function LoginPage() {
         )}
 
         {/* === Sign in with Apple (Guideline 4.8) === */}
-        {mode === "magic_link" && (
+        {mode === "magic_link" && !PILOT_HIDE_APPLE_SIGNIN && (
           <div className="mb-4">
             <Button
               type="button"

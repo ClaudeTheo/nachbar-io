@@ -67,7 +67,8 @@ export function TTSButton({ text }: TTSButtonProps) {
 
       audio.onended = () => {
         setPlaying(false);
-        URL.revokeObjectURL(url);
+        // Verzoegertes Revoke — Safari kann bei sofortigem Revoke abbrechen
+        setTimeout(() => URL.revokeObjectURL(url), 3000);
       };
 
       audio.onerror = () => {
@@ -76,7 +77,12 @@ export function TTSButton({ text }: TTSButtonProps) {
         toast.error('Wiedergabefehler.');
       };
 
-      await audio.play();
+      await audio.play().catch(() => {
+        // Safari/iOS blockiert audio.play() ohne User-Geste oder bei stummem Modus
+        toast.error('Wiedergabe blockiert — bitte pruefen Sie den Lautstaerke-/Stummschalter.');
+        URL.revokeObjectURL(url);
+        throw new Error('play blocked');
+      });
       setPlaying(true);
     } catch {
       toast.error('Sprachausgabe nicht verfuegbar.');

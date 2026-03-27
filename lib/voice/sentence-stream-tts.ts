@@ -5,6 +5,7 @@
 export interface SentenceStreamTTSOptions {
   voice?: string
   onSpeakingDone?: () => void
+  onError?: (error: Error) => void
 }
 
 export class SentenceStreamTTS {
@@ -62,12 +63,21 @@ export class SentenceStreamTTS {
     const blob = await res.blob()
     const url = URL.createObjectURL(blob)
     const audio = new Audio(url)
-    return new Promise((resolve) => {
-      audio.onended = () => { URL.revokeObjectURL(url); resolve() }
-      audio.onerror = () => { URL.revokeObjectURL(url); resolve() }
+    return new Promise<void>((resolve) => {
+      audio.onended = () => { setTimeout(() => URL.revokeObjectURL(url), 3000); resolve() }
+      audio.onerror = () => {
+        setTimeout(() => URL.revokeObjectURL(url), 3000)
+        this.options.onError?.(new Error('[TTS] Audio-Wiedergabefehler'))
+        resolve()
+      }
       const playResult = audio.play()
       if (playResult && typeof playResult.catch === 'function') {
-        playResult.catch(() => resolve())
+        playResult.catch(() => {
+          console.warn('[TTS] audio.play() blockiert (Safari/iOS Stummschalter?)')
+          URL.revokeObjectURL(url)
+          this.options.onError?.(new Error('[TTS] Wiedergabe blockiert — Stummschalter oder fehlende User-Geste'))
+          resolve()
+        })
       }
     })
   }

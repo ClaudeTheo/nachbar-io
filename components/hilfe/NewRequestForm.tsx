@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import { HelpCategory, HELP_CATEGORY_LABELS } from '@/lib/hilfe/types';
+import { useQuarter } from '@/lib/quarters/quarter-context';
 
 /** Emoji-Icons je Kategorie */
 const CATEGORY_ICONS: Record<HelpCategory, string> = {
@@ -25,6 +26,7 @@ interface NewRequestFormProps {
 
 /** Formular zum Erstellen eines neuen Hilfe-Gesuchs (Senior-Mode: große Kacheln, max 3 Taps) */
 export function NewRequestForm({ onSuccess }: NewRequestFormProps) {
+  const { currentQuarter } = useQuarter();
   const [category, setCategory] = useState<HelpCategory | null>(null);
   const [description, setDescription] = useState('');
   const [preferredTime, setPreferredTime] = useState('');
@@ -33,7 +35,7 @@ export function NewRequestForm({ onSuccess }: NewRequestFormProps) {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!category) return;
+    if (!category || !currentQuarter) return;
 
     setSubmitting(true);
     setError(null);
@@ -43,6 +45,7 @@ export function NewRequestForm({ onSuccess }: NewRequestFormProps) {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          quarter_id: currentQuarter.id,
           category,
           description: description || null,
           preferred_time: preferredTime || null,

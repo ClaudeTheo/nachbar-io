@@ -40,7 +40,10 @@ export default function MitessenPage() {
           .order("created_at", { ascending: false });
 
         if (error) {
-          toast.error("Mitess-Plätze konnten nicht geladen werden.");
+          // RLS-Block oder Permission-Fehler: leise behandeln (leere Liste zeigen)
+          console.warn("[Mitessen] Ladefehler:", error.message);
+          setMeals([]);
+          setLoading(false);
           return;
         }
 

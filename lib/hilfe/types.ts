@@ -1,26 +1,26 @@
 // Nachbar Hilfe — TypeScript-Typen
 
 export type HelpCategory =
-  | 'einkaufen'
-  | 'begleitung'
-  | 'haushalt'
-  | 'garten'
-  | 'technik'
-  | 'vorlesen'
-  | 'sonstiges';
+  | "einkaufen"
+  | "begleitung"
+  | "haushalt"
+  | "garten"
+  | "technik"
+  | "vorlesen"
+  | "sonstiges";
 
 export const HELP_CATEGORY_LABELS: Record<HelpCategory, string> = {
-  einkaufen: 'Einkaufen',
-  begleitung: 'Begleitung',
-  haushalt: 'Haushalt',
-  garten: 'Garten',
-  technik: 'Technik',
-  vorlesen: 'Vorlesen / Formulare',
-  sonstiges: 'Sonstiges',
+  einkaufen: "Einkaufen",
+  begleitung: "Begleitung",
+  haushalt: "Haushalt",
+  garten: "Garten",
+  technik: "Technik",
+  vorlesen: "Vorlesen / Formulare",
+  sonstiges: "Sonstiges",
 };
 
-export type HelpRequestStatus = 'open' | 'matched' | 'completed' | 'cancelled';
-export type HelpSessionStatus = 'draft' | 'signed' | 'receipt_created';
+export type HelpRequestStatus = "open" | "matched" | "completed" | "cancelled";
+export type HelpSessionStatus = "draft" | "signed" | "receipt_created";
 
 export interface FederalStateRule {
   state_code: string;
@@ -115,4 +115,48 @@ export interface BudgetSummary {
   available_cents: number;
   carry_over_cents: number;
   sessions_this_month: number;
+}
+
+// Phase 2 — Subscription + Verbindungen
+
+export type SubscriptionStatus =
+  | "free"
+  | "trial"
+  | "active"
+  | "paused"
+  | "cancelled";
+export type ConnectionSource = "organic" | "invitation";
+
+export interface HelperConnection {
+  id: string;
+  helper_id: string;
+  resident_id: string;
+  source: ConnectionSource;
+  invite_code: string | null;
+  confirmed_at: string | null;
+  revoked_at: string | null;
+  created_at: string;
+}
+
+export interface HelpMonthlyReport {
+  id: string;
+  helper_id: string;
+  resident_id: string;
+  month_year: string;
+  pdf_url: string;
+  total_sessions: number;
+  total_amount_cents: number;
+  sent_to_email: string | null;
+  sent_at: string | null;
+  created_at: string;
+}
+
+// Erweiterte NeighborhoodHelper mit Subscription-Feldern
+export interface NeighborhoodHelperFull extends NeighborhoodHelper {
+  subscription_status: SubscriptionStatus;
+  stripe_customer_id: string | null;
+  stripe_subscription_id: string | null;
+  trial_receipt_used: boolean;
+  subscription_paused_at: string | null;
+  subscription_cancelled_at: string | null;
 }

@@ -2,15 +2,16 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, Map, TriangleAlert, Heart, Bell, User, Bot } from "lucide-react";
+import { Home, Map, TriangleAlert, Heart, Bell, User, Bot, HandHeart } from "lucide-react";
 import { useUnreadCount } from "@/lib/useUnreadCount";
 import { haptic } from "@/lib/haptics";
 
 const navItems = [
   { href: "/dashboard", label: "Home", icon: Home },
   { href: "/map", label: "Karte", icon: Map },
-  { href: "/alerts/new", label: "Hilfe", icon: TriangleAlert },
+  { href: "/alerts/new", label: "Notfall", icon: TriangleAlert },
   { href: "/care", label: "Pflege", icon: Heart },
+  { href: "/hilfe", label: "Hilfe", icon: HandHeart },
   { href: "/companion", label: "KI-Assistent", icon: Bot },
   { href: "/notifications", label: "Inbox", icon: Bell },
   { href: "/profile", label: "Profil", icon: User },

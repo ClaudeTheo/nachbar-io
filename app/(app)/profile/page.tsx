@@ -3,7 +3,30 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Settings, LogOut, Star, Shield, ChevronRight, Pencil, Bell, TrendingUp, Plane, MapPin, CircleHelp, BarChart3, Package, UserPlus, Download, Mic, Fingerprint } from "lucide-react";
+import {
+  Settings,
+  LogOut,
+  Star,
+  Shield,
+  ChevronRight,
+  Pencil,
+  Bell,
+  TrendingUp,
+  Plane,
+  MapPin,
+  CircleHelp,
+  BarChart3,
+  Package,
+  UserPlus,
+  Download,
+  Mic,
+  Fingerprint,
+  Map,
+  Bot,
+  Inbox,
+} from "lucide-react";
+import { isUxRedesignEnabled } from "@/lib/ux-flags";
+import { useUnreadCount } from "@/lib/useUnreadCount";
 import { PageHeader } from "@/components/ui/page-header";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -14,14 +37,65 @@ import { ReputationBadge } from "@/components/ReputationBadge";
 import { createClient } from "@/lib/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { getCachedReputation, getReputationLevel } from "@/lib/reputation";
-import { getProfile, getHouseholdForUser, toggleUiMode as toggleUiModeService } from "@/lib/services";
+import {
+  getProfile,
+  getHouseholdForUser,
+  toggleUiMode as toggleUiModeService,
+} from "@/lib/services";
 import { VoiceSettings } from "@/components/companion/VoiceSettings";
 import { useVoicePreferences } from "@/hooks/useVoicePreferences";
 import type { User, Household, ReputationStats } from "@/lib/supabase/types";
 
+/** Schnellzugriff-Karte fuer Features die aus der BottomNav verschoben wurden */
+function QuickAccessCard() {
+  const { count: unreadCount } = useUnreadCount();
+
+  const quickItems = [
+    {
+      href: "/notifications",
+      label: "Nachrichten",
+      icon: Inbox,
+      badge: unreadCount,
+    },
+    { href: "/companion", label: "KI-Assistent", icon: Bot },
+    { href: "/map", label: "Karte", icon: Map },
+  ];
+
+  return (
+    <Card>
+      <CardContent className="p-0">
+        <p className="px-4 pt-3 pb-1 text-xs font-medium text-muted-foreground uppercase tracking-wider">
+          Schnellzugriff
+        </p>
+        {quickItems.map((item, i) => (
+          <div key={item.href}>
+            {i > 0 && <Separator />}
+            <Link
+              href={item.href}
+              className="flex items-center justify-between p-4 hover:bg-muted/50"
+            >
+              <div className="flex items-center gap-3">
+                <item.icon className="h-5 w-5 text-muted-foreground" />
+                <span>{item.label}</span>
+                {item.badge != null && item.badge > 0 && (
+                  <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-emergency-red px-1.5 text-[11px] font-bold text-white">
+                    {item.badge > 99 ? "99+" : item.badge}
+                  </span>
+                )}
+              </div>
+              <ChevronRight className="h-4 w-4 text-muted-foreground" />
+            </Link>
+          </div>
+        ))}
+      </CardContent>
+    </Card>
+  );
+}
+
 export default function ProfilePage() {
   const { user: authUser } = useAuth();
-  const { preferences: voicePrefs, updatePreferences: updateVoicePrefs } = useVoicePreferences();
+  const { preferences: voicePrefs, updatePreferences: updateVoicePrefs } =
+    useVoicePreferences();
   const [user, setUser] = useState<User | null>(null);
   const [household, setHousehold] = useState<Household | null>(null);
   const [reputation, setReputation] = useState<ReputationStats | null>(null);
@@ -42,8 +116,8 @@ export default function ProfilePage() {
           console.error("[Profile] Profil nicht gefunden:", profileErr);
           setLoadError(
             "Ihr Profil konnte nicht geladen werden. " +
-            "Möglicherweise wurde die Registrierung nicht vollständig abgeschlossen. " +
-            "Bitte versuchen Sie es erneut oder melden Sie sich neu an."
+              "Möglicherweise wurde die Registrierung nicht vollständig abgeschlossen. " +
+              "Bitte versuchen Sie es erneut oder melden Sie sich neu an.",
           );
           setIsLoading(false);
           return;
@@ -51,7 +125,9 @@ export default function ProfilePage() {
 
         setUser(userData);
         // Gecachte Reputation laden
-        const cached = getCachedReputation(userData.settings as Record<string, unknown> | null);
+        const cached = getCachedReputation(
+          userData.settings as Record<string, unknown> | null,
+        );
         if (cached) setReputation(cached);
 
         // Haushalt-Daten laden (optional, Fehler nicht kritisch)
@@ -59,12 +135,17 @@ export default function ProfilePage() {
           const householdData = await getHouseholdForUser(authUser.id);
           if (householdData) setHousehold(householdData);
         } catch (householdErr) {
-          console.warn("[Profile] Haushalt konnte nicht geladen werden:", householdErr);
+          console.warn(
+            "[Profile] Haushalt konnte nicht geladen werden:",
+            householdErr,
+          );
           // Nicht kritisch — Profil wird trotzdem angezeigt
         }
       } catch (err) {
         console.error("[Profile] Unerwarteter Fehler:", err);
-        setLoadError("Ein unerwarteter Fehler ist aufgetreten. Bitte laden Sie die Seite neu.");
+        setLoadError(
+          "Ein unerwarteter Fehler ist aufgetreten. Bitte laden Sie die Seite neu.",
+        );
       } finally {
         setIsLoading(false);
       }
@@ -98,10 +179,7 @@ export default function ProfilePage() {
       <div className="py-12 text-center space-y-4">
         <p className="text-sm text-emergency-red">{loadError}</p>
         <div className="flex gap-2 justify-center">
-          <Button
-            variant="outline"
-            onClick={() => window.location.reload()}
-          >
+          <Button variant="outline" onClick={() => window.location.reload()}>
             Seite neu laden
           </Button>
           <Button
@@ -118,7 +196,9 @@ export default function ProfilePage() {
   }
 
   if (isLoading || !user) {
-    return <div className="py-12 text-center text-muted-foreground">Laden...</div>;
+    return (
+      <div className="py-12 text-center text-muted-foreground">Laden...</div>
+    );
   }
 
   return (
@@ -136,14 +216,22 @@ export default function ProfilePage() {
             <div className="flex h-16 w-16 items-center justify-center rounded-full bg-quartier-green/10 text-2xl">
               {(() => {
                 const av = resolveAvatarUrl(user.avatar_url);
-                return av.type === "image"
+                return av.type === "image" ? (
                   /* eslint-disable-next-line @next/next/no-img-element */
-                  ? <img src={av.value} alt="" className="h-full w-full rounded-full object-cover" />
-                  : <span>{av.value}</span>;
+                  <img
+                    src={av.value}
+                    alt=""
+                    className="h-full w-full rounded-full object-cover"
+                  />
+                ) : (
+                  <span>{av.value}</span>
+                );
               })()}
             </div>
             <div>
-              <h2 className="text-lg font-semibold text-anthrazit">{user.display_name || "Unbekannt"}</h2>
+              <h2 className="text-lg font-semibold text-anthrazit">
+                {user.display_name || "Unbekannt"}
+              </h2>
               <div className="flex items-center gap-2 flex-wrap">
                 <TrustBadge level={user.trust_level} showLabel size="md" />
                 {reputation && reputation.points > 0 && (
@@ -165,12 +253,17 @@ export default function ProfilePage() {
                 </p>
               )}
               {user.phone && (
-                <p className="mt-0.5 text-xs text-muted-foreground">{user.phone}</p>
+                <p className="mt-0.5 text-xs text-muted-foreground">
+                  {user.phone}
+                </p>
               )}
             </div>
           </div>
         </CardContent>
       </Card>
+
+      {/* Schnellzugriff — verschobene Features aus BottomNav (nur bei UX-Redesign) */}
+      {isUxRedesignEnabled("UX_REDESIGN_NAV") && <QuickAccessCard />}
 
       {/* Menü */}
       <Card>
@@ -211,11 +304,13 @@ export default function ProfilePage() {
                 <span>Meine Reputation</span>
                 {reputation && reputation.level >= 1 && (
                   <span className="ml-2 text-xs text-muted-foreground">
-                    <ReputationBadge level={reputation.level} showLabel size="sm" />
+                    <ReputationBadge
+                      level={reputation.level}
+                      showLabel
+                      size="sm"
+                    />
                     {reputation.points > 0 && (
-                      <span className="ml-1">
-                        · {reputation.points} Punkte
-                      </span>
+                      <span className="ml-1">· {reputation.points} Punkte</span>
                     )}
                   </span>
                 )}
@@ -272,8 +367,12 @@ export default function ProfilePage() {
             <div className="flex items-center gap-3">
               <Shield className="h-5 w-5 text-quartier-green" />
               <div>
-                <p className="font-medium text-anthrazit">Care-Einwilligungen</p>
-                <p className="text-sm text-muted-foreground">Gesundheitsdaten-Einwilligungen verwalten</p>
+                <p className="font-medium text-anthrazit">
+                  Care-Einwilligungen
+                </p>
+                <p className="text-sm text-muted-foreground">
+                  Gesundheitsdaten-Einwilligungen verwalten
+                </p>
               </div>
             </div>
             <ChevronRight className="h-4 w-4 text-muted-foreground" />
@@ -433,10 +532,16 @@ export default function ProfilePage() {
       <div className="text-center text-xs text-muted-foreground">
         <p>Ihre Daten sind geschützt gemäß DSGVO.</p>
         <div className="mt-2 flex justify-center gap-4">
-          <Link href="/impressum" className="hover:text-anthrazit hover:underline">
+          <Link
+            href="/impressum"
+            className="hover:text-anthrazit hover:underline"
+          >
             Impressum
           </Link>
-          <Link href="/datenschutz" className="hover:text-anthrazit hover:underline">
+          <Link
+            href="/datenschutz"
+            className="hover:text-anthrazit hover:underline"
+          >
             Datenschutz
           </Link>
           <Link href="/agb" className="hover:text-anthrazit hover:underline">

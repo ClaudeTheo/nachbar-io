@@ -1,5 +1,5 @@
 // app/api/care/cron/appointments/route.ts
-// Nachbar.io — Termin-Erinnerungs-Cron: Faellige Terminerinnerungen versenden (alle 5 Min)
+// Nachbar.io — Termin-Erinnerungs-Cron: Fällige Terminerinnerungen versenden (alle 5 Min)
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
@@ -8,12 +8,12 @@ import { decryptFieldsArray, CARE_APPOINTMENTS_ENCRYPTED_FIELDS } from '@/lib/ca
 import { writeCronHeartbeat } from '@/lib/care/cron-heartbeat';
 import type { CareAppointment } from '@/lib/care/types';
 
-// Toleranz in Minuten (+/-) fuer den 5-Minuten-Cron-Intervall
+// Toleranz in Minuten (+/-) für den 5-Minuten-Cron-Intervall
 const TOLERANCE_MINUTES = 2.5;
 
 // GET /api/care/cron/appointments — Termin-Erinnerungs-Scheduler (Vercel Cron: alle 5 Minuten)
 export async function GET(request: NextRequest) {
-  // Cron-Auth: Authorization-Header gegen CRON_SECRET pruefen
+  // Cron-Auth: Authorization-Header gegen CRON_SECRET prüfen
   const cronSecret = process.env.CRON_SECRET;
   if (!cronSecret) {
     console.error('CRON_SECRET nicht konfiguriert — Cron-Endpunkt blockiert');
@@ -27,7 +27,7 @@ export async function GET(request: NextRequest) {
   const supabase = await createClient();
   const now = new Date();
 
-  // Zeitfenster: alle Termine in den naechsten 24 Stunden laden
+  // Zeitfenster: alle Termine in den nächsten 24 Stunden laden
   const windowEnd = new Date(now.getTime() + 24 * 60 * 60 * 1000);
 
   const { data: appointments, error: appointmentsError } = await supabase
@@ -44,7 +44,7 @@ export async function GET(request: NextRequest) {
     );
   }
 
-  // Termin-Felder entschluesseln (Art. 9 DSGVO) — Location und Notes fuer Benachrichtigungen
+  // Termin-Felder entschlüsseln (Art. 9 DSGVO) — Location und Notes für Benachrichtigungen
   const allAppointments: CareAppointment[] = decryptFieldsArray(appointments ?? [], CARE_APPOINTMENTS_ENCRYPTED_FIELDS) as CareAppointment[];
   let sentCount = 0;
 
@@ -53,10 +53,10 @@ export async function GET(request: NextRequest) {
     const reminderTimes = appointment.reminder_minutes_before ?? [];
 
     for (const reminderMinutes of reminderTimes) {
-      // Zeitpunkt, zu dem die Erinnerung ausgeloest werden soll
+      // Zeitpunkt, zu dem die Erinnerung ausgelöst werden soll
       const reminderAt = new Date(scheduledAt.getTime() - reminderMinutes * 60 * 1000);
 
-      // Pruefe ob dieser Erinnerungszeitpunkt innerhalb der Toleranz liegt
+      // Prüfe ob dieser Erinnerungszeitpunkt innerhalb der Toleranz liegt
       const diffMinutes = (now.getTime() - reminderAt.getTime()) / (1000 * 60);
 
       if (diffMinutes < -TOLERANCE_MINUTES || diffMinutes > TOLERANCE_MINUTES) {
@@ -92,7 +92,7 @@ export async function GET(request: NextRequest) {
         sentCount++;
       } catch (notifyError) {
         console.error(
-          `[care/cron/appointments] Erinnerung fuer Senior ${appointment.senior_id} (Termin ${appointment.id}) fehlgeschlagen:`,
+          `[care/cron/appointments] Erinnerung für Senior ${appointment.senior_id} (Termin ${appointment.id}) fehlgeschlagen:`,
           notifyError
         );
       }
@@ -104,7 +104,7 @@ export async function GET(request: NextRequest) {
             userId: appointment.managed_by,
             type: 'care_appointment_reminder',
             title: `Termin-Erinnerung: ${appointment.title}`,
-            body: `Der Termin "${appointment.title}" fuer Ihren Angehoerigen findet ${reminderLabel} statt (${dateStr} um ${timeStr} Uhr)${locationText}.`,
+            body: `Der Termin "${appointment.title}" für Ihren Angehörigen findet ${reminderLabel} statt (${dateStr} um ${timeStr} Uhr)${locationText}.`,
             referenceId: appointment.id,
             referenceType: 'care_appointments',
             url: '/care/appointments',
@@ -113,7 +113,7 @@ export async function GET(request: NextRequest) {
           sentCount++;
         } catch (notifyError) {
           console.error(
-            `[care/cron/appointments] Betreuer-Erinnerung fuer ${appointment.managed_by} (Termin ${appointment.id}) fehlgeschlagen:`,
+            `[care/cron/appointments] Betreuer-Erinnerung für ${appointment.managed_by} (Termin ${appointment.id}) fehlgeschlagen:`,
             notifyError
           );
         }

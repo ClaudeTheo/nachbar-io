@@ -70,7 +70,7 @@ export function KpiDashboard() {
   const previous =
     snapshots.length > 1 ? snapshots[snapshots.length - 2] : undefined;
 
-  // Trend-Daten fuer Charts
+  // Trend-Daten für Charts
   const wahTrend: TrendDataPoint[] = snapshots.map((s) => ({
     date: s.snapshot_date,
     value: s.wah,
@@ -109,7 +109,7 @@ export function KpiDashboard() {
 
       {!latest ? (
         <p className="text-sm text-muted-foreground text-center py-8">
-          Noch keine Analytics-Daten vorhanden. Der Cron-Job erstellt taeglich
+          Noch keine Analytics-Daten vorhanden. Der Cron-Job erstellt täglich
           Snapshots.
         </p>
       ) : (
@@ -117,7 +117,7 @@ export function KpiDashboard() {
           {/* North Star Metrik */}
           <div className="grid grid-cols-1 gap-3">
             <KpiMetricCard
-              title="WAH — Woechentlich aktive Haushalte"
+              title="WAH — Wöchentlich aktive Haushalte"
               value={latest.wah}
               previousValue={previous?.wah}
               description="North Star: Haushalte mit mindestens einer Interaktion in 7 Tagen"
@@ -202,7 +202,7 @@ export function KpiDashboard() {
           />
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             <KpiTrendChart
-              title="Beitraege pro Woche"
+              title="Beiträge pro Woche"
               data={postsTrend}
               color="#6366f1"
               height={160}

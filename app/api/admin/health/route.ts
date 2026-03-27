@@ -5,9 +5,9 @@ import { checkCronHealth } from "@/lib/care/cron-heartbeat";
 /**
  * GET /api/admin/health
  *
- * System-Health-Checks fuer das Admin-Dashboard.
- * Prueft DB-Verbindung, Push-Konfiguration, KI-API und Tabellen-Zustand.
- * Nur fuer Admins zugaenglich.
+ * System-Health-Checks für das Admin-Dashboard.
+ * Prüft DB-Verbindung, Push-Konfiguration, KI-API und Tabellen-Zustand.
+ * Nur für Admins zugänglich.
  */
 export async function GET() {
   const supabase = await createClient();
@@ -33,7 +33,7 @@ export async function GET() {
     responseMs?: number;
   }[] = [];
 
-  // 1. Datenbank-Verbindung pruefen
+  // 1. Datenbank-Verbindung prüfen
   const dbStart = Date.now();
   try {
     const { count, error } = await supabase
@@ -55,11 +55,11 @@ export async function GET() {
     checks.push({ name: "Datenbank", status: "error", detail: "Verbindung fehlgeschlagen", responseMs: Date.now() - dbStart });
   }
 
-  // 2. Push-Konfiguration pruefen
+  // 2. Push-Konfiguration prüfen
   const vapidKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
   const vapidPrivate = process.env.VAPID_PRIVATE_KEY;
   if (vapidKey && vapidPrivate) {
-    // Abonnements zaehlen
+    // Abonnements zählen
     const { count: subCount } = await supabase
       .from("push_subscriptions")
       .select("id", { count: "exact", head: true });
@@ -73,7 +73,7 @@ export async function GET() {
   // 3. KI-News (Anthropic API Key)
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if (apiKey && apiKey !== "placeholder-api-key") {
-    // Letzten News-Scrape pruefen
+    // Letzten News-Scrape prüfen
     const { data: lastNews } = await supabase
       .from("news_items")
       .select("created_at")
@@ -95,7 +95,7 @@ export async function GET() {
     checks.push({ name: "KI-News", status: "warn", detail: "API Key nicht konfiguriert" });
   }
 
-  // 4. Tabellen-Zustaende pruefen
+  // 4. Tabellen-Zustände prüfen
   const tableChecks = await Promise.all([
     supabase.from("alerts").select("id", { count: "exact", head: true }).eq("status", "open"),
     supabase.from("help_requests").select("id", { count: "exact", head: true }).eq("status", "active"),
@@ -118,7 +118,7 @@ export async function GET() {
     detail: `${unreadNotifications} ungelesen`,
   });
 
-  // 5. Cron-Jobs: Secret pruefen + Heartbeat-Status (FMEA Massnahme)
+  // 5. Cron-Jobs: Secret prüfen + Heartbeat-Status (FMEA Maßnahme)
   const cronSecret = process.env.CRON_SECRET;
   if (!cronSecret) {
     checks.push({ name: "Cron-Jobs", status: "warn", detail: "CRON_SECRET fehlt" });
@@ -133,7 +133,7 @@ export async function GET() {
         });
       }
     } catch {
-      checks.push({ name: "Cron-Jobs", status: "warn", detail: "Heartbeat-Tabelle nicht verfuegbar" });
+      checks.push({ name: "Cron-Jobs", status: "warn", detail: "Heartbeat-Tabelle nicht verfügbar" });
     }
   }
 

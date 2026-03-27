@@ -59,7 +59,7 @@ export async function POST(request: NextRequest) {
   const VALID_SOURCES: CareSosSource[] = ['app', 'device', 'checkin_timeout'];
   if (!VALID_SOURCES.includes(source)) {
     return NextResponse.json(
-      { error: `Ungueltige Quelle: ${source}. Erlaubt: ${VALID_SOURCES.join(', ')}` },
+      { error: `Ungültige Quelle: ${source}. Erlaubt: ${VALID_SOURCES.join(', ')}` },
       { status: 400 }
     );
   }
@@ -94,7 +94,7 @@ export async function POST(request: NextRequest) {
   // Quartier-ID des Nutzers ermitteln
   const quarterId = await getUserQuarterId(supabase, user.id);
 
-  // SOS-Alert in der Datenbank anlegen (notes verschluesselt — Art. 9 DSGVO)
+  // SOS-Alert in der Datenbank anlegen (notes verschlüsselt — Art. 9 DSGVO)
   const { data: alert, error: insertError } = await supabase
     .from('care_sos_alerts')
     .insert({
@@ -187,7 +187,7 @@ export async function POST(request: NextRequest) {
     log.error('notification_failed', notifyError, { alertId: alert.id });
   }
 
-  // Entschluesselt zurueckgeben
+  // Entschlüsselt zurückgeben
   log.done(201, { alertId: alert.id, status: alert.status });
   return NextResponse.json(decryptFields(alert, CARE_SOS_ALERTS_ENCRYPTED_FIELDS), { status: 201 });
 }
@@ -244,7 +244,7 @@ export async function GET(request: NextRequest) {
     if (!role) return NextResponse.json({ error: 'Kein Zugriff auf diesen Senior' }, { status: 403 });
     query = query.eq('senior_id', seniorId);
   } else {
-    // Pruefe ob User Admin ist
+    // Prüfe ob User Admin ist
     const { data: userData } = await supabase.from('users').select('is_admin').eq('id', user.id).single();
     if (!userData?.is_admin) {
       // Nicht-Admin: Nur eigene Alerts + Alerts von zugeordneten Senioren
@@ -269,7 +269,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: 'SOS-Alerts konnten nicht geladen werden' }, { status: 500 });
   }
 
-  // SOS-Notes und Response-Notes entschluesseln (Art. 9 DSGVO)
+  // SOS-Notes und Response-Notes entschlüsseln (Art. 9 DSGVO)
   const decryptedAlerts = (data ?? []).map((alert: Record<string, unknown>) => {
     const decryptedAlert = decryptFields(alert, CARE_SOS_ALERTS_ENCRYPTED_FIELDS);
     if (Array.isArray(decryptedAlert.responses)) {

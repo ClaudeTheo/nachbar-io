@@ -16,7 +16,7 @@ export async function POST(
 
   const { id } = await params;
 
-  // Pruefe Youth-Profil und Zugangs-Stufe
+  // Prüfe Youth-Profil und Zugangs-Stufe
   const { data: profile } = await supabase
     .from('youth_profiles')
     .select('access_level')
@@ -30,7 +30,7 @@ export async function POST(
     );
   }
 
-  // Pruefe ob Aufgabe verfuegbar
+  // Prüfe ob Aufgabe verfügbar
   const { data: task } = await supabase
     .from('youth_tasks')
     .select('id, status, created_by')

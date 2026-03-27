@@ -3,7 +3,7 @@
 // components/chat/ResidentBrowser.tsx
 // Nachbar.io — Sheet-Komponente zum Durchsuchen anonymisierter Bewohner
 // Zeigt Adressen im Quartier mit anonymisierten Bewohnern an
-// Ermoeglicht das Senden von Kontaktanfragen
+// Ermöglicht das Senden von Kontaktanfragen
 
 import { useEffect, useState, useCallback } from "react";
 import {
@@ -79,7 +79,7 @@ export function ResidentBrowser({ open, onClose, onRequestSent }: ResidentBrowse
     }
   }, []);
 
-  // Bei Oeffnen: Zuruecksetzen und laden
+  // Bei Öffnen: Zurücksetzen und laden
   useEffect(() => {
     if (open) {
       setSelectedResident(null);
@@ -102,7 +102,7 @@ export function ResidentBrowser({ open, onClose, onRequestSent }: ResidentBrowse
     });
   }
 
-  // Bewohner auswaehlen → Nachrichtenformular anzeigen
+  // Bewohner auswählen → Nachrichtenformular anzeigen
   function selectResident(address: Address, resident: Resident) {
     setSelectedResident({
       address: address.address,
@@ -113,7 +113,7 @@ export function ResidentBrowser({ open, onClose, onRequestSent }: ResidentBrowse
     setViewState("form");
   }
 
-  // Zurueck zur Adressliste
+  // Zurück zur Adressliste
   function goBackToList() {
     setSelectedResident(null);
     setMessage("");

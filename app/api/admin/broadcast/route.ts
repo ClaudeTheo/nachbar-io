@@ -6,7 +6,7 @@ import { safeInsertNotifications } from "@/lib/notifications-server";
  * POST /api/admin/broadcast
  *
  * Push-Broadcast senden und persistieren.
- * Nur fuer Admins. Speichert den Broadcast als Notification fuer alle Nutzer.
+ * Nur für Admins. Speichert den Broadcast als Notification für alle Nutzer.
  */
 export async function POST(request: NextRequest) {
   const supabase = await createClient();
@@ -29,7 +29,7 @@ export async function POST(request: NextRequest) {
   try {
     body = await request.json();
   } catch {
-    return NextResponse.json({ error: "Ungueltiges Anfrage-Format" }, { status: 400 });
+    return NextResponse.json({ error: "Ungültiges Anfrage-Format" }, { status: 400 });
   }
   const { title, body: messageBody, audience, street, urgency } = body;
 
@@ -40,11 +40,11 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Nachricht muss 3-5000 Zeichen lang sein" }, { status: 400 });
   }
 
-  // Empfaenger ermitteln
+  // Empfänger ermitteln
   let recipientQuery = supabase.from("users").select("id");
 
   if (audience === "street" && street) {
-    // Nutzer dieser Strasse ueber household_members + households
+    // Nutzer dieser Straße über household_members + households
     const { data: householdIds } = await supabase
       .from("households")
       .select("id")
@@ -67,7 +67,7 @@ export async function POST(request: NextRequest) {
   const { data: recipients } = await recipientQuery;
   const recipientIds = recipients?.map(r => r.id) ?? [];
 
-  // Notifications fuer alle Empfaenger erstellen (persistente History)
+  // Notifications für alle Empfänger erstellen (persistente History)
   const pushTitle = urgency === "urgent" ? `DRINGEND: ${title}` : title;
 
   if (recipientIds.length > 0) {

@@ -33,7 +33,7 @@ export async function GET(request: NextRequest) {
   // Kategorie validieren falls angegeben
   if (category && !VALID_CATEGORIES.includes(category as TaskCategory)) {
     return NextResponse.json(
-      { error: `Ungueltige Kategorie: ${category}. Erlaubt: ${VALID_CATEGORIES.join(', ')}` },
+      { error: `Ungültige Kategorie: ${category}. Erlaubt: ${VALID_CATEGORIES.join(', ')}` },
       { status: 400 }
     );
   }
@@ -86,7 +86,7 @@ export async function POST(request: NextRequest) {
   try {
     body = await request.json();
   } catch {
-    return NextResponse.json({ error: 'Ungueltiges Anfrage-Format' }, { status: 400 });
+    return NextResponse.json({ error: 'Ungültiges Anfrage-Format' }, { status: 400 });
   }
 
   const { title, description, category, urgency, preferred_date, preferred_time_from, preferred_time_to } = body;
@@ -95,7 +95,7 @@ export async function POST(request: NextRequest) {
   const VALID_URGENCIES = ['low', 'normal', 'high', 'urgent'];
   if (urgency && !VALID_URGENCIES.includes(urgency)) {
     return NextResponse.json(
-      { error: `Ungueltige Dringlichkeit: ${urgency}. Erlaubt: ${VALID_URGENCIES.join(', ')}` },
+      { error: `Ungültige Dringlichkeit: ${urgency}. Erlaubt: ${VALID_URGENCIES.join(', ')}` },
       { status: 400 }
     );
   }
@@ -119,12 +119,12 @@ export async function POST(request: NextRequest) {
   // Kategorie validieren
   if (category && !VALID_CATEGORIES.includes(category as TaskCategory)) {
     return NextResponse.json(
-      { error: `Ungueltige Kategorie: ${category}. Erlaubt: ${VALID_CATEGORIES.join(', ')}` },
+      { error: `Ungültige Kategorie: ${category}. Erlaubt: ${VALID_CATEGORIES.join(', ')}` },
       { status: 400 }
     );
   }
 
-  // Quarter-ID ueber household_members → households ermitteln
+  // Quarter-ID über household_members → households ermitteln
   const { data: membership, error: memberError } = await supabase
     .from('household_members')
     .select('household:households!inner(quarter_id)')

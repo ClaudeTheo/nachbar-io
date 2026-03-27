@@ -23,7 +23,7 @@ export async function GET(request: NextRequest) {
   const seniorId = searchParams.get('senior_id') ?? user.id;
   const upcoming = searchParams.get('upcoming') !== 'false';
 
-  // Zugriffspruefung: Nur Senior selbst, zugewiesene Helfer oder Admins
+  // Zugriffsprüfung: Nur Senior selbst, zugewiesene Helfer oder Admins
   if (seniorId !== user.id) {
     const role = await requireCareAccess(supabase, seniorId);
     if (!role) return NextResponse.json({ error: 'Kein Zugriff auf diesen Senior' }, { status: 403 });
@@ -45,12 +45,12 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: 'Termine konnten nicht geladen werden' }, { status: 500 });
   }
 
-  // Termin-Felder entschluesseln (Art. 9 DSGVO)
+  // Termin-Felder entschlüsseln (Art. 9 DSGVO)
   try {
     return NextResponse.json(decryptFieldsArray(data ?? [], CARE_APPOINTMENTS_ENCRYPTED_FIELDS));
   } catch (decryptError) {
-    console.error('[care/appointments] Entschluesselung fehlgeschlagen:', decryptError);
-    // Daten ohne Entschluesselung zurueckgeben damit die Seite nicht abstuerzt
+    console.error('[care/appointments] Entschlüsselung fehlgeschlagen:', decryptError);
+    // Daten ohne Entschlüsselung zurückgeben damit die Seite nicht abstürzt
     return NextResponse.json(data ?? []);
   }
 }
@@ -79,7 +79,7 @@ export async function POST(request: NextRequest) {
     senior_id?: string;
   };
   try { body = await request.json(); } catch {
-    return NextResponse.json({ error: 'Ungueltiges Anfrage-Format' }, { status: 400 });
+    return NextResponse.json({ error: 'Ungültiges Anfrage-Format' }, { status: 400 });
   }
 
   const { title, scheduled_at, type, duration_minutes, location, reminder_minutes_before, recurrence, notes, senior_id } = body;
@@ -90,13 +90,13 @@ export async function POST(request: NextRequest) {
 
   const targetSeniorId = senior_id ?? user.id;
 
-  // Zugriffspruefung: Nur Senior selbst, zugewiesene Helfer oder Admins
+  // Zugriffsprüfung: Nur Senior selbst, zugewiesene Helfer oder Admins
   if (targetSeniorId !== user.id) {
     const role = await requireCareAccess(supabase, targetSeniorId);
     if (!role) return NextResponse.json({ error: 'Kein Zugriff auf diesen Senior' }, { status: 403 });
   }
 
-  // Termin-Felder verschluesseln (Art. 9 DSGVO)
+  // Termin-Felder verschlüsseln (Art. 9 DSGVO)
   const insertData = encryptFields({
     senior_id: targetSeniorId,
     title,
@@ -130,6 +130,6 @@ export async function POST(request: NextRequest) {
     metadata: { action: 'created', title, scheduled_at },
   }).catch(() => {});
 
-  // Entschluesselt zurueckgeben
+  // Entschlüsselt zurückgeben
   return NextResponse.json(decryptFields(appointment, CARE_APPOINTMENTS_ENCRYPTED_FIELDS), { status: 201 });
 }

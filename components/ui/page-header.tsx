@@ -1,4 +1,4 @@
-// Nachbar.io — Gemeinsamer Seitenkopf mit Zurueck-Button
+// Nachbar.io — Gemeinsamer Seitenkopf mit Zurück-Button
 // Ersetzt das duplizierte Pattern: ArrowLeft + h1 + optionale Actions
 import * as React from "react";
 import Link from "next/link";
@@ -10,18 +10,18 @@ interface PageHeaderProps {
   title: React.ReactNode;
   /** Optionaler Untertitel unter dem Titel */
   subtitle?: string;
-  /** Zurueck-Link Ziel (z.B. "/dashboard") */
+  /** Zurück-Link Ziel (z.B. "/dashboard") */
   backHref: string;
-  /** Aria-Label fuer Zurueck-Button (Standard: "Zurück") */
+  /** Aria-Label für Zurück-Button (Standard: "Zurück") */
   backLabel?: string;
   /** Optionale Aktions-Elemente rechts (z.B. Plus-Button) */
   actions?: React.ReactNode;
-  /** Zusaetzliche CSS-Klassen fuer den aeusseren Container */
+  /** Zusätzliche CSS-Klassen für den äußeren Container */
   className?: string;
 }
 
 /**
- * Einheitlicher Seitenkopf mit Zurueck-Pfeil, Titel und optionalen Actions.
+ * Einheitlicher Seitenkopf mit Zurück-Pfeil, Titel und optionalen Actions.
  *
  * Beispiel:
  * ```tsx

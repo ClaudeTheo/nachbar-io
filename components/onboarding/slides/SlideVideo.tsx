@@ -13,7 +13,7 @@ interface SlideVideoProps {
  *
  * Zeigt das QuartierApp Promo-Video mit emotionalem Einstieg.
  * Autoplay ist stumm (Browser-Policy), Nutzer kann Ton einschalten.
- * Nativer Video-Player mit Vollbild-Option fuer Senioren.
+ * Nativer Video-Player mit Vollbild-Option für Senioren.
  *
  * Zwei Varianten:
  * - "welcome": Erstes Onboarding nach Registrierung
@@ -55,7 +55,7 @@ export default function SlideVideo({ variant = "welcome" }: SlideVideoProps) {
 
   return (
     <div className="flex h-full flex-col items-center justify-center px-4">
-      {/* Ueberschrift */}
+      {/* Überschrift */}
       <div className="mb-4 text-center animate-fade-in-up">
         <h2 className="text-2xl font-bold text-[#2D3142]">
           Entdecken Sie Ihr Quartier

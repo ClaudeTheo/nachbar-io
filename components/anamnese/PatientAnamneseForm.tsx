@@ -1,8 +1,8 @@
 "use client";
 
 // Nachbar.io — Patienten-Anamnese-Formular
-// Laedt Felder per Token, rendert dynamisch, verschickt verschluesselt
-// Senior-Modus: Grosse Buttons, klare Kontraste, Pagination bei vielen Feldern
+// Lädt Felder per Token, rendert dynamisch, verschickt verschlüsselt
+// Senior-Modus: Große Buttons, klare Kontraste, Pagination bei vielen Feldern
 
 import { useState, useEffect } from "react";
 import {
@@ -77,7 +77,7 @@ export default function PatientAnamneseForm({ token }: { token: string }) {
         setAnswers(defaults);
       })
       .catch(() =>
-        setError("Netzwerkfehler. Bitte pruefen Sie Ihre Internetverbindung."),
+        setError("Netzwerkfehler. Bitte prüfen Sie Ihre Internetverbindung."),
       )
       .finally(() => setLoading(false));
   }, [token]);
@@ -88,7 +88,7 @@ export default function PatientAnamneseForm({ token }: { token: string }) {
     value: string | string[] | number | boolean | null,
   ) => {
     setAnswers((prev) => ({ ...prev, [fieldId]: value }));
-    // Validierungsfehler loeschen
+    // Validierungsfehler löschen
     if (validationErrors[fieldId]) {
       setValidationErrors((prev) => {
         const next = { ...prev };
@@ -114,9 +114,9 @@ export default function PatientAnamneseForm({ token }: { token: string }) {
         Array.isArray(value) &&
         value.length === 0
       ) {
-        errors[field.id] = "Bitte waehlen Sie mindestens eine Option.";
+        errors[field.id] = "Bitte wählen Sie mindestens eine Option.";
       } else if (field.type === "boolean" && value === null) {
-        errors[field.id] = "Bitte waehlen Sie Ja oder Nein.";
+        errors[field.id] = "Bitte wählen Sie Ja oder Nein.";
       }
     }
 
@@ -179,17 +179,17 @@ export default function PatientAnamneseForm({ token }: { token: string }) {
     );
   }
 
-  // Fehler-Zustand (Token ungueltig, abgelaufen, etc.)
+  // Fehler-Zustand (Token ungültig, abgelaufen, etc.)
   if (error && !formData) {
     return (
       <div className="flex flex-col items-center justify-center rounded-2xl border border-red-200 bg-red-50 px-8 py-16 text-center">
         <AlertCircle className="h-14 w-14 text-red-400" />
         <h1 className="mt-4 text-xl font-semibold text-[#2D3142]">
-          Bogen nicht verfuegbar
+          Bogen nicht verfügbar
         </h1>
         <p className="mt-2 text-gray-600">{error}</p>
         <p className="mt-4 text-sm text-gray-500">
-          Bitte wenden Sie sich an Ihre Arztpraxis fuer einen neuen Link.
+          Bitte wenden Sie sich an Ihre Arztpraxis für einen neuen Link.
         </p>
       </div>
     );
@@ -207,11 +207,11 @@ export default function PatientAnamneseForm({ token }: { token: string }) {
           Ihr Anamnese-Bogen wurde erfolgreich eingereicht.
         </p>
         <p className="mt-2 text-sm text-gray-500">
-          Ihr Arzt erhaelt Ihre Angaben automatisch vor dem Termin.
+          Ihr Arzt erhält Ihre Angaben automatisch vor dem Termin.
         </p>
         <div className="mt-6 rounded-lg bg-white px-6 py-4 shadow-sm">
           <p className="text-sm text-gray-500">
-            Sie koennen dieses Fenster jetzt schliessen.
+            Sie können dieses Fenster jetzt schließen.
           </p>
         </div>
       </div>
@@ -242,11 +242,11 @@ export default function PatientAnamneseForm({ token }: { token: string }) {
           <p className="mt-2 text-gray-600">{formData.template_description}</p>
         )}
         <p className="mt-3 text-sm text-gray-500">
-          Bitte fuellen Sie die folgenden Felder aus. Pflichtfelder sind mit *
+          Bitte füllen Sie die folgenden Felder aus. Pflichtfelder sind mit *
           markiert.
         </p>
         <p className="mt-1 text-xs text-gray-400">
-          Ihre Angaben werden verschluesselt uebertragen und sind nur fuer Ihren
+          Ihre Angaben werden verschlüsselt übertragen und sind nur für Ihren
           Arzt sichtbar.
         </p>
       </div>
@@ -293,7 +293,7 @@ export default function PatientAnamneseForm({ token }: { token: string }) {
 
       {/* Navigation + Submit */}
       <div className="mt-8 flex items-center justify-between">
-        {/* Zurueck-Button */}
+        {/* Zurück-Button */}
         {currentPage > 0 ? (
           <button
             onClick={() => setCurrentPage(currentPage - 1)}
@@ -301,7 +301,7 @@ export default function PatientAnamneseForm({ token }: { token: string }) {
             style={{ minHeight: "52px" }}
           >
             <ChevronLeft className="h-5 w-5" />
-            Zurueck
+            Zurück
           </button>
         ) : (
           <div />
@@ -337,7 +337,7 @@ export default function PatientAnamneseForm({ token }: { token: string }) {
       {/* Datenschutz-Hinweis */}
       <div className="mt-8 rounded-lg bg-gray-50 px-4 py-3 text-center text-xs text-gray-400">
         <p>
-          Ihre Daten werden mit AES-256-GCM verschluesselt und auf Servern in
+          Ihre Daten werden mit AES-256-GCM verschlüsselt und auf Servern in
           Deutschland gespeichert.
         </p>
         <p className="mt-1">

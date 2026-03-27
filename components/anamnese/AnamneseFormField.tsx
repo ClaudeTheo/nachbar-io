@@ -2,7 +2,7 @@
 
 // Nachbar.io — Einzelnes Anamnese-Formularfeld
 // Rendert verschiedene Feldtypen dynamisch
-// Senior-Mode: Grosse Targets (min 48px), klare Labels
+// Senior-Mode: Große Targets (min 48px), klare Labels
 
 interface AnamnesisField {
   id: string;
@@ -76,7 +76,7 @@ export default function AnamneseFormField({
             onChange={(e) => onChange(e.target.value)}
             className={`w-full rounded-lg border px-4 py-3 text-base text-[#2D3142] focus:outline-none focus:ring-1 ${borderClass}`}
           >
-            <option value="">Bitte waehlen...</option>
+            <option value="">Bitte wählen...</option>
             {field.options.map((opt) => (
               <option key={opt} value={opt}>
                 {opt}
@@ -193,7 +193,7 @@ export default function AnamneseFormField({
             />
             <div className="mt-1 flex justify-between text-xs text-gray-400">
               <span>Kein Schmerz</span>
-              <span>Staerkster Schmerz</span>
+              <span>Stärkster Schmerz</span>
             </div>
           </div>
         )}

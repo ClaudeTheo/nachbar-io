@@ -19,7 +19,7 @@ const VALID_METHODS: InviteChannel[] = ["email", "whatsapp", "code", "sms"];
 /**
  * POST /api/invite/send
  *
- * Verifizierter Nutzer laedt einen Nachbarn ein.
+ * Verifizierter Nutzer lädt einen Nachbarn ein.
  * Body: {
  *   street, houseNumber,
  *   method: 'email' | 'whatsapp' | 'code' | 'sms',
@@ -35,7 +35,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Nicht autorisiert" }, { status: 401 });
   }
 
-  // Nutzer-Profil pruefen (muss verifiziert sein)
+  // Nutzer-Profil prüfen (muss verifiziert sein)
   const { data: profile } = await supabase
     .from("users")
     .select("trust_level, display_name")
@@ -95,7 +95,7 @@ export async function POST(request: NextRequest) {
     }
   }
 
-  // Plan-basiertes Rate-Limit pruefen
+  // Plan-basiertes Rate-Limit prüfen
   const userPlan = await getUserPlan(supabase, user.id);
   const { allowed, remaining, limit } = await checkInviteLimit(supabase, user.id, userPlan);
   if (!allowed) {
@@ -114,7 +114,7 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  // Quartier-ID des Einladenden ermitteln (fuer Haushalt + Einladung)
+  // Quartier-ID des Einladenden ermitteln (für Haushalt + Einladung)
   const inviterQuarterId = await getUserQuarterId(supabase, user.id);
 
   // Haushalt suchen oder automatisch anlegen
@@ -202,7 +202,7 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  // Personalisierte WhatsApp-URL (fuer alle Methoden als Fallback)
+  // Personalisierte WhatsApp-URL (für alle Methoden als Fallback)
   const whatsappText = buildWhatsAppMessage(profile.display_name, recipientName, registerUrl);
   const whatsappUrl = buildWhatsAppUrl(whatsappText, recipientPhone);
 

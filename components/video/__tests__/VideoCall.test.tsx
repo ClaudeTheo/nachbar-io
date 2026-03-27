@@ -1,12 +1,12 @@
 // components/video/__tests__/VideoCall.test.tsx
-// Nachbar Plus — Tests fuer VideoCall Komponente
-// Prueft: Rendering, Senior-Modus Touch-Targets, Hangup-Callback
+// Nachbar Plus — Tests für VideoCall Komponente
+// Prüft: Rendering, Senior-Modus Touch-Targets, Hangup-Callback
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, fireEvent, cleanup } from '@testing-library/react';
 import { VideoCall } from '../VideoCall';
 
-// Mock WebRTC APIs (nicht in jsdom verfuegbar)
+// Mock WebRTC APIs (nicht in jsdom verfügbar)
 const mockGetUserMedia = vi.fn().mockResolvedValue({
   getTracks: () => [],
   getAudioTracks: () => [{ enabled: true }],
@@ -27,7 +27,7 @@ const mockRTCPeerConnection = vi.fn().mockImplementation(() => ({
   onconnectionstatechange: null,
 }));
 
-// Mock Supabase Client (fuer WebRTCSignaling)
+// Mock Supabase Client (für WebRTCSignaling)
 vi.mock('@/lib/supabase/client', () => ({
   createClient: () => ({
     channel: () => ({
@@ -50,7 +50,7 @@ vi.mock('lucide-react', () => ({
 }));
 
 beforeEach(() => {
-  // WebRTC Globals in jsdom einfuegen
+  // WebRTC Globals in jsdom einfügen
   Object.defineProperty(globalThis, 'RTCPeerConnection', {
     value: mockRTCPeerConnection,
     writable: true,
@@ -108,7 +108,7 @@ describe('VideoCall', () => {
     expect(onHangup).toHaveBeenCalledTimes(1);
   });
 
-  it('Auflegen-Button hat 80px Mindestgroesse (Senior-Modus)', () => {
+  it('Auflegen-Button hat 80px Mindestgröße (Senior-Modus)', () => {
     render(<VideoCall {...defaultProps} />);
     const hangupBtn = screen.getByTestId('hangup-button');
 
@@ -127,7 +127,7 @@ describe('VideoCall', () => {
     expect(camBtn).toBeInTheDocument();
   });
 
-  it('Toggle-Buttons haben mindestens 64px Groesse (w-16 h-16)', () => {
+  it('Toggle-Buttons haben mindestens 64px Größe (w-16 h-16)', () => {
     render(<VideoCall {...defaultProps} />);
 
     const micBtn = screen.getByTestId('mic-toggle');
@@ -140,7 +140,7 @@ describe('VideoCall', () => {
     expect(camBtn.className).toContain('h-16');
   });
 
-  it('hat ein aria-label fuer Barrierefreiheit', () => {
+  it('hat ein aria-label für Barrierefreiheit', () => {
     render(<VideoCall {...defaultProps} />);
     const dialog = screen.getByRole('dialog');
     expect(dialog).toHaveAttribute('aria-label', 'Video-Anruf');

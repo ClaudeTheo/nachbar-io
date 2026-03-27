@@ -1,9 +1,9 @@
 // GET /api/quarters/find-by-location?lat=X&lng=Y
-// Geo-basierte Quartier-Zuweisung fuer B2C-Registrierung
+// Geo-basierte Quartier-Zuweisung für B2C-Registrierung
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 
-// Service-Client fuer Geo-Queries (umgeht RLS)
+// Service-Client für Geo-Queries (umgeht RLS)
 function getServiceClient() {
   return createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -25,14 +25,14 @@ export async function GET(request: NextRequest) {
   // Validierung: Koordinaten im plausiblen Bereich
   if (lat < -90 || lat > 90 || lng < -180 || lng > 180) {
     return NextResponse.json(
-      { error: "Ungueltige Koordinaten" },
+      { error: "Ungültige Koordinaten" },
       { status: 400 }
     );
   }
 
   const supabase = getServiceClient();
 
-  // 1) Aktives Quartier dessen geo_boundary den Punkt enthaelt?
+  // 1) Aktives Quartier dessen geo_boundary den Punkt enthält?
   const { data: containingQuarter } = await supabase.rpc("find_quarter_containing_point", {
     p_lat: lat,
     p_lng: lng,

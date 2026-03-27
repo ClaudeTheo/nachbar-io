@@ -1,6 +1,6 @@
 // app/api/organizations/[id]/webhooks/route.ts
-// Nachbar.io — Webhook-Verwaltung fuer Pro Community Organisationen
-// CRUD fuer Webhook-Konfigurationen (nur org_admin)
+// Nachbar.io — Webhook-Verwaltung für Pro Community Organisationen
+// CRUD für Webhook-Konfigurationen (nur org_admin)
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient as createServiceClient } from '@supabase/supabase-js';
@@ -20,7 +20,7 @@ function getServiceDb() {
 /**
  * GET /api/organizations/[id]/webhooks
  * Listet alle konfigurierten Webhooks der Organisation auf.
- * Secret wird NICHT zurueckgegeben (nur die letzten 4 Zeichen).
+ * Secret wird NICHT zurückgegeben (nur die letzten 4 Zeichen).
  * Erfordert Pro-Abo + org_admin oder Plattform-Admin.
  */
 export async function GET(
@@ -99,7 +99,7 @@ export async function POST(
   try {
     body = await request.json();
   } catch {
-    return NextResponse.json({ error: 'Ungueltiges Anfrage-Format' }, { status: 400 });
+    return NextResponse.json({ error: 'Ungültiges Anfrage-Format' }, { status: 400 });
   }
 
   const url = body.url as string | undefined;
@@ -149,7 +149,7 @@ export async function POST(
       details: { url, events },
     });
 
-  // Secret wird EINMALIG bei Erstellung zurueckgegeben
+  // Secret wird EINMALIG bei Erstellung zurückgegeben
   return NextResponse.json(webhook, { status: 201 });
 }
 
@@ -185,7 +185,7 @@ export async function DELETE(
   try {
     body = await request.json();
   } catch {
-    return NextResponse.json({ error: 'Ungueltiges Anfrage-Format' }, { status: 400 });
+    return NextResponse.json({ error: 'Ungültiges Anfrage-Format' }, { status: 400 });
   }
 
   const webhookId = body.webhook_id as string | undefined;
@@ -195,7 +195,7 @@ export async function DELETE(
 
   const serviceDb = getServiceDb();
 
-  // Pruefen ob Webhook zur Organisation gehoert
+  // Prüfen ob Webhook zur Organisation gehört
   const { data: existing } = await serviceDb
     .from('org_webhooks')
     .select('id, url')
@@ -214,7 +214,7 @@ export async function DELETE(
 
   if (error) {
     console.error('[organizations/webhooks] DELETE Fehler:', error);
-    return NextResponse.json({ error: 'Webhook konnte nicht geloescht werden' }, { status: 500 });
+    return NextResponse.json({ error: 'Webhook konnte nicht gelöscht werden' }, { status: 500 });
   }
 
   // Audit-Log

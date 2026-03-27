@@ -77,7 +77,7 @@ export default function ConnectionManager({ role }: ConnectionManagerProps) {
               <p className="text-3xl font-mono font-bold tracking-[0.3em] text-[#4CAF87] mb-2">
                 {inviteCode}
               </p>
-              <p className="text-xs text-gray-400">Gueltig fuer 24 Stunden</p>
+              <p className="text-xs text-gray-400">Gültig für 24 Stunden</p>
             </div>
           ) : (
             <button
@@ -112,7 +112,7 @@ export default function ConnectionManager({ role }: ConnectionManagerProps) {
                   <p className="text-sm text-gray-500">
                     {conn.source === "invitation"
                       ? "Per Einladung"
-                      : "Ueber Hilfe-Gesuch"}
+                      : "Über Hilfe-Gesuch"}
                   </p>
                 </div>
                 <button
@@ -128,7 +128,7 @@ export default function ConnectionManager({ role }: ConnectionManagerProps) {
         </div>
       )}
 
-      {/* Wartende Verbindungen (Senior muss bestaetigen) */}
+      {/* Wartende Verbindungen (Senior muss bestätigen) */}
       {pending.length > 0 && role === "senior" && (
         <div>
           <h3 className="font-semibold text-gray-900 mb-3">
@@ -141,7 +141,7 @@ export default function ConnectionManager({ role }: ConnectionManagerProps) {
                 className="rounded-xl border border-amber-200 bg-amber-50 p-4"
               >
                 <p className="text-sm text-gray-600 mb-3">
-                  Ein Helfer moechte sich mit Ihnen verbinden.
+                  Ein Helfer möchte sich mit Ihnen verbinden.
                 </p>
                 <div className="flex gap-3">
                   <button
@@ -149,7 +149,7 @@ export default function ConnectionManager({ role }: ConnectionManagerProps) {
                     className="flex-1 rounded-xl bg-[#4CAF87] px-4 py-3 text-white font-semibold
                                min-h-[52px] active:scale-[0.98] transition-transform"
                   >
-                    Bestaetigen
+                    Bestätigen
                   </button>
                   <button
                     onClick={() => revokeConnection(conn.id)}
@@ -170,7 +170,7 @@ export default function ConnectionManager({ role }: ConnectionManagerProps) {
           <p className="text-lg mb-1">Noch keine Verbindungen</p>
           <p className="text-sm">
             {role === "senior"
-              ? "Laden Sie einen Helfer ein oder warten Sie auf eine Anfrage ueber ein Hilfe-Gesuch."
+              ? "Laden Sie einen Helfer ein oder warten Sie auf eine Anfrage über ein Hilfe-Gesuch."
               : "Melden Sie sich auf ein Hilfe-Gesuch oder geben Sie einen Einladungs-Code ein."}
           </p>
         </div>

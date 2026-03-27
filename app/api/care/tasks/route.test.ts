@@ -1,5 +1,5 @@
 // app/api/care/tasks/route.test.ts
-// Nachbar.io — Tests fuer Aufgaben API-Route (GET + POST)
+// Nachbar.io — Tests für Aufgaben API-Route (GET + POST)
 // Testet: Auth, Subscription-Gate, Validierung, Kategorie, Urgency, Quartier-Zuordnung
 
 import { describe, it, expect, vi, beforeEach } from "vitest";
@@ -37,7 +37,7 @@ function createChainProxy(resolveValue: {
         return (resolve: (v: unknown) => void, reject?: (e: unknown) => void) =>
           Promise.resolve(resolveValue).then(resolve, reject);
       }
-      // single() gibt ein Promise zurueck
+      // single() gibt ein Promise zurück
       if (prop === "single") {
         return () => Promise.resolve(resolveValue);
       }
@@ -56,7 +56,7 @@ const mockHouseholdResult = {
   error: null,
 };
 
-// Merke: mockHouseholdSingle muss pro Test ueberschreibbar sein
+// Merke: mockHouseholdSingle muss pro Test überschreibbar sein
 const _mockHouseholdSingle = vi.fn().mockResolvedValue(mockHouseholdResult);
 
 const mockFrom = vi.fn().mockImplementation((table: string) => {
@@ -113,7 +113,7 @@ describe("GET /api/care/tasks", () => {
     expect(res.status).toBe(401);
   });
 
-  it("prueft Subscription-Gate (Plus erforderlich)", async () => {
+  it("prüft Subscription-Gate (Plus erforderlich)", async () => {
     mockRequireSubscription.mockResolvedValue(
       NextResponse.json({ error: "Plus erforderlich" }, { status: 403 }),
     );
@@ -121,21 +121,21 @@ describe("GET /api/care/tasks", () => {
     expect(res.status).toBe(403);
   });
 
-  it("laedt offene Aufgaben (Standard)", async () => {
+  it("lädt offene Aufgaben (Standard)", async () => {
     const res = await GET(createGetRequest());
     expect(res.status).toBe(200);
     const json = await res.json();
     expect(json).toHaveLength(2);
   });
 
-  it("weist ungueltige Kategorie ab", async () => {
-    const res = await GET(createGetRequest({ category: "ungueltig" }));
+  it("weist ungültige Kategorie ab", async () => {
+    const res = await GET(createGetRequest({ category: "ungültig" }));
     expect(res.status).toBe(400);
     const json = await res.json();
-    expect(json.error).toContain("Ungueltige Kategorie");
+    expect(json.error).toContain("Ungültige Kategorie");
   });
 
-  it("akzeptiert gueltige Kategorien", async () => {
+  it("akzeptiert gültige Kategorien", async () => {
     for (const cat of [
       "transport",
       "shopping",
@@ -199,25 +199,25 @@ describe("POST /api/care/tasks", () => {
     expect(json.error).toContain("1000 Zeichen");
   });
 
-  it("weist ungueltige Kategorie ab", async () => {
+  it("weist ungültige Kategorie ab", async () => {
     const res = await POST(
       createPostRequest({ title: "Test", category: "flugzeug" }),
     );
     expect(res.status).toBe(400);
     const json = await res.json();
-    expect(json.error).toContain("Ungueltige Kategorie");
+    expect(json.error).toContain("Ungültige Kategorie");
   });
 
-  it("weist ungueltige Dringlichkeit ab", async () => {
+  it("weist ungültige Dringlichkeit ab", async () => {
     const res = await POST(
       createPostRequest({ title: "Test", urgency: "sofort_bitte" }),
     );
     expect(res.status).toBe(400);
     const json = await res.json();
-    expect(json.error).toContain("Ungueltige Dringlichkeit");
+    expect(json.error).toContain("Ungültige Dringlichkeit");
   });
 
-  it("akzeptiert gueltige Dringlichkeitsstufen", async () => {
+  it("akzeptiert gültige Dringlichkeitsstufen", async () => {
     for (const urg of ["low", "normal", "high", "urgent"]) {
       mockRequireAuth.mockResolvedValue({
         supabase: mockSupabase,
@@ -237,7 +237,7 @@ describe("POST /api/care/tasks", () => {
   });
 
   it("gibt 403 wenn User keinem Quartier zugeordnet", async () => {
-    // Ueberschreibe mockFrom fuer diesen Test: household_members liefert Fehler
+    // Überschreibe mockFrom für diesen Test: household_members liefert Fehler
     mockFrom.mockImplementationOnce((table: string) => {
       if (table === "household_members") {
         return {
@@ -254,7 +254,7 @@ describe("POST /api/care/tasks", () => {
     expect(json.error).toContain("keinem Quartier");
   });
 
-  it("weist ungueltiges JSON ab", async () => {
+  it("weist ungültiges JSON ab", async () => {
     const req = new NextRequest("http://localhost:3000/api/care/tasks", {
       method: "POST",
       headers: { "Content-Type": "application/json" },

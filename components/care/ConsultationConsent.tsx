@@ -36,8 +36,8 @@ export function ConsultationConsent({ providerType, onConsented }: Props) {
       </h2>
 
       <div className="space-y-3 text-lg text-anthrazit/80">
-        <p>Ihre Daten werden verschluesselt uebertragen und nicht aufgezeichnet.</p>
-        <p>Die Teilnahme ist freiwillig. Sie koennen jederzeit auflegen.</p>
+        <p>Ihre Daten werden verschlüsselt übertragen und nicht aufgezeichnet.</p>
+        <p>Die Teilnahme ist freiwillig. Sie können jederzeit auflegen.</p>
         <p>Im Raum soll sich nur die Person befinden, die an der Sprechstunde teilnimmt.</p>
         {providerType === 'medical' && (
           <p className="font-medium text-anthrazit">

@@ -1,5 +1,5 @@
 // app/api/care/stats/overview/route.ts
-// Nachbar.io — Plattform-Uebersicht Statistiken (Admin)
+// Nachbar.io — Plattform-Übersicht Statistiken (Admin)
 
 import { requireAuth, requireAdmin, errorResponse, successResponse, careLog } from '@/lib/care/api-helpers';
 
@@ -14,12 +14,12 @@ export async function GET() {
 
   const { supabase, user } = auth;
   const isAdmin = await requireAdmin(supabase, user.id);
-  if (!isAdmin) return errorResponse('Nur fuer Administratoren', 403);
+  if (!isAdmin) return errorResponse('Nur für Administratoren', 403);
 
   careLog('stats', 'overview', { adminId: user.id });
 
   try {
-    // Alle Abfragen parallel ausfuehren
+    // Alle Abfragen parallel ausführen
     const now = new Date();
     const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000).toISOString();
 
@@ -98,7 +98,7 @@ export async function GET() {
         sosAlerts: {
           total: totalSos,
           last30Days: sos30DResult.count ?? 0,
-          avgResponseMinutes: null, // Komplexe Berechnung, spaeter
+          avgResponseMinutes: null, // Komplexe Berechnung, später
           resolutionRate: totalSos > 0 ? Math.round((resolvedSos / totalSos) * 100) : 0,
         },
         checkins: {

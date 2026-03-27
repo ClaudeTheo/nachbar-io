@@ -69,7 +69,7 @@ const STATUS_CONFIG: Record<TaskStatus, { label: string; classes: string }> = {
   claimed:   { label: 'Angenommen',  classes: 'bg-amber-100 text-amber-700' },
   in_progress: { label: 'In Arbeit', classes: 'bg-purple-100 text-purple-700' },
   done:      { label: 'Erledigt',    classes: 'bg-green-100 text-green-700' },
-  confirmed: { label: 'Bestaetigt', classes: 'bg-emerald-100 text-emerald-800' },
+  confirmed: { label: 'Bestätigt', classes: 'bg-emerald-100 text-emerald-800' },
   cancelled: { label: 'Storniert',   classes: 'bg-gray-100 text-gray-500' },
 };
 
@@ -99,7 +99,7 @@ export function TaskCard({ task, currentUserId, onAction }: TaskCardProps) {
   const isCreator = task.creator_id === currentUserId;
   const isClaimer = task.claimer_id === currentUserId;
 
-  // API-Aufruf fuer Status-Aenderungen
+  // API-Aufruf für Status-Änderungen
   async function handleAction(action: string) {
     setError(null);
     setLoading(true);
@@ -199,7 +199,7 @@ export function TaskCard({ task, currentUserId, onAction }: TaskCardProps) {
           </button>
         )}
 
-        {/* Angenommen + ist Helfer → "Erledigt" + "Zurueckziehen" */}
+        {/* Angenommen + ist Helfer → "Erledigt" + "Zurückziehen" */}
         {task.status === 'claimed' && isClaimer && (
           <>
             <button
@@ -216,12 +216,12 @@ export function TaskCard({ task, currentUserId, onAction }: TaskCardProps) {
               className="rounded-lg border-2 border-gray-300 px-4 py-2.5 text-sm font-medium text-anthrazit hover:bg-gray-50 active:bg-gray-100 disabled:opacity-50"
               style={{ minHeight: '48px', touchAction: 'manipulation' }}
             >
-              {loading ? '...' : 'Zurueckziehen'}
+              {loading ? '...' : 'Zurückziehen'}
             </button>
           </>
         )}
 
-        {/* Erledigt + ist Ersteller → "Bestaetigen — Danke!" */}
+        {/* Erledigt + ist Ersteller → "Bestätigen — Danke!" */}
         {task.status === 'done' && isCreator && (
           <button
             onClick={() => handleAction('confirm')}
@@ -229,7 +229,7 @@ export function TaskCard({ task, currentUserId, onAction }: TaskCardProps) {
             className="rounded-lg bg-[#4CAF87] px-4 py-2.5 text-sm font-bold text-white hover:bg-green-600 active:bg-green-700 disabled:opacity-50"
             style={{ minHeight: '48px', touchAction: 'manipulation' }}
           >
-            {loading ? '...' : 'Bestaetigen \u2014 Danke!'}
+            {loading ? '...' : 'Bestätigen \u2014 Danke!'}
           </button>
         )}
 

@@ -32,10 +32,10 @@ export function UserManagement({ users, onRefresh }: UserManagementProps) {
   const [createdCredentials, setCreatedCredentials] = useState<{ email: string; password: string } | null>(null);
   const [copiedPassword, setCopiedPassword] = useState(false);
 
-  // Admin: Konto fuer Nachbar erstellen
+  // Admin: Konto für Nachbar erstellen
   async function createUserAccount() {
     if (!newUserName.trim() || !newUserStreet || !newUserHouseNumber.trim()) {
-      toast.error("Name, Strasse und Hausnummer sind erforderlich");
+      toast.error("Name, Straße und Hausnummer sind erforderlich");
       return;
     }
 
@@ -100,11 +100,11 @@ export function UserManagement({ users, onRefresh }: UserManagementProps) {
     setUpdating(null);
   }
 
-  // Aktivitaets-Filter
+  // Aktivitäts-Filter
   const thirtyDaysAgo = new Date();
   thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
-  // Filter nach Suchbegriff und Aktivitaet
+  // Filter nach Suchbegriff und Aktivität
   const filtered = users.filter((u) => {
     const matchesSearch =
       u.display_name.toLowerCase().includes(search.toLowerCase()) ||
@@ -121,7 +121,7 @@ export function UserManagement({ users, onRefresh }: UserManagementProps) {
     return true;
   });
 
-  // Trust-Level aendern
+  // Trust-Level ändern
   async function changeTrustLevel(userId: string, newLevel: TrustLevel) {
     setUpdating(userId);
     const supabase = createClient();
@@ -131,9 +131,9 @@ export function UserManagement({ users, onRefresh }: UserManagementProps) {
       .eq("id", userId);
 
     if (error) {
-      toast.error("Fehler beim Aendern des Trust-Levels");
+      toast.error("Fehler beim Ändern des Trust-Levels");
     } else {
-      toast.success(`Trust-Level auf "${TRUST_LEVELS[newLevel].label}" geaendert`);
+      toast.success(`Trust-Level auf "${TRUST_LEVELS[newLevel].label}" geändert`);
       onRefresh();
     }
     setUpdating(null);
@@ -149,7 +149,7 @@ export function UserManagement({ users, onRefresh }: UserManagementProps) {
       .eq("id", userId);
 
     if (error) {
-      toast.error("Fehler beim Aendern des Admin-Status");
+      toast.error("Fehler beim Ändern des Admin-Status");
     } else {
       toast.success(currentIsAdmin ? "Admin-Rechte entzogen" : "Admin-Rechte vergeben");
       onRefresh();
@@ -157,7 +157,7 @@ export function UserManagement({ users, onRefresh }: UserManagementProps) {
     setUpdating(null);
   }
 
-  // UI-Modus aendern
+  // UI-Modus ändern
   async function changeUiMode(userId: string, newMode: "active" | "senior") {
     setUpdating(userId);
     const supabase = createClient();
@@ -167,9 +167,9 @@ export function UserManagement({ users, onRefresh }: UserManagementProps) {
       .eq("id", userId);
 
     if (error) {
-      toast.error("Fehler beim Aendern des Modus");
+      toast.error("Fehler beim Ändern des Modus");
     } else {
-      toast.success(`Modus auf "${newMode === "senior" ? "Seniorenmodus" : "Normal"}" geaendert`);
+      toast.success(`Modus auf "${newMode === "senior" ? "Seniorenmodus" : "Normal"}" geändert`);
       onRefresh();
     }
     setUpdating(null);
@@ -180,14 +180,14 @@ export function UserManagement({ users, onRefresh }: UserManagementProps) {
 
   return (
     <div className="space-y-4">
-      {/* Konto fuer Nachbar erstellen — kompakt wenn eingeklappt */}
+      {/* Konto für Nachbar erstellen — kompakt wenn eingeklappt */}
       {!showCreateForm ? (
         <button
           onClick={() => setShowCreateForm(true)}
           className="flex items-center gap-2 text-sm font-medium text-quartier-green hover:text-quartier-green-dark transition-colors py-1"
         >
           <UserPlus className="h-4 w-4" />
-          Konto fuer Nachbar erstellen
+          Konto für Nachbar erstellen
           <ChevronDown className="h-3 w-3" />
         </button>
       ) : (
@@ -198,19 +198,19 @@ export function UserManagement({ users, onRefresh }: UserManagementProps) {
               className="flex w-full items-center justify-between"
             >
               <span className="flex items-center gap-2 text-sm font-semibold text-quartier-green">
-                <UserPlus className="h-4 w-4" /> Konto fuer Nachbar erstellen
+                <UserPlus className="h-4 w-4" /> Konto für Nachbar erstellen
               </span>
               <ChevronUp className="h-4 w-4 text-muted-foreground" />
             </button>
             <div className="space-y-2 pt-2 border-t">
               <Input
-                placeholder="Name (z.B. Erika Mueller)"
+                placeholder="Name (z.B. Erika Müller)"
                 value={newUserName}
                 onChange={(e) => setNewUserName(e.target.value)}
               />
               <div className="grid grid-cols-2 gap-2">
                 <Input
-                  placeholder="Strasse..."
+                  placeholder="Straße..."
                   value={newUserStreet}
                   onChange={(e) => setNewUserStreet(e.target.value)}
                 />
@@ -305,7 +305,7 @@ export function UserManagement({ users, onRefresh }: UserManagementProps) {
           />
         </div>
 
-        {/* Aktivitaets-Filter */}
+        {/* Aktivitäts-Filter */}
         <div className="flex gap-1.5">
           <Button size="sm" variant={activityFilter === "all" ? "default" : "outline"} className="text-xs h-7" onClick={() => setActivityFilter("all")}>
             Alle ({users.length})
@@ -404,7 +404,7 @@ export function UserManagement({ users, onRefresh }: UserManagementProps) {
                 {isExpanded && (
                   <CardContent className="border-t bg-muted/10 p-3 space-y-3">
                     <div>
-                      <p className="text-xs font-medium text-muted-foreground mb-1.5">Trust-Level aendern</p>
+                      <p className="text-xs font-medium text-muted-foreground mb-1.5">Trust-Level ändern</p>
                       <div className="flex flex-wrap gap-1.5">
                         {trustLevelOrder.map((level) => (
                           <Button

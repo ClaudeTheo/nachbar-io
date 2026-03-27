@@ -1,5 +1,5 @@
 // app/api/care/sos/[id]/respond/route.test.ts
-// Nachbar.io — Tests fuer SOS-Respond API-Route
+// Nachbar.io — Tests für SOS-Respond API-Route
 // Testet: Auth, Validierung, Zugriffskontrolle (nur verifizierte Helfer)
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
@@ -58,7 +58,7 @@ describe('POST /api/care/sos/[id]/respond', () => {
     expect(json.error).toContain('response_type');
   });
 
-  it('gibt 400 bei ungueltigem response_type', async () => {
+  it('gibt 400 bei ungültigem response_type', async () => {
     mockSupabase.setUser({ id: 'helfer-1' });
     const res = await POST(createRequest({ response_type: 'maybe_later' }), { params: mockParams });
     expect(res.status).toBe(400);
@@ -66,7 +66,7 @@ describe('POST /api/care/sos/[id]/respond', () => {
     expect(json.error).toContain('Ungültiger Reaktionstyp');
   });
 
-  it('gibt 400 bei ungueltigem JSON', async () => {
+  it('gibt 400 bei ungültigem JSON', async () => {
     mockSupabase.setUser({ id: 'helfer-1' });
     const req = new NextRequest('http://localhost:3000/api/care/sos/alert-1/respond', {
       method: 'POST',

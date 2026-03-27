@@ -1,6 +1,6 @@
 // app/api/care/sos/route.test.ts
-// Nachbar.io — API-Route-Tests fuer SOS-Endpunkt (POST + GET)
-// Testet: Auth, Validierung, Verschluesselung, Feature-Gate, Benachrichtigungen
+// Nachbar.io — API-Route-Tests für SOS-Endpunkt (POST + GET)
+// Testet: Auth, Validierung, Verschlüsselung, Feature-Gate, Benachrichtigungen
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { NextRequest } from 'next/server';
@@ -70,7 +70,7 @@ function createGetRequest(params: Record<string, string> = {}): NextRequest {
 
 const TEST_USER = { id: 'user-senior-1', email: 'senior@test.de' };
 
-// Echt verschluesselter Wert fuer Mock-Daten (Decryption-safe)
+// Echt verschlüsselter Wert für Mock-Daten (Decryption-safe)
 const ENCRYPTED_NOTE = encryptField('Test-Notiz')!;
 
 // --- Tests ---
@@ -83,7 +83,7 @@ describe('POST /api/care/sos', () => {
   });
 
   describe('Authentifizierung', () => {
-    it('gibt 401 zurueck ohne authentifizierten User', async () => {
+    it('gibt 401 zurück ohne authentifizierten User', async () => {
       mockSupabase.setUser(null);
 
       const response = await POST(createPostRequest({ category: 'general_help' }));
@@ -95,7 +95,7 @@ describe('POST /api/care/sos', () => {
   });
 
   describe('Validierung', () => {
-    it('gibt 400 zurueck ohne Kategorie', async () => {
+    it('gibt 400 zurück ohne Kategorie', async () => {
       const response = await POST(createPostRequest({}));
       expect(response.status).toBe(400);
 
@@ -103,7 +103,7 @@ describe('POST /api/care/sos', () => {
       expect(body.error).toContain('Kategorie');
     });
 
-    it('gibt 400 zurueck bei ungueltiger Kategorie', async () => {
+    it('gibt 400 zurück bei ungültiger Kategorie', async () => {
       const response = await POST(createPostRequest({ category: 'invalid_category' }));
       expect(response.status).toBe(400);
 
@@ -111,7 +111,7 @@ describe('POST /api/care/sos', () => {
       expect(body.error).toContain('Ungültige Kategorie');
     });
 
-    it('gibt 400 zurueck bei ungueltigem JSON', async () => {
+    it('gibt 400 zurück bei ungültigem JSON', async () => {
       const request = new NextRequest('http://localhost:3000/api/care/sos', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -123,7 +123,7 @@ describe('POST /api/care/sos', () => {
   });
 
   describe('Feature-Gate', () => {
-    it('gibt 403 zurueck wenn Feature nicht im Abo-Plan', async () => {
+    it('gibt 403 zurück wenn Feature nicht im Abo-Plan', async () => {
       vi.mocked(canAccessFeature).mockResolvedValueOnce(false);
 
       const response = await POST(createPostRequest({ category: 'general_help' }));
@@ -134,7 +134,7 @@ describe('POST /api/care/sos', () => {
       expect(body.requiredFeature).toBe('sos_all');
     });
 
-    it('prueft medical_emergency_sos Feature fuer medizinischen Notfall', async () => {
+    it('prüft medical_emergency_sos Feature für medizinischen Notfall', async () => {
       mockSupabase.addResponse('care_sos_alerts', {
         data: { id: 'alert-1', status: 'triggered', category: 'medical_emergency', notes: null },
         error: null,
@@ -152,7 +152,7 @@ describe('POST /api/care/sos', () => {
   });
 
   describe('Erfolgreicher SOS-Alert', () => {
-    it('erstellt SOS-Alert und gibt 201 zurueck', async () => {
+    it('erstellt SOS-Alert und gibt 201 zurück', async () => {
       mockSupabase.addResponse('care_sos_alerts', {
         data: { id: 'alert-new-1', status: 'triggered', category: 'general_help', notes: null, source: 'app' },
         error: null,
@@ -167,7 +167,7 @@ describe('POST /api/care/sos', () => {
       expect(body.category).toBe('general_help');
     });
 
-    it('verschluesselt notes-Feld (DSGVO Art. 9)', async () => {
+    it('verschlüsselt notes-Feld (DSGVO Art. 9)', async () => {
       // Custom from-Mock der insert-Daten abfaengt
       const insertedData: Record<string, unknown>[] = [];
       mockSupabase.fromFn.mockImplementation((table: string) => {
@@ -249,7 +249,7 @@ describe('POST /api/care/sos', () => {
   });
 
   describe('Fehlerbehandlung', () => {
-    it('gibt 500 zurueck bei DB-Insert-Fehler', async () => {
+    it('gibt 500 zurück bei DB-Insert-Fehler', async () => {
       mockSupabase.addResponse('care_sos_alerts', {
         data: null,
         error: { message: 'DB connection lost' },
@@ -268,17 +268,17 @@ describe('GET /api/care/sos', () => {
     mockSupabase.setUser(TEST_USER);
   });
 
-  it('gibt 401 zurueck ohne authentifizierten User', async () => {
+  it('gibt 401 zurück ohne authentifizierten User', async () => {
     mockSupabase.setUser(null);
 
     const response = await GET(createGetRequest());
     expect(response.status).toBe(401);
   });
 
-  it('gibt Alerts zurueck fuer authentifizierten User (Admin)', async () => {
+  it('gibt Alerts zurück für authentifizierten User (Admin)', async () => {
     // Admin-Check
     mockSupabase.addResponse('users', { data: { is_admin: true }, error: null });
-    // Alerts query — Array mit gueltig entschluesselbaren Daten
+    // Alerts query — Array mit gültig entschlüsselbaren Daten
     mockSupabase.addResponse('care_sos_alerts', {
       data: [
         { id: 'alert-1', status: 'triggered', notes: null, responses: [] },
@@ -292,11 +292,11 @@ describe('GET /api/care/sos', () => {
 
     const body = await response.json();
     expect(body).toHaveLength(2);
-    // Verschluesseltes Feld wurde entschluesselt
+    // Verschlüsseltes Feld wurde entschlüsselt
     expect(body[1].notes).toBe('Test-Notiz');
   });
 
-  it('gibt 500 zurueck bei DB-Query-Fehler', async () => {
+  it('gibt 500 zurück bei DB-Query-Fehler', async () => {
     mockSupabase.addResponse('users', { data: { is_admin: true }, error: null });
     mockSupabase.addResponse('care_sos_alerts', {
       data: null,

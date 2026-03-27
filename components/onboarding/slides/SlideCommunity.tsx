@@ -8,7 +8,7 @@ export function SlideCommunity() {
   const cards = [
     {
       icon: <Calendar className="h-5 w-5 text-quartier-green" />,
-      title: "Strassenfest Samstag 14:00",
+      title: "Straßenfest Samstag 14:00",
       subtitle: "12 Zusagen · Purkersdorfer Str.",
       borderColor: "border-l-quartier-green",
       bgColor: "bg-quartier-green/5",
@@ -18,7 +18,7 @@ export function SlideCommunity() {
     {
       icon: <MessageCircle className="h-5 w-5 text-blue-500" />,
       title: "Neue Nachricht von Anna K.",
-      subtitle: "\"Koennen Sie Freitag beim Umzug...\"",
+      subtitle: "\"Können Sie Freitag beim Umzug...\"",
       borderColor: "border-l-blue-400",
       bgColor: "bg-blue-50",
       direction: "animate-slide-from-right",

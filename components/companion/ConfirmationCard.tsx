@@ -1,5 +1,5 @@
 // components/companion/ConfirmationCard.tsx
-// Bestaetigungskarte fuer Write-Aktionen — Nutzer muss explizit zustimmen
+// Bestätigungskarte für Write-Aktionen — Nutzer muss explizit zustimmen
 
 import { Button } from '@/components/ui/button';
 import { Loader2 } from 'lucide-react';
@@ -12,7 +12,7 @@ interface ConfirmationCardProps {
   loading?: boolean;
 }
 
-/** Karte mit Abschicken/Abbrechen fuer schreibende KI-Aktionen */
+/** Karte mit Abschicken/Abbrechen für schreibende KI-Aktionen */
 export function ConfirmationCard({
   tool,
   summary,
@@ -29,7 +29,7 @@ export function ConfirmationCard({
       <p className="mb-1 text-xs font-medium text-amber-700">{tool}</p>
       <p className="mb-3 text-sm text-anthrazit">{summary}</p>
 
-      {/* Buttons — Senior Mode: min 80px Hoehe */}
+      {/* Buttons — Senior Mode: min 80px Höhe */}
       <div className="flex gap-2">
         <Button
           data-testid="confirm-action"

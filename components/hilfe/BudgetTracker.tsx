@@ -61,8 +61,8 @@ export function BudgetTracker() {
     ? (budget.used_this_month_cents / budget.monthly_budget_cents) * 100
     : 0;
 
-  // Farblogik: Gruen < 80%, Amber >= 80%, Rot > 100%
-  let barColor = '#4CAF87'; // Gruen
+  // Farblogik: Grün < 80%, Amber >= 80%, Rot > 100%
+  let barColor = '#4CAF87'; // Grün
   if (percentage > 100) {
     barColor = '#EF4444'; // Rot
   } else if (percentage >= 80) {
@@ -97,14 +97,14 @@ export function BudgetTracker() {
           </p>
         </div>
 
-        {/* Betraege */}
+        {/* Beträge */}
         <div className="space-y-2 text-base">
           <p>
             <span className="font-semibold">Verbraucht:</span>{' '}
             {formatEur(budget.used_this_month_cents)} EUR / {formatEur(budget.monthly_budget_cents)} EUR
           </p>
           <p>
-            <span className="font-semibold">Verfuegbar:</span>{' '}
+            <span className="font-semibold">Verfügbar:</span>{' '}
             <span className={budget.available_cents < 0 ? 'text-red-600 font-bold' : 'text-[#4CAF87] font-bold'}>
               {formatEur(budget.available_cents)} EUR
             </span>
@@ -118,15 +118,15 @@ export function BudgetTracker() {
           </div>
         )}
 
-        {/* Einsaetze */}
+        {/* Einsätze */}
         <p className="text-sm text-gray-600">
-          {budget.sessions_this_month} Einsaetze diesen Monat
+          {budget.sessions_this_month} Einsätze diesen Monat
         </p>
 
         {/* Hinweise */}
         <div className="space-y-2 text-sm text-gray-500">
           <p>
-            Nicht genutzte Betraege sind bis zum 30.06. des Folgejahres uebertragbar
+            Nicht genutzte Beträge sind bis zum 30.06. des Folgejahres übertragbar
           </p>
           <p>
             Hinweis: Bis 3.000 EUR/Jahr steuerfrei (§3 Nr. 36 EStG)

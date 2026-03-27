@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 
-// Oeffentliche API-Route fuer Account-Loeschung via Web
-// Google Play Store Policy: Account-Loeschung muss auch ohne App moeglich sein
+// Öffentliche API-Route für Account-Löschung via Web
+// Google Play Store Policy: Account-Löschung muss auch ohne App möglich sein
 
-// Rate Limiting: Max 3 Anfragen pro E-Mail pro Stunde (In-Memory, reicht fuer Pilot)
+// Rate Limiting: Max 3 Anfragen pro E-Mail pro Stunde (In-Memory, reicht für Pilot)
 const rateLimitMap = new Map<string, { count: number; resetAt: number }>();
 
 function checkRateLimit(email: string): boolean {
@@ -39,7 +39,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Supabase Admin Client (Service Role fuer OTP-Versand und Loeschung)
+    // Supabase Admin Client (Service Role für OTP-Versand und Löschung)
     const supabase = createClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.SUPABASE_SERVICE_ROLE_KEY!,
@@ -78,10 +78,10 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: "Ungültiger oder abgelaufener Code" }, { status: 400 });
       }
 
-      // Account zur Loeschung markieren (soft delete mit 30 Tage Frist)
+      // Account zur Löschung markieren (soft delete mit 30 Tage Frist)
       const userId = verifyData.user.id;
 
-      // Profil als zur Loeschung markiert setzen
+      // Profil als zur Löschung markiert setzen
       await supabase
         .from("profiles")
         .update({

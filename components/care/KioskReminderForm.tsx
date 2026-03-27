@@ -1,5 +1,5 @@
 // components/care/KioskReminderForm.tsx
-// Nachbar.io — Erinnerungen erstellen und verwalten fuer den Kiosk (Caregiver-Seite)
+// Nachbar.io — Erinnerungen erstellen und verwalten für den Kiosk (Caregiver-Seite)
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
@@ -76,7 +76,7 @@ export function KioskReminderForm({ householdId }: KioskReminderFormProps) {
     setError(null);
 
     try {
-      // scheduled_at zusammenbauen fuer Termine
+      // scheduled_at zusammenbauen für Termine
       let scheduledAt: string | undefined;
       if (type === "appointment") {
         if (!date) {
@@ -104,7 +104,7 @@ export function KioskReminderForm({ householdId }: KioskReminderFormProps) {
         throw new Error(data.error || "Erstellen fehlgeschlagen");
       }
 
-      // Formular zuruecksetzen und Liste neu laden
+      // Formular zurücksetzen und Liste neu laden
       setTitle("");
       setDate("");
       setTime("");
@@ -116,7 +116,7 @@ export function KioskReminderForm({ householdId }: KioskReminderFormProps) {
     }
   };
 
-  // Erinnerung loeschen
+  // Erinnerung löschen
   const deleteReminder = async (reminderId: string) => {
     if (!confirm("Diese Erinnerung wirklich löschen?")) return;
 
@@ -224,7 +224,7 @@ export function KioskReminderForm({ householdId }: KioskReminderFormProps) {
           </p>
         </div>
 
-        {/* Datum + Uhrzeit (nur fuer Termine) */}
+        {/* Datum + Uhrzeit (nur für Termine) */}
         {type === "appointment" && (
           <div className="grid grid-cols-2 gap-3">
             <div>
@@ -340,7 +340,7 @@ export function KioskReminderForm({ householdId }: KioskReminderFormProps) {
                     </span>
                   )}
 
-                  {/* Bestaetigungsstatus (Sticky) */}
+                  {/* Bestätigungsstatus (Sticky) */}
                   {reminder.type === "sticky" && reminder.acknowledged_at && (
                     <span className="inline-flex items-center gap-1 rounded bg-quartier-green/10 px-1.5 py-0.5 text-xs font-medium text-quartier-green">
                       <Check className="h-3 w-3" />
@@ -355,7 +355,7 @@ export function KioskReminderForm({ householdId }: KioskReminderFormProps) {
                 </div>
               </div>
 
-              {/* Loeschen-Button */}
+              {/* Löschen-Button */}
               <button
                 onClick={() => deleteReminder(reminder.id)}
                 className="flex-shrink-0 rounded-full p-2 text-muted-foreground hover:text-emergency-red hover:bg-red-50 transition-colors"

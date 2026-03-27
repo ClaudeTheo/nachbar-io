@@ -1,5 +1,5 @@
 // app/api/care/cron/heartbeat-escalation/route.ts
-// Nachbar.io — Heartbeat-Eskalation Cron: Prueft alle 30 Min ob Bewohner aktiv sind (Plus-Feature)
+// Nachbar.io — Heartbeat-Eskalation Cron: Prüft alle 30 Min ob Bewohner aktiv sind (Plus-Feature)
 // Eskalationsstufen: 0-4h ok, 4-8h reminder, 8-12h alert, 12-24h lotse, 24h+ urgent
 
 import { NextRequest, NextResponse } from 'next/server';
@@ -21,7 +21,7 @@ export function getEscalationStage(hoursAgo: number): EscalationStage | null {
 
 // GET /api/care/cron/heartbeat-escalation — Heartbeat-Eskalation (Vercel Cron: alle 30 Minuten)
 export async function GET(request: NextRequest) {
-  // Cron-Auth: Authorization-Header gegen CRON_SECRET pruefen
+  // Cron-Auth: Authorization-Header gegen CRON_SECRET prüfen
   const cronSecret = process.env.CRON_SECRET;
   if (!cronSecret) {
     console.error('CRON_SECRET nicht konfiguriert — Cron-Endpunkt blockiert');
@@ -36,7 +36,7 @@ export async function GET(request: NextRequest) {
   const now = new Date();
 
   // Alle aktiven Caregiver-Links mit heartbeat_visible=true laden
-  // Gibt uns die Bewohner-IDs, fuer die Heartbeat-Monitoring aktiv ist
+  // Gibt uns die Bewohner-IDs, für die Heartbeat-Monitoring aktiv ist
   const { data: activeLinks, error: linksError } = await supabase
     .from('caregiver_links')
     .select('resident_id, caregiver_id')
@@ -59,7 +59,7 @@ export async function GET(request: NextRequest) {
   // Eindeutige Bewohner-IDs extrahieren
   const residentIds = [...new Set(activeLinks.map((l) => l.resident_id))];
 
-  // Caregivers pro Bewohner (fuer Benachrichtigungen)
+  // Caregivers pro Bewohner (für Benachrichtigungen)
   const caregiversByResident = new Map<string, string[]>();
   for (const link of activeLinks) {
     const existing = caregiversByResident.get(link.resident_id) ?? [];
@@ -84,7 +84,7 @@ export async function GET(request: NextRequest) {
       .maybeSingle();
 
     if (hbError) {
-      console.error(`[care/cron/heartbeat-escalation] Heartbeat-Abfrage fuer ${residentId} fehlgeschlagen:`, hbError);
+      console.error(`[care/cron/heartbeat-escalation] Heartbeat-Abfrage für ${residentId} fehlgeschlagen:`, hbError);
       continue;
     }
 
@@ -95,9 +95,9 @@ export async function GET(request: NextRequest) {
 
     const stage = getEscalationStage(hoursAgo);
 
-    // === Heartbeat vorhanden und im gruenen Bereich: Offene Events aufloesen ===
+    // === Heartbeat vorhanden und im gruenen Bereich: Offene Events auflösen ===
     if (stage === null) {
-      // Offene Eskalations-Events fuer diesen Bewohner aufloesen
+      // Offene Eskalations-Events für diesen Bewohner auflösen
       const { data: openEvents, error: openEventsError } = await supabase
         .from('escalation_events')
         .select('id, stage, notified_users')
@@ -105,12 +105,12 @@ export async function GET(request: NextRequest) {
         .is('resolved_at', null);
 
       if (openEventsError) {
-        console.error(`[care/cron/heartbeat-escalation] Offene Events Abfrage fuer ${residentId} fehlgeschlagen:`, openEventsError);
+        console.error(`[care/cron/heartbeat-escalation] Offene Events Abfrage für ${residentId} fehlgeschlagen:`, openEventsError);
         continue;
       }
 
       if (openEvents && openEvents.length > 0) {
-        // Alle offenen Events aufloesen
+        // Alle offenen Events auflösen
         const { error: resolveError } = await supabase
           .from('escalation_events')
           .update({ resolved_at: now.toISOString() })
@@ -118,7 +118,7 @@ export async function GET(request: NextRequest) {
           .is('resolved_at', null);
 
         if (resolveError) {
-          console.error(`[care/cron/heartbeat-escalation] Events aufloesen fuer ${residentId} fehlgeschlagen:`, resolveError);
+          console.error(`[care/cron/heartbeat-escalation] Events auflösen für ${residentId} fehlgeschlagen:`, resolveError);
           continue;
         }
 
@@ -138,7 +138,7 @@ export async function GET(request: NextRequest) {
                 userId: caregiverId,
                 type: 'care_heartbeat_alert',
                 title: 'Entwarnung',
-                body: 'Ihr Angehoeriger hat sich wieder gemeldet. Die Eskalation wurde aufgeloest.',
+                body: 'Ihr Angehöriger hat sich wieder gemeldet. Die Eskalation wurde aufgelöst.',
                 channels: ['push', 'in_app'],
               });
             } catch (notifyError) {
@@ -149,7 +149,7 @@ export async function GET(request: NextRequest) {
             }
           }
 
-          // Audit-Log: Eskalation aufgeloest
+          // Audit-Log: Eskalation aufgelöst
           try {
             await writeAuditLog(supabase, {
               seniorId: residentId,
@@ -166,7 +166,7 @@ export async function GET(request: NextRequest) {
       continue;
     }
 
-    // === Eskalation noetig: Pruefen ob bereits ein offenes Event fuer diese Stufe existiert (Dedup) ===
+    // === Eskalation nötig: Prüfen ob bereits ein offenes Event für diese Stufe existiert (Dedup) ===
     const { data: existingEvent, error: existingError } = await supabase
       .from('escalation_events')
       .select('id')
@@ -176,11 +176,11 @@ export async function GET(request: NextRequest) {
       .maybeSingle();
 
     if (existingError) {
-      console.error(`[care/cron/heartbeat-escalation] Dedup-Abfrage fuer ${residentId}/${stage} fehlgeschlagen:`, existingError);
+      console.error(`[care/cron/heartbeat-escalation] Dedup-Abfrage für ${residentId}/${stage} fehlgeschlagen:`, existingError);
       continue;
     }
 
-    // Bereits ein offenes Event fuer diese Stufe -> ueberspringen
+    // Bereits ein offenes Event für diese Stufe -> überspringen
     if (existingEvent) {
       continue;
     }
@@ -201,11 +201,11 @@ export async function GET(request: NextRequest) {
       .single();
 
     if (insertError || !newEvent) {
-      console.error(`[care/cron/heartbeat-escalation] Event erstellen fuer ${residentId}/${stage} fehlgeschlagen:`, insertError);
+      console.error(`[care/cron/heartbeat-escalation] Event erstellen für ${residentId}/${stage} fehlgeschlagen:`, insertError);
       continue;
     }
 
-    // Audit-Log: Eskalation ausgeloest
+    // Audit-Log: Eskalation ausgelöst
     try {
       await writeAuditLog(supabase, {
         seniorId: residentId,
@@ -228,7 +228,7 @@ export async function GET(request: NextRequest) {
             userId: residentId,
             type: 'care_heartbeat_reminder',
             title: 'Alles okay?',
-            body: 'Wir haben laenger nichts von Ihnen gehoert. Bitte melden Sie sich kurz.',
+            body: 'Wir haben länger nichts von Ihnen gehört. Bitte melden Sie sich kurz.',
             referenceId: newEvent.id,
             referenceType: 'escalation_events',
             url: '/care',
@@ -248,8 +248,8 @@ export async function GET(request: NextRequest) {
             await sendCareNotification(supabase, {
               userId: caregiverId,
               type: 'care_heartbeat_alert',
-              title: 'Keine Aktivitaet seit 8+ Stunden',
-              body: 'Ihr Angehoeriger hat sich seit ueber 8 Stunden nicht gemeldet. Bitte pruefen Sie nach.',
+              title: 'Keine Aktivität seit 8+ Stunden',
+              body: 'Ihr Angehöriger hat sich seit über 8 Stunden nicht gemeldet. Bitte prüfen Sie nach.',
               referenceId: newEvent.id,
               referenceType: 'escalation_events',
               url: '/care/caregiver',
@@ -278,7 +278,7 @@ export async function GET(request: NextRequest) {
                 userId: admin.id,
                 type: 'care_escalation',
                 title: 'Lotse: Bewohner inaktiv seit 12+ Stunden',
-                body: 'Ein Bewohner hat seit ueber 12 Stunden keinen Heartbeat gesendet. Bitte eskalieren Sie.',
+                body: 'Ein Bewohner hat seit über 12 Stunden keinen Heartbeat gesendet. Bitte eskalieren Sie.',
                 referenceId: newEvent.id,
                 referenceType: 'escalation_events',
                 channels: ['push', 'in_app', 'admin_alert'],
@@ -299,8 +299,8 @@ export async function GET(request: NextRequest) {
             await sendCareNotification(supabase, {
               userId: caregiverId,
               type: 'care_heartbeat_alert',
-              title: 'DRINGEND: Keine Aktivitaet seit 24+ Stunden',
-              body: 'Ihr Angehoeriger hat sich seit ueber 24 Stunden nicht gemeldet. Bitte pruefen Sie SOFORT nach dem Rechten.',
+              title: 'DRINGEND: Keine Aktivität seit 24+ Stunden',
+              body: 'Ihr Angehöriger hat sich seit über 24 Stunden nicht gemeldet. Bitte prüfen Sie SOFORT nach dem Rechten.',
               referenceId: newEvent.id,
               referenceType: 'escalation_events',
               url: '/care/caregiver',

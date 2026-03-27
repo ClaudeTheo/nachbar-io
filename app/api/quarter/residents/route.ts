@@ -1,6 +1,6 @@
 // app/api/quarter/residents/route.ts
-// Nachbar.io — Anonymisierte Bewohnerliste fuer Chat-Anfrage-Browser
-// Gibt Adressen mit anonymisierten Bewohnern (gehashte IDs) zurueck
+// Nachbar.io — Anonymisierte Bewohnerliste für Chat-Anfrage-Browser
+// Gibt Adressen mit anonymisierten Bewohnern (gehashte IDs) zurück
 // Filtert: eigener Haushalt, bereits verbundene, ausstehende/abgelehnte Anfragen
 
 import { NextRequest, NextResponse } from "next/server";
@@ -8,7 +8,7 @@ import { createClient } from "@/lib/supabase/server";
 import { hashUserId, hashHouseholdId } from "@/lib/quarter/resident-hash";
 
 export async function GET(_request: NextRequest) {
-  // 1. Authentifizierung pruefen
+  // 1. Authentifizierung prüfen
   const supabase = await createClient();
   const {
     data: { user },
@@ -21,7 +21,7 @@ export async function GET(_request: NextRequest) {
     );
   }
 
-  // 2. Eigenen Haushalt + Quartier ermitteln (ueber household_members → households)
+  // 2. Eigenen Haushalt + Quartier ermitteln (über household_members → households)
   const { data: membership } = await supabase
     .from("household_members")
     .select("household_id, households(quarter_id)")
@@ -30,7 +30,7 @@ export async function GET(_request: NextRequest) {
     .single();
 
   if (!membership) {
-    // User gehoert keinem Haushalt an → leere Liste
+    // User gehört keinem Haushalt an → leere Liste
     return NextResponse.json({ addresses: [] });
   }
 
@@ -80,8 +80,8 @@ export async function GET(_request: NextRequest) {
   const excludedUserIds = new Set<string>();
   if (connections) {
     for (const conn of connections) {
-      // Beide Richtungen: wenn ich Anfragender bin → target ausschliessen
-      // Wenn ich Ziel bin → requester ausschliessen
+      // Beide Richtungen: wenn ich Anfragender bin → target ausschließen
+      // Wenn ich Ziel bin → requester ausschließen
       if (conn.requester_id === user.id) {
         excludedUserIds.add(conn.target_id);
       } else {

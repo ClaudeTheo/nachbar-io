@@ -1,11 +1,11 @@
-// Nachbar.io — Test-Login API (nur fuer E2E-Tests)
+// Nachbar.io — Test-Login API (nur für E2E-Tests)
 // Loggt einen Nutzer via Passwort ein und setzt die Session-Cookies korrekt.
 // Wird von loginAgent() in den E2E-Tests aufgerufen.
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 
 export async function POST(request: NextRequest) {
-  // Nur verfuegbar wenn E2E-Secret gesetzt ist
+  // Nur verfügbar wenn E2E-Secret gesetzt ist
   const testSecret = process.env.E2E_TEST_SECRET;
   if (!testSecret) {
     return NextResponse.json({ error: "Not available" }, { status: 404 });

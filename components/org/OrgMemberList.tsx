@@ -1,10 +1,10 @@
 // components/org/OrgMemberList.tsx
-// Nachbar.io — Mitgliederverwaltung fuer Pro Community Organisationen
+// Nachbar.io — Mitgliederverwaltung für Pro Community Organisationen
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
 
-// Typen fuer Mitgliederdaten (aus API)
+// Typen für Mitgliederdaten (aus API)
 interface OrgMemberWithUser {
   id: string;
   org_id: string;
@@ -65,7 +65,7 @@ export function OrgMemberList({ orgId, currentUserRole }: OrgMemberListProps) {
     loadMembers();
   }, [loadMembers]);
 
-  // Rolle aendern (nur fuer Admins)
+  // Rolle ändern (nur für Admins)
   async function handleRoleToggle(memberId: string, currentRole: string) {
     const newRole = currentRole === "admin" ? "viewer" : "admin";
     try {
@@ -87,10 +87,10 @@ export function OrgMemberList({ orgId, currentUserRole }: OrgMemberListProps) {
     }
   }
 
-  // Mitglied entfernen (2-Schritt-Bestaetigung)
+  // Mitglied entfernen (2-Schritt-Bestätigung)
   async function handleRemove(memberId: string) {
     if (confirmRemoveId !== memberId) {
-      // Erster Klick: Bestaetigung anfordern
+      // Erster Klick: Bestätigung anfordern
       setConfirmRemoveId(memberId);
       return;
     }
@@ -132,7 +132,7 @@ export function OrgMemberList({ orgId, currentUserRole }: OrgMemberListProps) {
 
   return (
     <div className="space-y-4">
-      {/* Header mit Hinzufuegen-Button (nur fuer Admins) */}
+      {/* Header mit Hinzufügen-Button (nur für Admins) */}
       <div className="flex items-center justify-between">
         <h2 className="text-base font-semibold text-[#2D3142]">
           Mitglieder ({members.length})
@@ -191,7 +191,7 @@ export function OrgMemberList({ orgId, currentUserRole }: OrgMemberListProps) {
                       type="button"
                       onClick={() => handleRoleToggle(member.id, member.role)}
                       className="min-h-[44px] rounded-lg border px-3 py-2 text-xs text-gray-600 transition-colors hover:bg-gray-50"
-                      title={`Rolle aendern zu ${member.role === "admin" ? "Leserechte" : "Admin"}`}
+                      title={`Rolle ändern zu ${member.role === "admin" ? "Leserechte" : "Admin"}`}
                     >
                       {member.role === "admin" ? "Leserechte" : "Admin"}
                     </button>

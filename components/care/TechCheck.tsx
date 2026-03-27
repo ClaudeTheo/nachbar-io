@@ -1,5 +1,5 @@
 // components/care/TechCheck.tsx
-// Technik-Check vor Online-Sprechstunde: Kamera, Mikrofon, Internet pruefen
+// Technik-Check vor Online-Sprechstunde: Kamera, Mikrofon, Internet prüfen
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -19,7 +19,7 @@ export function TechCheck({ onReady, onFailed }: Props) {
 
   useEffect(() => {
     async function runChecks() {
-      // Kamera pruefen
+      // Kamera prüfen
       try {
         const stream = await navigator.mediaDevices.getUserMedia({ video: true });
         stream.getTracks().forEach(t => t.stop());
@@ -28,7 +28,7 @@ export function TechCheck({ onReady, onFailed }: Props) {
         setCamera('failed');
       }
 
-      // Mikrofon pruefen
+      // Mikrofon prüfen
       try {
         const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
         stream.getTracks().forEach(t => t.stop());
@@ -37,7 +37,7 @@ export function TechCheck({ onReady, onFailed }: Props) {
         setMic('failed');
       }
 
-      // Internetverbindung pruefen
+      // Internetverbindung prüfen
       try {
         const start = Date.now();
         await fetch('/api/health', { method: 'HEAD' });

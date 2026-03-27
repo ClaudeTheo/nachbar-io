@@ -48,7 +48,7 @@ export async function GET() {
 
 /**
  * POST /api/care/subscriptions
- * Abo erstellen oder Plan aendern.
+ * Abo erstellen oder Plan ändern.
  * Body: { plan: CareSubscriptionPlan }
  */
 export async function POST(request: Request) {
@@ -61,17 +61,17 @@ export async function POST(request: Request) {
   try {
     body = await request.json();
   } catch {
-    return errorResponse('Ungueltiger Request-Body', 400);
+    return errorResponse('Ungültiger Request-Body', 400);
   }
 
   const { plan } = body;
   if (!plan || !PLAN_HIERARCHY.includes(plan as CareSubscriptionPlan)) {
-    return errorResponse('Ungueltiger Plan', 400);
+    return errorResponse('Ungültiger Plan', 400);
   }
 
   careLog('subscriptions', 'change', { userId: user.id, newPlan: plan });
 
-  // Bestehendes Abo pruefen
+  // Bestehendes Abo prüfen
   const { data: existing } = await supabase
     .from('care_subscriptions')
     .select('id, plan')
@@ -84,7 +84,7 @@ export async function POST(request: Request) {
   periodEnd.setMonth(periodEnd.getMonth() + 1);
 
   if (existing) {
-    // Plan aendern
+    // Plan ändern
     const { data, error } = await supabase
       .from('care_subscriptions')
       .update({
@@ -112,7 +112,7 @@ export async function POST(request: Request) {
 
     return successResponse(data);
   } else {
-    // Neues Abo erstellen mit Trial fuer bezahlte Plaene
+    // Neues Abo erstellen mit Trial für bezahlte Pläne
     const trialEndsAt = plan !== 'free'
       ? new Date(Date.now() + TRIAL_DAYS * 24 * 60 * 60 * 1000).toISOString()
       : null;
@@ -148,7 +148,7 @@ export async function POST(request: Request) {
 
 /**
  * PATCH /api/care/subscriptions
- * Abo-Status aendern (kuendigen, reaktivieren).
+ * Abo-Status ändern (kündigen, reaktivieren).
  * Body: { status: 'cancelled' | 'active' }
  */
 export async function PATCH(request: Request) {
@@ -161,12 +161,12 @@ export async function PATCH(request: Request) {
   try {
     body = await request.json();
   } catch {
-    return errorResponse('Ungueltiger Request-Body', 400);
+    return errorResponse('Ungültiger Request-Body', 400);
   }
 
   const { status } = body;
   if (!status || !['cancelled', 'active'].includes(status)) {
-    return errorResponse('Ungueltiger Status (erlaubt: cancelled, active)', 400);
+    return errorResponse('Ungültiger Status (erlaubt: cancelled, active)', 400);
   }
 
   const { data: existing } = await supabase

@@ -6,7 +6,7 @@ export async function POST(request: NextRequest) {
   try {
     body = await request.json();
   } catch {
-    return NextResponse.json({ error: "Ungueltiges Anfrage-Format" }, { status: 400 });
+    return NextResponse.json({ error: "Ungültiges Anfrage-Format" }, { status: 400 });
   }
 
   // Token-Auth: Authorization-Header > Body > Query-Param

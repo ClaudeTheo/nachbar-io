@@ -26,7 +26,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Gültige Telefonnummer mit Landesvorwahl erforderlich' }, { status: 400 });
   }
 
-  // Pruefe ob Youth-Profil existiert
+  // Prüfe ob Youth-Profil existiert
   const { data: profile } = await supabase
     .from('youth_profiles')
     .select('id, access_level')
@@ -37,7 +37,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Kein Jugend-Profil gefunden' }, { status: 404 });
   }
 
-  // Rate-Limit: max 3 Token-Sendungen pruefen
+  // Rate-Limit: max 3 Token-Sendungen prüfen
   const guardianPhoneHash = createHash('sha256').update(guardian_phone).digest('hex');
   const { data: existingConsent } = await supabase
     .from('youth_guardian_consents')
@@ -56,7 +56,7 @@ export async function POST(request: NextRequest) {
   const expiresAt = new Date(Date.now() + TOKEN_EXPIRY_HOURS * 60 * 60 * 1000).toISOString();
 
   if (existingConsent) {
-    // Bestehenden Eintrag aktualisieren (neuer Token, Zaehler erhoehen)
+    // Bestehenden Eintrag aktualisieren (neuer Token, Zähler erhöhen)
     await supabase
       .from('youth_guardian_consents')
       .update({
@@ -91,7 +91,7 @@ export async function POST(request: NextRequest) {
 
   await sendSms({
     phone: guardian_phone,
-    message: `Hallo! ${userName} nutzt die QuartierApp und wuenscht sich Zugang zu weiteren Funktionen. Als Erziehungsberechtigte/r koennen Sie das hier freigeben: ${consentUrl} - Der Link ist 72 Stunden gueltig. Vielen Dank! Ihr QuartierApp-Team`,
+    message: `Hallo! ${userName} nutzt die QuartierApp und wünscht sich Zugang zu weiteren Funktionen. Als Erziehungsberechtigte/r können Sie das hier freigeben: ${consentUrl} - Der Link ist 72 Stunden gültig. Vielen Dank! Ihr QuartierApp-Team`,
   });
 
   return NextResponse.json({ sent: true }, { status: 200 });

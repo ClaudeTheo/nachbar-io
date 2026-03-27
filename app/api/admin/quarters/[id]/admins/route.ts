@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createClient as createServiceClient } from "@supabase/supabase-js";
 
-// Hilfsfunktion: Super-Admin Auth pruefen
+// Hilfsfunktion: Super-Admin Auth prüfen
 async function requireSuperAdmin() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
@@ -20,7 +20,7 @@ async function requireSuperAdmin() {
   return { user };
 }
 
-// Service-Client fuer cross-quarter Zugriff
+// Service-Client für cross-quarter Zugriff
 function getAdminDb() {
   return createServiceClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -30,7 +30,7 @@ function getAdminDb() {
 
 /**
  * GET /api/admin/quarters/[id]/admins
- * Liste aller Admins fuer ein Quartier.
+ * Liste aller Admins für ein Quartier.
  */
 export async function GET(
   _request: NextRequest,
@@ -52,7 +52,7 @@ export async function GET(
     return NextResponse.json({ error: 'Vorgang fehlgeschlagen' }, { status: 500 });
   }
 
-  // User-Infos separat laden (da kein FK-Join moeglich ueber Service-Client)
+  // User-Infos separat laden (da kein FK-Join möglich über Service-Client)
   const userIds = (admins ?? []).map((a) => a.user_id);
   const { data: users } = userIds.length > 0
     ? await adminDb
@@ -93,7 +93,7 @@ export async function POST(
 
   const adminDb = getAdminDb();
 
-  // Pruefen ob Quartier existiert
+  // Prüfen ob Quartier existiert
   const { data: quarter } = await adminDb
     .from("quarters")
     .select("id")
@@ -103,7 +103,7 @@ export async function POST(
     return NextResponse.json({ error: "Quartier nicht gefunden" }, { status: 404 });
   }
 
-  // Pruefen ob User existiert
+  // Prüfen ob User existiert
   const { data: targetUser } = await adminDb
     .from("users")
     .select("id, role")
@@ -113,7 +113,7 @@ export async function POST(
     return NextResponse.json({ error: "Benutzer nicht gefunden" }, { status: 404 });
   }
 
-  // Pruefen ob bereits zugewiesen
+  // Prüfen ob bereits zugewiesen
   const { data: existing } = await adminDb
     .from("quarter_admins")
     .select("id")
@@ -172,7 +172,7 @@ export async function DELETE(
 
   const adminDb = getAdminDb();
 
-  // Quarter-Admin Eintrag loeschen
+  // Quarter-Admin Eintrag löschen
   const { error } = await adminDb
     .from("quarter_admins")
     .delete()
@@ -183,15 +183,15 @@ export async function DELETE(
     return NextResponse.json({ error: 'Vorgang fehlgeschlagen' }, { status: 500 });
   }
 
-  // Pruefen ob User noch andere Quarter-Admin-Zuweisungen hat
+  // Prüfen ob User noch andere Quarter-Admin-Zuweisungen hat
   const { count } = await adminDb
     .from("quarter_admins")
     .select("*", { count: "exact", head: true })
     .eq("user_id", user_id);
 
-  // Wenn keine weiteren Zuweisungen, Rolle auf 'user' zuruecksetzen
+  // Wenn keine weiteren Zuweisungen, Rolle auf 'user' zurücksetzen
   if ((count ?? 0) === 0) {
-    // Nur zuruecksetzen wenn nicht super_admin
+    // Nur zurücksetzen wenn nicht super_admin
     const { data: userProfile } = await adminDb
       .from("users")
       .select("role")

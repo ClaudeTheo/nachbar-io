@@ -16,7 +16,7 @@ export async function GET(request: NextRequest) {
     return errorResponse('resident_id ist erforderlich', 400);
   }
 
-  // Pruefen ob Caregiver-Link besteht
+  // Prüfen ob Caregiver-Link besteht
   const { data: link } = await supabase
     .from('caregiver_links')
     .select('id, heartbeat_visible')
@@ -26,7 +26,7 @@ export async function GET(request: NextRequest) {
     .single();
 
   if (!link) {
-    return errorResponse('Keine Verknuepfung zu diesem Bewohner', 403);
+    return errorResponse('Keine Verknüpfung zu diesem Bewohner', 403);
   }
 
   // Letzter Heartbeat (nur wenn heartbeat_visible)

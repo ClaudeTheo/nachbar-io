@@ -8,7 +8,7 @@ import { requireAuth, requireSubscription, unauthorizedResponse } from '@/lib/ca
 
 export const dynamic = 'force-dynamic';
 
-// Service-Client fuer Admin-Operationen (Insert umgeht RLS)
+// Service-Client für Admin-Operationen (Insert umgeht RLS)
 function getServiceDb() {
   return createServiceClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -42,7 +42,7 @@ export async function GET() {
 
 /**
  * POST /api/organizations
- * Neue Organisation erstellen. Nur fuer Plattform-Admins mit Pro-Abo (is_admin = true).
+ * Neue Organisation erstellen. Nur für Plattform-Admins mit Pro-Abo (is_admin = true).
  * Body: { name, type, hr_vr_number, contact_email, contact_phone?, address? }
  */
 export async function POST(request: NextRequest) {
@@ -54,7 +54,7 @@ export async function POST(request: NextRequest) {
   const sub = await requireSubscription(auth.supabase, auth.user.id, 'pro');
   if (sub instanceof NextResponse) return sub;
 
-  // Nur Plattform-Admins duerfen Organisationen erstellen
+  // Nur Plattform-Admins dürfen Organisationen erstellen
   const { data: profile } = await auth.supabase
     .from('users')
     .select('is_admin')
@@ -63,7 +63,7 @@ export async function POST(request: NextRequest) {
 
   if (!profile?.is_admin) {
     return NextResponse.json(
-      { error: 'Nur Plattform-Administratoren duerfen Organisationen erstellen' },
+      { error: 'Nur Plattform-Administratoren dürfen Organisationen erstellen' },
       { status: 403 }
     );
   }
@@ -73,7 +73,7 @@ export async function POST(request: NextRequest) {
   try {
     body = await request.json();
   } catch {
-    return NextResponse.json({ error: 'Ungueltiges Anfrage-Format' }, { status: 400 });
+    return NextResponse.json({ error: 'Ungültiges Anfrage-Format' }, { status: 400 });
   }
 
   // Validierung
@@ -82,7 +82,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: validation.error }, { status: 400 });
   }
 
-  // Organisation erstellen (Service-Client fuer INSERT ohne RLS-Policy)
+  // Organisation erstellen (Service-Client für INSERT ohne RLS-Policy)
   const serviceDb = getServiceDb();
   const { data: org, error: insertError } = await serviceDb
     .from('organizations')

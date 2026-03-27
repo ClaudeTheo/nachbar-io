@@ -22,7 +22,7 @@ export async function GET(request: NextRequest) {
 
   if (!helper) return NextResponse.json({ error: 'Kein Helfer-Profil' }, { status: 404 });
 
-  // Feature-Gate pruefen
+  // Feature-Gate prüfen
   if (!canAccessBilling(helper.subscription_status, helper.trial_receipt_used)) {
     return NextResponse.json({ error: 'Abrechnungs-Modul erforderlich' }, { status: 403 });
   }
@@ -63,7 +63,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Abrechnungs-Modul erforderlich' }, { status: 403 });
   }
 
-  // Verbindung pruefen
+  // Verbindung prüfen
   const { data: connection } = await supabase
     .from('helper_connections')
     .select('id')
@@ -74,7 +74,7 @@ export async function POST(request: NextRequest) {
     .single();
 
   if (!connection) {
-    return NextResponse.json({ error: 'Keine bestaetigte Verbindung mit diesem Bewohner' }, { status: 403 });
+    return NextResponse.json({ error: 'Keine bestätigte Verbindung mit diesem Bewohner' }, { status: 403 });
   }
 
   // Sessions des Monats laden
@@ -93,7 +93,7 @@ export async function POST(request: NextRequest) {
     .in('status', ['signed', 'receipt_created']);
 
   if (!sessions || sessions.length === 0) {
-    return NextResponse.json({ error: 'Keine Einsaetze in diesem Monat' }, { status: 404 });
+    return NextResponse.json({ error: 'Keine Einsätze in diesem Monat' }, { status: 404 });
   }
 
   // Senior-Profil laden

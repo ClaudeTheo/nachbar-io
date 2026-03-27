@@ -1,5 +1,5 @@
 // components/companion/TTSButton.tsx
-// Vorlesen-Button — nur fuer Plus/Pro Nutzer (Pilot: alle freigeschalten)
+// Vorlesen-Button — nur für Plus/Pro Nutzer (Pilot: alle freigeschalten)
 
 'use client';
 
@@ -12,12 +12,12 @@ interface TTSButtonProps {
   text: string;
 }
 
-// Pilot-Modus: TTS fuer alle Nutzer freigeschalten
+// Pilot-Modus: TTS für alle Nutzer freigeschalten
 const PILOT_MODE = process.env.NEXT_PUBLIC_PILOT_MODE === 'true';
 
 /**
- * Spricht den uebergebenen Text via OpenAI TTS vor.
- * Feature-Gate: In der Pilot-Phase ist TTS fuer alle Nutzer verfuegbar.
+ * Spricht den übergebenen Text via OpenAI TTS vor.
+ * Feature-Gate: In der Pilot-Phase ist TTS für alle Nutzer verfügbar.
  * Nach Pilot: Nur Plus/Pro Nutzer (useSubscription-Check).
  *
  * TODO: Feature-Gate nach Pilot-Phase — useSubscription() einbinden
@@ -28,8 +28,8 @@ export function TTSButton({ text }: TTSButtonProps) {
   const [playing, setPlaying] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
-  // Feature-Gate: Im Pilot-Modus ist TTS fuer alle freigeschaltet.
-  // Nach Pilot: useSubscription() pruefen (Plus/Pro erforderlich).
+  // Feature-Gate: Im Pilot-Modus ist TTS für alle freigeschaltet.
+  // Nach Pilot: useSubscription() prüfen (Plus/Pro erforderlich).
   const isTtsAvailable = PILOT_MODE || true; // TODO: nach Pilot → useSubscription().plan !== 'free'
 
   const handlePlay = useCallback(async () => {
@@ -56,7 +56,7 @@ export function TTSButton({ text }: TTSButtonProps) {
       const blob = await res.blob();
       const url = URL.createObjectURL(blob);
 
-      // Vorheriges Audio aufraeumen
+      // Vorheriges Audio aufräumen
       if (audioRef.current) {
         audioRef.current.pause();
         URL.revokeObjectURL(audioRef.current.src);
@@ -67,7 +67,7 @@ export function TTSButton({ text }: TTSButtonProps) {
 
       audio.onended = () => {
         setPlaying(false);
-        // Verzoegertes Revoke — Safari kann bei sofortigem Revoke abbrechen
+        // Verzögertes Revoke — Safari kann bei sofortigem Revoke abbrechen
         setTimeout(() => URL.revokeObjectURL(url), 3000);
       };
 
@@ -79,19 +79,19 @@ export function TTSButton({ text }: TTSButtonProps) {
 
       await audio.play().catch(() => {
         // Safari/iOS blockiert audio.play() ohne User-Geste oder bei stummem Modus
-        toast.error('Wiedergabe blockiert — bitte pruefen Sie den Lautstaerke-/Stummschalter.');
+        toast.error('Wiedergabe blockiert — bitte prüfen Sie den Lautstärke-/Stummschalter.');
         URL.revokeObjectURL(url);
         throw new Error('play blocked');
       });
       setPlaying(true);
     } catch {
-      toast.error('Sprachausgabe nicht verfuegbar.');
+      toast.error('Sprachausgabe nicht verfügbar.');
     } finally {
       setLoading(false);
     }
   }, [text, playing]);
 
-  // Gesperrte Anzeige fuer Free-Nutzer (nach Pilot-Phase)
+  // Gesperrte Anzeige für Free-Nutzer (nach Pilot-Phase)
   if (!isTtsAvailable) {
     return (
       <Button

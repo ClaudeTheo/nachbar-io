@@ -5,7 +5,7 @@ const TIMEOUT_MS = 5000
 
 /**
  * GET /api/geo/reverse?lat=53.5511&lng=9.9937
- * Proxy fuer Photon Reverse Geocoding — gibt Stadt + Stadtteil zurueck
+ * Proxy für Photon Reverse Geocoding — gibt Stadt + Stadtteil zurück
  */
 export async function GET(request: NextRequest) {
   const { searchParams } = request.nextUrl

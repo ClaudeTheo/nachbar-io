@@ -139,7 +139,7 @@ export default function CareStatusPage() {
   if (loading) {
     return (
       <div className="space-y-4" data-testid="care-status-loading">
-        <PageHeader title="Status" subtitle="Heartbeat Ihrer Angehoerigen" backHref="/dashboard" />
+        <PageHeader title="Status" subtitle="Heartbeat Ihrer Angehörigen" backHref="/dashboard" />
         <div className="h-32 rounded-2xl bg-muted animate-shimmer" />
       </div>
     );
@@ -155,7 +155,7 @@ export default function CareStatusPage() {
         <div className="relative p-5">
           <h1 className="text-2xl font-bold text-anthrazit">Status</h1>
           <p className="text-sm text-muted-foreground mt-1">
-            Heartbeat und Check-in Ihrer Angehoerigen
+            Heartbeat und Check-in Ihrer Angehörigen
           </p>
         </div>
       </div>
@@ -164,7 +164,7 @@ export default function CareStatusPage() {
       <div className="flex items-start gap-2 rounded-lg bg-info-blue/5 p-3" data-testid="privacy-notice">
         <ShieldCheck className="h-4 w-4 text-info-blue mt-0.5 flex-shrink-0" />
         <p className="text-xs text-muted-foreground">
-          Sie sehen nur den Status und Zeitpunkt der letzten Aktivitaet — keine Inhalte, Standorte oder Nachrichten.
+          Sie sehen nur den Status und Zeitpunkt der letzten Aktivität — keine Inhalte, Standorte oder Nachrichten.
         </p>
       </div>
 
@@ -173,7 +173,7 @@ export default function CareStatusPage() {
           <CardContent className="flex flex-col items-center gap-3 py-10">
             <Heart className="h-10 w-10 text-muted-foreground/40" />
             <p className="text-sm text-muted-foreground text-center">
-              Keine verbundenen Angehoerigen. Ein Bewohner kann Sie als Angehoerigen einladen.
+              Keine verbundenen Angehörigen. Ein Bewohner kann Sie als Angehörigen einladen.
             </p>
           </CardContent>
         </Card>
@@ -232,15 +232,15 @@ export default function CareStatusPage() {
                     </div>
                   )}
 
-                  {/* Eskalations-Timeline (bei erhoehtem Level) */}
+                  {/* Eskalations-Timeline (bei erhöhtem Level) */}
                   {escalation.level !== "normal" && (
                     <div className="flex items-start gap-2 rounded-lg bg-alert-amber/5 p-3" data-testid={`escalation-${resident.id}`}>
                       <AlertTriangle className="h-4 w-4 text-alert-amber mt-0.5 flex-shrink-0" />
                       <div className="text-xs text-muted-foreground">
                         {escalation.level === "reminder" && "Der Bewohner wurde an eine Interaktion erinnert."}
-                        {escalation.level === "alert" && "Sie werden benachrichtigt, weil der Bewohner laengere Zeit nicht aktiv war."}
+                        {escalation.level === "alert" && "Sie werden benachrichtigt, weil der Bewohner längere Zeit nicht aktiv war."}
                         {escalation.level === "lotse" && "Der Quartier-Lotse wurde informiert."}
-                        {escalation.level === "emergency" && "Bitte ueberpruefen Sie den Status. Bei Bedarf rufen Sie 112 an."}
+                        {escalation.level === "emergency" && "Bitte überprüfen Sie den Status. Bei Bedarf rufen Sie 112 an."}
                       </div>
                     </div>
                   )}

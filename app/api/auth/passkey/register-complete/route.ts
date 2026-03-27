@@ -15,7 +15,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Nicht angemeldet' }, { status: 401 });
     }
 
-    // Challenge aus DB lesen statt Cookie (iOS-Kompatibilitaet)
+    // Challenge aus DB lesen statt Cookie (iOS-Kompatibilität)
     const { data: profile } = await supabase
       .from('users')
       .select('passkey_challenge, passkey_challenge_expires_at, passkey_secret')
@@ -31,7 +31,7 @@ export async function POST(req: NextRequest) {
 
     // Challenge abgelaufen?
     if (expiresAt && new Date(expiresAt) < new Date()) {
-      // Challenge aufraeumen
+      // Challenge aufräumen
       await supabase.from('users').update({
         passkey_challenge: null,
         passkey_challenge_expires_at: null,
@@ -68,7 +68,7 @@ export async function POST(req: NextRequest) {
         credential_id: credential.id,
         public_key: isoBase64URL.fromBuffer(credential.publicKey),
         counter: credential.counter,
-        device_name: deviceName || 'Unbekanntes Geraet',
+        device_name: deviceName || 'Unbekanntes Gerät',
         transports: attResponse.response?.transports || [],
       });
 
@@ -77,7 +77,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Speichern fehlgeschlagen' }, { status: 500 });
     }
 
-    // Challenge aufraeumen
+    // Challenge aufräumen
     await supabase.from('users').update({
       passkey_challenge: null,
       passkey_challenge_expires_at: null,
@@ -101,7 +101,7 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      device_name: deviceName || 'Unbekanntes Geraet',
+      device_name: deviceName || 'Unbekanntes Gerät',
     });
   } catch (err) {
     console.error('[Passkey] register-complete Fehler:', err);

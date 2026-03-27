@@ -17,7 +17,7 @@ export default function VideoCallScreen() {
   const [phase, setPhase] = useState<Phase>('idle');
   const [activeSlot, setActiveSlot] = useState<ConsultationSlot | null>(null);
 
-  // Naechsten relevanten Termin finden
+  // Nächsten relevanten Termin finden
   const nextSlot = slots.find(
     s => s.status === 'scheduled' || s.status === 'waiting' || s.status === 'active'
   );
@@ -92,7 +92,7 @@ export default function VideoCallScreen() {
         <div className="flex items-center gap-4 mb-6">
           <button
             onClick={() => { setPhase('idle'); setActiveSlot(null); }}
-            aria-label="Zurueck"
+            aria-label="Zurück"
             className="flex h-[80px] w-[80px] items-center justify-center rounded-2xl bg-anthrazit/10 text-anthrazit active:scale-95"
           >
             <ArrowLeft className="h-12 w-12" />
@@ -114,7 +114,7 @@ export default function VideoCallScreen() {
         <div className="flex items-center gap-4 mb-6">
           <button
             onClick={() => setPhase('consent')}
-            aria-label="Zurueck"
+            aria-label="Zurück"
             className="flex h-[80px] w-[80px] items-center justify-center rounded-2xl bg-anthrazit/10 text-anthrazit active:scale-95"
           >
             <ArrowLeft className="h-12 w-12" />
@@ -133,7 +133,7 @@ export default function VideoCallScreen() {
       <div className="flex items-center gap-4 mb-6">
         <button
           onClick={() => setActiveScreen("home")}
-          aria-label="Zurueck zur Startseite"
+          aria-label="Zurück zur Startseite"
           className="flex h-[80px] w-[80px] items-center justify-center rounded-2xl bg-anthrazit/10 text-anthrazit active:scale-95"
         >
           <ArrowLeft className="h-12 w-12" />
@@ -148,7 +148,7 @@ export default function VideoCallScreen() {
 
         {!loading && nextSlot && (
           <>
-            {/* Naechster Termin */}
+            {/* Nächster Termin */}
             <div className="flex items-center gap-4 rounded-2xl bg-info-blue/10 px-8 py-5">
               <Calendar className="h-12 w-12 text-info-blue" />
               <div>
@@ -206,7 +206,7 @@ export default function VideoCallScreen() {
                   Praxis kontaktieren
                 </p>
                 <p className="text-xl text-anthrazit/60">
-                  Rufen Sie Ihre Arztpraxis an fuer einen Termin
+                  Rufen Sie Ihre Arztpraxis an für einen Termin
                 </p>
               </div>
             </div>

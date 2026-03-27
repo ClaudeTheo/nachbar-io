@@ -10,9 +10,9 @@ import { WebRTCSignaling, PeerConnectionManager } from '@/lib/webrtc';
 import type { CallState, ConnectionQuality } from '@/lib/webrtc';
 
 interface VideoCallProps {
-  /** Eindeutige Anruf-ID fuer den Signaling-Channel */
+  /** Eindeutige Anruf-ID für den Signaling-Channel */
   callId: string;
-  /** Supabase User-ID des Gegenueber */
+  /** Supabase User-ID des Gegenüber */
   remoteUserId: string;
   /** Callback wenn der Anruf beendet wird */
   onHangup: () => void;
@@ -22,7 +22,7 @@ interface VideoCallProps {
   incomingOffer?: RTCSessionDescriptionInit;
 }
 
-/** Status-Texte fuer die Anzeige (Deutsch, Siezen) */
+/** Status-Texte für die Anzeige (Deutsch, Siezen) */
 const STATUS_TEXT: Record<CallState, string> = {
   idle: 'Bereit',
   calling: 'Verbindung wird hergestellt\u2026',
@@ -99,7 +99,7 @@ export function VideoCall({
 
     initCall();
 
-    // Qualitaets-Polling alle 3 Sekunden
+    // Qualitäts-Polling alle 3 Sekunden
     const qualityInterval = setInterval(() => {
       if (managerRef.current) {
         const quality = managerRef.current.getConnectionQuality();
@@ -167,7 +167,7 @@ export function VideoCall({
         autoPlay
         playsInline
         className="absolute inset-0 h-full w-full object-cover"
-        aria-label="Video des Gegenueber"
+        aria-label="Video des Gegenüber"
       />
 
       {/* Lokales Video (PiP, unten rechts) */}
@@ -194,7 +194,7 @@ export function VideoCall({
           {callState === 'active' && (
             <div
               className="flex items-center gap-1"
-              aria-label={`Verbindungsqualitaet: ${connectionQuality === 'good' ? 'Gut' : connectionQuality === 'degraded' ? 'Eingeschraenkt' : 'Unterbrochen'}`}
+              aria-label={`Verbindungsqualitaet: ${connectionQuality === 'good' ? 'Gut' : connectionQuality === 'degraded' ? 'Eingeschränkt' : 'Unterbrochen'}`}
               data-testid="quality-indicator"
             >
               {connectionQuality === 'failed' ? (
@@ -203,7 +203,7 @@ export function VideoCall({
                 <Wifi className={`h-5 w-5 ${connectionQuality === 'good' ? 'text-quartier-green' : 'text-amber-400'}`} />
               )}
               {connectionQuality === 'degraded' && (
-                <span className="text-xs text-amber-400">Eingeschraenkt</span>
+                <span className="text-xs text-amber-400">Eingeschränkt</span>
               )}
               {connectionQuality === 'failed' && (
                 <span className="text-xs text-red-400">Unterbrochen</span>

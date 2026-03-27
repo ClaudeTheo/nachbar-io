@@ -8,7 +8,7 @@ export async function GET(request: NextRequest) {
 
   const now = new Date().toISOString();
 
-  // Aktive Sticky Notes (nicht bestaetigt)
+  // Aktive Sticky Notes (nicht bestätigt)
   const { data: stickies } = await supabase
     .from("kiosk_reminders")
     .select("id, title, created_at")
@@ -18,7 +18,7 @@ export async function GET(request: NextRequest) {
     .order("created_at", { ascending: false })
     .limit(10);
 
-  // Anstehende Termine (naechste 7 Tage, nicht abgelaufen)
+  // Anstehende Termine (nächste 7 Tage, nicht abgelaufen)
   const in7Days = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
   const { data: appointments } = await supabase
     .from("kiosk_reminders")
@@ -31,7 +31,7 @@ export async function GET(request: NextRequest) {
     .order("scheduled_at", { ascending: true })
     .limit(20);
 
-  // Naechster Termin innerhalb 15 Minuten (fuer Popup)
+  // Nächster Termin innerhalb 15 Minuten (für Popup)
   const in15Min = new Date(Date.now() + 15 * 60 * 1000).toISOString();
   const upcomingPopup =
     (appointments ?? []).find(

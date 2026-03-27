@@ -1,14 +1,14 @@
 // app/api/cron/analytics/route.ts
-// Nachbar.io — Analytics Cron: Berechnet taeglich KPI-Snapshots pro Quartier
-// Vercel Cron: taeglich um 3:00 Uhr
+// Nachbar.io — Analytics Cron: Berechnet täglich KPI-Snapshots pro Quartier
+// Vercel Cron: täglich um 3:00 Uhr
 
 import { NextRequest, NextResponse } from 'next/server';
 import { getAdminSupabase } from '@/lib/supabase/admin';
 import { calculateQuarterSnapshot, saveSnapshot } from '@/lib/analytics';
 
-// GET /api/cron/analytics — Taeglich KPI-Snapshots berechnen und speichern
+// GET /api/cron/analytics — Täglich KPI-Snapshots berechnen und speichern
 export async function GET(request: NextRequest) {
-  // Cron-Auth: Authorization-Header gegen CRON_SECRET pruefen (PFLICHT)
+  // Cron-Auth: Authorization-Header gegen CRON_SECRET prüfen (PFLICHT)
   const cronSecret = process.env.CRON_SECRET;
   if (!cronSecret) {
     console.error('[cron/analytics] CRON_SECRET nicht konfiguriert — Endpoint gesperrt');

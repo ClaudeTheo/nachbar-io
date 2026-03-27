@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { createClient as createServerClient } from "@/lib/supabase/server";
 import { getAdminSupabase } from "@/lib/supabase/admin";
 
-// Notification-Typen die in Migration 037 hinzugefuegt werden
+// Notification-Typen die in Migration 037 hinzugefügt werden
 const NEW_TYPES = [
   "broadcast",
   "help_response",
@@ -21,9 +21,9 @@ const NEW_TYPES = [
 /**
  * GET /api/admin/migration-status
  *
- * Prueft ob Migration 037 (Notification Types) angewendet wurde.
- * Versucht fuer jeden neuen Typ eine Dummy-Zeile einzufuegen und
- * rollt sie sofort zurueck (DELETE). Bei Constraint-Fehler ist der
+ * Prüft ob Migration 037 (Notification Types) angewendet wurde.
+ * Versucht für jeden neuen Typ eine Dummy-Zeile einzufuegen und
+ * rollt sie sofort zurück (DELETE). Bei Constraint-Fehler ist der
  * Typ noch nicht freigeschaltet.
  */
 export async function GET() {
@@ -46,7 +46,7 @@ export async function GET() {
 
   const adminSupabase = getAdminSupabase();
 
-  // Test-Notification fuer jeden neuen Typ einfuegen
+  // Test-Notification für jeden neuen Typ einfügen
   const results: { type: string; status: "ok" | "blocked" }[] = [];
 
   for (const type of NEW_TYPES) {
@@ -56,7 +56,7 @@ export async function GET() {
         user_id: user.id,
         type,
         title: `__migration_test_${type}`,
-        body: "Test-Zeile — wird sofort geloescht",
+        body: "Test-Zeile — wird sofort gelöscht",
       })
       .select("id")
       .single();
@@ -64,7 +64,7 @@ export async function GET() {
     if (insertError) {
       results.push({ type, status: "blocked" });
     } else if (inserted) {
-      // Test-Zeile sofort loeschen
+      // Test-Zeile sofort löschen
       await adminSupabase
         .from("notifications")
         .delete()
@@ -81,14 +81,14 @@ export async function GET() {
     migration: "037_fix_notification_types_and_cron",
     summary: migrationApplied
       ? "Alle Notification-Typen sind freigeschaltet."
-      : `${blockedCount} von ${NEW_TYPES.length} Typen sind noch blockiert. Migration 037 muss ausgefuehrt werden.`,
+      : `${blockedCount} von ${NEW_TYPES.length} Typen sind noch blockiert. Migration 037 muss ausgeführt werden.`,
     types: results,
     sqlEditorUrl: `https://supabase.com/dashboard/project/uylszchlyhbpbmslcnka/sql/new`,
     migrationSql: MIGRATION_SQL,
   });
 }
 
-// SQL fuer Migration 037
+// SQL für Migration 037
 const MIGRATION_SQL = `-- Migration 037: Notification Types erweitern
 -- Kopieren Sie dieses SQL in den Supabase SQL Editor und fuehren Sie es aus.
 

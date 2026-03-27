@@ -1,15 +1,75 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 200" fill="none" stroke="#2D3142" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-  <!-- Haende (Schale) -->
-  <path d="M120 130 Q130 160 200 165 Q270 160 280 130" stroke-width="2" />
-  <path d="M120 130 Q110 120 115 110 Q120 100 135 105" />
-  <path d="M280 130 Q290 120 285 110 Q280 100 265 105" />
-  <!-- Herz -->
-  <path d="M170 85 Q170 60 195 60 Q210 60 210 80 Q210 60 225 60 Q250 60 250 85 Q250 110 210 135 Q170 110 170 85 Z" stroke="#EF4444" stroke-width="2" fill="none" />
-  <!-- Kleine Herzen drumherum -->
-  <path d="M130 70 Q132 64 136 70 Q140 64 142 70 Q142 76 136 82 Q130 76 130 70" stroke="#EF4444" stroke-width="1" opacity="0.5" />
-  <path d="M260 75 Q262 69 266 75 Q270 69 272 75 Q272 81 266 87 Q260 81 260 75" stroke="#EF4444" stroke-width="1" opacity="0.5" />
-  <!-- Strahlen -->
-  <line x1="210" y1="45" x2="210" y2="35" stroke="#F59E0B" stroke-width="1" opacity="0.6" />
-  <line x1="180" y1="50" x2="175" y2="40" stroke="#F59E0B" stroke-width="1" opacity="0.6" />
-  <line x1="240" y1="50" x2="245" y2="40" stroke="#F59E0B" stroke-width="1" opacity="0.6" />
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 200" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <!-- Sanfter Strahlenkranz -->
+  <line x1="200" y1="20" x2="200" y2="8" stroke="#F59E0B" stroke-width="0.6" opacity="0.25"/>
+  <line x1="220" y1="22" x2="228" y2="12" stroke="#F59E0B" stroke-width="0.5" opacity="0.2"/>
+  <line x1="180" y1="22" x2="172" y2="12" stroke="#F59E0B" stroke-width="0.5" opacity="0.2"/>
+  <line x1="238" y1="30" x2="250" y2="22" stroke="#F59E0B" stroke-width="0.5" opacity="0.18"/>
+  <line x1="162" y1="30" x2="150" y2="22" stroke="#F59E0B" stroke-width="0.5" opacity="0.18"/>
+  <line x1="252" y1="45" x2="265" y2="40" stroke="#F59E0B" stroke-width="0.4" opacity="0.15"/>
+  <line x1="148" y1="45" x2="135" y2="40" stroke="#F59E0B" stroke-width="0.4" opacity="0.15"/>
+
+  <!-- Haende (detailliert, schalenfoermig) -->
+  <!-- Linke Hand -->
+  <path d="M108 132 Q100 120 102 108 Q104 98 115 95 Q122 92 128 98 Q132 102 130 110" stroke="#2D3142" stroke-width="2"/>
+  <path d="M130 110 Q128 118 125 125" stroke="#2D3142" stroke-width="1.5"/>
+  <!-- Finger links -->
+  <path d="M115 95 Q108 88 105 92 Q102 96 108 100" stroke="#2D3142" stroke-width="1" opacity="0.6"/>
+  <path d="M122 92 Q118 85 114 88 Q110 92 115 95" stroke="#2D3142" stroke-width="0.8" opacity="0.5"/>
+  <!-- Handgelenk links -->
+  <path d="M108 132 Q105 140 100 148 Q96 155 94 160" stroke="#2D3142" stroke-width="1.8"/>
+  <path d="M125 125 Q120 135 118 142 Q115 150 112 158" stroke="#2D3142" stroke-width="1.5"/>
+  <!-- Aermel-Andeutung links -->
+  <path d="M94 160 Q90 165 85 168" stroke="#2D3142" stroke-width="1.2" opacity="0.5"/>
+  <path d="M112 158 Q108 163 104 166" stroke="#2D3142" stroke-width="1" opacity="0.4"/>
+  <path d="M88 165 Q96 162 106 165" stroke="#2D3142" stroke-width="0.6" opacity="0.25"/>
+
+  <!-- Rechte Hand -->
+  <path d="M292 132 Q300 120 298 108 Q296 98 285 95 Q278 92 272 98 Q268 102 270 110" stroke="#2D3142" stroke-width="2"/>
+  <path d="M270 110 Q272 118 275 125" stroke="#2D3142" stroke-width="1.5"/>
+  <!-- Finger rechts -->
+  <path d="M285 95 Q292 88 295 92 Q298 96 292 100" stroke="#2D3142" stroke-width="1" opacity="0.6"/>
+  <path d="M278 92 Q282 85 286 88 Q290 92 285 95" stroke="#2D3142" stroke-width="0.8" opacity="0.5"/>
+  <!-- Handgelenk rechts -->
+  <path d="M292 132 Q295 140 300 148 Q304 155 306 160" stroke="#2D3142" stroke-width="1.8"/>
+  <path d="M275 125 Q280 135 282 142 Q285 150 288 158" stroke="#2D3142" stroke-width="1.5"/>
+  <!-- Aermel-Andeutung rechts -->
+  <path d="M306 160 Q310 165 315 168" stroke="#2D3142" stroke-width="1.2" opacity="0.5"/>
+  <path d="M288 158 Q292 163 296 166" stroke="#2D3142" stroke-width="1" opacity="0.4"/>
+  <path d="M312 165 Q304 162 294 165" stroke="#2D3142" stroke-width="0.6" opacity="0.25"/>
+
+  <!-- Verbindungslinie unten (Haende zusammen) -->
+  <path d="M125 125 Q150 155 200 160 Q250 155 275 125" stroke="#2D3142" stroke-width="1.8"/>
+  <path d="M130 130 Q155 150 200 153 Q245 150 270 130" stroke="#2D3142" stroke-width="0.6" opacity="0.2"/>
+
+  <!-- Grosses Herz (detailliert, mit Schatten) -->
+  <path d="M160 78 Q160 48 185 42 Q200 38 200 58 Q200 38 215 42 Q240 48 240 78 Q240 110 200 135 Q160 110 160 78Z" stroke="#EF4444" stroke-width="2.5" fill="#EF4444" fill-opacity="0.05"/>
+  <!-- Herz-Highlight -->
+  <path d="M172 65 Q172 52 185 50 Q192 48 195 55" stroke="#EF4444" stroke-width="0.8" opacity="0.35"/>
+  <!-- Herz-Schatten -->
+  <path d="M180 105 Q190 115 200 118 Q210 115 220 105" stroke="#EF4444" stroke-width="0.6" opacity="0.2"/>
+
+  <!-- Kleine Herzen -->
+  <path d="M120 58 Q120 48 130 46 Q135 44 135 52 Q135 44 140 46 Q150 48 150 58 Q150 68 135 78 Q120 68 120 58Z" stroke="#EF4444" stroke-width="1" opacity="0.4" fill="#EF4444" fill-opacity="0.03"/>
+  <path d="M255 52 Q255 44 262 42 Q266 40 266 46 Q266 40 270 42 Q278 44 278 52 Q278 60 266 68 Q255 60 255 52Z" stroke="#EF4444" stroke-width="1" opacity="0.35" fill="#EF4444" fill-opacity="0.03"/>
+  <path d="M145 28 Q145 23 150 22 Q152 21 152 25 Q152 21 155 22 Q159 23 159 28 Q159 33 152 37 Q145 33 145 28Z" stroke="#EF4444" stroke-width="0.6" opacity="0.25"/>
+  <path d="M240 25 Q240 21 244 20 Q246 19 246 22 Q246 19 248 20 Q252 21 252 25 Q252 29 246 32 Q240 29 240 25Z" stroke="#EF4444" stroke-width="0.6" opacity="0.22"/>
+
+  <!-- Funkeln -->
+  <circle cx="130" cy="38" r="1" fill="#F59E0B" fill-opacity="0.3" stroke="none"/>
+  <circle cx="272" cy="32" r="1" fill="#F59E0B" fill-opacity="0.3" stroke="none"/>
+  <circle cx="200" cy="25" r="1.2" fill="#F59E0B" fill-opacity="0.25" stroke="none"/>
+  <path d="M110 42 L112 38 L114 42 L110 40 L114 40" stroke="#F59E0B" stroke-width="0.4" opacity="0.3"/>
+  <path d="M288 38 L290 34 L292 38 L288 36 L292 36" stroke="#F59E0B" stroke-width="0.4" opacity="0.25"/>
+
+  <!-- Blumen / Ranken unten -->
+  <path d="M155 165 Q160 158 168 162" stroke="#4CAF87" stroke-width="0.7" opacity="0.3"/>
+  <circle cx="168" cy="160" r="2.5" stroke="#F59E0B" stroke-width="0.6" opacity="0.25" fill="#F59E0B" fill-opacity="0.04"/>
+  <path d="M232 165 Q240 158 245 162" stroke="#4CAF87" stroke-width="0.7" opacity="0.3"/>
+  <circle cx="245" cy="160" r="2" stroke="#8B5CF6" stroke-width="0.6" opacity="0.25" fill="#8B5CF6" fill-opacity="0.04"/>
+
+  <!-- Subtile Punkte-Dekoration -->
+  <circle cx="100" cy="75" r="0.8" fill="#2D3142" fill-opacity="0.08" stroke="none"/>
+  <circle cx="300" cy="70" r="0.8" fill="#2D3142" fill-opacity="0.08" stroke="none"/>
+  <circle cx="85" cy="95" r="0.6" fill="#2D3142" fill-opacity="0.06" stroke="none"/>
+  <circle cx="315" cy="90" r="0.6" fill="#2D3142" fill-opacity="0.06" stroke="none"/>
 </svg>

@@ -4,7 +4,7 @@ import { Phone, X } from "lucide-react";
 import { useTerminal } from "@/lib/terminal/TerminalContext";
 
 /**
- * Notruf-Screen: Vollbild-Overlay fuer den Notfall.
+ * Notruf-Screen: Vollbild-Overlay für den Notfall.
  * KRITISCH: Zeigt IMMER 112/110 prominent an.
  * Telefon-Link oeffnet direkt den Notruf.
  */
@@ -16,7 +16,7 @@ export default function EmergencyScreen() {
       {/* Schliessen-Button oben rechts */}
       <button
         onClick={() => setActiveScreen("home")}
-        aria-label="Notruf-Bildschirm schliessen"
+        aria-label="Notruf-Bildschirm schließen"
         className="absolute right-8 top-8 flex h-24 w-24 items-center justify-center rounded-full bg-white/20 text-white transition-colors"
       >
         <X className="h-12 w-12" />
@@ -25,7 +25,7 @@ export default function EmergencyScreen() {
       {/* Telefon-Icon mit Puls-Animation */}
       <Phone className="h-40 w-40 animate-pulse text-white" />
 
-      {/* NOTRUF Ueberschrift */}
+      {/* NOTRUF Überschrift */}
       <h1 className="mt-6 text-7xl font-black tracking-wider text-white">
         NOTRUF
       </h1>

@@ -25,7 +25,7 @@ export function LeafletKarte({ quarterId: quarterIdProp }: LeafletKarteProps) {
   const [filter, setFilter] = useState<string>("all");
   const [selectedHouse, setSelectedHouse] = useState<GeoMapHouseData | null>(null);
 
-  // Nur Haeuser mit registrierten Bewohnern zaehlen
+  // Nur Häuser mit registrierten Bewohnern zählen
   const occupiedIds = useMemo(() => new Set(
     geoHouses.filter((h) => residentCounts[`${h.s}:${h.num}`]).map((h) => h.id),
   ), [geoHouses, residentCounts]);
@@ -41,7 +41,7 @@ export function LeafletKarte({ quarterId: quarterIdProp }: LeafletKarteProps) {
   const handleReset = useCallback(() => setFilter("all"), []);
   const handleHouseClick = useCallback((house: GeoMapHouseData) => setSelectedHouse(house), []);
 
-  // Sichtbare Haeuser filtern
+  // Sichtbare Häuser filtern
   const visibleHouses = useMemo(() =>
     geoHouses.filter((h) => {
       if (!residentCounts[`${h.s}:${h.num}`]) return false;

@@ -33,7 +33,7 @@ export function ShoppingRequestForm({ onSuccess, onCancel }: ShoppingRequestForm
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Artikel hinzufuegen
+  // Artikel hinzufügen
   function addItem() {
     if (items.length >= MAX_ITEMS) return;
     setItems([...items, { name: '', quantity: '' }]);
@@ -159,7 +159,7 @@ export function ShoppingRequestForm({ onSuccess, onCancel }: ShoppingRequestForm
           ))}
         </div>
 
-        {/* Artikel hinzufuegen */}
+        {/* Artikel hinzufügen */}
         {items.length < MAX_ITEMS && (
           <button
             type="button"
@@ -168,7 +168,7 @@ export function ShoppingRequestForm({ onSuccess, onCancel }: ShoppingRequestForm
             style={{ minHeight: '48px', touchAction: 'manipulation' }}
           >
             <Plus className="h-4 w-4" />
-            Artikel hinzufuegen ({items.length}/{MAX_ITEMS})
+            Artikel hinzufügen ({items.length}/{MAX_ITEMS})
           </button>
         )}
       </div>
@@ -184,7 +184,7 @@ export function ShoppingRequestForm({ onSuccess, onCancel }: ShoppingRequestForm
           onChange={(e) => setNote(e.target.value)}
           rows={2}
           maxLength={500}
-          placeholder="z.B. Bitte laktosefreie Milch, wenn verfuegbar..."
+          placeholder="z.B. Bitte laktosefreie Milch, wenn verfügbar..."
           className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm text-anthrazit placeholder:text-gray-400 focus:border-quartier-green focus:outline-none focus:ring-1 focus:ring-quartier-green resize-none"
         />
       </div>

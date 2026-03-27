@@ -10,14 +10,14 @@ interface HelperCardProps {
   showVerifyButton?: boolean;
   onVerify?: (id: string) => void;
   onRevoke?: (id: string) => void;
-  /** Aktueller Nutzer — eigene Eintraege koennen nicht selbst verifiziert werden */
+  /** Aktueller Nutzer — eigene Einträge können nicht selbst verifiziert werden */
   currentUserId?: string;
 }
 
 // Rollen-Badge: Farbe je nach Rolle
 const ROLE_CONFIG: Record<CareHelperRole, { label: string; className: string }> = {
   neighbor:     { label: 'Nachbar',        className: 'bg-green-100 text-green-700' },
-  relative:     { label: 'Angehoerige/r',  className: 'bg-blue-100 text-blue-700' },
+  relative:     { label: 'Angehörige/r',  className: 'bg-blue-100 text-blue-700' },
   care_service: { label: 'Pflegedienst',   className: 'bg-purple-100 text-purple-700' },
 };
 
@@ -28,7 +28,7 @@ const VERIFICATION_CONFIG: Record<CareHelperVerification, { label: string; class
   revoked:  { label: 'Gesperrt',   className: 'bg-red-100 text-red-600',          Icon: ShieldOff },
 };
 
-// Initialen-Avatar fuer Nutzer ohne Avatar-URL
+// Initialen-Avatar für Nutzer ohne Avatar-URL
 function InitialsAvatar({ name }: { name: string }) {
   const initial = name.trim().charAt(0).toUpperCase();
   return (
@@ -86,7 +86,7 @@ export function HelperCard({ helper, showVerifyButton, onVerify, onRevoke, curre
           <div className="flex items-center gap-1">
             <Star className="h-3.5 w-3.5" />
             <span className="font-medium text-anthrazit">{helper.response_count}</span>
-            <span>Einsaetze</span>
+            <span>Einsätze</span>
           </div>
           {helper.avg_response_minutes !== null && (
             <div className="flex items-center gap-1">
@@ -111,7 +111,7 @@ export function HelperCard({ helper, showVerifyButton, onVerify, onRevoke, curre
         </div>
       )}
 
-      {/* Aktions-Buttons (Verifizieren / Sperren) — nicht fuer eigenen Eintrag */}
+      {/* Aktions-Buttons (Verifizieren / Sperren) — nicht für eigenen Eintrag */}
       {showVerifyButton && currentUserId !== helper.user_id && (
         <div className="flex gap-2 pt-1">
           {helper.verification_status === 'pending' && onVerify && (

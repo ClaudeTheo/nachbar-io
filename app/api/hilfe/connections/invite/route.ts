@@ -1,5 +1,5 @@
 // POST /api/hilfe/connections/invite — Einladungs-Code generieren (Senior)
-// PUT /api/hilfe/connections/invite — Code einloesen (Helfer)
+// PUT /api/hilfe/connections/invite — Code einlösen (Helfer)
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { generateInviteCode, isValidInviteCode } from '@/lib/hilfe/connections';
@@ -22,7 +22,7 @@ export async function POST() {
   });
 }
 
-// Helfer loest Einladungs-Code ein
+// Helfer löst Einladungs-Code ein
 export async function PUT(request: NextRequest) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
@@ -37,7 +37,7 @@ export async function PUT(request: NextRequest) {
   }
 
   if (!isValidInviteCode(code)) {
-    return NextResponse.json({ error: 'Ungueltiges Code-Format' }, { status: 400 });
+    return NextResponse.json({ error: 'Ungültiges Code-Format' }, { status: 400 });
   }
 
   // Helfer-Profil laden
@@ -51,7 +51,7 @@ export async function PUT(request: NextRequest) {
     return NextResponse.json({ error: 'Kein Helfer-Profil gefunden' }, { status: 404 });
   }
 
-  // Bundesland-Limit pruefen
+  // Bundesland-Limit prüfen
   const { count: activeCount } = await supabase
     .from('helper_connections')
     .select('*', { count: 'exact', head: true })
@@ -66,7 +66,7 @@ export async function PUT(request: NextRequest) {
     }, { status: 403 });
   }
 
-  // Verbindung erstellen (mit Code, aber noch unbestaetigt)
+  // Verbindung erstellen (mit Code, aber noch unbestätigt)
   const { data: connection, error } = await supabase
     .from('helper_connections')
     .insert({

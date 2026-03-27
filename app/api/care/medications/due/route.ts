@@ -1,12 +1,12 @@
 // app/api/care/medications/due/route.ts
-// Nachbar.io — Faellige Medikamente fuer heute berechnen
+// Nachbar.io — Fällige Medikamente für heute berechnen
 
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAuth, requireSubscription, unauthorizedResponse, requireCareAccess } from '@/lib/care/api-helpers';
 import { decryptFieldsArray, CARE_MEDICATIONS_ENCRYPTED_FIELDS } from '@/lib/care/field-encryption';
 import type { CareMedication, MedicationSchedule } from '@/lib/care/types';
 
-// Berechnet ob ein Medikament zu einer bestimmten Uhrzeit faellig ist
+// Berechnet ob ein Medikament zu einer bestimmten Uhrzeit fällig ist
 function isDueAt(schedule: MedicationSchedule, timeStr: string, dayName: string): boolean {
   if (schedule.type === 'daily' && schedule.times) {
     return schedule.times.includes(timeStr);
@@ -17,7 +17,7 @@ function isDueAt(schedule: MedicationSchedule, timeStr: string, dayName: string)
   return false;
 }
 
-// GET /api/care/medications/due — Heute faellige Medikamente
+// GET /api/care/medications/due — Heute fällige Medikamente
 export async function GET(request: NextRequest) {
   // Auth
   const auth = await requireAuth();
@@ -32,7 +32,7 @@ export async function GET(request: NextRequest) {
   const { searchParams } = request.nextUrl;
   const seniorId = searchParams.get('senior_id') ?? user.id;
 
-  // Zugriffspruefung: Nur Senior selbst, zugewiesene Helfer oder Admins
+  // Zugriffsprüfung: Nur Senior selbst, zugewiesene Helfer oder Admins
   if (seniorId !== user.id) {
     const role = await requireCareAccess(supabase, seniorId);
     if (!role) return NextResponse.json({ error: 'Kein Zugriff auf diesen Senior' }, { status: 403 });
@@ -66,7 +66,7 @@ export async function GET(request: NextRequest) {
     logMap.set(key, { status: log.status, snoozed_until: log.snoozed_until });
   }
 
-  // Faellige Medikamente berechnen
+  // Fällige Medikamente berechnen
   const dueMeds: Array<{
     medication: CareMedication;
     scheduled_at: string;
@@ -74,7 +74,7 @@ export async function GET(request: NextRequest) {
     snoozed_until: string | null;
   }> = [];
 
-  // Medikamenten-Felder entschluesseln (Art. 9 DSGVO)
+  // Medikamenten-Felder entschlüsseln (Art. 9 DSGVO)
   const decryptedMeds = decryptFieldsArray(medications ?? [], CARE_MEDICATIONS_ENCRYPTED_FIELDS) as CareMedication[];
 
   for (const med of decryptedMeds) {

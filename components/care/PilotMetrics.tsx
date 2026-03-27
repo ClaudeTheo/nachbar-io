@@ -1,5 +1,5 @@
 // components/care/PilotMetrics.tsx
-// Nachbar.io — Pilot-Kennzahlen fuer Praesentationen
+// Nachbar.io — Pilot-Kennzahlen für Praesentationen
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -38,11 +38,11 @@ export function PilotMetrics() {
 
   return (
     <div className="space-y-4">
-      {/* 30-Tage Aktivitaet */}
+      {/* 30-Tage Aktivität */}
       <div className="rounded-xl border bg-card p-4">
         <div className="flex items-center gap-2 mb-3">
           <TrendingUp className="h-5 w-5 text-[#4CAF87]" />
-          <h3 className="text-sm font-semibold text-[#2D3142]">30-Tage Aktivitaet</h3>
+          <h3 className="text-sm font-semibold text-[#2D3142]">30-Tage Aktivität</h3>
         </div>
         <div className="grid grid-cols-3 gap-4 text-center">
           <div>

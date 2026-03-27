@@ -1,10 +1,10 @@
-// GET/PATCH /api/caregiver/auto-answer — Auto-Answer-Einstellungen fuer Kiosk-Videoanruf
-// Angehoerige koennen konfigurieren ob/wann ihr Anruf automatisch angenommen wird
+// GET/PATCH /api/caregiver/auto-answer — Auto-Answer-Einstellungen für Kiosk-Videoanruf
+// Angehörige können konfigurieren ob/wann ihr Anruf automatisch angenommen wird
 
 import { NextRequest, NextResponse } from "next/server";
 import { requireAuth, requireSubscription, unauthorizedResponse, errorResponse } from "@/lib/care/api-helpers";
 
-// GET: Auto-Answer-Einstellungen fuer einen Caregiver-Link abrufen
+// GET: Auto-Answer-Einstellungen für einen Caregiver-Link abrufen
 export async function GET(request: NextRequest) {
   // Auth
   const auth = await requireAuth();
@@ -50,7 +50,7 @@ export async function PATCH(request: NextRequest) {
   try {
     body = await request.json();
   } catch {
-    return errorResponse("Ungueltiges Anfrage-Format", 400);
+    return errorResponse("Ungültiges Anfrage-Format", 400);
   }
 
   const { linkId, autoAnswerAllowed, autoAnswerStart, autoAnswerEnd } = body;

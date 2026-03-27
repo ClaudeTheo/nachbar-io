@@ -1,19 +1,106 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 200" fill="none" stroke="#2D3142" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-  <!-- Baum -->
-  <line x1="280" y1="160" x2="280" y2="60" />
-  <circle cx="260" cy="50" r="25" fill="none" stroke="#4CAF87" stroke-width="1.5" />
-  <circle cx="295" cy="45" r="20" fill="none" stroke="#4CAF87" stroke-width="1.5" />
-  <circle cx="275" cy="30" r="18" fill="none" stroke="#4CAF87" stroke-width="1.5" />
-  <!-- Bank -->
-  <rect x="80" y="120" width="120" height="6" rx="3" />
-  <path d="M90 126 L85 126 L85 100 L90 100" />
-  <path d="M190 126 L195 126 L195 100 L190 100" />
-  <rect x="80" y="95" width="120" height="6" rx="3" />
-  <line x1="95" y1="126" x2="90" y2="155" />
-  <line x1="185" y1="126" x2="190" y2="155" />
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 200" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <!-- Himmel -->
+  <path d="M50 25 Q60 18 72 22 Q78 14 90 18 Q96 12 105 20" stroke="#2D3142" stroke-width="0.7" opacity="0.18"/>
+  <path d="M250 20 Q258 14 268 18 Q275 10 285 16" stroke="#2D3142" stroke-width="0.6" opacity="0.15"/>
+
+  <!-- Grosser Baum (detailliert) -->
+  <path d="M295 160 L295 72" stroke="#2D3142" stroke-width="3"/>
+  <!-- Wurzeln -->
+  <path d="M295 160 Q285 158 278 162" stroke="#2D3142" stroke-width="1.5" opacity="0.6"/>
+  <path d="M295 160 Q305 158 312 162" stroke="#2D3142" stroke-width="1.2" opacity="0.5"/>
+  <!-- Aeste -->
+  <path d="M295 100 Q275 85 262 82" stroke="#2D3142" stroke-width="1.8"/>
+  <path d="M295 88 Q315 72 328 68" stroke="#2D3142" stroke-width="1.5"/>
+  <path d="M295 95 Q280 78 268 72" stroke="#2D3142" stroke-width="1.2"/>
+  <path d="M295 82 Q310 65 320 58" stroke="#2D3142" stroke-width="1"/>
+  <path d="M295 105 Q312 95 322 92" stroke="#2D3142" stroke-width="1"/>
+  <!-- Kleinere Aeste -->
+  <path d="M268 72 Q258 65 252 68" stroke="#2D3142" stroke-width="0.7"/>
+  <path d="M262 82 Q255 78 248 80" stroke="#2D3142" stroke-width="0.6"/>
+  <path d="M328 68 Q335 62 340 65" stroke="#2D3142" stroke-width="0.6"/>
+
+  <!-- Blattwerk (organische Kronenform) -->
+  <path d="M240 60 Q248 40 268 35 Q280 28 295 30 Q310 28 325 35 Q342 38 350 55 Q358 68 348 78 Q355 88 342 95 Q335 100 322 95 Q315 102 300 100 Q288 105 275 98 Q262 102 255 92 Q242 88 238 75 Q235 68 240 60Z" stroke="#4CAF87" stroke-width="2" fill="#4CAF87" fill-opacity="0.06"/>
+  <!-- Blatt-Textur -->
+  <path d="M258 52 Q265 48 272 52" stroke="#4CAF87" stroke-width="0.6" opacity="0.4"/>
+  <path d="M280 38 Q288 34 296 38" stroke="#4CAF87" stroke-width="0.6" opacity="0.4"/>
+  <path d="M310 40 Q318 36 325 42" stroke="#4CAF87" stroke-width="0.6" opacity="0.4"/>
+  <path d="M338 58 Q342 52 348 58" stroke="#4CAF87" stroke-width="0.5" opacity="0.35"/>
+  <path d="M248 72 Q255 68 262 72" stroke="#4CAF87" stroke-width="0.5" opacity="0.35"/>
+  <path d="M300 48 Q305 42 312 48" stroke="#4CAF87" stroke-width="0.5" opacity="0.3"/>
+  <path d="M270 65 Q278 60 285 65" stroke="#4CAF87" stroke-width="0.5" opacity="0.3"/>
+  <path d="M320 70 Q328 65 335 72" stroke="#4CAF87" stroke-width="0.5" opacity="0.3"/>
+
+  <!-- Bank (detailliert, Holzlatten-Stil) -->
+  <!-- Rueckenlehne -->
+  <rect x="65" y="100" width="145" height="5" rx="2" stroke="#2D3142" stroke-width="1.5"/>
+  <rect x="65" y="107" width="145" height="5" rx="2" stroke="#2D3142" stroke-width="1.2"/>
+  <!-- Sitzflaeche -->
+  <rect x="60" y="118" width="155" height="5" rx="2" stroke="#2D3142" stroke-width="1.8"/>
+  <rect x="60" y="125" width="155" height="5" rx="2" stroke="#2D3142" stroke-width="1.5"/>
+  <!-- Holzmaserung -->
+  <path d="M80 119 Q100 120 120 119" stroke="#2D3142" stroke-width="0.3" opacity="0.15"/>
+  <path d="M140 126 Q160 127 180 126" stroke="#2D3142" stroke-width="0.3" opacity="0.15"/>
+  <path d="M80 102 Q100 103 120 101" stroke="#2D3142" stroke-width="0.3" opacity="0.12"/>
+  <!-- Armlehnen -->
+  <path d="M64 130 L60 130 L58 100 Q58 95 63 95 L68 95" stroke="#2D3142" stroke-width="2"/>
+  <path d="M211 130 L215 130 L217 100 Q217 95 212 95 L207 95" stroke="#2D3142" stroke-width="2"/>
+  <!-- Beine (ornamental) -->
+  <path d="M72 130 Q68 145 65 158" stroke="#2D3142" stroke-width="2"/>
+  <path d="M203 130 Q207 145 210 158" stroke="#2D3142" stroke-width="2"/>
+  <!-- Querstrebe -->
+  <path d="M72 145 Q137 150 203 145" stroke="#2D3142" stroke-width="0.8" opacity="0.3"/>
+
+  <!-- Person auf Bank sitzend -->
+  <circle cx="140" cy="88" r="8" stroke="#2D3142" stroke-width="1.3"/>
+  <!-- Haare -->
+  <path d="M132 85 Q134 78 140 76 Q146 78 148 85" stroke="#2D3142" stroke-width="1.2"/>
+  <!-- Gesicht -->
+  <circle cx="137" cy="87" r="0.8" fill="#2D3142" stroke="none"/>
+  <circle cx="143" cy="87" r="0.8" fill="#2D3142" stroke="none"/>
+  <path d="M138 91 Q140 93 142 91" stroke="#2D3142" stroke-width="0.6"/>
+  <!-- Koerper -->
+  <path d="M135 96 L133 118" stroke="#2D3142" stroke-width="1.2"/>
+  <path d="M145 96 L147 118" stroke="#2D3142" stroke-width="1.2"/>
+  <!-- Arme -->
+  <path d="M133 102 L122 108" stroke="#2D3142" stroke-width="1"/>
+  <path d="M147 102 L158 106" stroke="#2D3142" stroke-width="1"/>
+  <!-- Beine (sitzend) -->
+  <path d="M133 118 Q128 130 125 145" stroke="#2D3142" stroke-width="1.1"/>
+  <path d="M147 118 Q152 130 155 145" stroke="#2D3142" stroke-width="1.1"/>
+  <!-- Buch -->
+  <rect x="155" y="102" width="12" height="9" rx="1" stroke="#3B82F6" stroke-width="0.8" opacity="0.5"/>
+  <line x1="161" y1="102" x2="161" y2="111" stroke="#3B82F6" stroke-width="0.5" opacity="0.3"/>
+
+  <!-- Katze unter der Bank -->
+  <path d="M95 148 Q100 140 108 142 Q112 140 115 145 L115 155 Q110 158 100 158 Q93 156 95 148Z" stroke="#2D3142" stroke-width="0.8" opacity="0.4"/>
+  <path d="M96 145 L93 140" stroke="#2D3142" stroke-width="0.6" opacity="0.35"/>
+  <path d="M100 143 L98 138" stroke="#2D3142" stroke-width="0.6" opacity="0.35"/>
+  <path d="M115 152 Q120 150 125 152 Q128 155 125 156" stroke="#2D3142" stroke-width="0.5" opacity="0.3"/>
+
+  <!-- Voegel -->
+  <path d="M120 38 Q125 30 130 38" stroke="#2D3142" stroke-width="0.8" opacity="0.4"/>
+  <path d="M128 34 Q133 27 138 34" stroke="#2D3142" stroke-width="0.7" opacity="0.3"/>
+  <path d="M170 30 Q174 24 178 30" stroke="#2D3142" stroke-width="0.6" opacity="0.25"/>
+
+  <!-- Blumen links -->
+  <line x1="30" y1="160" x2="30" y2="142" stroke="#4CAF87" stroke-width="0.8"/>
+  <path d="M27 145 Q30 143 33 145" stroke="#4CAF87" stroke-width="0.5"/>
+  <circle cx="28" cy="140" r="3" stroke="#F59E0B" stroke-width="0.8" fill="#F59E0B" fill-opacity="0.06"/>
+  <circle cx="33" cy="138" r="2.5" stroke="#F59E0B" stroke-width="0.8" fill="#F59E0B" fill-opacity="0.06"/>
+  <circle cx="30" cy="135" r="2" stroke="#F59E0B" stroke-width="0.7" fill="#F59E0B" fill-opacity="0.05"/>
+
+  <!-- Gras-Bueschel -->
+  <path d="M45 160 Q47 152 49 160" stroke="#4CAF87" stroke-width="0.6" opacity="0.3"/>
+  <path d="M48 160 Q51 150 54 160" stroke="#4CAF87" stroke-width="0.5" opacity="0.25"/>
+  <path d="M230 160 Q232 154 234 160" stroke="#4CAF87" stroke-width="0.5" opacity="0.25"/>
+  <path d="M350 160 Q352 155 354 160" stroke="#4CAF87" stroke-width="0.5" opacity="0.2"/>
+
+  <!-- Fallendes Blatt -->
+  <path d="M265 55 Q268 58 272 55 Q270 60 265 58Z" stroke="#F59E0B" stroke-width="0.5" opacity="0.3" fill="#F59E0B" fill-opacity="0.05"/>
+
   <!-- Boden -->
-  <line x1="40" y1="160" x2="360" y2="160" stroke-dasharray="4 4" opacity="0.4" />
-  <!-- Vogel -->
-  <path d="M120 70 Q125 62 130 70" stroke="#4CAF87" stroke-width="1.5" />
-  <path d="M130 70 Q135 62 140 70" stroke="#4CAF87" stroke-width="1.5" />
+  <line x1="10" y1="162" x2="390" y2="162" stroke="#2D3142" stroke-width="1" opacity="0.25"/>
+  <path d="M70 162 Q80 160 90 162" stroke="#2D3142" stroke-width="0.4" opacity="0.1"/>
+  <path d="M150 162 Q160 160 170 162" stroke="#2D3142" stroke-width="0.4" opacity="0.1"/>
 </svg>

@@ -80,8 +80,8 @@ export function InviteCodeModal({ onClose }: InviteCodeModalProps) {
           // Zustand 1: Code noch nicht erstellt
           <div className="space-y-4">
             <p className="text-sm text-[#2D3142] text-center">
-              Erstellen Sie einen Einladungs-Code fuer eine/n Angehoerige/n.
-              Der Code ist 24 Stunden gueltig.
+              Erstellen Sie einen Einladungs-Code für eine/n Angehörige/n.
+              Der Code ist 24 Stunden gültig.
             </p>
             <button
               onClick={handleCreate}
@@ -110,10 +110,10 @@ export function InviteCodeModal({ onClose }: InviteCodeModalProps) {
             </div>
 
             <p className="text-sm text-muted-foreground text-center">
-              Geben Sie diesen Code Ihrem Angehoerigen.
+              Geben Sie diesen Code Ihrem Angehörigen.
             </p>
             <p className="text-xs text-muted-foreground text-center">
-              Gueltig fuer 24 Stunden (bis {formattedExpiry})
+              Gültig für 24 Stunden (bis {formattedExpiry})
             </p>
 
             {/* Kopieren-Button */}

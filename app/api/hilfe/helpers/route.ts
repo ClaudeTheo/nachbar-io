@@ -49,12 +49,12 @@ export async function POST(request: NextRequest) {
   try {
     body = await request.json();
   } catch {
-    return NextResponse.json({ error: 'Ungueltiges Anfrage-Format' }, { status: 400 });
+    return NextResponse.json({ error: 'Ungültiges Anfrage-Format' }, { status: 400 });
   }
 
   const { federal_state, date_of_birth, hourly_rate_cents, certification_url, relationship_check, household_check } = body;
 
-  // Pflichtfelder pruefen
+  // Pflichtfelder prüfen
   if (!federal_state) {
     return NextResponse.json({ error: 'Bundesland ist erforderlich' }, { status: 400 });
   }
@@ -67,38 +67,38 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Stundensatz ist erforderlich' }, { status: 400 });
   }
 
-  // Bundesland-Verfuegbarkeit pruefen
+  // Bundesland-Verfügbarkeit prüfen
   if (!isStateAvailable(federal_state)) {
     return NextResponse.json(
-      { error: `In Bremen ist die Nachbarschaftshilfe derzeit nicht ueber die Pflegekasse abrechenbar.` },
+      { error: `In Bremen ist die Nachbarschaftshilfe derzeit nicht über die Pflegekasse abrechenbar.` },
       { status: 400 },
     );
   }
 
-  // Mindestalter pruefen
+  // Mindestalter prüfen
   if (!validateHelperAge(federal_state, new Date(date_of_birth))) {
     return NextResponse.json(
-      { error: 'Sie muessen mindestens 16 Jahre alt sein, um sich als Helfer zu registrieren.' },
+      { error: 'Sie müssen mindestens 16 Jahre alt sein, um sich als Helfer zu registrieren.' },
       { status: 400 },
     );
   }
 
-  // Beziehungs- und Haushaltspruefung
+  // Beziehungs- und Haushaltsprüfung
   if (!relationship_check) {
     return NextResponse.json(
-      { error: 'Die Bestaetigung zur Beziehungspruefung ist erforderlich.' },
+      { error: 'Die Bestätigung zur Beziehungsprüfung ist erforderlich.' },
       { status: 400 },
     );
   }
 
   if (!household_check) {
     return NextResponse.json(
-      { error: 'Die Bestaetigung zur Haushaltspruefung ist erforderlich.' },
+      { error: 'Die Bestätigung zur Haushaltsprüfung ist erforderlich.' },
       { status: 400 },
     );
   }
 
-  // Schulungsnachweis pruefen (landesspezifisch)
+  // Schulungsnachweis prüfen (landesspezifisch)
   const stateRules = getStateRules(federal_state);
   if (stateRules?.training_required && !certification_url) {
     return NextResponse.json(
@@ -107,7 +107,7 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  // Upsert auf user_id — ermoeglicht erneute Registrierung nach Aenderung
+  // Upsert auf user_id — ermöglicht erneute Registrierung nach Änderung
   const { data: helper, error: upsertError } = await supabase
     .from('neighborhood_helpers')
     .upsert(

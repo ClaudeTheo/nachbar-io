@@ -7,7 +7,7 @@ import { generateSecureCode, generateTempPassword } from "@/lib/invite-codes";
  * POST /api/register/complete
  *
  * Komplette Registrierung serverseitig:
- * 1. User per Admin-API erstellen (kein Rate Limit, keine E-Mail-Bestaetigung)
+ * 1. User per Admin-API erstellen (kein Rate Limit, keine E-Mail-Bestätigung)
  * 2. Profil erstellen
  * 3. Haushalt suchen/erstellen + Zuordnung
  * 4. Verifizierungsanfrage erstellen
@@ -63,20 +63,20 @@ export async function POST(request: NextRequest) {
     // - Mit Passwort: Klassischer Flow (Fallback, Tester)
     // - Ohne Passwort: Magic Link Flow (Standard ab 2026-03)
     if (email) {
-      // Temporaeres Passwort generieren wenn keins mitgesendet wird
+      // Temporäres Passwort generieren wenn keins mitgesendet wird
       // (Supabase erfordert ein Passwort bei admin.createUser)
       const userPassword = password || generateTempPassword();
 
       // B-1 Pilot-Entscheidung (2026-03-18):
-      // email_confirm: true = Account wird sofort als bestaetigt markiert.
+      // email_confirm: true = Account wird sofort als bestätigt markiert.
       // Im Pilot mit Invite-Code-Pflicht akzeptabel: Code-Besitz dient als
-      // Verifikation (nur Personen mit gueltigem Invite-Code koennen sich registrieren).
+      // Verifikation (nur Personen mit gültigem Invite-Code können sich registrieren).
       //
-      // WICHTIG — NICHT fuer oeffentlichen Rollout ohne Invite-Gate geeignet:
-      // Ohne Invite-Code-Pflicht koennte ein Angreifer beliebige E-Mail-Adressen
+      // WICHTIG — NICHT für öffentlichen Rollout ohne Invite-Gate geeignet:
+      // Ohne Invite-Code-Pflicht könnte ein Angreifer beliebige E-Mail-Adressen
       // registrieren, ohne den Besitz nachzuweisen.
-      // Vor oeffentlichem Rollout: email_confirm auf false setzen und
-      // Supabase E-Mail-Bestaetigung erzwingen (Confirm Signup Template).
+      // Vor öffentlichem Rollout: email_confirm auf false setzen und
+      // Supabase E-Mail-Bestätigung erzwingen (Confirm Signup Template).
       const { data: newUser, error: createError } =
         await adminDb.auth.admin.createUser({
           email,
@@ -97,7 +97,7 @@ export async function POST(request: NextRequest) {
           );
 
           if (existingUser) {
-            // Pruefen ob ein Profil existiert
+            // Prüfen ob ein Profil existiert
             const { data: existingProfile } = await adminDb
               .from("users")
               .select("id")
@@ -112,7 +112,7 @@ export async function POST(request: NextRequest) {
               userId = existingUser.id;
               // Weiter mit Profil-Erstellung unten
             } else {
-              // Vollstaendig registrierter User → Login empfehlen
+              // Vollständig registrierter User → Login empfehlen
               return NextResponse.json(
                 {
                   error:
@@ -240,7 +240,7 @@ export async function POST(request: NextRequest) {
           }
         }
       } else if (trimmedHouseNumber) {
-        // Straßenname nicht in STREET_COORDS (andere Straße in Bad Saeckingen)
+        // Straßenname nicht in STREET_COORDS (andere Straße in Bad Säckingen)
         // Trotzdem Haushalt erstellen mit Quartier-Fallback-Koordinaten
         console.warn(
           `Straße nicht in Pilotgebiet: "${streetName}" — erstelle Haushalt mit Fallback-Koordinaten`,
@@ -269,7 +269,7 @@ export async function POST(request: NextRequest) {
           householdId = existing.id;
         } else {
           // Neuen Haushalt mit Quartier-Zentrum als Fallback-Koordinaten erstellen
-          const defaultLat = 47.5535; // Bad Saeckingen Zentrum
+          const defaultLat = 47.5535; // Bad Säckingen Zentrum
           const defaultLng = 7.964;
           const newInviteCode = generateSecureCode();
 
@@ -312,8 +312,8 @@ export async function POST(request: NextRequest) {
     }
 
     // 1. User-Profil erstellen
-    // Trust-Level abhaengig von Verifikationsmethode:
-    // - Invite-Code: sofort 'verified' (B2B-Track, vertrauenswuerdiger Kanal)
+    // Trust-Level abhängig von Verifikationsmethode:
+    // - Invite-Code: sofort 'verified' (B2B-Track, vertrauenswürdiger Kanal)
     // - Adresse manuell: 'new' (B2C-Track, muss per Vouching verifiziert werden)
     // PILOT_AUTO_VERIFY=true: Alle Nutzer auf 'verified' (Pilot-Modus)
     const pilotAutoVerify = process.env.PILOT_AUTO_VERIFY === "true";
@@ -330,7 +330,7 @@ export async function POST(request: NextRequest) {
         email_hash: "",
         display_name: displayName.trim(),
         ui_mode: uiMode || "active",
-        role: "resident", // Vier-Versionen-Modell: Standard-Rolle fuer Bewohner
+        role: "resident", // Vier-Versionen-Modell: Standard-Rolle für Bewohner
         trust_level: trustLevel,
       },
       { onConflict: "id" },
@@ -338,7 +338,7 @@ export async function POST(request: NextRequest) {
 
     if (profileError) {
       console.error("Profil-Fehler:", profileError);
-      // Auth-User wieder loeschen, damit kein verwaister Account zurueckbleibt
+      // Auth-User wieder löschen, damit kein verwaister Account zurückbleibt
       // (sonst: "Email bereits registriert" bei erneutem Versuch)
       try {
         await adminDb.auth.admin.deleteUser(userId);
@@ -362,7 +362,7 @@ export async function POST(request: NextRequest) {
     // 2. Haushalt-Zuordnung erstellen
     if (householdId) {
       // Pilotphase: Alle Nutzer werden sofort verifiziert (verified_at gesetzt)
-      // Damit koennen sie die App direkt nutzen (RLS: is_verified_member())
+      // Damit können sie die App direkt nutzen (RLS: is_verified_member())
       const { error: memberError } = await adminDb
         .from("household_members")
         .insert({
@@ -374,10 +374,10 @@ export async function POST(request: NextRequest) {
 
       if (memberError) {
         console.error("Mitglied-Fehler:", memberError);
-        // Nicht blockierend — Registrierung trotzdem abschliessen
+        // Nicht blockierend — Registrierung trotzdem abschließen
       }
 
-      // 3. Bei manueller Adress-Verifikation: Anfrage trotzdem erstellen (fuer Admin-Uebersicht)
+      // 3. Bei manueller Adress-Verifikation: Anfrage trotzdem erstellen (für Admin-Übersicht)
       if (verificationMethod === "address_manual") {
         const { error: requestError } = await adminDb
           .from("verification_requests")
@@ -419,7 +419,7 @@ export async function POST(request: NextRequest) {
 
         // verified_at bereits oben gesetzt (Pilot: alle sofort verifiziert)
 
-        // Punkte fuer den Einladenden
+        // Punkte für den Einladenden
         if (referrerId) {
           const { error: pointsErr } = await adminDb
             .from("reputation_points")

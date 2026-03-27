@@ -33,7 +33,7 @@ export function MapEditor() {
   const { currentQuarter, allQuarters } = useQuarter();
   const [selectedQuarterId, setSelectedQuarterId] = useState<string | null>(null);
 
-  // Ausgewaehltes Quartier bestimmen (Fallback auf aktuelles)
+  // Ausgewähltes Quartier bestimmen (Fallback auf aktuelles)
   const activeQuarter = useMemo(() => {
     if (selectedQuarterId) return allQuarters.find(q => q.id === selectedQuarterId) ?? currentQuarter;
     return currentQuarter;
@@ -55,7 +55,7 @@ export function MapEditor() {
   const [uploadingBg, setUploadingBg] = useState(false);
   const bgInputRef = useRef<HTMLInputElement>(null);
 
-  // Nutzer-State (fuer Panel)
+  // Nutzer-State (für Panel)
   const [showUsers, setShowUsers] = useState(false);
   const [householdMap, setHouseholdMap] = useState<Record<string, HouseholdWithMembers>>({});
   const [allUsers, setAllUsers] = useState<User[]>([]);
@@ -85,7 +85,7 @@ export function MapEditor() {
           setHouses(quarterHouses);
           setOriginalHouses(JSON.parse(JSON.stringify(quarterHouses)));
         } else {
-          // Fallback auf Hardcoded (nur fuer Pilot-Quartier)
+          // Fallback auf Hardcoded (nur für Pilot-Quartier)
           setHouses([...DEFAULT_HOUSES]);
           setOriginalHouses(JSON.parse(JSON.stringify(DEFAULT_HOUSES)));
         }
@@ -100,7 +100,7 @@ export function MapEditor() {
     setLoading(false);
   }, [activeQuarter?.id]);
 
-  // Haushalte + Mitglieder laden (fuer Nutzerverwaltung)
+  // Haushalte + Mitglieder laden (für Nutzerverwaltung)
   const loadHouseholds = useCallback(async () => {
     setLoadingUsers(true);
     try {
@@ -115,10 +115,10 @@ export function MapEditor() {
       const members = (mData ?? []) as (HouseholdMember & { user?: Pick<User, "display_name" | "avatar_url"> })[];
       const users = (uData ?? []) as User[];
 
-      // Haushalte nach Strasse+Hausnummer gruppieren (key = "PS:11")
+      // Haushalte nach Straße+Hausnummer gruppieren (key = "PS:11")
       const map: Record<string, HouseholdWithMembers> = {};
       households.forEach(h => {
-        // Strassen-Code ermitteln
+        // Straßen-Code ermitteln
         const code = Object.entries(STREET_LABELS).find(
           ([, name]) => h.street_name === name || h.street_name.includes(name.replace(" Str.", "").replace("straße", "str"))
         )?.[0] ?? "";
@@ -140,7 +140,7 @@ export function MapEditor() {
   useEffect(() => { loadHouses(); }, [loadHouses]);
 
   // ============================================================
-  // AENDERUNGSERKENNUNG
+  // ÄNDERUNGSERKENNUNG
   // ============================================================
   const hasChanges = JSON.stringify(houses) !== JSON.stringify(originalHouses);
 
@@ -152,7 +152,7 @@ export function MapEditor() {
       const orig = origById[h.id];
       if (!orig || orig.x !== h.x || orig.y !== h.y || orig.num !== h.num || orig.s !== h.s || orig.defaultColor !== h.defaultColor) count++;
     });
-    // Geloeschte zaehlen
+    // Gelöschte zählen
     const currentIds: Record<string, boolean> = {};
     houses.forEach(h => { currentIds[h.id] = true; });
     originalHouses.forEach(h => { if (!currentIds[h.id]) count++; });
@@ -200,14 +200,14 @@ export function MapEditor() {
     const dx = Math.abs(e.clientX - dragState.startX);
     const dy = Math.abs(e.clientY - dragState.startY);
     if (dx < 4 && dy < 4) {
-      // Klick — Haus auswaehlen
+      // Klick — Haus auswählen
       setSelectedId(dragState.houseId);
       setNewHouse(null);
     }
     setDragState(null);
   }
 
-  // Klick auf leere Kartenflaeche
+  // Klick auf leere Kartenfläche
   function handleSvgClick(e: React.MouseEvent<SVGSVGElement>) {
     if (!isAddMode) {
       setSelectedId(null);
@@ -243,7 +243,7 @@ export function MapEditor() {
     setHouses(prev => [...prev, house]);
     setSelectedId(id);
     setNewHouse(null);
-    toast.success(`Haus ${STREET_LABELS[house.s]} ${house.num} hinzugefuegt`);
+    toast.success(`Haus ${STREET_LABELS[house.s]} ${house.num} hinzugefügt`);
   }
 
   function deleteHouse(id: string) {
@@ -266,13 +266,13 @@ export function MapEditor() {
     try {
       const supabase = createClient();
 
-      // Geloeschte Haeuser ermitteln
+      // Gelöschte Häuser ermitteln
       const currentIds = new Set(houses.map(h => h.id));
       const deletedIds = originalHouses.filter(h => !currentIds.has(h.id)).map(h => h.id);
 
       if (deletedIds.length > 0) {
         const { error } = await supabase.from("map_houses").delete().in("id", deletedIds);
-        if (error) { toast.error("Fehler beim Loeschen"); setSaving(false); return; }
+        if (error) { toast.error("Fehler beim Löschen"); setSaving(false); return; }
       }
 
       // Alle aktuellen upserten (mit quarter_id)
@@ -291,7 +291,7 @@ export function MapEditor() {
       if (error) {
         toast.error("Fehler beim Speichern");
       } else {
-        toast.success(`${houses.length} Haeuser gespeichert`);
+        toast.success(`${houses.length} Häuser gespeichert`);
         setOriginalHouses(JSON.parse(JSON.stringify(houses)));
       }
     } catch {
@@ -357,7 +357,7 @@ export function MapEditor() {
     setUploadingBg(false);
   }
 
-  // Haushalt fuer ausgewaehltes Haus
+  // Haushalt für ausgewähltes Haus
   const selectedHousehold = selectedHouse
     ? householdMap[`${selectedHouse.s}:${selectedHouse.num}`] ?? null
     : null;
@@ -416,7 +416,7 @@ export function MapEditor() {
             className="text-xs h-8"
             onClick={() => bgInputRef.current?.click()}
             disabled={uploadingBg || !activeQuarter}
-            title="Hintergrundbild fuer dieses Quartier hochladen"
+            title="Hintergrundbild für dieses Quartier hochladen"
           >
             {/* eslint-disable-next-line jsx-a11y/alt-text */}
             <Image className="h-3.5 w-3.5 mr-1" />
@@ -558,7 +558,7 @@ export function MapEditor() {
         <Card className="border-quartier-green/30">
           <CardContent className="p-4 space-y-3">
             <div className="flex items-center justify-between">
-              <h3 className="text-sm font-semibold text-anthrazit">Neues Haus hinzufuegen</h3>
+              <h3 className="text-sm font-semibold text-anthrazit">Neues Haus hinzufügen</h3>
               <Button size="sm" variant="ghost" className="h-6 w-6 p-0" onClick={() => setNewHouse(null)}>
                 <X className="h-4 w-4" />
               </Button>
@@ -575,7 +575,7 @@ export function MapEditor() {
                 />
               </div>
               <div>
-                <label className="text-xs text-muted-foreground">Strasse</label>
+                <label className="text-xs text-muted-foreground">Straße</label>
                 <select
                   value={newHouse.s}
                   onChange={e => setNewHouse({ ...newHouse, s: e.target.value as StreetCode })}
@@ -614,13 +614,13 @@ export function MapEditor() {
             </div>
             <Button size="sm" onClick={addHouse} className="w-full">
               <Plus className="h-3.5 w-3.5 mr-1" />
-              Haus hinzufuegen
+              Haus hinzufügen
             </Button>
           </CardContent>
         </Card>
       )}
 
-      {/* Ausgewaehltes Haus — Edit Panel */}
+      {/* Ausgewähltes Haus — Edit Panel */}
       {selectedHouse && (
         <Card className="border-blue-200">
           <CardContent className="p-4 space-y-3">
@@ -646,7 +646,7 @@ export function MapEditor() {
                 />
               </div>
               <div>
-                <label className="text-xs text-muted-foreground">Strasse</label>
+                <label className="text-xs text-muted-foreground">Straße</label>
                 <select
                   value={selectedHouse.s}
                   onChange={e => updateHouse(selectedHouse.id, { s: e.target.value as StreetCode })}
@@ -719,7 +719,7 @@ export function MapEditor() {
 
       {/* Fusszeile */}
       <div className="flex items-center justify-between text-xs text-muted-foreground px-1">
-        <span>{houses.length} Haeuser</span>
+        <span>{houses.length} Häuser</span>
         <span>PS: {streetCounts.PS} · SN: {streetCounts.SN} · OR: {streetCounts.OR}</span>
       </div>
     </div>
@@ -760,7 +760,7 @@ function HouseholdPanel({
       <div className="rounded-lg bg-muted/50 p-3">
         <div className="flex items-center gap-2 text-xs text-muted-foreground">
           <Home className="h-3.5 w-3.5" />
-          <span>Kein Haushalt fuer {STREET_LABELS[house.s]} {house.num} registriert.</span>
+          <span>Kein Haushalt für {STREET_LABELS[house.s]} {house.num} registriert.</span>
         </div>
         <p className="text-[10px] text-muted-foreground mt-1">
           Erstellen Sie einen Haushalt im Tab &quot;Codes&quot;, um Bewohner zuzuordnen.
@@ -782,7 +782,7 @@ function HouseholdPanel({
         role: "member",
       });
       if (error) throw error;
-      toast.success("Bewohner hinzugefuegt");
+      toast.success("Bewohner hinzugefügt");
       setSelectedUserId("");
       setAddingMember(false);
       onRefresh();
@@ -851,7 +851,7 @@ function HouseholdPanel({
                 onChange={e => setSelectedUserId(e.target.value)}
                 className="flex-1 h-7 rounded-md border border-input bg-background px-2 text-xs"
               >
-                <option value="">Nutzer waehlen...</option>
+                <option value="">Nutzer wählen...</option>
                 {availableUsers.map(u => (
                   <option key={u.id} value={u.id}>{u.display_name}</option>
                 ))}

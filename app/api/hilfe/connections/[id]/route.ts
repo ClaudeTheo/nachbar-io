@@ -1,4 +1,4 @@
-// PUT /api/hilfe/connections/[id] — Verbindung bestaetigen (Senior)
+// PUT /api/hilfe/connections/[id] — Verbindung bestätigen (Senior)
 // DELETE /api/hilfe/connections/[id] — Verbindung widerrufen
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
@@ -14,7 +14,7 @@ export async function PUT(
     return NextResponse.json({ error: 'Nicht authentifiziert' }, { status: 401 });
   }
 
-  // Nur der Senior (resident_id) kann bestaetigen
+  // Nur der Senior (resident_id) kann bestätigen
   const { data: connection, error } = await supabase
     .from('helper_connections')
     .update({ confirmed_at: new Date().toISOString() })
@@ -26,7 +26,7 @@ export async function PUT(
     .single();
 
   if (error || !connection) {
-    return NextResponse.json({ error: 'Verbindung nicht gefunden oder bereits bestaetigt' }, { status: 404 });
+    return NextResponse.json({ error: 'Verbindung nicht gefunden oder bereits bestätigt' }, { status: 404 });
   }
 
   return NextResponse.json(connection);
@@ -43,7 +43,7 @@ export async function DELETE(
     return NextResponse.json({ error: 'Nicht authentifiziert' }, { status: 401 });
   }
 
-  // Beide Seiten koennen widerrufen
+  // Beide Seiten können widerrufen
   const { data: connection, error } = await supabase
     .from('helper_connections')
     .update({ revoked_at: new Date().toISOString() })

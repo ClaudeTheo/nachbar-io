@@ -1,19 +1,19 @@
 'use client';
 
-// Formular zur Registrierung als Helfer mit Rolle, Skills und Verfuegbarkeit
+// Formular zur Registrierung als Helfer mit Rolle, Skills und Verfügbarkeit
 
 import { useState } from 'react';
 import type { CareHelperRole } from '@/lib/care/types';
 import { CARE_HELPER_ROLES } from '@/lib/care/constants';
 
 interface HelperRegistrationFormProps {
-  /** Senior-ID, fuer die sich der Helfer registriert (optional) */
+  /** Senior-ID, für die sich der Helfer registriert (optional) */
   seniorId?: string;
   onSuccess?: () => void;
   onCancel?: () => void;
 }
 
-// Verfuegbare Faehigkeiten zur Auswahl
+// Verfügbare Fähigkeiten zur Auswahl
 const SKILL_OPTIONS: string[] = [
   'Einkaufen',
   'Transport',
@@ -24,7 +24,7 @@ const SKILL_OPTIONS: string[] = [
   'Haushalthilfe',
 ];
 
-// Verfuegbarkeits-Slots
+// Verfügbarkeits-Slots
 const AVAILABILITY_SLOTS: { key: keyof AvailabilityState; label: string }[] = [
   { key: 'morgens',  label: 'Morgens' },
   { key: 'mittags',  label: 'Mittags' },
@@ -50,14 +50,14 @@ export function HelperRegistrationForm({ seniorId, onSuccess, onCancel }: Helper
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Skill an/abwaehlen
+  // Skill an/abwählen
   function toggleSkill(skill: string) {
     setSkills((prev) =>
       prev.includes(skill) ? prev.filter((s) => s !== skill) : [...prev, skill]
     );
   }
 
-  // Verfuegbarkeits-Slot an/abwaehlen
+  // Verfügbarkeits-Slot an/abwählen
   function toggleAvailability(key: keyof AvailabilityState) {
     setAvailability((prev) => ({ ...prev, [key]: !prev[key] }));
   }
@@ -121,10 +121,10 @@ export function HelperRegistrationForm({ seniorId, onSuccess, onCancel }: Helper
         </p>
       </div>
 
-      {/* Faehigkeiten (Multi-Checkbox) */}
+      {/* Fähigkeiten (Multi-Checkbox) */}
       <fieldset>
         <legend className="block text-sm font-medium text-anthrazit mb-2">
-          Meine Faehigkeiten <span className="text-xs font-normal text-muted-foreground">(optional)</span>
+          Meine Fähigkeiten <span className="text-xs font-normal text-muted-foreground">(optional)</span>
         </legend>
         <div className="grid grid-cols-2 gap-2">
           {SKILL_OPTIONS.map((skill) => {
@@ -164,10 +164,10 @@ export function HelperRegistrationForm({ seniorId, onSuccess, onCancel }: Helper
         </div>
       </fieldset>
 
-      {/* Verfuegbarkeit (Toggle-Buttons) */}
+      {/* Verfügbarkeit (Toggle-Buttons) */}
       <fieldset>
         <legend className="block text-sm font-medium text-anthrazit mb-2">
-          Verfuegbarkeit <span className="text-xs font-normal text-muted-foreground">(optional)</span>
+          Verfügbarkeit <span className="text-xs font-normal text-muted-foreground">(optional)</span>
         </legend>
         <div className="flex gap-3">
           {AVAILABILITY_SLOTS.map(({ key, label }) => {

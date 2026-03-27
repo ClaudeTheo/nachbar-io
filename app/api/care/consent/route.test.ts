@@ -1,6 +1,6 @@
 // app/api/care/consent/route.test.ts
-// Nachbar.io — Tests fuer Consent API-Route (GET + POST)
-// Testet: Auth, Validierung, Feature-Keys, Abhaengigkeiten, Audit, DSGVO Art. 9
+// Nachbar.io — Tests für Consent API-Route (GET + POST)
+// Testet: Auth, Validierung, Feature-Keys, Abhängigkeiten, Audit, DSGVO Art. 9
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { NextRequest } from 'next/server';
@@ -64,7 +64,7 @@ describe('GET /api/care/consent', () => {
     expect(res.status).toBe(401);
   });
 
-  it('laedt alle Consents fuer authentifizierten User', async () => {
+  it('lädt alle Consents für authentifizierten User', async () => {
     mockSupabase.setUser({ id: 'user-1' });
     mockGetConsentsForUser.mockResolvedValue(FULL_CONSENTS);
 
@@ -107,14 +107,14 @@ describe('POST /api/care/consent', () => {
     expect(json.error).toContain('features');
   });
 
-  it('gibt 400 bei ungueltigem Feature-Key', async () => {
+  it('gibt 400 bei ungültigem Feature-Key', async () => {
     const res = await POST(createPostRequest({ features: { hacking: true } }));
     expect(res.status).toBe(400);
     const json = await res.json();
     expect(json.error).toContain('Ungültiges Feature');
   });
 
-  it('erzwingt SOS-Abhaengigkeit fuer emergency_contacts', async () => {
+  it('erzwingt SOS-Abhängigkeit für emergency_contacts', async () => {
     const res = await POST(createPostRequest({ features: { emergency_contacts: true } }));
     expect(res.status).toBe(400);
     const json = await res.json();
@@ -122,7 +122,7 @@ describe('POST /api/care/consent', () => {
   });
 
   it('akzeptiert emergency_contacts MIT sos', async () => {
-    // Upsert-Responses fuer sos + emergency_contacts
+    // Upsert-Responses für sos + emergency_contacts
     mockSupabase.addResponse('care_consents', { data: { id: 'c-1' }, error: null });
     mockSupabase.addResponse('care_consent_history', { data: null, error: null });
     mockSupabase.addResponse('care_consents', { data: { id: 'c-2' }, error: null });
@@ -139,7 +139,7 @@ describe('POST /api/care/consent', () => {
     expect(res.status).toBe(200);
   });
 
-  it('schreibt Audit-Log bei Aenderungen', async () => {
+  it('schreibt Audit-Log bei Änderungen', async () => {
     mockSupabase.addResponse('care_consents', { data: { id: 'c-1' }, error: null });
     mockSupabase.addResponse('care_consent_history', { data: null, error: null });
     mockGetConsentsForUser.mockResolvedValueOnce(EMPTY_CONSENTS);
@@ -153,7 +153,7 @@ describe('POST /api/care/consent', () => {
     );
   });
 
-  it('weist ungueltiges JSON ab', async () => {
+  it('weist ungültiges JSON ab', async () => {
     const req = new NextRequest('http://localhost:3000/api/care/consent', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },

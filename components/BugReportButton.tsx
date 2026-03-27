@@ -1,9 +1,9 @@
 "use client";
 
 // components/BugReportButton.tsx
-// Nachbar.io — Floating Bug-Report Button fuer alle Nutzer
+// Nachbar.io — Floating Bug-Report Button für alle Nutzer
 // Sammelt automatisch Console-Errors, Browser-Info und sendet Bug-Report
-// Unterstuetzt anonymen Modus (ohne Login) fuer Login-/Onboarding-Seiten
+// Unterstützt anonymen Modus (ohne Login) für Login-/Onboarding-Seiten
 
 import { useState, useEffect, useRef, useCallback, useContext } from "react";
 import { Bug, Send, Loader2, X } from "lucide-react";
@@ -33,7 +33,7 @@ interface BugReportButtonProps {
 }
 
 export function BugReportButton({ anonymous = false }: BugReportButtonProps) {
-  // Sicherer Quartier-Zugriff: useContext gibt null zurueck wenn kein Provider
+  // Sicherer Quartier-Zugriff: useContext gibt null zurück wenn kein Provider
   // (im Gegensatz zu useQuarter() das wirft). Fuer Login-/Onboarding-Seiten.
   const quarterCtx = useContext(QuarterContext);
   const quarterId = anonymous ? null : (quarterCtx?.currentQuarter?.id ?? null);
@@ -130,7 +130,7 @@ export function BugReportButton({ anonymous = false }: BugReportButtonProps) {
       let screenshotUrl: string | null = null;
       const blob = await captureScreenshot();
       if (blob) {
-        // Max 500KB — groessere Screenshots ueberspringen
+        // Max 500KB — größere Screenshots überspringen
         if (blob.size <= 500 * 1024) {
           const reader = new FileReader();
           const dataUrl = await new Promise<string>((resolve) => {
@@ -139,7 +139,7 @@ export function BugReportButton({ anonymous = false }: BugReportButtonProps) {
           });
           screenshotUrl = dataUrl;
         } else {
-          console.error("[BugReport] Screenshot zu gross fuer anonymen Report:", blob.size);
+          console.error("[BugReport] Screenshot zu groß für anonymen Report:", blob.size);
         }
       }
 
@@ -157,7 +157,7 @@ export function BugReportButton({ anonymous = false }: BugReportButtonProps) {
           browser_info: browserInfo,
           page_meta: pageMeta,
           user_comment: comment?.trim() || null,
-          website: honeypot, // Honeypot-Feld fuer Spam-Schutz
+          website: honeypot, // Honeypot-Feld für Spam-Schutz
         }),
       });
 
@@ -250,7 +250,7 @@ export function BugReportButton({ anonymous = false }: BugReportButtonProps) {
 
   return (
     <>
-      {/* Floating Action Button — unten-links, ueber der BottomNav */}
+      {/* Floating Action Button — unten-links, über der BottomNav */}
       <button
         onClick={() => setOpen(true)}
         className="fixed bottom-24 left-4 z-40 flex h-12 w-12 items-center justify-center rounded-full bg-alert-amber shadow-lg transition-all hover:scale-110 hover:shadow-xl active:scale-95"
@@ -275,7 +275,7 @@ export function BugReportButton({ anonymous = false }: BugReportButtonProps) {
           </SheetHeader>
 
           <div className="mt-4 space-y-4">
-            {/* Honeypot-Feld fuer Spam-Schutz (nur im anonymen Modus) */}
+            {/* Honeypot-Feld für Spam-Schutz (nur im anonymen Modus) */}
             {anonymous && (
               <input
                 name="website"

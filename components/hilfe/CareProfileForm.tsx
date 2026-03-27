@@ -32,7 +32,7 @@ export interface CareProfileData {
 }
 
 interface CareProfileFormProps {
-  /** Vorhandene Profildaten zum Vorausfuellen */
+  /** Vorhandene Profildaten zum Vorausfüllen */
   initialData?: Partial<CareProfileData>;
   /** Callback nach erfolgreichem Speichern */
   onSaved?: (data: CareProfileData) => void;
@@ -50,7 +50,7 @@ export function CareProfileForm({ initialData, onSaved }: CareProfileFormProps) 
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
 
-  // Pruefen, ob "Andere..." ausgewaehlt ist
+  // Prüfen, ob "Andere..." ausgewählt ist
   const isCustomInsurance = insuranceName === 'Andere...';
 
   // Effektiver Kassenname (bei "Andere..." den eigenen Wert nehmen)
@@ -63,11 +63,11 @@ export function CareProfileForm({ initialData, onSaved }: CareProfileFormProps) 
 
     // Client-seitige Validierung
     if (!careLevel || careLevel < 1 || careLevel > 5) {
-      setError('Bitte waehlen Sie einen Pflegegrad (1-5).');
+      setError('Bitte wählen Sie einen Pflegegrad (1-5).');
       return;
     }
     if (!effectiveInsuranceName) {
-      setError('Bitte waehlen Sie Ihre Pflegekasse aus.');
+      setError('Bitte wählen Sie Ihre Pflegekasse aus.');
       return;
     }
     if (!insuranceNumber.trim()) {
@@ -120,7 +120,7 @@ export function CareProfileForm({ initialData, onSaved }: CareProfileFormProps) 
           className="w-full min-h-[80px] rounded-lg border border-input bg-transparent px-4 text-lg focus:border-ring focus:ring-3 focus:ring-ring/50 outline-none"
         >
           <option value={0} disabled>
-            Bitte waehlen...
+            Bitte wählen...
           </option>
           {CARE_LEVELS.map((level) => (
             <option key={level} value={level}>
@@ -147,7 +147,7 @@ export function CareProfileForm({ initialData, onSaved }: CareProfileFormProps) 
           className="w-full min-h-[80px] rounded-lg border border-input bg-transparent px-4 text-lg focus:border-ring focus:ring-3 focus:ring-ring/50 outline-none"
         >
           <option value="" disabled>
-            Bitte waehlen...
+            Bitte wählen...
           </option>
           {INSURANCE_OPTIONS.map((name) => (
             <option key={name} value={name}>
@@ -198,7 +198,7 @@ export function CareProfileForm({ initialData, onSaved }: CareProfileFormProps) 
               </p>
               <p className="text-sm text-muted-foreground mt-1">
                 Ab Pflegegrad 1 steht Ihnen ein monatlicher Entlastungsbetrag von 131 EUR zu.
-                Dieser kann fuer haushaltsnahe Dienstleistungen und Alltagsbegleitung genutzt werden.
+                Dieser kann für haushaltsnahe Dienstleistungen und Alltagsbegleitung genutzt werden.
               </p>
             </div>
           </div>
@@ -207,7 +207,7 @@ export function CareProfileForm({ initialData, onSaved }: CareProfileFormProps) 
 
       {/* Datenschutz-Hinweis */}
       <p className="text-sm text-muted-foreground">
-        🔒 Daten nur fuer PDF-Quittung, nie an Dritte weitergegeben.
+        🔒 Daten nur für PDF-Quittung, nie an Dritte weitergegeben.
       </p>
 
       {/* Fehlermeldung */}

@@ -69,7 +69,7 @@ export function ConsultationSlotForm({ quarterId }: Props) {
           className="w-full rounded-xl border border-anthrazit/20 p-3 text-lg"
         >
           <option value="community">Quartiers-Beratung (Jitsi)</option>
-          <option value="medical">Aerztliche Sprechstunde (sprechstunde.online)</option>
+          <option value="medical">Ärztliche Sprechstunde (sprechstunde.online)</option>
         </select>
       </div>
 

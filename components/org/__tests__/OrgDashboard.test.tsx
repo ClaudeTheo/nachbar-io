@@ -1,5 +1,5 @@
 // components/org/__tests__/OrgDashboard.test.tsx
-// Nachbar.io — Tests fuer das Organisations-Dashboard (Pro Community)
+// Nachbar.io — Tests für das Organisations-Dashboard (Pro Community)
 
 import { describe, it, expect, vi, afterEach } from "vitest";
 import { render, screen, cleanup } from "@testing-library/react";
@@ -7,7 +7,7 @@ import { OrgDashboard } from "../OrgDashboard";
 import { OrgMemberList } from "../OrgMemberList";
 import type { Organization } from "@/app/(app)/org/page";
 
-// Mock Supabase Client (fuer QuarterStats-Kind-Komponente)
+// Mock Supabase Client (für QuarterStats-Kind-Komponente)
 vi.mock("@/lib/supabase/client", () => ({
   createClient: () => ({
     from: () => ({
@@ -68,7 +68,7 @@ describe("OrgDashboard", () => {
     expect(screen.getByText("Pflegedienst")).toBeInTheDocument();
   });
 
-  it("zeigt Verifizierungsstatus 'Verifiziert' in gruen", () => {
+  it("zeigt Verifizierungsstatus 'Verifiziert' in grün", () => {
     render(<OrgDashboard org={createTestOrg({ verification_status: "verified" })} />);
     const badge = screen.getByText("Verifiziert");
     expect(badge).toBeInTheDocument();
@@ -120,19 +120,19 @@ describe("OrgDashboard", () => {
     expect(screen.getByText("+49 7761 12345")).toBeInTheDocument();
   });
 
-  it("zeigt Gemeinde als Typ-Label fuer municipality", () => {
+  it("zeigt Gemeinde als Typ-Label für municipality", () => {
     render(<OrgDashboard org={createTestOrg({ type: "municipality" })} />);
     expect(screen.getByText("Gemeinde")).toBeInTheDocument();
   });
 
-  it("zeigt Wohnungsbau als Typ-Label fuer housing", () => {
+  it("zeigt Wohnungsbau als Typ-Label für housing", () => {
     render(<OrgDashboard org={createTestOrg({ type: "housing" })} />);
     expect(screen.getByText("Wohnungsbau")).toBeInTheDocument();
   });
 });
 
 describe("OrgMemberList", () => {
-  // Mock fetch fuer Mitglieder-API
+  // Mock fetch für Mitglieder-API
   const mockMembers = [
     {
       id: "m-1",
@@ -141,11 +141,11 @@ describe("OrgMemberList", () => {
       role: "admin",
       assigned_quarters: ["Purkersdorfer Straße"],
       created_at: "2026-01-01T00:00:00Z",
-      user: { id: "u-1", display_name: "Anna Mueller", email_hash: null },
+      user: { id: "u-1", display_name: "Anna Müller", email_hash: null },
     },
   ];
 
-  it("zeigt 'Mitglied hinzufügen' Button fuer Admins", async () => {
+  it("zeigt 'Mitglied hinzufügen' Button für Admins", async () => {
     vi.spyOn(globalThis, "fetch").mockResolvedValueOnce({
       ok: true,
       json: async () => mockMembers,
@@ -158,7 +158,7 @@ describe("OrgMemberList", () => {
     expect(button).toBeInTheDocument();
   });
 
-  it("zeigt KEINEN 'Mitglied hinzufügen' Button fuer Viewer", async () => {
+  it("zeigt KEINEN 'Mitglied hinzufügen' Button für Viewer", async () => {
     vi.spyOn(globalThis, "fetch").mockResolvedValueOnce({
       ok: true,
       json: async () => mockMembers,
@@ -167,7 +167,7 @@ describe("OrgMemberList", () => {
     render(<OrgMemberList orgId="org-1" currentUserRole="viewer" />);
 
     // Warten bis Mitgliedername sichtbar
-    await screen.findByText("Anna Mueller");
+    await screen.findByText("Anna Müller");
 
     // Button darf nicht existieren
     expect(screen.queryByText("Mitglied hinzufügen")).not.toBeInTheDocument();

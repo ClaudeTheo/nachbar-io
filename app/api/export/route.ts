@@ -1,5 +1,5 @@
 // app/api/export/route.ts
-// Nachbar.io — CSV/XLSX-Export API fuer B2B-Organisationen
+// Nachbar.io — CSV/XLSX-Export API für B2B-Organisationen
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import {
@@ -24,25 +24,25 @@ export async function GET(request: Request) {
   // Validierung
   if (!type || !VALID_TYPES.includes(type)) {
     return NextResponse.json(
-      { error: `Ungueltiger Typ. Erlaubt: ${VALID_TYPES.join(', ')}` },
+      { error: `Ungültiger Typ. Erlaubt: ${VALID_TYPES.join(', ')}` },
       { status: 400 }
     );
   }
   if (!VALID_FORMATS.includes(format)) {
     return NextResponse.json(
-      { error: `Ungueltiges Format. Erlaubt: ${VALID_FORMATS.join(', ')}` },
+      { error: `Ungültiges Format. Erlaubt: ${VALID_FORMATS.join(', ')}` },
       { status: 400 }
     );
   }
 
-  // Auth pruefen
+  // Auth prüfen
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) {
     return NextResponse.json({ error: 'Nicht authentifiziert' }, { status: 401 });
   }
 
-  // Rolle pruefen: nur admin + org_admin
+  // Rolle prüfen: nur admin + org_admin
   const { data: profile } = await supabase
     .from('profiles')
     .select('role')
@@ -97,7 +97,7 @@ export async function GET(request: Request) {
       }
 
       case 'activity_report': {
-        // Aggregierter Aktivitaetsbericht aus analytics_snapshots
+        // Aggregierter Aktivitätsbericht aus analytics_snapshots
         let query = supabase
           .from('analytics_snapshots')
           .select('snapshot_date, posts_count, events_count, wah, active_users_7d')

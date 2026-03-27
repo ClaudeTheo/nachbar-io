@@ -12,7 +12,7 @@ import { hashUserId, hashHouseholdId } from "@/lib/quarter/resident-hash";
 const MAX_PENDING_REQUESTS = 3;
 
 export async function POST(request: NextRequest) {
-  // 1. Authentifizierung pruefen
+  // 1. Authentifizierung prüfen
   const supabase = await createClient();
   const {
     data: { user },
@@ -108,7 +108,7 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  // 5. Alle Haushalte im eigenen Quartier laden und gehashte householdId aufloesen
+  // 5. Alle Haushalte im eigenen Quartier laden und gehashte householdId auflösen
   const { data: quarterHouseholds } = await supabase
     .from("households")
     .select("id")
@@ -121,7 +121,7 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  // Haushalt finden, dessen Hash mit der uebergebenen householdId uebereinstimmt
+  // Haushalt finden, dessen Hash mit der übergebenen householdId übereinstimmt
   const targetHousehold = quarterHouseholds.find(
     (hh) => hashHouseholdId(hh.id) === householdId
   );
@@ -135,7 +135,7 @@ export async function POST(request: NextRequest) {
 
   const realHouseholdId = targetHousehold.id;
 
-  // 6. Hash aufloesen: Alle Bewohner des Haushalts laden und Hash vergleichen
+  // 6. Hash auflösen: Alle Bewohner des Haushalts laden und Hash vergleichen
   const { data: householdMembers } = await supabase
     .from("household_members")
     .select("user_id")
@@ -148,7 +148,7 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  // Bewohner finden, dessen Hash mit hashedId uebereinstimmt
+  // Bewohner finden, dessen Hash mit hashedId übereinstimmt
   const targetMember = householdMembers.find(
     (m) => hashUserId(m.user_id) === hashedId
   );

@@ -22,7 +22,7 @@ export async function GET(request: NextRequest) {
 
     console.log(
       `[event-reminders] ${result.sent} Erinnerungen gesendet, ` +
-      `${result.skipped} uebersprungen, ${result.events} Events geprueft`
+      `${result.skipped} übersprungen, ${result.events} Events geprüft`
     );
 
     return NextResponse.json({

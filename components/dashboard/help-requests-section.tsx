@@ -1,7 +1,7 @@
 "use client";
 
-// Dashboard-Sektion: Hilfe-Boerse mit Wegwischen + 24h Filter
-// Nutzer koennen einzelne Anfragen per Swipe/X-Button ausblenden
+// Dashboard-Sektion: Hilfe-Börse mit Wegwischen + 24h Filter
+// Nutzer können einzelne Anfragen per Swipe/X-Button ausblenden
 // Nur Anfragen der letzten 24h werden angezeigt
 
 import { useState, useEffect, useRef } from "react";
@@ -26,7 +26,7 @@ function getDismissedIds(): Set<string> {
     const stored = localStorage.getItem(STORAGE_KEY);
     if (!stored) return new Set();
     const parsed = JSON.parse(stored) as { ids: string[]; timestamp: number };
-    // Dismissed-Liste nach 24h zuruecksetzen
+    // Dismissed-Liste nach 24h zurücksetzen
     if (Date.now() - parsed.timestamp > MAX_AGE_HOURS * 60 * 60 * 1000) {
       localStorage.removeItem(STORAGE_KEY);
       return new Set();
@@ -72,7 +72,7 @@ export function HelpRequestsSection({ requests }: { requests: HelpRequest[] }) {
     saveDismissedIds(newDismissed);
   }
 
-  // Touch-Events fuer Swipe-to-dismiss
+  // Touch-Events für Swipe-to-dismiss
   function handleTouchStart(e: React.TouchEvent, id: string) {
     touchStartX.current = e.touches[0].clientX;
     touchDeltaX.current = 0;
@@ -97,7 +97,7 @@ export function HelpRequestsSection({ requests }: { requests: HelpRequest[] }) {
   return (
     <section>
       <Link href="/help" className="mb-2 flex items-center justify-between">
-        <h2 className="text-lg font-bold text-anthrazit">Hilfe-Boerse</h2>
+        <h2 className="text-lg font-bold text-anthrazit">Hilfe-Börse</h2>
         <ChevronRight className="h-5 w-5 text-muted-foreground" />
       </Link>
       <div className="space-y-2">

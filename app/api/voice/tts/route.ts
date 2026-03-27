@@ -1,6 +1,6 @@
 // app/api/voice/tts/route.ts
 // OpenAI TTS Proxy — Text-to-Speech mit gpt-4o-mini-tts
-// Unterstuetzt voice + speed aus Request-Body (Client sendet User-Preferences)
+// Unterstützt voice + speed aus Request-Body (Client sendet User-Preferences)
 
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAuth, unauthorizedResponse, errorResponse } from '@/lib/care/api-helpers';

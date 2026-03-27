@@ -21,7 +21,7 @@ export async function DELETE(
       .eq('user_id', user.id);
 
     if (error) {
-      return NextResponse.json({ error: 'Loeschen fehlgeschlagen' }, { status: 500 });
+      return NextResponse.json({ error: 'Löschen fehlgeschlagen' }, { status: 500 });
     }
 
     return NextResponse.json({ success: true });

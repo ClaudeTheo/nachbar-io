@@ -1,4 +1,4 @@
-// POST /api/webhooks/stripe — Stripe Webhook fuer Hilfe-Subscriptions
+// POST /api/webhooks/stripe — Stripe Webhook für Hilfe-Subscriptions
 import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
 import { getAdminSupabase } from "@/lib/supabase/admin";
@@ -31,8 +31,8 @@ export async function POST(request: NextRequest) {
     event = stripe.webhooks.constructEvent(rawBody, signature, webhookSecret);
   } catch (err) {
     const message = err instanceof Error ? err.message : "Unbekannter Fehler";
-    console.error("[hilfe-webhook] Signaturpruefung fehlgeschlagen:", message);
-    return NextResponse.json({ error: "Ungueltige Signatur" }, { status: 400 });
+    console.error("[hilfe-webhook] Signaturprüfung fehlgeschlagen:", message);
+    return NextResponse.json({ error: "Ungültige Signatur" }, { status: 400 });
   }
 
   const supabase = getAdminSupabase();
@@ -68,7 +68,7 @@ export async function POST(request: NextRequest) {
         .eq("id", helperId);
 
       console.log(
-        `[hilfe-webhook] Subscription ${subscription.id} → ${subscriptionStatus} fuer Helfer ${helperId}`,
+        `[hilfe-webhook] Subscription ${subscription.id} → ${subscriptionStatus} für Helfer ${helperId}`,
       );
       break;
     }
@@ -87,7 +87,7 @@ export async function POST(request: NextRequest) {
         .eq("id", helperId);
 
       console.log(
-        `[hilfe-webhook] Subscription ${subscription.id} gekuendigt fuer Helfer ${helperId}`,
+        `[hilfe-webhook] Subscription ${subscription.id} gekündigt für Helfer ${helperId}`,
       );
       break;
     }
@@ -106,7 +106,7 @@ export async function POST(request: NextRequest) {
         .eq("id", helperId);
 
       console.log(
-        `[hilfe-webhook] Subscription ${subscription.id} pausiert fuer Helfer ${helperId}`,
+        `[hilfe-webhook] Subscription ${subscription.id} pausiert für Helfer ${helperId}`,
       );
       break;
     }
@@ -125,7 +125,7 @@ export async function POST(request: NextRequest) {
         .eq("id", helperId);
 
       console.log(
-        `[hilfe-webhook] Subscription ${subscription.id} wieder aktiviert fuer Helfer ${helperId}`,
+        `[hilfe-webhook] Subscription ${subscription.id} wieder aktiviert für Helfer ${helperId}`,
       );
       break;
     }

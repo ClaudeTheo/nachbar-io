@@ -14,7 +14,7 @@ interface MedicationManagementListProps {
 function formatSchedule(schedule: MedicationSchedule): string {
   switch (schedule.type) {
     case 'daily':
-      return `Taeglich um ${schedule.times?.join(', ') ?? '—'}`;
+      return `Täglich um ${schedule.times?.join(', ') ?? '—'}`;
     case 'weekly':
       return `${schedule.days?.join(', ') ?? '—'} um ${schedule.time ?? '—'}`;
     case 'interval':

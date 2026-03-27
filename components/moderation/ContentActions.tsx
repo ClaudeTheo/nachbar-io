@@ -10,7 +10,7 @@ import type { BlockLevel } from '@/lib/moderation/types';
 interface ContentActionsProps {
   contentType: string;
   contentId: string;
-  /** ID des Autors (fuer Block/Mute) */
+  /** ID des Autors (für Block/Mute) */
   authorId: string;
   /** Eigener Inhalt? Dann keine Aktionen anzeigen */
   isOwnContent?: boolean;

@@ -4,9 +4,9 @@ import { createClient } from "@/lib/supabase/server";
 /**
  * GET /api/admin/env-status
  *
- * Prueft welche Umgebungsvariablen gesetzt sind.
- * Gibt NUR Booleans zurueck (true/false), NIE die eigentlichen Werte.
- * Nur fuer Admins.
+ * Prüft welche Umgebungsvariablen gesetzt sind.
+ * Gibt NUR Booleans zurück (true/false), NIE die eigentlichen Werte.
+ * Nur für Admins.
  */
 export async function GET() {
   const supabase = await createClient();
@@ -25,7 +25,7 @@ export async function GET() {
     return NextResponse.json({ error: "Nur Admins" }, { status: 403 });
   }
 
-  // Env-Variablen pruefen (nur Praesenz, KEINE Werte!)
+  // Env-Variablen prüfen (nur Präsenz, KEINE Werte!)
   const ENV_CHECKS = [
     // Supabase
     { label: "Supabase URL", key: "NEXT_PUBLIC_SUPABASE_URL", critical: true, group: "Supabase" },

@@ -1,5 +1,5 @@
 // app/api/caregiver/invite/route.ts
-// Nachbar.io — Caregiver-Einladung: 8-stelliger Code, 24h gueltig
+// Nachbar.io — Caregiver-Einladung: 8-stelliger Code, 24h gültig
 
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAuth, requireSubscription, unauthorizedResponse, errorResponse, successResponse, careLog } from '@/lib/care/api-helpers';
@@ -27,7 +27,7 @@ export async function POST(_request: NextRequest) {
 
   const { supabase, user } = auth;
 
-  // Aktive Links zaehlen
+  // Aktive Links zählen
   const { data: activeLinks } = await supabase
     .from('caregiver_links')
     .select('id')
@@ -36,7 +36,7 @@ export async function POST(_request: NextRequest) {
 
   if ((activeLinks?.length ?? 0) >= MAX_CAREGIVERS_PER_RESIDENT) {
     return errorResponse(
-      `Maximal ${MAX_CAREGIVERS_PER_RESIDENT} Angehoerige erlaubt`,
+      `Maximal ${MAX_CAREGIVERS_PER_RESIDENT} Angehörige erlaubt`,
       409
     );
   }

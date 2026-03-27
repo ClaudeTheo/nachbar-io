@@ -34,13 +34,13 @@ export async function GET(
     return NextResponse.json({ error: 'Abfrage fehlgeschlagen' }, { status: 500 });
   }
 
-  // SICHERHEIT: Zugriffspruefung — nur Senior selbst, zugeordnete Helfer oder Admin
+  // SICHERHEIT: Zugriffsprüfung — nur Senior selbst, zugeordnete Helfer oder Admin
   if (data.senior_id !== user.id) {
     const role = await requireCareAccess(supabase, data.senior_id);
     if (!role) return NextResponse.json({ error: 'Kein Zugriff auf dieses Medikament' }, { status: 403 });
   }
 
-  // Medikamenten-Felder entschluesseln (Art. 9 DSGVO)
+  // Medikamenten-Felder entschlüsseln (Art. 9 DSGVO)
   return NextResponse.json(decryptFields(data, CARE_MEDICATIONS_ENCRYPTED_FIELDS));
 }
 
@@ -63,7 +63,7 @@ export async function PATCH(
 
   let body: Record<string, unknown>;
   try { body = await request.json(); } catch {
-    return NextResponse.json({ error: 'Ungueltiges Anfrage-Format' }, { status: 400 });
+    return NextResponse.json({ error: 'Ungültiges Anfrage-Format' }, { status: 400 });
   }
 
   const allowedFields = ['name', 'dosage', 'schedule', 'instructions', 'active'];
@@ -76,7 +76,7 @@ export async function PATCH(
     return NextResponse.json({ error: 'Keine aenderbaren Felder angegeben' }, { status: 400 });
   }
 
-  // SICHERHEIT: Zugriffspruefung vor dem Update
+  // SICHERHEIT: Zugriffsprüfung vor dem Update
   const { data: existing } = await supabase.from('care_medications').select('senior_id').eq('id', id).single();
   if (!existing) return NextResponse.json({ error: 'Medikament nicht gefunden' }, { status: 404 });
   if (existing.senior_id !== user.id) {
@@ -84,7 +84,7 @@ export async function PATCH(
     if (!role) return NextResponse.json({ error: 'Kein Zugriff auf dieses Medikament' }, { status: 403 });
   }
 
-  // Medikamenten-Felder verschluesseln (Art. 9 DSGVO)
+  // Medikamenten-Felder verschlüsseln (Art. 9 DSGVO)
   const encryptedUpdates = encryptFields(updates, CARE_MEDICATIONS_ENCRYPTED_FIELDS);
 
   const { data: medication, error } = await supabase
@@ -108,7 +108,7 @@ export async function PATCH(
     metadata: { action: updates.active === false ? 'deactivated' : 'updated', changes: Object.keys(updates) },
   }).catch(() => {});
 
-  // Entschluesselt zurueckgeben
+  // Entschlüsselt zurückgeben
   return NextResponse.json(decryptFields(medication, CARE_MEDICATIONS_ENCRYPTED_FIELDS));
 }
 
@@ -129,7 +129,7 @@ export async function DELETE(
 
   const { supabase, user } = auth;
 
-  // SICHERHEIT: Zugriffspruefung vor dem Deaktivieren
+  // SICHERHEIT: Zugriffsprüfung vor dem Deaktivieren
   const { data: existingMed } = await supabase.from('care_medications').select('senior_id').eq('id', id).single();
   if (!existingMed) return NextResponse.json({ error: 'Medikament nicht gefunden' }, { status: 404 });
   if (existingMed.senior_id !== user.id) {

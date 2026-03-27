@@ -6,18 +6,18 @@ export async function POST(request: NextRequest) {
   try {
     body = await request.json();
   } catch {
-    return NextResponse.json({ error: "Ungueltiges Anfrage-Format" }, { status: 400 });
+    return NextResponse.json({ error: "Ungültiges Anfrage-Format" }, { status: 400 });
   }
   const { alertId } = body;
 
   if (!alertId || typeof alertId !== "string") {
-    return NextResponse.json({ error: "alertId fehlt oder ungueltig" }, { status: 400 });
+    return NextResponse.json({ error: "alertId fehlt oder ungültig" }, { status: 400 });
   }
 
   // UUID-Format validieren (N6: alertId als UUID validieren)
   const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
   if (!uuidRegex.test(alertId)) {
-    return NextResponse.json({ error: "alertId muss eine gueltige UUID sein" }, { status: 400 });
+    return NextResponse.json({ error: "alertId muss eine gültige UUID sein" }, { status: 400 });
   }
 
   // Token-Auth: Authorization-Header > Body > Query-Param

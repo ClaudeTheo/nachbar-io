@@ -1,5 +1,5 @@
 // Nachbar.io — Benannte Sektion mit optionalem Titel
-// Ersetzt wiederholte div + space-y Wrapper mit optionaler Ueberschrift
+// Ersetzt wiederholte div + space-y Wrapper mit optionaler Überschrift
 import * as React from "react";
 import { cn } from "@/lib/utils";
 
@@ -9,7 +9,7 @@ interface SectionProps {
   title?: string;
   /** Vertikaler Abstand (Standard: 3 = space-y-3) */
   spacing?: 2 | 3 | 4;
-  /** Zusaetzliche CSS-Klassen */
+  /** Zusätzliche CSS-Klassen */
   className?: string;
 }
 

@@ -1,5 +1,5 @@
 // app/api/care/shopping/route.test.ts
-// Nachbar.io — Tests fuer Einkaufshilfe API-Route (GET + POST)
+// Nachbar.io — Tests für Einkaufshilfe API-Route (GET + POST)
 // Testet: Auth, Subscription-Gate, Validierung, Artikellimits, Quartier-Zuordnung
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
@@ -86,7 +86,7 @@ describe('GET /api/care/shopping', () => {
     expect(res.status).toBe(401);
   });
 
-  it('prueft Subscription-Gate (Plus erforderlich)', async () => {
+  it('prüft Subscription-Gate (Plus erforderlich)', async () => {
     mockRequireSubscription.mockResolvedValue(
       NextResponse.json({ error: 'Plus erforderlich' }, { status: 403 }),
     );
@@ -94,7 +94,7 @@ describe('GET /api/care/shopping', () => {
     expect(res.status).toBe(403);
   });
 
-  it('laedt Einkaufsanfragen', async () => {
+  it('lädt Einkaufsanfragen', async () => {
     const res = await GET(createGetRequest());
     expect(res.status).toBe(200);
   });
@@ -157,7 +157,7 @@ describe('POST /api/care/shopping', () => {
     expect(json.error).toContain('500 Zeichen');
   });
 
-  it('erstellt Einkaufsanfrage mit gueltigen Daten', async () => {
+  it('erstellt Einkaufsanfrage mit gültigen Daten', async () => {
     const res = await POST(createPostRequest({
       items: [{ name: 'Milch', quantity: '1L' }, { name: 'Brot' }],
       note: 'Bitte Vollkorn',
@@ -165,7 +165,7 @@ describe('POST /api/care/shopping', () => {
     expect(res.status).toBe(201);
   });
 
-  it('weist ungueltiges JSON ab', async () => {
+  it('weist ungültiges JSON ab', async () => {
     const req = new NextRequest('http://localhost:3000/api/care/shopping', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },

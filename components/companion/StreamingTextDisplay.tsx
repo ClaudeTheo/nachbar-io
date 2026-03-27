@@ -5,7 +5,7 @@ interface StreamingTextDisplayProps {
   isStreaming: boolean
 }
 
-// StreamingTextDisplay — Zeigt KI-Antwort mit blinkenden Cursor waehrend Streaming
+// StreamingTextDisplay — Zeigt KI-Antwort mit blinkenden Cursor während Streaming
 export function StreamingTextDisplay({ text, isStreaming }: StreamingTextDisplayProps) {
   return (
     <div className="whitespace-pre-wrap">

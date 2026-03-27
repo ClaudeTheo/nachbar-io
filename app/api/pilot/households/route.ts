@@ -1,5 +1,5 @@
-// Pilot-Haushaltsliste API — liefert Invite-Codes fuer Druckansicht
-// Geschuetzt durch einfaches Token (kein Auth noetig)
+// Pilot-Haushaltsliste API — liefert Invite-Codes für Druckansicht
+// Geschützt durch einfaches Token (kein Auth nötig)
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 

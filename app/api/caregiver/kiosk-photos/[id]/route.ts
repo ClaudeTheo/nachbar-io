@@ -1,5 +1,5 @@
 // app/api/caregiver/kiosk-photos/[id]/route.ts
-// Nachbar.io — Einzelnes Kiosk-Foto: Bearbeiten und Loeschen (nur eigene Fotos)
+// Nachbar.io — Einzelnes Kiosk-Foto: Bearbeiten und Löschen (nur eigene Fotos)
 
 import { NextRequest, NextResponse } from "next/server";
 import {
@@ -52,7 +52,7 @@ export async function PATCH(
     );
   }
 
-  // Foto laden und Besitz pruefen
+  // Foto laden und Besitz prüfen
   const { data: existing, error: fetchError } = await supabase
     .from("kiosk_photos")
     .select("id, uploaded_by")
@@ -95,7 +95,7 @@ export async function PATCH(
 
 /**
  * DELETE /api/caregiver/kiosk-photos/[id]
- * Foto-Metadaten und Storage-Datei loeschen. Nur eigene Fotos.
+ * Foto-Metadaten und Storage-Datei löschen. Nur eigene Fotos.
  */
 export async function DELETE(
   _request: NextRequest,
@@ -113,7 +113,7 @@ export async function DELETE(
 
   const { id } = await params;
 
-  // Foto laden und Besitz pruefen
+  // Foto laden und Besitz prüfen
   const { data: existing, error: fetchError } = await supabase
     .from("kiosk_photos")
     .select("id, uploaded_by, storage_path")
@@ -128,20 +128,20 @@ export async function DELETE(
     return errorResponse("Nur eigene Fotos können gelöscht werden", 403);
   }
 
-  // Storage-Datei loeschen
+  // Storage-Datei löschen
   const { error: storageError } = await supabase.storage
     .from("kiosk-photos")
     .remove([existing.storage_path]);
 
   if (storageError) {
-    // Warnung loggen, aber Metadaten trotzdem loeschen
+    // Warnung loggen, aber Metadaten trotzdem löschen
     console.warn(
       `[kiosk-photos] Storage-Datei konnte nicht gelöscht werden: ${existing.storage_path}`,
       storageError.message
     );
   }
 
-  // Metadaten loeschen
+  // Metadaten löschen
   const { error: deleteError } = await supabase
     .from("kiosk_photos")
     .delete()

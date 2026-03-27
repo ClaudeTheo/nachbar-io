@@ -1,5 +1,5 @@
 // app/api/caregiver/redeem/route.ts
-// Nachbar.io — Einladungs-Code einloesen: Caregiver-Link erstellen
+// Nachbar.io — Einladungs-Code einlösen: Caregiver-Link erstellen
 
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAuth, requireSubscription, unauthorizedResponse, errorResponse, successResponse, careLog } from '@/lib/care/api-helpers';
@@ -25,7 +25,7 @@ export async function POST(request: NextRequest) {
   try {
     body = await request.json();
   } catch {
-    return errorResponse('Ungueltiges Anfrage-Format', 400);
+    return errorResponse('Ungültiges Anfrage-Format', 400);
   }
   const { code, relationship_type } = body;
 
@@ -33,7 +33,7 @@ export async function POST(request: NextRequest) {
     return errorResponse('Code ist erforderlich', 400);
   }
   if (!relationship_type || !VALID_RELATIONSHIPS.includes(relationship_type as CaregiverRelationshipType)) {
-    return errorResponse('Ungueltiger Beziehungstyp', 400);
+    return errorResponse('Ungültiger Beziehungstyp', 400);
   }
 
   // Einladung suchen
@@ -44,15 +44,15 @@ export async function POST(request: NextRequest) {
     .single();
 
   if (inviteError || !invite) {
-    return errorResponse('Ungueltiger Einladungs-Code', 404);
+    return errorResponse('Ungültiger Einladungs-Code', 404);
   }
 
   // Self-Invite verhindern
   if (invite.resident_id === user.id) {
-    return errorResponse('Sie koennen sich nicht selbst einladen', 403);
+    return errorResponse('Sie können sich nicht selbst einladen', 403);
   }
 
-  // Bereits eingeloest?
+  // Bereits eingelöst?
   if (invite.used_at) {
     return errorResponse('Einladungs-Code wurde bereits verwendet', 409);
   }
@@ -74,9 +74,9 @@ export async function POST(request: NextRequest) {
   if (linkError) {
     // Duplikat? (unique constraint)
     if (linkError.code === '23505') {
-      return errorResponse('Verknuepfung besteht bereits', 409);
+      return errorResponse('Verknüpfung besteht bereits', 409);
     }
-    return errorResponse('Verknuepfung konnte nicht erstellt werden', 500);
+    return errorResponse('Verknüpfung konnte nicht erstellt werden', 500);
   }
 
   // Invite als benutzt markieren
@@ -85,7 +85,7 @@ export async function POST(request: NextRequest) {
     .update({ used_at: new Date().toISOString(), used_by: user.id })
     .eq('id', invite.id);
 
-  // Name des Bewohners fuer Bestaetigung holen
+  // Name des Bewohners für Bestätigung holen
   const { data: resident } = await supabase
     .from('users')
     .select('display_name')

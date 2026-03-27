@@ -1,7 +1,7 @@
 'use client';
 
 // components/care/CaregiverSettings.tsx
-// Nachbar.io — Bewohner verwaltet seine Angehoerigen (Einladen, Widerrufen, Heartbeat-Toggle)
+// Nachbar.io — Bewohner verwaltet seine Angehörigen (Einladen, Widerrufen, Heartbeat-Toggle)
 
 import { useState, useEffect, useCallback } from 'react';
 import { Users, Plus, Loader2 } from 'lucide-react';
@@ -26,7 +26,7 @@ export function CaregiverSettings() {
       const json = await res.json();
       setLinks(json.data.as_resident ?? []);
     } catch {
-      setError('Angehoerige konnten nicht geladen werden.');
+      setError('Angehörige konnten nicht geladen werden.');
     } finally {
       setLoading(false);
     }
@@ -36,10 +36,10 @@ export function CaregiverSettings() {
     fetchLinks();
   }, [fetchLinks]);
 
-  // Widerruf einer Verknuepfung
+  // Widerruf einer Verknüpfung
   const handleRevoke = async (linkId: string, caregiverName: string) => {
     const confirmed = window.confirm(
-      `Moechten Sie die Verknuepfung mit ${caregiverName} wirklich aufheben?\n\nDiese Person kann Ihren Aktivitaetsstatus danach nicht mehr sehen.`
+      `Möchten Sie die Verknüpfung mit ${caregiverName} wirklich aufheben?\n\nDiese Person kann Ihren Aktivitätsstatus danach nicht mehr sehen.`
     );
     if (!confirmed) return;
 
@@ -64,10 +64,10 @@ export function CaregiverSettings() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ heartbeat_visible: visible }),
       });
-      if (!res.ok) throw new Error('Aenderung fehlgeschlagen');
+      if (!res.ok) throw new Error('Änderung fehlgeschlagen');
       await fetchLinks();
     } catch {
-      setError('Einstellung konnte nicht geaendert werden.');
+      setError('Einstellung konnte nicht geändert werden.');
     }
   };
 
@@ -81,14 +81,14 @@ export function CaregiverSettings() {
 
   return (
     <div className="px-4 py-6 space-y-6 max-w-lg mx-auto">
-      {/* Ueberschrift */}
+      {/* Überschrift */}
       <div>
         <h1 className="text-2xl font-bold text-[#2D3142] flex items-center gap-2">
           <Users className="h-6 w-6 text-[#4CAF87]" />
-          Angehoerige verwalten
+          Angehörige verwalten
         </h1>
         <p className="text-muted-foreground mt-1">
-          Laden Sie Angehoerige ein, Ihren Aktivitaetsstatus zu sehen.
+          Laden Sie Angehörige ein, Ihren Aktivitätsstatus zu sehen.
         </p>
       </div>
 
@@ -116,7 +116,7 @@ export function CaregiverSettings() {
         Einladungs-Code erstellen ({activeLinks.length}/{MAX_CAREGIVERS_PER_RESIDENT})
       </button>
 
-      {/* Liste der Angehoerigen */}
+      {/* Liste der Angehörigen */}
       <CaregiverList
         activeLinks={activeLinks}
         revokedLinks={revokedLinks}

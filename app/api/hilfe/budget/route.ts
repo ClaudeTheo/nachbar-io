@@ -8,7 +8,7 @@ import type { BudgetSummary } from '@/lib/hilfe/types';
 // Monatliches Budget nach § 45b SGB XI: 125 EUR + 6 EUR Eigenanteil-Reserve = 131 EUR
 const MONTHLY_BUDGET_CENTS = 13100;
 
-// GET /api/hilfe/budget — Budget-Zusammenfassung fuer den aktuellen Monat
+// GET /api/hilfe/budget — Budget-Zusammenfassung für den aktuellen Monat
 export async function GET() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
@@ -19,8 +19,8 @@ export async function GET() {
   const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().slice(0, 10);
   const monthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0).toISOString().slice(0, 10);
 
-  // Sessions des aktuellen Monats laden (ueber help_matches verknuepft)
-  // RLS sorgt dafuer, dass nur eigene Sessions zurueckgegeben werden
+  // Sessions des aktuellen Monats laden (über help_matches verknüpft)
+  // RLS sorgt dafür, dass nur eigene Sessions zurückgegeben werden
   const { data: sessions, error } = await supabase
     .from('help_sessions')
     .select('total_amount_cents')
@@ -44,7 +44,7 @@ export async function GET() {
     monthly_budget_cents: MONTHLY_BUDGET_CENTS,
     used_this_month_cents: usedThisMonth,
     available_cents: availableCents,
-    carry_over_cents: 0, // Vereinfacht: Uebertrag wird spaeter implementiert
+    carry_over_cents: 0, // Vereinfacht: Übertrag wird später implementiert
     sessions_this_month: sessionsThisMonth,
   };
 

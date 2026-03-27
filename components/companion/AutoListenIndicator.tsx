@@ -5,7 +5,7 @@ interface AutoListenIndicatorProps {
   audioLevel: number // 0-1
 }
 
-// Pulsierender Ring + Text fuer den Dialog-Modus (wenn KI zuhoert)
+// Pulsierender Ring + Text für den Dialog-Modus (wenn KI zuhoert)
 // Senior-Modus: 80px Mindesthoehe
 export function AutoListenIndicator({ isListening, audioLevel }: AutoListenIndicatorProps) {
   if (!isListening) return null
@@ -18,7 +18,7 @@ export function AutoListenIndicator({ isListening, audioLevel }: AutoListenIndic
       data-testid="listen-indicator"
       className="flex flex-col items-center justify-center gap-3 min-h-[80px] py-4"
     >
-      {/* Pulsierender gruener Ring */}
+      {/* Pulsierender grüner Ring */}
       <div className="relative flex items-center justify-center">
         <div
           data-testid="pulse-ring"

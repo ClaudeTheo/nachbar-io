@@ -1,5 +1,5 @@
 // app/api/care/shopping/[id]/route.ts
-// Nachbar.io — Einkaufshilfe: Status-Uebergaenge (PATCH), Loeschen (DELETE)
+// Nachbar.io — Einkaufshilfe: Status-Übergänge (PATCH), Löschen (DELETE)
 
 import { NextRequest, NextResponse } from 'next/server';
 import { writeAuditLog } from '@/lib/care/audit';
@@ -8,7 +8,7 @@ import { requireAuth, requireSubscription, unauthorizedResponse } from '@/lib/ca
 
 export const dynamic = 'force-dynamic';
 
-// Gueltige Status-Uebergaenge
+// Gültige Status-Übergänge
 const TRANSITIONS: Record<string, { from: string[]; field_updates: Record<string, unknown> }> = {
   claim: {
     from: ['open'],
@@ -36,7 +36,7 @@ const TRANSITIONS: Record<string, { from: string[]; field_updates: Record<string
   },
 };
 
-// PATCH /api/care/shopping/[id] — Status-Aenderung oder Items aktualisieren
+// PATCH /api/care/shopping/[id] — Status-Änderung oder Items aktualisieren
 export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -57,7 +57,7 @@ export async function PATCH(
   try {
     body = await request.json();
   } catch {
-    return NextResponse.json({ error: 'Ungueltiges Anfrage-Format' }, { status: 400 });
+    return NextResponse.json({ error: 'Ungültiges Anfrage-Format' }, { status: 400 });
   }
 
   // Bestehende Anfrage laden
@@ -96,40 +96,40 @@ export async function PATCH(
     }));
   }
 
-  // Status-Uebergang (wenn action angegeben)
+  // Status-Übergang (wenn action angegeben)
   if (body.action) {
     const transition = TRANSITIONS[body.action];
     if (!transition) {
       return NextResponse.json({
-        error: `Ungueltige Aktion: ${body.action}. Erlaubt: ${Object.keys(TRANSITIONS).join(', ')}`,
+        error: `Ungültige Aktion: ${body.action}. Erlaubt: ${Object.keys(TRANSITIONS).join(', ')}`,
       }, { status: 400 });
     }
 
-    // Aktueller Status pruefen
+    // Aktueller Status prüfen
     if (!transition.from.includes(existing.status)) {
       return NextResponse.json({
-        error: `Aktion '${body.action}' ist im Status '${existing.status}' nicht moeglich`,
+        error: `Aktion '${body.action}' ist im Status '${existing.status}' nicht möglich`,
       }, { status: 409 });
     }
 
-    // Berechtigungspruefung
+    // Berechtigungsprüfung
     const isRequester = existing.requester_id === user.id;
     const isClaimer = existing.claimed_by === user.id;
 
     // confirm und cancel: nur Ersteller
     if (['confirm', 'cancel'].includes(body.action) && !isRequester) {
-      return NextResponse.json({ error: 'Nur der Ersteller kann diese Aktion ausfuehren' }, { status: 403 });
+      return NextResponse.json({ error: 'Nur der Ersteller kann diese Aktion ausführen' }, { status: 403 });
     }
 
-    // unclaim, shopping, deliver: nur der Uebernehmende
+    // unclaim, shopping, deliver: nur der Übernehmende
     if (['unclaim', 'shopping', 'deliver'].includes(body.action) && !isClaimer) {
-      return NextResponse.json({ error: 'Nur die uebernehmende Person kann diese Aktion ausfuehren' }, { status: 403 });
+      return NextResponse.json({ error: 'Nur die übernehmende Person kann diese Aktion ausführen' }, { status: 403 });
     }
 
-    // Feld-Updates aus Transition uebernehmen
+    // Feld-Updates aus Transition übernehmen
     Object.assign(updates, transition.field_updates);
 
-    // Zusaetzliche Felder je nach Aktion
+    // Zusätzliche Felder je nach Aktion
     if (body.action === 'claim') {
       updates.claimed_by = user.id;
       updates.claimed_at = new Date().toISOString();
@@ -144,7 +144,7 @@ export async function PATCH(
     return NextResponse.json({ error: 'Keine aenderbaren Felder angegeben' }, { status: 400 });
   }
 
-  // Update ausfuehren
+  // Update ausführen
   const { data: updated, error: updateError } = await supabase
     .from('care_shopping_requests')
     .update(updates)
@@ -173,12 +173,12 @@ export async function PATCH(
 
   // Push-Benachrichtigungen bei bestimmten Aktionen
   if (body.action === 'claim') {
-    // Ersteller benachrichtigen, dass jemand uebernommen hat
+    // Ersteller benachrichtigen, dass jemand übernommen hat
     await sendCareNotification(supabase, {
       userId: existing.requester_id,
       type: 'care_sos_response',
-      title: 'Einkaufshilfe uebernommen',
-      body: 'Jemand hat Ihre Einkaufsanfrage uebernommen.',
+      title: 'Einkaufshilfe übernommen',
+      body: 'Jemand hat Ihre Einkaufsanfrage übernommen.',
       referenceId: id,
       referenceType: 'care_shopping_requests',
       url: '/care/shopping',
@@ -190,7 +190,7 @@ export async function PATCH(
       userId: existing.requester_id,
       type: 'care_sos_response',
       title: 'Einkauf geliefert',
-      body: 'Ihr Einkauf wurde als geliefert markiert. Bitte bestaetigen Sie den Empfang.',
+      body: 'Ihr Einkauf wurde als geliefert markiert. Bitte bestätigen Sie den Empfang.',
       referenceId: id,
       referenceType: 'care_shopping_requests',
       url: '/care/shopping',
@@ -201,7 +201,7 @@ export async function PATCH(
   return NextResponse.json(updated);
 }
 
-// DELETE /api/care/shopping/[id] — Offene Anfrage loeschen
+// DELETE /api/care/shopping/[id] — Offene Anfrage löschen
 export async function DELETE(
   _request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -232,14 +232,14 @@ export async function DELETE(
     return NextResponse.json({ error: 'Einkaufsanfrage konnte nicht geladen werden' }, { status: 500 });
   }
 
-  // Nur Ersteller darf loeschen
+  // Nur Ersteller darf löschen
   if (existing.requester_id !== user.id) {
-    return NextResponse.json({ error: 'Nur der Ersteller kann diese Anfrage loeschen' }, { status: 403 });
+    return NextResponse.json({ error: 'Nur der Ersteller kann diese Anfrage löschen' }, { status: 403 });
   }
 
-  // Nur offene Anfragen loeschen
+  // Nur offene Anfragen löschen
   if (existing.status !== 'open') {
-    return NextResponse.json({ error: 'Nur offene Anfragen koennen geloescht werden' }, { status: 409 });
+    return NextResponse.json({ error: 'Nur offene Anfragen können gelöscht werden' }, { status: 409 });
   }
 
   const { error: deleteError } = await supabase
@@ -249,7 +249,7 @@ export async function DELETE(
 
   if (deleteError) {
     console.error('[care/shopping] DELETE Fehler:', deleteError);
-    return NextResponse.json({ error: 'Loeschen fehlgeschlagen' }, { status: 500 });
+    return NextResponse.json({ error: 'Löschen fehlgeschlagen' }, { status: 500 });
   }
 
   // Audit-Log

@@ -1,6 +1,6 @@
 // Cron-Route: Amtsblatt-Sync
 // Vercel Cron: samstags um 08:00 UTC
-// Prueft bad-saeckingen.de auf neue Amtsblatt-Ausgaben,
+// Prüft bad-saeckingen.de auf neue Amtsblatt-Ausgaben,
 // extrahiert Text per pdf-parse und strukturiert via Claude Haiku.
 
 import { NextResponse } from "next/server";
@@ -21,7 +21,7 @@ export const maxDuration = 120; // PDF-Download + KI braucht Zeit
 const LOG_PREFIX = "[amtsblatt-sync]";
 
 export async function GET(request: Request) {
-  // Cron-Secret pruefen
+  // Cron-Secret prüfen
   const authHeader = request.headers.get("authorization");
   const cronSecret = process.env.CRON_SECRET;
 
@@ -73,7 +73,7 @@ export async function GET(request: Request) {
     // 2. Supabase Admin-Client (Service-Role, umgeht RLS)
     const supabase = getAdminSupabase();
 
-    // Quartier Bad Saeckingen ermitteln
+    // Quartier Bad Säckingen ermitteln
     const { data: quarter } = await supabase
       .from("quarters")
       .select("id")
@@ -87,7 +87,7 @@ export async function GET(request: Request) {
 
     let totalImported = 0;
 
-    // 3. Nur das NEUESTE PDF verarbeiten (Amtsblatt erscheint 14-taegig)
+    // 3. Nur das NEUESTE PDF verarbeiten (Amtsblatt erscheint 14-tägig)
     // URLs sind chronologisch, neueste zuerst → nur pdfUrls[0]
     const latestPdfs = pdfUrls.slice(0, 1);
     for (const pdfUrl of latestPdfs) {
@@ -117,7 +117,7 @@ export async function GET(request: Request) {
         .insert({
           quarter_id: quarter.id,
           issue_number: fileInfo.issueNumber,
-          issue_date: new Date().toISOString().split("T")[0], // Wird spaeter aus PDF korrigiert
+          issue_date: new Date().toISOString().split("T")[0], // Wird später aus PDF korrigiert
           pdf_url: pdfUrl,
           status: "processing",
         })
@@ -144,7 +144,7 @@ export async function GET(request: Request) {
         console.log(`${LOG_PREFIX} ${pages} Seiten, ${rawText.length} Zeichen extrahiert`);
 
         if (rawText.length < 100) {
-          throw new Error("Zu wenig Text extrahiert — moeglicherweise Scan-PDF");
+          throw new Error("Zu wenig Text extrahiert — möglicherweise Scan-PDF");
         }
 
         // Ausgabe-Datum aus dem Text extrahieren (Pattern: "Samstag, DD. Monat YYYY")
@@ -194,7 +194,7 @@ export async function GET(request: Request) {
 
         console.log(`${LOG_PREFIX} ${items.length} Meldungen extrahiert`);
 
-        // 8. Meldungen in municipal_announcements einfuegen
+        // 8. Meldungen in municipal_announcements einfügen
         if (items.length > 0) {
           const announcements = items.map((item) => ({
             quarter_id: quarter.id,
@@ -233,7 +233,7 @@ export async function GET(request: Request) {
         console.log(`${LOG_PREFIX} Ausgabe ${fileInfo.issueNumber}: ${items.length} Meldungen importiert`);
 
       } catch (err) {
-        // Fehler fuer diese Ausgabe loggen, aber andere weiter verarbeiten
+        // Fehler für diese Ausgabe loggen, aber andere weiter verarbeiten
         const errorMsg = err instanceof Error ? err.message : String(err);
         console.error(`${LOG_PREFIX} Fehler bei ${pdfUrl}:`, errorMsg);
         await supabase

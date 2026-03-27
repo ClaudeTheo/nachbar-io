@@ -40,7 +40,7 @@ export async function POST(
     return NextResponse.json({ error: 'SOS-Alert konnte nicht geladen werden' }, { status: 500 });
   }
 
-  // SICHERHEIT: Nur Senior, zugeordnete Helfer oder Admin duerfen eskalieren
+  // SICHERHEIT: Nur Senior, zugeordnete Helfer oder Admin dürfen eskalieren
   if (alert.senior_id !== user.id) {
     const role = await requireCareAccess(supabase, alert.senior_id);
     if (!role) return NextResponse.json({ error: 'Kein Zugriff auf diesen SOS-Alert' }, { status: 403 });

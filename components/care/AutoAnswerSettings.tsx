@@ -1,7 +1,7 @@
 'use client';
 
-// AutoAnswerSettings — Konfiguration fuer automatische Kiosk-Anrufannahme
-// Angehoerige (Plus) koennen festlegen ob/wann ihr Anruf am Kiosk
+// AutoAnswerSettings — Konfiguration für automatische Kiosk-Anrufannahme
+// Angehörige (Plus) können festlegen ob/wann ihr Anruf am Kiosk
 // automatisch angenommen wird
 
 import { useState } from 'react';

@@ -8,14 +8,14 @@ export interface NavItemProps {
   href: string;
   label: string;
   icon: LucideIcon;
-  /** Tailwind-Farbklasse fuer aktiven Zustand */
+  /** Tailwind-Farbklasse für aktiven Zustand */
   activeColor: string;
   isActive: boolean;
   /** Badge-Zahl (z.B. ungelesene Nachrichten) */
   badge?: number;
-  /** Notfall-Item: erhoehte Darstellung mit Amber-Ring */
+  /** Notfall-Item: erhöhte Darstellung mit Amber-Ring */
   isEmergency?: boolean;
-  /** Senior-Modus: Label immer sichtbar (bereits Standard, hier fuer Klarheit) */
+  /** Senior-Modus: Label immer sichtbar (bereits Standard, hier für Klarheit) */
   seniorMode?: boolean;
 }
 

@@ -1,6 +1,6 @@
-// Nachbar.io — API: Anamnese-Bogen per Token laden + ausfuellen
-// GET: Formular-Felder laden (kein Login noetig, Token-basiert)
-// POST: Antworten speichern (verschluesselt via AES-256-GCM)
+// Nachbar.io — API: Anamnese-Bogen per Token laden + ausfüllen
+// GET: Formular-Felder laden (kein Login nötig, Token-basiert)
+// POST: Antworten speichern (verschlüsselt via AES-256-GCM)
 
 import { getAdminSupabase } from "@/lib/supabase/admin";
 import { NextRequest, NextResponse } from "next/server";
@@ -10,12 +10,12 @@ interface RouteContext {
   params: Promise<{ token: string }>;
 }
 
-// GET: Formular-Felder laden (kein Login noetig)
+// GET: Formular-Felder laden (kein Login nötig)
 export async function GET(_request: NextRequest, context: RouteContext) {
   const { token } = await context.params;
 
   if (!token || token.length < 10) {
-    return NextResponse.json({ error: "Ungueltiger Token." }, { status: 400 });
+    return NextResponse.json({ error: "Ungültiger Token." }, { status: 400 });
   }
 
   const supabase = getAdminSupabase();
@@ -36,7 +36,7 @@ export async function GET(_request: NextRequest, context: RouteContext) {
 
   if (form.status !== "pending") {
     return NextResponse.json(
-      { error: "Dieser Bogen wurde bereits ausgefuellt." },
+      { error: "Dieser Bogen wurde bereits ausgefüllt." },
       { status: 410 },
     );
   }
@@ -67,17 +67,17 @@ export async function GET(_request: NextRequest, context: RouteContext) {
   });
 }
 
-// POST: Antworten speichern (verschluesselt)
+// POST: Antworten speichern (verschlüsselt)
 export async function POST(request: NextRequest, context: RouteContext) {
   const { token } = await context.params;
 
   if (!token || token.length < 10) {
-    return NextResponse.json({ error: "Ungueltiger Token." }, { status: 400 });
+    return NextResponse.json({ error: "Ungültiger Token." }, { status: 400 });
   }
 
   const supabase = getAdminSupabase();
 
-  // Bogen laden und pruefen
+  // Bogen laden und prüfen
   const { data: form, error: formError } = await supabase
     .from("anamnesis_forms")
     .select("id, status, expires_at")
@@ -93,7 +93,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
 
   if (form.status !== "pending") {
     return NextResponse.json(
-      { error: "Dieser Bogen wurde bereits ausgefuellt." },
+      { error: "Dieser Bogen wurde bereits ausgefüllt." },
       { status: 410 },
     );
   }
@@ -111,7 +111,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
     body = await request.json();
   } catch {
     return NextResponse.json(
-      { error: "Ungueltiger Request-Body." },
+      { error: "Ungültiger Request-Body." },
       { status: 400 },
     );
   }
@@ -120,17 +120,17 @@ export async function POST(request: NextRequest, context: RouteContext) {
 
   if (!answers || !Array.isArray(answers)) {
     return NextResponse.json(
-      { error: "Antworten muessen ein Array sein." },
+      { error: "Antworten müssen ein Array sein." },
       { status: 400 },
     );
   }
 
-  // Antworten verschluesseln (AES-256-GCM)
+  // Antworten verschlüsseln (AES-256-GCM)
   const encrypted = encryptField(JSON.stringify(answers));
 
   if (!encrypted) {
     return NextResponse.json(
-      { error: "Verschluesselung fehlgeschlagen." },
+      { error: "Verschlüsselung fehlgeschlagen." },
       { status: 500 },
     );
   }

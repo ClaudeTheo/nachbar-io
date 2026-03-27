@@ -68,7 +68,7 @@ export async function POST(
     return NextResponse.json({ error: 'SOS-Alert konnte nicht geladen werden' }, { status: 500 });
   }
 
-  // SICHERHEIT: Pruefe ob der Nutzer ein verifizierter Helfer fuer diesen Senior ist
+  // SICHERHEIT: Prüfe ob der Nutzer ein verifizierter Helfer für diesen Senior ist
   if (alert.senior_id !== user.id) {
     const { data: helperCheck } = await supabase
       .from('care_helpers')
@@ -82,7 +82,7 @@ export async function POST(
 
     if (!isAssignedHelper && !adminCheck?.is_admin) {
       return NextResponse.json(
-        { error: 'Nur verifizierte Helfer duerfen auf SOS-Alerts reagieren' },
+        { error: 'Nur verifizierte Helfer dürfen auf SOS-Alerts reagieren' },
         { status: 403 }
       );
     }
@@ -165,6 +165,6 @@ export async function POST(
     }
   }
 
-  // Entschluesselt zurueckgeben
+  // Entschlüsselt zurückgeben
   return NextResponse.json(decryptFields(response, CARE_SOS_RESPONSES_ENCRYPTED_FIELDS), { status: 201 });
 }

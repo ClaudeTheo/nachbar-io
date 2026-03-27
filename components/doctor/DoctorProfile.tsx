@@ -1,5 +1,5 @@
 // components/doctor/DoctorProfile.tsx
-// Nachbar.io — Arzt-Profilkarte fuer Bewohner-Ansicht
+// Nachbar.io — Arzt-Profilkarte für Bewohner-Ansicht
 "use client";
 
 import { Card, CardContent } from "@/components/ui/card";

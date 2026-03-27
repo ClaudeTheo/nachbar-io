@@ -12,7 +12,7 @@ import Anthropic from '@anthropic-ai/sdk';
 
 export const dynamic = 'force-dynamic';
 
-/** Maximale Anzahl an Nachrichten im Session-Gedaechtnis */
+/** Maximale Anzahl an Nachrichten im Session-Gedächtnis */
 const MAX_MESSAGES = 20;
 
 /** Chat-Nachricht vom Client */
@@ -28,7 +28,7 @@ interface ChatRequest {
   confirmTool?: { tool: string; params: Record<string, unknown> };
 }
 
-/** Tool-Bestaetigung fuer Write-Tools (an Client zurueck) */
+/** Tool-Bestätigung für Write-Tools (an Client zurück) */
 interface ToolConfirmation {
   tool: string;
   params: Record<string, unknown>;
@@ -46,7 +46,7 @@ export async function POST(request: NextRequest) {
   try {
     body = await request.json();
   } catch {
-    return errorResponse('Ungueltiger Request-Body.', 400);
+    return errorResponse('Ungültiger Request-Body.', 400);
   }
 
   const { messages, stream, confirmTool } = body;
@@ -59,9 +59,9 @@ export async function POST(request: NextRequest) {
   try {
     const userId = auth.user.id;
 
-    // Tool-Bestaetigung ausfuehren (wenn vorhanden)
-    // Bei Bestaetigung: Tool direkt ausfuehren und Ergebnis zurueckgeben
-    // KEIN erneuter Claude-Call noetig — spart Latenz und verhindert doppelte Tool-Calls
+    // Tool-Bestätigung ausführen (wenn vorhanden)
+    // Bei Bestätigung: Tool direkt ausführen und Ergebnis zurückgeben
+    // KEIN erneuter Claude-Call nötig — spart Latenz und verhindert doppelte Tool-Calls
     if (confirmTool?.tool && confirmTool?.params) {
       const confirmResult = await executeCompanionTool(confirmTool.tool, confirmTool.params, userId);
       const confirmMessage = confirmResult.success
@@ -82,7 +82,7 @@ export async function POST(request: NextRequest) {
     // Quartier-Kontext laden (parallel zur Message-Validierung)
     const contextPromise = loadQuarterContext(userId);
 
-    // Nachrichten auf die letzten MAX_MESSAGES begrenzen (Session-Gedaechtnis)
+    // Nachrichten auf die letzten MAX_MESSAGES begrenzen (Session-Gedächtnis)
     const recentMessages = messages.slice(-MAX_MESSAGES).map((m) => ({
       role: m.role as 'user' | 'assistant',
       content: m.content,
@@ -97,7 +97,7 @@ export async function POST(request: NextRequest) {
       return await handleStreamingResponse(systemPrompt, recentMessages, userId);
     }
 
-    // Nicht-Streaming: Bisherige JSON-Response (Backwards-Kompatibilitaet)
+    // Nicht-Streaming: Bisherige JSON-Response (Backwards-Kompatibilität)
     return await handleJsonResponse(systemPrompt, recentMessages, userId);
   } catch (err) {
     console.error('[companion/chat] KI-Fehler:', err);
@@ -106,7 +106,7 @@ export async function POST(request: NextRequest) {
 }
 
 /**
- * Streaming-Response: SSE-Events fuer Text-Deltas, Tool-Results und Done.
+ * Streaming-Response: SSE-Events für Text-Deltas, Tool-Results und Done.
  */
 async function handleStreamingResponse(
   systemPrompt: string,
@@ -147,11 +147,11 @@ async function handleStreamingResponse(
             currentToolName = event.content_block.name;
             toolInputJson = '';
           } else if (event.type === 'content_block_stop' && currentToolName) {
-            // Tool-Block fertig — Tool ausfuehren
+            // Tool-Block fertig — Tool ausführen
             try {
               const toolParams = toolInputJson ? JSON.parse(toolInputJson) : {};
               if (isWriteTool(currentToolName)) {
-                // Write-Tool: Bestaetigung senden
+                // Write-Tool: Bestätigung senden
                 const sseEvent = `event: confirmation\ndata: ${JSON.stringify({
                   tool: currentToolName,
                   params: toolParams,
@@ -159,7 +159,7 @@ async function handleStreamingResponse(
                 })}\n\n`;
                 controller.enqueue(encoder.encode(sseEvent));
               } else {
-                // Read-Tool: Sofort ausfuehren
+                // Read-Tool: Sofort ausführen
                 const result = await executeCompanionTool(currentToolName, toolParams, userId);
                 const sseEvent = `event: tool\ndata: ${JSON.stringify({
                   name: currentToolName,
@@ -204,7 +204,7 @@ async function handleStreamingResponse(
 }
 
 /**
- * Nicht-Streaming JSON-Response (Backwards-Kompatibilitaet).
+ * Nicht-Streaming JSON-Response (Backwards-Kompatibilität).
  */
 async function handleJsonResponse(
   systemPrompt: string,
@@ -220,7 +220,7 @@ async function handleJsonResponse(
     messages,
   });
 
-  // Antwort verarbeiten: Text, Tool-Results und Bestaetigungen extrahieren
+  // Antwort verarbeiten: Text, Tool-Results und Bestätigungen extrahieren
   let message = '';
   const toolResults: ToolResult[] = [];
   const confirmations: ToolConfirmation[] = [];
@@ -262,12 +262,12 @@ async function handleJsonResponse(
 }
 
 /**
- * Erstellt eine benutzerfreundliche Beschreibung fuer eine Tool-Bestaetigung.
+ * Erstellt eine benutzerfreundliche Beschreibung für eine Tool-Bestätigung.
  */
 function formatToolDescription(toolName: string, params: Record<string, unknown>): string {
   switch (toolName) {
     case 'create_bulletin_post':
-      return `Beitrag "${params.title}" auf dem Schwarzen Brett veroeffentlichen`;
+      return `Beitrag "${params.title}" auf dem Schwarzen Brett veröffentlichen`;
     case 'create_help_request':
       return `Hilfsanfrage "${params.title}" erstellen`;
     case 'create_event':
@@ -285,6 +285,6 @@ function formatToolDescription(toolName: string, params: Record<string, unknown>
     case 'create_meal':
       return `Mitess-Angebot "${params.title}" erstellen`;
     default:
-      return `${toolName} ausfuehren`;
+      return `${toolName} ausführen`;
   }
 }

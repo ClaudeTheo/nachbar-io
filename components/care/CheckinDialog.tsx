@@ -73,7 +73,7 @@ export function CheckinDialog({ scheduledAt, source = 'app', onComplete }: Check
       </div>
       <div>
         <label htmlFor="checkin-note" className="block text-sm text-muted-foreground mb-1">
-          Moechten Sie etwas hinzufuegen? (optional)
+          Möchten Sie etwas hinzufügen? (optional)
         </label>
         <textarea id="checkin-note" value={note} onChange={(e) => setNote(e.target.value)}
           className="w-full rounded-lg border p-3 text-sm" rows={2} placeholder="z.B. Kopfschmerzen seit gestern..." />

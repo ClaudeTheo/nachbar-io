@@ -13,12 +13,12 @@ interface CallButtonProps {
   targetUserId: string;
   /** Anzeigename des Anruf-Ziels */
   targetName: string;
-  /** Ob eine Caregiver-Verbindung besteht (geprueft von uebergeordneter Komponente) */
+  /** Ob eine Caregiver-Verbindung besteht (geprüft von übergeordneter Komponente) */
   hasCaregiverLink?: boolean;
 }
 
 /**
- * CallButton — Gruener Telefon-Button zum Starten eines Video-Anrufs.
+ * CallButton — Grüner Telefon-Button zum Starten eines Video-Anrufs.
  *
  * - Nur sichtbar wenn eine caregiver_link Verbindung besteht
  * - 80px Touch-Target (Senior-Modus konform)
@@ -37,7 +37,7 @@ export function CallButton({
     setIsStarting(true);
 
     try {
-      // Anruf-Seite oeffnen — callId wird dort generiert
+      // Anruf-Seite öffnen — callId wird dort generiert
       router.push(`/call/${targetUserId}`);
     } catch (err) {
       console.error('[CallButton] Fehler beim Starten des Anrufs:', err);

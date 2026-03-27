@@ -1,5 +1,5 @@
 // components/care/AlarmScreen.test.tsx
-// Nachbar.io — Tests fuer Vollbild-Alarm (Sicherheitskritisch: Check-in, Senior UX)
+// Nachbar.io — Tests für Vollbild-Alarm (Sicherheitskritisch: Check-in, Senior UX)
 
 import { describe, it, expect, vi, afterEach } from 'vitest';
 import { render, screen, fireEvent, cleanup, waitFor } from '@testing-library/react';
@@ -78,9 +78,9 @@ describe('AlarmScreen', () => {
     expect(defaultProps.onSnooze).toHaveBeenCalledWith(10);
   });
 
-  it('zeigt Hinweis zur automatischen Check-in-Bestaetigung', () => {
+  it('zeigt Hinweis zur automatischen Check-in-Bestätigung', () => {
     render(<AlarmScreen {...defaultProps} />);
-    expect(screen.getByText(/bestaetigt automatisch Ihren Check-in/)).toBeInTheDocument();
+    expect(screen.getByText(/bestätigt automatisch Ihren Check-in/)).toBeInTheDocument();
   });
 
   it('"Aus"-Button hat minHeight 80px (Senior Touch-Target)', () => {

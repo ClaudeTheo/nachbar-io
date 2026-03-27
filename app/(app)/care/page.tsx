@@ -40,7 +40,7 @@ export default function CareDashboardPage() {
   const [isVerifiedHelper, setIsVerifiedHelper] = useState(false);
   const [trustLevel, setTrustLevel] = useState<string>('verified');
 
-  // Feature-Pruefung: Ist ein Feature im aktuellen Plan verfuegbar?
+  // Feature-Prüfung: Ist ein Feature im aktuellen Plan verfügbar?
   const hasFeature = (feature: string) => planFeatures.includes(feature);
 
   // Admin-Check + Plan-Features laden
@@ -52,7 +52,7 @@ export default function CareDashboardPage() {
       setIsAdmin(data?.is_admin === true);
       setTrustLevel(data?.trust_level ?? 'verified');
 
-      // Abo-Plan laden fuer Feature-Gating
+      // Abo-Plan laden für Feature-Gating
       const { data: subscription } = await supabase
         .from('care_subscriptions')
         .select('plan, status')
@@ -90,7 +90,7 @@ export default function CareDashboardPage() {
     }
     loadAlerts();
 
-    // Realtime-Abonnement fuer sofortige Aktualisierungen
+    // Realtime-Abonnement für sofortige Aktualisierungen
     const supabase = createClient();
     const channel = supabase
       .channel('care-dashboard-sos')
@@ -101,7 +101,7 @@ export default function CareDashboardPage() {
     return () => { supabase.removeChannel(channel); };
   }, []);
 
-  // Faellige Medikamente laden (nur wenn Feature verfuegbar)
+  // Fällige Medikamente laden (nur wenn Feature verfügbar)
   useEffect(() => {
     if (!hasFeature('medications')) return;
     async function loadMedicationStatus() {
@@ -119,7 +119,7 @@ export default function CareDashboardPage() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [planFeatures]);
 
-  // Naechsten Termin laden (nur wenn Feature verfuegbar)
+  // Nächsten Termin laden (nur wenn Feature verfügbar)
   useEffect(() => {
     if (!hasFeature('appointments')) return;
     async function loadNextAppointment() {
@@ -149,7 +149,7 @@ export default function CareDashboardPage() {
     loadHelperCount();
   }, []);
 
-  // Eigenen Helfer-Status laden (fuer "Meine Senioren" Link)
+  // Eigenen Helfer-Status laden (für "Meine Senioren" Link)
   useEffect(() => {
     if (!user) return;
     const supabase = createClient();
@@ -188,19 +188,19 @@ export default function CareDashboardPage() {
       {/* Header */}
       <PageHeader
         title={<><Heart className="h-6 w-6 text-quartier-green" /> Pflege &amp; Seniorenhilfe</>}
-        subtitle="Ihr persoenliches Pflege-Dashboard"
+        subtitle="Ihr persönliches Pflege-Dashboard"
         backHref="/dashboard"
         backLabel="Zurück zum Dashboard"
       />
 
-      {/* Verifikations-Hinweis fuer neue Nutzer */}
+      {/* Verifikations-Hinweis für neue Nutzer */}
       {trustLevel === 'new' && (
         <div className="rounded-xl border border-amber-200 bg-amber-50 p-4">
           <p className="text-sm font-medium text-amber-800">
-            Ihre Adresse muss noch bestaetigt werden.
+            Ihre Adresse muss noch bestätigt werden.
           </p>
           <p className="text-xs text-amber-700 mt-1">
-            Bitten Sie zwei Nachbarn um Bestaetigung, damit Sie alle Funktionen nutzen koennen.
+            Bitten Sie zwei Nachbarn um Bestätigung, damit Sie alle Funktionen nutzen können.
           </p>
           <Link
             href="/vouching"
@@ -237,7 +237,7 @@ export default function CareDashboardPage() {
                   </p>
                   {checkinStatus.nextDue && (
                     <p className="text-xs text-muted-foreground">
-                      Naechster: {checkinStatus.nextDue}
+                      Nächster: {checkinStatus.nextDue}
                     </p>
                   )}
                 </>
@@ -379,7 +379,7 @@ export default function CareDashboardPage() {
             <Clock className="h-4 w-4 text-quartier-green" />
             Jetzt einchecken
           </Link>
-          {/* Meine Senioren (nur fuer verifizierte Angehoerige/Pflegedienst) */}
+          {/* Meine Senioren (nur für verifizierte Angehörige/Pflegedienst) */}
           {isVerifiedHelper && (helperRole === 'relative' || helperRole === 'care_service') && (
             <Link
               href="/care/meine-senioren"
@@ -394,7 +394,7 @@ export default function CareDashboardPage() {
             className="rounded-lg border bg-card p-3 text-sm font-medium text-anthrazit hover:bg-gray-50 flex items-center gap-2"
           >
             <TriangleAlert className="h-4 w-4 text-alert-amber" />
-            SOS-Uebersicht
+            SOS-Übersicht
           </Link>
           <Link
             href="/care/checkins"
@@ -487,7 +487,7 @@ export default function CareDashboardPage() {
               className="rounded-lg border border-blue-200 bg-blue-50/50 p-3 text-sm font-medium text-anthrazit hover:bg-blue-50 flex items-center gap-2"
             >
               <BarChart3 className="h-4 w-4 text-blue-600" />
-              Plattform-Uebersicht
+              Plattform-Übersicht
             </Link>
           )}
         </div>
@@ -497,7 +497,7 @@ export default function CareDashboardPage() {
       <div className="rounded-xl bg-quartier-green/10 p-4 text-sm text-anthrazit">
         <p className="font-medium">Pflege-Modul aktiv</p>
         <p className="mt-1 text-muted-foreground">
-          Pflege-Modul vollstaendig: SOS, Check-ins, Medikamente, Termine, Helfer, Berichte, Abo-Verwaltung und Aktivitaetsprotokoll.
+          Pflege-Modul vollständig: SOS, Check-ins, Medikamente, Termine, Helfer, Berichte, Abo-Verwaltung und Aktivitätsprotokoll.
         </p>
       </div>
     </div>

@@ -6,15 +6,15 @@ import { useState } from 'react';
 import type { CareAppointment, CareAppointmentType } from '@/lib/care/types';
 
 interface AppointmentFormProps {
-  /** Befuelltes Objekt fuer den Bearbeitungs-Modus */
+  /** Befülltes Objekt für den Bearbeitungs-Modus */
   appointment?: CareAppointment;
-  /** Senior-ID fuer den Erstell-Modus */
+  /** Senior-ID für den Erstell-Modus */
   seniorId?: string;
   onSuccess?: () => void;
   onCancel?: () => void;
 }
 
-// Termin-Typ-Optionen fuer das Select-Feld
+// Termin-Typ-Optionen für das Select-Feld
 const TYPE_OPTIONS: { value: CareAppointmentType; label: string }[] = [
   { value: 'doctor',       label: 'Arzttermin' },
   { value: 'care_service', label: 'Pflegedienst' },
@@ -22,7 +22,7 @@ const TYPE_OPTIONS: { value: CareAppointmentType; label: string }[] = [
   { value: 'other',        label: 'Sonstiger Termin' },
 ];
 
-// ISO-Datetime-String in "YYYY-MM-DDTHH:MM" fuer datetime-local umwandeln
+// ISO-Datetime-String in "YYYY-MM-DDTHH:MM" für datetime-local umwandeln
 function toDatetimeLocalValue(iso: string): string {
   const d = new Date(iso);
   const y = d.getFullYear();
@@ -64,7 +64,7 @@ export function AppointmentForm({ appointment, seniorId, onSuccess, onCancel }: 
       duration_minutes: durationMinutes,
       location: location.trim() || null,
       notes: notes.trim() || null,
-      // senior_id wird nur beim Erstellen benoetigt
+      // senior_id wird nur beim Erstellen benötigt
       ...(!isEdit && { senior_id: seniorId }),
     };
 
@@ -105,7 +105,7 @@ export function AppointmentForm({ appointment, seniorId, onSuccess, onCancel }: 
           required
           value={title}
           onChange={(e) => setTitle(e.target.value)}
-          placeholder="z.B. Hausarzt Dr. Mueller"
+          placeholder="z.B. Hausarzt Dr. Müller"
           className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm text-anthrazit placeholder:text-gray-400 focus:border-quartier-green focus:outline-none focus:ring-1 focus:ring-quartier-green"
         />
       </div>
@@ -170,7 +170,7 @@ export function AppointmentForm({ appointment, seniorId, onSuccess, onCancel }: 
           type="text"
           value={location}
           onChange={(e) => setLocation(e.target.value)}
-          placeholder="z.B. Hauptstr. 12, Bad Saeckingen"
+          placeholder="z.B. Hauptstr. 12, Bad Säckingen"
           className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm text-anthrazit placeholder:text-gray-400 focus:border-quartier-green focus:outline-none focus:ring-1 focus:ring-quartier-green"
         />
       </div>
@@ -219,8 +219,8 @@ export function AppointmentForm({ appointment, seniorId, onSuccess, onCancel }: 
           {loading
             ? 'Wird gespeichert...'
             : isEdit
-              ? 'Aenderungen speichern'
-              : 'Termin hinzufuegen'}
+              ? 'Änderungen speichern'
+              : 'Termin hinzufügen'}
         </button>
       </div>
     </form>

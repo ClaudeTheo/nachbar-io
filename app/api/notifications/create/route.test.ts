@@ -15,7 +15,7 @@ vi.mock('@/lib/supabase/server', () => ({
   createClient: vi.fn().mockImplementation(() => Promise.resolve(mockSupabase.supabase)),
 }));
 
-// Service-Client Mock (fuer INSERT nach Beziehungscheck)
+// Service-Client Mock (für INSERT nach Beziehungscheck)
 const mockServiceInsert = vi.fn().mockResolvedValue({ data: null, error: null });
 vi.mock('@supabase/supabase-js', () => ({
   createClient: vi.fn(() => ({
@@ -34,7 +34,7 @@ import { POST } from './route';
 // --- Helpers ---
 
 const SENDER = { id: 'user-quarter-a', email: 'sender@test.de' };
-const RECIPIENT_FOREIGN = 'user-quarter-b'; // Quartiersfremder Empfaenger
+const RECIPIENT_FOREIGN = 'user-quarter-b'; // Quartiersfremder Empfänger
 
 function createPostRequest(body: Record<string, unknown>): NextRequest {
   return new NextRequest('http://localhost:3000/api/notifications/create', {
@@ -54,7 +54,7 @@ function validNotificationBody(overrides: Record<string, unknown> = {}) {
   };
 }
 
-// --- H1: Negativtest — Quartiersfremder Empfaenger wird blockiert ---
+// --- H1: Negativtest — Quartiersfremder Empfänger wird blockiert ---
 
 describe('POST /api/notifications/create — H1 Beziehungscheck', () => {
   beforeEach(() => {
@@ -64,7 +64,7 @@ describe('POST /api/notifications/create — H1 Beziehungscheck', () => {
   });
 
   describe('Authentifizierung', () => {
-    it('gibt 401 zurueck ohne authentifizierten User', async () => {
+    it('gibt 401 zurück ohne authentifizierten User', async () => {
       mockSupabase.setUser(null);
 
       const response = await POST(createPostRequest(validNotificationBody()));
@@ -73,12 +73,12 @@ describe('POST /api/notifications/create — H1 Beziehungscheck', () => {
   });
 
   describe('Validierung', () => {
-    it('gibt 400 zurueck ohne Pflichtfelder', async () => {
+    it('gibt 400 zurück ohne Pflichtfelder', async () => {
       const response = await POST(createPostRequest({}));
       expect(response.status).toBe(400);
     });
 
-    it('gibt 400 zurueck bei ungueltigem JSON', async () => {
+    it('gibt 400 zurück bei ungültigem JSON', async () => {
       const request = new NextRequest('http://localhost:3000/api/notifications/create', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -88,7 +88,7 @@ describe('POST /api/notifications/create — H1 Beziehungscheck', () => {
       expect(response.status).toBe(400);
     });
 
-    it('ueberspringt Self-Notify (gibt ok+skipped zurueck)', async () => {
+    it('überspringt Self-Notify (gibt ok+skipped zurück)', async () => {
       const response = await POST(createPostRequest(validNotificationBody({ userId: SENDER.id })));
       expect(response.status).toBe(200);
 
@@ -97,7 +97,7 @@ describe('POST /api/notifications/create — H1 Beziehungscheck', () => {
     });
   });
 
-  describe('H1 NEGATIVTEST — Quartiersfremder Empfaenger', () => {
+  describe('H1 NEGATIVTEST — Quartiersfremder Empfänger', () => {
     /**
      * Kerntest: User A (Quartier X) sendet an User B (Quartier Y)
      * Keine Beziehung: kein Admin, kein Haushalt, kein Caregiver-Link, anderes Quartier
@@ -110,13 +110,13 @@ describe('POST /api/notifications/create — H1 Beziehungscheck', () => {
         error: null,
       });
 
-      // 2. Sender hat Haushalte — aber Empfaenger ist NICHT drin
+      // 2. Sender hat Haushalte — aber Empfänger ist NICHT drin
       mockSupabase.addResponse('household_members', {
         data: [{ household_id: 'household-quarter-a' }],
         error: null,
       });
       mockSupabase.addResponse('household_members', {
-        data: [], // Empfaenger NICHT im gleichen Haushalt
+        data: [], // Empfänger NICHT im gleichen Haushalt
         error: null,
       });
 
@@ -132,7 +132,7 @@ describe('POST /api/notifications/create — H1 Beziehungscheck', () => {
         error: null,
       });
 
-      // 5. Empfaenger hat Quartier B (ANDERES Quartier)
+      // 5. Empfänger hat Quartier B (ANDERES Quartier)
       mockSupabase.addResponse('household_members', {
         data: { households: { quarter_id: 'quarter-b' } },
         error: null,
@@ -145,7 +145,7 @@ describe('POST /api/notifications/create — H1 Beziehungscheck', () => {
       expect(body.error).toContain('Keine Berechtigung');
     });
 
-    it('blockiert Notification wenn Sender keinem Haushalt angehoert', async () => {
+    it('blockiert Notification wenn Sender keinem Haushalt angehört', async () => {
       // 1. Kein Admin
       mockSupabase.addResponse('users', {
         data: { is_admin: false, role: 'resident' },
@@ -210,7 +210,7 @@ describe('POST /api/notifications/create — H1 Beziehungscheck', () => {
         error: null,
       });
 
-      // 3. Empfaenger IST im gleichen Haushalt
+      // 3. Empfänger IST im gleichen Haushalt
       mockSupabase.addResponse('household_members', {
         data: [{ id: 'match' }],
         error: null,
@@ -276,7 +276,7 @@ describe('POST /api/notifications/create — H1 Beziehungscheck', () => {
         error: null,
       });
 
-      // 5. Empfaenger AUCH Quartier A (GLEICHES Quartier)
+      // 5. Empfänger AUCH Quartier A (GLEICHES Quartier)
       mockSupabase.addResponse('household_members', {
         data: { households: { quarter_id: 'quarter-same' } },
         error: null,

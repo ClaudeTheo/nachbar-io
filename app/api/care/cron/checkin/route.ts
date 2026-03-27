@@ -1,5 +1,5 @@
 // app/api/care/cron/checkin/route.ts
-// Nachbar.io — Check-in Scheduler Cron: Faellige Check-ins erstellen, erinnern und eskalieren (alle 5 Min)
+// Nachbar.io — Check-in Scheduler Cron: Fällige Check-ins erstellen, erinnern und eskalieren (alle 5 Min)
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
@@ -12,7 +12,7 @@ import { getUserQuarterId } from '@/lib/quarters/helpers';
 
 // GET /api/care/cron/checkin — Check-in Scheduler (Vercel Cron: alle 5 Minuten)
 export async function GET(request: NextRequest) {
-  // Cron-Auth: Authorization-Header gegen CRON_SECRET pruefen
+  // Cron-Auth: Authorization-Header gegen CRON_SECRET prüfen
   const cronSecret = process.env.CRON_SECRET;
   if (!cronSecret) {
     console.error('CRON_SECRET nicht konfiguriert — Cron-Endpunkt blockiert');
@@ -25,7 +25,7 @@ export async function GET(request: NextRequest) {
 
   const supabase = await createClient();
 
-  // Alle Care-Profile laden, fuer die Check-ins aktiviert sind
+  // Alle Care-Profile laden, für die Check-ins aktiviert sind
   const { data: profiles, error: profilesError } = await supabase
     .from('care_profiles')
     .select('user_id, checkin_times')
@@ -52,7 +52,7 @@ export async function GET(request: NextRequest) {
       : [...CHECKIN_DEFAULTS.defaultTimes];
 
     for (const timeStr of checkinTimes) {
-      // Geplanten Check-in-Zeitpunkt fuer heute berechnen (HH:MM -> Date)
+      // Geplanten Check-in-Zeitpunkt für heute berechnen (HH:MM -> Date)
       const [hours, minutes] = timeStr.split(':').map(Number);
       if (isNaN(hours) || isNaN(minutes)) continue;
 
@@ -61,9 +61,9 @@ export async function GET(request: NextRequest) {
 
       const elapsedMinutes = (now.getTime() - scheduledAt.getTime()) / (1000 * 60);
 
-      // === Phase 1: Check-in erstellen (0-5 Min nach Faelligkeitszeit) ===
+      // === Phase 1: Check-in erstellen (0-5 Min nach Fälligkeitszeit) ===
       if (elapsedMinutes >= 0 && elapsedMinutes < 5) {
-        // Pruefen ob fuer diesen Zeitpunkt bereits ein Check-in existiert
+        // Prüfen ob für diesen Zeitpunkt bereits ein Check-in existiert
         const { data: existing, error: existingError } = await supabase
           .from('care_checkins')
           .select('id')
@@ -73,7 +73,7 @@ export async function GET(request: NextRequest) {
 
         if (existingError) {
           console.error(
-            `[care/cron/checkin] Existenz-Pruefung fuer Senior ${profile.user_id} fehlgeschlagen:`,
+            `[care/cron/checkin] Existenz-Prüfung für Senior ${profile.user_id} fehlgeschlagen:`,
             existingError
           );
           continue;
@@ -98,7 +98,7 @@ export async function GET(request: NextRequest) {
 
           if (insertError || !newCheckin) {
             console.error(
-              `[care/cron/checkin] Check-in fuer Senior ${profile.user_id} konnte nicht erstellt werden:`,
+              `[care/cron/checkin] Check-in für Senior ${profile.user_id} konnte nicht erstellt werden:`,
               insertError
             );
             continue;
@@ -111,7 +111,7 @@ export async function GET(request: NextRequest) {
             await sendCareNotification(supabase, {
               userId: profile.user_id,
               type: 'care_checkin_reminder',
-              title: 'Zeit fuer Ihren Check-in',
+              title: 'Zeit für Ihren Check-in',
               body: `Bitte melden Sie sich: Wie geht es Ihnen? (Geplant: ${timeStr} Uhr)`,
               referenceId: newCheckin.id,
               referenceType: 'care_checkins',
@@ -120,7 +120,7 @@ export async function GET(request: NextRequest) {
             });
           } catch (notifyError) {
             console.error(
-              `[care/cron/checkin] Erste Erinnerung fuer Senior ${profile.user_id} fehlgeschlagen:`,
+              `[care/cron/checkin] Erste Erinnerung für Senior ${profile.user_id} fehlgeschlagen:`,
               notifyError
             );
           }
@@ -129,7 +129,7 @@ export async function GET(request: NextRequest) {
         continue;
       }
 
-      // === Phase 2: Erinnerung senden (30-35 Min nach Faelligkeitszeit) ===
+      // === Phase 2: Erinnerung senden (30-35 Min nach Fälligkeitszeit) ===
       if (
         elapsedMinutes >= CHECKIN_DEFAULTS.reminderAfterMinutes &&
         elapsedMinutes < CHECKIN_DEFAULTS.reminderAfterMinutes + 5
@@ -146,7 +146,7 @@ export async function GET(request: NextRequest) {
 
         if (pendingError) {
           console.error(
-            `[care/cron/checkin] Erinnerungs-Abfrage fuer Senior ${profile.user_id} fehlgeschlagen:`,
+            `[care/cron/checkin] Erinnerungs-Abfrage für Senior ${profile.user_id} fehlgeschlagen:`,
             pendingError
           );
           continue;
@@ -161,7 +161,7 @@ export async function GET(request: NextRequest) {
 
           if (updateError) {
             console.error(
-              `[care/cron/checkin] reminder_sent_at Update fuer Check-in ${pendingCheckin.id} fehlgeschlagen:`,
+              `[care/cron/checkin] reminder_sent_at Update für Check-in ${pendingCheckin.id} fehlgeschlagen:`,
               updateError
             );
             continue;
@@ -183,7 +183,7 @@ export async function GET(request: NextRequest) {
             });
           } catch (notifyError) {
             console.error(
-              `[care/cron/checkin] Zweite Erinnerung fuer Senior ${profile.user_id} fehlgeschlagen:`,
+              `[care/cron/checkin] Zweite Erinnerung für Senior ${profile.user_id} fehlgeschlagen:`,
               notifyError
             );
           }
@@ -192,7 +192,7 @@ export async function GET(request: NextRequest) {
         continue;
       }
 
-      // === Phase 3: Eskalation (60-65 Min nach Faelligkeitszeit) ===
+      // === Phase 3: Eskalation (60-65 Min nach Fälligkeitszeit) ===
       if (
         elapsedMinutes >= CHECKIN_DEFAULTS.escalateAfterMinutes &&
         elapsedMinutes < CHECKIN_DEFAULTS.escalateAfterMinutes + 5
@@ -209,7 +209,7 @@ export async function GET(request: NextRequest) {
 
         if (overdueError) {
           console.error(
-            `[care/cron/checkin] Eskalations-Abfrage fuer Senior ${profile.user_id} fehlgeschlagen:`,
+            `[care/cron/checkin] Eskalations-Abfrage für Senior ${profile.user_id} fehlgeschlagen:`,
             overdueError
           );
           continue;
@@ -224,7 +224,7 @@ export async function GET(request: NextRequest) {
 
           if (updateError) {
             console.error(
-              `[care/cron/checkin] Eskalations-Update fuer Check-in ${overdueCheckin.id} fehlgeschlagen:`,
+              `[care/cron/checkin] Eskalations-Update für Check-in ${overdueCheckin.id} fehlgeschlagen:`,
               updateError
             );
             continue;
@@ -261,7 +261,7 @@ export async function GET(request: NextRequest) {
                 status: 'triggered',
                 current_escalation_level: 1,
                 escalated_at: [],
-                notes: encryptField(`Automatischer SOS-Alert: Check-in um ${timeStr} Uhr wurde nicht bestaetigt.`),
+                notes: encryptField(`Automatischer SOS-Alert: Check-in um ${timeStr} Uhr wurde nicht bestätigt.`),
                 source: 'checkin_timeout',
                 quarter_id: quarterId,
               })
@@ -270,7 +270,7 @@ export async function GET(request: NextRequest) {
 
             if (sosError || !sosAlert) {
               console.error(
-                `[care/cron/checkin] Auto-SOS fuer Senior ${profile.user_id} konnte nicht erstellt werden:`,
+                `[care/cron/checkin] Auto-SOS für Senior ${profile.user_id} konnte nicht erstellt werden:`,
                 sosError
               );
             } else {
@@ -283,7 +283,7 @@ export async function GET(request: NextRequest) {
             );
           }
 
-          // Audit-Log: Check-in eskaliert (SOS ausgeloest)
+          // Audit-Log: Check-in eskaliert (SOS ausgelöst)
           try {
             await writeAuditLog(supabase, {
               seniorId: profile.user_id,
@@ -305,7 +305,7 @@ export async function GET(request: NextRequest) {
             );
           }
 
-          // Angehoerige und Pflegedienst-Helfer benachrichtigen
+          // Angehörige und Pflegedienst-Helfer benachrichtigen
           try {
             const { data: helpers, error: helpersError } = await supabase
               .from('care_helpers')
@@ -316,7 +316,7 @@ export async function GET(request: NextRequest) {
 
             if (helpersError) {
               console.error(
-                `[care/cron/checkin] Helfer-Abfrage fuer Senior ${profile.user_id} fehlgeschlagen:`,
+                `[care/cron/checkin] Helfer-Abfrage für Senior ${profile.user_id} fehlgeschlagen:`,
                 helpersError
               );
             } else if (helpers && helpers.length > 0) {
@@ -325,7 +325,7 @@ export async function GET(request: NextRequest) {
                   userId: helper.user_id,
                   type: 'care_checkin_missed',
                   title: 'Check-in verpasst',
-                  body: 'Ihr Angehoeriger hat den Check-in seit ueber 60 Minuten nicht bestaetigt.',
+                  body: 'Ihr Angehöriger hat den Check-in seit über 60 Minuten nicht bestätigt.',
                   referenceId: sosAlertId ?? overdueCheckin.id,
                   referenceType: sosAlertId ? 'care_sos_alerts' : 'care_checkins',
                   url: sosAlertId ? `/care/sos/${sosAlertId}` : '/care/checkin',
@@ -338,7 +338,7 @@ export async function GET(request: NextRequest) {
             }
           } catch (notifyError) {
             console.error(
-              `[care/cron/checkin] Helfer-Benachrichtigung fuer Senior ${profile.user_id} fehlgeschlagen:`,
+              `[care/cron/checkin] Helfer-Benachrichtigung für Senior ${profile.user_id} fehlgeschlagen:`,
               notifyError
             );
           }

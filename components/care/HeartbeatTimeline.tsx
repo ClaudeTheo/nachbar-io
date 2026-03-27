@@ -30,7 +30,7 @@ export function HeartbeatTimeline({ residentId }: HeartbeatTimelineProps) {
         .gte("created_at", thirtyDaysAgo.toISOString())
         .order("created_at", { ascending: true });
 
-      // Tage mit Aktivitaet sammeln
+      // Tage mit Aktivität sammeln
       const activeDays = new Set<string>();
       if (data) {
         for (const hb of data) {
@@ -71,7 +71,7 @@ export function HeartbeatTimeline({ residentId }: HeartbeatTimelineProps) {
             style={{
               backgroundColor: day.hasActivity ? "#4CAF87" : "#E5E7EB",
             }}
-            title={`${day.date}: ${day.hasActivity ? "Aktiv" : "Keine Aktivitaet"}`}
+            title={`${day.date}: ${day.hasActivity ? "Aktiv" : "Keine Aktivität"}`}
           />
         ))}
       </div>

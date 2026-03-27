@@ -6,7 +6,7 @@ import { createClient } from "@/lib/supabase/client";
 import { getCachedUser } from "@/lib/supabase/cached-auth";
 
 /**
- * Banner fuer Nutzer mit ausstehender Adress-Verifizierung.
+ * Banner für Nutzer mit ausstehender Adress-Verifizierung.
  * Wird in der App-Layout eingebunden und zeigt sich nur wenn relevant.
  *
  * trust_level === 'new' UND verification_method === 'address_manual'
@@ -22,7 +22,7 @@ export function PendingVerificationBanner() {
       const { user } = await getCachedUser(supabase);
       if (!user) return;
 
-      // User-Profil pruefen
+      // User-Profil prüfen
       const { data: profile } = await supabase
         .from("users")
         .select("trust_level")
@@ -32,7 +32,7 @@ export function PendingVerificationBanner() {
       // Nur anzeigen wenn trust_level noch 'new'
       if (!profile || profile.trust_level !== "new") return;
 
-      // Verifizierungsanfrage pruefen
+      // Verifizierungsanfrage prüfen
       const { data: request } = await supabase
         .from("verification_requests")
         .select("status")

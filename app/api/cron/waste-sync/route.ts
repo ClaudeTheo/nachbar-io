@@ -1,5 +1,5 @@
 // Cron-Route: Nightly Waste Sync
-// Vercel Cron: taeglich um 02:00 UTC
+// Vercel Cron: täglich um 02:00 UTC
 // Holt Termine aus allen konfigurierten Quellen und aktualisiert waste_collection_dates
 
 import { NextResponse } from "next/server";
@@ -9,7 +9,7 @@ export const runtime = "nodejs";
 export const maxDuration = 60; // Max 60 Sekunden
 
 export async function GET(request: Request) {
-  // Cron-Secret pruefen
+  // Cron-Secret prüfen
   const authHeader = request.headers.get("authorization");
   const cronSecret = process.env.CRON_SECRET;
 

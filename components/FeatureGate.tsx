@@ -16,12 +16,12 @@ interface FeatureGateProps {
   children: ReactNode;
   /** Wird gerendert wenn das Flag inaktiv ist (Standard: null) */
   fallback?: ReactNode;
-  /** Optionaler Quartier-ID Override (sonst nicht geprueft) */
+  /** Optionaler Quartier-ID Override (sonst nicht geprüft) */
   quarterId?: string;
 }
 
 /**
- * Rendert children nur wenn das DB-Feature-Flag fuer den aktuellen User aktiv ist.
+ * Rendert children nur wenn das DB-Feature-Flag für den aktuellen User aktiv ist.
  * Nutzt useUserRole und useSubscription um den UserContext zu ermitteln.
  */
 export function FeatureGate({ feature, children, fallback = null, quarterId }: FeatureGateProps) {

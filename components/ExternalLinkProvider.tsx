@@ -1,8 +1,8 @@
 "use client";
 
 // components/ExternalLinkProvider.tsx
-// Nachbar.io — Externe Links sicher im Browser oeffnen
-// Zeigt kurzen Disclaimer + Domain vor dem Oeffnen
+// Nachbar.io — Externe Links sicher im Browser öffnen
+// Zeigt kurzen Disclaimer + Domain vor dem Öffnen
 
 import { createContext, useContext, useState, useCallback } from "react";
 import { ExternalLink as ExternalLinkIcon, Globe, X } from "lucide-react";
@@ -30,7 +30,7 @@ function extractDomain(url: string): string {
   }
 }
 
-// --- Provider + Bestaetigungs-Dialog ---
+// --- Provider + Bestätigungs-Dialog ---
 
 export function ExternalLinkProvider({
   children,
@@ -41,7 +41,7 @@ export function ExternalLinkProvider({
   const [_pendingTitle, setPendingTitle] = useState<string>("");
 
   const openExternal = useCallback((url: string, title?: string) => {
-    // mailto: und tel: Links direkt oeffnen
+    // mailto: und tel: Links direkt öffnen
     if (url.startsWith("mailto:") || url.startsWith("tel:")) {
       window.open(url, "_blank");
       return;
@@ -66,7 +66,7 @@ export function ExternalLinkProvider({
     <ExternalLinkContext.Provider value={{ openExternal }}>
       {children}
 
-      {/* Bestaetigungs-Dialog */}
+      {/* Bestätigungs-Dialog */}
       {pendingUrl && (
         <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/40 animate-fade-in-up">
           <div className="w-full max-w-lg rounded-t-2xl sm:rounded-2xl bg-white p-5 shadow-xl">

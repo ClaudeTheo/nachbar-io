@@ -32,7 +32,7 @@ function LoadingSkeleton() {
   );
 }
 
-// Datum als Gruppierungs-Schluessel (YYYY-MM-DD in Ortszeit)
+// Datum als Gruppierungs-Schlüssel (YYYY-MM-DD in Ortszeit)
 function toDateKey(iso: string): string {
   const d = new Date(iso);
   const y = d.getFullYear();
@@ -41,7 +41,7 @@ function toDateKey(iso: string): string {
   return `${y}-${m}-${day}`;
 }
 
-// Datums-Schluessel als lesbares Deutsch: "Montag, 10. März 2026"
+// Datums-Schlüssel als lesbares Deutsch: "Montag, 10. März 2026"
 function formatDateHeading(dateKey: string): string {
   const [y, m, d] = dateKey.split('-').map(Number);
   const date = new Date(y, m - 1, d);
@@ -70,10 +70,10 @@ function groupByDate(appointments: CareAppointment[]): Map<string, CareAppointme
 
 export function AppointmentList({ seniorId }: AppointmentListProps) {
   const { appointments, loading, refetch } = useAppointments(seniorId);
-  // Termin, der gerade geloescht wird (verhindert doppeltes Ausloesen)
+  // Termin, der gerade gelöscht wird (verhindert doppeltes Auslösen)
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
-  // Termin per API loeschen und Liste neu laden
+  // Termin per API löschen und Liste neu laden
   async function handleDelete(id: string) {
     if (deletingId) return;
     setDeletingId(id);
@@ -103,7 +103,7 @@ export function AppointmentList({ seniorId }: AppointmentListProps) {
     <div className="space-y-6">
       {Array.from(grouped.entries()).map(([dateKey, items]) => (
         <section key={dateKey}>
-          {/* Datums-Ueberschrift */}
+          {/* Datums-Überschrift */}
           <h2 className="mb-2 text-sm font-semibold text-muted-foreground uppercase tracking-wide">
             {formatDateHeading(dateKey)}
           </h2>

@@ -20,7 +20,7 @@ const CARE_LEVEL_OPTIONS: Array<{ value: CareLevel; label: string }> = [
 ];
 
 const CONTACT_ROLE_OPTIONS = [
-  { value: 'relative', label: 'Angehoerige/r' },
+  { value: 'relative', label: 'Angehörige/r' },
   { value: 'care_service', label: 'Pflegedienst' },
   { value: 'neighbor', label: 'Nachbar/in' },
   { value: 'other', label: 'Sonstiges' },
@@ -57,10 +57,10 @@ export function CareProfileForm({ userId, onSuccess }: CareProfileFormProps) {
   const [saving, setSaving] = useState(false);
   const [initialized, setInitialized] = useState(false);
 
-  // Formular mit vorhandenen Daten befuellen
+  // Formular mit vorhandenen Daten befüllen
   useEffect(() => {
     if (profile && !initialized) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect -- Formular mit vorhandenen Daten befuellen
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- Formular mit vorhandenen Daten befüllen
       setCareLevel(profile.care_level);
       setCheckinEnabled(profile.checkin_enabled);
       setCheckinTimes(profile.checkin_times.length > 0 ? profile.checkin_times : ['08:00', '20:00']);
@@ -166,7 +166,7 @@ export function CareProfileForm({ userId, onSuccess }: CareProfileFormProps) {
 
       {/* Check-in Einstellungen */}
       <section>
-        <h2 className="text-sm font-medium text-muted-foreground mb-3">Taeglicher Check-in</h2>
+        <h2 className="text-sm font-medium text-muted-foreground mb-3">Täglicher Check-in</h2>
 
         <label className="flex items-center gap-3 mb-4 cursor-pointer">
           <input
@@ -207,7 +207,7 @@ export function CareProfileForm({ userId, onSuccess }: CareProfileFormProps) {
               className="flex items-center gap-1 text-sm text-quartier-green hover:underline"
             >
               <Plus className="h-4 w-4" />
-              Uhrzeit hinzufuegen
+              Uhrzeit hinzufügen
             </button>
           </div>
         )}
@@ -217,7 +217,7 @@ export function CareProfileForm({ userId, onSuccess }: CareProfileFormProps) {
       <section>
         <h2 className="text-sm font-medium text-muted-foreground mb-3">Notfallkontakte</h2>
         <p className="text-xs text-muted-foreground mb-3">
-          Diese Personen werden im Notfall kontaktiert, sortiert nach Prioritaet.
+          Diese Personen werden im Notfall kontaktiert, sortiert nach Priorität.
         </p>
 
         {contacts.length === 0 && (
@@ -275,7 +275,7 @@ export function CareProfileForm({ userId, onSuccess }: CareProfileFormProps) {
                   className="rounded-lg border border-gray-300 px-3 py-2 text-sm text-anthrazit focus:border-quartier-green focus:outline-none focus:ring-1 focus:ring-quartier-green"
                 />
                 <div className="flex items-center gap-2">
-                  <label className="text-xs text-muted-foreground whitespace-nowrap">Prioritaet:</label>
+                  <label className="text-xs text-muted-foreground whitespace-nowrap">Priorität:</label>
                   <input
                     type="number"
                     min={1}
@@ -296,7 +296,7 @@ export function CareProfileForm({ userId, onSuccess }: CareProfileFormProps) {
           className="mt-3 flex items-center gap-1 text-sm text-quartier-green hover:underline"
         >
           <Plus className="h-4 w-4" />
-          Kontakt hinzufuegen
+          Kontakt hinzufügen
         </button>
       </section>
 
@@ -304,11 +304,11 @@ export function CareProfileForm({ userId, onSuccess }: CareProfileFormProps) {
       <section>
         <h2 className="text-sm font-medium text-muted-foreground mb-3">Eskalationsstufen</h2>
         <p className="text-xs text-muted-foreground mb-3">
-          Nach wie vielen Minuten ohne Reaktion wird die naechste Stufe benachrichtigt?
+          Nach wie vielen Minuten ohne Reaktion wird die nächste Stufe benachrichtigt?
         </p>
         <div className="space-y-3">
           <div className="flex items-center gap-3">
-            <label className="text-sm text-anthrazit w-40">Stufe 2 (Angehoerige):</label>
+            <label className="text-sm text-anthrazit w-40">Stufe 2 (Angehörige):</label>
             <input
               type="number"
               min={1}
@@ -352,7 +352,7 @@ export function CareProfileForm({ userId, onSuccess }: CareProfileFormProps) {
         <textarea
           value={medicalNotes}
           onChange={(e) => setMedicalNotes(e.target.value)}
-          placeholder="z.B. Allergien, Vorerkrankungen, besondere Hinweise fuer Helfer..."
+          placeholder="z.B. Allergien, Vorerkrankungen, besondere Hinweise für Helfer..."
           className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm text-anthrazit focus:border-quartier-green focus:outline-none focus:ring-1 focus:ring-quartier-green"
           rows={3}
         />
@@ -369,7 +369,7 @@ export function CareProfileForm({ userId, onSuccess }: CareProfileFormProps) {
       <div className="rounded-xl bg-quartier-green/10 p-4 text-sm text-anthrazit">
         <p className="font-medium">Datenschutz</p>
         <p className="mt-1 text-muted-foreground">
-          Ihre medizinischen Daten und Kontaktnummern werden verschluesselt gespeichert (AES-256).
+          Ihre medizinischen Daten und Kontaktnummern werden verschlüsselt gespeichert (AES-256).
           Nur Sie, Ihre zugewiesenen Helfer und Administratoren haben Zugriff.
         </p>
       </div>

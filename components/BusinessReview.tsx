@@ -1,7 +1,7 @@
 "use client";
 
-// BusinessReview — Sternebewertung fuer Dienstleister/Tipps
-// 1-5 Sterne + Text (max 500 Zeichen), nur fuer Nutzer registriert > 7 Tage
+// BusinessReview — Sternebewertung für Dienstleister/Tipps
+// 1-5 Sterne + Text (max 500 Zeichen), nur für Nutzer registriert > 7 Tage
 
 import { useState, useEffect } from "react";
 import { Star, Send } from "lucide-react";

@@ -1,5 +1,5 @@
 // GET /api/hilfe/connections — Liste eigener Verbindungen
-// POST /api/hilfe/connections — Organische Verbindung erstellen (Senior bestaetigt Match)
+// POST /api/hilfe/connections — Organische Verbindung erstellen (Senior bestätigt Match)
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 
@@ -44,7 +44,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'helper_id erforderlich' }, { status: 400 });
   }
 
-  // Pruefen ob Verbindung schon existiert
+  // Prüfen ob Verbindung schon existiert
   const { data: existing } = await supabase
     .from('helper_connections')
     .select('id')
@@ -57,7 +57,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Verbindung besteht bereits' }, { status: 409 });
   }
 
-  // Bundesland-Limit pruefen
+  // Bundesland-Limit prüfen
   const { data: helper } = await supabase
     .from('neighborhood_helpers')
     .select('federal_state')
@@ -80,11 +80,11 @@ export async function POST(request: NextRequest) {
 
   if (maxClients !== null && (activeCount || 0) >= maxClients) {
     return NextResponse.json({
-      error: `Maximale Anzahl an Klienten fuer ${helper.federal_state} erreicht (${maxClients}). Beenden Sie eine bestehende Verbindung.`,
+      error: `Maximale Anzahl an Klienten für ${helper.federal_state} erreicht (${maxClients}). Beenden Sie eine bestehende Verbindung.`,
     }, { status: 403 });
   }
 
-  // Verbindung erstellen (unbestaetigt, Senior muss bestaetigen)
+  // Verbindung erstellen (unbestätigt, Senior muss bestätigen)
   const { data: connection, error } = await supabase
     .from('helper_connections')
     .insert({

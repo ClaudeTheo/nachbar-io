@@ -16,7 +16,7 @@ describe('AutoAnswerSettings', () => {
     cleanup();
   });
 
-  it('zeigt Toggle fuer Auto-Answer', () => {
+  it('zeigt Toggle für Auto-Answer', () => {
     render(<AutoAnswerSettings {...defaultProps} />);
     expect(screen.getByRole('switch', { name: /automatisch annehmen/i })).toBeInTheDocument();
   });

@@ -4,22 +4,22 @@ import { createClient } from "@/lib/supabase/server";
 /**
  * GET /api/news/rss
  *
- * RSS-Feed-Aggregator fuer lokale Nachrichtenquellen.
+ * RSS-Feed-Aggregator für lokale Nachrichtenquellen.
  * Liest RSS-Feeds von konfigurierten Quellen und importiert
  * relevante Artikel in die news_items-Tabelle.
  *
- * Unterstuetzte Quellen:
- * - Suedkurier Bad Saeckingen
+ * Unterstützte Quellen:
+ * - Suedkurier Bad Säckingen
  * - Badische Zeitung (Hochrhein)
  *
- * DSGVO: NUR oeffentliche Nachrichtentexte.
+ * DSGVO: NUR öffentliche Nachrichtentexte.
  * KEINE personenbezogenen Daten werden verarbeitet.
  */
 
 // Konfigurierbare RSS-Quellen
 const RSS_SOURCES = [
   {
-    name: "Suedkurier Bad Saeckingen",
+    name: "Suedkurier Bad Säckingen",
     url: "https://www.suedkurier.de/region/hochrhein/bad-saeckingen/rss.feed",
     category: "other",
   },
@@ -33,7 +33,7 @@ const RSS_SOURCES = [
 // Kategorie-Keywords (gleich wie im Scraper)
 const CATEGORY_KEYWORDS: Record<string, string[]> = {
   infrastructure: [
-    "bahn", "strasse", "kanal", "baustelle", "sperrung", "glasfaser",
+    "bahn", "straße", "kanal", "baustelle", "sperrung", "glasfaser",
     "telekom", "wasser", "strom", "bus", "verkehr", "brücke",
   ],
   events: [
@@ -60,9 +60,9 @@ function guessCategory(title: string, description: string): string {
 
 function estimateRelevance(title: string, description: string): number {
   const text = `${title} ${description}`.toLowerCase();
-  let score = 4; // Niedrigere Basis fuer externe Quellen
+  let score = 4; // Niedrigere Basis für externe Quellen
 
-  // Erhoehung bei Quartiers-Bezug
+  // Erhöhung bei Quartiers-Bezug
   if (/bad säckingen|bad saeckingen/.test(text)) score += 2;
   if (/purkersdorf|sanary|rebberg/.test(text)) score += 3;
   if (/glasfaser|strom|wasser|kanal|strass/.test(text)) score += 1;
@@ -75,7 +75,7 @@ function estimateRelevance(title: string, description: string): number {
   return Math.min(10, Math.max(1, score));
 }
 
-// XML-Parser (einfach, ohne externe Abhaengigkeit)
+// XML-Parser (einfach, ohne externe Abhängigkeit)
 function parseRSSItems(xml: string): Array<{
   title: string;
   description: string;
@@ -145,7 +145,7 @@ export async function GET(request: Request) {
 
   const supabase = await createClient();
 
-  // Quartier-ID fuer Bad Saeckingen Pilot ermitteln
+  // Quartier-ID für Bad Säckingen Pilot ermitteln
   const { data: pilotQuarter } = await supabase
     .from("quarters")
     .select("id")
@@ -181,7 +181,7 @@ export async function GET(request: Request) {
     try {
       const response = await fetch(source.url, {
         headers: {
-          "User-Agent": "quartierapp-newsbot/1.0 (Community-App Bad Saeckingen)",
+          "User-Agent": "quartierapp-newsbot/1.0 (Community-App Bad Säckingen)",
           Accept: "application/rss+xml, application/xml, text/xml",
         },
         next: { revalidate: 0 },
@@ -197,7 +197,7 @@ export async function GET(request: Request) {
       const items = parseRSSItems(xml);
       sourceResult.fetched = items.length;
 
-      // Nur Artikel mit Bad-Saeckingen-Bezug filtern
+      // Nur Artikel mit Bad-Säckingen-Bezug filtern
       const relevantItems = items.filter((item) => {
         const text = `${item.title} ${item.description}`.toLowerCase();
         return (
@@ -221,7 +221,7 @@ export async function GET(request: Request) {
           : item.description;
         let relevance = estimateRelevance(item.title, item.description);
 
-        // Optional: Claude API fuer bessere Zusammenfassung
+        // Optional: Claude API für bessere Zusammenfassung
         if (apiKey && item.description.length > 30) {
           try {
             const aiResponse = await fetch("https://api.anthropic.com/v1/messages", {
@@ -237,7 +237,7 @@ export async function GET(request: Request) {
                 messages: [
                   {
                     role: "user",
-                    content: `Du bist ein Redakteur fuer das Quartier Purkersdorfer-/Sanary-/Rebbergstrasse in Bad Saeckingen. Fasse diese Nachricht in max. 2 Saetzen zusammen. Bewerte Relevanz fuer Quartierbewohner von 0-10. Antworte nur in JSON.
+                    content: `Du bist ein Redakteur für das Quartier Purkersdorfer-/Sanary-/Rebbergstraße in Bad Säckingen. Fasse diese Nachricht in max. 2 Sätzen zusammen. Bewerte Relevanz für Quartierbewohner von 0-10. Antworte nur in JSON.
 
 Titel: ${item.title}
 Inhalt: ${item.description}

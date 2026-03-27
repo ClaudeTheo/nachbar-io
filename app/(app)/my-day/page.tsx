@@ -24,7 +24,7 @@ import { haptic } from "@/lib/haptics";
 
 type CheckInStatus = "good" | "okay" | "bad" | null;
 
-// Tageszeitabhaengige Begruessung
+// Tageszeitabhängige Begrüßung
 function getGreeting(): string {
   const hour = new Date().getHours();
   if (hour < 10) return "Guten Morgen";
@@ -33,7 +33,7 @@ function getGreeting(): string {
   return "Guten Abend";
 }
 
-// Datum formatieren (z.B. "Donnerstag, 27. Maerz")
+// Datum formatieren (z.B. "Donnerstag, 27. März")
 function formatDate(): string {
   return new Date().toLocaleDateString("de-DE", {
     weekday: "long",
@@ -88,7 +88,7 @@ export default function MyDayPage() {
           setCheckinStatus(checkin[0].status as CheckInStatus);
         }
 
-        // Heutige Muelltermine laden
+        // Heutige Mülltermine laden
         const { data: waste } = await supabase
           .from("waste_collection_dates")
           .select("waste_type, collection_date")
@@ -99,7 +99,7 @@ export default function MyDayPage() {
         if (waste) {
           waste.forEach((w: { waste_type: string }) => {
             events.push({
-              time: "Frueh",
+              time: "Früh",
               title: `${w.waste_type} Abholung`,
               type: "waste",
             });
@@ -159,9 +159,9 @@ export default function MyDayPage() {
   return (
     <div className="space-y-5 pb-4" data-testid="my-day-page">
       {/* Hero mit Illustration */}
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-rose-50 via-rose-50/50 to-transparent shadow-hero">
-        <div className="absolute inset-0 opacity-[0.06] pointer-events-none">
-          <IllustrationRenderer name="ill-07-herz-haende" width="100%" height="100%" />
+      <div className="relative rounded-2xl bg-gradient-to-br from-rose-50 via-rose-50/50 to-transparent shadow-hero">
+        <div className="absolute right-2 top-2 w-[120px] h-[60px] opacity-[0.12] pointer-events-none overflow-hidden">
+          <IllustrationRenderer name="ill-07-herz-haende" width="120" height="60" />
         </div>
         <div className="relative p-5">
           <p className="text-sm text-muted-foreground">{formatDate()}</p>
@@ -171,7 +171,7 @@ export default function MyDayPage() {
           {lastHeartbeat && (
             <div className="flex items-center gap-1.5 mt-2 text-sm text-muted-foreground">
               <Heart className="h-4 w-4 text-quartier-green" />
-              <span>Letzte Aktivitaet: {lastHeartbeat}</span>
+              <span>Letzte Aktivität: {lastHeartbeat}</span>
             </div>
           )}
         </div>
@@ -244,7 +244,7 @@ export default function MyDayPage() {
             </div>
           ) : (
             <p className="text-sm text-muted-foreground py-2">
-              Keine Termine fuer heute.
+              Keine Termine für heute.
             </p>
           )}
         </CardContent>

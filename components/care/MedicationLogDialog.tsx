@@ -13,7 +13,7 @@ interface MedicationLogDialogProps {
   onSuccess: () => void;
 }
 
-// Aktions-Konfiguration fuer die drei grossen Buttons
+// Aktions-Konfiguration für die drei grossen Buttons
 const ACTIONS: Array<{ status: CareMedicationLogStatus; label: string; className: string }> = [
   {
     status: 'taken',
@@ -22,12 +22,12 @@ const ACTIONS: Array<{ status: CareMedicationLogStatus; label: string; className
   },
   {
     status: 'skipped',
-    label: 'Uebersprungen',
+    label: 'Übersprungen',
     className: 'border-2 border-gray-300 text-muted-foreground active:bg-gray-100',
   },
   {
     status: 'snoozed',
-    label: 'Spaeter erinnern',
+    label: 'Später erinnern',
     className: 'border-2 border-alert-amber text-alert-amber active:bg-amber-50',
   },
 ];
@@ -66,7 +66,7 @@ export function MedicationLogDialog({ medication, scheduledAt, onClose, onSucces
         return;
       }
 
-      // Automatisch schliessen nach Erfolg
+      // Automatisch schließen nach Erfolg
       onSuccess();
       onClose();
     } catch {

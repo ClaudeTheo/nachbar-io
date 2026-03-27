@@ -5,7 +5,7 @@ const TIMEOUT_MS = 5000
 
 /**
  * GET /api/geo/search?q=Hauptstraße+Berlin&limit=5
- * Proxy fuer Photon Forward Geocoding — vermeidet CORS/DNS-Probleme im Browser
+ * Proxy für Photon Forward Geocoding — vermeidet CORS/DNS-Probleme im Browser
  */
 export async function GET(request: NextRequest) {
   const { searchParams } = request.nextUrl

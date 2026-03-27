@@ -1,14 +1,14 @@
 // app/api/cron/heartbeat-cleanup/route.ts
 // Nachbar.io — Heartbeat-Cleanup: Loescht Heartbeats aelter als 90 Tage
-// Vercel Cron: woechentlich Sonntag 3:00 Uhr
+// Vercel Cron: wöchentlich Sonntag 3:00 Uhr
 
 import { NextRequest, NextResponse } from 'next/server';
 import { getAdminSupabase } from '@/lib/supabase/admin';
 import { HEARTBEAT_RETENTION_DAYS } from '@/lib/care/constants';
 
-// GET /api/cron/heartbeat-cleanup — Alte Heartbeats loeschen (90-Tage-Retention)
+// GET /api/cron/heartbeat-cleanup — Alte Heartbeats löschen (90-Tage-Retention)
 export async function GET(request: NextRequest) {
-  // Cron-Auth: Authorization-Header gegen CRON_SECRET pruefen (PFLICHT)
+  // Cron-Auth: Authorization-Header gegen CRON_SECRET prüfen (PFLICHT)
   const cronSecret = process.env.CRON_SECRET;
   if (!cronSecret) {
     console.error('[cron/heartbeat-cleanup] CRON_SECRET nicht konfiguriert — Endpoint gesperrt');
@@ -26,7 +26,7 @@ export async function GET(request: NextRequest) {
   const cutoff = new Date(now.getTime() - HEARTBEAT_RETENTION_DAYS * 24 * 60 * 60 * 1000);
   const cutoffISO = cutoff.toISOString();
 
-  // Alle Heartbeats aelter als Cutoff-Datum loeschen
+  // Alle Heartbeats aelter als Cutoff-Datum löschen
   const { data, error } = await supabase
     .from('heartbeats')
     .delete()
@@ -34,7 +34,7 @@ export async function GET(request: NextRequest) {
     .select('id');
 
   if (error) {
-    console.error('[cron/heartbeat-cleanup] Loeschen fehlgeschlagen:', error);
+    console.error('[cron/heartbeat-cleanup] Löschen fehlgeschlagen:', error);
     return NextResponse.json(
       { error: 'Heartbeat-Cleanup fehlgeschlagen', details: error.message },
       { status: 500 }
@@ -44,7 +44,7 @@ export async function GET(request: NextRequest) {
   const deletedCount = data?.length ?? 0;
 
   console.log(
-    `[cron/heartbeat-cleanup] ${deletedCount} Heartbeats geloescht (aelter als ${HEARTBEAT_RETENTION_DAYS} Tage, cutoff: ${cutoffISO})`
+    `[cron/heartbeat-cleanup] ${deletedCount} Heartbeats gelöscht (aelter als ${HEARTBEAT_RETENTION_DAYS} Tage, cutoff: ${cutoffISO})`
   );
 
   return NextResponse.json({

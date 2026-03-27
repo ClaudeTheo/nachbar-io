@@ -1,5 +1,5 @@
 // components/care/senior/SeniorCheckinButtons.test.tsx
-// Nachbar.io — Tests fuer Senior-Modus Check-in Buttons
+// Nachbar.io — Tests für Senior-Modus Check-in Buttons
 // KRITISCH: 80px Touch-Targets, korrekte Status-Zuordnung
 
 import { describe, it, expect, vi, afterEach, beforeEach } from 'vitest';

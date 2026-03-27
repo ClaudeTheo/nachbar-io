@@ -1,7 +1,7 @@
 "use client";
 
 // components/VoiceAssistantFAB.tsx
-// Nachbar.io — Floating Action Button fuer den KI-Sprach-Assistenten
+// Nachbar.io — Floating Action Button für den KI-Sprach-Assistenten
 // Companion-Integration: Nutzt /api/companion/chat mit Konversations-Modus
 
 import { useState, useRef, useCallback, useEffect } from "react";
@@ -37,7 +37,7 @@ import type {
   SpeechEngineCallbacks,
 } from "@/lib/voice/speech-engine";
 
-/** Sheet-Zustaende */
+/** Sheet-Zustände */
 type SheetState =
   | "closed"
   | "idle"
@@ -47,7 +47,7 @@ type SheetState =
   | "result"
   | "error";
 
-/** Chat-Nachricht fuer den Companion */
+/** Chat-Nachricht für den Companion */
 interface ChatMessage {
   role: "user" | "assistant";
   content: string;
@@ -61,7 +61,7 @@ interface CompanionToolResult {
   route?: string;
 }
 
-/** Tool-Bestaetigung (Write-Tool) */
+/** Tool-Bestätigung (Write-Tool) */
 interface CompanionConfirmation {
   tool: string;
   params: Record<string, unknown>;
@@ -121,13 +121,13 @@ export function VoiceAssistantFAB() {
   );
   const [exchangeCount, setExchangeCount] = useState(0);
   const audioRef = useRef<HTMLAudioElement | null>(null);
-  // Push-to-Talk: Startzeitpunkt fuer Mindestdauer-Pruefung
+  // Push-to-Talk: Startzeitpunkt für Mindestdauer-Prüfung
   const recordingStartTimeRef = useRef<number>(0);
-  // Streaming Tool-Ergebnisse und Bestaetigungen sammeln
+  // Streaming Tool-Ergebnisse und Bestätigungen sammeln
   const streamToolResultsRef = useRef<CompanionToolResult[]>([]);
   const streamConfirmationsRef = useRef<CompanionConfirmation[]>([]);
 
-  // Streaming-Chat Hook fuer SSE-basierte Antworten
+  // Streaming-Chat Hook für SSE-basierte Antworten
   const {
     streamingText,
     isStreaming: isStreamingChat,
@@ -170,12 +170,12 @@ export function VoiceAssistantFAB() {
       setSheetState("processing");
       setAudioLevel(0);
 
-      // Streaming-Refs zuruecksetzen
+      // Streaming-Refs zurücksetzen
       streamToolResultsRef.current = [];
       streamConfirmationsRef.current = [];
 
       try {
-        // Bei Tool-Bestaetigung: Nicht-Streaming (einfacher JSON-Request)
+        // Bei Tool-Bestätigung: Nicht-Streaming (einfacher JSON-Request)
         if (confirmTool) {
           const res = await fetch("/api/companion/chat", {
             method: "POST",
@@ -246,7 +246,7 @@ export function VoiceAssistantFAB() {
       setToolResults([...streamToolResultsRef.current]);
       setConfirmations([...streamConfirmationsRef.current]);
 
-      // Navigation pruefen
+      // Navigation prüfen
       const navResult = streamToolResultsRef.current.find((r) => r.route);
       if (navResult?.route) {
         router.push(navResult.route);
@@ -312,7 +312,7 @@ export function VoiceAssistantFAB() {
         setAudioLevel(level);
       },
       onStateChange: () => {
-        // State wird ueber sheetState gesteuert
+        // State wird über sheetState gesteuert
       },
       onError: (message: string) => {
         const userMessage =
@@ -332,17 +332,17 @@ export function VoiceAssistantFAB() {
     engineRef.current?.stopListening();
   }, []);
 
-  // FAB-Klick: Sheet oeffnen im idle-State (Push-to-Talk)
+  // FAB-Klick: Sheet öffnen im idle-State (Push-to-Talk)
   const handleFabClick = useCallback(() => {
     if (sheetState === "closed") {
-      // Neue Session: Konversation zuruecksetzen
+      // Neue Session: Konversation zurücksetzen
       setSheetMessages([]);
       setExchangeCount(0);
       setSheetState("idle");
     }
   }, [sheetState]);
 
-  // Push-to-Talk: Druecken startet Aufnahme
+  // Push-to-Talk: Drücken startet Aufnahme
   const handlePushStart = useCallback(
     (e: React.MouseEvent | React.TouchEvent) => {
       if ("touches" in e) e.preventDefault(); // Ghost-Clicks verhindern
@@ -356,7 +356,7 @@ export function VoiceAssistantFAB() {
     [startRecording],
   );
 
-  // Push-to-Talk: Loslassen stoppt Aufnahme (mit Mindestdauer-Pruefung)
+  // Push-to-Talk: Loslassen stoppt Aufnahme (mit Mindestdauer-Prüfung)
   const handlePushEnd = useCallback(
     (e: React.MouseEvent | React.TouchEvent) => {
       if ("touches" in e) e.preventDefault();
@@ -384,7 +384,7 @@ export function VoiceAssistantFAB() {
     setSheetState("result");
   }, []);
 
-  // Tool-Bestaetigung: Write-Action ausfuehren
+  // Tool-Bestätigung: Write-Action ausführen
   const handleConfirm = useCallback(
     (confirmation: CompanionConfirmation) => {
       sendToCompanion(transcript, {
@@ -395,7 +395,7 @@ export function VoiceAssistantFAB() {
     [sendToCompanion, transcript],
   );
 
-  // "Nochmal sprechen": Zurueck zum idle-State (Konversation bleibt erhalten)
+  // "Nochmal sprechen": Zurück zum idle-State (Konversation bleibt erhalten)
   const handleRetry = useCallback(() => {
     if (audioRef.current) {
       audioRef.current.pause();
@@ -417,7 +417,7 @@ export function VoiceAssistantFAB() {
     [router],
   );
 
-  // Sheet schliessen
+  // Sheet schließen
   const handleClose = useCallback(() => {
     engineRef.current?.stopListening();
     if (audioRef.current) {
@@ -434,7 +434,7 @@ export function VoiceAssistantFAB() {
     setAudioLevel(0);
   }, []);
 
-  // Nichts rendern wenn nicht gemountet oder keine Engine verfuegbar
+  // Nichts rendern wenn nicht gemountet oder keine Engine verfügbar
   // SSR-Guard: Server und Client rendern beide null → kein Hydration-Mismatch
   if (!mounted || !engineRef.current) {
     return null;
@@ -643,7 +643,7 @@ export function VoiceAssistantFAB() {
               </>
             )}
 
-            {/* RESULT: Ergebnis + Tool-Results + Bestaetigungen + Buttons */}
+            {/* RESULT: Ergebnis + Tool-Results + Bestätigungen + Buttons */}
             {sheetState === "result" && (
               <>
                 {/* Transkript */}
@@ -689,7 +689,7 @@ export function VoiceAssistantFAB() {
                   </div>
                 )}
 
-                {/* Bestaetigungen (ConfirmationCards) */}
+                {/* Bestätigungen (ConfirmationCards) */}
                 {confirmations.length > 0 && (
                   <div className="space-y-2" data-testid="confirmations">
                     {confirmations.map((conf, i) => (

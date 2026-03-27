@@ -5,9 +5,9 @@ import { createClient } from "@/lib/supabase/server";
  * POST /api/news/aggregate
  *
  * KI-Newsaggregation via Claude API.
- * Wird als Cron-Job aufgerufen — geschuetzt per CRON_SECRET.
+ * Wird als Cron-Job aufgerufen — geschützt per CRON_SECRET.
  *
- * DSGVO-Regel: NUR oeffentliche Nachrichtentexte werden an die API gesendet.
+ * DSGVO-Regel: NUR öffentliche Nachrichtentexte werden an die API gesendet.
  * KEINE personenbezogenen Daten, KEINE Adressdaten, KEINE Nutzerdaten.
  */
 export async function POST(request: NextRequest) {
@@ -34,7 +34,7 @@ export async function POST(request: NextRequest) {
     }
   }
 
-  // Quartier-ID fuer Bad Saeckingen Pilot ermitteln
+  // Quartier-ID für Bad Säckingen Pilot ermitteln
   const { data: pilotQuarter } = await supabase
     .from("quarters")
     .select("id")
@@ -42,7 +42,7 @@ export async function POST(request: NextRequest) {
     .single();
   const quarterId = pilotQuarter?.id ?? null;
 
-  // Beispiel-Nachricht fuer MVP (spaeter durch RSS-Scraping ersetzen)
+  // Beispiel-Nachricht für MVP (später durch RSS-Scraping ersetzen)
   const sampleNews = [
     {
       source_url: "https://www.bad-saeckingen.de",
@@ -98,7 +98,7 @@ Format: {"summary": "...", "relevance_score": 0, "category": "infrastructure|eve
         try {
           parsed = JSON.parse(text);
         } catch {
-          console.error("Claude-Antwort kein gueltiges JSON:", text.substring(0, 100));
+          console.error("Claude-Antwort kein gültiges JSON:", text.substring(0, 100));
           continue;
         }
 

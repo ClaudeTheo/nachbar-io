@@ -15,7 +15,7 @@ import {
 import { Button } from '@/components/ui/button';
 import type { ReportReason } from '@/lib/moderation/types';
 
-// Meldegruende nach Apple App Store Guideline 1.2
+// Meldegründe nach Apple App Store Guideline 1.2
 const REPORT_REASONS: Array<{ value: ReportReason; label: string; icon: string }> = [
   { value: 'spam', label: 'Spam oder Werbung', icon: '📧' },
   { value: 'harassment', label: 'Belästigung', icon: '😤' },
@@ -29,7 +29,7 @@ const REPORT_REASONS: Array<{ value: ReportReason; label: string; icon: string }
 interface ReportDialogProps {
   contentType: string;
   contentId: string;
-  /** Optionaler Trigger-Button (Standard: kein Trigger, Dialog wird ueber open gesteuert) */
+  /** Optionaler Trigger-Button (Standard: kein Trigger, Dialog wird über open gesteuert) */
   trigger?: React.ReactNode;
   /** Gesteuerter Modus: open/onOpenChange */
   open?: boolean;

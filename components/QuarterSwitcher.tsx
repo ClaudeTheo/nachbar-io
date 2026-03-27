@@ -11,7 +11,7 @@ import {
 import { MapPin } from "lucide-react";
 import type { QuarterStatus } from "@/lib/quarters";
 
-// Status-Punkt: Gruen=aktiv, Gelb=Entwurf, Grau=archiviert
+// Status-Punkt: Grün=aktiv, Gelb=Entwurf, Grau=archiviert
 function StatusDot({ status }: { status: QuarterStatus }) {
   const colors: Record<QuarterStatus, string> = {
     active: "bg-quartier-green",
@@ -32,7 +32,7 @@ function StatusDot({ status }: { status: QuarterStatus }) {
   );
 }
 
-// Quartier-Umschalter — nur fuer Super-Admins sichtbar
+// Quartier-Umschalter — nur für Super-Admins sichtbar
 export function QuarterSwitcher() {
   const { currentQuarter, allQuarters, loading, switchQuarter } = useQuarter();
   const { isSuperAdmin, loading: roleLoading } = useUserRole();
@@ -52,7 +52,7 @@ export function QuarterSwitcher() {
         }}
       >
         <SelectTrigger className="h-8 w-full text-xs" size="sm">
-          <SelectValue placeholder="Quartier waehlen...">
+          <SelectValue placeholder="Quartier wählen...">
             {currentQuarter && (
               <span className="flex items-center gap-1.5">
                 <StatusDot status={currentQuarter.status} />

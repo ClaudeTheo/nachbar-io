@@ -6,9 +6,9 @@ import { generateTempPassword } from "@/lib/invite-codes";
 /**
  * POST /api/admin/create-user
  *
- * Admin erstellt ein Konto fuer einen Nachbarn (z.B. Senioren).
+ * Admin erstellt ein Konto für einen Nachbarn (z.B. Senioren).
  * Body: { displayName, street, houseNumber, email?, uiMode?, verified? }
- * Gibt temporaeres Passwort zurueck (einmalig sichtbar).
+ * Gibt temporäres Passwort zurück (einmalig sichtbar).
  */
 export async function POST(request: NextRequest) {
   // 1. Admin-Check mit Session-basiertem Client
@@ -31,7 +31,7 @@ export async function POST(request: NextRequest) {
   try {
     body = await request.json();
   } catch {
-    return NextResponse.json({ error: "Ungueltiges Anfrage-Format" }, { status: 400 });
+    return NextResponse.json({ error: "Ungültiges Anfrage-Format" }, { status: 400 });
   }
   const {
     displayName,
@@ -45,12 +45,12 @@ export async function POST(request: NextRequest) {
 
   if (!displayName || !street || !houseNumber) {
     return NextResponse.json(
-      { error: "Name, Strasse und Hausnummer sind erforderlich" },
+      { error: "Name, Straße und Hausnummer sind erforderlich" },
       { status: 400 }
     );
   }
 
-  // 3. Haushalt pruefen (optional mit quarter_id filtern)
+  // 3. Haushalt prüfen (optional mit quarter_id filtern)
   const adminSupabase = getAdminSupabase();
   let householdQuery = adminSupabase
     .from("households")
@@ -78,7 +78,7 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  // 4. Temporaeres Passwort + E-Mail generieren
+  // 4. Temporäres Passwort + E-Mail generieren
   const tempPassword = generateTempPassword();
   const userEmail = email || `${displayName.toLowerCase().replace(/[^a-z0-9]/g, "")}.${Date.now()}@quartierapp.de`;
 
@@ -114,10 +114,10 @@ export async function POST(request: NextRequest) {
 
   if (profileError) {
     console.error("Profil-Fehler:", profileError);
-    // Rollback: Auth-User loeschen, da Konto ohne Profil unbenutzbar
+    // Rollback: Auth-User löschen, da Konto ohne Profil unbenutzbar
     const { error: rollbackError } = await adminSupabase.auth.admin.deleteUser(authData.user.id);
     if (rollbackError) {
-      console.error("Rollback Auth-User-Loeschung fehlgeschlagen:", rollbackError);
+      console.error("Rollback Auth-User-Löschung fehlgeschlagen:", rollbackError);
     }
     return NextResponse.json(
       { error: `Profil konnte nicht erstellt werden: ${profileError.message}` },
@@ -134,7 +134,7 @@ export async function POST(request: NextRequest) {
 
   if (memberError) {
     console.error("Mitglied-Fehler:", memberError);
-    // Kein Rollback — Konto existiert, Admin wird ueber fehlende Zuordnung informiert
+    // Kein Rollback — Konto existiert, Admin wird über fehlende Zuordnung informiert
     return NextResponse.json({
       success: true,
       userId: authData.user.id,

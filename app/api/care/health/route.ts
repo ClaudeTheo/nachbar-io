@@ -13,8 +13,8 @@ const CACHE_TTL_MS = 5000;
 
 /**
  * GET /api/care/health
- * Gesundheits-Check (nur fuer authentifizierte Admins).
- * Gibt interne System-Metriken zurueck.
+ * Gesundheits-Check (nur für authentifizierte Admins).
+ * Gibt interne System-Metriken zurück.
  */
 export async function GET() {
   const now = Date.now();
@@ -37,7 +37,7 @@ export async function GET() {
       return NextResponse.json({ overall: 'ok', timestamp: new Date().toISOString() });
     }
 
-    // Cache pruefen (nur fuer Admins relevant)
+    // Cache prüfen (nur für Admins relevant)
     if (cachedResult && (now - cachedAt) < CACHE_TTL_MS) {
       return NextResponse.json(cachedResult);
     }
@@ -61,7 +61,7 @@ export async function GET() {
   } catch {
     return NextResponse.json({
       overall: 'error',
-      checks: [{ name: 'System', status: 'error' as const, detail: 'Gesundheitspruefung fehlgeschlagen' }],
+      checks: [{ name: 'System', status: 'error' as const, detail: 'Gesundheitsprüfung fehlgeschlagen' }],
       timestamp: new Date().toISOString(),
     }, { status: 500 });
   }

@@ -1,6 +1,6 @@
 // GlobalCallListener — Lauscht auf eingehende Video-Anrufe via Supabase Realtime
 // Zeigt ein Fullscreen-Overlay bei eingehendem Anruf.
-// Eingebunden im App-Layout — aktiv fuer alle authentifizierten Nutzer.
+// Eingebunden im App-Layout — aktiv für alle authentifizierten Nutzer.
 'use client';
 
 import { useEffect, useState, useCallback, useRef } from 'react';
@@ -18,12 +18,12 @@ interface IncomingCall {
 const RING_TIMEOUT_MS = 30_000; // 30s, danach missed
 
 /**
- * GlobalCallListener — Globaler Listener fuer eingehende Anrufe.
+ * GlobalCallListener — Globaler Listener für eingehende Anrufe.
  *
  * Supabase Realtime Subscription auf `video_calls` INSERT
  * WHERE callee_id = aktueller Nutzer AND status = 'ringing'.
  *
- * Overlay: Anrufername + Annehmen (gruen, 80px) + Ablehnen (rot, 80px)
+ * Overlay: Anrufername + Annehmen (grün, 80px) + Ablehnen (rot, 80px)
  */
 export function GlobalCallListener() {
   const router = useRouter();
@@ -32,7 +32,7 @@ export function GlobalCallListener() {
   const audioRef = useRef<AudioContext | null>(null);
   const oscillatorRef = useRef<OscillatorNode | null>(null);
 
-  // Klingelton starten (Web Audio API — kein externer Sound noetig)
+  // Klingelton starten (Web Audio API — kein externer Sound nötig)
   const startRingtone = useCallback(() => {
     try {
       const ctx = new AudioContext();
@@ -67,7 +67,7 @@ export function GlobalCallListener() {
 
       oscillatorRef.current = osc1;
     } catch {
-      // Audio nicht verfuegbar — stilles Klingeln
+      // Audio nicht verfügbar — stilles Klingeln
     }
   }, []);
 

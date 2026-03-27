@@ -1,14 +1,14 @@
 'use client';
 
 // components/voice/AudioWaveform.tsx
-// Echtzeit Audio-Waveform — 16 Balken, Quartier-Gruen
-// Gauss-artige Verteilung: Mitte-Balken reagieren staerker
+// Echtzeit Audio-Waveform — 16 Balken, Quartier-Grün
+// Gauss-artige Verteilung: Mitte-Balken reagieren stärker
 
 import { useMemo } from 'react';
 
 interface AudioWaveformProps {
   audioLevel: number;  // 0-1, normalisierter Audio-Pegel
-  isActive: boolean;   // Aufnahme laeuft
+  isActive: boolean;   // Aufnahme läuft
 }
 
 const BAR_COUNT = 16;
@@ -16,12 +16,12 @@ const MIN_HEIGHT = 4;  // px
 const MAX_HEIGHT = 40; // px
 
 export function AudioWaveform({ audioLevel, isActive }: AudioWaveformProps) {
-  // Balken-Hoehen berechnen: Mitte hoeher, Raender niedriger (Wellenform-Effekt)
+  // Balken-Höhen berechnen: Mitte höher, Ränder niedriger (Wellenform-Effekt)
   const barHeights = useMemo(() => {
     return Array.from({ length: BAR_COUNT }, (_, i) => {
       const distance = Math.abs(i - (BAR_COUNT - 1) / 2) / ((BAR_COUNT - 1) / 2);
       const multiplier = 1 - distance * 0.6;
-      // Deterministische Variation pro Balken (kein Math.random fuer Tests)
+      // Deterministische Variation pro Balken (kein Math.random für Tests)
       const variation = 1 + Math.sin(i * 1.7) * 0.15;
       const height = MIN_HEIGHT + audioLevel * multiplier * variation * (MAX_HEIGHT - MIN_HEIGHT);
       return Math.max(MIN_HEIGHT, Math.round(height));

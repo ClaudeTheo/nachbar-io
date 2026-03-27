@@ -46,7 +46,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Meldung konnte nicht gespeichert werden' }, { status: 500 });
   }
 
-  // Auto-Sperre pruefen: 3 Meldungen gegen dasselbe Ziel → suspended
+  // Auto-Sperre prüfen: 3 Meldungen gegen dasselbe Ziel → suspended
   const { count } = await supabase
     .from('youth_moderation_log')
     .select('id', { count: 'exact', head: true })

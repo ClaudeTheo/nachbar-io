@@ -1,4 +1,4 @@
-// Tests fuer IllustrationRenderer
+// Tests für IllustrationRenderer
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, waitFor } from "@testing-library/react";
 import { IllustrationRenderer } from "../IllustrationRenderer";
@@ -63,7 +63,7 @@ describe("IllustrationRenderer", () => {
     }
   });
 
-  it("uebergibt custom className", () => {
+  it("übergibt custom className", () => {
     const { container } = render(
       <IllustrationRenderer name="ill-02-nachbarn" className="my-custom" />,
     );

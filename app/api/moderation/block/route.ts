@@ -17,7 +17,7 @@ export async function POST(request: NextRequest) {
   try {
     body = await request.json();
   } catch {
-    return NextResponse.json({ error: 'Ungueltiges Anfrage-Format' }, { status: 400 });
+    return NextResponse.json({ error: 'Ungültiges Anfrage-Format' }, { status: 400 });
   }
 
   const { blockedId, blockLevel = 'block' } = body;
@@ -28,11 +28,11 @@ export async function POST(request: NextRequest) {
 
   // Sich selbst blockieren verhindern
   if (blockedId === user.id) {
-    return NextResponse.json({ error: 'Sie koennen sich nicht selbst blockieren' }, { status: 400 });
+    return NextResponse.json({ error: 'Sie können sich nicht selbst blockieren' }, { status: 400 });
   }
 
   if (!VALID_BLOCK_LEVELS.includes(blockLevel)) {
-    return NextResponse.json({ error: 'Ungueltiges Block-Level' }, { status: 400 });
+    return NextResponse.json({ error: 'Ungültiges Block-Level' }, { status: 400 });
   }
 
   // Upsert: Block erstellen oder Block-Level aktualisieren
@@ -68,7 +68,7 @@ export async function DELETE(request: NextRequest) {
   try {
     body = await request.json();
   } catch {
-    return NextResponse.json({ error: 'Ungueltiges Anfrage-Format' }, { status: 400 });
+    return NextResponse.json({ error: 'Ungültiges Anfrage-Format' }, { status: 400 });
   }
 
   const { blockedId } = body;

@@ -3,7 +3,7 @@
 import { HelpTip } from "@/components/HelpTip";
 import type { LampColor } from "@/lib/map-houses";
 
-// Farb-Filter-Konfiguration fuer die Kartensteuerleiste
+// Farb-Filter-Konfiguration für die Kartensteuerleiste
 const FILTER_ITEMS: { key: LampColor; label: string; color: string; bg: string }[] = [
   { key: "green", label: "Grün", color: "#22c55e", bg: "#052e16" },
   { key: "red", label: "Rot", color: "#ef4444", bg: "#2d0505" },
@@ -28,7 +28,7 @@ interface MapFilterBarProps {
   quarterName: string;
 }
 
-// Gemeinsame Steuerleiste fuer SVG- und Leaflet-Karten
+// Gemeinsame Steuerleiste für SVG- und Leaflet-Karten
 export function MapFilterBar({ counts, filter, onFilterChange, onReset, quarterName }: MapFilterBarProps) {
   return (
     <div className="flex w-full flex-wrap items-center justify-between gap-2 rounded-lg bg-[#111827] px-3 py-2">

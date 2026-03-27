@@ -1,12 +1,12 @@
 "use client";
 
-// CSS-only Konfetti — keine externen Abhaengigkeiten
+// CSS-only Konfetti — keine externen Abhängigkeiten
 const COLORS = ["#4CAF87", "#F59E0B", "#3B82F6", "#8B5CF6", "#EF4444"];
 
 export function ConfettiEffect({ active }: { active: boolean }) {
   if (!active) return null;
 
-  /* eslint-disable react-hooks/purity -- Zufallswerte fuer Konfetti-Partikel gewollt */
+  /* eslint-disable react-hooks/purity -- Zufallswerte für Konfetti-Partikel gewollt */
   const particles = Array.from({ length: 35 }).map((_, i) => ({
     id: i,
     x: Math.random() * 300 - 150,

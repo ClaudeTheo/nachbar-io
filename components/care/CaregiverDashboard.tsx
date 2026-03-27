@@ -46,7 +46,7 @@ export function CaregiverDashboard() {
 
         setLinks(caregiverLinks);
 
-        // 2. Status fuer jeden Bewohner laden
+        // 2. Status für jeden Bewohner laden
         const statusMap = new Map<string, ResidentStatusData>();
         await Promise.all(
           caregiverLinks.map(async (link) => {
@@ -81,13 +81,13 @@ export function CaregiverDashboard() {
   if (loading) {
     return (
       <section className="space-y-3">
-        <h2 className="font-semibold text-anthrazit">Ihre Angehoerigen</h2>
+        <h2 className="font-semibold text-anthrazit">Ihre Angehörigen</h2>
         <p className="text-sm text-muted-foreground">Laden...</p>
       </section>
     );
   }
 
-  // Nach Kritikalitaet sortieren
+  // Nach Kritikalität sortieren
   const sortedLinks = [...links].sort((a, b) => {
     const statusA = statuses.get(a.resident_id)?.status ?? "ok";
     const statusB = statuses.get(b.resident_id)?.status ?? "ok";
@@ -96,7 +96,7 @@ export function CaregiverDashboard() {
 
   return (
     <section className="space-y-3">
-      <h2 className="font-semibold text-anthrazit">Ihre Angehoerigen</h2>
+      <h2 className="font-semibold text-anthrazit">Ihre Angehörigen</h2>
       <div className="space-y-3">
         {sortedLinks.map((link) => {
           const statusData = statuses.get(link.resident_id);

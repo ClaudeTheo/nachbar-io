@@ -80,7 +80,7 @@ export default function KioskIncomingCall({
         ctx.close();
       };
     } catch {
-      // Audio nicht verfuegbar — still ignorieren
+      // Audio nicht verfügbar — still ignorieren
     }
   }, [autoAnswer]);
 

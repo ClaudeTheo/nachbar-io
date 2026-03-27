@@ -2,7 +2,7 @@
 
 // components/fab/AssistantFAB.tsx
 // Nachbar.io — Neuer KI-Assistent FAB (violett, 56px, scroll-hide, dezentes Pulsieren)
-// Standalone-Komponente fuer zukuenftige Verwendung ausserhalb von VoiceAssistantFAB
+// Standalone-Komponente für zukünftige Verwendung außerhalb von VoiceAssistantFAB
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import { Mic } from "lucide-react";
@@ -13,7 +13,7 @@ interface AssistantFABProps {
 }
 
 /**
- * Violetter Floating Action Button fuer den KI-Assistenten.
+ * Violetter Floating Action Button für den KI-Assistenten.
  * - 56px Standard, 64px im Senior-Modus
  * - Scroll-Hide: Verschwindet bei Scroll-Down, erscheint bei Scroll-Up
  * - Dezentes Pulsieren alle 30 Sekunden

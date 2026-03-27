@@ -81,7 +81,7 @@ export default function ErinnerungenScreen() {
 
   return (
     <div className="flex flex-col h-full overflow-y-auto">
-      {/* Zurueck + Titel */}
+      {/* Zurück + Titel */}
       <div className="flex items-center gap-4 mb-4 shrink-0">
         <button
           onClick={() => setActiveScreen("home")}

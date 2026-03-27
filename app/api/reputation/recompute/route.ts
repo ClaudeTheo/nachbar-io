@@ -10,7 +10,7 @@ import { computeReputationStats } from "@/lib/reputation";
  *
  * Body: { userId?: string }
  * - userId: Optional. Wenn nicht angegeben, wird der aktuelle Nutzer verwendet.
- * - Nur Admins duerfen fremde User-IDs angeben.
+ * - Nur Admins dürfen fremde User-IDs angeben.
  */
 export async function POST(request: NextRequest) {
   const supabase = await createClient();
@@ -21,11 +21,11 @@ export async function POST(request: NextRequest) {
 
   let targetUserId = user.id;
 
-  // Optionaler userId-Parameter (nur fuer Admins)
+  // Optionaler userId-Parameter (nur für Admins)
   try {
     const body = await request.json();
     if (body.userId && body.userId !== user.id) {
-      // Pruefen ob Admin
+      // Prüfen ob Admin
       const { data: adminCheck } = await supabase
         .from("users")
         .select("is_admin")
@@ -34,7 +34,7 @@ export async function POST(request: NextRequest) {
 
       if (!adminCheck?.is_admin) {
         return NextResponse.json(
-          { error: "Nur Admins duerfen fremde Nutzer neu berechnen" },
+          { error: "Nur Admins dürfen fremde Nutzer neu berechnen" },
           { status: 403 }
         );
       }

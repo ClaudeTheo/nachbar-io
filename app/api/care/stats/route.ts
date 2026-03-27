@@ -5,7 +5,7 @@ import { requireAuth, requireAdmin, requireCareAccess, errorResponse, successRes
 
 /**
  * GET /api/care/stats
- * Aggregierte Statistiken fuer einen Senior oder systemweit (Admin).
+ * Aggregierte Statistiken für einen Senior oder systemweit (Admin).
  * Query: ?senior_id=... (optional, Admin bekommt ohne senior_id systemweite Daten)
  */
 export async function GET(request: Request) {
@@ -21,7 +21,7 @@ export async function GET(request: Request) {
     const isAdmin = await requireAdmin(supabase, user.id);
     if (!isAdmin) return errorResponse('Senior-ID erforderlich oder Admin-Rechte', 403);
   } else if (seniorId !== user.id) {
-    // Mit senior_id: Zugriffspruefung
+    // Mit senior_id: Zugriffsprüfung
     const role = await requireCareAccess(supabase, seniorId);
     if (!role) return errorResponse('Kein Zugriff auf diesen Senior', 403);
   }
@@ -32,11 +32,11 @@ export async function GET(request: Request) {
     // Build filter - seniorId scopes queries, null = system-wide
     const filter = seniorId;
 
-    // Zeitstempel fuer 7-Tage-Abfragen
+    // Zeitstempel für 7-Tage-Abfragen
     const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
     const now = new Date().toISOString();
 
-    // Alle Abfragen parallel ausfuehren fuer Performance
+    // Alle Abfragen parallel ausführen für Performance
     const [
       seniorsResult,
       sosResult,
@@ -122,11 +122,11 @@ export async function GET(request: Request) {
         return filter ? q.eq('senior_id', filter) : q;
       })(),
 
-      // Abonnements (immer systemweit fuer Verteilung)
+      // Abonnements (immer systemweit für Verteilung)
       supabase.from('care_subscriptions').select('plan'),
     ]);
 
-    // Geloeste SOS-Rate berechnen
+    // Gelöste SOS-Rate berechnen
     let sosResolved = 0;
     const sosTotal = sosResult.count ?? 0;
     if (sosTotal > 0) {
@@ -182,7 +182,7 @@ export async function GET(request: Request) {
       sos: {
         total: sosTotal,
         resolved: sosResolved,
-        avgResponseMinutes: null, // Komplexe Berechnung, spaeter implementieren
+        avgResponseMinutes: null, // Komplexe Berechnung, später implementieren
         last7Days: sosLast7Result.count ?? 0,
       },
       checkins: {

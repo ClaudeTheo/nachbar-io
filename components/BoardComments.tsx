@@ -1,6 +1,6 @@
 "use client";
 
-// BoardComments — Kommentar-System fuer Board-Posts
+// BoardComments — Kommentar-System für Board-Posts
 // Klappbar unter jedem Post, max 300 Zeichen
 
 import { useState, useEffect } from "react";

@@ -4,17 +4,17 @@ import { createClient } from "@/lib/supabase/server";
 /**
  * GET /api/news/scrape
  *
- * Woechentlicher Scraper fuer Neuigkeiten von bad-saeckingen.de.
+ * Wöchentlicher Scraper für Neuigkeiten von bad-saeckingen.de.
  * Wird als Vercel Cron-Job jeden Montag um 07:00 aufgerufen.
  *
  * Ablauf:
  * 1. HTML der Neuigkeiten-Seite abrufen
  * 2. Artikel-Daten extrahieren (Titel, Datum, Beschreibung, Kategorie)
- * 3. Pruefen ob bereits in DB vorhanden (Duplikat-Check ueber original_title)
+ * 3. Prüfen ob bereits in DB vorhanden (Duplikat-Check über original_title)
  * 4. Neue Artikel optional via Claude API zusammenfassen
  * 5. In news_items eintragen
  *
- * DSGVO: NUR oeffentliche Nachrichtentexte der Stadtverwaltung.
+ * DSGVO: NUR öffentliche Nachrichtentexte der Stadtverwaltung.
  * KEINE personenbezogenen Daten werden verarbeitet.
  */
 
@@ -23,7 +23,7 @@ const NEWS_URL = "https://www.bad-saeckingen.de/rathaus-service/aktuelles/neuigk
 // Kategorie-Mapping: Stichwort -> DB-Kategorie
 const CATEGORY_KEYWORDS: Record<string, string[]> = {
   infrastructure: [
-    "bahn", "strasse", "kanal", "baustelle", "sperrung", "glasfaser",
+    "bahn", "straße", "kanal", "baustelle", "sperrung", "glasfaser",
     "telekom", "wasser", "strom", "bus", "verkehr", "fahrgast", "brücke",
   ],
   events: [
@@ -49,12 +49,12 @@ function guessCategory(title: string, description: string): string {
   return "other";
 }
 
-// Relevanz fuer das Quartier schaetzen (0-10)
+// Relevanz für das Quartier schätzen (0-10)
 function estimateRelevance(title: string, description: string): number {
   const text = `${title} ${description}`.toLowerCase();
   let score = 5; // Basis-Relevanz
 
-  // Erhoehung bei lokaler Infrastruktur
+  // Erhöhung bei lokaler Infrastruktur
   if (/glasfaser|strom|wasser|kanal|strass/.test(text)) score += 2;
   if (/purkersdorf|sanary|rebberg/.test(text)) score += 3; // Direkt im Quartier
   if (/bad säckingen|bad saeckingen/.test(text)) score += 1;
@@ -81,7 +81,7 @@ function parseNewsArticles(html: string): Array<{
     tags: string[];
   }> = [];
 
-  // Regex fuer die Artikel-Bloecke der Bad Saeckingen Seite
+  // Regex für die Artikel-Bloecke der Bad Säckingen Seite
   // Typische Struktur: <h2>Titel</h2> ... <span class="tag">Aktuelles</span> ... Datum ... Beschreibung
   const _articleRegex = /<div[^>]*class="[^"]*teaser[^"]*"[^>]*>([\s\S]*?)<\/div>\s*<\/div>\s*<\/div>/gi;
   const _titleRegex = /<h[23][^>]*>\s*([\s\S]*?)\s*<\/h[23]>/i;
@@ -190,7 +190,7 @@ export async function GET(request: Request) {
     // 1. Neuigkeiten-Seite abrufen
     const response = await fetch(NEWS_URL, {
       headers: {
-        "User-Agent": "quartierapp-newsbot/1.0 (Community-App Bad Saeckingen)",
+        "User-Agent": "quartierapp-newsbot/1.0 (Community-App Bad Säckingen)",
         "Accept": "text/html",
       },
       next: { revalidate: 0 },
@@ -219,7 +219,7 @@ export async function GET(request: Request) {
     // 3. Bestehende Titel aus DB laden (Duplikat-Check)
     const supabase = await createClient();
 
-    // Quartier-ID fuer Bad Saeckingen Pilot ermitteln
+    // Quartier-ID für Bad Säckingen Pilot ermitteln
     const { data: pilotQuarter } = await supabase
       .from("quarters")
       .select("id")
@@ -252,7 +252,7 @@ export async function GET(request: Request) {
       let summary = article.description;
       let relevance = estimateRelevance(article.title, article.description);
 
-      // Optional: Claude API fuer bessere Zusammenfassung
+      // Optional: Claude API für bessere Zusammenfassung
       if (apiKey && article.description.length > 30) {
         try {
           const aiResponse = await fetch("https://api.anthropic.com/v1/messages", {
@@ -268,7 +268,7 @@ export async function GET(request: Request) {
               messages: [
                 {
                   role: "user",
-                  content: `Du bist ein Redakteur fuer das Quartier Purkersdorfer-/Sanary-/Rebbergstrasse in Bad Saeckingen. Fasse diese Nachricht in max. 2 Saetzen zusammen. Bewerte Relevanz fuer Quartierbewohner von 0-10. Antworte nur in JSON.
+                  content: `Du bist ein Redakteur für das Quartier Purkersdorfer-/Sanary-/Rebbergstraße in Bad Säckingen. Fasse diese Nachricht in max. 2 Sätzen zusammen. Bewerte Relevanz für Quartierbewohner von 0-10. Antworte nur in JSON.
 
 Titel: ${article.title}
 Inhalt: ${article.description}
@@ -291,7 +291,7 @@ Format: {"summary": "...", "relevance_score": 0, "category": "infrastructure|eve
           }
         } catch {
           // Fallback: Ohne KI-Zusammenfassung weiterarbeiten
-          console.warn("Claude API nicht verfuegbar, nutze Fallback-Logik");
+          console.warn("Claude API nicht verfügbar, nutze Fallback-Logik");
         }
       }
 

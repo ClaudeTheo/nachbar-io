@@ -9,13 +9,13 @@ import { encryptFields, decryptFields, CARE_PROFILES_ENCRYPTED_FIELDS } from '@/
 import { checkCareConsent } from '@/lib/care/consent';
 import type { CareLevel, EscalationConfig, EmergencyContact } from '@/lib/care/types';
 
-// Gueltige Pflegestufen
+// Gültige Pflegestufen
 const VALID_CARE_LEVELS: CareLevel[] = ['none', '1', '2', '3', '4', '5'];
 
-// Gueltige Kontakt-Rollen
+// Gültige Kontakt-Rollen
 const VALID_CONTACT_ROLES = ['relative', 'care_service', 'neighbor', 'other'] as const;
 
-// Uhrzeit-Format pruefen (HH:MM)
+// Uhrzeit-Format prüfen (HH:MM)
 function isValidTime(time: string): boolean {
   return /^([01]\d|2[0-3]):[0-5]\d$/.test(time);
 }
@@ -53,11 +53,11 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: 'Nicht authentifiziert' }, { status: 401 });
   }
 
-  // Optional: Senior-ID per Query-Param (fuer Helfer-Zugriff)
+  // Optional: Senior-ID per Query-Param (für Helfer-Zugriff)
   const { searchParams } = request.nextUrl;
   const seniorId = searchParams.get('senior_id') ?? user.id;
 
-  // Zugriffspruefung bei Fremd-Zugriff
+  // Zugriffsprüfung bei Fremd-Zugriff
   if (seniorId !== user.id) {
     const role = await requireCareAccess(supabase, seniorId);
     if (!role) {
@@ -76,7 +76,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: 'Profil konnte nicht geladen werden' }, { status: 500 });
   }
 
-  // Gesundheitsfelder entschluesseln (Art. 9 DSGVO)
+  // Gesundheitsfelder entschlüsseln (Art. 9 DSGVO)
   const decryptedData = data ? decryptFields(data, CARE_PROFILES_ENCRYPTED_FIELDS) : data;
 
   return NextResponse.json(decryptedData);
@@ -102,7 +102,7 @@ export async function PUT(request: NextRequest) {
   try {
     body = await request.json();
   } catch {
-    return NextResponse.json({ error: 'Ungueltiges Anfrage-Format' }, { status: 400 });
+    return NextResponse.json({ error: 'Ungültiges Anfrage-Format' }, { status: 400 });
   }
 
   const {
@@ -120,7 +120,7 @@ export async function PUT(request: NextRequest) {
   if (care_level !== undefined) {
     if (!VALID_CARE_LEVELS.includes(care_level as CareLevel)) {
       return NextResponse.json(
-        { error: `Ungueltige Pflegestufe: "${care_level}". Erlaubt: ${VALID_CARE_LEVELS.join(', ')}` },
+        { error: `Ungültige Pflegestufe: "${care_level}". Erlaubt: ${VALID_CARE_LEVELS.join(', ')}` },
         { status: 400 }
       );
     }
@@ -133,7 +133,7 @@ export async function PUT(request: NextRequest) {
     }
     for (const time of checkin_times) {
       if (typeof time !== 'string' || !isValidTime(time)) {
-        return NextResponse.json({ error: `Ungueltige Uhrzeit: "${time}". Format: HH:MM` }, { status: 400 });
+        return NextResponse.json({ error: `Ungültige Uhrzeit: "${time}". Format: HH:MM` }, { status: 400 });
       }
     }
   }
@@ -146,7 +146,7 @@ export async function PUT(request: NextRequest) {
     for (let i = 0; i < emergency_contacts.length; i++) {
       if (!isValidContact(emergency_contacts[i])) {
         return NextResponse.json(
-          { error: `Ungueltiger Notfallkontakt an Position ${i + 1}. Erforderlich: name, phone_encrypted, role, priority, relationship` },
+          { error: `Ungültiger Notfallkontakt an Position ${i + 1}. Erforderlich: name, phone_encrypted, role, priority, relationship` },
           { status: 400 }
         );
       }
@@ -157,7 +157,7 @@ export async function PUT(request: NextRequest) {
   if (escalation_config !== undefined) {
     if (!isValidEscalationConfig(escalation_config)) {
       return NextResponse.json(
-        { error: 'Ungueltige Eskalationskonfiguration. Erforderlich: escalate_to_level_2/3/4_after_minutes (positive Zahlen)' },
+        { error: 'Ungültige Eskalationskonfiguration. Erforderlich: escalate_to_level_2/3/4_after_minutes (positive Zahlen)' },
         { status: 400 }
       );
     }
@@ -175,7 +175,7 @@ export async function PUT(request: NextRequest) {
   if (checkin_enabled !== undefined) updateData.checkin_enabled = !!checkin_enabled;
   if (escalation_config !== undefined) updateData.escalation_config = escalation_config;
 
-  // Gesundheitsfelder verschluesseln (Art. 9 DSGVO)
+  // Gesundheitsfelder verschlüsseln (Art. 9 DSGVO)
   const encryptedData = encryptFields(updateData, CARE_PROFILES_ENCRYPTED_FIELDS);
 
   // Upsert: Erstellen falls nicht vorhanden, sonst aktualisieren
@@ -190,7 +190,7 @@ export async function PUT(request: NextRequest) {
     return NextResponse.json({ error: 'Profil konnte nicht gespeichert werden' }, { status: 500 });
   }
 
-  // Audit-Log: Profil-Aenderung protokollieren
+  // Audit-Log: Profil-Änderung protokollieren
   try {
     await writeAuditLog(supabase, {
       seniorId: user.id,
@@ -206,6 +206,6 @@ export async function PUT(request: NextRequest) {
     console.error('[care/profile] Audit-Log fehlgeschlagen:', auditError);
   }
 
-  // Entschluesselt zurueckgeben
+  // Entschlüsselt zurückgeben
   return NextResponse.json(decryptFields(profile, CARE_PROFILES_ENCRYPTED_FIELDS));
 }

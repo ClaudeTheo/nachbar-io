@@ -1,6 +1,6 @@
 // app/api/care/checkin/route.test.ts
-// Nachbar.io — API-Route-Tests fuer Check-in-Endpunkt (POST + GET)
-// Testet: Auth, Validierung, Verschluesselung, Auto-SOS, Angehoerigen-Benachrichtigung
+// Nachbar.io — API-Route-Tests für Check-in-Endpunkt (POST + GET)
+// Testet: Auth, Validierung, Verschlüsselung, Auto-SOS, Angehörigen-Benachrichtigung
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { NextRequest } from 'next/server';
@@ -76,7 +76,7 @@ describe('POST /api/care/checkin', () => {
   });
 
   describe('Authentifizierung', () => {
-    it('gibt 401 zurueck ohne authentifizierten User', async () => {
+    it('gibt 401 zurück ohne authentifizierten User', async () => {
       mockSupabase.setUser(null);
 
       const response = await POST(createPostRequest({ status: 'ok' }));
@@ -88,7 +88,7 @@ describe('POST /api/care/checkin', () => {
   });
 
   describe('Validierung', () => {
-    it('gibt 400 zurueck ohne Status', async () => {
+    it('gibt 400 zurück ohne Status', async () => {
       const response = await POST(createPostRequest({}));
       expect(response.status).toBe(400);
 
@@ -96,7 +96,7 @@ describe('POST /api/care/checkin', () => {
       expect(body.error).toContain('Status');
     });
 
-    it('gibt 400 zurueck bei ungueltigem Status', async () => {
+    it('gibt 400 zurück bei ungültigem Status', async () => {
       const response = await POST(createPostRequest({ status: 'invalid_status' }));
       expect(response.status).toBe(400);
 
@@ -104,13 +104,13 @@ describe('POST /api/care/checkin', () => {
       expect(body.error).toContain('Ungültiger Status');
     });
 
-    it('akzeptiert gueltige Status-Werte: ok, not_well, need_help', async () => {
+    it('akzeptiert gültige Status-Werte: ok, not_well, need_help', async () => {
       for (const status of ['ok', 'not_well', 'need_help']) {
         vi.clearAllMocks();
         mockSupabase.reset();
         mockSupabase.setUser(TEST_USER);
 
-        // Insert-Response fuer neuen Check-in
+        // Insert-Response für neuen Check-in
         mockSupabase.addResponse('care_checkins', {
           data: { id: `ci-${status}`, status, note: null, senior_id: TEST_USER.id },
           error: null,
@@ -130,7 +130,7 @@ describe('POST /api/care/checkin', () => {
       }
     });
 
-    it('gibt 400 zurueck bei ungueltigem JSON', async () => {
+    it('gibt 400 zurück bei ungültigem JSON', async () => {
       const request = new NextRequest('http://localhost:3000/api/care/checkin', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -142,7 +142,7 @@ describe('POST /api/care/checkin', () => {
   });
 
   describe('Erfolgreicher Check-in', () => {
-    it('erstellt neuen Check-in und gibt 201 zurueck', async () => {
+    it('erstellt neuen Check-in und gibt 201 zurück', async () => {
       const checkinData = {
         id: 'ci-new-1',
         senior_id: TEST_USER.id,
@@ -163,7 +163,7 @@ describe('POST /api/care/checkin', () => {
       expect(body.status).toBe('ok');
     });
 
-    it('verschluesselt note-Feld (DSGVO Art. 9)', async () => {
+    it('verschlüsselt note-Feld (DSGVO Art. 9)', async () => {
       const insertedNotes: unknown[] = [];
       mockSupabase.fromFn.mockImplementation((table: string) => {
         const createChain = (): unknown => new Proxy({}, {
@@ -225,8 +225,8 @@ describe('POST /api/care/checkin', () => {
     });
   });
 
-  describe('Angehoerigen-Benachrichtigung bei not_well', () => {
-    it('benachrichtigt Angehoerige wenn Status not_well', async () => {
+  describe('Angehörigen-Benachrichtigung bei not_well', () => {
+    it('benachrichtigt Angehörige wenn Status not_well', async () => {
       mockSupabase.addResponse('care_checkins', {
         data: { id: 'ci-notify', status: 'not_well', note: null, senior_id: TEST_USER.id },
         error: null,
@@ -271,7 +271,7 @@ describe('POST /api/care/checkin', () => {
 
       await POST(createPostRequest({ status: 'need_help' }));
 
-      // Pruefen dass from('care_sos_alerts') aufgerufen wurde (fuer den Auto-SOS-Insert)
+      // Prüfen dass from('care_sos_alerts') aufgerufen wurde (für den Auto-SOS-Insert)
       const sosCalls = mockSupabase.fromCalls.filter(c => c.table === 'care_sos_alerts');
       expect(sosCalls.length).toBeGreaterThan(0);
     });
@@ -290,7 +290,7 @@ describe('POST /api/care/checkin', () => {
   });
 
   describe('Fehlerbehandlung', () => {
-    it('gibt 500 zurueck bei DB-Insert-Fehler', async () => {
+    it('gibt 500 zurück bei DB-Insert-Fehler', async () => {
       mockSupabase.addResponse('care_checkins', {
         data: null,
         error: { message: 'Insert failed' },
@@ -304,7 +304,7 @@ describe('POST /api/care/checkin', () => {
 
 // --- GET Tests ---
 
-// Echt verschluesselter Wert fuer Mock-Daten
+// Echt verschlüsselter Wert für Mock-Daten
 const ENCRYPTED_CHECKIN_NOTE = encryptField('Fühle mich nicht gut')!;
 
 describe('GET /api/care/checkin', () => {
@@ -314,14 +314,14 @@ describe('GET /api/care/checkin', () => {
     mockSupabase.setUser(TEST_USER);
   });
 
-  it('gibt 401 zurueck ohne authentifizierten User', async () => {
+  it('gibt 401 zurück ohne authentifizierten User', async () => {
     mockSupabase.setUser(null);
 
     const response = await GET(createGetRequest());
     expect(response.status).toBe(401);
   });
 
-  it('gibt Check-in-Historie zurueck und entschluesselt Notizen', async () => {
+  it('gibt Check-in-Historie zurück und entschlüsselt Notizen', async () => {
     mockSupabase.addResponse('care_checkins', {
       data: [
         { id: 'ci-1', status: 'ok', note: null },
@@ -335,11 +335,11 @@ describe('GET /api/care/checkin', () => {
 
     const body = await response.json();
     expect(body).toHaveLength(2);
-    // Verschluesseltes Feld wurde entschluesselt
+    // Verschlüsseltes Feld wurde entschlüsselt
     expect(body[1].note).toBe('Fühle mich nicht gut');
   });
 
-  it('gibt 500 zurueck bei DB-Query-Fehler', async () => {
+  it('gibt 500 zurück bei DB-Query-Fehler', async () => {
     mockSupabase.addResponse('care_checkins', {
       data: null,
       error: { message: 'Query timeout' },

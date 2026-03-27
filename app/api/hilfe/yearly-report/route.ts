@@ -86,7 +86,7 @@ export async function GET(request: NextRequest) {
         { status: 404 },
       );
 
-    // Feature-Gate pruefen
+    // Feature-Gate prüfen
     if (
       !canAccessBilling(helper.subscription_status, helper.trial_receipt_used)
     ) {
@@ -109,7 +109,7 @@ export async function GET(request: NextRequest) {
 
     if (!sessions || sessions.length === 0) {
       return NextResponse.json(
-        { error: "Keine Einsaetze in diesem Jahr" },
+        { error: "Keine Einsätze in diesem Jahr" },
         { status: 404 },
       );
     }
@@ -181,7 +181,7 @@ export async function GET(request: NextRequest) {
     const stateRules = getStateRules(helper.federal_state);
     const taxNote =
       stateRules?.tax_note ||
-      "Bitte informieren Sie sich bei Ihrem Finanzamt ueber die steuerliche Behandlung.";
+      "Bitte informieren Sie sich bei Ihrem Finanzamt über die steuerliche Behandlung.";
 
     // Helfer-Daten laden
     const {
@@ -252,7 +252,7 @@ export async function GET(request: NextRequest) {
 
   if (!sessions || sessions.length === 0) {
     return NextResponse.json(
-      { error: "Keine Einsaetze in diesem Jahr" },
+      { error: "Keine Einsätze in diesem Jahr" },
       { status: 404 },
     );
   }
@@ -265,7 +265,7 @@ export async function GET(request: NextRequest) {
     helperMap.get(helperId)!.push(s);
   }
 
-  // Helfer-IDs → user_ids aufloesen (helper_id ist neighborhood_helpers.id, nicht user_id)
+  // Helfer-IDs → user_ids auflösen (helper_id ist neighborhood_helpers.id, nicht user_id)
   const helperIds = Array.from(helperMap.keys());
   const { data: helperProfiles } = await supabase
     .from("neighborhood_helpers")

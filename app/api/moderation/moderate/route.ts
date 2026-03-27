@@ -18,7 +18,7 @@ export async function POST(request: NextRequest) {
   try {
     body = await request.json();
   } catch {
-    return NextResponse.json({ error: 'Ungueltiges Anfrage-Format' }, { status: 400 });
+    return NextResponse.json({ error: 'Ungültiges Anfrage-Format' }, { status: 400 });
   }
 
   const { text, channel, contentId, contentType } = body;
@@ -32,10 +32,10 @@ export async function POST(request: NextRequest) {
   }
 
   if (!VALID_CHANNELS.includes(channel)) {
-    return NextResponse.json({ error: 'Ungueltiger Kanal' }, { status: 400 });
+    return NextResponse.json({ error: 'Ungültiger Kanal' }, { status: 400 });
   }
 
-  // KI-Moderation ausfuehren
+  // KI-Moderation ausführen
   const result = await moderateContent({
     text,
     channel,
@@ -44,7 +44,7 @@ export async function POST(request: NextRequest) {
     contentType: contentType || channel,
   });
 
-  // Bei Auffaelligkeiten und vorhandenem contentId → in Moderation-Queue einfuegen
+  // Bei Auffälligkeiten und vorhandenem contentId → in Moderation-Queue einfügen
   if (result.score !== 'green' && contentId) {
     const { error: queueError } = await supabase.from('moderation_queue').insert({
       content_type: contentType || channel,

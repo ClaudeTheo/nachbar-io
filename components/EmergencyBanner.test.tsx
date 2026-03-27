@@ -1,6 +1,6 @@
-// Nachbar.io — Tests fuer EmergencyBanner (KRITISCHE KOMPONENTE, FMEA FM-NB-02)
+// Nachbar.io — Tests für EmergencyBanner (KRITISCHE KOMPONENTE, FMEA FM-NB-02)
 // Stellt sicher, dass 112/110 IMMER korrekt angezeigt werden
-// und Banner NICHT ohne explizite Bestaetigung geschlossen werden kann
+// und Banner NICHT ohne explizite Bestätigung geschlossen werden kann
 import { describe, it, expect, vi, afterEach } from "vitest";
 import { render, screen, fireEvent, cleanup } from "@testing-library/react";
 import { EmergencyBanner } from "./EmergencyBanner";
@@ -15,7 +15,7 @@ afterEach(() => {
 });
 
 describe("EmergencyBanner", () => {
-  it("zeigt 'Wichtiger Hinweis' Ueberschrift", () => {
+  it("zeigt 'Wichtiger Hinweis' Überschrift", () => {
     render(<EmergencyBanner onAcknowledge={vi.fn()} />);
     expect(screen.getByText("Wichtiger Hinweis")).toBeInTheDocument();
   });
@@ -39,7 +39,7 @@ describe("EmergencyBanner", () => {
     expect(dialog).toHaveAttribute("aria-modal", "true");
   });
 
-  it("hat aria-labelledby fuer die Ueberschrift", () => {
+  it("hat aria-labelledby für die Überschrift", () => {
     const { container } = render(<EmergencyBanner onAcknowledge={vi.fn()} />);
     const dialog = container.querySelector("[role='alertdialog']");
     expect(dialog).toHaveAttribute("aria-labelledby", "emergency-title");
@@ -62,7 +62,7 @@ describe("EmergencyBanner", () => {
     const onAcknowledge = vi.fn();
     render(<EmergencyBanner onAcknowledge={onAcknowledge} />);
 
-    const button = screen.getByText(/Kein Notruf noetig/i);
+    const button = screen.getByText(/Kein Notruf nötig/i);
     fireEvent.click(button);
 
     expect(onAcknowledge).toHaveBeenCalledTimes(1);

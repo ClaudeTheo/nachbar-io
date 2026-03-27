@@ -12,7 +12,7 @@ const STORAGE_KEY = 'care_disclaimer_accepted';
 export function CareDisclaimer({ children }: { children: React.ReactNode }) {
   const [accepted, setAccepted] = useState(true); // Default true um Flash zu vermeiden
 
-  /* eslint-disable react-hooks/set-state-in-effect -- localStorage pruefen bei Mount */
+  /* eslint-disable react-hooks/set-state-in-effect -- localStorage prüfen bei Mount */
   useEffect(() => {
     const stored = localStorage.getItem(STORAGE_KEY);
     if (stored !== 'true') {

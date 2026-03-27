@@ -44,7 +44,7 @@ export async function POST(request: NextRequest) {
     })
     .eq('id', consent.id);
 
-  // Youth-Profil zurueckstufen
+  // Youth-Profil zurückstufen
   const { data: profile } = await supabase
     .from('youth_profiles')
     .select('age_group')

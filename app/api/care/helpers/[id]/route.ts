@@ -42,7 +42,7 @@ export async function PATCH(
 
   let body: Record<string, unknown>;
   try { body = await request.json(); } catch {
-    return NextResponse.json({ error: 'Ungueltiges Anfrage-Format' }, { status: 400 });
+    return NextResponse.json({ error: 'Ungültiges Anfrage-Format' }, { status: 400 });
   }
 
   const allowedFields = ['verification_status', 'assigned_seniors', 'skills', 'availability', 'role'];
@@ -51,7 +51,7 @@ export async function PATCH(
     if (key in body) updates[key] = body[key];
   }
 
-  // Helfer laden um Ownership zu pruefen
+  // Helfer laden um Ownership zu prüfen
   const { data: existingHelper } = await supabase
     .from('care_helpers')
     .select('user_id')
@@ -62,7 +62,7 @@ export async function PATCH(
     return NextResponse.json({ error: 'Helfer nicht gefunden' }, { status: 404 });
   }
 
-  // Admin-Status pruefen
+  // Admin-Status prüfen
   const { data: adminCheck } = await supabase
     .from('users')
     .select('is_admin')
@@ -70,14 +70,14 @@ export async function PATCH(
     .maybeSingle();
   const isAdmin = adminCheck?.is_admin === true;
 
-  // SICHERHEIT: Nur eigenes Profil oder Admin darf aendern
+  // SICHERHEIT: Nur eigenes Profil oder Admin darf ändern
   if (existingHelper.user_id !== user.id && !isAdmin) {
     return NextResponse.json({ error: 'Kein Zugriff auf dieses Helfer-Profil' }, { status: 403 });
   }
 
-  // Sicherheitskritische Felder (verification_status, role, assigned_seniors) nur fuer Admins
+  // Sicherheitskritische Felder (verification_status, role, assigned_seniors) nur für Admins
   if ((updates.verification_status || updates.role || updates.assigned_seniors) && !isAdmin) {
-    return NextResponse.json({ error: 'Nur Admins koennen Verifizierung, Rollen oder Senior-Zuordnungen aendern' }, { status: 403 });
+    return NextResponse.json({ error: 'Nur Admins können Verifizierung, Rollen oder Senior-Zuordnungen ändern' }, { status: 403 });
   }
 
   if (updates.verification_status === 'verified') {
@@ -100,7 +100,7 @@ export async function PATCH(
       userId: helper.user_id,
       type: 'care_helper_verified',
       title: 'Helfer-Verifizierung',
-      body: 'Sie wurden als Helfer verifiziert. Sie koennen jetzt auf SOS-Alarme reagieren.',
+      body: 'Sie wurden als Helfer verifiziert. Sie können jetzt auf SOS-Alarme reagieren.',
       url: '/care',
       channels: ['push', 'in_app'],
     }).catch(() => {});

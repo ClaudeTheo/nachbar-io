@@ -20,7 +20,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Challenge-ID fehlt' }, { status: 400 });
     }
 
-    // Challenge aus DB lesen statt Cookie (iOS-Kompatibilitaet)
+    // Challenge aus DB lesen statt Cookie (iOS-Kompatibilität)
     const admin = getAdminSupabase();
     const { data: challengeRow, error: challengeError } = await admin
       .from('passkey_challenges')
@@ -40,7 +40,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Challenge abgelaufen. Bitte erneut versuchen.' }, { status: 400 });
     }
 
-    // Challenge aufraeumen (einmalig verwendbar)
+    // Challenge aufräumen (einmalig verwendbar)
     await admin.from('passkey_challenges').delete().eq('id', challengeId);
 
     const { data: credential, error: credError } = await admin
@@ -96,12 +96,12 @@ export async function POST(req: NextRequest) {
       .single();
 
     if (!profile?.passkey_secret) {
-      return NextResponse.json({ error: 'Passkey-Konfiguration unvollstaendig' }, { status: 500 });
+      return NextResponse.json({ error: 'Passkey-Konfiguration unvollständig' }, { status: 500 });
     }
 
     const secret = decryptField(profile.passkey_secret);
     if (!secret) {
-      return NextResponse.json({ error: 'Entschluesselung fehlgeschlagen' }, { status: 500 });
+      return NextResponse.json({ error: 'Entschlüsselung fehlgeschlagen' }, { status: 500 });
     }
 
     console.info('[Passkey] login-complete: Decrypt OK');
@@ -116,7 +116,7 @@ export async function POST(req: NextRequest) {
       password: secret,
     });
 
-    // Secret-Recovery: Wenn Passwort nicht passt (z.B. manuell geaendert),
+    // Secret-Recovery: Wenn Passwort nicht passt (z.B. manuell geändert),
     // neues Secret generieren und als Passwort setzen
     if (signInResult.error) {
       console.warn('[Passkey] signInWithPassword fehlgeschlagen, versuche Secret-Recovery:', signInResult.error.message);
@@ -132,7 +132,7 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ error: 'Session-Erzeugung fehlgeschlagen' }, { status: 500 });
       }
 
-      // Neues Secret verschluesselt speichern
+      // Neues Secret verschlüsselt speichern
       await admin
         .from('users')
         .update({ passkey_secret: encryptField(newSecret) })
@@ -149,7 +149,7 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ error: 'Session-Erzeugung fehlgeschlagen' }, { status: 500 });
       }
 
-      console.info('[Passkey] Secret-Recovery erfolgreich fuer User:', credential.user_id);
+      console.info('[Passkey] Secret-Recovery erfolgreich für User:', credential.user_id);
     }
 
     console.info('[Passkey] login-complete: Session erzeugt OK');

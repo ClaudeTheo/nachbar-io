@@ -1,5 +1,5 @@
 // app/b2b/page.tsx
-// Nachbar.io — B2B-Landingpage fuer Organisationen und Aerzte
+// Nachbar.io — B2B-Landingpage für Organisationen und Ärzte
 import Link from 'next/link';
 import {
   Heart, Shield, BarChart3, Users, Phone,
@@ -14,11 +14,11 @@ function HeroSection() {
         <h1 className="text-3xl font-bold leading-tight sm:text-4xl lg:text-5xl">
           Digitale Quartiersvernetzung
           <br />
-          <span className="text-[#4CAF87]">fuer Ihre Organisation</span>
+          <span className="text-[#4CAF87]">für Ihre Organisation</span>
         </h1>
         <p className="mt-6 max-w-2xl text-lg text-gray-300">
-          QuartierApp verbindet Bewohner, Angehoerige und Organisationen in einem sicheren,
-          DSGVO-konformen System. Heartbeat-Monitoring, Einsamkeits-Praevention und
+          QuartierApp verbindet Bewohner, Angehörige und Organisationen in einem sicheren,
+          DSGVO-konformen System. Heartbeat-Monitoring, Einsamkeits-Prävention und
           anonymisierte Quartier-Statistiken — alles in einer Plattform.
         </p>
         <div className="mt-8 flex flex-wrap gap-4">
@@ -49,32 +49,32 @@ const BENEFITS = [
   {
     icon: <Heart className="h-6 w-6" />,
     title: 'Heartbeat-Monitoring',
-    description: 'Passive Lebenszeichen durch App-Nutzung. Automatische Eskalation bei Inaktivitaet — von Erinnerung bis Notfall-Alert.',
+    description: 'Passive Lebenszeichen durch App-Nutzung. Automatische Eskalation bei Inaktivität — von Erinnerung bis Notfall-Alert.',
   },
   {
     icon: <Shield className="h-6 w-6" />,
-    title: 'Einsamkeits-Praevention',
-    description: 'Fruehwarnsystem fuer soziale Isolation. Anonymisierte Inaktivitaets-Daten helfen, gefaehrdete Bewohner fruehzeitig zu erkennen.',
+    title: 'Einsamkeits-Prävention',
+    description: 'Frühwarnsystem für soziale Isolation. Anonymisierte Inaktivitäts-Daten helfen, gefährdete Bewohner frühzeitig zu erkennen.',
   },
   {
     icon: <BarChart3 className="h-6 w-6" />,
     title: 'Anonymisierte Statistiken',
-    description: 'Quartier-Dashboard mit aggregierten KPIs: Aktivitaet, Heartbeat-Abdeckung, Check-in-Frequenz. CSV/XLSX-Export inklusive.',
+    description: 'Quartier-Dashboard mit aggregierten KPIs: Aktivität, Heartbeat-Abdeckung, Check-in-Frequenz. CSV/XLSX-Export inklusive.',
   },
   {
     icon: <Users className="h-6 w-6" />,
     title: 'Content-Moderation',
-    description: 'Beitraege moderieren, Nutzer stummschalten oder sperren. Vollstaendiger Audit-Log fuer alle administrativen Aktionen.',
+    description: 'Beiträge moderieren, Nutzer stummschalten oder sperren. Vollständiger Audit-Log für alle administrativen Aktionen.',
   },
   {
     icon: <Phone className="h-6 w-6" />,
     title: 'Video-Sprechstunde',
-    description: 'KBV-zertifizierte Telemedizin fuer Aerzte im Quartier. Online-Terminbuchung, digitale Anamneseboegen, GDT-Schnittstelle.',
+    description: 'KBV-zertifizierte Telemedizin für Ärzte im Quartier. Online-Terminbuchung, digitale Anamnesebögen, GDT-Schnittstelle.',
   },
   {
     icon: <CircleCheck className="h-6 w-6" />,
     title: 'DSGVO-konform',
-    description: 'Hosting in Frankfurt (EU). AES-256-Verschluesselung fuer sensible Daten. Row-Level Security auf allen Tabellen. AVV verfuegbar.',
+    description: 'Hosting in Frankfurt (EU). AES-256-Verschlüsselung für sensible Daten. Row-Level Security auf allen Tabellen. AVV verfügbar.',
   },
 ];
 
@@ -82,7 +82,7 @@ function BenefitsSection() {
   return (
     <section className="mx-auto max-w-5xl px-6 py-16 sm:py-20">
       <h2 className="text-center text-2xl font-bold text-[#2D3142] sm:text-3xl">
-        Warum Organisationen QuartierApp waehlen
+        Warum Organisationen QuartierApp wählen
       </h2>
       <div className="mt-12 grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
         {BENEFITS.map((b) => (
@@ -121,7 +121,7 @@ const PLANS = [
     icon: <Stethoscope className="h-5 w-5" />,
     price: '89',
     unit: '/ Monat + 5 / Termin',
-    target: 'Aerzte, Telemedizin-Anbieter',
+    target: 'Ärzte, Telemedizin-Anbieter',
     features: [
       'Online-Terminbuchung (Self-Service)',
       'KBV-zertifizierte Video-Sprechstunde',
@@ -142,7 +142,7 @@ function PricingSection() {
           Transparente Preise
         </h2>
         <p className="mx-auto mt-4 max-w-xl text-center text-sm text-gray-500">
-          Alle Preise netto zzgl. USt. Vertragslaufzeit: monatlich kuendbar.
+          Alle Preise netto zzgl. USt. Vertragslaufzeit: monatlich kündbar.
           Voraussetzung: Handelsregister-/Vereinsregister-Nachweis + AVV.
         </p>
         <div className="mt-12 grid gap-8 sm:grid-cols-2">

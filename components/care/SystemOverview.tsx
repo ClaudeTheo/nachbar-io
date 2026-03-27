@@ -1,5 +1,5 @@
 // components/care/SystemOverview.tsx
-// Nachbar.io — System-Uebersicht fuer Admin-Dashboard
+// Nachbar.io — System-Übersicht für Admin-Dashboard
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -101,7 +101,7 @@ export function SystemOverview() {
         <div className="rounded-xl border bg-card p-4">
           <div className="rounded-lg bg-gray-50 p-2 w-fit mb-2"><Activity className="h-4 w-4 text-muted-foreground" /></div>
           <p className="text-lg font-bold text-[#2D3142]">{data.system.auditEntries}</p>
-          <p className="text-xs text-muted-foreground">Audit-Eintraege</p>
+          <p className="text-xs text-muted-foreground">Audit-Einträge</p>
         </div>
         <div className="rounded-xl border bg-card p-4">
           <p className="text-lg font-bold text-[#2D3142]">{data.system.documentsGenerated}</p>

@@ -11,7 +11,7 @@ interface BlockButtonProps {
   userId: string;
   /** Aktueller Block-Status (null = nicht blockiert) */
   currentBlockLevel?: BlockLevel | null;
-  /** Callback nach Statusaenderung */
+  /** Callback nach Statusänderung */
   onBlockChange?: (level: BlockLevel | null) => void;
   /** Kompakte Darstellung (nur Icon) */
   compact?: boolean;

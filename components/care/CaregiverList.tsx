@@ -1,7 +1,7 @@
 'use client';
 
 // components/care/CaregiverList.tsx
-// Nachbar.io — Liste der Angehoerigen mit Heartbeat-Toggle und Entfernen-Button
+// Nachbar.io — Liste der Angehörigen mit Heartbeat-Toggle und Entfernen-Button
 
 import { UserMinus, Eye, EyeOff } from 'lucide-react';
 import { CAREGIVER_RELATIONSHIP_TYPES } from '@/lib/care/constants';
@@ -37,9 +37,9 @@ export function CaregiverList({
   if (activeLinks.length === 0 && revokedLinks.length === 0) {
     return (
       <div className="rounded-xl border border-gray-200 p-6 text-center text-muted-foreground">
-        <p>Sie haben noch keine Angehoerigen verknuepft.</p>
+        <p>Sie haben noch keine Angehörigen verknüpft.</p>
         <p className="text-sm mt-1">
-          Erstellen Sie einen Einladungs-Code und teilen Sie ihn mit einem Angehoerigen.
+          Erstellen Sie einen Einladungs-Code und teilen Sie ihn mit einem Angehörigen.
         </p>
       </div>
     );
@@ -47,11 +47,11 @@ export function CaregiverList({
 
   return (
     <div className="space-y-4">
-      {/* Aktive Verknuepfungen */}
+      {/* Aktive Verknüpfungen */}
       {activeLinks.length > 0 && (
         <div>
           <h2 className="text-sm font-medium text-muted-foreground mb-2">
-            Aktive Verknuepfungen ({activeLinks.length})
+            Aktive Verknüpfungen ({activeLinks.length})
           </h2>
           <div className="space-y-3">
             {activeLinks.map((link) => {
@@ -80,7 +80,7 @@ export function CaregiverList({
                       ) : (
                         <EyeOff className="h-4 w-4 text-muted-foreground" />
                       )}
-                      <span>Aktivitaetsstatus sichtbar</span>
+                      <span>Aktivitätsstatus sichtbar</span>
                     </div>
                     <button
                       onClick={() =>
@@ -102,7 +102,7 @@ export function CaregiverList({
                     </button>
                   </div>
 
-                  {/* Datenschutz-Erklaerung */}
+                  {/* Datenschutz-Erklärung */}
                   {link.heartbeat_visible && (
                     <p className="text-xs text-muted-foreground bg-gray-50 rounded-lg p-2">
                       {name} sieht, WANN Sie die App nutzen, aber NICHT was Sie tun.
@@ -125,14 +125,14 @@ export function CaregiverList({
         </div>
       )}
 
-      {/* Widerrufene Verknuepfungen (eingeklappt) */}
+      {/* Widerrufene Verknüpfungen (eingeklappt) */}
       {revokedLinks.length > 0 && (
         <details className="rounded-xl border border-gray-200">
           <summary
             className="px-4 py-3 cursor-pointer text-sm text-muted-foreground hover:text-[#2D3142] transition-colors select-none"
             style={{ minHeight: '44px' }}
           >
-            Fruehere Verknuepfungen ({revokedLinks.length})
+            Frühere Verknüpfungen ({revokedLinks.length})
           </summary>
           <div className="px-4 pb-4 space-y-2">
             {revokedLinks.map((link) => {

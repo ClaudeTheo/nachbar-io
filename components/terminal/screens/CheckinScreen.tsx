@@ -5,9 +5,9 @@ import { Smile, Meh, Frown, CircleCheck, ArrowLeft } from "lucide-react";
 import { useTerminal } from "@/lib/terminal/TerminalContext";
 
 /**
- * Check-in Screen: Stimmungsabfrage fuer Senioren-Terminal.
+ * Check-in Screen: Stimmungsabfrage für Senioren-Terminal.
  * 3 grosse Smiley-Buttons (Gut / Geht so / Schlecht).
- * State-Machine: idle -> sending -> done (mit Auto-Rueckkehr nach 5s).
+ * State-Machine: idle -> sending -> done (mit Auto-Rückkehr nach 5s).
  */
 
 type CheckinState = "idle" | "sending" | "done";
@@ -16,7 +16,7 @@ export default function CheckinScreen() {
   const { sendCheckin, setActiveScreen } = useTerminal();
   const [state, setState] = useState<CheckinState>("idle");
 
-  // Nach erfolgreichem Check-in: 5 Sekunden warten, dann zurueck zur Startseite
+  // Nach erfolgreichem Check-in: 5 Sekunden warten, dann zurück zur Startseite
   useEffect(() => {
     if (state !== "done") return;
 
@@ -36,7 +36,7 @@ export default function CheckinScreen() {
       await sendCheckin();
       setState("done");
     } catch {
-      // Bei Fehler zurueck auf idle, damit erneut geklickt werden kann
+      // Bei Fehler zurück auf idle, damit erneut geklickt werden kann
       setState("idle");
     }
   }, [state, sendCheckin]);
@@ -56,7 +56,7 @@ export default function CheckinScreen() {
           onClick={() => setActiveScreen("home")}
           className="mt-4 rounded-xl bg-quartier-green px-10 py-5 text-[28px] font-bold text-white shadow-lg transition-transform active:scale-95"
         >
-          Zurueck zur Startseite
+          Zurück zur Startseite
         </button>
       </div>
     );
@@ -65,11 +65,11 @@ export default function CheckinScreen() {
   // Haupt-Ansicht: Stimmungsabfrage
   return (
     <div className="flex flex-1 flex-col items-center justify-center gap-12 p-8 relative">
-      {/* Zurueck-Button oben links */}
+      {/* Zurück-Button oben links */}
       <button
         onClick={() => setActiveScreen("home")}
         className="absolute top-0 left-0 flex h-[70px] w-[70px] items-center justify-center rounded-xl text-anthrazit/70 transition-colors active:bg-anthrazit/10"
-        aria-label="Zurueck zur Startseite"
+        aria-label="Zurück zur Startseite"
       >
         <ArrowLeft className="h-10 w-10" />
       </button>
@@ -79,7 +79,7 @@ export default function CheckinScreen() {
       </h1>
 
       <div className="flex flex-wrap items-center justify-center gap-8">
-        {/* Gut — gruener Smiley */}
+        {/* Gut — grüner Smiley */}
         <button
           onClick={handleCheckin}
           disabled={state === "sending"}

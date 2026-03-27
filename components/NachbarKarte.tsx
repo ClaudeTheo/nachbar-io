@@ -9,7 +9,7 @@ interface NachbarKarteProps {
   quarterId?: string;
 }
 
-// Router: Leaflet fuer Geo-Quartiere (Laufenburg etc.), SVG fuer Legacy (Bad Saeckingen)
+// Router: Leaflet für Geo-Quartiere (Laufenburg etc.), SVG für Legacy (Bad Säckingen)
 export function NachbarKarte({ quarterId }: NachbarKarteProps) {
   const { currentQuarter } = useQuarter();
   const mapConfig = currentQuarter?.map_config;

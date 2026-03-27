@@ -1,5 +1,5 @@
 // components/care/MedicationCard.test.tsx
-// Nachbar.io — Tests fuer Medikamenten-Karte (Medikamentensicherheit)
+// Nachbar.io — Tests für Medikamenten-Karte (Medikamentensicherheit)
 
 import { describe, it, expect, vi, afterEach } from 'vitest';
 import { render, screen, fireEvent, cleanup } from '@testing-library/react';
@@ -48,27 +48,27 @@ describe('MedicationCard', () => {
   });
 
   describe('Status-Badges', () => {
-    it('zeigt "Ausstehend" fuer pending', () => {
+    it('zeigt "Ausstehend" für pending', () => {
       render(<MedicationCard medication={TEST_MEDICATION} scheduledAt={TEST_SCHEDULED_AT} status="pending" />);
       expect(screen.getByText('Ausstehend')).toBeInTheDocument();
     });
 
-    it('zeigt "Genommen" fuer taken', () => {
+    it('zeigt "Genommen" für taken', () => {
       render(<MedicationCard medication={TEST_MEDICATION} scheduledAt={TEST_SCHEDULED_AT} status="taken" />);
       expect(screen.getByText('Genommen')).toBeInTheDocument();
     });
 
-    it('zeigt "Uebersprungen" fuer skipped', () => {
+    it('zeigt "Übersprungen" für skipped', () => {
       render(<MedicationCard medication={TEST_MEDICATION} scheduledAt={TEST_SCHEDULED_AT} status="skipped" />);
-      expect(screen.getByText('Uebersprungen')).toBeInTheDocument();
+      expect(screen.getByText('Übersprungen')).toBeInTheDocument();
     });
 
-    it('zeigt "Verschoben" fuer snoozed', () => {
+    it('zeigt "Verschoben" für snoozed', () => {
       render(<MedicationCard medication={TEST_MEDICATION} scheduledAt={TEST_SCHEDULED_AT} status="snoozed" />);
       expect(screen.getByText('Verschoben')).toBeInTheDocument();
     });
 
-    it('zeigt "Verpasst" fuer missed', () => {
+    it('zeigt "Verpasst" für missed', () => {
       render(<MedicationCard medication={TEST_MEDICATION} scheduledAt={TEST_SCHEDULED_AT} status="missed" />);
       expect(screen.getByText('Verpasst')).toBeInTheDocument();
     });
@@ -79,8 +79,8 @@ describe('MedicationCard', () => {
       const onAction = vi.fn();
       render(<MedicationCard medication={TEST_MEDICATION} scheduledAt={TEST_SCHEDULED_AT} status="pending" onAction={onAction} />);
       expect(screen.getByText('Genommen')).toBeInTheDocument();
-      expect(screen.getByText('Spaeter')).toBeInTheDocument();
-      expect(screen.getByText('Uebersprungen')).toBeInTheDocument();
+      expect(screen.getByText('Später')).toBeInTheDocument();
+      expect(screen.getByText('Übersprungen')).toBeInTheDocument();
     });
 
     it('zeigt KEINE Aktions-Buttons bei taken-Status', () => {
@@ -101,17 +101,17 @@ describe('MedicationCard', () => {
       expect(onAction).toHaveBeenCalledWith('taken');
     });
 
-    it('ruft onAction("snoozed") bei Klick auf "Spaeter"', () => {
+    it('ruft onAction("snoozed") bei Klick auf "Später"', () => {
       const onAction = vi.fn();
       render(<MedicationCard medication={TEST_MEDICATION} scheduledAt={TEST_SCHEDULED_AT} status="pending" onAction={onAction} />);
-      fireEvent.click(screen.getByText('Spaeter'));
+      fireEvent.click(screen.getByText('Später'));
       expect(onAction).toHaveBeenCalledWith('snoozed');
     });
 
-    it('ruft onAction("skipped") bei Klick auf "Uebersprungen"', () => {
+    it('ruft onAction("skipped") bei Klick auf "Übersprungen"', () => {
       const onAction = vi.fn();
       render(<MedicationCard medication={TEST_MEDICATION} scheduledAt={TEST_SCHEDULED_AT} status="pending" onAction={onAction} />);
-      fireEvent.click(screen.getByText('Uebersprungen'));
+      fireEvent.click(screen.getByText('Übersprungen'));
       expect(onAction).toHaveBeenCalledWith('skipped');
     });
 

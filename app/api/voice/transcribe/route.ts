@@ -1,5 +1,5 @@
 // app/api/voice/transcribe/route.ts
-// Whisper Proxy — nimmt Audio, sendet an OpenAI, gibt Text zurueck
+// Whisper Proxy — nimmt Audio, sendet an OpenAI, gibt Text zurück
 
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAuth, unauthorizedResponse, errorResponse } from '@/lib/care/api-helpers';

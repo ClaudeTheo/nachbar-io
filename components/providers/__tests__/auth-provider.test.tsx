@@ -1,4 +1,4 @@
-// Unit-Tests fuer AuthProvider + useAuth Hook
+// Unit-Tests für AuthProvider + useAuth Hook
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { render, screen, waitFor, act, cleanup } from "@testing-library/react";
 import { AuthProvider, useAuth } from "../auth-provider";
@@ -112,7 +112,7 @@ describe("AuthProvider", () => {
     expect(mockUnsubscribe).toHaveBeenCalledOnce();
   });
 
-  it("aktualisiert den User bei Auth-State-Aenderung", async () => {
+  it("aktualisiert den User bei Auth-State-Änderung", async () => {
     let authCallback: (
       event: string,
       session: { user: { id: string; email: string } } | null,
@@ -173,7 +173,7 @@ describe("AuthProvider", () => {
     expect(screen.getByTestId("user").textContent).toBe("null");
   });
 
-  it("refreshUser laedt den User neu", async () => {
+  it("refreshUser lädt den User neu", async () => {
     // Throttle umgehen: Date.now() so manipulieren, dass der Abstand >30s ist
     const originalNow = Date.now;
     const nowValue = 1000000;
@@ -188,7 +188,7 @@ describe("AuthProvider", () => {
       expect(screen.getByTestId("user").textContent).toBe("null");
     });
 
-    // Jetzt gibt getUser einen User zurueck
+    // Jetzt gibt getUser einen User zurück
     mockGetUser.mockResolvedValueOnce({
       data: { user: { id: "789", email: "refresh@example.com" } },
       error: null,
@@ -197,7 +197,7 @@ describe("AuthProvider", () => {
     // Throttle-Sperre umgehen: Zeit 60s vorspulen
     Date.now = () => nowValue + 60_000;
 
-    // Refresh ausloesen
+    // Refresh auslösen
     await act(async () => {
       screen.getByRole("button", { name: "Refresh" }).click();
     });
@@ -217,7 +217,7 @@ describe("useAuth (ohne Provider)", () => {
     cleanup();
   });
 
-  it("gibt Standardwerte zurueck wenn kein Provider vorhanden", () => {
+  it("gibt Standardwerte zurück wenn kein Provider vorhanden", () => {
     // Ohne Provider: loading=true, user=null (Standardwerte aus createContext)
     const { getByTestId } = render(<AuthConsumer />);
     expect(getByTestId("loading").textContent).toBe("true");

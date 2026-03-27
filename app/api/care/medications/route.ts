@@ -24,7 +24,7 @@ export async function GET(request: NextRequest) {
   const seniorId = searchParams.get('senior_id') ?? user.id;
   const includeInactive = searchParams.get('include_inactive') === 'true';
 
-  // Zugriffspruefung: Nur Senior selbst, zugewiesene Helfer oder Admins
+  // Zugriffsprüfung: Nur Senior selbst, zugewiesene Helfer oder Admins
   if (seniorId !== user.id) {
     const role = await requireCareAccess(supabase, seniorId);
     if (!role) return NextResponse.json({ error: 'Kein Zugriff auf diesen Senior' }, { status: 403 });
@@ -46,7 +46,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: 'Medikamente konnten nicht geladen werden' }, { status: 500 });
   }
 
-  // Medikamenten-Felder entschluesseln (Art. 9 DSGVO)
+  // Medikamenten-Felder entschlüsseln (Art. 9 DSGVO)
   return NextResponse.json(decryptFieldsArray(data ?? [], CARE_MEDICATIONS_ENCRYPTED_FIELDS));
 }
 
@@ -70,7 +70,7 @@ export async function POST(request: NextRequest) {
 
   let body: { name?: string; dosage?: string; schedule?: MedicationSchedule; instructions?: string; senior_id?: string };
   try { body = await request.json(); } catch {
-    return NextResponse.json({ error: 'Ungueltiges Anfrage-Format' }, { status: 400 });
+    return NextResponse.json({ error: 'Ungültiges Anfrage-Format' }, { status: 400 });
   }
 
   const { name, dosage, schedule, instructions, senior_id } = body;
@@ -81,22 +81,22 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Zeitplan ist erforderlich' }, { status: 400 });
   }
   if (instructions && (typeof instructions !== 'string' || instructions.length > 2000)) {
-    return NextResponse.json({ error: 'Anweisungen duerfen max. 2000 Zeichen lang sein' }, { status: 400 });
+    return NextResponse.json({ error: 'Anweisungen dürfen max. 2000 Zeichen lang sein' }, { status: 400 });
   }
 
   if (!['daily', 'weekly', 'interval'].includes(schedule.type)) {
-    return NextResponse.json({ error: 'Ungueltiger Zeitplan-Typ' }, { status: 400 });
+    return NextResponse.json({ error: 'Ungültiger Zeitplan-Typ' }, { status: 400 });
   }
 
   const targetSeniorId = senior_id ?? user.id;
 
-  // Zugriffspruefung: Nur Senior selbst, zugewiesene Helfer oder Admins
+  // Zugriffsprüfung: Nur Senior selbst, zugewiesene Helfer oder Admins
   if (targetSeniorId !== user.id) {
     const role = await requireCareAccess(supabase, targetSeniorId);
     if (!role) return NextResponse.json({ error: 'Kein Zugriff auf diesen Senior' }, { status: 403 });
   }
 
-  // Medikamenten-Felder verschluesseln (Art. 9 DSGVO)
+  // Medikamenten-Felder verschlüsseln (Art. 9 DSGVO)
   const insertData = encryptFields({
     senior_id: targetSeniorId,
     name,

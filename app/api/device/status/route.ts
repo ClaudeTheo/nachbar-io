@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getWeather } from "@/lib/device/weather";
 import { authenticateDevice, isAuthError } from "@/lib/device/auth";
 
-// Kategorie-Label fuer das Device
+// Kategorie-Label für das Device
 const CATEGORY_LABELS: Record<string, string> = {
   infrastructure: "Infrastruktur",
   events: "Veranstaltung",
@@ -12,7 +12,7 @@ const CATEGORY_LABELS: Record<string, string> = {
   other: "Sonstiges",
 };
 
-// Tageszeit-abhaengige Begruessung (Berlin-Timezone)
+// Tageszeit-abhängige Begrüßung (Berlin-Timezone)
 function getGreeting(): string {
   const berlinTime = new Date().toLocaleString("de-DE", { timeZone: "Europe/Berlin", hour: "numeric", hour12: false });
   const hour = parseInt(berlinTime, 10);
@@ -55,7 +55,7 @@ export async function GET(request: NextRequest) {
   // Notfall-Kategorien
   const emergencyCategories = ["fire", "health_concern", "medical", "crime"];
 
-  // Heutiges Datum in Berlin-Timezone (nicht UTC) fuer korrekte Tagesgrenze
+  // Heutiges Datum in Berlin-Timezone (nicht UTC) für korrekte Tagesgrenze
   const todayBerlin = new Date().toLocaleDateString("sv-SE", { timeZone: "Europe/Berlin" }); // YYYY-MM-DD
 
   // Parallele Abfragen (inkl. Welle-2-Daten: Fotos + Erinnerungen)
@@ -141,7 +141,7 @@ export async function GET(request: NextRequest) {
     ? careCheckinData[0].completed_at
     : legacyCheckin;
 
-  // News fuer das Device aufbereiten
+  // News für das Device aufbereiten
   const news = (newsResult.data || []).map((n: Record<string, unknown>) => ({
     id: n.id,
     title: n.original_title,
@@ -152,7 +152,7 @@ export async function GET(request: NextRequest) {
     publishedAt: n.published_at ?? n.created_at,
   }));
 
-  // Welle 2: Zaehler aufbereiten
+  // Welle 2: Zähler aufbereiten
   const remindersData = remindersResult.data ?? [];
   const photosCount = photosCountResult.count ?? 0;
   const remindersCount = remindersData.length;

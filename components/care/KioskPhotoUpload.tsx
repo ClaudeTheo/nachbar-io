@@ -1,5 +1,5 @@
 // components/care/KioskPhotoUpload.tsx
-// Nachbar.io — Foto-Upload und -Verwaltung fuer den Kiosk (Caregiver-Seite)
+// Nachbar.io — Foto-Upload und -Verwaltung für den Kiosk (Caregiver-Seite)
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -68,7 +68,7 @@ export function KioskPhotoUpload({ householdId }: KioskPhotoUploadProps) {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // Input zuruecksetzen fuer erneuten Upload
+    // Input zurücksetzen für erneuten Upload
     if (fileInputRef.current) fileInputRef.current.value = "";
 
     setUploading(true);
@@ -150,7 +150,7 @@ export function KioskPhotoUpload({ householdId }: KioskPhotoUploadProps) {
     }
   };
 
-  // Foto loeschen
+  // Foto löschen
   const deletePhoto = async (photoId: string) => {
     if (!confirm("Dieses Foto wirklich löschen?")) return;
 

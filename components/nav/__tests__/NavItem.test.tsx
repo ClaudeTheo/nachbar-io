@@ -1,4 +1,4 @@
-// Tests fuer NavItem-Komponente
+// Tests für NavItem-Komponente
 import { describe, it, expect, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
 import { NavItem } from "../NavItem";

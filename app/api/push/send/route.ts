@@ -26,7 +26,7 @@ function ensureVapid() {
 // POST /api/push/send — Push-Notification an Quartiersmitglieder senden
 // Nur intern aufrufbar (per INTERNAL_API_SECRET)
 export async function POST(request: NextRequest) {
-  // Internes Secret pruefen — nur andere API-Routes duerfen Push senden
+  // Internes Secret prüfen — nur andere API-Routes dürfen Push senden
   const internalSecret = request.headers.get("x-internal-secret");
   const expectedSecret = process.env.INTERNAL_API_SECRET;
 
@@ -40,7 +40,7 @@ export async function POST(request: NextRequest) {
   try {
     body = await request.json();
   } catch {
-    return NextResponse.json({ error: "Ungueltiges Anfrage-Format" }, { status: 400 });
+    return NextResponse.json({ error: "Ungültiges Anfrage-Format" }, { status: 400 });
   }
   const { title, body: messageBody, url, tag, urgent, excludeUserId } = body;
 
@@ -67,7 +67,7 @@ export async function POST(request: NextRequest) {
 
   if (fetchError) {
     console.error("Push-Subscriptions laden fehlgeschlagen:", fetchError);
-    return NextResponse.json({ error: "Empfaenger konnten nicht geladen werden" }, { status: 500 });
+    return NextResponse.json({ error: "Empfänger konnten nicht geladen werden" }, { status: 500 });
   }
 
   if (!subscriptions || subscriptions.length === 0) {
@@ -113,7 +113,7 @@ export async function POST(request: NextRequest) {
     })
   );
 
-  // Abgelaufene Subscriptions aufraeumen
+  // Abgelaufene Subscriptions aufräumen
   if (expiredEndpoints.length > 0) {
     const { error: cleanupError } = await supabase
       .from("push_subscriptions")

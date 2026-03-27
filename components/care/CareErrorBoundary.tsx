@@ -1,5 +1,5 @@
 // components/care/CareErrorBoundary.tsx
-// Nachbar.io — Fehlergrenze fuer Care-Komponenten
+// Nachbar.io — Fehlergrenze für Care-Komponenten
 'use client';
 
 import React from 'react';
@@ -16,7 +16,7 @@ interface State {
 }
 
 /**
- * Faengt React-Fehler in Care-Komponenten ab und zeigt
+ * Fängt React-Fehler in Care-Komponenten ab und zeigt
  * eine benutzerfreundliche Fehlermeldung auf Deutsch.
  */
 export class CareErrorBoundary extends React.Component<Props, State> {

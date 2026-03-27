@@ -26,9 +26,9 @@ export interface NavItemConfig {
   href: string;
   label: string;
   icon: LucideIcon;
-  /** Farb-Klasse fuer aktives Icon (Tailwind text-*) */
+  /** Farb-Klasse für aktives Icon (Tailwind text-*) */
   activeColor: string;
-  /** Ist das Notfall-Item (erhoehte Darstellung) */
+  /** Ist das Notfall-Item (erhöhte Darstellung) */
   isEmergency?: boolean;
 }
 
@@ -71,7 +71,7 @@ const seniorNav: NavItemConfig[] = [
 const helperNav: NavItemConfig[] = [
   {
     href: "/dashboard",
-    label: "Uebersicht",
+    label: "Übersicht",
     icon: Home,
     activeColor: "text-quartier-green",
   },
@@ -84,7 +84,7 @@ const helperNav: NavItemConfig[] = [
   },
   {
     href: "/hilfe/tasks",
-    label: "Einsaetze",
+    label: "Einsätze",
     icon: ClipboardList,
     activeColor: "text-blue-500",
   },
@@ -105,7 +105,7 @@ const helperNav: NavItemConfig[] = [
 const caregiverNav: NavItemConfig[] = [
   {
     href: "/dashboard",
-    label: "Uebersicht",
+    label: "Übersicht",
     icon: Home,
     activeColor: "text-quartier-green",
   },
@@ -139,7 +139,7 @@ const caregiverNav: NavItemConfig[] = [
 const orgAdminNav: NavItemConfig[] = [
   {
     href: "/dashboard",
-    label: "Uebersicht",
+    label: "Übersicht",
     icon: Home,
     activeColor: "text-quartier-green",
   },
@@ -170,7 +170,7 @@ const orgAdminNav: NavItemConfig[] = [
   },
 ];
 
-/** Gibt die Nav-Konfiguration fuer eine Rolle zurueck. */
+/** Gibt die Nav-Konfiguration für eine Rolle zurück. */
 export function getNavItems(role: NavRole): NavItemConfig[] {
   switch (role) {
     case "helper":
@@ -194,7 +194,7 @@ export function getNavItems(role: NavRole): NavItemConfig[] {
  * 3. hilfe_helper_profiles (aktiv) → helper
  * 4. Sonst → senior (Default)
  *
- * Prioritaet: org_admin > caregiver > helper > senior
+ * Priorität: org_admin > caregiver > helper > senior
  */
 async function detectNavRole(userId: string): Promise<NavRole> {
   const supabase = createClient();
@@ -227,8 +227,8 @@ async function detectNavRole(userId: string): Promise<NavRole> {
 // --- React Hook ---
 
 /**
- * Hook: Gibt die aktuelle Nav-Rolle des eingeloggten Users zurueck.
- * Laedt async, Default: "senior".
+ * Hook: Gibt die aktuelle Nav-Rolle des eingeloggten Users zurück.
+ * Lädt async, Default: "senior".
  */
 export function useNavRole(): { role: NavRole; loading: boolean } {
   const { user } = useAuth();

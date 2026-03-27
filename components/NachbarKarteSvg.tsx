@@ -37,13 +37,13 @@ export function NachbarKarteSvg({ quarterId: quarterIdProp }: NachbarKarteSvgPro
   // Bewohnerzahl pro Haus-Key (street_code:house_number)
   const [residentCounts, setResidentCounts] = useState<Record<string, number>>({});
 
-  // Haeuser dynamisch von Supabase laden (quartier-spezifisch, mit Fallback)
+  // Häuser dynamisch von Supabase laden (quartier-spezifisch, mit Fallback)
   useEffect(() => {
     async function loadData() {
       try {
         const supabase = createClient();
 
-        // Haeuser fuer aktuelles Quartier laden
+        // Häuser für aktuelles Quartier laden
         let loadedHouses = DEFAULT_HOUSES;
         if (quarterId) {
           const quarterHouses = await loadQuarterHouses(quarterId);
@@ -58,7 +58,7 @@ export function NachbarKarteSvg({ quarterId: quarterIdProp }: NachbarKarteSvgPro
           return s;
         });
 
-        // Aktive Urlaube laden — Haeuser blau faerben
+        // Aktive Urlaube laden — Häuser blau färben
         const today = new Date().toISOString().split("T")[0];
         const { data: vacations } = await supabase
           .from("vacation_modes")
@@ -82,7 +82,7 @@ export function NachbarKarteSvg({ quarterId: quarterIdProp }: NachbarKarteSvgPro
             for (const m of members) {
               const hh = m.households as unknown as { street_name: string; house_number: string } | null;
               if (hh) {
-                // Finde den street_code fuer diesen Strassennamen
+                // Finde den street_code für diesen Straßennamen
                 const code = (Object.entries(STREET_CODE_TO_NAME) as [StreetCode, string][])
                   .find(([, name]) => name === hh.street_name)?.[0];
                 if (code) {
@@ -104,7 +104,7 @@ export function NachbarKarteSvg({ quarterId: quarterIdProp }: NachbarKarteSvgPro
           }
         }
 
-        // Aktive Paketannahmen laden — Haeuser orange faerben
+        // Aktive Paketannahmen laden — Häuser orange färben
         const { data: packages } = await supabase
           .from("paketannahme")
           .select("user_id")
@@ -177,7 +177,7 @@ export function NachbarKarteSvg({ quarterId: quarterIdProp }: NachbarKarteSvgPro
     setSelectedHouse(h);
   }, []);
 
-  // Nur Haeuser mit registrierten Bewohnern zaehlen
+  // Nur Häuser mit registrierten Bewohnern zählen
   const occupiedIds = new Set(
     houses
       .filter((h) => residentCounts[`${h.s}:${h.num}`])
@@ -265,7 +265,7 @@ export function NachbarKarteSvg({ quarterId: quarterIdProp }: NachbarKarteSvgPro
 
           {/* Lampen-Marker */}
           {houses.map((h) => {
-            // Nur Haeuser mit registrierten Bewohnern anzeigen
+            // Nur Häuser mit registrierten Bewohnern anzeigen
             const houseKey = `${h.s}:${h.num}`;
             if (!residentCounts[houseKey]) return null;
 

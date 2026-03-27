@@ -1,5 +1,5 @@
 // app/api/care/consent/revoke/route.ts
-// Art. 9 Einwilligungswiderruf mit optionaler Datenloeschung
+// Art. 9 Einwilligungswiderruf mit optionaler Datenlöschung
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
@@ -8,7 +8,7 @@ import { CONSENT_FEATURES } from '@/lib/care/types';
 import { CURRENT_CONSENT_VERSION } from '@/lib/care/constants';
 import type { CareConsentFeature } from '@/lib/care/types';
 
-// Mapping: Welche Tabellen werden bei Datenloeschung betroffen?
+// Mapping: Welche Tabellen werden bei Datenlöschung betroffen?
 const FEATURE_DATA_TABLES: Record<CareConsentFeature, { table: string; column: string }[]> = {
   sos: [{ table: 'care_sos_alerts', column: 'reporter_id' }],
   checkin: [{ table: 'care_checkins', column: 'senior_id' }],
@@ -57,7 +57,7 @@ export async function POST(request: NextRequest) {
     .single();
 
   if (error) {
-    console.error(`[care/consent/revoke] Widerruf fehlgeschlagen fuer ${feature}:`, error);
+    console.error(`[care/consent/revoke] Widerruf fehlgeschlagen für ${feature}:`, error);
     return NextResponse.json({ error: 'Widerruf fehlgeschlagen' }, { status: 500 });
   }
 
@@ -70,7 +70,7 @@ export async function POST(request: NextRequest) {
     consent_version: CURRENT_CONSENT_VERSION,
   });
 
-  // Abhaengigkeit: sos-Widerruf → emergency_contacts auch widerrufen
+  // Abhängigkeit: sos-Widerruf → emergency_contacts auch widerrufen
   if (feature === 'sos') {
     const { data: ecConsent } = await supabase
       .from('care_consents')
@@ -97,7 +97,7 @@ export async function POST(request: NextRequest) {
     }
   }
 
-  // Optionale Datenloeschung
+  // Optionale Datenlöschung
   if (delete_data) {
     const tables = FEATURE_DATA_TABLES[feature as CareConsentFeature] ?? [];
     for (const { table, column } of tables) {

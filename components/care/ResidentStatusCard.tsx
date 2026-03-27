@@ -18,7 +18,7 @@ interface ResidentStatusCardProps {
   relationshipType: CaregiverRelationshipType;
 }
 
-// Farben fuer Status-Indikator
+// Farben für Status-Indikator
 const STATUS_COLORS: Record<ResidentStatus, string> = {
   ok: "#4CAF87",
   warning: "#F59E0B",
@@ -29,7 +29,7 @@ const STATUS_COLORS: Record<ResidentStatus, string> = {
 const STATUS_LABELS: Record<ResidentStatus, string> = {
   ok: "Aktiv",
   warning: "Erinnerung gesendet",
-  missing: "Keine Aktivitaet",
+  missing: "Keine Aktivität",
   critical: "Dringend",
 };
 
@@ -90,7 +90,7 @@ export function ResidentStatusCard({ data, relationshipType }: ResidentStatusCar
             {/* Letzter Heartbeat */}
             {data.last_heartbeat && (
               <div className="flex items-center justify-between text-sm">
-                <span className="text-muted-foreground">Letzte Aktivitaet</span>
+                <span className="text-muted-foreground">Letzte Aktivität</span>
                 <span className="font-medium text-anthrazit">
                   {relativeTime(data.last_heartbeat)}
                 </span>
@@ -112,7 +112,7 @@ export function ResidentStatusCard({ data, relationshipType }: ResidentStatusCar
           </>
         ) : (
           <p className="text-sm italic text-muted-foreground">
-            Aktivitaetsstatus nicht freigegeben
+            Aktivitätsstatus nicht freigegeben
           </p>
         )}
       </div>

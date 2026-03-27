@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 
-// Impressum gemaess § 5 TMG / § 18 MStV
+// Impressum gemäß § 5 TMG / § 18 MStV
 export default function ImpressumPage() {
   return (
     <div className="min-h-screen bg-warmwhite px-4 py-8">
@@ -11,21 +11,21 @@ export default function ImpressumPage() {
           className="mb-6 inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-anthrazit"
         >
           <ArrowLeft className="h-4 w-4" />
-          Zurueck
+          Zurück
         </Link>
 
         <h1 className="mb-8 text-2xl font-bold text-anthrazit">Impressum</h1>
 
         <div className="space-y-8 text-sm leading-relaxed text-anthrazit/80">
-          {/* Angaben gemaess § 5 TMG */}
+          {/* Angaben gemäß § 5 TMG */}
           <section>
             <h2 className="mb-2 text-lg font-semibold text-anthrazit">
-              Angaben gemaess § 5 TMG
+              Angaben gemäß § 5 TMG
             </h2>
             <p>
               Thomas Theobald<br />
-              Purkersdorfer Strasse 35<br />
-              79713 Bad Saeckingen<br />
+              Purkersdorfer Straße 35<br />
+              79713 Bad Säckingen<br />
               Deutschland
             </p>
           </section>
@@ -39,14 +39,14 @@ export default function ImpressumPage() {
             </p>
           </section>
 
-          {/* Verantwortlich fuer den Inhalt */}
+          {/* Verantwortlich für den Inhalt */}
           <section>
             <h2 className="mb-2 text-lg font-semibold text-anthrazit">
-              Verantwortlich fuer den Inhalt nach § 18 Abs. 2 MStV
+              Verantwortlich für den Inhalt nach § 18 Abs. 2 MStV
             </h2>
             <p>
               Thomas Theobald<br />
-              Purkersdorfer Strasse 35, 79713 Bad Saeckingen
+              Purkersdorfer Straße 35, 79713 Bad Säckingen
             </p>
           </section>
 
@@ -56,7 +56,7 @@ export default function ImpressumPage() {
               EU-Streitschlichtung
             </h2>
             <p>
-              Die Europaeische Kommission stellt eine Plattform zur
+              Die Europäische Kommission stellt eine Plattform zur
               Online-Streitbeilegung (OS) bereit:{" "}
               <a
                 href="https://ec.europa.eu/consumers/odr/"
@@ -73,38 +73,38 @@ export default function ImpressumPage() {
             </p>
           </section>
 
-          {/* Haftung fuer Inhalte */}
+          {/* Haftung für Inhalte */}
           <section>
             <h2 className="mb-2 text-lg font-semibold text-anthrazit">
-              Haftung fuer Inhalte
+              Haftung für Inhalte
             </h2>
             <p>
-              Als Diensteanbieter sind wir gemaess § 7 Abs. 1 TMG fuer eigene
+              Als Diensteanbieter sind wir gemäß § 7 Abs. 1 TMG für eigene
               Inhalte auf diesen Seiten nach den allgemeinen Gesetzen verantwortlich.
               Nach §§ 8 bis 10 TMG sind wir als Diensteanbieter jedoch nicht
-              verpflichtet, uebermittelte oder gespeicherte fremde Informationen zu
-              ueberwachen oder nach Umstaenden zu forschen, die auf eine rechtswidrige
-              Taetigkeit hinweisen.
+              verpflichtet, übermittelte oder gespeicherte fremde Informationen zu
+              überwachen oder nach Umständen zu forschen, die auf eine rechtswidrige
+              Tätigkeit hinweisen.
             </p>
             <p className="mt-2">
               Verpflichtungen zur Entfernung oder Sperrung der Nutzung von
-              Informationen nach den allgemeinen Gesetzen bleiben hiervon unberuehrt.
-              Eine diesbezuegliche Haftung ist jedoch erst ab dem Zeitpunkt der
-              Kenntnis einer konkreten Rechtsverletzung moeglich. Bei Bekanntwerden
+              Informationen nach den allgemeinen Gesetzen bleiben hiervon unberührt.
+              Eine diesbezügliche Haftung ist jedoch erst ab dem Zeitpunkt der
+              Kenntnis einer konkreten Rechtsverletzung möglich. Bei Bekanntwerden
               von entsprechenden Rechtsverletzungen werden wir diese Inhalte
               umgehend entfernen.
             </p>
           </section>
 
-          {/* Haftung fuer Links */}
+          {/* Haftung für Links */}
           <section>
             <h2 className="mb-2 text-lg font-semibold text-anthrazit">
-              Haftung fuer Links
+              Haftung für Links
             </h2>
             <p>
-              Unser Angebot enthaelt Links zu externen Websites Dritter, auf deren
-              Inhalte wir keinen Einfluss haben. Deshalb koennen wir fuer diese
-              fremden Inhalte auch keine Gewaehr uebernehmen. Fuer die Inhalte der
+              Unser Angebot enthält Links zu externen Websites Dritter, auf deren
+              Inhalte wir keinen Einfluss haben. Deshalb können wir für diese
+              fremden Inhalte auch keine Gewähr übernehmen. Für die Inhalte der
               verlinkten Seiten ist stets der jeweilige Anbieter oder Betreiber der
               Seiten verantwortlich.
             </p>
@@ -117,9 +117,9 @@ export default function ImpressumPage() {
             </h2>
             <p>
               Die durch die Seitenbetreiber erstellten Inhalte und Werke auf diesen
-              Seiten unterliegen dem deutschen Urheberrecht. Die Vervielfaeltigung,
-              Bearbeitung, Verbreitung und jede Art der Verwertung ausserhalb der
-              Grenzen des Urheberrechtes beduerfen der schriftlichen Zustimmung des
+              Seiten unterliegen dem deutschen Urheberrecht. Die Vervielfältigung,
+              Bearbeitung, Verbreitung und jede Art der Verwertung außerhalb der
+              Grenzen des Urheberrechtes bedürfen der schriftlichen Zustimmung des
               jeweiligen Autors bzw. Erstellers.
             </p>
           </section>
@@ -130,29 +130,29 @@ export default function ImpressumPage() {
               Hinweis zur Plattform
             </h2>
             <p>
-              QuartierApp ist ein nichtkommerzielles Community-Projekt fuer die
-              Nachbarschaft in Bad Saeckingen. Die Nutzung ist kostenlos. Die
-              Plattform wird ehrenamtlich betrieben und dient der Foerderung des
+              QuartierApp ist ein nichtkommerzielles Community-Projekt für die
+              Nachbarschaft in Bad Säckingen. Die Nutzung ist kostenlos. Die
+              Plattform wird ehrenamtlich betrieben und dient der Förderung des
               nachbarschaftlichen Zusammenhalts.
             </p>
           </section>
 
-          {/* Zweckbestimmung gemaess EU MDR 2017/745 */}
+          {/* Zweckbestimmung gemäß EU MDR 2017/745 */}
           <section>
             <h2 className="mb-2 text-lg font-semibold text-anthrazit">
               Zweckbestimmung
             </h2>
             <p>
-              QuartierApp ist eine Kommunikationsplattform zur Foerderung der
+              QuartierApp ist eine Kommunikationsplattform zur Förderung der
               Nachbarschaftshilfe im Quartier. Die App dient der Koordination von
               Alltagshilfe, dem Austausch lokaler Informationen und der freiwilligen
               sozialen Vernetzung von Bewohnerinnen und Bewohnern.
             </p>
             <p className="mt-2">
               Die optionalen Koordinationsfunktionen (Erinnerungen,
-              Tagescheck, Helfer-Uebersicht) sind organisatorische Hilfsmittel zur
-              Alltagsunterstuetzung. Sie ersetzen weder professionelle Pflege,
-              aerztliche Beratung noch medizinische Notrufsysteme (112/110).
+              Tagescheck, Helfer-Übersicht) sind organisatorische Hilfsmittel zur
+              Alltagsunterstützung. Sie ersetzen weder professionelle Pflege,
+              ärztliche Beratung noch medizinische Notrufsysteme (112/110).
             </p>
             <p className="mt-2">
               Die Erinnerungsfunktion dient der Alltagsorganisation und stellt
@@ -161,7 +161,7 @@ export default function ImpressumPage() {
             <p className="mt-2 font-medium text-anthrazit">
               QuartierApp ist kein Medizinprodukt im Sinne der Verordnung (EU)
               2017/745. Die Software erhebt keinen diagnostischen, therapeutischen
-              oder klinischen Ueberwachungszweck.
+              oder klinischen Überwachungszweck.
             </p>
           </section>
         </div>

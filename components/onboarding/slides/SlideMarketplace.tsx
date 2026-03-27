@@ -2,7 +2,7 @@
 
 import { Gift, RefreshCw, Search } from "lucide-react";
 
-// Slide 3: Marktplatz & Fundbuero — Regal mit bouncenden Items
+// Slide 3: Marktplatz & Fundbüro — Regal mit bouncenden Items
 
 export function SlideMarketplace() {
   const items = [
@@ -38,7 +38,7 @@ export function SlideMarketplace() {
         <div className="h-1 rounded-full bg-anthrazit/20 animate-shelf-slide" />
       </div>
 
-      {/* Fundbuero-Karte (flip-Effekt) */}
+      {/* Fundbüro-Karte (flip-Effekt) */}
       <div
         className="w-full max-w-[280px] rounded-xl border-2 border-blue-200 bg-blue-50/50 p-4 animate-fade-in-up"
         style={{ animationDelay: "1200ms" }}
@@ -48,9 +48,9 @@ export function SlideMarketplace() {
             <span className="text-lg">🔑</span>
           </div>
           <div>
-            <p className="text-sm font-semibold text-anthrazit">Schluesselbund gefunden</p>
+            <p className="text-sm font-semibold text-anthrazit">Schlüsselbund gefunden</p>
             <p className="text-[11px] text-muted-foreground">
-              📍 Naehe Purkersdorfer Str. 8
+              📍 Nähe Purkersdorfer Str. 8
             </p>
           </div>
         </div>
@@ -63,7 +63,7 @@ export function SlideMarketplace() {
         </h1>
         <p className="mt-2 text-base text-muted-foreground leading-relaxed">
           Verkaufen, verschenken oder verleihen Sie an Nachbarn.
-          Plus: Ihr Quartiers-Fundbuero.
+          Plus: Ihr Quartiers-Fundbüro.
         </p>
       </div>
     </div>

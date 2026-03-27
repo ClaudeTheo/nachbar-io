@@ -1,6 +1,6 @@
 // app/api/cron/subscription-check/route.ts
-// Nachbar.io — Cron: Trial-Ablauf pruefen + Auto-Downgrade
-// Vercel Cron: taeglich 09:00
+// Nachbar.io — Cron: Trial-Ablauf prüfen + Auto-Downgrade
+// Vercel Cron: täglich 09:00
 
 import { NextRequest, NextResponse } from 'next/server';
 import { getAdminSupabase } from '@/lib/supabase/admin';
@@ -23,7 +23,7 @@ export async function GET(request: NextRequest) {
     const supabase = getAdminSupabase();
     const now = new Date();
 
-    // Trial-Ablauf pruefen
+    // Trial-Ablauf prüfen
     const { expired, warned } = await checkTrialExpiry(supabase);
 
     let downgraded = 0;
@@ -47,12 +47,12 @@ export async function GET(request: NextRequest) {
         await sendPush(supabase, {
           userId,
           title: 'Testzeitraum abgelaufen',
-          body: 'Sie nutzen jetzt Nachbar Free. Upgraden Sie jederzeit fuer alle Funktionen.',
+          body: 'Sie nutzen jetzt Nachbar Free. Upgraden Sie jederzeit für alle Funktionen.',
           url: '/einstellungen/abo',
         });
       } catch (err) {
         const msg = err instanceof Error ? err.message : String(err);
-        console.error(`[subscription-check] Downgrade fehlgeschlagen fuer ${userId}:`, msg);
+        console.error(`[subscription-check] Downgrade fehlgeschlagen für ${userId}:`, msg);
         errors.push(`downgrade:${userId}`);
       }
     }
@@ -77,7 +77,7 @@ export async function GET(request: NextRequest) {
         warnings++;
       } catch (err) {
         const msg = err instanceof Error ? err.message : String(err);
-        console.error(`[subscription-check] Warnung fehlgeschlagen fuer ${userId}:`, msg);
+        console.error(`[subscription-check] Warnung fehlgeschlagen für ${userId}:`, msg);
         errors.push(`warning:${userId}`);
       }
     }

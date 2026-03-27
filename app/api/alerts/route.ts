@@ -7,7 +7,7 @@ import { validateLocationData } from "@/lib/alerts/validate-location";
 export async function GET() {
   const supabase = await createClient();
 
-  // Auth-Check: Nur authentifizierte Nutzer duerfen Alerts sehen
+  // Auth-Check: Nur authentifizierte Nutzer dürfen Alerts sehen
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -48,14 +48,14 @@ export async function POST(request: NextRequest) {
   try {
     body = await request.json();
   } catch {
-    return NextResponse.json({ error: "Ungueltiges Anfrage-Format" }, { status: 400 });
+    return NextResponse.json({ error: "Ungültiges Anfrage-Format" }, { status: 400 });
   }
   const { category, title, description, household_id, is_emergency, location_lat, location_lng, location_source } = body;
 
   // Input-Validierung
   const VALID_CATEGORIES = ["noise", "package", "security", "fire", "health_concern", "medical", "crime", "other"];
   if (!category || !VALID_CATEGORIES.includes(category)) {
-    return NextResponse.json({ error: "Ungueltige Kategorie" }, { status: 400 });
+    return NextResponse.json({ error: "Ungültige Kategorie" }, { status: 400 });
   }
   if (!title || title.length < 3 || title.length > 200) {
     return NextResponse.json({ error: "Titel muss 3-200 Zeichen lang sein" }, { status: 400 });
@@ -71,7 +71,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: locValidation.error }, { status: 400 });
   }
 
-  // Household-Ownership pruefen (falls angegeben)
+  // Household-Ownership prüfen (falls angegeben)
   if (household_id) {
     const { data: membership } = await supabase
       .from("household_members")
@@ -80,7 +80,7 @@ export async function POST(request: NextRequest) {
       .eq("household_id", household_id)
       .maybeSingle();
     if (!membership) {
-      return NextResponse.json({ error: "Sie gehoeren nicht zu diesem Haushalt" }, { status: 403 });
+      return NextResponse.json({ error: "Sie gehören nicht zu diesem Haushalt" }, { status: 403 });
     }
   }
 

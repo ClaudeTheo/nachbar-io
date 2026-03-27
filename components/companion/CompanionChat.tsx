@@ -1,5 +1,5 @@
 // components/companion/CompanionChat.tsx
-// Messenger-artige Chat-UI fuer den KI-Quartier-Lotsen
+// Messenger-artige Chat-UI für den KI-Quartier-Lotsen
 // Nachrichten werden in React-State gehalten (kein DB), Session-Persistenz via sessionStorage
 
 'use client';
@@ -29,7 +29,7 @@ interface ToolResult {
   route?: string; // Fuer navigate_to
 }
 
-/** Tool-Bestaetigung (Write-Aktion) */
+/** Tool-Bestätigung (Write-Aktion) */
 interface ToolConfirmation {
   tool: string;
   params: Record<string, unknown>;
@@ -60,7 +60,7 @@ const SESSION_KEY = 'companion-chat-messages';
 const WELCOME_MESSAGE: ChatMessage = {
   id: 'welcome',
   role: 'assistant',
-  content: 'Hallo! Ich bin Ihr KI-Assistent fuer das Quartier. Wie kann ich Ihnen helfen?',
+  content: 'Hallo! Ich bin Ihr KI-Assistent für das Quartier. Wie kann ich Ihnen helfen?',
   timestamp: Date.now(),
 };
 
@@ -140,7 +140,7 @@ export function CompanionChat() {
   const [confirmLoading, setConfirmLoading] = useState<string | null>(null);
   const [recording, setRecording] = useState(false);
   const [speechState, setSpeechState] = useState<SpeechEngineState>('idle');
-  // Streaming-State: Ergebnisse und Bestaetigungen die waehrend Streaming reinkommen
+  // Streaming-State: Ergebnisse und Bestätigungen die während Streaming reinkommen
   const streamingToolResults = useRef<ToolResult[]>([]);
   const streamingConfirmations = useRef<ToolConfirmation[]>([]);
 
@@ -148,7 +148,7 @@ export function CompanionChat() {
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const engineRef = useRef<SpeechEngine | null>(null);
 
-  // Streaming-Chat Hook fuer SSE-basierte Antworten
+  // Streaming-Chat Hook für SSE-basierte Antworten
   const { streamingText, isStreaming, error: streamingError, sendStreaming } = useStreamingChat({
     onToolResult: (event) => {
       streamingToolResults.current.push({
@@ -200,7 +200,7 @@ export function CompanionChat() {
     };
   }, []);
 
-  // Auto-Scroll zum letzten Element (scrollIntoView nur wenn verfuegbar, z.B. nicht in jsdom)
+  // Auto-Scroll zum letzten Element (scrollIntoView nur wenn verfügbar, z.B. nicht in jsdom)
   const scrollToBottom = useCallback(() => {
     if (messagesEndRef.current && typeof messagesEndRef.current.scrollIntoView === 'function') {
       messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
@@ -219,11 +219,11 @@ export function CompanionChat() {
     setInputValue('');
     setSending(true);
 
-    // Streaming-Ergebnisse zuruecksetzen
+    // Streaming-Ergebnisse zurücksetzen
     streamingToolResults.current = [];
     streamingConfirmations.current = [];
 
-    // User-Nachricht hinzufuegen
+    // User-Nachricht hinzufügen
     const userMsg: ChatMessage = {
       id: generateId(),
       role: 'user',
@@ -234,7 +234,7 @@ export function CompanionChat() {
     setMessages((prev) => [...prev, userMsg]);
 
     try {
-      // Nachrichten-History fuer API vorbereiten (nur role + content)
+      // Nachrichten-History für API vorbereiten (nur role + content)
       const apiMessages = [...messages, userMsg]
         .filter((m) => m.id !== 'welcome')
         .map((m) => ({ role: m.role, content: m.content }));
@@ -243,7 +243,7 @@ export function CompanionChat() {
       await sendStreaming(apiMessages);
 
       // Nach Streaming: finale Nachricht aus useStreamingChat-State erstellen
-      // streamingText wird ueber den Hook aktualisiert, wir lesen den Ref-Wert
+      // streamingText wird über den Hook aktualisiert, wir lesen den Ref-Wert
       // direkt nach sendStreaming weil der Hook-State schon final ist
     } catch {
       // Fehler: useStreamingChat setzt error, wir fangen hier ab
@@ -267,7 +267,7 @@ export function CompanionChat() {
       };
       setMessages((prev) => [...prev, assistantMsg]);
 
-      // Navigation ausfuehren wenn navigate_to Tool eine Route zurueckgibt
+      // Navigation ausführen wenn navigate_to Tool eine Route zurückgibt
       const navResult = streamingToolResults.current.find((r) => r.route);
       if (navResult?.route) {
         setTimeout(() => router.push(navResult.route!), 600);
@@ -290,12 +290,12 @@ export function CompanionChat() {
     }
   }, [streamingError]);
 
-  // --- Tool-Bestaetigung ---
+  // --- Tool-Bestätigung ---
   const handleConfirmTool = useCallback(async (confirmation: ToolConfirmation, msgId: string) => {
     setConfirmLoading(msgId);
 
     try {
-      // Letzte Nachrichten fuer Kontext
+      // Letzte Nachrichten für Kontext
       const apiMessages = messages
         .filter((m) => m.id !== 'welcome')
         .map((m) => ({ role: m.role, content: m.content }));
@@ -313,9 +313,9 @@ export function CompanionChat() {
 
       const data: ChatResponse = await res.json();
 
-      // Bestaetigungsnachricht entfernen und Ergebnis hinzufuegen
+      // Bestätigungsnachricht entfernen und Ergebnis hinzufügen
       setMessages((prev) => {
-        // Bestaetigung aus der Nachricht entfernen
+        // Bestätigung aus der Nachricht entfernen
         const updated = prev.map((m) => {
           if (m.id === msgId && m.confirmations) {
             return {
@@ -326,7 +326,7 @@ export function CompanionChat() {
           return m;
         });
 
-        // Ergebnis-Nachricht hinzufuegen
+        // Ergebnis-Nachricht hinzufügen
         const resultMsg: ChatMessage = {
           id: generateId(),
           role: 'assistant',
@@ -364,7 +364,7 @@ export function CompanionChat() {
   const toggleRecording = useCallback(() => {
     const engine = engineRef.current;
     if (!engine) {
-      toast.error('Spracheingabe ist in Ihrem Browser nicht verfuegbar.');
+      toast.error('Spracheingabe ist in Ihrem Browser nicht verfügbar.');
       return;
     }
 
@@ -386,7 +386,7 @@ export function CompanionChat() {
           }
         },
         onAudioLevel: () => {
-          // Fuer spaeter: Waveform-Visualisierung
+          // Fuer später: Waveform-Visualisierung
         },
         onStateChange: (state) => {
           setSpeechState(state);
@@ -403,7 +403,7 @@ export function CompanionChat() {
     }
   }, [recording, handleSend]);
 
-  // Enter zum Senden (Shift+Enter fuer Zeilenumbruch)
+  // Enter zum Senden (Shift+Enter für Zeilenumbruch)
   const handleKeyDown = useCallback((e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
@@ -420,7 +420,7 @@ export function CompanionChat() {
         </div>
         <div>
           <h1 className="text-lg font-bold text-anthrazit">Quartier-Lotse</h1>
-          <p className="text-xs text-muted-foreground">KI-Assistent fuer Ihr Quartier</p>
+          <p className="text-xs text-muted-foreground">KI-Assistent für Ihr Quartier</p>
         </div>
       </div>
 
@@ -455,7 +455,7 @@ export function CompanionChat() {
                     />
                   ))}
 
-                  {/* Bestaetigungskarten (nur KI-Nachrichten) */}
+                  {/* Bestätigungskarten (nur KI-Nachrichten) */}
                   {!isUser && msg.confirmations?.map((conf, i) => (
                     <ConfirmationCard
                       key={`${msg.id}-conf-${i}`}
@@ -494,7 +494,7 @@ export function CompanionChat() {
             );
           })}
 
-          {/* Streaming-Antwort waehrend KI antwortet */}
+          {/* Streaming-Antwort während KI antwortet */}
           {isStreaming && streamingText && (
             <div className="flex justify-start" data-testid="streaming-message">
               <div className="max-w-[85%] rounded-2xl border border-border bg-white px-4 py-3 text-sm text-anthrazit">
@@ -503,7 +503,7 @@ export function CompanionChat() {
             </div>
           )}
 
-          {/* Tipp-Indikator waehrend Warten auf erste Antwort */}
+          {/* Tipp-Indikator während Warten auf erste Antwort */}
           {(sending || isStreaming) && !streamingText && (
             <div className="flex justify-start" data-testid="typing-indicator">
               <div className="flex items-center gap-2 rounded-2xl border border-border bg-white px-4 py-3">

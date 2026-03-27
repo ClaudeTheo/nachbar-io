@@ -99,7 +99,7 @@ export async function GET() {
       vacations: vacationsResult.data ?? [],
     };
 
-    // Als JSON-Download zurueckgeben
+    // Als JSON-Download zurückgeben
     return new NextResponse(JSON.stringify(exportData, null, 2), {
       status: 200,
       headers: {

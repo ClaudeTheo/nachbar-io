@@ -11,7 +11,7 @@ export async function GET() {
   if (!user) return NextResponse.json({ error: 'Nicht authentifiziert' }, { status: 401 });
 
   // Sessions laden, bei denen der Nutzer als Helfer oder Bewohner beteiligt ist
-  // Ueber help_matches → help_requests die Zuordnung pruefen
+  // Über help_matches → help_requests die Zuordnung prüfen
   const { data, error } = await supabase
     .from('help_sessions')
     .select('*')
@@ -44,7 +44,7 @@ export async function POST(request: NextRequest) {
   try {
     body = await request.json();
   } catch {
-    return NextResponse.json({ error: 'Ungueltiges Anfrage-Format' }, { status: 400 });
+    return NextResponse.json({ error: 'Ungültiges Anfrage-Format' }, { status: 400 });
   }
 
   const { match_id, session_date, start_time, end_time, activity_category, activity_description, hourly_rate_cents } = body;
@@ -54,7 +54,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'match_id ist erforderlich' }, { status: 400 });
   }
 
-  // Pflichtfelder pruefen
+  // Pflichtfelder prüfen
   if (!session_date || !start_time || !end_time || !activity_category || hourly_rate_cents === undefined) {
     return NextResponse.json({ error: 'Pflichtfelder: session_date, start_time, end_time, activity_category, hourly_rate_cents' }, { status: 400 });
   }
@@ -64,7 +64,7 @@ export async function POST(request: NextRequest) {
   const endMinutes = parseTimeToMinutes(end_time);
 
   if (startMinutes === null || endMinutes === null) {
-    return NextResponse.json({ error: 'Ungueltiges Zeitformat (erwartet HH:MM)' }, { status: 400 });
+    return NextResponse.json({ error: 'Ungültiges Zeitformat (erwartet HH:MM)' }, { status: 400 });
   }
 
   if (endMinutes <= startMinutes) {
@@ -104,7 +104,7 @@ export async function POST(request: NextRequest) {
 
 /**
  * Parst "HH:MM" in Minuten seit Mitternacht.
- * Gibt null zurueck bei ungueltigem Format.
+ * Gibt null zurück bei ungültigem Format.
  */
 function parseTimeToMinutes(time: string): number | null {
   const match = time.match(/^(\d{1,2}):(\d{2})$/);

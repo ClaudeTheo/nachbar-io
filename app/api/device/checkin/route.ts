@@ -7,7 +7,7 @@ export async function POST(request: NextRequest) {
   try {
     body = await request.json();
   } catch {
-    return NextResponse.json({ error: "Ungueltiges Anfrage-Format" }, { status: 400 });
+    return NextResponse.json({ error: "Ungültiges Anfrage-Format" }, { status: 400 });
   }
 
   // Token-Auth: Authorization-Header > Body > Query-Param
@@ -17,7 +17,7 @@ export async function POST(request: NextRequest) {
 
   const now = new Date().toISOString();
 
-  // User-ID des Haushalt-Eigentümers ermitteln (fuer Care-Checkin)
+  // User-ID des Haushalt-Eigentümers ermitteln (für Care-Checkin)
   const { data: member } = await supabase
     .from("household_members")
     .select("user_id")
@@ -38,7 +38,7 @@ export async function POST(request: NextRequest) {
         senior_id: userId,
         status: "ok",
         mood: "good",
-        note: encryptField("Wecker bestaetigt via reTerminal E1001"),
+        note: encryptField("Wecker bestätigt via reTerminal E1001"),
         scheduled_at: now,
         completed_at: now,
         escalated: false,
@@ -65,7 +65,7 @@ export async function POST(request: NextRequest) {
     }
   }
 
-  // Legacy-Checkin in senior_checkins (Abwaertskompatibilitaet)
+  // Legacy-Checkin in senior_checkins (Abwärtskompatibilität)
   const { error: legacyError } = await supabase
     .from("senior_checkins")
     .insert({

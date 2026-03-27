@@ -1,9 +1,9 @@
 'use client'
 
 // Zentraler AuthProvider — stellt den aktuellen Supabase-User per Context bereit.
-// Nutzt onAuthStateChange fuer reaktive Updates (Login, Logout, Token-Refresh).
+// Nutzt onAuthStateChange für reaktive Updates (Login, Logout, Token-Refresh).
 // Initiales Laden per getSession() (lokal, kein API-Call — Middleware validiert bereits mit getUser()).
-// refreshUser() nutzt getUser() fuer explizite Server-Validierung (z.B. nach Profil-Update).
+// refreshUser() nutzt getUser() für explizite Server-Validierung (z.B. nach Profil-Update).
 
 import { createContext, useContext, useEffect, useState, useCallback, useRef } from 'react'
 import type { User } from '@supabase/supabase-js'
@@ -12,7 +12,7 @@ import { createClient } from '@/lib/supabase/client'
 interface AuthContextType {
   /** Aktueller User oder null wenn nicht eingeloggt */
   user: User | null
-  /** True waehrend der initiale Auth-Check laeuft */
+  /** True während der initiale Auth-Check läuft */
   loading: boolean
   /** User manuell neu laden (z.B. nach Profil-Update) */
   refreshUser: () => Promise<void>
@@ -52,7 +52,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setLoading(false)
     })
 
-    // Reaktiv auf Auth-Aenderungen lauschen
+    // Reaktiv auf Auth-Änderungen lauschen
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user ?? null)
       setLoading(false)
@@ -68,5 +68,5 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   )
 }
 
-/** Hook fuer Zugriff auf den Auth-Context */
+/** Hook für Zugriff auf den Auth-Context */
 export const useAuth = () => useContext(AuthContext)

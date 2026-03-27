@@ -1,13 +1,13 @@
 // app/api/cron/expire-invitations/route.ts
 // Nachbar.io — Cron: Offene Einladungen nach 30 Tagen automatisch ablaufen lassen
-// Vercel Cron: taeglich um 3:00 Uhr
+// Vercel Cron: täglich um 3:00 Uhr
 
 import { NextRequest, NextResponse } from "next/server";
 import { getAdminSupabase } from "@/lib/supabase/admin";
 
 // GET /api/cron/expire-invitations — Einladungen nach 30 Tagen ablaufen lassen
 export async function GET(request: NextRequest) {
-  // Cron-Auth: Authorization-Header gegen CRON_SECRET pruefen (PFLICHT)
+  // Cron-Auth: Authorization-Header gegen CRON_SECRET prüfen (PFLICHT)
   const cronSecret = process.env.CRON_SECRET;
   if (!cronSecret) {
     console.error("CRON_SECRET nicht konfiguriert — Endpoint gesperrt");

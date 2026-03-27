@@ -18,7 +18,7 @@ const URGENCY_OPTIONS: { value: TaskUrgency; label: string }[] = [
   { value: 'urgent', label: 'Dringend' },
 ];
 
-// Dringlichkeits-Farben fuer die Button-Auswahl
+// Dringlichkeits-Farben für die Button-Auswahl
 const URGENCY_STYLES: Record<TaskUrgency, { active: string; inactive: string }> = {
   low:    { active: 'bg-gray-200 text-anthrazit ring-2 ring-gray-400', inactive: 'bg-gray-50 text-gray-600' },
   normal: { active: 'bg-[#4CAF87]/10 text-[#4CAF87] ring-2 ring-[#4CAF87]', inactive: 'bg-gray-50 text-gray-600' },
@@ -40,7 +40,7 @@ const CATEGORY_PLACEHOLDERS: Record<TaskCategory, { title: string; description: 
   other:         { title: 'z.B. Blumen gießen im Urlaub',               description: 'Weitere Details zur Aufgabe...' },
 };
 
-// Heutiges Datum als YYYY-MM-DD fuer min-Attribut
+// Heutiges Datum als YYYY-MM-DD für min-Attribut
 function todayISO(): string {
   const d = new Date();
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;

@@ -1,5 +1,5 @@
 // components/org/OrgDashboard.tsx
-// Nachbar.io — Organisations-Dashboard Uebersicht (Pro Community)
+// Nachbar.io — Organisations-Dashboard Übersicht (Pro Community)
 "use client";
 
 import type { Organization } from "@/app/(app)/org/page";

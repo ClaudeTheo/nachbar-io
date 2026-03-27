@@ -1,7 +1,7 @@
 // app/api/cron/recurring-events/route.ts
 // Nachbar.io — Cron: Wiederkehrende Events
-// Vercel Cron: Taeglich um 04:00
-// Erstellt naechste Instanz fuer vergangene wiederkehrende Events
+// Vercel Cron: Täglich um 04:00
+// Erstellt nächste Instanz für vergangene wiederkehrende Events
 
 import { NextRequest, NextResponse } from 'next/server';
 import { getAdminSupabase } from '@/lib/supabase/admin';
@@ -22,7 +22,7 @@ export async function GET(request: NextRequest) {
 
     console.log(
       `[recurring-events] ${result.created} neue Instanzen erstellt, ` +
-      `${result.skipped} uebersprungen, ${result.total} Events geprueft`
+      `${result.skipped} übersprungen, ${result.total} Events geprüft`
     );
 
     return NextResponse.json({

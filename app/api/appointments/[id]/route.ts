@@ -1,6 +1,6 @@
 // app/api/appointments/[id]/route.ts
 // Nachbar.io — Einzelnen Termin lesen (GET), aktualisieren (PATCH), absagen (DELETE)
-// Pro Medical: Status-Uebergaenge, Verschluesselung, Arzt/Patient-Zugriffskontrolle
+// Pro Medical: Status-Übergänge, Verschlüsselung, Arzt/Patient-Zugriffskontrolle
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
@@ -36,7 +36,7 @@ export async function GET(
     return NextResponse.json({ error: 'Abfrage fehlgeschlagen' }, { status: 500 });
   }
 
-  // Zugriffspruefung: Nur Arzt oder Patient duerfen den Termin sehen
+  // Zugriffsprüfung: Nur Arzt oder Patient dürfen den Termin sehen
   if (data.doctor_id !== user.id && data.patient_id !== user.id) {
     return NextResponse.json({ error: 'Kein Zugriff auf diesen Termin' }, { status: 403 });
   }
@@ -47,8 +47,8 @@ export async function GET(
   });
 }
 
-// PATCH /api/appointments/[id] — Status aktualisieren, Notizen aendern
-// Nur der Arzt darf den Status aendern
+// PATCH /api/appointments/[id] — Status aktualisieren, Notizen ändern
+// Nur der Arzt darf den Status ändern
 export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -64,7 +64,7 @@ export async function PATCH(
   try {
     body = await request.json();
   } catch {
-    return NextResponse.json({ error: 'Ungueltiges Anfrage-Format' }, { status: 400 });
+    return NextResponse.json({ error: 'Ungültiges Anfrage-Format' }, { status: 400 });
   }
 
   // Bestehenden Termin laden
@@ -81,12 +81,12 @@ export async function PATCH(
     return NextResponse.json({ error: 'Abfrage fehlgeschlagen' }, { status: 500 });
   }
 
-  // Zugriffspruefung: Nur der Arzt darf den Status aendern
+  // Zugriffsprüfung: Nur der Arzt darf den Status ändern
   if (existing.doctor_id !== user.id) {
     return NextResponse.json({ error: 'Nur der Arzt darf den Termin aktualisieren' }, { status: 403 });
   }
 
-  // Validierung: Status-Uebergang pruefen
+  // Validierung: Status-Übergang prüfen
   const validation = validateAppointmentUpdate(
     { status: body.status as string, notes: body.notes as string, meeting_url: body.meeting_url as string },
     existing.status as AppointmentStatus
@@ -100,7 +100,7 @@ export async function PATCH(
   if (body.status) updates.status = body.status;
   if (body.meeting_url !== undefined) updates.meeting_url = body.meeting_url;
   if (body.notes !== undefined) {
-    // Notizen verschluesseln (Art. 9 DSGVO)
+    // Notizen verschlüsseln (Art. 9 DSGVO)
     updates.notes_encrypted = encryptField(body.notes as string);
   }
 
@@ -123,7 +123,7 @@ export async function PATCH(
 }
 
 // DELETE /api/appointments/[id] — Termin absagen (soft delete: status → cancelled)
-// Arzt oder Patient duerfen den Termin absagen
+// Arzt oder Patient dürfen den Termin absagen
 export async function DELETE(
   _request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -149,12 +149,12 @@ export async function DELETE(
     return NextResponse.json({ error: 'Abfrage fehlgeschlagen' }, { status: 500 });
   }
 
-  // Zugriffspruefung: Nur Arzt oder Patient duerfen absagen
+  // Zugriffsprüfung: Nur Arzt oder Patient dürfen absagen
   if (existing.doctor_id !== user.id && existing.patient_id !== user.id) {
     return NextResponse.json({ error: 'Kein Zugriff auf diesen Termin' }, { status: 403 });
   }
 
-  // Pruefen ob Termin bereits abgesagt ist
+  // Prüfen ob Termin bereits abgesagt ist
   if (existing.status === 'cancelled') {
     return NextResponse.json({ error: 'Termin ist bereits abgesagt' }, { status: 400 });
   }

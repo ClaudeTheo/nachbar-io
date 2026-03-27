@@ -11,7 +11,7 @@ interface CheckinHistoryProps {
 const STATUS_META: Record<string, { icon: typeof CircleCheck; color: string; label: string }> = {
   ok: { icon: CircleCheck, color: 'text-quartier-green', label: 'Gut' },
   not_well: { icon: TriangleAlert, color: 'text-alert-amber', label: 'Nicht so gut' },
-  need_help: { icon: CircleX, color: 'text-emergency-red', label: 'Hilfe noetig' },
+  need_help: { icon: CircleX, color: 'text-emergency-red', label: 'Hilfe nötig' },
   missed: { icon: CircleX, color: 'text-emergency-red', label: 'Verpasst' },
   reminded: { icon: Clock, color: 'text-muted-foreground', label: 'Ausstehend' },
 };

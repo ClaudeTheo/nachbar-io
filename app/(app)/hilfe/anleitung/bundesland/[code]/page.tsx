@@ -19,7 +19,7 @@ export default async function BundeslandPage({
 
   const isPending = state.research_status === 'pending_research';
 
-  // Erlaubte Taetigkeiten sammeln
+  // Erlaubte Tätigkeiten sammeln
   const activities = [
     { label: 'Haushaltshilfe', value: state.allowed_household, hint: 'Zum Beispiel Kochen, Aufräumen oder Wäsche machen.' },
     { label: 'Putzen/Reinigung', value: state.allowed_cleaning, hint: 'Böden wischen, Staub wischen oder Bad reinigen.' },
@@ -40,7 +40,7 @@ export default async function BundeslandPage({
         <div>
           <h1 className="text-xl font-bold text-gray-900">{state.state_name}</h1>
           {state.last_checked && (
-            <p className="text-xs text-gray-400">Geprueft: {state.last_checked}</p>
+            <p className="text-xs text-gray-400">Geprüft: {state.last_checked}</p>
           )}
         </div>
       </div>
@@ -48,10 +48,10 @@ export default async function BundeslandPage({
       <div className="p-4 space-y-4">
         {!state.is_available && !isPending && (
           <div className="rounded-2xl bg-red-50 border border-red-200 p-6">
-            <h2 className="text-lg font-semibold text-red-700 mb-2">Nicht verfuegbar</h2>
+            <h2 className="text-lg font-semibold text-red-700 mb-2">Nicht verfügbar</h2>
             <p className="text-sm text-red-600">
-              In {state.state_name} ist die Abrechnung von Nachbarschaftshilfe ueber den
-              Entlastungsbetrag derzeit nicht moeglich.
+              In {state.state_name} ist die Abrechnung von Nachbarschaftshilfe über den
+              Entlastungsbetrag derzeit nicht möglich.
             </p>
           </div>
         )}
@@ -60,7 +60,7 @@ export default async function BundeslandPage({
           <div className="rounded-2xl bg-amber-50 border border-amber-200 p-6">
             <h2 className="text-lg font-semibold text-amber-700 mb-2">Daten werden recherchiert</h2>
             <p className="text-sm text-amber-600">
-              Die Regeln fuer {state.state_name} werden derzeit geprueft. Die angezeigten
+              Die Regeln für {state.state_name} werden derzeit geprüft. Die angezeigten
               Basiswerte (Mindestalter, Verwandtschaftsausschluss) gelten bundesweit.
             </p>
           </div>
@@ -68,7 +68,7 @@ export default async function BundeslandPage({
 
         {/* Grundregeln */}
         <div className="rounded-2xl border border-gray-200 p-6 space-y-4">
-          <h2 className="text-lg font-semibold text-gray-900">Regeln fuer {state.state_name}</h2>
+          <h2 className="text-lg font-semibold text-gray-900">Regeln für {state.state_name}</h2>
 
           <div className="grid gap-3">
             <div className="flex justify-between items-start py-2 border-b border-gray-100">
@@ -153,11 +153,11 @@ export default async function BundeslandPage({
           </div>
         )}
 
-        {/* Erlaubte Taetigkeiten */}
+        {/* Erlaubte Tätigkeiten */}
         {hasActivities && (
           <div className="rounded-2xl border border-gray-200 p-6 space-y-3">
             <h3 className="font-semibold text-gray-900 flex items-center">
-              Erlaubte Taetigkeiten
+              Erlaubte Tätigkeiten
               <InfoHint text="Nur diese Tätigkeiten können Sie über die Pflegekasse abrechnen. Andere Arbeiten (z.B. Handwerkerarbeiten oder Gebäudereparaturen) zählen nicht dazu." />
             </h3>
             <div className="grid gap-2">
@@ -223,7 +223,7 @@ export default async function BundeslandPage({
         {state.registration_authority && (
           <div className="rounded-2xl border border-gray-200 p-6">
             <h3 className="font-semibold text-gray-900 mb-2 flex items-center">
-              Zustaendige Stelle
+              Zuständige Stelle
               <InfoHint text="An diese Behörde wenden Sie sich, wenn Sie Fragen haben oder sich registrieren möchten. Die können Ihnen auch bei der Abrechnung helfen." />
             </h3>
             <p className="text-sm text-gray-600">{state.registration_authority}</p>
@@ -271,7 +271,7 @@ export default async function BundeslandPage({
 
         <div className="rounded-xl bg-gray-50 p-4">
           <p className="text-xs text-gray-400">
-            Allgemeine Informationen, keine Rechtsberatung. Stand: Maerz 2026.
+            Allgemeine Informationen, keine Rechtsberatung. Stand: März 2026.
           </p>
         </div>
       </div>

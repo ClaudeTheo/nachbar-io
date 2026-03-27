@@ -44,7 +44,7 @@ export function InviteCodeManager({ households, onRefresh }: InviteCodeManagerPr
     loadQuarters();
   }, []);
 
-  // Ausgewaehltes Quartier-Objekt
+  // Ausgewähltes Quartier-Objekt
   const selectedQuarter = quarters.find(q => q.id === selectedQuarterId);
 
   // Gefilterte Haushalte nach Quartier
@@ -56,7 +56,7 @@ export function InviteCodeManager({ households, onRefresh }: InviteCodeManagerPr
   const usedCodes = filteredHouseholds.filter(h => h.memberCount > 0).length;
   const unusedCodes = filteredHouseholds.filter(h => h.memberCount === 0).length;
 
-  // Kryptografisch sicheren Invite-Code generieren — mit Quartier-Prefix falls verfuegbar
+  // Kryptografisch sicheren Invite-Code generieren — mit Quartier-Prefix falls verfügbar
   function generateInviteCode(): string {
     if (selectedQuarter?.invite_prefix) {
       return generateQuarterCode(selectedQuarter.invite_prefix);
@@ -67,14 +67,14 @@ export function InviteCodeManager({ households, onRefresh }: InviteCodeManagerPr
   // Neuen Haushalt + Code anlegen
   async function createHousehold() {
     if (!newStreet || !newHouseNumber) {
-      toast.error("Bitte Strasse und Hausnummer angeben");
+      toast.error("Bitte Straße und Hausnummer angeben");
       return;
     }
 
     setCreating(true);
     const supabase = createClient();
 
-    // Pruefen ob Haushalt schon existiert
+    // Prüfen ob Haushalt schon existiert
     const { data: existing } = await supabase
       .from("households")
       .select("id")
@@ -102,7 +102,7 @@ export function InviteCodeManager({ households, onRefresh }: InviteCodeManagerPr
       lng,
       verified: false,
     };
-    // Quartier-Zuordnung, falls ein Quartier ausgewaehlt ist
+    // Quartier-Zuordnung, falls ein Quartier ausgewählt ist
     if (selectedQuarter) {
       insertData.quarter_id = selectedQuarter.id;
     }
@@ -135,7 +135,7 @@ export function InviteCodeManager({ households, onRefresh }: InviteCodeManagerPr
     }
   }
 
-  // Code widerrufen (Haushalt ohne Mitglieder loeschen)
+  // Code widerrufen (Haushalt ohne Mitglieder löschen)
   async function revokeCode(householdId: string, code: string) {
     setRevoking(householdId);
     const supabase = createClient();
@@ -154,10 +154,10 @@ export function InviteCodeManager({ households, onRefresh }: InviteCodeManagerPr
     setRevoking(null);
   }
 
-  // Code erneuern (kryptografisch sicheren Code generieren fuer bestehenden Haushalt)
+  // Code erneuern (kryptografisch sicheren Code generieren für bestehenden Haushalt)
   async function regenerateCode(householdId: string, quarterId?: string) {
     const supabase = createClient();
-    // Quartier-Prefix fuer Haushalt ermitteln
+    // Quartier-Prefix für Haushalt ermitteln
     const quarter = quarterId ? quarters.find(q => q.id === quarterId) : selectedQuarter;
     const newCode = quarter?.invite_prefix
       ? generateQuarterCode(quarter.invite_prefix)
@@ -176,21 +176,21 @@ export function InviteCodeManager({ households, onRefresh }: InviteCodeManagerPr
     }
   }
 
-  // Strassen gruppieren (nur gefilterte Haushalte)
+  // Straßen gruppieren (nur gefilterte Haushalte)
   const streets = [...new Set(filteredHouseholds.map(h => h.street_name))];
   const unusedHouseholds = filteredHouseholds.filter(h => h.memberCount === 0);
   const usedHouseholds = filteredHouseholds.filter(h => h.memberCount > 0);
 
-  // Quartier-Name aus ID ermitteln (fuer Badges)
+  // Quartier-Name aus ID ermitteln (für Badges)
   function getQuarterName(quarterId?: string): string | null {
     if (!quarterId) return null;
     const q = quarters.find(qr => qr.id === quarterId);
     return q?.name ?? null;
   }
 
-  // Quartier-Prefix aus Invite-Code oder quarter_id ermitteln (fuer Badge-Anzeige)
+  // Quartier-Prefix aus Invite-Code oder quarter_id ermitteln (für Badge-Anzeige)
   function getQuarterBadge(household: Household): string | null {
-    // Zuerst ueber quarter_id
+    // Zuerst über quarter_id
     const name = getQuarterName(household.quarter_id);
     if (name) return name;
     // Fallback: Prefix aus Code extrahieren
@@ -252,7 +252,7 @@ export function InviteCodeManager({ households, onRefresh }: InviteCodeManagerPr
               onChange={(e) => setNewStreet(e.target.value)}
               className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
             >
-              <option value="">Strasse waehlen...</option>
+              <option value="">Straße wählen...</option>
               {streets.map((s) => (
                 <option key={s} value={s}>{s}</option>
               ))}
@@ -335,7 +335,7 @@ export function InviteCodeManager({ households, onRefresh }: InviteCodeManagerPr
               >
                 <RotateCcw className="h-3.5 w-3.5 text-blue-500" />
               </Button>
-              {/* Code widerrufen (Haushalt loeschen) */}
+              {/* Code widerrufen (Haushalt löschen) */}
               <Button
                 size="sm"
                 variant="ghost"
@@ -386,13 +386,13 @@ export function InviteCodeManager({ households, onRefresh }: InviteCodeManagerPr
               <Badge variant="default" className="text-[10px]">
                 {h.memberCount} Bew.
               </Badge>
-              {/* Code erneuern (fuer den Fall, dass er kompromittiert wurde) */}
+              {/* Code erneuern (für den Fall, dass er kompromittiert wurde) */}
               <Button
                 size="sm"
                 variant="ghost"
                 className="h-7 w-7 p-0"
                 onClick={() => regenerateCode(h.id, h.quarter_id)}
-                title="Code erneuern (alter Code wird ungueltig)"
+                title="Code erneuern (alter Code wird ungültig)"
               >
                 <RotateCcw className="h-3.5 w-3.5 text-blue-500" />
               </Button>

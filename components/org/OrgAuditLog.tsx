@@ -1,10 +1,10 @@
 // components/org/OrgAuditLog.tsx
-// Nachbar.io — Audit-Log Viewer fuer Pro Community Organisationen
+// Nachbar.io — Audit-Log Viewer für Pro Community Organisationen
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
 
-// Typen fuer Audit-Log-Eintraege (aus API)
+// Typen für Audit-Log-Einträge (aus API)
 interface AuditEntry {
   id: string;
   org_id: string;
@@ -73,7 +73,7 @@ const ACTION_CONFIG: Record<
   },
 };
 
-// Fallback fuer unbekannte Aktionen
+// Fallback für unbekannte Aktionen
 const DEFAULT_ACTION_CONFIG = {
   label: "Aktion",
   className: "bg-gray-100 text-gray-600",
@@ -168,7 +168,7 @@ export function OrgAuditLog({ orgId }: OrgAuditLogProps) {
       {entries.length === 0 ? (
         <div className="rounded-xl border bg-white p-6 text-center shadow-sm">
           <p className="text-sm text-gray-400">
-            Noch keine Audit-Eintraege vorhanden.
+            Noch keine Audit-Einträge vorhanden.
           </p>
         </div>
       ) : (

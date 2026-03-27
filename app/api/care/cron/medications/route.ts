@@ -1,5 +1,5 @@
 // app/api/care/cron/medications/route.ts
-// Nachbar.io — Medikamenten-Erinnerungs-Cron: Faellige Einnahmen erinnern und verpasste protokollieren (alle 5 Min)
+// Nachbar.io — Medikamenten-Erinnerungs-Cron: Fällige Einnahmen erinnern und verpasste protokollieren (alle 5 Min)
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
@@ -10,21 +10,21 @@ import { decryptFieldsArray, CARE_MEDICATIONS_ENCRYPTED_FIELDS } from '@/lib/car
 import { writeCronHeartbeat } from '@/lib/care/cron-heartbeat';
 import type { CareMedication, MedicationSchedule } from '@/lib/care/types';
 
-// Wochentagsnamen auf Deutsch (Index entspricht getDay()-Rueckgabe: 0 = Sonntag)
+// Wochentagsnamen auf Deutsch (Index entspricht getDay()-Rückgabe: 0 = Sonntag)
 const DAY_NAMES = ['Sonntag', 'Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag'];
 
 /**
- * Berechnet die heutigen Einnahmezeitpunkte fuer ein Medikament basierend auf dem Schedule-Typ.
- * Gibt eine Liste von HH:MM-Strings zurueck.
+ * Berechnet die heutigen Einnahmezeitpunkte für ein Medikament basierend auf dem Schedule-Typ.
+ * Gibt eine Liste von HH:MM-Strings zurück.
  */
 function getTodayScheduledTimes(schedule: MedicationSchedule, now: Date): string[] {
   if (schedule.type === 'daily') {
-    // Taeglich: alle konfigurierten Zeiten
+    // Täglich: alle konfigurierten Zeiten
     return schedule.times ?? [];
   }
 
   if (schedule.type === 'weekly') {
-    // Woechentlich: nur wenn der heutige Wochentag enthalten ist
+    // Wöchentlich: nur wenn der heutige Wochentag enthalten ist
     const dayName = DAY_NAMES[now.getDay()];
     if (schedule.days?.includes(dayName)) {
       return schedule.time ? [schedule.time] : [];
@@ -47,7 +47,7 @@ function getTodayScheduledTimes(schedule: MedicationSchedule, now: Date): string
 
 // GET /api/care/cron/medications — Medikamenten-Erinnerungs-Scheduler (Vercel Cron: alle 5 Minuten)
 export async function GET(request: NextRequest) {
-  // Cron-Auth: Authorization-Header gegen CRON_SECRET pruefen
+  // Cron-Auth: Authorization-Header gegen CRON_SECRET prüfen
   const cronSecret = process.env.CRON_SECRET;
   if (!cronSecret) {
     console.error('CRON_SECRET nicht konfiguriert — Cron-Endpunkt blockiert');
@@ -74,7 +74,7 @@ export async function GET(request: NextRequest) {
     );
   }
 
-  // Medikamenten-Felder entschluesseln (Art. 9 DSGVO) — Name, Dosierung, Anweisungen fuer Benachrichtigungen
+  // Medikamenten-Felder entschlüsseln (Art. 9 DSGVO) — Name, Dosierung, Anweisungen für Benachrichtigungen
   const allMedications: CareMedication[] = decryptFieldsArray(medications ?? [], CARE_MEDICATIONS_ENCRYPTED_FIELDS) as CareMedication[];
   const now = new Date();
 
@@ -86,7 +86,7 @@ export async function GET(request: NextRequest) {
     const scheduledTimes = getTodayScheduledTimes(schedule, now);
 
     for (const timeStr of scheduledTimes) {
-      // Geplanten Einnahmezeitpunkt fuer heute berechnen (HH:MM -> Date)
+      // Geplanten Einnahmezeitpunkt für heute berechnen (HH:MM -> Date)
       const [hours, minutes] = timeStr.split(':').map(Number);
       if (isNaN(hours) || isNaN(minutes)) continue;
 
@@ -95,10 +95,10 @@ export async function GET(request: NextRequest) {
 
       const elapsedMinutes = (now.getTime() - scheduledAt.getTime()) / (1000 * 60);
 
-      // Nur Zeitpunkte beruecksichtigen, die in der Vergangenheit liegen
+      // Nur Zeitpunkte berücksichtigen, die in der Vergangenheit liegen
       if (elapsedMinutes < 0) continue;
 
-      // Vorhandenen Log-Eintrag fuer diese Medikament+Zeit-Kombination pruefen
+      // Vorhandenen Log-Eintrag für diese Medikament+Zeit-Kombination prüfen
       const { data: existingLog, error: logError } = await supabase
         .from('care_medication_logs')
         .select('id, status, snoozed_until, confirmed_at')
@@ -109,7 +109,7 @@ export async function GET(request: NextRequest) {
 
       if (logError) {
         console.error(
-          `[care/cron/medications] Log-Abfrage fuer Medikament ${medication.id} fehlgeschlagen:`,
+          `[care/cron/medications] Log-Abfrage für Medikament ${medication.id} fehlgeschlagen:`,
           logError
         );
         continue;
@@ -119,7 +119,7 @@ export async function GET(request: NextRequest) {
       if (existingLog?.status === 'snoozed' && existingLog.snoozed_until) {
         const snoozedUntil = new Date(existingLog.snoozed_until);
 
-        // Pruefe ob Snooze-Zeit abgelaufen und noch nicht mehr als 5 Min verstrichen
+        // Prüfe ob Snooze-Zeit abgelaufen und noch nicht mehr als 5 Min verstrichen
         const snoozeElapsedMinutes = (now.getTime() - snoozedUntil.getTime()) / (1000 * 60);
         if (snoozeElapsedMinutes >= 0 && snoozeElapsedMinutes < 5) {
           // Re-Erinnerung nach Snooze senden
@@ -137,7 +137,7 @@ export async function GET(request: NextRequest) {
             remindersCount++;
           } catch (notifyError) {
             console.error(
-              `[care/cron/medications] Re-Erinnerung nach Snooze fuer Senior ${medication.senior_id} fehlgeschlagen:`,
+              `[care/cron/medications] Re-Erinnerung nach Snooze für Senior ${medication.senior_id} fehlgeschlagen:`,
               notifyError
             );
           }
@@ -145,12 +145,12 @@ export async function GET(request: NextRequest) {
         continue;
       }
 
-      // Bereits genommen, uebersprungen oder verpasst — kein weiterer Handlungsbedarf
+      // Bereits genommen, übersprungen oder verpasst — kein weiterer Handlungsbedarf
       if (existingLog?.status === 'taken' || existingLog?.status === 'skipped' || existingLog?.status === 'missed') {
         continue;
       }
 
-      // === Phase 1: Erste Erinnerung (0-5 Min nach Faelligkeitszeit) ===
+      // === Phase 1: Erste Erinnerung (0-5 Min nach Fälligkeitszeit) ===
       if (elapsedMinutes >= 0 && elapsedMinutes < 5) {
         if (!existingLog) {
           // Noch kein Log-Eintrag — Erinnerung senden
@@ -158,7 +158,7 @@ export async function GET(request: NextRequest) {
             await sendCareNotification(supabase, {
               userId: medication.senior_id,
               type: 'care_medication_reminder',
-              title: 'Zeit fuer Ihr Medikament',
+              title: 'Zeit für Ihr Medikament',
               body: `Bitte nehmen Sie jetzt: ${medication.name}${medication.dosage ? ` (${medication.dosage})` : ''}${medication.instructions ? `. Hinweis: ${medication.instructions}` : ''}.`,
               referenceType: 'care_medications',
               referenceId: medication.id,
@@ -168,7 +168,7 @@ export async function GET(request: NextRequest) {
             remindersCount++;
           } catch (notifyError) {
             console.error(
-              `[care/cron/medications] Erste Erinnerung fuer Senior ${medication.senior_id} fehlgeschlagen:`,
+              `[care/cron/medications] Erste Erinnerung für Senior ${medication.senior_id} fehlgeschlagen:`,
               notifyError
             );
           }
@@ -198,7 +198,7 @@ export async function GET(request: NextRequest) {
 
           if (insertError || !missedLog) {
             console.error(
-              `[care/cron/medications] Verpasst-Log fuer Medikament ${medication.id} konnte nicht erstellt werden:`,
+              `[care/cron/medications] Verpasst-Log für Medikament ${medication.id} konnte nicht erstellt werden:`,
               insertError
             );
             continue;
@@ -234,7 +234,7 @@ export async function GET(request: NextRequest) {
               userId: medication.senior_id,
               type: 'care_medication_missed',
               title: 'Medikament nicht eingenommen',
-              body: `Sie haben ${medication.name} um ${timeStr} Uhr nicht eingenommen. Bitte wenden Sie sich an Ihre Angehoerigen oder Ihren Arzt.`,
+              body: `Sie haben ${medication.name} um ${timeStr} Uhr nicht eingenommen. Bitte wenden Sie sich an Ihre Angehörigen oder Ihren Arzt.`,
               referenceId: missedLog.id,
               referenceType: 'care_medication_logs',
               url: '/care/medications',
@@ -242,12 +242,12 @@ export async function GET(request: NextRequest) {
             });
           } catch (notifyError) {
             console.error(
-              `[care/cron/medications] Verpasst-Benachrichtigung fuer Senior ${medication.senior_id} fehlgeschlagen:`,
+              `[care/cron/medications] Verpasst-Benachrichtigung für Senior ${medication.senior_id} fehlgeschlagen:`,
               notifyError
             );
           }
 
-          // Angehoerige und Pflegedienst-Helfer benachrichtigen
+          // Angehörige und Pflegedienst-Helfer benachrichtigen
           try {
             const { data: helpers, error: helpersError } = await supabase
               .from('care_helpers')
@@ -258,7 +258,7 @@ export async function GET(request: NextRequest) {
 
             if (helpersError) {
               console.error(
-                `[care/cron/medications] Helfer-Abfrage fuer Senior ${medication.senior_id} fehlgeschlagen:`,
+                `[care/cron/medications] Helfer-Abfrage für Senior ${medication.senior_id} fehlgeschlagen:`,
                 helpersError
               );
             } else if (helpers && helpers.length > 0) {
@@ -267,7 +267,7 @@ export async function GET(request: NextRequest) {
                   userId: helper.user_id,
                   type: 'care_medication_missed',
                   title: 'Medikament nicht eingenommen — Bitte nachfragen',
-                  body: `Ihr Angehoeriger hat ${medication.name} um ${timeStr} Uhr nicht eingenommen.`,
+                  body: `Ihr Angehöriger hat ${medication.name} um ${timeStr} Uhr nicht eingenommen.`,
                   referenceId: missedLog.id,
                   referenceType: 'care_medication_logs',
                   url: '/care/medications',
@@ -279,7 +279,7 @@ export async function GET(request: NextRequest) {
             }
           } catch (notifyError) {
             console.error(
-              `[care/cron/medications] Helfer-Benachrichtigung fuer Senior ${medication.senior_id} fehlgeschlagen:`,
+              `[care/cron/medications] Helfer-Benachrichtigung für Senior ${medication.senior_id} fehlgeschlagen:`,
               notifyError
             );
           }

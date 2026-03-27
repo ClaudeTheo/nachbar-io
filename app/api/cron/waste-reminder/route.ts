@@ -10,12 +10,12 @@ export const dynamic = 'force-dynamic';
 
 // Deutsche Bezeichnungen für Müllarten
 const WASTE_TYPE_LABELS: Record<string, string> = {
-  restmuell: 'Restmüll',
-  biomuell: 'Biomüll',
+  restmüll: 'Restmüll',
+  biomüll: 'Biomüll',
   papier: 'Papier',
   gelber_sack: 'Gelber Sack',
   gruenschnitt: 'Grünschnitt',
-  sperrmuell: 'Sperrmüll',
+  sperrmüll: 'Sperrmüll',
 };
 
 export async function GET(request: NextRequest) {
@@ -36,7 +36,7 @@ export async function GET(request: NextRequest) {
     tomorrow.setDate(tomorrow.getDate() + 1);
     const tomorrowStr = tomorrow.toISOString().split('T')[0]; // YYYY-MM-DD
 
-    // 1. Abholtermine fuer morgen: Neue Tabelle (source-driven) + Fallback (Legacy)
+    // 1. Abholtermine für morgen: Neue Tabelle (source-driven) + Fallback (Legacy)
     const { data: newDates } = await supabase
       .from('waste_collection_dates')
       .select('id, area_id, waste_type, notes, time_hint')
@@ -160,7 +160,7 @@ export async function GET(request: NextRequest) {
       const userQuarterId = userQuarterMap.get(reminder.user_id);
       if (!userQuarterId) continue;
 
-      // Pruefen ob es einen passenden Abholtermin gibt
+      // Prüfen ob es einen passenden Abholtermin gibt
       const matchingSchedule = useNewDates
         ? schedules.find((s) => s.waste_type === reminder.waste_type && quarterIds.includes(userQuarterId))
         : schedules.find((s) => 'quarter_id' in s && s.quarter_id === userQuarterId && s.waste_type === reminder.waste_type);

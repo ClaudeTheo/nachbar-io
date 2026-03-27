@@ -1,12 +1,12 @@
 // app/api/care/consultations/[id]/status/route.ts
-// Nachbar.io — Online-Sprechstunde: Status-Uebergaenge (nur Host)
+// Nachbar.io — Online-Sprechstunde: Status-Übergänge (nur Host)
 import { NextRequest, NextResponse } from 'next/server';
 import { createCareLogger } from '@/lib/care/logger';
 import { requireAuth, requireSubscription, unauthorizedResponse } from '@/lib/care/api-helpers';
 import { encryptField } from '@/lib/care/field-encryption';
 import type { ConsultationStatus } from '@/lib/care/types';
 
-// Erlaubte Status-Uebergaenge (State-Machine)
+// Erlaubte Status-Übergänge (State-Machine)
 const VALID_TRANSITIONS: Record<string, ConsultationStatus[]> = {
   scheduled: ['waiting', 'cancelled'],
   waiting: ['active', 'cancelled', 'no_show'],
@@ -38,7 +38,7 @@ export async function PATCH(
   try {
     body = await request.json();
   } catch {
-    return NextResponse.json({ error: 'Ungueltiges JSON' }, { status: 400 });
+    return NextResponse.json({ error: 'Ungültiges JSON' }, { status: 400 });
   }
 
   if (!body.status) {
@@ -56,16 +56,16 @@ export async function PATCH(
     return NextResponse.json({ error: 'Termin nicht gefunden' }, { status: 404 });
   }
 
-  // Nur der Host darf den Status aendern
+  // Nur der Host darf den Status ändern
   if (slot.host_user_id !== user.id) {
-    return NextResponse.json({ error: 'Nur der Host darf den Status aendern' }, { status: 403 });
+    return NextResponse.json({ error: 'Nur der Host darf den Status ändern' }, { status: 403 });
   }
 
-  // State-Machine pruefen
+  // State-Machine prüfen
   const allowed = VALID_TRANSITIONS[slot.status] || [];
   if (!allowed.includes(body.status)) {
     return NextResponse.json({
-      error: `Ungueltige Status-Aenderung: ${slot.status} → ${body.status}`,
+      error: `Ungültige Status-Änderung: ${slot.status} → ${body.status}`,
     }, { status: 400 });
   }
 
@@ -74,7 +74,7 @@ export async function PATCH(
     updated_at: new Date().toISOString(),
   };
 
-  // Notizen bei medizinischen Sprechstunden verschluesseln (Art. 9 DSGVO)
+  // Notizen bei medizinischen Sprechstunden verschlüsseln (Art. 9 DSGVO)
   if (body.notes) {
     if (slot.provider_type === 'medical') {
       updateData.notes = encryptField(body.notes);
@@ -96,7 +96,7 @@ export async function PATCH(
     return NextResponse.json({ error: 'Vorgang fehlgeschlagen' }, { status: 500 });
   }
 
-  // Audit-Log fuer medizinische Sprechstunden (strukturiertes JSON-Logging)
+  // Audit-Log für medizinische Sprechstunden (strukturiertes JSON-Logging)
   // consultation_status_change ist kein CareAuditEventType, daher console.log
   if (slot.provider_type === 'medical') {
     console.log(JSON.stringify({

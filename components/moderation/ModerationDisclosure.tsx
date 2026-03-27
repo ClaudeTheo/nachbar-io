@@ -92,7 +92,7 @@ export function ModerationDisclosure({ onAccept }: { onAccept?: () => void }) {
 }
 
 /**
- * Prueft ob die Moderation-Disclosure bereits akzeptiert wurde.
+ * Prüft ob die Moderation-Disclosure bereits akzeptiert wurde.
  * Nutzbar in Formularen: Erst Disclosure anzeigen, dann Post erlauben.
  */
 export function isModerationDisclosureAccepted(): boolean {

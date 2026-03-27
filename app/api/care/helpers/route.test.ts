@@ -1,5 +1,5 @@
 // app/api/care/helpers/route.test.ts
-// Nachbar.io — Tests fuer Helfer API-Route (GET + POST)
+// Nachbar.io — Tests für Helfer API-Route (GET + POST)
 // Testet: Auth, Zugriffskontrolle, Rollen-Validierung, Doppelregistrierung
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
@@ -49,7 +49,7 @@ describe('GET /api/care/helpers', () => {
     expect(res.status).toBe(401);
   });
 
-  it('laedt Helfer fuer authentifizierten User', async () => {
+  it('lädt Helfer für authentifizierten User', async () => {
     mockSupabase.setUser({ id: 'user-1' });
     // Admin-Check (nicht-Admin)
     mockSupabase.addResponse('users', { data: { is_admin: false }, error: null });
@@ -63,7 +63,7 @@ describe('GET /api/care/helpers', () => {
     expect(res.status).toBe(200);
   });
 
-  it('prueft Zugriff bei senior_id-Parameter', async () => {
+  it('prüft Zugriff bei senior_id-Parameter', async () => {
     mockSupabase.setUser({ id: 'helfer-1' });
     mockSupabase.addResponse('care_helpers', { data: [], error: null });
 
@@ -107,17 +107,17 @@ describe('POST /api/care/helpers', () => {
     const res = await POST(createPostRequest({}));
     expect(res.status).toBe(400);
     const json = await res.json();
-    expect(json.error).toContain('Ungueltige Rolle');
+    expect(json.error).toContain('Ungültige Rolle');
   });
 
-  it('weist ungueltige Rolle ab', async () => {
+  it('weist ungültige Rolle ab', async () => {
     const res = await POST(createPostRequest({ role: 'hacker' }));
     expect(res.status).toBe(400);
     const json = await res.json();
-    expect(json.error).toContain('Ungueltige Rolle');
+    expect(json.error).toContain('Ungültige Rolle');
   });
 
-  it('akzeptiert gueltige Rollen', async () => {
+  it('akzeptiert gültige Rollen', async () => {
     for (const role of ['neighbor', 'relative', 'care_service']) {
       mockSupabase.reset();
       mockSupabase.setUser({ id: `user-${role}` });
@@ -143,7 +143,7 @@ describe('POST /api/care/helpers', () => {
     expect(json.error).toContain('bereits als Helfer');
   });
 
-  it('weist ungueltiges JSON ab', async () => {
+  it('weist ungültiges JSON ab', async () => {
     const req = new NextRequest('http://localhost:3000/api/care/helpers', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },

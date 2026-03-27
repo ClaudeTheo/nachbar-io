@@ -1,5 +1,5 @@
 // app/api/care/tasks/[id]/route.ts
-// Nachbar.io — Aufgabentafel: Status-Uebergaenge (PATCH) und Loeschen (DELETE)
+// Nachbar.io — Aufgabentafel: Status-Übergänge (PATCH) und Löschen (DELETE)
 
 import { NextRequest, NextResponse } from 'next/server';
 import { writeAuditLog } from '@/lib/care/audit';
@@ -10,7 +10,7 @@ export const dynamic = 'force-dynamic';
 
 type TaskAction = 'claim' | 'unclaim' | 'start' | 'complete' | 'confirm' | 'cancel';
 
-// Erlaubte Status-Uebergaenge: action → [erlaubte Quell-Status]
+// Erlaubte Status-Übergänge: action → [erlaubte Quell-Status]
 const TRANSITIONS: Record<TaskAction, string[]> = {
   claim:    ['open'],
   unclaim:  ['claimed'],
@@ -20,7 +20,7 @@ const TRANSITIONS: Record<TaskAction, string[]> = {
   cancel:   ['open', 'claimed'],
 };
 
-// PATCH /api/care/tasks/[id] — Status-Uebergang
+// PATCH /api/care/tasks/[id] — Status-Übergang
 export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -41,14 +41,14 @@ export async function PATCH(
   try {
     body = await request.json();
   } catch {
-    return NextResponse.json({ error: 'Ungueltiges Anfrage-Format' }, { status: 400 });
+    return NextResponse.json({ error: 'Ungültiges Anfrage-Format' }, { status: 400 });
   }
 
   const { action } = body;
 
   if (!action || !Object.keys(TRANSITIONS).includes(action)) {
     return NextResponse.json(
-      { error: `Ungueltige Aktion: ${action}. Erlaubt: ${Object.keys(TRANSITIONS).join(', ')}` },
+      { error: `Ungültige Aktion: ${action}. Erlaubt: ${Object.keys(TRANSITIONS).join(', ')}` },
       { status: 400 }
     );
   }
@@ -69,7 +69,7 @@ export async function PATCH(
     return NextResponse.json({ error: 'Aufgabe konnte nicht geladen werden' }, { status: 500 });
   }
 
-  // Status-Uebergang pruefen
+  // Status-Übergang prüfen
   const allowedFrom = TRANSITIONS[typedAction];
   if (!allowedFrom.includes(task.status)) {
     return NextResponse.json(
@@ -78,22 +78,22 @@ export async function PATCH(
     );
   }
 
-  // Berechtigungspruefung
+  // Berechtigungsprüfung
   const isCreator = task.creator_id === user.id;
   const isClaimer = task.claimed_by === user.id;
 
   // confirm/cancel: nur Ersteller
   if ((typedAction === 'confirm' || typedAction === 'cancel') && !isCreator) {
     return NextResponse.json(
-      { error: 'Nur der Ersteller kann diese Aktion ausfuehren' },
+      { error: 'Nur der Ersteller kann diese Aktion ausführen' },
       { status: 403 }
     );
   }
 
-  // unclaim/start/complete: nur derjenige, der die Aufgabe uebernommen hat
+  // unclaim/start/complete: nur derjenige, der die Aufgabe übernommen hat
   if ((typedAction === 'unclaim' || typedAction === 'start' || typedAction === 'complete') && !isClaimer) {
     return NextResponse.json(
-      { error: 'Nur die Person, die die Aufgabe uebernommen hat, kann diese Aktion ausfuehren' },
+      { error: 'Nur die Person, die die Aufgabe übernommen hat, kann diese Aktion ausführen' },
       { status: 403 }
     );
   }
@@ -164,12 +164,12 @@ export async function PATCH(
 
   // Push-Benachrichtigungen
   if (typedAction === 'claim') {
-    // Ersteller benachrichtigen, dass jemand die Aufgabe uebernommen hat
+    // Ersteller benachrichtigen, dass jemand die Aufgabe übernommen hat
     await sendCareNotification(supabase, {
       userId: task.creator_id,
       type: 'care_task_claimed',
-      title: 'Aufgabe uebernommen',
-      body: `Ihre Aufgabe "${task.title}" wurde uebernommen.`,
+      title: 'Aufgabe übernommen',
+      body: `Ihre Aufgabe "${task.title}" wurde übernommen.`,
       referenceType: 'care_tasks',
       referenceId: id,
       url: '/care/tasks',
@@ -183,7 +183,7 @@ export async function PATCH(
       userId: task.creator_id,
       type: 'care_task_completed',
       title: 'Aufgabe erledigt',
-      body: `Ihre Aufgabe "${task.title}" wurde als erledigt markiert. Bitte bestaetigen Sie die Erledigung.`,
+      body: `Ihre Aufgabe "${task.title}" wurde als erledigt markiert. Bitte bestätigen Sie die Erledigung.`,
       referenceType: 'care_tasks',
       referenceId: id,
       url: '/care/tasks',
@@ -194,7 +194,7 @@ export async function PATCH(
   return NextResponse.json(updated);
 }
 
-// DELETE /api/care/tasks/[id] — Aufgabe loeschen (nur Ersteller, nur offene)
+// DELETE /api/care/tasks/[id] — Aufgabe löschen (nur Ersteller, nur offene)
 export async function DELETE(
   _request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -211,7 +211,7 @@ export async function DELETE(
 
   const { supabase, user } = auth;
 
-  // Aufgabe laden fuer Berechtigungspruefung
+  // Aufgabe laden für Berechtigungsprüfung
   const { data: task, error: fetchError } = await supabase
     .from('care_tasks')
     .select('creator_id, status, title')
@@ -226,12 +226,12 @@ export async function DELETE(
   }
 
   if (task.creator_id !== user.id) {
-    return NextResponse.json({ error: 'Nur der Ersteller kann die Aufgabe loeschen' }, { status: 403 });
+    return NextResponse.json({ error: 'Nur der Ersteller kann die Aufgabe löschen' }, { status: 403 });
   }
 
   if (task.status !== 'open') {
     return NextResponse.json(
-      { error: 'Nur offene Aufgaben koennen geloescht werden' },
+      { error: 'Nur offene Aufgaben können gelöscht werden' },
       { status: 409 }
     );
   }
@@ -242,8 +242,8 @@ export async function DELETE(
     .eq('id', id);
 
   if (deleteError) {
-    console.error('[care/tasks] Loeschen fehlgeschlagen:', deleteError);
-    return NextResponse.json({ error: 'Aufgabe konnte nicht geloescht werden' }, { status: 500 });
+    console.error('[care/tasks] Löschen fehlgeschlagen:', deleteError);
+    return NextResponse.json({ error: 'Aufgabe konnte nicht gelöscht werden' }, { status: 500 });
   }
 
   // Audit-Log

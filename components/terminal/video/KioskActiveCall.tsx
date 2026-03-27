@@ -150,7 +150,7 @@ export default function KioskActiveCall({
           {isMicMuted ? <MicOff className="h-8 w-8" /> : <Mic className="h-8 w-8" />}
         </button>
 
-        {/* Auflegen (zentral, groesser) */}
+        {/* Auflegen (zentral, größer) */}
         <button
           onClick={handleHangup}
           aria-label="Auflegen"

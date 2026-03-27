@@ -1,5 +1,5 @@
-// GET /api/device/contacts — Kontaktliste fuer Kiosk-Terminal (Videoanruf)
-// Gibt alle aktiven Caregiver-Links mit Namen/Avatar zurueck
+// GET /api/device/contacts — Kontaktliste für Kiosk-Terminal (Videoanruf)
+// Gibt alle aktiven Caregiver-Links mit Namen/Avatar zurück
 
 import { NextRequest, NextResponse } from "next/server";
 import { authenticateDevice, isAuthError } from "@/lib/device/auth";

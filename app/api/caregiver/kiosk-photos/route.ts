@@ -17,7 +17,7 @@ const SIGNED_URL_EXPIRY = 3600; // 1 Stunde
 
 /**
  * GET /api/caregiver/kiosk-photos?household_id=...
- * Fotos eines Haushalts auflisten. Zugriff fuer Caregiver und Haushaltsmitglieder.
+ * Fotos eines Haushalts auflisten. Zugriff für Caregiver und Haushaltsmitglieder.
  */
 export async function GET(request: NextRequest) {
   // Auth
@@ -35,7 +35,7 @@ export async function GET(request: NextRequest) {
     return errorResponse("household_id ist erforderlich", 400);
   }
 
-  // Zugriffspruefung: Caregiver-Link ODER Haushaltsmitglied
+  // Zugriffsprüfung: Caregiver-Link ODER Haushaltsmitglied
   const { data: link } = await supabase
     .from("caregiver_links")
     .select("id")
@@ -122,7 +122,7 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  // Zugriffspruefung: Caregiver-Link + Bewohner im Haushalt
+  // Zugriffsprüfung: Caregiver-Link + Bewohner im Haushalt
   const { data: link } = await supabase
     .from("caregiver_links")
     .select("id, resident_id")
@@ -148,7 +148,7 @@ export async function POST(request: NextRequest) {
     return errorResponse("Bewohner gehört nicht zu diesem Haushalt", 403);
   }
 
-  // Limit pruefen: max 200 Fotos pro Haushalt
+  // Limit prüfen: max 200 Fotos pro Haushalt
   const { count } = await supabase
     .from("kiosk_photos")
     .select("id", { count: "exact", head: true })

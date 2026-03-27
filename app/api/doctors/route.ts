@@ -1,11 +1,11 @@
 // app/api/doctors/route.ts
-// Nachbar.io — Oeffentliche Arzt-Liste (GET)
-// Pro Medical: Sichtbare Aerzte mit optionaler Filterung nach Quartier und Fachgebiet
+// Nachbar.io — Öffentliche Arzt-Liste (GET)
+// Pro Medical: Sichtbare Ärzte mit optionaler Filterung nach Quartier und Fachgebiet
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 
-// GET /api/doctors — Oeffentliche Liste sichtbarer Aerzte
+// GET /api/doctors — Öffentliche Liste sichtbarer Ärzte
 // Filter: ?quarter_id=UUID, ?specialization=Allgemeinmedizin
 export async function GET(request: NextRequest) {
   const supabase = await createClient();
@@ -20,12 +20,12 @@ export async function GET(request: NextRequest) {
     .eq('visible', true)
     .order('created_at', { ascending: false });
 
-  // Filter: Quartier (quarter_ids enthaelt die gesuchte UUID)
+  // Filter: Quartier (quarter_ids enthält die gesuchte UUID)
   if (quarterId) {
     query = query.contains('quarter_ids', [quarterId]);
   }
 
-  // Filter: Fachgebiet (specialization enthaelt den gesuchten String)
+  // Filter: Fachgebiet (specialization enthält den gesuchten String)
   if (specialization) {
     query = query.contains('specialization', [specialization]);
   }
@@ -34,7 +34,7 @@ export async function GET(request: NextRequest) {
 
   if (error) {
     console.error('[doctors] Abfrage fehlgeschlagen:', error);
-    return NextResponse.json({ error: 'Aerzte konnten nicht geladen werden' }, { status: 500 });
+    return NextResponse.json({ error: 'Ärzte konnten nicht geladen werden' }, { status: 500 });
   }
 
   return NextResponse.json(data ?? []);

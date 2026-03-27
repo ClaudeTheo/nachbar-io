@@ -1,14 +1,14 @@
 'use client'
 
-// Stimmen-Einstellungen fuer den KI-Companion
+// Stimmen-Einstellungen für den KI-Companion
 // Drei Toggles: Stimme (Weiblich/Maennlich), Tempo (Normal/Langsam), Anrede (Foermlich/Vertraut)
-// + Vorschau-Button zum Probehoeren der aktuellen Stimme
+// + Vorschau-Button zum Probehören der aktuellen Stimme
 
 import { useState, useRef, useCallback } from 'react'
 import { Volume2, Square, Loader2 } from 'lucide-react'
 
 export interface VoicePreferences {
-  voice: 'nova' | 'onyx'     // nova = weiblich, onyx = maennlich
+  voice: 'nova' | 'onyx'     // nova = weiblich, onyx = männlich
   speed: number               // 1.0 = normal, 0.85 = langsam
   formality: 'formal' | 'informal'
 }
@@ -24,7 +24,7 @@ interface ToggleOption {
   active: boolean
 }
 
-// Vorschau-Saetze je nach Anrede und Stimme
+// Vorschau-Sätze je nach Anrede und Stimme
 const PREVIEW_TEXTS: Record<string, Record<string, string>> = {
   formal: {
     nova: 'Guten Tag, ich bin Ihre digitale Nachbarschaftshelferin. Wie kann ich Ihnen heute behilflich sein?',
@@ -214,7 +214,7 @@ export function VoiceSettings({ settings, onChange }: VoiceSettingsProps) {
         {previewState === 'idle' && (
           <>
             <Volume2 className="h-4 w-4" />
-            Stimme anhoeren
+            Stimme anhören
           </>
         )}
       </button>

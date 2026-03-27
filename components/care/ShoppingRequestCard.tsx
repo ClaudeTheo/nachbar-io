@@ -34,10 +34,10 @@ const STATUS_CONFIG: Record<
   { label: string; bg: string; text: string; Icon: React.ComponentType<{ className?: string }> }
 > = {
   open:      { label: 'Offen',       bg: 'bg-blue-100',   text: 'text-blue-700',    Icon: Clock },
-  claimed:   { label: 'Uebernommen', bg: 'bg-amber-100',  text: 'text-amber-700',   Icon: UserCheck },
+  claimed:   { label: 'Übernommen', bg: 'bg-amber-100',  text: 'text-amber-700',   Icon: UserCheck },
   shopping:  { label: 'Wird eingekauft', bg: 'bg-purple-100', text: 'text-purple-700', Icon: ShoppingCart },
   delivered: { label: 'Geliefert',    bg: 'bg-green-100',  text: 'text-green-700',   Icon: Truck },
-  confirmed: { label: 'Bestaetigt',   bg: 'bg-emerald-100', text: 'text-emerald-800', Icon: Check },
+  confirmed: { label: 'Bestätigt',   bg: 'bg-emerald-100', text: 'text-emerald-800', Icon: Check },
   cancelled: { label: 'Storniert',    bg: 'bg-gray-100',   text: 'text-gray-500',    Icon: X },
 };
 
@@ -59,7 +59,7 @@ export function ShoppingRequestCard({ request, currentUserId, onUpdate }: Shoppi
   const config = STATUS_CONFIG[request.status] ?? STATUS_CONFIG.open;
   const StatusIcon = config.Icon;
 
-  // Aktion ausfuehren (PATCH /api/care/shopping/[id])
+  // Aktion ausführen (PATCH /api/care/shopping/[id])
   async function executeAction(action: string) {
     setError(null);
     setLoading(action);
@@ -89,7 +89,7 @@ export function ShoppingRequestCard({ request, currentUserId, onUpdate }: Shoppi
   function renderActions() {
     const buttons: React.ReactNode[] = [];
 
-    // Offen + nicht Ersteller → Uebernehmen
+    // Offen + nicht Ersteller → Übernehmen
     if (request.status === 'open' && !isRequester) {
       buttons.push(
         <button
@@ -100,12 +100,12 @@ export function ShoppingRequestCard({ request, currentUserId, onUpdate }: Shoppi
           style={{ minHeight: '48px', touchAction: 'manipulation' }}
         >
           <UserCheck className="h-4 w-4" />
-          {loading === 'claim' ? 'Wird uebernommen...' : 'Ich uebernehme das'}
+          {loading === 'claim' ? 'Wird übernommen...' : 'Ich übernehme das'}
         </button>
       );
     }
 
-    // Uebernommen + ist Uebernehmender → Geliefert + Zurueckziehen
+    // Übernommen + ist Übernehmender → Geliefert + Zurückziehen
     if (request.status === 'claimed' && isClaimer) {
       buttons.push(
         <button
@@ -125,12 +125,12 @@ export function ShoppingRequestCard({ request, currentUserId, onUpdate }: Shoppi
           className="rounded-lg border-2 border-gray-300 px-4 py-3 text-sm font-medium text-anthrazit hover:bg-gray-50 active:bg-gray-100 disabled:opacity-50"
           style={{ minHeight: '48px', touchAction: 'manipulation' }}
         >
-          {loading === 'unclaim' ? '...' : 'Zurueckziehen'}
+          {loading === 'unclaim' ? '...' : 'Zurückziehen'}
         </button>
       );
     }
 
-    // Geliefert + ist Ersteller → Bestaetigen
+    // Geliefert + ist Ersteller → Bestätigen
     if (request.status === 'delivered' && isRequester) {
       buttons.push(
         <button
@@ -141,12 +141,12 @@ export function ShoppingRequestCard({ request, currentUserId, onUpdate }: Shoppi
           style={{ minHeight: '48px', touchAction: 'manipulation' }}
         >
           <Check className="h-4 w-4" />
-          {loading === 'confirm' ? 'Wird bestaetigt...' : 'Erhalten — Danke!'}
+          {loading === 'confirm' ? 'Wird bestätigt...' : 'Erhalten — Danke!'}
         </button>
       );
     }
 
-    // Offen oder Uebernommen + ist Ersteller → Stornieren
+    // Offen oder Übernommen + ist Ersteller → Stornieren
     if (['open', 'claimed'].includes(request.status) && isRequester) {
       buttons.push(
         <button
@@ -227,11 +227,11 @@ export function ShoppingRequestCard({ request, currentUserId, onUpdate }: Shoppi
         </div>
       )}
 
-      {/* Uebernehmender */}
+      {/* Übernehmender */}
       {request.claimer?.display_name && (
         <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
           <UserCheck className="h-4 w-4 shrink-0" />
-          <span>Uebernommen von {request.claimer.display_name}</span>
+          <span>Übernommen von {request.claimer.display_name}</span>
         </div>
       )}
 

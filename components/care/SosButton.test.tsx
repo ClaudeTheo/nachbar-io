@@ -1,5 +1,5 @@
 // components/care/SosButton.test.tsx
-// Nachbar.io — Tests fuer SOS-Button (Sicherheitskritisch: Touch-Targets, Navigation)
+// Nachbar.io — Tests für SOS-Button (Sicherheitskritisch: Touch-Targets, Navigation)
 
 import { describe, it, expect, vi, afterEach } from 'vitest';
 import { render, screen, fireEvent, cleanup } from '@testing-library/react';

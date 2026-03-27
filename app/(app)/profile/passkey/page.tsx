@@ -1,7 +1,7 @@
 "use client";
 
 // Passkey-Verwaltungsseite — Biometrische Anmeldung (Face ID, Touch ID, Windows Hello)
-// Nutzt WebAuthn / SimpleWebAuthn fuer passwortlose Registrierung und Loeschung
+// Nutzt WebAuthn / SimpleWebAuthn für passwortlose Registrierung und Löschung
 // v2 — Inline-Input, WebAuthn-Check, iOS-Fehlermeldungen
 
 import { useEffect, useState, useCallback, useRef } from "react";
@@ -29,7 +29,7 @@ function formatDate(isoString: string): string {
   });
 }
 
-// Pruefen ob WebAuthn im Browser unterstuetzt wird
+// Prüfen ob WebAuthn im Browser unterstützt wird
 function isWebAuthnSupported(): boolean {
   return (
     typeof window !== "undefined" &&
@@ -38,16 +38,16 @@ function isWebAuthnSupported(): boolean {
   );
 }
 
-// Automatischen Geraetenamen ermitteln
+// Automatischen Gerätenamen ermitteln
 function getDefaultDeviceName(): string {
-  if (typeof navigator === "undefined") return "Mein Geraet";
+  if (typeof navigator === "undefined") return "Mein Gerät";
   const ua = navigator.userAgent;
   if (/iPhone/.test(ua)) return "Mein iPhone";
   if (/iPad/.test(ua)) return "Mein iPad";
   if (/Android/.test(ua)) return "Mein Android";
   if (/Mac/.test(ua)) return "Mein Mac";
   if (/Windows/.test(ua)) return "Mein Windows-PC";
-  return "Mein Geraet";
+  return "Mein Gerät";
 }
 
 export default function PasskeyPage() {
@@ -63,13 +63,13 @@ export default function PasskeyPage() {
   const [deviceName, setDeviceName] = useState("");
   const nameInputRef = useRef<HTMLInputElement>(null);
 
-  // Registrierte Geraete laden
+  // Registrierte Geräte laden
   const loadCredentials = useCallback(async () => {
     setLoading(true);
     try {
       const res = await fetch("/api/auth/passkey/credentials");
       if (!res.ok) {
-        throw new Error(`Fehler beim Laden der Geraete (${res.status})`);
+        throw new Error(`Fehler beim Laden der Geräte (${res.status})`);
       }
       const json = await res.json();
       const data: PasskeyCredential[] = Array.isArray(json) ? json : (json.credentials || []);
@@ -80,7 +80,7 @@ export default function PasskeyPage() {
       setErrorMessage(
         err instanceof Error
           ? err.message
-          : "Die registrierten Geraete konnten nicht geladen werden."
+          : "Die registrierten Geräte konnten nicht geladen werden."
       );
     } finally {
       setLoading(false);
@@ -92,7 +92,7 @@ export default function PasskeyPage() {
     loadCredentials();
   }, [authUser, loadCredentials]);
 
-  // Eingabefeld fuer Geraetename oeffnen
+  // Eingabefeld für Gerätename öffnen
   function handleShowNameInput() {
     setSuccessMessage(null);
     setErrorMessage(null);
@@ -123,7 +123,7 @@ export default function PasskeyPage() {
       }
       const options = await beginRes.json();
 
-      // Schritt 2: WebAuthn-Registrierung im Browser durchfuehren
+      // Schritt 2: WebAuthn-Registrierung im Browser durchführen
       const { startRegistration } = await import("@simplewebauthn/browser");
       const result = await startRegistration({ optionsJSON: options });
 
@@ -145,8 +145,8 @@ export default function PasskeyPage() {
       // was die Session kurz invalidiert. 1s warten bevor wir nachladen.
       await new Promise(r => setTimeout(r, 1000));
       await loadCredentials().catch(() => {
-        // Nachladen kann nach Passwort-Aenderung 401 geben — ignorieren,
-        // beim naechsten Seitenaufruf werden die Credentials korrekt geladen
+        // Nachladen kann nach Passwort-Änderung 401 geben — ignorieren,
+        // beim nächsten Seitenaufruf werden die Credentials korrekt geladen
       });
     } catch (err) {
       console.error("[Passkey] Registrierung fehlgeschlagen:", err);
@@ -154,16 +154,16 @@ export default function PasskeyPage() {
       if (err instanceof Error) {
         if (err.name === "NotAllowedError") {
           setErrorMessage(
-            "Die biometrische Freigabe wurde abgebrochen oder von Ihrem Geraet abgelehnt. " +
-            "Bitte stellen Sie sicher, dass Face ID / Touch ID in Ihren Geraeteeinstellungen aktiviert ist."
+            "Die biometrische Freigabe wurde abgebrochen oder von Ihrem Gerät abgelehnt. " +
+            "Bitte stellen Sie sicher, dass Face ID / Touch ID in Ihren Geräteeinstellungen aktiviert ist."
           );
         } else if (err.name === "NotSupportedError") {
           setErrorMessage(
-            "Ihr Browser unterstuetzt keine Passkeys. Bitte verwenden Sie Safari auf dem iPhone oder Chrome auf dem Desktop."
+            "Ihr Browser unterstützt keine Passkeys. Bitte verwenden Sie Safari auf dem iPhone oder Chrome auf dem Desktop."
           );
         } else if (err.name === "InvalidStateError") {
           setErrorMessage(
-            "Dieses Geraet ist bereits registriert."
+            "Dieses Gerät ist bereits registriert."
           );
         } else if (err.name === "AbortError") {
           setErrorMessage(
@@ -171,7 +171,7 @@ export default function PasskeyPage() {
           );
         } else if (err.name === "SecurityError") {
           setErrorMessage(
-            "Sicherheitsfehler: Passkeys funktionieren nur ueber eine sichere Verbindung (HTTPS)."
+            "Sicherheitsfehler: Passkeys funktionieren nur über eine sichere Verbindung (HTTPS)."
           );
         } else {
           setErrorMessage(err.message);
@@ -184,10 +184,10 @@ export default function PasskeyPage() {
     }
   }
 
-  // Geraet loeschen
+  // Gerät löschen
   async function handleDeletePasskey(id: string, name: string) {
     const confirmed = window.confirm(
-      `Moechten Sie "${name}" wirklich entfernen? Sie koennen sich danach nicht mehr mit diesem Geraet anmelden.`
+      `Möchten Sie "${name}" wirklich entfernen? Sie können sich danach nicht mehr mit diesem Gerät anmelden.`
     );
     if (!confirmed) return;
 
@@ -200,23 +200,23 @@ export default function PasskeyPage() {
         method: "DELETE",
       });
       if (!res.ok) {
-        throw new Error(`Geraet konnte nicht entfernt werden (${res.status})`);
+        throw new Error(`Gerät konnte nicht entfernt werden (${res.status})`);
       }
       setSuccessMessage(`"${name}" wurde entfernt.`);
       await loadCredentials();
     } catch (err) {
-      console.error("[Passkey] Loeschen fehlgeschlagen:", err);
+      console.error("[Passkey] Löschen fehlgeschlagen:", err);
       setErrorMessage(
         err instanceof Error
           ? err.message
-          : "Das Geraet konnte nicht entfernt werden."
+          : "Das Gerät konnte nicht entfernt werden."
       );
     } finally {
       setDeletingId(null);
     }
   }
 
-  // Senior-Modus: groessere Touch-Targets
+  // Senior-Modus: größere Touch-Targets
   const isSenior =
     authUser &&
     "ui_mode" in authUser &&
@@ -246,14 +246,14 @@ export default function PasskeyPage() {
         backHref="/profile"
       />
 
-      {/* WebAuthn nicht unterstuetzt */}
+      {/* WebAuthn nicht unterstützt */}
       {!webAuthnSupported && (
         <Card className="border-amber-300 bg-amber-50">
           <CardContent className="p-4">
             <div className="flex items-start gap-3">
               <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-amber-600" />
               <div className="text-sm text-anthrazit leading-relaxed">
-                <p className="font-medium">Passkeys werden in diesem Browser nicht unterstuetzt.</p>
+                <p className="font-medium">Passkeys werden in diesem Browser nicht unterstützt.</p>
                 <p className="mt-1">
                   Bitte verwenden Sie <strong>Safari</strong> auf dem iPhone/iPad
                   oder <strong>Chrome/Edge</strong> auf dem Desktop.
@@ -271,9 +271,9 @@ export default function PasskeyPage() {
             <Fingerprint className="mt-0.5 h-5 w-5 shrink-0 text-quartier-green" />
             <p className="text-sm text-anthrazit leading-relaxed">
               Ihre biometrischen Daten (Fingerabdruck/Gesicht) bleiben
-              ausschliesslich auf Ihrem Geraet. Wir speichern nur einen
-              kryptographischen Schluessel zur Anmeldung. Sie koennen
-              registrierte Geraete jederzeit hier entfernen.
+              ausschließlich auf Ihrem Gerät. Wir speichern nur einen
+              kryptographischen Schlüssel zur Anmeldung. Sie können
+              registrierte Geräte jederzeit hier entfernen.
             </p>
           </div>
         </CardContent>
@@ -291,14 +291,14 @@ export default function PasskeyPage() {
         </p>
       )}
 
-      {/* Registrierte Geraete */}
+      {/* Registrierte Geräte */}
       <Card>
         <CardContent className="p-0">
           {credentials.length === 0 ? (
             <div className="flex flex-col items-center gap-3 py-10 text-center">
               <Smartphone className="h-8 w-8 text-muted-foreground/40" />
               <p className="text-sm text-muted-foreground">
-                Noch kein Geraet registriert
+                Noch kein Gerät registriert
               </p>
             </div>
           ) : (
@@ -348,12 +348,12 @@ export default function PasskeyPage() {
         </CardContent>
       </Card>
 
-      {/* Inline-Eingabefeld fuer Geraetename */}
+      {/* Inline-Eingabefeld für Gerätename */}
       {showNameInput && (
         <Card className="border-quartier-green/50">
           <CardContent className="p-4">
             <label className="block text-sm font-medium text-anthrazit mb-2">
-              Wie soll dieses Geraet heissen?
+              Wie soll dieses Gerät heißen?
             </label>
             <div className="flex gap-2">
               <input
@@ -384,13 +384,13 @@ export default function PasskeyPage() {
               </Button>
             </div>
             <p className="mt-2 text-xs text-muted-foreground">
-              Nach &quot;Weiter&quot; werden Sie aufgefordert, die biometrische Freigabe (Face ID / Touch ID / Fingerabdruck) zu bestaetigen.
+              Nach &quot;Weiter&quot; werden Sie aufgefordert, die biometrische Freigabe (Face ID / Touch ID / Fingerabdruck) zu bestätigen.
             </p>
           </CardContent>
         </Card>
       )}
 
-      {/* Neues Geraet hinzufuegen */}
+      {/* Neues Gerät hinzufügen */}
       {!showNameInput && (
         <Button
           onClick={handleShowNameInput}
@@ -398,11 +398,11 @@ export default function PasskeyPage() {
           className={`w-full gap-2 bg-quartier-green hover:bg-quartier-green/90 ${buttonMinHeight}`}
         >
           {adding ? (
-            "Biometrische Freigabe laeuft..."
+            "Biometrische Freigabe läuft..."
           ) : (
             <>
               <Plus className="h-4 w-4" />
-              Neues Geraet hinzufuegen
+              Neues Gerät hinzufügen
             </>
           )}
         </Button>
@@ -412,8 +412,8 @@ export default function PasskeyPage() {
       <div className="rounded-lg bg-muted/50 p-4 text-sm text-muted-foreground">
         <p className="font-medium text-anthrazit">Hinweise zur sicheren Nutzung:</p>
         <ul className="mt-2 space-y-1">
-          <li>- Registrieren Sie nur eigene Geraete</li>
-          <li>- Entfernen Sie verlorene oder gestohlene Geraete sofort</li>
+          <li>- Registrieren Sie nur eigene Geräte</li>
+          <li>- Entfernen Sie verlorene oder gestohlene Geräte sofort</li>
           <li>- Die Anmeldung per Passkey ersetzt Ihren Magic Link</li>
         </ul>
       </div>

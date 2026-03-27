@@ -70,16 +70,16 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  // M2: mood gegen Whitelist pruefen
+  // M2: mood gegen Whitelist prüfen
   const VALID_MOODS: CareCheckinMood[] = ['good', 'neutral', 'bad'];
   if (mood && !VALID_MOODS.includes(mood)) {
     return NextResponse.json(
-      { error: `Ungueltiger mood-Wert: "${mood}". Erlaubt: ${VALID_MOODS.join(', ')}` },
+      { error: `Ungültiger mood-Wert: "${mood}". Erlaubt: ${VALID_MOODS.join(', ')}` },
       { status: 400 }
     );
   }
 
-  // M3: note Laengenlimit (max 2000 Zeichen)
+  // M3: note Längenlimit (max 2000 Zeichen)
   if (note && note.length > 2000) {
     return NextResponse.json(
       { error: 'Notiz darf maximal 2000 Zeichen lang sein' },
@@ -90,7 +90,7 @@ export async function POST(request: NextRequest) {
   const now = new Date().toISOString();
   let checkin: Record<string, unknown>;
 
-  // Note verschluesseln (Art. 9 DSGVO)
+  // Note verschlüsseln (Art. 9 DSGVO)
   const encryptedNote = encryptField(note ?? null);
 
   // Versuche, einen bestehenden ausstehenden Check-in zu aktualisieren, wenn scheduled_at angegeben
@@ -230,7 +230,7 @@ export async function POST(request: NextRequest) {
         status: 'triggered',
         current_escalation_level: 1,
         escalated_at: [],
-        notes: encryptField(note || 'Hilfe ueber Check-in angefordert'),
+        notes: encryptField(note || 'Hilfe über Check-in angefordert'),
         source: 'checkin_timeout',
         quarter_id: quarterId,
       });
@@ -245,7 +245,7 @@ export async function POST(request: NextRequest) {
     }
   }
 
-  // Entschluesselt zurueckgeben
+  // Entschlüsselt zurückgeben
   log.done(201, { checkinId: checkin.id as string, status });
   return NextResponse.json(decryptFields(checkin as Record<string, unknown>, CARE_CHECKINS_ENCRYPTED_FIELDS), { status: 201 });
 }
@@ -269,7 +269,7 @@ export async function GET(request: NextRequest) {
   const limitParam = searchParams.get('limit');
   const limit = limitParam ? Math.min(Math.max(parseInt(limitParam, 10) || 30, 1), 100) : 30;
 
-  // Zugriffspruefung: Nur Senior selbst, zugewiesene Helfer oder Admins
+  // Zugriffsprüfung: Nur Senior selbst, zugewiesene Helfer oder Admins
   if (seniorId !== user.id) {
     const role = await requireCareAccess(supabase, seniorId);
     if (!role) return NextResponse.json({ error: 'Kein Zugriff auf diesen Senior' }, { status: 403 });
@@ -288,6 +288,6 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: 'Check-in-Historie konnte nicht geladen werden' }, { status: 500 });
   }
 
-  // Check-in-Notizen entschluesseln (Art. 9 DSGVO)
+  // Check-in-Notizen entschlüsseln (Art. 9 DSGVO)
   return NextResponse.json(decryptFieldsArray(data ?? [], CARE_CHECKINS_ENCRYPTED_FIELDS));
 }

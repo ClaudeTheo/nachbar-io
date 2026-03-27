@@ -1,11 +1,11 @@
 "use client";
 
-// Slide 0: Willkommen — 3 Haeuser mit leuchtenden Fenstern
+// Slide 0: Willkommen — 3 Häuser mit leuchtenden Fenstern
 
 export function SlideWelcome() {
   return (
     <div className="flex h-full flex-col items-center justify-center px-6">
-      {/* Haeuser-Illustration */}
+      {/* Häuser-Illustration */}
       <div className="relative mb-10 flex items-end justify-center gap-4">
         {/* Haus links (klein) */}
         <div className="animate-house-build" style={{ animationDelay: "0ms" }}>
@@ -22,7 +22,7 @@ export function SlideWelcome() {
           </div>
         </div>
 
-        {/* Haus Mitte (gross — Ihr Haus) */}
+        {/* Haus Mitte (groß — Ihr Haus) */}
         <div className="animate-house-build" style={{ animationDelay: "200ms" }}>
           <div className="relative">
             {/* Dach */}
@@ -63,11 +63,11 @@ export function SlideWelcome() {
           Willkommen bei QuartierApp
         </h1>
         <p className="mt-2 text-base text-muted-foreground">
-          Ihr digitaler Dorfplatz fuer die Nachbarschaft
+          Ihr digitaler Dorfplatz für die Nachbarschaft
         </p>
       </div>
 
-      {/* Strassen-Badge */}
+      {/* Straßen-Badge */}
       <div className="mt-6 animate-fade-in-up" style={{ animationDelay: "1400ms" }}>
         <div className="inline-flex items-center gap-2 rounded-full border border-quartier-green/30 bg-quartier-green/5 px-4 py-2">
           <div className="h-2 w-2 rounded-full bg-quartier-green animate-pulse" />

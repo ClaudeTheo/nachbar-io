@@ -1,5 +1,5 @@
 // app/api/care/reports/data/route.ts
-// Nachbar.io — Bericht-Daten (JSON) fuer Client-Rendering
+// Nachbar.io — Bericht-Daten (JSON) für Client-Rendering
 
 import { NextResponse } from 'next/server';
 import { requireAuth, requireSubscription, requireFeature, requireCareAccess, errorResponse, successResponse, careLog } from '@/lib/care/api-helpers';
@@ -8,7 +8,7 @@ import type { CareDocumentType } from '@/lib/care/types';
 
 /**
  * GET /api/care/reports/data?senior_id=...&period_start=...&period_end=...&type=...
- * Gibt Bericht-Daten als JSON zurueck fuer Client-seitiges Rendering.
+ * Gibt Bericht-Daten als JSON zurück für Client-seitiges Rendering.
  */
 export async function GET(request: Request) {
   const auth = await requireAuth();
@@ -29,7 +29,7 @@ export async function GET(request: Request) {
     return errorResponse('Parameter period_start, period_end und type erforderlich', 400);
   }
 
-  // Zugriffspruefung: Nur Senior selbst, zugewiesene Helfer oder Admins
+  // Zugriffsprüfung: Nur Senior selbst, zugewiesene Helfer oder Admins
   if (seniorId !== user.id) {
     const role = await requireCareAccess(supabase, seniorId);
     if (!role) return errorResponse('Kein Zugriff auf diesen Senior', 403);
@@ -37,7 +37,7 @@ export async function GET(request: Request) {
 
   // Feature-Gate
   const allowed = await requireFeature(supabase, seniorId, 'reports');
-  if (!allowed) return errorResponse('Berichte sind in Ihrem aktuellen Plan nicht verfuegbar', 403);
+  if (!allowed) return errorResponse('Berichte sind in Ihrem aktuellen Plan nicht verfügbar', 403);
 
   careLog('reports', 'data', { seniorId, type, periodStart, periodEnd });
 

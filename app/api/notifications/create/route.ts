@@ -9,7 +9,7 @@ import { createClient as createServiceClient } from "@supabase/supabase-js";
 import { safeInsertNotification } from "@/lib/notifications-server";
 
 export async function POST(request: NextRequest) {
-  // 1. Authentifizierung pruefen (normaler User-Client)
+  // 1. Authentifizierung prüfen (normaler User-Client)
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) {
@@ -28,7 +28,7 @@ export async function POST(request: NextRequest) {
   try {
     body = await request.json();
   } catch {
-    return NextResponse.json({ error: "Ungueltiges Format" }, { status: 400 });
+    return NextResponse.json({ error: "Ungültiges Format" }, { status: 400 });
   }
 
   const { userId, type, title, body: notifBody, referenceId, referenceType } = body;
@@ -45,17 +45,17 @@ export async function POST(request: NextRequest) {
   // 3b. Beziehungscheck: Nur an User mit Beziehung senden
   const hasRelationship = await checkUserRelationship(supabase, user.id, userId);
   if (!hasRelationship) {
-    return NextResponse.json({ error: "Keine Berechtigung fuer diesen Empfaenger" }, { status: 403 });
+    return NextResponse.json({ error: "Keine Berechtigung für diesen Empfänger" }, { status: 403 });
   }
 
-  // 4. Service-Role Client fuer INSERT (umgeht RLS)
+  // 4. Service-Role Client für INSERT (umgeht RLS)
   const serviceClient = createServiceClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY!,
     { auth: { persistSession: false } }
   );
 
-  // 5. Notification einfuegen
+  // 5. Notification einfügen
   const result = await safeInsertNotification(serviceClient, {
     user_id: userId,
     type,
@@ -161,7 +161,7 @@ async function checkUserRelationship(
     return true;
   }
 
-  // 4. Gleiches Quartier (ueber household_members → households)
+  // 4. Gleiches Quartier (über household_members → households)
   const { data: senderQuarter } = await supabase
     .from("household_members")
     .select("households(quarter_id)")

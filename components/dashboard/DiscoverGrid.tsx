@@ -33,7 +33,7 @@ interface DiscoverItem {
   iconColor: string;
 }
 
-// Primaere 8 Kategorien (immer sichtbar)
+// Primäre 8 Kategorien (immer sichtbar)
 const primaryItems: DiscoverItem[] = [
   {
     href: "/board",
@@ -72,7 +72,7 @@ const primaryItems: DiscoverItem[] = [
   },
   {
     href: "/reports",
-    label: "Maengel",
+    label: "Mängel",
     icon: AlertTriangle,
     bgColor: "bg-violet-50",
     iconColor: "text-violet-500",
@@ -111,7 +111,7 @@ const secondaryItems: DiscoverItem[] = [
   },
   {
     href: "/noise",
-    label: "Laerm",
+    label: "Lärm",
     icon: AlertTriangle,
     bgColor: "bg-red-50",
     iconColor: "text-red-400",
@@ -125,7 +125,7 @@ const secondaryItems: DiscoverItem[] = [
   },
   {
     href: "/lost-found",
-    label: "Fundbuero",
+    label: "Fundbüro",
     icon: Paperclip,
     bgColor: "bg-teal-50",
     iconColor: "text-teal-500",

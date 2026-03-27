@@ -5,9 +5,9 @@ import { createClient as createAdminClient } from "@supabase/supabase-js";
 /**
  * POST /api/user/delete
  *
- * DSGVO Art. 17 — Recht auf Loeschung
- * Loescht das Nutzerkonto und alle zugehoerigen Daten.
- * Erfordert Bestaetigung via { confirmText: "KONTO LÖSCHEN" }
+ * DSGVO Art. 17 — Recht auf Löschung
+ * Loescht das Nutzerkonto und alle zugehörigen Daten.
+ * Erfordert Bestätigung via { confirmText: "KONTO LÖSCHEN" }
  */
 export async function POST(request: NextRequest) {
   const supabase = await createClient();
@@ -16,7 +16,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Nicht autorisiert" }, { status: 401 });
   }
 
-  // Bestaetigungs-Text pruefen (Schutz gegen versehentliches Loeschen)
+  // Bestätigungs-Text prüfen (Schutz gegen versehentliches Löschen)
   try {
     const body = await request.json();
     if (body.confirmText !== "KONTO LÖSCHEN") {
@@ -32,7 +32,7 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  // Admin-Client fuer Auth-User-Loeschung (erfordert Service-Role-Key)
+  // Admin-Client für Auth-User-Löschung (erfordert Service-Role-Key)
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
   if (!supabaseUrl || !serviceRoleKey) {
@@ -44,12 +44,12 @@ export async function POST(request: NextRequest) {
   const adminSupabase = createAdminClient(supabaseUrl, serviceRoleKey);
 
   try {
-    // 1. Nutzerdaten aus verknuepften Tabellen loeschen
+    // 1. Nutzerdaten aus verknüpften Tabellen löschen
     //    (Die meisten haben ON DELETE CASCADE, aber sicherheitshalber explizit)
     const userId = user.id;
     const errors: string[] = [];
 
-    // Kaskaden-Loeschung mit Fehler-Tracking
+    // Kaskaden-Löschung mit Fehler-Tracking
     const cascadeDeletes: { table: string; filter: [string, string] }[] = [
       { table: "push_subscriptions", filter: ["user_id", userId] },
       { table: "notifications", filter: ["user_id", userId] },
@@ -63,7 +63,7 @@ export async function POST(request: NextRequest) {
     for (const { table, filter } of cascadeDeletes) {
       const { error } = await adminSupabase.from(table).delete().eq(filter[0], filter[1]);
       if (error) {
-        console.error(`DSGVO-Loeschung ${table} fehlgeschlagen:`, error.message);
+        console.error(`DSGVO-Löschung ${table} fehlgeschlagen:`, error.message);
         errors.push(table);
       }
     }
@@ -71,23 +71,23 @@ export async function POST(request: NextRequest) {
     // Nutzerprofil aus users-Tabelle entfernen
     const { error: profileDeleteError } = await adminSupabase.from("users").delete().eq("id", userId);
     if (profileDeleteError) {
-      console.error("DSGVO-Loeschung users fehlgeschlagen:", profileDeleteError.message);
+      console.error("DSGVO-Löschung users fehlgeschlagen:", profileDeleteError.message);
       errors.push("users");
     }
 
-    // Bei kritischen Fehlern abbrechen BEVOR Auth-User geloescht wird
+    // Bei kritischen Fehlern abbrechen BEVOR Auth-User gelöscht wird
     if (errors.length > 0) {
-      console.error(`DSGVO-Loeschung unvollstaendig (${errors.join(", ")}), Auth-User bleibt erhalten`);
+      console.error(`DSGVO-Löschung unvollständig (${errors.join(", ")}), Auth-User bleibt erhalten`);
       return NextResponse.json(
         { error: `Daten konnten nicht vollständig gelöscht werden (${errors.join(", ")}). Bitte kontaktieren Sie den Admin.` },
         { status: 500 }
       );
     }
 
-    // 2. Auth-User loeschen (erst wenn alle Daten entfernt — sonst verwaiste Daten)
+    // 2. Auth-User löschen (erst wenn alle Daten entfernt — sonst verwaiste Daten)
     const { error: deleteError } = await adminSupabase.auth.admin.deleteUser(userId);
     if (deleteError) {
-      console.error("Auth-User-Loeschung fehlgeschlagen:", deleteError);
+      console.error("Auth-User-Löschung fehlgeschlagen:", deleteError);
       return NextResponse.json(
         { error: "Konto konnte nicht vollständig gelöscht werden. Bitte kontaktieren Sie den Admin." },
         { status: 500 }
@@ -99,7 +99,7 @@ export async function POST(request: NextRequest) {
       message: "Ihr Konto und alle zugehörigen Daten wurden gelöscht.",
     });
   } catch (err) {
-    console.error("Konto-Loeschung fehlgeschlagen:", err);
+    console.error("Konto-Löschung fehlgeschlagen:", err);
     return NextResponse.json(
       { error: "Interner Fehler bei der Kontolöschung" },
       { status: 500 }

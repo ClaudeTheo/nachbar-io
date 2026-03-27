@@ -25,7 +25,7 @@ export async function POST(request: NextRequest) {
 
   let body: { medication_id?: string; status?: CareMedicationLogStatus; scheduled_at?: string };
   try { body = await request.json(); } catch {
-    return NextResponse.json({ error: 'Ungueltiges Anfrage-Format' }, { status: 400 });
+    return NextResponse.json({ error: 'Ungültiges Anfrage-Format' }, { status: 400 });
   }
 
   const { medication_id, status, scheduled_at } = body;
@@ -34,7 +34,7 @@ export async function POST(request: NextRequest) {
   }
 
   if (!VALID_LOG_STATUSES.includes(status)) {
-    return NextResponse.json({ error: `Ungueltiger Status: ${status}` }, { status: 400 });
+    return NextResponse.json({ error: `Ungültiger Status: ${status}` }, { status: 400 });
   }
 
   const now = new Date().toISOString();
@@ -90,7 +90,7 @@ export async function POST(request: NextRequest) {
     metadata: { medication_id, status },
   }).catch(() => {});
 
-  // Bei "skipped": Angehoerige benachrichtigen
+  // Bei "skipped": Angehörige benachrichtigen
   if (status === 'skipped') {
     const { data: relatives } = await supabase
       .from('care_helpers')
@@ -106,15 +106,15 @@ export async function POST(request: NextRequest) {
         .eq('id', medication_id)
         .single();
 
-      // Medikamenten-Name entschluesseln fuer Benachrichtigungstext
+      // Medikamenten-Name entschlüsseln für Benachrichtigungstext
       const medName = med?.name ? decryptField(med.name) : null;
 
       for (const rel of relatives) {
         await sendCareNotification(supabase, {
           userId: rel.user_id,
           type: 'care_medication_missed',
-          title: 'Medikament uebersprungen',
-          body: `${medName ?? 'Ein Medikament'} wurde uebersprungen.`,
+          title: 'Medikament übersprungen',
+          body: `${medName ?? 'Ein Medikament'} wurde übersprungen.`,
           referenceId: logEntry.id,
           referenceType: 'care_medication_logs',
           url: '/care/medications',
@@ -144,7 +144,7 @@ export async function GET(request: NextRequest) {
   const medicationId = searchParams.get('medication_id');
   const limit = Math.min(parseInt(searchParams.get('limit') ?? '50', 10) || 50, 100);
 
-  // Zugriffspruefung: Nur Senior selbst, zugewiesene Helfer oder Admins
+  // Zugriffsprüfung: Nur Senior selbst, zugewiesene Helfer oder Admins
   if (seniorId !== user.id) {
     const role = await requireCareAccess(supabase, seniorId);
     if (!role) return NextResponse.json({ error: 'Kein Zugriff auf diesen Senior' }, { status: 403 });
@@ -162,7 +162,7 @@ export async function GET(request: NextRequest) {
   const { data, error } = await query;
   if (error) return NextResponse.json({ error: 'Log konnte nicht geladen werden' }, { status: 500 });
 
-  // Verschluesselte Medikamenten-Namen in der verschachtelten Relation entschluesseln
+  // Verschlüsselte Medikamenten-Namen in der verschachtelten Relation entschlüsseln
   const decryptedData = (data ?? []).map((log: Record<string, unknown>) => {
     if (log.medication && typeof log.medication === 'object') {
       const med = log.medication as Record<string, unknown>;

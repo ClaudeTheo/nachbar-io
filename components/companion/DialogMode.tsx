@@ -19,7 +19,7 @@ interface DialogModeProps {
 }
 
 // DialogMode — Sprach-Dialog-Modus mit State-Machine
-// Nutzt useDialogMode fuer States, SilenceDetector, SentenceStreamTTS
+// Nutzt useDialogMode für States, SilenceDetector, SentenceStreamTTS
 export function DialogMode({ onMessage, onMicError }: DialogModeProps) {
   const dialog = useDialogMode();
   const { streamingText, isStreaming, sendStreaming } = useStreamingChat();
@@ -40,7 +40,7 @@ export function DialogMode({ onMessage, onMicError }: DialogModeProps) {
     return () => engineRef.current?.cleanup();
   }, []);
 
-  // Streaming-Text verarbeiten: Saetze extrahieren und an TTS weiterleiten
+  // Streaming-Text verarbeiten: Sätze extrahieren und an TTS weiterleiten
   const prevStreamingRef = useRef(false);
   useEffect(() => {
     if (isStreaming && streamingText) {
@@ -54,7 +54,7 @@ export function DialogMode({ onMessage, onMicError }: DialogModeProps) {
       onMessage?.("assistant", streamingText);
       messagesRef.current.push({ role: "assistant", content: streamingText });
 
-      // TTS fuer restlichen Text
+      // TTS für restlichen Text
       if (ttsRef.current) {
         const remaining = ttsRef.current.flush();
         if (remaining.length > 0) {
@@ -106,7 +106,7 @@ export function DialogMode({ onMessage, onMicError }: DialogModeProps) {
       },
     });
 
-    // Spracheingabe starten wenn verfuegbar
+    // Spracheingabe starten wenn verfügbar
     const engine = engineRef.current;
     if (engine) {
       engine.startListening({
@@ -155,7 +155,7 @@ export function DialogMode({ onMessage, onMicError }: DialogModeProps) {
 
   return (
     <div className="flex h-full flex-col items-center justify-center gap-6 p-4">
-      {/* Idle: Grosser Start-Button oder Mikrofon-Hinweis */}
+      {/* Idle: Großer Start-Button oder Mikrofon-Hinweis */}
       {!isActive && !micBlocked && (
         <Button
           onClick={handleStart}
@@ -224,7 +224,7 @@ export function DialogMode({ onMessage, onMicError }: DialogModeProps) {
             <p className="text-base font-medium text-[#2D3142]">Noch etwas?</p>
           )}
 
-          {/* Stopp-Button (immer sichtbar waehrend Dialog) */}
+          {/* Stopp-Button (immer sichtbar während Dialog) */}
           <Button
             onClick={handleStop}
             className="min-h-[80px] w-full rounded-2xl bg-red-500 text-lg font-semibold text-white hover:bg-red-600"

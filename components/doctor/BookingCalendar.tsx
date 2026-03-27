@@ -1,5 +1,5 @@
 // components/doctor/BookingCalendar.tsx
-// Nachbar.io — Terminbuchung Self-Service fuer Bewohner
+// Nachbar.io — Terminbuchung Self-Service für Bewohner
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
@@ -29,7 +29,7 @@ type BookingCalendarProps = {
   videoEnabled: boolean;
 };
 
-// Naechste 14 Tage generieren (Mo-Fr)
+// Nächste 14 Tage generieren (Mo-Fr)
 function getWeekdays(count: number): Date[] {
   const days: Date[] = [];
   const today = new Date();
@@ -87,7 +87,7 @@ export function BookingCalendar({
 
   const weekdays = getWeekdays(10);
 
-  // Verfuegbare Slots fuer gewaehlten Tag laden
+  // Verfügbare Slots für gewählten Tag laden
   const loadSlots = useCallback(
     async (date: Date) => {
       setLoading(true);
@@ -174,7 +174,7 @@ export function BookingCalendar({
         </CardTitle>
       </CardHeader>
       <CardContent>
-        {/* Schritt 1: Datum waehlen */}
+        {/* Schritt 1: Datum wählen */}
         {step === "date" && (
           <div className="space-y-3">
             <p className="text-sm text-gray-500">Waehlen Sie einen Tag:</p>
@@ -197,7 +197,7 @@ export function BookingCalendar({
           </div>
         )}
 
-        {/* Schritt 2: Uhrzeit waehlen */}
+        {/* Schritt 2: Uhrzeit wählen */}
         {step === "time" && selectedDate && (
           <div className="space-y-3">
             <button
@@ -208,10 +208,10 @@ export function BookingCalendar({
               className="flex items-center gap-1 text-xs text-gray-400 hover:text-gray-600"
             >
               <ArrowLeft className="h-3 w-3" />
-              Zurueck
+              Zurück
             </button>
             <p className="text-sm text-gray-500">
-              Verfuegbare Zeiten am <strong>{formatDate(selectedDate)}</strong>:
+              Verfügbare Zeiten am <strong>{formatDate(selectedDate)}</strong>:
             </p>
             {loading ? (
               <div className="grid grid-cols-3 gap-2">
@@ -250,10 +250,10 @@ export function BookingCalendar({
               className="flex items-center gap-1 text-xs text-gray-400 hover:text-gray-600"
             >
               <ArrowLeft className="h-3 w-3" />
-              Zurueck
+              Zurück
             </button>
             <p className="text-sm text-gray-500">
-              Wie moechten Sie den Termin wahrnehmen?
+              Wie möchten Sie den Termin wahrnehmen?
             </p>
             <div className="grid grid-cols-1 gap-3">
               <Button
@@ -292,7 +292,7 @@ export function BookingCalendar({
           </div>
         )}
 
-        {/* Schritt 4: Bestaetigung */}
+        {/* Schritt 4: Bestätigung */}
         {step === "confirm" && selectedDate && selectedTime && (
           <div className="space-y-4">
             <button
@@ -300,10 +300,10 @@ export function BookingCalendar({
               className="flex items-center gap-1 text-xs text-gray-400 hover:text-gray-600"
             >
               <ArrowLeft className="h-3 w-3" />
-              Zurueck
+              Zurück
             </button>
             <div className="rounded-lg border border-[#4CAF87]/20 bg-[#4CAF87]/5 p-4">
-              <h3 className="font-semibold text-[#2D3142]">Terminuebersicht</h3>
+              <h3 className="font-semibold text-[#2D3142]">Terminübersicht</h3>
               <dl className="mt-2 space-y-1 text-sm">
                 <div className="flex gap-2">
                   <dt className="text-gray-500">Arzt:</dt>
@@ -345,7 +345,7 @@ export function BookingCalendar({
               Termin gebucht!
             </h3>
             <p className="text-sm text-gray-500">
-              Sie erhalten eine Bestaetigung. Der Arzt wird ueber Ihren Termin
+              Sie erhalten eine Bestätigung. Der Arzt wird über Ihren Termin
               informiert.
             </p>
           </div>

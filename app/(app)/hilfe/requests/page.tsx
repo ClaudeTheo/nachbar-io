@@ -115,7 +115,7 @@ export default function HelferRequestsPage() {
 
   async function handleDecline(requestId: string) {
     haptic("light");
-    // Lokal ausblenden (kein DB-Update, Anfrage bleibt fuer andere verfuegbar)
+    // Lokal ausblenden (kein DB-Update, Anfrage bleibt für andere verfügbar)
     setRequests((prev) => prev.filter((r) => r.id !== requestId));
   }
 
@@ -142,7 +142,7 @@ export default function HelferRequestsPage() {
           <CardContent className="flex flex-col items-center gap-3 py-10">
             <HandHeart className="h-10 w-10 text-muted-foreground/40" />
             <p className="text-sm text-muted-foreground text-center">
-              Keine offenen Anfragen im Quartier. Schauen Sie spaeter nochmal vorbei.
+              Keine offenen Anfragen im Quartier. Schauen Sie später nochmal vorbei.
             </p>
           </CardContent>
         </Card>

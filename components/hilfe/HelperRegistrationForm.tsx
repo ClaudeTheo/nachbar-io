@@ -1,7 +1,7 @@
 'use client';
 
 // Nachbar Hilfe — Helfer-Registrierung Formular
-// Nachbarschaftshelfer koennen sich hier fuer die Abrechnung nach §45a SGB XI registrieren.
+// Nachbarschaftshelfer können sich hier für die Abrechnung nach §45a SGB XI registrieren.
 
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
@@ -88,7 +88,7 @@ export function HelperRegistrationForm() {
         <CardContent className="p-6">
           <p className="text-lg text-green-700">
             Ihre Registrierung als Nachbarschaftshelfer wurde erfolgreich eingereicht.
-            Sie werden nach Pruefung freigeschaltet.
+            Sie werden nach Prüfung freigeschaltet.
           </p>
         </CardContent>
       </Card>
@@ -108,7 +108,7 @@ export function HelperRegistrationForm() {
           onChange={(e) => setFederalState(e.target.value)}
           className="min-h-[80px] w-full rounded-md border border-gray-300 px-4 py-3 text-base"
         >
-          <option value="">Bitte waehlen...</option>
+          <option value="">Bitte wählen...</option>
           {states.map((s) => (
             <option key={s.state_code} value={s.state_code}>
               {s.state_name}
@@ -123,7 +123,7 @@ export function HelperRegistrationForm() {
           role="alert"
           className="rounded-md border border-amber-300 bg-amber-50 p-4 text-amber-800"
         >
-          Nachbarschaftshilfe ist in Bremen nicht ueber den Entlastungsbetrag abrechenbar
+          Nachbarschaftshilfe ist in Bremen nicht über den Entlastungsbetrag abrechenbar
         </div>
       )}
 
@@ -192,7 +192,7 @@ export function HelperRegistrationForm() {
             onChange={(e) => setTermsCheck(e.target.checked)}
             className="h-6 w-6"
           />
-          <span>Ich bestaetige die Rahmenbedingungen nach §45a SGB XI</span>
+          <span>Ich bestätige die Rahmenbedingungen nach §45a SGB XI</span>
         </label>
       </div>
 

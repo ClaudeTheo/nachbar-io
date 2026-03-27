@@ -30,7 +30,7 @@ export async function GET(
 
   if (error || !data) return errorResponse('Dokument nicht gefunden', 404);
 
-  // SICHERHEIT: Zugriffspruefung — nur Senior, zugeordnete Helfer oder Admin
+  // SICHERHEIT: Zugriffsprüfung — nur Senior, zugeordnete Helfer oder Admin
   if (data.senior_id !== auth.user.id) {
     const role = await requireCareAccess(supabase, data.senior_id);
     if (!role) return errorResponse('Kein Zugriff auf dieses Dokument', 403);

@@ -36,7 +36,7 @@ export async function GET(request: NextRequest) {
   const { searchParams } = request.nextUrl;
   const seniorId = searchParams.get('senior_id') ?? user.id;
 
-  // Zugriffspruefung: Nur Senior selbst, zugewiesene Helfer oder Admins
+  // Zugriffsprüfung: Nur Senior selbst, zugewiesene Helfer oder Admins
   if (seniorId !== user.id) {
     const role = await requireCareAccess(supabase, seniorId);
     if (!role) return NextResponse.json({ error: 'Kein Zugriff auf diesen Senior' }, { status: 403 });
@@ -81,7 +81,7 @@ export async function GET(request: NextRequest) {
     );
   }
 
-  // Check-in-Notizen entschluesseln (Art. 9 DSGVO)
+  // Check-in-Notizen entschlüsseln (Art. 9 DSGVO)
   const todayCheckins: CareCheckin[] = decryptFieldsArray(checkinsResult.data ?? [], CARE_CHECKINS_ENCRYPTED_FIELDS) as CareCheckin[];
 
   // Check-in-Zeiten und Aktivierungsstatus aus dem Profil oder Defaults laden

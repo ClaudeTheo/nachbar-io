@@ -1,9 +1,9 @@
 "use client";
 
-// Slide 4: Quartierskarte — SVG-Strassen mit Dot-Wave
+// Slide 4: Quartierskarte — SVG-Straßen mit Dot-Wave
 
 export function SlideMap() {
-  // Haeuser-Punkte pro Strasse
+  // Häuser-Punkte pro Straße
   const streets = [
     { name: "Purkersdorfer Str.", y: 55, points: [30, 55, 80, 105, 130, 155, 180, 205, 230, 255, 280, 295, 310, 325], color: "#4CAF87" },
     { name: "Sanarystraße", y: 120, points: [45, 70, 95, 120, 145, 170, 195, 220, 245, 270, 290, 310], color: "#4CAF87" },
@@ -27,10 +27,10 @@ export function SlideMap() {
           {/* Hintergrund */}
           <rect x="10" y="10" width="340" height="220" rx="12" fill="white" stroke="#E5E7EB" strokeWidth="1" />
 
-          {/* Strassen */}
+          {/* Straßen */}
           {streets.map((street, si) => (
             <g key={si}>
-              {/* Strassen-Linie */}
+              {/* Straßen-Linie */}
               <line
                 x1="20"
                 y1={street.y}
@@ -44,7 +44,7 @@ export function SlideMap() {
                 style={{ animationDelay: `${si * 300}ms` }}
               />
 
-              {/* Strassen-Name */}
+              {/* Straßen-Name */}
               <text
                 x="24"
                 y={street.y - 10}
@@ -54,7 +54,7 @@ export function SlideMap() {
                 {street.name}
               </text>
 
-              {/* Haeuser-Punkte */}
+              {/* Häuser-Punkte */}
               {street.points.map((px, pi) => {
                 const isUserHouse = si === userHouseStreet && pi === userHouseIndex;
                 return (

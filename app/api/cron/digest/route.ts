@@ -1,7 +1,7 @@
 // app/api/cron/digest/route.ts
-// Nachbar.io — Cron: Woechentlicher Quartier-Digest
+// Nachbar.io — Cron: Wöchentlicher Quartier-Digest
 // Vercel Cron: Sonntag 18:00
-// Fasst Quartier-Aktivitaet der Woche zusammen (Claude Haiku) und sendet Push
+// Fasst Quartier-Aktivität der Woche zusammen (Claude Haiku) und sendet Push
 
 import { NextRequest, NextResponse } from 'next/server';
 import { getAdminSupabase } from '@/lib/supabase/admin';
@@ -28,7 +28,7 @@ export async function GET(request: NextRequest) {
     // Anthropic Client
     const anthropicKey = process.env.ANTHROPIC_API_KEY;
     if (!anthropicKey) {
-      console.warn('[digest] ANTHROPIC_API_KEY nicht konfiguriert — Digest uebersprungen');
+      console.warn('[digest] ANTHROPIC_API_KEY nicht konfiguriert — Digest übersprungen');
       return NextResponse.json({ success: true, skipped: true, reason: 'no_api_key' });
     }
     const anthropic = new Anthropic({ apiKey: anthropicKey });
@@ -78,7 +78,7 @@ export async function GET(request: NextRequest) {
         newMembers: membersResult.count ?? 0,
       };
 
-      // Keine Aktivitaet → kein Digest
+      // Keine Aktivität → kein Digest
       const hasActivity = weekData.newPosts > 0 || weekData.newAlerts > 0 ||
                           weekData.newEvents > 0 || weekData.newMembers > 0;
       if (!hasActivity) continue;
@@ -91,15 +91,15 @@ export async function GET(request: NextRequest) {
           max_tokens: 300,
           messages: [{
             role: 'user',
-            content: `Du bist der Nachbarschafts-Assistent fuer das Quartier "${quarter.name}".\n` +
-              `Fasse die Woche in 3-5 Saetzen zusammen. Tonalitaet: freundlich, Siezen, sachlich.\n` +
+            content: `Du bist der Nachbarschafts-Assistent für das Quartier "${quarter.name}".\n` +
+              `Fasse die Woche in 3-5 Sätzen zusammen. Tonalitaet: freundlich, Siezen, sachlich.\n` +
               `Keine Emojis. Kein Hype.\n` +
               `Daten: ${JSON.stringify(weekData)}`,
           }],
         });
         summary = response.content[0].type === 'text' ? response.content[0].text : '';
       } catch (aiError) {
-        console.error(`[digest] Claude API Fehler fuer ${quarter.name}:`, aiError);
+        console.error(`[digest] Claude API Fehler für ${quarter.name}:`, aiError);
         // Fallback: Einfache Zusammenfassung ohne KI
         summary = `Diese Woche in ${quarter.name}: ${weekData.newPosts} neue Beitraege, ` +
           `${weekData.newAlerts} Meldungen, ${weekData.newEvents} Events, ` +
@@ -115,7 +115,7 @@ export async function GET(request: NextRequest) {
       for (const member of members ?? []) {
         await sendPush(supabase, {
           userId: member.user_id,
-          title: `Wochenrueckblick: ${quarter.name}`,
+          title: `Wochenrückblick: ${quarter.name}`,
           body: summary.slice(0, 200),
           url: '/dashboard',
         });
@@ -123,7 +123,7 @@ export async function GET(request: NextRequest) {
         await safeInsertNotification(supabase, {
           user_id: member.user_id,
           type: 'broadcast',
-          title: `Wochenrueckblick: ${quarter.name}`,
+          title: `Wochenrückblick: ${quarter.name}`,
           body: summary,
         });
 

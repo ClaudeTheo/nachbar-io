@@ -10,7 +10,7 @@ import { CARE_HELPER_ROLES } from '@/lib/care/constants';
 import { HelperCard } from './HelperCard';
 
 interface HelperListProps {
-  /** Optional: Nur Helfer fuer diesen Senior anzeigen */
+  /** Optional: Nur Helfer für diesen Senior anzeigen */
   seniorId?: string;
   /** Wenn true: alle Helfer inkl. pending anzeigen (Admin-Modus) */
   showPending?: boolean;
@@ -59,7 +59,7 @@ function groupByRole(helpers: CareHelper[]): Map<CareHelperRole, CareHelper[]> {
 
 export function HelperList({ seniorId, showPending = false, currentUserId }: HelperListProps) {
   const { helpers, loading, refetch } = useHelpers(seniorId);
-  // ID des Helpers, bei dem gerade eine Verifikations-Aktion laeuft
+  // ID des Helpers, bei dem gerade eine Verifikations-Aktion läuft
   const [processingId, setProcessingId] = useState<string | null>(null);
 
   // Helfer-Liste filtern: ohne showPending nur verifizierte Helfer anzeigen
@@ -122,7 +122,7 @@ export function HelperList({ seniorId, showPending = false, currentUserId }: Hel
 
         return (
           <section key={roleId}>
-            {/* Rollen-Ueberschrift */}
+            {/* Rollen-Überschrift */}
             <h2 className="mb-2 text-sm font-semibold text-muted-foreground uppercase tracking-wide">
               {roleLabel} ({roleHelpers.length})
             </h2>

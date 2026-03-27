@@ -1,23 +1,93 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 200" fill="none" stroke="#2D3142" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-  <!-- Pinnwand-Rahmen -->
-  <rect x="100" y="30" width="200" height="140" rx="6" />
-  <!-- Notiz 1 -->
-  <rect x="120" y="50" width="60" height="45" rx="2" transform="rotate(-3 150 72)" />
-  <line x1="130" y1="62" x2="170" y2="62" opacity="0.5" />
-  <line x1="130" y1="72" x2="165" y2="72" opacity="0.5" />
-  <circle cx="150" cy="48" r="3" fill="#8B5CF6" stroke="#8B5CF6" />
-  <!-- Notiz 2 -->
-  <rect x="220" y="45" width="55" height="50" rx="2" transform="rotate(2 247 70)" />
-  <line x1="230" y1="60" x2="265" y2="60" opacity="0.5" />
-  <line x1="230" y1="70" x2="260" y2="70" opacity="0.5" />
-  <circle cx="247" cy="43" r="3" fill="#8B5CF6" stroke="#8B5CF6" />
-  <!-- Notiz 3 -->
-  <rect x="140" y="110" width="65" height="40" rx="2" transform="rotate(1 172 130)" />
-  <line x1="150" y1="122" x2="195" y2="122" opacity="0.5" />
-  <line x1="150" y1="132" x2="190" y2="132" opacity="0.5" />
-  <circle cx="172" cy="108" r="3" fill="#8B5CF6" stroke="#8B5CF6" />
-  <!-- Notiz 4 -->
-  <rect x="225" y="112" width="50" height="38" rx="2" transform="rotate(-2 250 131)" />
-  <line x1="233" y1="125" x2="268" y2="125" opacity="0.5" />
-  <circle cx="250" cy="110" r="3" fill="#8B5CF6" stroke="#8B5CF6" />
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 200" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <!-- Wand-Textur (subtil) -->
+  <line x1="20" y1="20" x2="20" y2="185" stroke="#2D3142" stroke-width="0.3" opacity="0.06"/>
+  <line x1="60" y1="20" x2="60" y2="185" stroke="#2D3142" stroke-width="0.3" opacity="0.06"/>
+  <line x1="340" y1="20" x2="340" y2="185" stroke="#2D3142" stroke-width="0.3" opacity="0.06"/>
+  <line x1="380" y1="20" x2="380" y2="185" stroke="#2D3142" stroke-width="0.3" opacity="0.06"/>
+
+  <!-- Pinnwand-Rahmen (Holz-Textur) -->
+  <rect x="80" y="18" width="240" height="164" rx="4" stroke="#2D3142" stroke-width="2.5"/>
+  <!-- Rahmen-Innenlinie -->
+  <rect x="84" y="22" width="232" height="156" rx="2" stroke="#2D3142" stroke-width="0.5" opacity="0.2"/>
+  <!-- Kork-Textur -->
+  <circle cx="120" cy="55" r="1" fill="#2D3142" fill-opacity="0.06" stroke="none"/>
+  <circle cx="180" cy="45" r="0.8" fill="#2D3142" fill-opacity="0.05" stroke="none"/>
+  <circle cx="250" cy="65" r="1.2" fill="#2D3142" fill-opacity="0.06" stroke="none"/>
+  <circle cx="140" cy="120" r="0.8" fill="#2D3142" fill-opacity="0.05" stroke="none"/>
+  <circle cx="280" cy="110" r="1" fill="#2D3142" fill-opacity="0.06" stroke="none"/>
+  <circle cx="200" cy="85" r="0.7" fill="#2D3142" fill-opacity="0.04" stroke="none"/>
+  <circle cx="160" cy="155" r="0.9" fill="#2D3142" fill-opacity="0.05" stroke="none"/>
+  <circle cx="260" cy="145" r="1.1" fill="#2D3142" fill-opacity="0.06" stroke="none"/>
+
+  <!-- Notiz 1 (gross, gelb, schraeg) -->
+  <rect x="95" y="32" width="72" height="55" rx="2" stroke="#F59E0B" stroke-width="1.2" fill="#F59E0B" fill-opacity="0.04" transform="rotate(-4 131 59)"/>
+  <!-- Eselsohren -->
+  <path d="M165 34 L162 32 L167 30" stroke="#F59E0B" stroke-width="0.6" opacity="0.4"/>
+  <!-- Text-Linien -->
+  <line x1="105" y1="48" x2="155" y2="47" stroke="#2D3142" stroke-width="0.7" opacity="0.3"/>
+  <line x1="105" y1="56" x2="150" y2="55" stroke="#2D3142" stroke-width="0.6" opacity="0.25"/>
+  <line x1="105" y1="64" x2="145" y2="63" stroke="#2D3142" stroke-width="0.6" opacity="0.25"/>
+  <line x1="105" y1="72" x2="135" y2="71" stroke="#2D3142" stroke-width="0.5" opacity="0.2"/>
+  <!-- Pin -->
+  <circle cx="131" cy="32" r="4.5" fill="#EF4444" fill-opacity="0.15" stroke="#EF4444" stroke-width="1.2"/>
+  <circle cx="131" cy="32" r="1.5" fill="#EF4444" fill-opacity="0.4" stroke="none"/>
+
+  <!-- Notiz 2 (blau, rechts oben) -->
+  <rect x="210" y="28" width="65" height="58" rx="2" stroke="#3B82F6" stroke-width="1.2" fill="#3B82F6" fill-opacity="0.04" transform="rotate(3 242 57)"/>
+  <line x1="220" y1="45" x2="265" y2="46" stroke="#2D3142" stroke-width="0.7" opacity="0.3"/>
+  <line x1="220" y1="53" x2="260" y2="54" stroke="#2D3142" stroke-width="0.6" opacity="0.25"/>
+  <line x1="220" y1="61" x2="255" y2="62" stroke="#2D3142" stroke-width="0.6" opacity="0.25"/>
+  <line x1="220" y1="69" x2="245" y2="70" stroke="#2D3142" stroke-width="0.5" opacity="0.2"/>
+  <!-- Pin -->
+  <circle cx="242" cy="28" r="4.5" fill="#4CAF87" fill-opacity="0.15" stroke="#4CAF87" stroke-width="1.2"/>
+  <circle cx="242" cy="28" r="1.5" fill="#4CAF87" fill-opacity="0.4" stroke="none"/>
+
+  <!-- Notiz 3 (pink/violett, links unten) -->
+  <rect x="100" y="100" width="68" height="50" rx="2" stroke="#8B5CF6" stroke-width="1.2" fill="#8B5CF6" fill-opacity="0.04" transform="rotate(2 134 125)"/>
+  <line x1="110" y1="115" x2="158" y2="116" stroke="#2D3142" stroke-width="0.7" opacity="0.3"/>
+  <line x1="110" y1="123" x2="155" y2="124" stroke="#2D3142" stroke-width="0.6" opacity="0.25"/>
+  <line x1="110" y1="131" x2="148" y2="132" stroke="#2D3142" stroke-width="0.6" opacity="0.25"/>
+  <!-- Smiley auf der Notiz -->
+  <circle cx="150" cy="140" r="5" stroke="#8B5CF6" stroke-width="0.6" opacity="0.3"/>
+  <circle cx="148" cy="139" r="0.7" fill="#2D3142" fill-opacity="0.3" stroke="none"/>
+  <circle cx="152" cy="139" r="0.7" fill="#2D3142" fill-opacity="0.3" stroke="none"/>
+  <path d="M148 142 Q150 144 152 142" stroke="#2D3142" stroke-width="0.4" opacity="0.3"/>
+  <!-- Pin -->
+  <circle cx="134" cy="100" r="4.5" fill="#F59E0B" fill-opacity="0.15" stroke="#F59E0B" stroke-width="1.2"/>
+  <circle cx="134" cy="100" r="1.5" fill="#F59E0B" fill-opacity="0.4" stroke="none"/>
+
+  <!-- Notiz 4 (gruen, rechts unten) -->
+  <rect x="215" y="102" width="60" height="48" rx="2" stroke="#4CAF87" stroke-width="1.2" fill="#4CAF87" fill-opacity="0.04" transform="rotate(-2 245 126)"/>
+  <!-- Haekchen-Liste -->
+  <path d="M225 118 L228 121 L233 114" stroke="#4CAF87" stroke-width="0.8" opacity="0.5"/>
+  <line x1="238" y1="118" x2="265" y2="118" stroke="#2D3142" stroke-width="0.6" opacity="0.25"/>
+  <path d="M225 130 L228 133 L233 126" stroke="#4CAF87" stroke-width="0.8" opacity="0.5"/>
+  <line x1="238" y1="130" x2="262" y2="130" stroke="#2D3142" stroke-width="0.6" opacity="0.25"/>
+  <rect x="225" y="138" width="8" height="8" rx="1" stroke="#2D3142" stroke-width="0.5" opacity="0.2"/>
+  <line x1="238" y1="142" x2="258" y2="142" stroke="#2D3142" stroke-width="0.5" opacity="0.2"/>
+  <!-- Pin -->
+  <circle cx="245" cy="102" r="4.5" fill="#EF4444" fill-opacity="0.15" stroke="#EF4444" stroke-width="1.2"/>
+  <circle cx="245" cy="102" r="1.5" fill="#EF4444" fill-opacity="0.4" stroke="none"/>
+
+  <!-- Foto angeheftet (Polaroid-Stil) -->
+  <rect x="175" y="95" width="30" height="35" rx="1" stroke="#2D3142" stroke-width="0.8" opacity="0.35" fill="white" fill-opacity="0.3" transform="rotate(8 190 112)"/>
+  <rect x="178" y="98" width="24" height="22" rx="0.5" stroke="#2D3142" stroke-width="0.5" opacity="0.2" transform="rotate(8 190 109)"/>
+  <!-- Berg-Motiv im Foto -->
+  <path d="M180 116 L188 104 L192 110 L198 102 L202 116Z" stroke="#4CAF87" stroke-width="0.4" opacity="0.2" transform="rotate(8 190 109)"/>
+  <!-- Pin -->
+  <circle cx="190" cy="95" r="3.5" fill="#3B82F6" fill-opacity="0.15" stroke="#3B82F6" stroke-width="1"/>
+  <circle cx="190" cy="95" r="1.2" fill="#3B82F6" fill-opacity="0.4" stroke="none"/>
+
+  <!-- Washi-Tape oben -->
+  <rect x="155" y="25" width="35" height="8" rx="1" fill="#4CAF87" fill-opacity="0.08" stroke="#4CAF87" stroke-width="0.5" opacity="0.3" transform="rotate(-2 172 29)"/>
+
+  <!-- Bueroklammer -->
+  <path d="M285 55 L285 45 Q285 40 290 40 Q295 40 295 45 L295 65 Q295 70 290 70 Q285 70 285 65 L285 58" stroke="#2D3142" stroke-width="0.8" opacity="0.3"/>
+
+  <!-- Aufhaengung oben -->
+  <circle cx="200" cy="12" r="3" stroke="#2D3142" stroke-width="1" opacity="0.4"/>
+  <line x1="200" y1="15" x2="200" y2="18" stroke="#2D3142" stroke-width="0.8" opacity="0.3"/>
+
+  <!-- Schatten unter Pinnwand -->
+  <ellipse cx="200" cy="186" rx="110" ry="3" fill="#2D3142" fill-opacity="0.06" stroke="none"/>
 </svg>

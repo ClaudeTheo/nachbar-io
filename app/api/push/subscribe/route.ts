@@ -17,7 +17,7 @@ export async function POST(request: NextRequest) {
   try {
     body = await request.json();
   } catch {
-    return NextResponse.json({ error: "Ungueltiges Anfrage-Format" }, { status: 400 });
+    return NextResponse.json({ error: "Ungültiges Anfrage-Format" }, { status: 400 });
   }
   const { endpoint, keys } = body;
 
@@ -36,7 +36,7 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  // Laengenbeschraenkung fuer Endpoint-URL
+  // Längenbeschränkung für Endpoint-URL
   if (endpoint.length > 2048) {
     return NextResponse.json(
       { error: "Push-Endpoint zu lang" },
@@ -86,7 +86,7 @@ export async function DELETE(request: NextRequest) {
   try {
     body = await request.json();
   } catch {
-    return NextResponse.json({ error: "Ungueltiges Anfrage-Format" }, { status: 400 });
+    return NextResponse.json({ error: "Ungültiges Anfrage-Format" }, { status: 400 });
   }
   const { endpoint } = body;
 

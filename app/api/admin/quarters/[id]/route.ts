@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createClient as createServiceClient } from "@supabase/supabase-js";
 
-// Hilfsfunktion: Super-Admin Auth pruefen
+// Hilfsfunktion: Super-Admin Auth prüfen
 async function requireSuperAdmin() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
@@ -20,7 +20,7 @@ async function requireSuperAdmin() {
   return { user };
 }
 
-// Service-Client fuer cross-quarter Zugriff
+// Service-Client für cross-quarter Zugriff
 function getAdminDb() {
   return createServiceClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -30,7 +30,7 @@ function getAdminDb() {
 
 /**
  * GET /api/admin/quarters/[id]
- * Einzelnes Quartier mit vollstaendigen Stats laden.
+ * Einzelnes Quartier mit vollständigen Stats laden.
  */
 export async function GET(
   _request: NextRequest,
@@ -58,7 +58,7 @@ export async function GET(
       .from("households")
       .select("*", { count: "exact", head: true })
       .eq("quarter_id", id),
-    // Bewohner ueber household_members zaehlen (users hat kein quarter_id)
+    // Bewohner über household_members zählen (users hat kein quarter_id)
     adminDb
       .from("household_members")
       .select("*, households!inner(quarter_id)", { count: "exact", head: true })
@@ -102,7 +102,7 @@ export async function PUT(
   const { id } = await params;
   const body = await request.json();
 
-  // Erlaubte Felder fuer Update
+  // Erlaubte Felder für Update
   const allowedFields = [
     "name", "city", "state", "description", "settings", "map_config",
     "status", "invite_prefix", "max_households", "contact_email",
@@ -134,12 +134,12 @@ export async function PUT(
       const validTransitions: Record<string, string[]> = {
         draft: ["active"],
         active: ["archived"],
-        archived: [], // Kein Zurueck
+        archived: [], // Kein Zurück
       };
       const allowed = validTransitions[current.status] ?? [];
       if (!allowed.includes(updateData.status as string)) {
         return NextResponse.json(
-          { error: `Status-Uebergang von '${current.status}' nach '${updateData.status}' nicht erlaubt` },
+          { error: `Status-Übergang von '${current.status}' nach '${updateData.status}' nicht erlaubt` },
           { status: 400 }
         );
       }

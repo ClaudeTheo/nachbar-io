@@ -110,7 +110,7 @@ export default function HelferTasksPage() {
   if (loading) {
     return (
       <div className="space-y-4" data-testid="tasks-loading">
-        <PageHeader title="Meine Einsaetze" subtitle="Aktive Hilfe-Einsaetze" backHref="/hilfe" />
+        <PageHeader title="Meine Einsätze" subtitle="Aktive Hilfe-Einsätze" backHref="/hilfe" />
         <div className="h-20 rounded-2xl bg-muted animate-shimmer" />
         <div className="h-20 rounded-2xl bg-muted animate-shimmer" />
       </div>
@@ -120,12 +120,12 @@ export default function HelferTasksPage() {
   return (
     <div className="space-y-4" data-testid="tasks-page">
       <PageHeader
-        title="Meine Einsaetze"
-        subtitle={`${tasks.length} Einsaetze insgesamt`}
+        title="Meine Einsätze"
+        subtitle={`${tasks.length} Einsätze insgesamt`}
         backHref="/hilfe"
       />
 
-      {/* Status-Uebersicht */}
+      {/* Status-Übersicht */}
       <div className="grid grid-cols-3 gap-2" data-testid="status-overview">
         <div className="rounded-xl bg-info-blue/10 p-3 text-center">
           <p className="text-xl font-bold text-info-blue">{counts.open}</p>
@@ -167,8 +167,8 @@ export default function HelferTasksPage() {
             <ClipboardList className="h-10 w-10 text-muted-foreground/40" />
             <p className="text-sm text-muted-foreground">
               {filter === "all"
-                ? "Noch keine Einsaetze. Schauen Sie unter Anfragen, ob jemand Hilfe braucht."
-                : `Keine ${FILTER_OPTIONS.find((f) => f.value === filter)?.label?.toLowerCase()} Einsaetze.`}
+                ? "Noch keine Einsätze. Schauen Sie unter Anfragen, ob jemand Hilfe braucht."
+                : `Keine ${FILTER_OPTIONS.find((f) => f.value === filter)?.label?.toLowerCase()} Einsätze.`}
             </p>
           </CardContent>
         </Card>

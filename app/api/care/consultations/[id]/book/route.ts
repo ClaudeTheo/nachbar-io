@@ -38,7 +38,7 @@ export async function POST(
     return NextResponse.json({ error: 'Termin nicht gefunden' }, { status: 404 });
   }
 
-  // Pruefen ob bereits gebucht
+  // Prüfen ob bereits gebucht
   if (slot.booked_by) {
     log.done(409);
     return NextResponse.json({ error: 'Termin ist bereits gebucht' }, { status: 409 });
@@ -46,7 +46,7 @@ export async function POST(
 
   if (slot.status !== 'scheduled') {
     log.done(409);
-    return NextResponse.json({ error: 'Termin ist nicht mehr verfuegbar' }, { status: 409 });
+    return NextResponse.json({ error: 'Termin ist nicht mehr verfügbar' }, { status: 409 });
   }
 
   // Video-Raum erstellen falls noch nicht vorhanden

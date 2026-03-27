@@ -28,7 +28,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
     return NextResponse.json({ error: 'Session nicht gefunden' }, { status: 404 });
   }
 
-  // Pruefen ob bereits eine Quittung existiert
+  // Prüfen ob bereits eine Quittung existiert
   if (session.status === 'receipt_created') {
     return NextResponse.json({ error: 'Quittung wurde bereits erstellt' }, { status: 409 });
   }
@@ -50,7 +50,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
   try {
     body = await request.json();
   } catch {
-    return NextResponse.json({ error: 'Ungueltiges Anfrage-Format' }, { status: 400 });
+    return NextResponse.json({ error: 'Ungültiges Anfrage-Format' }, { status: 400 });
   }
 
   if (!body.resident || !body.helper) {
@@ -98,7 +98,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
     return NextResponse.json({ error: 'PDF-Upload fehlgeschlagen' }, { status: 500 });
   }
 
-  // Oeffentliche URL holen
+  // Öffentliche URL holen
   const { data: urlData } = supabase.storage
     .from('receipts')
     .getPublicUrl(storagePath);
@@ -129,7 +129,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
 
   if (updateError) {
     console.error('[hilfe/receipt] Status-Update fehlgeschlagen:', updateError);
-    // Quittung wurde erstellt, nur Status-Update schlug fehl — trotzdem 201 zurueckgeben
+    // Quittung wurde erstellt, nur Status-Update schlug fehl — trotzdem 201 zurückgeben
   }
 
   return NextResponse.json({ pdf_url: pdfUrl, receipt_id: receipt.id }, { status: 201 });
@@ -150,7 +150,7 @@ export async function GET(_request: NextRequest, context: RouteContext) {
     .single();
 
   if (error || !receipt) {
-    return NextResponse.json({ error: 'Keine Quittung fuer diese Session gefunden' }, { status: 404 });
+    return NextResponse.json({ error: 'Keine Quittung für diese Session gefunden' }, { status: 404 });
   }
 
   return NextResponse.json(receipt);

@@ -1,5 +1,5 @@
 // app/(app)/org/reports/page.tsx
-// Nachbar.io — Maengelmelder-Moderation fuer Org-Admins (Pro Community)
+// Nachbar.io — Mängelmelder-Moderation für Org-Admins (Pro Community)
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
@@ -10,7 +10,7 @@ import type { MunicipalReport, ReportStatus } from "@/lib/municipal";
 import { REPORT_CATEGORIES, REPORT_STATUS_CONFIG } from "@/lib/municipal";
 import { PageHeader } from "@/components/ui/page-header";
 
-// Alle Status-Optionen fuer den Filter
+// Alle Status-Optionen für den Filter
 const STATUS_FILTERS: { value: ReportStatus | "all"; label: string }[] = [
   { value: "all", label: "Alle" },
   { value: "open", label: "Offen" },
@@ -30,7 +30,7 @@ export default function OrgReportsPage() {
   const [assignedQuarters, setAssignedQuarters] = useState<string[]>([]);
   // Status-Notizen pro Meldung
   const [statusNotes, setStatusNotes] = useState<Record<string, string>>({});
-  // Lade-Zustand pro Meldung (fuer Button-Deaktivierung)
+  // Lade-Zustand pro Meldung (für Button-Deaktivierung)
   const [actionLoading, setActionLoading] = useState<Record<string, boolean>>(
     {},
   );
@@ -49,7 +49,7 @@ export default function OrgReportsPage() {
         return;
       }
 
-      // Org-Mitgliedschaft pruefen (nur Admins)
+      // Org-Mitgliedschaft prüfen (nur Admins)
       const { data: membership, error: memberError } = await supabase
         .from("org_members")
         .select("org_id, assigned_quarters")
@@ -71,7 +71,7 @@ export default function OrgReportsPage() {
         return;
       }
 
-      // Meldungen fuer zugewiesene Quartiere laden
+      // Meldungen für zugewiesene Quartiere laden
       const { data, error: reportsError } = await supabase
         .from("municipal_reports")
         .select("*")
@@ -96,7 +96,7 @@ export default function OrgReportsPage() {
     loadReports();
   }, [loadReports]);
 
-  // Status einer Meldung aendern
+  // Status einer Meldung ändern
   async function handleStatusChange(
     report: MunicipalReport,
     newStatus: ReportStatus,
@@ -169,11 +169,11 @@ export default function OrgReportsPage() {
     }
   }
 
-  // Meldung loeschen
+  // Meldung löschen
   async function handleDelete(report: MunicipalReport) {
     if (!orgId || !userId) return;
 
-    // Bestaetigung einholen
+    // Bestätigung einholen
     const confirmed = window.confirm(
       `Möchten Sie diese Meldung wirklich löschen?\n\n„${report.description || "Keine Beschreibung"}"`,
     );
@@ -182,7 +182,7 @@ export default function OrgReportsPage() {
     setActionLoading((prev) => ({ ...prev, [report.id]: true }));
 
     try {
-      // Meldung loeschen
+      // Meldung löschen
       const { error: deleteError } = await supabase
         .from("municipal_reports")
         .delete()
@@ -371,7 +371,7 @@ export default function OrgReportsPage() {
 
               {/* Aktionen */}
               <div className="flex flex-wrap items-end gap-2 mt-3 pt-3 border-t border-gray-100">
-                {/* Status aendern */}
+                {/* Status ändern */}
                 <div className="flex flex-col gap-1">
                   <label
                     className="text-xs text-gray-500"
@@ -420,7 +420,7 @@ export default function OrgReportsPage() {
                   />
                 </div>
 
-                {/* Loeschen-Button */}
+                {/* Löschen-Button */}
                 <button
                   onClick={() => handleDelete(report)}
                   disabled={isProcessing}

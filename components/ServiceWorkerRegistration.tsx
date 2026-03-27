@@ -18,14 +18,14 @@ export function ServiceWorkerRegistration() {
       .then((registration) => {
         console.log("SW registered:", registration.scope);
 
-        // Pruefen ob bereits ein wartender SW vorhanden ist
+        // Prüfen ob bereits ein wartender SW vorhanden ist
         if (registration.waiting) {
           setWaitingWorker(registration.waiting);
           setUpdateAvailable(true);
           return;
         }
 
-        // Einmal pro Tag auf Updates pruefen
+        // Einmal pro Tag auf Updates prüfen
         try {
           const lastCheck = localStorage.getItem(LAST_CHECK_KEY);
           const now = Date.now();
@@ -36,7 +36,7 @@ export function ServiceWorkerRegistration() {
             });
           }
         } catch {
-          // localStorage nicht verfuegbar (Private Browsing) — ignorieren
+          // localStorage nicht verfügbar (Private Browsing) — ignorieren
         }
 
         // Auf neue SW-Version lauschen
@@ -46,7 +46,7 @@ export function ServiceWorkerRegistration() {
 
           newWorker.addEventListener("statechange", () => {
             if (newWorker.state === "installed" && navigator.serviceWorker.controller) {
-              // Neuer SW wartet — Update verfuegbar
+              // Neuer SW wartet — Update verfügbar
               setWaitingWorker(newWorker);
               setUpdateAvailable(true);
             }
@@ -57,7 +57,7 @@ export function ServiceWorkerRegistration() {
         console.log("SW registration failed:", error);
       });
 
-    // Seite neu laden wenn neuer SW die Kontrolle uebernimmt
+    // Seite neu laden wenn neuer SW die Kontrolle übernimmt
     let refreshing = false;
     function handleControllerChange() {
       if (refreshing) return;

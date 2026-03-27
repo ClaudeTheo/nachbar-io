@@ -1,6 +1,6 @@
 // components/care/index.ts
-// Barrel-Export fuer alle Care-Komponenten
-// Neue Komponenten hier eintragen fuer einfache Imports
+// Barrel-Export für alle Care-Komponenten
+// Neue Komponenten hier eintragen für einfache Imports
 
 // SOS-Komponenten
 export { SosButton } from './SosButton';
@@ -41,11 +41,11 @@ export { FeatureGate } from './FeatureGate';
 // Fehlerbehandlung
 export { CareErrorBoundary } from './CareErrorBoundary';
 
-// Admin-Uebersicht
+// Admin-Übersicht
 export { SystemOverview } from './SystemOverview';
 export { PilotMetrics } from './PilotMetrics';
 
-// Senior-Geraet (E-Ink)
+// Senior-Gerät (E-Ink)
 export { SeniorSosButton } from './senior/SeniorSosButton';
 export { SeniorCheckinButtons } from './senior/SeniorCheckinButtons';
 export { SeniorStatusScreen } from './senior/SeniorStatusScreen';

@@ -28,18 +28,18 @@ function ensureVapid() {
 export async function POST(request: NextRequest) {
   const supabase = await createClient();
 
-  // Auth-Pruefung: Entweder internes Secret oder gueltige Session
+  // Auth-Prüfung: Entweder internes Secret oder gültige Session
   const internalSecret = request.headers.get("x-internal-secret");
   const expectedSecret = process.env.INTERNAL_API_SECRET;
   const hasInternalSecret = expectedSecret && internalSecret === expectedSecret;
 
   if (!hasInternalSecret) {
-    // Ohne internes Secret: Nur Admins duerfen Pushes an andere senden
+    // Ohne internes Secret: Nur Admins dürfen Pushes an andere senden
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
       return NextResponse.json({ error: "Nicht autorisiert" }, { status: 403 });
     }
-    // Admin-Check: Nur Admins duerfen gezielt pushen
+    // Admin-Check: Nur Admins dürfen gezielt pushen
     const { data: profile } = await supabase
       .from("users")
       .select("is_admin")
@@ -54,7 +54,7 @@ export async function POST(request: NextRequest) {
   try {
     body = await request.json();
   } catch {
-    return NextResponse.json({ error: "Ungueltiges Anfrage-Format" }, { status: 400 });
+    return NextResponse.json({ error: "Ungültiges Anfrage-Format" }, { status: 400 });
   }
   const { userId, title, body: messageBody, url, tag } = body;
 
@@ -118,7 +118,7 @@ export async function POST(request: NextRequest) {
     })
   );
 
-  // Abgelaufene Subscriptions aufraeumen
+  // Abgelaufene Subscriptions aufräumen
   if (expiredEndpoints.length > 0) {
     const { error: cleanupError } = await supabase
       .from("push_subscriptions")

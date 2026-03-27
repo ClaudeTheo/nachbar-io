@@ -39,7 +39,7 @@ export async function POST(request: NextRequest) {
     ? createHash('sha256').update(user.phone).digest('hex')
     : '';
 
-  // Duplikat-Pruefung
+  // Duplikat-Prüfung
   const { data: existing } = await supabase
     .from('youth_profiles')
     .select('id')

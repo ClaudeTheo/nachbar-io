@@ -1,6 +1,6 @@
 // app/api/care/medications/route.test.ts
-// Nachbar.io — Tests fuer Medikamente API-Route (GET + POST)
-// Testet: Auth, Subscription-Gate, Zugriff, Validierung, Consent, Verschluesselung
+// Nachbar.io — Tests für Medikamente API-Route (GET + POST)
+// Testet: Auth, Subscription-Gate, Zugriff, Validierung, Consent, Verschlüsselung
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { NextRequest, NextResponse } from 'next/server';
@@ -32,7 +32,7 @@ vi.mock('@/lib/care/field-encryption', () => ({
   CARE_MEDICATIONS_ENCRYPTED_FIELDS: ['name', 'dosage', 'instructions'],
 }));
 
-// Proxy-basierter Supabase-Mock: jede Chain-Methode gibt den Proxy zurueck
+// Proxy-basierter Supabase-Mock: jede Chain-Methode gibt den Proxy zurück
 const mockMeds = [
   { id: 'med-1', name: 'Metformin', dosage: '500mg', active: true },
   { id: 'med-2', name: 'Ramipril', dosage: '5mg', active: true },
@@ -90,7 +90,7 @@ describe('GET /api/care/medications', () => {
     expect(res.status).toBe(401);
   });
 
-  it('prueft Subscription-Gate (Plus erforderlich)', async () => {
+  it('prüft Subscription-Gate (Plus erforderlich)', async () => {
     mockRequireSubscription.mockResolvedValue(
       NextResponse.json({ error: 'Plus erforderlich' }, { status: 403 }),
     );
@@ -98,12 +98,12 @@ describe('GET /api/care/medications', () => {
     expect(res.status).toBe(403);
   });
 
-  it('laedt Medikamente fuer eigenen User', async () => {
+  it('lädt Medikamente für eigenen User', async () => {
     const res = await GET(createGetRequest());
     expect(res.status).toBe(200);
   });
 
-  it('prueft Zugriff bei Fremd-Zugriff via senior_id', async () => {
+  it('prüft Zugriff bei Fremd-Zugriff via senior_id', async () => {
     mockRequireCareAccess.mockResolvedValue('admin');
     const res = await GET(createGetRequest({ senior_id: 'senior-x' }));
     expect(res.status).toBe(200);
@@ -157,14 +157,14 @@ describe('POST /api/care/medications', () => {
     expect(json.error).toContain('Zeitplan');
   });
 
-  it('weist ungueltigen Zeitplan-Typ ab', async () => {
+  it('weist ungültigen Zeitplan-Typ ab', async () => {
     const res = await POST(createPostRequest({ name: 'Metformin', schedule: { type: 'monthly' } }));
     expect(res.status).toBe(400);
     const json = await res.json();
-    expect(json.error).toContain('Ungueltiger Zeitplan-Typ');
+    expect(json.error).toContain('Ungültiger Zeitplan-Typ');
   });
 
-  it('akzeptiert gueltiges Medikament', async () => {
+  it('akzeptiert gültiges Medikament', async () => {
     const res = await POST(createPostRequest({
       name: 'Metformin',
       dosage: '500mg',
@@ -185,7 +185,7 @@ describe('POST /api/care/medications', () => {
     expect(json.error).toContain('2000 Zeichen');
   });
 
-  it('weist ungueltiges JSON ab', async () => {
+  it('weist ungültiges JSON ab', async () => {
     const req = new NextRequest('http://localhost:3000/api/care/medications', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },

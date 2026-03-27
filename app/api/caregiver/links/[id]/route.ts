@@ -20,7 +20,7 @@ export async function PATCH(
   const { supabase, user } = auth;
   const { id } = await params;
 
-  // Pruefen ob der Link dem Bewohner gehoert
+  // Prüfen ob der Link dem Bewohner gehört
   const { data: link } = await supabase
     .from('caregiver_links')
     .select('id, resident_id, caregiver_id')
@@ -60,7 +60,7 @@ export async function PATCH(
   }
 
   if (Object.keys(updates).length === 0) {
-    return errorResponse('Keine Aenderungen angegeben', 400);
+    return errorResponse('Keine Änderungen angegeben', 400);
   }
 
   const { error } = await supabase

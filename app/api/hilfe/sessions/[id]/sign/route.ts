@@ -24,7 +24,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
   try {
     body = await request.json();
   } catch {
-    return NextResponse.json({ error: 'Ungueltiges Anfrage-Format' }, { status: 400 });
+    return NextResponse.json({ error: 'Ungültiges Anfrage-Format' }, { status: 400 });
   }
 
   const { role, signature_data_url } = body;
@@ -38,7 +38,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
     return NextResponse.json({ error: 'signature_data_url ist erforderlich' }, { status: 400 });
   }
 
-  // Session laden um aktuellen Stand der Unterschriften zu pruefen
+  // Session laden um aktuellen Stand der Unterschriften zu prüfen
   const { data: existingSession, error: fetchError } = await supabase
     .from('help_sessions')
     .select('*')
@@ -53,7 +53,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
   const signatureField = role === 'helper' ? 'helper_signature_url' : 'resident_signature_url';
   const otherField = role === 'helper' ? 'resident_signature_url' : 'helper_signature_url';
 
-  // Pruefen ob nach dem Update beide Signaturen vorhanden sind
+  // Prüfen ob nach dem Update beide Signaturen vorhanden sind
   const bothSigned = existingSession[otherField] !== null;
   const updatePayload: Record<string, unknown> = {
     [signatureField]: signature_data_url,

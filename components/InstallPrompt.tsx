@@ -20,12 +20,12 @@ export function InstallPrompt() {
       if (Capacitor.isNativePlatform()) return;
       initPromptLogic();
     }).catch(() => {
-      // Capacitor nicht verfuegbar (reiner Web-Modus) — normal weitermachen
+      // Capacitor nicht verfügbar (reiner Web-Modus) — normal weitermachen
       initPromptLogic();
     });
 
     function initPromptLogic() {
-      // Pruefen ob schon dismissed (plattform-agnostisch)
+      // Prüfen ob schon dismissed (plattform-agnostisch)
       import("@/lib/platform-storage").then(({ getStorage }) => {
         getStorage("pwa-install-dismissed").then(val => {
           if (val) {
@@ -40,7 +40,7 @@ export function InstallPrompt() {
     }
 
     function setupBeforeInstallPrompt() {
-      // Pruefen ob bereits installiert (standalone mode)
+      // Prüfen ob bereits installiert (standalone mode)
       if (window.matchMedia("(display-mode: standalone)").matches) {
         return;
       }
@@ -51,7 +51,7 @@ export function InstallPrompt() {
       }
 
       window.addEventListener("beforeinstallprompt", handleBeforeInstall);
-      // Cleanup nicht moeglich da Referenz in async Callback — akzeptabel fuer diesen Use-Case
+      // Cleanup nicht möglich da Referenz in async Callback — akzeptabel für diesen Use-Case
     }
   }, []);
 

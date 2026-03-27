@@ -102,7 +102,7 @@ export default function FamilienFotosScreen() {
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
     >
-      {/* Zurueck-Button */}
+      {/* Zurück-Button */}
       <button
         onClick={() => setActiveScreen("home")}
         className="absolute top-4 left-4 z-10 flex items-center justify-center h-[70px] w-[70px] rounded-2xl bg-black/50 text-white active:scale-95 transition-transform"

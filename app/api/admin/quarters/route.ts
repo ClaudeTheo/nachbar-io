@@ -5,7 +5,7 @@ import { createClient as createServiceClient } from "@supabase/supabase-js";
 /**
  * GET /api/admin/quarters
  * Liste aller Quartiere mit Statistiken.
- * Nur fuer super_admin zugaenglich.
+ * Nur für super_admin zugänglich.
  */
 export async function GET() {
   const supabase = await createClient();
@@ -24,7 +24,7 @@ export async function GET() {
     return NextResponse.json({ error: "Nur Super-Admins" }, { status: 403 });
   }
 
-  // Service-Client fuer cross-quarter Zugriff (umgeht RLS)
+  // Service-Client für cross-quarter Zugriff (umgeht RLS)
   const adminDb = createServiceClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY!
@@ -48,7 +48,7 @@ export async function GET() {
           .from("households")
           .select("*", { count: "exact", head: true })
           .eq("quarter_id", q.id),
-        // Bewohner ueber household_members zaehlen (users hat kein quarter_id)
+        // Bewohner über household_members zählen (users hat kein quarter_id)
         adminDb
           .from("household_members")
           .select("*, households!inner(quarter_id)", { count: "exact", head: true })
@@ -91,7 +91,7 @@ export async function GET() {
 /**
  * POST /api/admin/quarters
  * Neues Quartier erstellen.
- * Nur fuer super_admin zugaenglich.
+ * Nur für super_admin zugänglich.
  */
 export async function POST(request: NextRequest) {
   const supabase = await createClient();
@@ -119,7 +119,7 @@ export async function POST(request: NextRequest) {
     settings: requestedSettings, map_config: requestedMapConfig,
   } = body;
 
-  // Pflichtfelder pruefen
+  // Pflichtfelder prüfen
   if (!name || center_lat == null || center_lng == null) {
     return NextResponse.json(
       { error: "Name, center_lat und center_lng sind Pflichtfelder" },
@@ -130,7 +130,7 @@ export async function POST(request: NextRequest) {
   const lat = typeof center_lat === "number" ? center_lat : parseFloat(center_lat);
   const lng = typeof center_lng === "number" ? center_lng : parseFloat(center_lng);
   if (isNaN(lat) || isNaN(lng)) {
-    return NextResponse.json({ error: "Ungueltige Koordinaten" }, { status: 400 });
+    return NextResponse.json({ error: "Ungültige Koordinaten" }, { status: 400 });
   }
 
   // Slug aus Name generieren
@@ -144,7 +144,7 @@ export async function POST(request: NextRequest) {
     .replace(/\s+/g, "-")
     .replace(/-+/g, "-");
 
-  // Bounding Box: Vom Client uebernehmen oder ~500m Offset berechnen
+  // Bounding Box: Vom Client übernehmen oder ~500m Offset berechnen
   const offset = 0.003;
   const swLat = bounds_sw_lat != null ? Number(bounds_sw_lat) : lat - offset;
   const swLng = bounds_sw_lng != null ? Number(bounds_sw_lng) : lng - offset;
@@ -155,13 +155,13 @@ export async function POST(request: NextRequest) {
   const validStatuses = ["draft", "active"];
   const finalStatus = validStatuses.includes(requestedStatus) ? requestedStatus : "draft";
 
-  // Service-Client fuer Insert
+  // Service-Client für Insert
   const adminDb = createServiceClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY!
   );
 
-  // Standard-Settings mit uebergebenen mergen
+  // Standard-Settings mit übergebenen mergen
   const defaultSettings = {
     allowSelfRegistration: false,
     requireVerification: true,

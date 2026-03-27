@@ -1,6 +1,6 @@
 // app/api/care/profile/route.test.ts
-// Nachbar.io — Tests fuer Care-Profil API-Route (GET + PUT)
-// Testet: Auth, Zugriff, Validierung, Verschluesselung, Consent, Audit
+// Nachbar.io — Tests für Care-Profil API-Route (GET + PUT)
+// Testet: Auth, Zugriff, Validierung, Verschlüsselung, Consent, Audit
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { NextRequest } from 'next/server';
@@ -80,7 +80,7 @@ describe('GET /api/care/profile', () => {
     expect(json.error).toBe('Nicht authentifiziert');
   });
 
-  it('laedt eigenes Profil', async () => {
+  it('lädt eigenes Profil', async () => {
     mockSupabase.setUser({ id: 'user-1', email: 'test@test.de' });
     mockSupabase.addResponse('care_profiles', { data: mockProfile, error: null });
 
@@ -102,7 +102,7 @@ describe('GET /api/care/profile', () => {
     expect(json).toBeNull();
   });
 
-  it('prueft Zugriff bei Fremd-Zugriff via senior_id', async () => {
+  it('prüft Zugriff bei Fremd-Zugriff via senior_id', async () => {
     mockSupabase.setUser({ id: 'helfer-1', email: 'helfer@test.de' });
     mockSupabase.addResponse('care_profiles', { data: mockProfile, error: null });
 
@@ -151,7 +151,7 @@ describe('PUT /api/care/profile', () => {
     expect(json.feature).toBe('care_profile');
   });
 
-  it('aktualisiert Profil mit gueltigem care_level', async () => {
+  it('aktualisiert Profil mit gültigem care_level', async () => {
     mockSupabase.setUser({ id: 'user-1', email: 'test@test.de' });
     mockSupabase.addResponse('care_profiles', { data: { ...mockProfile, care_level: '2' }, error: null });
 
@@ -160,13 +160,13 @@ describe('PUT /api/care/profile', () => {
     expect(writeAuditLog).toHaveBeenCalled();
   });
 
-  it('weist ungueltige Pflegestufe ab', async () => {
+  it('weist ungültige Pflegestufe ab', async () => {
     mockSupabase.setUser({ id: 'user-1', email: 'test@test.de' });
 
     const res = await PUT(createPutRequest({ care_level: '9' }));
     expect(res.status).toBe(400);
     const json = await res.json();
-    expect(json.error).toContain('Ungueltige Pflegestufe');
+    expect(json.error).toContain('Ungültige Pflegestufe');
   });
 
   it('validiert Check-in-Zeiten Format HH:MM', async () => {
@@ -175,10 +175,10 @@ describe('PUT /api/care/profile', () => {
     const res = await PUT(createPutRequest({ checkin_times: ['25:00'] }));
     expect(res.status).toBe(400);
     const json = await res.json();
-    expect(json.error).toContain('Ungueltige Uhrzeit');
+    expect(json.error).toContain('Ungültige Uhrzeit');
   });
 
-  it('akzeptiert gueltige Check-in-Zeiten', async () => {
+  it('akzeptiert gültige Check-in-Zeiten', async () => {
     mockSupabase.setUser({ id: 'user-1', email: 'test@test.de' });
     mockSupabase.addResponse('care_profiles', { data: { ...mockProfile, checkin_times: ['08:00', '12:30', '20:00'] }, error: null });
 
@@ -194,10 +194,10 @@ describe('PUT /api/care/profile', () => {
     }));
     expect(res.status).toBe(400);
     const json = await res.json();
-    expect(json.error).toContain('Ungueltiger Notfallkontakt');
+    expect(json.error).toContain('Ungültiger Notfallkontakt');
   });
 
-  it('akzeptiert gueltige Notfallkontakte', async () => {
+  it('akzeptiert gültige Notfallkontakte', async () => {
     mockSupabase.setUser({ id: 'user-1', email: 'test@test.de' });
     mockSupabase.addResponse('care_profiles', { data: mockProfile, error: null });
 
@@ -216,10 +216,10 @@ describe('PUT /api/care/profile', () => {
     }));
     expect(res.status).toBe(400);
     const json = await res.json();
-    expect(json.error).toContain('Ungueltige Eskalationskonfiguration');
+    expect(json.error).toContain('Ungültige Eskalationskonfiguration');
   });
 
-  it('weist ungueltiges JSON ab', async () => {
+  it('weist ungültiges JSON ab', async () => {
     mockSupabase.setUser({ id: 'user-1', email: 'test@test.de' });
 
     const req = new NextRequest('http://localhost:3000/api/care/profile', {
@@ -231,6 +231,6 @@ describe('PUT /api/care/profile', () => {
     const res = await PUT(req);
     expect(res.status).toBe(400);
     const json = await res.json();
-    expect(json.error).toContain('Ungueltiges Anfrage-Format');
+    expect(json.error).toContain('Ungültiges Anfrage-Format');
   });
 });

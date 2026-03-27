@@ -12,7 +12,7 @@ export function CapacitorInit() {
         });
       }
     }).catch(() => {
-      // Capacitor nicht verfuegbar (reiner Web-Modus) — ignorieren
+      // Capacitor nicht verfügbar (reiner Web-Modus) — ignorieren
     });
   }, []);
 

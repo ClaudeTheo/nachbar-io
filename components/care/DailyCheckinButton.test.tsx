@@ -1,5 +1,5 @@
 // components/care/DailyCheckinButton.test.tsx
-// Nachbar.io — Tests fuer den Dashboard Check-in Button
+// Nachbar.io — Tests für den Dashboard Check-in Button
 
 import { describe, it, expect, vi, afterEach, beforeEach } from "vitest";
 import { render, screen, fireEvent, cleanup, waitFor } from "@testing-library/react";
@@ -112,7 +112,7 @@ describe("DailyCheckinButton", () => {
 
     render(<DailyCheckinButton />);
 
-    // Warten bis Button sichtbar, dann klicken fuer Stimmungsauswahl
+    // Warten bis Button sichtbar, dann klicken für Stimmungsauswahl
     await waitFor(() => {
       expect(screen.getByTestId("checkin-button")).toBeInTheDocument();
     });
@@ -122,10 +122,10 @@ describe("DailyCheckinButton", () => {
     expect(mainButton.style.minHeight).toBe("80px");
     expect(mainButton.style.touchAction).toBe("manipulation");
 
-    // Stimmungsauswahl oeffnen
+    // Stimmungsauswahl öffnen
     fireEvent.click(mainButton);
 
-    // Alle Mood-Buttons pruefen
+    // Alle Mood-Buttons prüfen
     const moodButtons = screen.getAllByRole("button");
     moodButtons.forEach((btn) => {
       expect(btn.style.minHeight).toBe("80px");

@@ -36,7 +36,7 @@ export async function POST() {
       },
     });
 
-    // Challenge in DB speichern statt Cookie (iOS-Kompatibilitaet)
+    // Challenge in DB speichern statt Cookie (iOS-Kompatibilität)
     // Cookies gehen auf iPhone Chrome nach Face-ID-Dialog verloren
     const expiresAt = new Date(Date.now() + 120_000).toISOString(); // 2 Minuten
     await supabase

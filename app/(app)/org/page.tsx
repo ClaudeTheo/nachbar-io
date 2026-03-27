@@ -5,7 +5,7 @@
 import { useEffect, useState } from "react";
 import { OrgDashboard } from "@/components/org/OrgDashboard";
 
-// Typdefinition fuer Organisation (aus API-Antwort)
+// Typdefinition für Organisation (aus API-Antwort)
 export interface Organization {
   id: string;
   name: string;
@@ -42,10 +42,10 @@ export default function OrgPage() {
         }
 
         const data: Organization[] = await res.json();
-        // Erste Organisation verwenden (Nutzer gehoert meist zu einer Org)
+        // Erste Organisation verwenden (Nutzer gehört meist zu einer Org)
         setOrg(data.length > 0 ? data[0] : null);
       } catch {
-        setError("Verbindungsfehler. Bitte versuchen Sie es spaeter erneut.");
+        setError("Verbindungsfehler. Bitte versuchen Sie es später erneut.");
       } finally {
         setLoading(false);
       }
@@ -96,7 +96,7 @@ export default function OrgPage() {
         </h2>
         <p className="text-sm text-gray-500">
           Sie sind derzeit keiner Organisation zugeordnet. Kontaktieren Sie Ihren
-          Administrator, um einer Organisation beitreten zu koennen.
+          Administrator, um einer Organisation beitreten zu können.
         </p>
       </div>
     );

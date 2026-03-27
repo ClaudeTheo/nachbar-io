@@ -5,16 +5,16 @@ import { useTerminal } from "@/lib/terminal/TerminalContext";
 
 /**
  * Nachtmodus-Overlay (22:00–07:00):
- * - Grosse digitale Uhr, zentriert, weisser Text auf dunklem Hintergrund
+ * - Große digitale Uhr, zentriert, weisser Text auf dunklem Hintergrund
  * - Datum darunter
  * - Notruf-Button (rot, 112) am unteren Rand
- * - Antippen irgendwo blendet das Overlay fuer 5 Minuten aus
+ * - Antippen irgendwo blendet das Overlay für 5 Minuten aus
  */
 export default function NightModeOverlay() {
   const { dismissNightMode } = useTerminal();
   const [currentTime, setCurrentTime] = useState(new Date());
 
-  // Uhrzeit jede Sekunde aktualisieren fuer fluessige Anzeige
+  // Uhrzeit jede Sekunde aktualisieren für flüssige Anzeige
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentTime(new Date());
@@ -22,7 +22,7 @@ export default function NightModeOverlay() {
     return () => clearInterval(interval);
   }, []);
 
-  // Notruf-Anruf ausloesen
+  // Notruf-Anruf auslösen
   const handleEmergency = useCallback((e: React.MouseEvent | React.TouchEvent) => {
     e.stopPropagation();
     window.location.href = "tel:112";

@@ -1,6 +1,6 @@
 'use client';
 
-// Monatskalender fuer Termine mit Farbpunkten nach Termintyp
+// Monatskalender für Termine mit Farbpunkten nach Termintyp
 
 import { useMemo, useState } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
@@ -25,14 +25,14 @@ const TYPE_COLORS: Record<CareAppointmentType, string> = {
 
 // Deutsche Monatsnamen
 const MONTH_NAMES = [
-  'Januar', 'Februar', 'Maerz', 'April', 'Mai', 'Juni',
+  'Januar', 'Februar', 'März', 'April', 'Mai', 'Juni',
   'Juli', 'August', 'September', 'Oktober', 'November', 'Dezember',
 ];
 
 // Wochentag-Header (Montag zuerst)
 const WEEKDAY_HEADERS = ['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So'];
 
-// Datum als YYYY-MM-DD Schluessel (Ortszeit)
+// Datum als YYYY-MM-DD Schlüssel (Ortszeit)
 function toDateKey(iso: string): string {
   const d = new Date(iso);
   const y = d.getFullYear();
@@ -67,7 +67,7 @@ export function AppointmentCalendar({ appointments }: AppointmentCalendarProps) 
     return map;
   }, [appointments]);
 
-  // Kalender-Tage fuer den aktuellen Monat berechnen
+  // Kalender-Tage für den aktuellen Monat berechnen
   const calendarDays = useMemo(() => {
     // Erster Tag des Monats
     const firstDay = new Date(viewYear, viewMonth, 1);
@@ -86,7 +86,7 @@ export function AppointmentCalendar({ appointments }: AppointmentCalendarProps) 
       days.push(d);
     }
 
-    // Auffuellen auf volle Wochen
+    // Auffüllen auf volle Wochen
     while (days.length % 7 !== 0) {
       days.push(null);
     }
@@ -94,13 +94,13 @@ export function AppointmentCalendar({ appointments }: AppointmentCalendarProps) 
     return days;
   }, [viewYear, viewMonth]);
 
-  // Heutiges Datum als Schluessel
+  // Heutiges Datum als Schlüssel
   const todayKey = toDateKey(today.toISOString());
   const todayYear = today.getFullYear();
   const todayMonth = today.getMonth();
   const todayDate = today.getDate();
 
-  // Termine fuer heute
+  // Termine für heute
   const todaysAppointments = useMemo(() => {
     return appointmentsByDate.get(todayKey) ?? [];
   }, [appointmentsByDate, todayKey]);
@@ -140,7 +140,7 @@ export function AppointmentCalendar({ appointments }: AppointmentCalendarProps) 
         <button
           onClick={goToNextMonth}
           className="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-lg hover:bg-muted transition-colors"
-          aria-label="Naechster Monat"
+          aria-label="Nächster Monat"
         >
           <ChevronRight className="h-5 w-5 text-anthrazit" />
         </button>
@@ -169,7 +169,7 @@ export function AppointmentCalendar({ appointments }: AppointmentCalendarProps) 
           const dayAppointments = appointmentsByDate.get(dateKey) ?? [];
           const isToday = viewYear === todayYear && viewMonth === todayMonth && day === todayDate;
 
-          // Eindeutige Typen fuer Farbpunkte (max. 3)
+          // Eindeutige Typen für Farbpunkte (max. 3)
           const uniqueTypes = [...new Set(dayAppointments.map((a) => a.type))].slice(0, 3);
 
           return (

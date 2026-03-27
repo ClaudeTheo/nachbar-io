@@ -1,8 +1,8 @@
-// GET /api/hilfe/federal-states — Oeffentliche Bundesland-Regeln
+// GET /api/hilfe/federal-states — Öffentliche Bundesland-Regeln
 import { NextResponse } from 'next/server';
 import { getAllStates } from '@/lib/hilfe/federal-states';
 
 export async function GET() {
-  // Oeffentliche Referenzdaten, keine Auth erforderlich
+  // Öffentliche Referenzdaten, keine Auth erforderlich
   return NextResponse.json(getAllStates());
 }

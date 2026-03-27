@@ -3,7 +3,7 @@
 import { useState, useCallback } from "react";
 import Link from "next/link";
 
-// Kontextabhaengige Texte fuer Google Play Prominent Disclosure
+// Kontextabhaengige Texte für Google Play Prominent Disclosure
 // Google verlangt In-App-Offenlegung VOR dem System-Permission-Dialog
 const DISCLOSURE_TEXTS = {
   emergency: {
@@ -34,7 +34,7 @@ interface LocationDisclosureProps {
   onDecline: () => void;
 }
 
-// Pruefen ob Disclosure fuer diesen Zweck bereits akzeptiert wurde
+// Prüfen ob Disclosure für diesen Zweck bereits akzeptiert wurde
 export function isLocationDisclosed(purpose: LocationPurpose): boolean {
   if (typeof window === "undefined") return false;
   return localStorage.getItem(`nachbar-location-disclosed-${purpose}`) === "true";

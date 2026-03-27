@@ -1,5 +1,5 @@
 // components/care/TaskCard.test.tsx
-// Nachbar.io — Tests fuer Aufgaben-Karte (Nachbarschaftshilfe)
+// Nachbar.io — Tests für Aufgaben-Karte (Nachbarschaftshilfe)
 
 import { describe, it, expect, vi, afterEach } from 'vitest';
 import { render, screen, cleanup } from '@testing-library/react';
@@ -43,12 +43,12 @@ describe('TaskCard', () => {
     expect(screen.getByText(/Herr Schmidt/)).toBeInTheDocument();
   });
 
-  it('zeigt Ich-helfe-Button fuer andere Nutzer', () => {
+  it('zeigt Ich-helfe-Button für andere Nutzer', () => {
     render(<TaskCard task={mockTask} currentUserId="user-2" />);
     expect(screen.getByText('Ich helfe')).toBeInTheDocument();
   });
 
-  it('zeigt KEINEN Ich-helfe-Button fuer Ersteller', () => {
+  it('zeigt KEINEN Ich-helfe-Button für Ersteller', () => {
     render(<TaskCard task={mockTask} currentUserId="user-1" />);
     expect(screen.queryByText('Ich helfe')).not.toBeInTheDocument();
   });
@@ -64,12 +64,12 @@ describe('TaskCard', () => {
     expect(screen.queryByText('Donnerstag 14 Uhr, Rheinfelden')).not.toBeInTheDocument();
   });
 
-  it('zeigt Stornieren fuer Ersteller', () => {
+  it('zeigt Stornieren für Ersteller', () => {
     render(<TaskCard task={mockTask} currentUserId="user-1" />);
     expect(screen.getByText('Stornieren')).toBeInTheDocument();
   });
 
-  it('zeigt KEINEN Stornieren-Button fuer andere Nutzer', () => {
+  it('zeigt KEINEN Stornieren-Button für andere Nutzer', () => {
     render(<TaskCard task={mockTask} currentUserId="user-2" />);
     expect(screen.queryByText('Stornieren')).not.toBeInTheDocument();
   });
@@ -80,15 +80,15 @@ describe('TaskCard', () => {
   });
 
   it('zeigt Status-Badge "Angenommen" bei claimed', () => {
-    const claimed = { ...mockTask, status: 'claimed' as const, claimer_id: 'user-2', claimer_name: 'Frau Mueller' };
+    const claimed = { ...mockTask, status: 'claimed' as const, claimer_id: 'user-2', claimer_name: 'Frau Müller' };
     render(<TaskCard task={claimed} currentUserId="user-3" />);
     expect(screen.getByText('Angenommen')).toBeInTheDocument();
   });
 
   it('zeigt Helfer-Info bei angenommener Aufgabe', () => {
-    const claimed = { ...mockTask, status: 'claimed' as const, claimer_id: 'user-2', claimer_name: 'Frau Mueller' };
+    const claimed = { ...mockTask, status: 'claimed' as const, claimer_id: 'user-2', claimer_name: 'Frau Müller' };
     render(<TaskCard task={claimed} currentUserId="user-3" />);
-    expect(screen.getByText('Frau Mueller')).toBeInTheDocument();
+    expect(screen.getByText('Frau Müller')).toBeInTheDocument();
   });
 
   it('zeigt Wunschdatum wenn angegeben', () => {

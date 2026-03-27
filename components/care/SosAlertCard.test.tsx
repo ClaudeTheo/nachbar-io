@@ -1,5 +1,5 @@
 // components/care/SosAlertCard.test.tsx
-// Nachbar.io — Tests fuer SOS-Alert-Karte (Helfer-Benachrichtigung)
+// Nachbar.io — Tests für SOS-Alert-Karte (Helfer-Benachrichtigung)
 
 import { describe, it, expect, vi, afterEach, beforeEach } from 'vitest';
 import { render, screen, fireEvent, cleanup, waitFor } from '@testing-library/react';
@@ -65,9 +65,9 @@ describe('SosAlertCard', () => {
 
   it('zeigt Senior-Name wenn vorhanden', () => {
     const alert = createTestAlert();
-    alert.senior = { display_name: 'Frau Mueller', avatar_url: null };
+    alert.senior = { display_name: 'Frau Müller', avatar_url: null };
     render(<SosAlertCard alert={alert} />);
-    expect(screen.getByText('Frau Mueller')).toBeInTheDocument();
+    expect(screen.getByText('Frau Müller')).toBeInTheDocument();
   });
 
   it('zeigt Notizen wenn vorhanden', () => {
@@ -76,19 +76,19 @@ describe('SosAlertCard', () => {
   });
 
   describe('Aktions-Buttons', () => {
-    it('zeigt "Ich helfe" und "Kann nicht" fuer triggered-Status', () => {
+    it('zeigt "Ich helfe" und "Kann nicht" für triggered-Status', () => {
       render(<SosAlertCard alert={createTestAlert({ status: 'triggered' })} />);
       expect(screen.getByText(/Ich helfe/)).toBeInTheDocument();
       expect(screen.getByText('Kann nicht')).toBeInTheDocument();
     });
 
-    it('zeigt "Ich helfe" und "Kann nicht" fuer notified-Status', () => {
+    it('zeigt "Ich helfe" und "Kann nicht" für notified-Status', () => {
       render(<SosAlertCard alert={createTestAlert({ status: 'notified' })} />);
       expect(screen.getByText(/Ich helfe/)).toBeInTheDocument();
       expect(screen.getByText('Kann nicht')).toBeInTheDocument();
     });
 
-    it('zeigt "Ich helfe" und "Kann nicht" fuer escalated-Status', () => {
+    it('zeigt "Ich helfe" und "Kann nicht" für escalated-Status', () => {
       render(<SosAlertCard alert={createTestAlert({ status: 'escalated' })} />);
       expect(screen.getByText(/Ich helfe/)).toBeInTheDocument();
     });
@@ -167,13 +167,13 @@ describe('SosAlertCard', () => {
   });
 
   describe('Notfall-Styling', () => {
-    it('hat roten Rahmen fuer medical_emergency', () => {
+    it('hat roten Rahmen für medical_emergency', () => {
       const { container } = render(<SosAlertCard alert={createTestAlert({ category: 'medical_emergency' })} />);
       const card = container.firstChild as HTMLElement;
       expect(card.className).toContain('border-emergency-red');
     });
 
-    it('hat amber Rahmen fuer general_help', () => {
+    it('hat amber Rahmen für general_help', () => {
       const { container } = render(<SosAlertCard alert={createTestAlert({ category: 'general_help' })} />);
       const card = container.firstChild as HTMLElement;
       expect(card.className).toContain('border-alert-amber');

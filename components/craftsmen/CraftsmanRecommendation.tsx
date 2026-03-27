@@ -68,7 +68,7 @@ export function CraftsmanRecommendation({
   const [submitting, setSubmitting] = useState(false);
   const [loggingUsage, setLoggingUsage] = useState(false);
 
-  // Aspekt-Rating aendern
+  // Aspekt-Rating ändern
   const setAspectRating = useCallback((key: keyof CraftsmanAspects, value: number) => {
     setAspects((prev) => ({ ...prev, [key]: value }));
   }, []);

@@ -11,7 +11,7 @@ const HEARTBEAT_INTERVAL_MS = 30_000; // 30 Sekunden
  * PresenceHeartbeat — Unsichtbare Komponente die den eigenen
  * Online-Status via Supabase Realtime Presence Channel sendet.
  *
- * Andere Nutzer koennen via usePresence(userId) diesen Status abfragen.
+ * Andere Nutzer können via usePresence(userId) diesen Status abfragen.
  */
 export function PresenceHeartbeat() {
   useEffect(() => {

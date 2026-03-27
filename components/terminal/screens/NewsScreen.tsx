@@ -8,7 +8,7 @@ import type { NewsItem } from "@/lib/terminal/useTerminalData";
 /**
  * NewsScreen: Zeigt Quartiersnachrichten als scrollbare Karten-Liste.
  * Jede Karte kann per Tap aufgeklappt werden (vollstaendige Zusammenfassung).
- * Senior-UX: Grosse Schrift, 80px+ Touch-Targets, hoher Kontrast.
+ * Senior-UX: Große Schrift, 80px+ Touch-Targets, hoher Kontrast.
  */
 
 // Kategorie-Farben passend zum Design-System
@@ -22,7 +22,7 @@ const CATEGORY_COLORS: Record<string, { bg: string; text: string }> = {
   politics: { bg: "bg-anthrazit/10", text: "text-anthrazit/80" },
 };
 
-// Fallback-Farbe fuer unbekannte Kategorien
+// Fallback-Farbe für unbekannte Kategorien
 const DEFAULT_CATEGORY_COLOR = { bg: "bg-anthrazit/10", text: "text-anthrazit/70" };
 
 /**
@@ -64,11 +64,11 @@ export default function NewsScreen() {
 
   return (
     <div className="flex flex-1 flex-col h-full">
-      {/* Kopfzeile mit Zurueck-Button */}
+      {/* Kopfzeile mit Zurück-Button */}
       <div className="flex items-center gap-4 px-6 py-4 shrink-0">
         <button
           onClick={() => setActiveScreen("home")}
-          aria-label="Zurueck zur Startseite"
+          aria-label="Zurück zur Startseite"
           className="flex h-[80px] w-[80px] items-center justify-center rounded-2xl bg-anthrazit/10 text-anthrazit transition-transform active:scale-95"
         >
           <ArrowLeft className="h-12 w-12" />
@@ -116,7 +116,7 @@ function EmptyState() {
 
 /**
  * Einzelne Nachrichten-Karte: Titel, Kategorie-Badge, Zeitangabe.
- * Aufklappbar fuer vollstaendige Zusammenfassung.
+ * Aufklappbar für vollstaendige Zusammenfassung.
  */
 function NewsCard({
   item,

@@ -14,7 +14,7 @@ export default function PaywallBanner({
 }: PaywallBannerProps) {
   const router = useRouter();
 
-  // Kein Banner noetig fuer aktive Abos
+  // Kein Banner nötig für aktive Abos
   if (status === "active") return null;
   if (status === "trial" && !trialReceiptUsed) return null;
 
@@ -29,8 +29,8 @@ export default function PaywallBanner({
       </h3>
       <p className="text-sm text-gray-600 mb-4">
         {isTrialExpired
-          ? "Um weitere Einsaetze abzurechnen, aktivieren Sie das Abrechnungs-Modul fuer 19,90 EUR/Monat."
-          : "Um Einsaetze zu dokumentieren, Quittungen zu erstellen und mit der Pflegekasse abzurechnen, benoetigen Sie das Abrechnungs-Modul."}
+          ? "Um weitere Einsätze abzurechnen, aktivieren Sie das Abrechnungs-Modul für 19,90 EUR/Monat."
+          : "Um Einsätze zu dokumentieren, Quittungen zu erstellen und mit der Pflegekasse abzurechnen, benötigen Sie das Abrechnungs-Modul."}
       </p>
       <div className="space-y-2 text-sm text-gray-500 mb-4">
         <p>
@@ -38,7 +38,7 @@ export default function PaywallBanner({
           Sammelabrechnung, Budget-Tracker
         </p>
         <p className="font-medium text-gray-700">
-          19,90 EUR/Monat · Jederzeit kuendbar · SEPA oder Karte
+          19,90 EUR/Monat · Jederzeit kündbar · SEPA oder Karte
         </p>
       </div>
       <button

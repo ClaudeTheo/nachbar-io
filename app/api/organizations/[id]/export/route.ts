@@ -1,5 +1,5 @@
 // app/api/organizations/[id]/export/route.ts
-// Nachbar.io — CSV/XLSX-Export fuer Pro Community Organisationen
+// Nachbar.io — CSV/XLSX-Export für Pro Community Organisationen
 // Exportiert Bewohner, Alerts oder Check-ins als Datei-Download
 
 import { NextRequest, NextResponse } from 'next/server';
@@ -24,7 +24,7 @@ function getServiceDb() {
 }
 
 /**
- * Laedt Bewohner-Daten fuer den Export (anonymisiert fuer org_viewer).
+ * Laedt Bewohner-Daten für den Export (anonymisiert für org_viewer).
  */
 async function fetchResidents(orgId: string) {
   const serviceDb = getServiceDb();
@@ -60,7 +60,7 @@ async function fetchResidents(orgId: string) {
 }
 
 /**
- * Laedt Alert-Daten fuer den Export.
+ * Laedt Alert-Daten für den Export.
  */
 async function fetchAlerts(orgId: string) {
   const serviceDb = getServiceDb();
@@ -72,7 +72,7 @@ async function fetchAlerts(orgId: string) {
     .order('created_at', { ascending: false })
     .limit(1000);
 
-  const headers = ['ID', 'Kategorie', 'Status', 'Erstellt', 'Geloest'];
+  const headers = ['ID', 'Kategorie', 'Status', 'Erstellt', 'Gelöst'];
   const rows = (alerts ?? []).map((a) => [
     a.id,
     a.category ?? '',
@@ -85,7 +85,7 @@ async function fetchAlerts(orgId: string) {
 }
 
 /**
- * Laedt Check-in-Daten fuer den Export (anonymisiert).
+ * Laedt Check-in-Daten für den Export (anonymisiert).
  */
 async function fetchCheckins(orgId: string) {
   const serviceDb = getServiceDb();
@@ -154,14 +154,14 @@ export async function GET(
 
   if (!format || !EXPORT_FORMATS.includes(format)) {
     return NextResponse.json(
-      { error: 'Ungueltiges Format. Erlaubt: csv, xlsx' },
+      { error: 'Ungültiges Format. Erlaubt: csv, xlsx' },
       { status: 400 }
     );
   }
 
   if (!type || !EXPORT_TYPES.includes(type)) {
     return NextResponse.json(
-      { error: 'Ungueltiger Typ. Erlaubt: residents, alerts, checkins' },
+      { error: 'Ungültiger Typ. Erlaubt: residents, alerts, checkins' },
       { status: 400 }
     );
   }

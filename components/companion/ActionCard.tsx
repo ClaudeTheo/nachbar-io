@@ -9,7 +9,7 @@ interface ActionCardProps {
   success: boolean;
 }
 
-/** Inline-Karte fuer Tool-Ergebnisse im Chat */
+/** Inline-Karte für Tool-Ergebnisse im Chat */
 export function ActionCard({ tool, summary, success }: ActionCardProps) {
   return (
     <div

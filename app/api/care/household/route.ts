@@ -1,5 +1,5 @@
 // app/api/care/household/route.ts
-// Nachbar.io — Haushalt-Lookup: household_id fuer einen Bewohner ermitteln
+// Nachbar.io — Haushalt-Lookup: household_id für einen Bewohner ermitteln
 
 import { NextRequest } from "next/server";
 import {
@@ -10,8 +10,8 @@ import {
 
 /**
  * GET /api/care/household?resident_id=...
- * Gibt die household_id zurueck, zu der der angegebene Bewohner gehoert.
- * Nur fuer authentifizierte Caregiver mit aktivem Link zum Bewohner.
+ * Gibt die household_id zurück, zu der der angegebene Bewohner gehört.
+ * Nur für authentifizierte Caregiver mit aktivem Link zum Bewohner.
  */
 export async function GET(request: NextRequest) {
   const authResult = await requireAuth();
@@ -23,7 +23,7 @@ export async function GET(request: NextRequest) {
     return errorResponse("resident_id ist erforderlich", 400);
   }
 
-  // Zugriffspruefung: aktiver Caregiver-Link zum Bewohner
+  // Zugriffsprüfung: aktiver Caregiver-Link zum Bewohner
   const { data: link } = await supabase
     .from("caregiver_links")
     .select("id")

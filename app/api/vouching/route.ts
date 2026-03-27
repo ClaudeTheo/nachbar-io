@@ -1,4 +1,4 @@
-// POST /api/vouching — Nachbar-Vouching: 2 Nachbarn bestaetigen Identitaet
+// POST /api/vouching — Nachbar-Vouching: 2 Nachbarn bestätigen Identität
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 
@@ -12,10 +12,10 @@ export async function POST(request: NextRequest) {
 
   const { target_user_id } = await request.json();
   if (!target_user_id || target_user_id === user.id) {
-    return NextResponse.json({ error: "Ungueltiger Ziel-Nutzer" }, { status: 400 });
+    return NextResponse.json({ error: "Ungültiger Ziel-Nutzer" }, { status: 400 });
   }
 
-  // Pruefen: Voucher muss mindestens 'verified' sein
+  // Prüfen: Voucher muss mindestens 'verified' sein
   const { data: voucher } = await supabase
     .from("users")
     .select("trust_level")
@@ -24,7 +24,7 @@ export async function POST(request: NextRequest) {
 
   if (!voucher || !["verified", "trusted", "lotse", "admin"].includes(voucher.trust_level)) {
     return NextResponse.json(
-      { error: "Sie muessen selbst verifiziert sein, um andere zu bestaetigen" },
+      { error: "Sie müssen selbst verifiziert sein, um andere zu bestätigen" },
       { status: 403 }
     );
   }
@@ -43,7 +43,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Kein Quartier zugeordnet" }, { status: 400 });
   }
 
-  // Pruefen: Ziel-Nutzer muss im selben Quartier sein
+  // Prüfen: Ziel-Nutzer muss im selben Quartier sein
   const { data: targetHm } = await supabase
     .from("household_members")
     .select("households(quarter_id)")
@@ -60,7 +60,7 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  // Pruefen: Bereits gevoucht?
+  // Prüfen: Bereits gevoucht?
   const { data: existing } = await supabase
     .from("neighbor_vouches")
     .select("id")
@@ -69,7 +69,7 @@ export async function POST(request: NextRequest) {
     .maybeSingle();
 
   if (existing) {
-    return NextResponse.json({ error: "Sie haben diesen Nachbarn bereits bestaetigt" }, { status: 409 });
+    return NextResponse.json({ error: "Sie haben diesen Nachbarn bereits bestätigt" }, { status: 409 });
   }
 
   // Vouch eintragen
@@ -82,7 +82,7 @@ export async function POST(request: NextRequest) {
     });
 
   if (insertError) {
-    return NextResponse.json({ error: "Bestaetigung fehlgeschlagen" }, { status: 500 });
+    return NextResponse.json({ error: "Bestätigung fehlgeschlagen" }, { status: 500 });
   }
 
   // Zaehlen: Hat der Ziel-Nutzer jetzt 2 Vouches?

@@ -4,8 +4,8 @@ import { createClient } from "@supabase/supabase-js";
 /**
  * GET /api/households/by-street?street=Purkersdorfer+Straße
  *
- * Gibt alle Hausnummern fuer eine Straße zurueck.
- * Wird im Registrierungsformular fuer Autocomplete verwendet.
+ * Gibt alle Hausnummern für eine Straße zurück.
+ * Wird im Registrierungsformular für Autocomplete verwendet.
  * Verwendet Service-Role um RLS zu umgehen (unangemeldete Nutzer).
  */
 export async function GET(request: NextRequest) {
@@ -34,7 +34,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ houseNumbers: [] });
   }
 
-  // Hausnummern natuerlich sortieren (1, 2, 3, ... 10, 11, ... statt 1, 10, 11, 2, ...)
+  // Hausnummern natürlich sortieren (1, 2, 3, ... 10, 11, ... statt 1, 10, 11, 2, ...)
   const houseNumbers = (data || [])
     .map((h) => h.house_number)
     .sort((a, b) => {

@@ -17,7 +17,7 @@ function getFingerprint(req: NextRequest): string {
   return createHash('sha256').update(raw).digest('hex');
 }
 
-// IP-Hash fuer bug_reports.ip_hash (nur IP, kein Fingerprint)
+// IP-Hash für bug_reports.ip_hash (nur IP, kein Fingerprint)
 function getIpHash(req: NextRequest): string {
   const ip = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
   return createHash('sha256').update(ip).digest('hex');
@@ -27,7 +27,7 @@ export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
 
-    // Schicht 1: Honeypot — wenn ausgefuellt, still ignorieren
+    // Schicht 1: Honeypot — wenn ausgefüllt, still ignorieren
     if (body.website) {
       return NextResponse.json({ success: true });
     }
@@ -35,14 +35,14 @@ export async function POST(req: NextRequest) {
     const admin = getAdminSupabase();
     const fingerprint = getFingerprint(req);
 
-    // Schicht 2: Rate-Limit pruefen
-    // Alte Eintraege aufraeumen (> 1 Stunde)
+    // Schicht 2: Rate-Limit prüfen
+    // Alte Einträge aufräumen (> 1 Stunde)
     await admin
       .from('bug_report_rate_limits')
       .delete()
       .lt('window_start', new Date(Date.now() - 60 * 60 * 1000).toISOString());
 
-    // Aktuellen Zaehler pruefen
+    // Aktuellen Zähler prüfen
     const { data: rateLimit } = await admin
       .from('bug_report_rate_limits')
       .select('report_count, window_start')
@@ -51,12 +51,12 @@ export async function POST(req: NextRequest) {
 
     if (rateLimit && rateLimit.report_count >= MAX_REPORTS_PER_HOUR) {
       return NextResponse.json(
-        { error: 'Zu viele Bug-Reports. Bitte versuchen Sie es spaeter erneut.' },
+        { error: 'Zu viele Bug-Reports. Bitte versuchen Sie es später erneut.' },
         { status: 429 }
       );
     }
 
-    // Rate-Limit Zaehler erhoehen
+    // Rate-Limit Zähler erhöhen
     if (rateLimit) {
       await admin
         .from('bug_report_rate_limits')

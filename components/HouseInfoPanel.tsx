@@ -62,7 +62,7 @@ export function HouseInfoPanel({
     if (!user) { setLoading(false); return; }
     setCurrentUserId(user.id);
 
-    // Haushalt finden ueber Strassenname + Hausnummer
+    // Haushalt finden über Straßenname + Hausnummer
     const { data: household } = await supabase
       .from("households")
       .select("id")
@@ -159,7 +159,7 @@ export function HouseInfoPanel({
   }, [open, streetName, houseNumber]);
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- Daten laden bei Mount/Abhaengigkeitsaenderung
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- Daten laden bei Mount/Abhängigkeitsänderung
     loadResidents();
   }, [loadResidents]);
 
@@ -188,7 +188,7 @@ export function HouseInfoPanel({
     setSending(false);
   }
 
-  // Nachricht senden (Konversation oeffnen/erstellen)
+  // Nachricht senden (Konversation öffnen/erstellen)
   async function openConversation(otherUserId: string) {
     if (!currentUserId) return;
 

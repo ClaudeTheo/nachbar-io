@@ -2,7 +2,7 @@
 
 import { HandHelping, Wrench, Heart } from "lucide-react";
 
-// Slide 2: Hilfe-Boerse — Zwei Karten teilen sich, Herz erscheint
+// Slide 2: Hilfe-Börse — Zwei Karten teilen sich, Herz erscheint
 
 export function SlideHelp() {
   return (

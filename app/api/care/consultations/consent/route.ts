@@ -1,5 +1,5 @@
 // app/api/care/consultations/consent/route.ts
-// API-Route fuer DSGVO-Einwilligung zur Online-Sprechstunde
+// API-Route für DSGVO-Einwilligung zur Online-Sprechstunde
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAuth, requireSubscription, unauthorizedResponse } from '@/lib/care/api-helpers';
 
@@ -42,12 +42,12 @@ export async function POST(request: NextRequest) {
   try {
     body = await request.json();
   } catch {
-    return NextResponse.json({ error: 'Ungueltiges JSON' }, { status: 400 });
+    return NextResponse.json({ error: 'Ungültiges JSON' }, { status: 400 });
   }
 
   const providerType = body.provider_type || 'community';
   if (!['community', 'medical'].includes(providerType)) {
-    return NextResponse.json({ error: 'Ungueltiger provider_type' }, { status: 400 });
+    return NextResponse.json({ error: 'Ungültiger provider_type' }, { status: 400 });
   }
 
   const { data, error } = await supabase

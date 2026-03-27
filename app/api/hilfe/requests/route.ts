@@ -50,7 +50,7 @@ export async function POST(request: NextRequest) {
   try {
     body = await request.json();
   } catch {
-    return NextResponse.json({ error: 'Ungueltiges Anfrage-Format' }, { status: 400 });
+    return NextResponse.json({ error: 'Ungültiges Anfrage-Format' }, { status: 400 });
   }
 
   const { quarter_id, category, description, preferred_time } = body;
@@ -63,7 +63,7 @@ export async function POST(request: NextRequest) {
   // Kategorie validieren
   if (!category || !VALID_CATEGORIES.includes(category as HelpCategory)) {
     return NextResponse.json(
-      { error: `Ungueltige Kategorie: ${category}. Erlaubt: ${VALID_CATEGORIES.join(', ')}` },
+      { error: `Ungültige Kategorie: ${category}. Erlaubt: ${VALID_CATEGORIES.join(', ')}` },
       { status: 400 },
     );
   }

@@ -1,6 +1,6 @@
 'use client';
 
-// Alarm-Provider: Ueberwacht Check-in-Zeiten und zeigt Vollbild-Wecker.
+// Alarm-Provider: Überwacht Check-in-Zeiten und zeigt Vollbild-Wecker.
 // Wird im Care-Layout eingebunden, damit der Alarm auf allen Care-Seiten aktiv ist.
 
 import type { ReactNode } from 'react';

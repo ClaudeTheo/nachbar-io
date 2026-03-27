@@ -58,7 +58,7 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  // Validierung: Nur gueltige Feature-Keys
+  // Validierung: Nur gültige Feature-Keys
   const validFeatures = new Set<string>(CONSENT_FEATURES);
   for (const key of Object.keys(body.features)) {
     if (!validFeatures.has(key)) {
@@ -71,7 +71,7 @@ export async function POST(request: NextRequest) {
     }
   }
 
-  // Abhaengigkeitsregel: emergency_contacts erfordert sos
+  // Abhängigkeitsregel: emergency_contacts erfordert sos
   if (body.features.emergency_contacts && !body.features.sos) {
     return NextResponse.json(
       { error: "Notfallkontakte erfordern die SOS-Einwilligung" },
@@ -82,17 +82,17 @@ export async function POST(request: NextRequest) {
   const now = new Date().toISOString();
   const changedFeatures: string[] = [];
 
-  // Aktuelle Consents laden (fuer History-Vergleich)
+  // Aktuelle Consents laden (für History-Vergleich)
   const currentConsents = await getConsentsForUser(supabase, user.id);
 
-  // Upsert fuer jedes Feature
+  // Upsert für jedes Feature
   for (const feature of CONSENT_FEATURES) {
     if (!(feature in body.features)) continue;
 
     const newGranted = body.features[feature] === true;
     const currentGranted = currentConsents[feature]?.granted ?? false;
 
-    // Nur aendern wenn sich der Status geaendert hat
+    // Nur ändern wenn sich der Status geändert hat
     if (newGranted === currentGranted) continue;
 
     const consentData: Record<string, unknown> = {
@@ -118,7 +118,7 @@ export async function POST(request: NextRequest) {
 
     if (error) {
       console.error(
-        `[care/consent] Upsert fehlgeschlagen fuer ${feature}:`,
+        `[care/consent] Upsert fehlgeschlagen für ${feature}:`,
         error,
       );
       continue;
@@ -150,7 +150,7 @@ export async function POST(request: NextRequest) {
     }
   }
 
-  // Aktualisierte Consents zurueckgeben
+  // Aktualisierte Consents zurückgeben
   const updatedConsents = await getConsentsForUser(supabase, user.id);
   const hasAny = Object.values(updatedConsents).some((c) => c.granted);
 

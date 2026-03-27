@@ -61,7 +61,7 @@ interface StickyForScreensaver {
   title: string;
 }
 
-// Screensaver-Overlay: Foto-Diashow (oder Gradient-Fallback) nach 5 Min. Inaktivitaet
+// Screensaver-Overlay: Foto-Diashow (oder Gradient-Fallback) nach 5 Min. Inaktivität
 export default function ScreensaverOverlay() {
   const { isIdle, wake } = useIdleTimer();
   const { data, token } = useTerminal();

@@ -11,9 +11,9 @@ interface SlideReadyProps {
 export function SlideReady({ displayName }: SlideReadyProps) {
   return (
     <div className="flex h-full flex-col items-center justify-center px-6">
-      {/* Grosses Haekchen */}
+      {/* Großes Haekchen */}
       <div className="relative mb-8">
-        {/* Aeusserer Ring mit Glow */}
+        {/* Äußerer Ring mit Glow */}
         <div className="animate-check-bounce flex h-28 w-28 items-center justify-center rounded-full bg-quartier-green shadow-lg shadow-quartier-green/30">
           <Check className="h-14 w-14 text-white" strokeWidth={3} />
         </div>
@@ -38,7 +38,7 @@ export function SlideReady({ displayName }: SlideReadyProps) {
       <div className="mt-8 grid grid-cols-3 gap-3 animate-fade-in-up" style={{ animationDelay: "800ms" }}>
         {[
           { emoji: "🆘", label: "Soforthilfe" },
-          { emoji: "🤝", label: "Hilfe-Boerse" },
+          { emoji: "🤝", label: "Hilfe-Börse" },
           { emoji: "🛍️", label: "Marktplatz" },
           { emoji: "🗺️", label: "Karte" },
           { emoji: "📅", label: "Events" },

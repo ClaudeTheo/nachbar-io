@@ -1,4 +1,4 @@
-// Tests fuer DiscoverGrid-Komponente
+// Tests für DiscoverGrid-Komponente
 import { describe, it, expect, vi } from "vitest";
 import { render, fireEvent } from "@testing-library/react";
 import { DiscoverGrid } from "../DiscoverGrid";
@@ -43,7 +43,7 @@ describe("DiscoverGrid", () => {
     fireEvent.click(btn);
     const grid = container.querySelector('[data-testid="discover-grid"]')!;
     const links = grid.querySelectorAll("a");
-    // 8 primaer + 10 sekundaer = 18
+    // 8 primär + 10 sekundaer = 18
     expect(links.length).toBe(18);
     // Button verschwindet
     expect(

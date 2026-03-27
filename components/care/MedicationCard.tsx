@@ -17,7 +17,7 @@ interface MedicationCardProps {
 const STATUS_CONFIG: Record<string, { label: string; className: string }> = {
   pending:  { label: 'Ausstehend',    className: 'bg-gray-100 text-gray-600' },
   taken:    { label: 'Genommen',      className: 'bg-green-100 text-quartier-green' },
-  skipped:  { label: 'Uebersprungen', className: 'bg-amber-100 text-alert-amber' },
+  skipped:  { label: 'Übersprungen', className: 'bg-amber-100 text-alert-amber' },
   snoozed:  { label: 'Verschoben',    className: 'bg-blue-100 text-blue-600' },
   missed:   { label: 'Verpasst',      className: 'bg-red-100 text-red-600' },
 };
@@ -79,21 +79,21 @@ export function MedicationCard({ medication, scheduledAt, status, snoozedUntil, 
           >
             Genommen
           </button>
-          {/* Spaeter */}
+          {/* Später */}
           <button
             onClick={() => onAction('snoozed')}
             className="flex-1 rounded-lg border-2 border-alert-amber py-3 font-medium text-alert-amber active:bg-amber-50"
             style={{ minHeight: '48px', touchAction: 'manipulation' }}
           >
-            Spaeter
+            Später
           </button>
-          {/* Uebersprungen */}
+          {/* Übersprungen */}
           <button
             onClick={() => onAction('skipped')}
             className="flex-1 rounded-lg border-2 border-gray-300 py-3 font-medium text-muted-foreground active:bg-gray-100"
             style={{ minHeight: '48px', touchAction: 'manipulation' }}
           >
-            Uebersprungen
+            Übersprungen
           </button>
         </div>
       )}

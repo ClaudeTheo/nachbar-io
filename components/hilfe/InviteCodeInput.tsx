@@ -16,7 +16,7 @@ export default function InviteCodeInput() {
     const upperCode = code.toUpperCase().trim();
 
     if (!isValidInviteCode(upperCode)) {
-      setMessage("Bitte geben Sie einen gueltigen 6-stelligen Code ein.");
+      setMessage("Bitte geben Sie einen gültigen 6-stelligen Code ein.");
       setStatus("error");
       return;
     }
@@ -31,12 +31,12 @@ export default function InviteCodeInput() {
     if (res.ok) {
       setStatus("success");
       setMessage(
-        "Verbindung angefragt! Der Bewohner muss die Verbindung noch bestaetigen.",
+        "Verbindung angefragt! Der Bewohner muss die Verbindung noch bestätigen.",
       );
     } else {
       const data = await res.json();
       setStatus("error");
-      setMessage(data.error || "Fehler beim Einloesen des Codes.");
+      setMessage(data.error || "Fehler beim Einlösen des Codes.");
     }
   }
 
@@ -66,7 +66,7 @@ export default function InviteCodeInput() {
         className="w-full rounded-xl bg-[#4CAF87] px-6 py-4 text-white font-semibold
                    min-h-[52px] disabled:opacity-50 active:scale-[0.98] transition-transform"
       >
-        {status === "loading" ? "Wird geprueft..." : "Code einloesen"}
+        {status === "loading" ? "Wird geprüft..." : "Code einlösen"}
       </button>
       {message && (
         <p

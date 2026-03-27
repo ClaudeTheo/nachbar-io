@@ -1,5 +1,5 @@
 // components/care/ShoppingRequestCard.test.tsx
-// Nachbar.io — Tests fuer Einkaufsanfrage-Karte
+// Nachbar.io — Tests für Einkaufsanfrage-Karte
 
 import { describe, it, expect, vi, afterEach } from 'vitest';
 import { render, screen, cleanup } from '@testing-library/react';
@@ -36,7 +36,7 @@ const mockRequest: ShoppingRequest = {
   confirmed_at: null,
   due_date: '2026-03-20',
   created_at: '2026-03-15T10:00:00Z',
-  requester: { display_name: 'Frau Mueller' },
+  requester: { display_name: 'Frau Müller' },
   claimer: undefined,
 };
 
@@ -53,17 +53,17 @@ describe('ShoppingRequestCard', () => {
     expect(screen.getByText('(1 Laib)')).toBeInTheDocument();
   });
 
-  it('zeigt Uebernahme-Button fuer andere Nutzer', () => {
+  it('zeigt Übernahme-Button für andere Nutzer', () => {
     render(<ShoppingRequestCard request={mockRequest} currentUserId="user-2" />);
-    expect(screen.getByText('Ich uebernehme das')).toBeInTheDocument();
+    expect(screen.getByText('Ich übernehme das')).toBeInTheDocument();
   });
 
-  it('zeigt keinen Uebernahme-Button fuer Ersteller', () => {
+  it('zeigt keinen Übernahme-Button für Ersteller', () => {
     render(<ShoppingRequestCard request={mockRequest} currentUserId="user-1" />);
-    expect(screen.queryByText('Ich uebernehme das')).not.toBeInTheDocument();
+    expect(screen.queryByText('Ich übernehme das')).not.toBeInTheDocument();
   });
 
-  it('zeigt Stornieren-Button fuer Ersteller bei Status open', () => {
+  it('zeigt Stornieren-Button für Ersteller bei Status open', () => {
     render(<ShoppingRequestCard request={mockRequest} currentUserId="user-1" />);
     expect(screen.getByText('Stornieren')).toBeInTheDocument();
   });
@@ -84,15 +84,15 @@ describe('ShoppingRequestCard', () => {
     expect(screen.getByText('Offen')).toBeInTheDocument();
   });
 
-  it('zeigt Status-Badge "Uebernommen" bei claimed', () => {
+  it('zeigt Status-Badge "Übernommen" bei claimed', () => {
     const claimed = { ...mockRequest, status: 'claimed' as const, claimed_by: 'user-2', claimer: { display_name: 'Herr Schmidt' } };
     render(<ShoppingRequestCard request={claimed} currentUserId="user-3" />);
-    expect(screen.getByText('Uebernommen')).toBeInTheDocument();
+    expect(screen.getByText('Übernommen')).toBeInTheDocument();
   });
 
   it('zeigt Ersteller-Name an', () => {
     render(<ShoppingRequestCard request={mockRequest} currentUserId="user-2" />);
-    expect(screen.getByText('Frau Mueller')).toBeInTheDocument();
+    expect(screen.getByText('Frau Müller')).toBeInTheDocument();
   });
 
   it('zeigt "Unbekannt" wenn kein Display-Name', () => {
@@ -101,7 +101,7 @@ describe('ShoppingRequestCard', () => {
     expect(screen.getByText('Unbekannt')).toBeInTheDocument();
   });
 
-  it('zeigt Uebernehmenden bei claimed-Status', () => {
+  it('zeigt Übernehmenden bei claimed-Status', () => {
     const claimed = {
       ...mockRequest,
       status: 'claimed' as const,
@@ -109,18 +109,18 @@ describe('ShoppingRequestCard', () => {
       claimer: { display_name: 'Herr Schmidt' },
     };
     render(<ShoppingRequestCard request={claimed} currentUserId="user-3" />);
-    expect(screen.getByText(/Uebernommen von Herr Schmidt/)).toBeInTheDocument();
+    expect(screen.getByText(/Übernommen von Herr Schmidt/)).toBeInTheDocument();
   });
 
-  it('Uebernahme-Button hat minHeight 48px (Touch-Target)', () => {
+  it('Übernahme-Button hat minHeight 48px (Touch-Target)', () => {
     render(<ShoppingRequestCard request={mockRequest} currentUserId="user-2" />);
-    const button = screen.getByText('Ich uebernehme das');
+    const button = screen.getByText('Ich übernehme das');
     expect(button.style.minHeight).toBe('48px');
   });
 
-  it('Uebernahme-Button hat touchAction: manipulation', () => {
+  it('Übernahme-Button hat touchAction: manipulation', () => {
     render(<ShoppingRequestCard request={mockRequest} currentUserId="user-2" />);
-    const button = screen.getByText('Ich uebernehme das');
+    const button = screen.getByText('Ich übernehme das');
     expect(button.style.touchAction).toBe('manipulation');
   });
 });

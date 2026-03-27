@@ -1,23 +1,136 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 200" fill="none" stroke="#2D3142" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-  <!-- Brunnen -->
-  <ellipse cx="200" cy="140" rx="40" ry="12" />
-  <path d="M170 140 L170 115 Q200 95 230 115 L230 140" />
-  <line x1="200" y1="95" x2="200" y2="75" />
-  <path d="M190 75 Q200 65 210 75" stroke="#4CAF87" stroke-width="2" />
-  <!-- Bank links -->
-  <rect x="60" y="135" width="50" height="5" rx="2" />
-  <line x1="65" y1="140" x2="65" y2="155" />
-  <line x1="105" y1="140" x2="105" y2="155" />
-  <!-- Bank rechts -->
-  <rect x="290" y="135" width="50" height="5" rx="2" />
-  <line x1="295" y1="140" x2="295" y2="155" />
-  <line x1="335" y1="140" x2="335" y2="155" />
-  <!-- Baum links -->
-  <line x1="45" y1="155" x2="45" y2="110" />
-  <circle cx="45" cy="95" r="20" fill="none" stroke="#4CAF87" stroke-width="1.5" />
-  <!-- Baum rechts -->
-  <line x1="355" y1="155" x2="355" y2="110" />
-  <circle cx="355" cy="95" r="18" fill="none" stroke="#4CAF87" stroke-width="1.5" />
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 200" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <!-- Himmel-Wolken -->
+  <path d="M30 22 Q38 15 50 18 Q55 10 68 14 Q75 8 85 15 Q90 12 95 18" stroke="#2D3142" stroke-width="0.8" opacity="0.25"/>
+  <path d="M310 18 Q320 12 330 16 Q338 9 348 14 Q355 10 362 16" stroke="#2D3142" stroke-width="0.8" opacity="0.2"/>
+
+  <!-- Gebaeude-Silhouette Hintergrund links -->
+  <path d="M15 80 L15 45 L25 45 L25 38 L35 38 L35 45 L55 45 L55 55 L65 55 L65 80" stroke="#2D3142" stroke-width="0.7" opacity="0.15"/>
+  <rect x="20" y="52" width="6" height="8" rx="1" stroke="#2D3142" stroke-width="0.5" opacity="0.12"/>
+  <rect x="32" y="52" width="6" height="8" rx="1" stroke="#2D3142" stroke-width="0.5" opacity="0.12"/>
+  <rect x="44" y="58" width="6" height="7" rx="1" stroke="#2D3142" stroke-width="0.5" opacity="0.12"/>
+
+  <!-- Gebaeude-Silhouette Hintergrund rechts -->
+  <path d="M335 80 L335 50 L345 50 L345 42 L350 35 L355 42 L355 50 L370 50 L370 60 L385 60 L385 80" stroke="#2D3142" stroke-width="0.7" opacity="0.15"/>
+  <rect x="340" y="55" width="5" height="7" rx="1" stroke="#2D3142" stroke-width="0.5" opacity="0.12"/>
+  <rect x="360" y="55" width="5" height="7" rx="1" stroke="#2D3142" stroke-width="0.5" opacity="0.12"/>
+  <rect x="375" y="65" width="5" height="6" rx="1" stroke="#2D3142" stroke-width="0.5" opacity="0.12"/>
+
+  <!-- Grosser Baum links -->
+  <path d="M52 155 L52 85" stroke="#2D3142" stroke-width="2.5"/>
+  <path d="M52 105 Q38 90 30 95" stroke="#2D3142" stroke-width="1.2"/>
+  <path d="M52 95 Q65 78 72 82" stroke="#2D3142" stroke-width="1"/>
+  <path d="M52 110 Q40 100 35 105" stroke="#2D3142" stroke-width="0.8"/>
+  <!-- Blattwerk links (organische Formen) -->
+  <path d="M20 75 Q30 55 52 60 Q65 48 80 58 Q90 50 88 65 Q95 72 82 80 Q88 90 72 88 Q65 95 52 85 Q38 92 30 82 Q18 85 20 75Z" stroke="#4CAF87" stroke-width="1.8" fill="#4CAF87" fill-opacity="0.06"/>
+  <path d="M28 70 Q35 62 45 65" stroke="#4CAF87" stroke-width="0.6" opacity="0.5"/>
+  <path d="M60 58 Q68 55 75 62" stroke="#4CAF87" stroke-width="0.6" opacity="0.5"/>
+  <path d="M35 80 Q42 75 50 78" stroke="#4CAF87" stroke-width="0.6" opacity="0.5"/>
+  <path d="M65 78 Q72 72 78 76" stroke="#4CAF87" stroke-width="0.6" opacity="0.5"/>
+
+  <!-- Grosser Baum rechts -->
+  <path d="M348 155 L348 90" stroke="#2D3142" stroke-width="2.2"/>
+  <path d="M348 108 Q360 95 368 100" stroke="#2D3142" stroke-width="1"/>
+  <path d="M348 100 Q336 88 328 92" stroke="#2D3142" stroke-width="0.8"/>
+  <!-- Blattwerk rechts -->
+  <path d="M320 72 Q330 55 348 58 Q360 48 375 56 Q382 52 380 65 Q388 72 378 78 Q382 86 370 85 Q362 92 348 82 Q335 90 325 80 Q315 82 320 72Z" stroke="#4CAF87" stroke-width="1.6" fill="#4CAF87" fill-opacity="0.05"/>
+  <path d="M330 68 Q338 62 345 66" stroke="#4CAF87" stroke-width="0.6" opacity="0.4"/>
+  <path d="M355 60 Q362 56 370 62" stroke="#4CAF87" stroke-width="0.6" opacity="0.4"/>
+
+  <!-- Laterne links -->
+  <line x1="95" y1="155" x2="95" y2="85" stroke="#2D3142" stroke-width="1.2"/>
+  <path d="M88 88 L95 82 L102 88" stroke="#2D3142" stroke-width="1"/>
+  <rect x="89" y="88" width="12" height="10" rx="2" stroke="#2D3142" stroke-width="0.8"/>
+  <circle cx="95" cy="93" r="2" fill="#F59E0B" fill-opacity="0.3" stroke="#F59E0B" stroke-width="0.5"/>
+
+  <!-- Laterne rechts -->
+  <line x1="305" y1="155" x2="305" y2="88" stroke="#2D3142" stroke-width="1.2"/>
+  <path d="M298 91 L305 85 L312 91" stroke="#2D3142" stroke-width="1"/>
+  <rect x="299" y="91" width="12" height="10" rx="2" stroke="#2D3142" stroke-width="0.8"/>
+  <circle cx="305" cy="96" r="2" fill="#F59E0B" fill-opacity="0.3" stroke="#F59E0B" stroke-width="0.5"/>
+
+  <!-- Brunnen (detailliert) -->
+  <ellipse cx="200" cy="142" rx="48" ry="14" stroke="#2D3142" stroke-width="2"/>
+  <ellipse cx="200" cy="138" rx="42" ry="10" stroke="#2D3142" stroke-width="0.6" opacity="0.3"/>
+  <path d="M162 142 L162 108 Q165 102 175 105 L175 112" stroke="#2D3142" stroke-width="1.5"/>
+  <path d="M238 142 L238 108 Q235 102 225 105 L225 112" stroke="#2D3142" stroke-width="1.5"/>
+  <path d="M175 112 Q188 118 200 112 Q212 118 225 112" stroke="#2D3142" stroke-width="1"/>
+  <!-- Brunnen-Saeule -->
+  <rect x="196" y="78" width="8" height="34" rx="2" stroke="#2D3142" stroke-width="1.2"/>
+  <path d="M192 80 L208 80" stroke="#2D3142" stroke-width="1.5"/>
+  <!-- Wasser-Fontaene -->
+  <path d="M200 78 Q198 62 194 55 Q192 50 196 48" stroke="#3B82F6" stroke-width="1.2" opacity="0.6"/>
+  <path d="M200 78 Q202 62 206 55 Q208 50 204 48" stroke="#3B82F6" stroke-width="1.2" opacity="0.6"/>
+  <path d="M196 55 Q193 60 188 65 Q185 70 186 75" stroke="#3B82F6" stroke-width="0.8" opacity="0.35"/>
+  <path d="M206 55 Q209 60 214 65 Q216 70 215 75" stroke="#3B82F6" stroke-width="0.8" opacity="0.35"/>
+  <!-- Wasser-Tropfen -->
+  <circle cx="188" cy="78" r="1" fill="#3B82F6" fill-opacity="0.3" stroke="none"/>
+  <circle cx="212" cy="76" r="1" fill="#3B82F6" fill-opacity="0.3" stroke="none"/>
+  <circle cx="195" cy="82" r="0.8" fill="#3B82F6" fill-opacity="0.2" stroke="none"/>
+
+  <!-- Bank links (detailliert) -->
+  <rect x="108" y="130" width="55" height="4" rx="2" stroke="#2D3142" stroke-width="1.5"/>
+  <rect x="108" y="122" width="55" height="4" rx="2" stroke="#2D3142" stroke-width="1"/>
+  <path d="M112 134 L112 126 L112 118 Q112 114 116 114" stroke="#2D3142" stroke-width="1.5"/>
+  <path d="M159 134 L159 126 L159 118 Q159 114 155 114" stroke="#2D3142" stroke-width="1.5"/>
+  <line x1="114" y1="134" x2="110" y2="155" stroke="#2D3142" stroke-width="1.3"/>
+  <line x1="157" y1="134" x2="161" y2="155" stroke="#2D3142" stroke-width="1.3"/>
+  <!-- Sitzlatten -->
+  <line x1="118" y1="130" x2="118" y2="134" stroke="#2D3142" stroke-width="0.4" opacity="0.3"/>
+  <line x1="128" y1="130" x2="128" y2="134" stroke="#2D3142" stroke-width="0.4" opacity="0.3"/>
+  <line x1="138" y1="130" x2="138" y2="134" stroke="#2D3142" stroke-width="0.4" opacity="0.3"/>
+  <line x1="148" y1="130" x2="148" y2="134" stroke="#2D3142" stroke-width="0.4" opacity="0.3"/>
+
+  <!-- Person auf Bank links -->
+  <circle cx="135" cy="110" r="6" stroke="#2D3142" stroke-width="1.2"/>
+  <path d="M135 116 L135 128" stroke="#2D3142" stroke-width="1.2"/>
+  <path d="M135 120 L126 125" stroke="#2D3142" stroke-width="1"/>
+  <path d="M135 120 L144 118" stroke="#2D3142" stroke-width="1"/>
+  <path d="M135 128 L128 140" stroke="#2D3142" stroke-width="1"/>
+  <path d="M135 128 L142 138" stroke="#2D3142" stroke-width="1"/>
+  <!-- Buch in der Hand -->
+  <rect x="142" y="115" width="8" height="6" rx="1" stroke="#3B82F6" stroke-width="0.7" opacity="0.5"/>
+
+  <!-- Bank rechts (detailliert) -->
+  <rect x="237" y="130" width="55" height="4" rx="2" stroke="#2D3142" stroke-width="1.5"/>
+  <rect x="237" y="122" width="55" height="4" rx="2" stroke="#2D3142" stroke-width="1"/>
+  <path d="M241 134 L241 126 L241 118 Q241 114 245 114" stroke="#2D3142" stroke-width="1.5"/>
+  <path d="M288 134 L288 126 L288 118 Q288 114 284 114" stroke="#2D3142" stroke-width="1.5"/>
+  <line x1="243" y1="134" x2="239" y2="155" stroke="#2D3142" stroke-width="1.3"/>
+  <line x1="286" y1="134" x2="290" y2="155" stroke="#2D3142" stroke-width="1.3"/>
+
+  <!-- Blumen-Kuebel links -->
+  <path d="M80 145 L76 155 L90 155 L86 145Z" stroke="#2D3142" stroke-width="1"/>
+  <line x1="83" y1="145" x2="83" y2="135" stroke="#4CAF87" stroke-width="0.8"/>
+  <circle cx="80" cy="133" r="3" stroke="#F59E0B" stroke-width="0.8" fill="#F59E0B" fill-opacity="0.08"/>
+  <circle cx="86" cy="131" r="2.5" stroke="#F59E0B" stroke-width="0.8" fill="#F59E0B" fill-opacity="0.08"/>
+  <path d="M79 137 Q82 135 85 137" stroke="#4CAF87" stroke-width="0.6"/>
+
+  <!-- Blumen-Kuebel rechts -->
+  <path d="M315 145 L311 155 L325 155 L321 145Z" stroke="#2D3142" stroke-width="1"/>
+  <line x1="318" y1="145" x2="318" y2="136" stroke="#4CAF87" stroke-width="0.8"/>
+  <circle cx="315" cy="134" r="2.5" stroke="#EF4444" stroke-width="0.8" fill="#EF4444" fill-opacity="0.08"/>
+  <circle cx="321" cy="132" r="3" stroke="#EF4444" stroke-width="0.8" fill="#EF4444" fill-opacity="0.08"/>
+
+  <!-- Voegel -->
+  <path d="M140 42 Q145 35 150 42" stroke="#2D3142" stroke-width="0.8" opacity="0.4"/>
+  <path d="M148 38 Q153 32 158 38" stroke="#2D3142" stroke-width="0.7" opacity="0.3"/>
+  <path d="M260 35 Q264 29 268 35" stroke="#2D3142" stroke-width="0.7" opacity="0.35"/>
+
+  <!-- Kopfsteinpflaster-Andeutung -->
+  <path d="M100 158 Q105 156 110 158" stroke="#2D3142" stroke-width="0.4" opacity="0.15"/>
+  <path d="M130 160 Q135 158 140 160" stroke="#2D3142" stroke-width="0.4" opacity="0.12"/>
+  <path d="M170 157 Q175 155 180 157" stroke="#2D3142" stroke-width="0.4" opacity="0.15"/>
+  <path d="M210 159 Q215 157 220 159" stroke="#2D3142" stroke-width="0.4" opacity="0.12"/>
+  <path d="M250 158 Q255 156 260 158" stroke="#2D3142" stroke-width="0.4" opacity="0.15"/>
+  <path d="M280 160 Q285 158 290 160" stroke="#2D3142" stroke-width="0.4" opacity="0.12"/>
+
   <!-- Boden-Linie -->
-  <line x1="20" y1="155" x2="380" y2="155" stroke-dasharray="4 4" opacity="0.4" />
+  <line x1="10" y1="162" x2="390" y2="162" stroke="#2D3142" stroke-width="1" opacity="0.25"/>
+  <line x1="15" y1="165" x2="385" y2="165" stroke="#2D3142" stroke-width="0.5" opacity="0.1"/>
+
+  <!-- Gras-Bueschel -->
+  <path d="M12 160 Q14 152 16 160" stroke="#4CAF87" stroke-width="0.6" opacity="0.3"/>
+  <path d="M14 160 Q17 150 20 160" stroke="#4CAF87" stroke-width="0.5" opacity="0.25"/>
+  <path d="M380 160 Q382 153 384 160" stroke="#4CAF87" stroke-width="0.6" opacity="0.3"/>
+  <path d="M384 160 Q386 154 388 160" stroke="#4CAF87" stroke-width="0.5" opacity="0.25"/>
 </svg>

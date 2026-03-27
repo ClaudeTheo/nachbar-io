@@ -6,7 +6,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { requireAuth, requireSubscription, unauthorizedResponse } from '@/lib/care/api-helpers';
 
 export async function POST(request: NextRequest) {
-  // Auth + Plus-Subscription pruefen
+  // Auth + Plus-Subscription prüfen
   const auth = await requireAuth();
   if (!auth) return unauthorizedResponse();
 
@@ -23,7 +23,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'resident_id erforderlich' }, { status: 400 });
     }
 
-    // Caregiver-Link pruefen (aktiv = nicht widerrufen)
+    // Caregiver-Link prüfen (aktiv = nicht widerrufen)
     const { data: link, error: linkError } = await supabase
       .from('caregiver_links')
       .select('id')
@@ -34,7 +34,7 @@ export async function POST(request: NextRequest) {
 
     if (linkError || !link) {
       return NextResponse.json(
-        { error: 'Keine aktive Verknuepfung mit diesem Bewohner' },
+        { error: 'Keine aktive Verknüpfung mit diesem Bewohner' },
         { status: 403 }
       );
     }

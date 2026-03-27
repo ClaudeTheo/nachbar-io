@@ -21,8 +21,8 @@ const ONBOARDING_STEPS = [
   {
     step: 'profile',
     delayHours: 24,
-    title: 'Profil vervollstaendigen',
-    body: 'Vervollstaendigen Sie Ihr Profil — so finden Nachbarn Sie leichter.',
+    title: 'Profil vervollständigen',
+    body: 'Vervollständigen Sie Ihr Profil — so finden Nachbarn Sie leichter.',
     url: '/profile',
   },
   {
@@ -43,14 +43,14 @@ const ONBOARDING_STEPS = [
     step: 'help',
     delayHours: 336,
     title: 'Hilfe anbieten oder suchen',
-    body: 'Brauchen Sie Hilfe oder koennen Sie welche anbieten?',
+    body: 'Brauchen Sie Hilfe oder können Sie welche anbieten?',
     url: '/help',
   },
   {
     step: 'feedback',
     delayHours: 720,
     title: 'Wie gefällt Ihnen QuartierApp?',
-    body: 'Wir freuen uns ueber Ihr Feedback.',
+    body: 'Wir freuen uns über Ihr Feedback.',
     url: '/feedback',
   },
 ] as const;
@@ -95,12 +95,12 @@ export async function GET(request: NextRequest) {
       .select('user_id, step')
       .in('user_id', userIds);
 
-    // Set fuer schnellen Lookup: "userId:step"
+    // Set für schnellen Lookup: "userId:step"
     const sentSet = new Set(
       (sentSteps ?? []).map((s: { user_id: string; step: string }) => `${s.user_id}:${s.step}`)
     );
 
-    // Pro User: faellige Schritte senden
+    // Pro User: fällige Schritte senden
     for (const user of recentUsers) {
       const hoursSinceRegistration =
         (now.getTime() - new Date(user.created_at).getTime()) / (1000 * 60 * 60);

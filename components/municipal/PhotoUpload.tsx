@@ -1,7 +1,7 @@
 "use client";
 
 // Wiederverwendbare Foto-Upload-Komponente
-// Unterstuetzt Kamera-Aufnahme, Galerie-Auswahl, Client-seitige Komprimierung
+// Unterstützt Kamera-Aufnahme, Galerie-Auswahl, Client-seitige Komprimierung
 // und Upload in einen Supabase Storage Bucket.
 
 import { useState, useRef, useCallback } from "react";
@@ -20,11 +20,11 @@ export interface PhotoUploadProps {
   onPhotoRemoved: () => void;
   /** Aktuelles Foto (Preview-URL) */
   photoPreview: string | null;
-  /** Maximale Dateigroesse in Bytes (Standard: 2 MB) */
+  /** Maximale Dateigröße in Bytes (Standard: 2 MB) */
   maxSize?: number;
   /** Maximale Breite nach Komprimierung (Standard: 1200px) */
   maxWidth?: number;
-  /** JPEG-Qualitaet 0-1 (Standard: 0.8) */
+  /** JPEG-Qualität 0-1 (Standard: 0.8) */
   quality?: number;
   /** Hinweistext unter den Buttons */
   hint?: string;
@@ -91,7 +91,7 @@ export function PhotoUpload({
         return;
       }
 
-      // Validierung: max doppelte Groesse vor Komprimierung
+      // Validierung: max doppelte Größe vor Komprimierung
       if (file.size > maxSize * 2) {
         toast.error(
           `Das Bild ist zu groß (max. ${Math.round((maxSize * 2) / 1024 / 1024)} MB vor Komprimierung).`,
@@ -105,7 +105,7 @@ export function PhotoUpload({
         // Komprimieren
         const compressed = await compressImage(file, maxWidth, quality);
 
-        // Pruefen ob komprimiertes Bild unter maxSize liegt
+        // Prüfen ob komprimiertes Bild unter maxSize liegt
         if (compressed.size > maxSize) {
           toast.error(
             `Das Bild ist auch nach Komprimierung zu groß (max. ${Math.round(maxSize / 1024 / 1024)} MB).`,
@@ -147,7 +147,7 @@ export function PhotoUpload({
         toast.error("Bildverarbeitung fehlgeschlagen.");
       } finally {
         setUploading(false);
-        // Input zuruecksetzen (damit dasselbe Bild nochmal gewaehlt werden kann)
+        // Input zurücksetzen (damit dasselbe Bild nochmal gewählt werden kann)
         e.target.value = "";
       }
     },

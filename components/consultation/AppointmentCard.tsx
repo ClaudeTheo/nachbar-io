@@ -1,5 +1,5 @@
 // components/consultation/AppointmentCard.tsx
-// Karte fuer einen Termin mit Verhandlungs-Aktionen
+// Karte für einen Termin mit Verhandlungs-Aktionen
 'use client';
 
 import { useState } from 'react';
@@ -9,7 +9,7 @@ import { Calendar, Clock, User, Video, Check, ArrowRightLeft, X } from 'lucide-r
 import { getAvailableActions, type AppointmentStatus, type ActorRole, type AppointmentAction } from '@/lib/consultation/appointment-status';
 import type { ConsultationSlot } from '@/lib/care/types';
 
-// Status-Konfiguration fuer Badges
+// Status-Konfiguration für Badges
 const STATUS_CONFIG: Record<string, { label: string; color: string }> = {
   proposed: { label: 'Vorgeschlagen', color: 'bg-amber-100 text-amber-800' },
   counter_proposed: { label: 'Gegenvorschlag', color: 'bg-blue-100 text-blue-800' },
@@ -25,7 +25,7 @@ interface AppointmentCardProps {
   slot: ConsultationSlot;
   /** Wer den Termin ansieht */
   actorRole: ActorRole;
-  /** Callback fuer Aktionen (confirm, counter_propose, decline, cancel) */
+  /** Callback für Aktionen (confirm, counter_propose, decline, cancel) */
   onAction: (slotId: string, action: AppointmentAction, scheduledAt?: string) => Promise<void>;
   /** Callback wenn "Gegenvorschlag" geklickt wird (oeffnet Modal) */
   onCounterPropose?: (slotId: string) => void;
@@ -100,10 +100,10 @@ export function AppointmentCard({ slot, actorRole, onAction, onCounterPropose }:
         </div>
       )}
 
-      {/* Aktions-Buttons (Senior-Mode: min-h 80px fuer primaere Aktionen) */}
+      {/* Aktions-Buttons (Senior-Mode: min-h 80px für primäre Aktionen) */}
       {actions.length > 0 && (
         <div className="mt-4 flex flex-col gap-2">
-          {/* Beitreten — gross und prominent */}
+          {/* Beitreten — groß und prominent */}
           {actions.includes('join') && slot.join_url && (
             <a
               href={slot.join_url}

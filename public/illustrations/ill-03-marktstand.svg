@@ -1,17 +1,95 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 200" fill="none" stroke="#2D3142" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-  <!-- Tisch -->
-  <rect x="100" y="110" width="200" height="8" rx="3" />
-  <line x1="120" y1="118" x2="120" y2="160" />
-  <line x1="280" y1="118" x2="280" y2="160" />
-  <!-- Markise -->
-  <path d="M90 60 L310 60 L300 110 L100 110 Z" stroke-width="1.5" />
-  <path d="M90 60 Q130 85 170 60" stroke="#3B82F6" stroke-width="2" />
-  <path d="M170 60 Q210 85 250 60" stroke="#3B82F6" stroke-width="2" />
-  <path d="M250 60 Q290 85 310 60" stroke="#3B82F6" stroke-width="2" />
-  <!-- Waren auf dem Tisch -->
-  <circle cx="160" cy="100" r="10" />
-  <circle cx="200" cy="98" r="12" />
-  <circle cx="240" cy="100" r="10" />
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 200" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <!-- Markise (gestreift, detailliert) -->
+  <path d="M75 52 L325 52 L315 108 L85 108Z" stroke="#2D3142" stroke-width="1.8"/>
+  <!-- Markisen-Wellen -->
+  <path d="M75 52 Q108 78 140 52" stroke="#3B82F6" stroke-width="2"/>
+  <path d="M140 52 Q173 78 205 52" stroke="#EF4444" stroke-width="2" opacity="0.7"/>
+  <path d="M205 52 Q238 78 270 52" stroke="#3B82F6" stroke-width="2"/>
+  <path d="M270 52 Q298 74 325 52" stroke="#EF4444" stroke-width="2" opacity="0.7"/>
+  <!-- Markisen-Schatten -->
+  <path d="M85 108 Q115 98 140 108" stroke="#2D3142" stroke-width="0.5" opacity="0.15"/>
+  <path d="M175 108 Q200 98 225 108" stroke="#2D3142" stroke-width="0.5" opacity="0.15"/>
+  <!-- Stangen -->
+  <line x1="82" y1="52" x2="82" y2="45" stroke="#2D3142" stroke-width="1.5"/>
+  <line x1="318" y1="52" x2="318" y2="45" stroke="#2D3142" stroke-width="1.5"/>
+  <circle cx="82" cy="43" r="2.5" stroke="#2D3142" stroke-width="1"/>
+  <circle cx="318" cy="43" r="2.5" stroke="#2D3142" stroke-width="1"/>
+
+  <!-- Tisch (detailliert mit Holzmaserung) -->
+  <rect x="88" y="108" width="224" height="10" rx="3" stroke="#2D3142" stroke-width="1.8"/>
+  <line x1="95" y1="111" x2="305" y2="111" stroke="#2D3142" stroke-width="0.4" opacity="0.2"/>
+  <line x1="95" y1="114" x2="305" y2="114" stroke="#2D3142" stroke-width="0.3" opacity="0.15"/>
+  <!-- Tischbeine -->
+  <path d="M105 118 L102 160" stroke="#2D3142" stroke-width="2"/>
+  <path d="M295 118 L298 160" stroke="#2D3142" stroke-width="2"/>
+  <path d="M105 118 L100 120 L102 160" stroke="#2D3142" stroke-width="0.5" opacity="0.3"/>
+  <path d="M295 118 L300 120 L298 160" stroke="#2D3142" stroke-width="0.5" opacity="0.3"/>
+
+  <!-- Obst-Koerbe -->
+  <!-- Korb 1: Aepfel -->
+  <path d="M105 107 Q115 95 130 107" stroke="#2D3142" stroke-width="1.2"/>
+  <path d="M108 104 Q112 100 116 104" stroke="#2D3142" stroke-width="0.5" opacity="0.3"/>
+  <circle cx="112" cy="98" r="5" stroke="#EF4444" stroke-width="1" fill="#EF4444" fill-opacity="0.06"/>
+  <circle cx="122" cy="96" r="5.5" stroke="#EF4444" stroke-width="1" fill="#EF4444" fill-opacity="0.06"/>
+  <circle cx="117" cy="92" r="4.5" stroke="#EF4444" stroke-width="1" fill="#EF4444" fill-opacity="0.06"/>
+  <line x1="117" y1="88" x2="118" y2="85" stroke="#4CAF87" stroke-width="0.7"/>
+
+  <!-- Korb 2: Birnen -->
+  <path d="M148 107 Q160 92 175 107" stroke="#2D3142" stroke-width="1.2"/>
+  <path d="M155 100 Q158 94 162 98" stroke="#F59E0B" stroke-width="1" fill="#F59E0B" fill-opacity="0.05"/>
+  <path d="M162 98 Q165 92 168 96" stroke="#F59E0B" stroke-width="1" fill="#F59E0B" fill-opacity="0.05"/>
+  <path d="M158 96 Q161 90 164 94" stroke="#F59E0B" stroke-width="1" fill="#F59E0B" fill-opacity="0.05"/>
+
+  <!-- Korb 3: Brot -->
+  <path d="M190 107 Q200 96 215 107" stroke="#2D3142" stroke-width="1.2"/>
+  <path d="M195 102 Q200 92 210 98 Q212 102 208 106" stroke="#2D3142" stroke-width="1"/>
+  <path d="M198 98 L200 94 L202 98" stroke="#2D3142" stroke-width="0.5" opacity="0.3"/>
+  <!-- Brot-Kreuzung -->
+  <path d="M200 95 Q203 97 206 95" stroke="#2D3142" stroke-width="0.6" opacity="0.4"/>
+
+  <!-- Kaese -->
+  <path d="M230 106 L225 92 L250 92 L255 106" stroke="#F59E0B" stroke-width="1.2"/>
+  <circle cx="232" cy="98" r="1.5" fill="#F59E0B" fill-opacity="0.15" stroke="none"/>
+  <circle cx="240" cy="96" r="1" fill="#F59E0B" fill-opacity="0.15" stroke="none"/>
+  <circle cx="248" cy="99" r="1.2" fill="#F59E0B" fill-opacity="0.15" stroke="none"/>
+  <line x1="225" y1="92" x2="255" y2="92" stroke="#F59E0B" stroke-width="0.8" opacity="0.4"/>
+
+  <!-- Blumen-Vasen -->
+  <path d="M270 107 L268 96 Q270 92 275 92 Q280 92 282 96 L280 107" stroke="#2D3142" stroke-width="1"/>
+  <line x1="272" y1="92" x2="270" y2="82" stroke="#4CAF87" stroke-width="0.8"/>
+  <line x1="275" y1="92" x2="275" y2="78" stroke="#4CAF87" stroke-width="0.8"/>
+  <line x1="278" y1="92" x2="280" y2="80" stroke="#4CAF87" stroke-width="0.8"/>
+  <circle cx="270" cy="80" r="3" stroke="#8B5CF6" stroke-width="0.8" fill="#8B5CF6" fill-opacity="0.06"/>
+  <circle cx="275" cy="76" r="3.5" stroke="#EF4444" stroke-width="0.8" fill="#EF4444" fill-opacity="0.06"/>
+  <circle cx="280" cy="78" r="2.5" stroke="#F59E0B" stroke-width="0.8" fill="#F59E0B" fill-opacity="0.06"/>
+
+  <!-- Preisschilder -->
+  <rect x="112" y="82" width="16" height="10" rx="1" stroke="#2D3142" stroke-width="0.6" opacity="0.4" transform="rotate(-5 120 87)"/>
+  <line x1="115" y1="87" x2="125" y2="87" stroke="#2D3142" stroke-width="0.4" opacity="0.3"/>
+  <rect x="240" y="84" width="14" height="9" rx="1" stroke="#2D3142" stroke-width="0.6" opacity="0.4" transform="rotate(3 247 88)"/>
+  <line x1="243" y1="89" x2="251" y2="89" stroke="#2D3142" stroke-width="0.4" opacity="0.3"/>
+
+  <!-- Verkaeufer (angedeutet hinter Tisch) -->
+  <circle cx="200" cy="75" r="8" stroke="#2D3142" stroke-width="1.2" opacity="0.5"/>
+  <path d="M192 83 L190 105" stroke="#2D3142" stroke-width="1" opacity="0.4"/>
+  <path d="M208 83 L210 105" stroke="#2D3142" stroke-width="1" opacity="0.4"/>
+  <!-- Schuerze -->
+  <path d="M192 90 Q200 95 208 90" stroke="#2D3142" stroke-width="0.6" opacity="0.3"/>
+  <!-- Muetze/Hut -->
+  <path d="M190 70 Q200 62 210 70" stroke="#2D3142" stroke-width="1" opacity="0.5"/>
+
+  <!-- Einkaufstasche am Boden -->
+  <rect x="320" y="135" width="18" height="22" rx="3" stroke="#2D3142" stroke-width="1" opacity="0.4"/>
+  <path d="M323 135 Q329 128 335 135" stroke="#2D3142" stroke-width="0.8" opacity="0.4"/>
+  <path d="M323 142 L335 142" stroke="#2D3142" stroke-width="0.4" opacity="0.2"/>
+
+  <!-- Blaetter / Kraeuter auf dem Boden -->
+  <path d="M65 155 Q68 148 72 155" stroke="#4CAF87" stroke-width="0.6" opacity="0.3"/>
+  <path d="M340 158 Q343 150 346 158" stroke="#4CAF87" stroke-width="0.6" opacity="0.25"/>
+
   <!-- Boden -->
-  <line x1="60" y1="160" x2="340" y2="160" stroke-dasharray="4 4" opacity="0.4" />
+  <line x1="30" y1="162" x2="370" y2="162" stroke="#2D3142" stroke-width="1" opacity="0.25"/>
+  <path d="M120 162 Q125 160 130 162" stroke="#2D3142" stroke-width="0.4" opacity="0.12"/>
+  <path d="M200 162 Q205 160 210 162" stroke="#2D3142" stroke-width="0.4" opacity="0.12"/>
+  <path d="M270 162 Q275 160 280 162" stroke="#2D3142" stroke-width="0.4" opacity="0.12"/>
 </svg>

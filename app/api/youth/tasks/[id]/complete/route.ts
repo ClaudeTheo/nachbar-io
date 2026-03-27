@@ -1,5 +1,5 @@
 // app/api/youth/tasks/[id]/complete/route.ts
-// Jugend-Modul: Aufgabe abschliessen + Punkte buchen
+// Jugend-Modul: Aufgabe abschließen + Punkte buchen
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 
@@ -30,7 +30,7 @@ export async function POST(
     return NextResponse.json({ error: 'Aufgabe muss zuerst angenommen sein' }, { status: 400 });
   }
 
-  // Nur der Ersteller oder der Bearbeiter kann abschliessen
+  // Nur der Ersteller oder der Bearbeiter kann abschließen
   const isCreator = task.created_by === user.id;
   const isAcceptor = task.accepted_by === user.id;
 
@@ -57,7 +57,7 @@ export async function POST(
     return NextResponse.json({ error: 'Aufgabe konnte nicht abgeschlossen werden' }, { status: 500 });
   }
 
-  // Punkte buchen fuer den Bearbeiter
+  // Punkte buchen für den Bearbeiter
   if (task.accepted_by) {
     const bonus = task.category === 'technik' ? 10 : 0;
     const totalPoints = task.points_reward + bonus;

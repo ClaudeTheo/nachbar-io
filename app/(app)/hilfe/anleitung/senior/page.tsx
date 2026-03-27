@@ -8,43 +8,43 @@ const steps = [
     number: 1,
     title: "Pflege-Profil anlegen",
     description:
-      "Tragen Sie Ihren Pflegegrad, Ihre Pflegekasse und Versichertennummer ein. Diese Daten werden verschluesselt gespeichert.",
+      "Tragen Sie Ihren Pflegegrad, Ihre Pflegekasse und Versichertennummer ein. Diese Daten werden verschlüsselt gespeichert.",
   },
   {
     number: 2,
     title: "Hilfe-Gesuch erstellen",
     description:
-      "Waehlen Sie eine Kategorie (z.B. Einkaufen, Begleitung) und beschreiben Sie, wobei Sie Hilfe benoetigen.",
+      "Wählen Sie eine Kategorie (z.B. Einkaufen, Begleitung) und beschreiben Sie, wobei Sie Hilfe benötigen.",
   },
   {
     number: 3,
-    title: "Helfer auswaehlen",
+    title: "Helfer auswählen",
     description:
-      "Freiwillige Helfer aus Ihrer Nachbarschaft melden sich auf Ihr Gesuch. Waehlen Sie den passenden Helfer aus.",
+      "Freiwillige Helfer aus Ihrer Nachbarschaft melden sich auf Ihr Gesuch. Wählen Sie den passenden Helfer aus.",
   },
   {
     number: 4,
     title: "Helfer verbinden",
     description:
-      "Nach dem ersten Einsatz fragt die App, ob Sie den Helfer als festen Helfer verbinden moechten. Oder laden Sie einen bekannten Helfer per Code ein.",
+      "Nach dem ersten Einsatz fragt die App, ob Sie den Helfer als festen Helfer verbinden möchten. Oder laden Sie einen bekannten Helfer per Code ein.",
   },
   {
     number: 5,
     title: "Einsatz bestaetigen",
     description:
-      "Nach jedem Einsatz dokumentiert der Helfer Datum, Dauer und Taetigkeit. Sie unterschreiben digital auf dem Bildschirm.",
+      "Nach jedem Einsatz dokumentiert der Helfer Datum, Dauer und Tätigkeit. Sie unterschreiben digital auf dem Bildschirm.",
   },
   {
     number: 6,
     title: "Quittung erhalten",
     description:
-      "Eine PDF-Quittung wird automatisch erstellt. Sie koennen diese herunterladen oder per E-Mail erhalten.",
+      "Eine PDF-Quittung wird automatisch erstellt. Sie können diese herunterladen oder per E-Mail erhalten.",
   },
   {
     number: 7,
     title: "Bei der Pflegekasse einreichen",
     description:
-      "Am Monatsende erhalten Sie eine Sammelabrechnung mit allen Einsaetzen. Senden Sie diese per Post oder E-Mail an Ihre Pflegekasse.",
+      "Am Monatsende erhalten Sie eine Sammelabrechnung mit allen Einsätzen. Senden Sie diese per Post oder E-Mail an Ihre Pflegekasse.",
   },
 ];
 
@@ -74,7 +74,7 @@ export default function AnleitungSeniorPage() {
       {/* Print Header */}
       <div className="hidden print:block p-8">
         <h1 className="text-2xl font-bold">
-          Nachbar.io — Anleitung fuer Pflegebeduerftige
+          Nachbar.io — Anleitung für Pflegebedürftige
         </h1>
         <p className="text-lg text-gray-600 mt-1">
           So finden Sie Hilfe und rechnen ab
@@ -89,9 +89,9 @@ export default function AnleitungSeniorPage() {
             Ihr Entlastungsbetrag: 131 EUR pro Monat
           </h2>
           <p className="text-base text-gray-600 leading-relaxed">
-            Ab Pflegegrad 1 stehen Ihnen 131 EUR monatlich fuer
+            Ab Pflegegrad 1 stehen Ihnen 131 EUR monatlich für
             Nachbarschaftshilfe zu (§45b SGB XI). Dieses Geld zahlt Ihre
-            Pflegekasse — Sie muessen nichts bezahlen. Die App hilft Ihnen,
+            Pflegekasse — Sie müssen nichts bezahlen. Die App hilft Ihnen,
             einen Helfer zu finden und die Abrechnung zu erledigen.
           </p>
         </div>
@@ -128,7 +128,7 @@ export default function AnleitungSeniorPage() {
           <p className="text-xs text-gray-400 leading-relaxed">
             Allgemeine Informationen zur Nutzung des Entlastungsbetrags. Keine
             Rechtsberatung. Bei Fragen wenden Sie sich an Ihre Pflegekasse.
-            Stand: Maerz 2026.
+            Stand: März 2026.
           </p>
         </div>
 

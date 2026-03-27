@@ -1,4 +1,4 @@
-// OnlineIndicator — Gruener/grauer Punkt fuer Online-Status
+// OnlineIndicator — Grüner/grauer Punkt für Online-Status
 'use client';
 
 interface OnlineIndicatorProps {
@@ -7,8 +7,8 @@ interface OnlineIndicatorProps {
 }
 
 /**
- * OnlineIndicator — Zeigt einen gruenen (online) oder grauen (offline) Punkt.
- * Senior-Modus: 'md' fuer bessere Sichtbarkeit.
+ * OnlineIndicator — Zeigt einen grünen (online) oder grauen (offline) Punkt.
+ * Senior-Modus: 'md' für bessere Sichtbarkeit.
  */
 export function OnlineIndicator({ isOnline, size = 'sm' }: OnlineIndicatorProps) {
   const sizeClass = size === 'sm' ? 'h-2.5 w-2.5' : 'h-3.5 w-3.5';

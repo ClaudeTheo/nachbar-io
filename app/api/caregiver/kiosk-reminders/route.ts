@@ -17,7 +17,7 @@ const VALID_TYPES = ["appointment", "sticky"] as const;
 
 /**
  * GET /api/caregiver/kiosk-reminders?household_id=...
- * Erinnerungen eines Haushalts auflisten. Zugriff fuer Caregiver und Haushaltsmitglieder.
+ * Erinnerungen eines Haushalts auflisten. Zugriff für Caregiver und Haushaltsmitglieder.
  */
 export async function GET(request: NextRequest) {
   // Auth
@@ -35,7 +35,7 @@ export async function GET(request: NextRequest) {
     return errorResponse("household_id ist erforderlich", 400);
   }
 
-  // Zugriffspruefung: Caregiver-Link ODER Haushaltsmitglied
+  // Zugriffsprüfung: Caregiver-Link ODER Haushaltsmitglied
   const { data: link } = await supabase
     .from("caregiver_links")
     .select("id")
@@ -104,7 +104,7 @@ export async function POST(request: NextRequest) {
 
   const { household_id, type, title, scheduled_at } = body;
 
-  // Pflichtfelder pruefen
+  // Pflichtfelder prüfen
   if (!household_id || !type || !title) {
     return errorResponse(
       "household_id, type und title sind erforderlich",
@@ -120,7 +120,7 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  // Titel-Laenge validieren
+  // Titel-Länge validieren
   if (title.length < 1 || title.length > MAX_TITLE_LENGTH) {
     return errorResponse(
       `Titel muss zwischen 1 und ${MAX_TITLE_LENGTH} Zeichen lang sein`,
@@ -141,7 +141,7 @@ export async function POST(request: NextRequest) {
     return errorResponse("scheduled_at ist kein gültiges Datum", 400);
   }
 
-  // Zugriffspruefung: Caregiver-Link + Bewohner im Haushalt
+  // Zugriffsprüfung: Caregiver-Link + Bewohner im Haushalt
   const { data: link } = await supabase
     .from("caregiver_links")
     .select("id, resident_id")

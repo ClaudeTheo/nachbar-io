@@ -4,9 +4,9 @@ import Link from "next/link";
 import { Wrench, Trash2, Landmark } from "lucide-react";
 
 interface QuartierServicesProps {
-  /** Anzahl offener Maengelmelder-Meldungen */
+  /** Anzahl offener Mängelmelder-Meldungen */
   openReportsCount?: number;
-  /** Naechste Muellabholung (z.B. "Mo: Biotonne") */
+  /** Nächste Müllabholung (z.B. "Mo: Biotonne") */
   nextWasteInfo?: string;
   /** Anzahl Service-Links */
   serviceLinksCount?: number;
@@ -21,7 +21,7 @@ export function QuartierServicesSection({
     <section>
       <h2 className="mb-2 font-semibold text-anthrazit">Quartier-Services</h2>
       <div className="grid grid-cols-3 gap-2">
-        {/* Maengelmelder */}
+        {/* Mängelmelder */}
         <Link
           href="/reports"
           className="card-interactive flex flex-col items-center gap-1.5 rounded-xl bg-white p-3 shadow-soft text-center"
@@ -38,7 +38,7 @@ export function QuartierServicesSection({
           )}
         </Link>
 
-        {/* Muellkalender */}
+        {/* Müllkalender */}
         <Link
           href="/waste-calendar"
           className="card-interactive flex flex-col items-center gap-1.5 rounded-xl bg-white p-3 shadow-soft text-center"

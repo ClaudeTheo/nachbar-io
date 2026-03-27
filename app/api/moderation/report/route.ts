@@ -22,7 +22,7 @@ export async function POST(request: NextRequest) {
   try {
     body = await request.json();
   } catch {
-    return NextResponse.json({ error: 'Ungueltiges Anfrage-Format' }, { status: 400 });
+    return NextResponse.json({ error: 'Ungültiges Anfrage-Format' }, { status: 400 });
   }
 
   const { contentType, contentId, reasonCategory, reasonText } = body;
@@ -36,10 +36,10 @@ export async function POST(request: NextRequest) {
   }
 
   if (!VALID_REASONS.includes(reasonCategory)) {
-    return NextResponse.json({ error: 'Ungueltiger Meldegrund' }, { status: 400 });
+    return NextResponse.json({ error: 'Ungültiger Meldegrund' }, { status: 400 });
   }
 
-  // Doppel-Meldung pruefen
+  // Doppel-Meldung prüfen
   const { data: existingReport } = await supabase
     .from('content_reports')
     .select('id')
@@ -69,7 +69,7 @@ export async function POST(request: NextRequest) {
   // Fallback: verifiziert wenn Feld vorhanden, sonst Account aelter als 30 Tage
   const reporterVerified = profile?.verified ?? accountAgeDays >= 30;
 
-  // Haushalt-Reports auf denselben Content zaehlen
+  // Haushalt-Reports auf denselben Content zählen
   let householdReportsOnSameContent = 0;
   if (profile?.household_id) {
     const { count } = await supabase
@@ -96,7 +96,7 @@ export async function POST(request: NextRequest) {
     householdReportsOnSameContent,
   });
 
-  // Report einfuegen
+  // Report einfügen
   const { error } = await supabase.from('content_reports').insert({
     reporter_id: user.id,
     content_type: contentType,
@@ -111,5 +111,5 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Meldung konnte nicht erstellt werden' }, { status: 500 });
   }
 
-  return NextResponse.json({ success: true, message: 'Danke, wir pruefen das.' });
+  return NextResponse.json({ success: true, message: 'Danke, wir prüfen das.' });
 }

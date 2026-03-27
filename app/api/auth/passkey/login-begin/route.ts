@@ -12,7 +12,7 @@ export async function POST() {
       userVerification: 'preferred',
     });
 
-    // Challenge in DB speichern statt Cookie (iOS-Kompatibilitaet)
+    // Challenge in DB speichern statt Cookie (iOS-Kompatibilität)
     const admin = getAdminSupabase();
     const { data: row, error } = await admin
       .from('passkey_challenges')
@@ -28,7 +28,7 @@ export async function POST() {
       return NextResponse.json({ error: 'Interner Fehler' }, { status: 500 });
     }
 
-    // Challenge-ID im Response mitgeben (Client sendet sie bei login-complete zurueck)
+    // Challenge-ID im Response mitgeben (Client sendet sie bei login-complete zurück)
     return NextResponse.json({ ...options, challengeId: row.id });
   } catch (err) {
     console.error('[Passkey] login-begin Fehler:', err);

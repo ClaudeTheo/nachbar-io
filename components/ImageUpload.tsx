@@ -38,7 +38,7 @@ export function ImageUpload({
   const totalCount = images.length + pendingFiles.length;
   const canAdd = totalCount < maxImages;
 
-  // Datei(en) hinzufuegen
+  // Datei(en) hinzufügen
   function handleFileSelect(e: React.ChangeEvent<HTMLInputElement>) {
     const files = e.target.files;
     if (!files || files.length === 0) return;
@@ -63,7 +63,7 @@ export function ImageUpload({
       onPendingFilesChange([...pendingFiles, ...newFiles]);
     }
 
-    // File-Input zuruecksetzen
+    // File-Input zurücksetzen
     if (fileInputRef.current) fileInputRef.current.value = "";
   }
 
@@ -143,7 +143,7 @@ export function ImageUpload({
           </div>
         ))}
 
-        {/* Hinzufuegen-Button */}
+        {/* Hinzufügen-Button */}
         {canAdd && !disabled && (
           <button
             onClick={() => fileInputRef.current?.click()}
@@ -175,7 +175,7 @@ export function ImageUpload({
   );
 }
 
-// Hilfskomponente fuer Upload-Fortschritt (in Submit-Flows)
+// Hilfskomponente für Upload-Fortschritt (in Submit-Flows)
 export function UploadingOverlay() {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30">

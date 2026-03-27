@@ -23,8 +23,8 @@ export async function POST(request: NextRequest) {
   try {
     event = stripe.webhooks.constructEvent(body, signature, process.env.STRIPE_WEBHOOK_SECRET);
   } catch (err) {
-    console.error('Webhook Signatur ungueltig:', err);
-    return NextResponse.json({ error: 'Ungueltige Signatur' }, { status: 400 });
+    console.error('Webhook Signatur ungültig:', err);
+    return NextResponse.json({ error: 'Ungültige Signatur' }, { status: 400 });
   }
 
   const adminDb = getAdminSupabase();
@@ -125,7 +125,7 @@ export async function POST(request: NextRequest) {
       const subscriptionId = (typeof sub === 'string' ? sub : sub?.id) as string;
       if (!subscriptionId) break;
 
-      // Abrechnungszeitraum aktualisieren, Status auf active setzen (Verlaengerung)
+      // Abrechnungszeitraum aktualisieren, Status auf active setzen (Verlängerung)
       const { error } = await adminDb
         .from('care_subscriptions')
         .update({
@@ -147,7 +147,7 @@ export async function POST(request: NextRequest) {
     case 'customer.subscription.deleted': {
       const subscription = event.data.object as Stripe.Subscription;
 
-      // Downgrade auf Free: Rolle zuruecksetzen, aber Daten behalten
+      // Downgrade auf Free: Rolle zurücksetzen, aber Daten behalten
       const { data: subData } = await adminDb
         .from('care_subscriptions')
         .select('user_id')
@@ -163,9 +163,9 @@ export async function POST(request: NextRequest) {
         })
         .eq('external_subscription_id', subscription.id);
 
-      if (error) console.error('Subscription-Kuendigung Fehler:', error);
+      if (error) console.error('Subscription-Kündigung Fehler:', error);
 
-      // Rolle auf 'user' zuruecksetzen (Daten bleiben erhalten, nur Zugriff entfernt)
+      // Rolle auf 'user' zurücksetzen (Daten bleiben erhalten, nur Zugriff entfernt)
       if (subData?.user_id) {
         const { error: roleError } = await adminDb
           .from('users')

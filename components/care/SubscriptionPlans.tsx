@@ -125,11 +125,11 @@ export function SubscriptionPlans({ currentPlan = 'free', onSelectPlan }: Subscr
                 } flex items-center justify-center gap-2`}
               >
                 {isChanging ? (
-                  <><Loader2 className="h-4 w-4 animate-spin" /> Wird geaendert...</>
+                  <><Loader2 className="h-4 w-4 animate-spin" /> Wird geändert...</>
                 ) : isCurrent ? (
                   'Aktueller Plan'
                 ) : (
-                  'Auswaehlen'
+                  'Auswählen'
                 )}
               </button>
             </div>

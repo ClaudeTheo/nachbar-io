@@ -5,7 +5,7 @@ import KioskIncomingCall from './KioskIncomingCall';
 
 /**
  * IncomingCallOverlay: Rendert das Incoming-Call-UI wenn ein Anruf eingeht.
- * Wird im Terminal-Layout eingebunden (z-48, ueber Screensaver/Appointment).
+ * Wird im Terminal-Layout eingebunden (z-48, über Screensaver/Appointment).
  */
 export default function IncomingCallOverlay() {
   const { incomingCall, setIncomingCall, setActiveCall, setActiveScreen } = useTerminal();

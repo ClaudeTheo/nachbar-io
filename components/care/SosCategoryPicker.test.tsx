@@ -1,5 +1,5 @@
 // components/care/SosCategoryPicker.test.tsx
-// Nachbar.io — Tests fuer SOS-Kategorie-Auswahl
+// Nachbar.io — Tests für SOS-Kategorie-Auswahl
 // KRITISCH: EmergencyBanner muss bei Notfall-Kategorien erscheinen (FMEA FM-NB-02)
 
 import { describe, it, expect, vi, afterEach, beforeEach } from 'vitest';
@@ -34,7 +34,7 @@ describe('SosCategoryPicker', () => {
     globalThis.fetch = mockFetch as typeof fetch;
   });
 
-  it('zeigt "Was brauchen Sie?" Ueberschrift', () => {
+  it('zeigt "Was brauchen Sie?" Überschrift', () => {
     render(<SosCategoryPicker />);
     expect(screen.getByText('Was brauchen Sie?')).toBeInTheDocument();
   });
@@ -60,7 +60,7 @@ describe('SosCategoryPicker', () => {
     render(<SosCategoryPicker />);
     fireEvent.click(screen.getByText('Dringende Hilfe benötigt'));
 
-    // 112/110 koennen mehrfach vorkommen (Link + Text)
+    // 112/110 können mehrfach vorkommen (Link + Text)
     const elements112 = screen.getAllByText(/112/);
     expect(elements112.length).toBeGreaterThan(0);
     const elements110 = screen.getAllByText(/110/);
@@ -123,14 +123,14 @@ describe('SosCategoryPicker', () => {
   it('zeigt Fehler bei fehlgeschlagenem API-Aufruf', async () => {
     mockFetch.mockResolvedValueOnce({
       ok: false,
-      json: () => Promise.resolve({ error: 'Feature nicht verfuegbar' }),
+      json: () => Promise.resolve({ error: 'Feature nicht verfügbar' }),
     });
 
     render(<SosCategoryPicker />);
     fireEvent.click(screen.getByText('Allgemeine Hilfe'));
 
     await waitFor(() => {
-      expect(screen.getByText('Feature nicht verfuegbar')).toBeInTheDocument();
+      expect(screen.getByText('Feature nicht verfügbar')).toBeInTheDocument();
     });
   });
 

@@ -26,7 +26,7 @@ const TYPE_LABELS: Record<CareDocumentType, string> = {
 
 /**
  * GET /api/care/reports?senior_id=...
- * Liste aller Dokumente fuer einen Senior.
+ * Liste aller Dokumente für einen Senior.
  */
 export async function GET(request: Request) {
   const auth = await requireAuth();
@@ -40,7 +40,7 @@ export async function GET(request: Request) {
   const url = new URL(request.url);
   const seniorId = url.searchParams.get('senior_id') ?? user.id;
 
-  // Zugriffspruefung: Nur Senior selbst, zugewiesene Helfer oder Admins
+  // Zugriffsprüfung: Nur Senior selbst, zugewiesene Helfer oder Admins
   if (seniorId !== user.id) {
     const role = await requireCareAccess(supabase, seniorId);
     if (!role) return errorResponse('Kein Zugriff auf diesen Senior', 403);
@@ -48,7 +48,7 @@ export async function GET(request: Request) {
 
   // Feature-Gate: reports
   const allowed = await requireFeature(supabase, seniorId, 'reports');
-  if (!allowed) return errorResponse('Berichte sind in Ihrem aktuellen Plan nicht verfuegbar', 403);
+  if (!allowed) return errorResponse('Berichte sind in Ihrem aktuellen Plan nicht verfügbar', 403);
 
   careLog('reports', 'list', { seniorId });
 
@@ -82,13 +82,13 @@ export async function POST(request: Request) {
   try {
     body = await request.json();
   } catch {
-    return errorResponse('Ungueltiger Request-Body', 400);
+    return errorResponse('Ungültiger Request-Body', 400);
   }
 
   const { type, period_start, period_end } = body;
   const seniorId = body.senior_id ?? user.id;
 
-  // Zugriffspruefung: Nur Senior selbst, zugewiesene Helfer oder Admins
+  // Zugriffsprüfung: Nur Senior selbst, zugewiesene Helfer oder Admins
   if (seniorId !== user.id) {
     const role = await requireCareAccess(supabase, seniorId);
     if (!role) return errorResponse('Kein Zugriff auf diesen Senior', 403);
@@ -96,7 +96,7 @@ export async function POST(request: Request) {
 
   // Validierung
   if (!type || !VALID_TYPES.includes(type as CareDocumentType)) {
-    return errorResponse('Ungueltiger Berichtstyp', 400);
+    return errorResponse('Ungültiger Berichtstyp', 400);
   }
   if (!period_start || !period_end) {
     return errorResponse('Zeitraum (period_start, period_end) erforderlich', 400);
@@ -104,7 +104,7 @@ export async function POST(request: Request) {
 
   // Feature-Gate
   const allowed = await requireFeature(supabase, seniorId, 'reports');
-  if (!allowed) return errorResponse('Berichte sind in Ihrem aktuellen Plan nicht verfuegbar', 403);
+  if (!allowed) return errorResponse('Berichte sind in Ihrem aktuellen Plan nicht verfügbar', 403);
 
   careLog('reports', 'generate', { seniorId, type, period_start, period_end });
 

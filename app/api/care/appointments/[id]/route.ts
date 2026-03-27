@@ -1,5 +1,5 @@
 // app/api/care/appointments/[id]/route.ts
-// Nachbar.io — Einzelnen Termin lesen, aktualisieren, loeschen
+// Nachbar.io — Einzelnen Termin lesen, aktualisieren, löschen
 
 import { NextRequest, NextResponse } from 'next/server';
 import { writeAuditLog } from '@/lib/care/audit';
@@ -34,13 +34,13 @@ export async function GET(
     return NextResponse.json({ error: 'Abfrage fehlgeschlagen' }, { status: 500 });
   }
 
-  // SICHERHEIT: Zugriffspruefung — nur Senior selbst, zugeordnete Helfer oder Admin
+  // SICHERHEIT: Zugriffsprüfung — nur Senior selbst, zugeordnete Helfer oder Admin
   if (data.senior_id !== user.id) {
     const role = await requireCareAccess(supabase, data.senior_id);
     if (!role) return NextResponse.json({ error: 'Kein Zugriff auf diesen Termin' }, { status: 403 });
   }
 
-  // Termin-Felder entschluesseln (Art. 9 DSGVO)
+  // Termin-Felder entschlüsseln (Art. 9 DSGVO)
   return NextResponse.json(decryptFields(data, CARE_APPOINTMENTS_ENCRYPTED_FIELDS));
 }
 
@@ -63,7 +63,7 @@ export async function PATCH(
 
   let body: Record<string, unknown>;
   try { body = await request.json(); } catch {
-    return NextResponse.json({ error: 'Ungueltiges Anfrage-Format' }, { status: 400 });
+    return NextResponse.json({ error: 'Ungültiges Anfrage-Format' }, { status: 400 });
   }
 
   const allowedFields = ['title', 'type', 'scheduled_at', 'duration_minutes', 'location', 'reminder_minutes_before', 'notes'];
@@ -76,7 +76,7 @@ export async function PATCH(
     return NextResponse.json({ error: 'Keine aenderbaren Felder angegeben' }, { status: 400 });
   }
 
-  // SICHERHEIT: Zugriffspruefung vor dem Update
+  // SICHERHEIT: Zugriffsprüfung vor dem Update
   const { data: existing } = await supabase.from('care_appointments').select('senior_id').eq('id', id).single();
   if (!existing) return NextResponse.json({ error: 'Termin nicht gefunden' }, { status: 404 });
   if (existing.senior_id !== user.id) {
@@ -84,7 +84,7 @@ export async function PATCH(
     if (!role) return NextResponse.json({ error: 'Kein Zugriff auf diesen Termin' }, { status: 403 });
   }
 
-  // Termin-Felder verschluesseln (Art. 9 DSGVO)
+  // Termin-Felder verschlüsseln (Art. 9 DSGVO)
   const encryptedUpdates = encryptFields(updates, CARE_APPOINTMENTS_ENCRYPTED_FIELDS);
 
   const { data: appointment, error } = await supabase
@@ -108,11 +108,11 @@ export async function PATCH(
     metadata: { action: 'updated', changes: Object.keys(updates) },
   }).catch(() => {});
 
-  // Entschluesselt zurueckgeben
+  // Entschlüsselt zurückgeben
   return NextResponse.json(decryptFields(appointment, CARE_APPOINTMENTS_ENCRYPTED_FIELDS));
 }
 
-// DELETE /api/care/appointments/[id] — Termin endgueltig loeschen (hard delete)
+// DELETE /api/care/appointments/[id] — Termin endgültig löschen (hard delete)
 export async function DELETE(
   _request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -129,7 +129,7 @@ export async function DELETE(
 
   const { supabase, user } = auth;
 
-  // senior_id vor dem Loeschen fuer den Audit-Log sichern
+  // senior_id vor dem Löschen für den Audit-Log sichern
   const { data: existing, error: fetchError } = await supabase
     .from('care_appointments')
     .select('senior_id')
@@ -141,7 +141,7 @@ export async function DELETE(
     return NextResponse.json({ error: 'Abfrage fehlgeschlagen' }, { status: 500 });
   }
 
-  // SICHERHEIT: Zugriffspruefung vor dem Loeschen
+  // SICHERHEIT: Zugriffsprüfung vor dem Löschen
   if (existing.senior_id !== user.id) {
     const role = await requireCareAccess(supabase, existing.senior_id);
     if (!role) return NextResponse.json({ error: 'Kein Zugriff auf diesen Termin' }, { status: 403 });
@@ -153,8 +153,8 @@ export async function DELETE(
     .eq('id', id);
 
   if (deleteError) {
-    console.error('[care/appointments] Loeschen fehlgeschlagen:', deleteError);
-    return NextResponse.json({ error: 'Termin konnte nicht geloescht werden' }, { status: 500 });
+    console.error('[care/appointments] Löschen fehlgeschlagen:', deleteError);
+    return NextResponse.json({ error: 'Termin konnte nicht gelöscht werden' }, { status: 500 });
   }
 
   await writeAuditLog(supabase, {

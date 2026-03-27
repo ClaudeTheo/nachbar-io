@@ -1,5 +1,5 @@
 // app/api/organizations/[id]/members/route.ts
-// Nachbar.io — Org-Mitglieder: Auflisten (GET) und Hinzufuegen (POST)
+// Nachbar.io — Org-Mitglieder: Auflisten (GET) und Hinzufügen (POST)
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient as createServiceClient } from '@supabase/supabase-js';
@@ -18,7 +18,7 @@ function getServiceDb() {
 /**
  * GET /api/organizations/[id]/members
  * Mitglieder der Organisation auflisten.
- * Sichtbar fuer alle Org-Mitglieder und Plattform-Admins.
+ * Sichtbar für alle Org-Mitglieder und Plattform-Admins.
  * Erfordert Pro-Abo.
  */
 export async function GET(
@@ -78,7 +78,7 @@ export async function GET(
 
 /**
  * POST /api/organizations/[id]/members
- * Mitglied zur Organisation hinzufuegen.
+ * Mitglied zur Organisation hinzufügen.
  * Nur org_admin oder Plattform-Admin. Erfordert Pro-Abo.
  * Body: { user_id, role, assigned_quarters? }
  */
@@ -109,7 +109,7 @@ export async function POST(
   try {
     body = await request.json();
   } catch {
-    return NextResponse.json({ error: 'Ungueltiges Anfrage-Format' }, { status: 400 });
+    return NextResponse.json({ error: 'Ungültiges Anfrage-Format' }, { status: 400 });
   }
 
   // Validierung
@@ -120,7 +120,7 @@ export async function POST(
 
   const serviceDb = getServiceDb();
 
-  // Pruefen ob Organisation existiert
+  // Prüfen ob Organisation existiert
   const { data: orgData } = await serviceDb
     .from('organizations')
     .select('id')
@@ -131,7 +131,7 @@ export async function POST(
     return NextResponse.json({ error: 'Organisation nicht gefunden' }, { status: 404 });
   }
 
-  // Pruefen ob User existiert
+  // Prüfen ob User existiert
   const { data: targetUser } = await serviceDb
     .from('users')
     .select('id')
@@ -142,7 +142,7 @@ export async function POST(
     return NextResponse.json({ error: 'Benutzer nicht gefunden' }, { status: 404 });
   }
 
-  // Pruefen ob bereits Mitglied
+  // Prüfen ob bereits Mitglied
   const { data: existing } = await serviceDb
     .from('org_members')
     .select('id')
@@ -154,7 +154,7 @@ export async function POST(
     return NextResponse.json({ error: 'Benutzer ist bereits Mitglied dieser Organisation' }, { status: 409 });
   }
 
-  // Mitglied hinzufuegen
+  // Mitglied hinzufügen
   const { data: member, error: insertError } = await serviceDb
     .from('org_members')
     .insert({
@@ -168,7 +168,7 @@ export async function POST(
 
   if (insertError || !member) {
     console.error('[organizations/members] POST Insert-Fehler:', insertError);
-    return NextResponse.json({ error: 'Mitglied konnte nicht hinzugefuegt werden' }, { status: 500 });
+    return NextResponse.json({ error: 'Mitglied konnte nicht hinzugefügt werden' }, { status: 500 });
   }
 
   // Audit-Log

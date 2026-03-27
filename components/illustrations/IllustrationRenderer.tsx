@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 
-// Verfuegbare Illustrationen (Dateinamen ohne Pfad/Extension)
+// Verfügbare Illustrationen (Dateinamen ohne Pfad/Extension)
 export type IllustrationName =
   | "ill-01-dorfplatz"
   | "ill-02-nachbarn"
@@ -23,7 +23,7 @@ interface IllustrationRendererProps {
 }
 
 /**
- * Rendert eine SVG-Illustration inline (fuer CSS-Animation).
+ * Rendert eine SVG-Illustration inline (für CSS-Animation).
  * Zeichnen-Animation via stroke-dasharray / stroke-dashoffset.
  * Respektiert prefers-reduced-motion.
  */
@@ -65,7 +65,7 @@ export function IllustrationRenderer({
       return;
     }
 
-    // prefers-reduced-motion pruefen
+    // prefers-reduced-motion prüfen
     const prefersReduced = window.matchMedia(
       "(prefers-reduced-motion: reduce)",
     ).matches;
@@ -92,7 +92,7 @@ export function IllustrationRenderer({
       }
     });
 
-    // Animation starten (naechster Frame)
+    // Animation starten (nächster Frame)
     requestAnimationFrame(() => {
       if (!containerRef.current) return;
       const animPaths = containerRef.current.querySelectorAll(

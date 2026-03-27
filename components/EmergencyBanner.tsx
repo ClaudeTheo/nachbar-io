@@ -7,11 +7,11 @@ import { Phone } from "lucide-react";
  * KRITISCHE KOMPONENTE: EmergencyBanner (FMEA FM-NB-02)
  *
  * Zeigt den Notruf-Hinweis bei lebensbedrohlichen Situationen.
- * Muss IMMER angezeigt werden BEVOR andere Aktionen moeglich sind.
+ * Muss IMMER angezeigt werden BEVOR andere Aktionen möglich sind.
  *
- * SICHERHEIT: Banner kann NICHT geschlossen werden ohne explizite Bestaetigung.
+ * SICHERHEIT: Banner kann NICHT geschlossen werden ohne explizite Bestätigung.
  * Escape-Taste ist DEAKTIVIERT (FMEA-Massnahme: RPZ 60 → 12).
- * Zwei explizite Buttons: "Notruf gerufen" vs. "Kein Notruf noetig"
+ * Zwei explizite Buttons: "Notruf gerufen" vs. "Kein Notruf nötig"
  *
  * Regel: Bei Feuer, medizinischem Notfall oder Einbruch → 112/110 zuerst.
  * Diese Regel ist NICHT verhandelbar.
@@ -57,7 +57,7 @@ export function EmergencyBanner({ onAcknowledge }: EmergencyBannerProps) {
     // Erstes interaktives Element fokussieren
     firstFocusRef.current?.focus();
 
-    // Keyboard-Events fuer Focus-Trap
+    // Keyboard-Events für Focus-Trap
     document.addEventListener("keydown", handleKeyDown);
 
     // Hintergrund-Scrolling verhindern
@@ -109,19 +109,19 @@ export function EmergencyBanner({ onAcknowledge }: EmergencyBannerProps) {
           oder 110.
         </p>
 
-        {/* Zwei explizite Bestaetigungsbuttons (FMEA FM-NB-02) */}
+        {/* Zwei explizite Bestätigungsbuttons (FMEA FM-NB-02) */}
         <div className="space-y-2">
           <button
             onClick={() => onAcknowledge(true)}
             className="w-full rounded-lg border-2 border-green-600 bg-green-50 px-4 py-3 text-sm font-semibold text-green-800 transition-colors hover:bg-green-100"
           >
-            Ich habe 112/110 angerufen — Nachbarn zusaetzlich informieren
+            Ich habe 112/110 angerufen — Nachbarn zusätzlich informieren
           </button>
           <button
             onClick={() => onAcknowledge(false)}
             className="w-full rounded-lg border-2 border-gray-300 px-4 py-3 text-sm font-medium text-muted-foreground transition-colors hover:bg-gray-50"
           >
-            Kein Notruf noetig — nur Nachbarschaftshilfe
+            Kein Notruf nötig — nur Nachbarschaftshilfe
           </button>
         </div>
       </div>

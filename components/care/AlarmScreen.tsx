@@ -21,7 +21,7 @@ export function AlarmScreen({ onDismiss, onSnooze }: AlarmScreenProps) {
     const ok = await onDismiss();
     if (ok) {
       setSuccess(true);
-      // Erfolg fuer 2 Sekunden anzeigen, dann verschwindet das Overlay
+      // Erfolg für 2 Sekunden anzeigen, dann verschwindet das Overlay
       setTimeout(() => setSuccess(false), 2000);
     }
     setDismissing(false);
@@ -73,7 +73,7 @@ export function AlarmScreen({ onDismiss, onSnooze }: AlarmScreenProps) {
         )}
       </button>
 
-      {/* Sekundaeraktion: Schlummern */}
+      {/* Sekundäraktion: Schlummern */}
       <button
         onClick={() => onSnooze(10)}
         className="mt-6 w-64 flex items-center justify-center gap-2 rounded-2xl border-2 border-white/30 px-8 py-4 text-white/80 font-medium text-lg transition-all active:scale-95 hover:border-white/50"
@@ -85,7 +85,7 @@ export function AlarmScreen({ onDismiss, onSnooze }: AlarmScreenProps) {
 
       {/* Hinweis */}
       <p className="mt-8 text-sm text-white/40 text-center px-8">
-        &quot;Aus&quot; bestaetigt automatisch Ihren Check-in
+        &quot;Aus&quot; bestätigt automatisch Ihren Check-in
       </p>
     </div>
   );

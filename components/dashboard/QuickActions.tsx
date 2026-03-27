@@ -29,14 +29,14 @@ const quickActions = [
     label: "Kalender",
     icon: CalendarDays,
     bgColor: "bg-alert-amber",
-    description: "Muell & Events",
+    description: "Müll & Events",
   },
   {
     href: "/reports/new",
     label: "Melden",
     icon: AlertTriangle,
     bgColor: "bg-violet-500",
-    description: "Maengel & Laerm",
+    description: "Mängel & Lärm",
   },
 ];
 

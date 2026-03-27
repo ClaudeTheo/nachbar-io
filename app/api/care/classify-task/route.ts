@@ -1,5 +1,5 @@
 // app/api/care/classify-task/route.ts
-// Nachbar.io — KI-Klassifizierung von Spracheingaben fuer Hilfe-Aufgaben
+// Nachbar.io — KI-Klassifizierung von Spracheingaben für Hilfe-Aufgaben
 
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAuth, unauthorizedResponse, errorResponse } from '@/lib/care/api-helpers';
@@ -9,7 +9,7 @@ export const dynamic = 'force-dynamic';
 
 // POST /api/care/classify-task — Text per KI klassifizieren
 export async function POST(request: NextRequest) {
-  // Auth: Nur angemeldete Nutzer duerfen die KI nutzen
+  // Auth: Nur angemeldete Nutzer dürfen die KI nutzen
   const auth = await requireAuth();
   if (!auth) return unauthorizedResponse();
 

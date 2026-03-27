@@ -1,5 +1,5 @@
 // components/care/AuditLogViewer.tsx
-// Nachbar.io — Filterbares Aktivitaetsprotokoll
+// Nachbar.io — Filterbares Aktivitätsprotokoll
 'use client';
 
 import { useState, useMemo } from 'react';
@@ -19,7 +19,7 @@ export function AuditLogViewer({ seniorId }: AuditLogViewerProps) {
   const [filterEnd, setFilterEnd] = useState('');
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
-  // Gefilterte Eintraege
+  // Gefilterte Einträge
   const filtered = useMemo(() => {
     let result = entries;
     if (filterType) {
@@ -85,14 +85,14 @@ export function AuditLogViewer({ seniorId }: AuditLogViewerProps) {
       {filtered.length === 0 ? (
         <div className="rounded-xl border bg-card p-8 text-center">
           <ScrollText className="mx-auto h-10 w-10 text-muted-foreground/40 mb-3" />
-          <p className="text-sm font-medium text-[#2D3142]">Keine Eintraege vorhanden</p>
+          <p className="text-sm font-medium text-[#2D3142]">Keine Einträge vorhanden</p>
           <p className="text-xs text-muted-foreground mt-1">
-            {entries.length > 0 ? 'Passen Sie die Filter an.' : 'Es wurden noch keine Aktivitaeten protokolliert.'}
+            {entries.length > 0 ? 'Passen Sie die Filter an.' : 'Es wurden noch keine Aktivitäten protokolliert.'}
           </p>
         </div>
       ) : (
         <div className="space-y-1">
-          <p className="text-xs text-muted-foreground mb-2">{filtered.length} Eintraege</p>
+          <p className="text-xs text-muted-foreground mb-2">{filtered.length} Einträge</p>
           {filtered.map(entry => {
             const isExpanded = expandedId === entry.id;
             const label = AUDIT_EVENT_LABELS[entry.event_type as CareAuditEventType] ?? entry.event_type;

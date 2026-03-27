@@ -38,7 +38,7 @@ const BUTTON_LABELS = [
  * 4. Fertig (mit Konfetti)
  *
  * Die restlichen Funktionen (Marktplatz, Karte, Community, Push, Position)
- * werden kontextuell im Dashboard erklaert, wenn der Nutzer sie erstmals aufruft.
+ * werden kontextuell im Dashboard erklärt, wenn der Nutzer sie erstmals aufruft.
  */
 export function OnboardingFlow() {
   const router = useRouter();
@@ -99,7 +99,7 @@ export function OnboardingFlow() {
     }, 200);
   }, [currentSlide, isAnimating]);
 
-  // Onboarding abschliessen
+  // Onboarding abschließen
   async function handleComplete() {
     await completeOnboarding();
     router.push("/dashboard");
@@ -133,19 +133,19 @@ export function OnboardingFlow() {
           }
         }
       } catch {
-        // Nicht-blockierend — Skills koennen spaeter nachgetragen werden
+        // Nicht-blockierend — Skills können später nachgetragen werden
       }
     }
     goToSlide(currentSlide + 1);
   }
 
-  // Ueberspringen
+  // Überspringen
   async function handleSkip() {
     await completeOnboarding();
     router.push("/dashboard");
   }
 
-  // Touch-Handler fuer Swipe
+  // Touch-Handler für Swipe
   function onTouchStart(e: React.TouchEvent) {
     setTouchEnd(null);
     setTouchStart(e.targetTouches[0].clientX);
@@ -203,7 +203,7 @@ export function OnboardingFlow() {
       onTouchMove={onTouchMove}
       onTouchEnd={onTouchEnd}
     >
-      {/* Top-Bar: Zurueck + Progress + Skip */}
+      {/* Top-Bar: Zurück + Progress + Skip */}
       <div className="flex items-center justify-between px-4 pt-3 pb-2 safe-top">
         {currentSlide > 0 ? (
           <button

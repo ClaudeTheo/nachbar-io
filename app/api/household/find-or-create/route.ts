@@ -6,9 +6,9 @@ import { generateSecureCode } from "@/lib/invite-codes";
 
 /**
  * POST /api/household/find-or-create
- * Sucht einen Haushalt anhand von Strasse und Hausnummer.
+ * Sucht einen Haushalt anhand von Straße und Hausnummer.
  * Wenn nicht vorhanden, wird ein neuer Haushalt angelegt.
- * Gibt die household_id zurueck.
+ * Gibt die household_id zurück.
  *
  * SICHERHEIT: Erfordert authentifizierten User.
  */
@@ -42,7 +42,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Service-Role-Client fuer Schreibzugriff
+    // Service-Role-Client für Schreibzugriff
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
     const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 

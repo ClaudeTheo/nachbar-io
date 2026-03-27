@@ -84,7 +84,7 @@ const initialFormData: WizardFormData = {
 };
 
 const BUNDESLAENDER: Record<string, string> = {
-  BW: "Baden-Wuerttemberg",
+  BW: "Baden-Württemberg",
   BY: "Bayern",
   BE: "Berlin",
   BB: "Brandenburg",
@@ -99,7 +99,7 @@ const BUNDESLAENDER: Record<string, string> = {
   SN: "Sachsen",
   ST: "Sachsen-Anhalt",
   SH: "Schleswig-Holstein",
-  TH: "Thueringen",
+  TH: "Thüringen",
 };
 
 const STEPS = [
@@ -107,7 +107,7 @@ const STEPS = [
   { label: "Standort", icon: MapPin },
   { label: "Konfiguration", icon: Settings },
   { label: "Karte", icon: Map },
-  { label: "Uebersicht", icon: CircleCheckBig },
+  { label: "Übersicht", icon: CircleCheckBig },
 ];
 
 // -------------------------------------------------------------------
@@ -121,7 +121,7 @@ export function QuarterWizard({ open, onOpenChange, onCreated }: QuarterWizardPr
   const [created, setCreated] = useState(false);
   const [createdQuarter, setCreatedQuarter] = useState<Quarter | null>(null);
 
-  // Formular zuruecksetzen beim Schliessen
+  // Formular zurücksetzen beim Schließen
   function handleOpenChange(nextOpen: boolean) {
     if (!nextOpen) {
       setCurrentStep(1);
@@ -151,20 +151,20 @@ export function QuarterWizard({ open, onOpenChange, onCreated }: QuarterWizardPr
         const lat = parseFloat(formData.centerLat);
         const lng = parseFloat(formData.centerLng);
         if (!formData.centerLat.trim() || isNaN(lat))
-          return "Bitte geben Sie einen gueltigen Breitengrad ein.";
+          return "Bitte geben Sie einen gültigen Breitengrad ein.";
         if (!formData.centerLng.trim() || isNaN(lng))
-          return "Bitte geben Sie einen gueltigen Laengengrad ein.";
+          return "Bitte geben Sie einen gültigen Längengrad ein.";
         if (lat < -90 || lat > 90)
           return "Breitengrad muss zwischen -90 und 90 liegen.";
         if (lng < -180 || lng > 180)
-          return "Laengengrad muss zwischen -180 und 180 liegen.";
+          return "Längengrad muss zwischen -180 und 180 liegen.";
         return null;
       }
       case 3:
         if (!formData.invitePrefix.trim())
-          return "Bitte geben Sie ein Invite-Praefix ein.";
+          return "Bitte geben Sie ein Invite-Präfix ein.";
         if (formData.invitePrefix.length > 10)
-          return "Das Invite-Praefix darf maximal 10 Zeichen lang sein.";
+          return "Das Invite-Präfix darf maximal 10 Zeichen lang sein.";
         return null;
       case 4:
         return null; // Karte ist optional
@@ -346,7 +346,7 @@ export function QuarterWizard({ open, onOpenChange, onCreated }: QuarterWizardPr
             disabled={currentStep === 1}
           >
             <ChevronLeft className="mr-1 h-4 w-4" />
-            Zurueck
+            Zurück
           </Button>
 
           {currentStep < 5 ? (
@@ -450,7 +450,7 @@ function StepGrunddaten({
           Name <span className="text-red-500">*</span>
         </label>
         <Input
-          placeholder="z.B. Bad Saeckingen — Altstadt"
+          placeholder="z.B. Bad Säckingen — Altstadt"
           value={formData.name}
           onChange={(e) => update("name", e.target.value)}
         />
@@ -461,7 +461,7 @@ function StepGrunddaten({
           Stadt <span className="text-red-500">*</span>
         </label>
         <Input
-          placeholder="z.B. Bad Saeckingen"
+          placeholder="z.B. Bad Säckingen"
           value={formData.city}
           onChange={(e) => update("city", e.target.value)}
         />
@@ -476,7 +476,7 @@ function StepGrunddaten({
           onValueChange={(v) => update("state", v ?? "")}
         >
           <SelectTrigger>
-            <SelectValue placeholder="Bundesland waehlen..." />
+            <SelectValue placeholder="Bundesland wählen..." />
           </SelectTrigger>
           <SelectContent>
             {Object.entries(BUNDESLAENDER).map(([code, name]) => (
@@ -545,7 +545,7 @@ function StepStandort({
         </div>
         <div>
           <label className="mb-1 block text-sm font-medium text-anthrazit">
-            Laengengrad <span className="text-red-500">*</span>
+            Längengrad <span className="text-red-500">*</span>
           </label>
           <Input
             type="number"
@@ -591,7 +591,7 @@ function StepStandort({
           </span>
         </div>
         <p className="mt-1 text-xs text-muted-foreground">
-          14 = Stadtteil-Uebersicht, 19 = Einzelne Haeuser
+          14 = Stadtteil-Übersicht, 19 = Einzelne Häuser
         </p>
       </div>
     </div>
@@ -613,7 +613,7 @@ function StepKonfiguration({
     <div className="space-y-4">
       <div>
         <label className="mb-1 block text-sm font-medium text-anthrazit">
-          Invite-Praefix <span className="text-red-500">*</span>
+          Invite-Präfix <span className="text-red-500">*</span>
         </label>
         <Input
           placeholder="z.B. REBBERG"
@@ -624,7 +624,7 @@ function StepKonfiguration({
           maxLength={10}
         />
         <p className="mt-1 text-xs text-muted-foreground">
-          Grossbuchstaben, max. 10 Zeichen. Wird fuer Einladungscodes verwendet (z.B. REBBERG-A1B2).
+          Großbuchstaben, max. 10 Zeichen. Wird für Einladungscodes verwendet (z.B. REBBERG-A1B2).
         </p>
       </div>
 
@@ -718,8 +718,8 @@ function StepKarte({
               SVG-Karte (individuell)
             </p>
             <p className="mt-1 text-xs text-muted-foreground">
-              Sie koennen spaeter ein Luftbild hochladen und Haeuser manuell platzieren.
-              Ideal fuer kleine, ueberschaubare Quartiere.
+              Sie können später ein Luftbild hochladen und Häuser manuell platzieren.
+              Ideal für kleine, überschaubare Quartiere.
             </p>
           </div>
         </label>
@@ -746,21 +746,21 @@ function StepKarte({
             </p>
             <p className="mt-1 text-xs text-muted-foreground">
               Nutzt automatisch OpenStreetMap-Kacheln basierend auf den Koordinaten.
-              Ideal fuer groessere Quartiere oder als schneller Start.
+              Ideal für größere Quartiere oder als schneller Start.
             </p>
           </div>
         </label>
       </div>
 
       <p className="text-xs text-muted-foreground">
-        Der Karten-Typ kann spaeter in den Quartiers-Einstellungen geaendert werden.
+        Der Karten-Typ kann später in den Quartiers-Einstellungen geändert werden.
       </p>
     </div>
   );
 }
 
 // -------------------------------------------------------------------
-// Schritt 5: Uebersicht
+// Schritt 5: Übersicht
 // -------------------------------------------------------------------
 
 function StepUebersicht({
@@ -815,7 +815,7 @@ function StepUebersicht({
       {/* Konfiguration */}
       <SummarySection title="Konfiguration">
         <SummaryRow
-          label="Invite-Praefix"
+          label="Invite-Präfix"
           value={formData.invitePrefix || "—"}
         />
         <SummaryRow
@@ -870,7 +870,7 @@ function StepUebersicht({
               Als Entwurf speichern
             </p>
             <p className="text-xs text-muted-foreground">
-              Das Quartier wird erstellt, ist aber noch nicht fuer Bewohner sichtbar.
+              Das Quartier wird erstellt, ist aber noch nicht für Bewohner sichtbar.
             </p>
           </div>
         </label>
@@ -894,7 +894,7 @@ function StepUebersicht({
               Sofort aktivieren
             </p>
             <p className="text-xs text-muted-foreground">
-              Das Quartier ist sofort aktiv und Bewohner koennen beitreten.
+              Das Quartier ist sofort aktiv und Bewohner können beitreten.
             </p>
           </div>
         </label>

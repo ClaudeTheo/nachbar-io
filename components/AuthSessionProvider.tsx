@@ -19,7 +19,7 @@ export function AuthSessionProvider({ children }: { children: React.ReactNode })
     // Session beim Start proaktiv wiederherstellen
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (!session) {
-        // Kein gueltige Session — Redirect nur wenn auf geschuetzter Route
+        // Kein gültige Session — Redirect nur wenn auf geschützter Route
         const path = window.location.pathname;
         const publicPaths = ['/', '/login', '/register', '/auth/callback', '/impressum', '/datenschutz', '/agb'];
         if (!publicPaths.some(p => path === p || path.startsWith('/auth/'))) {
@@ -28,7 +28,7 @@ export function AuthSessionProvider({ children }: { children: React.ReactNode })
       }
     });
 
-    // Auf Auth-Aenderungen lauschen (Token Refresh, Sign Out, etc.)
+    // Auf Auth-Änderungen lauschen (Token Refresh, Sign Out, etc.)
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
       if (event === 'SIGNED_OUT') {
         invalidateUserCache();
@@ -45,8 +45,8 @@ export function AuthSessionProvider({ children }: { children: React.ReactNode })
       if (event === 'SIGNED_IN') {
         invalidateUserCache();
         // Beim initialen Mount feuert SIGNED_IN wenn eine bestehende
-        // Session erkannt wird — router.refresh() wuerde eine Endlosschleife
-        // ausloesen (refresh → neuer Mount → SIGNED_IN → refresh → ...)
+        // Session erkannt wird — router.refresh() würde eine Endlosschleife
+        // auslösen (refresh → neuer Mount → SIGNED_IN → refresh → ...)
         if (!isInitialMount.current) {
           router.refresh();
         }

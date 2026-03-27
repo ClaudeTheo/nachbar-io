@@ -1,5 +1,5 @@
 // app/api/caregiver/kiosk-reminders/[id]/route.ts
-// Nachbar.io — Einzelne Kiosk-Erinnerung: Bearbeiten und Loeschen (nur eigene)
+// Nachbar.io — Einzelne Kiosk-Erinnerung: Bearbeiten und Löschen (nur eigene)
 
 import { NextRequest, NextResponse } from "next/server";
 import {
@@ -16,7 +16,7 @@ const MAX_TITLE_LENGTH = 80;
 /**
  * PATCH /api/caregiver/kiosk-reminders/[id]
  * Erinnerung aktualisieren (title, scheduled_at). Nur eigene Erinnerungen (created_by = user.id).
- * Bei Aenderung von scheduled_at wird expires_at neu berechnet.
+ * Bei Änderung von scheduled_at wird expires_at neu berechnet.
  */
 export async function PATCH(
   request: NextRequest,
@@ -49,7 +49,7 @@ export async function PATCH(
     );
   }
 
-  // Titel-Laenge validieren falls angegeben
+  // Titel-Länge validieren falls angegeben
   if (body.title !== undefined && (body.title.length < 1 || body.title.length > MAX_TITLE_LENGTH)) {
     return errorResponse(
       `Titel muss zwischen 1 und ${MAX_TITLE_LENGTH} Zeichen lang sein`,
@@ -62,7 +62,7 @@ export async function PATCH(
     return errorResponse("scheduled_at ist kein gültiges Datum", 400);
   }
 
-  // Erinnerung laden und Besitz pruefen
+  // Erinnerung laden und Besitz prüfen
   const { data: existing, error: fetchError } = await supabase
     .from("kiosk_reminders")
     .select("id, created_by, type")
@@ -83,7 +83,7 @@ export async function PATCH(
   if (body.scheduled_at !== undefined) {
     updates.scheduled_at = body.scheduled_at;
 
-    // expires_at neu berechnen fuer Termine
+    // expires_at neu berechnen für Termine
     if (existing.type === "appointment" && body.scheduled_at) {
       const expires = new Date(body.scheduled_at);
       expires.setTime(expires.getTime() + 60 * 60 * 1000); // +1 Stunde
@@ -115,7 +115,7 @@ export async function PATCH(
 
 /**
  * DELETE /api/caregiver/kiosk-reminders/[id]
- * Erinnerung loeschen. Nur eigene Erinnerungen (created_by = user.id).
+ * Erinnerung löschen. Nur eigene Erinnerungen (created_by = user.id).
  */
 export async function DELETE(
   _request: NextRequest,
@@ -133,7 +133,7 @@ export async function DELETE(
 
   const { id } = await params;
 
-  // Erinnerung laden und Besitz pruefen
+  // Erinnerung laden und Besitz prüfen
   const { data: existing, error: fetchError } = await supabase
     .from("kiosk_reminders")
     .select("id, created_by")

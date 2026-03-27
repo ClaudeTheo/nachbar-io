@@ -28,7 +28,7 @@ export async function GET(request: NextRequest) {
   if (status !== 'all') query = query.eq('verification_status', status);
   if (role) query = query.eq('role', role);
   if (seniorId) {
-    // Zugriffspruefung: Nur Senior selbst, zugewiesene Helfer oder Admins
+    // Zugriffsprüfung: Nur Senior selbst, zugewiesene Helfer oder Admins
     if (seniorId !== user.id) {
       const careRole = await requireCareAccess(supabase, seniorId);
       if (!careRole) return NextResponse.json({ error: 'Kein Zugriff auf diesen Senior' }, { status: 403 });
@@ -57,16 +57,16 @@ export async function POST(request: NextRequest) {
 
   let body: { role?: CareHelperRole; skills?: string[]; availability?: Record<string, unknown>; senior_ids?: string[] };
   try { body = await request.json(); } catch {
-    return NextResponse.json({ error: 'Ungueltiges Anfrage-Format' }, { status: 400 });
+    return NextResponse.json({ error: 'Ungültiges Anfrage-Format' }, { status: 400 });
   }
 
   const { role, skills = [], availability, senior_ids = [] } = body;
 
   if (!role || !VALID_ROLES.includes(role)) {
-    return NextResponse.json({ error: `Ungueltige Rolle: ${role}. Erlaubt: ${VALID_ROLES.join(', ')}` }, { status: 400 });
+    return NextResponse.json({ error: `Ungültige Rolle: ${role}. Erlaubt: ${VALID_ROLES.join(', ')}` }, { status: 400 });
   }
 
-  // Pruefen ob bereits registriert
+  // Prüfen ob bereits registriert
   const { data: existing } = await supabase
     .from('care_helpers')
     .select('id')

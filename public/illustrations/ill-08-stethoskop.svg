@@ -1,19 +1,92 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 200" fill="none" stroke="#2D3142" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-  <!-- Stethoskop -->
-  <path d="M150 50 L150 100 Q150 140 200 140 Q250 140 250 100 L250 50" stroke-width="2" />
-  <circle cx="150" cy="45" r="8" />
-  <circle cx="250" cy="45" r="8" />
-  <circle cx="200" cy="155" r="12" stroke="#3B82F6" stroke-width="2" />
-  <circle cx="200" cy="155" r="5" fill="none" stroke="#3B82F6" stroke-width="1.5" />
-  <!-- Kalender -->
-  <rect x="290" y="60" width="60" height="55" rx="4" />
-  <line x1="290" y1="78" x2="350" y2="78" />
-  <line x1="305" y1="60" x2="305" y2="52" />
-  <line x1="335" y1="60" x2="335" y2="52" />
-  <!-- Kalender-Tage -->
-  <circle cx="308" cy="92" r="3" fill="#3B82F6" stroke="none" />
-  <circle cx="320" cy="92" r="2" fill="#2D3142" stroke="none" opacity="0.3" />
-  <circle cx="332" cy="92" r="2" fill="#2D3142" stroke="none" opacity="0.3" />
-  <circle cx="308" cy="104" r="2" fill="#2D3142" stroke="none" opacity="0.3" />
-  <circle cx="320" cy="104" r="2" fill="#2D3142" stroke="none" opacity="0.3" />
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 200" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <!-- Stethoskop (detailliert) -->
+  <!-- Ohrbügel -->
+  <path d="M135 42 L135 95 Q135 125 165 135 Q185 142 200 142 Q215 142 235 135 Q265 125 265 95 L265 42" stroke="#2D3142" stroke-width="2.5"/>
+  <!-- Ohrstücke -->
+  <ellipse cx="135" cy="38" rx="7" ry="9" stroke="#2D3142" stroke-width="1.5"/>
+  <ellipse cx="135" cy="38" rx="3.5" ry="5" stroke="#2D3142" stroke-width="0.6" opacity="0.3"/>
+  <ellipse cx="265" cy="38" rx="7" ry="9" stroke="#2D3142" stroke-width="1.5"/>
+  <ellipse cx="265" cy="38" rx="3.5" ry="5" stroke="#2D3142" stroke-width="0.6" opacity="0.3"/>
+  <!-- Y-Stück -->
+  <path d="M135 42 Q140 35 148 32 Q158 28 165 32" stroke="#2D3142" stroke-width="1" opacity="0.4"/>
+  <path d="M265 42 Q260 35 252 32 Q242 28 235 32" stroke="#2D3142" stroke-width="1" opacity="0.4"/>
+  <!-- Brust-Stück (Membran) -->
+  <circle cx="200" cy="158" r="18" stroke="#3B82F6" stroke-width="2.5"/>
+  <circle cx="200" cy="158" r="12" stroke="#3B82F6" stroke-width="1.2" opacity="0.5"/>
+  <circle cx="200" cy="158" r="6" stroke="#3B82F6" stroke-width="0.8" opacity="0.3"/>
+  <!-- Membran-Highlight -->
+  <path d="M190 150 Q195 148 198 152" stroke="#3B82F6" stroke-width="0.5" opacity="0.25"/>
+  <!-- Schlauch-Verbindung -->
+  <path d="M200 142 L200 140" stroke="#2D3142" stroke-width="2"/>
+
+  <!-- Schlauch-Detail (leichte Windung) -->
+  <path d="M165 120 Q168 118 170 120" stroke="#2D3142" stroke-width="0.4" opacity="0.15"/>
+  <path d="M230 118 Q233 116 235 118" stroke="#2D3142" stroke-width="0.4" opacity="0.15"/>
+
+  <!-- Herzschlag-Linie (EKG) -->
+  <path d="M55 95 L95 95 L105 95 L112 80 L118 110 L125 70 L132 105 L138 90 L145 95 L180 95" stroke="#EF4444" stroke-width="1.2" opacity="0.35"/>
+  <!-- Zweite EKG-Linie (schwächer) -->
+  <path d="M220 95 L255 95 L262 82 L268 108 L275 72 L282 102 L288 88 L295 95 L345 95" stroke="#EF4444" stroke-width="1" opacity="0.2"/>
+
+  <!-- Kalender (detailliert) -->
+  <rect x="310" y="30" width="72" height="62" rx="5" stroke="#2D3142" stroke-width="1.8"/>
+  <!-- Kalender-Header -->
+  <rect x="310" y="30" width="72" height="16" rx="5" stroke="#2D3142" stroke-width="1.2" fill="#3B82F6" fill-opacity="0.06"/>
+  <line x1="310" y1="46" x2="382" y2="46" stroke="#2D3142" stroke-width="1"/>
+  <!-- Bindung -->
+  <line x1="328" y1="26" x2="328" y2="34" stroke="#2D3142" stroke-width="1.5"/>
+  <line x1="346" y1="26" x2="346" y2="34" stroke="#2D3142" stroke-width="1.5"/>
+  <line x1="364" y1="26" x2="364" y2="34" stroke="#2D3142" stroke-width="1.5"/>
+  <!-- Monats-Text-Placeholder -->
+  <line x1="330" y1="39" x2="362" y2="39" stroke="#2D3142" stroke-width="0.6" opacity="0.3"/>
+  <!-- Wochen-Header -->
+  <line x1="318" y1="52" x2="322" y2="52" stroke="#2D3142" stroke-width="0.5" opacity="0.3"/>
+  <line x1="330" y1="52" x2="334" y2="52" stroke="#2D3142" stroke-width="0.5" opacity="0.3"/>
+  <line x1="342" y1="52" x2="346" y2="52" stroke="#2D3142" stroke-width="0.5" opacity="0.3"/>
+  <line x1="354" y1="52" x2="358" y2="52" stroke="#2D3142" stroke-width="0.5" opacity="0.3"/>
+  <line x1="366" y1="52" x2="370" y2="52" stroke="#2D3142" stroke-width="0.5" opacity="0.3"/>
+  <!-- Tage (Punkte) -->
+  <circle cx="318" cy="60" r="2" fill="#2D3142" fill-opacity="0.15" stroke="none"/>
+  <circle cx="330" cy="60" r="2" fill="#2D3142" fill-opacity="0.15" stroke="none"/>
+  <circle cx="342" cy="60" r="2" fill="#2D3142" fill-opacity="0.15" stroke="none"/>
+  <circle cx="354" cy="60" r="2" fill="#2D3142" fill-opacity="0.15" stroke="none"/>
+  <circle cx="366" cy="60" r="2" fill="#2D3142" fill-opacity="0.15" stroke="none"/>
+  <!-- Markierter Tag -->
+  <circle cx="342" cy="72" r="5" stroke="#3B82F6" stroke-width="1.2" fill="#3B82F6" fill-opacity="0.1"/>
+  <circle cx="318" cy="72" r="2" fill="#2D3142" fill-opacity="0.15" stroke="none"/>
+  <circle cx="330" cy="72" r="2" fill="#2D3142" fill-opacity="0.15" stroke="none"/>
+  <circle cx="354" cy="72" r="2" fill="#2D3142" fill-opacity="0.15" stroke="none"/>
+  <circle cx="366" cy="72" r="2" fill="#2D3142" fill-opacity="0.15" stroke="none"/>
+  <!-- Dritte Reihe -->
+  <circle cx="318" cy="84" r="2" fill="#2D3142" fill-opacity="0.12" stroke="none"/>
+  <circle cx="330" cy="84" r="2" fill="#2D3142" fill-opacity="0.12" stroke="none"/>
+  <circle cx="342" cy="84" r="2" fill="#2D3142" fill-opacity="0.12" stroke="none"/>
+
+  <!-- Rezept/Dokument -->
+  <rect x="18" y="35" width="55" height="68" rx="3" stroke="#2D3142" stroke-width="1.2" opacity="0.5"/>
+  <line x1="28" y1="48" x2="62" y2="48" stroke="#2D3142" stroke-width="0.6" opacity="0.25"/>
+  <line x1="28" y1="56" x2="58" y2="56" stroke="#2D3142" stroke-width="0.5" opacity="0.2"/>
+  <line x1="28" y1="64" x2="55" y2="64" stroke="#2D3142" stroke-width="0.5" opacity="0.2"/>
+  <line x1="28" y1="72" x2="50" y2="72" stroke="#2D3142" stroke-width="0.5" opacity="0.18"/>
+  <!-- Rx-Symbol -->
+  <text x="30" y="45" font-size="8" font-weight="bold" fill="#3B82F6" fill-opacity="0.3" font-family="serif">Rx</text>
+  <!-- Unterschrift-Placeholder -->
+  <path d="M35 88 Q42 82 50 86 Q55 88 60 84" stroke="#2D3142" stroke-width="0.5" opacity="0.2"/>
+
+  <!-- Pille/Tablette -->
+  <ellipse cx="60" cy="135" rx="12" ry="7" stroke="#8B5CF6" stroke-width="1.2" opacity="0.5" transform="rotate(-20 60 135)"/>
+  <line x1="60" y1="128" x2="60" y2="142" stroke="#8B5CF6" stroke-width="0.6" opacity="0.3" transform="rotate(-20 60 135)"/>
+
+  <!-- Pflaster/Kreuz -->
+  <path d="M340 120 L340 145" stroke="#EF4444" stroke-width="1.5" opacity="0.4"/>
+  <path d="M327 132 L353 132" stroke="#EF4444" stroke-width="1.5" opacity="0.4"/>
+
+  <!-- Kleine Herzen -->
+  <path d="M175 25 Q175 20 180 19 Q182 18 182 22 Q182 18 185 19 Q189 20 189 25 Q189 30 182 34 Q175 30 175 25Z" stroke="#EF4444" stroke-width="0.7" opacity="0.3"/>
+  <path d="M215 22 Q215 18 219 17 Q221 16 221 19 Q221 16 223 17 Q227 18 227 22 Q227 26 221 29 Q215 26 215 22Z" stroke="#EF4444" stroke-width="0.6" opacity="0.25"/>
+
+  <!-- Dekorative Punkte -->
+  <circle cx="90" cy="130" r="0.8" fill="#2D3142" fill-opacity="0.08" stroke="none"/>
+  <circle cx="310" cy="110" r="0.8" fill="#2D3142" fill-opacity="0.08" stroke="none"/>
+  <circle cx="85" cy="150" r="0.6" fill="#2D3142" fill-opacity="0.06" stroke="none"/>
 </svg>

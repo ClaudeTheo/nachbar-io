@@ -16,7 +16,7 @@ interface FeatureGateProps {
 }
 
 /**
- * Zeigt children nur wenn das Feature im aktuellen Abo verfuegbar ist.
+ * Zeigt children nur wenn das Feature im aktuellen Abo verfügbar ist.
  * Sonst: Upgrade-Hinweis mit Link zur Abo-Seite.
  */
 export function FeatureGate({ feature, children }: FeatureGateProps) {
@@ -44,8 +44,8 @@ export function FeatureGate({ feature, children }: FeatureGateProps) {
         {featureLabel}
       </h3>
       <p className="text-xs text-muted-foreground mb-3">
-        Diese Funktion ist in Ihrem aktuellen Plan nicht verfuegbar.
-        {planLabel && ` Verfuegbar ab dem Plan "${planLabel}".`}
+        Diese Funktion ist in Ihrem aktuellen Plan nicht verfügbar.
+        {planLabel && ` Verfügbar ab dem Plan "${planLabel}".`}
       </p>
       <Link
         href="/care/subscription"

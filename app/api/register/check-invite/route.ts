@@ -5,9 +5,9 @@ import { normalizeCode } from "@/lib/invite-codes";
 /**
  * POST /api/register/check-invite
  *
- * Prueft ob ein Einladungscode gueltig ist.
+ * Prüft ob ein Einladungscode gültig ist.
  * Verwendet Service-Role weil unauthentifizierte Nutzer
- * die households-Tabelle nicht lesen duerfen (RLS).
+ * die households-Tabelle nicht lesen dürfen (RLS).
  *
  * Body: { inviteCode: string }
  * Response: { valid: true, householdId, streetName, houseNumber } oder { valid: false }

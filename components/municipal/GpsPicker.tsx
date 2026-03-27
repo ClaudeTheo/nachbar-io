@@ -94,7 +94,7 @@ export function GpsPicker({
         />
       )}
 
-      {/* GPS-Button — Senior-Mode: min 80px Hoehe */}
+      {/* GPS-Button — Senior-Mode: min 80px Höhe */}
       <button
         onClick={handleAutoDetect}
         disabled={locating}

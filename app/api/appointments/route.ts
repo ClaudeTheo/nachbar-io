@@ -1,6 +1,6 @@
 // app/api/appointments/route.ts
 // Nachbar.io — Termin-Buchungen auflisten (GET) und anlegen (POST)
-// Pro Medical: Arzt-Patienten-Termine mit Slot-Ueberlappungspruefung
+// Pro Medical: Arzt-Patienten-Termine mit Slot-Überlappungsprüfung
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
@@ -11,7 +11,7 @@ import {
 } from '@/lib/appointments';
 
 // GET /api/appointments — Termine auflisten
-// Aerzte sehen ihre eigenen Termine, Patienten sehen ihre eigenen Termine
+// Ärzte sehen ihre eigenen Termine, Patienten sehen ihre eigenen Termine
 export async function GET(request: NextRequest) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
@@ -44,7 +44,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: 'Termine konnten nicht geladen werden' }, { status: 500 });
   }
 
-  // notes_encrypted entschluesseln fuer die Antwort
+  // notes_encrypted entschlüsseln für die Antwort
   const decrypted = (data ?? []).map(appointment => ({
     ...appointment,
     notes_encrypted: decryptField(appointment.notes_encrypted),
@@ -65,7 +65,7 @@ export async function POST(request: NextRequest) {
   try {
     body = await request.json();
   } catch {
-    return NextResponse.json({ error: 'Ungueltiges Anfrage-Format' }, { status: 400 });
+    return NextResponse.json({ error: 'Ungültiges Anfrage-Format' }, { status: 400 });
   }
 
   // Validierung
@@ -83,13 +83,13 @@ export async function POST(request: NextRequest) {
   const patientEmail = body.patient_email as string | undefined;
   const patientPhone = body.patient_phone as string | undefined;
 
-  // Slot-Verfuegbarkeit pruefen (keine Ueberlappung)
+  // Slot-Verfügbarkeit prüfen (keine Überlappung)
   const slotCheck = await checkSlotAvailability(supabase, doctorId, scheduledAt, durationMinutes);
   if (!slotCheck.available) {
     return NextResponse.json({ error: slotCheck.error }, { status: 409 });
   }
 
-  // Termin anlegen — notes verschluesseln (Art. 9 DSGVO)
+  // Termin anlegen — notes verschlüsseln (Art. 9 DSGVO)
   const insertData = {
     doctor_id: doctorId,
     patient_id: user.id,
@@ -116,7 +116,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Termin konnte nicht angelegt werden' }, { status: 500 });
   }
 
-  // Entschluesselt zurueckgeben
+  // Entschlüsselt zurückgeben
   return NextResponse.json({
     ...appointment,
     notes_encrypted: decryptField(appointment.notes_encrypted),

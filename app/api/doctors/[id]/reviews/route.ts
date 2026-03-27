@@ -1,12 +1,12 @@
 // app/api/doctors/[id]/reviews/route.ts
 // Nachbar.io — Arzt-Bewertungen lesen (GET) und erstellen (POST)
-// Pro Medical: GET ist oeffentlich, POST erfordert Authentifizierung (max 1 pro Arzt)
+// Pro Medical: GET ist öffentlich, POST erfordert Authentifizierung (max 1 pro Arzt)
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { validateReview } from '@/lib/doctors';
 
-// GET /api/doctors/[id]/reviews — Oeffentliche Bewertungen eines Arztes
+// GET /api/doctors/[id]/reviews — Öffentliche Bewertungen eines Arztes
 export async function GET(
   _request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -14,7 +14,7 @@ export async function GET(
   const { id: doctorId } = await params;
   const supabase = await createClient();
 
-  // Pruefen ob der Arzt existiert
+  // Prüfen ob der Arzt existiert
   const { data: doctor, error: doctorError } = await supabase
     .from('doctor_profiles')
     .select('id')
@@ -54,7 +54,7 @@ export async function POST(
     return NextResponse.json({ error: 'Nicht authentifiziert' }, { status: 401 });
   }
 
-  // Pruefen ob der Arzt existiert
+  // Prüfen ob der Arzt existiert
   const { data: doctor, error: doctorError } = await supabase
     .from('doctor_profiles')
     .select('id, user_id')
@@ -67,14 +67,14 @@ export async function POST(
 
   // Arzt darf sich nicht selbst bewerten
   if (doctor.user_id === user.id) {
-    return NextResponse.json({ error: 'Sie koennen sich nicht selbst bewerten' }, { status: 400 });
+    return NextResponse.json({ error: 'Sie können sich nicht selbst bewerten' }, { status: 400 });
   }
 
   let body: Record<string, unknown>;
   try {
     body = await request.json();
   } catch {
-    return NextResponse.json({ error: 'Ungueltiges Anfrage-Format' }, { status: 400 });
+    return NextResponse.json({ error: 'Ungültiges Anfrage-Format' }, { status: 400 });
   }
 
   // Validierung
@@ -83,7 +83,7 @@ export async function POST(
     return NextResponse.json({ error: validation.error }, { status: 400 });
   }
 
-  // Bewertung einfuegen (UNIQUE constraint doctor_id + patient_id)
+  // Bewertung einfügen (UNIQUE constraint doctor_id + patient_id)
   const insertData = {
     doctor_id: doctorId,
     patient_id: user.id,

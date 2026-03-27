@@ -59,13 +59,13 @@ export async function GET(
     return NextResponse.json({ error: 'SOS-Alert konnte nicht geladen werden' }, { status: 500 });
   }
 
-  // SICHERHEIT: Zugriffspruefung — nur Senior, zugeordnete Helfer oder Admin
+  // SICHERHEIT: Zugriffsprüfung — nur Senior, zugeordnete Helfer oder Admin
   if (alert.senior_id !== user.id) {
     const role = await requireCareAccess(supabase, alert.senior_id);
     if (!role) return NextResponse.json({ error: 'Kein Zugriff auf diesen SOS-Alert' }, { status: 403 });
   }
 
-  // SOS-Notes und Response-Notes entschluesseln (Art. 9 DSGVO)
+  // SOS-Notes und Response-Notes entschlüsseln (Art. 9 DSGVO)
   const decryptedAlert = decryptFields(alert, CARE_SOS_ALERTS_ENCRYPTED_FIELDS);
   if (Array.isArray(decryptedAlert.responses)) {
     decryptedAlert.responses = (decryptedAlert.responses as Record<string, unknown>[]).map(
@@ -120,7 +120,7 @@ export async function PATCH(
 
   const newStatus = status as 'resolved' | 'cancelled';
 
-  // SICHERHEIT: Zugriffspruefung — nur Senior, zugeordnete Helfer oder Admin duerfen Status aendern
+  // SICHERHEIT: Zugriffsprüfung — nur Senior, zugeordnete Helfer oder Admin dürfen Status ändern
   const { data: alertCheck } = await supabase.from('care_sos_alerts').select('senior_id').eq('id', id).single();
   if (!alertCheck) return NextResponse.json({ error: 'SOS-Alert nicht gefunden' }, { status: 404 });
   if (alertCheck.senior_id !== user.id) {
@@ -171,6 +171,6 @@ export async function PATCH(
     console.error('[care/sos/id] Audit-Log konnte nicht geschrieben werden:', auditError);
   }
 
-  // Entschluesselt zurueckgeben
+  // Entschlüsselt zurückgeben
   return NextResponse.json(decryptFields(updatedAlert, CARE_SOS_ALERTS_ENCRYPTED_FIELDS));
 }

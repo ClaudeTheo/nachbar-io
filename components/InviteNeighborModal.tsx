@@ -103,7 +103,7 @@ export function InviteNeighborModal({
           toast.success("Einladung erstellt!");
         }
 
-        // WhatsApp direkt oeffnen
+        // WhatsApp direkt öffnen
         if (method === "whatsapp" && data.whatsappUrl) {
           setTimeout(() => {
             window.location.href = data.whatsappUrl;
@@ -127,7 +127,7 @@ export function InviteNeighborModal({
     }
   }
 
-  // Pruefen ob Senden moeglich ist
+  // Prüfen ob Senden möglich ist
   const canSend =
     street &&
     houseNumber.trim() &&

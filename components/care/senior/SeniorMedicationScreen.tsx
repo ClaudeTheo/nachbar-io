@@ -106,7 +106,7 @@ export function SeniorMedicationScreen({
                   Genommen
                 </button>
 
-                {/* "Spaeter" Button */}
+                {/* "Später" Button */}
                 <button
                   onClick={() =>
                     onAction(

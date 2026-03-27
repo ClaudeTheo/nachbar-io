@@ -1,5 +1,5 @@
 // components/care/DailyCheckinButton.tsx
-// Nachbar.io — Prominenter "Mir geht's gut" Check-in Button fuer das Dashboard
+// Nachbar.io — Prominenter "Mir geht's gut" Check-in Button für das Dashboard
 // Seniorenmodus: 80px Touch-Targets, 4.5:1 Kontrast, touch-manipulation
 
 "use client";
@@ -15,7 +15,7 @@ interface CheckinStatusResponse {
   allCompleted: boolean;
 }
 
-// Stimmungs-Optionen fuer die Auswahl
+// Stimmungs-Optionen für die Auswahl
 type MoodOption = {
   mood: "good" | "neutral" | "bad";
   status: "ok" | "not_well" | "need_help";
@@ -106,7 +106,7 @@ export function DailyCheckinButton() {
     return null;
   }
 
-  // Fehler-Meldung (wird ueber dem aktuellen State angezeigt)
+  // Fehler-Meldung (wird über dem aktuellen State angezeigt)
   const errorBanner = error ? (
     <p className="mb-2 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700" role="alert">
       {error}
@@ -139,7 +139,7 @@ export function DailyCheckinButton() {
     return (
       <div data-testid="checkin-mood" className="space-y-2">
         {errorBanner}
-        <p className="text-sm font-medium text-[#2D3142]">Wie fuehlen Sie sich?</p>
+        <p className="text-sm font-medium text-[#2D3142]">Wie fühlen Sie sich?</p>
         <div className="grid grid-cols-3 gap-2">
           {MOOD_OPTIONS.map((option) => (
             <button

@@ -34,7 +34,7 @@ export function TrustScoreBadge({ score, showRecency, showUsageCount, size = "md
         {display.label}
       </div>
 
-      {/* Zusatz-Signale (nur bei genuegend Bewertungen) */}
+      {/* Zusatz-Signale (nur bei genügend Bewertungen) */}
       {score.has_minimum && (
         <div className="flex flex-wrap gap-2">
           {showRecency && score.last_used_at && (

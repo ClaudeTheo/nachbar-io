@@ -1,5 +1,5 @@
 // components/care/CareErrorBoundary.test.tsx
-// Nachbar.io — Tests fuer Care Error Boundary (Strukturiertes Logging, Benutzerfreundlichkeit)
+// Nachbar.io — Tests für Care Error Boundary (Strukturiertes Logging, Benutzerfreundlichkeit)
 
 import { describe, it, expect, vi, afterEach } from 'vitest';
 import { render, screen, fireEvent, cleanup } from '@testing-library/react';
@@ -36,7 +36,7 @@ describe('CareErrorBoundary', () => {
   });
 
   it('zeigt Fehler-UI wenn Kind einen Fehler wirft', () => {
-    // console.error unterdruecken (React Error Boundary loggt)
+    // console.error unterdrücken (React Error Boundary loggt)
     const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
 
     render(

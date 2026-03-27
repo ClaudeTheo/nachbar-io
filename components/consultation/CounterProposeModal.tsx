@@ -1,5 +1,5 @@
 // components/consultation/CounterProposeModal.tsx
-// Kompakter Dialog fuer Gegenvorschlag: Datepicker + Zeitauswahl
+// Kompakter Dialog für Gegenvorschlag: Datepicker + Zeitauswahl
 'use client';
 
 import { useState } from 'react';

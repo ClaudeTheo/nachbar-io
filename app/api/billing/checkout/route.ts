@@ -1,6 +1,6 @@
 // POST /api/billing/checkout
-// Erstellt eine Stripe Checkout Session — oder aktiviert kostenlos fuer Early Adopter
-// Unterstuetzt alle Plan-Typen: plus, pro_community, pro_medical
+// Erstellt eine Stripe Checkout Session — oder aktiviert kostenlos für Early Adopter
+// Unterstützt alle Plan-Typen: plus, pro_community, pro_medical
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { getAdminSupabase } from '@/lib/supabase/admin';
@@ -8,10 +8,10 @@ import { stripe, getStripePriceId } from '@/lib/stripe';
 import type { PaidPlan, BillingInterval } from '@/lib/stripe';
 import { writeAuditLog } from '@/lib/care/audit';
 
-// Gueltige bezahlte Plan-Typen
+// Gültige bezahlte Plan-Typen
 const VALID_PAID_PLANS: PaidPlan[] = ['plus', 'pro_community', 'pro_medical'];
 
-// Erste 200 Nutzer bekommen alle Plaene kostenlos
+// Erste 200 Nutzer bekommen alle Pläne kostenlos
 const EARLY_ADOPTER_LIMIT = 200;
 
 export async function POST(request: NextRequest) {
@@ -25,17 +25,17 @@ export async function POST(request: NextRequest) {
   try {
     body = await request.json();
   } catch {
-    return NextResponse.json({ error: 'Ungueltiges Anfrage-Format' }, { status: 400 });
+    return NextResponse.json({ error: 'Ungültiges Anfrage-Format' }, { status: 400 });
   }
 
-  // Abwaertskompatibilitaet: planType oder plan akzeptieren, interval oder billing_cycle
+  // Abwärtskompatibilität: planType oder plan akzeptieren, interval oder billing_cycle
   const plan = (body.planType || body.plan) as PaidPlan;
   const interval = (body.interval || body.billing_cycle || 'monthly') as BillingInterval;
   const quarterId = body.quarterId as string | undefined;
 
-  // Validierung: Nur gueltige bezahlte Plaene erlaubt
+  // Validierung: Nur gültige bezahlte Pläne erlaubt
   if (!VALID_PAID_PLANS.includes(plan)) {
-    return NextResponse.json({ error: 'Ungueltiger Plan' }, { status: 400 });
+    return NextResponse.json({ error: 'Ungültiger Plan' }, { status: 400 });
   }
 
   // pro_community erfordert eine quarterId
@@ -46,7 +46,7 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  // Early-Adopter-Pruefung: Anzahl bezahlter Abos zaehlen
+  // Early-Adopter-Prüfung: Anzahl bezahlter Abos zählen
   const adminDb = getAdminSupabase();
   const { count } = await adminDb
     .from('care_subscriptions')
@@ -56,7 +56,7 @@ export async function POST(request: NextRequest) {
 
   const totalPaidSubs = count ?? 0;
 
-  // Pruefe ob dieser User bereits ein Early-Adopter-Abo hat
+  // Prüfe ob dieser User bereits ein Early-Adopter-Abo hat
   const { data: existingSub } = await adminDb
     .from('care_subscriptions')
     .select('id, plan, payment_provider')
@@ -69,7 +69,7 @@ export async function POST(request: NextRequest) {
     // Early Adopter: Plan direkt kostenlos aktivieren
     const now = new Date();
     const periodEnd = new Date(now);
-    periodEnd.setFullYear(periodEnd.getFullYear() + 1); // 1 Jahr gueltig
+    periodEnd.setFullYear(periodEnd.getFullYear() + 1); // 1 Jahr gültig
 
     if (existingSub) {
       const { data, error } = await adminDb
@@ -88,7 +88,7 @@ export async function POST(request: NextRequest) {
 
       if (error) return NextResponse.json({ error: 'Vorgang fehlgeschlagen' }, { status: 500 });
 
-      // Plan-spezifische Provisioning (auch fuer Early Adopter)
+      // Plan-spezifische Provisioning (auch für Early Adopter)
       await provisionPlanResources(adminDb, user.id, plan, quarterId);
 
       writeAuditLog(supabase, {
@@ -117,7 +117,7 @@ export async function POST(request: NextRequest) {
 
       if (error) return NextResponse.json({ error: 'Vorgang fehlgeschlagen' }, { status: 500 });
 
-      // Plan-spezifische Provisioning (auch fuer Early Adopter)
+      // Plan-spezifische Provisioning (auch für Early Adopter)
       await provisionPlanResources(adminDb, user.id, plan, quarterId);
 
       writeAuditLog(supabase, {
@@ -136,7 +136,7 @@ export async function POST(request: NextRequest) {
   // Ab 200 Nutzer: Stripe Checkout
   if (!stripe) {
     return NextResponse.json(
-      { error: 'Zahlungen sind derzeit nicht verfuegbar.' },
+      { error: 'Zahlungen sind derzeit nicht verfügbar.' },
       { status: 503 }
     );
   }
@@ -153,19 +153,19 @@ export async function POST(request: NextRequest) {
   try {
     const origin = request.nextUrl.origin;
 
-    // Plan-spezifische Metadata fuer Webhook-Verarbeitung
+    // Plan-spezifische Metadata für Webhook-Verarbeitung
     const metadata: Record<string, string> = {
       user_id: user.id,
       plan,
       billing_cycle: interval,
     };
 
-    // Pro Community: Quartier-ID mitgeben fuer org_member Erstellung
+    // Pro Community: Quartier-ID mitgeben für org_member Erstellung
     if (plan === 'pro_community' && quarterId) {
       metadata.quarter_id = quarterId;
     }
 
-    // Pro Medical: Arzt-Rolle markieren fuer doctor_profile Erstellung
+    // Pro Medical: Arzt-Rolle markieren für doctor_profile Erstellung
     if (plan === 'pro_medical') {
       metadata.role = 'doctor';
     }
@@ -251,5 +251,5 @@ async function provisionPlanResources(
   }
 }
 
-// Export fuer Tests und Webhook-Nutzung
+// Export für Tests und Webhook-Nutzung
 export { provisionPlanResources };

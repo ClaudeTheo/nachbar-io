@@ -52,7 +52,7 @@ export async function PATCH(
     return NextResponse.json({ error: "Termin nicht gefunden" }, { status: 404 });
   }
 
-  // Pruefen ob Nutzer Patient dieses Termins ist
+  // Prüfen ob Nutzer Patient dieses Termins ist
   if (slot.booked_by !== user.id) {
     log.done(403);
     return NextResponse.json({ error: "Nicht berechtigt" }, { status: 403 });
@@ -91,7 +91,7 @@ export async function PATCH(
   if (action === "confirm") {
     // join_url wird NICHT mehr hier gesetzt — der Arzt startet die Sprechstunde
     // im nachbar-arzt Portal, welches die join_url via sprechstunde.online API setzt.
-    // provider_type wird NICHT geaendert — gehoert zur Identitaet des Slots
+    // provider_type wird NICHT geändert — gehört zur Identität des Slots
   }
 
   if (action === "cancel") {

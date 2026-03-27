@@ -1,5 +1,5 @@
 // components/care/CheckinDialog.test.tsx
-// Nachbar.io — Tests fuer Check-in-Dialog (Stimmungserfassung + API)
+// Nachbar.io — Tests für Check-in-Dialog (Stimmungserfassung + API)
 
 import { describe, it, expect, vi, afterEach, beforeEach } from 'vitest';
 import { render, screen, fireEvent, cleanup, waitFor } from '@testing-library/react';
@@ -29,7 +29,7 @@ describe('CheckinDialog', () => {
     globalThis.fetch = mockFetch as typeof fetch;
   });
 
-  it('zeigt "Wie geht es Ihnen?" Ueberschrift', () => {
+  it('zeigt "Wie geht es Ihnen?" Überschrift', () => {
     render(<CheckinDialog />);
     expect(screen.getByText('Wie geht es Ihnen?')).toBeInTheDocument();
   });
@@ -43,7 +43,7 @@ describe('CheckinDialog', () => {
 
   it('zeigt optionales Notiz-Feld', () => {
     render(<CheckinDialog />);
-    expect(screen.getByLabelText(/hinzufuegen/)).toBeInTheDocument();
+    expect(screen.getByLabelText(/hinzufügen/)).toBeInTheDocument();
     expect(screen.getByPlaceholderText(/Kopfschmerzen/)).toBeInTheDocument();
   });
 
@@ -84,12 +84,12 @@ describe('CheckinDialog', () => {
     render(<CheckinDialog />);
 
     const textarea = screen.getByPlaceholderText(/Kopfschmerzen/);
-    fireEvent.change(textarea, { target: { value: 'Rueckenschmerzen seit gestern' } });
+    fireEvent.change(textarea, { target: { value: 'Rückenschmerzen seit gestern' } });
     fireEvent.click(screen.getByText('Nicht so gut'));
 
     await waitFor(() => {
       const body = JSON.parse(mockFetch.mock.calls[0][1].body);
-      expect(body.note).toBe('Rueckenschmerzen seit gestern');
+      expect(body.note).toBe('Rückenschmerzen seit gestern');
     });
   });
 
@@ -135,14 +135,14 @@ describe('CheckinDialog', () => {
   it('zeigt Fehler bei fehlgeschlagenem API-Aufruf', async () => {
     mockFetch.mockResolvedValueOnce({
       ok: false,
-      json: () => Promise.resolve({ error: 'Status ungueltig' }),
+      json: () => Promise.resolve({ error: 'Status ungültig' }),
     });
 
     render(<CheckinDialog />);
     fireEvent.click(screen.getByText('Mir geht es gut'));
 
     await waitFor(() => {
-      expect(screen.getByText('Status ungueltig')).toBeInTheDocument();
+      expect(screen.getByText('Status ungültig')).toBeInTheDocument();
     });
   });
 

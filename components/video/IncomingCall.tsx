@@ -18,7 +18,7 @@ interface IncomingCallProps {
   onDecline: () => void;
 }
 
-/** Auto-Timeout fuer verpasste Anrufe (30 Sekunden) */
+/** Auto-Timeout für verpasste Anrufe (30 Sekunden) */
 const AUTO_TIMEOUT_MS = 30_000;
 
 /**
@@ -56,7 +56,7 @@ function createRingtone(): { start: () => void; stop: () => void } {
         playTone();
         intervalId = setInterval(playTone, 2000);
       } catch {
-        // Web Audio nicht verfuegbar — stilles Klingeln
+        // Web Audio nicht verfügbar — stilles Klingeln
       }
     },
     stop: () => {
@@ -71,11 +71,11 @@ function createRingtone(): { start: () => void; stop: () => void } {
 }
 
 /**
- * IncomingCall — Overlay fuer eingehende Anrufe.
+ * IncomingCall — Overlay für eingehende Anrufe.
  *
  * - Halbtransparenter schwarzer Hintergrund
  * - Anrufername + Avatar mit Puls-Animation
- * - Annehmen (gruen) + Ablehnen (rot), beide 80px
+ * - Annehmen (grün) + Ablehnen (rot), beide 80px
  * - 30s Auto-Timeout → verpasster Anruf
  * - Klingelton via Web Audio API
  */

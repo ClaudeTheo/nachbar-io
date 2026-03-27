@@ -10,15 +10,15 @@ interface OtpCodeEntryProps {
   email: string;
   /** Wohin nach erfolgreichem Login weiterleiten */
   redirectTo?: string;
-  /** Callback um zum vorherigen Schritt zurueckzukehren */
+  /** Callback um zum vorherigen Schritt zurückzukehren */
   onBack: () => void;
   /** Callback um OTP erneut zu senden */
   onResend: () => void;
 }
 
 /**
- * OTP-Code-Eingabe fuer Senioren — 6 einzelne Felder, extra gross.
- * Ersetzt die Magic-Link-Bestaetigungsseite.
+ * OTP-Code-Eingabe für Senioren — 6 einzelne Felder, extra groß.
+ * Ersetzt die Magic-Link-Bestätigungsseite.
  *
  * Flow: User gibt den 6-stelligen Code aus der E-Mail ein → verifyOtp → eingeloggt.
  */
@@ -50,12 +50,12 @@ export function OtpCodeEntry({ email, redirectTo = "/welcome", onBack, onResend 
     setDigits(newDigits);
     setError(null);
 
-    // Auto-Fokus auf naechstes Feld
+    // Auto-Fokus auf nächstes Feld
     if (digit && index < 5) {
       inputRefs.current[index + 1]?.focus();
     }
 
-    // Auto-Submit wenn alle 6 Felder ausgefuellt
+    // Auto-Submit wenn alle 6 Felder ausgefüllt
     if (digit && index === 5 && newDigits.every(d => d !== "")) {
       verifyCode(newDigits.join(""));
     }
@@ -67,7 +67,7 @@ export function OtpCodeEntry({ email, redirectTo = "/welcome", onBack, onResend 
     }
   }
 
-  // Einfuegen aus Zwischenablage (z.B. Code kopiert)
+  // Einfügen aus Zwischenablage (z.B. Code kopiert)
   function handlePaste(e: React.ClipboardEvent) {
     e.preventDefault();
     const pasted = e.clipboardData.getData("text").replace(/\D/g, "").slice(0, 6);
@@ -79,11 +79,11 @@ export function OtpCodeEntry({ email, redirectTo = "/welcome", onBack, onResend 
     }
     setDigits(newDigits);
 
-    // Fokus auf letztes ausgefuelltes Feld oder naechstes leeres
+    // Fokus auf letztes ausgefülltes Feld oder nächstes leeres
     const nextEmpty = newDigits.findIndex(d => d === "");
     inputRefs.current[nextEmpty >= 0 ? nextEmpty : 5]?.focus();
 
-    // Auto-Submit wenn alle 6 Felder ausgefuellt
+    // Auto-Submit wenn alle 6 Felder ausgefüllt
     if (newDigits.every(d => d !== "")) {
       verifyCode(newDigits.join(""));
     }
@@ -103,8 +103,8 @@ export function OtpCodeEntry({ email, redirectTo = "/welcome", onBack, onResend 
 
       if (verifyError) {
         // B-3 Sicherheitsfix: Einheitliche Fehlermeldung verhindert E-Mail-Enumeration
-        // und Rueckschluesse auf Code-Gueltigkeit (expired vs. invalid).
-        // Vorher: unterschiedliche Meldungen fuer "abgelaufen" vs. "falsch" vs. "generisch".
+        // und Rückschlüsse auf Code-Gültigkeit (expired vs. invalid).
+        // Vorher: unterschiedliche Meldungen für "abgelaufen" vs. "falsch" vs. "generisch".
         setError("Code ungültig oder abgelaufen. Bitte fordern Sie einen neuen an.");
         setLoading(false);
         // Felder leeren bei Fehler
@@ -136,7 +136,7 @@ export function OtpCodeEntry({ email, redirectTo = "/welcome", onBack, onResend 
         <CircleCheckBig className="h-8 w-8 text-quartier-green" />
       </div>
 
-      {/* Erklaerung */}
+      {/* Erklärung */}
       <div>
         <p className="text-base text-muted-foreground">
           Wir haben einen Code an
@@ -208,7 +208,7 @@ export function OtpCodeEntry({ email, redirectTo = "/welcome", onBack, onResend 
         {resendCooldown > 0 ? `Erneut senden (${resendCooldown}s)` : "Code erneut senden"}
       </Button>
 
-      {/* Zurueck */}
+      {/* Zurück */}
       <button
         onClick={onBack}
         className="text-sm text-quartier-green hover:underline"

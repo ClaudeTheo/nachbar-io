@@ -1,5 +1,5 @@
 // app/api/organizations/[id]/audit/route.ts
-// Nachbar.io — Org-Audit-Log: Abrufen (GET), nur fuer org_admin
+// Nachbar.io — Org-Audit-Log: Abrufen (GET), nur für org_admin
 
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAuth, requireSubscription, requireOrgAccess, requireAdmin, unauthorizedResponse } from '@/lib/care/api-helpers';
@@ -9,7 +9,7 @@ export const dynamic = 'force-dynamic';
 /**
  * GET /api/organizations/[id]/audit
  * Audit-Log der Organisation auflisten.
- * Nur fuer org_admin oder Plattform-Admin. Erfordert Pro-Abo.
+ * Nur für org_admin oder Plattform-Admin. Erfordert Pro-Abo.
  * Query-Parameter: limit (default 50), offset (default 0)
  */
 export async function GET(
@@ -39,7 +39,7 @@ export async function GET(
   const limit = Math.min(parseInt(searchParams.get('limit') ?? '50', 10) || 50, 200);
   const offset = parseInt(searchParams.get('offset') ?? '0', 10) || 0;
 
-  // Audit-Eintraege laden (RLS stellt zusaetzlich sicher, dass nur berechtigte Daten kommen)
+  // Audit-Einträge laden (RLS stellt zusätzlich sicher, dass nur berechtigte Daten kommen)
   const { data, error, count } = await auth.supabase
     .from('org_audit_log')
     .select('*', { count: 'exact' })

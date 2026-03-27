@@ -54,7 +54,7 @@ export default function SubscriptionManager() {
           Noch kein Helfer-Profil vorhanden
         </h3>
         <p className="text-sm text-gray-500">
-          Um das Abrechnungs-Modul nutzen zu koennen, registrieren Sie sich
+          Um das Abrechnungs-Modul nutzen zu können, registrieren Sie sich
           zuerst als Nachbarschaftshelfer.
         </p>
         <a
@@ -91,7 +91,7 @@ export default function SubscriptionManager() {
         {/* Trial Info */}
         {sub.subscription_status === "trial" && !sub.trial_receipt_used && (
           <p className="text-sm text-blue-600 bg-blue-50 rounded-xl p-4">
-            Sie koennen eine Quittung kostenlos erstellen. Danach wird das
+            Sie können eine Quittung kostenlos erstellen. Danach wird das
             Abrechnungs-Modul kostenpflichtig (19,90 EUR/Monat).
           </p>
         )}
@@ -146,7 +146,7 @@ export default function SubscriptionManager() {
         )}
       </div>
 
-      {/* Leistungsuebersicht */}
+      {/* Leistungsübersicht */}
       <div className="rounded-2xl border border-gray-200 p-6">
         <h3 className="font-semibold text-gray-900 mb-3">Was ist enthalten?</h3>
         <ul className="space-y-2 text-sm text-gray-600">
@@ -158,7 +158,7 @@ export default function SubscriptionManager() {
             "Budget-Tracker (131 EUR/Monat)",
             "E-Mail-Versand an Pflegekasse",
             "Verbindung mit Senioren",
-            "Jederzeit kuendbar oder pausierbar",
+            "Jederzeit kündbar oder pausierbar",
           ].map((item) => (
             <li key={item} className="flex items-start gap-2">
               <span className="text-[#4CAF87] mt-0.5">&#10003;</span>

@@ -9,8 +9,8 @@ interface ExternalLinkProps {
   className?: string;
 }
 
-// Drop-in-Ersatz fuer <a href="..." target="_blank">
-// Oeffnet externe Links im In-App-Browser statt im neuen Tab
+// Drop-in-Ersatz für <a href="..." target="_blank">
+// Öffnet externe Links im In-App-Browser statt im neuen Tab
 export function ExternalLink({ href, title, children, className }: ExternalLinkProps) {
   const { openExternal } = useExternalLink();
 

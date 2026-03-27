@@ -38,7 +38,7 @@ export function AvatarPicker({
 
   const resolved = resolveAvatarUrl(currentAvatarUrl);
 
-  // Preset waehlen
+  // Preset wählen
   function handlePresetSelect(presetId: string) {
     onAvatarChange(`preset:${presetId}`);
     setOpen(false);
@@ -66,7 +66,7 @@ export function AvatarPicker({
       toast.error(err instanceof Error ? err.message : "Upload fehlgeschlagen");
     } finally {
       setUploading(false);
-      // File-Input zuruecksetzen
+      // File-Input zurücksetzen
       if (fileInputRef.current) fileInputRef.current.value = "";
     }
   }

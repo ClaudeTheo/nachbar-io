@@ -1,5 +1,5 @@
 // Nachbar.io — Einheitlicher Seitencontainer
-// Standardisiert Aussenabstaende und Animationen fuer alle App-Seiten
+// Standardisiert Außenabstaende und Animationen für alle App-Seiten
 import * as React from "react";
 import { cn } from "@/lib/utils";
 
@@ -9,12 +9,12 @@ interface PageContainerProps {
   spacing?: 3 | 4 | 6;
   /** Fade-In-Animation (Standard: true) */
   animate?: boolean;
-  /** Zusaetzliche CSS-Klassen */
+  /** Zusätzliche CSS-Klassen */
   className?: string;
 }
 
 /**
- * Konsistenter aeusserer Container fuer App-Seiten.
+ * Konsistenter äußerer Container für App-Seiten.
  * Setzt Standard-Spacing und optionale Fade-In-Animation.
  *
  * Beispiel:

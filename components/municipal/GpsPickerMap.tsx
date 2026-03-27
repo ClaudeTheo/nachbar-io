@@ -8,8 +8,8 @@ import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { useEffect } from "react";
 
-// Leaflet Marker-Icon Fix fuer Next.js (webpack bricht Standard-Icons)
-// Icons lokal aus /public/leaflet/ statt CDN — keine externe Abhaengigkeit
+// Leaflet Marker-Icon Fix für Next.js (webpack bricht Standard-Icons)
+// Icons lokal aus /public/leaflet/ statt CDN — keine externe Abhängigkeit
 delete (L.Icon.Default.prototype as unknown as Record<string, unknown>)._getIconUrl;
 L.Icon.Default.mergeOptions({
   iconRetinaUrl: "/leaflet/marker-icon-2x.png",
@@ -25,7 +25,7 @@ interface GpsPickerMapProps {
   onLocationChange: (lat: number, lng: number) => void;
 }
 
-// Bad Saeckingen Zentrum (Pilot-Quartier)
+// Bad Säckingen Zentrum (Pilot-Quartier)
 const DEFAULT_CENTER: [number, number] = [47.5535, 7.964];
 const DEFAULT_ZOOM = 16;
 
@@ -44,13 +44,13 @@ function MapClickHandler({
   return null;
 }
 
-// --- Karten-Groesse korrigieren (noetig bei aufklappbaren Containern) ---
+// --- Karten-Größe korrigieren (nötig bei aufklappbaren Containern) ---
 
 function InvalidateSizeOnMount() {
   const map = useMap();
 
   useEffect(() => {
-    // ResizeObserver reagiert zuverlaessig auf Container-Groessenaenderungen
+    // ResizeObserver reagiert zuverlässig auf Container-Größenänderungen
     // (z.B. bei aufklappbaren Elementen) — besser als mehrfache Timeouts
     const container = map.getContainer();
     map.invalidateSize();
@@ -66,7 +66,7 @@ function InvalidateSizeOnMount() {
   return null;
 }
 
-// --- Karte zentrieren wenn sich Position aendert ---
+// --- Karte zentrieren wenn sich Position ändert ---
 
 function RecenterMap({ lat, lng }: { lat: number; lng: number }) {
   const map = useMap();
@@ -105,7 +105,7 @@ export default function GpsPickerMap({
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
       />
 
-      {/* Karten-Groesse nach Mount korrigieren */}
+      {/* Karten-Größe nach Mount korrigieren */}
       <InvalidateSizeOnMount />
 
       {/* Klick auf Karte setzt Marker */}

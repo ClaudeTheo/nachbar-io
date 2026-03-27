@@ -59,9 +59,9 @@ const DB_TABLES = [
 /**
  * GET /api/admin/db-overview
  *
- * Gibt Tabellen-Uebersicht zurueck: Name, Zeilen-Count, Kategorie.
+ * Gibt Tabellen-Übersicht zurück: Name, Zeilen-Count, Kategorie.
  * Verwendet Service-Role um RLS zu umgehen.
- * Nur fuer Admins.
+ * Nur für Admins.
  */
 export async function GET() {
   const supabase = await createServerClient();
@@ -86,7 +86,7 @@ export async function GET() {
   const tableResults = await Promise.allSettled(
     DB_TABLES.map(async (table) => {
       try {
-        // Zeilen zaehlen
+        // Zeilen zählen
         const { count, error: countError } = await adminDb
           .from(table.name)
           .select("*", { count: "exact", head: true });

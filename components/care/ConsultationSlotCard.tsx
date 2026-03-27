@@ -15,7 +15,7 @@ interface ConsultationSlotCardProps {
 }
 
 /**
- * Karte fuer einen Sprechstunden-Termin.
+ * Karte für einen Sprechstunden-Termin.
  * Senior-Mode: 80px Touch-Targets, 4.5:1 Kontrast.
  */
 export function ConsultationSlotCard({ slot, onBook, onJoin }: ConsultationSlotCardProps) {

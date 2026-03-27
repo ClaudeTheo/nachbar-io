@@ -1,6 +1,6 @@
 // app/api/care/checkin/status/route.test.ts
-// Nachbar.io — Tests fuer Check-in-Status API-Route
-// Testet: Auth, Zugriffskontrolle, Tagesberechnung, Verschluesselung, nextDue
+// Nachbar.io — Tests für Check-in-Status API-Route
+// Testet: Auth, Zugriffskontrolle, Tagesberechnung, Verschlüsselung, nextDue
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { NextRequest } from 'next/server';
@@ -41,7 +41,7 @@ describe('GET /api/care/checkin/status', () => {
     expect(res.status).toBe(401);
   });
 
-  it('laedt Status fuer eigenen User', async () => {
+  it('lädt Status für eigenen User', async () => {
     mockSupabase.setUser({ id: 'user-1' });
     // Checkins-Query
     mockSupabase.addResponse('care_checkins', { data: [], error: null });
@@ -61,7 +61,7 @@ describe('GET /api/care/checkin/status', () => {
     expect(json.completedCount).toBe(0);
   });
 
-  it('prueft Zugriff bei Fremd-Zugriff', async () => {
+  it('prüft Zugriff bei Fremd-Zugriff', async () => {
     mockSupabase.setUser({ id: 'helfer-1' });
     mockSupabase.addResponse('care_checkins', { data: [], error: null });
     mockSupabase.addResponse('care_profiles', {
@@ -81,7 +81,7 @@ describe('GET /api/care/checkin/status', () => {
     expect(res.status).toBe(403);
   });
 
-  it('zaehlt abgeschlossene Check-ins korrekt', async () => {
+  it('zählt abgeschlossene Check-ins korrekt', async () => {
     mockSupabase.setUser({ id: 'user-1' });
     mockSupabase.addResponse('care_checkins', {
       data: [

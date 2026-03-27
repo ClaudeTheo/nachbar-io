@@ -1,5 +1,5 @@
 // app/api/hilfe/requests/[id]/match/route.ts
-// Nachbar Hilfe — Helfer-Matching: Bewerben (POST) und Bestaetigen (PUT)
+// Nachbar Hilfe — Helfer-Matching: Bewerben (POST) und Bestätigen (PUT)
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
@@ -19,7 +19,7 @@ export async function POST(
   try {
     body = await request.json();
   } catch {
-    return NextResponse.json({ error: 'Ungueltiges Anfrage-Format' }, { status: 400 });
+    return NextResponse.json({ error: 'Ungültiges Anfrage-Format' }, { status: 400 });
   }
 
   const { helper_id } = body;
@@ -44,7 +44,7 @@ export async function POST(
   return NextResponse.json(match, { status: 201 });
 }
 
-// PUT /api/hilfe/requests/[id]/match — Bewohner bestaetigt einen Match
+// PUT /api/hilfe/requests/[id]/match — Bewohner bestätigt einen Match
 export async function PUT(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> },
@@ -59,7 +59,7 @@ export async function PUT(
   try {
     body = await request.json();
   } catch {
-    return NextResponse.json({ error: 'Ungueltiges Anfrage-Format' }, { status: 400 });
+    return NextResponse.json({ error: 'Ungültiges Anfrage-Format' }, { status: 400 });
   }
 
   const { match_id } = body;
@@ -67,7 +67,7 @@ export async function PUT(
     return NextResponse.json({ error: 'match_id ist erforderlich' }, { status: 400 });
   }
 
-  // Match bestaetigen: confirmed_at setzen
+  // Match bestätigen: confirmed_at setzen
   const { data: updatedMatch, error: matchError } = await supabase
     .from('help_matches')
     .update({ confirmed_at: new Date().toISOString() })
@@ -77,8 +77,8 @@ export async function PUT(
     .single();
 
   if (matchError || !updatedMatch) {
-    console.error('[hilfe/match] Bestaetigung fehlgeschlagen:', matchError);
-    return NextResponse.json({ error: 'Match konnte nicht bestaetigt werden' }, { status: 500 });
+    console.error('[hilfe/match] Bestätigung fehlgeschlagen:', matchError);
+    return NextResponse.json({ error: 'Match konnte nicht bestätigt werden' }, { status: 500 });
   }
 
   // Gesuch-Status auf 'matched' setzen

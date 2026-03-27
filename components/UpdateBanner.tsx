@@ -8,7 +8,7 @@ interface UpdateBannerProps {
   onDismiss: () => void;
 }
 
-// Banner fuer verfuegbare App-Updates (PWA Service Worker)
+// Banner für verfügbare App-Updates (PWA Service Worker)
 export function UpdateBanner({ onUpdate, onDismiss }: UpdateBannerProps) {
   return (
     <div className="fixed bottom-20 left-4 right-4 z-50 animate-in slide-in-from-bottom-4 fade-in duration-300">

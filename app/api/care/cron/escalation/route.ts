@@ -13,7 +13,7 @@ import type { EscalationConfig } from '@/lib/care/types';
 // GET /api/care/cron/escalation — Automatische SOS-Eskalation (Vercel Cron: jede Minute)
 export async function GET(request: NextRequest) {
   const log = createCareLogger('care/cron/escalation');
-  // Cron-Auth: Authorization-Header gegen CRON_SECRET pruefen
+  // Cron-Auth: Authorization-Header gegen CRON_SECRET prüfen
   const cronSecret = process.env.CRON_SECRET;
   if (!cronSecret) {
     log.error('cron_secret_missing');
@@ -27,7 +27,7 @@ export async function GET(request: NextRequest) {
 
   const supabase = await createClient();
 
-  // Alle offenen SOS-Alerts laden, die noch eskaliert werden koennen
+  // Alle offenen SOS-Alerts laden, die noch eskaliert werden können
   const { data: openAlerts, error: alertsError } = await supabase
     .from('care_sos_alerts')
     .select('id, senior_id, status, current_escalation_level, escalated_at, created_at, category')
@@ -65,7 +65,7 @@ export async function GET(request: NextRequest) {
     const escalationConfig: EscalationConfig | undefined =
       careProfile?.escalation_config ?? undefined;
 
-    // Pruefen ob Eskalation faellig ist
+    // Prüfen ob Eskalation fällig ist
     const currentLevel: number = alert.current_escalation_level ?? 1;
     const escalatedAt: string[] = Array.isArray(alert.escalated_at) ? alert.escalated_at : [];
 
@@ -80,7 +80,7 @@ export async function GET(request: NextRequest) {
       continue;
     }
 
-    // Naechste Eskalationsstufe ermitteln
+    // Nächste Eskalationsstufe ermitteln
     const toLevel = getNextEscalationLevel(currentLevel);
     if (toLevel === null) {
       // Sollte durch lt('current_escalation_level', 4) nicht vorkommen
@@ -89,7 +89,7 @@ export async function GET(request: NextRequest) {
 
     const fromLevel = currentLevel;
 
-    // Neuen Eskalations-Zeitstempel anhaengen
+    // Neuen Eskalations-Zeitstempel anhängen
     const updatedEscalatedAt = [...escalatedAt, new Date().toISOString()];
 
     // Alert aktualisieren mit Retry-Logik (bis zu 3 Versuche bei transientem DB-Fehler)
@@ -141,7 +141,7 @@ export async function GET(request: NextRequest) {
     escalatedCount++;
     log.info('alert_escalated', { alertId: alert.id, fromLevel, toLevel, seniorId: alert.senior_id });
 
-    // Metadaten der neuen Eskalationsstufe abrufen (Label, Rolle, Kanaele)
+    // Metadaten der neuen Eskalationsstufe abrufen (Label, Rolle, Kanäle)
     const escalationMeta = getEscalationMeta(toLevel);
 
     if (escalationMeta) {
@@ -171,7 +171,7 @@ export async function GET(request: NextRequest) {
           if (helpersError) {
             log.error('helpers_query_failed', helpersError, { alertId: alert.id, level: toLevel });
           } else if (helpers && helpers.length > 0) {
-            // Kanaele aus den Metadaten als mutable Array uebernehmen
+            // Kanäle aus den Metadaten als mutable Array übernehmen
             const notificationChannels = [...escalationMeta.channels] as (
               | 'push'
               | 'in_app'
@@ -180,7 +180,7 @@ export async function GET(request: NextRequest) {
               | 'admin_alert'
             )[];
 
-            // Telefonnummern der Helfer laden fuer SMS/Voice-Fallback
+            // Telefonnummern der Helfer laden für SMS/Voice-Fallback
             const { data: helperPhones } = await supabase
               .from('users')
               .select('id, phone')

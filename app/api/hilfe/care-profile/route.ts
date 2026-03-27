@@ -1,12 +1,12 @@
 // app/api/hilfe/care-profile/route.ts
 // Nachbar Hilfe — Pflege-Profil API (Pflegestufe, Kasse, Versichertennummer)
-// Versichertennummer wird verschluesselt gespeichert (Art. 9 DSGVO)
+// Versichertennummer wird verschlüsselt gespeichert (Art. 9 DSGVO)
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { encryptField, decryptField } from '@/lib/care/field-encryption';
 
-// Gueltige Pflegestufen (1-5)
+// Gültige Pflegestufen (1-5)
 const VALID_CARE_LEVELS = [1, 2, 3, 4, 5] as const;
 
 // GET /api/hilfe/care-profile — Pflege-Profil lesen
@@ -33,7 +33,7 @@ export async function GET() {
     return NextResponse.json({ error: 'Kein Pflege-Profil vorhanden' }, { status: 404 });
   }
 
-  // Versichertennummer entschluesseln
+  // Versichertennummer entschlüsseln
   return NextResponse.json({
     ...data,
     insurance_number_encrypted: decryptField(data.insurance_number_encrypted),
@@ -54,7 +54,7 @@ export async function POST(request: NextRequest) {
   try {
     body = await request.json();
   } catch {
-    return NextResponse.json({ error: 'Ungueltiges Anfrage-Format' }, { status: 400 });
+    return NextResponse.json({ error: 'Ungültiges Anfrage-Format' }, { status: 400 });
   }
 
   const { care_level, insurance_name, insurance_number } = body;
@@ -65,7 +65,7 @@ export async function POST(request: NextRequest) {
   }
   if (typeof care_level !== 'number' || !VALID_CARE_LEVELS.includes(care_level as typeof VALID_CARE_LEVELS[number])) {
     return NextResponse.json(
-      { error: `Ungueltige Pflegestufe: "${care_level}". Erlaubt: 1, 2, 3, 4, 5` },
+      { error: `Ungültige Pflegestufe: "${care_level}". Erlaubt: 1, 2, 3, 4, 5` },
       { status: 400 },
     );
   }
@@ -80,7 +80,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'insurance_number ist erforderlich' }, { status: 400 });
   }
 
-  // Versichertennummer verschluesseln (Art. 9 DSGVO)
+  // Versichertennummer verschlüsseln (Art. 9 DSGVO)
   const encryptedNumber = encryptField(insurance_number as string);
 
   // Budget-Defaults nach Pflegestufe (in Cents)
@@ -113,7 +113,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Profil konnte nicht gespeichert werden' }, { status: 500 });
   }
 
-  // Entschluesselt zurueckgeben
+  // Entschlüsselt zurückgeben
   return NextResponse.json(
     {
       ...profile,

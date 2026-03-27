@@ -50,7 +50,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: 'Vorgang fehlgeschlagen' }, { status: 500 });
   }
 
-  // Notizen nur fuer Host oder gebuchten Nutzer entschluesseln
+  // Notizen nur für Host oder gebuchten Nutzer entschlüsseln
   const decrypted = (data ?? []).map(slot => {
     if (slot.notes && (slot.host_user_id === user.id || slot.booked_by === user.id)) {
       return decryptFieldsArray([slot], ENCRYPTED_FIELDS)[0];
@@ -86,7 +86,7 @@ export async function POST(request: NextRequest) {
     body = await request.json();
   } catch {
     log.done(400);
-    return NextResponse.json({ error: 'Ungueltiges JSON' }, { status: 400 });
+    return NextResponse.json({ error: 'Ungültiges JSON' }, { status: 400 });
   }
 
   // Validierung
@@ -100,7 +100,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'host_name ist erforderlich' }, { status: 400 });
   }
   if (!body.scheduled_at || isNaN(Date.parse(body.scheduled_at))) {
-    return NextResponse.json({ error: 'scheduled_at muss ein gueltiges Datum sein' }, { status: 400 });
+    return NextResponse.json({ error: 'scheduled_at muss ein gültiges Datum sein' }, { status: 400 });
   }
   const duration = body.duration_minutes ?? 15;
   if (duration < 5 || duration > 60) {
@@ -115,11 +115,11 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: 'join_url muss eine HTTPS-URL sein' }, { status: 400 });
       }
     } catch {
-      return NextResponse.json({ error: 'join_url ist keine gueltige URL' }, { status: 400 });
+      return NextResponse.json({ error: 'join_url ist keine gültige URL' }, { status: 400 });
     }
   }
 
-  // Notizen verschluesseln bei medizinischen Sprechstunden
+  // Notizen verschlüsseln bei medizinischen Sprechstunden
   const notes = body.notes
     ? (body.provider_type === 'medical' ? encryptField(body.notes) : body.notes)
     : null;

@@ -94,7 +94,7 @@ export function GuidelinesAcceptance({ onAccepted }: GuidelinesAcceptanceProps) 
 }
 
 /**
- * Wrapper-Komponente: Zeigt GuidelinesAcceptance Modal wenn noetig,
+ * Wrapper-Komponente: Zeigt GuidelinesAcceptance Modal wenn nötig,
  * sonst rendert die children.
  */
 interface GuidelinesGateProps {

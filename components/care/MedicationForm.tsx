@@ -1,6 +1,6 @@
 'use client';
 
-// Medikament-Formular: Name, Dosierung, Zeitplan (taeglich/woechentlich/intervall), Anweisungen
+// Medikament-Formular: Name, Dosierung, Zeitplan (täglich/wöchentlich/intervall), Anweisungen
 
 import { useState } from 'react';
 import { toast } from 'sonner';
@@ -9,12 +9,12 @@ import type { CareMedication, MedicationSchedule } from '@/lib/care/types';
 
 // Zeitplan-Typen
 const SCHEDULE_TYPE_OPTIONS = [
-  { value: 'daily', label: 'Taeglich' },
-  { value: 'weekly', label: 'Woechentlich' },
+  { value: 'daily', label: 'Täglich' },
+  { value: 'weekly', label: 'Wöchentlich' },
   { value: 'interval', label: 'Intervall (alle X Stunden)' },
 ] as const;
 
-// Wochentage fuer woechentlichen Zeitplan
+// Wochentage für wöchentlichen Zeitplan
 const WEEKDAY_OPTIONS = [
   { value: 'Montag', short: 'Mo' },
   { value: 'Dienstag', short: 'Di' },
@@ -50,7 +50,7 @@ export function MedicationForm({ medication, seniorId, onSuccess, onCancel }: Me
   const [instructions, setInstructions] = useState(medication?.instructions ?? '');
   const [saving, setSaving] = useState(false);
 
-  // Uhrzeiten verwalten (fuer taeglich)
+  // Uhrzeiten verwalten (für täglich)
   function addTime() {
     setTimes([...times, '12:00']);
   }
@@ -95,10 +95,10 @@ export function MedicationForm({ medication, seniorId, onSuccess, onCancel }: Me
       return 'Bitte geben Sie mindestens eine Uhrzeit an.';
     }
     if (scheduleType === 'weekly' && days.length === 0) {
-      return 'Bitte waehlen Sie mindestens einen Wochentag aus.';
+      return 'Bitte wählen Sie mindestens einen Wochentag aus.';
     }
     if (scheduleType === 'interval' && (!intervalHours || intervalHours < 1)) {
-      return 'Bitte geben Sie ein gueltiges Intervall an (mindestens 1 Stunde).';
+      return 'Bitte geben Sie ein gültiges Intervall an (mindestens 1 Stunde).';
     }
     return null;
   }
@@ -209,7 +209,7 @@ export function MedicationForm({ medication, seniorId, onSuccess, onCancel }: Me
         </div>
       </div>
 
-      {/* Uhrzeiten (fuer taeglich) */}
+      {/* Uhrzeiten (für täglich) */}
       {scheduleType === 'daily' && (
         <div>
           <label className="block text-sm font-medium text-anthrazit mb-2">Einnahmezeiten</label>
@@ -240,13 +240,13 @@ export function MedicationForm({ medication, seniorId, onSuccess, onCancel }: Me
               className="flex items-center gap-1 text-sm text-quartier-green hover:underline"
             >
               <Plus className="h-4 w-4" />
-              Uhrzeit hinzufuegen
+              Uhrzeit hinzufügen
             </button>
           </div>
         </div>
       )}
 
-      {/* Wochentage + Uhrzeit (fuer woechentlich) */}
+      {/* Wochentage + Uhrzeit (für wöchentlich) */}
       {scheduleType === 'weekly' && (
         <>
           <div>
@@ -283,7 +283,7 @@ export function MedicationForm({ medication, seniorId, onSuccess, onCancel }: Me
         </>
       )}
 
-      {/* Intervall (fuer intervall) */}
+      {/* Intervall (für intervall) */}
       {scheduleType === 'interval' && (
         <div>
           <label htmlFor="interval-hours" className="block text-sm font-medium text-anthrazit mb-1">
@@ -347,7 +347,7 @@ export function MedicationForm({ medication, seniorId, onSuccess, onCancel }: Me
           ) : (
             <>
               <Save className="h-5 w-5" />
-              {isEdit ? 'Aktualisieren' : 'Hinzufuegen'}
+              {isEdit ? 'Aktualisieren' : 'Hinzufügen'}
             </>
           )}
         </button>

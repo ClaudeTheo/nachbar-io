@@ -37,7 +37,7 @@ export async function GET(request: NextRequest) {
 
   for (const helper of helpers) {
     try {
-      // Hat der Helfer Einsaetze in diesem Monat?
+      // Hat der Helfer Einsätze in diesem Monat?
       const { count } = await supabase
         .from("help_sessions")
         .select("*", { count: "exact", head: true })
@@ -51,13 +51,13 @@ export async function GET(request: NextRequest) {
         user_id: helper.user_id,
         type: "system",
         title: "Sammelabrechnung bereit",
-        body: `Sie haben ${count} Einsaetze im ${monthYear}. Erstellen Sie jetzt Ihre Sammelabrechnung.`,
+        body: `Sie haben ${count} Einsätze im ${monthYear}. Erstellen Sie jetzt Ihre Sammelabrechnung.`,
       });
 
       await sendPush(supabase, {
         userId: helper.user_id,
         title: "Sammelabrechnung bereit",
-        body: `${count} Einsaetze — jetzt Sammelabrechnung erstellen`,
+        body: `${count} Einsätze — jetzt Sammelabrechnung erstellen`,
         url: "/hilfe/budget",
       });
 

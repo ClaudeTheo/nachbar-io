@@ -1,5 +1,5 @@
 // components/org/QuarterStats.tsx
-// Nachbar.io — Anonymisierte Quartier-Statistiken fuer B2B (Pro Community)
+// Nachbar.io — Anonymisierte Quartier-Statistiken für B2B (Pro Community)
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
@@ -80,7 +80,7 @@ export function QuarterStats({ quarterIds }: QuarterStatsProps) {
     setLoading(true);
     const supabase = createClient();
 
-    // Neueste Snapshots fuer die zugewiesenen Quartiere laden
+    // Neueste Snapshots für die zugewiesenen Quartiere laden
     const { data } = await supabase
       .from("analytics_snapshots")
       .select(
@@ -117,14 +117,14 @@ export function QuarterStats({ quarterIds }: QuarterStatsProps) {
       <Card data-testid="quarter-stats-empty">
         <CardContent className="py-8 text-center">
           <p className="text-sm text-muted-foreground">
-            Noch keine Statistiken verfuegbar. Daten werden taeglich erfasst.
+            Noch keine Statistiken verfügbar. Daten werden täglich erfasst.
           </p>
         </CardContent>
       </Card>
     );
   }
 
-  // Aggregiert ueber alle Quartiere
+  // Aggregiert über alle Quartiere
   const aggregated = snapshots.reduce(
     (acc, s) => ({
       totalUsers: acc.totalUsers + s.total_users,
@@ -180,11 +180,11 @@ export function QuarterStats({ quarterIds }: QuarterStatsProps) {
           value={aggregated.wah}
           unit="/ Woche"
           color="bg-[#4CAF87]"
-          description="Woechentlich aktive Haushalte"
+          description="Wöchentlich aktive Haushalte"
         />
         <StatCard
           icon={<Activity className="h-4 w-4 text-white" />}
-          label="Aktivitaetsrate"
+          label="Aktivitätsrate"
           value={`${activityRate} %`}
           color="bg-blue-500"
           description="Aktive Nutzer (7 Tage)"
@@ -198,7 +198,7 @@ export function QuarterStats({ quarterIds }: QuarterStatsProps) {
         />
         <StatCard
           icon={<MessageSquare className="h-4 w-4 text-white" />}
-          label="Beitraege / Woche"
+          label="Beiträge / Woche"
           value={aggregated.posts}
           color="bg-indigo-500"
         />
@@ -210,18 +210,18 @@ export function QuarterStats({ quarterIds }: QuarterStatsProps) {
         />
       </div>
 
-      {/* Einsamkeits-Praevention: Inaktive Nutzer */}
+      {/* Einsamkeits-Prävention: Inaktive Nutzer */}
       {inactiveUsers > 0 && (
         <Card className="border-[#F59E0B]/30 bg-[#F59E0B]/5">
           <CardContent className="py-4">
             <div className="flex items-center gap-2">
               <TriangleAlert className="h-4 w-4 text-[#F59E0B]" />
               <p className="text-sm font-medium text-[#2D3142]">
-                {inactiveUsers} Bewohner ohne Aktivitaet in den letzten 7 Tagen
+                {inactiveUsers} Bewohner ohne Aktivität in den letzten 7 Tagen
               </p>
             </div>
             <p className="mt-1 text-xs text-gray-500">
-              Diese Bewohner koennten von einer aktiven Ansprache profitieren.
+              Diese Bewohner könnten von einer aktiven Ansprache profitieren.
             </p>
           </CardContent>
         </Card>

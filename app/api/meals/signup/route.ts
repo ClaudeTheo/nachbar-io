@@ -24,7 +24,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "meal_id erforderlich." }, { status: 400 });
     }
 
-    // Mahlzeit laden (inkl. Titel fuer Notification)
+    // Mahlzeit laden (inkl. Titel für Notification)
     const { data: meal, error: mealError } = await supabase
       .from("shared_meals")
       .select("id, servings, status, user_id, title")
@@ -43,7 +43,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Sie können sich nicht für Ihr eigenes Angebot anmelden." }, { status: 400 });
     }
 
-    // Aktuelle Anmeldungen zaehlen
+    // Aktuelle Anmeldungen zählen
     const { count } = await supabase
       .from("meal_signups")
       .select("id", { count: "exact", head: true })
@@ -55,7 +55,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Nicht genügend Plätze verfügbar." }, { status: 409 });
     }
 
-    // Anmeldung einfuegen
+    // Anmeldung einfügen
     const { error: signupError } = await supabase
       .from("meal_signups")
       .insert({

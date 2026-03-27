@@ -9,7 +9,7 @@ import { findNewUsersForWelcomePack, sendWelcomePack } from '@/lib/welcome-pack'
  * Laeuft alle 30 Minuten via Vercel Cron.
  */
 export async function GET(request: Request) {
-  // Cron-Secret pruefen
+  // Cron-Secret prüfen
   const authHeader = request.headers.get('authorization');
   if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -26,7 +26,7 @@ export async function GET(request: Request) {
   const newUsers = await findNewUsersForWelcomePack(supabase);
 
   if (newUsers.length === 0) {
-    return NextResponse.json({ message: 'Keine neuen Nutzer fuer Willkommenspaket', count: 0 });
+    return NextResponse.json({ message: 'Keine neuen Nutzer für Willkommenspaket', count: 0 });
   }
 
   const results = [];

@@ -30,7 +30,7 @@ export function ReportGenerator({ seniorId, onGenerated }: ReportGeneratorProps)
 
   async function handleGenerate() {
     if (!periodStart || !periodEnd) {
-      setError('Bitte waehlen Sie einen Zeitraum.');
+      setError('Bitte wählen Sie einen Zeitraum.');
       return;
     }
     setLoading(true);
@@ -54,7 +54,7 @@ export function ReportGenerator({ seniorId, onGenerated }: ReportGeneratorProps)
       setViewUrl(`/care/reports/view?senior_id=${seniorId}&period_start=${periodStart}&period_end=${periodEnd}&type=${type}`);
       onGenerated?.();
 
-      // Erfolg nach 3 Sekunden zuruecksetzen
+      // Erfolg nach 3 Sekunden zurücksetzen
       setTimeout(() => setSuccess(false), 3000);
     } catch {
       setError('Netzwerkfehler');

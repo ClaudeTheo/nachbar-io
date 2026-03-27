@@ -1,5 +1,5 @@
 // app/api/heartbeat/route.ts
-// Nachbar.io — Heartbeat API: Passives Check-in bei App-Oeffnung (1 pro Session)
+// Nachbar.io — Heartbeat API: Passives Check-in bei App-Öffnung (1 pro Session)
 
 import { NextRequest } from 'next/server';
 import { requireAuth, errorResponse, successResponse, careLog } from '@/lib/care/api-helpers';
@@ -18,10 +18,10 @@ export async function POST(request: NextRequest) {
 
   // Validierung
   if (!source || !VALID_SOURCES.includes(source)) {
-    return errorResponse('Ungueltiger source-Wert', 400);
+    return errorResponse('Ungültiger source-Wert', 400);
   }
   if (device_type && !VALID_DEVICE_TYPES.includes(device_type)) {
-    return errorResponse('Ungueltiger device_type-Wert', 400);
+    return errorResponse('Ungültiger device_type-Wert', 400);
   }
 
   const { error } = await supabase.from('heartbeats').insert({

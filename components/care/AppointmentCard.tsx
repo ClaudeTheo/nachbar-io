@@ -90,7 +90,7 @@ export function AppointmentCard({ appointment, onEdit, onDelete }: AppointmentCa
             {onDelete && (
               <button
                 onClick={onDelete}
-                aria-label="Termin loeschen"
+                aria-label="Termin löschen"
                 className="flex h-9 w-9 items-center justify-center rounded-lg border border-gray-200 text-red-500 hover:bg-red-50 active:bg-red-100"
                 style={{ minHeight: '44px', minWidth: '44px', touchAction: 'manipulation' }}
               >

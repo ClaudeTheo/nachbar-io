@@ -7,8 +7,8 @@ import { toast } from "sonner";
 
 // Fehlermeldungen nach HTTP-Status
 const ERROR_MESSAGES: Record<number, string> = {
-  403: "Sie koennen sich nicht selbst einladen.",
-  404: "Dieser Code ist ungueltig. Bitte pruefen Sie die Eingabe.",
+  403: "Sie können sich nicht selbst einladen.",
+  404: "Dieser Code ist ungültig. Bitte prüfen Sie die Eingabe.",
   409: "Dieser Code wurde bereits verwendet.",
   410: "Dieser Code ist abgelaufen. Bitte fordern Sie einen neuen an.",
 };
@@ -53,7 +53,7 @@ export function RedeemCodeBanner() {
     [code, focusInput],
   );
 
-  // Backspace: aktuelles Feld loeschen oder zum vorherigen springen
+  // Backspace: aktuelles Feld löschen oder zum vorherigen springen
   const handleKeyDown = useCallback(
     (index: number, e: React.KeyboardEvent<HTMLInputElement>) => {
       if (e.key === "Backspace") {
@@ -73,7 +73,7 @@ export function RedeemCodeBanner() {
     [code, focusInput],
   );
 
-  // Code einloesen
+  // Code einlösen
   const handleRedeem = useCallback(async () => {
     const fullCode = code.join("");
     if (fullCode.length !== 8) {
@@ -95,10 +95,10 @@ export function RedeemCodeBanner() {
         return;
       }
 
-      toast.success("Einladung erfolgreich angenommen! Sie koennen nun den Status einsehen.");
+      toast.success("Einladung erfolgreich angenommen! Sie können nun den Status einsehen.");
       setState("success");
     } catch {
-      toast.error("Netzwerkfehler. Bitte pruefen Sie Ihre Verbindung.");
+      toast.error("Netzwerkfehler. Bitte prüfen Sie Ihre Verbindung.");
     } finally {
       setSubmitting(false);
     }
@@ -111,7 +111,7 @@ export function RedeemCodeBanner() {
       {state === "initial" && (
         <div className="flex flex-col items-center gap-3 sm:flex-row sm:justify-between">
           <p className="text-sm font-medium text-anthrazit">
-            Haben Sie einen Einladungs-Code eines Angehoerigen erhalten?
+            Haben Sie einen Einladungs-Code eines Angehörigen erhalten?
           </p>
           <div className="flex gap-2">
             <button
@@ -188,7 +188,7 @@ export function RedeemCodeBanner() {
               className="flex-1 rounded-lg bg-[#4CAF87] px-4 text-sm font-semibold text-white transition-colors hover:bg-[#4CAF87]/90 disabled:cursor-not-allowed disabled:opacity-50"
               style={{ minHeight: 44 }}
             >
-              {submitting ? "Wird geprueft..." : "Code einloesen"}
+              {submitting ? "Wird geprüft..." : "Code einlösen"}
             </button>
             <button
               onClick={() => {

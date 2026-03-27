@@ -5,7 +5,7 @@ import { Pill, CircleCheck, ArrowLeft, Clock } from "lucide-react";
 import { useTerminal } from "@/lib/terminal/TerminalContext";
 
 /**
- * Medikamenten-Erinnerungsscreen fuer das Senioren-Terminal.
+ * Medikamenten-Erinnerungsscreen für das Senioren-Terminal.
  * Zeigt heutige Medikamente mit grossem "Eingenommen"-Toggle.
  * Mock-Daten, da noch keine Medikamenten-API vorhanden.
  */
@@ -18,7 +18,7 @@ interface Medication {
   taken: boolean;
 }
 
-// Mock-Daten fuer die Pilotphase
+// Mock-Daten für die Pilotphase
 const INITIAL_MEDICATIONS: Medication[] = [
   { id: "med-1", name: "Metoprolol", dosage: "47,5 mg", time: "08:00", taken: false },
   { id: "med-2", name: "Ramipril", dosage: "5 mg", time: "08:00", taken: false },
@@ -29,13 +29,13 @@ export default function MedicationsScreen() {
   const { setActiveScreen } = useTerminal();
   const [medications, setMedications] = useState<Medication[]>(INITIAL_MEDICATIONS);
 
-  // Pruefen ob alle Medikamente eingenommen wurden
+  // Prüfen ob alle Medikamente eingenommen wurden
   const allTaken = useMemo(
     () => medications.every((med) => med.taken),
     [medications]
   );
 
-  // Toggle-Handler fuer einzelnes Medikament
+  // Toggle-Handler für einzelnes Medikament
   const toggleMedication = (id: string) => {
     setMedications((prev) =>
       prev.map((med) =>
@@ -50,7 +50,7 @@ export default function MedicationsScreen() {
       <div className="flex items-center gap-4">
         <button
           onClick={() => setActiveScreen("home")}
-          aria-label="Zurueck zur Startseite"
+          aria-label="Zurück zur Startseite"
           className="flex h-[80px] w-[80px] items-center justify-center rounded-2xl bg-anthrazit/10 text-anthrazit transition-transform active:scale-95"
         >
           <ArrowLeft className="h-12 w-12" />
@@ -118,12 +118,12 @@ export default function MedicationsScreen() {
         ))}
       </div>
 
-      {/* Zurueck-Button unten */}
+      {/* Zurück-Button unten */}
       <button
         onClick={() => setActiveScreen("home")}
         className="flex h-[80px] items-center justify-center rounded-2xl bg-quartier-green px-8 text-3xl font-bold text-white shadow-soft transition-transform active:scale-95"
       >
-        Zurueck zur Startseite
+        Zurück zur Startseite
       </button>
     </div>
   );

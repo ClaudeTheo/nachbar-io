@@ -1,4 +1,4 @@
-// Tests fuer QuickActions-Komponente
+// Tests für QuickActions-Komponente
 import { describe, it, expect, vi } from "vitest";
 import { render } from "@testing-library/react";
 import { QuickActions } from "../QuickActions";
@@ -34,7 +34,7 @@ describe("QuickActions", () => {
     expect(hrefs).toContain("/reports/new");
   });
 
-  it("zeigt Labels fuer alle Aktionen", () => {
+  it("zeigt Labels für alle Aktionen", () => {
     const { container } = render(<QuickActions />);
     const text = container.textContent;
     expect(text).toContain("Brett");

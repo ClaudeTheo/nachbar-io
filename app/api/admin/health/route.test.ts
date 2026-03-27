@@ -1,4 +1,4 @@
-// Nachbar.io — Tests fuer Admin Health-Check API
+// Nachbar.io — Tests für Admin Health-Check API
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { GET } from "./route";
 
@@ -29,7 +29,7 @@ beforeEach(() => {
 });
 
 describe("GET /api/admin/health", () => {
-  it("gibt 401 zurueck ohne Authentifizierung", async () => {
+  it("gibt 401 zurück ohne Authentifizierung", async () => {
     mockGetUser.mockResolvedValue({ data: { user: null } });
 
     const response = await GET();
@@ -39,7 +39,7 @@ describe("GET /api/admin/health", () => {
     expect(body.error).toBe("Nicht autorisiert");
   });
 
-  it("gibt 403 zurueck fuer Nicht-Admins", async () => {
+  it("gibt 403 zurück für Nicht-Admins", async () => {
     mockGetUser.mockResolvedValue({ data: { user: { id: "user-123" } } });
 
     // Chainable Query: from().select().eq().single()
@@ -58,7 +58,7 @@ describe("GET /api/admin/health", () => {
     expect(body.error).toBe("Nur Admins");
   });
 
-  it("gibt 200 mit Health-Checks fuer Admins zurueck", async () => {
+  it("gibt 200 mit Health-Checks für Admins zurück", async () => {
     mockGetUser.mockResolvedValue({ data: { user: { id: "admin-123" } } });
 
     // Admin-Check: is_admin = true

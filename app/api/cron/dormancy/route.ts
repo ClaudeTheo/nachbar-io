@@ -1,6 +1,6 @@
 // app/api/cron/dormancy/route.ts
 // Nachbar.io — Cron: Dormancy-Detection
-// Vercel Cron: taeglich 06:00
+// Vercel Cron: täglich 06:00
 // Erkennt inaktive Quartiere und sendet Re-Engagement-Pushes
 
 import { NextRequest, NextResponse } from 'next/server';
@@ -47,7 +47,7 @@ export async function GET(request: NextRequest) {
       const total = quarterUserIds.length;
       if (total === 0) continue;
 
-      // Aktive User der letzten 7 Tage zaehlen (Quartier-bezogen)
+      // Aktive User der letzten 7 Tage zählen (Quartier-bezogen)
       let activeInQuarter = 0;
       if (quarterUserIds.length > 0) {
         const { count } = await supabase
@@ -95,7 +95,7 @@ export async function GET(request: NextRequest) {
       pushesSent,
     });
 
-    console.log(`[dormancy] ${quartersProcessed} Quartiere geprueft, ${pushesSent} Pushes`);
+    console.log(`[dormancy] ${quartersProcessed} Quartiere geprüft, ${pushesSent} Pushes`);
     return NextResponse.json({
       success: true,
       quartersProcessed,

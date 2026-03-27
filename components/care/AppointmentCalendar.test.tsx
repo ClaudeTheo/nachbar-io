@@ -1,5 +1,5 @@
 // components/care/AppointmentCalendar.test.tsx
-// Nachbar.io — Tests fuer Termin-Kalender
+// Nachbar.io — Tests für Termin-Kalender
 
 import { describe, it, expect, vi, afterEach } from 'vitest';
 import { render, screen, cleanup, fireEvent } from '@testing-library/react';
@@ -48,33 +48,33 @@ describe('AppointmentCalendar', () => {
     expect(screen.getByText('So')).toBeInTheDocument();
   });
 
-  it('zeigt Monatsnavigation (Vorheriger/Naechster)', () => {
+  it('zeigt Monatsnavigation (Vorheriger/Nächster)', () => {
     render(<AppointmentCalendar appointments={[]} />);
     expect(screen.getByLabelText('Vorheriger Monat')).toBeInTheDocument();
-    expect(screen.getByLabelText('Naechster Monat')).toBeInTheDocument();
+    expect(screen.getByLabelText('Nächster Monat')).toBeInTheDocument();
   });
 
-  it('zeigt aktuelles Jahr in der Ueberschrift', () => {
+  it('zeigt aktuelles Jahr in der Überschrift', () => {
     render(<AppointmentCalendar appointments={[]} />);
     const year = new Date().getFullYear().toString();
     expect(screen.getByText(new RegExp(year))).toBeInTheDocument();
   });
 
-  it('zeigt aktuellen Monat in der Ueberschrift', () => {
+  it('zeigt aktuellen Monat in der Überschrift', () => {
     render(<AppointmentCalendar appointments={[]} />);
     const monthNames = [
-      'Januar', 'Februar', 'Maerz', 'April', 'Mai', 'Juni',
+      'Januar', 'Februar', 'März', 'April', 'Mai', 'Juni',
       'Juli', 'August', 'September', 'Oktober', 'November', 'Dezember',
     ];
     const currentMonth = monthNames[new Date().getMonth()];
     expect(screen.getByText(new RegExp(currentMonth))).toBeInTheDocument();
   });
 
-  it('navigiert zum naechsten Monat', () => {
+  it('navigiert zum nächsten Monat', () => {
     render(<AppointmentCalendar appointments={[]} />);
-    const nextButton = screen.getByLabelText('Naechster Monat');
+    const nextButton = screen.getByLabelText('Nächster Monat');
     const monthNames = [
-      'Januar', 'Februar', 'Maerz', 'April', 'Mai', 'Juni',
+      'Januar', 'Februar', 'März', 'April', 'Mai', 'Juni',
       'Juli', 'August', 'September', 'Oktober', 'November', 'Dezember',
     ];
 
@@ -90,7 +90,7 @@ describe('AppointmentCalendar', () => {
     render(<AppointmentCalendar appointments={[]} />);
     const prevButton = screen.getByLabelText('Vorheriger Monat');
     const monthNames = [
-      'Januar', 'Februar', 'Maerz', 'April', 'Mai', 'Juni',
+      'Januar', 'Februar', 'März', 'April', 'Mai', 'Juni',
       'Juli', 'August', 'September', 'Oktober', 'November', 'Dezember',
     ];
 
@@ -122,8 +122,8 @@ describe('AppointmentCalendar', () => {
   it('Navigation-Buttons haben minHeight 44px (Touch-Target)', () => {
     render(<AppointmentCalendar appointments={[]} />);
     const prevButton = screen.getByLabelText('Vorheriger Monat');
-    const nextButton = screen.getByLabelText('Naechster Monat');
-    // Pruefe CSS-Klassen statt inline-Style (min-h-[44px] in Tailwind)
+    const nextButton = screen.getByLabelText('Nächster Monat');
+    // Prüfe CSS-Klassen statt inline-Style (min-h-[44px] in Tailwind)
     expect(prevButton.className).toContain('min-h-[44px]');
     expect(nextButton.className).toContain('min-h-[44px]');
   });

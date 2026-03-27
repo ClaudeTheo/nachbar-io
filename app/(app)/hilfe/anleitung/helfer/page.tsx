@@ -8,7 +8,7 @@ const steps = [
   {
     number: 1,
     title: 'Was ist der Entlastungsbetrag?',
-    description: 'Pflegebeduerftige ab Pflegegrad 1 erhalten 131 EUR/Monat von ihrer Pflegekasse (§45b SGB XI). Dieses Geld ist fuer Alltagsunterstuetzung gedacht — und Sie koennen damit Geld verdienen.',
+    description: 'Pflegebedürftige ab Pflegegrad 1 erhalten 131 EUR/Monat von ihrer Pflegekasse (§45b SGB XI). Dieses Geld ist für Alltagsunterstützung gedacht — und Sie können damit Geld verdienen.',
   },
   {
     number: 2,
@@ -18,42 +18,42 @@ const steps = [
   {
     number: 3,
     title: 'Registrierung als Helfer',
-    description: 'Waehlen Sie Ihr Bundesland, geben Sie Geburtsdatum und Stundensatz ein. Bestaetige Sie die Voraussetzungen per Checkbox.',
+    description: 'Wählen Sie Ihr Bundesland, geben Sie Geburtsdatum und Stundensatz ein. Bestätigen Sie die Voraussetzungen per Checkbox.',
   },
   {
     number: 4,
     title: 'Erste Quittung kostenlos',
-    description: 'Fuehren Sie einen kompletten Einsatz durch — inklusive Dokumentation, Unterschrift und PDF-Quittung. Alles kostenlos, damit Sie den vollen Wert der App erleben.',
+    description: 'Führen Sie einen kompletten Einsatz durch — inklusive Dokumentation, Unterschrift und PDF-Quittung. Alles kostenlos, damit Sie den vollen Wert der App erleben.',
   },
   {
     number: 5,
     title: 'Abrechnungs-Modul buchen',
-    description: 'Fuer 19,90 EUR/Monat erhalten Sie Zugang zu: Einsatz-Dokumentation, digitale Unterschrift, PDF-Quittungen, Sammelabrechnung, Budget-Tracker. SEPA oder Karte, jederzeit kuendbar.',
+    description: 'Für 19,90 EUR/Monat erhalten Sie Zugang zu: Einsatz-Dokumentation, digitale Unterschrift, PDF-Quittungen, Sammelabrechnung, Budget-Tracker. SEPA oder Karte, jederzeit kündbar.',
   },
   {
     number: 6,
     title: 'Mit Senior verbinden',
-    description: 'Ueber ein Hilfe-Gesuch oder per Einladungs-Code des Seniors. Die Verbindung erfordert die Bestaetigung beider Seiten (DSGVO).',
+    description: 'Über ein Hilfe-Gesuch oder per Einladungs-Code des Seniors. Die Verbindung erfordert die Bestätigung beider Seiten (DSGVO).',
   },
   {
     number: 7,
     title: 'Einsatz dokumentieren',
-    description: 'Datum, Uhrzeit, Dauer und Taetigkeit eintragen. Beide Seiten unterschreiben digital auf dem Bildschirm.',
+    description: 'Datum, Uhrzeit, Dauer und Tätigkeit eintragen. Beide Seiten unterschreiben digital auf dem Bildschirm.',
   },
   {
     number: 8,
     title: 'PDF-Quittung erstellen',
-    description: 'Die App erstellt automatisch eine pflegekassenkonforme Quittung. Sie koennen diese herunterladen oder per E-Mail versenden.',
+    description: 'Die App erstellt automatisch eine pflegekassenkonforme Quittung. Sie können diese herunterladen oder per E-Mail versenden.',
   },
   {
     number: 9,
     title: 'Sammelabrechnung am Monatsende',
-    description: 'Am Monatsende erstellen Sie eine Sammelabrechnung mit allen Einsaetzen eines Monats. Ein PDF fuer die Pflegekasse.',
+    description: 'Am Monatsende erstellen Sie eine Sammelabrechnung mit allen Einsätzen eines Monats. Ein PDF für die Pflegekasse.',
   },
   {
     number: 10,
     title: 'Steuern',
-    description: 'Einnahmen aus Nachbarschaftshilfe sind bis 3.000 EUR/Jahr steuerfrei (§3 Nr. 36 EStG). Darueber hinaus muessen Sie die Einnahmen in Ihrer Steuererklaerung angeben.',
+    description: 'Einnahmen aus Nachbarschaftshilfe sind bis 3.000 EUR/Jahr steuerfrei (§3 Nr. 36 EStG). Darüber hinaus müssen Sie die Einnahmen in Ihrer Steuererklärung angeben.',
   },
 ];
 
@@ -76,7 +76,7 @@ export default function AnleitungHelferPage() {
 
       {/* Print Header */}
       <div className="hidden print:block p-8">
-        <h1 className="text-2xl font-bold">Nachbar.io — Anleitung fuer Helfer</h1>
+        <h1 className="text-2xl font-bold">Nachbar.io — Anleitung für Helfer</h1>
         <p className="text-lg text-gray-600 mt-1">So verdienen Sie Geld mit Nachbarschaftshilfe</p>
         <hr className="mt-4" />
       </div>
@@ -85,11 +85,11 @@ export default function AnleitungHelferPage() {
         {/* Verdienstrechnung */}
         <div className="rounded-2xl bg-[#f0faf4] p-6 mb-6">
           <h2 className="text-lg font-semibold text-gray-900 mb-2">
-            Ihre Verdienstmoeglichkeit
+            Ihre Verdienstmöglichkeit
           </h2>
           <p className="text-base text-gray-600 leading-relaxed mb-3">
-            Bei 15 EUR/Stunde und 2 Einsaetzen pro Woche (je 2h) verdienen Sie ca. <strong>240 EUR/Monat</strong> —
-            abzueglich 19,90 EUR Servicegebuehr = <strong>220 EUR netto</strong>.
+            Bei 15 EUR/Stunde und 2 Einsätzen pro Woche (je 2h) verdienen Sie ca. <strong>240 EUR/Monat</strong> —
+            abzüglich 19,90 EUR Servicegebühr = <strong>220 EUR netto</strong>.
           </p>
           <p className="text-sm text-gray-500">
             Steuerfrei bis 3.000 EUR/Jahr (§3 Nr. 36 EStG)
@@ -118,7 +118,7 @@ export default function AnleitungHelferPage() {
           ))}
         </div>
 
-        {/* Bundesland-Links — geprueft */}
+        {/* Bundesland-Links — geprüft */}
         <h2 className="text-lg font-semibold text-gray-900 mb-3">Regeln in Ihrem Bundesland</h2>
         <div className="space-y-2 mb-4">
           {verifiedStates.map((state) => (
@@ -134,17 +134,17 @@ export default function AnleitungHelferPage() {
               <p className="text-sm text-gray-500 mt-1">
                 {state.training_required
                   ? `${state.training_hours} UE Schulung erforderlich`
-                  : 'Kein Kurs noetig'}
+                  : 'Kein Kurs nötig'}
                 {state.max_concurrent_clients ? ` · Max. ${state.max_concurrent_clients} Klienten` : ''}
               </p>
             </Link>
           ))}
         </div>
 
-        {/* Bundesland-Links — noch nicht geprueft */}
+        {/* Bundesland-Links — noch nicht geprüft */}
         {pendingStates.length > 0 && (
           <div className="mb-6">
-            <h3 className="text-sm font-medium text-gray-500 mb-2">Weitere Bundeslaender (Daten werden recherchiert)</h3>
+            <h3 className="text-sm font-medium text-gray-500 mb-2">Weitere Bundesländer (Daten werden recherchiert)</h3>
             <div className="grid grid-cols-2 gap-2">
               {pendingStates.map((state) => (
                 <Link
@@ -162,8 +162,8 @@ export default function AnleitungHelferPage() {
         {/* Disclaimer */}
         <div className="rounded-xl bg-gray-50 p-4 mb-4">
           <p className="text-xs text-gray-400 leading-relaxed">
-            Allgemeine Informationen, keine Rechtsberatung. Die Regeln koennen sich aendern.
-            Pruefen Sie die aktuellen Vorgaben bei Ihrer zustaendigen Behoerde. Stand: Maerz 2026.
+            Allgemeine Informationen, keine Rechtsberatung. Die Regeln können sich ändern.
+            Prüfen Sie die aktuellen Vorgaben bei Ihrer zuständigen Behörde. Stand: März 2026.
           </p>
         </div>
 

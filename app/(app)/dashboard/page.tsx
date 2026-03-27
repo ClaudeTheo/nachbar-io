@@ -16,6 +16,8 @@ import { PullToRefresh } from "@/components/PullToRefresh";
 import { ReputationBadge } from "@/components/ReputationBadge";
 import { ProfileCompletionBanner } from "@/components/ProfileCompletionBanner";
 import { FloatingHelpButton } from "@/components/FloatingHelpButton";
+import { InfoBar } from "@/components/info/InfoBar";
+import { NinaAlert } from "@/components/info/NinaAlert";
 import { HeroCard } from "@/components/HeroCard";
 import { InviteNeighborModal } from "@/components/InviteNeighborModal";
 import { DailyCheckinButton } from "@/components/care/DailyCheckinButton";
@@ -291,6 +293,9 @@ export default function DashboardPage() {
     <>
       <PullToRefresh onRefresh={loadDashboard}>
         <div className="space-y-6 animate-fade-in-up">
+          {/* NINA-Warnungen (vor Hero, nach Notfall-Banner) */}
+          <NinaAlert />
+
           {/* Hero-Bereich: Begruessung + Check-in */}
           {isUxRedesignEnabled("UX_REDESIGN_DASHBOARD") ? (
             <DashboardHero
@@ -402,6 +407,9 @@ export default function DashboardPage() {
               </div>
             </div>
           )}
+
+          {/* Quartier-Info-Bar (Wetter, Pollen, Muellabfuhr) */}
+          <InfoBar />
 
           {/* Einladungs-Code Banner (Caregiver/Plus) */}
           <RedeemCodeBanner />

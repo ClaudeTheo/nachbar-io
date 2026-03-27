@@ -97,11 +97,11 @@
     },
     {
       "path": "/api/cron/quartier-info-sync",
-      "schedule": "0 * * * *"
+      "schedule": "0 6 * * *"
     },
     {
       "path": "/api/cron/nina-sync",
-      "schedule": "*/5 * * * *"
+      "schedule": "0 7 * * *"
     }
   ],
   "headers": [

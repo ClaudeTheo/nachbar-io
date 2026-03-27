@@ -41,7 +41,7 @@ UPDATE federal_state_rules SET
   allowed_escort = true,
   allowed_leisure = true,
   allowed_snow_removal = true,
-  allowed_lawn_mowing = null,
+  allowed_lawn_mowing = true,
   insurance_note = 'Eigene Haftpflicht empfohlen; keine pauschale gesetzliche Unfallversicherung',
   tax_note = 'Steuerfrei bis 3.000 EUR/Jahr (Uebungsleiterfreibetrag) bei Erfuellung der Voraussetzungen',
   primary_official_url = 'https://sozialministerium.baden-wuerttemberg.de/de/gesundheit-pflege/pflege/ehrenamt-und-selbsthilfe/anerkennung-einzelhelfende',
@@ -54,8 +54,8 @@ UPDATE federal_state_rules SET
   training_required = true,
   training_hours = 8,
   max_concurrent_clients = 3,
-  registration_authority = 'Regionale Fachstelle fuer Pflege- und Behinderteneinrichtungen',
-  notes = 'Registrierung bei Fachstelle erforderlich; Registrierung = Anerkennung. Gartenarbeit und hausmeisterliche Taetigkeiten ausdruecklich ausgeschlossen.',
+  registration_authority = 'Regionale Fachstelle fuer Demenz und Pflege',
+  notes = 'Registrierung bei Fachstelle fuer Demenz und Pflege erforderlich; Registrierung = Anerkennung. Gartenarbeit und hausmeisterliche Taetigkeiten ausdruecklich ausgeschlossen. Schulung: 8 Unterrichtseinheiten (UE) a 45 Minuten = 6 Zeitstunden.',
   research_status = 'checked_official_sources',
   last_checked = '2026-03-27',
   recognition_type = 'Registrierung bei regionaler Fachstelle; Registrierung = Anerkennung',
@@ -73,7 +73,7 @@ UPDATE federal_state_rules SET
   allowed_snow_removal = false,
   allowed_lawn_mowing = false,
   insurance_note = 'Haftpflicht- und Unfallversicherung erforderlich; ggf. Bayerische Ehrenamtsversicherung',
-  tax_note = 'Ggf. steuerfrei; VV-AVSG verweist auf ehrenamtliche Steuerfreigrenzen',
+  tax_note = 'Ggf. steuerfrei nach § 3 Nr. 36 EStG (Aufwandsentschaedigung fuer Pflegepersonen); Bayerische Ehrenamtsversicherung bietet subsidiaeren Versicherungsschutz',
   primary_official_url = 'https://www.stmgp.bayern.de/pflege/pflege-zu-hause/angebote-zur-unterstuetzung-im-alltag/',
   secondary_official_url = 'https://www.gesetze-bayern.de/Content/Document/BayAVSG-82'
 WHERE state_code = 'BY';

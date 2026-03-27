@@ -133,7 +133,7 @@ export default function AnleitungHelferPage() {
               </div>
               <p className="text-sm text-gray-500 mt-1">
                 {state.training_required
-                  ? `${state.training_hours}h Schulung erforderlich`
+                  ? `${state.training_hours} UE Schulung erforderlich`
                   : 'Kein Kurs noetig'}
                 {state.max_concurrent_clients ? ` · Max. ${state.max_concurrent_clients} Klienten` : ''}
               </p>

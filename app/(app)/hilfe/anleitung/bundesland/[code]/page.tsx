@@ -73,7 +73,7 @@ export default async function BundeslandPage({
             <div className="flex justify-between py-2 border-b border-gray-100">
               <span className="text-gray-600">Schulung erforderlich</span>
               <span className="font-medium">
-                {state.training_required ? `Ja (${state.training_hours}h)` : 'Nein'}
+                {state.training_required ? `Ja (${state.training_hours} UE a 45 Min.)` : 'Nein'}
               </span>
             </div>
             {state.formal_pre_registration !== null && (

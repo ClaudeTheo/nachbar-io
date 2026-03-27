@@ -2,6 +2,7 @@ import { ChevronLeft, ExternalLink } from 'lucide-react';
 import Link from 'next/link';
 import { getAllStates, getStateRules } from '@/lib/hilfe/federal-states';
 import { notFound } from 'next/navigation';
+import { InfoHint } from '../InfoHint';
 
 export function generateStaticParams() {
   return getAllStates().map((s) => ({ code: s.state_code }));
@@ -20,13 +21,13 @@ export default async function BundeslandPage({
 
   // Erlaubte Taetigkeiten sammeln
   const activities = [
-    { label: 'Haushaltshilfe', value: state.allowed_household },
-    { label: 'Putzen/Reinigung', value: state.allowed_cleaning },
-    { label: 'Einkaufen', value: state.allowed_shopping },
-    { label: 'Arztbegleitung', value: state.allowed_escort },
-    { label: 'Freizeitbegleitung', value: state.allowed_leisure },
-    { label: 'Schneeraeumen', value: state.allowed_snow_removal },
-    { label: 'Rasenmaehen', value: state.allowed_lawn_mowing },
+    { label: 'Haushaltshilfe', value: state.allowed_household, hint: 'Zum Beispiel Kochen, Aufräumen oder Wäsche machen.' },
+    { label: 'Putzen/Reinigung', value: state.allowed_cleaning, hint: 'Böden wischen, Staub wischen oder Bad reinigen.' },
+    { label: 'Einkaufen', value: state.allowed_shopping, hint: 'Lebensmittel oder Dinge des täglichen Bedarfs besorgen.' },
+    { label: 'Arztbegleitung', value: state.allowed_escort, hint: 'Die Person zum Arzt, zur Apotheke oder zu Behörden begleiten.' },
+    { label: 'Freizeitbegleitung', value: state.allowed_leisure, hint: 'Gemeinsame Spaziergänge, Vorlesen oder Gesellschaft leisten.' },
+    { label: 'Schneeräumen', value: state.allowed_snow_removal, hint: 'Den Gehweg oder die Einfahrt von Schnee befreien.' },
+    { label: 'Rasenmähen', value: state.allowed_lawn_mowing, hint: 'Rasen mähen oder leichte Gartenarbeit.' },
   ];
   const hasActivities = activities.some((a) => a.value !== null);
 
@@ -70,41 +71,62 @@ export default async function BundeslandPage({
           <h2 className="text-lg font-semibold text-gray-900">Regeln fuer {state.state_name}</h2>
 
           <div className="grid gap-3">
-            <div className="flex justify-between py-2 border-b border-gray-100">
-              <span className="text-gray-600">Schulung erforderlich</span>
+            <div className="flex justify-between items-start py-2 border-b border-gray-100">
+              <span className="text-gray-600 flex items-center">
+                Schulung erforderlich
+                <InfoHint text="Manche Bundesländer verlangen einen kurzen Kurs, bevor Sie als Helfer starten dürfen. Eine UE (Unterrichtseinheit) dauert 45 Minuten." />
+              </span>
               <span className="font-medium">
                 {state.training_required ? `Ja (${state.training_hours} UE a 45 Min.)` : 'Nein'}
               </span>
             </div>
             {state.formal_pre_registration !== null && (
-              <div className="flex justify-between py-2 border-b border-gray-100">
-                <span className="text-gray-600">Vorab-Registrierung</span>
+              <div className="flex justify-between items-start py-2 border-b border-gray-100">
+                <span className="text-gray-600 flex items-center">
+                  Vorab-Registrierung
+                  <InfoHint text="Müssen Sie sich bei einer Behörde anmelden, bevor Sie als Helfer anfangen dürfen? Wenn ja, geht das meistens online oder telefonisch." />
+                </span>
                 <span className="font-medium">
                   {state.formal_pre_registration ? 'Ja' : 'Nein'}
                 </span>
               </div>
             )}
-            <div className="flex justify-between py-2 border-b border-gray-100">
-              <span className="text-gray-600">Mindestalter</span>
+            <div className="flex justify-between items-start py-2 border-b border-gray-100">
+              <span className="text-gray-600 flex items-center">
+                Mindestalter
+                <InfoHint text="Ab diesem Alter dürfen Sie als Nachbarschaftshelfer tätig werden und mit der Pflegekasse abrechnen." />
+              </span>
               <span className="font-medium">{state.min_age} Jahre</span>
             </div>
-            <div className="flex justify-between py-2 border-b border-gray-100">
-              <span className="text-gray-600">Max. Klienten gleichzeitig</span>
+            <div className="flex justify-between items-start py-2 border-b border-gray-100">
+              <span className="text-gray-600 flex items-center">
+                Max. Klienten gleichzeitig
+                <InfoHint text="So viele Personen dürfen Sie höchstens gleichzeitig betreuen. Mehr sind nicht erlaubt, damit die Qualität der Hilfe stimmt." />
+              </span>
               <span className="font-medium">
                 {state.max_concurrent_clients ?? 'Kein Limit'}
               </span>
             </div>
-            <div className="flex justify-between py-2 border-b border-gray-100">
-              <span className="text-gray-600">Verwandtschaftsausschluss</span>
+            <div className="flex justify-between items-start py-2 border-b border-gray-100">
+              <span className="text-gray-600 flex items-center">
+                Verwandtschaftsausschluss
+                <InfoHint text="Sie dürfen keine nahen Verwandten betreuen und dafür Geld bekommen. 2. Grad bedeutet: Eltern, Kinder, Geschwister, Großeltern und Enkel sind ausgeschlossen." />
+              </span>
               <span className="font-medium">Bis {state.relationship_exclusion_degree}. Grad</span>
             </div>
-            <div className="flex justify-between py-2 border-b border-gray-100">
-              <span className="text-gray-600">Gleicher Haushalt ausgeschlossen</span>
+            <div className="flex justify-between items-start py-2 border-b border-gray-100">
+              <span className="text-gray-600 flex items-center">
+                Gleicher Haushalt ausgeschlossen
+                <InfoHint text="Wohnen Sie mit der Person zusammen, dürfen Sie die Hilfe nicht über die Pflegekasse abrechnen." />
+              </span>
               <span className="font-medium">{state.same_household_excluded ? 'Ja' : 'Nein'}</span>
             </div>
             {state.direct_payment_possible !== null && (
-              <div className="flex justify-between py-2 border-b border-gray-100">
-                <span className="text-gray-600">Direktzahlung an Helfer</span>
+              <div className="flex justify-between items-start py-2 border-b border-gray-100">
+                <span className="text-gray-600 flex items-center">
+                  Direktzahlung an Helfer
+                  <InfoHint text="Kann die Pflegekasse das Geld direkt an Sie als Helfer überweisen? Wenn ja, brauchen Sie eine Abtretungserklärung (ein kurzes Formular)." />
+                </span>
                 <span className="font-medium">
                   {state.direct_payment_possible ? 'Ja' : 'Nein'}
                 </span>
@@ -116,7 +138,10 @@ export default async function BundeslandPage({
         {/* Stundensatz-Hinweis */}
         {(state.hourly_rate_min_cents || state.hourly_rate_max_cents || state.hourly_rate_note) && (
           <div className="rounded-2xl border border-gray-200 p-6 space-y-2">
-            <h3 className="font-semibold text-gray-900">Stundensatz</h3>
+            <h3 className="font-semibold text-gray-900 flex items-center">
+              Stundensatz
+              <InfoHint text="So viel können Sie pro Stunde für Ihre Hilfe verlangen. Der Betrag wird aus dem Entlastungsbetrag der pflegebedürftigen Person bezahlt (bis zu 131 EUR pro Monat)." />
+            </h3>
             {state.hourly_rate_min_cents && state.hourly_rate_max_cents && (
               <p className="text-2xl font-bold text-[#4CAF87]">
                 {(state.hourly_rate_min_cents / 100).toFixed(2)} – {(state.hourly_rate_max_cents / 100).toFixed(2)} EUR/Stunde
@@ -131,7 +156,10 @@ export default async function BundeslandPage({
         {/* Erlaubte Taetigkeiten */}
         {hasActivities && (
           <div className="rounded-2xl border border-gray-200 p-6 space-y-3">
-            <h3 className="font-semibold text-gray-900">Erlaubte Taetigkeiten</h3>
+            <h3 className="font-semibold text-gray-900 flex items-center">
+              Erlaubte Taetigkeiten
+              <InfoHint text="Nur diese Tätigkeiten können Sie über die Pflegekasse abrechnen. Andere Arbeiten (z.B. Handwerkerarbeiten oder Gebäudereparaturen) zählen nicht dazu." />
+            </h3>
             <div className="grid gap-2">
               {activities.map((a) => (
                 a.value !== null && (
@@ -142,6 +170,7 @@ export default async function BundeslandPage({
                     <span className={`text-sm ${a.value ? 'text-gray-700' : 'text-gray-400 line-through'}`}>
                       {a.label}
                     </span>
+                    <InfoHint text={a.hint} />
                   </div>
                 )
               ))}
@@ -152,7 +181,10 @@ export default async function BundeslandPage({
         {/* Anerkennung */}
         {state.recognition_type && (
           <div className="rounded-2xl border border-gray-200 p-6 space-y-2">
-            <h3 className="font-semibold text-gray-900">Anerkennungsverfahren</h3>
+            <h3 className="font-semibold text-gray-900 flex items-center">
+              Anerkennungsverfahren
+              <InfoHint text="So werden Sie offiziell als Nachbarschaftshelfer anerkannt. Erst mit dieser Anerkennung können Sie über die Pflegekasse abrechnen." />
+            </h3>
             <p className="text-sm text-gray-600">{state.recognition_type}</p>
           </div>
         )}
@@ -163,13 +195,19 @@ export default async function BundeslandPage({
             <h3 className="font-semibold text-gray-900">Wichtige Hinweise</h3>
             {state.insurance_note && (
               <div>
-                <p className="text-xs font-medium text-gray-500 uppercase mb-1">Versicherung</p>
+                <p className="text-xs font-medium text-gray-500 uppercase mb-1 flex items-center">
+                  Versicherung
+                  <InfoHint text="Wenn beim Helfen etwas kaputt geht oder jemand sich verletzt, schützt Sie eine Versicherung vor Kosten. Prüfen Sie, ob Ihre private Haftpflicht das abdeckt." />
+                </p>
                 <p className="text-sm text-gray-600">{state.insurance_note}</p>
               </div>
             )}
             {state.tax_note && (
               <div>
-                <p className="text-xs font-medium text-gray-500 uppercase mb-1">Steuern</p>
+                <p className="text-xs font-medium text-gray-500 uppercase mb-1 flex items-center">
+                  Steuern
+                  <InfoHint text="Bis zu einem bestimmten Betrag pro Jahr müssen Sie auf Ihre Einnahmen als Helfer keine Steuern zahlen. Tragen Sie die Einnahmen trotzdem in Ihre Steuererklärung ein." />
+                </p>
                 <p className="text-sm text-gray-600">{state.tax_note}</p>
               </div>
             )}
@@ -184,7 +222,10 @@ export default async function BundeslandPage({
 
         {state.registration_authority && (
           <div className="rounded-2xl border border-gray-200 p-6">
-            <h3 className="font-semibold text-gray-900 mb-2">Zustaendige Stelle</h3>
+            <h3 className="font-semibold text-gray-900 mb-2 flex items-center">
+              Zustaendige Stelle
+              <InfoHint text="An diese Behörde wenden Sie sich, wenn Sie Fragen haben oder sich registrieren möchten. Die können Ihnen auch bei der Abrechnung helfen." />
+            </h3>
             <p className="text-sm text-gray-600">{state.registration_authority}</p>
           </div>
         )}

@@ -1,5 +1,5 @@
 import SubscriptionManager from "@/components/hilfe/SubscriptionManager";
-import HilfeNav from "@/components/hilfe/HilfeNav";
+import { HilfeNav } from "@/components/hilfe/HilfeNav";
 
 export default function AboPage() {
   return (

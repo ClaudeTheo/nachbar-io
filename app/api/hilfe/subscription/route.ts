@@ -3,6 +3,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { getStripe } from "@/lib/hilfe/stripe";
+import type Stripe from "stripe";
 
 export async function GET() {
   const supabase = await createClient();

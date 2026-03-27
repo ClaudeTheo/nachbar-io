@@ -1,6 +1,6 @@
 import ConnectionManager from "@/components/hilfe/ConnectionManager";
 import InviteCodeInput from "@/components/hilfe/InviteCodeInput";
-import HilfeNav from "@/components/hilfe/HilfeNav";
+import { HilfeNav } from "@/components/hilfe/HilfeNav";
 
 export default function VerbindungenPage() {
   return (

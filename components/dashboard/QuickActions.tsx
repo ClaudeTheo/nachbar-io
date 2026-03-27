@@ -51,7 +51,7 @@ export function QuickActions() {
               key={action.href}
               href={action.href}
               onClick={() => haptic("light")}
-              className={`${action.bgColor} flex flex-col items-center justify-center gap-2 rounded-2xl p-5 text-white shadow-soft transition-all duration-200 active:scale-[0.96] active:shadow-lg hover:brightness-110`}
+              className={`${action.bgColor} flex flex-col items-center justify-center gap-2 rounded-2xl p-5 text-white shadow-soft transition-all duration-200 animate-card-lift active:shadow-lg hover:brightness-110`}
             >
               <Icon className="h-8 w-8" strokeWidth={1.5} />
               <span className="text-sm font-semibold">{action.label}</span>

@@ -84,6 +84,24 @@ export function VoiceAssistantFAB() {
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
 
+  // Scroll-Hide: FAB verschwindet bei Scroll-Down, erscheint bei Scroll-Up
+  const [fabVisible, setFabVisible] = useState(true);
+  const lastScrollYRef = useRef(0);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const currentY = window.scrollY;
+      if (currentY > lastScrollYRef.current + 10) {
+        setFabVisible(false);
+      } else if (currentY < lastScrollYRef.current - 10) {
+        setFabVisible(true);
+      }
+      lastScrollYRef.current = currentY;
+    };
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
   // Engine lazy initialisieren (nur im Browser)
   const engineRef = useRef<SpeechEngine | null | undefined>(undefined);
   if (mounted && engineRef.current === undefined) {
@@ -427,19 +445,21 @@ export function VoiceAssistantFAB() {
 
   return (
     <>
-      {/* Floating Action Button — immer gruen */}
+      {/* Floating Action Button — violett, 56px, scroll-hide, dezentes Pulsieren */}
       <button
         onClick={handleFabClick}
-        className="fixed bottom-24 right-4 z-40 flex items-center justify-center rounded-full shadow-lg bg-[#4CAF87] transition-all hover:scale-110 active:scale-95"
+        className={`fixed bottom-24 right-4 z-40 flex items-center justify-center rounded-full shadow-lg bg-violet-500 text-white animate-fab-pulse transition-all hover:scale-110 active:scale-95 ${
+          fabVisible ? "fab-visible" : "fab-hidden"
+        }`}
         style={{
-          minWidth: "56px",
-          minHeight: "56px",
+          width: "56px",
+          height: "56px",
           touchAction: "manipulation",
         }}
         aria-label="Sprachassistent"
         data-testid="voice-assistant-fab"
       >
-        <Mic className="h-6 w-6 text-white" />
+        <Mic className="h-6 w-6" />
       </button>
 
       {/* Bottom-Sheet */}

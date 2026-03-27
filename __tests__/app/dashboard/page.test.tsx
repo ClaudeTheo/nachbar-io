@@ -19,12 +19,35 @@ vi.mock('next/link', () => ({
   ),
 }));
 
-// lucide-react
+// lucide-react — alle Icons die von Dashboard-Komponenten transitiv genutzt werden
 vi.mock('lucide-react', () => ({
   Bell: (props: Record<string, unknown>) => <svg data-testid="icon-bell" {...props} />,
   ChevronRight: (props: Record<string, unknown>) => <svg data-testid="icon-chevron-right" {...props} />,
   Plus: (props: Record<string, unknown>) => <svg data-testid="icon-plus" {...props} />,
   UserPlus: (props: Record<string, unknown>) => <svg data-testid="icon-user-plus" {...props} />,
+  // QuickActions
+  Clipboard: (props: Record<string, unknown>) => <svg data-testid="icon-clipboard" {...props} />,
+  ShoppingBag: (props: Record<string, unknown>) => <svg data-testid="icon-shopping-bag" {...props} />,
+  CalendarDays: (props: Record<string, unknown>) => <svg data-testid="icon-calendar-days" {...props} />,
+  AlertTriangle: (props: Record<string, unknown>) => <svg data-testid="icon-alert-triangle" {...props} />,
+  // DiscoverGrid
+  MapPin: (props: Record<string, unknown>) => <svg data-testid="icon-map-pin" {...props} />,
+  HandHeart: (props: Record<string, unknown>) => <svg data-testid="icon-hand-heart" {...props} />,
+  PartyPopper: (props: Record<string, unknown>) => <svg data-testid="icon-party-popper" {...props} />,
+  Star: (props: Record<string, unknown>) => <svg data-testid="icon-star" {...props} />,
+  Search: (props: Record<string, unknown>) => <svg data-testid="icon-search" {...props} />,
+  MessageCircle: (props: Record<string, unknown>) => <svg data-testid="icon-message-circle" {...props} />,
+  Wrench: (props: Record<string, unknown>) => <svg data-testid="icon-wrench" {...props} />,
+  Trash2: (props: Record<string, unknown>) => <svg data-testid="icon-trash-2" {...props} />,
+  Building2: (props: Record<string, unknown>) => <svg data-testid="icon-building-2" {...props} />,
+  Paperclip: (props: Record<string, unknown>) => <svg data-testid="icon-paperclip" {...props} />,
+  Lightbulb: (props: Record<string, unknown>) => <svg data-testid="icon-lightbulb" {...props} />,
+  ShoppingCart: (props: Record<string, unknown>) => <svg data-testid="icon-shopping-cart" {...props} />,
+  ClipboardList: (props: Record<string, unknown>) => <svg data-testid="icon-clipboard-list" {...props} />,
+  Stethoscope: (props: Record<string, unknown>) => <svg data-testid="icon-stethoscope" {...props} />,
+  ChevronDown: (props: Record<string, unknown>) => <svg data-testid="icon-chevron-down" {...props} />,
+  // help-requests-section
+  X: (props: Record<string, unknown>) => <svg data-testid="icon-x" {...props} />,
 }));
 
 // sonner

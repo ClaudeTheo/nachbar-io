@@ -221,6 +221,109 @@ h1, h2, h3, h4 {
 }
 
 /* ============================================================
+   UX-REDESIGN PHASE 3 — Seiten-Uebergaenge + Micro-Interactions
+   ============================================================ */
+
+/* Seiten-Uebergang: Slide + Fade rein */
+@keyframes page-enter {
+  from {
+    opacity: 0;
+    transform: translateX(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* Seiten-Uebergang: Slide + Fade raus */
+@keyframes page-exit {
+  from {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateX(-16px);
+  }
+}
+
+/* Seiten-Uebergang: Nur Fade */
+@keyframes page-fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.animate-page-enter {
+  animation: page-enter 250ms ease-out both;
+}
+
+.animate-page-exit {
+  animation: page-exit 200ms ease-in both;
+}
+
+.animate-page-fade {
+  animation: page-fade 250ms ease-out both;
+}
+
+/* Nav-Tap Bounce */
+@keyframes nav-tap-bounce {
+  0% { transform: scale(1); }
+  40% { transform: scale(0.88); }
+  70% { transform: scale(1.04); }
+  100% { transform: scale(1); }
+}
+
+.animate-nav-tap:active {
+  animation: nav-tap-bounce 250ms ease-out;
+}
+
+/* Card-Lift Micro-Interaction */
+@keyframes card-lift {
+  0% { transform: translateY(0); box-shadow: 0 1px 4px rgba(61,61,80,0.04); }
+  100% { transform: translateY(-3px); box-shadow: 0 8px 20px rgba(61,61,80,0.10); }
+}
+
+.animate-card-lift:active {
+  animation: card-lift 200ms ease-out forwards;
+}
+
+/* Strichzeichnung-Spinner (kreisender Stift) */
+@keyframes sketch-spinner {
+  0% { stroke-dashoffset: 283; transform: rotate(0deg); }
+  50% { stroke-dashoffset: 70; }
+  100% { stroke-dashoffset: 283; transform: rotate(360deg); }
+}
+
+.animate-sketch-spinner {
+  animation: sketch-spinner 1.5s ease-in-out infinite;
+  stroke-dasharray: 283;
+}
+
+/* FAB-Puls (dezent, alle 30s) */
+@keyframes fab-pulse {
+  0%, 95%, 100% { box-shadow: 0 4px 12px rgba(139,92,246,0.3); }
+  97.5% { box-shadow: 0 4px 20px rgba(139,92,246,0.5), 0 0 0 8px rgba(139,92,246,0.1); }
+}
+
+.animate-fab-pulse {
+  animation: fab-pulse 30s ease-in-out infinite;
+}
+
+/* FAB Scroll-Verhalten */
+.fab-hidden {
+  transform: translateY(120px);
+  opacity: 0;
+  transition: transform 300ms ease-in, opacity 200ms ease-in;
+}
+
+.fab-visible {
+  transform: translateY(0);
+  opacity: 1;
+  transition: transform 300ms ease-out, opacity 200ms ease-out;
+}
+
+/* ============================================================
    APP ANIMATIONS
    ============================================================ */
 
@@ -472,6 +575,13 @@ h1, h2, h3, h4 {
   .animate-float,
   .animate-btn-bounce:active,
   .animate-badge-pop,
+  .animate-page-enter,
+  .animate-page-exit,
+  .animate-page-fade,
+  .animate-nav-tap:active,
+  .animate-card-lift:active,
+  .animate-sketch-spinner,
+  .animate-fab-pulse,
   .animate-house-build,
   .animate-window-glow,
   .animate-pulse-ring,

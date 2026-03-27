@@ -172,8 +172,8 @@ describe("VoiceAssistantFAB (Push-to-Talk + Companion)", () => {
       await import("@/components/VoiceAssistantFAB");
     const { getByTestId } = render(<VoiceAssistantFAB />);
     const btn = getByTestId("voice-assistant-fab");
-    expect(btn.style.minWidth).toBe("56px");
-    expect(btn.style.minHeight).toBe("56px");
+    expect(btn.style.width).toBe("56px");
+    expect(btn.style.height).toBe("56px");
   });
 
   it("oeffnet Sheet im idle-State bei FAB-Klick (keine Aufnahme)", async () => {

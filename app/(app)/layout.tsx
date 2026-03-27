@@ -1,6 +1,7 @@
 import { BottomNav } from "@/components/BottomNav";
 import { HeartbeatProvider } from "@/components/HeartbeatProvider";
 import { InstallPrompt } from "@/components/InstallPrompt";
+import { PageTransition } from "@/components/PageTransition";
 import { PendingVerificationBanner } from "@/components/PendingVerificationBanner";
 import { QuarterProvider } from "@/lib/quarters";
 import { BugReportButton } from "@/components/BugReportButton";
@@ -38,7 +39,9 @@ export default function AppLayout({
           <HeartbeatProvider>
             <GlobalCallListener />
             <PresenceHeartbeat />
-            <main id="main-content" className="mx-auto max-w-lg px-4 pt-4">{children}</main>
+            <main id="main-content" className="mx-auto max-w-lg px-4 pt-4">
+              <PageTransition>{children}</PageTransition>
+            </main>
           </HeartbeatProvider>
           <BugReportButton />
           <VoiceAssistantFAB />

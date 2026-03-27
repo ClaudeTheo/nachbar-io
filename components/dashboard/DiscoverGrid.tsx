@@ -173,7 +173,7 @@ function DiscoverTile({ item }: { item: DiscoverItem }) {
     <Link
       href={item.href}
       onClick={() => haptic("light")}
-      className={`flex flex-col items-center gap-1.5 rounded-xl ${item.bgColor} p-3 transition-all duration-200 active:scale-[0.95] hover:shadow-soft`}
+      className={`flex flex-col items-center gap-1.5 rounded-xl ${item.bgColor} p-3 transition-all duration-200 animate-card-lift hover:shadow-soft`}
     >
       <Icon className={`h-6 w-6 ${item.iconColor}`} strokeWidth={1.5} />
       <span className="text-xs font-medium text-anthrazit">{item.label}</span>

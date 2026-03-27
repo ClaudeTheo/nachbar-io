@@ -6,7 +6,7 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { getAllStates } from '@/lib/hilfe/federal-states';
 import type { FederalStateRule } from '@/lib/hilfe/types';
 
@@ -24,7 +24,7 @@ export function HelperRegistrationForm() {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
 
-  const selectedState: FederalStateRule | undefined = states.find(
+  const _selectedState: FederalStateRule | undefined = states.find(
     (s) => s.state_code === federalState,
   );
   const isBremen = federalState === 'HB';

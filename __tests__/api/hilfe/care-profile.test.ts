@@ -26,7 +26,7 @@ describe('GET /api/hilfe/care-profile', () => {
 
   it('gibt 401 ohne Authentifizierung zurueck', async () => {
     // Kein User gesetzt → auth.getUser gibt null zurueck
-    const req = new NextRequest('http://localhost/api/hilfe/care-profile');
+    const _req = new NextRequest('http://localhost/api/hilfe/care-profile');
     const res = await GET();
     expect(res.status).toBe(401);
     const body = await res.json();

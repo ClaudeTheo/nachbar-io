@@ -69,13 +69,10 @@ const mockFrom = vi.fn().mockImplementation((table: string) => {
     };
   }
   if (table === "household_members") {
+    // Proxy-Chain mit single() am Ende → household-Lookup
+    const proxy = createChainProxy(mockHouseholdResult);
     return {
-      select: () => createChainProxy({ data: null, error: null }),
-      // Proxy-Chain mit single() am Ende → household-Lookup
-      ...(() => {
-        const proxy = createChainProxy(mockHouseholdResult);
-        return { select: () => proxy };
-      })(),
+      select: () => proxy,
     };
   }
   return { select: () => createChainProxy({ data: null, error: null }) };

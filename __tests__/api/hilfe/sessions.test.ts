@@ -19,7 +19,7 @@ function makePostRequest(url: string, body: Record<string, unknown>): NextReques
   }) as unknown as NextRequest;
 }
 
-function makeGetRequest(url = 'http://localhost/api/hilfe/sessions'): NextRequest {
+function _makeGetRequest(url = 'http://localhost/api/hilfe/sessions'): NextRequest {
   const req = new Request(url, { method: 'GET' });
   Object.defineProperty(req, 'nextUrl', { value: new URL(url) });
   return req as unknown as NextRequest;

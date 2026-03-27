@@ -4,22 +4,28 @@
 
 import { createHmac } from "crypto";
 
-const HASH_SECRET = process.env.RESIDENT_HASH_SECRET;
+const DEV_FALLBACK = "nachbar-io-dev-resident-hash-2026";
 
-if (!HASH_SECRET && process.env.NODE_ENV === "production") {
-  throw new Error("RESIDENT_HASH_SECRET environment variable is required in production");
+function getSecret(): string {
+  const secret = process.env.RESIDENT_HASH_SECRET;
+  if (!secret && process.env.NODE_ENV === "production" && typeof window === "undefined") {
+    // Erlaube Build-Phase (next build collectPageData) ohne Secret
+    if (process.env.NEXT_PHASE === "phase-production-build") {
+      return DEV_FALLBACK;
+    }
+    throw new Error("RESIDENT_HASH_SECRET environment variable is required in production");
+  }
+  return secret || DEV_FALLBACK;
 }
-
-const SECRET = HASH_SECRET || "nachbar-io-dev-resident-hash-2026";
 
 // Erzeugt eine anonyme ID aus einer echten User-ID (nicht umkehrbar ohne Secret)
 export function hashUserId(userId: string): string {
-  return createHmac("sha256", SECRET).update(userId).digest("hex").slice(0, 16);
+  return createHmac("sha256", getSecret()).update(userId).digest("hex").slice(0, 16);
 }
 
 // Erzeugt eine anonyme ID aus einer Household-ID
 export function hashHouseholdId(householdId: string): string {
-  return createHmac("sha256", SECRET)
+  return createHmac("sha256", getSecret())
     .update(`hh:${householdId}`)
     .digest("hex")
     .slice(0, 16);

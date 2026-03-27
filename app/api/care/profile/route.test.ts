@@ -112,7 +112,7 @@ describe('GET /api/care/profile', () => {
   });
 
   it('gibt 403 bei fehlendem Fremd-Zugriff', async () => {
-    vi.mocked(requireCareAccess).mockResolvedValueOnce(null as unknown as string);
+    vi.mocked(requireCareAccess).mockResolvedValueOnce(null);
     mockSupabase.setUser({ id: 'fremder-1', email: 'fremder@test.de' });
 
     const res = await GET(createGetRequest({ senior_id: 'user-1' }));

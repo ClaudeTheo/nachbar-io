@@ -76,7 +76,7 @@ export async function POST(request: NextRequest) {
   }
 
   // Mindestalter pruefen
-  if (!validateHelperAge(date_of_birth, federal_state)) {
+  if (!validateHelperAge(federal_state, new Date(date_of_birth))) {
     return NextResponse.json(
       { error: 'Sie muessen mindestens 16 Jahre alt sein, um sich als Helfer zu registrieren.' },
       { status: 400 },

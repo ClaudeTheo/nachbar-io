@@ -74,7 +74,7 @@ describe('GET /api/care/helpers', () => {
 
   it('gibt 403 bei fehlendem Zugriff auf Senior', async () => {
     mockSupabase.setUser({ id: 'fremder-1' });
-    vi.mocked(requireCareAccess).mockResolvedValueOnce(null as unknown as string);
+    vi.mocked(requireCareAccess).mockResolvedValueOnce(null);
 
     const res = await GET(createGetRequest({ senior_id: 'senior-1' }));
     expect(res.status).toBe(403);

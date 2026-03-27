@@ -7,6 +7,8 @@ const navItems = [
   { href: "/hilfe", label: "Gesuche" },
   { href: "/hilfe/profil", label: "Mein Profil" },
   { href: "/hilfe/budget", label: "Budget" },
+  { href: "/hilfe/verbindungen", label: "Verbindungen" },
+  { href: "/hilfe/abo", label: "Abo" },
   { href: "/hilfe/helfer-werden", label: "Helfer werden" },
 ];
 

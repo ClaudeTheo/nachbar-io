@@ -90,6 +90,10 @@
     {
       "path": "/api/cron/amtsblatt-sync",
       "schedule": "0 8 * * 6"
+    },
+    {
+      "path": "/api/cron/hilfe-reminder",
+      "schedule": "0 9 28 * *"
     }
   ],
   "headers": [
@@ -97,14 +101,15 @@
       "source": "/sw.js",
       "headers": [
         { "key": "Service-Worker-Allowed", "value": "/" },
-        { "key": "Cache-Control", "value": "no-cache, no-store, must-revalidate" }
+        {
+          "key": "Cache-Control",
+          "value": "no-cache, no-store, must-revalidate"
+        }
       ]
     },
     {
       "source": "/manifest.json",
-      "headers": [
-        { "key": "Cache-Control", "value": "public, max-age=3600" }
-      ]
+      "headers": [{ "key": "Cache-Control", "value": "public, max-age=3600" }]
     }
   ]
 }

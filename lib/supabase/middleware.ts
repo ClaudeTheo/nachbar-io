@@ -53,7 +53,9 @@ export async function updateSession(request: NextRequest) {
     request.nextUrl.pathname.startsWith("/b2b") ||
     request.nextUrl.pathname.startsWith("/account-loeschen") ||
     request.nextUrl.pathname.startsWith("/support") ||
-    request.nextUrl.pathname.startsWith("/richtlinien");
+    request.nextUrl.pathname.startsWith("/richtlinien") ||
+    request.nextUrl.pathname.startsWith("/weather-demo") ||
+    request.nextUrl.pathname.startsWith("/apple-demo");
   // Terminal-Seite authentifiziert sich ueber Token in der URL, nicht ueber Session
   const isTerminalPage = request.nextUrl.pathname.startsWith("/terminal");
   // Jugend-Freigabe: Oeffentliche Elternfreigabe-Seiten (via SMS-Token, kein Login)

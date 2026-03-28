@@ -291,7 +291,7 @@ export default function DashboardPage() {
         <div className="mb-4 text-5xl" aria-hidden="true">
           🏘️
         </div>
-        <h1 className="text-xl font-bold text-anthrazit">
+        <h1 className="text-xl font-extrabold text-anthrazit">
           Willkommen bei QuartierApp
         </h1>
         <p className="mt-2 max-w-sm text-sm text-muted-foreground">
@@ -354,7 +354,7 @@ export default function DashboardPage() {
                   )}
                   <div>
                     <h1
-                      className="flex items-center gap-2 text-2xl font-bold text-anthrazit"
+                      className="flex items-center gap-2 text-2xl font-extrabold text-anthrazit"
                       data-testid="dashboard-greeting"
                     >
                       {userName ? (

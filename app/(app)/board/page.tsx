@@ -16,6 +16,7 @@ import { BoardComments } from "@/components/BoardComments";
 import { validateImageFile, compressImage, MAX_DIMENSION } from "@/lib/storage";
 import { GuidelinesGate } from "@/components/moderation/GuidelinesAcceptance";
 import { LargeTitle } from "@/components/ui/LargeTitle";
+import { SegmentedControl } from "@/components/ui/SegmentedControl";
 
 export default function BoardPage() {
   const { user } = useAuth();
@@ -25,6 +26,7 @@ export default function BoardPage() {
   const [newPost, setNewPost] = useState("");
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [boardFilter, setBoardFilter] = useState("Alle");
   const { currentQuarter } = useQuarter();
 
   const loadPosts = useCallback(async () => {
@@ -270,75 +272,87 @@ export default function BoardPage() {
           </div>
         </div>
 
+        {/* Board Filter */}
+        <SegmentedControl
+          items={["Alle", "Meine"]}
+          active={boardFilter}
+          onChange={setBoardFilter}
+        />
+
         {/* Beiträge */}
-        {posts.length > 0 ? (
-          <div className="divide-y divide-[#ebe5dd]">
-            {posts.map((post) => (
-              <div
-                key={post.id}
-                className="px-4 py-4"
-              >
-                <div className="flex items-start gap-3">
-                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-purple-100 text-sm font-bold text-purple-700">
-                    {(post.user?.display_name ?? "?")[0].toUpperCase()}
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm font-semibold text-anthrazit">
-                        {post.user?.display_name ?? "Nachbar"}
-                      </span>
-                      <span className="text-xs text-muted-foreground">
-                        {formatDistanceToNow(new Date(post.created_at), {
-                          addSuffix: true,
-                          locale: de,
-                        })}
-                      </span>
+        {(() => {
+          const filtered =
+            boardFilter === "Meine"
+              ? posts.filter((p) => p.user_id === user?.id)
+              : posts;
+          return filtered.length > 0 ? (
+            <div className="divide-y divide-[#ebe5dd]">
+              {filtered.map((post) => (
+                <div key={post.id} className="px-4 py-4">
+                  <div className="flex items-start gap-3">
+                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-purple-100 text-sm font-bold text-purple-700">
+                      {(post.user?.display_name ?? "?")[0].toUpperCase()}
                     </div>
-                    <p className="mt-1 text-sm text-anthrazit whitespace-pre-line">
-                      {post.title}
-                    </p>
-                    {/* Bild */}
-                    {(post as HelpRequest & { image_url?: string })
-                      .image_url && (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img
-                        src={
-                          (post as HelpRequest & { image_url?: string })
-                            .image_url!
-                        }
-                        alt="Bild zum Beitrag"
-                        className="mt-2 max-h-48 rounded-lg object-cover"
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm font-semibold text-anthrazit">
+                          {post.user?.display_name ?? "Nachbar"}
+                        </span>
+                        <span className="text-xs text-muted-foreground">
+                          {formatDistanceToNow(new Date(post.created_at), {
+                            addSuffix: true,
+                            locale: de,
+                          })}
+                        </span>
+                      </div>
+                      <p className="mt-1 text-sm text-anthrazit whitespace-pre-line">
+                        {post.title}
+                      </p>
+                      {/* Bild */}
+                      {(post as HelpRequest & { image_url?: string })
+                        .image_url && (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          src={
+                            (post as HelpRequest & { image_url?: string })
+                              .image_url!
+                          }
+                          alt="Bild zum Beitrag"
+                          className="mt-2 max-h-48 rounded-lg object-cover"
+                        />
+                      )}
+                      {/* Kommentare */}
+                      <BoardComments
+                        postId={post.id}
+                        currentUserId={user?.id ?? null}
                       />
+                    </div>
+                    {post.user_id === user?.id && (
+                      <button
+                        onClick={() => deletePost(post.id)}
+                        className="shrink-0 rounded-lg p-1.5 text-muted-foreground hover:bg-muted hover:text-anthrazit"
+                        aria-label="Beitrag löschen"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </button>
                     )}
-                    {/* Kommentare */}
-                    <BoardComments
-                      postId={post.id}
-                      currentUserId={user?.id ?? null}
-                    />
                   </div>
-                  {post.user_id === user?.id && (
-                    <button
-                      onClick={() => deletePost(post.id)}
-                      className="shrink-0 rounded-lg p-1.5 text-muted-foreground hover:bg-muted hover:text-anthrazit"
-                      aria-label="Beitrag löschen"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </button>
-                  )}
                 </div>
-              </div>
-            ))}
-          </div>
-        ) : (
-          <div className="py-8 text-center">
-            <div className="mb-3 text-5xl" aria-hidden="true">
-              📌
+              ))}
             </div>
-            <p className="text-muted-foreground">
-              Noch keine Beiträge. Starten Sie die Unterhaltung!
-            </p>
-          </div>
-        )}
+          ) : (
+            <div className="py-8 text-center">
+              <div className="mb-3 text-5xl" aria-hidden="true">
+                📌
+              </div>
+              <p className="text-muted-foreground">
+                {boardFilter === "Meine"
+                  ? "Sie haben noch keine Beiträge verfasst."
+                  : "Noch keine Beiträge. Starten Sie die Unterhaltung!"}
+              </p>
+            </div>
+          );
+        })()}
       </div>
     </GuidelinesGate>
   );

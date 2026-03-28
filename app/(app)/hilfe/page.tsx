@@ -5,12 +5,14 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { HelpRequestCard } from "@/components/hilfe/HelpRequestCard";
 import { LargeTitle } from "@/components/ui/LargeTitle";
+import { SegmentedControl } from "@/components/ui/SegmentedControl";
 import type { HelpRequest } from "@/lib/hilfe/types";
 
 /** Hauptseite Nachbarschaftshilfe — zeigt offene Gesuche */
 export default function HilfePage() {
   const [requests, setRequests] = useState<HelpRequest[]>([]);
   const [loading, setLoading] = useState(true);
+  const [hilfeFilter, setHilfeFilter] = useState("Alle");
 
   useEffect(() => {
     fetch("/api/hilfe/requests")
@@ -48,20 +50,36 @@ export default function HilfePage() {
         </Button>
       </Link>
 
+      <SegmentedControl
+        items={["Alle", "Offen", "Vermittelt"]}
+        active={hilfeFilter}
+        onChange={setHilfeFilter}
+      />
+
       {loading && (
         <p className="text-center text-gray-500">Gesuche werden geladen…</p>
       )}
 
-      {!loading && requests.length === 0 && (
-        <p className="text-center text-gray-500">
-          Noch keine Gesuche vorhanden.
-        </p>
-      )}
-
       <div className="space-y-4">
-        {requests.map((req) => (
-          <HelpRequestCard key={req.id} request={req} onApply={handleApply} />
-        ))}
+        {(() => {
+          if (loading) return null;
+          const filtered = hilfeFilter === "Offen"
+            ? requests.filter((r) => r.status === "open")
+            : hilfeFilter === "Vermittelt"
+              ? requests.filter((r) => r.status === "matched" || r.status === "completed")
+              : requests;
+          return filtered.length > 0
+            ? filtered.map((req) => (
+                <HelpRequestCard key={req.id} request={req} onApply={handleApply} />
+              ))
+            : (
+                <p className="text-center text-gray-500">
+                  {hilfeFilter === "Alle"
+                    ? "Noch keine Gesuche vorhanden."
+                    : "Keine Gesuche in dieser Kategorie."}
+                </p>
+              );
+        })()}
       </div>
     </div>
   );

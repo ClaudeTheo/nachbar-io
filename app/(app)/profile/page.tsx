@@ -24,6 +24,9 @@ import {
   Map,
   Bot,
   Inbox,
+  Share2,
+  Copy,
+  Check,
 } from "lucide-react";
 import { isUxRedesignEnabled } from "@/lib/ux-flags";
 import { useUnreadCount } from "@/lib/useUnreadCount";
@@ -45,6 +48,8 @@ import {
 import { VoiceSettings } from "@/components/companion/VoiceSettings";
 import { useVoicePreferences } from "@/hooks/useVoicePreferences";
 import { LargeTitle } from "@/components/ui/LargeTitle";
+import { formatCode, generateSecureCode } from "@/lib/invite-codes";
+import { toast } from "sonner";
 import type { User, Household, ReputationStats } from "@/lib/supabase/types";
 
 /** Schnellzugriff-Karte fuer Features die aus der BottomNav verschoben wurden */
@@ -102,6 +107,9 @@ export default function ProfilePage() {
   const [reputation, setReputation] = useState<ReputationStats | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [inviteCode, setInviteCode] = useState<string | null>(null);
+  const [inviteCount, setInviteCount] = useState(0);
+  const [codeCopied, setCodeCopied] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
@@ -142,6 +150,39 @@ export default function ProfilePage() {
           );
           // Nicht kritisch — Profil wird trotzdem angezeigt
         }
+
+        // Einladungscode laden
+        const supabase = createClient();
+        try {
+          const { data: codeData } = await supabase
+            .from("invite_codes")
+            .select("code")
+            .eq("created_by", authUser.id)
+            .is("used_by", null)
+            .limit(1)
+            .single();
+
+          if (codeData) {
+            setInviteCode(codeData.code);
+          } else {
+            const newCode = generateSecureCode();
+            const { data: inserted } = await supabase
+              .from("invite_codes")
+              .insert({ code: newCode, created_by: authUser.id })
+              .select("code")
+              .single();
+            if (inserted) setInviteCode(inserted.code);
+          }
+
+          const { count } = await supabase
+            .from("invite_codes")
+            .select("*", { count: "exact", head: true })
+            .eq("created_by", authUser.id)
+            .not("used_by", "is", null);
+          setInviteCount(count ?? 0);
+        } catch (inviteErr) {
+          console.warn("[Profile] Einladungscode konnte nicht geladen werden:", inviteErr);
+        }
       } catch (err) {
         console.error("[Profile] Unerwarteter Fehler:", err);
         setLoadError(
@@ -171,6 +212,32 @@ export default function ProfilePage() {
       router.push("/senior/home");
     } else {
       router.push("/dashboard");
+    }
+  }
+
+  async function copyInviteCode() {
+    if (!inviteCode) return;
+    try {
+      await navigator.clipboard.writeText(formatCode(inviteCode));
+      setCodeCopied(true);
+      toast.success("Code kopiert!");
+      setTimeout(() => setCodeCopied(false), 2000);
+    } catch {
+      toast.error("Code konnte nicht kopiert werden.");
+    }
+  }
+
+  async function shareInviteCode() {
+    if (!inviteCode) return;
+    const text = `Werde mein Nachbar auf QuartierApp! Nutze meinen Einladungscode: ${formatCode(inviteCode)}`;
+    if (navigator.share) {
+      try {
+        await navigator.share({ title: "QuartierApp Einladung", text });
+      } catch {
+        // Nutzer hat Teilen abgebrochen
+      }
+    } else {
+      copyInviteCode();
     }
   }
 
@@ -262,6 +329,42 @@ export default function ProfilePage() {
 
       {/* Schnellzugriff — verschobene Features aus BottomNav (nur bei UX-Redesign) */}
       {isUxRedesignEnabled("UX_REDESIGN_NAV") && <QuickAccessCard />}
+
+      {/* Nachbarn einladen */}
+      {inviteCode && (
+        <div className="border-t border-[#ebe5dd] px-4 py-4">
+          <p className="text-xs font-semibold uppercase tracking-wider text-[#2D3142]/40 mb-3">
+            Nachbarn einladen
+          </p>
+          <p className="text-sm text-[#2D3142]/60 mb-2">
+            Ihr persönlicher Code:
+          </p>
+          <div className="flex items-center gap-2 mb-3">
+            <div className="flex-1 rounded-lg bg-[#f5f0eb] px-4 py-3 font-mono text-lg font-bold text-[#2D3142] tracking-widest">
+              {formatCode(inviteCode)}
+            </div>
+            <button
+              onClick={copyInviteCode}
+              className="flex h-12 w-12 items-center justify-center rounded-lg bg-[#f5f0eb] text-[#2D3142]/60 transition-colors active:bg-[#ebe5dd]"
+              aria-label="Code kopieren"
+            >
+              {codeCopied ? <Check className="h-5 w-5 text-quartier-green" /> : <Copy className="h-5 w-5" />}
+            </button>
+          </div>
+          <button
+            onClick={shareInviteCode}
+            className="flex w-full items-center justify-center gap-2 rounded-xl bg-quartier-green py-3 text-sm font-semibold text-white transition-colors active:bg-quartier-green-dark"
+          >
+            <Share2 className="h-4 w-4" />
+            Teilen
+          </button>
+          {inviteCount > 0 && (
+            <p className="mt-3 text-center text-xs text-[#2D3142]/40">
+              {inviteCount} {inviteCount === 1 ? "Nachbar" : "Nachbarn"} bereits eingeladen
+            </p>
+          )}
+        </div>
+      )}
 
       {/* Menü */}
       <Card>

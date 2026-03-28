@@ -12,6 +12,7 @@ import type { MarketplaceItem } from "@/lib/supabase/types";
 import { formatDistanceToNow } from "date-fns";
 import { de } from "date-fns/locale";
 import { LargeTitle } from "@/components/ui/LargeTitle";
+import { SegmentedControl } from "@/components/ui/SegmentedControl";
 
 export default function MarketplacePage() {
   const [items, setItems] = useState<MarketplaceItem[]>([]);
@@ -61,41 +62,35 @@ export default function MarketplacePage() {
         }
       />
 
-      {/* Filter-Chips */}
-      <div className="mb-4 flex gap-2 overflow-x-auto pb-2">
-        <button
-          onClick={() => setFilterType(null)}
-          className={`shrink-0 rounded-full px-3 py-1.5 text-sm font-medium transition-colors ${
-            !filterType
-              ? "bg-anthrazit text-white"
-              : "bg-muted text-muted-foreground hover:bg-muted/80"
-          }`}
-        >
-          Alle
-        </button>
-        {MARKETPLACE_TYPES.map((type) => (
-          <button
-            key={type.id}
-            onClick={() => setFilterType(type.id)}
-            className={`shrink-0 rounded-full px-3 py-1.5 text-sm font-medium transition-colors ${
-              filterType === type.id
-                ? "bg-anthrazit text-white"
-                : "bg-muted text-muted-foreground hover:bg-muted/80"
-            }`}
-          >
-            {type.icon} {type.label}
-          </button>
-        ))}
-      </div>
+      {/* Segmented Filter */}
+      <SegmentedControl
+        items={[
+          "Alle",
+          ...MARKETPLACE_TYPES.map((t) => `${t.icon} ${t.label}`),
+        ]}
+        active={
+          filterType
+            ? `${MARKETPLACE_TYPES.find((t) => t.id === filterType)?.icon} ${MARKETPLACE_TYPES.find((t) => t.id === filterType)?.label}`
+            : "Alle"
+        }
+        onChange={(value) => {
+          if (value === "Alle") {
+            setFilterType(null);
+          } else {
+            const match = MARKETPLACE_TYPES.find(
+              (t) => `${t.icon} ${t.label}` === value,
+            );
+            setFilterType(match?.id ?? null);
+          }
+        }}
+        className="mb-4"
+      />
 
       {/* Inserate */}
       {loading ? (
         <div className="mt-4 divide-y divide-[#ebe5dd]">
           {[1, 2, 3].map((i) => (
-            <div
-              key={i}
-              className="px-4 py-4"
-            >
+            <div key={i} className="px-4 py-4">
               <div className="flex gap-3">
                 <div className="h-20 w-20 shrink-0 animate-pulse rounded-lg bg-muted" />
                 <div className="flex-1 space-y-2">

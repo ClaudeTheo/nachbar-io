@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, afterEach } from 'vitest';
 import { render, screen, cleanup, fireEvent } from '@testing-library/react';
-import SessionDocForm from '@/components/hilfe/SessionDocForm';
+import SessionDocForm from '@/modules/hilfe/components/SessionDocForm';
 
 afterEach(() => {
   cleanup();

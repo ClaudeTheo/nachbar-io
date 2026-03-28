@@ -1,7 +1,7 @@
 // POST /api/hilfe/monthly-report/send — Sammelabrechnung per E-Mail senden
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-import { sendMonthlyReportEmail } from '@/lib/hilfe/email';
+import { sendMonthlyReportEmail } from '@/modules/hilfe/services/email';
 
 export async function POST(request: NextRequest) {
   const supabase = await createClient();

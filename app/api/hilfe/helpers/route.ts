@@ -3,7 +3,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-import { validateHelperAge, isStateAvailable, getStateRules } from '@/lib/hilfe/federal-states';
+import { validateHelperAge, isStateAvailable, getStateRules } from '@/modules/hilfe/services/federal-states';
 
 // GET /api/hilfe/helpers — Verifizierte Helfer auflisten
 export async function GET(request: NextRequest) {

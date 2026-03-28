@@ -2,8 +2,8 @@
 // POST /api/hilfe/monthly-report — Sammelabrechnung generieren + PDF speichern
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-import { generateMonthlyReport } from '@/lib/hilfe/pdf-monthly-report';
-import { canAccessBilling } from '@/lib/hilfe/feature-gate';
+import { generateMonthlyReport } from '@/modules/hilfe/services/pdf-monthly-report';
+import { canAccessBilling } from '@/modules/hilfe/services/feature-gate';
 
 export async function GET(request: NextRequest) {
   const supabase = await createClient();

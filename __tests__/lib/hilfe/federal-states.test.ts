@@ -9,7 +9,7 @@ import {
   validateHelperAge,
   validateHourlyRate,
   getMaxClients,
-} from "@/lib/hilfe/federal-states";
+} from "@/modules/hilfe/services/federal-states";
 
 describe("federal-states", () => {
   it("getAvailableStates: gibt nur verfuegbare Bundeslaender zurueck (BW+BY, kein HB/NW)", () => {

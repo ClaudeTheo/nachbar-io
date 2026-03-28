@@ -3,7 +3,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-import { generateReceipt, type ReceiptData } from '@/lib/hilfe/pdf-receipt';
+import { generateReceipt, type ReceiptData } from '@/modules/hilfe/services/pdf-receipt';
 
 interface RouteContext {
   params: Promise<{ id: string }>;

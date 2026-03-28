@@ -2,12 +2,12 @@
 
 import { useState, useMemo, type FormEvent } from 'react';
 import { Button } from '@/components/ui/button';
-import SignaturePad from '@/components/hilfe/SignaturePad';
+import SignaturePad from '@/modules/hilfe/components/SignaturePad';
 import {
   HELP_CATEGORY_LABELS,
   type HelpCategory,
   type HelpSessionStatus,
-} from '@/lib/hilfe/types';
+} from '@/modules/hilfe/services/types';
 
 interface Props {
   matchId: string;

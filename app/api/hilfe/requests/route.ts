@@ -3,7 +3,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-import type { HelpCategory } from '@/lib/hilfe/types';
+import type { HelpCategory } from '@/modules/hilfe/services/types';
 
 const VALID_CATEGORIES: HelpCategory[] = [
   'einkaufen', 'begleitung', 'haushalt', 'garten', 'technik', 'vorlesen', 'sonstiges',

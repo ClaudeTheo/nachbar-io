@@ -6,7 +6,7 @@ import {
   cleanup,
   waitFor,
 } from "@testing-library/react";
-import { CareProfileForm } from "@/components/hilfe/CareProfileForm";
+import { CareProfileForm } from "@/modules/hilfe/components/CareProfileForm";
 
 // Globaler Fetch-Mock
 let mockFetch: ReturnType<typeof vi.fn>;

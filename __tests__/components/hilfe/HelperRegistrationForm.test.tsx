@@ -1,6 +1,6 @@
 import { render, screen, fireEvent } from "@testing-library/react";
 import { describe, it, expect, vi, afterEach } from "vitest";
-import { HelperRegistrationForm } from "@/components/hilfe/HelperRegistrationForm";
+import { HelperRegistrationForm } from "@/modules/hilfe/components/HelperRegistrationForm";
 
 // Fetch mocken
 global.fetch = vi.fn();

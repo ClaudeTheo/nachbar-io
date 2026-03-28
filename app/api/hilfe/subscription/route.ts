@@ -2,7 +2,7 @@
 // POST /api/hilfe/subscription — Abo-Verwaltung (pause/resume/cancel)
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import { getStripe } from "@/lib/hilfe/stripe";
+import { getStripe } from "@/modules/hilfe/services/stripe";
 import type Stripe from "stripe";
 
 export async function GET() {

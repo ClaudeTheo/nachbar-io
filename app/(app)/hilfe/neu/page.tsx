@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { NewRequestForm } from '@/components/hilfe/NewRequestForm';
+import { NewRequestForm } from '@/modules/hilfe/components/NewRequestForm';
 
 /** Seite zum Erstellen eines neuen Hilfe-Gesuchs */
 export default function NeuesGesuchPage() {

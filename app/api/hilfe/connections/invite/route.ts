@@ -2,8 +2,8 @@
 // PUT /api/hilfe/connections/invite — Code einlösen (Helfer)
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-import { generateInviteCode, isValidInviteCode } from '@/lib/hilfe/connections';
-import { getMaxClients } from '@/lib/hilfe/federal-states';
+import { generateInviteCode, isValidInviteCode } from '@/modules/hilfe/services/connections';
+import { getMaxClients } from '@/modules/hilfe/services/federal-states';
 
 // Senior generiert Einladungs-Code
 export async function POST() {

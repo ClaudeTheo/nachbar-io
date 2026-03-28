@@ -2,20 +2,20 @@
 // Jahresabrechnung als PDF oder CSV herunterladen
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import { canAccessBilling } from "@/lib/hilfe/feature-gate";
-import { getStateRules } from "@/lib/hilfe/federal-states";
-import { generateYearlyHelperReport } from "@/lib/hilfe/pdf-yearly-helper";
+import { canAccessBilling } from "@/modules/hilfe/services/feature-gate";
+import { getStateRules } from "@/modules/hilfe/services/federal-states";
+import { generateYearlyHelperReport } from "@/modules/hilfe/services/pdf-yearly-helper";
 import type {
   YearlyHelperClient,
   YearlyHelperSession,
-} from "@/lib/hilfe/pdf-yearly-helper";
-import { generateYearlyResidentReport } from "@/lib/hilfe/pdf-yearly-resident";
+} from "@/modules/hilfe/services/pdf-yearly-helper";
+import { generateYearlyResidentReport } from "@/modules/hilfe/services/pdf-yearly-resident";
 import type {
   YearlyResidentHelper,
   YearlyResidentSession,
-} from "@/lib/hilfe/pdf-yearly-resident";
-import { generateHelperCsv, generateResidentCsv } from "@/lib/hilfe/csv-yearly";
-import type { HelperCsvRow, ResidentCsvRow } from "@/lib/hilfe/csv-yearly";
+} from "@/modules/hilfe/services/pdf-yearly-resident";
+import { generateHelperCsv, generateResidentCsv } from "@/modules/hilfe/services/csv-yearly";
+import type { HelperCsvRow, ResidentCsvRow } from "@/modules/hilfe/services/csv-yearly";
 
 function formatCentsToEur(cents: number): string {
   return (cents / 100).toFixed(2).replace(".", ",");

@@ -1,8 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { getSubscriptionLabel } from "@/lib/hilfe/feature-gate";
-import type { SubscriptionStatus } from "@/lib/hilfe/types";
+import { getSubscriptionLabel } from "@/modules/hilfe/services/feature-gate";
+import type { SubscriptionStatus } from "@/modules/hilfe/services/types";
 
 export default function SubscriptionManager() {
   const [sub, setSub] = useState<{

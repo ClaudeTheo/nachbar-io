@@ -7,8 +7,8 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
-import { getAllStates } from '@/lib/hilfe/federal-states';
-import type { FederalStateRule } from '@/lib/hilfe/types';
+import { getAllStates } from '@/modules/hilfe/services/federal-states';
+import type { FederalStateRule } from '@/modules/hilfe/services/types';
 
 export function HelperRegistrationForm() {
   const states = getAllStates();

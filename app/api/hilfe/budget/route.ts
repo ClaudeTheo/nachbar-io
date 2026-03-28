@@ -3,7 +3,7 @@
 
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-import type { BudgetSummary } from '@/lib/hilfe/types';
+import type { BudgetSummary } from '@/modules/hilfe/services/types';
 
 // Monatliches Budget nach § 45b SGB XI: 125 EUR + 6 EUR Eigenanteil-Reserve = 131 EUR
 const MONTHLY_BUDGET_CENTS = 13100;

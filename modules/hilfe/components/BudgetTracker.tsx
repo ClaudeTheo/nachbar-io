@@ -5,7 +5,7 @@
 
 import { useEffect, useState } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-import type { BudgetSummary } from '@/lib/hilfe/types';
+import type { BudgetSummary } from '@/modules/hilfe/services/types';
 
 /** Cent-Betrag als EUR-String formatieren (z.B. 13100 → "131,00") */
 function formatEur(cents: number): string {

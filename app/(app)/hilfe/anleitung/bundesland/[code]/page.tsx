@@ -1,6 +1,6 @@
 import { ChevronLeft, ExternalLink } from 'lucide-react';
 import Link from 'next/link';
-import { getAllStates, getStateRules } from '@/lib/hilfe/federal-states';
+import { getAllStates, getStateRules } from '@/modules/hilfe/services/federal-states';
 import { notFound } from 'next/navigation';
 import { InfoHint } from '../InfoHint';
 

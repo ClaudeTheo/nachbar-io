@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
-import { HelpCategory, HELP_CATEGORY_LABELS } from '@/lib/hilfe/types';
+import { HelpCategory, HELP_CATEGORY_LABELS } from '@/modules/hilfe/services/types';
 import { useQuarter } from '@/lib/quarters/quarter-context';
 
 /** Emoji-Icons je Kategorie */

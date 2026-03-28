@@ -3,7 +3,7 @@
 
 import { describe, it, expect, vi, afterEach } from "vitest";
 import { render, screen, cleanup } from "@testing-library/react";
-import { HilfeNav } from "@/components/hilfe/HilfeNav";
+import { HilfeNav } from "@/modules/hilfe/components/HilfeNav";
 
 // next/navigation mocken
 vi.mock("next/navigation", () => ({

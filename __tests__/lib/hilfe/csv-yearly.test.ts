@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { generateHelperCsv, generateResidentCsv } from "@/lib/hilfe/csv-yearly";
+import { generateHelperCsv, generateResidentCsv } from "@/modules/hilfe/services/csv-yearly";
 
 describe("csv-yearly", () => {
   it("Helfer-CSV: Semikolon-Trennung, Dezimalkomma, BOM", () => {

@@ -5,7 +5,7 @@
 
 import { Wallet } from 'lucide-react';
 import { PageHeader } from '@/components/ui/page-header';
-import { BudgetTracker } from '@/components/hilfe/BudgetTracker';
+import { BudgetTracker } from '@/modules/hilfe/components/BudgetTracker';
 
 export default function HilfeBudgetPage() {
   return (

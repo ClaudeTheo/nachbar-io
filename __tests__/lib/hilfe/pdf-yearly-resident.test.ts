@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import {
   generateYearlyResidentReport,
   type YearlyResidentData,
-} from "@/lib/hilfe/pdf-yearly-resident";
+} from "@/modules/hilfe/services/pdf-yearly-resident";
 
 const MOCK_DATA: YearlyResidentData = {
   year: 2026,

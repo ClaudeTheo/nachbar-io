@@ -2,7 +2,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
 import { getAdminSupabase } from "@/lib/supabase/admin";
-import { getStripe } from "@/lib/hilfe/stripe";
+import { getStripe } from "@/modules/hilfe/services/stripe";
 
 export async function POST(request: NextRequest) {
   const stripe = getStripe();

@@ -1,5 +1,5 @@
-// Barrel Export: Nachbar Hilfe Modul
-// Alle oeffentlichen Exporte fuer @/lib/hilfe
+// modules/hilfe/services/index.ts — Barrel Export fuer Hilfe-Services
+// Sammelt: Types, Connections, CSV, Email, Feature-Gate, Federal-States, Notifications, PDFs, Stripe
 
 // Typen
 export type {

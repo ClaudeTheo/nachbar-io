@@ -3,8 +3,8 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Button, LargeTitle, SegmentedControl } from "@/components/ui";
-import { HelpRequestCard } from "@/components/hilfe/HelpRequestCard";
-import type { HelpRequest } from "@/lib/hilfe/types";
+import { HelpRequestCard } from "@/modules/hilfe/components/HelpRequestCard";
+import type { HelpRequest } from "@/modules/hilfe/services/types";
 
 /** Hauptseite Nachbarschaftshilfe — zeigt offene Gesuche */
 export default function HilfePage() {

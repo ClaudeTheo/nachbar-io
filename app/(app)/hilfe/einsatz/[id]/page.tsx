@@ -2,8 +2,8 @@
 
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
-import SessionDocForm from '@/components/hilfe/SessionDocForm';
-import type { HelpMatch, NeighborhoodHelper } from '@/lib/hilfe/types';
+import SessionDocForm from '@/modules/hilfe/components/SessionDocForm';
+import type { HelpMatch, NeighborhoodHelper } from '@/modules/hilfe/services/types';
 
 interface MatchData {
   match: HelpMatch;

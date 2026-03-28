@@ -6,7 +6,7 @@ import {
   buildHelpRequestNotification,
   buildMatchNotification,
   buildSignatureReminder,
-} from '@/lib/hilfe/notifications';
+} from '@/modules/hilfe/services/notifications';
 
 describe('hilfe/notifications', () => {
   it('buildHelpRequestNotification: Titel enthaelt "Hilfe-Gesuch", Body enthaelt Kategorie-Label, URL ist /hilfe', () => {

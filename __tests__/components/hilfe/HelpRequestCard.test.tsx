@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, afterEach } from 'vitest';
 import { render, screen, cleanup } from '@testing-library/react';
-import { HelpRequestCard } from '@/components/hilfe/HelpRequestCard';
-import type { HelpRequest } from '@/lib/hilfe/types';
+import { HelpRequestCard } from '@/modules/hilfe/components/HelpRequestCard';
+import type { HelpRequest } from '@/modules/hilfe/services/types';
 
 afterEach(() => {
   cleanup();

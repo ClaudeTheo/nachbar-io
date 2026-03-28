@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import type { HelperConnection } from "@/lib/hilfe/types";
+import type { HelperConnection } from "@/modules/hilfe/services/types";
 
 interface ConnectionManagerProps {
   role: "helper" | "senior";

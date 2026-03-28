@@ -6,7 +6,7 @@ import {
   cleanup,
   waitFor,
 } from "@testing-library/react";
-import { NewRequestForm } from "@/components/hilfe/NewRequestForm";
+import { NewRequestForm } from "@/modules/hilfe/components/NewRequestForm";
 
 // useQuarter Mock — simuliert ein aktives Quartier
 vi.mock("@/lib/quarters/quarter-context", () => ({

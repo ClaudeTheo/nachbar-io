@@ -2,7 +2,7 @@
 
 import { ChevronLeft } from 'lucide-react';
 import Link from 'next/link';
-import { getAllStates } from '@/lib/hilfe/federal-states';
+import { getAllStates } from '@/modules/hilfe/services/federal-states';
 
 const steps = [
   {

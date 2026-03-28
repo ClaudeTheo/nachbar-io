@@ -13,7 +13,7 @@ vi.mock("@/lib/supabase/server", () => ({
     .mockImplementation(() => Promise.resolve(mockSupabase.supabase)),
 }));
 
-vi.mock("@/lib/hilfe/federal-states", () => ({
+vi.mock("@/modules/hilfe/services/federal-states", () => ({
   validateHelperAge: vi.fn().mockReturnValue(true),
   isStateAvailable: vi.fn().mockReturnValue(true),
   getStateRules: vi.fn().mockReturnValue({
@@ -32,7 +32,7 @@ import {
   validateHelperAge,
   isStateAvailable,
   getStateRules,
-} from "@/lib/hilfe/federal-states";
+} from "@/modules/hilfe/services/federal-states";
 
 const VALID_BODY = {
   federal_state: "BW",

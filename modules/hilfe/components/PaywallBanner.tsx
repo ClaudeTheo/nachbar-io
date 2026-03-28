@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import type { SubscriptionStatus } from "@/lib/hilfe/types";
+import type { SubscriptionStatus } from "@/modules/hilfe/services/types";
 
 interface PaywallBannerProps {
   status: SubscriptionStatus;

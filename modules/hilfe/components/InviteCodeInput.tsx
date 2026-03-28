@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { isValidInviteCode } from "@/lib/hilfe/connections";
+import { isValidInviteCode } from "@/modules/hilfe/services/connections";
 
 export default function InviteCodeInput() {
   const [code, setCode] = useState("");

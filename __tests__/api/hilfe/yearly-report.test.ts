@@ -14,15 +14,15 @@ vi.mock("@/lib/supabase/server", () => ({
 }));
 
 // PDF/CSV-Generatoren mocken (brauchen jsPDF)
-vi.mock("@/lib/hilfe/pdf-yearly-helper", () => ({
+vi.mock("@/modules/hilfe/services/pdf-yearly-helper", () => ({
   generateYearlyHelperReport: vi.fn(() => new Uint8Array([1, 2, 3])),
 }));
 
-vi.mock("@/lib/hilfe/pdf-yearly-resident", () => ({
+vi.mock("@/modules/hilfe/services/pdf-yearly-resident", () => ({
   generateYearlyResidentReport: vi.fn(() => new Uint8Array([1, 2, 3])),
 }));
 
-vi.mock("@/lib/hilfe/csv-yearly", () => ({
+vi.mock("@/modules/hilfe/services/csv-yearly", () => ({
   generateHelperCsv: vi.fn(() => "Datum;Klient\n01.01.2026;Maria S."),
   generateResidentCsv: vi.fn(() => "Datum;Helfer\n01.01.2026;Max M."),
 }));

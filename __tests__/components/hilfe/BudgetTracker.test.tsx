@@ -3,8 +3,8 @@
 
 import { describe, it, expect, vi, afterEach, beforeEach } from 'vitest';
 import { render, screen, cleanup, waitFor } from '@testing-library/react';
-import { BudgetTracker } from '@/components/hilfe/BudgetTracker';
-import type { BudgetSummary } from '@/lib/hilfe/types';
+import { BudgetTracker } from '@/modules/hilfe/components/BudgetTracker';
+import type { BudgetSummary } from '@/modules/hilfe/services/types';
 
 afterEach(() => {
   cleanup();

@@ -3,7 +3,7 @@
 
 import { Heart } from "lucide-react";
 import { PageHeader } from "@/components/ui/page-header";
-import { CareProfileForm } from "@/components/hilfe/CareProfileForm";
+import { CareProfileForm } from "@/modules/hilfe/components/CareProfileForm";
 import { YearlyReport } from "./YearlyReport";
 import { createClient } from "@/lib/supabase/server";
 

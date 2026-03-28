@@ -3,7 +3,7 @@
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { HelpRequest, HELP_CATEGORY_LABELS } from '@/lib/hilfe/types';
+import { HelpRequest, HELP_CATEGORY_LABELS } from '@/modules/hilfe/services/types';
 
 /** Emoji-Icons je Kategorie */
 const CATEGORY_ICONS: Record<string, string> = {

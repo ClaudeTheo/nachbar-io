@@ -2,7 +2,7 @@
 // Nachbar Hilfe — Tests fuer PDF-Quittung Generierung
 
 import { describe, expect, it } from 'vitest';
-import { generateReceipt, formatCents, formatDate, type ReceiptData } from '@/lib/hilfe/pdf-receipt';
+import { generateReceipt, formatCents, formatDate, type ReceiptData } from '@/modules/hilfe/services/pdf-receipt';
 
 const MOCK_RECEIPT_DATA: ReceiptData = {
   resident: {

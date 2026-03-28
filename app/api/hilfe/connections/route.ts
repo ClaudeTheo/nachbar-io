@@ -75,7 +75,7 @@ export async function POST(request: NextRequest) {
     .is('revoked_at', null)
     .not('confirmed_at', 'is', null);
 
-  const { getMaxClients } = await import('@/lib/hilfe/federal-states');
+  const { getMaxClients } = await import('@/modules/hilfe/services/federal-states');
   const maxClients = getMaxClients(helper.federal_state);
 
   if (maxClients !== null && (activeCount || 0) >= maxClients) {

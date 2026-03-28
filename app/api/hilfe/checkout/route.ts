@@ -1,7 +1,7 @@
 // POST /api/hilfe/checkout — Stripe Checkout Session erstellen
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import { getStripe } from "@/lib/hilfe/stripe";
+import { getStripe } from "@/modules/hilfe/services/stripe";
 
 export async function POST(request: NextRequest) {
   const supabase = await createClient();

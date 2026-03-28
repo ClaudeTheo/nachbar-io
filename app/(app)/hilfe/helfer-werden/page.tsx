@@ -1,7 +1,7 @@
 // Nachbar Hilfe — Helfer werden Seite
 // Registrierung als Nachbarschaftshelfer nach §45a SGB XI
 
-import { HelperRegistrationForm } from '@/components/hilfe/HelperRegistrationForm';
+import { HelperRegistrationForm } from '@/modules/hilfe/components/HelperRegistrationForm';
 
 export const metadata = {
   title: 'Helfer werden | Nachbar Hilfe',

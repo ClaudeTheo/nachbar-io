@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, afterEach } from 'vitest';
 import { render, screen, cleanup } from '@testing-library/react';
-import SignaturePad from '@/components/hilfe/SignaturePad';
+import SignaturePad from '@/modules/hilfe/components/SignaturePad';
 
 afterEach(() => {
   cleanup();

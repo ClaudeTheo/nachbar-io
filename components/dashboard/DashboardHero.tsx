@@ -5,6 +5,7 @@ import { Bell } from "lucide-react";
 import { CategoryIcon } from "@/components/CategoryIcon";
 import { ReputationBadge } from "@/components/ReputationBadge";
 import { IllustrationRenderer } from "@/components/illustrations/IllustrationRenderer";
+import { WeatherWidget } from "@/components/weather/WeatherWidget";
 import { DailyCheckinButton } from "@/components/care/DailyCheckinButton";
 import { useUnreadCount } from "@/lib/useUnreadCount";
 import type { CategoryIconConfig } from "@/lib/category-icons";
@@ -15,6 +16,9 @@ interface DashboardHeroProps {
   reputationLevel: number;
   greeting: { text: string; timeKey: string };
   greetingIcon: CategoryIconConfig;
+  weatherIcon?: string;
+  weatherTemp?: number | null;
+  weatherDescription?: string;
 }
 
 export function DashboardHero({
@@ -23,23 +27,44 @@ export function DashboardHero({
   reputationLevel,
   greeting,
   greetingIcon,
+  weatherIcon,
+  weatherTemp,
+  weatherDescription,
 }: DashboardHeroProps) {
   const { count: unreadCount } = useUnreadCount();
+  const hasWeather = weatherIcon && weatherDescription;
 
   return (
     <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-quartier-green/10 via-quartier-green/5 to-transparent shadow-hero">
-      {/* Strichzeichnung als Hintergrund */}
-      <div className="absolute inset-0 opacity-[0.08] pointer-events-none">
-        <IllustrationRenderer
-          name="ill-01-dorfplatz"
-          width="100%"
-          height="100%"
-          animated
+      {/* Wetter-Hintergrund (wenn Daten vorhanden) */}
+      {hasWeather && (
+        <WeatherWidget
+          variant="hero"
+          temp={weatherTemp ?? null}
+          description={weatherDescription}
+          icon={weatherIcon}
         />
-      </div>
+      )}
 
-      {/* Inhalt darüber */}
-      <div className="relative p-6">
+      {/* Strichzeichnung als Hintergrund (Fallback ohne Wetter) */}
+      {!hasWeather && (
+        <div className="absolute inset-0 opacity-[0.08] pointer-events-none">
+          <IllustrationRenderer
+            name="ill-01-dorfplatz"
+            width="100%"
+            height="100%"
+            animated
+          />
+        </div>
+      )}
+
+      {/* Gradient-Overlay fuer Lesbarkeit ueber dem Wetter-Hintergrund */}
+      {hasWeather && (
+        <div className="absolute inset-0 z-[11] bg-gradient-to-r from-white/70 via-white/40 to-transparent pointer-events-none" />
+      )}
+
+      {/* Inhalt darüber (z-20 um ueber Wetter-Gradient zu liegen) */}
+      <div className={`relative p-6 ${hasWeather ? "z-20" : ""}`}>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             {avatarUrl ? (

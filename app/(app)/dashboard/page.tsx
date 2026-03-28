@@ -81,6 +81,13 @@ export default function DashboardPage() {
     settings: Record<string, unknown> | null;
   } | null>(null);
 
+  // Wetterdaten fuer Hero-Hintergrund
+  const [weatherData, setWeatherData] = useState<{
+    icon: string;
+    temp: number | null;
+    description: string;
+  } | null>(null);
+
   // Angehörige (caregiver_links)
   const [caregivers, setCaregivers] = useState<
     Array<{
@@ -172,6 +179,20 @@ export default function DashboardPage() {
           }
         }
       }
+
+      // Wetterdaten fuer Hero-Hintergrund laden (nicht-blockierend)
+      fetch(`/api/quartier-info?quarter_id=${currentQuarter.id}`)
+        .then((res) => res.json())
+        .then((d) => {
+          if (d?.weather) {
+            setWeatherData({
+              icon: d.weather.icon,
+              temp: d.weather.temp,
+              description: d.weather.description,
+            });
+          }
+        })
+        .catch(() => {});
 
       // Parallele Datenabfragen (statt sequentiell)
       const [alertResult, newsResult, helpResult, marketResult] =
@@ -307,6 +328,9 @@ export default function DashboardPage() {
               reputationLevel={reputationLevel}
               greeting={greeting}
               greetingIcon={greetingIcon}
+              weatherIcon={weatherData?.icon}
+              weatherTemp={weatherData?.temp}
+              weatherDescription={weatherData?.description}
             />
           ) : (
             <HeroCard>

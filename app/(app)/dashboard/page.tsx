@@ -16,6 +16,7 @@ import { PullToRefresh } from "@/components/PullToRefresh";
 import { ReputationBadge } from "@/components/ReputationBadge";
 import { ProfileCompletionBanner } from "@/components/ProfileCompletionBanner";
 import { FloatingHelpButton } from "@/components/FloatingHelpButton";
+import { LargeTitle } from "@/components/ui/LargeTitle";
 import { InfoBar } from "@/components/info/InfoBar";
 import { NinaAlert } from "@/components/info/NinaAlert";
 import { HeroCard } from "@/components/HeroCard";
@@ -293,6 +294,8 @@ export default function DashboardPage() {
     <>
       <PullToRefresh onRefresh={loadDashboard}>
         <div className="space-y-6 animate-fade-in-up">
+          <LargeTitle title="Zuhause" />
+
           {/* NINA-Warnungen (vor Hero, nach Notfall-Banner) */}
           <NinaAlert />
 

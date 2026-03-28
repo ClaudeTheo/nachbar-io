@@ -42,6 +42,7 @@ import type {
 } from "@/lib/info/types";
 import { APOTHEKEN_BAD_SAECKINGEN, NOTDIENST_URL } from "@/lib/info/apotheken";
 import { EVENTS_BAD_SAECKINGEN, EVENTS_CALENDAR_URL } from "@/lib/info/events";
+import { LargeTitle } from "@/components/ui/LargeTitle";
 
 // Wetter-Icon Mapping
 function WeatherIcon({
@@ -156,6 +157,8 @@ export default function QuartierInfoPage() {
 
   return (
     <div className="space-y-6 pb-24 animate-fade-in-up">
+      <LargeTitle title="Mein Quartier" />
+
       {/* Header */}
       <div className="flex items-center gap-3">
         <Link
@@ -164,7 +167,6 @@ export default function QuartierInfoPage() {
         >
           <ArrowLeft className="h-5 w-5 text-anthrazit" />
         </Link>
-        <h1 className="text-xl font-bold text-anthrazit">Quartier-Info</h1>
         <button
           onClick={loadData}
           className="ml-auto p-2 rounded-full hover:bg-gray-100 min-w-[44px] min-h-[44px] flex items-center justify-center"

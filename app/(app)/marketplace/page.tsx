@@ -11,6 +11,7 @@ import { useQuarter } from "@/lib/quarters";
 import type { MarketplaceItem } from "@/lib/supabase/types";
 import { formatDistanceToNow } from "date-fns";
 import { de } from "date-fns/locale";
+import { LargeTitle } from "@/components/ui/LargeTitle";
 
 export default function MarketplacePage() {
   const [items, setItems] = useState<MarketplaceItem[]>([]);
@@ -39,14 +40,14 @@ export default function MarketplacePage() {
       setLoading(false);
     }
     load();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filterType, currentQuarter?.id]);
 
   return (
     <div>
+      <LargeTitle title="Marktplatz" subtitle="Kaufen, verschenken, tauschen" />
       <PageHeader
-        title="Marktplatz"
-        subtitle="Kaufen, verschenken, tauschen"
+        title=""
         backHref="/dashboard"
         className="mb-4"
         actions={
@@ -65,7 +66,9 @@ export default function MarketplacePage() {
         <button
           onClick={() => setFilterType(null)}
           className={`shrink-0 rounded-full px-3 py-1.5 text-sm font-medium transition-colors ${
-            !filterType ? "bg-anthrazit text-white" : "bg-muted text-muted-foreground hover:bg-muted/80"
+            !filterType
+              ? "bg-anthrazit text-white"
+              : "bg-muted text-muted-foreground hover:bg-muted/80"
           }`}
         >
           Alle
@@ -89,7 +92,10 @@ export default function MarketplacePage() {
       {loading ? (
         <div className="mt-4 space-y-3">
           {[1, 2, 3].map((i) => (
-            <div key={i} className="rounded-lg border border-border bg-white p-4">
+            <div
+              key={i}
+              className="rounded-lg border border-border bg-white p-4"
+            >
               <div className="flex gap-3">
                 <div className="h-20 w-20 shrink-0 animate-pulse rounded-lg bg-muted" />
                 <div className="flex-1 space-y-2">
@@ -104,8 +110,13 @@ export default function MarketplacePage() {
       ) : items.length === 0 ? (
         <div className="py-12 text-center">
           <div className="mb-2 text-4xl">🏪</div>
-          <p className="text-muted-foreground">Noch keine Inserate vorhanden.</p>
-          <Link href="/marketplace/new" className="mt-2 inline-block text-sm text-quartier-green hover:underline">
+          <p className="text-muted-foreground">
+            Noch keine Inserate vorhanden.
+          </p>
+          <Link
+            href="/marketplace/new"
+            className="mt-2 inline-block text-sm text-quartier-green hover:underline"
+          >
             Erstellen Sie das erste Inserat.
           </Link>
         </div>
@@ -138,7 +149,11 @@ function MarketplaceCard({ item }: { item: MarketplaceItem }) {
         {item.images && item.images.length > 0 ? (
           <div className="h-20 w-20 shrink-0 overflow-hidden rounded-lg bg-muted">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={item.images[0]} alt={item.title} className="h-full w-full object-cover" />
+            <img
+              src={item.images[0]}
+              alt={item.title}
+              className="h-full w-full object-cover"
+            />
           </div>
         ) : (
           <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-lg bg-muted text-2xl">
@@ -148,15 +163,25 @@ function MarketplaceCard({ item }: { item: MarketplaceItem }) {
 
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2">
-            <h3 className="truncate font-semibold text-anthrazit">{item.title}</h3>
+            <h3 className="truncate font-semibold text-anthrazit">
+              {item.title}
+            </h3>
           </div>
           <div className="mt-1 flex items-center gap-2">
             <Badge variant="secondary">{type?.label}</Badge>
-            {category && <span className="text-xs text-muted-foreground">{category.label}</span>}
+            {category && (
+              <span className="text-xs text-muted-foreground">
+                {category.label}
+              </span>
+            )}
           </div>
           <div className="mt-2 flex items-center justify-between">
             <span className="font-bold text-anthrazit">
-              {item.price ? `${item.price} €` : item.type === "give" ? "Geschenkt" : ""}
+              {item.price
+                ? `${item.price} €`
+                : item.type === "give"
+                  ? "Geschenkt"
+                  : ""}
             </span>
             <span className="text-xs text-muted-foreground">
               {item.user?.display_name} · {timeAgo}

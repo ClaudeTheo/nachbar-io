@@ -44,6 +44,7 @@ import {
 } from "@/lib/services";
 import { VoiceSettings } from "@/components/companion/VoiceSettings";
 import { useVoicePreferences } from "@/hooks/useVoicePreferences";
+import { LargeTitle } from "@/components/ui/LargeTitle";
 import type { User, Household, ReputationStats } from "@/lib/supabase/types";
 
 /** Schnellzugriff-Karte fuer Features die aus der BottomNav verschoben wurden */
@@ -203,11 +204,8 @@ export default function ProfilePage() {
 
   return (
     <div className="space-y-4">
-      <PageHeader
-        title="Mein Profil"
-        subtitle="Einstellungen und Übersicht"
-        backHref="/dashboard"
-      />
+      <LargeTitle title="Profil" subtitle="Einstellungen und Übersicht" />
+      <PageHeader title="" backHref="/dashboard" />
 
       {/* Profil-Card */}
       <Card>

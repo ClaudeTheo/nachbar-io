@@ -3,11 +3,13 @@
 import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { MessageCircle, UserPlus, Check, X, MapPin } from "lucide-react";
-import { PageHeader } from "@/components/ui/page-header";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
+import {
+  PageHeader,
+  Skeleton,
+  Badge,
+  Button,
+  Separator,
+} from "@/components/ui";
 import { createClient } from "@/lib/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { createNotification } from "@/lib/notifications";

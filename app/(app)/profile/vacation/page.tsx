@@ -4,13 +4,15 @@ import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Separator } from "@/components/ui/separator";
-import { Badge } from "@/components/ui/badge";
+import {
+  Button,
+  Input,
+  Textarea,
+  Separator,
+  Badge,
+  PageHeader,
+} from "@/components/ui";
 import { Plane, Trash2, Plus, Calendar } from "lucide-react";
-import { PageHeader } from "@/components/ui/page-header";
 import type { VacationMode } from "@/lib/supabase/types";
 import { toast } from "sonner";
 

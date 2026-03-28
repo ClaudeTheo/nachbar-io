@@ -2,9 +2,13 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { Pin, Send, Trash2, ImageIcon, X } from "lucide-react";
-import { PageHeader } from "@/components/ui/page-header";
-import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
+import {
+  PageHeader,
+  Button,
+  Skeleton,
+  LargeTitle,
+  SegmentedControl,
+} from "@/components/ui";
 import { toast } from "sonner";
 import { createClient } from "@/lib/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
@@ -15,8 +19,6 @@ import type { HelpRequest } from "@/lib/supabase/types";
 import { BoardComments } from "@/components/BoardComments";
 import { validateImageFile, compressImage, MAX_DIMENSION } from "@/lib/storage";
 import { GuidelinesGate } from "@/components/moderation/GuidelinesAcceptance";
-import { LargeTitle } from "@/components/ui/LargeTitle";
-import { SegmentedControl } from "@/components/ui/SegmentedControl";
 
 export default function BoardPage() {
   const { user } = useAuth();

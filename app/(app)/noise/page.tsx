@@ -2,11 +2,7 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { Volume2, Clock, Send } from "lucide-react";
-import { PageHeader } from "@/components/ui/page-header";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Skeleton } from "@/components/ui/skeleton";
+import { PageHeader, Badge, Button, Input, Skeleton } from "@/components/ui";
 import { toast } from "sonner";
 import { createClient } from "@/lib/supabase/client";
 import { useAuth } from "@/hooks/use-auth";

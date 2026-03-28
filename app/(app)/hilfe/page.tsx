@@ -2,10 +2,8 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
+import { Button, LargeTitle, SegmentedControl } from "@/components/ui";
 import { HelpRequestCard } from "@/components/hilfe/HelpRequestCard";
-import { LargeTitle } from "@/components/ui/LargeTitle";
-import { SegmentedControl } from "@/components/ui/SegmentedControl";
 import type { HelpRequest } from "@/lib/hilfe/types";
 
 /** Hauptseite Nachbarschaftshilfe — zeigt offene Gesuche */
@@ -63,22 +61,29 @@ export default function HilfePage() {
       <div className="space-y-4">
         {(() => {
           if (loading) return null;
-          const filtered = hilfeFilter === "Offen"
-            ? requests.filter((r) => r.status === "open")
-            : hilfeFilter === "Vermittelt"
-              ? requests.filter((r) => r.status === "matched" || r.status === "completed")
-              : requests;
-          return filtered.length > 0
-            ? filtered.map((req) => (
-                <HelpRequestCard key={req.id} request={req} onApply={handleApply} />
-              ))
-            : (
-                <p className="text-center text-gray-500">
-                  {hilfeFilter === "Alle"
-                    ? "Noch keine Gesuche vorhanden."
-                    : "Keine Gesuche in dieser Kategorie."}
-                </p>
-              );
+          const filtered =
+            hilfeFilter === "Offen"
+              ? requests.filter((r) => r.status === "open")
+              : hilfeFilter === "Vermittelt"
+                ? requests.filter(
+                    (r) => r.status === "matched" || r.status === "completed",
+                  )
+                : requests;
+          return filtered.length > 0 ? (
+            filtered.map((req) => (
+              <HelpRequestCard
+                key={req.id}
+                request={req}
+                onApply={handleApply}
+              />
+            ))
+          ) : (
+            <p className="text-center text-gray-500">
+              {hilfeFilter === "Alle"
+                ? "Noch keine Gesuche vorhanden."
+                : "Keine Gesuche in dieser Kategorie."}
+            </p>
+          );
         })()}
       </div>
     </div>

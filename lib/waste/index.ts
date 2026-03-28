@@ -1,9 +1,19 @@
-// Waste-Modul: Source-Driven Muellkalender
-// Exporte fuer Connectors, Sync-Engine und Utilities
+// Bridge: Re-Export aus modules/waste — Abwaertskompatibilitaet
+// Alle Imports auf @/modules/waste umstellen
 
-export { mapWasteType, extractWasteTypeFromSummary } from "./type-mapping";
-export { fetchIcsWasteDates, checkIcsHealth } from "./ics-connector";
-export { parseCsvWasteDates } from "./csv-connector";
-export { runWasteSync } from "./sync-engine";
-export type { RawWasteDate, IcsConnectorConfig, IcsFetchResult } from "./ics-connector";
-export type { SyncResult } from "./sync-engine";
+export {
+  mapWasteType,
+  extractWasteTypeFromSummary,
+} from "@/modules/waste/services/type-mapping";
+export {
+  fetchIcsWasteDates,
+  checkIcsHealth,
+} from "@/modules/waste/services/ics-connector";
+export { parseCsvWasteDates } from "@/modules/waste/services/csv-connector";
+export { runWasteSync } from "@/modules/waste/services/sync-engine";
+export type {
+  RawWasteDate,
+  IcsConnectorConfig,
+  IcsFetchResult,
+} from "@/modules/waste/types";
+export type { SyncResult } from "@/modules/waste/types";

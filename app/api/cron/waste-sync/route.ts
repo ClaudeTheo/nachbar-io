@@ -3,7 +3,7 @@
 // Holt Termine aus allen konfigurierten Quellen und aktualisiert waste_collection_dates
 
 import { NextResponse } from "next/server";
-import { runWasteSync } from "@/lib/waste/sync-engine";
+import { runWasteSync } from "@/modules/waste";
 
 export const runtime = "nodejs";
 export const maxDuration = 60; // Max 60 Sekunden
@@ -17,7 +17,7 @@ export async function GET(request: Request) {
     console.error("[waste-sync] CRON_SECRET nicht gesetzt");
     return NextResponse.json(
       { error: "Server-Konfigurationsfehler" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 
@@ -38,8 +38,8 @@ export async function GET(request: Request) {
           inserted: r.dates_inserted,
           updated: r.dates_updated,
           cancelled: r.dates_cancelled,
-        }))
-      )
+        })),
+      ),
     );
 
     return NextResponse.json({
@@ -57,7 +57,7 @@ export async function GET(request: Request) {
         error: error instanceof Error ? error.message : "Unbekannter Fehler",
         timestamp: new Date().toISOString(),
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

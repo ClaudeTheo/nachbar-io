@@ -1,5 +1,5 @@
 // Statische Veranstaltungen fuer Bad Säckingen (Pilot)
-import type { LocalEvent } from "./types";
+import type { LocalEvent } from "../types";
 
 export const EVENTS_BAD_SAECKINGEN: LocalEvent[] = [
   {

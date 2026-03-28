@@ -1,5 +1,5 @@
 // Statische Apotheken-Daten fuer Bad Säckingen (Pilot)
-import type { Apotheke } from "./types";
+import type { Apotheke } from "../types";
 
 export const APOTHEKEN_BAD_SAECKINGEN: Apotheke[] = [
   {

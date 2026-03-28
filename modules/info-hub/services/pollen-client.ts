@@ -1,12 +1,18 @@
 // Pollenflug-Daten vom Deutschen Wetterdienst (DWD)
 // API: https://opendata.dwd.de/climate_environment/health/alerts/s31fg.json
 
-import type { PollenData, PollenIntensity } from "./types";
+import type { PollenData, PollenIntensity } from "../types";
 
 // Die 8 relevanten Pollentypen
 const POLLEN_TYPES = [
-  "Hasel", "Erle", "Esche", "Birke",
-  "Graeser", "Roggen", "Beifuss", "Ambrosia",
+  "Hasel",
+  "Erle",
+  "Esche",
+  "Birke",
+  "Graeser",
+  "Roggen",
+  "Beifuss",
+  "Ambrosia",
 ] as const;
 
 // DWD Belastungsstufen → numerischer Wert
@@ -37,10 +43,11 @@ function parseIntensity(value: unknown): PollenIntensity {
  * @param regionId DWD Region-ID (Default: 112)
  */
 export async function fetchPollenData(
-  regionId: number = 112
+  regionId: number = 112,
 ): Promise<PollenData | null> {
   try {
-    const url = "https://opendata.dwd.de/climate_environment/health/alerts/s31fg.json";
+    const url =
+      "https://opendata.dwd.de/climate_environment/health/alerts/s31fg.json";
     const res = await fetch(url, {
       signal: AbortSignal.timeout(5000),
       next: { revalidate: 86400 }, // 1x taeglich reicht
@@ -63,14 +70,16 @@ export async function fetchPollenData(
     // Region finden (partregion_id oder region_id)
     const region = regions.find(
       (r: Record<string, unknown>) =>
-        r.partregion_id === regionId || r.region_id === regionId
+        r.partregion_id === regionId || r.region_id === regionId,
     );
 
     if (!region) {
-      console.warn(`[pollen] Region ${regionId} nicht gefunden, versuche Fallback 120`);
+      console.warn(
+        `[pollen] Region ${regionId} nicht gefunden, versuche Fallback 120`,
+      );
       const fallback = regions.find(
         (r: Record<string, unknown>) =>
-          r.partregion_id === 120 || r.region_id === 120
+          r.partregion_id === 120 || r.region_id === 120,
       );
       if (!fallback) return null;
       return parseRegion(fallback);
@@ -85,11 +94,17 @@ export async function fetchPollenData(
 
 function parseRegion(region: Record<string, unknown>): PollenData {
   const regionName = String(
-    region.partregion_name || region.region_name || "Unbekannt"
+    region.partregion_name || region.region_name || "Unbekannt",
   );
 
-  const pollenObj = (region.Pollen || {}) as Record<string, Record<string, unknown>>;
-  const pollen: Record<string, { today: PollenIntensity; tomorrow: PollenIntensity }> = {};
+  const pollenObj = (region.Pollen || {}) as Record<
+    string,
+    Record<string, unknown>
+  >;
+  const pollen: Record<
+    string,
+    { today: PollenIntensity; tomorrow: PollenIntensity }
+  > = {};
 
   for (const type of POLLEN_TYPES) {
     const entry = pollenObj[type];

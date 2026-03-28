@@ -14,7 +14,7 @@ import {
 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useQuarter } from "@/lib/quarters";
-import type { QuartierInfoResponse } from "@/lib/info/types";
+import type { QuartierInfoResponse } from "../types";
 
 // Wetter-Icon Mapping
 const WEATHER_ICONS: Record<string, React.ReactNode> = {

@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
-import { fetchWeather } from "@/lib/info/weather-client";
-import { fetchPollenData } from "@/lib/info/pollen-client";
-import { fetchDepartures } from "@/lib/info/oepnv-client";
-import { OEPNV_STOPS_BAD_SAECKINGEN } from "@/lib/info/oepnv-stops";
+import { fetchWeather } from "@/modules/info-hub/services/weather-client";
+import { fetchPollenData } from "@/modules/info-hub/services/pollen-client";
+import { fetchDepartures } from "@/modules/info-hub/services/oepnv-client";
+import { OEPNV_STOPS_BAD_SAECKINGEN } from "@/modules/info-hub/services/oepnv-stops";
 import { randomUUID } from "crypto";
 
 /**

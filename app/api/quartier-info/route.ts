@@ -1,18 +1,24 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
-import { fetchWeather } from "@/lib/info/weather-client";
-import { fetchPollenData } from "@/lib/info/pollen-client";
-import { fetchNinaWarnings } from "@/lib/info/nina-client";
-import { RATHAUS_LINKS } from "@/lib/info/rathaus-links";
-import { fetchDepartures } from "@/lib/info/oepnv-client";
-import { OEPNV_STOPS_BAD_SAECKINGEN } from "@/lib/info/oepnv-stops";
-import { APOTHEKEN_BAD_SAECKINGEN, NOTDIENST_URL } from "@/lib/info/apotheken";
-import { EVENTS_BAD_SAECKINGEN, EVENTS_CALENDAR_URL } from "@/lib/info/events";
+import { fetchWeather } from "@/modules/info-hub/services/weather-client";
+import { fetchPollenData } from "@/modules/info-hub/services/pollen-client";
+import { fetchNinaWarnings } from "@/modules/info-hub/services/nina-client";
+import { RATHAUS_LINKS } from "@/modules/info-hub/services/rathaus-links";
+import { fetchDepartures } from "@/modules/info-hub/services/oepnv-client";
+import { OEPNV_STOPS_BAD_SAECKINGEN } from "@/modules/info-hub/services/oepnv-stops";
+import {
+  APOTHEKEN_BAD_SAECKINGEN,
+  NOTDIENST_URL,
+} from "@/modules/info-hub/services/apotheken";
+import {
+  EVENTS_BAD_SAECKINGEN,
+  EVENTS_CALENDAR_URL,
+} from "@/modules/info-hub/services/events";
 import type {
   QuartierInfoResponse,
   WasteNext,
   OepnvStop,
-} from "@/lib/info/types";
+} from "@/modules/info-hub/types";
 
 /**
  * GET /api/quartier-info?quarter_id=...

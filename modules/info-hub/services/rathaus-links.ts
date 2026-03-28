@@ -1,5 +1,5 @@
 // Statische Rathaus-Links fuer Bad Saeckingen
-import type { RathausLink } from "./types";
+import type { RathausLink } from "../types";
 
 export const RATHAUS_LINKS: RathausLink[] = [
   {

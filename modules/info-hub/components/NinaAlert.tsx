@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { AlertTriangle, X } from "lucide-react";
 import { useQuarter } from "@/lib/quarters";
-import type { NinaWarning } from "@/lib/info/types";
+import type { NinaWarning } from "../types";
 
 // Dismissed-Warnungen in LocalStorage merken
 function getDismissed(): Set<string> {

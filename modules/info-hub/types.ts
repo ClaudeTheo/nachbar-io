@@ -1,10 +1,11 @@
-// Quartier-Info-Hub: Gemeinsame Typen
+// Info-Hub: Gemeinsame Typen
+// Zentrales Typen-Modul fuer den Quartier-Info-Hub
 
 // Wetter (Open-Meteo)
 export interface QuartierWeatherDay {
-  day: string;      // Deutscher Kurzname: "Mo", "Di", "Mi", ...
-  tempMax: number;  // Tageshöchsttemperatur in °C (gerundet)
-  icon: string;     // Icon-Schluessel (sun/cloud/rain/snow/fog/storm)
+  day: string; // Deutscher Kurzname: "Mo", "Di", "Mi", ...
+  tempMax: number; // Tageshöchsttemperatur in °C (gerundet)
+  icon: string; // Icon-Schluessel (sun/cloud/rain/snow/fog/storm)
 }
 
 export interface QuartierWeather {
@@ -57,17 +58,17 @@ export interface RathausLink {
 
 // ÖPNV-Abfahrten (EFA-BW)
 export interface OepnvDeparture {
-  line: string;        // "7334", "SEV C"
+  line: string; // "7334", "SEV C"
   destination: string; // "Waldshut Busbahnhof"
-  time: string;        // "12:28" (HH:MM)
-  platform: string;    // "14"
-  countdown: number;   // Minuten bis Abfahrt
-  hint?: string;       // "Ersatzverkehr", "Fahrradmitnahme"
+  time: string; // "12:28" (HH:MM)
+  platform: string; // "14"
+  countdown: number; // Minuten bis Abfahrt
+  hint?: string; // "Ersatzverkehr", "Fahrradmitnahme"
 }
 
 export interface OepnvStop {
-  id: string;          // "8506566"
-  name: string;        // "Bad Säckingen Bahnhof"
+  id: string; // "8506566"
+  name: string; // "Bad Säckingen Bahnhof"
   departures: OepnvDeparture[];
 }
 
@@ -83,7 +84,7 @@ export interface Apotheke {
 export interface LocalEvent {
   title: string;
   description: string;
-  schedule: string;    // "Mi + Sa, 08:00-12:00"
+  schedule: string; // "Mi + Sa, 08:00-12:00"
   location: string;
   icon: string;
 }

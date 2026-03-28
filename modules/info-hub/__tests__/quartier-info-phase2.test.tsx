@@ -1,12 +1,18 @@
 import { describe, it, expect } from "vitest";
 
 // Statische Config-Validierung
-import { APOTHEKEN_BAD_SAECKINGEN, NOTDIENST_URL } from "@/lib/info/apotheken";
-import { EVENTS_BAD_SAECKINGEN, EVENTS_CALENDAR_URL } from "@/lib/info/events";
+import {
+  APOTHEKEN_BAD_SAECKINGEN,
+  NOTDIENST_URL,
+} from "@/modules/info-hub/services/apotheken";
+import {
+  EVENTS_BAD_SAECKINGEN,
+  EVENTS_CALENDAR_URL,
+} from "@/modules/info-hub/services/events";
 import {
   OEPNV_STOPS_BAD_SAECKINGEN,
   EFA_BW_BASE_URL,
-} from "@/lib/info/oepnv-stops";
+} from "@/modules/info-hub/services/oepnv-stops";
 
 describe("Statische Configs Phase 2", () => {
   it("Apotheken: 3 Apotheken mit gueltigen Telefonnummern", () => {

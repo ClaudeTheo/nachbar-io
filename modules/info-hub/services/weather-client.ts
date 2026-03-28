@@ -1,10 +1,10 @@
 // Wetter-Daten von Open-Meteo API (kostenlos, kein API-Key, DSGVO-konform)
 // Gemeinsamer Client fuer Web-App und Kiosk
 
-import type { QuartierWeather, QuartierWeatherDay } from "./types";
+import type { QuartierWeather, QuartierWeatherDay } from "../types";
 
 const DEFAULT_LAT = 47.5535;
-const DEFAULT_LON = 7.9640;
+const DEFAULT_LON = 7.964;
 
 // Deutsche Wochentags-Kuerzel (Index 0 = Sonntag)
 const DAY_NAMES_DE = ["So", "Mo", "Di", "Mi", "Do", "Fr", "Sa"] as const;
@@ -74,22 +74,35 @@ function dateToDayName(dateStr: string): string {
  */
 export async function fetchWeather(
   lat: number = DEFAULT_LAT,
-  lon: number = DEFAULT_LON
+  lon: number = DEFAULT_LON,
 ): Promise<QuartierWeather> {
   try {
     const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,weather_code&daily=temperature_2m_max,weather_code&forecast_days=4&timezone=Europe/Berlin`;
     const res = await fetch(url, { next: { revalidate: 1800 } });
 
     if (!res.ok) {
-      console.error("[weather] Open-Meteo API Fehler:", res.status, res.statusText);
-      return { temp: null, icon: "cloud", description: "Nicht verfügbar", forecast: [] };
+      console.error(
+        "[weather] Open-Meteo API Fehler:",
+        res.status,
+        res.statusText,
+      );
+      return {
+        temp: null,
+        icon: "cloud",
+        description: "Nicht verfügbar",
+        forecast: [],
+      };
     }
 
     const data = await res.json();
 
     // 3-Tage-Vorhersage: Index 0 = heute ueberspringen, nur Folgetage 1-3
     const forecast: QuartierWeatherDay[] = [];
-    if (data.daily?.time && data.daily?.temperature_2m_max && data.daily?.weather_code) {
+    if (
+      data.daily?.time &&
+      data.daily?.temperature_2m_max &&
+      data.daily?.weather_code
+    ) {
       for (let i = 1; i <= 3 && i < data.daily.time.length; i++) {
         forecast.push({
           day: dateToDayName(data.daily.time[i]),
@@ -109,6 +122,11 @@ export async function fetchWeather(
     };
   } catch (err) {
     console.error("[weather] Netzwerkfehler:", err);
-    return { temp: null, icon: "cloud", description: "Nicht verfügbar", forecast: [] };
+    return {
+      temp: null,
+      icon: "cloud",
+      description: "Nicht verfügbar",
+      forecast: [],
+    };
   }
 }

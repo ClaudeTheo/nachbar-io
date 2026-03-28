@@ -1,7 +1,7 @@
 // NINA-Warnungen vom Bundesamt fuer Bevoelkerungsschutz (BBK)
 // API: https://warnung.bund.de/api31/
 
-import type { NinaWarning, NinaSeverity } from "./types";
+import type { NinaWarning, NinaSeverity } from "../types";
 
 // AGS Landkreis Waldshut (Bad Saeckingen)
 const DEFAULT_AGS = "083370000000";

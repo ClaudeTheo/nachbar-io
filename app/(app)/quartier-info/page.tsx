@@ -34,9 +34,15 @@ import type {
   OepnvDeparture,
   Apotheke,
   LocalEvent,
-} from "@/lib/info/types";
-import { APOTHEKEN_BAD_SAECKINGEN, NOTDIENST_URL } from "@/lib/info/apotheken";
-import { EVENTS_BAD_SAECKINGEN, EVENTS_CALENDAR_URL } from "@/lib/info/events";
+} from "@/modules/info-hub/types";
+import {
+  APOTHEKEN_BAD_SAECKINGEN,
+  NOTDIENST_URL,
+} from "@/modules/info-hub/services/apotheken";
+import {
+  EVENTS_BAD_SAECKINGEN,
+  EVENTS_CALENDAR_URL,
+} from "@/modules/info-hub/services/events";
 import { LargeTitle } from "@/components/ui/LargeTitle";
 
 // Pollen-Balken (farbig)

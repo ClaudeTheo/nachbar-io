@@ -1,5 +1,5 @@
 // ÖPNV-Abfahrten von EFA-BW JSON API (kostenlos, kein API-Key)
-import type { OepnvDeparture, OepnvStop } from "./types";
+import type { OepnvDeparture, OepnvStop } from "../types";
 import { EFA_BW_BASE_URL } from "./oepnv-stops";
 
 // EFA-BW Response-Typen (vereinfacht)

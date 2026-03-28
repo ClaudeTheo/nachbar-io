@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
-import { fetchNinaWarnings } from "@/lib/info/nina-client";
+import { fetchNinaWarnings } from "@/modules/info-hub/services/nina-client";
 import { randomUUID } from "crypto";
 
 // AGS Landkreis Waldshut (Bad Saeckingen)
@@ -25,7 +25,10 @@ export async function GET(request: Request) {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
   if (!supabaseUrl || !serviceKey) {
-    return NextResponse.json({ error: "Server-Konfigurationsfehler" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Server-Konfigurationsfehler" },
+      { status: 500 },
+    );
   }
 
   const supabase = createClient(supabaseUrl, serviceKey);
@@ -61,7 +64,13 @@ export async function GET(request: Request) {
     });
 
     if (insertError) {
-      console.error(JSON.stringify({ requestId, event: "nina_insert_error", error: insertError.message }));
+      console.error(
+        JSON.stringify({
+          requestId,
+          event: "nina_insert_error",
+          error: insertError.message,
+        }),
+      );
       results.errors++;
       continue;
     }
@@ -81,20 +90,28 @@ export async function GET(request: Request) {
 
           for (const sub of subscriptions) {
             try {
-              await fetch(`${process.env.NEXT_PUBLIC_APP_URL || "https://nachbar-io.vercel.app"}/api/push/send`, {
-                method: "POST",
-                headers: {
-                  "Content-Type": "application/json",
-                  Authorization: `Bearer ${process.env.INTERNAL_API_SECRET}`,
+              await fetch(
+                `${process.env.NEXT_PUBLIC_APP_URL || "https://nachbar-io.vercel.app"}/api/push/send`,
+                {
+                  method: "POST",
+                  headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${process.env.INTERNAL_API_SECRET}`,
+                  },
+                  body: JSON.stringify({
+                    subscription: {
+                      endpoint: sub.endpoint,
+                      keys: { p256dh: sub.p256dh, auth: sub.auth },
+                    },
+                    title: `⚠️ ${warning.headline}`,
+                    body:
+                      warning.description?.slice(0, 200) ||
+                      "Neue Warnung vom Bundesamt",
+                    url: "/quartier-info#warnungen",
+                    tag: `nina-${warning.warning_id}`,
+                  }),
                 },
-                body: JSON.stringify({
-                  subscription: { endpoint: sub.endpoint, keys: { p256dh: sub.p256dh, auth: sub.auth } },
-                  title: `⚠️ ${warning.headline}`,
-                  body: warning.description?.slice(0, 200) || "Neue Warnung vom Bundesamt",
-                  url: "/quartier-info#warnungen",
-                  tag: `nina-${warning.warning_id}`,
-                }),
-              });
+              );
               results.push_sent++;
             } catch {
               // Einzelne Push-Fehler nicht abbrechen
@@ -108,7 +125,13 @@ export async function GET(request: Request) {
           .update({ push_sent: true })
           .eq("warning_id", warning.warning_id);
       } catch (err) {
-        console.error(JSON.stringify({ requestId, event: "nina_push_error", error: String(err) }));
+        console.error(
+          JSON.stringify({
+            requestId,
+            event: "nina_push_error",
+            error: String(err),
+          }),
+        );
       }
     }
   }
@@ -135,11 +158,17 @@ export async function GET(request: Request) {
           fetched_at: new Date().toISOString(),
           expires_at: new Date(Date.now() + 10 * 60 * 1000).toISOString(), // 10 Min
         },
-        { onConflict: "quarter_id,source" }
+        { onConflict: "quarter_id,source" },
       );
     }
   }
 
-  console.log(JSON.stringify({ requestId, event: "nina_sync_done", ...results }));
-  return NextResponse.json({ message: "NINA-Sync abgeschlossen", requestId, ...results });
+  console.log(
+    JSON.stringify({ requestId, event: "nina_sync_done", ...results }),
+  );
+  return NextResponse.json({
+    message: "NINA-Sync abgeschlossen",
+    requestId,
+    ...results,
+  });
 }

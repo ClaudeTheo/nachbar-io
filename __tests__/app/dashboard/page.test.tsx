@@ -152,10 +152,10 @@ vi.mock("@/components/ProfileCompletionBanner", () => ({
 vi.mock("@/components/FloatingHelpButton", () => ({
   FloatingHelpButton: () => <button data-testid="floating-help-button" />,
 }));
-vi.mock("@/components/info/InfoBar", () => ({
+vi.mock("@/modules/info-hub/components/InfoBar", () => ({
   InfoBar: () => <div data-testid="info-bar" />,
 }));
-vi.mock("@/components/info/NinaAlert", () => ({
+vi.mock("@/modules/info-hub/components/NinaAlert", () => ({
   NinaAlert: () => <div data-testid="nina-alert" />,
 }));
 vi.mock("@/components/AlertCard", () => ({

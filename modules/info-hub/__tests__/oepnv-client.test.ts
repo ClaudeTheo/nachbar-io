@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { fetchDepartures } from "./oepnv-client";
+import { fetchDepartures } from "../services/oepnv-client";
 
 // EFA-BW Mock-Response (vereinfacht, basierend auf echtem API-Response)
 const MOCK_EFA_RESPONSE = {

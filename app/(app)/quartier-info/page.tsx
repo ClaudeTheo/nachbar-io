@@ -4,11 +4,6 @@ import { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
 import {
   Cloud,
-  Sun,
-  CloudRain,
-  Snowflake,
-  CloudFog,
-  CloudLightning,
   AlertTriangle,
   CheckCircle2,
   Trash2,
@@ -27,11 +22,11 @@ import {
   Clock,
   MapPin,
 } from "lucide-react";
+import { WeatherWidget } from "@/components/weather/WeatherWidget";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useQuarter } from "@/lib/quarters";
 import type {
   QuartierInfoResponse,
-  QuartierWeatherDay,
   RathausLink,
   NinaWarning,
   WasteNext,
@@ -43,25 +38,6 @@ import type {
 import { APOTHEKEN_BAD_SAECKINGEN, NOTDIENST_URL } from "@/lib/info/apotheken";
 import { EVENTS_BAD_SAECKINGEN, EVENTS_CALENDAR_URL } from "@/lib/info/events";
 import { LargeTitle } from "@/components/ui/LargeTitle";
-
-// Wetter-Icon Mapping
-function WeatherIcon({
-  icon,
-  className,
-}: {
-  icon: string;
-  className?: string;
-}) {
-  const icons: Record<string, React.ReactNode> = {
-    sun: <Sun className={className} />,
-    cloud: <Cloud className={className} />,
-    rain: <CloudRain className={className} />,
-    snow: <Snowflake className={className} />,
-    fog: <CloudFog className={className} />,
-    storm: <CloudLightning className={className} />,
-  };
-  return <>{icons[icon] || icons.cloud}</>;
-}
 
 // Pollen-Balken (farbig)
 function PollenBar({ intensity, label }: { intensity: number; label: string }) {
@@ -179,55 +155,30 @@ export default function QuartierInfoPage() {
       </div>
 
       {/* 1. Wetter */}
-      <section
-        className="rounded-2xl bg-white shadow-sm border border-gray-100 p-5"
-        data-testid="info-weather"
-      >
-        <h2 className="text-base font-semibold text-anthrazit mb-3">Wetter</h2>
+      <section data-testid="info-weather">
         {loading ? (
-          <div className="space-y-3">
+          <div className="rounded-2xl bg-white shadow-sm border border-gray-100 p-5 space-y-3">
+            <Skeleton className="h-5 w-20" />
             <Skeleton className="h-12 w-full" />
             <Skeleton className="h-8 w-full" />
           </div>
         ) : data?.weather ? (
-          <div>
-            {/* Aktuell */}
-            <div className="flex items-center gap-4 mb-4">
-              <WeatherIcon
-                icon={data.weather.icon}
-                className="h-10 w-10 text-amber-500"
-              />
-              <div>
-                <span className="text-3xl font-bold text-anthrazit">
-                  {data.weather.temp !== null ? `${data.weather.temp}°C` : "–"}
-                </span>
-                <p className="text-sm text-muted-foreground">
-                  {data.weather.description}
-                </p>
-              </div>
-            </div>
-            {/* 3-Tage-Forecast */}
-            {data.weather.forecast.length > 0 && (
-              <div className="flex gap-4 border-t border-gray-100 pt-3">
-                {data.weather.forecast.map((day: QuartierWeatherDay) => (
-                  <div key={day.day} className="flex-1 text-center">
-                    <p className="text-xs text-muted-foreground">{day.day}</p>
-                    <WeatherIcon
-                      icon={day.icon}
-                      className="h-5 w-5 mx-auto my-1 text-gray-500"
-                    />
-                    <p className="text-sm font-medium text-anthrazit">
-                      {day.tempMax}°
-                    </p>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
+          <WeatherWidget
+            variant="full"
+            temp={data.weather.temp}
+            description={data.weather.description}
+            icon={data.weather.icon}
+            forecast={data.weather.forecast}
+          />
         ) : (
-          <p className="text-sm text-muted-foreground">
-            Wetterdaten nicht verfügbar
-          </p>
+          <div className="rounded-2xl bg-white shadow-sm border border-gray-100 p-5">
+            <h2 className="text-base font-semibold text-anthrazit mb-3">
+              Wetter
+            </h2>
+            <p className="text-sm text-muted-foreground">
+              Wetterdaten nicht verfügbar
+            </p>
+          </div>
         )}
       </section>
 

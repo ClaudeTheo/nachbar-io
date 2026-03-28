@@ -1,18 +1,24 @@
-'use client';
+"use client";
 
 // Aufgabentafel-Seite: Aufgaben anzeigen, filtern und erstellen
 
-import { useCallback, useEffect, useState } from 'react';
-import { Plus, X } from 'lucide-react';
-import { PageHeader } from '@/components/ui/page-header';
-import { TaskCard } from '@/components/care/TaskCard';
-import { TaskForm } from '@/components/care/TaskForm';
-import type { CareTask, TaskCategory } from '@/components/care/TaskCard';
-import { CATEGORY_CONFIG } from '@/components/care/TaskCard';
-import { useAuth } from '@/hooks/use-auth';
+import { useCallback, useEffect, useState } from "react";
+import { Plus, X } from "lucide-react";
+import { PageHeader } from "@/components/ui/page-header";
+import { TaskCard } from "@/modules/care/components/tasks/TaskCard";
+import { TaskForm } from "@/modules/care/components/tasks/TaskForm";
+import type {
+  CareTask,
+  TaskCategory,
+} from "@/modules/care/components/tasks/TaskCard";
+import { CATEGORY_CONFIG } from "@/modules/care/components/tasks/TaskCard";
+import { useAuth } from "@/hooks/use-auth";
 
 // Alle Kategorien fuer den Filter
-const ALL_CATEGORIES = Object.entries(CATEGORY_CONFIG) as [TaskCategory, { emoji: string; label: string }][];
+const ALL_CATEGORIES = Object.entries(CATEGORY_CONFIG) as [
+  TaskCategory,
+  { emoji: string; label: string },
+][];
 
 export default function TasksPage() {
   const { user } = useAuth();
@@ -20,7 +26,9 @@ export default function TasksPage() {
   const [tasks, setTasks] = useState<CareTask[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [categoryFilter, setCategoryFilter] = useState<TaskCategory | null>(null);
+  const [categoryFilter, setCategoryFilter] = useState<TaskCategory | null>(
+    null,
+  );
 
   // Aufgaben vom API laden
   const loadTasks = useCallback(async () => {
@@ -30,21 +38,21 @@ export default function TasksPage() {
     try {
       const params = new URLSearchParams();
       if (categoryFilter) {
-        params.set('category', categoryFilter);
+        params.set("category", categoryFilter);
       }
 
-      const url = `/api/care/tasks${params.toString() ? `?${params.toString()}` : ''}`;
+      const url = `/api/care/tasks${params.toString() ? `?${params.toString()}` : ""}`;
       const res = await fetch(url);
 
       if (!res.ok) {
-        setError('Aufgaben konnten nicht geladen werden.');
+        setError("Aufgaben konnten nicht geladen werden.");
         return;
       }
 
       const data = await res.json();
       setTasks(data.tasks ?? data ?? []);
     } catch {
-      setError('Verbindungsfehler. Bitte versuchen Sie es erneut.');
+      setError("Verbindungsfehler. Bitte versuchen Sie es erneut.");
     } finally {
       setLoading(false);
     }
@@ -86,11 +94,17 @@ export default function TasksPage() {
           <button
             onClick={() => setShowForm((v) => !v)}
             className="min-h-[80px] min-w-[80px] flex flex-col items-center justify-center gap-1 rounded-xl border bg-card px-3 py-2 text-sm font-medium text-anthrazit hover:bg-muted transition-colors"
-            aria-label={showForm ? 'Formular schliessen' : 'Neue Aufgabe erstellen'}
-            style={{ touchAction: 'manipulation' }}
+            aria-label={
+              showForm ? "Formular schliessen" : "Neue Aufgabe erstellen"
+            }
+            style={{ touchAction: "manipulation" }}
           >
-            {showForm ? <X className="h-5 w-5" /> : <Plus className="h-5 w-5" />}
-            {showForm ? 'Schliessen' : 'Neue Aufgabe'}
+            {showForm ? (
+              <X className="h-5 w-5" />
+            ) : (
+              <Plus className="h-5 w-5" />
+            )}
+            {showForm ? "Schliessen" : "Neue Aufgabe"}
           </button>
         }
       />
@@ -98,7 +112,9 @@ export default function TasksPage() {
       {/* Formular (ein-/ausblendbar) */}
       {showForm && (
         <div className="rounded-xl border bg-card p-4">
-          <h2 className="text-lg font-bold text-anthrazit mb-4">Neue Aufgabe erstellen</h2>
+          <h2 className="text-lg font-bold text-anthrazit mb-4">
+            Neue Aufgabe erstellen
+          </h2>
           <TaskForm
             onSuccess={handleFormSuccess}
             onCancel={() => setShowForm(false)}
@@ -108,17 +124,19 @@ export default function TasksPage() {
 
       {/* Kategorie-Filter: horizontal scrollbare Chips */}
       <div className="space-y-2">
-        <h2 className="text-sm font-medium text-muted-foreground">Kategorie filtern</h2>
+        <h2 className="text-sm font-medium text-muted-foreground">
+          Kategorie filtern
+        </h2>
         <div className="flex gap-2 overflow-x-auto pb-2 -mx-4 px-4 scrollbar-hide">
           {/* "Alle" Chip */}
           <button
             onClick={() => setCategoryFilter(null)}
             className={`shrink-0 rounded-full px-4 py-2 text-sm font-medium transition-colors ${
               categoryFilter === null
-                ? 'bg-[#2D3142] text-white'
-                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                ? "bg-[#2D3142] text-white"
+                : "bg-gray-100 text-gray-600 hover:bg-gray-200"
             }`}
-            style={{ minHeight: '40px', touchAction: 'manipulation' }}
+            style={{ minHeight: "40px", touchAction: "manipulation" }}
           >
             Alle
           </button>
@@ -130,10 +148,10 @@ export default function TasksPage() {
               onClick={() => setCategoryFilter(key)}
               className={`shrink-0 rounded-full px-4 py-2 text-sm font-medium transition-colors whitespace-nowrap ${
                 categoryFilter === key
-                  ? 'bg-[#2D3142] text-white'
-                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                  ? "bg-[#2D3142] text-white"
+                  : "bg-gray-100 text-gray-600 hover:bg-gray-200"
               }`}
-              style={{ minHeight: '40px', touchAction: 'manipulation' }}
+              style={{ minHeight: "40px", touchAction: "manipulation" }}
             >
               {config.emoji} {config.label}
             </button>
@@ -143,7 +161,10 @@ export default function TasksPage() {
 
       {/* Fehlermeldung */}
       {error && (
-        <p role="alert" className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-600">
+        <p
+          role="alert"
+          className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-600"
+        >
           {error}
         </p>
       )}
@@ -152,7 +173,10 @@ export default function TasksPage() {
       {loading && (
         <div className="space-y-4">
           {[1, 2, 3].map((i) => (
-            <div key={i} className="animate-pulse rounded-xl border p-4 space-y-3">
+            <div
+              key={i}
+              className="animate-pulse rounded-xl border p-4 space-y-3"
+            >
               <div className="flex gap-3">
                 <div className="h-10 w-10 rounded-full bg-muted" />
                 <div className="flex-1 space-y-2">
@@ -182,14 +206,16 @@ export default function TasksPage() {
       {/* Leerer Zustand */}
       {!loading && tasks.length === 0 && !error && (
         <div className="flex flex-col items-center justify-center py-12 text-center">
-          <span className="text-5xl mb-4">{'\uD83D\uDCCB'}</span>
+          <span className="text-5xl mb-4">{"\uD83D\uDCCB"}</span>
           <p className="text-lg font-medium text-anthrazit">
-            {categoryFilter ? 'Keine Aufgaben in dieser Kategorie' : 'Noch keine Aufgaben'}
+            {categoryFilter
+              ? "Keine Aufgaben in dieser Kategorie"
+              : "Noch keine Aufgaben"}
           </p>
           <p className="text-sm text-muted-foreground mt-1">
             {categoryFilter
-              ? 'Versuchen Sie einen anderen Filter oder erstellen Sie eine neue Aufgabe.'
-              : 'Erstellen Sie die erste Aufgabe fuer Ihr Quartier!'}
+              ? "Versuchen Sie einen anderen Filter oder erstellen Sie eine neue Aufgabe."
+              : "Erstellen Sie die erste Aufgabe fuer Ihr Quartier!"}
           </p>
         </div>
       )}

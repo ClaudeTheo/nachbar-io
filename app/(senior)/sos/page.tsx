@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import { SosCategoryPicker } from '@/components/care/SosCategoryPicker';
+import { SosCategoryPicker } from "@/modules/care/components/sos/SosCategoryPicker";
 
 export default function SeniorSosPage() {
   return (

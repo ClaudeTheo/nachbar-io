@@ -1,8 +1,11 @@
 "use client";
 
 import { CAREGIVER_RELATIONSHIP_TYPES } from "@/lib/care/constants";
-import type { CaregiverRelationshipType, ResidentStatus } from "@/lib/care/types";
-import { HeartbeatTimeline } from "./HeartbeatTimeline";
+import type {
+  CaregiverRelationshipType,
+  ResidentStatus,
+} from "@/lib/care/types";
+import { HeartbeatTimeline } from "../checkin/HeartbeatTimeline";
 
 interface ResidentStatusData {
   resident_id: string;
@@ -56,10 +59,15 @@ function relativeTime(isoDate: string): string {
 
 // Beziehungstyp-Label
 function getRelationshipLabel(type: CaregiverRelationshipType): string {
-  return CAREGIVER_RELATIONSHIP_TYPES.find((rt) => rt.id === type)?.label ?? type;
+  return (
+    CAREGIVER_RELATIONSHIP_TYPES.find((rt) => rt.id === type)?.label ?? type
+  );
 }
 
-export function ResidentStatusCard({ data, relationshipType }: ResidentStatusCardProps) {
+export function ResidentStatusCard({
+  data,
+  relationshipType,
+}: ResidentStatusCardProps) {
   const statusColor = STATUS_COLORS[data.status];
   const statusLabel = STATUS_LABELS[data.status];
 
@@ -69,7 +77,9 @@ export function ResidentStatusCard({ data, relationshipType }: ResidentStatusCar
       <div className="flex items-center justify-between">
         <div>
           <h3 className="font-semibold text-anthrazit">{data.display_name}</h3>
-          <p className="text-xs text-muted-foreground">{getRelationshipLabel(relationshipType)}</p>
+          <p className="text-xs text-muted-foreground">
+            {getRelationshipLabel(relationshipType)}
+          </p>
         </div>
         <div className="flex items-center gap-1.5">
           <div
@@ -102,7 +112,8 @@ export function ResidentStatusCard({ data, relationshipType }: ResidentStatusCar
               <div className="flex items-center justify-between text-sm">
                 <span className="text-muted-foreground">Letzter Check-in</span>
                 <span className="font-medium text-anthrazit">
-                  {CHECKIN_LABELS[data.last_checkin_status] ?? data.last_checkin_status}
+                  {CHECKIN_LABELS[data.last_checkin_status] ??
+                    data.last_checkin_status}
                 </span>
               </div>
             )}

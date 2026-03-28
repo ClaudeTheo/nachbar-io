@@ -1,12 +1,12 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
-import { createClient } from '@/lib/supabase/client';
-import { TriangleAlert } from 'lucide-react';
-import Link from 'next/link';
-import { PageHeader } from '@/components/ui/page-header';
-import { SosAlertCard } from '@/components/care/SosAlertCard';
-import type { CareSosAlert } from '@/lib/care/types';
+import { useEffect, useState } from "react";
+import { createClient } from "@/lib/supabase/client";
+import { TriangleAlert } from "lucide-react";
+import Link from "next/link";
+import { PageHeader } from "@/components/ui/page-header";
+import { SosAlertCard } from "@/modules/care/components/sos/SosAlertCard";
+import type { CareSosAlert } from "@/lib/care/types";
 
 export default function SosOverviewPage() {
   const [alerts, setAlerts] = useState<CareSosAlert[]>([]);
@@ -14,7 +14,7 @@ export default function SosOverviewPage() {
 
   useEffect(() => {
     async function load() {
-      const res = await fetch('/api/care/sos');
+      const res = await fetch("/api/care/sos");
       if (res.ok) setAlerts(await res.json());
       setLoading(false);
     }
@@ -22,10 +22,18 @@ export default function SosOverviewPage() {
 
     const supabase = createClient();
     const channel = supabase
-      .channel('care-sos-overview')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'care_sos_alerts' }, () => { load(); })
+      .channel("care-sos-overview")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "care_sos_alerts" },
+        () => {
+          load();
+        },
+      )
       .subscribe();
-    return () => { supabase.removeChannel(channel); };
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, []);
 
   if (loading) {
@@ -43,7 +51,11 @@ export default function SosOverviewPage() {
   return (
     <div className="px-4 py-6 space-y-4">
       <PageHeader
-        title={<><TriangleAlert className="h-6 w-6 text-alert-amber" /> SOS-Alarme</>}
+        title={
+          <>
+            <TriangleAlert className="h-6 w-6 text-alert-amber" /> SOS-Alarme
+          </>
+        }
         backHref="/care"
       />
       {alerts.length === 0 ? (

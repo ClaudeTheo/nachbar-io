@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import { SeniorCheckinButtons } from '@/components/care/senior/SeniorCheckinButtons';
+import { SeniorCheckinButtons } from "@/modules/care/components/senior/SeniorCheckinButtons";
 
 export default function SeniorCheckinPage() {
   return (

@@ -125,6 +125,10 @@ vi.mock("lucide-react", () => ({
   CloudLightning: (props: Record<string, unknown>) => (
     <svg data-testid="icon-cloud-lightning" {...props} />
   ),
+  // DailyCheckinButton
+  Check: (props: Record<string, unknown>) => (
+    <svg data-testid="icon-check" {...props} />
+  ),
 }));
 
 // sonner

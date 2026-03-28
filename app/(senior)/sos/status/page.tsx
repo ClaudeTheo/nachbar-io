@@ -1,14 +1,18 @@
-'use client';
+"use client";
 
-import { Suspense, useEffect, useState } from 'react';
-import { useSearchParams } from 'next/navigation';
-import { createClient } from '@/lib/supabase/client';
-import { SeniorStatusScreen } from '@/components/care/senior/SeniorStatusScreen';
-import type { CareSosAlert } from '@/lib/care/types';
+import { Suspense, useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
+import { createClient } from "@/lib/supabase/client";
+import { SeniorStatusScreen } from "@/modules/care/components/senior/SeniorStatusScreen";
+import type { CareSosAlert } from "@/lib/care/types";
 
 export default function SeniorSosStatusPage() {
   return (
-    <Suspense fallback={<div className="py-12 text-center text-muted-foreground">Laden...</div>}>
+    <Suspense
+      fallback={
+        <div className="py-12 text-center text-muted-foreground">Laden...</div>
+      }
+    >
       <SeniorSosStatusContent />
     </Suspense>
   );
@@ -16,7 +20,7 @@ export default function SeniorSosStatusPage() {
 
 function SeniorSosStatusContent() {
   const searchParams = useSearchParams();
-  const alertId = searchParams.get('id');
+  const alertId = searchParams.get("id");
   const [alert, setAlert] = useState<CareSosAlert | null>(null);
 
   useEffect(() => {
@@ -30,17 +34,32 @@ function SeniorSosStatusContent() {
 
     const supabase = createClient();
     const channel = supabase
-      .channel('senior-sos-' + alertId)
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'care_sos_alerts', filter: `id=eq.${alertId}` }, () => { load(); })
+      .channel("senior-sos-" + alertId)
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "care_sos_alerts",
+          filter: `id=eq.${alertId}`,
+        },
+        () => {
+          load();
+        },
+      )
       .subscribe();
-    return () => { supabase.removeChannel(channel); };
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, [alertId]);
 
-  if (alert?.status === 'accepted' || alert?.status === 'helper_enroute') {
+  if (alert?.status === "accepted" || alert?.status === "helper_enroute") {
     return (
       <div className="text-center py-8 space-y-6">
         <div className="text-8xl">🏃</div>
-        <h1 className="text-4xl font-bold text-green-600">Hilfe ist unterwegs!</h1>
+        <h1 className="text-4xl font-bold text-green-600">
+          Hilfe ist unterwegs!
+        </h1>
         <p className="text-xl text-gray-600">Jemand kommt zu Ihnen.</p>
       </div>
     );

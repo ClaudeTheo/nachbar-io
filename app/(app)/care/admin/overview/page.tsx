@@ -6,8 +6,8 @@ import { BarChart3, ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { PageHeader } from "@/components/ui/page-header";
 import { createClient } from "@/lib/supabase/client";
-import { SystemOverview } from "@/components/care/SystemOverview";
-import { PilotMetrics } from "@/components/care/PilotMetrics";
+import { SystemOverview } from "@/modules/care/components/admin/SystemOverview";
+import { PilotMetrics } from "@/modules/care/components/admin/PilotMetrics";
 import { useAuth } from "@/hooks/use-auth";
 
 export default function AdminOverviewPage() {

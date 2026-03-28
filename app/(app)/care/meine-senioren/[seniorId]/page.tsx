@@ -19,7 +19,7 @@ import Link from "next/link";
 import { PageHeader } from "@/components/ui/page-header";
 import { useCareRole } from "@/lib/care/hooks/useCareRole";
 import { createClient } from "@/lib/supabase/client";
-import { HeartbeatTimeline } from "@/components/care/HeartbeatTimeline";
+import { HeartbeatTimeline } from "@/modules/care/components/checkin/HeartbeatTimeline";
 import { usePresence } from "@/lib/video-calls/usePresence";
 import { OnlineIndicator } from "@/components/video/OnlineIndicator";
 

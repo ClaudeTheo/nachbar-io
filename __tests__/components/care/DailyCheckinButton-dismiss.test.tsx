@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { render, screen, act, cleanup } from "@testing-library/react";
-import { DailyCheckinButton } from "@/components/care/DailyCheckinButton";
+import { DailyCheckinButton } from "@/modules/care/components/checkin/DailyCheckinButton";
 
 // Mock fetch fuer Check-in Status
 function mockFetchDone() {

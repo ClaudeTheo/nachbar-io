@@ -6,21 +6,19 @@ import { isUxRedesignEnabled } from "@/lib/ux-flags";
 import { QuickActions } from "@/components/dashboard/QuickActions";
 import { DiscoverGrid } from "@/components/dashboard/DiscoverGrid";
 import { HelpRequestsSection } from "@/components/dashboard/help-requests-section";
-import { CaregiverDashboard } from "@/components/care/CaregiverDashboard";
+import { CaregiverDashboard } from "@/modules/care/components/caregiver/CaregiverDashboard";
 import { FeatureGate } from "@/components/FeatureGate";
 import { QuartierServicesSection } from "@/components/municipal/QuartierServicesSection";
 import { Badge } from "@/components/ui/badge";
 import { NewsCard } from "@/components/NewsCard";
-import type { HelpRequest, MarketplaceItem, NewsItem } from "@/lib/supabase/types";
+import type {
+  HelpRequest,
+  MarketplaceItem,
+  NewsItem,
+} from "@/lib/supabase/types";
 
 // Section-Header Hilfskomponente (intern)
-function SectionHeader({
-  title,
-  href,
-}: {
-  title: string;
-  href: string;
-}) {
+function SectionHeader({ title, href }: { title: string; href: string }) {
   return (
     <div className="mb-2 flex items-center justify-between px-4">
       <h2 className="text-xs font-semibold uppercase tracking-wider text-[#2D3142]/40">

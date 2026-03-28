@@ -1,11 +1,11 @@
 // app/(senior)/medications/page.tsx
 // Nachbar.io — Senior-Geraet: Medikamenten-Ansicht
-'use client';
+"use client";
 
-import { useEffect, useState, useCallback } from 'react';
-import { createClient } from '@/lib/supabase/client';
-import { SeniorMedicationScreen } from '@/components/care/senior/SeniorMedicationScreen';
-import type { CareMedication } from '@/lib/care/types';
+import { useEffect, useState, useCallback } from "react";
+import { createClient } from "@/lib/supabase/client";
+import { SeniorMedicationScreen } from "@/modules/care/components/senior/SeniorMedicationScreen";
+import type { CareMedication } from "@/lib/care/types";
 import { getCachedUser } from "@/lib/supabase/cached-auth";
 
 interface DueMed {
@@ -33,12 +33,16 @@ export default function SeniorMedicationsPage() {
     try {
       const res = await fetch(`/api/care/medications/due?senior_id=${userId}`);
       if (res.ok) setDueMeds(await res.json());
-    } catch { /* Stille Fehlerbehandlung fuer Geraet */ }
+    } catch {
+      /* Stille Fehlerbehandlung fuer Geraet */
+    }
     setLoading(false);
   }, [userId]);
 
   // eslint-disable-next-line react-hooks/set-state-in-effect
-  useEffect(() => { loadDueMeds(); }, [loadDueMeds]);
+  useEffect(() => {
+    loadDueMeds();
+  }, [loadDueMeds]);
 
   // Auto-refresh alle 5 Min
   useEffect(() => {
@@ -47,24 +51,38 @@ export default function SeniorMedicationsPage() {
     return () => clearInterval(interval);
   }, [userId, loadDueMeds]);
 
-  const handleAction = async (medicationId: string, scheduledAt: string, status: 'taken' | 'snoozed') => {
+  const handleAction = async (
+    medicationId: string,
+    scheduledAt: string,
+    status: "taken" | "snoozed",
+  ) => {
     try {
-      const res = await fetch('/api/care/medications/log', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ medication_id: medicationId, scheduled_at: scheduledAt, status }),
+      const res = await fetch("/api/care/medications/log", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          medication_id: medicationId,
+          scheduled_at: scheduledAt,
+          status,
+        }),
       });
       if (res.ok) {
         await loadDueMeds();
-        if (status === 'taken') {
-          window.location.href = '/confirmed';
+        if (status === "taken") {
+          window.location.href = "/confirmed";
         }
       }
-    } catch { /* Stille Fehlerbehandlung fuer Geraet */ }
+    } catch {
+      /* Stille Fehlerbehandlung fuer Geraet */
+    }
   };
 
-  const mappedMeds = dueMeds.map(d => ({
-    medication: { id: d.medication.id, name: d.medication.name, dosage: d.medication.dosage },
+  const mappedMeds = dueMeds.map((d) => ({
+    medication: {
+      id: d.medication.id,
+      name: d.medication.name,
+      dosage: d.medication.dosage,
+    },
     scheduled_at: d.scheduled_at,
     status: d.status,
   }));
@@ -72,7 +90,9 @@ export default function SeniorMedicationsPage() {
   if (loading && dueMeds.length === 0) {
     return (
       <div className="flex min-h-[60vh] items-center justify-center">
-        <p className="text-3xl font-bold text-gray-600">Erinnerungen werden geladen...</p>
+        <p className="text-3xl font-bold text-gray-600">
+          Erinnerungen werden geladen...
+        </p>
       </div>
     );
   }

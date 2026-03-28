@@ -1,14 +1,14 @@
-'use client';
+"use client";
 
 // components/care/CaregiverSettings.tsx
 // Nachbar.io — Bewohner verwaltet seine Angehörigen (Einladen, Widerrufen, Heartbeat-Toggle)
 
-import { useState, useEffect, useCallback } from 'react';
-import { Users, Plus, Loader2 } from 'lucide-react';
-import { MAX_CAREGIVERS_PER_RESIDENT } from '@/lib/care/constants';
-import type { CaregiverLink } from '@/lib/care/types';
-import { InviteCodeModal } from './InviteCodeModal';
-import { CaregiverList } from './CaregiverList';
+import { useState, useEffect, useCallback } from "react";
+import { Users, Plus, Loader2 } from "lucide-react";
+import { MAX_CAREGIVERS_PER_RESIDENT } from "@/lib/care/constants";
+import type { CaregiverLink } from "@/lib/care/types";
+import { InviteCodeModal } from "../subscription/InviteCodeModal";
+import { CaregiverList } from "./CaregiverList";
 
 export function CaregiverSettings() {
   const [links, setLinks] = useState<CaregiverLink[]>([]);
@@ -21,12 +21,12 @@ export function CaregiverSettings() {
 
   const fetchLinks = useCallback(async () => {
     try {
-      const res = await fetch('/api/caregiver/links');
-      if (!res.ok) throw new Error('Laden fehlgeschlagen');
+      const res = await fetch("/api/caregiver/links");
+      if (!res.ok) throw new Error("Laden fehlgeschlagen");
       const json = await res.json();
       setLinks(json.data.as_resident ?? []);
     } catch {
-      setError('Angehörige konnten nicht geladen werden.');
+      setError("Angehörige konnten nicht geladen werden.");
     } finally {
       setLoading(false);
     }
@@ -39,20 +39,20 @@ export function CaregiverSettings() {
   // Widerruf einer Verknüpfung
   const handleRevoke = async (linkId: string, caregiverName: string) => {
     const confirmed = window.confirm(
-      `Möchten Sie die Verknüpfung mit ${caregiverName} wirklich aufheben?\n\nDiese Person kann Ihren Aktivitätsstatus danach nicht mehr sehen.`
+      `Möchten Sie die Verknüpfung mit ${caregiverName} wirklich aufheben?\n\nDiese Person kann Ihren Aktivitätsstatus danach nicht mehr sehen.`,
     );
     if (!confirmed) return;
 
     try {
       const res = await fetch(`/api/caregiver/links/${linkId}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ revoke: true }),
       });
-      if (!res.ok) throw new Error('Widerruf fehlgeschlagen');
+      if (!res.ok) throw new Error("Widerruf fehlgeschlagen");
       await fetchLinks();
     } catch {
-      setError('Widerruf fehlgeschlagen. Bitte versuchen Sie es erneut.');
+      setError("Widerruf fehlgeschlagen. Bitte versuchen Sie es erneut.");
     }
   };
 
@@ -60,14 +60,14 @@ export function CaregiverSettings() {
   const handleHeartbeatToggle = async (linkId: string, visible: boolean) => {
     try {
       const res = await fetch(`/api/caregiver/links/${linkId}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ heartbeat_visible: visible }),
       });
-      if (!res.ok) throw new Error('Änderung fehlgeschlagen');
+      if (!res.ok) throw new Error("Änderung fehlgeschlagen");
       await fetchLinks();
     } catch {
-      setError('Einstellung konnte nicht geändert werden.');
+      setError("Einstellung konnte nicht geändert werden.");
     }
   };
 
@@ -110,10 +110,11 @@ export function CaregiverSettings() {
         onClick={() => setShowInviteModal(true)}
         disabled={activeLinks.length >= MAX_CAREGIVERS_PER_RESIDENT}
         className="w-full flex items-center justify-center gap-2 rounded-xl bg-[#4CAF87] text-white font-semibold text-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-[#3d9a74] transition-colors"
-        style={{ minHeight: '80px' }}
+        style={{ minHeight: "80px" }}
       >
         <Plus className="h-5 w-5" />
-        Einladungs-Code erstellen ({activeLinks.length}/{MAX_CAREGIVERS_PER_RESIDENT})
+        Einladungs-Code erstellen ({activeLinks.length}/
+        {MAX_CAREGIVERS_PER_RESIDENT})
       </button>
 
       {/* Liste der Angehörigen */}
@@ -126,7 +127,12 @@ export function CaregiverSettings() {
 
       {/* Modal */}
       {showInviteModal && (
-        <InviteCodeModal onClose={() => { setShowInviteModal(false); fetchLinks(); }} />
+        <InviteCodeModal
+          onClose={() => {
+            setShowInviteModal(false);
+            fetchLinks();
+          }}
+        />
       )}
     </div>
   );

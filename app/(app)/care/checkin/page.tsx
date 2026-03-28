@@ -1,15 +1,15 @@
-'use client';
+"use client";
 
 // Aktive Check-in Seite: Taeglicher Check-in + letzte Eintraege
 
-import { useEffect, useState, useCallback } from 'react';
-import { Clock, ArrowRight } from 'lucide-react';
-import Link from 'next/link';
-import { PageHeader } from '@/components/ui/page-header';
-import { CheckinDialog } from '@/components/care/CheckinDialog';
-import { CheckinHistory } from '@/components/care/CheckinHistory';
-import type { CareCheckin } from '@/lib/care/types';
-import { useAuth } from '@/hooks/use-auth';
+import { useEffect, useState, useCallback } from "react";
+import { Clock, ArrowRight } from "lucide-react";
+import Link from "next/link";
+import { PageHeader } from "@/components/ui/page-header";
+import { CheckinDialog } from "@/modules/care/components/checkin/CheckinDialog";
+import { CheckinHistory } from "@/modules/care/components/checkin/CheckinHistory";
+import type { CareCheckin } from "@/lib/care/types";
+import { useAuth } from "@/hooks/use-auth";
 
 export default function CheckinPage() {
   const { user } = useAuth();
@@ -26,7 +26,9 @@ export default function CheckinPage() {
         const data = await res.json();
         setRecentCheckins(data);
       }
-    } catch { /* silent */ }
+    } catch {
+      /* silent */
+    }
     setLoadingHistory(false);
   }, [user]);
 
@@ -50,7 +52,12 @@ export default function CheckinPage() {
     <div className="px-4 py-6 space-y-6">
       {/* Header */}
       <PageHeader
-        title={<><Clock className="h-6 w-6 text-quartier-green" /> Taeglicher Check-in</>}
+        title={
+          <>
+            <Clock className="h-6 w-6 text-quartier-green" /> Taeglicher
+            Check-in
+          </>
+        }
         subtitle="Melden Sie uns kurz, wie es Ihnen geht"
         backHref="/care"
       />
@@ -63,7 +70,9 @@ export default function CheckinPage() {
       {/* Letzte Check-ins */}
       <div>
         <div className="flex items-center justify-between mb-3">
-          <h2 className="text-sm font-medium text-muted-foreground">Letzte Check-ins</h2>
+          <h2 className="text-sm font-medium text-muted-foreground">
+            Letzte Check-ins
+          </h2>
           <Link
             href="/care/checkins"
             className="flex items-center gap-1 text-sm text-quartier-green font-medium hover:underline"

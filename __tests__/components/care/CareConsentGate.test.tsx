@@ -1,6 +1,6 @@
 import { describe, expect, it, vi, beforeEach } from "vitest";
 import { render, screen, waitFor } from "@testing-library/react";
-import { CareConsentGate } from "@/components/care/CareConsentGate";
+import { CareConsentGate } from "@/modules/care/components/consent/CareConsentGate";
 
 const mockPush = vi.fn();
 vi.mock("next/navigation", () => ({

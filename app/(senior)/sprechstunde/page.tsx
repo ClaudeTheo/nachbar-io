@@ -1,25 +1,33 @@
 // app/(senior)/sprechstunde/page.tsx
-'use client';
+"use client";
 
-import { useState, useCallback } from 'react';
-import Link from 'next/link';
-import { useConsultations } from '@/lib/care/hooks/useConsultations';
-import { ConsultationConsent } from '@/components/care/ConsultationConsent';
-import { TechCheck } from '@/components/care/TechCheck';
-import { SeniorSosButton } from '@/components/care/senior/SeniorSosButton';
+import { useState, useCallback } from "react";
+import Link from "next/link";
+import { useConsultations } from "@/lib/care/hooks/useConsultations";
+import { ConsultationConsent } from "@/modules/care/components/appointments/ConsultationConsent";
+import { TechCheck } from "@/modules/care/components/appointments/TechCheck";
+import { SeniorSosButton } from "@/modules/care/components/senior/SeniorSosButton";
 
-type Phase = 'list' | 'consent' | 'techcheck' | 'video';
+type Phase = "list" | "consent" | "techcheck" | "video";
 
 export default function SeniorSprechstundePage() {
   const { slots, loading, bookSlot } = useConsultations(undefined, false);
-  const [phase, setPhase] = useState<Phase>('list');
+  const [phase, setPhase] = useState<Phase>("list");
   const [activeJoinUrl, setActiveJoinUrl] = useState<string | null>(null);
-  const [activeProviderType, setActiveProviderType] = useState<'community' | 'medical'>('community');
+  const [activeProviderType, setActiveProviderType] = useState<
+    "community" | "medical"
+  >("community");
   const [error, setError] = useState<string | null>(null);
 
-  const available = slots.filter(s => s.status === 'scheduled' && !s.booked_by);
+  const available = slots.filter(
+    (s) => s.status === "scheduled" && !s.booked_by,
+  );
   const mySlots = slots.filter(
-    s => s.booked_by && (s.status === 'waiting' || s.status === 'active' || s.status === 'scheduled')
+    (s) =>
+      s.booked_by &&
+      (s.status === "waiting" ||
+        s.status === "active" ||
+        s.status === "scheduled"),
   );
 
   async function handleBook(slotId: string) {
@@ -27,37 +35,37 @@ export default function SeniorSprechstundePage() {
     try {
       await bookSlot(slotId);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Buchung fehlgeschlagen');
+      setError(err instanceof Error ? err.message : "Buchung fehlgeschlagen");
     }
   }
 
-  function handleJoin(joinUrl: string, providerType: 'community' | 'medical') {
+  function handleJoin(joinUrl: string, providerType: "community" | "medical") {
     setActiveJoinUrl(joinUrl);
     setActiveProviderType(providerType);
-    setPhase('consent');
+    setPhase("consent");
   }
 
   const handleConsented = useCallback(() => {
-    setPhase('techcheck');
+    setPhase("techcheck");
   }, []);
 
   const handleTechReady = useCallback(() => {
-    setPhase('video');
+    setPhase("video");
   }, []);
 
   const handleTechFailed = useCallback((reason: string) => {
-    console.warn('[Senior/Sprechstunde] Technik-Check fehlgeschlagen:', reason);
+    console.warn("[Senior/Sprechstunde] Technik-Check fehlgeschlagen:", reason);
     setError(`Technik-Problem: ${reason}`);
-    setPhase('list');
+    setPhase("list");
   }, []);
 
   function handleHangUp() {
-    setPhase('list');
+    setPhase("list");
     setActiveJoinUrl(null);
   }
 
   // Video-Phase: iFrame
-  if (phase === 'video' && activeJoinUrl) {
+  if (phase === "video" && activeJoinUrl) {
     return (
       <div className="fixed inset-0 z-50 bg-black">
         <iframe
@@ -76,7 +84,7 @@ export default function SeniorSprechstundePage() {
             onClick={handleHangUp}
             aria-label="Sprechstunde beenden"
             className="h-[100px] w-[100px] rounded-full bg-red-500 text-white text-3xl font-bold shadow-xl active:scale-95"
-            style={{ touchAction: 'manipulation' }}
+            style={{ touchAction: "manipulation" }}
           >
             ✕
           </button>
@@ -86,13 +94,13 @@ export default function SeniorSprechstundePage() {
   }
 
   // Consent-Phase
-  if (phase === 'consent') {
+  if (phase === "consent") {
     return (
       <div className="space-y-6">
         <button
-          onClick={() => setPhase('list')}
+          onClick={() => setPhase("list")}
           className="rounded-2xl bg-gray-200 px-6 py-4 text-xl font-bold text-anthrazit"
-          style={{ minHeight: '60px', touchAction: 'manipulation' }}
+          style={{ minHeight: "60px", touchAction: "manipulation" }}
         >
           ← Zurueck
         </button>
@@ -105,13 +113,13 @@ export default function SeniorSprechstundePage() {
   }
 
   // TechCheck-Phase
-  if (phase === 'techcheck') {
+  if (phase === "techcheck") {
     return (
       <div className="space-y-6">
         <button
-          onClick={() => setPhase('consent')}
+          onClick={() => setPhase("consent")}
           className="rounded-2xl bg-gray-200 px-6 py-4 text-xl font-bold text-anthrazit"
-          style={{ minHeight: '60px', touchAction: 'manipulation' }}
+          style={{ minHeight: "60px", touchAction: "manipulation" }}
         >
           ← Zurueck
         </button>
@@ -126,7 +134,7 @@ export default function SeniorSprechstundePage() {
       <Link
         href="/"
         className="inline-block rounded-2xl bg-gray-200 px-6 py-4 text-xl font-bold text-anthrazit"
-        style={{ minHeight: '60px', touchAction: 'manipulation' }}
+        style={{ minHeight: "60px", touchAction: "manipulation" }}
       >
         ← Zurueck
       </Link>
@@ -140,30 +148,42 @@ export default function SeniorSprechstundePage() {
       )}
 
       {loading && (
-        <p className="text-xl text-gray-500 text-center">Termine werden geladen...</p>
+        <p className="text-xl text-gray-500 text-center">
+          Termine werden geladen...
+        </p>
       )}
 
       {/* Meine Termine — Teilnehmen */}
-      {mySlots.map(slot => (
-        <div key={slot.id} className="rounded-2xl border-2 border-quartier-green bg-quartier-green/5 p-6 space-y-3">
+      {mySlots.map((slot) => (
+        <div
+          key={slot.id}
+          className="rounded-2xl border-2 border-quartier-green bg-quartier-green/5 p-6 space-y-3"
+        >
           <p className="text-2xl font-bold">{slot.title}</p>
           <p className="text-xl text-gray-600">{slot.host_name}</p>
           <p className="text-lg text-gray-500">
-            {new Date(slot.scheduled_at).toLocaleDateString('de-DE', {
-              weekday: 'long', day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit'
+            {new Date(slot.scheduled_at).toLocaleDateString("de-DE", {
+              weekday: "long",
+              day: "numeric",
+              month: "long",
+              hour: "2-digit",
+              minute: "2-digit",
             })}
           </p>
-          {(slot.status === 'waiting' || slot.status === 'active') && slot.join_url && (
-            <button
-              onClick={() => handleJoin(slot.join_url!, slot.provider_type)}
-              className="w-full rounded-2xl bg-quartier-green px-8 py-8 text-2xl font-bold text-white shadow-lg active:scale-95 animate-pulse"
-              style={{ minHeight: '80px', touchAction: 'manipulation' }}
-            >
-              📹 Jetzt teilnehmen
-            </button>
-          )}
-          {slot.status === 'scheduled' && (
-            <p className="text-xl text-gray-500 text-center">Wartet auf Start...</p>
+          {(slot.status === "waiting" || slot.status === "active") &&
+            slot.join_url && (
+              <button
+                onClick={() => handleJoin(slot.join_url!, slot.provider_type)}
+                className="w-full rounded-2xl bg-quartier-green px-8 py-8 text-2xl font-bold text-white shadow-lg active:scale-95 animate-pulse"
+                style={{ minHeight: "80px", touchAction: "manipulation" }}
+              >
+                📹 Jetzt teilnehmen
+              </button>
+            )}
+          {slot.status === "scheduled" && (
+            <p className="text-xl text-gray-500 text-center">
+              Wartet auf Start...
+            </p>
           )}
         </div>
       ))}
@@ -172,19 +192,26 @@ export default function SeniorSprechstundePage() {
       {available.length > 0 && (
         <>
           <h2 className="text-2xl font-bold">Verfuegbare Termine</h2>
-          {available.map(slot => (
-            <div key={slot.id} className="rounded-2xl border border-gray-200 p-6 space-y-3">
+          {available.map((slot) => (
+            <div
+              key={slot.id}
+              className="rounded-2xl border border-gray-200 p-6 space-y-3"
+            >
               <p className="text-2xl font-bold">{slot.title}</p>
               <p className="text-xl text-gray-600">{slot.host_name}</p>
               <p className="text-lg text-gray-500">
-                {new Date(slot.scheduled_at).toLocaleDateString('de-DE', {
-                  weekday: 'long', day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit'
+                {new Date(slot.scheduled_at).toLocaleDateString("de-DE", {
+                  weekday: "long",
+                  day: "numeric",
+                  month: "long",
+                  hour: "2-digit",
+                  minute: "2-digit",
                 })}
               </p>
               <button
                 onClick={() => handleBook(slot.id)}
                 className="w-full rounded-2xl bg-quartier-green px-8 py-8 text-2xl font-bold text-white shadow-lg active:scale-95"
-                style={{ minHeight: '80px', touchAction: 'manipulation' }}
+                style={{ minHeight: "80px", touchAction: "manipulation" }}
               >
                 Termin buchen
               </button>

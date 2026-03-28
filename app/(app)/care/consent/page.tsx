@@ -1,16 +1,20 @@
 // app/(app)/care/consent/page.tsx
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { Shield, Info } from 'lucide-react';
-import Link from 'next/link';
-import { PageHeader } from '@/components/ui/page-header';
-import { ConsentFeatureCard } from '@/components/care/ConsentFeatureCard';
-import { RevokeDialog } from '@/components/care/RevokeDialog';
-import { CARE_CONSENT_FEATURES, CARE_CONSENT_LABELS, CARE_CONSENT_DESCRIPTIONS } from '@/lib/care/constants';
-import type { CareConsentFeature } from '@/lib/care/types';
-import { CONSENT_DEPENDENCIES } from '@/lib/care/types';
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { Shield, Info } from "lucide-react";
+import Link from "next/link";
+import { PageHeader } from "@/components/ui/page-header";
+import { ConsentFeatureCard } from "@/modules/care/components/consent/ConsentFeatureCard";
+import { RevokeDialog } from "@/modules/care/components/caregiver/RevokeDialog";
+import {
+  CARE_CONSENT_FEATURES,
+  CARE_CONSENT_LABELS,
+  CARE_CONSENT_DESCRIPTIONS,
+} from "@/lib/care/constants";
+import type { CareConsentFeature } from "@/lib/care/types";
+import { CONSENT_DEPENDENCIES } from "@/lib/care/types";
 
 interface ConsentState {
   granted: boolean;
@@ -22,15 +26,22 @@ export default function CareConsentPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [consents, setConsents] = useState<Record<CareConsentFeature, ConsentState> | null>(null);
+  const [consents, setConsents] = useState<Record<
+    CareConsentFeature,
+    ConsentState
+  > | null>(null);
   const [isFirstTime, setIsFirstTime] = useState(true);
-  const [pendingFeatures, setPendingFeatures] = useState<Record<string, boolean>>({});
-  const [revokeFeature, setRevokeFeature] = useState<CareConsentFeature | null>(null);
+  const [pendingFeatures, setPendingFeatures] = useState<
+    Record<string, boolean>
+  >({});
+  const [revokeFeature, setRevokeFeature] = useState<CareConsentFeature | null>(
+    null,
+  );
 
   useEffect(() => {
     async function load() {
       try {
-        const res = await fetch('/api/care/consent');
+        const res = await fetch("/api/care/consent");
         if (res.ok) {
           const data = await res.json();
           setConsents(data.consents);
@@ -43,7 +54,9 @@ export default function CareConsentPage() {
             setPendingFeatures(initial);
           }
         }
-      } catch { /* silent */ }
+      } catch {
+        /* silent */
+      }
       setLoading(false);
     }
     load();
@@ -52,7 +65,7 @@ export default function CareConsentPage() {
   function handleFirstTimeToggle(feature: CareConsentFeature, value: boolean) {
     setPendingFeatures((prev) => {
       const next = { ...prev, [feature]: value };
-      if (feature === 'sos' && !value) {
+      if (feature === "sos" && !value) {
         next.emergency_contacts = false;
       }
       return next;
@@ -62,19 +75,24 @@ export default function CareConsentPage() {
   async function handleSubmitConsents() {
     setSaving(true);
     try {
-      const res = await fetch('/api/care/consent', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const res = await fetch("/api/care/consent", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ features: pendingFeatures }),
       });
       if (res.ok) {
-        router.push('/care');
+        router.push("/care");
       }
-    } catch { /* silent */ }
+    } catch {
+      /* silent */
+    }
     setSaving(false);
   }
 
-  async function handleManageToggle(feature: CareConsentFeature, value: boolean) {
+  async function handleManageToggle(
+    feature: CareConsentFeature,
+    value: boolean,
+  ) {
     if (!value) {
       setRevokeFeature(feature);
       return;
@@ -82,16 +100,18 @@ export default function CareConsentPage() {
 
     setSaving(true);
     try {
-      const res = await fetch('/api/care/consent', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const res = await fetch("/api/care/consent", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ features: { [feature]: true } }),
       });
       if (res.ok) {
         const data = await res.json();
         setConsents(data.consents);
       }
-    } catch { /* silent */ }
+    } catch {
+      /* silent */
+    }
     setSaving(false);
   }
 
@@ -99,17 +119,22 @@ export default function CareConsentPage() {
     if (!revokeFeature) return;
     setSaving(true);
     try {
-      await fetch('/api/care/consent/revoke', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ feature: revokeFeature, delete_data: deleteData }),
+      await fetch("/api/care/consent/revoke", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          feature: revokeFeature,
+          delete_data: deleteData,
+        }),
       });
-      const res = await fetch('/api/care/consent');
+      const res = await fetch("/api/care/consent");
       if (res.ok) {
         const data = await res.json();
         setConsents(data.consents);
       }
-    } catch { /* silent */ }
+    } catch {
+      /* silent */
+    }
     setRevokeFeature(null);
     setSaving(false);
   }
@@ -130,17 +155,23 @@ export default function CareConsentPage() {
   return (
     <div className="px-4 py-6 space-y-6 max-w-lg mx-auto">
       <PageHeader
-        title={<><Shield className="h-6 w-6 text-quartier-green" /> Datenschutz-Einwilligungen</>}
+        title={
+          <>
+            <Shield className="h-6 w-6 text-quartier-green" />{" "}
+            Datenschutz-Einwilligungen
+          </>
+        }
         subtitle="Care-Modul — Gesundheitsdaten"
-        backHref={isFirstTime ? '/' : '/care'}
+        backHref={isFirstTime ? "/" : "/care"}
       />
 
       <div className="rounded-2xl bg-quartier-green/10 border border-quartier-green/20 p-4 flex gap-3">
         <Info className="h-5 w-5 text-quartier-green flex-shrink-0 mt-0.5" />
         <div className="text-sm text-anthrazit/80">
           <p>
-            Ihre Gesundheitsdaten (Art. 9 DSGVO) werden nur mit Ihrer ausdrücklichen
-            Einwilligung verarbeitet. Sie können jede Einwilligung jederzeit widerrufen.
+            Ihre Gesundheitsdaten (Art. 9 DSGVO) werden nur mit Ihrer
+            ausdrücklichen Einwilligung verarbeitet. Sie können jede
+            Einwilligung jederzeit widerrufen.
           </p>
         </div>
       </div>
@@ -166,7 +197,9 @@ export default function CareConsentPage() {
               description={CARE_CONSENT_DESCRIPTIONS[feature]}
               granted={granted}
               disabled={!dependencyMet || saving}
-              onChange={isFirstTime ? handleFirstTimeToggle : handleManageToggle}
+              onChange={
+                isFirstTime ? handleFirstTimeToggle : handleManageToggle
+              }
             />
           );
         })}
@@ -177,14 +210,17 @@ export default function CareConsentPage() {
           onClick={handleSubmitConsents}
           disabled={!hasAnySelected || saving}
           className="w-full h-[80px] rounded-2xl bg-quartier-green text-white text-2xl font-bold disabled:opacity-40 active:scale-95"
-          style={{ touchAction: 'manipulation' }}
+          style={{ touchAction: "manipulation" }}
         >
-          {saving ? 'Wird gespeichert...' : 'Einwilligung erteilen'}
+          {saving ? "Wird gespeichert..." : "Einwilligung erteilen"}
         </button>
       )}
 
       <div className="text-center">
-        <Link href="/datenschutz" className="text-sm text-muted-foreground underline">
+        <Link
+          href="/datenschutz"
+          className="text-sm text-muted-foreground underline"
+        >
           Datenschutzerklärung lesen
         </Link>
       </div>

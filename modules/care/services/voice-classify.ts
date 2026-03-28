@@ -1,8 +1,8 @@
 // Sprach-Klassifizierung: Analysiert Text via Claude Haiku
 // und bestimmt Kategorie, Titel und Beschreibung fuer eine Hilfe-Anfrage
 
-import Anthropic from '@anthropic-ai/sdk';
-import type { TaskCategory } from '@/components/care/TaskCard';
+import Anthropic from "@anthropic-ai/sdk";
+import type { TaskCategory } from "@/modules/care/components/tasks/TaskCard";
 
 /** Ergebnis der KI-Klassifizierung */
 export interface ClassifyResult {
@@ -13,8 +13,14 @@ export interface ClassifyResult {
 
 /** Gueltige Kategorien fuer Validierung */
 const VALID_CATEGORIES: TaskCategory[] = [
-  'transport', 'shopping', 'companionship', 'garden',
-  'tech_help', 'pet_care', 'household', 'other',
+  "transport",
+  "shopping",
+  "companionship",
+  "garden",
+  "tech_help",
+  "pet_care",
+  "household",
+  "other",
 ];
 
 /** System-Prompt fuer die Aufgaben-Klassifizierung */
@@ -42,13 +48,15 @@ Antworte NUR als JSON-Objekt, ohne Markdown, ohne Erklärungen.`;
  * Nutzt Claude Haiku fuer die Analyse.
  * Fallback bei Fehler: Kategorie 'other' + Rohtext als Titel.
  */
-export async function classifyTaskFromVoice(text: string): Promise<ClassifyResult> {
+export async function classifyTaskFromVoice(
+  text: string,
+): Promise<ClassifyResult> {
   // Leerer Text → Fallback
   if (!text.trim()) {
     return {
-      category: 'other',
-      title: '',
-      description: '',
+      category: "other",
+      title: "",
+      description: "",
     };
   }
 
@@ -62,12 +70,12 @@ export async function classifyTaskFromVoice(text: string): Promise<ClassifyResul
     const anthropic = new Anthropic({ apiKey });
 
     const response = await anthropic.messages.create({
-      model: 'claude-haiku-4-5-20251001',
+      model: "claude-haiku-4-5-20251001",
       max_tokens: 256,
       system: CLASSIFY_SYSTEM_PROMPT,
       messages: [
         {
-          role: 'user',
+          role: "user",
           content: `Klassifiziere diese Spracheingabe:\n\n"${text}"`,
         },
       ],
@@ -75,13 +83,13 @@ export async function classifyTaskFromVoice(text: string): Promise<ClassifyResul
 
     // Antwort-Text extrahieren
     const block = response.content[0];
-    if (block.type !== 'text') {
+    if (block.type !== "text") {
       return fallbackResult(text);
     }
 
     return parseClassifyResponse(block.text, text);
   } catch (err) {
-    console.error('[voice-classify] Fehler bei KI-Klassifizierung:', err);
+    console.error("[voice-classify] Fehler bei KI-Klassifizierung:", err);
     return fallbackResult(text);
   }
 }
@@ -90,24 +98,34 @@ export async function classifyTaskFromVoice(text: string): Promise<ClassifyResul
  * Parst die KI-Antwort und validiert die Felder.
  * Bei ungueltigem JSON oder fehlenden Feldern: Fallback.
  */
-export function parseClassifyResponse(responseText: string, originalText: string): ClassifyResult {
+export function parseClassifyResponse(
+  responseText: string,
+  originalText: string,
+): ClassifyResult {
   let jsonStr = responseText.trim();
   // Markdown-Wrapper entfernen falls vorhanden
-  if (jsonStr.startsWith('```')) {
-    jsonStr = jsonStr.replace(/^```(?:json)?\n?/, '').replace(/\n?```$/, '');
+  if (jsonStr.startsWith("```")) {
+    jsonStr = jsonStr.replace(/^```(?:json)?\n?/, "").replace(/\n?```$/, "");
   }
 
   try {
     const parsed = JSON.parse(jsonStr) as Record<string, unknown>;
 
-    const category = typeof parsed.category === 'string' ? parsed.category.trim() : 'other';
-    const title = typeof parsed.title === 'string' ? parsed.title.trim().slice(0, 80) : originalText.slice(0, 80);
-    const description = typeof parsed.description === 'string' ? parsed.description.trim().slice(0, 200) : '';
+    const category =
+      typeof parsed.category === "string" ? parsed.category.trim() : "other";
+    const title =
+      typeof parsed.title === "string"
+        ? parsed.title.trim().slice(0, 80)
+        : originalText.slice(0, 80);
+    const description =
+      typeof parsed.description === "string"
+        ? parsed.description.trim().slice(0, 200)
+        : "";
 
     return {
       category: VALID_CATEGORIES.includes(category as TaskCategory)
         ? (category as TaskCategory)
-        : 'other',
+        : "other",
       title,
       description,
     };
@@ -119,8 +137,8 @@ export function parseClassifyResponse(responseText: string, originalText: string
 /** Fallback: Rohtext als Titel, Kategorie 'other' */
 function fallbackResult(text: string): ClassifyResult {
   return {
-    category: 'other',
+    category: "other",
     title: text.trim().slice(0, 80),
-    description: '',
+    description: "",
   };
 }

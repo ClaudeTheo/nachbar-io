@@ -6,8 +6,8 @@ import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { ArrowLeft, Camera, Bell, Monitor, Loader2 } from "lucide-react";
 import { PageHeader } from "@/components/ui/page-header";
-import { KioskPhotoUpload } from "@/components/care/KioskPhotoUpload";
-import { KioskReminderForm } from "@/components/care/KioskReminderForm";
+import { KioskPhotoUpload } from "@/modules/care/components/kiosk/KioskPhotoUpload";
+import { KioskReminderForm } from "@/modules/care/components/kiosk/KioskReminderForm";
 
 type Tab = "photos" | "reminders";
 
@@ -47,21 +47,19 @@ export default function KioskManagementPage() {
 
       // Schritt 2: household_id fuer den Bewohner ermitteln
       const hhRes = await fetch(
-        `/api/care/household?resident_id=${link.resident_id}`
+        `/api/care/household?resident_id=${link.resident_id}`,
       );
       if (!hhRes.ok) {
         const hhData = await hhRes.json();
         throw new Error(
-          hhData.error || "Haushalt konnte nicht ermittelt werden"
+          hhData.error || "Haushalt konnte nicht ermittelt werden",
         );
       }
       const hhData = await hhRes.json();
       setHouseholdId(hhData.household_id);
     } catch (err) {
       if (error !== "NO_LINK") {
-        setError(
-          err instanceof Error ? err.message : "Unbekannter Fehler"
-        );
+        setError(err instanceof Error ? err.message : "Unbekannter Fehler");
       }
     } finally {
       setLoading(false);
@@ -139,7 +137,11 @@ export default function KioskManagementPage() {
     <div className="px-4 py-6 space-y-6">
       {/* Header */}
       <PageHeader
-        title={<><Monitor className="h-6 w-6 text-quartier-green" /> Kiosk verwalten</>}
+        title={
+          <>
+            <Monitor className="h-6 w-6 text-quartier-green" /> Kiosk verwalten
+          </>
+        }
         subtitle={`Fotos und Erinnerungen für das Terminal von ${residentName}`}
         backHref="/care"
         backLabel="Zurück zum Pflege-Dashboard"
@@ -172,9 +174,7 @@ export default function KioskManagementPage() {
       </div>
 
       {/* Tab-Inhalt */}
-      {activeTab === "photos" && (
-        <KioskPhotoUpload householdId={householdId} />
-      )}
+      {activeTab === "photos" && <KioskPhotoUpload householdId={householdId} />}
       {activeTab === "reminders" && (
         <KioskReminderForm householdId={householdId} />
       )}

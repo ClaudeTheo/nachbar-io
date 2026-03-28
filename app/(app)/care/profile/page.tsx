@@ -1,11 +1,11 @@
-'use client';
+"use client";
 
 // Pflege-Profil Seite: Pflegestufe, Notfallkontakte, Check-in-Zeiten, Eskalation konfigurieren
 
-import { Heart } from 'lucide-react';
-import { PageHeader } from '@/components/ui/page-header';
-import { CareProfileForm } from '@/components/care/CareProfileForm';
-import { useAuth } from '@/hooks/use-auth';
+import { Heart } from "lucide-react";
+import { PageHeader } from "@/components/ui/page-header";
+import { CareProfileForm } from "@/modules/care/components/profile/CareProfileForm";
+import { useAuth } from "@/hooks/use-auth";
 
 export default function CareProfilePage() {
   const { user } = useAuth();
@@ -26,7 +26,11 @@ export default function CareProfilePage() {
     <div className="px-4 py-6 space-y-6">
       {/* Header */}
       <PageHeader
-        title={<><Heart className="h-6 w-6 text-quartier-green" /> Pflege-Profil</>}
+        title={
+          <>
+            <Heart className="h-6 w-6 text-quartier-green" /> Pflege-Profil
+          </>
+        }
         subtitle="Ihre persoenlichen Pflege-Einstellungen und Notfallkontakte"
         backHref="/care"
       />

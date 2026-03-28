@@ -15,8 +15,8 @@ import { InfoBar } from "@/modules/info-hub/components/InfoBar";
 import { NinaAlert } from "@/modules/info-hub/components/NinaAlert";
 import { HeroCard } from "@/components/HeroCard";
 import { InviteNeighborModal } from "@/components/InviteNeighborModal";
-import { DailyCheckinButton } from "@/components/care/DailyCheckinButton";
-import { RedeemCodeBanner } from "@/components/care/RedeemCodeBanner";
+import { DailyCheckinButton } from "@/modules/care/components/checkin/DailyCheckinButton";
+import { RedeemCodeBanner } from "@/modules/care/components/subscription/RedeemCodeBanner";
 import { Skeleton } from "@/components/ui/skeleton";
 
 import { useDashboardData, getGreeting } from "./hooks/useDashboardData";

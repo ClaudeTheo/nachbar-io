@@ -1,18 +1,18 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { Pill, Plus } from 'lucide-react';
-import Link from 'next/link';
-import { PageHeader } from '@/components/ui/page-header';
-import { MedicationList } from '@/components/care/MedicationList';
-import { MedicationManagementList } from '@/components/care/MedicationManagementList';
-import { useAuth } from '@/hooks/use-auth';
+import { useState } from "react";
+import { Pill, Plus } from "lucide-react";
+import Link from "next/link";
+import { PageHeader } from "@/components/ui/page-header";
+import { MedicationList } from "@/modules/care/components/medication/MedicationList";
+import { MedicationManagementList } from "@/modules/care/components/medication/MedicationManagementList";
+import { useAuth } from "@/hooks/use-auth";
 
-type TabView = 'due' | 'all';
+type TabView = "due" | "all";
 
 export default function MedicationsPage() {
   const { user } = useAuth();
-  const [activeTab, setActiveTab] = useState<TabView>('due');
+  const [activeTab, setActiveTab] = useState<TabView>("due");
 
   if (!user) {
     return (
@@ -29,7 +29,11 @@ export default function MedicationsPage() {
     <div className="px-4 py-6 space-y-6">
       {/* Header mit Hinzufuegen-Button */}
       <PageHeader
-        title={<><Pill className="h-6 w-6 text-quartier-green" /> Erinnerungen</>}
+        title={
+          <>
+            <Pill className="h-6 w-6 text-quartier-green" /> Erinnerungen
+          </>
+        }
         subtitle="Verwaltung und Alltags-Protokoll"
         backHref="/care"
         actions={
@@ -46,21 +50,21 @@ export default function MedicationsPage() {
       {/* Tab-Umschalter */}
       <div className="flex gap-2">
         <button
-          onClick={() => setActiveTab('due')}
+          onClick={() => setActiveTab("due")}
           className={`rounded-full px-4 py-1.5 text-sm font-medium transition-colors ${
-            activeTab === 'due'
-              ? 'bg-anthrazit text-white'
-              : 'bg-muted text-muted-foreground hover:bg-muted/80'
+            activeTab === "due"
+              ? "bg-anthrazit text-white"
+              : "bg-muted text-muted-foreground hover:bg-muted/80"
           }`}
         >
           Heute faellig
         </button>
         <button
-          onClick={() => setActiveTab('all')}
+          onClick={() => setActiveTab("all")}
           className={`rounded-full px-4 py-1.5 text-sm font-medium transition-colors ${
-            activeTab === 'all'
-              ? 'bg-anthrazit text-white'
-              : 'bg-muted text-muted-foreground hover:bg-muted/80'
+            activeTab === "all"
+              ? "bg-anthrazit text-white"
+              : "bg-muted text-muted-foreground hover:bg-muted/80"
           }`}
         >
           Alle Medikamente
@@ -68,14 +72,18 @@ export default function MedicationsPage() {
       </div>
 
       {/* Inhalt je nach Tab */}
-      {activeTab === 'due' ? (
+      {activeTab === "due" ? (
         <div>
-          <h2 className="text-sm font-medium text-muted-foreground mb-3">Heute faellig</h2>
+          <h2 className="text-sm font-medium text-muted-foreground mb-3">
+            Heute faellig
+          </h2>
           <MedicationList seniorId={user.id} />
         </div>
       ) : (
         <div>
-          <h2 className="text-sm font-medium text-muted-foreground mb-3">Alle aktiven Medikamente</h2>
+          <h2 className="text-sm font-medium text-muted-foreground mb-3">
+            Alle aktiven Medikamente
+          </h2>
           <MedicationManagementList seniorId={user.id} />
         </div>
       )}

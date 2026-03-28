@@ -1,10 +1,10 @@
 // app/(app)/care/audit/page.tsx
-'use client';
+"use client";
 
-import { ScrollText } from 'lucide-react';
-import { PageHeader } from '@/components/ui/page-header';
-import { AuditLogViewer } from '@/components/care/AuditLogViewer';
-import { useAuth } from '@/hooks/use-auth';
+import { ScrollText } from "lucide-react";
+import { PageHeader } from "@/components/ui/page-header";
+import { AuditLogViewer } from "@/modules/care/components/reports/AuditLogViewer";
+import { useAuth } from "@/hooks/use-auth";
 
 export default function AuditLogPage() {
   const { user } = useAuth();
@@ -23,7 +23,12 @@ export default function AuditLogPage() {
   return (
     <div className="px-4 py-6 space-y-6">
       <PageHeader
-        title={<><ScrollText className="h-6 w-6 text-quartier-green" /> Aktivitaetsprotokoll</>}
+        title={
+          <>
+            <ScrollText className="h-6 w-6 text-quartier-green" />{" "}
+            Aktivitaetsprotokoll
+          </>
+        }
         subtitle="Lueckenloses Protokoll aller Pflege-Aktivitaeten."
         backHref="/care"
       />

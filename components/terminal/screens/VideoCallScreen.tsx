@@ -4,60 +4,66 @@ import { useState, useEffect, useCallback } from "react";
 import { Video, ArrowLeft, Calendar, Phone, PhoneOff } from "lucide-react";
 import { useTerminal } from "@/lib/terminal/TerminalContext";
 import { useConsultations } from "@/lib/care/hooks/useConsultations";
-import { ConsultationConsent } from "@/components/care/ConsultationConsent";
-import { TechCheck } from "@/components/care/TechCheck";
-import { SeniorSosButton } from "@/components/care/senior/SeniorSosButton";
+import { ConsultationConsent } from "@/modules/care/components/appointments/ConsultationConsent";
+import { TechCheck } from "@/modules/care/components/appointments/TechCheck";
+import { SeniorSosButton } from "@/modules/care/components/senior/SeniorSosButton";
 import type { ConsultationSlot } from "@/lib/care/types";
 
-type Phase = 'idle' | 'consent' | 'techcheck' | 'video';
+type Phase = "idle" | "consent" | "techcheck" | "video";
 
 export default function VideoCallScreen() {
   const { setActiveScreen } = useTerminal();
   const { slots, loading } = useConsultations(undefined, true);
-  const [phase, setPhase] = useState<Phase>('idle');
+  const [phase, setPhase] = useState<Phase>("idle");
   const [activeSlot, setActiveSlot] = useState<ConsultationSlot | null>(null);
 
   // Nächsten relevanten Termin finden
   const nextSlot = slots.find(
-    s => s.status === 'scheduled' || s.status === 'waiting' || s.status === 'active'
+    (s) =>
+      s.status === "scheduled" ||
+      s.status === "waiting" ||
+      s.status === "active",
   );
 
   // Wenn Termin aktiv wird, automatisch Consent-Flow starten
   useEffect(() => {
-    if (nextSlot && (nextSlot.status === 'waiting' || nextSlot.status === 'active')) {
+    if (
+      nextSlot &&
+      (nextSlot.status === "waiting" || nextSlot.status === "active")
+    ) {
       // eslint-disable-next-line react-hooks/set-state-in-effect -- sync external slot state
       setActiveSlot(nextSlot);
-      if (phase === 'idle') setPhase('consent');
+      if (phase === "idle") setPhase("consent");
     }
   }, [nextSlot, phase]);
 
   const handleConsented = useCallback(() => {
-    setPhase('techcheck');
+    setPhase("techcheck");
   }, []);
 
   const handleTechReady = useCallback(() => {
-    setPhase('video');
+    setPhase("video");
   }, []);
 
   const handleTechFailed = useCallback((reason: string) => {
-    console.warn('[VideoCall] Technik-Check fehlgeschlagen:', reason);
-    setPhase('idle');
+    console.warn("[VideoCall] Technik-Check fehlgeschlagen:", reason);
+    setPhase("idle");
   }, []);
 
   function handleHangUp() {
-    setPhase('idle');
+    setPhase("idle");
     setActiveSlot(null);
   }
 
   function startCall() {
     if (nextSlot) {
       setActiveSlot(nextSlot);
-      setPhase('consent');
+      setPhase("consent");
     }
   }
 
   // Video-Phase: iFrame im Vollbild
-  if (phase === 'video' && activeSlot?.join_url) {
+  if (phase === "video" && activeSlot?.join_url) {
     return (
       <div className="relative h-full w-full">
         <iframe
@@ -76,7 +82,7 @@ export default function VideoCallScreen() {
             onClick={handleHangUp}
             aria-label="Sprechstunde beenden"
             className="flex h-[100px] w-[100px] items-center justify-center rounded-full bg-red-500 text-white shadow-xl active:scale-95"
-            style={{ touchAction: 'manipulation' }}
+            style={{ touchAction: "manipulation" }}
           >
             <PhoneOff className="h-14 w-14" />
           </button>
@@ -86,12 +92,15 @@ export default function VideoCallScreen() {
   }
 
   // Consent-Phase
-  if (phase === 'consent' && activeSlot) {
+  if (phase === "consent" && activeSlot) {
     return (
       <div className="flex flex-col h-full">
         <div className="flex items-center gap-4 mb-6">
           <button
-            onClick={() => { setPhase('idle'); setActiveSlot(null); }}
+            onClick={() => {
+              setPhase("idle");
+              setActiveSlot(null);
+            }}
             aria-label="Zurück"
             className="flex h-[80px] w-[80px] items-center justify-center rounded-2xl bg-anthrazit/10 text-anthrazit active:scale-95"
           >
@@ -108,12 +117,12 @@ export default function VideoCallScreen() {
   }
 
   // TechCheck-Phase
-  if (phase === 'techcheck') {
+  if (phase === "techcheck") {
     return (
       <div className="flex flex-col h-full">
         <div className="flex items-center gap-4 mb-6">
           <button
-            onClick={() => setPhase('consent')}
+            onClick={() => setPhase("consent")}
             aria-label="Zurück"
             className="flex h-[80px] w-[80px] items-center justify-center rounded-2xl bg-anthrazit/10 text-anthrazit active:scale-95"
           >
@@ -143,7 +152,9 @@ export default function VideoCallScreen() {
 
       <div className="flex flex-1 flex-col items-center justify-center gap-8">
         {loading && (
-          <p className="text-2xl text-anthrazit/50">Termine werden geladen...</p>
+          <p className="text-2xl text-anthrazit/50">
+            Termine werden geladen...
+          </p>
         )}
 
         {!loading && nextSlot && (
@@ -156,27 +167,33 @@ export default function VideoCallScreen() {
                   {nextSlot.title}
                 </p>
                 <p className="text-xl text-anthrazit/60">
-                  {nextSlot.host_name} — {new Date(nextSlot.scheduled_at).toLocaleDateString('de-DE', {
-                    weekday: 'long', day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit'
+                  {nextSlot.host_name} —{" "}
+                  {new Date(nextSlot.scheduled_at).toLocaleDateString("de-DE", {
+                    weekday: "long",
+                    day: "numeric",
+                    month: "long",
+                    hour: "2-digit",
+                    minute: "2-digit",
                   })}
                 </p>
               </div>
             </div>
 
             {/* Wartezimmer betreten */}
-            {(nextSlot.status === 'waiting' || nextSlot.status === 'active') && (
+            {(nextSlot.status === "waiting" ||
+              nextSlot.status === "active") && (
               <button
                 onClick={startCall}
                 aria-label="Sprechstunde starten"
                 className="flex h-[100px] w-full max-w-md items-center justify-center gap-4 rounded-2xl bg-quartier-green text-white text-3xl font-bold shadow-lg active:scale-95 animate-pulse"
-                style={{ touchAction: 'manipulation' }}
+                style={{ touchAction: "manipulation" }}
               >
                 <Video className="h-12 w-12" />
                 Jetzt teilnehmen
               </button>
             )}
 
-            {nextSlot.status === 'scheduled' && (
+            {nextSlot.status === "scheduled" && (
               <div className="rounded-2xl bg-quartier-green/10 px-8 py-5 text-center">
                 <p className="text-2xl text-anthrazit">
                   Ihr Termin beginnt bald

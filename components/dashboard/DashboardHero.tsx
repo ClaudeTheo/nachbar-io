@@ -6,7 +6,7 @@ import { CategoryIcon } from "@/components/CategoryIcon";
 import { ReputationBadge } from "@/components/ReputationBadge";
 import { IllustrationRenderer } from "@/components/illustrations/IllustrationRenderer";
 import { WeatherWidget } from "@/components/weather/WeatherWidget";
-import { DailyCheckinButton } from "@/components/care/DailyCheckinButton";
+import { DailyCheckinButton } from "@/modules/care/components/checkin/DailyCheckinButton";
 import { useUnreadCount } from "@/lib/useUnreadCount";
 import type { CategoryIconConfig } from "@/lib/category-icons";
 

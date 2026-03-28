@@ -55,6 +55,39 @@ export interface RathausLink {
   icon: string;
 }
 
+// ÖPNV-Abfahrten (EFA-BW)
+export interface OepnvDeparture {
+  line: string;        // "7334", "SEV C"
+  destination: string; // "Waldshut Busbahnhof"
+  time: string;        // "12:28" (HH:MM)
+  platform: string;    // "14"
+  countdown: number;   // Minuten bis Abfahrt
+  hint?: string;       // "Ersatzverkehr", "Fahrradmitnahme"
+}
+
+export interface OepnvStop {
+  id: string;          // "8506566"
+  name: string;        // "Bad Säckingen Bahnhof"
+  departures: OepnvDeparture[];
+}
+
+// Apotheken (statisch)
+export interface Apotheke {
+  name: string;
+  address: string;
+  phone: string;
+  openingHours: string;
+}
+
+// Veranstaltungen (statisch)
+export interface LocalEvent {
+  title: string;
+  description: string;
+  schedule: string;    // "Mi + Sa, 08:00-12:00"
+  location: string;
+  icon: string;
+}
+
 // Gesamt-Response der API
 export interface QuartierInfoResponse {
   weather: QuartierWeather | null;
@@ -62,4 +95,10 @@ export interface QuartierInfoResponse {
   pollen: PollenData | null;
   waste_next: WasteNext[];
   rathaus: RathausLink[];
+  // Phase 2
+  oepnv: OepnvStop[];
+  apotheken: Apotheke[];
+  events: LocalEvent[];
+  notdienst_url: string;
+  events_calendar_url: string;
 }

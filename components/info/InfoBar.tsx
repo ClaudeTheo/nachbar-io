@@ -10,6 +10,7 @@ import {
   CloudFog,
   CloudLightning,
   Trash2,
+  Train,
 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useQuarter } from "@/lib/quarters";
@@ -134,6 +135,14 @@ export function InfoBar() {
               <PollenDots intensity={val.today} />
             </span>
           ))}
+        </div>
+      )}
+
+      {/* ÖPNV naechste Abfahrt */}
+      {data.oepnv?.[0]?.departures?.[0] && (
+        <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+          <Train className="h-3.5 w-3.5 text-blue-600" />
+          <span>{data.oepnv[0].departures[0].countdown} Min</span>
         </div>
       )}
 

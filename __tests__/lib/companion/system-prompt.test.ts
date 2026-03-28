@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import {
   buildSystemPrompt,
   type QuarterContext,
-} from "@/lib/companion/system-prompt";
+} from "@/modules/voice/services/system-prompt";
 
 // Vollen Kontext fuer Tests
 function fullContext(): QuarterContext {

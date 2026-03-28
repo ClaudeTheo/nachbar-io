@@ -21,7 +21,7 @@ const mockEngine = {
 
 let shouldReturnEngine = true;
 
-vi.mock("@/lib/voice/create-speech-engine", () => ({
+vi.mock("@/modules/voice/engines/create-speech-engine", () => ({
   createSpeechEngine: () => (shouldReturnEngine ? mockEngine : null),
 }));
 
@@ -65,7 +65,7 @@ afterEach(() => {
 describe("CompanionChat", () => {
   it("rendert Eingabefeld und Senden-Button", async () => {
     const { CompanionChat } =
-      await import("@/components/companion/CompanionChat");
+      await import("@/modules/voice/components/companion/CompanionChat");
     const { getByTestId } = render(<CompanionChat />);
 
     expect(getByTestId("companion-input")).toBeDefined();
@@ -74,7 +74,7 @@ describe("CompanionChat", () => {
 
   it("zeigt Willkommensnachricht beim Mount", async () => {
     const { CompanionChat } =
-      await import("@/components/companion/CompanionChat");
+      await import("@/modules/voice/components/companion/CompanionChat");
     const { getByText } = render(<CompanionChat />);
 
     expect(
@@ -86,7 +86,7 @@ describe("CompanionChat", () => {
 
   it("rendert Mikrofon-Button", async () => {
     const { CompanionChat } =
-      await import("@/components/companion/CompanionChat");
+      await import("@/modules/voice/components/companion/CompanionChat");
     const { getByTestId } = render(<CompanionChat />);
 
     expect(getByTestId("companion-mic")).toBeDefined();
@@ -94,7 +94,7 @@ describe("CompanionChat", () => {
 
   it("rendert TTSButton auf KI-Nachrichten", async () => {
     const { CompanionChat } =
-      await import("@/components/companion/CompanionChat");
+      await import("@/modules/voice/components/companion/CompanionChat");
     const { getAllByTestId } = render(<CompanionChat />);
 
     // Willkommensnachricht hat einen TTS-Button
@@ -104,7 +104,7 @@ describe("CompanionChat", () => {
 
   it("rendert Quartier-Lotse Header", async () => {
     const { CompanionChat } =
-      await import("@/components/companion/CompanionChat");
+      await import("@/modules/voice/components/companion/CompanionChat");
     const { getByText } = render(<CompanionChat />);
 
     expect(getByText("Quartier-Lotse")).toBeDefined();
@@ -120,7 +120,7 @@ describe("CompanionChat", () => {
     );
 
     const { CompanionChat } =
-      await import("@/components/companion/CompanionChat");
+      await import("@/modules/voice/components/companion/CompanionChat");
     const { getByTestId, getByText } = render(<CompanionChat />);
 
     // Text eingeben
@@ -165,7 +165,7 @@ describe("CompanionChat", () => {
     );
 
     const { CompanionChat } =
-      await import("@/components/companion/CompanionChat");
+      await import("@/modules/voice/components/companion/CompanionChat");
     const { getByTestId } = render(<CompanionChat />);
 
     // Text eingeben und senden
@@ -182,7 +182,7 @@ describe("CompanionChat", () => {
 
   it("deaktiviert Senden-Button wenn Eingabe leer", async () => {
     const { CompanionChat } =
-      await import("@/components/companion/CompanionChat");
+      await import("@/modules/voice/components/companion/CompanionChat");
     const { getByTestId } = render(<CompanionChat />);
 
     const sendBtn = getByTestId("companion-send") as HTMLButtonElement;
@@ -217,7 +217,7 @@ describe("CompanionChat", () => {
     );
 
     const { CompanionChat } =
-      await import("@/components/companion/CompanionChat");
+      await import("@/modules/voice/components/companion/CompanionChat");
     const { getByTestId, getByText } = render(<CompanionChat />);
 
     fireEvent.change(getByTestId("companion-input"), {
@@ -238,7 +238,7 @@ describe("CompanionChat", () => {
     mockFetch.mockRejectedValueOnce(new Error("Network error"));
 
     const { CompanionChat } =
-      await import("@/components/companion/CompanionChat");
+      await import("@/modules/voice/components/companion/CompanionChat");
     const { getByTestId, getByText } = render(<CompanionChat />);
 
     fireEvent.change(getByTestId("companion-input"), {
@@ -258,7 +258,8 @@ describe("CompanionChat", () => {
 
 describe("ActionCard", () => {
   it("zeigt Erfolg mit gruener Umrandung", async () => {
-    const { ActionCard } = await import("@/components/companion/ActionCard");
+    const { ActionCard } =
+      await import("@/modules/voice/components/companion/ActionCard");
     const { getByTestId, getByText } = render(
       <ActionCard
         tool="Muellkalender"
@@ -273,7 +274,8 @@ describe("ActionCard", () => {
   });
 
   it("zeigt Fehler mit roter Umrandung", async () => {
-    const { ActionCard } = await import("@/components/companion/ActionCard");
+    const { ActionCard } =
+      await import("@/modules/voice/components/companion/ActionCard");
     const { getByTestId } = render(
       <ActionCard tool="Test" summary="Fehlgeschlagen" success={false} />,
     );
@@ -286,7 +288,7 @@ describe("ActionCard", () => {
 describe("ConfirmationCard", () => {
   it("zeigt Abschicken und Abbrechen Buttons", async () => {
     const { ConfirmationCard } =
-      await import("@/components/companion/ConfirmationCard");
+      await import("@/modules/voice/components/companion/ConfirmationCard");
     const onConfirm = vi.fn();
     const onCancel = vi.fn();
 
@@ -314,7 +316,8 @@ describe("ConfirmationCard", () => {
 
 describe("TTSButton", () => {
   it("rendert Vorlesen-Button", async () => {
-    const { TTSButton } = await import("@/components/companion/TTSButton");
+    const { TTSButton } =
+      await import("@/modules/voice/components/companion/TTSButton");
     const { getByTestId, getByText } = render(<TTSButton text="Hallo Welt" />);
 
     expect(getByTestId("tts-button")).toBeDefined();
@@ -322,7 +325,8 @@ describe("TTSButton", () => {
   });
 
   it("ist deaktiviert wenn kein Text", async () => {
-    const { TTSButton } = await import("@/components/companion/TTSButton");
+    const { TTSButton } =
+      await import("@/modules/voice/components/companion/TTSButton");
     const { getByTestId } = render(<TTSButton text="" />);
 
     const btn = getByTestId("tts-button") as HTMLButtonElement;

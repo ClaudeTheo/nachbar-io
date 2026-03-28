@@ -1,8 +1,8 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect } from "vitest";
 
-describe('SpeechEngine Interface', () => {
-  it('exportiert SpeechEngineState und SpeechEngineCallbacks Typen', async () => {
-    const mod = await import('@/lib/voice/speech-engine');
+describe("SpeechEngine Interface", () => {
+  it("exportiert SpeechEngineState und SpeechEngineCallbacks Typen", async () => {
+    const mod = await import("@/modules/voice/engines/speech-engine");
     // Typ-Exporte pruefen — wenn Import klappt, existieren die Typen
     expect(mod).toBeDefined();
   });

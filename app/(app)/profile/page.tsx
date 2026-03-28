@@ -45,7 +45,7 @@ import {
   getHouseholdForUser,
   toggleUiMode as toggleUiModeService,
 } from "@/lib/services";
-import { VoiceSettings } from "@/components/companion/VoiceSettings";
+import { VoiceSettings } from "@/modules/voice/components/companion/VoiceSettings";
 import { useVoicePreferences } from "@/hooks/useVoicePreferences";
 import { LargeTitle } from "@/components/ui/LargeTitle";
 import { formatCode, generateSecureCode } from "@/lib/invite-codes";
@@ -181,7 +181,10 @@ export default function ProfilePage() {
             .not("used_by", "is", null);
           setInviteCount(count ?? 0);
         } catch (inviteErr) {
-          console.warn("[Profile] Einladungscode konnte nicht geladen werden:", inviteErr);
+          console.warn(
+            "[Profile] Einladungscode konnte nicht geladen werden:",
+            inviteErr,
+          );
         }
       } catch (err) {
         console.error("[Profile] Unerwarteter Fehler:", err);
@@ -348,7 +351,11 @@ export default function ProfilePage() {
               className="flex h-12 w-12 items-center justify-center rounded-lg bg-[#f5f0eb] text-[#2D3142]/60 transition-colors active:bg-[#ebe5dd]"
               aria-label="Code kopieren"
             >
-              {codeCopied ? <Check className="h-5 w-5 text-quartier-green" /> : <Copy className="h-5 w-5" />}
+              {codeCopied ? (
+                <Check className="h-5 w-5 text-quartier-green" />
+              ) : (
+                <Copy className="h-5 w-5" />
+              )}
             </button>
           </div>
           <button
@@ -360,7 +367,8 @@ export default function ProfilePage() {
           </button>
           {inviteCount > 0 && (
             <p className="mt-3 text-center text-xs text-[#2D3142]/40">
-              {inviteCount} {inviteCount === 1 ? "Nachbar" : "Nachbarn"} bereits eingeladen
+              {inviteCount} {inviteCount === 1 ? "Nachbar" : "Nachbarn"} bereits
+              eingeladen
             </p>
           )}
         </div>

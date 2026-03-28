@@ -6,7 +6,7 @@ import { PageTransition } from "@/components/PageTransition";
 import { PendingVerificationBanner } from "@/components/PendingVerificationBanner";
 import { QuarterProvider } from "@/lib/quarters";
 import { BugReportButton } from "@/components/BugReportButton";
-import { VoiceAssistantFAB } from "@/components/VoiceAssistantFAB";
+import { VoiceAssistantFAB } from "@/modules/voice/components/VoiceAssistantFAB";
 import { ExternalLinkProvider } from "@/components/ExternalLinkProvider";
 import { AuthSessionProvider } from "@/components/AuthSessionProvider";
 import { AuthProvider } from "@/components/providers/auth-provider";

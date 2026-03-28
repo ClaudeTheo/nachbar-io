@@ -8,56 +8,62 @@ const state = {
 };
 
 vi.mock("@/lib/supabase/server", () => ({
-  createClient: () => Promise.resolve({
-    from: (table: string) => {
-      if (table === "household_members") {
-        return {
-          select: () => ({
-            eq: () => ({
-              limit: () => ({
-                single: () => Promise.resolve({
-                  data: { household_id: "h-1", household: { quarter_id: "q-1" } },
-                  error: null,
+  createClient: () =>
+    Promise.resolve({
+      from: (table: string) => {
+        if (table === "household_members") {
+          return {
+            select: () => ({
+              eq: () => ({
+                limit: () => ({
+                  single: () =>
+                    Promise.resolve({
+                      data: {
+                        household_id: "h-1",
+                        household: { quarter_id: "q-1" },
+                      },
+                      error: null,
+                    }),
                 }),
               }),
             }),
-          }),
-        };
-      }
-      if (table === "shared_meals") {
-        return {
-          insert: (data: Record<string, unknown>) => {
-            state.insertData = data;
-            return Promise.resolve({ error: state.insertError });
-          },
-          select: () => ({
-            eq: () => ({
+          };
+        }
+        if (table === "shared_meals") {
+          return {
+            insert: (data: Record<string, unknown>) => {
+              state.insertData = data;
+              return Promise.resolve({ error: state.insertError });
+            },
+            select: () => ({
               eq: () => ({
-                gte: () => ({
-                  order: () => ({
-                    limit: () => Promise.resolve({ data: state.meals, error: null }),
+                eq: () => ({
+                  gte: () => ({
+                    order: () => ({
+                      limit: () =>
+                        Promise.resolve({ data: state.meals, error: null }),
+                    }),
                   }),
                 }),
               }),
             }),
-          }),
-        };
-      }
-      return {
-        select: () => ({
-          eq: () => ({
-            limit: () => ({
-              single: () => Promise.resolve({ data: null, error: null }),
+          };
+        }
+        return {
+          select: () => ({
+            eq: () => ({
+              limit: () => ({
+                single: () => Promise.resolve({ data: null, error: null }),
+              }),
             }),
           }),
-        }),
-      };
-    },
-  }),
+        };
+      },
+    }),
 }));
 
-import { executeCompanionTool } from "@/lib/companion/tool-executor";
-import { companionTools, WRITE_TOOLS } from "@/lib/companion/tools";
+import { executeCompanionTool } from "@/modules/voice/services/tool-executor";
+import { companionTools, WRITE_TOOLS } from "@/modules/voice/services/tools";
 
 describe("Companion Meals Tools", () => {
   beforeEach(() => {
@@ -92,12 +98,16 @@ describe("Companion Meals Tools", () => {
 
   describe("create_meal Executor", () => {
     it("erstellt Portion erfolgreich", async () => {
-      const result = await executeCompanionTool("create_meal", {
-        title: "Lasagne",
-        type: "portion",
-        servings: 3,
-        meal_date: "2026-03-22",
-      }, "u-1");
+      const result = await executeCompanionTool(
+        "create_meal",
+        {
+          title: "Lasagne",
+          type: "portion",
+          servings: 3,
+          meal_date: "2026-03-22",
+        },
+        "u-1",
+      );
 
       expect(result.success).toBe(true);
       expect(result.summary).toContain("Lasagne");
@@ -106,13 +116,17 @@ describe("Companion Meals Tools", () => {
     });
 
     it("erstellt Einladung erfolgreich", async () => {
-      const result = await executeCompanionTool("create_meal", {
-        title: "Grillabend",
-        type: "invitation",
-        servings: 6,
-        meal_date: "2026-03-25",
-        meal_time: "17:00",
-      }, "u-1");
+      const result = await executeCompanionTool(
+        "create_meal",
+        {
+          title: "Grillabend",
+          type: "invitation",
+          servings: 6,
+          meal_date: "2026-03-25",
+          meal_time: "17:00",
+        },
+        "u-1",
+      );
 
       expect(result.success).toBe(true);
       expect(result.summary).toContain("Grillabend");
@@ -121,12 +135,16 @@ describe("Companion Meals Tools", () => {
 
     it("gibt Fehler bei DB-Fehler zurueck", async () => {
       state.insertError = { message: "DB-Fehler" };
-      const result = await executeCompanionTool("create_meal", {
-        title: "Suppe",
-        type: "portion",
-        servings: 2,
-        meal_date: "2026-03-22",
-      }, "u-1");
+      const result = await executeCompanionTool(
+        "create_meal",
+        {
+          title: "Suppe",
+          type: "portion",
+          servings: 2,
+          meal_date: "2026-03-22",
+        },
+        "u-1",
+      );
 
       expect(result.success).toBe(false);
       expect(result.summary).toContain("Fehler");
@@ -144,8 +162,24 @@ describe("Companion Meals Tools", () => {
 
     it("listet vorhandene Angebote", async () => {
       state.meals = [
-        { title: "Lasagne", type: "portion", servings: 3, meal_date: "2026-03-22", meal_time: "18:00", cost_hint: "2 EUR", user: { display_name: "Thomas" } },
-        { title: "Grillabend", type: "invitation", servings: 6, meal_date: "2026-03-25", meal_time: null, cost_hint: null, user: { display_name: "Maria" } },
+        {
+          title: "Lasagne",
+          type: "portion",
+          servings: 3,
+          meal_date: "2026-03-22",
+          meal_time: "18:00",
+          cost_hint: "2 EUR",
+          user: { display_name: "Thomas" },
+        },
+        {
+          title: "Grillabend",
+          type: "invitation",
+          servings: 6,
+          meal_date: "2026-03-25",
+          meal_time: null,
+          cost_hint: null,
+          user: { display_name: "Maria" },
+        },
       ];
       const result = await executeCompanionTool("list_meals", {}, "u-1");
 

@@ -90,7 +90,8 @@ afterEach(() => {
 
 describe("WhisperEngine", () => {
   it("isAvailable() gibt true zurueck wenn getUserMedia + MediaRecorder existiert", async () => {
-    const { WhisperEngine } = await import("@/lib/voice/whisper-engine");
+    const { WhisperEngine } =
+      await import("@/modules/voice/engines/whisper-engine");
     const engine = new WhisperEngine();
     expect(engine.isAvailable()).toBe(true);
   });
@@ -102,7 +103,8 @@ describe("WhisperEngine", () => {
       configurable: true,
     });
 
-    const { WhisperEngine } = await import("@/lib/voice/whisper-engine");
+    const { WhisperEngine } =
+      await import("@/modules/voice/engines/whisper-engine");
     const engine = new WhisperEngine();
     expect(engine.isAvailable()).toBe(false);
   });
@@ -110,7 +112,8 @@ describe("WhisperEngine", () => {
   it("startListening() startet MediaRecorder + AudioContext", async () => {
     mockGetUserMedia.mockResolvedValueOnce(mockStream);
 
-    const { WhisperEngine } = await import("@/lib/voice/whisper-engine");
+    const { WhisperEngine } =
+      await import("@/modules/voice/engines/whisper-engine");
     const engine = new WhisperEngine();
 
     const callbacks = {
@@ -136,7 +139,8 @@ describe("WhisperEngine", () => {
       json: async () => ({ text: "Hilfe beim Einkaufen" }),
     });
 
-    const { WhisperEngine } = await import("@/lib/voice/whisper-engine");
+    const { WhisperEngine } =
+      await import("@/modules/voice/engines/whisper-engine");
     const engine = new WhisperEngine();
 
     const callbacks = {
@@ -180,7 +184,8 @@ describe("WhisperEngine", () => {
       json: async () => ({ text: "Timeout-Text" }),
     });
 
-    const { WhisperEngine } = await import("@/lib/voice/whisper-engine");
+    const { WhisperEngine } =
+      await import("@/modules/voice/engines/whisper-engine");
     const engine = new WhisperEngine();
 
     const callbacks = {
@@ -209,7 +214,8 @@ describe("WhisperEngine", () => {
       new DOMException("Permission denied", "NotAllowedError"),
     );
 
-    const { WhisperEngine } = await import("@/lib/voice/whisper-engine");
+    const { WhisperEngine } =
+      await import("@/modules/voice/engines/whisper-engine");
     const engine = new WhisperEngine();
 
     const callbacks = {
@@ -237,7 +243,8 @@ describe("WhisperEngine", () => {
       json: async () => ({ text: "Hallo" }),
     });
 
-    const { WhisperEngine } = await import("@/lib/voice/whisper-engine");
+    const { WhisperEngine } =
+      await import("@/modules/voice/engines/whisper-engine");
     const engine = new WhisperEngine();
 
     const callbacks = {
@@ -283,7 +290,8 @@ describe("WhisperEngine", () => {
     vi.useFakeTimers();
     mockGetUserMedia.mockResolvedValueOnce(mockStream);
 
-    const { WhisperEngine } = await import("@/lib/voice/whisper-engine");
+    const { WhisperEngine } =
+      await import("@/modules/voice/engines/whisper-engine");
     const engine = new WhisperEngine();
 
     const callbacks = {
@@ -320,7 +328,8 @@ describe("WhisperEngine", () => {
       json: async () => ({ text: "Normal" }),
     });
 
-    const { WhisperEngine } = await import("@/lib/voice/whisper-engine");
+    const { WhisperEngine } =
+      await import("@/modules/voice/engines/whisper-engine");
     const engine = new WhisperEngine();
 
     const callbacks = {
@@ -349,7 +358,8 @@ describe("WhisperEngine", () => {
     mockGetUserMedia.mockResolvedValueOnce(mockStream);
     mockFetch.mockResolvedValueOnce({ ok: false, status: 502 });
 
-    const { WhisperEngine } = await import("@/lib/voice/whisper-engine");
+    const { WhisperEngine } =
+      await import("@/modules/voice/engines/whisper-engine");
     const engine = new WhisperEngine();
 
     const callbacks = {

@@ -1,9 +1,9 @@
 // components/companion/ChatInputArea.tsx
 // Eingabebereich: Textarea, Mikrofon-Button, Senden-Button, Aufnahme-Indikator
 
-import { Send, Mic } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import type { SpeechEngineState } from '@/lib/voice/speech-engine';
+import { Send, Mic } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import type { SpeechEngineState } from "../../engines/speech-engine";
 
 interface ChatInputAreaProps {
   inputValue: string;
@@ -38,7 +38,7 @@ export function ChatInputArea({
         >
           <span className="h-3 w-3 animate-pulse rounded-full bg-red-500" />
           <span className="text-sm font-medium text-red-700">
-            {speechState === 'processing' ? 'Verarbeite...' : 'Ich hoere zu...'}
+            {speechState === "processing" ? "Verarbeite..." : "Ich hoere zu..."}
           </span>
         </div>
       )}
@@ -51,11 +51,13 @@ export function ChatInputArea({
             data-testid="companion-mic"
             onClick={onToggleRecording}
             size="icon"
-            variant={recording ? 'destructive' : 'outline'}
+            variant={recording ? "destructive" : "outline"}
             className={`h-11 w-11 shrink-0 rounded-full ${
-              recording ? '' : 'border-border text-muted-foreground hover:text-quartier-green'
+              recording
+                ? ""
+                : "border-border text-muted-foreground hover:text-quartier-green"
             }`}
-            aria-label={recording ? 'Aufnahme stoppen' : 'Spracheingabe'}
+            aria-label={recording ? "Aufnahme stoppen" : "Spracheingabe"}
           >
             <Mic className="h-5 w-5" />
           </Button>
@@ -72,12 +74,12 @@ export function ChatInputArea({
             maxLength={1000}
             disabled={sending}
             className="flex-1 resize-none rounded-2xl border border-border bg-white px-4 py-2.5 text-sm placeholder:text-muted-foreground focus:border-quartier-green focus:outline-none focus:ring-1 focus:ring-quartier-green disabled:opacity-50"
-            style={{ minHeight: '2.75rem', maxHeight: '7rem' }}
+            style={{ minHeight: "2.75rem", maxHeight: "7rem" }}
             onInput={(e) => {
               // Auto-Resize
               const target = e.target as HTMLTextAreaElement;
-              target.style.height = 'auto';
-              target.style.height = Math.min(target.scrollHeight, 112) + 'px';
+              target.style.height = "auto";
+              target.style.height = Math.min(target.scrollHeight, 112) + "px";
             }}
           />
 

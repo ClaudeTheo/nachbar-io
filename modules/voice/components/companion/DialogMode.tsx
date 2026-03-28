@@ -7,11 +7,11 @@ import { useDialogMode } from "@/hooks/useDialogMode";
 import { useStreamingChat } from "@/hooks/useStreamingChat";
 import { AutoListenIndicator } from "./AutoListenIndicator";
 import { StreamingTextDisplay } from "./StreamingTextDisplay";
-import { SpeakerAnimation } from "@/components/voice/SpeakerAnimation";
-import { createSpeechEngine } from "@/lib/voice/create-speech-engine";
-import { SilenceDetector } from "@/lib/voice/silence-detector";
-import { SentenceStreamTTS } from "@/lib/voice/sentence-stream-tts";
-import type { SpeechEngine } from "@/lib/voice/speech-engine";
+import { SpeakerAnimation } from "../voice/SpeakerAnimation";
+import { createSpeechEngine } from "../../engines/create-speech-engine";
+import { SilenceDetector } from "../../engines/silence-detector";
+import { SentenceStreamTTS } from "../../engines/sentence-stream-tts";
+import type { SpeechEngine } from "../../engines/speech-engine";
 
 interface DialogModeProps {
   onMessage?: (role: "user" | "assistant", content: string) => void;

@@ -1,23 +1,30 @@
 // app/api/companion/chat/route.ts
 // Nachbar.io — Companion Chat API: Claude-basierter Quartier-Lotse mit Tool Use
 
-import { NextRequest, NextResponse } from 'next/server';
-import { requireAuth, unauthorizedResponse, errorResponse } from '@/lib/care/api-helpers';
-import { loadQuarterContext } from '@/lib/companion/context-loader';
-import { buildSystemPrompt } from '@/lib/companion/system-prompt';
-import { companionTools } from '@/lib/companion/tools';
-import { isWriteTool, executeCompanionTool } from '@/lib/companion/tool-executor';
-import type { ToolResult } from '@/lib/companion/tool-executor';
-import Anthropic from '@anthropic-ai/sdk';
+import { NextRequest, NextResponse } from "next/server";
+import {
+  requireAuth,
+  unauthorizedResponse,
+  errorResponse,
+} from "@/lib/care/api-helpers";
+import { loadQuarterContext } from "@/modules/voice/services/context-loader";
+import { buildSystemPrompt } from "@/modules/voice/services/system-prompt";
+import { companionTools } from "@/modules/voice/services/tools";
+import {
+  isWriteTool,
+  executeCompanionTool,
+} from "@/modules/voice/services/tool-executor";
+import type { ToolResult } from "@/modules/voice/services/tool-executor";
+import Anthropic from "@anthropic-ai/sdk";
 
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
 /** Maximale Anzahl an Nachrichten im Session-Gedächtnis */
 const MAX_MESSAGES = 20;
 
 /** Chat-Nachricht vom Client */
 interface ChatMessage {
-  role: 'user' | 'assistant';
+  role: "user" | "assistant";
   content: string;
 }
 
@@ -46,14 +53,14 @@ export async function POST(request: NextRequest) {
   try {
     body = await request.json();
   } catch {
-    return errorResponse('Ungültiger Request-Body.', 400);
+    return errorResponse("Ungültiger Request-Body.", 400);
   }
 
   const { messages, stream, confirmTool } = body;
 
   // Validierung: mindestens eine Nachricht
   if (!Array.isArray(messages) || messages.length === 0) {
-    return errorResponse('Keine Nachrichten angegeben.', 400);
+    return errorResponse("Keine Nachrichten angegeben.", 400);
   }
 
   try {
@@ -63,19 +70,25 @@ export async function POST(request: NextRequest) {
     // Bei Bestätigung: Tool direkt ausführen und Ergebnis zurückgeben
     // KEIN erneuter Claude-Call nötig — spart Latenz und verhindert doppelte Tool-Calls
     if (confirmTool?.tool && confirmTool?.params) {
-      const confirmResult = await executeCompanionTool(confirmTool.tool, confirmTool.params, userId);
+      const confirmResult = await executeCompanionTool(
+        confirmTool.tool,
+        confirmTool.params,
+        userId,
+      );
       const confirmMessage = confirmResult.success
         ? confirmResult.summary
         : `Leider ist ein Fehler aufgetreten: ${confirmResult.summary}`;
 
       return NextResponse.json({
         message: confirmMessage,
-        toolResults: [{
-          tool: confirmTool.tool,
-          summary: confirmResult.summary,
-          success: confirmResult.success,
-          route: confirmResult.route,
-        }],
+        toolResults: [
+          {
+            tool: confirmTool.tool,
+            summary: confirmResult.summary,
+            success: confirmResult.success,
+            route: confirmResult.route,
+          },
+        ],
       });
     }
 
@@ -84,7 +97,7 @@ export async function POST(request: NextRequest) {
 
     // Nachrichten auf die letzten MAX_MESSAGES begrenzen (Session-Gedächtnis)
     const recentMessages = messages.slice(-MAX_MESSAGES).map((m) => ({
-      role: m.role as 'user' | 'assistant',
+      role: m.role as "user" | "assistant",
       content: m.content,
     }));
 
@@ -94,14 +107,18 @@ export async function POST(request: NextRequest) {
 
     // Streaming-Modus: SSE-Response mit ReadableStream
     if (stream) {
-      return await handleStreamingResponse(systemPrompt, recentMessages, userId);
+      return await handleStreamingResponse(
+        systemPrompt,
+        recentMessages,
+        userId,
+      );
     }
 
     // Nicht-Streaming: Bisherige JSON-Response (Backwards-Kompatibilität)
     return await handleJsonResponse(systemPrompt, recentMessages, userId);
   } catch (err) {
-    console.error('[companion/chat] KI-Fehler:', err);
-    return errorResponse('KI-Fehler', 500);
+    console.error("[companion/chat] KI-Fehler:", err);
+    return errorResponse("KI-Fehler", 500);
   }
 }
 
@@ -110,8 +127,8 @@ export async function POST(request: NextRequest) {
  */
 async function handleStreamingResponse(
   systemPrompt: string,
-  messages: Array<{ role: 'user' | 'assistant'; content: string }>,
-  userId: string
+  messages: Array<{ role: "user" | "assistant"; content: string }>,
+  userId: string,
 ): Promise<Response> {
   const encoder = new TextEncoder();
 
@@ -120,33 +137,36 @@ async function handleStreamingResponse(
       try {
         const anthropic = new Anthropic();
         const stream = anthropic.messages.stream({
-          model: 'claude-haiku-4-5-20251001',
+          model: "claude-haiku-4-5-20251001",
           max_tokens: 768,
           system: systemPrompt,
           tools: companionTools,
           messages,
         });
 
-        let fullReply = '';
-        let toolInputJson = '';
-        let currentToolName = '';
+        let fullReply = "";
+        let toolInputJson = "";
+        let currentToolName = "";
 
         for await (const event of stream) {
-          if (event.type === 'content_block_delta') {
-            if (event.delta.type === 'text_delta') {
+          if (event.type === "content_block_delta") {
+            if (event.delta.type === "text_delta") {
               // Text-Delta an Client senden
               fullReply += event.delta.text;
               const sseEvent = `event: text\ndata: ${JSON.stringify({ delta: event.delta.text })}\n\n`;
               controller.enqueue(encoder.encode(sseEvent));
-            } else if (event.delta.type === 'input_json_delta') {
+            } else if (event.delta.type === "input_json_delta") {
               // Tool-Input JSON-Chunks sammeln
               toolInputJson += event.delta.partial_json;
             }
-          } else if (event.type === 'content_block_start' && event.content_block.type === 'tool_use') {
+          } else if (
+            event.type === "content_block_start" &&
+            event.content_block.type === "tool_use"
+          ) {
             // Neuer Tool-Block beginnt
             currentToolName = event.content_block.name;
-            toolInputJson = '';
-          } else if (event.type === 'content_block_stop' && currentToolName) {
+            toolInputJson = "";
+          } else if (event.type === "content_block_stop" && currentToolName) {
             // Tool-Block fertig — Tool ausführen
             try {
               const toolParams = toolInputJson ? JSON.parse(toolInputJson) : {};
@@ -155,12 +175,19 @@ async function handleStreamingResponse(
                 const sseEvent = `event: confirmation\ndata: ${JSON.stringify({
                   tool: currentToolName,
                   params: toolParams,
-                  description: formatToolDescription(currentToolName, toolParams),
+                  description: formatToolDescription(
+                    currentToolName,
+                    toolParams,
+                  ),
                 })}\n\n`;
                 controller.enqueue(encoder.encode(sseEvent));
               } else {
                 // Read-Tool: Sofort ausführen
-                const result = await executeCompanionTool(currentToolName, toolParams, userId);
+                const result = await executeCompanionTool(
+                  currentToolName,
+                  toolParams,
+                  userId,
+                );
                 const sseEvent = `event: tool\ndata: ${JSON.stringify({
                   name: currentToolName,
                   result,
@@ -173,19 +200,22 @@ async function handleStreamingResponse(
                 }
               }
             } catch (toolErr) {
-              console.error(`[companion/chat] Tool-Fehler (${currentToolName}):`, toolErr);
+              console.error(
+                `[companion/chat] Tool-Fehler (${currentToolName}):`,
+                toolErr,
+              );
             }
-            currentToolName = '';
-            toolInputJson = '';
-          } else if (event.type === 'message_stop') {
+            currentToolName = "";
+            toolInputJson = "";
+          } else if (event.type === "message_stop") {
             // Stream beendet
             const doneEvent = `event: done\ndata: ${JSON.stringify({ full_reply: fullReply })}\n\n`;
             controller.enqueue(encoder.encode(doneEvent));
           }
         }
       } catch (err) {
-        console.error('[companion/chat] Streaming-Fehler:', err);
-        const errorEvent = `event: error\ndata: ${JSON.stringify({ message: 'KI-Fehler' })}\n\n`;
+        console.error("[companion/chat] Streaming-Fehler:", err);
+        const errorEvent = `event: error\ndata: ${JSON.stringify({ message: "KI-Fehler" })}\n\n`;
         controller.enqueue(encoder.encode(errorEvent));
       } finally {
         controller.close();
@@ -196,9 +226,9 @@ async function handleStreamingResponse(
   return new Response(readableStream, {
     status: 200,
     headers: {
-      'Content-Type': 'text/event-stream',
-      'Cache-Control': 'no-cache',
-      'Connection': 'keep-alive',
+      "Content-Type": "text/event-stream",
+      "Cache-Control": "no-cache",
+      Connection: "keep-alive",
     },
   });
 }
@@ -208,12 +238,12 @@ async function handleStreamingResponse(
  */
 async function handleJsonResponse(
   systemPrompt: string,
-  messages: Array<{ role: 'user' | 'assistant'; content: string }>,
-  userId: string
+  messages: Array<{ role: "user" | "assistant"; content: string }>,
+  userId: string,
 ): Promise<NextResponse> {
   const anthropic = new Anthropic();
   const response = await anthropic.messages.create({
-    model: 'claude-haiku-4-5-20251001',
+    model: "claude-haiku-4-5-20251001",
     max_tokens: 768,
     system: systemPrompt,
     tools: companionTools,
@@ -221,14 +251,14 @@ async function handleJsonResponse(
   });
 
   // Antwort verarbeiten: Text, Tool-Results und Bestätigungen extrahieren
-  let message = '';
+  let message = "";
   const toolResults: ToolResult[] = [];
   const confirmations: ToolConfirmation[] = [];
 
   for (const block of response.content) {
-    if (block.type === 'text') {
+    if (block.type === "text") {
       message += block.text;
-    } else if (block.type === 'tool_use') {
+    } else if (block.type === "tool_use") {
       const toolName = block.name;
       const toolParams = (block.input as Record<string, unknown>) ?? {};
 
@@ -251,7 +281,8 @@ async function handleJsonResponse(
 
   // Fallback-Nachricht wenn leer
   if (!message && toolResults.length === 0 && confirmations.length === 0) {
-    message = 'Ich konnte Ihre Anfrage leider nicht verarbeiten. Bitte versuchen Sie es erneut.';
+    message =
+      "Ich konnte Ihre Anfrage leider nicht verarbeiten. Bitte versuchen Sie es erneut.";
   }
 
   const responseBody: Record<string, unknown> = { message };
@@ -264,25 +295,28 @@ async function handleJsonResponse(
 /**
  * Erstellt eine benutzerfreundliche Beschreibung für eine Tool-Bestätigung.
  */
-function formatToolDescription(toolName: string, params: Record<string, unknown>): string {
+function formatToolDescription(
+  toolName: string,
+  params: Record<string, unknown>,
+): string {
   switch (toolName) {
-    case 'create_bulletin_post':
+    case "create_bulletin_post":
       return `Beitrag "${params.title}" auf dem Schwarzen Brett veröffentlichen`;
-    case 'create_help_request':
+    case "create_help_request":
       return `Hilfsanfrage "${params.title}" erstellen`;
-    case 'create_event':
+    case "create_event":
       return `Veranstaltung "${params.title}" am ${params.date} erstellen`;
-    case 'report_issue':
+    case "report_issue":
       return `Maengelmeldung erstellen: ${(params.description as string)?.slice(0, 80)}`;
-    case 'create_marketplace_listing':
+    case "create_marketplace_listing":
       return `Inserat "${params.title}" auf dem Marktplatz erstellen`;
-    case 'update_help_offers':
+    case "update_help_offers":
       return `Hilfsangebote aktualisieren`;
-    case 'send_message':
+    case "send_message":
       return `Nachricht an "${params.recipient_name}" senden`;
-    case 'update_profile':
+    case "update_profile":
       return `Profil aktualisieren`;
-    case 'create_meal':
+    case "create_meal":
       return `Mitess-Angebot "${params.title}" erstellen`;
     default:
       return `${toolName} ausführen`;

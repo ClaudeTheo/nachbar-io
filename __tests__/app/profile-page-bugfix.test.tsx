@@ -66,7 +66,7 @@ vi.mock("lucide-react", () => {
 });
 
 // VoiceSettings + Hook Mock
-vi.mock("@/components/companion/VoiceSettings", () => ({
+vi.mock("@/modules/voice/components/companion/VoiceSettings", () => ({
   VoiceSettings: () => <div data-testid="voice-settings">VoiceSettings</div>,
 }));
 vi.mock("@/hooks/useVoicePreferences", () => ({

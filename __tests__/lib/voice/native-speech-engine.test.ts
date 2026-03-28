@@ -42,7 +42,7 @@ afterEach(() => {
 describe("NativeSpeechEngine", () => {
   it("isAvailable() gibt true zurueck wenn SpeechRecognition existiert", async () => {
     const { NativeSpeechEngine } =
-      await import("@/lib/voice/native-speech-engine");
+      await import("@/modules/voice/engines/native-speech-engine");
     const engine = new NativeSpeechEngine();
     expect(engine.isAvailable()).toBe(true);
   });
@@ -54,7 +54,7 @@ describe("NativeSpeechEngine", () => {
     (globalThis as any).webkitSpeechRecognition = MockSpeechRecognition;
 
     const { NativeSpeechEngine } =
-      await import("@/lib/voice/native-speech-engine");
+      await import("@/modules/voice/engines/native-speech-engine");
     const engine = new NativeSpeechEngine();
     expect(engine.isAvailable()).toBe(true);
   });
@@ -64,14 +64,14 @@ describe("NativeSpeechEngine", () => {
     delete (globalThis as any).SpeechRecognition;
 
     const { NativeSpeechEngine } =
-      await import("@/lib/voice/native-speech-engine");
+      await import("@/modules/voice/engines/native-speech-engine");
     const engine = new NativeSpeechEngine();
     expect(engine.isAvailable()).toBe(false);
   });
 
   it("setzt Sprache auf de-DE", async () => {
     const { NativeSpeechEngine } =
-      await import("@/lib/voice/native-speech-engine");
+      await import("@/modules/voice/engines/native-speech-engine");
     const engine = new NativeSpeechEngine();
 
     const callbacks = {
@@ -91,7 +91,7 @@ describe("NativeSpeechEngine", () => {
 
   it("startListening() setzt State auf listening", async () => {
     const { NativeSpeechEngine } =
-      await import("@/lib/voice/native-speech-engine");
+      await import("@/modules/voice/engines/native-speech-engine");
     const engine = new NativeSpeechEngine();
 
     const callbacks = {
@@ -109,7 +109,7 @@ describe("NativeSpeechEngine", () => {
 
   it("leitet finales Transkript an onTranscript weiter", async () => {
     const { NativeSpeechEngine } =
-      await import("@/lib/voice/native-speech-engine");
+      await import("@/modules/voice/engines/native-speech-engine");
     const engine = new NativeSpeechEngine();
 
     const callbacks = {
@@ -143,7 +143,7 @@ describe("NativeSpeechEngine", () => {
 
   it("ignoriert Interim-Ergebnisse fuer onTranscript, nutzt sie fuer Audio-Level", async () => {
     const { NativeSpeechEngine } =
-      await import("@/lib/voice/native-speech-engine");
+      await import("@/modules/voice/engines/native-speech-engine");
     const engine = new NativeSpeechEngine();
 
     const callbacks = {
@@ -183,7 +183,7 @@ describe("NativeSpeechEngine", () => {
 
   it("uebersetzt not-allowed Fehler in deutsche Meldung", async () => {
     const { NativeSpeechEngine } =
-      await import("@/lib/voice/native-speech-engine");
+      await import("@/modules/voice/engines/native-speech-engine");
     const engine = new NativeSpeechEngine();
 
     const callbacks = {
@@ -206,7 +206,7 @@ describe("NativeSpeechEngine", () => {
 
   it("uebersetzt no-speech Fehler korrekt", async () => {
     const { NativeSpeechEngine } =
-      await import("@/lib/voice/native-speech-engine");
+      await import("@/modules/voice/engines/native-speech-engine");
     const engine = new NativeSpeechEngine();
 
     const callbacks = {
@@ -226,7 +226,7 @@ describe("NativeSpeechEngine", () => {
 
   it("uebersetzt audio-capture Fehler korrekt", async () => {
     const { NativeSpeechEngine } =
-      await import("@/lib/voice/native-speech-engine");
+      await import("@/modules/voice/engines/native-speech-engine");
     const engine = new NativeSpeechEngine();
 
     const callbacks = {
@@ -244,7 +244,7 @@ describe("NativeSpeechEngine", () => {
 
   it("uebersetzt network Fehler korrekt", async () => {
     const { NativeSpeechEngine } =
-      await import("@/lib/voice/native-speech-engine");
+      await import("@/modules/voice/engines/native-speech-engine");
     const engine = new NativeSpeechEngine();
 
     const callbacks = {
@@ -264,7 +264,7 @@ describe("NativeSpeechEngine", () => {
 
   it("ignoriert aborted-Fehler (manueller Stop)", async () => {
     const { NativeSpeechEngine } =
-      await import("@/lib/voice/native-speech-engine");
+      await import("@/modules/voice/engines/native-speech-engine");
     const engine = new NativeSpeechEngine();
 
     const callbacks = {
@@ -286,7 +286,7 @@ describe("NativeSpeechEngine", () => {
 
   it("stopListening() ruft recognition.stop() auf", async () => {
     const { NativeSpeechEngine } =
-      await import("@/lib/voice/native-speech-engine");
+      await import("@/modules/voice/engines/native-speech-engine");
     const engine = new NativeSpeechEngine();
 
     const callbacks = {
@@ -304,7 +304,7 @@ describe("NativeSpeechEngine", () => {
 
   it("cleanup() stoppt und raeumt Referenzen auf", async () => {
     const { NativeSpeechEngine } =
-      await import("@/lib/voice/native-speech-engine");
+      await import("@/modules/voice/engines/native-speech-engine");
     const engine = new NativeSpeechEngine();
 
     const callbacks = {
@@ -325,7 +325,7 @@ describe("NativeSpeechEngine", () => {
 
   it("onend setzt State auf idle und Audio-Level auf 0", async () => {
     const { NativeSpeechEngine } =
-      await import("@/lib/voice/native-speech-engine");
+      await import("@/modules/voice/engines/native-speech-engine");
     const engine = new NativeSpeechEngine();
 
     const callbacks = {
@@ -350,7 +350,7 @@ describe("NativeSpeechEngine", () => {
     delete (globalThis as any).SpeechRecognition;
 
     const { NativeSpeechEngine } =
-      await import("@/lib/voice/native-speech-engine");
+      await import("@/modules/voice/engines/native-speech-engine");
     const engine = new NativeSpeechEngine();
 
     const callbacks = {

@@ -13,7 +13,7 @@ import { uploadCategoryImage } from "@/lib/storage";
 import { createClient } from "@/lib/supabase/client";
 import { useAuth } from '@/hooks/use-auth';
 import { useQuarter } from "@/lib/quarters";
-import { MARKETPLACE_TYPES, MARKETPLACE_CATEGORIES } from "@/lib/constants";
+import { MARKETPLACE_TYPES, MARKETPLACE_CATEGORIES } from "@/modules/marketplace";
 import { GuidelinesGate } from "@/components/moderation/GuidelinesAcceptance";
 
 export default function MarketplaceNewPage() {

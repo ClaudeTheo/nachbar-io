@@ -107,26 +107,11 @@ export const HELP_EXPIRY_DAYS: Record<string, number> = {
   other: 3,
 };
 
-// Marktplatz-Typen
-export const MARKETPLACE_TYPES = [
-  { id: "sell", label: "Verkaufen", icon: "💰" },
-  { id: "give", label: "Verschenken", icon: "🎁" },
-  { id: "search", label: "Suchen", icon: "🔍" },
-  { id: "lend", label: "Verleihen", icon: "🔄" },
-] as const;
-
-// Marktplatz-Kategorien
-export const MARKETPLACE_CATEGORIES = [
-  { id: "furniture", label: "Möbel & Einrichtung" },
-  { id: "tools", label: "Werkzeug & Garten" },
-  { id: "kids", label: "Kinderartikel" },
-  { id: "books", label: "Bücher & Medien" },
-  { id: "electronics", label: "Elektronik" },
-  { id: "clothing", label: "Kleidung" },
-  { id: "plants", label: "Pflanzen" },
-  { id: "household", label: "Haushalt" },
-  { id: "other", label: "Sonstiges" },
-] as const;
+// Marktplatz-Konstanten werden jetzt aus dem Modul re-exportiert
+export {
+  MARKETPLACE_TYPES,
+  MARKETPLACE_CATEGORIES,
+} from "@/modules/marketplace/services/marketplace-constants";
 
 // Skill-Kategorien
 export const SKILL_CATEGORIES = [

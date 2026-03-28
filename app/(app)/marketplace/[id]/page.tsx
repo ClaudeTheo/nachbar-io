@@ -11,8 +11,8 @@ import { createClient } from "@/lib/supabase/client";
 import { useAuth } from '@/hooks/use-auth';
 import { createNotification } from "@/lib/notifications";
 import { useQuarter } from "@/lib/quarters";
-import { MARKETPLACE_TYPES, MARKETPLACE_CATEGORIES } from "@/lib/constants";
-import type { MarketplaceItem } from "@/lib/supabase/types";
+import { MARKETPLACE_TYPES, MARKETPLACE_CATEGORIES } from "@/modules/marketplace";
+import type { MarketplaceItem } from "@/modules/marketplace";
 import { formatDistanceToNow } from "date-fns";
 import { de } from "date-fns/locale";
 

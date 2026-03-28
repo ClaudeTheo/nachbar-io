@@ -268,7 +268,7 @@ export default function DashboardPage() {
   // Loading-Skeleton
   if (loading && (quarterLoading || currentQuarter)) {
     return (
-      <div className="space-y-6 animate-fade-in-up">
+      <div className="space-y-8 animate-fade-in-up">
         <div className="flex items-center justify-between">
           <div>
             <Skeleton className="h-8 w-48" />
@@ -314,7 +314,7 @@ export default function DashboardPage() {
   return (
     <>
       <PullToRefresh onRefresh={loadDashboard}>
-        <div className="space-y-6 animate-fade-in-up">
+        <div className="space-y-8 animate-fade-in-up">
           <LargeTitle title="Zuhause" />
 
           {/* NINA-Warnungen (vor Hero, nach Notfall-Banner) */}

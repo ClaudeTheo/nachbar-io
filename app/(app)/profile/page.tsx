@@ -204,7 +204,7 @@ export default function ProfilePage() {
 
   return (
     <div className="space-y-4">
-      <LargeTitle title="Profil" subtitle="Einstellungen und Übersicht" />
+      <LargeTitle title="Mein Profil" />
       <PageHeader title="" backHref="/dashboard" />
 
       {/* Profil-Card */}

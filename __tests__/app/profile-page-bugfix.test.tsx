@@ -280,7 +280,7 @@ describe("ProfilePage — Error-Handling Bugfixes", () => {
       expect(screen.getByText("Max Mustermann")).toBeDefined();
     });
     expect(screen.getByText("Sanarystraße 5")).toBeDefined();
-    expect(screen.getByText("Mein Profil")).toBeDefined();
+    expect(screen.getAllByText("Mein Profil").length).toBeGreaterThan(0);
   });
 
   // =========================================================================
@@ -300,7 +300,7 @@ describe("ProfilePage — Error-Handling Bugfixes", () => {
     await waitFor(() => {
       expect(screen.getByText("Max Mustermann")).toBeDefined();
     });
-    expect(screen.getByText("Mein Profil")).toBeDefined();
+    expect(screen.getAllByText("Mein Profil").length).toBeGreaterThan(0);
 
     // Keine Adresse sichtbar (Haushalt konnte nicht geladen werden)
     expect(screen.queryByText(/Sanarystraße/)).toBeNull();

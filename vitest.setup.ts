@@ -5,8 +5,26 @@ import "@testing-library/jest-dom/vitest";
 import { vi } from "vitest";
 import React from "react";
 
+// IntersectionObserver Mock (fuer LargeTitle und andere Observer-Components)
+class MockIntersectionObserver {
+  readonly root: Element | null = null;
+  readonly rootMargin: string = "";
+  readonly thresholds: ReadonlyArray<number> = [];
+  observe = vi.fn();
+  unobserve = vi.fn();
+  disconnect = vi.fn();
+  takeRecords = vi.fn().mockReturnValue([]);
+  constructor(
+    _callback: IntersectionObserverCallback,
+    _options?: IntersectionObserverInit,
+  ) {}
+}
+globalThis.IntersectionObserver =
+  MockIntersectionObserver as unknown as typeof IntersectionObserver;
+
 // Test-Encryption-Key fuer care/crypto Tests (32 Bytes = 64 Hex-Zeichen)
-process.env.CARE_ENCRYPTION_KEY = process.env.CARE_ENCRYPTION_KEY || "0".repeat(64);
+process.env.CARE_ENCRYPTION_KEY =
+  process.env.CARE_ENCRYPTION_KEY || "0".repeat(64);
 
 // Next.js Navigation Mocks
 vi.mock("next/navigation", () => ({
@@ -24,8 +42,15 @@ vi.mock("next/navigation", () => ({
 
 // Next.js Link als einfaches <a> rendern
 vi.mock("next/link", () => ({
-  default: ({ children, href, ...props }: { children: React.ReactNode; href: string; [key: string]: unknown }) =>
-    React.createElement("a", { href, ...props }, children),
+  default: ({
+    children,
+    href,
+    ...props
+  }: {
+    children: React.ReactNode;
+    href: string;
+    [key: string]: unknown;
+  }) => React.createElement("a", { href, ...props }, children),
 }));
 
 // Next.js Image als <img> rendern

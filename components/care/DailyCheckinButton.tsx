@@ -4,7 +4,7 @@
 
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Check } from "lucide-react";
 
 // Check-in-Status-Antwort vom Server
@@ -35,6 +35,29 @@ export function DailyCheckinButton() {
   const [totalCount, setTotalCount] = useState(0);
   const [checkinEnabled, setCheckinEnabled] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [dismissed, setDismissed] = useState(false);
+  const doneRef = useRef<HTMLDivElement>(null);
+
+  // Auto-Dismiss: animationend Listener (native DOM fuer bessere Kompatibilitaet)
+  useEffect(() => {
+    if (phase !== "done" || dismissed) return;
+    const el = doneRef.current;
+    if (!el) return;
+    const handler = () => setDismissed(true);
+    el.addEventListener("animationend", handler);
+    return () => el.removeEventListener("animationend", handler);
+  }, [phase, dismissed]);
+
+  // Auto-Dismiss: Timer-Fallback fuer prefers-reduced-motion
+  useEffect(() => {
+    if (phase !== "done" || dismissed) return;
+    const prefersReducedMotion =
+      typeof window !== "undefined" &&
+      window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+    if (!prefersReducedMotion) return;
+    const timer = setTimeout(() => setDismissed(true), 3400);
+    return () => clearTimeout(timer);
+  }, [phase, dismissed]);
 
   // Status vom Server laden
   const loadStatus = useCallback(async () => {
@@ -115,11 +138,15 @@ export function DailyCheckinButton() {
 
   // Zustand: Alle Check-ins erledigt
   if (phase === "done") {
+    if (dismissed) return null;
+
     return (
       <div
-        className="flex items-center gap-3 rounded-xl border-2 border-[#4CAF87]/30 bg-[#4CAF87]/10 px-4 py-3"
+        ref={doneRef}
+        className="flex items-center gap-3 rounded-xl border-2 border-[#4CAF87]/30 bg-[#4CAF87]/10 px-4 py-3 animate-auto-dismiss"
         data-testid="checkin-done"
         role="status"
+        aria-live="polite"
       >
         <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#4CAF87] text-white">
           <Check className="h-5 w-5" aria-hidden="true" />

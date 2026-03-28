@@ -3,21 +3,25 @@
 // Verifiziert dass checkUserRelationship() fremde Nutzer blockiert (403)
 // Testet alle 4 Bedingungen: Admin, Haushalt, Caregiver-Link, gleiches Quartier
 
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { NextRequest } from 'next/server';
-import { createRouteMockSupabase } from '@/lib/care/__tests__/mock-supabase';
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { NextRequest } from "next/server";
+import { createRouteMockSupabase } from "@/lib/care/__tests__/mock-supabase";
 
 // --- Mocks ---
 
 const mockSupabase = createRouteMockSupabase();
 
-vi.mock('@/lib/supabase/server', () => ({
-  createClient: vi.fn().mockImplementation(() => Promise.resolve(mockSupabase.supabase)),
+vi.mock("@/lib/supabase/server", () => ({
+  createClient: vi
+    .fn()
+    .mockImplementation(() => Promise.resolve(mockSupabase.supabase)),
 }));
 
 // Service-Client Mock (für INSERT nach Beziehungscheck)
-const mockServiceInsert = vi.fn().mockResolvedValue({ data: null, error: null });
-vi.mock('@supabase/supabase-js', () => ({
+const mockServiceInsert = vi
+  .fn()
+  .mockResolvedValue({ data: null, error: null });
+vi.mock("@supabase/supabase-js", () => ({
   createClient: vi.fn(() => ({
     from: vi.fn(() => ({
       insert: mockServiceInsert,
@@ -25,21 +29,31 @@ vi.mock('@supabase/supabase-js', () => ({
   })),
 }));
 
-vi.mock('@/lib/notifications-server', () => ({
-  safeInsertNotification: vi.fn().mockResolvedValue({ success: true, usedFallback: false }),
+vi.mock("@/lib/notifications-server", () => ({
+  safeInsertNotification: vi
+    .fn()
+    .mockResolvedValue({ success: true, usedFallback: false }),
 }));
 
-import { POST } from './route';
+// Global fetch mock — die Route ruft intern fetch() fuer Push-Notifications auf
+const originalFetch = global.fetch;
+const mockFetch = vi
+  .fn()
+  .mockResolvedValue(
+    new Response(JSON.stringify({ ok: true }), { status: 200 }),
+  );
+
+import { POST } from "./route";
 
 // --- Helpers ---
 
-const SENDER = { id: 'user-quarter-a', email: 'sender@test.de' };
-const RECIPIENT_FOREIGN = 'user-quarter-b'; // Quartiersfremder Empfänger
+const SENDER = { id: "user-quarter-a", email: "sender@test.de" };
+const RECIPIENT_FOREIGN = "user-quarter-b"; // Quartiersfremder Empfänger
 
 function createPostRequest(body: Record<string, unknown>): NextRequest {
-  return new NextRequest('http://localhost:3000/api/notifications/create', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+  return new NextRequest("http://localhost:3000/api/notifications/create", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify(body),
   });
 }
@@ -47,24 +61,29 @@ function createPostRequest(body: Record<string, unknown>): NextRequest {
 function validNotificationBody(overrides: Record<string, unknown> = {}) {
   return {
     userId: RECIPIENT_FOREIGN,
-    type: 'message',
-    title: 'Testnachricht',
-    body: 'Inhalt',
+    type: "message",
+    title: "Testnachricht",
+    body: "Inhalt",
     ...overrides,
   };
 }
 
 // --- H1: Negativtest — Quartiersfremder Empfänger wird blockiert ---
 
-describe('POST /api/notifications/create — H1 Beziehungscheck', () => {
+describe("POST /api/notifications/create — H1 Beziehungscheck", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockSupabase.reset();
     mockSupabase.setUser(SENDER);
+    global.fetch = mockFetch as unknown as typeof fetch;
   });
 
-  describe('Authentifizierung', () => {
-    it('gibt 401 zurück ohne authentifizierten User', async () => {
+  afterEach(() => {
+    global.fetch = originalFetch;
+  });
+
+  describe("Authentifizierung", () => {
+    it("gibt 401 zurück ohne authentifizierten User", async () => {
       mockSupabase.setUser(null);
 
       const response = await POST(createPostRequest(validNotificationBody()));
@@ -72,24 +91,29 @@ describe('POST /api/notifications/create — H1 Beziehungscheck', () => {
     });
   });
 
-  describe('Validierung', () => {
-    it('gibt 400 zurück ohne Pflichtfelder', async () => {
+  describe("Validierung", () => {
+    it("gibt 400 zurück ohne Pflichtfelder", async () => {
       const response = await POST(createPostRequest({}));
       expect(response.status).toBe(400);
     });
 
-    it('gibt 400 zurück bei ungültigem JSON', async () => {
-      const request = new NextRequest('http://localhost:3000/api/notifications/create', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: 'KEIN JSON',
-      });
+    it("gibt 400 zurück bei ungültigem JSON", async () => {
+      const request = new NextRequest(
+        "http://localhost:3000/api/notifications/create",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: "KEIN JSON",
+        },
+      );
       const response = await POST(request);
       expect(response.status).toBe(400);
     });
 
-    it('überspringt Self-Notify (gibt ok+skipped zurück)', async () => {
-      const response = await POST(createPostRequest(validNotificationBody({ userId: SENDER.id })));
+    it("überspringt Self-Notify (gibt ok+skipped zurück)", async () => {
+      const response = await POST(
+        createPostRequest(validNotificationBody({ userId: SENDER.id })),
+      );
       expect(response.status).toBe(200);
 
       const body = await response.json();
@@ -97,44 +121,44 @@ describe('POST /api/notifications/create — H1 Beziehungscheck', () => {
     });
   });
 
-  describe('H1 NEGATIVTEST — Quartiersfremder Empfänger', () => {
+  describe("H1 NEGATIVTEST — Quartiersfremder Empfänger", () => {
     /**
      * Kerntest: User A (Quartier X) sendet an User B (Quartier Y)
      * Keine Beziehung: kein Admin, kein Haushalt, kein Caregiver-Link, anderes Quartier
      * Erwartung: 403 Forbidden
      */
-    it('blockiert Notification an quartiersfremden User mit 403', async () => {
+    it("blockiert Notification an quartiersfremden User mit 403", async () => {
       // 1. Sender ist KEIN Admin
-      mockSupabase.addResponse('users', {
-        data: { is_admin: false, role: 'resident' },
+      mockSupabase.addResponse("users", {
+        data: { is_admin: false, role: "resident" },
         error: null,
       });
 
       // 2. Sender hat Haushalte — aber Empfänger ist NICHT drin
-      mockSupabase.addResponse('household_members', {
-        data: [{ household_id: 'household-quarter-a' }],
+      mockSupabase.addResponse("household_members", {
+        data: [{ household_id: "household-quarter-a" }],
         error: null,
       });
-      mockSupabase.addResponse('household_members', {
+      mockSupabase.addResponse("household_members", {
         data: [], // Empfänger NICHT im gleichen Haushalt
         error: null,
       });
 
       // 3. Kein Caregiver-Link
-      mockSupabase.addResponse('caregiver_links', {
+      mockSupabase.addResponse("caregiver_links", {
         data: [],
         error: null,
       });
 
       // 4. Sender hat Quartier A
-      mockSupabase.addResponse('household_members', {
-        data: { households: { quarter_id: 'quarter-a' } },
+      mockSupabase.addResponse("household_members", {
+        data: { households: { quarter_id: "quarter-a" } },
         error: null,
       });
 
       // 5. Empfänger hat Quartier B (ANDERES Quartier)
-      mockSupabase.addResponse('household_members', {
-        data: { households: { quarter_id: 'quarter-b' } },
+      mockSupabase.addResponse("household_members", {
+        data: { households: { quarter_id: "quarter-b" } },
         error: null,
       });
 
@@ -142,30 +166,30 @@ describe('POST /api/notifications/create — H1 Beziehungscheck', () => {
       expect(response.status).toBe(403);
 
       const body = await response.json();
-      expect(body.error).toContain('Keine Berechtigung');
+      expect(body.error).toContain("Keine Berechtigung");
     });
 
-    it('blockiert Notification wenn Sender keinem Haushalt angehört', async () => {
+    it("blockiert Notification wenn Sender keinem Haushalt angehört", async () => {
       // 1. Kein Admin
-      mockSupabase.addResponse('users', {
-        data: { is_admin: false, role: 'resident' },
+      mockSupabase.addResponse("users", {
+        data: { is_admin: false, role: "resident" },
         error: null,
       });
 
       // 2. Sender hat KEINE Haushalte
-      mockSupabase.addResponse('household_members', {
+      mockSupabase.addResponse("household_members", {
         data: [],
         error: null,
       });
 
       // 3. Kein Caregiver-Link
-      mockSupabase.addResponse('caregiver_links', {
+      mockSupabase.addResponse("caregiver_links", {
         data: [],
         error: null,
       });
 
       // 4. Sender-Quartier Query gibt null (kein Haushalt)
-      mockSupabase.addResponse('household_members', {
+      mockSupabase.addResponse("household_members", {
         data: null,
         error: null,
       });
@@ -175,11 +199,11 @@ describe('POST /api/notifications/create — H1 Beziehungscheck', () => {
     });
   });
 
-  describe('Positiv-Gegenproben (erlaubte Beziehungen)', () => {
-    it('erlaubt Notification wenn Sender Admin ist', async () => {
+  describe("Positiv-Gegenproben (erlaubte Beziehungen)", () => {
+    it("erlaubt Notification wenn Sender Admin ist", async () => {
       // Admin darf an alle senden
-      mockSupabase.addResponse('users', {
-        data: { is_admin: true, role: 'admin' },
+      mockSupabase.addResponse("users", {
+        data: { is_admin: true, role: "admin" },
         error: null,
       });
 
@@ -187,9 +211,9 @@ describe('POST /api/notifications/create — H1 Beziehungscheck', () => {
       expect(response.status).toBe(200);
     });
 
-    it('erlaubt Notification wenn Sender super_admin ist', async () => {
-      mockSupabase.addResponse('users', {
-        data: { is_admin: false, role: 'super_admin' },
+    it("erlaubt Notification wenn Sender super_admin ist", async () => {
+      mockSupabase.addResponse("users", {
+        data: { is_admin: false, role: "super_admin" },
         error: null,
       });
 
@@ -197,22 +221,22 @@ describe('POST /api/notifications/create — H1 Beziehungscheck', () => {
       expect(response.status).toBe(200);
     });
 
-    it('erlaubt Notification bei gleichem Haushalt', async () => {
+    it("erlaubt Notification bei gleichem Haushalt", async () => {
       // 1. Kein Admin
-      mockSupabase.addResponse('users', {
-        data: { is_admin: false, role: 'resident' },
+      mockSupabase.addResponse("users", {
+        data: { is_admin: false, role: "resident" },
         error: null,
       });
 
       // 2. Sender hat Haushalt
-      mockSupabase.addResponse('household_members', {
-        data: [{ household_id: 'shared-household' }],
+      mockSupabase.addResponse("household_members", {
+        data: [{ household_id: "shared-household" }],
         error: null,
       });
 
       // 3. Empfänger IST im gleichen Haushalt
-      mockSupabase.addResponse('household_members', {
-        data: [{ id: 'match' }],
+      mockSupabase.addResponse("household_members", {
+        data: [{ id: "match" }],
         error: null,
       });
 
@@ -220,26 +244,26 @@ describe('POST /api/notifications/create — H1 Beziehungscheck', () => {
       expect(response.status).toBe(200);
     });
 
-    it('erlaubt Notification bei Caregiver-Link', async () => {
+    it("erlaubt Notification bei Caregiver-Link", async () => {
       // 1. Kein Admin
-      mockSupabase.addResponse('users', {
-        data: { is_admin: false, role: 'resident' },
+      mockSupabase.addResponse("users", {
+        data: { is_admin: false, role: "resident" },
         error: null,
       });
 
       // 2. Kein gemeinsamer Haushalt
-      mockSupabase.addResponse('household_members', {
-        data: [{ household_id: 'household-a' }],
+      mockSupabase.addResponse("household_members", {
+        data: [{ household_id: "household-a" }],
         error: null,
       });
-      mockSupabase.addResponse('household_members', {
+      mockSupabase.addResponse("household_members", {
         data: [],
         error: null,
       });
 
       // 3. Caregiver-Link existiert
-      mockSupabase.addResponse('caregiver_links', {
-        data: [{ id: 'link-1' }],
+      mockSupabase.addResponse("caregiver_links", {
+        data: [{ id: "link-1" }],
         error: null,
       });
 
@@ -247,38 +271,38 @@ describe('POST /api/notifications/create — H1 Beziehungscheck', () => {
       expect(response.status).toBe(200);
     });
 
-    it('erlaubt Notification bei gleichem Quartier', async () => {
+    it("erlaubt Notification bei gleichem Quartier", async () => {
       // 1. Kein Admin
-      mockSupabase.addResponse('users', {
-        data: { is_admin: false, role: 'resident' },
+      mockSupabase.addResponse("users", {
+        data: { is_admin: false, role: "resident" },
         error: null,
       });
 
       // 2. Kein gemeinsamer Haushalt
-      mockSupabase.addResponse('household_members', {
-        data: [{ household_id: 'household-a' }],
+      mockSupabase.addResponse("household_members", {
+        data: [{ household_id: "household-a" }],
         error: null,
       });
-      mockSupabase.addResponse('household_members', {
+      mockSupabase.addResponse("household_members", {
         data: [],
         error: null,
       });
 
       // 3. Kein Caregiver-Link
-      mockSupabase.addResponse('caregiver_links', {
+      mockSupabase.addResponse("caregiver_links", {
         data: [],
         error: null,
       });
 
       // 4. Sender Quartier A
-      mockSupabase.addResponse('household_members', {
-        data: { households: { quarter_id: 'quarter-same' } },
+      mockSupabase.addResponse("household_members", {
+        data: { households: { quarter_id: "quarter-same" } },
         error: null,
       });
 
       // 5. Empfänger AUCH Quartier A (GLEICHES Quartier)
-      mockSupabase.addResponse('household_members', {
-        data: { households: { quarter_id: 'quarter-same' } },
+      mockSupabase.addResponse("household_members", {
+        data: { households: { quarter_id: "quarter-same" } },
         error: null,
       });
 

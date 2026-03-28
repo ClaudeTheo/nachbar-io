@@ -1,4 +1,5 @@
 import { BottomNav } from "@/components/BottomNav";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { HeartbeatProvider } from "@/components/HeartbeatProvider";
 import { InstallPrompt } from "@/components/InstallPrompt";
 import { PageTransition } from "@/components/PageTransition";
@@ -13,11 +14,7 @@ import { GlobalCallListener } from "@/components/video/GlobalCallListener";
 import { PresenceHeartbeat } from "@/components/video/PresenceHeartbeat";
 
 // Layout fuer den aktiven Modus — mit Bottom-Navigation + Bug-Report
-export default function AppLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function AppLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="min-h-screen bg-warmwhite pb-20">
       {/* Skip-Navigation fuer Tastaturnutzer */}
@@ -33,24 +30,30 @@ export default function AppLayout({
       </div>
       {/* Quartier-Kontext + Hauptinhalt */}
       <AuthProvider>
-      <AuthSessionProvider>
-      <QuarterProvider>
-        <ExternalLinkProvider>
-          <HeartbeatProvider>
-            <GlobalCallListener />
-            <PresenceHeartbeat />
-            <main id="main-content" className="mx-auto max-w-lg px-4 pt-4">
-              <PageTransition>{children}</PageTransition>
-            </main>
-          </HeartbeatProvider>
-          <BugReportButton />
-          <VoiceAssistantFAB />
-        </ExternalLinkProvider>
-      </QuarterProvider>
-      </AuthSessionProvider>
+        <AuthSessionProvider>
+          <QuarterProvider>
+            <ExternalLinkProvider>
+              <HeartbeatProvider>
+                <GlobalCallListener />
+                <PresenceHeartbeat />
+                <main id="main-content" className="mx-auto max-w-lg px-4 pt-4">
+                  <ErrorBoundary>
+                    <PageTransition>{children}</PageTransition>
+                  </ErrorBoundary>
+                </main>
+              </HeartbeatProvider>
+              <BugReportButton />
+              <VoiceAssistantFAB />
+            </ExternalLinkProvider>
+          </QuarterProvider>
+        </AuthSessionProvider>
       </AuthProvider>
       <span className="fixed bottom-[68px] left-2 text-[10px] text-muted-foreground/40 z-10">
-        V{(process.env.NEXT_PUBLIC_APP_VERSION || '1.0.0').split('.').slice(0, 2).join('.')}
+        V
+        {(process.env.NEXT_PUBLIC_APP_VERSION || "1.0.0")
+          .split(".")
+          .slice(0, 2)
+          .join(".")}
       </span>
       <BottomNav />
       <InstallPrompt />

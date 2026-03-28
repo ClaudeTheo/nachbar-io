@@ -90,11 +90,11 @@ export default function MarketplacePage() {
 
       {/* Inserate */}
       {loading ? (
-        <div className="mt-4 space-y-3">
+        <div className="mt-4 divide-y divide-[#ebe5dd]">
           {[1, 2, 3].map((i) => (
             <div
               key={i}
-              className="rounded-lg border border-border bg-white p-4"
+              className="px-4 py-4"
             >
               <div className="flex gap-3">
                 <div className="h-20 w-20 shrink-0 animate-pulse rounded-lg bg-muted" />
@@ -121,7 +121,7 @@ export default function MarketplacePage() {
           </Link>
         </div>
       ) : (
-        <div className="space-y-3">
+        <div className="divide-y divide-[#ebe5dd]">
           {items.map((item) => (
             <MarketplaceCard key={item.id} item={item} />
           ))}
@@ -142,7 +142,7 @@ function MarketplaceCard({ item }: { item: MarketplaceItem }) {
   return (
     <Link
       href={`/marketplace/${item.id}`}
-      className="card-interactive block rounded-lg border border-border bg-white p-4 shadow-soft"
+      className="block px-4 py-4 transition-colors active:bg-[#f5f0eb]"
     >
       <div className="flex gap-3">
         {/* Bild-Platzhalter */}

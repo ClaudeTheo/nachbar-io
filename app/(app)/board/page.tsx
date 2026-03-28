@@ -272,11 +272,11 @@ export default function BoardPage() {
 
         {/* Beiträge */}
         {posts.length > 0 ? (
-          <div className="space-y-3">
+          <div className="divide-y divide-[#ebe5dd]">
             {posts.map((post) => (
               <div
                 key={post.id}
-                className="rounded-lg border border-border bg-white p-4"
+                className="px-4 py-4"
               >
                 <div className="flex items-start gap-3">
                   <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-purple-100 text-sm font-bold text-purple-700">

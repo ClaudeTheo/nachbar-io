@@ -1,8 +1,8 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { render, screen, waitFor, cleanup } from "@testing-library/react";
-import { KpiMetricCard } from "@/components/admin/KpiMetricCard";
-import { KpiTrendChart } from "@/components/admin/KpiTrendChart";
-import { KpiDashboard } from "@/components/admin/KpiDashboard";
+import { KpiMetricCard } from "@/modules/admin/components/KpiMetricCard";
+import { KpiTrendChart } from "@/modules/admin/components/KpiTrendChart";
+import { KpiDashboard } from "@/modules/admin/components/KpiDashboard";
 
 afterEach(cleanup);
 

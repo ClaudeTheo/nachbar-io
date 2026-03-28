@@ -47,7 +47,7 @@ import { SuperAdminOverview } from "./components/SuperAdminOverview";
 import { QuarterWizard } from "./components/QuarterWizard";
 import { FeatureFlagManager } from "./components/FeatureFlagManager";
 import { BugReports } from "./components/BugReports";
-import { KpiDashboard } from "@/components/admin/KpiDashboard";
+import { KpiDashboard } from "@/modules/admin/components/KpiDashboard";
 import { useUserRole } from "@/lib/quarters";
 
 // ============================================================

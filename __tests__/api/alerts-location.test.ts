@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { validateLocationData } from "@/lib/alerts/validate-location";
+import { validateLocationData } from "@/modules/alerts/services/validate-location";
 
 describe("validateLocationData", () => {
   it("akzeptiert gültige GPS-Daten", () => {

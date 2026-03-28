@@ -1,5 +1,8 @@
 import { describe, it, expect } from "vitest";
-import { getLocationForRole, roundCoordinates } from "@/lib/alerts/location-visibility";
+import {
+  getLocationForRole,
+  roundCoordinates,
+} from "@/modules/alerts/services/location-visibility";
 
 describe("roundCoordinates", () => {
   it("rundet auf ~50m Ungenauigkeit (3 Dezimalstellen)", () => {
@@ -23,7 +26,12 @@ describe("getLocationForRole", () => {
 
   it("Plus-Angehöriger: bekommt exakte Position", () => {
     const result = getLocationForRole(alertWithGps, "plus_family", false);
-    expect(result).toEqual({ lat: 47.5535, lng: 7.964, exact: true, source: "gps" });
+    expect(result).toEqual({
+      lat: 47.5535,
+      lng: 7.964,
+      exact: true,
+      source: "gps",
+    });
   });
 
   it("Pro ohne Helfer-Bestätigung: bekommt gerundete Position", () => {
@@ -49,7 +57,11 @@ describe("getLocationForRole", () => {
   });
 
   it("Alert ohne GPS: gibt null zurück", () => {
-    const noGps = { location_lat: null, location_lng: null, location_source: "none" as const };
+    const noGps = {
+      location_lat: null,
+      location_lng: null,
+      location_source: "none" as const,
+    };
     const result = getLocationForRole(noGps, "plus_family", false);
     expect(result).toBeNull();
   });

@@ -10,7 +10,7 @@ import { useAuth } from "@/hooks/use-auth";
 import type { Alert } from "@/lib/supabase/types";
 
 const FamilyAlertMap = dynamic(
-  () => import("@/components/alerts/FamilyAlertMap"),
+  () => import("@/modules/alerts/components/FamilyAlertMap"),
   {
     ssr: false,
     loading: () => <div className="h-64 animate-pulse rounded-xl bg-muted" />,

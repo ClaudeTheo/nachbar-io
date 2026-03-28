@@ -18,8 +18,8 @@ import { createAlert, getMembership, getHousehold } from "@/lib/services";
 import { useAuth } from "@/hooks/use-auth";
 import { useQuarter } from "@/lib/quarters";
 import { useGeolocation } from "@/hooks/useGeolocation";
-import { LocationConsentDialog } from "@/components/alerts/LocationConsentDialog";
-import { AlertLocationCheckbox } from "@/components/alerts/AlertLocationCheckbox";
+import { LocationConsentDialog } from "@/modules/alerts/components/LocationConsentDialog";
+import { AlertLocationCheckbox } from "@/modules/alerts/components/AlertLocationCheckbox";
 import { GuidelinesGate } from "@/components/moderation/GuidelinesAcceptance";
 
 type Step = "category" | "emergency" | "description" | "sent";

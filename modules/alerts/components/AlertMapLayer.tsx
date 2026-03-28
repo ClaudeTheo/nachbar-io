@@ -38,7 +38,10 @@ export function AlertMapLayer({ alerts, onHelp }: AlertMapLayerProps) {
 
         if (alert.location.exact) {
           return (
-            <Marker key={alert.id} position={[alert.location.lat, alert.location.lng]}>
+            <Marker
+              key={alert.id}
+              position={[alert.location.lat, alert.location.lng]}
+            >
               <Popup>
                 <div className="text-sm">
                   <p className="font-semibold">{alert.title}</p>
@@ -71,7 +74,9 @@ export function AlertMapLayer({ alerts, onHelp }: AlertMapLayerProps) {
             <Popup>
               <div className="text-sm">
                 <p className="font-semibold">{alert.title}</p>
-                <p className="text-xs text-gray-500">Ungefährer Bereich (~50m)</p>
+                <p className="text-xs text-gray-500">
+                  Ungefährer Bereich (~50m)
+                </p>
                 {alert.status === "open" && onHelp && (
                   <button
                     onClick={() => onHelp(alert.id)}

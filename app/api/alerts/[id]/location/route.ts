@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import { getLocationForRole } from "@/lib/alerts/location-visibility";
+import { getLocationForRole } from "@/modules/alerts/services/location-visibility";
 
 export async function GET(
   _request: NextRequest,
@@ -9,9 +9,14 @@ export async function GET(
   const { id } = await params;
   const supabase = await createClient();
 
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
   if (!user) {
-    return NextResponse.json({ error: "Nicht authentifiziert" }, { status: 401 });
+    return NextResponse.json(
+      { error: "Nicht authentifiziert" },
+      { status: 401 },
+    );
   }
 
   const { data: alert, error } = await supabase
@@ -21,7 +26,10 @@ export async function GET(
     .single();
 
   if (error || !alert) {
-    return NextResponse.json({ error: "Alert nicht gefunden" }, { status: 404 });
+    return NextResponse.json(
+      { error: "Alert nicht gefunden" },
+      { status: 404 },
+    );
   }
 
   // 1. Plus-Angehöriger?

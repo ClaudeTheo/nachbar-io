@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, afterEach } from "vitest";
 import { render, screen, fireEvent, cleanup } from "@testing-library/react";
-import { AlertLocationCheckbox } from "@/components/alerts/AlertLocationCheckbox";
+import { AlertLocationCheckbox } from "@/modules/alerts/components/AlertLocationCheckbox";
 
 afterEach(() => {
   cleanup();
@@ -26,7 +26,13 @@ describe("AlertLocationCheckbox", () => {
   });
 
   it("zeigt GPS-Loading-Indikator", () => {
-    render(<AlertLocationCheckbox checked={true} onChange={vi.fn()} gpsLoading={true} />);
+    render(
+      <AlertLocationCheckbox
+        checked={true}
+        onChange={vi.fn()}
+        gpsLoading={true}
+      />,
+    );
     expect(screen.getByText(/Standort wird ermittelt/)).toBeTruthy();
   });
 });

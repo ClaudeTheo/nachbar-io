@@ -8,9 +8,16 @@ interface AlertLocationCheckboxProps {
   gpsLoading?: boolean;
 }
 
-export function AlertLocationCheckbox({ checked, onChange, gpsLoading }: AlertLocationCheckboxProps) {
+export function AlertLocationCheckbox({
+  checked,
+  onChange,
+  gpsLoading,
+}: AlertLocationCheckboxProps) {
   return (
-    <label className="flex items-center gap-2 cursor-pointer" htmlFor="share-location">
+    <label
+      className="flex items-center gap-2 cursor-pointer"
+      htmlFor="share-location"
+    >
       <input
         id="share-location"
         type="checkbox"
@@ -26,9 +33,7 @@ export function AlertLocationCheckbox({ checked, onChange, gpsLoading }: AlertLo
           Standort wird ermittelt...
         </span>
       ) : (
-        <span className="text-sm text-muted-foreground">
-          Standort teilen
-        </span>
+        <span className="text-sm text-muted-foreground">Standort teilen</span>
       )}
     </label>
   );

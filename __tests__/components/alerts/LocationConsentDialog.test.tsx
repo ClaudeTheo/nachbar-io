@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, afterEach } from "vitest";
 import { render, screen, fireEvent, cleanup } from "@testing-library/react";
-import { LocationConsentDialog } from "@/components/alerts/LocationConsentDialog";
+import { LocationConsentDialog } from "@/modules/alerts/components/LocationConsentDialog";
 
 afterEach(() => {
   cleanup();

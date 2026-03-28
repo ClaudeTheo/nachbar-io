@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { getUserQuarterId } from "@/lib/quarters/helpers";
-import { validateLocationData } from "@/lib/alerts/validate-location";
+import { validateLocationData } from "@/modules/alerts/services/validate-location";
 
 // GET /api/alerts — Alle aktiven Alerts abrufen (authentifiziert)
 export async function GET() {
@@ -13,20 +13,26 @@ export async function GET() {
   } = await supabase.auth.getUser();
 
   if (!user) {
-    return NextResponse.json({ error: "Nicht authentifiziert" }, { status: 401 });
+    return NextResponse.json(
+      { error: "Nicht authentifiziert" },
+      { status: 401 },
+    );
   }
 
   const { data, error } = await supabase
     .from("alerts")
     .select(
-      "*, user:users(display_name, avatar_url), household:households(street_name, house_number, lat, lng), responses:alert_responses(*, responder:users(display_name, avatar_url))"
+      "*, user:users(display_name, avatar_url), household:households(street_name, house_number, lat, lng), responses:alert_responses(*, responder:users(display_name, avatar_url))",
     )
     .in("status", ["open", "help_coming"])
     .order("created_at", { ascending: false });
 
   if (error) {
     console.error("Alerts-Abfrage fehlgeschlagen:", error);
-    return NextResponse.json({ error: "Alerts konnten nicht geladen werden" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Alerts konnten nicht geladen werden" },
+      { status: 500 },
+    );
   }
 
   return NextResponse.json(data);
@@ -41,32 +47,69 @@ export async function POST(request: NextRequest) {
   } = await supabase.auth.getUser();
 
   if (!user) {
-    return NextResponse.json({ error: "Nicht authentifiziert" }, { status: 401 });
+    return NextResponse.json(
+      { error: "Nicht authentifiziert" },
+      { status: 401 },
+    );
   }
 
   let body;
   try {
     body = await request.json();
   } catch {
-    return NextResponse.json({ error: "Ungültiges Anfrage-Format" }, { status: 400 });
+    return NextResponse.json(
+      { error: "Ungültiges Anfrage-Format" },
+      { status: 400 },
+    );
   }
-  const { category, title, description, household_id, is_emergency, location_lat, location_lng, location_source } = body;
+  const {
+    category,
+    title,
+    description,
+    household_id,
+    is_emergency,
+    location_lat,
+    location_lng,
+    location_source,
+  } = body;
 
   // Input-Validierung
-  const VALID_CATEGORIES = ["noise", "package", "security", "fire", "health_concern", "medical", "crime", "other"];
+  const VALID_CATEGORIES = [
+    "noise",
+    "package",
+    "security",
+    "fire",
+    "health_concern",
+    "medical",
+    "crime",
+    "other",
+  ];
   if (!category || !VALID_CATEGORIES.includes(category)) {
     return NextResponse.json({ error: "Ungültige Kategorie" }, { status: 400 });
   }
   if (!title || title.length < 3 || title.length > 200) {
-    return NextResponse.json({ error: "Titel muss 3-200 Zeichen lang sein" }, { status: 400 });
+    return NextResponse.json(
+      { error: "Titel muss 3-200 Zeichen lang sein" },
+      { status: 400 },
+    );
   }
   // SICHERHEIT (H8): Beschreibung begrenzen
-  if (description && (typeof description !== "string" || description.length > 2000)) {
-    return NextResponse.json({ error: "Beschreibung darf maximal 2000 Zeichen lang sein" }, { status: 400 });
+  if (
+    description &&
+    (typeof description !== "string" || description.length > 2000)
+  ) {
+    return NextResponse.json(
+      { error: "Beschreibung darf maximal 2000 Zeichen lang sein" },
+      { status: 400 },
+    );
   }
 
   // GPS-Validierung
-  const locValidation = validateLocationData(location_lat, location_lng, location_source);
+  const locValidation = validateLocationData(
+    location_lat,
+    location_lng,
+    location_source,
+  );
   if (!locValidation.valid) {
     return NextResponse.json({ error: locValidation.error }, { status: 400 });
   }
@@ -80,7 +123,10 @@ export async function POST(request: NextRequest) {
       .eq("household_id", household_id)
       .maybeSingle();
     if (!membership) {
-      return NextResponse.json({ error: "Sie gehören nicht zu diesem Haushalt" }, { status: 403 });
+      return NextResponse.json(
+        { error: "Sie gehören nicht zu diesem Haushalt" },
+        { status: 403 },
+      );
     }
   }
 
@@ -96,8 +142,10 @@ export async function POST(request: NextRequest) {
       category,
       title,
       description: description || null,
-      location_lat: location_source && location_source !== "none" ? location_lat : null,
-      location_lng: location_source && location_source !== "none" ? location_lng : null,
+      location_lat:
+        location_source && location_source !== "none" ? location_lat : null,
+      location_lng:
+        location_source && location_source !== "none" ? location_lng : null,
       location_source: location_source || "none",
       status: "open",
       is_emergency: is_emergency || false,
@@ -109,12 +157,18 @@ export async function POST(request: NextRequest) {
 
   if (error) {
     console.error("Alert-Erstellung fehlgeschlagen:", error);
-    return NextResponse.json({ error: "Alert konnte nicht erstellt werden" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Alert konnte nicht erstellt werden" },
+      { status: 500 },
+    );
   }
 
   // Push-Notifications an Quartiersmitglieder senden (interner Aufruf)
   try {
-    const baseUrl = request.nextUrl.origin || process.env.NEXT_PUBLIC_SITE_URL || "https://quartierapp.de";
+    const baseUrl =
+      request.nextUrl.origin ||
+      process.env.NEXT_PUBLIC_SITE_URL ||
+      "https://quartierapp.de";
     await fetch(`${baseUrl}/api/push/send`, {
       method: "POST",
       headers: {

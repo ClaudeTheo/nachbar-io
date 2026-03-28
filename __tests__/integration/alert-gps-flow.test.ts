@@ -1,6 +1,9 @@
 import { describe, it, expect } from "vitest";
-import { validateLocationData } from "@/lib/alerts/validate-location";
-import { getLocationForRole, roundCoordinates } from "@/lib/alerts/location-visibility";
+import { validateLocationData } from "@/modules/alerts/services/validate-location";
+import {
+  getLocationForRole,
+  roundCoordinates,
+} from "@/modules/alerts/services/location-visibility";
 import { GPS_ALERT_CATEGORIES } from "@/lib/constants";
 
 describe("Alert-GPS Integrationstest", () => {
@@ -52,7 +55,11 @@ describe("Alert-GPS Integrationstest", () => {
   });
 
   describe("Rollen-Matrix vollständig", () => {
-    const alert = { location_lat: 47.5535, location_lng: 7.964, location_source: "gps" as const };
+    const alert = {
+      location_lat: 47.5535,
+      location_lng: 7.964,
+      location_source: "gps" as const,
+    };
 
     it("Free → null (kein GPS-Zugriff)", () => {
       expect(getLocationForRole(alert, "free", false)).toBeNull();
@@ -91,13 +98,21 @@ describe("Alert-GPS Integrationstest", () => {
 
   describe("DSGVO: Auto-Löschung Szenarien", () => {
     it("resolved Alert ohne GPS wird korrekt behandelt", () => {
-      const resolved = { location_lat: null, location_lng: null, location_source: "none" as const };
+      const resolved = {
+        location_lat: null,
+        location_lng: null,
+        location_source: "none" as const,
+      };
       expect(getLocationForRole(resolved, "plus_family", false)).toBeNull();
       expect(getLocationForRole(resolved, "pro", true)).toBeNull();
     });
 
     it("source 'none' gibt immer null", () => {
-      const none = { location_lat: 47.5, location_lng: 7.9, location_source: "none" as const };
+      const none = {
+        location_lat: 47.5,
+        location_lng: 7.9,
+        location_source: "none" as const,
+      };
       expect(getLocationForRole(none, "plus_family", false)).toBeNull();
     });
   });
@@ -135,7 +150,11 @@ describe("Alert-GPS Integrationstest", () => {
       expect(val.valid).toBe(true);
 
       const loc = getLocationForRole(
-        { location_lat: 47.5617, location_lng: 7.9483, location_source: "household" },
+        {
+          location_lat: 47.5617,
+          location_lng: 7.9483,
+          location_source: "household",
+        },
         "pro",
         false,
       );

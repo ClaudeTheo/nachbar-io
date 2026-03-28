@@ -36,6 +36,7 @@
     "@capacitor/status-bar": "^8.0.1",
     "@phosphor-icons/react": "^2.1.10",
     "@radix-ui/react-switch": "^1.2.6",
+    "@sentry/nextjs": "^10.46.0",
     "@simplewebauthn/browser": "^13.3.0",
     "@simplewebauthn/server": "^13.3.0",
     "@supabase/ssr": "^0.9.0",

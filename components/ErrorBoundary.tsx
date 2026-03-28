@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import * as Sentry from "@sentry/nextjs";
 
 interface ErrorBoundaryState {
   hasError: boolean;
@@ -23,7 +24,10 @@ export class ErrorBoundary extends React.Component<
   }
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
-    // Strukturiertes Logging — wird von Sentry (wenn eingebunden) erfasst
+    // Fehler an Sentry melden (Client-Side)
+    Sentry.captureException(error, {
+      extra: { componentStack: errorInfo.componentStack },
+    });
     console.error("[ErrorBoundary] Unbehandelter Fehler:", error, errorInfo);
   }
 

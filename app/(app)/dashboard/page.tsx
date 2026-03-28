@@ -461,9 +461,9 @@ export default function DashboardPage() {
                 href="/alerts"
                 count={alerts.length}
               />
-              <div className="divide-y divide-[#ebe5dd] animate-stagger">
+              <div className="rounded-xl bg-white shadow-soft overflow-hidden animate-stagger">
                 {alerts.map((alert) => (
-                  <AlertCard key={alert.id} alert={alert} />
+                  <AlertCard key={alert.id} alert={alert} compact />
                 ))}
               </div>
             </section>

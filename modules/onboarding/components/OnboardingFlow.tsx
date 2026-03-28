@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { getCachedUser } from "@/lib/supabase/cached-auth";
-import { completeOnboarding } from "@/lib/onboarding";
+import { completeOnboarding } from "../services/onboarding";
 import { Button } from "@/components/ui/button";
 import { ProgressDots } from "./ProgressDots";
 import { ConfettiEffect } from "./ConfettiEffect";

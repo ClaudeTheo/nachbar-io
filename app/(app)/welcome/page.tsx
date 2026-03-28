@@ -1,6 +1,6 @@
 "use client";
 
-import { OnboardingFlow } from "@/components/onboarding/OnboardingFlow";
+import { OnboardingFlow } from "@/modules/onboarding";
 
 // Neue immersive Onboarding-Tour
 // Ersetzt die alte Text-basierte Tour

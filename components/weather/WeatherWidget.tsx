@@ -79,19 +79,21 @@ function HeroVariant({
     >
       <SkylineSilhouette opacity={isDark ? 0.15 : 0.1} />
 
-      <div className="relative z-10 h-full flex items-center justify-between p-4">
-        <div>
-          <span
-            className="font-extralight tracking-tighter leading-none block"
-            style={{ color: colors.text, fontSize: 48 }}
-          >
-            {temp !== null ? `${temp}°` : "--°"}
-          </span>
-          <p className="text-sm mt-1" style={{ color: colors.sub }}>
-            {description}
-          </p>
+      <div className="relative z-10 h-full flex items-end justify-end p-4 pointer-events-none">
+        <div className="flex items-center gap-3">
+          <div className="text-right">
+            <span
+              className="font-extralight tracking-tighter leading-none block"
+              style={{ color: colors.text, fontSize: 40 }}
+            >
+              {temp !== null ? `${temp}°` : "--°"}
+            </span>
+            <p className="text-xs mt-0.5" style={{ color: colors.sub }}>
+              {description}
+            </p>
+          </div>
+          <AnimatedWeatherIcon icon={icon} size={44} />
         </div>
-        <AnimatedWeatherIcon icon={icon} size={56} />
       </div>
 
       <WeatherAnimationStyles />

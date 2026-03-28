@@ -72,12 +72,12 @@ export function DashboardHero({
               <img
                 src={avatarUrl}
                 alt="Profilbild"
-                className="h-16 w-16 rounded-full object-cover border-2 border-quartier-green/20 flex-shrink-0"
+                className="h-12 w-12 rounded-full object-cover border-2 border-quartier-green/20 flex-shrink-0"
                 data-testid="dashboard-avatar"
               />
             ) : (
               <div
-                className="h-16 w-16 rounded-full bg-anthrazit text-white font-bold text-xl flex items-center justify-center flex-shrink-0"
+                className="h-12 w-12 rounded-full bg-anthrazit text-white font-bold text-lg flex items-center justify-center flex-shrink-0"
                 data-testid="dashboard-avatar"
               >
                 {userName ? userName.charAt(0).toUpperCase() : "?"}

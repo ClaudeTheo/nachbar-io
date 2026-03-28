@@ -1,5 +1,5 @@
 import { render, screen, fireEvent, cleanup } from '@testing-library/react';
-import { SlideSkills } from '@/components/onboarding/SlideSkills';
+import { SlideSkills } from '@/modules/onboarding';
 import { SKILL_CATEGORIES } from '@/lib/constants';
 import { describe, it, expect, vi, afterEach } from 'vitest';
 

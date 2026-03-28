@@ -2,7 +2,7 @@
 // Jugend-Modul: Elternfreigabe verifizieren (Guardian klickt SMS-Link)
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-import { hashToken, isTokenExpired } from '@/lib/youth/consent';
+import { hashToken, isTokenExpired } from '@/modules/youth';
 import { encryptField } from '@/lib/care/field-encryption';
 
 export async function POST(request: NextRequest) {

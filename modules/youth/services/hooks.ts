@@ -1,4 +1,4 @@
-// lib/youth/hooks.ts
+// modules/youth/services/hooks.ts
 // Jugend-Modul: React Hooks fuer Youth-Profile
 'use client';
 

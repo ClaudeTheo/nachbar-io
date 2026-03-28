@@ -5,8 +5,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { createClient as _createClient } from "@/lib/supabase/client";
-import { useYouthProfile } from "@/lib/youth/hooks";
-import { YouthGuard } from "@/components/youth/YouthGuard";
+import { useYouthProfile, YouthGuard } from "@/modules/youth";
 import { PageHeader } from "@/components/ui/page-header";
 
 interface TaskDetail {

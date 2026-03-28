@@ -1,6 +1,6 @@
 // __tests__/api/youth-consent-verify.test.ts
 import { describe, it, expect } from 'vitest';
-import { hashToken, isTokenExpired } from '@/lib/youth/consent';
+import { hashToken, isTokenExpired } from '@/modules/youth';
 
 describe('Consent Verification Logic', () => {
   it('erkennt abgelaufene Tokens', () => {

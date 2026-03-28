@@ -1,4 +1,4 @@
-// components/youth/TaskCard.tsx
+// modules/youth/components/TaskCard.tsx
 // Jugend-Modul: Aufgaben-Karte
 
 const CATEGORY_CONFIG = {

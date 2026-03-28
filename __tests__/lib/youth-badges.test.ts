@@ -1,6 +1,6 @@
 // __tests__/lib/youth-badges.test.ts
 import { describe, it, expect } from 'vitest';
-import { checkBadgeEligibility } from '@/lib/youth/badges';
+import { checkBadgeEligibility } from '@/modules/youth';
 
 describe('Youth Badges', () => {
   it('erkennt task_count Badge-Berechtigung', () => {

@@ -1,10 +1,10 @@
-// components/youth/YouthGuard.tsx
+// modules/youth/components/YouthGuard.tsx
 // Jugend-Modul: Zugangs-Schutz nach Stufe
 'use client';
 
 import { ReactNode } from 'react';
-import { useYouthProfile } from '@/lib/youth/hooks';
-import type { AccessLevel } from '@/lib/youth/profile';
+import { useYouthProfile } from '../services/hooks';
+import type { AccessLevel } from '../services/profile';
 
 const LEVEL_HIERARCHY: Record<AccessLevel, number> = {
   basis: 0,

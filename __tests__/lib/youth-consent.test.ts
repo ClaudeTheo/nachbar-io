@@ -1,6 +1,6 @@
 // __tests__/lib/youth-consent.test.ts
 import { describe, it, expect } from 'vitest';
-import { generateConsentToken, hashToken } from '@/lib/youth/consent';
+import { generateConsentToken, hashToken } from '@/modules/youth';
 
 describe('Youth Consent', () => {
   describe('generateConsentToken', () => {

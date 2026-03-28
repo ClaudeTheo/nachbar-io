@@ -2,7 +2,7 @@
 // Jugend-Modul: Elternfreigabe-Token per SMS senden
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-import { generateConsentToken, hashToken, CONSENT_TEXT_VERSION, TOKEN_EXPIRY_HOURS, MAX_TOKEN_SENDS } from '@/lib/youth/consent';
+import { generateConsentToken, hashToken, CONSENT_TEXT_VERSION, TOKEN_EXPIRY_HOURS, MAX_TOKEN_SENDS } from '@/modules/youth';
 import { sendSms } from '@/lib/care/channels/sms';
 import { createHash } from 'crypto';
 

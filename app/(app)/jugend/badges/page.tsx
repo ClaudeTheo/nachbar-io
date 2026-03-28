@@ -5,7 +5,7 @@
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
-import { BadgeCard } from "@/components/youth/BadgeCard";
+import { BadgeCard } from "@/modules/youth";
 import { PageHeader } from "@/components/ui/page-header";
 
 interface Badge {

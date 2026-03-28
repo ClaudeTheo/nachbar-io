@@ -1,6 +1,6 @@
 // __tests__/lib/youth-points.test.ts
 import { describe, it, expect } from 'vitest';
-import { calculateTaskReward } from '@/lib/youth/points';
+import { calculateTaskReward } from '@/modules/youth';
 
 describe('Youth Points', () => {
   it('gibt Standard-Belohnung fuer normale Aufgabe', () => {

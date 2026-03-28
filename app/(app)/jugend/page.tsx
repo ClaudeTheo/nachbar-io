@@ -2,9 +2,7 @@
 // Jugend-Modul: Dashboard — Uebersicht mit Punkten, Badges, Aufgaben
 'use client';
 
-import { useYouthProfile } from '@/lib/youth/hooks';
-import { PointsDisplay } from '@/components/youth/PointsDisplay';
-import { AccessLevelBanner } from '@/components/youth/AccessLevelBanner';
+import { useYouthProfile, PointsDisplay, AccessLevelBanner } from '@/modules/youth';
 import Link from 'next/link';
 import { PageHeader } from "@/components/ui/page-header";
 

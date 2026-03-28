@@ -1,4 +1,4 @@
-// lib/youth/consent.ts
+// modules/youth/services/consent.ts
 // Jugend-Modul: Elternfreigabe — Token-Generierung und Hashing
 import { createHash, randomBytes } from 'crypto';
 

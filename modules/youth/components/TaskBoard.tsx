@@ -1,4 +1,4 @@
-// components/youth/TaskBoard.tsx
+// modules/youth/components/TaskBoard.tsx
 // Jugend-Modul: Aufgaben-Board mit Kategorie-Filter
 'use client';
 

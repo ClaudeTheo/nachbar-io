@@ -1,6 +1,6 @@
 // __tests__/lib/youth-moderation.test.ts
 import { describe, it, expect } from 'vitest';
-import { filterMessage, containsContactInfo } from '@/lib/youth/moderation';
+import { filterMessage, containsContactInfo } from '@/modules/youth';
 
 describe('Youth Moderation', () => {
   describe('filterMessage', () => {

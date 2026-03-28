@@ -4,7 +4,7 @@ import {
   calculateAgeGroup,
   getAccessLevel,
   canAccessFeature,
-} from "@/lib/youth/profile";
+} from "@/modules/youth";
 
 describe("Youth Profile", () => {
   describe("calculateAgeGroup", () => {

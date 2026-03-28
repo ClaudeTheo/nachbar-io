@@ -1,4 +1,4 @@
-// lib/youth/points.ts
+// modules/youth/services/points.ts
 // Jugend-Modul: Punkte-Berechnung fuer Aufgaben
 const BASE_REWARD = 20;
 const TECHNIK_BONUS = 10;

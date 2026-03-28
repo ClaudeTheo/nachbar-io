@@ -1,4 +1,4 @@
-// lib/youth/moderation.ts
+// modules/youth/services/moderation.ts
 // Jugend-Modul: Chat-Moderation — Keyword-Filter und Kontaktdaten-Erkennung
 
 export interface ModerationResult {

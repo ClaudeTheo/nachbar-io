@@ -1,4 +1,4 @@
-// lib/youth/profile.ts
+// modules/youth/services/profile.ts
 // Jugend-Modul: Profil-Logik, Altersgruppen, Zugangs-Stufen
 
 export type AgeGroup = 'u16' | '16_17';

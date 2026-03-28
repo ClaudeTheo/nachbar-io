@@ -1,7 +1,7 @@
 // __tests__/components/youth-task-card.test.tsx
 import { describe, it, expect, afterEach } from 'vitest';
 import { render, screen, cleanup } from '@testing-library/react';
-import { TaskCard } from '@/components/youth/TaskCard';
+import { TaskCard } from '@/modules/youth';
 
 afterEach(cleanup);
 

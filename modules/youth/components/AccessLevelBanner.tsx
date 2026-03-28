@@ -1,8 +1,8 @@
-// components/youth/AccessLevelBanner.tsx
+// modules/youth/components/AccessLevelBanner.tsx
 // Jugend-Modul: Zeigt aktuelle Zugangs-Stufe + Upgrade-Hinweis
 'use client';
 
-import type { AccessLevel } from '@/lib/youth/profile';
+import type { AccessLevel } from '../services/profile';
 
 const LEVEL_CONFIG: Record<AccessLevel, { label: string; color: string; description: string }> = {
   basis: {

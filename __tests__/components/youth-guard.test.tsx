@@ -1,14 +1,14 @@
 // __tests__/components/youth-guard.test.tsx
 import { describe, it, expect, vi, afterEach } from 'vitest';
 import { render, screen, cleanup } from '@testing-library/react';
-import { YouthGuard } from '@/components/youth/YouthGuard';
+import { YouthGuard } from '@/modules/youth';
 
 // Mock des Hooks
-vi.mock('@/lib/youth/hooks', () => ({
+vi.mock('@/modules/youth/services/hooks', () => ({
   useYouthProfile: vi.fn(),
 }));
 
-import { useYouthProfile } from '@/lib/youth/hooks';
+import { useYouthProfile } from '@/modules/youth';
 
 afterEach(() => {
   cleanup();

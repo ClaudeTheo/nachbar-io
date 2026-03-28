@@ -2,9 +2,7 @@
 // Jugend-Modul: Profil-Seite
 'use client';
 
-import { useYouthProfile } from '@/lib/youth/hooks';
-import { AccessLevelBanner } from '@/components/youth/AccessLevelBanner';
-import { PointsDisplay } from '@/components/youth/PointsDisplay';
+import { useYouthProfile, AccessLevelBanner, PointsDisplay } from '@/modules/youth';
 import { PageHeader } from "@/components/ui/page-header";
 
 export default function JugendProfil() {

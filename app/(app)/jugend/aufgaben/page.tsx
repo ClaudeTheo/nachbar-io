@@ -2,8 +2,7 @@
 // Jugend-Modul: Aufgaben-Board Seite
 'use client';
 
-import { TaskBoard } from '@/components/youth/TaskBoard';
-import { useYouthProfile } from '@/lib/youth/hooks';
+import { TaskBoard, useYouthProfile } from '@/modules/youth';
 import { PageHeader } from "@/components/ui/page-header";
 
 export default function JugendAufgaben() {

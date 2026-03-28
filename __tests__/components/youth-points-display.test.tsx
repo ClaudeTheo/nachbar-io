@@ -1,7 +1,7 @@
 // __tests__/components/youth-points-display.test.tsx
 import { describe, it, expect, afterEach } from 'vitest';
 import { render, screen, cleanup } from '@testing-library/react';
-import { PointsDisplay } from '@/components/youth/PointsDisplay';
+import { PointsDisplay } from '@/modules/youth';
 
 afterEach(cleanup);
 

@@ -2,7 +2,7 @@
 // Jugend-Modul: Registrierungs-Endpoint
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-import { calculateAgeGroup, getAccessLevel } from '@/lib/youth/profile';
+import { calculateAgeGroup, getAccessLevel } from '@/modules/youth';
 import { createHash } from 'crypto';
 
 export async function POST(request: NextRequest) {

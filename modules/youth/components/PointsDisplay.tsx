@@ -1,4 +1,4 @@
-// components/youth/PointsDisplay.tsx
+// modules/youth/components/PointsDisplay.tsx
 // Jugend-Modul: Kompakte Punkte-Anzeige
 
 interface PointsDisplayProps {

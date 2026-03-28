@@ -1,4 +1,4 @@
-// lib/youth/badges.ts
+// modules/youth/services/badges.ts
 // Jugend-Modul: Badge-Eligibility Engine
 export interface BadgeCondition {
   condition_type: string;

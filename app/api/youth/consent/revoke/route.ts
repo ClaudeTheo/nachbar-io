@@ -3,7 +3,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { encryptField } from '@/lib/care/field-encryption';
-import { getAccessLevel } from '@/lib/youth/profile';
+import { getAccessLevel } from '@/modules/youth';
 
 export async function POST(request: NextRequest) {
   const supabase = await createClient();

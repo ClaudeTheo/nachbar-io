@@ -1,4 +1,4 @@
-// components/youth/BadgeCard.tsx
+// modules/youth/components/BadgeCard.tsx
 // Jugend-Modul: Badge-Karte mit earned/locked State
 
 interface BadgeCardProps {

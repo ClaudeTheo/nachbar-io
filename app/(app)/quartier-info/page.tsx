@@ -20,6 +20,12 @@ import {
   Calendar,
   HeartHandshake,
   ShieldCheck,
+  Train,
+  Pill,
+  Phone,
+  ShoppingBag,
+  Clock,
+  MapPin,
 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useQuarter } from "@/lib/quarters";
@@ -29,7 +35,13 @@ import type {
   RathausLink,
   NinaWarning,
   WasteNext,
+  OepnvStop,
+  OepnvDeparture,
+  Apotheke,
+  LocalEvent,
 } from "@/lib/info/types";
+import { APOTHEKEN_BAD_SAECKINGEN, NOTDIENST_URL } from "@/lib/info/apotheken";
+import { EVENTS_BAD_SAECKINGEN, EVENTS_CALENDAR_URL } from "@/lib/info/events";
 
 // Wetter-Icon Mapping
 function WeatherIcon({
@@ -112,6 +124,7 @@ function DynamicIcon({
     calendar: Calendar,
     "heart-handshake": HeartHandshake,
     "shield-check": ShieldCheck,
+    "shopping-bag": ShoppingBag,
   };
   const Icon = IconMap[name] || Cloud;
   return <Icon className={className} />;
@@ -343,7 +356,163 @@ export default function QuartierInfoPage() {
         )}
       </section>
 
-      {/* 5. Rathaus & Services */}
+      {/* 5. ÖPNV-Abfahrten */}
+      <section
+        className="rounded-2xl bg-white shadow-sm border border-gray-100 p-5"
+        data-testid="info-oepnv"
+      >
+        <div className="flex items-center gap-2 mb-3">
+          <Train className="h-5 w-5 text-blue-600" />
+          <h2 className="text-base font-semibold text-anthrazit">
+            Nächste Abfahrten
+          </h2>
+        </div>
+        {loading ? (
+          <div className="space-y-2">
+            {[1, 2, 3].map((i) => (
+              <Skeleton key={i} className="h-8 w-full" />
+            ))}
+          </div>
+        ) : data?.oepnv && data.oepnv.length > 0 ? (
+          <div className="space-y-4">
+            {data.oepnv.map((stop: OepnvStop) => (
+              <div key={stop.id}>
+                <p className="text-xs text-muted-foreground mb-2">
+                  <MapPin className="h-3 w-3 inline mr-1" />
+                  {stop.name}
+                </p>
+                <div className="space-y-1">
+                  {stop.departures
+                    .slice(0, 8)
+                    .map((dep: OepnvDeparture, i: number) => (
+                      <div
+                        key={i}
+                        className="flex items-center gap-3 py-2 border-b border-gray-50 last:border-0"
+                      >
+                        <span className="w-12 text-sm font-mono font-semibold text-anthrazit">
+                          {dep.time}
+                        </span>
+                        <span className="w-16 text-xs font-medium text-blue-700 bg-blue-50 rounded px-1.5 py-0.5 text-center">
+                          {dep.line}
+                        </span>
+                        <span className="flex-1 text-sm text-anthrazit truncate">
+                          {dep.destination}
+                        </span>
+                        {dep.platform && (
+                          <span className="text-xs text-muted-foreground">
+                            Gl. {dep.platform}
+                          </span>
+                        )}
+                      </div>
+                    ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p className="text-sm text-muted-foreground">
+            Keine Abfahrten verfügbar
+          </p>
+        )}
+      </section>
+
+      {/* 6. Apotheken */}
+      <section
+        className="rounded-2xl bg-white shadow-sm border border-gray-100 p-5"
+        data-testid="info-apotheken"
+      >
+        <div className="flex items-center gap-2 mb-3">
+          <Pill className="h-5 w-5 text-green-600" />
+          <h2 className="text-base font-semibold text-anthrazit">Apotheken</h2>
+        </div>
+        <div className="space-y-3">
+          {APOTHEKEN_BAD_SAECKINGEN.map((apo: Apotheke) => (
+            <div
+              key={apo.name}
+              className="flex items-start gap-3 py-3 border-b border-gray-50 last:border-0"
+            >
+              <div className="flex-1">
+                <p className="text-sm font-medium text-anthrazit">{apo.name}</p>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  {apo.address}
+                </p>
+                <div className="flex items-center gap-3 mt-1">
+                  <span className="text-xs text-muted-foreground flex items-center gap-1">
+                    <Clock className="h-3 w-3" />
+                    {apo.openingHours}
+                  </span>
+                </div>
+              </div>
+              <a
+                href={`tel:${apo.phone.replace(/\s/g, "")}`}
+                className="flex items-center justify-center w-10 h-10 rounded-full bg-green-50 hover:bg-green-100 transition-colors flex-shrink-0"
+                aria-label={`${apo.name} anrufen`}
+              >
+                <Phone className="h-4 w-4 text-green-700" />
+              </a>
+            </div>
+          ))}
+        </div>
+        <a
+          href={NOTDIENST_URL}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="mt-4 flex items-center justify-center gap-2 w-full py-3 rounded-xl bg-amber-50 border border-amber-200 text-amber-900 font-medium text-sm hover:bg-amber-100 transition-colors min-h-[48px]"
+        >
+          <AlertTriangle className="h-4 w-4 text-amber-600" />
+          Notdienst jetzt prüfen
+          <ExternalLink className="h-3 w-3 text-amber-600" />
+        </a>
+      </section>
+
+      {/* 7. Veranstaltungen */}
+      <section
+        className="rounded-2xl bg-white shadow-sm border border-gray-100 p-5"
+        data-testid="info-events"
+      >
+        <div className="flex items-center gap-2 mb-3">
+          <Calendar className="h-5 w-5 text-purple-600" />
+          <h2 className="text-base font-semibold text-anthrazit">
+            Veranstaltungen
+          </h2>
+        </div>
+        <div className="space-y-3">
+          {EVENTS_BAD_SAECKINGEN.map((evt: LocalEvent, i: number) => (
+            <div
+              key={i}
+              className="flex items-start gap-3 rounded-xl border border-gray-100 p-4"
+            >
+              <DynamicIcon
+                name={evt.icon}
+                className="h-5 w-5 text-purple-500 flex-shrink-0 mt-0.5"
+              />
+              <div>
+                <p className="text-sm font-medium text-anthrazit">
+                  {evt.title}
+                </p>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  {evt.schedule}
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  <MapPin className="h-3 w-3 inline mr-0.5" />
+                  {evt.location}
+                </p>
+              </div>
+            </div>
+          ))}
+        </div>
+        <a
+          href={EVENTS_CALENDAR_URL}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="mt-3 text-xs text-quartier-green hover:underline inline-flex items-center gap-1"
+        >
+          Alle Veranstaltungen in Bad Säckingen
+          <ExternalLink className="h-3 w-3" />
+        </a>
+      </section>
+
+      {/* 8. Rathaus & Services */}
       <section
         className="rounded-2xl bg-white shadow-sm border border-gray-100 p-5"
         data-testid="info-rathaus"

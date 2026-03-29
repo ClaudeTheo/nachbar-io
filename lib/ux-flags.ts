@@ -1,10 +1,7 @@
 // lib/ux-flags.ts
-// Nachbar.io — UX-Redesign Feature-Flags (env-basiert)
-// Einfache Flags fuer schrittweises Rollout des UX-Redesigns.
-// Unabhaengig vom DB-getriebenen Feature-Flag-System.
-//
-// WICHTIG: Next.js ersetzt process.env.NEXT_PUBLIC_* nur bei
-// literalen Zugriffen. Daher kein dynamischer Key-Lookup moeglich.
+// Nachbar.io — UX-Redesign Feature-Flags
+// Redesign Wave 1+2+3 abgeschlossen → alle Flags standardmaessig aktiv.
+// Env-Variable kann auf "false" gesetzt werden zum Deaktivieren (Rollback).
 
 export type UxFlag =
   | "UX_REDESIGN_NAV"
@@ -13,17 +10,18 @@ export type UxFlag =
 
 /**
  * Prueft ob ein UX-Redesign-Flag aktiv ist.
- * Liest aus NEXT_PUBLIC_ env-Variablen, Fallback: false.
+ * Standard: true (Redesign abgeschlossen).
+ * Kann via NEXT_PUBLIC_ env auf "false" gesetzt werden fuer Rollback.
  */
 export function isUxRedesignEnabled(flag: UxFlag): boolean {
   switch (flag) {
     case "UX_REDESIGN_NAV":
-      return process.env.NEXT_PUBLIC_UX_REDESIGN_NAV === "true";
+      return process.env.NEXT_PUBLIC_UX_REDESIGN_NAV !== "false";
     case "UX_REDESIGN_DASHBOARD":
-      return process.env.NEXT_PUBLIC_UX_REDESIGN_DASHBOARD === "true";
+      return process.env.NEXT_PUBLIC_UX_REDESIGN_DASHBOARD !== "false";
     case "UX_REDESIGN_ILLUSTRATIONS":
-      return process.env.NEXT_PUBLIC_UX_REDESIGN_ILLUSTRATIONS === "true";
+      return process.env.NEXT_PUBLIC_UX_REDESIGN_ILLUSTRATIONS !== "false";
     default:
-      return false;
+      return true;
   }
 }

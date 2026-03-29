@@ -1,61 +1,35 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import { computeReputationStats } from "@/lib/reputation";
+import { recomputeReputation } from "@/lib/services/misc-utilities.service";
+import { handleServiceError } from "@/lib/services/service-error";
 
 /**
  * POST /api/reputation/recompute
  *
  * Berechnet die Reputation-Stats eines Nutzers neu und speichert sie im Cache.
- * Kann nach wichtigen Aktionen aufgerufen werden (Einladung angenommen, Hilfe geleistet, etc.)
- *
- * Body: { userId?: string }
- * - userId: Optional. Wenn nicht angegeben, wird der aktuelle Nutzer verwendet.
- * - Nur Admins dürfen fremde User-IDs angeben.
+ * Body: { userId?: string } — Nur Admins dürfen fremde User-IDs angeben.
  */
 export async function POST(request: NextRequest) {
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
   if (!user) {
     return NextResponse.json({ error: "Nicht autorisiert" }, { status: 401 });
   }
 
-  let targetUserId = user.id;
-
-  // Optionaler userId-Parameter (nur für Admins)
+  let targetUserId: string | undefined;
   try {
     const body = await request.json();
-    if (body.userId && body.userId !== user.id) {
-      // Prüfen ob Admin
-      const { data: adminCheck } = await supabase
-        .from("users")
-        .select("is_admin")
-        .eq("id", user.id)
-        .single();
-
-      if (!adminCheck?.is_admin) {
-        return NextResponse.json(
-          { error: "Nur Admins dürfen fremde Nutzer neu berechnen" },
-          { status: 403 }
-        );
-      }
-      targetUserId = body.userId;
-    }
+    targetUserId = body.userId;
   } catch {
     // Leerer Body ist ok — eigener Nutzer wird verwendet
   }
 
   try {
-    const stats = await computeReputationStats(supabase, targetUserId);
-
-    return NextResponse.json({
-      success: true,
-      stats,
-    });
-  } catch (err) {
-    console.error("Reputation-Neuberechnung fehlgeschlagen:", err);
-    return NextResponse.json(
-      { error: "Neuberechnung fehlgeschlagen" },
-      { status: 500 }
-    );
+    const result = await recomputeReputation(supabase, user.id, targetUserId);
+    return NextResponse.json(result);
+  } catch (error) {
+    return handleServiceError(error);
   }
 }

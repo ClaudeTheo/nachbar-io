@@ -13,27 +13,28 @@ import {
   CircleCheck,
   Smartphone,
 } from "lucide-react";
+// Next.js Image nicht nötig — Hero-Bild ist statisch
 
 // Landing Page — quartierapp.de / nachbar-io.vercel.app
-// Professionelle Conversion-Seite fuer Bewohner + Organisationen
+// Professionelle Conversion-Seite für Bewohner + Organisationen
 
 function Hero() {
   return (
-    <section className="relative overflow-hidden bg-gradient-to-br from-[#2D3142] via-[#363b52] to-[#2D3142]">
-      <div className="mx-auto max-w-5xl px-6 py-20 sm:py-28 text-center">
-        <div className="mb-6 inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-1.5 text-sm text-white/80 backdrop-blur-sm">
+    <section className="relative overflow-hidden bg-gradient-to-b from-white via-[#f0fdf4] to-white">
+      <div className="mx-auto max-w-5xl px-6 pt-16 sm:pt-20 text-center">
+        <div className="mb-6 inline-flex items-center gap-2 rounded-full bg-[#4CAF87]/10 px-4 py-1.5 text-sm text-[#4CAF87] font-medium">
           <MapPin className="h-3.5 w-3.5" />
-          Pilot: Bad Saeckingen
+          Pilot: Bad Säckingen
         </div>
-        <h1 className="text-4xl font-extrabold leading-tight text-white sm:text-5xl lg:text-6xl">
+        <h1 className="text-4xl font-extrabold leading-tight text-[#2D3142] sm:text-5xl lg:text-6xl">
           Ihr digitaler
           <br />
           <span className="text-[#4CAF87]">Dorfplatz</span>
         </h1>
-        <p className="mx-auto mt-6 max-w-xl text-lg text-gray-300 leading-relaxed">
+        <p className="mx-auto mt-6 max-w-xl text-lg text-gray-600 leading-relaxed">
           QuartierApp verbindet echte Nachbarn. Nachbarschaftshilfe,
-          Notfall-System, lokale Informationen und Sicherheit fuer Ihre Liebsten
-          — in einem vertrauenswuerdigen, geschuetzten Netzwerk.
+          Notfall-System, lokale Informationen und Sicherheit für Ihre Liebsten
+          — in einem vertrauenswürdigen, geschützten Netzwerk.
         </p>
         <div className="mt-10 flex flex-wrap justify-center gap-4">
           <Link
@@ -45,18 +46,26 @@ function Hero() {
           </Link>
           <Link
             href="/login"
-            className="inline-flex items-center rounded-xl border-2 border-white/30 px-8 py-4 text-base font-semibold text-white backdrop-blur-sm transition-all hover:bg-white/10"
+            className="inline-flex items-center rounded-xl border-2 border-[#2D3142]/20 px-8 py-4 text-base font-semibold text-[#2D3142] transition-all hover:bg-[#2D3142]/5"
           >
             Anmelden
           </Link>
         </div>
         <p className="mt-6 text-xs text-gray-400">
-          Kostenlos fuer alle Bewohner. Keine Werbung. Kein Datenverkauf.
+          Kostenlos für alle Bewohner. Keine Werbung. Kein Datenverkauf.
         </p>
       </div>
-      {/* Dekorative Elemente */}
-      <div className="absolute -right-32 -top-32 h-96 w-96 rounded-full bg-[#4CAF87]/8 blur-3xl" />
-      <div className="absolute -bottom-20 -left-20 h-64 w-64 rounded-full bg-[#4CAF87]/5 blur-2xl" />
+      {/* Hero-Bild: Nachbarinnen im Quartier */}
+      <div className="mx-auto max-w-4xl px-6 pt-8 pb-4">
+        <div className="overflow-hidden rounded-2xl shadow-lg">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/images/hero-quartier.png"
+            alt="Zwei Nachbarinnen unterhalten sich in einem deutschen Quartier"
+            className="w-full h-auto object-cover"
+          />
+        </div>
+      </div>
     </section>
   );
 }
@@ -71,19 +80,19 @@ const FEATURES = [
   {
     icon: <Heart className="h-6 w-6" />,
     title: "Heartbeat",
-    text: "Jede App-Nutzung ist ein passives Lebenszeichen. Angehoerige sehen: Es geht Ihren Eltern gut.",
+    text: "Jede App-Nutzung ist ein passives Lebenszeichen. Angehörige sehen: Es geht Ihren Eltern gut.",
     color: "bg-green-50 text-[#4CAF87]",
   },
   {
     icon: <Users className="h-6 w-6" />,
     title: "Nachbarschaftshilfe",
-    text: "Einkauf, Gartenarbeit, Gesellschaft. Finden Sie Helfer in Ihrer Naehe — mit Pflege-Matrix fuer alle 16 Bundeslaender.",
+    text: "Einkauf, Gartenarbeit, Gesellschaft. Finden Sie Helfer in Ihrer Nähe — mit Pflege-Matrix für alle 16 Bundesländer.",
     color: "bg-blue-50 text-blue-500",
   },
   {
     icon: <MessageSquare className="h-6 w-6" />,
     title: "Schwarzes Brett",
-    text: "Lokale Neuigkeiten, Fragen und Ankuendigungen. Nur fuer verifizierte Bewohner Ihres Quartiers.",
+    text: "Lokale Neuigkeiten, Fragen und Ankündigungen. Nur für verifizierte Bewohner Ihres Quartiers.",
     color: "bg-amber-50 text-amber-500",
   },
   {
@@ -95,7 +104,7 @@ const FEATURES = [
   {
     icon: <Shield className="h-6 w-6" />,
     title: "DSGVO by Design",
-    text: "EU-Hosting Frankfurt. AES-256 Verschluesselung. Keine Werbung. Keine Tracker. Ihre Daten gehoeren Ihnen.",
+    text: "EU-Hosting Frankfurt. AES-256 Verschlüsselung. Keine Werbung. Keine Tracker. Ihre Daten gehören Ihnen.",
     color: "bg-gray-50 text-gray-600",
   },
 ];
@@ -107,8 +116,8 @@ function FeaturesSection() {
         Alles, was Ihr Quartier braucht
       </h2>
       <p className="mx-auto mt-4 max-w-lg text-center text-sm text-gray-500 leading-relaxed">
-        Eine App fuer Sicherheit, Gemeinschaft und lokale Informationen.
-        Entwickelt fuer alle Altersgruppen — mit besonderem Fokus auf Senioren.
+        Eine App für Sicherheit, Gemeinschaft und lokale Informationen.
+        Entwickelt für alle Altersgruppen — mit besonderem Fokus auf Senioren.
       </p>
       <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
         {FEATURES.map((f) => (
@@ -186,16 +195,16 @@ function ForFamilies() {
             Wissen, dass es Mama gut geht
           </h2>
           <p className="mt-4 text-sm text-gray-500 leading-relaxed">
-            Fuer Kinder, Enkel und Angehoerige: Sehen Sie auf einen Blick, wann
-            Ihr Familienmitglied zuletzt aktiv war. Ohne Ueberwachung — nur ein
-            beruhrigendes Lebenszeichen.
+            Für Kinder, Enkel und Angehörige: Sehen Sie auf einen Blick, wann
+            Ihr Familienmitglied zuletzt aktiv war. Ohne Überwachung — nur ein
+            beruhigendes Lebenszeichen.
           </p>
           <ul className="mt-6 space-y-3">
             {[
-              "Heartbeat-Status (letzte Aktivitaet)",
-              "Taegliches Check-in (gut / geht so / schlecht)",
+              "Heartbeat-Status (letzte Aktivität)",
+              "Tägliches Check-in (gut / geht so / schlecht)",
               "Video-Anruf (wie FaceTime)",
-              "Eskalation bei laengerer Inaktivitaet",
+              "Eskalation bei längerer Inaktivität",
               "Jederzeit widerrufbar durch den Bewohner",
             ].map((f) => (
               <li
@@ -207,9 +216,8 @@ function ForFamilies() {
               </li>
             ))}
           </ul>
-          <p className="mt-6 text-lg font-bold text-[#2D3142]">
-            8,90 EUR{" "}
-            <span className="text-sm font-normal text-gray-400">/ Monat</span>
+          <p className="mt-6 text-sm font-medium text-[#4CAF87]">
+            Kostenlos während der Pilotphase
           </p>
         </div>
         <div className="flex items-center justify-center">
@@ -237,7 +245,7 @@ function ForFamilies() {
             <div className="mt-3 rounded-2xl bg-white p-4 shadow-sm">
               <p className="text-xs text-gray-400">Medikamente</p>
               <p className="mt-1 text-sm font-semibold text-[#4CAF87]">
-                ✓ Alle bestaetigt
+                ✓ Alle bestätigt
               </p>
             </div>
           </div>
@@ -252,11 +260,11 @@ function ForOrganizations() {
     <section className="bg-[#2D3142] py-16 sm:py-24 text-white">
       <div className="mx-auto max-w-5xl px-6">
         <h2 className="text-center text-2xl font-extrabold sm:text-3xl">
-          Fuer Organisationen & Aerzte
+          Für Organisationen & Ärzte
         </h2>
         <p className="mx-auto mt-4 max-w-lg text-center text-sm text-gray-400">
-          B2B-Loesungen fuer Kommunen, Pflegedienste, Wohnungsbaugesellschaften
-          und Aerzte.
+          B2B-Lösungen für Kommunen, Pflegedienste, Wohnungsbaugesellschaften
+          und Ärzte.
         </p>
         <div className="mt-12 grid gap-8 sm:grid-cols-2">
           {/* Pro Community */}
@@ -270,11 +278,8 @@ function ForOrganizations() {
             <p className="mt-1 text-xs text-gray-400">
               Kommunen, Pflegedienste, Wohnungsbau
             </p>
-            <p className="mt-4 text-3xl font-bold">
-              79 EUR{" "}
-              <span className="text-sm font-normal text-gray-400">
-                / Quartier / Monat
-              </span>
+            <p className="mt-4 text-sm font-medium text-[#4CAF87]">
+              Preise auf Anfrage
             </p>
             <ul className="mt-6 space-y-2">
               {[
@@ -302,13 +307,10 @@ function ForOrganizations() {
               <h3 className="text-lg font-bold">Pro Medical</h3>
             </div>
             <p className="mt-1 text-xs text-gray-400">
-              Aerzte, Telemedizin-Anbieter
+              Ärzte, Telemedizin-Anbieter
             </p>
-            <p className="mt-4 text-3xl font-bold">
-              89 EUR{" "}
-              <span className="text-sm font-normal text-gray-400">
-                / Monat + 5 EUR / Termin
-              </span>
+            <p className="mt-4 text-sm font-medium text-[#4CAF87]">
+              Preise auf Anfrage
             </p>
             <ul className="mt-6 space-y-2">
               {[
@@ -333,7 +335,7 @@ function ForOrganizations() {
             href="/b2b"
             className="inline-flex items-center gap-2 text-sm font-semibold text-[#4CAF87] hover:underline"
           >
-            Mehr erfahren fuer Organisationen
+            Mehr erfahren für Organisationen
             <ArrowRight className="h-4 w-4" />
           </Link>
         </div>
@@ -345,7 +347,7 @@ function ForOrganizations() {
 function Trust() {
   const stats = [
     { value: "DSGVO", label: "EU-Hosting Frankfurt" },
-    { value: "AES-256", label: "Verschluesselung" },
+    { value: "AES-256", label: "Verschlüsselung" },
     { value: "0", label: "Werbung & Tracker" },
     { value: "112", label: "Notruf immer sichtbar" },
   ];
@@ -375,8 +377,8 @@ function CTASection() {
           Werden Sie Teil Ihres Quartiers
         </h2>
         <p className="mt-4 text-base text-white/80">
-          Kostenlos fuer alle Bewohner. Laden Sie Ihre Nachbarn ein und machen
-          Sie Ihr Quartier ein Stueck sicherer.
+          Kostenlos für alle Bewohner. Laden Sie Ihre Nachbarn ein und machen
+          Sie Ihr Quartier ein Stück sicherer.
         </p>
         <div className="mt-8 flex flex-wrap justify-center gap-4">
           <Link
@@ -433,7 +435,7 @@ function Footer() {
               href="/b2b"
               className="hover:text-[#2D3142] transition-colors"
             >
-              Fuer Organisationen
+              Für Organisationen
             </Link>
           </div>
         </div>

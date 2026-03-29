@@ -217,6 +217,13 @@ export default function DashboardPage() {
           {/* Quartier-Info-Bar (Wetter, Pollen, Muellabfuhr) */}
           <InfoBar />
 
+          {/* Services: Kommunal, Hilfe-Boerse, Marktplatz, News, Caregiver — Schnellzugriff oben */}
+          <DashboardServices
+            helpRequests={helpRequests}
+            marketplaceItems={marketplaceItems}
+            news={news}
+          />
+
           {/* Einladungs-Code Banner (Caregiver/Plus) */}
           <RedeemCodeBanner />
 
@@ -236,13 +243,6 @@ export default function DashboardPage() {
           <AlertBanners
             alerts={alerts}
             onInviteClick={() => setShowInviteModal(true)}
-          />
-
-          {/* Services: Kommunal, Hilfe-Boerse, Marktplatz, News, Caregiver */}
-          <DashboardServices
-            helpRequests={helpRequests}
-            marketplaceItems={marketplaceItems}
-            news={news}
           />
 
           {/* Leer-Zustand mit Demo-Vorschau (nur ohne UX-Redesign) */}

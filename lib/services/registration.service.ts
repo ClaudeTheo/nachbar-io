@@ -4,7 +4,11 @@
 
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { safeInsertNotification } from "@/lib/notifications-server";
-import { generateSecureCode, generateTempPassword } from "@/lib/invite-codes";
+import {
+  generateSecureCode,
+  generateTempPassword,
+  normalizeCode,
+} from "@/lib/invite-codes";
 import { ServiceError } from "@/lib/services/service-error";
 
 // ============================================================
@@ -33,6 +37,79 @@ export interface RegistrationResult {
   success: true;
   userId: string;
   verificationMethod?: string;
+}
+
+export interface InviteCheckResult {
+  valid: boolean;
+  householdId?: string;
+  streetName?: string;
+  houseNumber?: string;
+  referrerId?: string;
+}
+
+// ============================================================
+// Invite-Code Pruefung
+// ============================================================
+
+/**
+ * Prüft ob ein Einladungscode gültig ist.
+ * Sucht zuerst in households.invite_code (B2B), dann in neighbor_invitations (persönlich).
+ * Verwendet Service-Role weil unauthentifizierte Nutzer die Tabelle nicht lesen dürfen.
+ */
+export async function checkInviteCode(
+  adminDb: SupabaseClient,
+  inviteCode: string,
+): Promise<InviteCheckResult> {
+  if (!inviteCode || typeof inviteCode !== "string") {
+    throw new ServiceError("Kein Einladungscode angegeben", 400);
+  }
+
+  const normalized = normalizeCode(inviteCode);
+  if (!normalized || normalized.length < 4) {
+    return { valid: false };
+  }
+
+  // 1. Zuerst in households.invite_code suchen (B2B-Codes)
+  const { data: household } = await adminDb
+    .from("households")
+    .select("id, street_name, house_number")
+    .eq("invite_code", normalized)
+    .single();
+
+  if (household) {
+    return {
+      valid: true,
+      householdId: household.id,
+      streetName: household.street_name,
+      houseNumber: household.house_number,
+    };
+  }
+
+  // 2. Dann in neighbor_invitations suchen (persoenliche Einladungen)
+  const { data: invitation } = await adminDb
+    .from("neighbor_invitations")
+    .select(
+      "id, household_id, inviter_id, households(street_name, house_number)",
+    )
+    .eq("invite_code", normalized)
+    .eq("status", "sent")
+    .single();
+
+  if (invitation?.household_id) {
+    const hh = invitation.households as unknown as {
+      street_name: string;
+      house_number: string;
+    } | null;
+    return {
+      valid: true,
+      householdId: invitation.household_id,
+      streetName: hh?.street_name ?? "",
+      houseNumber: hh?.house_number ?? "",
+      referrerId: invitation.inviter_id,
+    };
+  }
+
+  return { valid: false };
 }
 
 // ============================================================

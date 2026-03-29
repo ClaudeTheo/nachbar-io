@@ -1,77 +1,57 @@
 // app/api/youth/tasks/[id]/route.ts
-// Jugend-Modul: Einzelne Aufgabe lesen/aktualisieren
-import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
+// Jugend-Modul: Einzelne Aufgabe lesen/aktualisieren (Thin Wrapper)
+import { NextRequest, NextResponse } from "next/server";
+import { createClient } from "@/lib/supabase/server";
+import { handleServiceError } from "@/lib/services/service-error";
+import {
+  getYouthTask,
+  updateYouthTask,
+} from "@/modules/youth/services/youth-routes.service";
 
 export async function GET(
   _request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
   if (!user) {
-    return NextResponse.json({ error: 'Nicht angemeldet' }, { status: 401 });
+    return NextResponse.json({ error: "Nicht angemeldet" }, { status: 401 });
   }
 
-  const { id } = await params;
-
-  const { data: task, error } = await supabase
-    .from('youth_tasks')
-    .select('*')
-    .eq('id', id)
-    .single();
-
-  if (error || !task) {
-    return NextResponse.json({ error: 'Aufgabe nicht gefunden' }, { status: 404 });
+  try {
+    const { id } = await params;
+    const result = await getYouthTask(supabase, id);
+    return NextResponse.json(result, { status: 200 });
+  } catch (error) {
+    return handleServiceError(error);
   }
-
-  return NextResponse.json({ task }, { status: 200 });
 }
 
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
   if (!user) {
-    return NextResponse.json({ error: 'Nicht angemeldet' }, { status: 401 });
+    return NextResponse.json({ error: "Nicht angemeldet" }, { status: 401 });
   }
 
-  const { id } = await params;
-
-  let body: Record<string, unknown>;
   try {
-    body = await request.json();
-  } catch {
-    return NextResponse.json({ error: 'Ungültige Anfrage' }, { status: 400 });
-  }
-
-  // Nur erlaubte Felder aktualisieren
-  const allowedFields = ['title', 'description', 'status', 'risk_level', 'estimated_minutes', 'points_reward'];
-  const updates: Record<string, unknown> = {};
-  for (const key of allowedFields) {
-    if (body[key] !== undefined) {
-      updates[key] = body[key];
+    const { id } = await params;
+    const body = await request.json();
+    const result = await updateYouthTask(supabase, id, body);
+    return NextResponse.json(result, { status: 200 });
+  } catch (error) {
+    if (error instanceof SyntaxError) {
+      return NextResponse.json({ error: "Ungültige Anfrage" }, { status: 400 });
     }
+    return handleServiceError(error);
   }
-
-  if (Object.keys(updates).length === 0) {
-    return NextResponse.json({ error: 'Keine Änderungen' }, { status: 400 });
-  }
-
-  const { data: task, error } = await supabase
-    .from('youth_tasks')
-    .update(updates)
-    .eq('id', id)
-    .select()
-    .single();
-
-  if (error) {
-    return NextResponse.json({ error: 'Aufgabe konnte nicht aktualisiert werden' }, { status: 500 });
-  }
-
-  return NextResponse.json({ task }, { status: 200 });
 }

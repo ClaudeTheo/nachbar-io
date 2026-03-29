@@ -26,9 +26,11 @@ export async function middleware(request: NextRequest) {
             "Retry-After": String(retryAfterSeconds),
             "X-RateLimit-Limit": String(result.limit),
             "X-RateLimit-Remaining": "0",
-            "X-RateLimit-Reset": String(Math.ceil((Date.now() + result.resetMs) / 1000)),
+            "X-RateLimit-Reset": String(
+              Math.ceil((Date.now() + result.resetMs) / 1000),
+            ),
           },
-        }
+        },
       );
     }
 
@@ -40,7 +42,7 @@ export async function middleware(request: NextRequest) {
       response.headers.set("X-RateLimit-Remaining", String(result.remaining));
       response.headers.set(
         "X-RateLimit-Reset",
-        String(Math.ceil((Date.now() + result.resetMs) / 1000))
+        String(Math.ceil((Date.now() + result.resetMs) / 1000)),
       );
     }
 
@@ -54,6 +56,6 @@ export async function middleware(request: NextRequest) {
 export const config = {
   matcher: [
     // Alle Routen ausser statische Assets und _next
-    "/((?!_next/static|_next/image|favicon.ico|icons/|manifest.json|sw.js).*)",
+    "/((?!_next/static|_next/image|favicon.ico|icons/|manifest.json|sw.js|promo/).*)",
   ],
 };

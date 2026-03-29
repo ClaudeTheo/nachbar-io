@@ -57,6 +57,8 @@ export interface QuarterSettings {
   emergencyBannerEnabled?: boolean;
   maxMembersPerHousehold?: number;
   defaultLanguage?: string;
+  /** Amtlicher Gemeindeschluessel fuer NINA-Warnungen (z.B. "083370000000" = LK Waldshut) */
+  nina_ags?: string;
 }
 
 export interface QuarterAdmin {

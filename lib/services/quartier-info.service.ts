@@ -80,11 +80,22 @@ export async function getQuartierInfo(
     }
   }
 
-  // 4. NINA-Warnungen — aus Cache oder Live-Fetch
+  // 4. NINA-Warnungen — nur wenn AGS fuer das Quartier konfiguriert ist
   let nina = cacheMap.get("nina") as QuartierInfoResponse["nina"] | undefined;
   if (!nina) {
     try {
-      nina = await fetchNinaWarnings();
+      // AGS-Code aus Quartier-Settings lesen
+      const { data: quarterData } = await supabase
+        .from("quarters")
+        .select("settings")
+        .eq("id", quarterId)
+        .single();
+      const ninaAgs = quarterData?.settings?.nina_ags;
+      if (ninaAgs) {
+        nina = await fetchNinaWarnings(ninaAgs);
+      } else {
+        nina = [];
+      }
     } catch {
       nina = [];
     }

@@ -3,9 +3,6 @@
 
 import type { NinaWarning, NinaSeverity } from "../types";
 
-// AGS Landkreis Waldshut (Bad Saeckingen)
-const DEFAULT_AGS = "083370000000";
-
 // Severity-Mapping: NINA nutzt verschiedene Formate
 function mapSeverity(raw: string | undefined): NinaSeverity {
   const s = (raw || "").toLowerCase();
@@ -20,7 +17,7 @@ function mapSeverity(raw: string | undefined): NinaSeverity {
  * @param ags Amtlicher Gemeindeschluessel (Default: Landkreis Waldshut)
  */
 export async function fetchNinaWarnings(
-  ags: string = DEFAULT_AGS,
+  ags: string,
 ): Promise<NinaWarning[]> {
   try {
     const url = `https://warnung.bund.de/api31/dashboard/${ags}.json`;

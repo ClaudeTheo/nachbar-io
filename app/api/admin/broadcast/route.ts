@@ -1,12 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import { safeInsertNotifications } from "@/lib/notifications-server";
+import { handleServiceError } from "@/lib/services/service-error";
+import { sendBroadcast, getBroadcastHistory } from "@/modules/admin/services/broadcast.service";
 
 /**
  * POST /api/admin/broadcast
  *
  * Push-Broadcast senden und persistieren.
- * Nur für Admins. Speichert den Broadcast als Notification für alle Nutzer.
+ * Nur fuer Admins. Speichert den Broadcast als Notification fuer alle Nutzer.
  */
 export async function POST(request: NextRequest) {
   const supabase = await createClient();
@@ -31,96 +32,21 @@ export async function POST(request: NextRequest) {
   } catch {
     return NextResponse.json({ error: "Ungültiges Anfrage-Format" }, { status: 400 });
   }
-  const { title, body: messageBody, audience, street, urgency } = body;
 
-  if (!title || typeof title !== "string" || title.trim().length < 3 || title.trim().length > 200) {
-    return NextResponse.json({ error: "Titel muss 3-200 Zeichen lang sein" }, { status: 400 });
+  try {
+    const baseUrl = request.nextUrl.origin || process.env.NEXT_PUBLIC_SITE_URL || "https://quartierapp.de";
+    const result = await sendBroadcast(supabase, {
+      title: body.title,
+      body: body.body,
+      audience: body.audience,
+      street: body.street,
+      urgency: body.urgency,
+      baseUrl,
+    });
+    return NextResponse.json(result);
+  } catch (error) {
+    return handleServiceError(error);
   }
-  if (!messageBody || typeof messageBody !== "string" || messageBody.trim().length < 3 || messageBody.trim().length > 5000) {
-    return NextResponse.json({ error: "Nachricht muss 3-5000 Zeichen lang sein" }, { status: 400 });
-  }
-
-  // Empfänger ermitteln
-  let recipientQuery = supabase.from("users").select("id");
-
-  if (audience === "street" && street) {
-    // Nutzer dieser Straße über household_members + households
-    const { data: householdIds } = await supabase
-      .from("households")
-      .select("id")
-      .eq("street_name", street);
-
-    if (householdIds && householdIds.length > 0) {
-      const { data: memberUserIds } = await supabase
-        .from("household_members")
-        .select("user_id")
-        .in("household_id", householdIds.map(h => h.id));
-
-      if (memberUserIds && memberUserIds.length > 0) {
-        recipientQuery = recipientQuery.in("id", memberUserIds.map(m => m.user_id));
-      }
-    }
-  } else if (audience === "seniors") {
-    recipientQuery = recipientQuery.eq("ui_mode", "senior");
-  }
-
-  const { data: recipients } = await recipientQuery;
-  const recipientIds = recipients?.map(r => r.id) ?? [];
-
-  // Notifications für alle Empfänger erstellen (persistente History)
-  const pushTitle = urgency === "urgent" ? `DRINGEND: ${title}` : title;
-
-  if (recipientIds.length > 0) {
-    const notifications = recipientIds.map(userId => ({
-      user_id: userId,
-      type: "broadcast",
-      title: pushTitle,
-      body: messageBody,
-      reference_type: "broadcast",
-      reference_id: `broadcast-${Date.now()}`,
-      read: false,
-    }));
-
-    await safeInsertNotifications(supabase, notifications);
-  }
-
-  // Push-Nachrichten senden (falls VAPID konfiguriert)
-  let pushSent = 0;
-  const internalSecret = process.env.INTERNAL_API_SECRET;
-
-  if (internalSecret) {
-    try {
-      // Interne Push-API aufrufen
-      const baseUrl = request.nextUrl.origin || process.env.NEXT_PUBLIC_SITE_URL || "https://quartierapp.de";
-      const pushRes = await fetch(`${baseUrl}/api/push/send`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "x-internal-secret": internalSecret,
-        },
-        body: JSON.stringify({
-          title: pushTitle,
-          body: messageBody,
-          url: "/dashboard",
-          tag: `broadcast-${Date.now()}`,
-          urgent: urgency === "urgent",
-        }),
-      });
-
-      if (pushRes.ok) {
-        const pushResult = await pushRes.json();
-        pushSent = pushResult.sent ?? 0;
-      }
-    } catch (err) {
-      console.error("Push-Versand fehlgeschlagen:", err);
-    }
-  }
-
-  return NextResponse.json({
-    sent: recipientIds.length,
-    pushSent,
-    timestamp: new Date().toISOString(),
-  });
 }
 
 /**
@@ -145,32 +71,10 @@ export async function GET() {
     return NextResponse.json({ error: "Nur Admins" }, { status: 403 });
   }
 
-  // Broadcasts sind Notifications mit reference_type='broadcast'
-  // Gruppiert nach reference_id (gleicher Broadcast = gleiche reference_id)
-  const { data: broadcasts } = await supabase
-    .from("notifications")
-    .select("title, body, reference_id, created_at")
-    .eq("reference_type", "broadcast")
-    .order("created_at", { ascending: false })
-    .limit(200);
-
-  // Nach reference_id gruppieren (jeder Broadcast hat mehrere Notifications)
-  const grouped = new Map<string, { title: string; body: string; created_at: string; recipientCount: number }>();
-
-  (broadcasts ?? []).forEach((b: Record<string, unknown>) => {
-    const refId = b.reference_id as string;
-    if (!grouped.has(refId)) {
-      grouped.set(refId, {
-        title: b.title as string,
-        body: (b.body as string) ?? "",
-        created_at: b.created_at as string,
-        recipientCount: 0,
-      });
-    }
-    grouped.get(refId)!.recipientCount++;
-  });
-
-  const history = [...grouped.values()].slice(0, 50);
-
-  return NextResponse.json({ history });
+  try {
+    const history = await getBroadcastHistory(supabase);
+    return NextResponse.json({ history });
+  } catch (error) {
+    return handleServiceError(error);
+  }
 }

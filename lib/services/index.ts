@@ -33,3 +33,9 @@ export {
   getHouseholdForUserServer,
   getHouseholdMembersServer,
 } from "./household.service";
+
+export { completeRegistration } from "./registration.service";
+export type {
+  RegistrationInput,
+  RegistrationResult,
+} from "./registration.service";

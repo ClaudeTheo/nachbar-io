@@ -23,11 +23,15 @@ export interface AmtsblattSyncResult {
 }
 
 export async function runAmtsblattSync(
-  supabase: SupabaseClient
+  supabase: SupabaseClient,
 ): Promise<AmtsblattSyncResult> {
   const anthropicKey = process.env.ANTHROPIC_API_KEY;
   if (!anthropicKey) {
-    throw new ServiceError("ANTHROPIC_API_KEY nicht gesetzt", 500, "MISSING_API_KEY");
+    throw new ServiceError(
+      "ANTHROPIC_API_KEY nicht gesetzt",
+      500,
+      "MISSING_API_KEY",
+    );
   }
 
   console.log(`${LOG_PREFIX} Starte Amtsblatt-Sync...`);
@@ -37,7 +41,11 @@ export async function runAmtsblattSync(
     headers: { "User-Agent": "QuartierApp/1.0 (Community-Info)" },
   });
   if (!pageResponse.ok) {
-    throw new Error(`Amtsblatt-Seite nicht erreichbar: ${pageResponse.status}`);
+    throw new ServiceError(
+      `Amtsblatt-Seite nicht erreichbar: ${pageResponse.status}`,
+      502,
+      "PAGE_UNREACHABLE",
+    );
   }
   const html = await pageResponse.text();
   const pdfUrls = extractPdfUrls(html);
@@ -54,7 +62,11 @@ export async function runAmtsblattSync(
 
   if (pdfUrls.length === 0) {
     console.log(`${LOG_PREFIX} Keine PDF-URLs gefunden`);
-    return { message: "Keine PDFs gefunden", pdfs_found: 0, announcements_imported: 0 };
+    return {
+      message: "Keine PDFs gefunden",
+      pdfs_found: 0,
+      announcements_imported: 0,
+    };
   }
 
   console.log(`${LOG_PREFIX} ${pdfUrls.length} PDF-URLs gefunden`);
@@ -68,7 +80,11 @@ export async function runAmtsblattSync(
     .single();
 
   if (!quarter) {
-    throw new Error("Quartier Bad Säckingen nicht gefunden");
+    throw new ServiceError(
+      "Quartier Bad Säckingen nicht gefunden",
+      500,
+      "QUARTER_NOT_FOUND",
+    );
   }
 
   let totalImported = 0;
@@ -127,7 +143,9 @@ export async function runAmtsblattSync(
 
       // 5. Text extrahieren
       const { text: rawText, pages } = await extractTextFromPdf(pdfBuffer);
-      console.log(`${LOG_PREFIX} ${pages} Seiten, ${rawText.length} Zeichen extrahiert`);
+      console.log(
+        `${LOG_PREFIX} ${pages} Seiten, ${rawText.length} Zeichen extrahiert`,
+      );
 
       if (rawText.length < 100) {
         throw new Error("Zu wenig Text extrahiert — möglicherweise Scan-PDF");
@@ -135,14 +153,23 @@ export async function runAmtsblattSync(
 
       // Ausgabe-Datum aus dem Text extrahieren (Pattern: "Samstag, DD. Monat YYYY")
       const dateMatch = rawText.match(
-        /(?:Samstag|Montag|Dienstag|Mittwoch|Donnerstag|Freitag|Sonntag),\s+(\d{1,2})\.\s+(\w+)\s+(\d{4})/
+        /(?:Samstag|Montag|Dienstag|Mittwoch|Donnerstag|Freitag|Sonntag),\s+(\d{1,2})\.\s+(\w+)\s+(\d{4})/,
       );
       let issueDate = new Date().toISOString().split("T")[0];
       if (dateMatch) {
         const monthMap: Record<string, string> = {
-          Januar: "01", Februar: "02", "März": "03", April: "04",
-          Mai: "05", Juni: "06", Juli: "07", August: "08",
-          September: "09", Oktober: "10", November: "11", Dezember: "12",
+          Januar: "01",
+          Februar: "02",
+          März: "03",
+          April: "04",
+          Mai: "05",
+          Juni: "06",
+          Juli: "07",
+          August: "08",
+          September: "09",
+          Oktober: "10",
+          November: "11",
+          Dezember: "12",
         };
         const month = monthMap[dateMatch[2]];
         if (month) {
@@ -163,15 +190,15 @@ export async function runAmtsblattSync(
           model: "claude-haiku-4-5-20251001",
           max_tokens: 16000,
           system: EXTRACTION_SYSTEM_PROMPT,
-          messages: [
-            { role: "user", content: buildExtractionPrompt(rawText) },
-          ],
+          messages: [{ role: "user", content: buildExtractionPrompt(rawText) }],
         }),
       });
 
       if (!aiResponse.ok) {
         const errBody = await aiResponse.text();
-        throw new Error(`Claude API Fehler ${aiResponse.status}: ${errBody.slice(0, 200)}`);
+        throw new Error(
+          `Claude API Fehler ${aiResponse.status}: ${errBody.slice(0, 200)}`,
+        );
       }
 
       const aiData = await aiResponse.json();
@@ -200,7 +227,9 @@ export async function runAmtsblattSync(
           .insert(announcements);
 
         if (insertError) {
-          throw new Error(`Announcements-Insert Fehler: ${insertError.message}`);
+          throw new Error(
+            `Announcements-Insert Fehler: ${insertError.message}`,
+          );
         }
       }
 
@@ -216,8 +245,9 @@ export async function runAmtsblattSync(
         .eq("id", issue.id);
 
       totalImported += items.length;
-      console.log(`${LOG_PREFIX} Ausgabe ${fileInfo.issueNumber}: ${items.length} Meldungen importiert`);
-
+      console.log(
+        `${LOG_PREFIX} Ausgabe ${fileInfo.issueNumber}: ${items.length} Meldungen importiert`,
+      );
     } catch (err) {
       // Fehler fuer diese Ausgabe loggen, aber andere weiter verarbeiten
       const errorMsg = err instanceof Error ? err.message : String(err);

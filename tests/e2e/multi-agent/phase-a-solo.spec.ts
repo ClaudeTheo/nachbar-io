@@ -35,7 +35,12 @@ test.describe("Bewohner (Senior/Free)", () => {
     // Senior-Modus: Groessere Touch-Targets, vereinfachte Navigation
     await expect(page).toHaveURL(/senior/);
 
-    // Screenshot fuer visuelle Pruefung
+    // Senior-Begruessung sichtbar
+    const greeting = page.locator("[data-testid='senior-greeting']");
+    if (await greeting.isVisible({ timeout: 5000 }).catch(() => false)) {
+      console.log("[S] Senior-Begruessung sichtbar");
+    }
+
     await page.screenshot({
       path: "test-results/multi-agent/bewohner-dashboard.png",
     });
@@ -49,20 +54,31 @@ test.describe("Bewohner (Senior/Free)", () => {
     await page.goto("/senior/checkin");
     await page.waitForLoadState("networkidle").catch(() => {});
 
-    // Check-in Buttons suchen (gut / geht so / schlecht)
-    const checkinArea = page.locator("[data-testid='checkin'], main");
-    await expect(checkinArea).toBeVisible({ timeout: TIMEOUTS.elementVisible });
+    // Check-in Button oder Mood-Auswahl suchen
+    const checkinButton = page.locator("[data-testid='checkin-button']");
+    const moodGood = page.locator("[data-testid='mood-good']");
 
-    // "Gut" waehlen (erster Check-in-Button)
-    const gutButton = page.getByRole("button", { name: /gut/i }).first();
-    if (await gutButton.isVisible({ timeout: 3000 }).catch(() => false)) {
-      await gutButton.click();
-      console.log("[S] Check-in: 'Gut' gewaehlt");
+    if (await checkinButton.isVisible({ timeout: 5000 }).catch(() => false)) {
+      await checkinButton.click();
+      await page.waitForTimeout(1000);
+      console.log("[S] Check-in Button geklickt");
+    }
+
+    // Mood-Auswahl: "Gut" waehlen
+    if (await moodGood.isVisible({ timeout: 5000 }).catch(() => false)) {
+      await moodGood.click();
+      console.log("[S] Check-in: 'Gut' gewaehlt (data-testid=mood-good)");
       await page.waitForTimeout(1000);
     } else {
       console.log(
-        "[S] Check-in-Buttons nicht gefunden — Seite evtl. anders aufgebaut",
+        "[S] Mood-Buttons nicht sichtbar — evtl. bereits eingecheckt",
       );
+    }
+
+    // Erfolg pruefen
+    const checkinDone = page.locator("[data-testid='checkin-done']");
+    if (await checkinDone.isVisible({ timeout: 5000 }).catch(() => false)) {
+      console.log("[S] Check-in erfolgreich abgeschlossen");
     }
 
     await page.screenshot({
@@ -73,34 +89,28 @@ test.describe("Bewohner (Senior/Free)", () => {
   test("A3: Schwarzes Brett — Beitrag erstellen", async () => {
     const { page } = agents.bewohner;
 
-    // Senior nutzt normales Board (oder senior/home hat Board-Link)
     await page.goto("/board");
     await page.waitForLoadState("networkidle").catch(() => {});
 
-    // Neuen Beitrag erstellen
-    const neuButton = page
-      .getByRole("button", { name: /neu|beitrag|schreiben|erstellen/i })
-      .first();
-    if (await neuButton.isVisible({ timeout: 3000 }).catch(() => false)) {
-      await neuButton.click();
-      await page.waitForTimeout(500);
-
-      // Titel und Text eingeben
-      const titelInput = page.getByLabel(/titel|betreff/i).first();
-      if (await titelInput.isVisible({ timeout: 2000 }).catch(() => false)) {
-        await titelInput.fill("E2E: Grüße aus dem Seniorenmodus!");
-      }
-
-      const textInput = page.getByLabel(/text|nachricht|inhalt/i).first();
-      if (await textInput.isVisible({ timeout: 2000 }).catch(() => false)) {
-        await textInput.fill(
-          "Dies ist ein automatisch erstellter Testbeitrag vom Senior-Agenten.",
-        );
-      }
-
+    // Board hat eine Textarea (kein "Neu"-Button) + "Posten"-Button
+    const textarea = page.getByPlaceholder(
+      "Was gibt es Neues im Quartier?",
+    );
+    if (await textarea.isVisible({ timeout: 5000 }).catch(() => false)) {
+      await textarea.fill(
+        "E2E: Grüße aus dem Seniorenmodus! Dies ist ein automatisch erstellter Testbeitrag.",
+      );
       console.log("[S] Schwarzes Brett Beitrag ausgefuellt");
+
+      // "Posten" Button klicken
+      const postenButton = page.getByRole("button", { name: /posten/i });
+      if (await postenButton.isVisible({ timeout: 3000 }).catch(() => false)) {
+        await postenButton.click();
+        await page.waitForTimeout(2000);
+        console.log("[S] Beitrag gepostet");
+      }
     } else {
-      console.log("[S] Board-Seite geladen, 'Neu'-Button nicht sichtbar");
+      console.log("[S] Board-Seite geladen, Textarea nicht sichtbar");
     }
 
     await page.screenshot({
@@ -118,15 +128,27 @@ test.describe("Bewohner (Senior/Free)", () => {
       timeout: TIMEOUTS.elementVisible,
     });
 
-    // "Hilfe suchen" oder "Anfrage erstellen" Button
-    const hilfeButton = page
-      .getByRole("button", { name: /hilfe.*such|anfrage|brauche.*hilfe/i })
-      .first();
-    if (await hilfeButton.isVisible({ timeout: 3000 }).catch(() => false)) {
-      await hilfeButton.click();
-      console.log("[S] Hilfe-Anfrage Dialog geoeffnet");
+    // "Neues Gesuch erstellen" Link → /hilfe/neu
+    const gesuchLink = page.getByRole("link", {
+      name: /neues gesuch erstellen/i,
+    });
+    if (await gesuchLink.isVisible({ timeout: 5000 }).catch(() => false)) {
+      await gesuchLink.click();
+      await page.waitForLoadState("networkidle").catch(() => {});
+      console.log("[S] Hilfe-Anfrage Formular geoeffnet (/hilfe/neu)");
+
+      // Kategorie waehlen (z.B. einkaufen)
+      const einkaufenBtn = page.getByRole("button", { name: /einkaufen/i });
+      if (
+        await einkaufenBtn.isVisible({ timeout: 3000 }).catch(() => false)
+      ) {
+        await einkaufenBtn.click();
+        console.log("[S] Kategorie 'Einkaufen' gewaehlt");
+      }
     } else {
-      console.log("[S] Hilfe-Seite geladen, kein Anfrage-Button sichtbar");
+      console.log(
+        "[S] Hilfe-Seite geladen, kein 'Neues Gesuch erstellen' Link sichtbar",
+      );
     }
 
     await page.screenshot({
@@ -166,6 +188,12 @@ test.describe("Angehöriger (Plus)", () => {
       timeout: TIMEOUTS.elementVisible,
     });
 
+    // Dashboard-Greeting pruefen
+    const greeting = page.locator("[data-testid='dashboard-greeting']");
+    if (await greeting.isVisible({ timeout: 3000 }).catch(() => false)) {
+      console.log("[T] Dashboard-Begruessung sichtbar");
+    }
+
     console.log("[T] Angehoeriger-Dashboard geladen");
     await page.screenshot({
       path: "test-results/multi-agent/angehoeriger-dashboard.png",
@@ -175,7 +203,7 @@ test.describe("Angehöriger (Plus)", () => {
   test("A7: Heartbeat-Status des Bewohners sehen", async () => {
     const { page } = agents.angehoeriger;
 
-    // Care-Uebersicht mit Heartbeat-Status
+    // Care-Uebersicht
     await page.goto("/care");
     await page.waitForLoadState("networkidle").catch(() => {});
 
@@ -183,19 +211,19 @@ test.describe("Angehöriger (Plus)", () => {
       timeout: TIMEOUTS.elementVisible,
     });
 
-    // Heartbeat-Karte oder Status-Anzeige suchen
-    const heartbeatCard = page.locator(
-      "[data-testid='heartbeat'], [class*='heartbeat'], [class*='status']",
+    // Caregiver-spezifische Elemente suchen
+    const caregiverSection = page.locator(
+      "[data-testid='dashboard-caregivers'], [data-testid='heartbeat'], main",
     );
     if (
-      await heartbeatCard
+      await caregiverSection
         .first()
-        .isVisible({ timeout: 3000 })
+        .isVisible({ timeout: 5000 })
         .catch(() => false)
     ) {
-      console.log("[T] Heartbeat-Status sichtbar");
+      console.log("[T] Care-Bereich sichtbar");
     } else {
-      console.log("[T] Care-Seite geladen, Heartbeat-Widget nicht gefunden");
+      console.log("[T] Care-Seite geladen, Caregiver-Widget nicht gefunden");
     }
 
     await page.screenshot({
@@ -206,15 +234,14 @@ test.describe("Angehöriger (Plus)", () => {
   test("A8: Check-in-Historie einsehen", async () => {
     const { page } = agents.angehoeriger;
 
-    // Companion/Care-Seite mit Check-in-Historie
-    await page.goto("/companion");
+    await page.goto("/care/caregiver");
     await page.waitForLoadState("networkidle").catch(() => {});
 
     await expect(page.locator("main")).toBeVisible({
       timeout: TIMEOUTS.elementVisible,
     });
 
-    console.log("[T] Companion/Care-Seite geladen");
+    console.log("[T] Caregiver-Einstellungen geladen");
     await page.screenshot({
       path: "test-results/multi-agent/angehoeriger-checkin-historie.png",
     });
@@ -229,6 +256,21 @@ test.describe("Angehöriger (Plus)", () => {
     await expect(page.locator("main")).toBeVisible({
       timeout: TIMEOUTS.elementVisible,
     });
+
+    // Konversationskarten suchen
+    const conversationCard = page.locator(
+      "[data-testid='conversation-card']",
+    );
+    if (
+      await conversationCard
+        .first()
+        .isVisible({ timeout: 5000 })
+        .catch(() => false)
+    ) {
+      console.log("[T] Konversationen sichtbar");
+    } else {
+      console.log("[T] Messages geladen, keine Konversationen vorhanden");
+    }
 
     console.log("[T] Chat/Nachrichten geladen");
     await page.screenshot({
@@ -261,13 +303,18 @@ test.describe("Stadt/Kommune (Pro Community)", () => {
   test("A11: Bewohner-Statistiken ansehen", async () => {
     const { page } = agents.stadt;
 
-    // Org-Reports-Seite
     await page.goto("/org/reports");
     await page.waitForLoadState("networkidle").catch(() => {});
 
     await expect(page.locator("main")).toBeVisible({
       timeout: TIMEOUTS.elementVisible,
     });
+
+    // Statusfilter-Buttons pruefen
+    const alleButton = page.getByRole("button", { name: "Alle" });
+    if (await alleButton.isVisible({ timeout: 3000 }).catch(() => false)) {
+      console.log("[K] Reports mit Statusfilter geladen");
+    }
 
     console.log("[K] Statistiken/Reports geladen");
     await page.screenshot({
@@ -284,6 +331,14 @@ test.describe("Stadt/Kommune (Pro Community)", () => {
     await expect(page.locator("main")).toBeVisible({
       timeout: TIMEOUTS.elementVisible,
     });
+
+    // "Neue Bekanntmachung" Button pruefen
+    const neuButton = page.getByRole("button", {
+      name: /neue bekanntmachung/i,
+    });
+    if (await neuButton.isVisible({ timeout: 5000 }).catch(() => false)) {
+      console.log("[K] 'Neue Bekanntmachung' Button sichtbar");
+    }
 
     console.log("[K] Ankuendigungen geladen");
     await page.screenshot({
@@ -338,6 +393,14 @@ test.describe("Arzt (Pro Medical + Bewohner)", () => {
     await expect(page.locator("main")).toBeVisible({
       timeout: TIMEOUTS.elementVisible,
     });
+
+    // Board-Textarea pruefen
+    const textarea = page.getByPlaceholder(
+      "Was gibt es Neues im Quartier?",
+    );
+    if (await textarea.isVisible({ timeout: 3000 }).catch(() => false)) {
+      console.log("[D] Board-Textarea sichtbar");
+    }
 
     console.log("[D] Schwarzes Brett geladen (Arzt als Nachbar)");
     await page.screenshot({

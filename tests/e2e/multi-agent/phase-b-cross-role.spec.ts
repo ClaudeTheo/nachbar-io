@@ -29,7 +29,7 @@ test.afterAll(async () => {
 // ============================================================
 
 test.describe("B1: Schwarzes Brett → Moderation", () => {
-  const testTitle = `E2E-B1: Testbeitrag ${Date.now()}`;
+  const testText = `E2E-B1: Testbeitrag ${Date.now()}`;
 
   test("B1a: Senior erstellt Beitrag auf Schwarzem Brett", async () => {
     const { page } = agents.bewohner;
@@ -37,40 +37,22 @@ test.describe("B1: Schwarzes Brett → Moderation", () => {
     await page.goto("/board");
     await page.waitForLoadState("networkidle").catch(() => {});
 
-    // "Neu" / "Beitrag erstellen" Button
-    const neuButton = page
-      .getByRole("button", { name: /neu|beitrag|schreiben|erstellen/i })
-      .first();
+    // Board: Textarea + "Posten"-Button (kein separater "Neu"-Dialog)
+    const textarea = page.getByPlaceholder(
+      "Was gibt es Neues im Quartier?",
+    );
 
-    if (await neuButton.isVisible({ timeout: 5000 }).catch(() => false)) {
-      await neuButton.click();
-      await page.waitForTimeout(500);
+    if (await textarea.isVisible({ timeout: 5000 }).catch(() => false)) {
+      await textarea.fill(testText);
 
-      // Titel eingeben
-      const titelInput = page.getByLabel(/titel|betreff/i).first();
-      if (await titelInput.isVisible({ timeout: 3000 }).catch(() => false)) {
-        await titelInput.fill(testTitle);
-      }
-
-      // Text eingeben
-      const textInput = page.getByLabel(/text|nachricht|inhalt/i).first();
-      if (await textInput.isVisible({ timeout: 3000 }).catch(() => false)) {
-        await textInput.fill(
-          "Cross-Role-Test: Dieser Beitrag soll in der Moderation sichtbar sein.",
-        );
-      }
-
-      // Absenden
-      const submitButton = page
-        .getByRole("button", { name: /senden|posten|absenden|erstellen/i })
-        .first();
-      if (await submitButton.isVisible({ timeout: 3000 }).catch(() => false)) {
-        await submitButton.click();
+      const postenButton = page.getByRole("button", { name: /posten/i });
+      if (await postenButton.isVisible({ timeout: 3000 }).catch(() => false)) {
+        await postenButton.click();
         await page.waitForTimeout(2000);
-        console.log(`[S] Board-Beitrag erstellt: "${testTitle}"`);
+        console.log(`[S] Board-Beitrag gepostet: "${testText}"`);
       }
     } else {
-      console.log("[S] Board-Seite geladen, 'Neu'-Button nicht sichtbar");
+      console.log("[S] Board-Seite geladen, Textarea nicht sichtbar");
     }
 
     await page.screenshot({
@@ -78,10 +60,9 @@ test.describe("B1: Schwarzes Brett → Moderation", () => {
     });
   });
 
-  test("B1b: Stadt sieht Beitrag im Org-Dashboard", async () => {
+  test("B1b: Stadt sieht Beitrag im Board", async () => {
     const { page } = agents.stadt;
 
-    // Org-Dashboard oder Board-Uebersicht laden
     await page.goto("/board");
     await page.waitForLoadState("networkidle").catch(() => {});
 
@@ -90,9 +71,9 @@ test.describe("B1: Schwarzes Brett → Moderation", () => {
     });
 
     // Pruefen ob der Beitrag des Seniors sichtbar ist
-    const beitrag = page.getByText(testTitle);
-    if (await beitrag.isVisible({ timeout: 5000 }).catch(() => false)) {
-      console.log(`[K] Beitrag "${testTitle}" im Board sichtbar`);
+    const beitrag = page.getByText(testText);
+    if (await beitrag.isVisible({ timeout: 8000 }).catch(() => false)) {
+      console.log(`[K] Beitrag "${testText}" im Board sichtbar`);
     } else {
       console.log(
         "[K] Board geladen, Beitrag noch nicht sichtbar (evtl. Realtime-Delay)",
@@ -110,24 +91,33 @@ test.describe("B1: Schwarzes Brett → Moderation", () => {
 // ============================================================
 
 test.describe("B2: Check-in → Betreuer sieht Status", () => {
-  test("B2a: Senior fuehrt Check-in 'geht so' durch", async () => {
+  test("B2a: Senior fuehrt Check-in 'Geht so' durch", async () => {
     const { page } = agents.bewohner;
 
     await page.goto("/senior/checkin");
     await page.waitForLoadState("networkidle").catch(() => {});
 
-    // "Geht so" Button waehlen
-    const gehtSoButton = page.getByRole("button", { name: /geht so/i }).first();
-    if (await gehtSoButton.isVisible({ timeout: 5000 }).catch(() => false)) {
-      await gehtSoButton.click();
+    // Check-in Button klicken (falls noch nicht eingecheckt)
+    const checkinButton = page.locator("[data-testid='checkin-button']");
+    if (await checkinButton.isVisible({ timeout: 5000 }).catch(() => false)) {
+      await checkinButton.click();
+      await page.waitForTimeout(1000);
+    }
+
+    // Mood-Auswahl: "Geht so" (data-testid="mood-neutral")
+    const moodNeutral = page.locator("[data-testid='mood-neutral']");
+    if (await moodNeutral.isVisible({ timeout: 5000 }).catch(() => false)) {
+      await moodNeutral.click();
       await page.waitForTimeout(1500);
-      console.log("[S] Check-in: 'Geht so' gewaehlt");
+      console.log("[S] Check-in: 'Geht so' gewaehlt (mood-neutral)");
     } else {
-      // Fallback: erster mittlerer Button
-      const buttons = page.getByRole("button").all();
-      console.log(
-        "[S] 'Geht so'-Button nicht gefunden, Check-in-Seite geladen",
-      );
+      // Bereits eingecheckt oder anderer Zustand
+      const checkinDone = page.locator("[data-testid='checkin-done']");
+      if (await checkinDone.isVisible({ timeout: 3000 }).catch(() => false)) {
+        console.log("[S] Check-in bereits erledigt");
+      } else {
+        console.log("[S] Mood-Buttons nicht sichtbar");
+      }
     }
 
     await page.screenshot({
@@ -138,19 +128,19 @@ test.describe("B2: Check-in → Betreuer sieht Status", () => {
   test("B2b: Betreuer sieht Check-in-Status auf Care-Seite", async () => {
     const { page } = agents.angehoeriger;
 
-    await page.goto("/care/caregiver");
+    await page.goto("/care");
     await page.waitForLoadState("networkidle").catch(() => {});
 
     await expect(page.locator("main")).toBeVisible({
       timeout: TIMEOUTS.elementVisible,
     });
 
-    // Status-Anzeige suchen (Heartbeat / Check-in)
-    const statusElement = page.locator(
-      "[data-testid='checkin-status'], [class*='status'], [class*='heartbeat']",
+    // Caregiver-Dashboard mit Heartbeat/Status
+    const careSection = page.locator(
+      "[data-testid='dashboard-caregivers'], [data-testid='checkin-status'], [data-testid='heartbeat']",
     );
     if (
-      await statusElement
+      await careSection
         .first()
         .isVisible({ timeout: 5000 })
         .catch(() => false)
@@ -171,9 +161,9 @@ test.describe("B2: Check-in → Betreuer sieht Status", () => {
 // ============================================================
 
 test.describe("B3: Ankuendigung → Bewohner sieht sie", () => {
-  const announcementText = `E2E-B3: Ankuendigung ${Date.now()}`;
+  const announcementTitle = `E2E-B3: Ankuendigung ${Date.now()}`;
 
-  test("B3a: Stadt erstellt Ankuendigung", async () => {
+  test("B3a: Stadt erstellt Bekanntmachung", async () => {
     const { page } = agents.stadt;
 
     await page.goto("/org/announcements");
@@ -183,35 +173,39 @@ test.describe("B3: Ankuendigung → Bewohner sieht sie", () => {
       timeout: TIMEOUTS.elementVisible,
     });
 
-    // "Neue Ankuendigung" Button
-    const neuButton = page
-      .getByRole("button", { name: /neu|erstellen|ankuendigung/i })
-      .first();
+    // "Neue Bekanntmachung" Button
+    const neuButton = page.getByRole("button", {
+      name: /neue bekanntmachung/i,
+    });
     if (await neuButton.isVisible({ timeout: 5000 }).catch(() => false)) {
       await neuButton.click();
       await page.waitForTimeout(500);
 
-      // Text eingeben
-      const textInput = page
-        .getByLabel(/titel|text|nachricht|betreff/i)
-        .first();
-      if (await textInput.isVisible({ timeout: 3000 }).catch(() => false)) {
-        await textInput.fill(announcementText);
+      // Titel eingeben (id="ann-title")
+      const titelInput = page.locator("#ann-title");
+      if (await titelInput.isVisible({ timeout: 3000 }).catch(() => false)) {
+        await titelInput.fill(announcementTitle);
       }
 
-      // Absenden
-      const submitButton = page
-        .getByRole("button", {
-          name: /senden|posten|erstellen|veroeffentlichen/i,
-        })
-        .first();
-      if (await submitButton.isVisible({ timeout: 3000 }).catch(() => false)) {
-        await submitButton.click();
+      // Text eingeben (id="ann-body")
+      const bodyInput = page.locator("#ann-body");
+      if (await bodyInput.isVisible({ timeout: 3000 }).catch(() => false)) {
+        await bodyInput.fill(
+          "Cross-Role-Test: Bekanntmachung fuer alle Bewohner.",
+        );
+      }
+
+      // Speichern
+      const saveButton = page.getByRole("button", { name: /speichern/i });
+      if (await saveButton.isVisible({ timeout: 3000 }).catch(() => false)) {
+        await saveButton.click();
         await page.waitForTimeout(2000);
-        console.log(`[K] Ankuendigung erstellt: "${announcementText}"`);
+        console.log(`[K] Bekanntmachung erstellt: "${announcementTitle}"`);
       }
     } else {
-      console.log("[K] Ankuendigungen-Seite geladen, kein 'Neu'-Button");
+      console.log(
+        "[K] Ankuendigungen-Seite geladen, kein 'Neue Bekanntmachung'-Button",
+      );
     }
 
     await page.screenshot({
@@ -230,10 +224,10 @@ test.describe("B3: Ankuendigung → Bewohner sieht sie", () => {
     });
 
     // Ankuendigung auf der Startseite suchen
-    const announcement = page.getByText(announcementText);
-    if (await announcement.isVisible({ timeout: 5000 }).catch(() => false)) {
+    const announcement = page.getByText(announcementTitle);
+    if (await announcement.isVisible({ timeout: 8000 }).catch(() => false)) {
       console.log(
-        `[S] Ankuendigung "${announcementText}" auf Dashboard sichtbar`,
+        `[S] Ankuendigung "${announcementTitle}" auf Dashboard sichtbar`,
       );
     } else {
       console.log(
@@ -255,40 +249,40 @@ test.describe("B4: Hilfe-Anfrage → Arzt sieht sie", () => {
   test("B4a: Senior stellt Hilfe-Anfrage", async () => {
     const { page } = agents.bewohner;
 
-    await page.goto("/hilfe");
+    await page.goto("/hilfe/neu");
     await page.waitForLoadState("networkidle").catch(() => {});
 
     await expect(page.locator("main")).toBeVisible({
       timeout: TIMEOUTS.elementVisible,
     });
 
-    // "Hilfe suchen" oder "Anfrage erstellen"
-    const hilfeButton = page
-      .getByRole("button", { name: /hilfe.*such|anfrage|brauche.*hilfe/i })
-      .first();
-    if (await hilfeButton.isVisible({ timeout: 5000 }).catch(() => false)) {
-      await hilfeButton.click();
-      await page.waitForTimeout(1000);
+    // Kategorie waehlen: "Einkaufen"
+    const einkaufenBtn = page.getByRole("button", { name: /einkaufen/i });
+    if (await einkaufenBtn.isVisible({ timeout: 5000 }).catch(() => false)) {
+      await einkaufenBtn.click();
+      await page.waitForTimeout(500);
 
-      // Beschreibung eingeben
-      const textInput = page
-        .getByLabel(/beschreibung|text|was.*brauchen/i)
-        .first();
-      if (await textInput.isVisible({ timeout: 3000 }).catch(() => false)) {
-        await textInput.fill("E2E-B4: Senior braucht Hilfe beim Einkaufen");
+      // Beschreibung eingeben (id="description")
+      const descInput = page.locator("#description");
+      if (await descInput.isVisible({ timeout: 3000 }).catch(() => false)) {
+        await descInput.fill(
+          "E2E-B4: Senior braucht Hilfe beim Einkaufen",
+        );
       }
 
-      // Absenden
-      const submitButton = page
-        .getByRole("button", { name: /senden|absenden|anfrage/i })
-        .first();
+      // "Gesuch aufgeben" Button
+      const submitButton = page.getByRole("button", {
+        name: /gesuch aufgeben/i,
+      });
       if (await submitButton.isVisible({ timeout: 3000 }).catch(() => false)) {
         await submitButton.click();
         await page.waitForTimeout(2000);
-        console.log("[S] Hilfe-Anfrage erstellt");
+        console.log("[S] Hilfe-Gesuch erstellt (Einkaufen)");
       }
     } else {
-      console.log("[S] Hilfe-Seite geladen, kein Anfrage-Button sichtbar");
+      console.log(
+        "[S] Hilfe-Formular geladen, Kategorie-Buttons nicht sichtbar",
+      );
     }
 
     await page.screenshot({
@@ -308,7 +302,7 @@ test.describe("B4: Hilfe-Anfrage → Arzt sieht sie", () => {
 
     // Suche nach Hilfe-Anfragen in der Liste
     const anfrage = page.getByText(/einkaufen/i);
-    if (await anfrage.isVisible({ timeout: 5000 }).catch(() => false)) {
+    if (await anfrage.isVisible({ timeout: 8000 }).catch(() => false)) {
       console.log("[D] Hilfe-Anfrage des Seniors sichtbar");
     } else {
       console.log("[D] Hilfe-Seite geladen, Anfrage nicht sichtbar");
@@ -348,7 +342,6 @@ test.describe("B5: Arzt-Termin → Bewohner sieht ihn", () => {
     // Termin-Formular ausfuellen
     const datumInput = page.getByLabel(/datum|date/i).first();
     if (await datumInput.isVisible({ timeout: 3000 }).catch(() => false)) {
-      // Morgen als Termin-Datum
       const morgen = new Date();
       morgen.setDate(morgen.getDate() + 1);
       const dateStr = morgen.toISOString().split("T")[0];
@@ -356,7 +349,7 @@ test.describe("B5: Arzt-Termin → Bewohner sieht ihn", () => {
       console.log(`[D] Termin-Datum gesetzt: ${dateStr}`);
     }
 
-    // Patient waehlen (Senior)
+    // Patient waehlen
     const patientInput = page.getByLabel(/patient/i).first();
     if (await patientInput.isVisible({ timeout: 3000 }).catch(() => false)) {
       await patientInput.fill("Gertrude");
@@ -372,7 +365,6 @@ test.describe("B5: Arzt-Termin → Bewohner sieht ihn", () => {
   test("B5b: Senior sieht Termin auf Dashboard", async () => {
     const { page } = agents.bewohner;
 
-    // Termine-Seite oder Dashboard
     await page.goto("/senior/home");
     await page.waitForLoadState("networkidle").catch(() => {});
 
@@ -409,7 +401,6 @@ test.describe("B6: Problem-Meldung → Stadt-Moderation", () => {
   test("B6a: Senior meldet Problem", async () => {
     const { page } = agents.bewohner;
 
-    // Board oder allgemeine Seite mit Melden-Funktion
     await page.goto("/board");
     await page.waitForLoadState("networkidle").catch(() => {});
 
@@ -417,7 +408,7 @@ test.describe("B6: Problem-Meldung → Stadt-Moderation", () => {
       timeout: TIMEOUTS.elementVisible,
     });
 
-    // Einen Beitrag suchen und "Melden" Button finden
+    // "Melden" Button auf einem Beitrag suchen
     const meldenButton = page
       .getByRole("button", { name: /melden|report|problem/i })
       .first();
@@ -426,7 +417,9 @@ test.describe("B6: Problem-Meldung → Stadt-Moderation", () => {
       await page.waitForTimeout(500);
 
       // Grund eingeben
-      const grundInput = page.getByLabel(/grund|reason|beschreibung/i).first();
+      const grundInput = page
+        .getByLabel(/grund|reason|beschreibung/i)
+        .first();
       if (await grundInput.isVisible({ timeout: 3000 }).catch(() => false)) {
         await grundInput.fill("E2E-B6: Test-Meldung eines Problems");
       }
@@ -449,10 +442,9 @@ test.describe("B6: Problem-Meldung → Stadt-Moderation", () => {
     });
   });
 
-  test("B6b: Stadt sieht Meldung im Moderation-Panel", async () => {
+  test("B6b: Stadt sieht Meldung im Reports-Panel", async () => {
     const { page } = agents.stadt;
 
-    // Org-Moderation oder Reports
     await page.goto("/org/reports");
     await page.waitForLoadState("networkidle").catch(() => {});
 
@@ -460,7 +452,14 @@ test.describe("B6: Problem-Meldung → Stadt-Moderation", () => {
       timeout: TIMEOUTS.elementVisible,
     });
 
-    // Meldungen/Reports auflisten
+    // Statusfilter: "Alle" anzeigen
+    const alleButton = page.getByRole("button", { name: "Alle" });
+    if (await alleButton.isVisible({ timeout: 3000 }).catch(() => false)) {
+      await alleButton.click();
+      await page.waitForTimeout(1000);
+    }
+
+    // Meldungen pruefen
     const meldung = page.getByText(/E2E-B6|problem|meldung/i);
     if (
       await meldung
@@ -468,7 +467,7 @@ test.describe("B6: Problem-Meldung → Stadt-Moderation", () => {
         .isVisible({ timeout: 5000 })
         .catch(() => false)
     ) {
-      console.log("[K] Meldung im Moderation-Panel sichtbar");
+      console.log("[K] Meldung im Reports-Panel sichtbar");
     } else {
       console.log("[K] Reports geladen, Meldung nicht sichtbar");
     }
@@ -497,30 +496,43 @@ test.describe("B7: Chat — Betreuer → Senior", () => {
     });
 
     // Konversation mit Senior oeffnen (Gertrude H.)
-    const contact = page.getByText(/gertrude/i);
-    if (await contact.isVisible({ timeout: 5000 }).catch(() => false)) {
-      await contact.click();
+    const conversationCard = page
+      .locator("[data-testid='conversation-card']")
+      .filter({ hasText: /gertrude/i });
+    if (
+      await conversationCard.isVisible({ timeout: 5000 }).catch(() => false)
+    ) {
+      await conversationCard.click();
       await page.waitForTimeout(1000);
+    } else {
+      // Fallback: beliebige Konversation oder "Bewohner kontaktieren"
+      const anyCard = page
+        .locator("[data-testid='conversation-card']")
+        .first();
+      if (await anyCard.isVisible({ timeout: 3000 }).catch(() => false)) {
+        await anyCard.click();
+        await page.waitForTimeout(1000);
+      } else {
+        console.log(
+          "[T] Keine Konversationen vorhanden, ueberspringe Chat-Test",
+        );
+      }
     }
 
-    // Nachricht eingeben
-    const messageInput = page
-      .getByPlaceholder(/nachricht|schreiben|message/i)
-      .first();
+    // Nachricht eingeben (data-testid="chat-input")
+    const messageInput = page.locator("[data-testid='chat-input']");
     if (await messageInput.isVisible({ timeout: 3000 }).catch(() => false)) {
       await messageInput.fill(chatText);
 
-      // Senden
-      const sendButton = page
-        .getByRole("button", { name: /senden|send/i })
-        .first();
+      // Senden (data-testid="chat-send")
+      const sendButton = page.locator("[data-testid='chat-send']");
       if (await sendButton.isVisible({ timeout: 3000 }).catch(() => false)) {
         await sendButton.click();
         await page.waitForTimeout(1500);
         console.log(`[T] Chat-Nachricht gesendet: "${chatText}"`);
       }
     } else {
-      console.log("[T] Messages geladen, kein Eingabefeld sichtbar");
+      console.log("[T] Chat-Eingabefeld nicht sichtbar");
     }
 
     await page.screenshot({
@@ -539,10 +551,22 @@ test.describe("B7: Chat — Betreuer → Senior", () => {
     });
 
     // Konversation mit Betreuer oeffnen (Tanja P.)
-    const contact = page.getByText(/tanja/i);
-    if (await contact.isVisible({ timeout: 5000 }).catch(() => false)) {
-      await contact.click();
+    const conversationCard = page
+      .locator("[data-testid='conversation-card']")
+      .filter({ hasText: /tanja/i });
+    if (
+      await conversationCard.isVisible({ timeout: 5000 }).catch(() => false)
+    ) {
+      await conversationCard.click();
       await page.waitForTimeout(1000);
+    } else {
+      const anyCard = page
+        .locator("[data-testid='conversation-card']")
+        .first();
+      if (await anyCard.isVisible({ timeout: 3000 }).catch(() => false)) {
+        await anyCard.click();
+        await page.waitForTimeout(1000);
+      }
     }
 
     // Nachricht suchen

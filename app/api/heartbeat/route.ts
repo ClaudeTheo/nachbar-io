@@ -1,40 +1,24 @@
 // app/api/heartbeat/route.ts
-// Nachbar.io — Heartbeat API: Passives Check-in bei App-Öffnung (1 pro Session)
+// Nachbar.io — Heartbeat API: Passives Check-in bei App-Oeffnung (Thin Wrapper)
 
-import { NextRequest } from 'next/server';
-import { requireAuth, errorResponse, successResponse, careLog } from '@/lib/care/api-helpers';
-import type { HeartbeatSource, HeartbeatDeviceType } from '@/lib/care/types';
-
-const VALID_SOURCES: HeartbeatSource[] = ['app', 'kiosk', 'web'];
-const VALID_DEVICE_TYPES: HeartbeatDeviceType[] = ['mobile', 'tablet', 'kiosk', 'desktop'];
+import { NextRequest, NextResponse } from "next/server";
+import { requireAuth } from "@/lib/care/api-helpers";
+import { recordHeartbeat } from "@/lib/services/heartbeat.service";
+import { handleServiceError } from "@/lib/services/service-error";
 
 export async function POST(request: NextRequest) {
-  const authResult = await requireAuth();
-  if (!authResult) return errorResponse('Nicht autorisiert', 401);
-  const { supabase, user } = authResult;
+  try {
+    const authResult = await requireAuth();
+    if (!authResult) {
+      return NextResponse.json({ error: "Nicht autorisiert" }, { status: 401 });
+    }
+    const { supabase, user } = authResult;
 
-  const body = await request.json();
-  const { source, device_type } = body;
+    const body = await request.json();
+    const result = await recordHeartbeat(supabase, user.id, body);
 
-  // Validierung
-  if (!source || !VALID_SOURCES.includes(source)) {
-    return errorResponse('Ungültiger source-Wert', 400);
+    return NextResponse.json(result, { status: 201 });
+  } catch (error) {
+    return handleServiceError(error);
   }
-  if (device_type && !VALID_DEVICE_TYPES.includes(device_type)) {
-    return errorResponse('Ungültiger device_type-Wert', 400);
-  }
-
-  const { error } = await supabase.from('heartbeats').insert({
-    user_id: user.id,
-    source,
-    device_type: device_type || null,
-  });
-
-  if (error) {
-    return errorResponse('Heartbeat konnte nicht gespeichert werden', 500);
-  }
-
-  careLog('heartbeat', 'created', { userId: user.id, source, device_type });
-
-  return successResponse({ ok: true }, 201);
 }

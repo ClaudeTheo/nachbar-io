@@ -1,114 +1,58 @@
 // app/api/doctors/[id]/reviews/route.ts
-// Nachbar.io — Arzt-Bewertungen lesen (GET) und erstellen (POST)
-// Pro Medical: GET ist öffentlich, POST erfordert Authentifizierung (max 1 pro Arzt)
+// Nachbar.io — Arzt-Bewertungen lesen + erstellen (Thin Wrapper)
 
-import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
-import { validateReview } from '@/lib/doctors';
+import { NextRequest, NextResponse } from "next/server";
+import { createClient } from "@/lib/supabase/server";
+import { handleServiceError } from "@/lib/services/service-error";
+import {
+  listDoctorReviews,
+  createDoctorReview,
+} from "@/lib/services/doctors.service";
 
 // GET /api/doctors/[id]/reviews — Öffentliche Bewertungen eines Arztes
 export async function GET(
   _request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
-  const { id: doctorId } = await params;
-  const supabase = await createClient();
-
-  // Prüfen ob der Arzt existiert
-  const { data: doctor, error: doctorError } = await supabase
-    .from('doctor_profiles')
-    .select('id')
-    .eq('id', doctorId)
-    .single();
-
-  if (doctorError || !doctor) {
-    return NextResponse.json({ error: 'Arzt-Profil nicht gefunden' }, { status: 404 });
+  try {
+    const { id: doctorId } = await params;
+    const supabase = await createClient();
+    const data = await listDoctorReviews(supabase, doctorId);
+    return NextResponse.json(data);
+  } catch (error) {
+    return handleServiceError(error);
   }
-
-  // Nur sichtbare Bewertungen laden
-  const { data, error } = await supabase
-    .from('doctor_reviews')
-    .select('id, doctor_id, patient_id, rating, text, visible, created_at')
-    .eq('doctor_id', doctorId)
-    .eq('visible', true)
-    .order('created_at', { ascending: false });
-
-  if (error) {
-    console.error('[doctor-reviews] Abfrage fehlgeschlagen:', error);
-    return NextResponse.json({ error: 'Bewertungen konnten nicht geladen werden' }, { status: 500 });
-  }
-
-  return NextResponse.json(data ?? []);
 }
 
-// POST /api/doctors/[id]/reviews — Bewertung abgeben (authentifiziert, max 1 pro Arzt)
+// POST /api/doctors/[id]/reviews — Bewertung abgeben (authentifiziert)
 export async function POST(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
-  const { id: doctorId } = await params;
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-
-  if (!user) {
-    return NextResponse.json({ error: 'Nicht authentifiziert' }, { status: 401 });
-  }
-
-  // Prüfen ob der Arzt existiert
-  const { data: doctor, error: doctorError } = await supabase
-    .from('doctor_profiles')
-    .select('id, user_id')
-    .eq('id', doctorId)
-    .single();
-
-  if (doctorError || !doctor) {
-    return NextResponse.json({ error: 'Arzt-Profil nicht gefunden' }, { status: 404 });
-  }
-
-  // Arzt darf sich nicht selbst bewerten
-  if (doctor.user_id === user.id) {
-    return NextResponse.json({ error: 'Sie können sich nicht selbst bewerten' }, { status: 400 });
-  }
-
-  let body: Record<string, unknown>;
   try {
-    body = await request.json();
-  } catch {
-    return NextResponse.json({ error: 'Ungültiges Anfrage-Format' }, { status: 400 });
-  }
+    const { id: doctorId } = await params;
+    const supabase = await createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
 
-  // Validierung
-  const validation = validateReview(body);
-  if (!validation.valid) {
-    return NextResponse.json({ error: validation.error }, { status: 400 });
-  }
-
-  // Bewertung einfügen (UNIQUE constraint doctor_id + patient_id)
-  const insertData = {
-    doctor_id: doctorId,
-    patient_id: user.id,
-    rating: body.rating as number,
-    text: (body.text as string) ?? null,
-    visible: true,
-  };
-
-  const { data: review, error: insertError } = await supabase
-    .from('doctor_reviews')
-    .insert(insertData)
-    .select()
-    .single();
-
-  if (insertError) {
-    // UNIQUE constraint violation (23505) — Bewertung existiert bereits
-    if (insertError.code === '23505') {
+    if (!user) {
       return NextResponse.json(
-        { error: 'Sie haben diesen Arzt bereits bewertet' },
-        { status: 409 }
+        { error: "Nicht authentifiziert" },
+        { status: 401 },
       );
     }
-    console.error('[doctor-reviews] Bewertung konnte nicht erstellt werden:', insertError);
-    return NextResponse.json({ error: 'Bewertung konnte nicht erstellt werden' }, { status: 500 });
-  }
 
-  return NextResponse.json(review, { status: 201 });
+    const body = await request.json();
+    const review = await createDoctorReview(supabase, user.id, doctorId, body);
+    return NextResponse.json(review, { status: 201 });
+  } catch (error) {
+    if (error instanceof SyntaxError) {
+      return NextResponse.json(
+        { error: "Ungültiges Anfrage-Format" },
+        { status: 400 },
+      );
+    }
+    return handleServiceError(error);
+  }
 }

@@ -8,6 +8,8 @@ export type AgentRole =
   | "moderator"     // Admin/Moderator
   | "senior"        // Senior im einfachen Modus
   | "betreuer"      // Betreuer des Seniors
+  | "org_admin"     // Kommunaler Org-Admin (Pro Community)
+  | "doctor"        // Arzt (Pro Medical) — gleichzeitig Bewohner
   | "unverified"    // Nicht verifiziert (kein Invite-Code)
   | "guest";        // Nicht eingeloggt
 

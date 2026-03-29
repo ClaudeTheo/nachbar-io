@@ -332,8 +332,85 @@ export async function seedAll(): Promise<Map<string, string>> {
     }
   }
 
+  // 3. Rollen-spezifisches Seeding (Org, Doctor, Caregiver-Links)
+  await seedRoleSpecificData(userMap);
+
   console.log(`[SEED] Fertig — ${userMap.size} Agenten angelegt`);
   return userMap;
+}
+
+/**
+ * Rollen-spezifisches Seeding: Organisation, Doctor-Profil, Caregiver-Links.
+ */
+async function seedRoleSpecificData(
+  userMap: Map<string, string>,
+): Promise<void> {
+  const quarterId = await getOrCreateQuarterId();
+
+  // --- Organisation fuer stadt_k (Pro Community) ---
+  const stadtUserId = userMap.get("stadt_k");
+  if (stadtUserId) {
+    const orgId = "00000000-e2e0-4000-c001-000000000001";
+    const { error: orgError } = await supabaseAdmin("organizations", "POST", {
+      id: orgId,
+      name: "Stadt Bad Säckingen (E2E)",
+      type: "kommune",
+      hr_vr_number: "VR-E2E-12345",
+      verification_status: "verified",
+      avv_signed_at: new Date().toISOString(),
+    });
+    if (orgError && !orgError.includes("duplicate") && !orgError.includes("409")) {
+      console.warn(`[SEED] Organisation: ${orgError}`);
+    } else {
+      console.log(`[SEED] Organisation angelegt: ${orgId}`);
+    }
+
+    // org_members Eintrag
+    const { error: memberError } = await supabaseAdmin("org_members", "POST", {
+      org_id: orgId,
+      user_id: stadtUserId,
+      role: "admin",
+      assigned_quarters: quarterId ? [quarterId] : [],
+    });
+    if (memberError && !memberError.includes("duplicate") && !memberError.includes("409")) {
+      console.warn(`[SEED] Org-Member stadt_k: ${memberError}`);
+    } else {
+      console.log(`[SEED] stadt_k als org_admin zugewiesen`);
+    }
+  }
+
+  // --- Doctor-Profil fuer arzt_d (Pro Medical) ---
+  const arztUserId = userMap.get("arzt_d");
+  if (arztUserId) {
+    const { error: docError } = await supabaseAdmin("doctor_profiles", "POST", {
+      user_id: arztUserId,
+      specialization: ["Allgemeinmedizin"],
+      bio: "Dr. med. Daniel F. — Allgemeinmedizin, E2E-Testarzt",
+      visible: true,
+      quarter_ids: quarterId ? [quarterId] : [],
+    });
+    if (docError && !docError.includes("duplicate") && !docError.includes("409")) {
+      console.warn(`[SEED] Doctor-Profil arzt_d: ${docError}`);
+    } else {
+      console.log(`[SEED] arzt_d Doctor-Profil angelegt`);
+    }
+  }
+
+  // --- Caregiver-Link: senior_s <-> betreuer_t ---
+  const seniorUserId = userMap.get("senior_s");
+  const betreuerUserId = userMap.get("betreuer_t");
+  if (seniorUserId && betreuerUserId) {
+    const { error: linkError } = await supabaseAdmin("caregiver_links", "POST", {
+      resident_id: seniorUserId,
+      caregiver_id: betreuerUserId,
+      permissions: { heartbeat: true, checkin: true, chat: true },
+    });
+    if (linkError && !linkError.includes("duplicate") && !linkError.includes("409")) {
+      console.warn(`[SEED] Caregiver-Link: ${linkError}`);
+    } else {
+      console.log(`[SEED] Caregiver-Link senior_s → betreuer_t angelegt`);
+    }
+  }
 }
 
 /**

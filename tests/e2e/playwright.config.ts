@@ -95,6 +95,18 @@ export default defineConfig({
       },
     },
 
+    // ─── Phase 3: Multi-Agent Simulation (4 Rollen gleichzeitig) ───
+    {
+      name: "multi-agent-sim",
+      testMatch: /multi-agent\/.*\.spec\.ts/,
+      dependencies: ["setup"],
+      use: {
+        ...devices["Desktop Chrome"],
+        channel: "msedge", // Edge statt Chromium (vermeidet spawn UNKNOWN auf Windows)
+        storageState: undefined, // Jeder Agent verwaltet eigene Session
+      },
+    },
+
     // ─── Smoke Tests (kein Seed noetig, kein Auth) ───
     {
       name: "smoke",

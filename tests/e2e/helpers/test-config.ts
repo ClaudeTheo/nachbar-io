@@ -105,6 +105,26 @@ export const TEST_AGENTS: Record<string, AgentCredentials> = {
     uiMode: "active",
     role: "unverified",
   },
+
+  // Agent K: Stadt/Kommune — Org-Admin (Pro Community)
+  stadt_k: {
+    email: `agent_k@${TEST_DOMAIN}`,
+    password: "TestPass123!",
+    displayName: "Klara S.",
+    inviteCode: "TEST0003",
+    uiMode: "active",
+    role: "org_admin",
+  },
+
+  // Agent D: Arzt — Doctor (Pro Medical) + gleichzeitig Bewohner
+  arzt_d: {
+    email: `agent_d@${TEST_DOMAIN}`,
+    password: "TestPass123!",
+    displayName: "Dr. Daniel F.",
+    inviteCode: "TEST0002",
+    uiMode: "active",
+    role: "doctor",
+  },
 };
 
 /** Test-Mode Header: Wenn gesetzt, ueberspringt Supabase echte Auth */

@@ -45,6 +45,8 @@ export async function createAgent(
     moderator: "[M]",
     senior: "[S]",
     betreuer: "[T]",
+    org_admin: "[K]",
+    doctor: "[D]",
     unverified: "[X]",
     guest: "[G]",
   };

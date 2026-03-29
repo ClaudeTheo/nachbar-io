@@ -10,26 +10,7 @@ import { ServiceError } from "@/lib/services/service-error";
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const adminDb = getAdminSupabase();
-
-    const result = await completeRegistration(adminDb, {
-      email: body.email,
-      password: body.password,
-      displayName: body.displayName,
-      uiMode: body.uiMode,
-      householdId: body.householdId,
-      streetName: body.streetName,
-      houseNumber: body.houseNumber,
-      lat: body.lat,
-      lng: body.lng,
-      postalCode: body.postalCode,
-      city: body.city,
-      verificationMethod: body.verificationMethod,
-      inviteCode: body.inviteCode,
-      referrerId: body.referrerId,
-      quarterId: body.quarterId,
-    });
-
+    const result = await completeRegistration(getAdminSupabase(), body);
     return NextResponse.json(result);
   } catch (err) {
     if (err instanceof ServiceError) {

@@ -263,15 +263,13 @@ async function findOrCreateHousehold(
   }
 
   // Neuen Haushalt anlegen
-  const defaultLat = 47.5535; // Bad Säckingen Zentrum
-  const defaultLng = 7.964;
   const newInviteCode = generateSecureCode();
 
   const insertData: Record<string, unknown> = {
     street_name: streetName,
     house_number: trimmedHouseNumber,
-    lat: hasCoords ? lat : defaultLat,
-    lng: hasCoords ? lng : defaultLng,
+    lat: hasCoords ? lat : 0,
+    lng: hasCoords ? lng : 0,
     verified: false,
     invite_code: newInviteCode,
   };

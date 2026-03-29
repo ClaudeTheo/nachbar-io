@@ -1,293 +1,71 @@
 // app/api/care/checkin/route.ts
 // Nachbar.io — Check-in abgeben (POST) und Check-in-Historie abrufen (GET)
 
-import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
-import { writeAuditLog } from '@/lib/care/audit';
-import { sendCareNotification } from '@/lib/care/notifications';
-import { requireCareAccess } from '@/lib/care/api-helpers';
-import { encryptField, decryptFields, decryptFieldsArray, CARE_CHECKINS_ENCRYPTED_FIELDS } from '@/lib/care/field-encryption';
-import { createCareLogger } from '@/lib/care/logger';
-import { checkCareConsent } from '@/lib/care/consent';
-import { getUserQuarterId } from '@/lib/quarters/helpers';
-import type { CareCheckinStatus, CareCheckinMood } from '@/lib/care/types';
-
-// Gültige Check-in-Status-Werte für die Eingabe
-const VALID_SUBMIT_STATUSES: CareCheckinStatus[] = ['ok', 'not_well', 'need_help'];
-
-// Status-Werte, bei denen ein bestehender Check-in aktualisiert werden kann
-const PENDING_CHECKIN_STATUSES: CareCheckinStatus[] = ['reminded', 'missed'];
+import { NextRequest, NextResponse } from "next/server";
+import { createClient } from "@/lib/supabase/server";
+import { handleServiceError } from "@/lib/services/service-error";
+import {
+  submitCheckin,
+  getCheckinHistory,
+} from "@/modules/care/services/checkin.service";
 
 // POST /api/care/checkin — Check-in abgeben
 export async function POST(request: NextRequest) {
-  const log = createCareLogger('care/checkin/POST');
   const supabase = await createClient();
-
-  // Auth-Check: Nur authentifizierte Nutzer dürfen Check-ins abgeben
   const {
     data: { user },
   } = await supabase.auth.getUser();
+  if (!user)
+    return NextResponse.json(
+      { error: "Nicht authentifiziert" },
+      { status: 401 },
+    );
 
-  if (!user) {
-    log.warn('auth_failed');
-    log.done(401);
-    return NextResponse.json({ error: 'Nicht authentifiziert' }, { status: 401 });
-  }
-
-  // Art. 9 DSGVO: Einwilligung prüfen
-  const hasConsent = await checkCareConsent(supabase, user.id, 'checkin');
-  if (!hasConsent) {
-    return NextResponse.json({ error: 'Einwilligung erforderlich', feature: 'checkin' }, { status: 403 });
-  }
-
-  // Request-Body einlesen und validieren
-  let body: {
-    status?: CareCheckinStatus;
-    mood?: CareCheckinMood;
-    note?: string;
-    scheduled_at?: string;
-  };
   try {
-    body = await request.json();
-  } catch {
-    return NextResponse.json({ error: 'Ungültiges Anfrage-Format' }, { status: 400 });
-  }
-
-  const { status, mood, note, scheduled_at } = body;
-
-  // Status ist Pflichtfeld
-  if (!status) {
-    return NextResponse.json({ error: 'Status ist erforderlich' }, { status: 400 });
-  }
-
-  // Status gegen gültige Eingabe-Werte prüfen
-  if (!VALID_SUBMIT_STATUSES.includes(status)) {
-    return NextResponse.json(
-      {
-        error: `Ungültiger Status: "${status}". Erlaubt: ${VALID_SUBMIT_STATUSES.join(', ')}`,
-      },
-      { status: 400 }
-    );
-  }
-
-  // M2: mood gegen Whitelist prüfen
-  const VALID_MOODS: CareCheckinMood[] = ['good', 'neutral', 'bad'];
-  if (mood && !VALID_MOODS.includes(mood)) {
-    return NextResponse.json(
-      { error: `Ungültiger mood-Wert: "${mood}". Erlaubt: ${VALID_MOODS.join(', ')}` },
-      { status: 400 }
-    );
-  }
-
-  // M3: note Längenlimit (max 2000 Zeichen)
-  if (note && note.length > 2000) {
-    return NextResponse.json(
-      { error: 'Notiz darf maximal 2000 Zeichen lang sein' },
-      { status: 400 }
-    );
-  }
-
-  const now = new Date().toISOString();
-  let checkin: Record<string, unknown>;
-
-  // Note verschlüsseln (Art. 9 DSGVO)
-  const encryptedNote = encryptField(note ?? null);
-
-  // Versuche, einen bestehenden ausstehenden Check-in zu aktualisieren, wenn scheduled_at angegeben
-  if (scheduled_at) {
-    const { data: existing, error: updateError } = await supabase
-      .from('care_checkins')
-      .update({
-        status,
-        mood: mood ?? null,
-        note: encryptedNote,
-        completed_at: now,
-      })
-      .eq('senior_id', user.id)
-      .eq('scheduled_at', scheduled_at)
-      .in('status', PENDING_CHECKIN_STATUSES)
-      .select()
-      .maybeSingle();
-
-    if (updateError) {
-      log.error('db_update_failed', updateError, { userId: user.id, scheduled_at });
-      log.done(500);
+    const body = await request.json().catch(() => {
+      throw { status: 400 };
+    });
+    const result = await submitCheckin(supabase, user.id, body);
+    return NextResponse.json(result, { status: 201 });
+  } catch (error) {
+    if (
+      error &&
+      typeof error === "object" &&
+      "status" in error &&
+      (error as { status: number }).status === 400 &&
+      !("message" in error)
+    ) {
       return NextResponse.json(
-        { error: 'Check-in konnte nicht aktualisiert werden' },
-        { status: 500 }
+        { error: "Ungültiges Anfrage-Format" },
+        { status: 400 },
       );
     }
-
-    if (existing) {
-      // Vorhandener Check-in wurde erfolgreich aktualisiert
-      checkin = existing;
-    } else {
-      // Kein passender ausstehender Eintrag gefunden → neuen Check-in erstellen
-      const { data: newCheckin, error: insertError } = await supabase
-        .from('care_checkins')
-        .insert({
-          senior_id: user.id,
-          status,
-          mood: mood ?? null,
-          note: encryptedNote,
-          scheduled_at,
-          completed_at: now,
-          escalated: false,
-        })
-        .select()
-        .single();
-
-      if (insertError || !newCheckin) {
-        log.error('db_insert_failed', insertError, { userId: user.id, scheduled_at });
-        log.done(500);
-        return NextResponse.json({ error: 'Check-in konnte nicht gespeichert werden' }, { status: 500 });
-      }
-      checkin = newCheckin;
-    }
-  } else {
-    // Neuen Check-in ohne geplanten Zeitpunkt anlegen
-    const { data: newCheckin, error: insertError } = await supabase
-      .from('care_checkins')
-      .insert({
-        senior_id: user.id,
-        status,
-        mood: mood ?? null,
-        note: encryptedNote,
-        scheduled_at: now,
-        completed_at: now,
-        escalated: false,
-      })
-      .select()
-      .single();
-
-    if (insertError || !newCheckin) {
-      log.error('db_insert_failed', insertError, { userId: user.id });
-      log.done(500);
-      return NextResponse.json({ error: 'Check-in konnte nicht gespeichert werden' }, { status: 500 });
-    }
-    checkin = newCheckin;
+    return handleServiceError(error);
   }
-
-  log.info('checkin_submitted', { userId: user.id, checkinId: checkin.id as string, status, mood: mood ?? null });
-
-  // Audit-Log schreiben: ok → checkin_ok, not_well/need_help → checkin_not_well
-  const auditEventType = status === 'ok' ? 'checkin_ok' : 'checkin_not_well';
-  try {
-    await writeAuditLog(supabase, {
-      seniorId: user.id,
-      actorId: user.id,
-      eventType: auditEventType,
-      referenceType: 'care_checkins',
-      referenceId: checkin.id as string,
-      metadata: { status, mood: mood ?? null, hasNote: !!note },
-    });
-  } catch (_auditError) {
-    // Audit-Fehler blockiert nicht den Check-in-Prozess
-    log.warn('audit_log_failed', { checkinId: checkin.id as string });
-  }
-
-  // Bei "not_well": Angehörige benachrichtigen
-  if (status === 'not_well') {
-    try {
-      // Alle verifizierten Angehörigen abrufen, die diesem Senior zugewiesen sind
-      const { data: relatives, error: relativesError } = await supabase
-        .from('care_helpers')
-        .select('user_id')
-        .eq('role', 'relative')
-        .eq('verification_status', 'verified')
-        .contains('assigned_seniors', [user.id]);
-
-      if (relativesError) {
-        log.error('relatives_query_failed', relativesError, { userId: user.id });
-      } else if (relatives && relatives.length > 0) {
-        const notifyPromises = relatives.map((relative) =>
-          sendCareNotification(supabase, {
-            userId: relative.user_id,
-            type: 'care_checkin_missed',
-            title: 'Check-in: Nicht so gut',
-            body: `Ihr Angehöriger hat gemeldet, dass er sich nicht wohl fühlt.${note ? ` Hinweis: ${note}` : ''}`,
-            referenceId: checkin!.id as string,
-            referenceType: 'care_checkins',
-            url: `/care/checkin/${checkin!.id}`,
-            channels: ['push', 'in_app'],
-          })
-        );
-        await Promise.all(notifyPromises);
-      }
-    } catch (notifyError) {
-      // Benachrichtigungsfehler blockiert nicht die Check-in-Antwort
-      log.error('notification_failed', notifyError, { userId: user.id });
-    }
-  }
-
-  // Bei "need_help": SOS-Alert direkt in der Datenbank anlegen (kein internes fetch wegen Cookie-Weiterleitung)
-  if (status === 'need_help') {
-    try {
-      const quarterId = await getUserQuarterId(supabase, user.id);
-      const { error: sosError } = await supabase.from('care_sos_alerts').insert({
-        senior_id: user.id,
-        category: 'general_help',
-        status: 'triggered',
-        current_escalation_level: 1,
-        escalated_at: [],
-        notes: encryptField(note || 'Hilfe über Check-in angefordert'),
-        source: 'checkin_timeout',
-        quarter_id: quarterId,
-      });
-
-      if (sosError) {
-        log.error('auto_sos_failed', sosError, { userId: user.id });
-      } else {
-        log.info('auto_sos_created', { userId: user.id, source: 'checkin_need_help' });
-      }
-    } catch (e) {
-      log.error('auto_sos_exception', e, { userId: user.id });
-    }
-  }
-
-  // Entschlüsselt zurückgeben
-  log.done(201, { checkinId: checkin.id as string, status });
-  return NextResponse.json(decryptFields(checkin as Record<string, unknown>, CARE_CHECKINS_ENCRYPTED_FIELDS), { status: 201 });
 }
 
 // GET /api/care/checkin — Check-in-Historie abrufen
 export async function GET(request: NextRequest) {
   const supabase = await createClient();
-
-  // Auth-Check
   const {
     data: { user },
   } = await supabase.auth.getUser();
+  if (!user)
+    return NextResponse.json(
+      { error: "Nicht authentifiziert" },
+      { status: 401 },
+    );
 
-  if (!user) {
-    return NextResponse.json({ error: 'Nicht authentifiziert' }, { status: 401 });
+  try {
+    const { searchParams } = request.nextUrl;
+    const seniorId = searchParams.get("senior_id") ?? user.id;
+    const limitParam = searchParams.get("limit");
+    const limit = limitParam
+      ? Math.min(Math.max(parseInt(limitParam, 10) || 30, 1), 100)
+      : 30;
+    const result = await getCheckinHistory(supabase, user.id, seniorId, limit);
+    return NextResponse.json(result);
+  } catch (error) {
+    return handleServiceError(error);
   }
-
-  // Query-Parameter auslesen
-  const { searchParams } = request.nextUrl;
-  const seniorId = searchParams.get('senior_id') ?? user.id;
-  const limitParam = searchParams.get('limit');
-  const limit = limitParam ? Math.min(Math.max(parseInt(limitParam, 10) || 30, 1), 100) : 30;
-
-  // Zugriffsprüfung: Nur Senior selbst, zugewiesene Helfer oder Admins
-  if (seniorId !== user.id) {
-    const role = await requireCareAccess(supabase, seniorId);
-    if (!role) return NextResponse.json({ error: 'Kein Zugriff auf diesen Senior' }, { status: 403 });
-  }
-
-  // Check-in-Historie aus der Datenbank abrufen, absteigend nach geplantem Zeitpunkt
-  const { data, error } = await supabase
-    .from('care_checkins')
-    .select('*')
-    .eq('senior_id', seniorId)
-    .order('scheduled_at', { ascending: false })
-    .limit(limit);
-
-  if (error) {
-    console.error('[care/checkin] Historie-Abfrage fehlgeschlagen:', error);
-    return NextResponse.json({ error: 'Check-in-Historie konnte nicht geladen werden' }, { status: 500 });
-  }
-
-  // Check-in-Notizen entschlüsseln (Art. 9 DSGVO)
-  return NextResponse.json(decryptFieldsArray(data ?? [], CARE_CHECKINS_ENCRYPTED_FIELDS));
 }

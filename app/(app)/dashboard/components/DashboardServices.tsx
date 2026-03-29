@@ -110,9 +110,6 @@ export function DashboardServices({
       {/* Marktplatz */}
       <MarketplaceSection items={marketplaceItems} />
 
-      {/* Quartiersnews */}
-      <NewsFeedSection news={news} />
-
       {/* Angehoerigen-Dashboard (Caregiver/Plus) */}
       <CaregiverDashboard />
 
@@ -123,6 +120,9 @@ export function DashboardServices({
           <DiscoverGrid />
         </>
       )}
+
+      {/* Quartiersnews — ganz unten */}
+      <NewsFeedSection news={news} />
     </>
   );
 }

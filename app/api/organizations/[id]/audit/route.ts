@@ -1,10 +1,18 @@
 // app/api/organizations/[id]/audit/route.ts
 // Nachbar.io — Org-Audit-Log: Abrufen (GET), nur für org_admin
 
-import { NextRequest, NextResponse } from 'next/server';
-import { requireAuth, requireSubscription, requireOrgAccess, requireAdmin, unauthorizedResponse } from '@/lib/care/api-helpers';
+import { NextRequest, NextResponse } from "next/server";
+import {
+  requireAuth,
+  requireSubscription,
+  requireOrgAccess,
+  requireAdmin,
+  unauthorizedResponse,
+} from "@/lib/care/api-helpers";
+import { handleServiceError } from "@/lib/services/service-error";
+import { getAuditLog } from "@/modules/admin/services/organizations.service";
 
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
 /**
  * GET /api/organizations/[id]/audit
@@ -14,7 +22,7 @@ export const dynamic = 'force-dynamic';
  */
 export async function GET(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   const { id } = await params;
 
@@ -23,11 +31,11 @@ export async function GET(
   if (!auth) return unauthorizedResponse();
 
   // Abo-Guard: Pro erforderlich
-  const sub = await requireSubscription(auth.supabase, auth.user.id, 'pro');
+  const sub = await requireSubscription(auth.supabase, auth.user.id, "pro");
   if (sub instanceof NextResponse) return sub;
 
   // Org-Zugriffs-Guard: Admin-Rolle erforderlich (oder Plattform-Admin als Fallback)
-  const org = await requireOrgAccess(auth.supabase, auth.user.id, id, 'admin');
+  const org = await requireOrgAccess(auth.supabase, auth.user.id, id, "admin");
   if (org instanceof NextResponse) {
     // Plattform-Admin hat immer Zugriff
     const isPlatformAdmin = await requireAdmin(auth.supabase, auth.user.id);
@@ -36,26 +44,13 @@ export async function GET(
 
   // Paginierung
   const { searchParams } = request.nextUrl;
-  const limit = Math.min(parseInt(searchParams.get('limit') ?? '50', 10) || 50, 200);
-  const offset = parseInt(searchParams.get('offset') ?? '0', 10) || 0;
+  const limit = parseInt(searchParams.get("limit") ?? "50", 10) || 50;
+  const offset = parseInt(searchParams.get("offset") ?? "0", 10) || 0;
 
-  // Audit-Einträge laden (RLS stellt zusätzlich sicher, dass nur berechtigte Daten kommen)
-  const { data, error, count } = await auth.supabase
-    .from('org_audit_log')
-    .select('*', { count: 'exact' })
-    .eq('org_id', id)
-    .order('created_at', { ascending: false })
-    .range(offset, offset + limit - 1);
-
-  if (error) {
-    console.error('[organizations/audit] GET Fehler:', error);
-    return NextResponse.json({ error: 'Audit-Log konnte nicht geladen werden' }, { status: 500 });
+  try {
+    const result = await getAuditLog(auth.supabase, id, limit, offset);
+    return NextResponse.json(result);
+  } catch (error) {
+    return handleServiceError(error);
   }
-
-  return NextResponse.json({
-    data: data ?? [],
-    total: count ?? 0,
-    limit,
-    offset,
-  });
 }

@@ -1,75 +1,68 @@
-// GET/PATCH /api/caregiver/auto-answer — Auto-Answer-Einstellungen für Kiosk-Videoanruf
-// Angehörige können konfigurieren ob/wann ihr Anruf automatisch angenommen wird
+// app/api/caregiver/auto-answer/route.ts
+// Nachbar.io — Auto-Answer-Einstellungen fuer Kiosk-Videoanruf (Thin Handler)
 
 import { NextRequest, NextResponse } from "next/server";
-import { requireAuth, requireSubscription, unauthorizedResponse, errorResponse } from "@/lib/care/api-helpers";
+import {
+  requireAuth,
+  requireSubscription,
+  unauthorizedResponse,
+  errorResponse,
+} from "@/lib/care/api-helpers";
+import { handleServiceError } from "@/lib/services/service-error";
+import {
+  getAutoAnswerSettings,
+  updateAutoAnswerSettings,
+} from "@/modules/care/services/caregiver/caregiver-misc.service";
 
-// GET: Auto-Answer-Einstellungen für einen Caregiver-Link abrufen
 export async function GET(request: NextRequest) {
-  // Auth
   const auth = await requireAuth();
   if (!auth) return unauthorizedResponse();
 
-  // Subscription-Gate: Plus erforderlich
-  const sub = await requireSubscription(auth.supabase, auth.user.id, 'plus');
+  const sub = await requireSubscription(auth.supabase, auth.user.id, "plus");
   if (sub instanceof NextResponse) return sub;
-
-  const { supabase, user } = auth;
 
   const linkId = request.nextUrl.searchParams.get("linkId");
-  if (!linkId) return errorResponse("linkId fehlt", 400);
 
-  const { data, error } = await supabase
-    .from("caregiver_links")
-    .select("auto_answer_allowed, auto_answer_start, auto_answer_end")
-    .eq("id", linkId)
-    .eq("caregiver_id", user.id)
-    .is("revoked_at", null)
-    .single();
-
-  if (error || !data) {
-    return errorResponse("Link nicht gefunden", 404);
+  try {
+    const result = await getAutoAnswerSettings(
+      auth.supabase,
+      auth.user.id,
+      linkId ?? "",
+    );
+    return NextResponse.json(result);
+  } catch (error) {
+    return handleServiceError(error);
   }
-
-  return NextResponse.json(data);
 }
 
-// PATCH: Auto-Answer-Einstellungen aktualisieren
 export async function PATCH(request: NextRequest) {
-  // Auth
   const auth = await requireAuth();
   if (!auth) return unauthorizedResponse();
 
-  // Subscription-Gate: Plus erforderlich
-  const sub = await requireSubscription(auth.supabase, auth.user.id, 'plus');
+  const sub = await requireSubscription(auth.supabase, auth.user.id, "plus");
   if (sub instanceof NextResponse) return sub;
 
-  const { supabase, user } = auth;
-
-  let body: { linkId?: string; autoAnswerAllowed?: boolean; autoAnswerStart?: string; autoAnswerEnd?: string };
+  let body: {
+    linkId?: string;
+    autoAnswerAllowed?: boolean;
+    autoAnswerStart?: string;
+    autoAnswerEnd?: string;
+  };
   try {
     body = await request.json();
   } catch {
     return errorResponse("Ungültiges Anfrage-Format", 400);
   }
 
-  const { linkId, autoAnswerAllowed, autoAnswerStart, autoAnswerEnd } = body;
-  if (!linkId) return errorResponse("linkId fehlt", 400);
-
-  const { error } = await supabase
-    .from("caregiver_links")
-    .update({
-      auto_answer_allowed: autoAnswerAllowed,
-      auto_answer_start: autoAnswerStart,
-      auto_answer_end: autoAnswerEnd,
-    })
-    .eq("id", linkId)
-    .eq("caregiver_id", user.id)
-    .is("revoked_at", null);
-
-  if (error) {
-    return errorResponse("Update fehlgeschlagen", 500);
+  try {
+    const result = await updateAutoAnswerSettings(auth.supabase, auth.user.id, {
+      linkId: body.linkId ?? "",
+      autoAnswerAllowed: body.autoAnswerAllowed,
+      autoAnswerStart: body.autoAnswerStart,
+      autoAnswerEnd: body.autoAnswerEnd,
+    });
+    return NextResponse.json(result);
+  } catch (error) {
+    return handleServiceError(error);
   }
-
-  return NextResponse.json({ ok: true });
 }

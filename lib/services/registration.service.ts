@@ -305,7 +305,7 @@ async function findOrCreateHousehold(
       const { assignUserToQuarter } =
         await import("@/lib/geo/quarter-clustering");
       try {
-        quarterId = await assignUserToQuarter(lat!, lng!);
+        quarterId = await assignUserToQuarter(adminDb, lat!, lng!);
       } catch (err) {
         console.error("Quartier-Clustering fehlgeschlagen:", err);
       }

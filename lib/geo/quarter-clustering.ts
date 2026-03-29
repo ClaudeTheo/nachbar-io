@@ -1,5 +1,5 @@
-import { createClient } from '@/lib/supabase/server'
-import { reverseGeocode } from './photon-client'
+import type { SupabaseClient } from "@supabase/supabase-js";
+import { reverseGeocode } from "./photon-client";
 
 /**
  * Weist einen Nutzer basierend auf Koordinaten einem Quartier zu.
@@ -7,29 +7,28 @@ import { reverseGeocode } from './photon-client'
  * Erstellt automatisch ein neues Quartier wenn keines in Reichweite.
  */
 export async function assignUserToQuarter(
+  supabase: SupabaseClient,
   lat: number,
-  lng: number
+  lng: number,
 ): Promise<string> {
   // Reverse Geocoding fuer Quartier-Name
-  const geo = await reverseGeocode(lat, lng)
-  const quarterName = geo?.quarterName ?? 'Neues Quartier'
-  const city = geo?.city ?? ''
-  const state = geo?.state ?? ''
-  const country = geo?.country ?? 'DE'
+  const geo = await reverseGeocode(lat, lng);
+  const quarterName = geo?.quarterName ?? "Neues Quartier";
+  const city = geo?.city ?? "";
+  const state = geo?.state ?? "";
+  const country = geo?.country ?? "DE";
 
-  const supabase = await createClient()
-
-  const { data, error } = await supabase.rpc('assign_point_to_quarter', {
+  const { data, error } = await supabase.rpc("assign_point_to_quarter", {
     p_point: `SRID=4326;POINT(${lng} ${lat})`,
     p_quarter_name: quarterName,
     p_city: city,
     p_state: state,
     p_country: country,
-  })
+  });
 
   if (error) {
-    throw new Error(error.message)
+    throw new Error(error.message);
   }
 
-  return data as string
+  return data as string;
 }

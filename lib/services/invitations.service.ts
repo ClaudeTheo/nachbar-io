@@ -99,7 +99,7 @@ export async function sendInvitation(
       400,
     );
   }
-  if (method === "sms") {
+  if (method === "sms" && recipientPhone) {
     const { valid } = validatePhone(recipientPhone);
     if (!valid) {
       throw new ServiceError(

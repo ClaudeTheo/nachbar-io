@@ -1,41 +1,13 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
-import { ChevronRight, Plus, UserPlus } from "lucide-react";
+import { ChevronDown, Plus, UserPlus } from "lucide-react";
 import { AlertCard } from "@/components/AlertCard";
+import { haptic } from "@/lib/haptics";
 import type { Alert } from "@/lib/supabase/types";
 
-// Section-Header Hilfskomponente (intern)
-function SectionHeader({
-  title,
-  href,
-  count,
-}: {
-  title: string;
-  href: string;
-  count?: number;
-}) {
-  return (
-    <div className="mb-2 flex items-center justify-between px-4">
-      <h2 className="text-xs font-semibold uppercase tracking-wider text-[#2D3142]/40">
-        {title}
-        {count !== undefined && count > 0 && (
-          <span className="ml-2 normal-case tracking-normal text-alert-amber">
-            ({count})
-          </span>
-        )}
-      </h2>
-      <Link
-        href={href}
-        className="flex items-center text-xs font-semibold text-quartier-green hover:underline"
-      >
-        Alle <ChevronRight className="h-3 w-3" />
-      </Link>
-    </div>
-  );
-}
-
-// Aktive Hilfeanfragen + Schnell-Hilfe + Nachbar-einladen
+// Aktive Hilfeanfragen (collapsible) + Schnell-Hilfe + Nachbar-einladen
 export function AlertBanners({
   alerts,
   onInviteClick,
@@ -43,20 +15,41 @@ export function AlertBanners({
   alerts: Alert[];
   onInviteClick: () => void;
 }) {
+  const [isOpen, setIsOpen] = useState(false);
+
   return (
     <>
-      {/* Aktive Hilfeanfragen */}
+      {/* Aktive Hilfeanfragen — eingeklappt, per Tap aufklappbar */}
       {alerts.length > 0 && (
         <section>
-          <SectionHeader
-            title="Aktuelle Hilfeanfragen"
-            href="/alerts"
-            count={alerts.length}
-          />
-          <div className="rounded-xl bg-white shadow-soft overflow-hidden animate-stagger">
-            {alerts.map((alert) => (
-              <AlertCard key={alert.id} alert={alert} compact />
-            ))}
+          <button
+            type="button"
+            onClick={() => { setIsOpen(!isOpen); haptic("light"); }}
+            className="mb-2 flex w-full items-center justify-between px-4"
+          >
+            <div className="flex items-center gap-2">
+              <h2 className="text-xs font-semibold uppercase tracking-wider text-[#2D3142]/40">
+                Aktuelle Hilfeanfragen
+              </h2>
+              <span className="text-xs font-medium text-alert-amber bg-alert-amber/10 px-1.5 py-0.5 rounded-full">
+                {alerts.length}
+              </span>
+            </div>
+            <ChevronDown
+              className={`h-4 w-4 text-muted-foreground transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`}
+            />
+          </button>
+
+          <div
+            className={`grid transition-[grid-template-rows] duration-300 ease-out ${isOpen ? "grid-rows-[1fr]" : "grid-rows-[0fr]"}`}
+          >
+            <div className="overflow-hidden">
+              <div className="rounded-xl bg-white shadow-soft overflow-hidden animate-stagger">
+                {alerts.map((alert) => (
+                  <AlertCard key={alert.id} alert={alert} compact />
+                ))}
+              </div>
+            </div>
           </div>
         </section>
       )}

@@ -127,7 +127,7 @@ describe("POST /api/hilfe/care-profile", () => {
     const res = await POST(req);
     expect(res.status).toBe(400);
     const body = await res.json();
-    expect(body.error).toContain("Ungültige Pflegestufe");
+    expect(body.error).toContain("Ungueltige Pflegestufe");
   });
 
   it("lehnt fehlende Pflichtfelder ab (400)", async () => {

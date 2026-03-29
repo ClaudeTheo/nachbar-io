@@ -15,7 +15,8 @@ import { createCareLogger } from "@/lib/care/logger";
 import { checkCareConsent } from "@/lib/care/consent";
 import { getUserQuarterId } from "@/lib/quarters/helpers";
 import { ServiceError } from "@/lib/services/service-error";
-import type { CareCheckinStatus, CareCheckinMood } from "@/lib/care/types";
+import type { CareCheckin, CareCheckinStatus, CareCheckinMood } from "@/lib/care/types";
+import { CHECKIN_DEFAULTS } from "@/modules/care/services/constants";
 
 // Gültige Check-in-Status-Werte für die Eingabe
 const VALID_SUBMIT_STATUSES: CareCheckinStatus[] = [
@@ -282,4 +283,142 @@ export async function getCheckinHistory(
 
   // Check-in-Notizen entschlüsseln (Art. 9 DSGVO)
   return decryptFieldsArray(data ?? [], CARE_CHECKINS_ENCRYPTED_FIELDS);
+}
+
+// Antwort-Struktur für den Status-Endpunkt
+export interface CheckinStatusResponse {
+  today: CareCheckin[];
+  checkinTimes: string[];
+  checkinEnabled: boolean;
+  completedCount: number;
+  totalCount: number;
+  nextDue: string | null;
+  allCompleted: boolean;
+}
+
+// Hilfsfunktion: Aktuelle Zeit als HH:MM formatieren
+function formatTimeHHMM(date: Date): string {
+  const hours = date.getHours().toString().padStart(2, "0");
+  const minutes = date.getMinutes().toString().padStart(2, "0");
+  return `${hours}:${minutes}`;
+}
+
+// Hilfsfunktion: Nächsten fälligen Check-in-Zeitpunkt bestimmen
+// Gibt den nächsten konfigurierten Zeitpunkt zurück, für den noch kein
+// abgeschlossener Check-in heute vorliegt und der noch nicht vergangen ist.
+function findNextDueTime(
+  checkinTimes: string[],
+  todayCheckins: CareCheckin[],
+  nowTimeStr: string,
+): string | null {
+  // Zeitpunkte, für die bereits heute ein abgeschlossener Check-in vorliegt
+  const completedTimes = new Set(
+    todayCheckins
+      .filter((c) => c.completed_at !== null && c.status !== "missed")
+      .map((c) => formatTimeHHMM(new Date(c.scheduled_at))),
+  );
+
+  // Sortierte Zeiten durchlaufen und ersten noch ausstehenden zurückgeben
+  const sortedTimes = [...checkinTimes].sort();
+  for (const time of sortedTimes) {
+    if (completedTimes.has(time)) continue;
+    // Noch nicht vergangener Zeitpunkt → als nächsten fälligen zurückgeben
+    if (time >= nowTimeStr) return time;
+  }
+
+  // Alle heutigen Zeiten sind entweder erledigt oder vergangen
+  return null;
+}
+
+// GET-Logik: Heutigen Check-in-Status eines Seniors abrufen
+export async function getTodayCheckinStatus(
+  supabase: SupabaseClient,
+  userId: string,
+  seniorId: string,
+): Promise<CheckinStatusResponse> {
+  // Zugriffsprüfung: Nur Senior selbst, zugewiesene Helfer oder Admins
+  if (seniorId !== userId) {
+    const role = await requireCareAccess(supabase, seniorId);
+    if (!role) {
+      throw new ServiceError("Kein Zugriff auf diesen Senior", 403);
+    }
+  }
+
+  // Tagesgrenzen berechnen: heute 00:00 bis morgen 00:00 (ISO-Format)
+  const todayStart = new Date();
+  todayStart.setHours(0, 0, 0, 0);
+  const tomorrowStart = new Date(todayStart);
+  tomorrowStart.setDate(tomorrowStart.getDate() + 1);
+
+  // Heutige Check-ins und Care-Profil parallel abrufen
+  const [checkinsResult, profileResult] = await Promise.all([
+    supabase
+      .from("care_checkins")
+      .select("*")
+      .eq("senior_id", seniorId)
+      .gte("scheduled_at", todayStart.toISOString())
+      .lt("scheduled_at", tomorrowStart.toISOString())
+      .order("scheduled_at", { ascending: true }),
+
+    supabase
+      .from("care_profiles")
+      .select("checkin_times, checkin_enabled")
+      .eq("user_id", seniorId)
+      .maybeSingle(),
+  ]);
+
+  if (checkinsResult.error) {
+    console.error(
+      "[care/checkin/status] Check-in-Abfrage fehlgeschlagen:",
+      checkinsResult.error,
+    );
+    throw new ServiceError(
+      "Check-in-Status konnte nicht geladen werden",
+      500,
+    );
+  }
+
+  if (profileResult.error) {
+    console.error(
+      "[care/checkin/status] Profil-Abfrage fehlgeschlagen:",
+      profileResult.error,
+    );
+    throw new ServiceError("Care-Profil konnte nicht geladen werden", 500);
+  }
+
+  // Check-in-Notizen entschlüsseln (Art. 9 DSGVO)
+  const todayCheckins: CareCheckin[] = decryptFieldsArray(
+    checkinsResult.data ?? [],
+    CARE_CHECKINS_ENCRYPTED_FIELDS,
+  ) as CareCheckin[];
+
+  // Check-in-Zeiten und Aktivierungsstatus aus dem Profil oder Defaults laden
+  const checkinTimes: string[] =
+    profileResult.data?.checkin_times ?? [...CHECKIN_DEFAULTS.defaultTimes];
+  const checkinEnabled: boolean =
+    profileResult.data?.checkin_enabled ?? true;
+
+  // Anzahl abgeschlossener Check-ins (completed_at ist gesetzt, Status nicht 'missed')
+  const completedCount = todayCheckins.filter(
+    (c) => c.completed_at !== null && c.status !== "missed",
+  ).length;
+
+  const totalCount = checkinTimes.length;
+
+  // Nächsten fälligen Check-in-Zeitpunkt ermitteln
+  const nowTimeStr = formatTimeHHMM(new Date());
+  const nextDue = findNextDueTime(checkinTimes, todayCheckins, nowTimeStr);
+
+  const allCompleted =
+    checkinEnabled && completedCount >= totalCount && totalCount > 0;
+
+  return {
+    today: todayCheckins,
+    checkinTimes,
+    checkinEnabled,
+    completedCount,
+    totalCount,
+    nextDue,
+    allCompleted,
+  };
 }

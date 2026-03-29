@@ -168,6 +168,24 @@ export { sendCareNotification } from "./notifications";
 // Permissions
 export { getCareRole, canAccessFeature } from "./permissions";
 
+// Profile (Care)
+export { getCareProfile, updateCareProfile } from "./profile.service";
+
+// Checkin (erweitert)
+export type { CheckinStatusResponse } from "./checkin.service";
+export {
+  submitCheckin,
+  getCheckinHistory,
+  getTodayCheckinStatus,
+} from "./checkin.service";
+
+// Consent-Routes (Art. 9)
+export {
+  getConsents,
+  updateConsents,
+  revokeConsent,
+} from "./consent-routes.service";
+
 // Voice-Classify
 export type { ClassifyResult } from "./voice-classify";
 export { classifyTaskFromVoice, parseClassifyResponse } from "./voice-classify";

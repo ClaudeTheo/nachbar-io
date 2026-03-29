@@ -3,45 +3,43 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import { writeAuditLog } from "@/lib/care/audit";
-import { getConsentsForUser } from "@/lib/care/consent";
-import { CONSENT_FEATURES } from "@/lib/care/types";
-import { CURRENT_CONSENT_VERSION } from "@/lib/care/constants";
-import type { CareConsentFeature as _CareConsentFeature } from "@/lib/care/types";
+import { handleServiceError } from "@/lib/services/service-error";
+import {
+  getConsents,
+  updateConsents,
+} from "@/modules/care/services/consent-routes.service";
 
-// GET /api/care/consent — Alle Consents laden
 export async function GET(_request: NextRequest) {
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) {
+  if (!user)
     return NextResponse.json(
       { error: "Nicht authentifiziert" },
       { status: 401 },
     );
+
+  try {
+    const result = await getConsents(supabase, user.id);
+    return NextResponse.json(result);
+  } catch (error) {
+    return handleServiceError(error);
   }
-
-  const consents = await getConsentsForUser(supabase, user.id);
-  const hasAny = Object.values(consents).some((c) => c.granted);
-
-  return NextResponse.json({ consents, has_any_consent: hasAny });
 }
 
-// POST /api/care/consent — Consents erteilen/aktualisieren
 export async function POST(request: NextRequest) {
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) {
+  if (!user)
     return NextResponse.json(
       { error: "Nicht authentifiziert" },
       { status: 401 },
     );
-  }
 
-  let body: { features: Record<string, boolean> };
+  let body: { features?: Record<string, boolean> };
   try {
     body = await request.json();
   } catch {
@@ -51,111 +49,14 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  if (!body.features || typeof body.features !== "object") {
-    return NextResponse.json(
-      { error: "features-Objekt erforderlich" },
-      { status: 400 },
+  try {
+    const result = await updateConsents(
+      supabase,
+      user.id,
+      body.features as Record<string, boolean>,
     );
+    return NextResponse.json(result);
+  } catch (error) {
+    return handleServiceError(error);
   }
-
-  // Validierung: Nur gültige Feature-Keys
-  const validFeatures = new Set<string>(CONSENT_FEATURES);
-  for (const key of Object.keys(body.features)) {
-    if (!validFeatures.has(key)) {
-      return NextResponse.json(
-        {
-          error: `Ungültiges Feature: "${key}". Erlaubt: ${CONSENT_FEATURES.join(", ")}`,
-        },
-        { status: 400 },
-      );
-    }
-  }
-
-  // Abhängigkeitsregel: emergency_contacts erfordert sos
-  if (body.features.emergency_contacts && !body.features.sos) {
-    return NextResponse.json(
-      { error: "Notfallkontakte erfordern die SOS-Einwilligung" },
-      { status: 400 },
-    );
-  }
-
-  const now = new Date().toISOString();
-  const changedFeatures: string[] = [];
-
-  // Aktuelle Consents laden (für History-Vergleich)
-  const currentConsents = await getConsentsForUser(supabase, user.id);
-
-  // Upsert für jedes Feature
-  for (const feature of CONSENT_FEATURES) {
-    if (!(feature in body.features)) continue;
-
-    const newGranted = body.features[feature] === true;
-    const currentGranted = currentConsents[feature]?.granted ?? false;
-
-    // Nur ändern wenn sich der Status geändert hat
-    if (newGranted === currentGranted) continue;
-
-    const consentData: Record<string, unknown> = {
-      user_id: user.id,
-      feature,
-      granted: newGranted,
-      consent_version: CURRENT_CONSENT_VERSION,
-      updated_at: now,
-    };
-
-    if (newGranted) {
-      consentData.granted_at = now;
-      consentData.revoked_at = null;
-    } else {
-      consentData.revoked_at = now;
-    }
-
-    const { data: upserted, error } = await supabase
-      .from("care_consents")
-      .upsert(consentData, { onConflict: "user_id,feature" })
-      .select()
-      .single();
-
-    if (error) {
-      console.error(
-        `[care/consent] Upsert fehlgeschlagen für ${feature}:`,
-        error,
-      );
-      continue;
-    }
-
-    // History-Eintrag
-    await supabase.from("care_consent_history").insert({
-      consent_id: upserted.id,
-      user_id: user.id,
-      feature,
-      action: newGranted ? "granted" : "revoked",
-      consent_version: CURRENT_CONSENT_VERSION,
-    });
-
-    changedFeatures.push(`${feature}:${newGranted ? "granted" : "revoked"}`);
-  }
-
-  // Audit-Log
-  if (changedFeatures.length > 0) {
-    try {
-      await writeAuditLog(supabase, {
-        seniorId: user.id,
-        actorId: user.id,
-        eventType: "consent_updated",
-        metadata: { changes: changedFeatures },
-      });
-    } catch (err) {
-      console.error("[care/consent] Audit-Log fehlgeschlagen:", err);
-    }
-  }
-
-  // Aktualisierte Consents zurückgeben
-  const updatedConsents = await getConsentsForUser(supabase, user.id);
-  const hasAny = Object.values(updatedConsents).some((c) => c.granted);
-
-  return NextResponse.json({
-    consents: updatedConsents,
-    has_any_consent: hasAny,
-  });
 }

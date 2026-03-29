@@ -20,6 +20,11 @@ export default defineConfig({
       name: "Mobile Chrome",
       use: { ...devices["Pixel 5"] },
     },
+    {
+      name: "multi-agent",
+      testDir: "./tests/e2e/multi-agent",
+      use: { ...devices["Desktop Chrome"] },
+    },
   ],
   webServer: {
     command: "npm run dev",

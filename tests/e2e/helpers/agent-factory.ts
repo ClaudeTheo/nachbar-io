@@ -63,7 +63,9 @@ export async function createAgent(
   const storagePath = options?.useStorageState ? authFile(agentId) : undefined;
   const hasStorageState = storagePath && fs.existsSync(storagePath);
   if (options?.useStorageState && !hasStorageState) {
-    console.warn(`[AGENT] storageState fuer ${agentId} nicht gefunden: ${storagePath}`);
+    console.warn(
+      `[AGENT] storageState fuer ${agentId} nicht gefunden: ${storagePath}`,
+    );
   }
 
   // Eigener Browser-Kontext = eigene Session/Cookies
@@ -183,7 +185,9 @@ export async function loginAgent(agent: TestAgent): Promise<void> {
 
     lastError = await response.text();
     const status = response.status();
-    const isRetryable = status === 429 || (status === 401 && lastError.includes("Invalid login credentials"));
+    const isRetryable =
+      status === 429 ||
+      (status === 401 && lastError.includes("Invalid login credentials"));
 
     if (!isRetryable) {
       throw new Error(
@@ -198,10 +202,16 @@ export async function loginAgent(agent: TestAgent): Promise<void> {
     }
   }
 
+  // Kurz warten damit Dev-Server vorherige Requests abschliessen kann
+  await page.waitForTimeout(1000);
+
   // Zur Zielseite navigieren (Cookies aus dem API-Call sind im Context)
   const target =
     credentials.uiMode === "senior" ? "/senior/home" : "/dashboard";
-  await page.goto(target);
+  await page.goto(target, {
+    timeout: TIMEOUTS.pageLoad,
+    waitUntil: "domcontentloaded",
+  });
 
   if (credentials.uiMode === "senior") {
     await page.waitForURL("**/senior/**", { timeout: TIMEOUTS.pageLoad });

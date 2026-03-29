@@ -1,182 +1,69 @@
 // app/api/care/medications/log/route.ts
-// Nachbar.io — Medikamenten-Einnahme protokollieren (POST) und Log abrufen (GET)
+// Nachbar.io — Medikamenten-Einnahme protokollieren (POST) und Log abrufen (GET) (thin handler)
 
-import { NextRequest, NextResponse } from 'next/server';
-import { writeAuditLog } from '@/lib/care/audit';
-import { sendCareNotification } from '@/lib/care/notifications';
-import { requireAuth, requireSubscription, unauthorizedResponse, requireCareAccess } from '@/lib/care/api-helpers';
-import { MEDICATION_DEFAULTS } from '@/lib/care/constants';
-import { decryptField } from '@/lib/care/field-encryption';
-import type { CareMedicationLogStatus } from '@/lib/care/types';
-
-const VALID_LOG_STATUSES: CareMedicationLogStatus[] = ['taken', 'skipped', 'snoozed'];
+import { NextRequest, NextResponse } from "next/server";
+import {
+  requireAuth,
+  requireSubscription,
+  unauthorizedResponse,
+} from "@/lib/care/api-helpers";
+import { handleServiceError } from "@/lib/services/service-error";
+import {
+  logMedicationIntake,
+  getMedicationLog,
+} from "@/modules/care/services/medications-log.service";
 
 // POST /api/care/medications/log — Einnahme protokollieren
 export async function POST(request: NextRequest) {
-  // Auth
   const auth = await requireAuth();
   if (!auth) return unauthorizedResponse();
 
-  // Subscription-Gate: Plus erforderlich
-  const sub = await requireSubscription(auth.supabase, auth.user.id, 'plus');
+  const sub = await requireSubscription(auth.supabase, auth.user.id, "plus");
   if (sub instanceof NextResponse) return sub;
 
-  const { supabase, user } = auth;
-
-  let body: { medication_id?: string; status?: CareMedicationLogStatus; scheduled_at?: string };
-  try { body = await request.json(); } catch {
-    return NextResponse.json({ error: 'Ungültiges Anfrage-Format' }, { status: 400 });
+  let body;
+  try {
+    body = await request.json();
+  } catch {
+    return NextResponse.json(
+      { error: "Ungültiges Anfrage-Format" },
+      { status: 400 },
+    );
   }
 
-  const { medication_id, status, scheduled_at } = body;
-  if (!medication_id || !status || !scheduled_at) {
-    return NextResponse.json({ error: 'medication_id, status und scheduled_at sind erforderlich' }, { status: 400 });
+  try {
+    const result = await logMedicationIntake(auth.supabase, auth.user.id, body);
+    return NextResponse.json(result, { status: 201 });
+  } catch (error) {
+    return handleServiceError(error);
   }
-
-  if (!VALID_LOG_STATUSES.includes(status)) {
-    return NextResponse.json({ error: `Ungültiger Status: ${status}` }, { status: 400 });
-  }
-
-  const now = new Date().toISOString();
-  const snoozedUntil = status === 'snoozed'
-    ? new Date(Date.now() + MEDICATION_DEFAULTS.snoozeMinutes * 60 * 1000).toISOString()
-    : null;
-
-  // Upsert: Aktualisiere vorhandenen Log oder erstelle neuen
-  const { data: existing } = await supabase
-    .from('care_medication_logs')
-    .select('id')
-    .eq('medication_id', medication_id)
-    .eq('scheduled_at', scheduled_at)
-    .maybeSingle();
-
-  let logEntry;
-  if (existing) {
-    const { data, error } = await supabase
-      .from('care_medication_logs')
-      .update({ status, confirmed_at: status === 'taken' ? now : null, snoozed_until: snoozedUntil })
-      .eq('id', existing.id)
-      .select()
-      .single();
-    if (error) return NextResponse.json({ error: 'Log konnte nicht aktualisiert werden' }, { status: 500 });
-    logEntry = data;
-  } else {
-    const { data, error } = await supabase
-      .from('care_medication_logs')
-      .insert({
-        medication_id,
-        senior_id: user.id,
-        scheduled_at,
-        status,
-        confirmed_at: status === 'taken' ? now : null,
-        snoozed_until: snoozedUntil,
-      })
-      .select()
-      .single();
-    if (error) return NextResponse.json({ error: 'Log konnte nicht erstellt werden' }, { status: 500 });
-    logEntry = data;
-  }
-
-  // Audit-Log
-  const auditEvent = status === 'taken' ? 'medication_taken'
-    : status === 'skipped' ? 'medication_skipped'
-    : 'medication_snoozed';
-  await writeAuditLog(supabase, {
-    seniorId: user.id,
-    actorId: user.id,
-    eventType: auditEvent,
-    referenceType: 'care_medication_logs',
-    referenceId: logEntry.id,
-    metadata: { medication_id, status },
-  }).catch(() => {});
-
-  // Bei "skipped": Angehörige benachrichtigen
-  if (status === 'skipped') {
-    const { data: relatives } = await supabase
-      .from('care_helpers')
-      .select('user_id')
-      .eq('role', 'relative')
-      .eq('verification_status', 'verified')
-      .contains('assigned_seniors', [user.id]);
-
-    if (relatives && relatives.length > 0) {
-      const { data: med } = await supabase
-        .from('care_medications')
-        .select('name')
-        .eq('id', medication_id)
-        .single();
-
-      // Medikamenten-Name entschlüsseln für Benachrichtigungstext
-      const medName = med?.name ? decryptField(med.name) : null;
-
-      for (const rel of relatives) {
-        await sendCareNotification(supabase, {
-          userId: rel.user_id,
-          type: 'care_medication_missed',
-          title: 'Medikament übersprungen',
-          body: `${medName ?? 'Ein Medikament'} wurde übersprungen.`,
-          referenceId: logEntry.id,
-          referenceType: 'care_medication_logs',
-          url: '/care/medications',
-          channels: ['push', 'in_app'],
-        }).catch(() => {});
-      }
-    }
-  }
-
-  return NextResponse.json(logEntry, { status: 201 });
 }
 
 // GET /api/care/medications/log — Log-Historie abrufen
 export async function GET(request: NextRequest) {
-  // Auth
   const auth = await requireAuth();
   if (!auth) return unauthorizedResponse();
 
-  // Subscription-Gate: Plus erforderlich
-  const sub = await requireSubscription(auth.supabase, auth.user.id, 'plus');
+  const sub = await requireSubscription(auth.supabase, auth.user.id, "plus");
   if (sub instanceof NextResponse) return sub;
 
-  const { supabase, user } = auth;
-
-  const { searchParams } = request.nextUrl;
-  const seniorId = searchParams.get('senior_id') ?? user.id;
-  const medicationId = searchParams.get('medication_id');
-  const limit = Math.min(parseInt(searchParams.get('limit') ?? '50', 10) || 50, 100);
-
-  // Zugriffsprüfung: Nur Senior selbst, zugewiesene Helfer oder Admins
-  if (seniorId !== user.id) {
-    const role = await requireCareAccess(supabase, seniorId);
-    if (!role) return NextResponse.json({ error: 'Kein Zugriff auf diesen Senior' }, { status: 403 });
+  try {
+    const { searchParams } = request.nextUrl;
+    const seniorId = searchParams.get("senior_id") ?? auth.user.id;
+    const medicationId = searchParams.get("medication_id");
+    const limit = Math.min(
+      parseInt(searchParams.get("limit") ?? "50", 10) || 50,
+      100,
+    );
+    const result = await getMedicationLog(
+      auth.supabase,
+      auth.user.id,
+      seniorId,
+      medicationId,
+      limit,
+    );
+    return NextResponse.json(result);
+  } catch (error) {
+    return handleServiceError(error);
   }
-
-  let query = supabase
-    .from('care_medication_logs')
-    .select('*, medication:care_medications(name, dosage)')
-    .eq('senior_id', seniorId)
-    .order('scheduled_at', { ascending: false })
-    .limit(limit);
-
-  if (medicationId) query = query.eq('medication_id', medicationId);
-
-  const { data, error } = await query;
-  if (error) return NextResponse.json({ error: 'Log konnte nicht geladen werden' }, { status: 500 });
-
-  // Verschlüsselte Medikamenten-Namen in der verschachtelten Relation entschlüsseln
-  const decryptedData = (data ?? []).map((log: Record<string, unknown>) => {
-    if (log.medication && typeof log.medication === 'object') {
-      const med = log.medication as Record<string, unknown>;
-      return {
-        ...log,
-        medication: {
-          ...med,
-          name: typeof med.name === 'string' ? decryptField(med.name) : med.name,
-          dosage: typeof med.dosage === 'string' ? decryptField(med.dosage) : med.dosage,
-        },
-      };
-    }
-    return log;
-  });
-
-  return NextResponse.json(decryptedData);
 }

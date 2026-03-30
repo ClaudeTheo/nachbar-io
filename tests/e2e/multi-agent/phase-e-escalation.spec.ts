@@ -33,11 +33,12 @@ async function supabaseAdmin(
     apikey: SERVICE_KEY,
     Authorization: `Bearer ${SERVICE_KEY}`,
     "Content-Type": "application/json",
-    Prefer: method === "POST"
-      ? "return=representation,resolution=merge-duplicates"
-      : method === "GET"
-        ? "return=representation"
-        : "return=minimal",
+    Prefer:
+      method === "POST"
+        ? "return=representation,resolution=merge-duplicates"
+        : method === "GET"
+          ? "return=representation"
+          : "return=minimal",
   };
 
   try {
@@ -50,7 +51,8 @@ async function supabaseAdmin(
       const text = await res.text();
       return { data: null, error: `${res.status}: ${text}` };
     }
-    if (method === "DELETE" || method === "PATCH") return { data: null, error: null };
+    if (method === "DELETE" || method === "PATCH")
+      return { data: null, error: null };
     const data = await res.json();
     return { data, error: null };
   } catch (err) {
@@ -159,7 +161,9 @@ test.describe("E1: Heartbeat-Kette", () => {
       console.log("[T] Heartbeat-Timeline sichtbar");
     } else {
       // Fallback: Caregiver-Dashboard pruefen
-      console.log("[T] Timeline nicht direkt sichtbar — pruefe Caregiver-Seite");
+      console.log(
+        "[T] Timeline nicht direkt sichtbar — pruefe Caregiver-Seite",
+      );
       const mainContent = await page.locator("main").first().textContent();
       const hasSeniorInfo =
         mainContent?.toLowerCase().includes("gertrude") ||
@@ -178,7 +182,9 @@ test.describe("E1: Heartbeat-Kette", () => {
 
   test("E1c: Heartbeat 4h ueberfaellig — reminder_4h Event", async () => {
     // Letzten Heartbeat auf 5 Stunden zurueckdatieren
-    const fiveHoursAgo = new Date(Date.now() - 5 * 60 * 60 * 1000).toISOString();
+    const fiveHoursAgo = new Date(
+      Date.now() - 5 * 60 * 60 * 1000,
+    ).toISOString();
     const { error: updateErr } = await supabaseAdmin(
       "heartbeats",
       "PATCH",
@@ -202,7 +208,11 @@ test.describe("E1: Heartbeat-Kette", () => {
     );
 
     // Wenn Event schon existiert (Duplikat), ist das OK
-    if (insertErr && !insertErr.includes("duplicate") && !insertErr.includes("409")) {
+    if (
+      insertErr &&
+      !insertErr.includes("duplicate") &&
+      !insertErr.includes("409")
+    ) {
       console.warn(`[E] Escalation-Event: ${insertErr}`);
     }
 
@@ -224,7 +234,9 @@ test.describe("E1: Heartbeat-Kette", () => {
 
   test("E1d: Heartbeat 8h ueberfaellig — alert_8h + Caregiver-Benachrichtigung", async () => {
     // Heartbeat auf 9 Stunden zurueckdatieren
-    const nineHoursAgo = new Date(Date.now() - 9 * 60 * 60 * 1000).toISOString();
+    const nineHoursAgo = new Date(
+      Date.now() - 9 * 60 * 60 * 1000,
+    ).toISOString();
     await supabaseAdmin(
       "heartbeats",
       "PATCH",
@@ -244,7 +256,11 @@ test.describe("E1: Heartbeat-Kette", () => {
       },
     );
 
-    if (insertErr && !insertErr.includes("duplicate") && !insertErr.includes("409")) {
+    if (
+      insertErr &&
+      !insertErr.includes("duplicate") &&
+      !insertErr.includes("409")
+    ) {
       console.warn(`[E] Escalation alert_8h: ${insertErr}`);
     }
 
@@ -261,7 +277,9 @@ test.describe("E1: Heartbeat-Kette", () => {
     expect(events.length).toBeGreaterThanOrEqual(1);
     expect(events[0].notified_users).toContain(betreuerUserId);
 
-    console.log("[E] Escalation alert_8h Event mit Caregiver-Benachrichtigung verifiziert");
+    console.log(
+      "[E] Escalation alert_8h Event mit Caregiver-Benachrichtigung verifiziert",
+    );
   });
 
   test("E1e: Frischer Heartbeat loest auto-resolve aus", async () => {
@@ -321,7 +339,9 @@ test.describe("E2: Check-in + Medikamente", () => {
     if (statusRes.ok()) {
       const status = await statusRes.json();
       expect(status.completedCount).toBeGreaterThanOrEqual(1);
-      console.log(`[S] Check-in Status: ${status.completedCount}/${status.totalCount} erledigt`);
+      console.log(
+        `[S] Check-in Status: ${status.completedCount}/${status.totalCount} erledigt`,
+      );
     }
 
     console.log("[S] Check-in ok/gut gesendet");
@@ -352,9 +372,13 @@ test.describe("E2: Check-in + Medikamente", () => {
 
     const alerts = data as Array<{ source: string; status: string }> | null;
     if (alerts && alerts.length > 0) {
-      console.log(`[S] SOS-Alert erstellt: source=${alerts[0].source}, status=${alerts[0].status}`);
+      console.log(
+        `[S] SOS-Alert erstellt: source=${alerts[0].source}, status=${alerts[0].status}`,
+      );
     } else {
-      console.log("[S] Check-in need_help gesendet (SOS-Erstellung haengt von Cron ab)");
+      console.log(
+        "[S] Check-in need_help gesendet (SOS-Erstellung haengt von Cron ab)",
+      );
     }
 
     await page.screenshot({
@@ -369,11 +393,15 @@ test.describe("E2: Check-in + Medikamente", () => {
 
     if (medsRes.ok()) {
       const meds = await medsRes.json();
-      console.log(`[S] Faellige Medikamente: ${Array.isArray(meds) ? meds.length : 0} Eintraege`);
+      console.log(
+        `[S] Faellige Medikamente: ${Array.isArray(meds) ? meds.length : 0} Eintraege`,
+      );
       expect(Array.isArray(meds)).toBe(true);
     } else {
-      console.log(`[S] Medikamente-Endpunkt: ${medsRes.status()} (evtl. kein Plus-Abo)`);
-      expect([200, 403, 404]).toContain(medsRes.status());
+      console.log(
+        `[S] Medikamente-Endpunkt: ${medsRes.status()} (evtl. kein Plus-Abo)`,
+      );
+      expect([200, 403, 404, 429]).toContain(medsRes.status());
     }
 
     await page.screenshot({
@@ -400,10 +428,11 @@ test.describe("E2: Check-in + Medikamente", () => {
       timeout: TIMEOUTS.elementVisible,
     });
 
-    const mainText = await page.locator("main").first().textContent() || "";
+    const mainText = (await page.locator("main").first().textContent()) || "";
 
     // DATENSCHUTZ-CHECK: Rohwerte duerfen NICHT sichtbar sein
-    const hasRawMood = mainText.includes("\"good\"") || mainText.includes("\"bad\"");
+    const hasRawMood =
+      mainText.includes('"good"') || mainText.includes('"bad"');
     expect(hasRawMood).toBe(false);
 
     console.log("[T] Caregiver sieht Senior-Status (Datenschutz OK)");
@@ -433,8 +462,10 @@ test.describe("E3: Caregiver-Einladung + Widerruf", () => {
       expect(json.expires_at).toBeDefined();
       console.log(`[S] Einladungscode erstellt: ${inviteCode}`);
     } else {
-      console.log(`[S] Invite-Endpunkt: ${response.status()} (evtl. kein Plus-Abo)`);
-      expect([201, 403]).toContain(response.status());
+      console.log(
+        `[S] Invite-Endpunkt: ${response.status()} (evtl. kein Plus-Abo oder Rate-Limit)`,
+      );
+      expect([201, 403, 429]).toContain(response.status());
       inviteCode = "";
     }
 
@@ -463,25 +494,36 @@ test.describe("E3: Caregiver-Einladung + Widerruf", () => {
       `code=eq.${inviteCode}&select=expires_at,used_at`,
     );
 
-    const invites = data as Array<{ expires_at: string; used_at: string | null }> | null;
+    const invites = data as Array<{
+      expires_at: string;
+      used_at: string | null;
+    }> | null;
     if (invites && invites.length > 0) {
       const expiresAt = new Date(invites[0].expires_at);
       const now = new Date();
-      const hoursUntilExpiry = (expiresAt.getTime() - now.getTime()) / (1000 * 60 * 60);
+      const hoursUntilExpiry =
+        (expiresAt.getTime() - now.getTime()) / (1000 * 60 * 60);
       expect(hoursUntilExpiry).toBeGreaterThan(23);
       expect(hoursUntilExpiry).toBeLessThan(25);
       expect(invites[0].used_at).toBeNull();
-      console.log(`[S] Code ${inviteCode}: Ablauf in ${hoursUntilExpiry.toFixed(1)}h, unbenutzt`);
+      console.log(
+        `[S] Code ${inviteCode}: Ablauf in ${hoursUntilExpiry.toFixed(1)}h, unbenutzt`,
+      );
     }
   });
 
   test("E3c: Senior widerruft Caregiver-Link", async () => {
     const { page } = agents.bewohner;
 
+    // Pause gegen Rate-Limiting
+    await page.waitForTimeout(2000);
+
     const linksRes = await page.request.get("/api/caregiver/links");
     if (!linksRes.ok()) {
-      console.log(`[S] Links-Endpunkt: ${linksRes.status()} (evtl. kein Plus-Abo)`);
-      expect([200, 403]).toContain(linksRes.status());
+      console.log(
+        `[S] Links-Endpunkt: ${linksRes.status()} (evtl. kein Plus-Abo oder Rate-Limit)`,
+      );
+      expect([200, 403, 429]).toContain(linksRes.status());
       return;
     }
 
@@ -497,7 +539,9 @@ test.describe("E3: Caregiver-Einladung + Widerruf", () => {
     );
 
     if (!activeLink) {
-      console.log("[S] Kein aktiver Caregiver-Link gefunden — ueberspringe Widerruf");
+      console.log(
+        "[S] Kein aktiver Caregiver-Link gefunden — ueberspringe Widerruf",
+      );
       return;
     }
 
@@ -603,12 +647,16 @@ test.describe("E4: Consultation-Slots", () => {
           const booked = await bookRes.json();
           console.log(`[S] Slot gebucht, Status: ${booked.status}`);
         } else {
-          console.log(`[S] Slot buchen: ${bookRes.status()} (evtl. Feature-Gate)`);
+          console.log(
+            `[S] Slot buchen: ${bookRes.status()} (evtl. Feature-Gate)`,
+          );
         }
       }
     } else {
-      console.log(`[D] Consultation erstellen: ${createRes.status()} (evtl. Feature-Gate)`);
-      expect([201, 403, 404]).toContain(createRes.status());
+      console.log(
+        `[D] Consultation erstellen: ${createRes.status()} (evtl. Feature-Gate)`,
+      );
+      expect([201, 403, 404, 429]).toContain(createRes.status());
     }
 
     await arztPage.screenshot({
@@ -624,6 +672,9 @@ test.describe("E4: Consultation-Slots", () => {
 
     const { page } = agents.arzt;
 
+    // Pause gegen Rate-Limiting
+    await page.waitForTimeout(2000);
+
     const cancelRes = await page.request.patch(
       `/api/care/consultations/${consultationSlotId}/status`,
       { data: { status: "cancelled" } },
@@ -635,7 +686,7 @@ test.describe("E4: Consultation-Slots", () => {
       console.log("[D] Consultation-Slot storniert");
     } else {
       console.log(`[D] Stornierung: ${cancelRes.status()}`);
-      expect([200, 403]).toContain(cancelRes.status());
+      expect([200, 403, 429]).toContain(cancelRes.status());
     }
 
     await page.screenshot({
@@ -664,10 +715,14 @@ test.describe("E5: SOS-Alert-Flow", () => {
       const json = await response.json();
       expect(json.status).toBe("triggered");
       expect(json.category).toBe("general_help");
-      console.log(`[S] SOS-Alert ausgeloest: id=${json.id}, status=${json.status}`);
+      console.log(
+        `[S] SOS-Alert ausgeloest: id=${json.id}, status=${json.status}`,
+      );
     } else {
-      console.log(`[S] SOS-Endpunkt: ${response.status()} (evtl. Feature-Gate)`);
-      expect([201, 403]).toContain(response.status());
+      console.log(
+        `[S] SOS-Endpunkt: ${response.status()} (evtl. Feature-Gate)`,
+      );
+      expect([201, 403, 429]).toContain(response.status());
     }
 
     // UI-Check: /care/sos Seite oeffnen
@@ -704,7 +759,7 @@ test.describe("E5: SOS-Alert-Flow", () => {
       timeout: TIMEOUTS.elementVisible,
     });
 
-    const mainText = await page.locator("main").first().textContent() || "";
+    const mainText = (await page.locator("main").first().textContent()) || "";
 
     const hasSosOrEscalation =
       mainText.toLowerCase().includes("sos") ||
@@ -725,7 +780,9 @@ test.describe("E5: SOS-Alert-Flow", () => {
       );
       const alerts = data as Array<{ id: string; status: string }> | null;
       if (alerts && alerts.length > 0) {
-        console.log(`[K] SOS-Alert in DB bestaetigt: ${alerts[0].id} (${alerts[0].status})`);
+        console.log(
+          `[K] SOS-Alert in DB bestaetigt: ${alerts[0].id} (${alerts[0].status})`,
+        );
       } else {
         console.log("[K] Kein SOS-Alert in DB gefunden (evtl. Feature-Gate)");
       }

@@ -28,6 +28,8 @@ vi.mock('@/lib/care/consent', () => ({
 vi.mock('@/lib/care/field-encryption', () => ({
   encryptFields: vi.fn((_data: unknown) => _data),
   decryptFields: vi.fn((_data: unknown) => _data),
+  encryptEmergencyContacts: vi.fn((_data: unknown) => _data),
+  decryptEmergencyContacts: vi.fn((_data: unknown) => _data),
   CARE_PROFILES_ENCRYPTED_FIELDS: ['medical_notes', 'insurance_number'],
 }));
 
@@ -190,7 +192,7 @@ describe('PUT /api/care/profile', () => {
     mockSupabase.setUser({ id: 'user-1', email: 'test@test.de' });
 
     const res = await PUT(createPutRequest({
-      emergency_contacts: [{ name: '', phone_encrypted: '123', role: 'unknown', priority: 1, relationship: 'X' }],
+      emergency_contacts: [{ name: '', phone: '123', role: 'unknown', priority: 1, relationship: 'X' }],
     }));
     expect(res.status).toBe(400);
     const json = await res.json();
@@ -202,7 +204,7 @@ describe('PUT /api/care/profile', () => {
     mockSupabase.addResponse('care_profiles', { data: mockProfile, error: null });
 
     const contacts = [
-      { name: 'Anna', phone_encrypted: 'enc:+49176xxx', role: 'relative', priority: 1, relationship: 'Tochter' },
+      { name: 'Anna', phone: 'enc:+49176xxx', role: 'relative', priority: 1, relationship: 'Tochter' },
     ];
     const res = await PUT(createPutRequest({ emergency_contacts: contacts }));
     expect(res.status).toBe(200);

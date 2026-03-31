@@ -41,7 +41,7 @@ export async function sendSms(payload: SmsPayload): Promise<boolean> {
   if (!isTwilioConfigured()) {
     console.warn(
       `[care/sms] SMS nicht gesendet — Twilio nicht konfiguriert`,
-      { phone: payload.phone.slice(0, 6) + '...', messageLength: payload.message.length }
+      { phone: '***' + payload.phone.slice(-4), messageLength: payload.message.length }
     );
     return false;
   }
@@ -60,7 +60,7 @@ export async function sendSms(payload: SmsPayload): Promise<boolean> {
 
       console.log(
         `[care/sms] SMS gesendet`,
-        { sid: result.sid, to: payload.phone.slice(0, 6) + '...', status: result.status, attempt: attempt + 1 }
+        { sid: result.sid, to: '***' + payload.phone.slice(-4), status: result.status, attempt: attempt + 1 }
       );
 
       return true;
@@ -77,14 +77,14 @@ export async function sendSms(payload: SmsPayload): Promise<boolean> {
       if (isPermanent || isLastAttempt) {
         console.error(
           `[care/sms] SMS-Versand endgueltig fehlgeschlagen`,
-          { phone: payload.phone.slice(0, 6) + '...', error: errorMsg, attempts: attempt + 1 }
+          { phone: '***' + payload.phone.slice(-4), error: errorMsg, attempts: attempt + 1 }
         );
         return false;
       }
 
       console.warn(
         `[care/sms] SMS-Versand fehlgeschlagen, Retry ${attempt + 1}/${MAX_RETRIES}`,
-        { phone: payload.phone.slice(0, 6) + '...', error: errorMsg }
+        { phone: '***' + payload.phone.slice(-4), error: errorMsg }
       );
       await new Promise(resolve => setTimeout(resolve, retryDelay(attempt)));
     }

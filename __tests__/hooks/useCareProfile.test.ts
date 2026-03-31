@@ -11,7 +11,7 @@ const mockProfile: Partial<CareProfile> = {
   user_id: 'user-1',
   care_level: '3',
   emergency_contacts: [
-    { name: 'Anna Müller', phone_encrypted: 'enc:+49176xxx', role: 'relative', priority: 1, relationship: 'Tochter' },
+    { name: 'Anna Müller', phone: 'enc:+49176xxx', role: 'relative', priority: 1, relationship: 'Tochter' },
   ],
   medical_notes: null,
   preferred_hospital: 'St. Blasien',

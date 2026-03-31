@@ -493,7 +493,7 @@ Die Verschluesselung wird in `lib/care/crypto.ts` implementiert:
 
 | Tabelle | Feld | Beschreibung |
 |---|---|---|
-| `care_profiles` | `emergency_contacts` -> `phone_encrypted` | Telefonnummern der Notfallkontakte innerhalb des JSONB |
+| `care_profiles` | `emergency_contacts` -> `phone` (AES-256-GCM) | Telefonnummern der Notfallkontakte innerhalb des JSONB, verschluesselt gespeichert |
 | `care_profiles` | `insurance_number` | Krankenversicherungsnummer |
 
 **Hinweis:** Die Verschluesselung erfolgt auf Anwendungsebene (Application-Level Encryption), nicht in der Datenbank. Die Werte werden vor dem INSERT verschluesselt und nach dem SELECT entschluesselt.

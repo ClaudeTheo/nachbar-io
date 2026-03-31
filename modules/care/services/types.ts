@@ -72,7 +72,8 @@ export type CareNotificationType =
 
 export interface EmergencyContact {
   name: string;
-  phone_encrypted: string;
+  /** Telefonnummer — wird serverseitig per AES-256-GCM verschluesselt (DSGVO Art. 9) */
+  phone: string;
   role: 'relative' | 'care_service' | 'neighbor' | 'other';
   priority: number;
   relationship: string;

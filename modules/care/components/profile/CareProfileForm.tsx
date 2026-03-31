@@ -30,7 +30,7 @@ const CONTACT_ROLE_OPTIONS = [
 function emptyContact(): EmergencyContact {
   return {
     name: '',
-    phone_encrypted: '',
+    phone: '',
     role: 'relative',
     priority: 1,
     relationship: '',
@@ -253,8 +253,8 @@ export function CareProfileForm({ userId, onSuccess }: CareProfileFormProps) {
                 <input
                   type="tel"
                   placeholder="Telefonnummer *"
-                  value={contact.phone_encrypted}
-                  onChange={(e) => updateContact(index, 'phone_encrypted', e.target.value)}
+                  value={contact.phone}
+                  onChange={(e) => updateContact(index, 'phone', e.target.value)}
                   className="rounded-lg border border-gray-300 px-3 py-2 text-sm text-anthrazit focus:border-quartier-green focus:outline-none focus:ring-1 focus:ring-quartier-green"
                   required
                 />

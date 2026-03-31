@@ -90,6 +90,43 @@ export const CARE_APPOINTMENTS_ENCRYPTED_FIELDS = [
   'notes',
 ] as const;
 
+// --- Notfallkontakt-Verschluesselung (JSONB-Feld emergency_contacts) ---
+
+/**
+ * Verschluesselt die Telefonnummern innerhalb eines emergency_contacts-Arrays.
+ * Die Telefonnummer ist personenbezogen (DSGVO Art. 9) und muss verschluesselt
+ * in der Datenbank gespeichert werden.
+ */
+export function encryptEmergencyContacts(
+  contacts: Array<Record<string, unknown>> | undefined | null,
+): Array<Record<string, unknown>> | undefined | null {
+  if (!contacts || !Array.isArray(contacts)) return contacts;
+  return contacts.map((contact) => {
+    const phone = contact.phone as string | null | undefined;
+    return {
+      ...contact,
+      phone: encryptField(phone ?? null),
+    };
+  });
+}
+
+/**
+ * Entschluesselt die Telefonnummern innerhalb eines emergency_contacts-Arrays.
+ * Abwaertskompatibel: Klartext-Werte (ohne aes256gcm:-Praefix) werden unveraendert zurueckgegeben.
+ */
+export function decryptEmergencyContacts(
+  contacts: Array<Record<string, unknown>> | undefined | null,
+): Array<Record<string, unknown>> | undefined | null {
+  if (!contacts || !Array.isArray(contacts)) return contacts;
+  return contacts.map((contact) => {
+    const phone = contact.phone as string | null | undefined;
+    return {
+      ...contact,
+      phone: decryptField(phone ?? null),
+    };
+  });
+}
+
 // --- Generische Helfer fuer Objekt-Verschluesselung/Entschluesselung ---
 
 /**

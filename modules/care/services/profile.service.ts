@@ -7,6 +7,8 @@ import { requireCareAccess } from "@/lib/care/api-helpers";
 import {
   encryptFields,
   decryptFields,
+  encryptEmergencyContacts,
+  decryptEmergencyContacts,
   CARE_PROFILES_ENCRYPTED_FIELDS,
 } from "@/lib/care/field-encryption";
 import { checkCareConsent } from "@/lib/care/consent";
@@ -40,7 +42,7 @@ function isValidContact(contact: unknown): contact is EmergencyContact {
   return (
     typeof c.name === "string" &&
     c.name.length > 0 &&
-    typeof c.phone_encrypted === "string" &&
+    typeof c.phone === "string" &&
     typeof c.role === "string" &&
     VALID_CONTACT_ROLES.includes(
       c.role as (typeof VALID_CONTACT_ROLES)[number],
@@ -89,8 +91,19 @@ export async function getCareProfile(
     throw new ServiceError("Profil konnte nicht geladen werden", 500);
   }
 
+  if (!data) return data;
+
   // Gesundheitsfelder entschlüsseln (Art. 9 DSGVO)
-  return data ? decryptFields(data, CARE_PROFILES_ENCRYPTED_FIELDS) : data;
+  const decrypted = decryptFields(data, CARE_PROFILES_ENCRYPTED_FIELDS);
+
+  // Telefonnummern in Notfallkontakten entschlüsseln
+  if (decrypted.emergency_contacts) {
+    decrypted.emergency_contacts = decryptEmergencyContacts(
+      decrypted.emergency_contacts as Array<Record<string, unknown>>,
+    );
+  }
+
+  return decrypted;
 }
 
 // PUT — Pflege-Profil erstellen oder aktualisieren
@@ -154,7 +167,7 @@ export async function updateCareProfile(
     for (let i = 0; i < emergency_contacts.length; i++) {
       if (!isValidContact(emergency_contacts[i])) {
         throw new ServiceError(
-          `Ungültiger Notfallkontakt an Position ${i + 1}. Erforderlich: name, phone_encrypted, role, priority, relationship`,
+          `Ungültiger Notfallkontakt an Position ${i + 1}. Erforderlich: name, phone, role, priority, relationship`,
           400,
         );
       }
@@ -188,6 +201,13 @@ export async function updateCareProfile(
     updateData.checkin_enabled = !!checkin_enabled;
   if (escalation_config !== undefined)
     updateData.escalation_config = escalation_config;
+
+  // Telefonnummern in Notfallkontakten verschlüsseln (DSGVO Art. 9)
+  if (updateData.emergency_contacts) {
+    updateData.emergency_contacts = encryptEmergencyContacts(
+      updateData.emergency_contacts as Array<Record<string, unknown>>,
+    );
+  }
 
   // Gesundheitsfelder verschlüsseln (Art. 9 DSGVO)
   const encryptedData = encryptFields(
@@ -224,5 +244,14 @@ export async function updateCareProfile(
   }
 
   // Entschlüsselt zurückgeben
-  return decryptFields(profile, CARE_PROFILES_ENCRYPTED_FIELDS);
+  const decryptedProfile = decryptFields(profile, CARE_PROFILES_ENCRYPTED_FIELDS);
+
+  // Telefonnummern in Notfallkontakten entschlüsseln
+  if (decryptedProfile.emergency_contacts) {
+    decryptedProfile.emergency_contacts = decryptEmergencyContacts(
+      decryptedProfile.emergency_contacts as Array<Record<string, unknown>>,
+    );
+  }
+
+  return decryptedProfile;
 }

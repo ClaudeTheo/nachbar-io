@@ -158,7 +158,7 @@ export async function loadMemoryContext(
         for (const fact of careNeedFacts) {
           if (fact.value_encrypted) {
             try {
-              fact.value = decryptField(fact.value);
+              fact.value = decryptField(fact.value) ?? fact.value;
             } catch {
               /* skip */
             }
@@ -178,7 +178,7 @@ export async function loadMemoryContext(
         for (const fact of personalFacts) {
           if (fact.value_encrypted) {
             try {
-              fact.value = decryptField(fact.value);
+              fact.value = decryptField(fact.value) ?? fact.value;
             } catch {
               /* skip */
             }
@@ -200,7 +200,7 @@ export async function loadMemoryContext(
         for (const fact of careTeamFacts) {
           if (fact.value_encrypted) {
             try {
-              fact.value = decryptField(fact.value);
+              fact.value = decryptField(fact.value) ?? fact.value;
             } catch {
               /* skip */
             }

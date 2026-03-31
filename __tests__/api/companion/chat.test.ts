@@ -66,6 +66,28 @@ vi.mock("@/modules/voice/services/tool-executor", () => ({
     mockExecuteCompanionTool(...args),
 }));
 
+// Memory-Modul Mocks (Senior Memory Layer)
+vi.mock("@/modules/memory/services/memory-loader", () => ({
+  loadMemoryContext: vi.fn().mockResolvedValue(""),
+  buildPromptBlock: vi.fn().mockReturnValue(""),
+}));
+
+vi.mock("@/modules/memory/services/chat-integration", () => ({
+  buildMemoryTool: vi.fn().mockReturnValue(null),
+  processMemoryToolCall: vi
+    .fn()
+    .mockResolvedValue({ result: "", needsConfirmation: false }),
+}));
+
+vi.mock("@/modules/memory/services/facts.service", () => ({
+  saveFact: vi.fn().mockResolvedValue({ id: "mock-fact-id" }),
+  getFactCount: vi.fn().mockResolvedValue(0),
+}));
+
+vi.mock("@/modules/memory/services/consent.service", () => ({
+  hasConsent: vi.fn().mockResolvedValue(false),
+}));
+
 vi.mock("@anthropic-ai/sdk", () => {
   // Echte Klasse statt Arrow-Function, damit 'new Anthropic()' funktioniert
   class MockAnthropic {
@@ -75,6 +97,23 @@ vi.mock("@anthropic-ai/sdk", () => {
   }
   return { default: MockAnthropic };
 });
+
+// Mock-Supabase mit from()-Methode (fuer Memory-Layer Integration)
+function createMockSupabase() {
+  return {
+    from: () => ({
+      select: () => ({
+        eq: () => ({
+          single: () => Promise.resolve({ data: null, error: null }),
+          limit: () => ({
+            single: () => Promise.resolve({ data: null, error: null }),
+          }),
+        }),
+        limit: () => Promise.resolve({ data: [], error: null }),
+      }),
+    }),
+  };
+}
 
 // Standard-Context fuer Tests
 const defaultContext = {
@@ -108,7 +147,10 @@ describe("POST /api/companion/chat", () => {
   });
 
   it("gibt 400 zurueck bei leeren Nachrichten", async () => {
-    mockRequireAuth.mockResolvedValue({ supabase: {}, user: { id: "u1" } });
+    mockRequireAuth.mockResolvedValue({
+      supabase: createMockSupabase(),
+      user: { id: "u1" },
+    });
 
     const { POST } = await import("@/app/api/companion/chat/route");
     const req = new NextRequest("http://localhost/api/companion/chat", {
@@ -121,7 +163,10 @@ describe("POST /api/companion/chat", () => {
   });
 
   it("gibt 400 zurueck bei fehlendem messages-Feld", async () => {
-    mockRequireAuth.mockResolvedValue({ supabase: {}, user: { id: "u1" } });
+    mockRequireAuth.mockResolvedValue({
+      supabase: createMockSupabase(),
+      user: { id: "u1" },
+    });
 
     const { POST } = await import("@/app/api/companion/chat/route");
     const req = new NextRequest("http://localhost/api/companion/chat", {
@@ -134,7 +179,10 @@ describe("POST /api/companion/chat", () => {
   });
 
   it("gibt 400 zurueck bei ungueltigem JSON", async () => {
-    mockRequireAuth.mockResolvedValue({ supabase: {}, user: { id: "u1" } });
+    mockRequireAuth.mockResolvedValue({
+      supabase: createMockSupabase(),
+      user: { id: "u1" },
+    });
 
     const { POST } = await import("@/app/api/companion/chat/route");
     const req = new NextRequest("http://localhost/api/companion/chat", {
@@ -147,7 +195,10 @@ describe("POST /api/companion/chat", () => {
   });
 
   it("gibt Chat-Antwort mit Text zurueck", async () => {
-    mockRequireAuth.mockResolvedValue({ supabase: {}, user: { id: "u1" } });
+    mockRequireAuth.mockResolvedValue({
+      supabase: createMockSupabase(),
+      user: { id: "u1" },
+    });
     mockAnthropicCreate.mockResolvedValue({
       content: [
         { type: "text", text: "Guten Tag! Wie kann ich Ihnen helfen?" },
@@ -170,7 +221,10 @@ describe("POST /api/companion/chat", () => {
   });
 
   it("begrenzt Nachrichten auf 20 (Session-Gedaechtnis)", async () => {
-    mockRequireAuth.mockResolvedValue({ supabase: {}, user: { id: "u1" } });
+    mockRequireAuth.mockResolvedValue({
+      supabase: createMockSupabase(),
+      user: { id: "u1" },
+    });
     mockAnthropicCreate.mockResolvedValue({
       content: [{ type: "text", text: "OK" }],
     });
@@ -197,7 +251,10 @@ describe("POST /api/companion/chat", () => {
   });
 
   it("fuehrt Read-Tools sofort aus und gibt Ergebnis zurueck", async () => {
-    mockRequireAuth.mockResolvedValue({ supabase: {}, user: { id: "u1" } });
+    mockRequireAuth.mockResolvedValue({
+      supabase: createMockSupabase(),
+      user: { id: "u1" },
+    });
     mockAnthropicCreate.mockResolvedValue({
       content: [
         { type: "text", text: "Hier sind Ihre Muelltermine:" },
@@ -233,7 +290,10 @@ describe("POST /api/companion/chat", () => {
   });
 
   it("fordert Bestaetigung fuer Write-Tools an (ohne Ausfuehrung)", async () => {
-    mockRequireAuth.mockResolvedValue({ supabase: {}, user: { id: "u1" } });
+    mockRequireAuth.mockResolvedValue({
+      supabase: createMockSupabase(),
+      user: { id: "u1" },
+    });
     mockAnthropicCreate.mockResolvedValue({
       content: [
         { type: "text", text: "Soll ich den Beitrag veroeffentlichen?" },
@@ -278,7 +338,10 @@ describe("POST /api/companion/chat", () => {
   });
 
   it("fuehrt bestaetigtes Write-Tool aus (confirmTool)", async () => {
-    mockRequireAuth.mockResolvedValue({ supabase: {}, user: { id: "u1" } });
+    mockRequireAuth.mockResolvedValue({
+      supabase: createMockSupabase(),
+      user: { id: "u1" },
+    });
     mockExecuteCompanionTool.mockResolvedValue({
       success: true,
       summary:
@@ -339,7 +402,10 @@ describe("POST /api/companion/chat", () => {
   });
 
   it("gibt 500 mit KI-Fehler bei Anthropic-Fehlern zurueck", async () => {
-    mockRequireAuth.mockResolvedValue({ supabase: {}, user: { id: "u1" } });
+    mockRequireAuth.mockResolvedValue({
+      supabase: createMockSupabase(),
+      user: { id: "u1" },
+    });
     mockAnthropicCreate.mockRejectedValue(new Error("API rate limit exceeded"));
 
     const { POST } = await import("@/app/api/companion/chat/route");
@@ -356,7 +422,10 @@ describe("POST /api/companion/chat", () => {
   });
 
   it("uebergibt korrektes Modell und System-Prompt an Claude", async () => {
-    mockRequireAuth.mockResolvedValue({ supabase: {}, user: { id: "u1" } });
+    mockRequireAuth.mockResolvedValue({
+      supabase: createMockSupabase(),
+      user: { id: "u1" },
+    });
     mockBuildSystemPrompt.mockReturnValue("Test-System-Prompt");
     mockAnthropicCreate.mockResolvedValue({
       content: [{ type: "text", text: "OK" }],
@@ -380,7 +449,7 @@ describe("POST /api/companion/chat", () => {
 
   it("laedt Quartier-Kontext fuer den authentifizierten Nutzer", async () => {
     mockRequireAuth.mockResolvedValue({
-      supabase: {},
+      supabase: createMockSupabase(),
       user: { id: "user-42" },
     });
     mockAnthropicCreate.mockResolvedValue({

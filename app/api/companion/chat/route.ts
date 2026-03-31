@@ -1,5 +1,5 @@
 // app/api/companion/chat/route.ts
-// Nachbar.io — Companion Chat API: Claude-basierter Quartier-Lotse mit Tool Use
+// Nachbar.io — Companion Chat API: Claude-basierter Quartier-Lotse mit Tool Use + Memory
 
 import { NextRequest } from "next/server";
 import {
@@ -26,7 +26,7 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    return await processChat(body, auth.user.id);
+    return await processChat(body, auth.user.id, auth.supabase);
   } catch (err) {
     if (err instanceof ServiceError) {
       return errorResponse(err.message, err.status);

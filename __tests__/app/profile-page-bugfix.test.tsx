@@ -67,6 +67,9 @@ vi.mock("lucide-react", () => {
     Copy: iconStub("copy"),
     Bot: iconStub("bot"),
     Map: iconStub("map"),
+    Monitor: iconStub("monitor"),
+    Check: iconStub("check"),
+    Brain: iconStub("brain"),
   };
 });
 

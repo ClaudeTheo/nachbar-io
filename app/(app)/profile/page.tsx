@@ -21,9 +21,11 @@ import {
   Download,
   Mic,
   Fingerprint,
+  Monitor,
   Map,
   Bot,
   Inbox,
+  Brain,
   Share2,
   Copy,
   Check,
@@ -457,6 +459,24 @@ export default function ProfilePage() {
           <Separator />
 
           <Link
+            href="/profile/kiosk-pin"
+            className="flex items-center justify-between p-4 hover:bg-muted/50"
+          >
+            <div className="flex items-center gap-3">
+              <Monitor className="h-5 w-5 text-muted-foreground" />
+              <div>
+                <p className="font-medium text-anthrazit">Kiosk-PIN</p>
+                <p className="text-sm text-muted-foreground">
+                  PIN fuer Quartier-Kiosk festlegen
+                </p>
+              </div>
+            </div>
+            <ChevronRight className="h-4 w-4 text-muted-foreground" />
+          </Link>
+
+          <Separator />
+
+          <Link
             href="/profile/location"
             className="flex items-center justify-between p-4 hover:bg-muted/50"
           >
@@ -481,6 +501,24 @@ export default function ProfilePage() {
                 </p>
                 <p className="text-sm text-muted-foreground">
                   Gesundheitsdaten-Einwilligungen verwalten
+                </p>
+              </div>
+            </div>
+            <ChevronRight className="h-4 w-4 text-muted-foreground" />
+          </Link>
+
+          <Separator />
+
+          <Link
+            href="/einstellungen/gedaechtnis"
+            className="flex items-center justify-between p-4 hover:bg-muted/50"
+          >
+            <div className="flex items-center gap-3">
+              <Brain className="h-5 w-5 text-quartier-green" />
+              <div>
+                <p className="font-medium text-anthrazit">Mein Gedächtnis</p>
+                <p className="text-sm text-muted-foreground">
+                  Was sich Ihr Assistent über Sie merkt
                 </p>
               </div>
             </div>

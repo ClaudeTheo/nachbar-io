@@ -30,9 +30,7 @@ describe("Memory Consent API", () => {
     ]);
 
     const { GET } = await import("@/app/api/memory/consent/route");
-    const response = await GET(
-      new Request("http://localhost/api/memory/consent"),
-    );
+    const response = await GET();
     const body = await response.json();
 
     expect(body.success).toBe(true);

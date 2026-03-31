@@ -1,7 +1,7 @@
 // lib/export.ts
 // Nachbar.io — CSV/XLSX Export-Utilities fuer Pro Community Organisationen
 
-import * as XLSX from 'xlsx';
+import ExcelJS from 'exceljs';
 
 // --- Typen ---
 
@@ -86,18 +86,24 @@ export function generateCsv(headers: string[], rows: string[][]): string {
 
 /**
  * Generiert XLSX-Buffer aus Header + Datenzeilen (low-level)
+ * Verwendet ExcelJS statt xlsx-Paket (sicherheitskritisch)
  */
-export function generateXlsx(headers: string[], rows: string[][]): Buffer {
-  const worksheetData = [headers, ...rows];
-  const worksheet = XLSX.utils.aoa_to_sheet(worksheetData);
+export async function generateXlsx(headers: string[], rows: string[][]): Promise<Buffer> {
+  const workbook = new ExcelJS.Workbook();
+  const worksheet = workbook.addWorksheet('Export');
+
+  // Header-Zeile hinzufuegen
+  worksheet.addRow(headers);
+  // Datenzeilen hinzufuegen
+  for (const row of rows) {
+    worksheet.addRow(row);
+  }
 
   // Spaltenbreiten anpassen
-  worksheet['!cols'] = headers.map(h => ({ wch: Math.max(h.length, 12) }));
+  worksheet.columns = headers.map(h => ({ width: Math.max(h.length, 12) }));
 
-  const workbook = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(workbook, worksheet, 'Export');
-  const buffer = XLSX.write(workbook, { type: 'buffer', bookType: 'xlsx' });
-  return Buffer.from(buffer);
+  const arrayBuffer = await workbook.xlsx.writeBuffer();
+  return Buffer.from(arrayBuffer);
 }
 
 // --- High-Level Export-Funktionen ---
@@ -117,8 +123,9 @@ export function generateTypedCsv(rows: ExportRow[], exportType: ExportType): str
 
 /**
  * Generiert XLSX aus typisiertem Export (mit deutschen Spaltennamen)
+ * Verwendet ExcelJS statt xlsx-Paket (sicherheitskritisch)
  */
-export function generateTypedXlsx(rows: ExportRow[], exportType: ExportType, sheetName?: string): Buffer {
+export async function generateTypedXlsx(rows: ExportRow[], exportType: ExportType, sheetName?: string): Promise<Buffer> {
   const prepared = prepareData(rows, exportType);
   if (prepared.length === 0) {
     return generateXlsx(['Keine Daten'], []);
@@ -128,14 +135,21 @@ export function generateTypedXlsx(rows: ExportRow[], exportType: ExportType, she
     headers.map(h => String(row[h] ?? ''))
   );
 
-  const worksheetData = [headers, ...dataRows];
-  const worksheet = XLSX.utils.aoa_to_sheet(worksheetData);
-  worksheet['!cols'] = headers.map(h => ({ wch: Math.max(h.length, 12) }));
+  const workbook = new ExcelJS.Workbook();
+  const worksheet = workbook.addWorksheet(sheetName ?? 'Export');
 
-  const workbook = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(workbook, worksheet, sheetName ?? 'Export');
-  const buffer = XLSX.write(workbook, { type: 'buffer', bookType: 'xlsx' });
-  return Buffer.from(buffer);
+  // Header-Zeile hinzufuegen
+  worksheet.addRow(headers);
+  // Datenzeilen hinzufuegen
+  for (const row of dataRows) {
+    worksheet.addRow(row);
+  }
+
+  // Spaltenbreiten anpassen
+  worksheet.columns = headers.map(h => ({ width: Math.max(h.length, 12) }));
+
+  const arrayBuffer = await workbook.xlsx.writeBuffer();
+  return Buffer.from(arrayBuffer);
 }
 
 /**

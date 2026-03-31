@@ -38,7 +38,7 @@ export async function GET(request: Request) {
     const filename = getExportFilename(type, format);
 
     if (format === "xlsx") {
-      const buffer = generateTypedXlsx(rows, type);
+      const buffer = await generateTypedXlsx(rows, type);
       return new Response(new Uint8Array(buffer), {
         headers: {
           "Content-Type":

@@ -31,10 +31,10 @@ describe('generateCsv', () => {
 });
 
 describe('generateXlsx', () => {
-  it('erzeugt gueltigen XLSX-Buffer', () => {
+  it('erzeugt gueltigen XLSX-Buffer', async () => {
     const headers = ['Name', 'Wert'];
     const rows = [['Test', '42']];
-    const buffer = generateXlsx(headers, rows);
+    const buffer = await generateXlsx(headers, rows);
     expect(buffer).toBeInstanceOf(Buffer);
     expect(buffer.length).toBeGreaterThan(0);
     // XLSX Magic Bytes (PK = ZIP)
@@ -79,17 +79,17 @@ describe('generateTypedCsv', () => {
 });
 
 describe('generateTypedXlsx', () => {
-  it('erzeugt gueltigen XLSX-Buffer', () => {
+  it('erzeugt gueltigen XLSX-Buffer', async () => {
     const rows: ExportRow[] = [
       { snapshot_date: '2026-03-18', wah: 20 },
     ];
-    const buffer = generateTypedXlsx(rows, 'quarter_stats');
+    const buffer = await generateTypedXlsx(rows, 'quarter_stats');
     expect(buffer).toBeInstanceOf(Buffer);
     expect(buffer[0]).toBe(0x50);
   });
 
-  it('erzeugt Fallback bei leeren Daten', () => {
-    const buffer = generateTypedXlsx([], 'quarter_stats');
+  it('erzeugt Fallback bei leeren Daten', async () => {
+    const buffer = await generateTypedXlsx([], 'quarter_stats');
     expect(buffer).toBeInstanceOf(Buffer);
     expect(buffer.length).toBeGreaterThan(0);
   });

@@ -80,7 +80,7 @@ export async function GET(
     }
 
     // XLSX
-    const xlsxBuffer = generateXlsx(exportData.headers, exportData.rows);
+    const xlsxBuffer = await generateXlsx(exportData.headers, exportData.rows);
     return new NextResponse(new Uint8Array(xlsxBuffer), {
       status: 200,
       headers: {

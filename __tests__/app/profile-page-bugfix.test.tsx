@@ -62,6 +62,11 @@ vi.mock("lucide-react", () => {
     ArrowLeft: iconStub("arrow-left"),
     Mic: iconStub("mic"),
     Fingerprint: iconStub("fingerprint"),
+    Inbox: iconStub("inbox"),
+    Share2: iconStub("share2"),
+    Copy: iconStub("copy"),
+    Bot: iconStub("bot"),
+    Map: iconStub("map"),
   };
 });
 
@@ -134,6 +139,10 @@ vi.mock("@/lib/reputation", () => ({
   }),
 }));
 
+vi.mock("@/lib/supabase/cached-auth", () => ({
+  getCachedUser: vi.fn().mockResolvedValue({ id: "user-001" }),
+}));
+
 // --- Steuerbarer Supabase-Mock ---
 const mockAuthGetUser = vi.fn();
 const mockUserSelect = vi.fn();
@@ -147,6 +156,11 @@ vi.mock("@/lib/supabase/client", () => ({
       getUser: mockAuthGetUser,
       signOut: mockSignOut,
     },
+    channel: vi.fn(() => ({
+      on: vi.fn().mockReturnThis(),
+      subscribe: vi.fn(),
+    })),
+    removeChannel: vi.fn(),
     from: (table: string) => {
       if (table === "users") {
         return {
@@ -172,10 +186,34 @@ vi.mock("@/lib/supabase/client", () => ({
           }),
         };
       }
+      // Default-Fallback fuer alle anderen Tabellen (inkl. invite_codes)
+      // Fluent-Chain: jede Methode gibt ein Objekt zurueck, das alle Methoden hat
+      const chainResult = { data: null, error: null, count: 0 };
+      const makeChain = (): Record<string, unknown> => {
+        const chain: Record<string, unknown> = {};
+        const methods = [
+          "select",
+          "eq",
+          "is",
+          "not",
+          "limit",
+          "head",
+          "in",
+          "or",
+          "gte",
+          "order",
+        ];
+        for (const m of methods) {
+          chain[m] = vi.fn(() => makeChain());
+        }
+        chain.single = vi.fn().mockResolvedValue(chainResult);
+        chain.maybeSingle = vi.fn().mockResolvedValue(chainResult);
+        chain.then = (resolve: (v: unknown) => void) => resolve(chainResult);
+        return chain;
+      };
       return {
-        select: vi.fn().mockReturnThis(),
-        eq: vi.fn().mockReturnThis(),
-        single: vi.fn().mockResolvedValue({ data: null, error: null }),
+        select: vi.fn(() => makeChain()),
+        insert: vi.fn(() => makeChain()),
       };
     },
   })),

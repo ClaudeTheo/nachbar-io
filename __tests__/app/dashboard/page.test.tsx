@@ -220,6 +220,9 @@ vi.mock("@/lib/reputation", () => ({
 vi.mock("@/lib/useUnreadCount", () => ({
   useUnreadCount: () => ({ count: 0 }),
 }));
+vi.mock("@/lib/ux-flags", () => ({
+  isUxRedesignEnabled: () => false,
+}));
 
 // useAuth-Mock (Dashboard nutzt jetzt useAuth() statt getCachedUser)
 vi.mock("@/hooks/use-auth", () => ({

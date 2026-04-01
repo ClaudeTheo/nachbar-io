@@ -237,13 +237,13 @@ function ForFamilies() {
               </div>
             </div>
             <div className="mt-3 rounded-2xl bg-white p-4 shadow-sm">
-              <p className="text-xs text-gray-400">Heutiges Check-in</p>
+              <p className="text-xs text-gray-500">Heutiges Check-in</p>
               <p className="mt-1 text-sm font-semibold text-[#2D3142]">
                 😊 &quot;Mir geht es gut&quot;
               </p>
             </div>
             <div className="mt-3 rounded-2xl bg-white p-4 shadow-sm">
-              <p className="text-xs text-gray-400">Medikamente</p>
+              <p className="text-xs text-gray-500">Medikamente</p>
               <p className="mt-1 text-sm font-semibold text-[#4CAF87]">
                 ✓ Alle bestätigt
               </p>
@@ -262,7 +262,7 @@ function ForOrganizations() {
         <h2 className="text-center text-2xl font-extrabold sm:text-3xl">
           Für Organisationen & Ärzte
         </h2>
-        <p className="mx-auto mt-4 max-w-lg text-center text-sm text-gray-400">
+        <p className="mx-auto mt-4 max-w-lg text-center text-sm text-gray-300">
           B2B-Lösungen für Kommunen, Pflegedienste, Wohnungsbaugesellschaften
           und Ärzte.
         </p>
@@ -275,7 +275,7 @@ function ForOrganizations() {
               </div>
               <h3 className="text-lg font-bold">Pro Community</h3>
             </div>
-            <p className="mt-1 text-xs text-gray-400">
+            <p className="mt-1 text-xs text-gray-300">
               Kommunen, Pflegedienste, Wohnungsbau
             </p>
             <p className="mt-4 text-sm font-medium text-[#4CAF87]">
@@ -291,7 +291,7 @@ function ForOrganizations() {
               ].map((f) => (
                 <li
                   key={f}
-                  className="flex items-center gap-2 text-sm text-gray-300"
+                  className="flex items-center gap-2 text-sm text-gray-200"
                 >
                   <CircleCheck className="h-3.5 w-3.5 text-[#4CAF87]" /> {f}
                 </li>
@@ -306,7 +306,7 @@ function ForOrganizations() {
               </div>
               <h3 className="text-lg font-bold">Pro Medical</h3>
             </div>
-            <p className="mt-1 text-xs text-gray-400">
+            <p className="mt-1 text-xs text-gray-300">
               Ärzte, Telemedizin-Anbieter
             </p>
             <p className="mt-4 text-sm font-medium text-[#4CAF87]">
@@ -322,7 +322,7 @@ function ForOrganizations() {
               ].map((f) => (
                 <li
                   key={f}
-                  className="flex items-center gap-2 text-sm text-gray-300"
+                  className="flex items-center gap-2 text-sm text-gray-200"
                 >
                   <CircleCheck className="h-3.5 w-3.5 text-[#4CAF87]" /> {f}
                 </li>
@@ -412,28 +412,28 @@ function Footer() {
               Ihr digitaler Dorfplatz — ein Projekt von nachbar.io
             </p>
           </div>
-          <div className="flex gap-6 text-xs text-gray-500">
+          <div className="flex flex-wrap gap-2 text-xs text-gray-500">
             <Link
               href="/impressum"
-              className="hover:text-[#2D3142] transition-colors"
+              className="inline-flex items-center px-3 py-2 min-h-[44px] hover:text-[#2D3142] transition-colors"
             >
               Impressum
             </Link>
             <Link
               href="/datenschutz"
-              className="hover:text-[#2D3142] transition-colors"
+              className="inline-flex items-center px-3 py-2 min-h-[44px] hover:text-[#2D3142] transition-colors"
             >
               Datenschutz
             </Link>
             <Link
               href="/agb"
-              className="hover:text-[#2D3142] transition-colors"
+              className="inline-flex items-center px-3 py-2 min-h-[44px] hover:text-[#2D3142] transition-colors"
             >
               AGB
             </Link>
             <Link
               href="/b2b"
-              className="hover:text-[#2D3142] transition-colors"
+              className="inline-flex items-center px-3 py-2 min-h-[44px] hover:text-[#2D3142] transition-colors"
             >
               Für Organisationen
             </Link>
@@ -444,9 +444,46 @@ function Footer() {
   );
 }
 
+function StructuredData() {
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    name: "QuartierApp",
+    applicationCategory: "SocialNetworkingApplication",
+    operatingSystem: "Web, iOS, Android",
+    description:
+      "Nachbarschaftshilfe, Notfall-System und lokale Informationen für Ihr Quartier.",
+    url: "https://nachbar-io.vercel.app",
+    offers: {
+      "@type": "Offer",
+      price: "0",
+      priceCurrency: "EUR",
+      description: "Kostenlos für alle Bewohner",
+    },
+    provider: {
+      "@type": "Organization",
+      name: "nachbar.io",
+      url: "https://nachbar-io.vercel.app",
+      address: {
+        "@type": "PostalAddress",
+        addressLocality: "Bad Säckingen",
+        addressCountry: "DE",
+      },
+    },
+  };
+
+  return (
+    <script
+      type="application/ld+json"
+      dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+    />
+  );
+}
+
 export default function LandingPage() {
   return (
     <>
+      <StructuredData />
       <main>
         <Hero />
         <FeaturesSection />

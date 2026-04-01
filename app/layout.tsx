@@ -19,7 +19,8 @@ const nunitoSans = Nunito_Sans({
   display: "swap",
 });
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://nachbar-io.vercel.app";
+const siteUrl =
+  process.env.NEXT_PUBLIC_SITE_URL || "https://nachbar-io.vercel.app";
 
 export const metadata: Metadata = {
   title: "QuartierApp — Ihr digitaler Dorfplatz",
@@ -27,6 +28,9 @@ export const metadata: Metadata = {
     "Nachbarschaftshilfe, lokale Informationen und soziale Interaktion für Ihr Quartier.",
   manifest: "/manifest.json",
   metadataBase: new URL(siteUrl),
+  alternates: {
+    canonical: siteUrl,
+  },
   openGraph: {
     type: "website",
     locale: "de_DE",
@@ -37,7 +41,7 @@ export const metadata: Metadata = {
       "Nachbarschaftshilfe, lokale Informationen und Quartiersleben. Jetzt mitmachen!",
     images: [
       {
-        url: "/og-image.png",
+        url: "/opengraph-image",
         width: 1200,
         height: 630,
         alt: "QuartierApp — Ihr digitaler Dorfplatz",
@@ -49,7 +53,7 @@ export const metadata: Metadata = {
     title: "QuartierApp — Ihr digitaler Dorfplatz",
     description:
       "Nachbarschaftshilfe, lokale Informationen und Quartiersleben.",
-    images: ["/og-image.png"],
+    images: ["/opengraph-image"],
   },
   appleWebApp: {
     capable: true,
@@ -71,7 +75,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="de">
-      <body className={`${nunito.variable} ${nunitoSans.variable} font-sans antialiased`}>
+      <body
+        className={`${nunito.variable} ${nunitoSans.variable} font-sans antialiased`}
+      >
         {children}
         <Toaster position="top-center" />
         <ServiceWorkerRegistration />

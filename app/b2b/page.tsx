@@ -16,7 +16,7 @@ function HeroSection() {
           <br />
           <span className="text-[#4CAF87]">für Ihre Organisation</span>
         </h1>
-        <p className="mt-6 max-w-2xl text-lg text-gray-300">
+        <p className="mt-6 max-w-2xl text-lg text-gray-200">
           QuartierApp verbindet Bewohner, Angehörige und Organisationen in einem sicheren,
           DSGVO-konformen System. Heartbeat-Monitoring, Einsamkeits-Prävention und
           anonymisierte Quartier-Statistiken — alles in einer Plattform.
@@ -157,10 +157,10 @@ function PricingSection() {
                 <div className="rounded-lg bg-[#4CAF87]/10 p-2 text-[#4CAF87]">{plan.icon}</div>
                 <h3 className="text-lg font-bold">{plan.name}</h3>
               </div>
-              <p className="mt-1 text-xs text-gray-400">{plan.target}</p>
+              <p className="mt-1 text-xs text-gray-500">{plan.target}</p>
               <div className="mt-4">
                 <span className="text-3xl font-bold text-[#2D3142]">{plan.price} EUR</span>
-                <span className="text-sm text-gray-400 ml-1">{plan.unit}</span>
+                <span className="text-sm text-gray-500 ml-1">{plan.unit}</span>
               </div>
               <ul className="mt-6 space-y-3">
                 {plan.features.map((f) => (
@@ -189,16 +189,16 @@ function B2BFooter() {
   return (
     <footer className="border-t bg-white py-8">
       <div className="mx-auto max-w-5xl px-6 text-center">
-        <p className="text-sm text-gray-400">
+        <p className="text-sm text-gray-500">
           QuartierApp — Ein Projekt von nachbar.io
         </p>
-        <p className="mt-2 text-xs text-gray-300">
+        <p className="mt-2 text-xs text-gray-500">
           Kontakt: thomasth@gmx.de | nachbar.io
         </p>
-        <div className="mt-4 flex justify-center gap-4 text-xs text-gray-400">
-          <Link href="/impressum" className="hover:text-[#2D3142]">Impressum</Link>
-          <Link href="/datenschutz" className="hover:text-[#2D3142]">Datenschutz</Link>
-          <Link href="/" className="hover:text-[#2D3142]">Zur App</Link>
+        <div className="mt-4 flex justify-center flex-wrap gap-2 text-xs text-gray-500">
+          <Link href="/impressum" className="inline-flex items-center px-3 py-2 min-h-[44px] hover:text-[#2D3142]">Impressum</Link>
+          <Link href="/datenschutz" className="inline-flex items-center px-3 py-2 min-h-[44px] hover:text-[#2D3142]">Datenschutz</Link>
+          <Link href="/" className="inline-flex items-center px-3 py-2 min-h-[44px] hover:text-[#2D3142]">Zur App</Link>
         </div>
       </div>
     </footer>

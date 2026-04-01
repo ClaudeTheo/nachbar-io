@@ -28,8 +28,8 @@ const LIMITS = {
   maxInputLength: 500,
   // Max. Kontext-Nachrichten an API senden
   maxHistory: 10,
-  // Max. Output-Tokens pro Antwort
-  maxOutputTokens: 200,
+  // Max. Output-Tokens pro Antwort (weniger = schnellere Antwort)
+  maxOutputTokens: 120,
 };
 
 // In-Memory Zähler (Produktion: Redis/Supabase)
@@ -177,7 +177,7 @@ async function generateGemini(
     systemInstruction: systemPrompt,
     generationConfig: {
       maxOutputTokens: LIMITS.maxOutputTokens,
-      temperature: 0.7,
+      temperature: 0.5,
     },
     // Google Search Grounding: KI kann aktuelle Infos im Internet nachschlagen
     // (Zugverbindungen, Wetter, Öffnungszeiten, Nachrichten etc.)

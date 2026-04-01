@@ -1,5 +1,4 @@
 import Link from "next/link";
-import Image from "next/image";
 import { ArrowRight, MapPin } from "lucide-react";
 
 export function Hero() {
@@ -36,13 +35,11 @@ export function Hero() {
       </div>
       <div className="mx-auto max-w-4xl px-6 pt-8 pb-4">
         <div className="overflow-hidden rounded-2xl shadow-lg">
-          <Image
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
             src="/images/hero-quartier.webp"
             alt="Zwei Nachbarinnen unterhalten sich in einem deutschen Quartier"
-            width={1200}
-            height={630}
             className="w-full h-auto object-cover"
-            priority
           />
         </div>
       </div>

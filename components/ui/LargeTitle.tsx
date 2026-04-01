@@ -53,6 +53,7 @@ export function LargeTitle({ title, subtitle, children }: LargeTitleProps) {
         }}
       >
         <h1
+          aria-hidden="true"
           style={{
             fontSize: 17,
             fontWeight: 700,

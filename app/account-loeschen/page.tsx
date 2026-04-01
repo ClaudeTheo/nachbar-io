@@ -214,7 +214,7 @@ export default function AccountLoeschenPage() {
       )}
 
       {/* Hinweise */}
-      <section className="mt-8 space-y-3 text-xs text-gray-400">
+      <section className="mt-8 space-y-3 text-xs text-gray-500">
         <p>
           Die Löschung erfolgt gemäß DSGVO Art. 17 (Recht auf Löschung). Gesetzliche
           Aufbewahrungspflichten gemäß HGB §257 und AO §147 bleiben bestehen.
@@ -228,7 +228,7 @@ export default function AccountLoeschenPage() {
       </section>
 
       {/* Footer-Links */}
-      <nav className="mt-8 flex gap-4 text-xs text-gray-400">
+      <nav className="mt-8 flex gap-4 text-xs text-gray-500">
         <Link href="/datenschutz" className="underline">Datenschutz</Link>
         <Link href="/impressum" className="underline">Impressum</Link>
         <Link href="/support" className="underline">Support</Link>

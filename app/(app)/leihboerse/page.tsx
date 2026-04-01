@@ -177,7 +177,7 @@ function LeihboerseCard({ item }: { item: LeihboerseItem }) {
         <div className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-muted text-2xl">
           {item.image_url ? (
             /* eslint-disable-next-line @next/next/no-img-element */
-            <img src={item.image_url} alt="" className="h-full w-full object-cover" />
+            <img src={item.image_url} alt={item.title} className="h-full w-full object-cover" />
           ) : (
             category?.icon ?? "📦"
           )}

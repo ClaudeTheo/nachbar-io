@@ -294,7 +294,7 @@ export default function ChatPage() {
               /* eslint-disable-next-line @next/next/no-img-element */
               <img
                 src={otherUserAvatar}
-                alt=""
+                alt={otherUserName}
                 className="h-8 w-8 rounded-full object-cover"
               />
             ) : (

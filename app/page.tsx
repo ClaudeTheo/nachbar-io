@@ -51,7 +51,7 @@ function Hero() {
             Anmelden
           </Link>
         </div>
-        <p className="mt-6 text-xs text-gray-400">
+        <p className="mt-6 text-xs text-gray-500">
           Kostenlos für alle Bewohner. Keine Werbung. Kein Datenverkauf.
         </p>
       </div>
@@ -376,7 +376,7 @@ function CTASection() {
         <h2 className="text-2xl font-extrabold sm:text-3xl">
           Werden Sie Teil Ihres Quartiers
         </h2>
-        <p className="mt-4 text-base text-white/80">
+        <p className="mt-4 text-base text-white">
           Kostenlos für alle Bewohner. Laden Sie Ihre Nachbarn ein und machen
           Sie Ihr Quartier ein Stück sicherer.
         </p>
@@ -408,11 +408,11 @@ function Footer() {
         <div className="flex flex-col items-center gap-4 sm:flex-row sm:justify-between">
           <div className="text-center sm:text-left">
             <p className="text-sm font-bold text-[#2D3142]">QuartierApp</p>
-            <p className="mt-1 text-xs text-gray-400">
+            <p className="mt-1 text-xs text-gray-500">
               Ihr digitaler Dorfplatz — ein Projekt von nachbar.io
             </p>
           </div>
-          <div className="flex gap-6 text-xs text-gray-400">
+          <div className="flex gap-6 text-xs text-gray-500">
             <Link
               href="/impressum"
               className="hover:text-[#2D3142] transition-colors"
@@ -447,13 +447,15 @@ function Footer() {
 export default function LandingPage() {
   return (
     <>
-      <Hero />
-      <FeaturesSection />
-      <HowItWorks />
-      <ForFamilies />
-      <ForOrganizations />
-      <Trust />
-      <CTASection />
+      <main>
+        <Hero />
+        <FeaturesSection />
+        <HowItWorks />
+        <ForFamilies />
+        <ForOrganizations />
+        <Trust />
+        <CTASection />
+      </main>
       <Footer />
     </>
   );

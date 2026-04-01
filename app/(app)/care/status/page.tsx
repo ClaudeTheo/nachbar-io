@@ -193,7 +193,7 @@ export default function CareStatusPage() {
                         // eslint-disable-next-line @next/next/no-img-element
                         <img
                           src={resident.avatar_url}
-                          alt=""
+                          alt={resident.display_name}
                           className="h-12 w-12 rounded-full object-cover border-2 border-quartier-green/20"
                         />
                       ) : (

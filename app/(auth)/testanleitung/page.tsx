@@ -20,10 +20,10 @@ export default function TestanleitungPage() {
 
       {/* Willkommen */}
       <div className="mb-6 rounded-xl border-2 border-quartier-green bg-quartier-green/5 p-5">
-        <h3 className="mb-2 flex items-center gap-2 font-semibold text-quartier-green">
+        <h2 className="mb-2 flex items-center gap-2 font-semibold text-quartier-green">
           <CheckSquare className="h-5 w-5" />
           Bevor es losgeht
-        </h3>
+        </h2>
         <p className="mb-2 text-sm text-muted-foreground">
           QuartierApp ist eine Internetseite speziell für unsere Nachbarschaft. Sie funktioniert
           wie eine App auf Ihrem Handy — direkt im Internet-Browser (z.B. Safari oder Chrome).
@@ -89,13 +89,13 @@ export default function TestanleitungPage() {
           Nach der Freischaltung können Sie alles ausprobieren. Hier eine Übersicht, was Sie testen können:
         </p>
 
-        <h4 className="mb-2 text-sm font-semibold">Erste Schritte</h4>
+        <h3 className="mb-2 text-sm font-semibold">Erste Schritte</h3>
         <Checklist items={[
           "Öffnen Sie die Seite und schauen Sie sich die Startseite an",
           "Unten am Bildschirm sehen Sie 5 Symbole — tippen Sie jedes einmal an: Startseite, Hilfe, Karte, Marktplatz, Profil",
         ]} />
 
-        <h4 className="mb-2 mt-5 text-sm font-semibold">Ihr Profil anpassen</h4>
+        <h3 className="mb-2 mt-5 text-sm font-semibold">Ihr Profil anpassen</h3>
         <Checklist items={[
           "Tippen Sie unten rechts auf \"Profil\"",
           "Tippen Sie auf \"Profil bearbeiten\" und schreiben Sie einen kurzen Text über sich (z.B. \"Ich wohne seit 5 Jahren hier\")",
@@ -104,7 +104,7 @@ export default function TestanleitungPage() {
           "Öffnen Sie das Hilfe-Center: dort finden Sie Antworten auf häufige Fragen",
         ]} />
 
-        <h4 className="mb-2 mt-5 text-sm font-semibold">Die Nachbarschaftskarte</h4>
+        <h3 className="mb-2 mt-5 text-sm font-semibold">Die Nachbarschaftskarte</h3>
         <p className="mb-2 text-xs text-muted-foreground">
           Die Karte zeigt unsere Nachbarschaft von oben. Jedes Haus ist eingezeichnet.
         </p>
@@ -114,7 +114,7 @@ export default function TestanleitungPage() {
           "Tippen Sie auf die kleine Lampe neben einem Haus — die Farbe wechselt (Grün = alles gut, Rot = brauche Hilfe, Gelb = bin im Urlaub)",
         ]} />
 
-        <h4 className="mb-2 mt-5 text-sm font-semibold">Hilfe anbieten oder suchen</h4>
+        <h3 className="mb-2 mt-5 text-sm font-semibold">Hilfe anbieten oder suchen</h3>
         <p className="mb-2 text-xs text-muted-foreground">
           Das Herzstück von QuartierApp: Nachbarn helfen Nachbarn.
         </p>
@@ -127,7 +127,7 @@ export default function TestanleitungPage() {
           "Antworten Sie auf einen Eintrag eines anderen Testers",
         ]} />
 
-        <h4 className="mb-2 mt-5 text-sm font-semibold">Marktplatz — Verschenken, Verleihen, Suchen</h4>
+        <h3 className="mb-2 mt-5 text-sm font-semibold">Marktplatz — Verschenken, Verleihen, Suchen</h3>
         <Checklist items={[
           "Tippen Sie unten auf \"Marktplatz\"",
           "Erstellen Sie ein Angebot (z.B. \"Verschenke Blumentöpfe\")",
@@ -135,7 +135,7 @@ export default function TestanleitungPage() {
           "Probieren Sie \"Wer hat?\" aus — hier können Sie fragen, ob jemand etwas bestimmtes hat",
         ]} />
 
-        <h4 className="mb-2 mt-5 text-sm font-semibold">Gemeinschaft — Brett, Veranstaltungen, Tipps</h4>
+        <h3 className="mb-2 mt-5 text-sm font-semibold">Gemeinschaft — Brett, Veranstaltungen, Tipps</h3>
         <Checklist items={[
           "Öffnen Sie das Schwarze Brett — hier können Nachbarn Aushänge machen",
           "Schauen Sie bei Veranstaltungen rein und erstellen Sie ein Test-Event (z.B. \"Straßenfest am Samstag\")",
@@ -152,7 +152,7 @@ export default function TestanleitungPage() {
           Verabreden Sie sich kurz — z.B. per Telefon oder WhatsApp.
         </div>
 
-        <h4 className="mb-2 text-sm font-semibold">Sich gegenseitig schreiben</h4>
+        <h3 className="mb-2 text-sm font-semibold">Sich gegenseitig schreiben</h3>
         <ol className="list-inside list-decimal space-y-2 text-sm">
           <li><strong>Person A</strong> öffnet &quot;Nachrichten&quot; (das Briefumschlag-Symbol)</li>
           <li><strong>Person A</strong> sucht <strong>Person B</strong> und sendet eine Kontaktanfrage</li>
@@ -163,7 +163,7 @@ export default function TestanleitungPage() {
           <li>Schauen Sie, ob am Nachrichten-Symbol eine <strong>kleine Zahl</strong> erscheint, wenn Sie ungelesene Nachrichten haben</li>
         </ol>
 
-        <h4 className="mb-2 mt-5 text-sm font-semibold">Benachrichtigungen testen (zu zweit)</h4>
+        <h3 className="mb-2 mt-5 text-sm font-semibold">Benachrichtigungen testen (zu zweit)</h3>
         <p className="mb-2 text-xs text-muted-foreground">
           Voraussetzung: Beide haben die Benachrichtigungen eingeschaltet (siehe oben bei &quot;Profil anpassen&quot;).
         </p>
@@ -174,7 +174,7 @@ export default function TestanleitungPage() {
           <li>Tippen Sie auf das Glocken-Symbol oben rechts — dort sehen Sie alle Ihre Benachrichtigungen</li>
         </ol>
 
-        <h4 className="mb-2 mt-5 text-sm font-semibold">Nachbarn einladen</h4>
+        <h3 className="mb-2 mt-5 text-sm font-semibold">Nachbarn einladen</h3>
         <Checklist items={[
           "Gehen Sie zu Profil → \"Nachbar einladen\"",
           "Erstellen Sie eine Einladung — es öffnet sich WhatsApp mit einem fertigen Text",
@@ -184,7 +184,7 @@ export default function TestanleitungPage() {
 
       {/* 4. Besondere Funktionen */}
       <Section icon={<Bell className="h-5 w-5" />} title="4. Besondere Funktionen" id="sonderfaelle">
-        <h4 className="mb-2 text-sm font-semibold">Notfall-Hinweis testen</h4>
+        <h3 className="mb-2 text-sm font-semibold">Notfall-Hinweis testen</h3>
         <div className="mb-3 rounded-lg bg-red-50 p-3 text-sm text-red-700">
           <strong>Keine Sorge:</strong> Sie rufen dabei <strong>NICHT</strong> wirklich den Notruf an!
           Wir testen nur, ob der Warnhinweis richtig angezeigt wird.
@@ -197,7 +197,7 @@ export default function TestanleitungPage() {
           <li>Probieren Sie das Gleiche mit &quot;Medizinischer Notfall&quot; und &quot;Kriminalität&quot;</li>
         </ol>
 
-        <h4 className="mb-2 mt-5 text-sm font-semibold">Seniorenmodus ausprobieren</h4>
+        <h3 className="mb-2 mt-5 text-sm font-semibold">Seniorenmodus ausprobieren</h3>
         <p className="mb-2 text-xs text-muted-foreground">
           Der Seniorenmodus macht alles größer und leichter zu bedienen.
         </p>
@@ -234,7 +234,7 @@ export default function TestanleitungPage() {
           "Wenn etwas nicht funktioniert: Ist die Fehlermeldung verständlich?",
         ]} />
 
-        <h4 className="mb-2 mt-5 text-sm font-semibold">App auf den Startbildschirm legen (freiwillig)</h4>
+        <h3 className="mb-2 mt-5 text-sm font-semibold">App auf den Startbildschirm legen (freiwillig)</h3>
         <div className="rounded-lg bg-blue-50 p-3 text-sm text-blue-800">
           <p className="mb-2">
             Sie können QuartierApp wie eine richtige App auf Ihren Startbildschirm legen.
@@ -263,7 +263,7 @@ export default function TestanleitungPage() {
 
       {/* Zeitplan */}
       <div className="mb-6 rounded-xl border bg-white p-5">
-        <h3 className="mb-3 text-lg font-semibold text-anthrazit">Wie lange dauert das?</h3>
+        <h2 className="mb-3 text-lg font-semibold text-anthrazit">Wie lange dauert das?</h2>
         <p className="mb-3 text-sm text-muted-foreground">
           Ungefähr eine Stunde — aber Sie können jederzeit pausieren und später weitermachen.
         </p>
@@ -278,10 +278,10 @@ export default function TestanleitungPage() {
 
       {/* Tipps */}
       <div className="mb-6 rounded-xl border bg-blue-50 p-5 text-sm text-blue-800">
-        <h3 className="mb-2 flex items-center gap-2 font-semibold">
+        <h2 className="mb-2 flex items-center gap-2 font-semibold">
           <CircleHelp className="h-4 w-4" />
           Tipps zum Testen
-        </h3>
+        </h2>
         <ul className="list-inside list-disc space-y-2">
           <li>Nutzen Sie am besten <strong>Safari</strong> (iPhone) oder <strong>Chrome</strong> (Android)</li>
           <li>Wenn etwas nicht klappt — das ist in Ordnung! Genau dafür testen wir</li>
@@ -293,10 +293,10 @@ export default function TestanleitungPage() {
 
       {/* Feedback */}
       <div className="mb-6 rounded-xl border-2 border-quartier-green bg-quartier-green/5 p-5">
-        <h3 className="mb-2 flex items-center gap-2 font-semibold text-quartier-green">
+        <h2 className="mb-2 flex items-center gap-2 font-semibold text-quartier-green">
           <MessageCircle className="h-5 w-5" />
           Feedback geben
-        </h3>
+        </h2>
         <p className="text-sm text-muted-foreground">
           Nach dem Testen würden wir uns sehr über Ihr Feedback freuen!
           Schreiben Sie Thomas einfach eine kurze Nachricht — per WhatsApp, E-Mail oder direkt in der App.
@@ -317,10 +317,10 @@ export default function TestanleitungPage() {
 function Section({ icon, title, id, children }: { icon: React.ReactNode; title: string; id: string; children: React.ReactNode }) {
   return (
     <div className="mb-6 rounded-xl border bg-white p-5" id={id}>
-      <h3 className="mb-3 flex items-center gap-2 text-lg font-semibold text-anthrazit">
+      <h2 className="mb-3 flex items-center gap-2 text-lg font-semibold text-anthrazit">
         <span className="text-quartier-green">{icon}</span>
         {title}
-      </h3>
+      </h2>
       {children}
     </div>
   );

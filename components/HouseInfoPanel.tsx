@@ -271,7 +271,7 @@ export function HouseInfoPanel({
                     <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-quartier-green/10 text-sm font-bold text-quartier-green">
                       {r.avatarUrl ? (
                         /* eslint-disable-next-line @next/next/no-img-element */
-                        <img src={r.avatarUrl} alt="" className="h-10 w-10 rounded-full object-cover" />
+                        <img src={r.avatarUrl} alt={r.displayName} className="h-10 w-10 rounded-full object-cover" />
                       ) : (
                         (r.displayName[0] ?? "N").toUpperCase()
                       )}

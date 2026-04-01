@@ -209,9 +209,11 @@ function B2BFooter() {
 export default function B2BPage() {
   return (
     <>
-      <HeroSection />
-      <BenefitsSection />
-      <PricingSection />
+      <main>
+        <HeroSection />
+        <BenefitsSection />
+        <PricingSection />
+      </main>
       <B2BFooter />
     </>
   );

@@ -37,7 +37,7 @@ export const metadata: Metadata = {
       "Nachbarschaftshilfe, lokale Informationen und Quartiersleben. Jetzt mitmachen!",
     images: [
       {
-        url: "/og-image.svg",
+        url: "/og-image.png",
         width: 1200,
         height: 630,
         alt: "QuartierApp — Ihr digitaler Dorfplatz",
@@ -49,7 +49,7 @@ export const metadata: Metadata = {
     title: "QuartierApp — Ihr digitaler Dorfplatz",
     description:
       "Nachbarschaftshilfe, lokale Informationen und Quartiersleben.",
-    images: ["/og-image.svg"],
+    images: ["/og-image.png"],
   },
   appleWebApp: {
     capable: true,

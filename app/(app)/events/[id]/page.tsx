@@ -440,7 +440,7 @@ export default function EventDetailPage() {
                     /* eslint-disable-next-line @next/next/no-img-element */
                     <img
                       src={p.user.avatar_url}
-                      alt=""
+                      alt={p.user?.display_name ?? "Teilnehmer"}
                       className="h-9 w-9 rounded-full object-cover"
                     />
                   ) : (
@@ -476,7 +476,7 @@ export default function EventDetailPage() {
                       /* eslint-disable-next-line @next/next/no-img-element */
                       <img
                         src={p.user.avatar_url}
-                        alt=""
+                        alt={p.user?.display_name ?? "Teilnehmer"}
                         className="h-9 w-9 rounded-full object-cover"
                       />
                     ) : (

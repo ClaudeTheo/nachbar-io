@@ -205,6 +205,7 @@ function StepDescription({
           value={description}
           onChange={(e) => onChange(e.target.value.slice(0, MAX_DESCRIPTION))}
           placeholder="Was ist das Problem?"
+          aria-label="Problembeschreibung"
           rows={5}
           maxLength={MAX_DESCRIPTION}
           className="w-full rounded-lg border border-gray-200 bg-white px-4 py-3 text-sm text-anthrazit placeholder:text-gray-400 focus:border-quartier-green focus:outline-none focus:ring-1 focus:ring-quartier-green"

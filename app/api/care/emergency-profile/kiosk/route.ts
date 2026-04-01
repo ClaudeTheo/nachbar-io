@@ -14,19 +14,22 @@ function getServiceClient() {
 }
 
 // Device-Token pruefen: Erst kiosk_devices Tabelle, dann ENV-Fallback
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function verifyDevice(
-  supabase: ReturnType<typeof createClient>,
+  supabase: any,
   deviceId: string,
-  deviceToken: string
+  deviceToken: string,
 ): Promise<{ valid: boolean; userId?: string }> {
   // Versuch 1: kiosk_devices Tabelle (fuer Produktionsbetrieb)
   try {
-    const { data: device } = await supabase
+    const { data: device } = (await supabase
       .from("kiosk_devices")
       .select("id, user_id, device_token")
       .eq("device_id", deviceId)
       .eq("device_token", deviceToken)
-      .maybeSingle();
+      .maybeSingle()) as {
+      data: { id: string; user_id: string; device_token: string } | null;
+    };
 
     if (device) {
       return { valid: true, userId: device.user_id };
@@ -53,7 +56,7 @@ export async function GET(req: NextRequest) {
   if (!deviceToken) {
     return NextResponse.json(
       { error: "Device-Token fehlt (x-device-token Header)" },
-      { status: 401 }
+      { status: 401 },
     );
   }
 
@@ -62,7 +65,7 @@ export async function GET(req: NextRequest) {
   if (!deviceId) {
     return NextResponse.json(
       { error: "deviceId Parameter fehlt" },
-      { status: 400 }
+      { status: 400 },
     );
   }
 
@@ -71,13 +74,13 @@ export async function GET(req: NextRequest) {
   const { valid, userId: deviceUserId } = await verifyDevice(
     supabase,
     deviceId,
-    deviceToken
+    deviceToken,
   );
 
   if (!valid) {
     return NextResponse.json(
       { error: "Ungültiges Gerät oder Token" },
-      { status: 403 }
+      { status: 403 },
     );
   }
 
@@ -87,7 +90,7 @@ export async function GET(req: NextRequest) {
   if (!userId) {
     return NextResponse.json(
       { error: "Kein Bewohner zugeordnet (userId fehlt)" },
-      { status: 400 }
+      { status: 400 },
     );
   }
 
@@ -135,7 +138,7 @@ export async function GET(req: NextRequest) {
     console.error("Notfallprofil-Entschlüsselung fehlgeschlagen:", error);
     return NextResponse.json(
       { error: "Entschlüsselung fehlgeschlagen" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

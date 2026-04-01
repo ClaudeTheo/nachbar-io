@@ -12,19 +12,22 @@ function getServiceClient() {
 }
 
 // Device-Token pruefen: Erst kiosk_devices Tabelle, dann ENV-Fallback
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function verifyDevice(
-  supabase: ReturnType<typeof createClient>,
+  supabase: any,
   deviceId: string,
-  deviceToken: string
+  deviceToken: string,
 ): Promise<{ valid: boolean; userId?: string }> {
   // Versuch 1: kiosk_devices Tabelle (Produktionsbetrieb)
   try {
-    const { data: device } = await supabase
+    const { data: device } = (await supabase
       .from("kiosk_devices")
       .select("id, user_id, device_token")
       .eq("device_id", deviceId)
       .eq("device_token", deviceToken)
-      .maybeSingle();
+      .maybeSingle()) as {
+      data: { id: string; user_id: string; device_token: string } | null;
+    };
 
     if (device) {
       return { valid: true, userId: device.user_id };
@@ -55,7 +58,7 @@ export async function POST(req: NextRequest) {
   if (!deviceToken) {
     return NextResponse.json(
       { error: "Device-Token fehlt (x-device-token Header)" },
-      { status: 401 }
+      { status: 401 },
     );
   }
 
@@ -66,7 +69,7 @@ export async function POST(req: NextRequest) {
   } catch {
     return NextResponse.json(
       { error: "Ungültiger JSON-Body" },
-      { status: 400 }
+      { status: 400 },
     );
   }
 
@@ -75,7 +78,7 @@ export async function POST(req: NextRequest) {
   if (!deviceId) {
     return NextResponse.json(
       { error: "deviceId fehlt im Body" },
-      { status: 400 }
+      { status: 400 },
     );
   }
 
@@ -84,13 +87,13 @@ export async function POST(req: NextRequest) {
   const { valid, userId: deviceUserId } = await verifyDevice(
     supabase,
     deviceId,
-    deviceToken
+    deviceToken,
   );
 
   if (!valid) {
     return NextResponse.json(
       { error: "Ungültiges Gerät oder Token" },
-      { status: 403 }
+      { status: 403 },
     );
   }
 
@@ -98,7 +101,7 @@ export async function POST(req: NextRequest) {
   if (!event_type || !VALID_EVENT_TYPES.includes(event_type as SosEventType)) {
     return NextResponse.json(
       { error: "Ungültiger event_type — erlaubt: sos_opened, sos_alerted" },
-      { status: 400 }
+      { status: 400 },
     );
   }
 
@@ -124,7 +127,7 @@ export async function POST(req: NextRequest) {
 
   // 6. Deduplizierung: gleicher User + sos_alerted in letzten 10 Minuten?
   const dedupCutoff = new Date(
-    Date.now() - DEDUP_WINDOW_MINUTES * 60 * 1000
+    Date.now() - DEDUP_WINDOW_MINUTES * 60 * 1000,
   ).toISOString();
 
   const { data: existing } = await supabase
@@ -138,7 +141,7 @@ export async function POST(req: NextRequest) {
   if (existing) {
     return NextResponse.json(
       { error: "Bereits benachrichtigt (10-Min-Sperre)" },
-      { status: 429 }
+      { status: 429 },
     );
   }
 
@@ -178,7 +181,7 @@ export async function POST(req: NextRequest) {
       target_user_id: userId || null,
       details: JSON.stringify({
         caregiver_ids: caregivers.map(
-          (c: { caregiver_id: string }) => c.caregiver_id
+          (c: { caregiver_id: string }) => c.caregiver_id,
         ),
         title: "SOS ausgelöst",
         body: "Notfallmappe wird angezeigt — bitte prüfen.",

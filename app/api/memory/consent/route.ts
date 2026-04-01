@@ -75,7 +75,7 @@ export async function POST(
       userId: user.id,
       consentType: consent_type as MemoryConsentType,
       actorUserId: user.id,
-      actorRole: "self",
+      actorRole: "senior",
     });
 
     return NextResponse.json({ success: true, data: null, error: null });

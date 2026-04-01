@@ -1,0 +1,529 @@
+/* Kiosk Fröhliches Helles Theme */
+/* AWOW AIBOOK 11: 1280x800px, 10.1" IPS Touch */
+
+.kiosk-root {
+  width: 100vw;
+  height: 100vh;
+  height: 100dvh;
+  max-height: 100dvh;
+  background: #f8faf5;
+  color: #2d3142;
+  font-size: 24px;
+  line-height: 1.5;
+  overflow: hidden;
+  position: relative;
+  touch-action: manipulation;
+  -webkit-user-select: none;
+  user-select: none;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+/* Hochformat-Hinweis (Tablet muss quer liegen) */
+@media (orientation: portrait) {
+  .kiosk-root::after {
+    content: "Bitte drehen Sie das Tablet ins Querformat";
+    position: fixed;
+    inset: 0;
+    background: #f8faf5;
+    color: #2d3142;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    text-align: center;
+    padding: 40px;
+    z-index: 9999;
+  }
+}
+
+/* Sanfter Hintergrund-Gradient */
+.kiosk-root::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 80% 60% at 20% 80%, rgba(76, 175, 135, 0.08) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 50% at 80% 20%, rgba(96, 165, 250, 0.06) 0%, transparent 60%),
+    radial-gradient(ellipse 50% 40% at 50% 50%, rgba(251, 191, 36, 0.04) 0%, transparent 60%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.kiosk-root > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* Fröhliche Kachel */
+.kiosk-tile {
+  background: white;
+  border: 1.5px solid #e8ede3;
+  border-radius: 20px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  text-decoration: none;
+  color: inherit;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.kiosk-tile:active {
+  transform: scale(0.96);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+}
+
+.kiosk-tile-icon {
+  font-size: 44px;
+  line-height: 1;
+}
+
+.kiosk-tile-label {
+  font-size: 22px;
+  font-weight: 600;
+  text-align: center;
+  letter-spacing: 0.01em;
+  color: #2d3142;
+}
+
+/* Kachel-Akzentfarben (linker Rand) */
+.kiosk-tile[data-accent="green"] { border-left: 4px solid #4caf87; }
+.kiosk-tile[data-accent="blue"] { border-left: 4px solid #60a5fa; }
+.kiosk-tile[data-accent="orange"] { border-left: 4px solid #f59e0b; }
+.kiosk-tile[data-accent="purple"] { border-left: 4px solid #a78bfa; }
+.kiosk-tile[data-accent="pink"] { border-left: 4px solid #f472b6; }
+.kiosk-tile[data-accent="cyan"] { border-left: 4px solid #22d3ee; }
+.kiosk-tile[data-accent="red"] { border-left: 4px solid #ef4444; }
+.kiosk-tile[data-accent="teal"] { border-left: 4px solid #2dd4bf; }
+
+/* Card (größere Bereiche) */
+.kiosk-card {
+  background: white;
+  border: 1.5px solid #e8ede3;
+  border-radius: 20px;
+  padding: 24px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+/* Kiosk Header (Uhr + Wetter) — max 72px */
+.kiosk-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 28px 8px;
+  height: 72px;
+  flex-shrink: 0;
+}
+
+.kiosk-clock {
+  font-size: 42px;
+  font-weight: 700;
+  letter-spacing: -1px;
+  color: #2d3142;
+}
+
+.kiosk-date {
+  font-size: 16px;
+  color: #6b7280;
+  margin-top: 1px;
+}
+
+.kiosk-weather {
+  text-align: right;
+  font-size: 16px;
+  color: #6b7280;
+}
+
+.kiosk-weather-temp {
+  font-size: 28px;
+  font-weight: 600;
+  color: #f59e0b;
+}
+
+/* Dashboard Grid — 3x3, exakt für 800px Höhe */
+/* 800 - 72 (Header) - 68 (Footer) = 660px. 3 Reihen + 2 Gaps (12px) = ~208px/Reihe */
+.kiosk-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: repeat(3, 1fr);
+  gap: 12px;
+  padding: 8px 24px 72px;
+  height: calc(100dvh - 72px);
+  overflow: hidden;
+}
+
+/* SOS Footer — kompakt, 60px */
+.kiosk-footer {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  padding: 8px 28px 12px;
+  background: linear-gradient(to top, rgba(248, 250, 245, 0.95), transparent);
+  z-index: 10;
+}
+
+.kiosk-sos-button {
+  background: #fef2f2;
+  border: 2px solid #ef4444;
+  border-radius: 14px;
+  color: #dc2626;
+  font-size: 22px;
+  font-weight: 700;
+  padding: 14px 32px;
+  min-height: 56px;
+  cursor: pointer;
+  animation: sos-pulse 3s infinite;
+  transition: transform 0.15s ease;
+}
+
+.kiosk-sos-button:active {
+  transform: scale(0.95);
+  background: #fee2e2;
+}
+
+@keyframes sos-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.2); }
+  50% { box-shadow: 0 0 16px 6px rgba(239, 68, 68, 0.1); }
+}
+
+/* Zurück-Button (auf Unterseiten) */
+.kiosk-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: white;
+  border: 1.5px solid #e8ede3;
+  border-radius: 12px;
+  color: #4caf87;
+  font-size: 20px;
+  font-weight: 600;
+  padding: 14px 22px;
+  min-height: 56px;
+  cursor: pointer;
+  transition: background 0.15s ease;
+  text-decoration: none;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+}
+
+.kiosk-back:active {
+  background: #f0fdf4;
+}
+
+/* Chat-Bubble (KI-Begleiter) */
+.kiosk-chat-bubble {
+  max-width: 80%;
+  padding: 16px 20px;
+  border-radius: 16px;
+  font-size: 22px;
+  line-height: 1.5;
+  animation: bubble-in 0.3s ease;
+}
+
+.kiosk-chat-bubble.assistant {
+  background: #f0fdf4;
+  border: 1.5px solid #bbf7d0;
+  border-radius: 16px 16px 16px 4px;
+  align-self: flex-start;
+  color: #166534;
+}
+
+.kiosk-chat-bubble.user {
+  background: #eff6ff;
+  border: 1.5px solid #bfdbfe;
+  border-radius: 16px 16px 4px 16px;
+  align-self: flex-end;
+  color: #1e40af;
+}
+
+@keyframes bubble-in {
+  from { opacity: 0; transform: translateY(8px) scale(0.97); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* Suggestion-Chips */
+.kiosk-chip {
+  background: white;
+  border: 1.5px solid #e8ede3;
+  border-radius: 24px;
+  color: #4caf87;
+  font-size: 20px;
+  font-weight: 500;
+  padding: 14px 22px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s ease, border-color 0.15s ease;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+}
+
+.kiosk-chip:active {
+  background: #f0fdf4;
+  border-color: #4caf87;
+}
+
+/* Radio Station Card */
+.kiosk-station {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 20px;
+  min-height: 80px;
+}
+
+.kiosk-station.playing {
+  background: #f0fdf4;
+  border-color: #4caf87;
+}
+
+/* Scrollbar (dünn, dezent) */
+.kiosk-scroll::-webkit-scrollbar {
+  width: 4px;
+}
+
+.kiosk-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.kiosk-scroll::-webkit-scrollbar-thumb {
+  background: #d1d5db;
+  border-radius: 4px;
+}
+
+/* Memory-Spiel Karten */
+.kiosk-memory-card {
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 36px;
+  border-radius: 16px;
+  cursor: pointer;
+  transition: transform 0.3s ease;
+  min-height: 80px;
+}
+
+.kiosk-memory-card.hidden {
+  background: #e8ede3;
+  border: 2px solid #d1d9c9;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+}
+
+.kiosk-memory-card.hidden::after {
+  content: "?";
+  font-size: 28px;
+  font-weight: 700;
+  color: #9ca3af;
+}
+
+.kiosk-memory-card.revealed {
+  background: #f0fdf4;
+  border: 2px solid #4caf87;
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(76, 175, 135, 0.2);
+}
+
+.kiosk-memory-card.matched {
+  background: #eff6ff;
+  border: 2px solid #60a5fa;
+  opacity: 0.7;
+}
+
+/* Kontaktbörse (Aktivitäten-Pinnwand) */
+.kiosk-activity-card {
+  display: flex;
+  gap: 16px;
+  padding: 16px;
+  align-items: flex-start;
+}
+
+.kiosk-activity-badge {
+  background: #f5f3ff;
+  border: 1.5px solid #ddd6fe;
+  border-radius: 12px;
+  padding: 8px 12px;
+  font-size: 14px;
+  color: #7c3aed;
+  white-space: nowrap;
+}
+
+/* Pflege-Info Karte */
+.kiosk-info-item {
+  display: flex;
+  gap: 12px;
+  padding: 14px 16px;
+  border-bottom: 1.5px solid #f0f0f0;
+  font-size: 22px;
+}
+
+.kiosk-info-item:last-child {
+  border-bottom: none;
+}
+
+/* Login-Screen */
+.kiosk-login {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100dvh;
+  gap: 24px;
+  padding: 24px;
+  text-align: center;
+}
+
+.kiosk-login-title {
+  font-size: 32px;
+  font-weight: 700;
+  color: #2d3142;
+}
+
+.kiosk-login-subtitle {
+  font-size: 18px;
+  color: #6b7280;
+  max-width: 500px;
+}
+
+.kiosk-qr-container {
+  background: white;
+  border-radius: 20px;
+  padding: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid #e8ede3;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+}
+
+.kiosk-qr-container canvas,
+.kiosk-qr-container svg {
+  display: block;
+}
+
+.kiosk-login-divider {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  width: 100%;
+  max-width: 400px;
+  color: #9ca3af;
+  font-size: 14px;
+}
+
+.kiosk-login-divider::before,
+.kiosk-login-divider::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: #e5e7eb;
+}
+
+/* PIN-Eingabe */
+.kiosk-pin-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 80px);
+  gap: 12px;
+}
+
+.kiosk-pin-button {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: white;
+  border: 2px solid #e8ede3;
+  color: #2d3142;
+  font-size: 28px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s ease, transform 0.1s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+}
+
+.kiosk-pin-button:active {
+  background: #f0fdf4;
+  transform: scale(0.93);
+  border-color: #4caf87;
+}
+
+.kiosk-pin-button.action {
+  font-size: 18px;
+  font-weight: 500;
+}
+
+.kiosk-pin-display {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.kiosk-pin-dot {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 2px solid #d1d5db;
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+.kiosk-pin-dot.filled {
+  background: #4caf87;
+  border-color: #4caf87;
+}
+
+.kiosk-pin-dot.error {
+  background: #ef4444;
+  border-color: #ef4444;
+}
+
+/* Login-Methoden Tabs */
+.kiosk-login-tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.kiosk-login-tab {
+  background: white;
+  border: 1.5px solid #e8ede3;
+  border-radius: 12px;
+  color: #6b7280;
+  font-size: 16px;
+  padding: 10px 20px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.kiosk-login-tab.active {
+  background: #f0fdf4;
+  border-color: #4caf87;
+  color: #166534;
+  font-weight: 600;
+}
+
+/* Gast-Button */
+.kiosk-guest-button {
+  background: white;
+  border: 1.5px solid #e8ede3;
+  border-radius: 14px;
+  color: #6b7280;
+  font-size: 18px;
+  padding: 16px 32px;
+  min-height: 56px;
+  cursor: pointer;
+  transition: background 0.15s ease;
+  margin-top: 8px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+}
+
+.kiosk-guest-button:active {
+  background: #f9fafb;
+}

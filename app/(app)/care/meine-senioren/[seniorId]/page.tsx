@@ -14,6 +14,7 @@ import {
   MessageCircle,
   UserCog,
   Phone,
+  Brain,
 } from "lucide-react";
 import Link from "next/link";
 import { PageHeader } from "@/components/ui/page-header";
@@ -22,6 +23,7 @@ import { createClient } from "@/lib/supabase/client";
 import { HeartbeatTimeline } from "@/modules/care/components/checkin/HeartbeatTimeline";
 import { usePresence } from "@/lib/video-calls/usePresence";
 import { OnlineIndicator } from "@/components/video/OnlineIndicator";
+import { CaregiverMemoryEditor } from "@/modules/memory/components/CaregiverMemoryEditor";
 
 interface MedicationEntry {
   id: string;
@@ -47,7 +49,7 @@ interface SosEntry {
   resolved_at: string | null;
 }
 
-type Tab = "medikamente" | "checkins" | "sos";
+type Tab = "medikamente" | "checkins" | "sos" | "gedaechtnis";
 
 export default function SeniorDetailPage() {
   const params = useParams();
@@ -170,6 +172,11 @@ export default function SeniorDetailPage() {
       key: "sos",
       label: "SOS-Verlauf",
       icon: <TriangleAlert className="h-4 w-4" />,
+    },
+    {
+      key: "gedaechtnis",
+      label: "Gedächtnis",
+      icon: <Brain className="h-4 w-4" />,
     },
   ];
 
@@ -451,6 +458,14 @@ export default function SeniorDetailPage() {
                 ))
               )}
             </div>
+          )}
+
+          {/* Gedaechtnis-Tab */}
+          {activeTab === "gedaechtnis" && (
+            <CaregiverMemoryEditor
+              seniorId={seniorId}
+              seniorName={seniorName}
+            />
           )}
         </>
       )}

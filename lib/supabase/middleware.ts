@@ -58,8 +58,10 @@ export async function updateSession(request: NextRequest) {
   const isTerminalPage = request.nextUrl.pathname.startsWith("/terminal");
   // Jugend-Freigabe: Oeffentliche Elternfreigabe-Seiten (via SMS-Token, kein Login)
   const isYouthConsentPage = request.nextUrl.pathname.startsWith("/jugend/freigabe");
+  // Kiosk: Eigenes Auth-System (QR-Code, PIN, Gast-Modus) — keine Supabase-Session noetig
+  const isKioskPage = request.nextUrl.pathname.startsWith("/kiosk");
 
-  if (!user && !isAuthPage && !isApiRoute && !isRootPage && !isLegalPage && !isPublicPage && !isTerminalPage && !isYouthConsentPage) {
+  if (!user && !isAuthPage && !isApiRoute && !isRootPage && !isLegalPage && !isPublicPage && !isTerminalPage && !isYouthConsentPage && !isKioskPage) {
     const url = request.nextUrl.clone();
     url.pathname = "/login";
     return NextResponse.redirect(url);

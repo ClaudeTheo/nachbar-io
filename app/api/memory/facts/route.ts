@@ -68,10 +68,11 @@ export async function POST(
     }
 
     const body = await request.json();
-    const { category, key, value } = body as {
+    const { category, key, value, targetUserId } = body as {
       category: MemoryCategory;
       key: string;
       value: string;
+      targetUserId?: string;
     };
 
     if (!category || !key || !value) {
@@ -81,9 +82,31 @@ export async function POST(
       );
     }
 
-    // Consent pruefen
+    // Caregiver-Modus: targetUserId = Senior, fuer den gespeichert wird
+    const isCaregiver = targetUserId && targetUserId !== user.id;
+    const effectiveUserId = isCaregiver ? targetUserId : user.id;
+
+    // Bei Caregiver: pruefen ob aktiver Link existiert
+    if (isCaregiver) {
+      const { data: link } = await supabase
+        .from("caregiver_links")
+        .select("id")
+        .eq("caregiver_id", user.id)
+        .eq("resident_id", targetUserId)
+        .is("revoked_at", null)
+        .single();
+
+      if (!link) {
+        return NextResponse.json(
+          { success: false, data: null, error: "no_caregiver_link" },
+          { status: 403 },
+        );
+      }
+    }
+
+    // Consent pruefen (fuer den Ziel-User)
     const consentType = CATEGORY_TO_CONSENT[category];
-    if (!(await hasConsent(supabase, user.id, consentType))) {
+    if (!(await hasConsent(supabase, effectiveUserId, consentType))) {
       return NextResponse.json(
         { success: false, data: null, error: "no_consent" },
         { status: 403 },
@@ -92,7 +115,7 @@ export async function POST(
 
     // Validierung
     const isSensitive = SENSITIVE_CATEGORIES.includes(category);
-    const factCount = await getFactCount(supabase, user.id, isSensitive);
+    const factCount = await getFactCount(supabase, effectiveUserId, isSensitive);
     const maxFacts = isSensitive
       ? MEMORY_LIMITS.SENSITIVE_MAX
       : MEMORY_LIMITS.BASIS_MAX;
@@ -113,7 +136,8 @@ export async function POST(
       category,
       key,
       value,
-      source: "self",
+      targetUserId: effectiveUserId,
+      source: isCaregiver ? "caregiver" : "self",
       sourceUserId: user.id,
       confidence: 1.0,
       confirmed: true,

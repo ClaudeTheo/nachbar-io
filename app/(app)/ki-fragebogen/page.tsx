@@ -41,12 +41,10 @@ export default async function KiFragebogenPage() {
 
   return (
     <div className="mx-auto max-w-2xl px-4 py-6">
-      <h1 className="mb-2 text-2xl font-bold text-[#2D3142]">
-        KI-Fragebogen
-      </h1>
+      <h1 className="mb-2 text-2xl font-bold text-[#2D3142]">KI-Fragebogen</h1>
       <p className="mb-6 text-gray-500">
         Helfen Sie der KI, Sie besser kennenzulernen. Beantworten Sie so viele
-        Fragen wie Sie moechten.
+        Fragen wie Sie möchten.
       </p>
 
       <SeniorQuestionnaire

@@ -1,4 +1,4 @@
-// KI-Fragebogen: 15 Fragen fuer Senior Memory Layer
+// KI-Fragebogen: 15 Fragen für Senior Memory Layer
 // Jede Antwort wird als user_memory_fact gespeichert
 
 export type QuestionInputType = "text" | "select" | "textarea";
@@ -17,8 +17,8 @@ export interface QuestionDefinition {
 export const QUESTIONNAIRE_QUESTIONS: QuestionDefinition[] = [
   {
     id: 1,
-    label: "Wie moechten Sie angesprochen werden?",
-    placeholder: "z.B. Frau Mueller, Oma Ingrid, Herr Schmidt...",
+    label: "Wie möchten Sie angesprochen werden?",
+    placeholder: "z.B. Frau Müller, Oma Ingrid, Herr Schmidt...",
     memory_category: "preferences",
     memory_key: "preferred_name",
     consent_level: "memory_basis",
@@ -63,7 +63,7 @@ export const QUESTIONNAIRE_QUESTIONS: QuestionDefinition[] = [
   {
     id: 6,
     label: "Was ist Ihnen im Alltag besonders wichtig?",
-    placeholder: "z.B. Selbststaendigkeit, Familie, frische Luft...",
+    placeholder: "z.B. Selbstständigkeit, Familie, frische Luft...",
     memory_category: "values",
     memory_key: "daily_values",
     consent_level: "memory_basis",
@@ -71,8 +71,8 @@ export const QUESTIONNAIRE_QUESTIONS: QuestionDefinition[] = [
   },
   {
     id: 7,
-    label: "Gibt es Dinge, die Sie gar nicht moegen?",
-    placeholder: "z.B. Laerm, frueh aufstehen, bestimmte Speisen...",
+    label: "Gibt es Dinge, die Sie gar nicht mögen?",
+    placeholder: "z.B. Lärm, früh aufstehen, bestimmte Speisen...",
     memory_category: "preferences",
     memory_key: "dislikes",
     consent_level: "memory_basis",
@@ -80,8 +80,8 @@ export const QUESTIONNAIRE_QUESTIONS: QuestionDefinition[] = [
   },
   {
     id: 8,
-    label: "Wie sieht ein guter Tag fuer Sie aus?",
-    placeholder: "Beschreiben Sie einen schoenen Tag...",
+    label: "Wie sieht ein guter Tag für Sie aus?",
+    placeholder: "Beschreiben Sie einen schönen Tag...",
     memory_category: "daily_routine",
     memory_key: "good_day",
     consent_level: "memory_basis",
@@ -108,17 +108,17 @@ export const QUESTIONNAIRE_QUESTIONS: QuestionDefinition[] = [
   {
     id: 11,
     label: "Wie kommen Sie normalerweise zum Arzt?",
-    placeholder: "Bitte waehlen Sie aus...",
+    placeholder: "Bitte wählen Sie aus...",
     memory_category: "mobility",
     memory_key: "transport_to_doctor",
     consent_level: "memory_basis",
     input_type: "select",
-    options: ["Selbst", "Angehoerige", "Taxi", "Fahrdienst"],
+    options: ["Selbst", "Angehörige", "Taxi", "Fahrdienst"],
   },
   {
     id: 12,
-    label: "Nehmen Sie regelmaessig Medikamente?",
-    placeholder: "Bitte waehlen Sie aus...",
+    label: "Nehmen Sie regelmäßig Medikamente?",
+    placeholder: "Bitte wählen Sie aus...",
     memory_category: "health",
     memory_key: "takes_medication",
     consent_level: "memory_basis",
@@ -128,17 +128,17 @@ export const QUESTIONNAIRE_QUESTIONS: QuestionDefinition[] = [
   {
     id: 13,
     label: "Brauchen Sie Hilfe im Haushalt?",
-    placeholder: "Bitte waehlen Sie aus...",
+    placeholder: "Bitte wählen Sie aus...",
     memory_category: "care_needs",
     memory_key: "household_help",
     consent_level: "memory_basis",
     input_type: "select",
-    options: ["Nein", "Manchmal", "Regelmaessig"],
+    options: ["Nein", "Manchmal", "Regelmäßig"],
   },
   {
     id: 14,
-    label: "Fuehlen Sie sich manchmal einsam?",
-    placeholder: "Bitte waehlen Sie aus...",
+    label: "Fühlen Sie sich manchmal einsam?",
+    placeholder: "Bitte wählen Sie aus...",
     memory_category: "wellbeing",
     memory_key: "loneliness",
     consent_level: "memory_basis",
@@ -147,8 +147,8 @@ export const QUESTIONNAIRE_QUESTIONS: QuestionDefinition[] = [
   },
   {
     id: 15,
-    label: "Was wuenschen Sie sich von Ihren Nachbarn?",
-    placeholder: "z.B. Gemeinsame Spaziergaenge, Hilfe beim Einkaufen...",
+    label: "Was wünschen Sie sich von Ihren Nachbarn?",
+    placeholder: "z.B. Gemeinsame Spaziergänge, Hilfe beim Einkaufen...",
     memory_category: "community",
     memory_key: "neighbor_wishes",
     consent_level: "memory_basis",

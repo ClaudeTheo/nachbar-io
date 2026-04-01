@@ -67,14 +67,14 @@ export function SeniorQuestionnaire({
     setSaving(true);
     setError(null);
     try {
-      const facts = QUESTIONNAIRE_QUESTIONS
-        .filter((q) => answers[q.id]?.trim())
-        .map((q) => ({
-          category: q.memory_category,
-          key: q.memory_key,
-          value: answers[q.id].trim(),
-          source: "ki_fragebogen",
-        }));
+      const facts = QUESTIONNAIRE_QUESTIONS.filter((q) =>
+        answers[q.id]?.trim(),
+      ).map((q) => ({
+        category: q.memory_category,
+        key: q.memory_key,
+        value: answers[q.id].trim(),
+        source: "ki_fragebogen",
+      }));
 
       if (facts.length === 0) {
         setDone(true);
@@ -101,7 +101,8 @@ export function SeniorQuestionnaire({
   }, [answers, userId]);
 
   const totalQuestions = QUESTIONNAIRE_QUESTIONS.length;
-  const currentQuestion: QuestionDefinition | undefined = QUESTIONNAIRE_QUESTIONS[step];
+  const currentQuestion: QuestionDefinition | undefined =
+    QUESTIONNAIRE_QUESTIONS[step];
   const answeredCount = Object.values(answers).filter((v) => v?.trim()).length;
 
   // Einwilligungs-Screen
@@ -113,17 +114,15 @@ export function SeniorQuestionnaire({
             <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#4CAF87]/10">
               <Brain className="h-6 w-6 text-[#4CAF87]" />
             </div>
-            <h2 className="text-xl font-bold text-[#2D3142]">
-              KI-Gedaechtnis
-            </h2>
+            <h2 className="text-xl font-bold text-[#2D3142]">KI-Gedächtnis</h2>
           </div>
           <p className="mb-4 text-gray-600">
-            Moechten Sie, dass die KI sich an Ihre Antworten erinnert? So kann
-            sie Sie besser unterstuetzen und auf Ihre Wuensche eingehen.
+            Möchten Sie, dass die KI sich an Ihre Antworten erinnert? So kann
+            sie Sie besser unterstützen und auf Ihre Wünsche eingehen.
           </p>
           <p className="mb-6 text-sm text-gray-500">
-            Sie koennen Ihre Einwilligung jederzeit in den Einstellungen
-            widerrufen. Ihre Daten werden ausschliesslich fuer Sie gespeichert.
+            Sie können Ihre Einwilligung jederzeit in den Einstellungen
+            widerrufen. Ihre Daten werden ausschließlich für Sie gespeichert.
           </p>
           {error && (
             <p className="mb-4 rounded-lg bg-red-50 p-3 text-sm text-red-600">
@@ -279,7 +278,7 @@ export function SeniorQuestionnaire({
           className="flex min-h-[52px] items-center justify-center gap-1 rounded-xl border-2 border-gray-200 px-4 font-medium text-gray-600 transition-colors hover:bg-gray-50 disabled:opacity-30"
         >
           <ChevronLeft className="h-5 w-5" />
-          Zurueck
+          Zurück
         </button>
 
         {step < totalQuestions - 1 ? (
@@ -301,7 +300,7 @@ export function SeniorQuestionnaire({
             ) : (
               <>
                 <Check className="h-5 w-5" />
-                Abschliessen ({answeredCount}/{totalQuestions})
+                Abschließen ({answeredCount}/{totalQuestions})
               </>
             )}
           </button>
@@ -315,7 +314,7 @@ export function SeniorQuestionnaire({
             onClick={() => setStep((s) => s + 1)}
             className="text-sm text-gray-400 hover:text-gray-600"
           >
-            Frage ueberspringen
+            Frage überspringen
           </button>
         </p>
       )}

@@ -56,7 +56,7 @@ export default async function PflegeEinstellungenPage() {
       </h1>
       <p className="mb-6 text-gray-500">
         Legen Sie fest, welche Informationen Sie mit Ihrem Pflegeteam und
-        Angehoerigen teilen moechten.
+        Angehörigen teilen möchten.
       </p>
 
       <PflegeSettings userId={user.id} initialSettings={existingSettings} />

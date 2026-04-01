@@ -25,7 +25,7 @@ export async function POST(request: Request) {
     // EdgeTTS: Konstruktor bekommt Text, Stimme und Optionen
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const tts = new (EdgeTTS as any)(trimmedText, VOICE, {
-      rate: "-10%", // Etwas langsamer für Senioren
+      rate: "-2%", // Leicht unter Normaltempo, natuerlich
       pitch: "+0Hz",
     });
 

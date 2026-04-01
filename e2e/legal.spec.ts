@@ -93,16 +93,16 @@ test.describe("Impressum", () => {
     });
   });
 
-  test("Impressum hat Pflichtangaben gemaess § 5 TMG", async ({ page }) => {
+  test("Impressum hat Pflichtangaben gemäß § 5 TMG", async ({ page }) => {
     await page.goto("/impressum");
-    await expect(page.getByText("Angaben gemaess § 5 TMG")).toBeVisible({
+    await expect(page.getByText("Angaben gemäß § 5 TMG")).toBeVisible({
       timeout: 10000,
     });
     await expect(page.getByText("Thomas Theobald").first()).toBeVisible();
     await expect(
-      page.getByText("Purkersdorfer Strasse 35").first(),
+      page.getByText("Purkersdorfer Straße 35").first(),
     ).toBeVisible();
-    await expect(page.getByText("79713 Bad Saeckingen").first()).toBeVisible();
+    await expect(page.getByText("79713 Bad Säckingen").first()).toBeVisible();
     await expect(page.getByText("Deutschland")).toBeVisible();
   });
 
@@ -114,7 +114,7 @@ test.describe("Impressum", () => {
 
   test("Impressum hat Inhalt-Verantwortlichen", async ({ page }) => {
     await page.goto("/impressum");
-    await expect(page.getByText(/Verantwortlich fuer den Inhalt/)).toBeVisible({
+    await expect(page.getByText(/Verantwortlich für den Inhalt/)).toBeVisible({
       timeout: 10000,
     });
     await expect(page.getByText(/§ 18 Abs\. 2 MStV/)).toBeVisible();
@@ -135,10 +135,10 @@ test.describe("Impressum", () => {
 
   test("Impressum hat Haftungsausschluss", async ({ page }) => {
     await page.goto("/impressum");
-    await expect(page.getByText("Haftung fuer Inhalte")).toBeVisible({
+    await expect(page.getByText("Haftung für Inhalte")).toBeVisible({
       timeout: 10000,
     });
-    await expect(page.getByText("Haftung fuer Links")).toBeVisible();
+    await expect(page.getByText("Haftung für Links")).toBeVisible();
     await expect(
       page.getByRole("heading", { name: "Urheberrecht" }),
     ).toBeVisible();
@@ -156,9 +156,9 @@ test.describe("Impressum", () => {
     ).toBeVisible();
   });
 
-  test("Impressum hat Zurueck-Link", async ({ page }) => {
+  test("Impressum hat Zurück-Link", async ({ page }) => {
     await page.goto("/impressum");
-    const backLink = page.getByRole("link", { name: "Zurueck" });
+    const backLink = page.getByRole("link", { name: "Zurück" });
     await expect(backLink).toBeVisible({ timeout: 10000 });
     await expect(backLink).toHaveAttribute("href", "/");
   });

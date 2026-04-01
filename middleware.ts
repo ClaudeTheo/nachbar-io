@@ -3,8 +3,16 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { checkRateLimit, getClientKey } from "@/lib/rate-limit";
 
+// Oeffentliche Seiten: Kein Auth-Check noetig, statisch cachebar
+const PUBLIC_PATHS = ["/", "/b2b", "/impressum", "/datenschutz", "/agb"];
+
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
+
+  // Oeffentliche Seiten: Kein Supabase-Session-Check, direkt weiterleiten
+  if (PUBLIC_PATHS.includes(pathname)) {
+    return NextResponse.next();
+  }
 
   // Rate Limiting nur fuer API-Endpunkte
   if (pathname.startsWith("/api/")) {

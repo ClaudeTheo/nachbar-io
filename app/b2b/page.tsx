@@ -1,5 +1,6 @@
 // app/b2b/page.tsx
 // Nachbar.io — B2B-Landingpage für Organisationen und Ärzte
+export const dynamic = "force-static";
 import Link from "next/link";
 import {
   Heart,

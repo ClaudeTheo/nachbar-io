@@ -17,6 +17,8 @@ import {
 
 // Landing Page — quartierapp.de / nachbar-io.vercel.app
 // Professionelle Conversion-Seite für Bewohner + Organisationen
+// Statisch gerendert: Kein dynamischer Content, beste Performance
+export const dynamic = "force-static";
 
 function Hero() {
   return (

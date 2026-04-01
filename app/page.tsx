@@ -333,7 +333,7 @@ function ForOrganizations() {
         <div className="mt-8 text-center">
           <Link
             href="/b2b"
-            className="inline-flex items-center gap-2 text-sm font-semibold text-[#4CAF87] hover:underline"
+            className="inline-flex items-center gap-2 px-4 py-3 min-h-[44px] text-sm font-semibold text-[#4CAF87] hover:underline"
           >
             Mehr erfahren für Organisationen
             <ArrowRight className="h-4 w-4" />

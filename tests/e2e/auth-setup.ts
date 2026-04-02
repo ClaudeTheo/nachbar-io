@@ -113,8 +113,9 @@ setup("Auth: stadt_k einloggen", async ({ page }) => {
 });
 
 /**
- * Loggt einen Agenten via Supabase Auth API ein und speichert den storageState.
- * Umgeht PILOT_HIDE_PASSWORD_LOGIN — Passwort-UI ist im Pilot ausgeblendet.
+ * Loggt einen Agenten ein und speichert den storageState.
+ * Strategie 1: /api/test/login (lokaler Dev-Server)
+ * Strategie 2: Supabase Auth API direkt (Live/Vercel — /api/test/login gibt 404)
  */
 async function loginAndSave(
   page: import("@playwright/test").Page,
@@ -127,23 +128,25 @@ async function loginAndSave(
 
   const baseURL = process.env.E2E_BASE_URL || "http://localhost:3000";
   const testSecret = process.env.E2E_TEST_SECRET || "e2e-test-secret-dev";
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
   // Erst eine Seite laden damit Cookies empfangen werden koennen
-  // Zuerst /login laden, dann auf Stabilisierung warten (Redirect moeglich)
   await page.goto("/login");
   await page.waitForLoadState("networkidle").catch(() => {});
 
-  // CareDisclaimer akzeptieren + AlarmScreen deaktivieren + Onboarding-Skip
-  // (muss VOR dem Login gesetzt werden, damit storageState alle Flags enthaelt)
+  // E2E-Flags setzen (muss VOR dem Login passieren)
   await page.evaluate(() => {
     localStorage.setItem("care_disclaimer_accepted", "true");
     localStorage.setItem("e2e_disable_alarm", "true");
     localStorage.setItem("e2e_skip_onboarding", "true");
   });
 
-  // Test-Login-API aufrufen mit Retry bei Rate-Limiting (429) oder temporaerem 401
-  // Supabase gibt manchmal 401 statt 429 bei IP-basiertem Rate-Limiting zurueck
+  // --- Strategie 1: /api/test/login (Dev-Server) ---
   let result: { userId?: string } = {};
+  let useSupabaseDirect = false;
+
   for (let attempt = 0; attempt < 5; attempt++) {
     if (attempt > 0) {
       const delay = 2000 * attempt;
@@ -162,8 +165,18 @@ async function loginAndSave(
       break;
     }
 
-    const text = await response.text();
     const status = response.status();
+    const text = await response.text();
+
+    // 404 = Route existiert nicht auf Production → Supabase-direkt Fallback
+    if (status === 404) {
+      console.log(
+        `[AUTH] ${agentId} /api/test/login nicht verfuegbar (404) → Supabase-Direkt-Auth`,
+      );
+      useSupabaseDirect = true;
+      break;
+    }
+
     const isRetryable =
       status === 429 ||
       (status === 401 && text.includes("Invalid login credentials"));
@@ -173,11 +186,98 @@ async function loginAndSave(
       return;
     }
   }
-  console.log(`[AUTH] ${agentId} Test-Login OK → userId=${result.userId}`);
 
-  // Onboarding-Redirect verhindern: settings.onboarding_completed via Service-Key sicherstellen
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  // --- Strategie 2: Supabase Auth API direkt (Live-Modus) ---
+  if (useSupabaseDirect) {
+    if (!supabaseUrl || !anonKey) {
+      console.warn(
+        `[AUTH] ${agentId} Supabase-Direkt-Auth nicht moeglich: NEXT_PUBLIC_SUPABASE_URL oder ANON_KEY fehlt`,
+      );
+      return;
+    }
+
+    // Supabase Auth REST API: signInWithPassword
+    const authResp = await fetch(
+      `${supabaseUrl}/auth/v1/token?grant_type=password`,
+      {
+        method: "POST",
+        headers: {
+          apikey: anonKey,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email, password }),
+      },
+    );
+
+    if (!authResp.ok) {
+      const errText = await authResp.text();
+      console.warn(
+        `[AUTH] ${agentId} Supabase-Direkt-Auth fehlgeschlagen: ${authResp.status} ${errText}`,
+      );
+      return;
+    }
+
+    const authData = await authResp.json();
+    result.userId = authData.user?.id;
+
+    // Projekt-Referenz aus der URL extrahieren (z.B. "uylszchlyhbpbmslcnka")
+    const projectRef = new URL(supabaseUrl).hostname.split(".")[0];
+    const storageKey = `sb-${projectRef}-auth-token`;
+
+    // Token in Browser-localStorage injizieren
+    await page.evaluate(
+      ({ key, value }: { key: string; value: string }) => {
+        localStorage.setItem(key, value);
+      },
+      { key: storageKey, value: JSON.stringify(authData) },
+    );
+
+    // Supabase SSR-Cookies setzen (Middleware liest Cookies, nicht localStorage)
+    // Cookie-Format: JSON-Chunks (max 3500 Bytes pro Chunk)
+    const sessionJson = JSON.stringify(authData);
+    const chunkSize = 3500;
+    const chunks = [];
+    for (let i = 0; i < sessionJson.length; i += chunkSize) {
+      chunks.push(sessionJson.slice(i, i + chunkSize));
+    }
+    const baseUrl = new URL(page.url());
+    const cookieBase = {
+      domain: baseUrl.hostname,
+      path: "/",
+      httpOnly: false,
+      secure: baseUrl.protocol === "https:",
+      sameSite: "Lax" as const,
+    };
+    if (chunks.length === 1) {
+      await page.context().addCookies([
+        {
+          ...cookieBase,
+          name: storageKey,
+          value: `base64-${btoa(chunks[0])}`,
+        },
+      ]);
+    } else {
+      const cookies = chunks.map((chunk, i) => ({
+        ...cookieBase,
+        name: `${storageKey}.${i}`,
+        value: `base64-${btoa(chunk)}`,
+      }));
+      await page.context().addCookies(cookies);
+    }
+
+    console.log(
+      `[AUTH] ${agentId} Supabase-Token injiziert (${storageKey}, ${chunks.length} Cookie-Chunks) → userId=${result.userId}`,
+    );
+
+    // Seite neu laden damit Middleware die Cookies liest
+    await page.reload({ waitUntil: "networkidle" }).catch(() => {});
+  }
+
+  if (!useSupabaseDirect) {
+    console.log(`[AUTH] ${agentId} Test-Login OK → userId=${result.userId}`);
+  }
+
+  // Onboarding-Redirect verhindern: settings.onboarding_completed via Service-Key
   if (supabaseUrl && serviceKey && result.userId) {
     await fetch(`${supabaseUrl}/rest/v1/users?id=eq.${result.userId}`, {
       method: "PATCH",

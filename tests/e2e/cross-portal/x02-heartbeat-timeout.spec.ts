@@ -4,6 +4,7 @@
 import { test, expect } from "../fixtures/roles";
 import { waitForApiResult } from "../helpers/observer";
 import { supabaseAdmin } from "../helpers/supabase-admin";
+import { portalUrl } from "../helpers/portal-urls";
 
 test.describe("X2: Heartbeat-Timeout → 4h-Erinnerung", () => {
   test.describe.configure({ mode: "serial" });
@@ -36,7 +37,7 @@ test.describe("X2: Heartbeat-Timeout → 4h-Erinnerung", () => {
     // Eskalationslogik laeuft als Cron-Job, nicht in Echtzeit —
     // in der Dev-Umgebung wird der Cron moeglicherweise nicht ausgefuehrt.
     // Angehoerigen-Kontext nutzen (hat Zugriff auf Eskalations-API)
-    await caregiverPage.page.goto("http://localhost:3000/dashboard");
+    await caregiverPage.page.goto(portalUrl("io", "/dashboard"));
     await caregiverPage.page.waitForLoadState("domcontentloaded");
 
     // Eskalations-API per Polling abfragen —

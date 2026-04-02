@@ -5,6 +5,7 @@
 import { test, expect } from "../fixtures/roles";
 import { gotoCrossPortal } from "../helpers/observer";
 import { supabaseAdmin } from "../helpers/supabase-admin";
+import { portalUrl } from "../helpers/portal-urls";
 
 test.describe("X4: Kiosk/Senior SOS → Pflege + 112-Banner", () => {
   test.describe.configure({ mode: "serial" });
@@ -14,7 +15,7 @@ test.describe("X4: Kiosk/Senior SOS → Pflege + 112-Banner", () => {
     // Kiosk-Ansicht oeffnen — Senior-Modus auf /senior/home
     await gotoCrossPortal(
       residentPage.page,
-      "http://localhost:3000/senior/home",
+      portalUrl("io", "/senior/home"),
     );
     await residentPage.page.waitForLoadState("domcontentloaded");
 
@@ -40,13 +41,12 @@ test.describe("X4: Kiosk/Senior SOS → Pflege + 112-Banner", () => {
   test("x4b: Pflege sieht Eskalation nach Kiosk-SOS", async ({
     residentPage,
   }) => {
-    // Cross-Origin Auth funktioniert nicht (StorageState von localhost:3000
-    // gilt nicht fuer localhost:3004) — stattdessen API-basierte Verifikation
-    // vom gleichen Origin (localhost:3000) aus.
+    // API-basierte Verifikation vom io-Portal aus (stabiler als UI-Check
+    // auf anderem Portal, da API-Route garantiert existiert).
     const apiPath =
       "/api/care/escalation-events?status=eq.active&order=created_at.desc&limit=1";
     const resp = await residentPage.page.request
-      .get(`http://localhost:3000${apiPath}`)
+      .get(portalUrl("io", apiPath))
       .catch(() => null);
 
     if (!resp || !resp.ok()) {

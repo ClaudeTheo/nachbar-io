@@ -8,6 +8,7 @@ import {
   gotoCrossPortal,
 } from "../helpers/observer";
 import { supabaseAdmin } from "../helpers/supabase-admin";
+import { portalUrl } from "../helpers/portal-urls";
 
 test.describe("X9: Bewohner storniert → Arzt sieht Slot frei", () => {
   test.describe.configure({ mode: "serial" });
@@ -41,7 +42,7 @@ test.describe("X9: Bewohner storniert → Arzt sieht Slot frei", () => {
     residentPage,
   }) => {
     // Zur Terminuebersicht des Bewohners navigieren
-    await residentPage.page.goto("http://localhost:3000/termine");
+    await residentPage.page.goto(portalUrl("io", "/termine"));
     await residentPage.page.waitForLoadState("domcontentloaded");
 
     // Stornierungsschaltflaeche suchen
@@ -97,12 +98,12 @@ test.describe("X9: Bewohner storniert → Arzt sieht Slot frei", () => {
     // Zum Arzt-Portal navigieren — /termine existiert im Arzt-Portal unter (portal)/termine
     // Fallback auf /dashboard falls /termine nicht erreichbar ist
     const termineResp = await arztPage.page.request
-      .get("http://localhost:3002/termine")
+      .get(portalUrl("arzt", "/termine"))
       .catch(() => null);
     const targetUrl =
       termineResp && termineResp.ok()
-        ? "http://localhost:3002/termine"
-        : "http://localhost:3002/dashboard";
+        ? portalUrl("arzt", "/termine")
+        : portalUrl("arzt", "/dashboard");
     await gotoCrossPortal(arztPage.page, targetUrl);
 
     // Per API pruefen: stornierter Termin muss Status `cancelled` haben
@@ -110,7 +111,7 @@ test.describe("X9: Bewohner storniert → Arzt sieht Slot frei", () => {
     const apiPath =
       "/api/arzt/appointments?status=eq.cancelled&order=updated_at.desc&limit=1";
     const apiResp = await arztPage.page.request
-      .get(`http://localhost:3002${apiPath}`)
+      .get(portalUrl("arzt", apiPath))
       .catch(() => null);
     if (!apiResp || !apiResp.ok()) {
       const status = apiResp ? apiResp.status() : "network error";

@@ -13,9 +13,9 @@ export default defineConfig({
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 1,
-  workers: process.env.CI ? 1 : 4, // CI: 1 Worker um Supabase Rate-Limiting zu vermeiden
-  timeout: 60_000,
-  expect: { timeout: 10_000 },
+  workers: process.env.CI || process.env.E2E_LIVE ? 1 : 4, // CI/Live: 1 Worker (Rate-Limiting)
+  timeout: process.env.E2E_LIVE ? 90_000 : 60_000,
+  expect: { timeout: process.env.E2E_LIVE ? 15_000 : 10_000 },
 
   reporter: [
     [
@@ -129,13 +129,18 @@ export default defineConfig({
     },
   ],
 
-  webServer: {
-    // In CI: Production-Build verwenden (vermeidet Hydration-Race-Conditions im Dev-Server)
-    command: process.env.CI ? "npm start" : "npm run dev",
-    url: "http://localhost:3000",
-    reuseExistingServer: !process.env.CI,
-    timeout: 120_000,
-    stdout: "pipe",
-    stderr: "pipe",
-  },
+  // Live-Modus (E2E_LIVE=true): kein lokaler Server — Tests laufen gegen Vercel-URLs
+  ...(process.env.E2E_LIVE
+    ? {}
+    : {
+        webServer: {
+          // In CI: Production-Build verwenden (vermeidet Hydration-Race-Conditions im Dev-Server)
+          command: process.env.CI ? "npm start" : "npm run dev",
+          url: "http://localhost:3000",
+          reuseExistingServer: !process.env.CI,
+          timeout: 120_000,
+          stdout: "pipe",
+          stderr: "pipe",
+        },
+      }),
 });

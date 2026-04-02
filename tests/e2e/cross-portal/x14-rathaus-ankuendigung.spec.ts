@@ -11,6 +11,7 @@ import {
   gotoCrossPortal,
 } from "../helpers/observer";
 import { supabaseAdmin } from "../helpers/supabase-admin";
+import { portalUrl } from "../helpers/portal-urls";
 
 // Eindeutiger Test-Marker fuer diese Testsuite — verhindert Kolllisionen mit echten Daten
 const TEST_ANNOUNCEMENT_MARKER = `E2E-Ankuendigung-${Date.now()}`;
@@ -25,7 +26,7 @@ test.describe("X14+X15: Rathaus Ankuendigung + Quartier-Isolation", () => {
     orgAdminPage,
   }) => {
     // Zum Rathaus/Civic-Portal navigieren (Port 3003)
-    await gotoCrossPortal(orgAdminPage.page, "http://localhost:3003/dashboard");
+    await gotoCrossPortal(orgAdminPage.page, portalUrl("civic", "/dashboard"));
 
     // Ankuendigungen-Bereich oeffnen
     const announcements = orgAdminPage.announcements;
@@ -112,13 +113,13 @@ test.describe("X14+X15: Rathaus Ankuendigung + Quartier-Isolation", () => {
     residentPage,
   }) => {
     // Zur Quartier-Feed-Seite navigieren
-    await residentPage.page.goto("http://localhost:3000/dashboard");
+    await residentPage.page.goto(portalUrl("io", "/dashboard"));
     await residentPage.page.waitForLoadState("domcontentloaded");
 
     // Soft-Check per API: Ankuendigungs-Endpunkt moeglicherweise nicht vorhanden
     const apiPath = "/api/feed/announcements?order=created_at.desc&limit=5";
     const resp = await residentPage.page.request
-      .get(`http://localhost:3000${apiPath}`)
+      .get(portalUrl("io", apiPath))
       .catch(() => null);
     if (!resp || !resp.ok()) {
       const status = resp ? resp.status() : "network error";
@@ -198,7 +199,7 @@ test.describe("X14+X15: Rathaus Ankuendigung + Quartier-Isolation", () => {
 
     try {
       // Dashboard des anderen Quartiers oeffnen
-      await page.goto("http://localhost:3000/dashboard");
+      await page.goto(portalUrl("io", "/dashboard"));
       await page.waitForLoadState("domcontentloaded");
 
       // Kurze Wartezeit fuer Seiten-Rendering

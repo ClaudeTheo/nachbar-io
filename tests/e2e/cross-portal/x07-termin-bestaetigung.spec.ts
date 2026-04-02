@@ -8,6 +8,7 @@ import {
   gotoCrossPortal,
 } from "../helpers/observer";
 import { supabaseAdmin } from "../helpers/supabase-admin";
+import { portalUrl } from "../helpers/portal-urls";
 
 test.describe("X7: Arzt bestaetigt Termin → Bewohner Notification", () => {
   test.describe.configure({ mode: "serial" });
@@ -41,7 +42,7 @@ test.describe("X7: Arzt bestaetigt Termin → Bewohner Notification", () => {
     arztPage,
   }) => {
     // Zum Arzt-Portal navigieren (Port 3002)
-    await gotoCrossPortal(arztPage.page, "http://localhost:3002/termine");
+    await gotoCrossPortal(arztPage.page, portalUrl("arzt", "/termine"));
 
     // Terminliste muss sichtbar sein
     const appointmentList = arztPage.appointmentList;
@@ -90,14 +91,14 @@ test.describe("X7: Arzt bestaetigt Termin → Bewohner Notification", () => {
     residentPage,
   }) => {
     // Zur Notifications-Seite navigieren
-    await residentPage.page.goto("http://localhost:3000/notifications");
+    await residentPage.page.goto(portalUrl("io", "/notifications"));
     await residentPage.page.waitForLoadState("domcontentloaded");
 
     // Soft-Check: Notification-Pipeline ist moeglicherweise nicht vollstaendig verdrahtet.
     // Zuerst per API pruefen, ob ueberhaupt Notifications vorhanden sind.
     const apiPath = "/api/notifications?order=created_at.desc&limit=5";
     const resp = await residentPage.page.request
-      .get(`http://localhost:3000${apiPath}`)
+      .get(portalUrl("io", apiPath))
       .catch(() => null);
     if (!resp || !resp.ok()) {
       const status = resp ? resp.status() : "network error";

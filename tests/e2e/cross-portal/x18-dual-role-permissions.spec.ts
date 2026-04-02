@@ -8,6 +8,7 @@ import {
   waitForStableUI,
 } from "../helpers/observer";
 import { supabaseAdmin } from "../helpers/supabase-admin";
+import { portalUrl } from "../helpers/portal-urls";
 
 test.describe("X18: Dual-Role Portal-Trennung (RLS-Check)", () => {
   test.describe.configure({ mode: "serial" });
@@ -17,7 +18,7 @@ test.describe("X18: Dual-Role Portal-Trennung (RLS-Check)", () => {
     arztPage,
   }) => {
     // Zum Arzt-Dashboard navigieren
-    await arztPage.page.goto("http://localhost:3002/dashboard");
+    await arztPage.page.goto(portalUrl("arzt", "/dashboard"));
     await arztPage.page.waitForLoadState("domcontentloaded");
 
     // Dashboard muss sichtbar sein
@@ -58,7 +59,7 @@ test.describe("X18: Dual-Role Portal-Trennung (RLS-Check)", () => {
     pflegePage,
   }) => {
     // Zum Pflege-Dashboard navigieren
-    await gotoCrossPortal(pflegePage.page, "http://localhost:3004/dashboard");
+    await gotoCrossPortal(pflegePage.page, portalUrl("pflege", "/dashboard"));
 
     // Dashboard muss sichtbar sein
     const dashboard = pflegePage.page.locator("main").first();
@@ -99,7 +100,7 @@ test.describe("X18: Dual-Role Portal-Trennung (RLS-Check)", () => {
   }) => {
     // Versuch, auf Pflege-spezifische API zuzugreifen
     const resp = await arztPage.page.request
-      .get("http://localhost:3004/api/care/medication-plans")
+      .get(portalUrl("pflege", "/api/care/medication-plans"))
       .catch(() => null);
 
     if (!resp) {
@@ -125,7 +126,7 @@ test.describe("X18: Dual-Role Portal-Trennung (RLS-Check)", () => {
   }) => {
     // Versuch, auf Arzt-spezifische API zuzugreifen
     const resp = await pflegePage.page.request
-      .get("http://localhost:3002/api/appointments")
+      .get(portalUrl("arzt", "/api/appointments"))
       .catch(() => null);
 
     if (!resp) {
@@ -151,17 +152,17 @@ test.describe("X18: Dual-Role Portal-Trennung (RLS-Check)", () => {
   }) => {
     // Feature-Guard: Pruefen ob Pflege-Portal erreichbar ist
     const healthCheck = await arztPage.page.request
-      .get("http://localhost:3004/")
+      .get(portalUrl("pflege", "/"))
       .catch(() => null);
     if (!healthCheck) {
-      test.skip(true, "Pflege-Portal (localhost:3004) nicht erreichbar");
+      test.skip(true, "Pflege-Portal nicht erreichbar");
       return;
     }
 
     // Versuch, zur Pflege-Seite zu navigieren
     let navigationFailed = false;
     await arztPage.page
-      .goto("http://localhost:3004/dashboard", {
+      .goto(portalUrl("pflege", "/dashboard"), {
         waitUntil: "domcontentloaded",
         timeout: 10_000,
       })
@@ -181,7 +182,7 @@ test.describe("X18: Dual-Role Portal-Trennung (RLS-Check)", () => {
       currentUrl.includes("login") ||
       currentUrl.includes("denied") ||
       currentUrl.includes("unauthorized");
-    const onPflegeDashboard = currentUrl.includes("localhost:3004/dashboard");
+    const onPflegeDashboard = currentUrl.includes(portalUrl("pflege", "/dashboard"));
 
     if (onAuthPage) {
       // Korrekt: Arzt-User ist nicht im Pflege-Portal authentifiziert
@@ -212,17 +213,17 @@ test.describe("X18: Dual-Role Portal-Trennung (RLS-Check)", () => {
   }) => {
     // Feature-Guard: Pruefen ob Arzt-Portal erreichbar ist
     const healthCheck = await pflegePage.page.request
-      .get("http://localhost:3002/")
+      .get(portalUrl("arzt", "/"))
       .catch(() => null);
     if (!healthCheck) {
-      test.skip(true, "Arzt-Portal (localhost:3002) nicht erreichbar");
+      test.skip(true, "Arzt-Portal nicht erreichbar");
       return;
     }
 
     // Versuch, zur Arzt-Seite zu navigieren
     let navigationFailed = false;
     await pflegePage.page
-      .goto("http://localhost:3002/dashboard", {
+      .goto(portalUrl("arzt", "/dashboard"), {
         waitUntil: "domcontentloaded",
         timeout: 10_000,
       })
@@ -249,7 +250,7 @@ test.describe("X18: Dual-Role Portal-Trennung (RLS-Check)", () => {
       currentUrl.includes("login") ||
       currentUrl.includes("denied") ||
       currentUrl.includes("unauthorized");
-    const onArztDashboard = currentUrl.includes("localhost:3002/dashboard");
+    const onArztDashboard = currentUrl.includes(portalUrl("arzt", "/dashboard"));
 
     if (onAuthPage) {
       // Korrekt: Pflege-User ist nicht im Arzt-Portal authentifiziert

@@ -2,6 +2,7 @@
 // Flow: senior_s macht Check-in (Stimmung: gut) → betreuer_t sieht aktualisierten Status
 import { test, expect } from "../fixtures/roles";
 import { waitForRealtimeUI, gotoCare } from "../helpers/observer";
+import { portalUrl } from "../helpers/portal-urls";
 
 test.describe("X1: Bewohner Check-in → Angehoeriger Status", () => {
   test.describe.configure({ mode: "serial" });
@@ -9,7 +10,7 @@ test.describe("X1: Bewohner Check-in → Angehoeriger Status", () => {
 
   test("x1a: Bewohner macht Check-in (gut)", async ({ residentPage }) => {
     // Direkt zur Check-in-Seite navigieren (primaerer Pfad)
-    await residentPage.page.goto("http://localhost:3000/care/checkin");
+    await residentPage.page.goto(portalUrl("io", "/care/checkin"));
     await residentPage.page.waitForLoadState("domcontentloaded");
 
     // Check-in Button oder direkt Stimmungsauswahl

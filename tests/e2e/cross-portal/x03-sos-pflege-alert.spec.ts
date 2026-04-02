@@ -4,6 +4,7 @@
 import { test, expect } from "../fixtures/roles";
 import { gotoCare } from "../helpers/observer";
 import { supabaseAdmin } from "../helpers/supabase-admin";
+import { portalUrl } from "../helpers/portal-urls";
 
 test.describe("X3: Bewohner SOS → Pflege Alert", () => {
   test.describe.configure({ mode: "serial" });
@@ -11,7 +12,7 @@ test.describe("X3: Bewohner SOS → Pflege Alert", () => {
 
   test("x3a: Bewohner loest SOS aus", async ({ residentPage }) => {
     // SOS-Trigger: Der "SOS — Ich brauche Hilfe"-Button ist auf /care (nicht /alerts/new oder /care/sos)
-    await residentPage.page.goto("http://localhost:3000/care");
+    await residentPage.page.goto(portalUrl("io", "/care"));
     await residentPage.page.waitForLoadState("domcontentloaded");
 
     // Community-Richtlinien-Dialog schliessen falls vorhanden
@@ -44,11 +45,10 @@ test.describe("X3: Bewohner SOS → Pflege Alert", () => {
   test("x3b: Pflege-Dashboard zeigt Eskalations-Alert", async ({
     residentPage,
   }) => {
-    // Cross-Origin Auth (StorageState auf Port 3000 ≠ Port 3004) — pflege UI nicht direkt aufrufbar.
-    // Stattdessen: API-Check von localhost:3000 aus.
+    // API-basierte Verifikation vom io-Portal (stabiler als UI-Check auf Pflege-Portal).
     const resp = await residentPage.page.request
       .get(
-        "http://localhost:3000/api/care/escalation-events?status=eq.active&order=created_at.desc&limit=1",
+        portalUrl("io", "/api/care/escalation-events?status=eq.active&order=created_at.desc&limit=1"),
       )
       .catch(() => null);
 

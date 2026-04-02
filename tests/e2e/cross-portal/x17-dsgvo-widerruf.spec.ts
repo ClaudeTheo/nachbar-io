@@ -7,6 +7,7 @@
 import { test, expect } from "../fixtures/roles";
 import { gotoCare } from "../helpers/observer";
 import { supabaseAdmin } from "../helpers/supabase-admin";
+import { portalUrl } from "../helpers/portal-urls";
 
 test.describe("X17: DSGVO-Widerruf → Zugriff entfernt", () => {
   test.describe.configure({ mode: "serial" });
@@ -17,7 +18,7 @@ test.describe("X17: DSGVO-Widerruf → Zugriff entfernt", () => {
   }) => {
     // Feature-Guard: Route /care/caregiver pruefen (absolute URL noetig fuer request.get)
     const resp = await residentPage.page.request
-      .get("http://localhost:3000/care/caregiver")
+      .get(portalUrl("io", "/care/caregiver"))
       .catch(() => null);
     if (!resp || resp.status() === 404 || resp.url().includes("/login")) {
       test.skip(
@@ -47,7 +48,7 @@ test.describe("X17: DSGVO-Widerruf → Zugriff entfernt", () => {
   }) => {
     // Feature-Guard: Route /care/caregiver pruefen (absolute URL noetig fuer request.get)
     const resp = await residentPage.page.request
-      .get("http://localhost:3000/care/caregiver")
+      .get(portalUrl("io", "/care/caregiver"))
       .catch(() => null);
     if (!resp || resp.status() === 404 || resp.url().includes("/login")) {
       test.skip(
@@ -104,7 +105,7 @@ test.describe("X17: DSGVO-Widerruf → Zugriff entfernt", () => {
     // Daher pruefen wir nur, dass die API grundsaetzlich erreichbar ist und RLS aktiv ist.
     // Ein vollstaendiger Widerruf-RLS-Test muss in einem separaten, isolierten Szenario erfolgen.
     const resp = await caregiverPage.page.request
-      .get("http://localhost:3000/api/care/heartbeats")
+      .get(portalUrl("io", "/api/care/heartbeats"))
       .catch(() => null);
 
     if (!resp || resp.status() === 404) {

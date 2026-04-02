@@ -5,6 +5,7 @@
 import { test, expect } from "../fixtures/roles";
 import { waitForApiResult, gotoCrossPortal } from "../helpers/observer";
 import { supabaseAdmin } from "../helpers/supabase-admin";
+import { portalUrl } from "../helpers/portal-urls";
 
 /** Hilfsfunktion: Eskalationseintrag anlegen und Zeitstempel setzen */
 async function createBackdatedEscalation(
@@ -50,7 +51,7 @@ test.describe("X5: SOS-Eskalation 4h→8h→12h→24h Zeitraffer", () => {
       return;
     }
 
-    await caregiverPage.page.goto("http://localhost:3000/dashboard");
+    await caregiverPage.page.goto(portalUrl("io", "/dashboard"));
     await caregiverPage.page.waitForLoadState("domcontentloaded");
 
     // API-Pruefung: Eintrag muss in der Datenbank vorhanden sein
@@ -83,7 +84,7 @@ test.describe("X5: SOS-Eskalation 4h→8h→12h→24h Zeitraffer", () => {
       return;
     }
 
-    await caregiverPage.page.goto("http://localhost:3000/care/uebersicht");
+    await caregiverPage.page.goto(portalUrl("io", "/care/uebersicht"));
     await caregiverPage.page.waitForLoadState("domcontentloaded");
 
     try {
@@ -121,7 +122,7 @@ test.describe("X5: SOS-Eskalation 4h→8h→12h→24h Zeitraffer", () => {
     }
 
     // Pro-Community-Org sieht Quartier-Eskalationen im Dashboard
-    await orgAdminPage.page.goto("http://localhost:3000/admin/org/dashboard");
+    await orgAdminPage.page.goto(portalUrl("io", "/admin/org/dashboard"));
     await orgAdminPage.page.waitForLoadState("domcontentloaded");
 
     try {
@@ -152,7 +153,7 @@ test.describe("X5: SOS-Eskalation 4h→8h→12h→24h Zeitraffer", () => {
       return;
     }
 
-    await orgAdminPage.page.goto("http://localhost:3000/admin/org/dashboard");
+    await orgAdminPage.page.goto(portalUrl("io", "/admin/org/dashboard"));
     await orgAdminPage.page.waitForLoadState("domcontentloaded");
 
     try {

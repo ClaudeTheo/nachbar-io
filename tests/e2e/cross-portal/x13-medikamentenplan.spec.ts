@@ -11,6 +11,7 @@ import {
   gotoCrossPortal,
 } from "../helpers/observer";
 import { supabaseAdmin } from "../helpers/supabase-admin";
+import { portalUrl } from "../helpers/portal-urls";
 
 test.describe("X13: Pflege Medikamentenplan → Bewohner sieht", () => {
   test.describe.configure({ mode: "serial" });
@@ -22,7 +23,7 @@ test.describe("X13: Pflege Medikamentenplan → Bewohner sieht", () => {
     pflegePage,
   }) => {
     // Zum Pflege-Portal navigieren (Port 3004)
-    await gotoCrossPortal(pflegePage.page, "http://localhost:3004/medikamente");
+    await gotoCrossPortal(pflegePage.page, portalUrl("pflege", "/medikamente"));
 
     // Medikamentenliste muss sichtbar sein
     const medPlans = pflegePage.medicationPlans;
@@ -100,13 +101,13 @@ test.describe("X13: Pflege Medikamentenplan → Bewohner sieht", () => {
     residentPage,
   }) => {
     // Zur Care/Medikamente-Seite des Bewohners navigieren
-    await residentPage.page.goto("http://localhost:3000/care/medikamente");
+    await residentPage.page.goto(portalUrl("io", "/care/medikamente"));
     await residentPage.page.waitForLoadState("domcontentloaded");
 
     // Soft-Check per API: Medikamentenplan-Endpunkt moeglicherweise nicht vorhanden
     const apiPath = "/api/care/medication-plans?order=created_at.desc&limit=1";
     const resp = await residentPage.page.request
-      .get(`http://localhost:3000${apiPath}`)
+      .get(portalUrl("io", apiPath))
       .catch(() => null);
     if (!resp || !resp.ok()) {
       const status = resp ? resp.status() : "network error";

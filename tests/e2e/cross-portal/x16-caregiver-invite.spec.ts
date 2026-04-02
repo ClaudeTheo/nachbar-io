@@ -4,6 +4,7 @@
 // Voraussetzung: caregiver_links-Eintrag fuer senior_s ↔ betreuer_t in DB vorhanden
 import { test, expect } from "../fixtures/roles";
 import { gotoCare, waitForRealtimeUI } from "../helpers/observer";
+import { portalUrl } from "../helpers/portal-urls";
 
 test.describe("X16: Caregiver-Invite → Akzeptanz → Status", () => {
   test.describe.configure({ mode: "serial" });
@@ -14,7 +15,7 @@ test.describe("X16: Caregiver-Invite → Akzeptanz → Status", () => {
   }) => {
     // Feature-Guard: Route /care/caregiver pruefen (absolute URL noetig fuer request.get)
     const resp = await residentPage.page.request
-      .get("http://localhost:3000/care/caregiver")
+      .get(portalUrl("io", "/care/caregiver"))
       .catch(() => null);
     if (!resp || resp.status() === 404 || resp.url().includes("/login")) {
       test.skip(
@@ -43,7 +44,7 @@ test.describe("X16: Caregiver-Invite → Akzeptanz → Status", () => {
   }) => {
     // Feature-Guard: Route /care/caregiver pruefen (absolute URL noetig fuer request.get)
     const resp = await residentPage.page.request
-      .get("http://localhost:3000/care/caregiver")
+      .get(portalUrl("io", "/care/caregiver"))
       .catch(() => null);
     if (!resp || resp.status() === 404 || resp.url().includes("/login")) {
       test.skip(

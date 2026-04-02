@@ -11,6 +11,7 @@ import {
   gotoCrossPortal,
 } from "../helpers/observer";
 import { supabaseAdmin } from "../helpers/supabase-admin";
+import { portalUrl } from "../helpers/portal-urls";
 
 test.describe("X10+X11: Video-Konsultation Start + Verbindungsstatus", () => {
   test.describe.configure({ mode: "serial" });
@@ -22,7 +23,7 @@ test.describe("X10+X11: Video-Konsultation Start + Verbindungsstatus", () => {
     residentPage,
   }) => {
     // Zur Video-Konsultationsseite navigieren
-    await residentPage.page.goto("http://localhost:3000/video");
+    await residentPage.page.goto(portalUrl("io", "/video"));
     await residentPage.page.waitForLoadState("domcontentloaded");
 
     // Anfrage-Button suchen — Beschriftung variiert je nach Implementierung
@@ -72,12 +73,12 @@ test.describe("X10+X11: Video-Konsultation Start + Verbindungsstatus", () => {
   }) => {
     // Zum Arzt-Portal navigieren — /video existiert NICHT, korrekte Route ist /sprechstunde oder /dashboard
     const sprechstundeResp = await arztPage.page.request
-      .get("http://localhost:3002/sprechstunde")
+      .get(portalUrl("arzt", "/sprechstunde"))
       .catch(() => null);
     const targetUrl =
       sprechstundeResp && sprechstundeResp.ok()
-        ? "http://localhost:3002/sprechstunde"
-        : "http://localhost:3002/dashboard";
+        ? portalUrl("arzt", "/sprechstunde")
+        : portalUrl("arzt", "/dashboard");
     await gotoCrossPortal(arztPage.page, targetUrl);
 
     // Konsultationsanfragen-Liste pruefen (soft)
@@ -92,7 +93,7 @@ test.describe("X10+X11: Video-Konsultation Start + Verbindungsstatus", () => {
     const apiPath =
       "/api/arzt/video-calls?status=eq.pending&type=eq.pro_medical&limit=1";
     const apiResp = await arztPage.page.request
-      .get(`http://localhost:3002${apiPath}`)
+      .get(portalUrl("arzt", apiPath))
       .catch(() => null);
     if (!apiResp || !apiResp.ok()) {
       const status = apiResp ? apiResp.status() : "network error";
@@ -120,12 +121,12 @@ test.describe("X10+X11: Video-Konsultation Start + Verbindungsstatus", () => {
   test("x11a: Arzt nimmt Konsultation an (X11)", async ({ arztPage }) => {
     // Annehmen-Button im Arzt-Portal suchen — /sprechstunde oder /dashboard
     const sprechstundeResp = await arztPage.page.request
-      .get("http://localhost:3002/sprechstunde")
+      .get(portalUrl("arzt", "/sprechstunde"))
       .catch(() => null);
     const targetUrl =
       sprechstundeResp && sprechstundeResp.ok()
-        ? "http://localhost:3002/sprechstunde"
-        : "http://localhost:3002/dashboard";
+        ? portalUrl("arzt", "/sprechstunde")
+        : portalUrl("arzt", "/dashboard");
     await gotoCrossPortal(arztPage.page, targetUrl);
 
     const acceptBtn = arztPage.page.getByRole("button", {

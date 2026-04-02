@@ -3,6 +3,7 @@
 //       arzt_d sieht gebuchten Slot in seiner Terminliste auf nachbar-arzt
 import { test, expect } from "../fixtures/roles";
 import { waitForRealtimeUI, gotoCrossPortal } from "../helpers/observer";
+import { portalUrl } from "../helpers/portal-urls";
 
 test.describe("X6: Bewohner bucht Termin → Arzt sieht Slot", () => {
   test.describe.configure({ mode: "serial" });
@@ -12,7 +13,7 @@ test.describe("X6: Bewohner bucht Termin → Arzt sieht Slot", () => {
     residentPage,
   }) => {
     // Termin-Buchungs-Seite auf nachbar-io oeffnen (/care/appointments, NICHT /arzt/termine)
-    await residentPage.page.goto("http://localhost:3000/care/appointments");
+    await residentPage.page.goto(portalUrl("io", "/care/appointments"));
     await residentPage.page.waitForLoadState("domcontentloaded");
 
     // Terminbuchungs-Seite muss sichtbar sein — Ueberschrift oder Beschreibung
@@ -30,7 +31,7 @@ test.describe("X6: Bewohner bucht Termin → Arzt sieht Slot", () => {
     arztPage,
   }) => {
     // Arzt-Portal auf eigenem Port oeffnen
-    await gotoCrossPortal(arztPage.page, "http://localhost:3002/termine");
+    await gotoCrossPortal(arztPage.page, portalUrl("arzt", "/termine"));
     await arztPage.page.waitForLoadState("domcontentloaded");
 
     // Terminliste muss sichtbar sein — POM-Getter oder Text-Fallback
@@ -55,7 +56,7 @@ test.describe("X6: Bewohner bucht Termin → Arzt sieht Slot", () => {
   }) => {
     // Nach Terminbuchung durch Bewohner muss Arzt-Portal neuen Slot widerspiegeln.
     // waitForRealtimeUI nutzt expect().toPass() — beachtet Supabase Realtime-Verzoegerung.
-    await gotoCrossPortal(arztPage.page, "http://localhost:3002/termine");
+    await gotoCrossPortal(arztPage.page, portalUrl("arzt", "/termine"));
 
     await waitForRealtimeUI(
       arztPage.page,

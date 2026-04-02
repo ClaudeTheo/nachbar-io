@@ -13,8 +13,13 @@ let _webauthnModule: WebAuthnModule | null = null;
 // Apple-Logo SVG nach Apple HIG (kein Lucide — das waere ein Frucht-Apfel)
 function AppleLogo({ className }: { className?: string }) {
   return (
-    <svg className={className} viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-      <path d="M17.05 20.28c-.98.95-2.05.88-3.08.4-1.09-.5-2.08-.48-3.24 0-1.44.62-2.2.44-3.06-.4C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.54 4.09zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z"/>
+    <svg
+      className={className}
+      viewBox="0 0 24 24"
+      fill="currentColor"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <path d="M17.05 20.28c-.98.95-2.05.88-3.08.4-1.09-.5-2.08-.48-3.24 0-1.44.62-2.2.44-3.06-.4C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.54 4.09zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z" />
     </svg>
   );
 }
@@ -57,15 +62,17 @@ export default function LoginPage() {
 
   // Passkey-Support erkennen (nur Client-Side)
   useEffect(() => {
-    console.log('[Passkey] useEffect gestartet');
-    import("@simplewebauthn/browser").then(mod => {
-      _webauthnModule = mod;
-      const supported = mod.browserSupportsWebAuthn();
-      console.log('[Passkey] WebAuthn supported:', supported);
-      setSupportsPasskey(supported);
-    }).catch(err => {
-      console.error('[Passkey] Import fehlgeschlagen:', err);
-    });
+    console.log("[Passkey] useEffect gestartet");
+    import("@simplewebauthn/browser")
+      .then((mod) => {
+        _webauthnModule = mod;
+        const supported = mod.browserSupportsWebAuthn();
+        console.log("[Passkey] WebAuthn supported:", supported);
+        setSupportsPasskey(supported);
+      })
+      .catch((err) => {
+        console.error("[Passkey] Import fehlgeschlagen:", err);
+      });
   }, []);
 
   // Passkey-Login (Logik extrahiert nach lib/auth/passkey-login.ts)
@@ -99,7 +106,9 @@ export default function LoginPage() {
         if (otpError.message?.includes("rate limit")) {
           setError("Zu viele Versuche. Bitte warten Sie einen Moment.");
         } else {
-          setError("Anmelde-Code konnte nicht gesendet werden. Bitte versuchen Sie es erneut.");
+          setError(
+            "Anmelde-Code konnte nicht gesendet werden. Bitte versuchen Sie es erneut.",
+          );
         }
         setLoading(false);
         return;
@@ -123,10 +132,11 @@ export default function LoginPage() {
 
     try {
       const supabase = createClient();
-      const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
+      const { data: authData, error: authError } =
+        await supabase.auth.signInWithPassword({
+          email,
+          password,
+        });
 
       if (authError) {
         console.error("Login-Fehler:", authError);
@@ -160,211 +170,237 @@ export default function LoginPage() {
 
   return (
     <>
-    <Card className="border-0 shadow-lg">
-      <CardHeader className="text-center">
-        <div className="mb-2 text-4xl">🏘️</div>
-        <CardTitle className="text-2xl text-anthrazit">
-          {mode === "magic_link_sent" ? "Code eingeben" : "Anmelden"}
-        </CardTitle>
-        {mode !== "magic_link_sent" && (
-          <p className="text-sm text-muted-foreground">
-            Willkommen zurück in Ihrem Quartier
-          </p>
-        )}
-      </CardHeader>
-      <CardContent>
-
-        {/* === Passkey / Biometrische Anmeldung === */}
-        {mode === "magic_link" && supportsPasskey && !PILOT_HIDE_PASSKEY_LOGIN && (
-          <div className="mb-4">
-            <Button
-              type="button"
-              onClick={handlePasskeyLogin}
-              disabled={loading}
-              className="w-full bg-anthrazit text-white hover:bg-anthrazit/90"
-              style={{ minHeight: '48px' }}
-            >
-              <Fingerprint className="mr-2 h-5 w-5" />
-              Mit Fingerabdruck / Gesicht anmelden
-            </Button>
-          </div>
-        )}
-
-        {/* === Sign in with Apple (Guideline 4.8) === */}
-        {mode === "magic_link" && !PILOT_HIDE_APPLE_SIGNIN && (
-          <div className="mb-4">
-            <Button
-              type="button"
-              onClick={async () => {
-                setLoading(true);
-                setError(null);
-                const { error: appleError } = await signInWithApple();
-                if (appleError) {
-                  setError("Apple-Anmeldung fehlgeschlagen. Bitte versuchen Sie es erneut.");
-                }
-                setLoading(false);
-              }}
-              disabled={loading}
-              className="w-full bg-black text-white hover:bg-black/90"
-              style={{ minHeight: '48px' }}
-            >
-              <AppleLogo className="mr-2 h-5 w-5" />
-              Mit Apple anmelden
-            </Button>
-            <div className="relative my-4">
-              <div className="absolute inset-0 flex items-center">
-                <span className="w-full border-t" />
+      <Card className="border-0 shadow-lg">
+        <CardHeader className="text-center">
+          <div className="mb-2 text-4xl">🏘️</div>
+          <CardTitle className="text-2xl text-anthrazit">
+            {mode === "magic_link_sent" ? "Code eingeben" : "Anmelden"}
+          </CardTitle>
+          {mode !== "magic_link_sent" && (
+            <p className="text-sm text-muted-foreground">
+              Willkommen zurück in Ihrem Quartier
+            </p>
+          )}
+        </CardHeader>
+        <CardContent>
+          {/* === Passkey / Biometrische Anmeldung === */}
+          {mode === "magic_link" &&
+            supportsPasskey &&
+            !PILOT_HIDE_PASSKEY_LOGIN && (
+              <div className="mb-4">
+                <Button
+                  type="button"
+                  onClick={handlePasskeyLogin}
+                  disabled={loading}
+                  className="w-full bg-anthrazit text-white hover:bg-anthrazit/90"
+                  style={{ minHeight: "48px" }}
+                >
+                  <Fingerprint className="mr-2 h-5 w-5" />
+                  Mit Fingerabdruck / Gesicht anmelden
+                </Button>
               </div>
-              <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-background px-2 text-muted-foreground">oder per E-Mail</span>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* === Magic Link (Standard) === */}
-        {mode === "magic_link" && (
-          <form onSubmit={handleMagicLink} className="space-y-4">
-            <div>
-              <label htmlFor="email" className="mb-1 block text-sm font-medium">
-                E-Mail-Adresse
-              </label>
-              <Input
-                id="email"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="ihre@email.de"
-                required
-                autoComplete="email"
-                autoFocus
-              />
-            </div>
-
-            {error && (
-              <p className="text-sm text-emergency-red" role="alert">
-                {error}
-              </p>
             )}
 
-            <Button
-              type="submit"
-              disabled={loading || sendCooldown > 0}
-              className="w-full bg-quartier-green hover:bg-quartier-green-dark"
-            >
-              <Mail className="mr-2 h-4 w-4" />
-              {loading ? "Wird gesendet..." : sendCooldown > 0 ? `Bitte warten (${sendCooldown}s)` : "Anmelde-Code senden"}
-            </Button>
+          {/* === Sign in with Apple (Guideline 4.8) === */}
+          {mode === "magic_link" && !PILOT_HIDE_APPLE_SIGNIN && (
+            <div className="mb-4">
+              <Button
+                type="button"
+                onClick={async () => {
+                  setLoading(true);
+                  setError(null);
+                  const { error: appleError } = await signInWithApple();
+                  if (appleError) {
+                    setError(
+                      "Apple-Anmeldung fehlgeschlagen. Bitte versuchen Sie es erneut.",
+                    );
+                  }
+                  setLoading(false);
+                }}
+                disabled={loading}
+                className="w-full bg-black text-white hover:bg-black/90"
+                style={{ minHeight: "48px" }}
+              >
+                <AppleLogo className="mr-2 h-5 w-5" />
+                Mit Apple anmelden
+              </Button>
+              <div className="relative my-4">
+                <div className="absolute inset-0 flex items-center">
+                  <span className="w-full border-t" />
+                </div>
+                <div className="relative flex justify-center text-xs uppercase">
+                  <span className="bg-background px-2 text-muted-foreground">
+                    oder per E-Mail
+                  </span>
+                </div>
+              </div>
+            </div>
+          )}
 
-            {!PILOT_HIDE_PASSWORD_LOGIN && (
+          {/* === Magic Link (Standard) === */}
+          {mode === "magic_link" && (
+            <form onSubmit={handleMagicLink} className="space-y-4">
+              <div>
+                <label
+                  htmlFor="email"
+                  className="mb-1 block text-sm font-medium"
+                >
+                  E-Mail-Adresse
+                </label>
+                <Input
+                  id="email"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="ihre@email.de"
+                  required
+                  autoComplete="email"
+                  autoFocus
+                />
+              </div>
+
+              {error && (
+                <p className="text-sm text-emergency-red" role="alert">
+                  {error}
+                </p>
+              )}
+
+              <Button
+                type="submit"
+                disabled={loading || sendCooldown > 0}
+                className="w-full bg-quartier-green hover:bg-quartier-green-dark"
+              >
+                <Mail className="mr-2 h-4 w-4" />
+                {loading
+                  ? "Wird gesendet..."
+                  : sendCooldown > 0
+                    ? `Bitte warten (${sendCooldown}s)`
+                    : "Anmelde-Code senden"}
+              </Button>
+
+              {!PILOT_HIDE_PASSWORD_LOGIN && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setError(null);
+                    setMode("password");
+                  }}
+                  className="flex w-full items-center justify-center gap-1.5 text-xs text-muted-foreground hover:underline"
+                >
+                  <KeyRound className="h-3 w-3" />
+                  Stattdessen mit Passwort anmelden
+                </button>
+              )}
+            </form>
+          )}
+
+          {/* === Passwort-Login (Fallback) — ausgeblendet im Pilot (B-2) === */}
+          {mode === "password" && !PILOT_HIDE_PASSWORD_LOGIN && (
+            <form onSubmit={handlePasswordLogin} className="space-y-4">
+              <div>
+                <label
+                  htmlFor="email-pw"
+                  className="mb-1 block text-sm font-medium"
+                >
+                  E-Mail-Adresse
+                </label>
+                <Input
+                  id="email-pw"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="ihre@email.de"
+                  required
+                  autoComplete="email"
+                />
+              </div>
+
+              <div>
+                <label
+                  htmlFor="password"
+                  className="mb-1 block text-sm font-medium"
+                >
+                  Passwort
+                </label>
+                <Input
+                  id="password"
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="Ihr Passwort"
+                  required
+                  autoComplete="current-password"
+                />
+              </div>
+
+              {error && (
+                <p className="text-sm text-emergency-red" role="alert">
+                  {error}
+                </p>
+              )}
+
+              <Button
+                type="submit"
+                disabled={loading}
+                className="w-full bg-quartier-green hover:bg-quartier-green-dark"
+              >
+                {loading ? "Wird angemeldet..." : "Anmelden"}
+              </Button>
+
               <button
                 type="button"
                 onClick={() => {
                   setError(null);
-                  setMode("password");
+                  setMode("magic_link");
                 }}
                 className="flex w-full items-center justify-center gap-1.5 text-xs text-muted-foreground hover:underline"
               >
-                <KeyRound className="h-3 w-3" />
-                Stattdessen mit Passwort anmelden
+                <Mail className="h-3 w-3" />
+                Stattdessen Anmelde-Code per E-Mail erhalten
               </button>
-            )}
-          </form>
-        )}
+            </form>
+          )}
 
-        {/* === Passwort-Login (Fallback) — ausgeblendet im Pilot (B-2) === */}
-        {mode === "password" && !PILOT_HIDE_PASSWORD_LOGIN && (
-          <form onSubmit={handlePasswordLogin} className="space-y-4">
-            <div>
-              <label htmlFor="email-pw" className="mb-1 block text-sm font-medium">
-                E-Mail-Adresse
-              </label>
-              <Input
-                id="email-pw"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="ihre@email.de"
-                required
-                autoComplete="email"
-              />
-            </div>
-
-            <div>
-              <label htmlFor="password" className="mb-1 block text-sm font-medium">
-                Passwort
-              </label>
-              <Input
-                id="password"
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="Ihr Passwort"
-                required
-                autoComplete="current-password"
-              />
-            </div>
-
-            {error && (
-              <p className="text-sm text-emergency-red" role="alert">
-                {error}
-              </p>
-            )}
-
-            <Button
-              type="submit"
-              disabled={loading}
-              className="w-full bg-quartier-green hover:bg-quartier-green-dark"
-            >
-              {loading ? "Wird angemeldet..." : "Anmelden"}
-            </Button>
-
-            <button
-              type="button"
-              onClick={() => {
-                setError(null);
+          {/* === OTP-Code Eingabe (ersetzt Magic Link Bestaetigung) === */}
+          {mode === "magic_link_sent" && (
+            <OtpCodeEntry
+              email={email}
+              redirectTo="/dashboard"
+              onBack={() => {
                 setMode("magic_link");
+                setError(null);
               }}
-              className="flex w-full items-center justify-center gap-1.5 text-xs text-muted-foreground hover:underline"
-            >
-              <Mail className="h-3 w-3" />
-              Stattdessen Anmelde-Code per E-Mail erhalten
-            </button>
-          </form>
-        )}
+              onResend={() => {
+                const supabase = createClient();
+                supabase.auth.signInWithOtp({
+                  email,
+                  options: {
+                    emailRedirectTo: `${window.location.origin}/auth/callback?next=/dashboard`,
+                  },
+                });
+              }}
+            />
+          )}
 
-        {/* === OTP-Code Eingabe (ersetzt Magic Link Bestaetigung) === */}
-        {mode === "magic_link_sent" && (
-          <OtpCodeEntry
-            email={email}
-            redirectTo="/dashboard"
-            onBack={() => { setMode("magic_link"); setError(null); }}
-            onResend={() => {
-              const supabase = createClient();
-              supabase.auth.signInWithOtp({
-                email,
-                options: { emailRedirectTo: `${window.location.origin}/auth/callback?next=/dashboard` },
-              });
-            }}
-          />
-        )}
+          {/* Registrierung-Link (nicht auf Bestaetigungsseite) */}
+          {mode !== "magic_link_sent" && (
+            <div className="mt-6 text-center">
+              <p className="text-sm text-muted-foreground">
+                Noch kein Konto?{" "}
+                <Link
+                  href="/register"
+                  className="text-quartier-green underline hover:no-underline"
+                >
+                  Jetzt registrieren
+                </Link>
+              </p>
+            </div>
+          )}
+        </CardContent>
+      </Card>
 
-        {/* Registrierung-Link (nicht auf Bestaetigungsseite) */}
-        {mode !== "magic_link_sent" && (
-          <div className="mt-6 text-center">
-            <p className="text-sm text-muted-foreground">
-              Noch kein Konto?{" "}
-              <Link href="/register" className="text-quartier-green hover:underline">
-                Jetzt registrieren
-              </Link>
-            </p>
-          </div>
-        )}
-      </CardContent>
-    </Card>
-
-    {/* Bug-Report Button (anonym, fuer Login-Bugs) */}
-    <BugReportButton anonymous />
+      {/* Bug-Report Button (anonym, fuer Login-Bugs) */}
+      <BugReportButton anonymous />
     </>
   );
 }

@@ -24,7 +24,7 @@ export function StickyNav() {
           </Link>
           <Link
             href="/register"
-            className="rounded-xl bg-[#4CAF87] px-5 py-2.5 text-sm font-semibold text-white transition-all hover:bg-[#3d9a73] active:scale-95"
+            className="rounded-xl bg-[#357a5d] px-5 py-2.5 text-sm font-semibold text-white transition-all hover:bg-[#2e7d5e] active:scale-95"
           >
             Kostenlos testen
           </Link>
@@ -53,7 +53,7 @@ export function StickyNav() {
             </Link>
             <Link
               href="/register"
-              className="rounded-xl bg-[#4CAF87] px-5 py-3 text-center text-sm font-semibold text-white"
+              className="rounded-xl bg-[#357a5d] px-5 py-3 text-center text-sm font-semibold text-white"
               onClick={() => setMenuOpen(false)}
             >
               Kostenlos testen

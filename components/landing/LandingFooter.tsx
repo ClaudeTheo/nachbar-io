@@ -61,7 +61,7 @@ export function LandingFooter() {
           </div>
         </div>
         <div className="mt-10 border-t border-gray-100 pt-6 text-center">
-          <p className="text-xs text-gray-400">
+          <p className="text-xs text-gray-500">
             © 2026 QuartierApp. Alle Rechte vorbehalten.
           </p>
         </div>

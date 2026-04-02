@@ -5,7 +5,7 @@ import { ArrowLeft } from "lucide-react";
 // Stand: März 2026
 export default function AGBPage() {
   return (
-    <div className="min-h-screen bg-warmwhite px-4 py-8">
+    <main className="min-h-screen bg-warmwhite px-4 py-8">
       <div className="mx-auto max-w-2xl">
         <Link
           href="/"
@@ -27,14 +27,14 @@ export default function AGBPage() {
             </h2>
             <p>
               Diese Allgemeinen Geschäftsbedingungen regeln die Nutzung der
-              Plattform QuartierApp (quartierapp.de), betrieben von Thomas Theobald,
-              Purkersdorfer Straße 35, 79713 Bad Säckingen (nachfolgend
-              &bdquo;Betreiber&ldquo;). Sie gelten für alle Zugangswege: Web-App,
-              Arzt-Portal und Pi-Kiosk-Terminal.
+              Plattform QuartierApp (quartierapp.de), betrieben von Thomas
+              Theobald, Purkersdorfer Straße 35, 79713 Bad Säckingen
+              (nachfolgend &bdquo;Betreiber&ldquo;). Sie gelten für alle
+              Zugangswege: Web-App, Arzt-Portal und Pi-Kiosk-Terminal.
             </p>
             <p className="mt-2">
-              Mit der Registrierung und Nutzung von QuartierApp erklären Sie sich
-              mit diesen AGB einverstanden.
+              Mit der Registrierung und Nutzung von QuartierApp erklären Sie
+              sich mit diesen AGB einverstanden.
             </p>
           </section>
 
@@ -52,12 +52,13 @@ export default function AGBPage() {
               <li>
                 <strong>Nachbar Free</strong> (kostenlos): Schwarzes Brett,
                 Marktplatz, Quartierskarte, Hilfeanfragen, Veranstaltungen,
-                lokale Nachrichten, optionale Koordinationsfunktionen (Tagescheck,
-                Erinnerungen)
+                lokale Nachrichten, optionale Koordinationsfunktionen
+                (Tagescheck, Erinnerungen)
               </li>
               <li>
-                <strong>Nachbar Plus</strong> (kostenpflichtig): Angehörigen-Verknüpfung,
-                Statuseinsicht, Video-Anrufe mit Angehörigen, Chat
+                <strong>Nachbar Plus</strong> (kostenpflichtig):
+                Angehörigen-Verknüpfung, Statuseinsicht, Video-Anrufe mit
+                Angehörigen, Chat
               </li>
               <li>
                 <strong>Nachbar Pro Community</strong> (B2B, kostenpflichtig):
@@ -65,14 +66,14 @@ export default function AGBPage() {
               </li>
               <li>
                 <strong>Nachbar Pro Medical</strong> (B2B, kostenpflichtig):
-                Online-Terminbuchung, ärztliche Videosprechstunde, Patienten-CRM,
-                digitale Anamnese
+                Online-Terminbuchung, ärztliche Videosprechstunde,
+                Patienten-CRM, digitale Anamnese
               </li>
             </ul>
             <p className="mt-2">
-              Der genaue Funktionsumfang kann sich im Rahmen der Weiterentwicklung
-              ändern. Wesentliche Einschränkungen bestehender Funktionen werden
-              vorab angekündigt.
+              Der genaue Funktionsumfang kann sich im Rahmen der
+              Weiterentwicklung ändern. Wesentliche Einschränkungen bestehender
+              Funktionen werden vorab angekündigt.
             </p>
           </section>
 
@@ -86,9 +87,7 @@ export default function AGBPage() {
                 Die Registrierung erfolgt per Einladungscode oder Standortangabe
                 mit anschließender Verifizierung per E-Mail (Magic Link).
               </li>
-              <li>
-                Pro Person ist ein Nutzerkonto zulässig.
-              </li>
+              <li>Pro Person ist ein Nutzerkonto zulässig.</li>
               <li>
                 Die Nutzung setzt die Zugehörigkeit zu einem teilnehmenden
                 Quartier voraus.
@@ -107,12 +106,8 @@ export default function AGBPage() {
             </h2>
             <p>Sie verpflichten sich:</p>
             <ul className="ml-4 mt-2 list-disc space-y-1">
-              <li>
-                wahrheitsgemäße Angaben bei der Registrierung zu machen
-              </li>
-              <li>
-                Ihre Zugangsdaten vertraulich zu behandeln
-              </li>
+              <li>wahrheitsgemäße Angaben bei der Registrierung zu machen</li>
+              <li>Ihre Zugangsdaten vertraulich zu behandeln</li>
               <li>
                 keine rechtswidrigen, beleidigenden, diskriminierenden oder
                 gewaltverherrlichenden Inhalte zu veröffentlichen
@@ -127,8 +122,8 @@ export default function AGBPage() {
                 veröffentlichen
               </li>
               <li>
-                die Plattform nicht zur Verbreitung von Falschinformationen
-                im Zusammenhang mit Notfällen zu missbrauchen
+                die Plattform nicht zur Verbreitung von Falschinformationen im
+                Zusammenhang mit Notfällen zu missbrauchen
               </li>
             </ul>
           </section>
@@ -143,8 +138,8 @@ export default function AGBPage() {
             <p>
               QuartierApp ist keine Plattform zur Diagnose, Behandlung,
               Überwachung oder Verhütung von Krankheiten und{" "}
-              <strong>kein Medizinprodukt</strong> im Sinne der
-              Verordnung (EU) 2017/745 (MDR).
+              <strong>kein Medizinprodukt</strong> im Sinne der Verordnung (EU)
+              2017/745 (MDR).
             </p>
             <p className="mt-2">
               Die optionalen Koordinationsfunktionen (Erinnerungen, Tagescheck,
@@ -155,8 +150,9 @@ export default function AGBPage() {
 
             <h3 className="mt-3 font-semibold">5.2 Keine Notrufleistung</h3>
             <p>
-              QuartierApp ist <strong>kein Ersatz für den Notruf 112/110</strong>.
-              In medizinischen Notfällen, bei Feuer oder Straftaten ist immer
+              QuartierApp ist{" "}
+              <strong>kein Ersatz für den Notruf 112/110</strong>. In
+              medizinischen Notfällen, bei Feuer oder Straftaten ist immer
               zuerst der offizielle Notruf zu wählen. Die Hilfeanfrage-Funktion
               der App dient ausschließlich der nachbarschaftlichen Koordination
               im Alltag.
@@ -170,25 +166,39 @@ export default function AGBPage() {
               Verletzung wesentlicher Vertragspflichten beschränkt und auf den
               vorhersehbaren, vertragstypischen Schaden begrenzt.
             </p>
-            <p className="mt-2">
-              Der Betreiber übernimmt keine Haftung für:
-            </p>
+            <p className="mt-2">Der Betreiber übernimmt keine Haftung für:</p>
             <ul className="ml-4 mt-1 list-disc space-y-1">
-              <li>die Richtigkeit, Vollständigkeit oder Aktualität nutzergenerierter Inhalte</li>
-              <li>das Zustandekommen oder die Qualität von Nachbarschaftshilfe-Vereinbarungen</li>
-              <li>Schäden durch Nichtbeachtung des Hinweises, in Notfällen den offiziellen Notruf zu nutzen</li>
-              <li>vorübergehende Nichterreichbarkeit der Plattform (siehe §6)</li>
+              <li>
+                die Richtigkeit, Vollständigkeit oder Aktualität
+                nutzergenerierter Inhalte
+              </li>
+              <li>
+                das Zustandekommen oder die Qualität von
+                Nachbarschaftshilfe-Vereinbarungen
+              </li>
+              <li>
+                Schäden durch Nichtbeachtung des Hinweises, in Notfällen den
+                offiziellen Notruf zu nutzen
+              </li>
+              <li>
+                vorübergehende Nichterreichbarkeit der Plattform (siehe §6)
+              </li>
             </ul>
 
-            <h3 className="mt-4 text-base font-semibold">5.4 Standortdaten bei Hilferufen</h3>
+            <h3 className="mt-4 text-base font-semibold">
+              5.4 Standortdaten bei Hilferufen
+            </h3>
             <p className="mt-2 text-sm text-muted-foreground">
-              Bei Erstellung eines Hilferufs können Sie optional Ihren Standort teilen. Dieser dient
-              ausschließlich der nachbarschaftlichen Koordination und wird automatisch gelöscht, sobald
-              der Hilferuf als erledigt markiert wird. Die Standortfreigabe ersetzt nicht die Ortung
-              durch Rettungsdienste (112/110). Die Sichtbarkeit Ihres Standorts richtet sich nach der
-              Abo-Stufe der Empfänger: Angehörige (Plus) sehen den genauen Standort, Organisationen
-              (Pro) sehen zunächst nur einen ungefähren Bereich. Sie können die Standortfreigabe
-              jederzeit in Ihren Profileinstellungen oder bei jedem einzelnen Hilferuf deaktivieren.
+              Bei Erstellung eines Hilferufs können Sie optional Ihren Standort
+              teilen. Dieser dient ausschließlich der nachbarschaftlichen
+              Koordination und wird automatisch gelöscht, sobald der Hilferuf
+              als erledigt markiert wird. Die Standortfreigabe ersetzt nicht die
+              Ortung durch Rettungsdienste (112/110). Die Sichtbarkeit Ihres
+              Standorts richtet sich nach der Abo-Stufe der Empfänger:
+              Angehörige (Plus) sehen den genauen Standort, Organisationen (Pro)
+              sehen zunächst nur einen ungefähren Bereich. Sie können die
+              Standortfreigabe jederzeit in Ihren Profileinstellungen oder bei
+              jedem einzelnen Hilferuf deaktivieren.
             </p>
           </section>
 
@@ -198,14 +208,16 @@ export default function AGBPage() {
               5.5 Einwilligung für das Care-Modul
             </h3>
             <p>
-              Die Nutzung des Care-Moduls (Pflege & Seniorenhilfe) erfordert Ihre
-              ausdrückliche Einwilligung in die Verarbeitung von Gesundheitsdaten
-              gemäß Art. 9 DSGVO. Sie können für einzelne Bereiche
-              (SOS-Hilferufe, Check-in, Medikamente, Pflegeprofil, Notfallkontakte)
-              getrennt einwilligen. Details finden Sie in unserer{' '}
+              Die Nutzung des Care-Moduls (Pflege & Seniorenhilfe) erfordert
+              Ihre ausdrückliche Einwilligung in die Verarbeitung von
+              Gesundheitsdaten gemäß Art. 9 DSGVO. Sie können für einzelne
+              Bereiche (SOS-Hilferufe, Check-in, Medikamente, Pflegeprofil,
+              Notfallkontakte) getrennt einwilligen. Details finden Sie in
+              unserer{" "}
               <a href="/datenschutz" className="text-quartier-green underline">
                 Datenschutzerklärung §5.9
-              </a>.
+              </a>
+              .
             </p>
           </section>
 
@@ -217,8 +229,9 @@ export default function AGBPage() {
             <p>
               Der Betreiber bemüht sich um eine möglichst unterbrechungsfreie
               Verfügbarkeit der Plattform. Ein Anspruch auf ununterbrochene
-              Verfügbarkeit besteht nicht. Wartungsarbeiten, technische Störungen
-              oder höhere Gewalt können zu vorübergehenden Einschränkungen führen.
+              Verfügbarkeit besteht nicht. Wartungsarbeiten, technische
+              Störungen oder höhere Gewalt können zu vorübergehenden
+              Einschränkungen führen.
             </p>
           </section>
 
@@ -228,10 +241,11 @@ export default function AGBPage() {
               7. Inhalte und Moderation
             </h2>
             <p>
-              Nutzer sind für ihre veröffentlichten Inhalte selbst verantwortlich.
-              Der Betreiber behält sich vor, Inhalte zu entfernen oder Nutzer
-              vorübergehend stummzuschalten oder zu sperren, wenn diese gegen
-              geltendes Recht oder diese AGB verstoßen.
+              Nutzer sind für ihre veröffentlichten Inhalte selbst
+              verantwortlich. Der Betreiber behält sich vor, Inhalte zu
+              entfernen oder Nutzer vorübergehend stummzuschalten oder zu
+              sperren, wenn diese gegen geltendes Recht oder diese AGB
+              verstoßen.
             </p>
             <p className="mt-2">
               Bei wiederholten oder schwerwiegenden Verstößen kann der Zugang
@@ -254,7 +268,9 @@ export default function AGBPage() {
               werden vorab angekündigt.
             </p>
 
-            <h3 className="mt-3 font-semibold">8.2 Kostenpflichtige Funktionen</h3>
+            <h3 className="mt-3 font-semibold">
+              8.2 Kostenpflichtige Funktionen
+            </h3>
             <p>
               Nachbar Plus, Pro Community und Pro Medical sind kostenpflichtige
               Abonnements. Die Zahlung erfolgt über den Zahlungsdienstleister
@@ -278,9 +294,13 @@ export default function AGBPage() {
             <p className="mt-2">
               Bei Kündigung werden Ihre Daten gemäß der Datenschutzerklärung
               gelöscht (siehe{" "}
-              <Link href="/datenschutz" className="text-quartier-green underline">
+              <Link
+                href="/datenschutz"
+                className="text-quartier-green underline"
+              >
                 Datenschutzerklärung §11
-              </Link>).
+              </Link>
+              ).
             </p>
           </section>
 
@@ -290,8 +310,8 @@ export default function AGBPage() {
               9. Pilotbetrieb
             </h2>
             <p>
-              QuartierApp befindet sich derzeit im <strong>Pilotbetrieb</strong>,
-              insbesondere im Pilotgebiet Bad Säckingen. Im Rahmen des
+              QuartierApp befindet sich derzeit im <strong>Pilotbetrieb</strong>
+              , insbesondere im Pilotgebiet Bad Säckingen. Im Rahmen des
               Pilotbetriebs gilt:
             </p>
             <ul className="ml-4 mt-2 list-disc space-y-1">
@@ -316,9 +336,7 @@ export default function AGBPage() {
               10. Schlussbestimmungen
             </h2>
             <ul className="ml-4 list-disc space-y-1">
-              <li>
-                Es gilt das Recht der Bundesrepublik Deutschland.
-              </li>
+              <li>Es gilt das Recht der Bundesrepublik Deutschland.</li>
               <li>
                 Sollten einzelne Bestimmungen dieser AGB unwirksam sein oder
                 werden, bleibt die Wirksamkeit der übrigen Bestimmungen
@@ -338,10 +356,16 @@ export default function AGBPage() {
 
         {/* Footer */}
         <div className="mt-12 flex gap-4 border-t border-border pt-4 text-xs text-muted-foreground">
-          <Link href="/impressum" className="hover:text-anthrazit hover:underline">
+          <Link
+            href="/impressum"
+            className="hover:text-anthrazit hover:underline"
+          >
             Impressum
           </Link>
-          <Link href="/datenschutz" className="hover:text-anthrazit hover:underline">
+          <Link
+            href="/datenschutz"
+            className="hover:text-anthrazit hover:underline"
+          >
             Datenschutz
           </Link>
           <Link href="/agb" className="font-medium text-anthrazit">
@@ -349,6 +373,6 @@ export default function AGBPage() {
           </Link>
         </div>
       </div>
-    </div>
+    </main>
   );
 }

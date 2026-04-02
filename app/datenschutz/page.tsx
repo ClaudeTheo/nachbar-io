@@ -5,7 +5,7 @@ import { ArrowLeft } from "lucide-react";
 // TDDDG-konform, Stand: März 2026
 export default function DatenschutzPage() {
   return (
-    <div className="min-h-screen bg-warmwhite px-4 py-8">
+    <main className="min-h-screen bg-warmwhite px-4 py-8">
       <div className="mx-auto max-w-2xl">
         <Link
           href="/"
@@ -733,6 +733,6 @@ export default function DatenschutzPage() {
           </Link>
         </div>
       </div>
-    </div>
+    </main>
   );
 }

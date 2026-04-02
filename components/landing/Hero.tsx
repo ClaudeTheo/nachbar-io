@@ -5,13 +5,12 @@ export function Hero() {
   return (
     <section className="relative overflow-hidden bg-gradient-to-b from-white via-[#f0fdf4] to-white">
       <div className="mx-auto max-w-5xl px-6 pt-16 sm:pt-20 text-center">
-        <div className="mb-4 inline-flex items-center gap-2 rounded-full bg-[#4CAF87]/10 px-4 py-1.5 text-sm text-[#4CAF87] font-medium">
+        <div className="mb-4 inline-flex items-center gap-2 rounded-full bg-[#4CAF87]/10 px-4 py-1.5 text-sm text-[#2e7d5e] font-medium">
           <MapPin className="h-3.5 w-3.5" />
           Pilot-Phase: Alle Features kostenlos
         </div>
         <h1 className="text-4xl font-extrabold leading-tight text-[#2D3142] sm:text-5xl lg:text-6xl">
-          Ihr digitaler{" "}
-          <span className="text-[#4CAF87]">Dorfplatz</span>
+          Ihr digitaler <span className="text-[#2e7d5e]">Dorfplatz</span>
         </h1>
         <p className="mx-auto mt-6 max-w-2xl text-lg text-gray-600 leading-relaxed">
           Die App, die Nachbarschaften verbindet — für Bewohner, Angehörige,
@@ -20,7 +19,7 @@ export function Hero() {
         <div className="mt-10 flex flex-wrap justify-center gap-4">
           <Link
             href="/register"
-            className="inline-flex items-center gap-2 rounded-xl bg-[#4CAF87] px-8 py-4 text-base font-semibold text-white shadow-lg transition-all hover:bg-[#3d9a73] hover:shadow-xl active:scale-95"
+            className="inline-flex items-center gap-2 rounded-xl bg-[#357a5d] px-8 py-4 text-base font-semibold text-white shadow-lg transition-all hover:bg-[#2e7d5e] hover:shadow-xl active:scale-95"
           >
             Kostenlos testen
             <ArrowRight className="h-4 w-4" />

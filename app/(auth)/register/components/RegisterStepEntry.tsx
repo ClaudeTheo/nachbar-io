@@ -23,7 +23,9 @@ export function RegisterStepEntry({ state, setState, setStep }: StepProps) {
             <Mail className="h-5 w-5 text-quartier-green" />
           </div>
           <div>
-            <p className="font-semibold text-anthrazit">Ich habe einen Einladungscode</p>
+            <p className="font-semibold text-anthrazit">
+              Ich habe einen Einladungscode
+            </p>
             <p className="mt-1 text-sm text-muted-foreground">
               Per Brief, Aushang oder von einem Nachbarn erhalten
             </p>
@@ -44,7 +46,9 @@ export function RegisterStepEntry({ state, setState, setStep }: StepProps) {
             <MapPin className="h-5 w-5 text-blue-500" />
           </div>
           <div>
-            <p className="font-semibold text-anthrazit">Ich möchte mein Quartier finden</p>
+            <p className="font-semibold text-anthrazit">
+              Ich möchte mein Quartier finden
+            </p>
             <p className="mt-1 text-sm text-muted-foreground">
               Über Adresse oder Standort dem nächsten Quartier beitreten
             </p>
@@ -52,12 +56,17 @@ export function RegisterStepEntry({ state, setState, setStep }: StepProps) {
         </div>
       </button>
 
-      {state.error && <p className="text-sm text-emergency-red">{state.error}</p>}
+      {state.error && (
+        <p className="text-sm text-emergency-red">{state.error}</p>
+      )}
 
       <div className="mt-6 text-center">
         <p className="text-sm text-muted-foreground">
           Bereits registriert?{" "}
-          <Link href="/login" className="text-quartier-green hover:underline">
+          <Link
+            href="/login"
+            className="text-quartier-green underline hover:no-underline"
+          >
             Jetzt anmelden
           </Link>
         </p>

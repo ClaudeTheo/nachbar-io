@@ -29,7 +29,7 @@ const PLANS = [
     audience: "Angehörige",
     icon: <Heart className="h-6 w-6" />,
     badge: "Kostenlos in der Pilot-Phase",
-    badgeColor: "bg-[#4CAF87]/10 text-[#4CAF87]",
+    badgeColor: "bg-[#e8f5ee] text-[#266a4a]",
     features: [
       "Alles aus Free",
       "Heartbeat-Status des Bewohners",
@@ -45,7 +45,7 @@ const PLANS = [
     audience: "Pflegedienste",
     icon: <Shield className="h-6 w-6" />,
     badge: "Kostenlos in der Pilot-Phase",
-    badgeColor: "bg-[#4CAF87]/10 text-[#4CAF87]",
+    badgeColor: "bg-[#e8f5ee] text-[#266a4a]",
     features: [
       "Eigenes Pflege-Portal",
       "Bewohner-Dashboard mit Ampel",
@@ -61,7 +61,7 @@ const PLANS = [
     audience: "Kommunen",
     icon: <Building2 className="h-6 w-6" />,
     badge: "Kostenlos in der Pilot-Phase",
-    badgeColor: "bg-[#4CAF87]/10 text-[#4CAF87]",
+    badgeColor: "bg-[#e8f5ee] text-[#266a4a]",
     features: [
       "Eigenes Rathaus-Portal",
       "8-KPI-Dashboard",
@@ -77,7 +77,7 @@ const PLANS = [
     audience: "Ärzte",
     icon: <Stethoscope className="h-6 w-6" />,
     badge: "Kostenlos in der Pilot-Phase",
-    badgeColor: "bg-[#4CAF87]/10 text-[#4CAF87]",
+    badgeColor: "bg-[#e8f5ee] text-[#266a4a]",
     features: [
       "Eigenes Arzt-Portal",
       "Online-Terminbuchung",
@@ -98,7 +98,8 @@ export function PricingOverview() {
           Fünf Versionen — eine Plattform
         </h2>
         <p className="mx-auto mt-4 max-w-lg text-center text-sm text-gray-500">
-          Aktuell kostenlos — Preise werden vor dem offiziellen Start bekanntgegeben.
+          Aktuell kostenlos — Preise werden vor dem offiziellen Start
+          bekanntgegeben.
         </p>
 
         <div className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
@@ -112,7 +113,9 @@ export function PricingOverview() {
               }`}
             >
               <div className="text-[#4CAF87] mb-3">{plan.icon}</div>
-              <h3 className="text-base font-bold text-[#2D3142]">{plan.name}</h3>
+              <h3 className="text-base font-bold text-[#2D3142]">
+                {plan.name}
+              </h3>
               <p className="text-xs text-gray-500">{plan.audience}</p>
               <div
                 className={`mt-3 inline-flex rounded-full px-3 py-1 text-xs font-medium ${plan.badgeColor}`}
@@ -121,7 +124,10 @@ export function PricingOverview() {
               </div>
               <ul className="mt-4 space-y-2">
                 {plan.features.map((f) => (
-                  <li key={f} className="flex items-start gap-1.5 text-xs text-gray-600">
+                  <li
+                    key={f}
+                    className="flex items-start gap-1.5 text-xs text-gray-600"
+                  >
                     <CircleCheck className="mt-0.5 h-3.5 w-3.5 flex-shrink-0 text-[#4CAF87]" />
                     {f}
                   </li>

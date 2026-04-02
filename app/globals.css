@@ -12,9 +12,9 @@
   --font-mono: var(--font-geist-mono);
 
   /* Nachbar.io Custom Colors — Warm & Persoenlich */
-  --color-quartier-green: #389568;
-  --color-quartier-green-light: #6bc4a1;
-  --color-quartier-green-dark: #2d7a54;
+  --color-quartier-green: #2e7d5e;
+  --color-quartier-green-light: #4CAF87;
+  --color-quartier-green-dark: #245f49;
   --color-anthrazit: #3d3d50;
   --color-anthrazit-light: #56566e;
   --color-warmwhite: #fdf8f3;
@@ -79,19 +79,19 @@
   --card-foreground: #3d3d50;
   --popover: #fffcf9;
   --popover-foreground: #3d3d50;
-  --primary: #389568;
+  --primary: #2e7d5e;
   --primary-foreground: #ffffff;
   --secondary: #f5f0eb;
   --secondary-foreground: #3d3d50;
   --muted: #f5f0eb;
-  --muted-foreground: #9ca3af;
+  --muted-foreground: #6b7280;
   --accent: #f5f0eb;
   --accent-foreground: #3d3d50;
   --destructive: #ef4444;
   --border: #ebe5dd;
   --input: #ebe5dd;
-  --ring: #389568;
-  --chart-1: #389568;
+  --ring: #2e7d5e;
+  --chart-1: #2e7d5e;
   --chart-2: #f59e0b;
   --chart-3: #3b82f6;
   --chart-4: #8b5cf6;
@@ -99,12 +99,12 @@
   --radius: 0.625rem;
   --sidebar: #fdf8f3;
   --sidebar-foreground: #3d3d50;
-  --sidebar-primary: #389568;
+  --sidebar-primary: #2e7d5e;
   --sidebar-primary-foreground: #ffffff;
   --sidebar-accent: #f5f0eb;
   --sidebar-accent-foreground: #3d3d50;
   --sidebar-border: #ebe5dd;
-  --sidebar-ring: #389568;
+  --sidebar-ring: #2e7d5e;
 }
 
 @layer base {
@@ -451,7 +451,7 @@ h4 {
 
 /* Keyboard-Focus für Barrierefreiheit */
 :focus-visible {
-  outline: 2px solid #389568;
+  outline: 2px solid #2e7d5e;
   outline-offset: 2px;
   border-radius: 4px;
 }
@@ -605,7 +605,7 @@ h4 {
     box-shadow: none;
   }
   100% {
-    background-color: #389568;
+    background-color: #2e7d5e;
     box-shadow: 0 0 8px rgba(56, 149, 104, 0.5);
   }
 }

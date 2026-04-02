@@ -4,7 +4,7 @@ import { ArrowLeft } from "lucide-react";
 // Impressum gemäß § 5 TMG / § 18 MStV
 export default function ImpressumPage() {
   return (
-    <div className="min-h-screen bg-warmwhite px-4 py-8">
+    <main className="min-h-screen bg-warmwhite px-4 py-8">
       <div className="mx-auto max-w-2xl">
         <Link
           href="/"
@@ -23,18 +23,24 @@ export default function ImpressumPage() {
               Angaben gemäß § 5 TMG
             </h2>
             <p>
-              Thomas Theobald<br />
-              Purkersdorfer Straße 35<br />
-              79713 Bad Säckingen<br />
+              Thomas Theobald
+              <br />
+              Purkersdorfer Straße 35
+              <br />
+              79713 Bad Säckingen
+              <br />
               Deutschland
             </p>
           </section>
 
           {/* Kontakt */}
           <section>
-            <h2 className="mb-2 text-lg font-semibold text-anthrazit">Kontakt</h2>
+            <h2 className="mb-2 text-lg font-semibold text-anthrazit">
+              Kontakt
+            </h2>
             <p>
-              E-Mail: ThomasTh@gmx.de<br />
+              E-Mail: ThomasTh@gmx.de
+              <br />
               Telefon: auf Anfrage
             </p>
           </section>
@@ -45,7 +51,8 @@ export default function ImpressumPage() {
               Verantwortlich für den Inhalt nach § 18 Abs. 2 MStV
             </h2>
             <p>
-              Thomas Theobald<br />
+              Thomas Theobald
+              <br />
               Purkersdorfer Straße 35, 79713 Bad Säckingen
             </p>
           </section>
@@ -68,8 +75,9 @@ export default function ImpressumPage() {
               </a>
             </p>
             <p className="mt-2">
-              Wir sind nicht bereit oder verpflichtet, an Streitbeilegungsverfahren
-              vor einer Verbraucherschlichtungsstelle teilzunehmen.
+              Wir sind nicht bereit oder verpflichtet, an
+              Streitbeilegungsverfahren vor einer Verbraucherschlichtungsstelle
+              teilzunehmen.
             </p>
           </section>
 
@@ -80,19 +88,19 @@ export default function ImpressumPage() {
             </h2>
             <p>
               Als Diensteanbieter sind wir gemäß § 7 Abs. 1 TMG für eigene
-              Inhalte auf diesen Seiten nach den allgemeinen Gesetzen verantwortlich.
-              Nach §§ 8 bis 10 TMG sind wir als Diensteanbieter jedoch nicht
-              verpflichtet, übermittelte oder gespeicherte fremde Informationen zu
-              überwachen oder nach Umständen zu forschen, die auf eine rechtswidrige
-              Tätigkeit hinweisen.
+              Inhalte auf diesen Seiten nach den allgemeinen Gesetzen
+              verantwortlich. Nach §§ 8 bis 10 TMG sind wir als Diensteanbieter
+              jedoch nicht verpflichtet, übermittelte oder gespeicherte fremde
+              Informationen zu überwachen oder nach Umständen zu forschen, die
+              auf eine rechtswidrige Tätigkeit hinweisen.
             </p>
             <p className="mt-2">
               Verpflichtungen zur Entfernung oder Sperrung der Nutzung von
-              Informationen nach den allgemeinen Gesetzen bleiben hiervon unberührt.
-              Eine diesbezügliche Haftung ist jedoch erst ab dem Zeitpunkt der
-              Kenntnis einer konkreten Rechtsverletzung möglich. Bei Bekanntwerden
-              von entsprechenden Rechtsverletzungen werden wir diese Inhalte
-              umgehend entfernen.
+              Informationen nach den allgemeinen Gesetzen bleiben hiervon
+              unberührt. Eine diesbezügliche Haftung ist jedoch erst ab dem
+              Zeitpunkt der Kenntnis einer konkreten Rechtsverletzung möglich.
+              Bei Bekanntwerden von entsprechenden Rechtsverletzungen werden wir
+              diese Inhalte umgehend entfernen.
             </p>
           </section>
 
@@ -102,11 +110,11 @@ export default function ImpressumPage() {
               Haftung für Links
             </h2>
             <p>
-              Unser Angebot enthält Links zu externen Websites Dritter, auf deren
-              Inhalte wir keinen Einfluss haben. Deshalb können wir für diese
-              fremden Inhalte auch keine Gewähr übernehmen. Für die Inhalte der
-              verlinkten Seiten ist stets der jeweilige Anbieter oder Betreiber der
-              Seiten verantwortlich.
+              Unser Angebot enthält Links zu externen Websites Dritter, auf
+              deren Inhalte wir keinen Einfluss haben. Deshalb können wir für
+              diese fremden Inhalte auch keine Gewähr übernehmen. Für die
+              Inhalte der verlinkten Seiten ist stets der jeweilige Anbieter
+              oder Betreiber der Seiten verantwortlich.
             </p>
           </section>
 
@@ -116,11 +124,11 @@ export default function ImpressumPage() {
               Urheberrecht
             </h2>
             <p>
-              Die durch die Seitenbetreiber erstellten Inhalte und Werke auf diesen
-              Seiten unterliegen dem deutschen Urheberrecht. Die Vervielfältigung,
-              Bearbeitung, Verbreitung und jede Art der Verwertung außerhalb der
-              Grenzen des Urheberrechtes bedürfen der schriftlichen Zustimmung des
-              jeweiligen Autors bzw. Erstellers.
+              Die durch die Seitenbetreiber erstellten Inhalte und Werke auf
+              diesen Seiten unterliegen dem deutschen Urheberrecht. Die
+              Vervielfältigung, Bearbeitung, Verbreitung und jede Art der
+              Verwertung außerhalb der Grenzen des Urheberrechtes bedürfen der
+              schriftlichen Zustimmung des jeweiligen Autors bzw. Erstellers.
             </p>
           </section>
 
@@ -144,24 +152,25 @@ export default function ImpressumPage() {
             </h2>
             <p>
               QuartierApp ist eine Kommunikationsplattform zur Förderung der
-              Nachbarschaftshilfe im Quartier. Die App dient der Koordination von
-              Alltagshilfe, dem Austausch lokaler Informationen und der freiwilligen
-              sozialen Vernetzung von Bewohnerinnen und Bewohnern.
+              Nachbarschaftshilfe im Quartier. Die App dient der Koordination
+              von Alltagshilfe, dem Austausch lokaler Informationen und der
+              freiwilligen sozialen Vernetzung von Bewohnerinnen und Bewohnern.
             </p>
             <p className="mt-2">
-              Die optionalen Koordinationsfunktionen (Erinnerungen,
-              Tagescheck, Helfer-Übersicht) sind organisatorische Hilfsmittel zur
+              Die optionalen Koordinationsfunktionen (Erinnerungen, Tagescheck,
+              Helfer-Übersicht) sind organisatorische Hilfsmittel zur
               Alltagsunterstützung. Sie ersetzen weder professionelle Pflege,
               ärztliche Beratung noch medizinische Notrufsysteme (112/110).
             </p>
             <p className="mt-2">
               Die Erinnerungsfunktion dient der Alltagsorganisation und stellt
-              keine medizinische Dosierungs-, Diagnose- oder Therapieempfehlung dar.
+              keine medizinische Dosierungs-, Diagnose- oder Therapieempfehlung
+              dar.
             </p>
             <p className="mt-2 font-medium text-anthrazit">
               QuartierApp ist kein Medizinprodukt im Sinne der Verordnung (EU)
-              2017/745. Die Software erhebt keinen diagnostischen, therapeutischen
-              oder klinischen Überwachungszweck.
+              2017/745. Die Software erhebt keinen diagnostischen,
+              therapeutischen oder klinischen Überwachungszweck.
             </p>
           </section>
         </div>
@@ -171,7 +180,10 @@ export default function ImpressumPage() {
           <Link href="/impressum" className="font-medium text-anthrazit">
             Impressum
           </Link>
-          <Link href="/datenschutz" className="hover:text-anthrazit hover:underline">
+          <Link
+            href="/datenschutz"
+            className="hover:text-anthrazit hover:underline"
+          >
             Datenschutz
           </Link>
           <Link href="/agb" className="hover:text-anthrazit hover:underline">
@@ -179,6 +191,6 @@ export default function ImpressumPage() {
           </Link>
         </div>
       </div>
-    </div>
+    </main>
   );
 }

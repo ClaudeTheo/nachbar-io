@@ -70,15 +70,9 @@ test.describe("B1: Schwarzes Brett → Moderation", () => {
       timeout: TIMEOUTS.elementVisible,
     });
 
-    // Pruefen ob der Beitrag des Seniors sichtbar ist
+    // Harter Assert: Beitrag des Seniors muss im Board sichtbar sein
     const beitrag = page.getByText(testText);
-    if (await beitrag.isVisible({ timeout: 8000 }).catch(() => false)) {
-      console.log(`[K] Beitrag "${testText}" im Board sichtbar`);
-    } else {
-      console.log(
-        "[K] Board geladen, Beitrag noch nicht sichtbar (evtl. Realtime-Delay)",
-      );
-    }
+    await expect(beitrag).toBeVisible({ timeout: 10_000 });
 
     await page.screenshot({
       path: "test-results/multi-agent/b1b-stadt-sieht-beitrag.png",
@@ -135,20 +129,11 @@ test.describe("B2: Check-in → Betreuer sieht Status", () => {
       timeout: TIMEOUTS.elementVisible,
     });
 
-    // Caregiver-Dashboard mit Heartbeat/Status
+    // Harter Assert: Caregiver-Dashboard muss Check-in-Status/Heartbeat anzeigen
     const careSection = page.locator(
       "[data-testid='dashboard-caregivers'], [data-testid='checkin-status'], [data-testid='heartbeat']",
     );
-    if (
-      await careSection
-        .first()
-        .isVisible({ timeout: 5000 })
-        .catch(() => false)
-    ) {
-      console.log("[T] Check-in-Status des Bewohners sichtbar");
-    } else {
-      console.log("[T] Care-Seite geladen, Status-Widget nicht gefunden");
-    }
+    await expect(careSection.first()).toBeVisible({ timeout: 10_000 });
 
     await page.screenshot({
       path: "test-results/multi-agent/b2b-betreuer-sieht-status.png",
@@ -223,17 +208,9 @@ test.describe("B3: Ankuendigung → Bewohner sieht sie", () => {
       timeout: TIMEOUTS.elementVisible,
     });
 
-    // Ankuendigung auf der Startseite suchen
+    // Harter Assert: Ankuendigung der Stadt muss auf dem Dashboard sichtbar sein
     const announcement = page.getByText(announcementTitle);
-    if (await announcement.isVisible({ timeout: 8000 }).catch(() => false)) {
-      console.log(
-        `[S] Ankuendigung "${announcementTitle}" auf Dashboard sichtbar`,
-      );
-    } else {
-      console.log(
-        "[S] Dashboard geladen, Ankuendigung nicht sichtbar (evtl. Realtime-Delay)",
-      );
-    }
+    await expect(announcement).toBeVisible({ timeout: 10_000 });
 
     await page.screenshot({
       path: "test-results/multi-agent/b3b-senior-sieht-ankuendigung.png",
@@ -300,13 +277,9 @@ test.describe("B4: Hilfe-Anfrage → Arzt sieht sie", () => {
       timeout: TIMEOUTS.elementVisible,
     });
 
-    // Suche nach Hilfe-Anfragen in der Liste
+    // Harter Assert: Hilfe-Anfrage des Seniors muss in der Liste sichtbar sein
     const anfrage = page.getByText(/einkaufen/i);
-    if (await anfrage.isVisible({ timeout: 8000 }).catch(() => false)) {
-      console.log("[D] Hilfe-Anfrage des Seniors sichtbar");
-    } else {
-      console.log("[D] Hilfe-Seite geladen, Anfrage nicht sichtbar");
-    }
+    await expect(anfrage).toBeVisible({ timeout: 10_000 });
 
     await page.screenshot({
       path: "test-results/multi-agent/b4b-arzt-sieht-hilfe.png",
@@ -372,20 +345,11 @@ test.describe("B5: Arzt-Termin → Bewohner sieht ihn", () => {
       timeout: TIMEOUTS.elementVisible,
     });
 
-    // Termin-Widget suchen
+    // Harter Assert: Termin-Widget muss auf dem Dashboard sichtbar sein
     const terminWidget = page.locator(
       "[data-testid='appointments'], [class*='termin'], [class*='appointment']",
     );
-    if (
-      await terminWidget
-        .first()
-        .isVisible({ timeout: 5000 })
-        .catch(() => false)
-    ) {
-      console.log("[S] Termin-Widget auf Dashboard sichtbar");
-    } else {
-      console.log("[S] Dashboard geladen, kein Termin-Widget gefunden");
-    }
+    await expect(terminWidget.first()).toBeVisible({ timeout: 10_000 });
 
     await page.screenshot({
       path: "test-results/multi-agent/b5b-senior-sieht-termin.png",
@@ -459,18 +423,9 @@ test.describe("B6: Problem-Meldung → Stadt-Moderation", () => {
       await page.waitForTimeout(1000);
     }
 
-    // Meldungen pruefen
+    // Harter Assert: Meldung des Seniors muss im Reports-Panel sichtbar sein
     const meldung = page.getByText(/E2E-B6|problem|meldung/i);
-    if (
-      await meldung
-        .first()
-        .isVisible({ timeout: 5000 })
-        .catch(() => false)
-    ) {
-      console.log("[K] Meldung im Reports-Panel sichtbar");
-    } else {
-      console.log("[K] Reports geladen, Meldung nicht sichtbar");
-    }
+    await expect(meldung.first()).toBeVisible({ timeout: 10_000 });
 
     await page.screenshot({
       path: "test-results/multi-agent/b6b-stadt-sieht-meldung.png",
@@ -569,19 +524,9 @@ test.describe("B7: Chat — Betreuer → Senior", () => {
       }
     }
 
-    // Nachricht suchen
+    // Harter Assert: Chat-Nachricht vom Betreuer muss beim Senior sichtbar sein
     const nachricht = page.getByText(chatText);
-    if (
-      await nachricht
-        .isVisible({ timeout: TIMEOUTS.realtimeDelivery })
-        .catch(() => false)
-    ) {
-      console.log(`[S] Chat-Nachricht empfangen: "${chatText}"`);
-    } else {
-      console.log(
-        "[S] Messages geladen, Nachricht nicht sichtbar (evtl. Realtime-Delay)",
-      );
-    }
+    await expect(nachricht).toBeVisible({ timeout: 10_000 });
 
     await page.screenshot({
       path: "test-results/multi-agent/b7b-senior-empfaengt-chat.png",

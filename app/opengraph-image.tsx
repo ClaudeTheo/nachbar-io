@@ -49,7 +49,7 @@ export default function OGImage() {
             fontWeight: 800,
           }}
         >
-          N
+          Q
         </div>
         <span
           style={{
@@ -58,7 +58,7 @@ export default function OGImage() {
             color: "white",
           }}
         >
-          achbar.io
+          uartierApp
         </span>
       </div>
 

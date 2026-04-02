@@ -64,6 +64,6 @@ export async function middleware(request: NextRequest) {
 export const config = {
   matcher: [
     // Alle Routen ausser statische Assets und _next
-    "/((?!_next/static|_next/image|favicon.ico|icons/|manifest.json|sw.js|promo/).*)",
+    "/((?!_next/static|_next/image|favicon.ico|icons/|manifest.json|sw.js|promo/|robots.txt|sitemap.xml|monitoring).*)",
   ],
 };

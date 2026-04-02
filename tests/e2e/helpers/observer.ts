@@ -242,3 +242,67 @@ export async function waitForChatMessage(
 export async function getChatMessageCount(page: Page): Promise<number> {
   return page.locator("[data-testid='chat-message']").count();
 }
+
+/**
+ * Wartet bis eine API-Abfrage das erwartete Ergebnis liefert (Polling).
+ * Nutzt expect.poll() — ideal fuer Cross-Portal-Verifizierung.
+ *
+ * Beispiel: Nach SOS pruefen ob Eskalation in DB angekommen ist.
+ */
+export async function waitForApiResult(
+  page: Page,
+  apiPath: string,
+  predicate: (data: unknown) => boolean,
+  options?: { timeout?: number; intervals?: number[]; message?: string },
+): Promise<unknown> {
+  let lastData: unknown;
+  await expect.poll(
+    async () => {
+      const resp = await page.request.get(apiPath);
+      if (!resp.ok()) return false;
+      lastData = await resp.json();
+      return predicate(lastData);
+    },
+    {
+      timeout: options?.timeout || 15_000,
+      intervals: options?.intervals || [500, 1000, 2000, 3000],
+      message: options?.message || `API ${apiPath} lieferte nicht das erwartete Ergebnis`,
+    },
+  ).toBeTruthy();
+  return lastData;
+}
+
+/**
+ * Wartet bis ein UI-Element den erwarteten Zustand hat (Realtime).
+ * Nutzt expect().toPass() — ideal fuer Supabase Realtime Updates.
+ *
+ * Beispiel: Nach Check-in pruefen ob Angehoeriger Status-Update sieht.
+ */
+export async function waitForRealtimeUI(
+  page: Page,
+  assertion: () => Promise<void>,
+  options?: { timeout?: number },
+): Promise<void> {
+  await expect(assertion).toPass({
+    timeout: options?.timeout || 10_000,
+  });
+}
+
+/**
+ * Navigiert zu einer Cross-Portal-URL (absolute URL, nicht relativ).
+ * Setzt localStorage-Flags fuer AlarmScreen/Onboarding.
+ *
+ * Beispiel: gotoCrossPortal(arztPage, 'http://localhost:3002/termine')
+ */
+export async function gotoCrossPortal(
+  page: Page,
+  absoluteUrl: string,
+): Promise<void> {
+  await page.goto(absoluteUrl);
+  await page.evaluate(() => {
+    localStorage.setItem('care_disclaimer_accepted', 'true');
+    localStorage.setItem('e2e_disable_alarm', 'true');
+    localStorage.setItem('e2e_skip_onboarding', 'true');
+  });
+  await waitForStableUI(page);
+}

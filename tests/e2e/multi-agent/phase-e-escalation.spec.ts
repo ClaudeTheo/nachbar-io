@@ -8,9 +8,10 @@ import {
   MultiAgentSetup,
 } from "./setup-windows";
 import { TIMEOUTS } from "../helpers/test-config";
+import { supabaseAdmin } from "../helpers/supabase-admin";
 
-const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || "";
 const SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || "";
+const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || "";
 
 let agents: MultiAgentSetup;
 
@@ -20,45 +21,6 @@ let betreuerUserId: string;
 let caregiverLinkId: string;
 let inviteCode: string;
 let consultationSlotId: string;
-
-// Hilfsfunktion: Supabase Admin Query (bypasst RLS)
-async function supabaseAdmin(
-  table: string,
-  method: "GET" | "POST" | "PATCH" | "DELETE",
-  body?: unknown,
-  query?: string,
-): Promise<{ data: unknown; error: string | null }> {
-  const url = `${SUPABASE_URL}/rest/v1/${table}${query ? `?${query}` : ""}`;
-  const headers: Record<string, string> = {
-    apikey: SERVICE_KEY,
-    Authorization: `Bearer ${SERVICE_KEY}`,
-    "Content-Type": "application/json",
-    Prefer:
-      method === "POST"
-        ? "return=representation,resolution=merge-duplicates"
-        : method === "GET"
-          ? "return=representation"
-          : "return=minimal",
-  };
-
-  try {
-    const res = await fetch(url, {
-      method,
-      headers,
-      body: body ? JSON.stringify(body) : undefined,
-    });
-    if (!res.ok) {
-      const text = await res.text();
-      return { data: null, error: `${res.status}: ${text}` };
-    }
-    if (method === "DELETE" || method === "PATCH")
-      return { data: null, error: null };
-    const data = await res.json();
-    return { data, error: null };
-  } catch (err) {
-    return { data: null, error: String(err) };
-  }
-}
 
 // Hilfsfunktion: User-ID aus der users-Tabelle holen
 async function getUserId(email: string): Promise<string | null> {

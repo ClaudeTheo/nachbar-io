@@ -4,55 +4,10 @@
 
 import { TEST_HOUSEHOLDS, TEST_AGENTS } from "./test-config";
 import type { AgentCredentials, TestHousehold } from "./types";
+import { supabaseAdmin } from "./supabase-admin";
 
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || "";
 const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || "";
-
-/**
- * Supabase REST API Aufruf mit Service Role Key (Admin-Zugriff, kein RLS).
- */
-async function supabaseAdmin(
-  table: string,
-  method: "GET" | "POST" | "DELETE" | "PATCH",
-  body?: unknown,
-  query?: string,
-): Promise<{ data: unknown; error: string | null }> {
-  if (!SUPABASE_URL || !SUPABASE_SERVICE_KEY) {
-    console.warn("[SEED] Keine Supabase Credentials — Seeding uebersprungen");
-    return { data: null, error: "no_credentials" };
-  }
-
-  const url = `${SUPABASE_URL}/rest/v1/${table}${query ? `?${query}` : ""}`;
-  const headers: Record<string, string> = {
-    apikey: SUPABASE_SERVICE_KEY,
-    Authorization: `Bearer ${SUPABASE_SERVICE_KEY}`,
-    "Content-Type": "application/json",
-    Prefer:
-      method === "POST"
-        ? "return=representation,resolution=merge-duplicates"
-        : "return=minimal",
-  };
-
-  try {
-    const res = await fetch(url, {
-      method,
-      headers,
-      body: body ? JSON.stringify(body) : undefined,
-    });
-
-    if (!res.ok) {
-      const text = await res.text();
-      return { data: null, error: `${res.status}: ${text}` };
-    }
-
-    if (method === "DELETE" || method === "PATCH")
-      return { data: null, error: null };
-    const data = await res.json();
-    return { data, error: null };
-  } catch (err) {
-    return { data: null, error: String(err) };
-  }
-}
 
 /**
  * Supabase Auth Admin API — Nutzer erstellen.

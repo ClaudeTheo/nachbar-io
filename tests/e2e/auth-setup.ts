@@ -76,6 +76,42 @@ setup("Auth: betreuer_t einloggen", async ({ page }) => {
   );
 });
 
+// --- Agent D: Arzt (Pro Medical, Cross-Portal Termin-Tests) ---
+setup("Auth: arzt_d einloggen", async ({ page }) => {
+  const agent = TEST_AGENTS.arzt_d;
+  await loginAndSave(
+    page,
+    agent.email,
+    agent.password,
+    "arzt_d",
+    /\/(dashboard|welcome|termine)/,
+  );
+});
+
+// --- Agent P: Pflegedienst (Pro Community, Cross-Portal Pflege-Tests) ---
+setup("Auth: pflege_p einloggen", async ({ page }) => {
+  const agent = TEST_AGENTS.pflege_p;
+  await loginAndSave(
+    page,
+    agent.email,
+    agent.password,
+    "pflege_p",
+    /\/(dashboard|welcome)/,
+  );
+});
+
+// --- Agent K: Kommune/Rathaus (Pro Community, Cross-Portal Civic-Tests) ---
+setup("Auth: stadt_k einloggen", async ({ page }) => {
+  const agent = TEST_AGENTS.stadt_k;
+  await loginAndSave(
+    page,
+    agent.email,
+    agent.password,
+    "stadt_k",
+    /\/(dashboard|welcome|admin)/,
+  );
+});
+
 /**
  * Loggt einen Agenten via Supabase Auth API ein und speichert den storageState.
  * Umgeht PILOT_HIDE_PASSWORD_LOGIN — Passwort-UI ist im Pilot ausgeblendet.
@@ -128,12 +164,12 @@ async function loginAndSave(
 
     const text = await response.text();
     const status = response.status();
-    const isRetryable = status === 429 || (status === 401 && text.includes("Invalid login credentials"));
+    const isRetryable =
+      status === 429 ||
+      (status === 401 && text.includes("Invalid login credentials"));
 
     if (!isRetryable || attempt === 4) {
-      console.warn(
-        `[AUTH] ${agentId} Login fehlgeschlagen: ${status} ${text}`,
-      );
+      console.warn(`[AUTH] ${agentId} Login fehlgeschlagen: ${status} ${text}`);
       return;
     }
   }

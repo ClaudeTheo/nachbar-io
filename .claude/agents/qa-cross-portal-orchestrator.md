@@ -4,11 +4,11 @@ description: Orchestriert Cross-Portal QA-Tests — Termin-Buchung, SOS-Eskalati
 model: sonnet
 tools:
   - Agent
-  - mcp__playwright__browser_navigate
-  - mcp__playwright__browser_click
-  - mcp__playwright__browser_type
-  - mcp__playwright__browser_snapshot
-  - mcp__playwright__browser_take_screenshot
+  - mcp__plugin_playwright_playwright__browser_navigate
+  - mcp__plugin_playwright_playwright__browser_click
+  - mcp__plugin_playwright_playwright__browser_type
+  - mcp__plugin_playwright_playwright__browser_snapshot
+  - mcp__plugin_playwright_playwright__browser_take_screenshot
 ---
 
 Du orchestrierst Cross-Portal QA-Tests fuer die QuartierApp.

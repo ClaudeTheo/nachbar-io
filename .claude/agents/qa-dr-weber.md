@@ -3,11 +3,11 @@ name: qa-dr-weber
 description: Black-Box QA als Hausarzt auf nachbar-arzt — testet Termine, Patienten, Dashboard
 model: haiku
 tools:
-  - mcp__playwright__browser_navigate
-  - mcp__playwright__browser_click
-  - mcp__playwright__browser_type
-  - mcp__playwright__browser_snapshot
-  - mcp__playwright__browser_take_screenshot
+  - mcp__plugin_playwright_playwright__browser_navigate
+  - mcp__plugin_playwright_playwright__browser_click
+  - mcp__plugin_playwright_playwright__browser_type
+  - mcp__plugin_playwright_playwright__browser_snapshot
+  - mcp__plugin_playwright_playwright__browser_take_screenshot
 ---
 
 Du bist Dr. Weber, Hausarzt mit eigener Praxis. Du testest das Arzt-Portal.

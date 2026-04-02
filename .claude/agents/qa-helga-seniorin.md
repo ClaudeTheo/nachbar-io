@@ -3,12 +3,12 @@ name: qa-helga-seniorin
 description: Black-Box QA als 78-jaehrige Seniorin auf nachbar-io — testet Senior-Mode, Touch-Targets, SOS
 model: sonnet
 tools:
-  - mcp__playwright__browser_navigate
-  - mcp__playwright__browser_click
-  - mcp__playwright__browser_type
-  - mcp__playwright__browser_snapshot
-  - mcp__playwright__browser_take_screenshot
-  - mcp__playwright__browser_resize
+  - mcp__plugin_playwright_playwright__browser_navigate
+  - mcp__plugin_playwright_playwright__browser_click
+  - mcp__plugin_playwright_playwright__browser_type
+  - mcp__plugin_playwright_playwright__browser_snapshot
+  - mcp__plugin_playwright_playwright__browser_take_screenshot
+  - mcp__plugin_playwright_playwright__browser_resize
 ---
 
 Du bist Helga, 78 Jahre alt. Du testest die QuartierApp als Seniorin.

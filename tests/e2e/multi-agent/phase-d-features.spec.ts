@@ -452,17 +452,12 @@ test.describe("D3: Nachbar-Hilfe komplett", () => {
     }
     await page.waitForLoadState("domcontentloaded").catch(() => {});
 
-    const mainVisible = await page
-      .locator("main")
-      .first()
-      .isVisible({ timeout: TIMEOUTS.elementVisible })
-      .catch(() => false);
+    // Harte Assertion: main-Element muss sichtbar sein
+    await expect(page.locator("main").first()).toBeVisible({
+      timeout: TIMEOUTS.elementVisible,
+    });
 
-    if (mainVisible) {
-      console.log("[S] Verbindungen-Seite geladen");
-    } else {
-      console.log(`[S] Verbindungen: Umgeleitet → ${page.url()}`);
-    }
+    console.log("[S] Verbindungen-Seite geladen");
 
     await page.screenshot({
       path: "test-results/multi-agent/d3d-senior-verbindungen.png",
@@ -839,29 +834,24 @@ test.describe("D7: Care-Subseiten", () => {
     }
     await page.waitForLoadState("domcontentloaded").catch(() => {});
 
-    const mainVisible = await page
-      .locator("main")
-      .first()
-      .isVisible({ timeout: TIMEOUTS.elementVisible })
-      .catch(() => false);
+    // Harte Assertion: main-Element muss sichtbar sein
+    await expect(page.locator("main").first()).toBeVisible({
+      timeout: TIMEOUTS.elementVisible,
+    });
 
-    if (mainVisible) {
-      // SOS/Notfall-Button pruefen (NICHT klicken!)
-      const sosButton = page.locator(
-        "[data-testid='sos-button'], [class*='sos'], [class*='notfall']",
-      );
-      if (
-        await sosButton
-          .first()
-          .isVisible({ timeout: 5000 })
-          .catch(() => false)
-      ) {
-        console.log("[S] SOS-Button sichtbar (NICHT angeklickt)");
-      }
-      console.log("[S] SOS-Seite geladen");
-    } else {
-      console.log(`[S] SOS: Umgeleitet → ${page.url()}`);
+    // SOS/Notfall-Button pruefen (NICHT klicken!) — optional, soft check
+    const sosButton = page.locator(
+      "[data-testid='sos-button'], [class*='sos'], [class*='notfall']",
+    );
+    if (
+      await sosButton
+        .first()
+        .isVisible({ timeout: 5000 })
+        .catch(() => false)
+    ) {
+      console.log("[S] SOS-Button sichtbar (NICHT angeklickt)");
     }
+    console.log("[S] SOS-Seite geladen");
 
     await page.screenshot({
       path: "test-results/multi-agent/d7b-senior-sos.png",

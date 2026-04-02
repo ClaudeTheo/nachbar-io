@@ -291,20 +291,15 @@ test.describe("C2: Race Conditions — Parallele Aktionen", () => {
       betreuerPage.waitForLoadState("networkidle").catch(() => {}),
     ]);
 
-    // Beide Seiten sollten ohne Fehler laden
-    const seniorMain = seniorPage.locator("main");
-    const betreuerMain = betreuerPage.locator("main");
+    // Beide Seiten sollten ohne Fehler laden — harte Assertion
+    await expect(seniorPage.locator("main")).toBeVisible({
+      timeout: TIMEOUTS.elementVisible,
+    });
+    await expect(betreuerPage.locator("main")).toBeVisible({
+      timeout: TIMEOUTS.elementVisible,
+    });
 
-    const seniorOk = await seniorMain
-      .isVisible({ timeout: TIMEOUTS.elementVisible })
-      .catch(() => false);
-    const betreuerOk = await betreuerMain
-      .isVisible({ timeout: TIMEOUTS.elementVisible })
-      .catch(() => false);
-
-    console.log(
-      `[C2b] Care-Seite: Senior=${seniorOk ? "OK" : "FEHLER"}, Betreuer=${betreuerOk ? "OK" : "FEHLER"}`,
-    );
+    console.log("[C2b] Care-Seite: Senior=OK, Betreuer=OK");
 
     await Promise.all([
       seniorPage.screenshot({
@@ -337,19 +332,12 @@ test.describe("C2: Race Conditions — Parallele Aktionen", () => {
       ),
     );
 
-    // Alle sollten main-Element haben
-    const results = await Promise.all(
-      pages.map(async (p) => {
-        const visible = await p.page
-          .locator("main")
-          .isVisible({ timeout: TIMEOUTS.elementVisible })
-          .catch(() => false);
-        return { label: p.label, ok: visible };
-      }),
-    );
-
-    for (const r of results) {
-      console.log(`[C2c] ${r.label}: ${r.ok ? "OK" : "FEHLER"}`);
+    // Alle sollten main-Element haben — harte Assertion pro Seite
+    for (const p of pages) {
+      await expect(p.page.locator("main")).toBeVisible({
+        timeout: TIMEOUTS.elementVisible,
+      });
+      console.log(`[C2c] ${p.label}: OK`);
     }
 
     // Screenshots

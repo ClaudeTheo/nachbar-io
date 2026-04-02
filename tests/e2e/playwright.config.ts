@@ -107,6 +107,18 @@ export default defineConfig({
       },
     },
 
+    // ─── Phase 4: Cross-Portal Tests (mehrere Portale gleichzeitig) ───
+    {
+      name: "cross-portal",
+      testMatch: /cross-portal\/.*\.spec\.ts/,
+      dependencies: ["auth"],
+      use: {
+        ...devices["Desktop Chrome"],
+        channel: "msedge",
+        storageState: undefined, // Jeder Test erstellt eigene Kontexte per Rolle
+      },
+    },
+
     // ─── Smoke Tests (kein Seed noetig, kein Auth) ───
     {
       name: "smoke",

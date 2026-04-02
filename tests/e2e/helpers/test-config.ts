@@ -125,6 +125,16 @@ export const TEST_AGENTS: Record<string, AgentCredentials> = {
     uiMode: "active",
     role: "doctor",
   },
+
+  // Agent P: Pflegedienst — Org-Admin mit Pflege-Kontext (Pro Community, Pflege-Typ)
+  pflege_p: {
+    email: `agent_p@${TEST_DOMAIN}`,
+    password: "TestPass123!",
+    displayName: "Petra K.",
+    inviteCode: "TEST0003",
+    uiMode: "active",
+    role: "org_admin", // Pflege nutzt org_admin-Rolle mit eigenem Organisations-Typ
+  },
 };
 
 /** Test-Mode Header: Wenn gesetzt, ueberspringt Supabase echte Auth */

@@ -2,7 +2,7 @@
 // Nachbar.io — Heartbeat-Eskalation Cron-Route (alle 30 Minuten)
 
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
+import { getAdminSupabase } from "@/lib/supabase/admin";
 import { handleServiceError } from "@/lib/services/service-error";
 import { runHeartbeatEscalation } from "@/modules/care/services/heartbeat-escalation.service";
 
@@ -26,7 +26,7 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const supabase = await createClient();
+    const supabase = getAdminSupabase();
     const result = await runHeartbeatEscalation(supabase);
     return NextResponse.json(result);
   } catch (error) {

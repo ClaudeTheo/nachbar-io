@@ -2,7 +2,7 @@
 // Nachbar.io — SOS-Eskalations-Cron (Vercel Cron: jede Minute)
 
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
+import { getAdminSupabase } from "@/lib/supabase/admin";
 import { runEscalationCron } from "@/modules/care/services/cron-escalation.service";
 import { handleServiceError } from "@/lib/services/service-error";
 
@@ -22,7 +22,7 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const supabase = await createClient();
+    const supabase = getAdminSupabase();
     const result = await runEscalationCron(supabase);
     return NextResponse.json(result);
   } catch (error) {

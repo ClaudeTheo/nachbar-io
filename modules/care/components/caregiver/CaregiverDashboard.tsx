@@ -32,6 +32,7 @@ export function CaregiverDashboard() {
         // 1. Caregiver-Links laden
         const linksRes = await fetch("/api/caregiver/links");
         if (!linksRes.ok) {
+          // 403 = kein Plus-Abo, kein Caregiver → nichts anzeigen (kein Fehler)
           setLoading(false);
           return;
         }

@@ -25,8 +25,13 @@ export async function GET(req: NextRequest) {
     .eq("user_id", userId)
     .order("sort_order", { ascending: true });
 
-  if (error)
+  if (error) {
+    // Tabelle existiert moeglicherweise nicht (Kiosk-Feature, Mig. noch offen)
+    if (error.message.includes("does not exist") || error.code === "42P01") {
+      return NextResponse.json([]);
+    }
     return NextResponse.json({ error: error.message }, { status: 500 });
+  }
 
   // Kontaktdaten aus Quell-Tabellen aufloesen
   const resolved = await Promise.all(

@@ -14,8 +14,11 @@ export async function GET(_request: NextRequest) {
   const auth = await requireAuth();
   if (!auth) return unauthorizedResponse();
 
+  // Kein Plus-Abo → leeres Ergebnis statt 403 (wird auf Dashboard aufgerufen)
   const sub = await requireSubscription(auth.supabase, auth.user.id, "plus");
-  if (sub instanceof NextResponse) return sub;
+  if (sub instanceof NextResponse) {
+    return NextResponse.json({ as_caregiver: [], as_resident: [] });
+  }
 
   try {
     const result = await listCaregiverLinks(auth.supabase, auth.user.id);

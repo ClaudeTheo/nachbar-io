@@ -4,21 +4,25 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
-import { HelpCategory, HELP_CATEGORY_LABELS } from '@/modules/hilfe/services/types';
+import { HelpCategory, HELP_CATEGORY_LABELS, PRIMARY_HELP_CATEGORIES } from '@/modules/hilfe/services/types';
 import { useQuarter } from '@/lib/quarters/quarter-context';
 
 /** Emoji-Icons je Kategorie */
-const CATEGORY_ICONS: Record<HelpCategory, string> = {
-  einkaufen: '🛒',
-  begleitung: '🚶',
-  haushalt: '🏠',
-  garten: '🌱',
-  technik: '💻',
-  vorlesen: '📖',
-  sonstiges: '❓',
+const CATEGORY_ICONS: Partial<Record<HelpCategory, string>> = {
+  shopping: '🛒',
+  company: '🚶',
+  handwork: '🏠',
+  garden: '🌱',
+  tech: '💻',
+  tutoring: '📖',
+  transport: '🚗',
+  childcare: '👶',
+  pet_care: '🐾',
+  package: '📦',
+  other: '❓',
 };
 
-const CATEGORIES = Object.keys(HELP_CATEGORY_LABELS) as HelpCategory[];
+const CATEGORIES = PRIMARY_HELP_CATEGORIES;
 
 interface NewRequestFormProps {
   onSuccess?: () => void;
@@ -41,14 +45,20 @@ export function NewRequestForm({ onSuccess }: NewRequestFormProps) {
     setError(null);
 
     try {
+      // Wunschzeit in Beschreibung anhaengen, falls angegeben
+      const fullDescription = preferredTime
+        ? `${description || ''}\n\nWunschzeit: ${preferredTime}`.trim()
+        : description || null;
+
       const res = await fetch('/api/hilfe/requests', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           quarter_id: currentQuarter.id,
           category,
-          description: description || null,
-          preferred_time: preferredTime || null,
+          title: `${HELP_CATEGORY_LABELS[category]} gesucht`,
+          description: fullDescription,
+          type: 'need',
         }),
       });
 

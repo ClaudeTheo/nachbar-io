@@ -3,17 +3,10 @@
 
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { ServiceError } from "@/lib/services/service-error";
-import type { HelpCategory } from "@/modules/hilfe/services/types";
+import type { HelpCategory, HelpRequestType } from "@/modules/hilfe/services/types";
+import { HELP_CATEGORY_LABELS } from "@/modules/hilfe/services/types";
 
-const VALID_CATEGORIES: HelpCategory[] = [
-  "einkaufen",
-  "begleitung",
-  "haushalt",
-  "garten",
-  "technik",
-  "vorlesen",
-  "sonstiges",
-];
+const VALID_CATEGORIES = Object.keys(HELP_CATEGORY_LABELS) as HelpCategory[];
 
 // --- Hilfe-Gesuche auflisten ---
 
@@ -26,7 +19,7 @@ export async function listRequests(
   let query = supabase
     .from("help_requests")
     .select("*")
-    .eq("status", "open")
+    .eq("status", "active")
     .order("created_at", { ascending: false });
 
   if (quarterId) {
@@ -51,11 +44,12 @@ export async function createRequest(
   input: {
     quarter_id?: string;
     category?: string;
+    title?: string;
     description?: string | null;
-    preferred_time?: string | null;
+    type?: HelpRequestType;
   },
 ) {
-  const { quarter_id, category, description, preferred_time } = input;
+  const { quarter_id, category, title, description, type } = input;
 
   // Pflichtfeld: quarter_id
   if (!quarter_id) {
@@ -65,20 +59,28 @@ export async function createRequest(
   // Kategorie validieren
   if (!category || !VALID_CATEGORIES.includes(category as HelpCategory)) {
     throw new ServiceError(
-      `Ungültige Kategorie: ${category}. Erlaubt: ${VALID_CATEGORIES.join(", ")}`,
+      `Ungueltige Kategorie: ${category}. Erlaubt: ${VALID_CATEGORIES.join(", ")}`,
       400,
     );
   }
+
+  // Typ validieren (Standard: "need")
+  const requestType: HelpRequestType = type === "offer" ? "offer" : "need";
+
+  // Titel: uebergeben oder aus Kategorie ableiten
+  const requestTitle =
+    title || HELP_CATEGORY_LABELS[category as HelpCategory] || category;
 
   const { data: helpRequest, error: insertError } = await supabase
     .from("help_requests")
     .insert({
       user_id: userId,
       quarter_id,
+      type: requestType,
       category,
+      title: requestTitle,
       description: description ?? null,
-      preferred_time: preferred_time ?? null,
-      status: "open",
+      status: "active",
     })
     .select()
     .single();

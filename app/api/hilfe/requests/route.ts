@@ -45,8 +45,9 @@ export async function POST(request: NextRequest) {
   let body: {
     quarter_id?: string;
     category?: string;
+    title?: string;
     description?: string | null;
-    preferred_time?: string | null;
+    type?: "need" | "offer";
   };
 
   try {

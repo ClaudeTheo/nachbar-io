@@ -1,25 +1,53 @@
 // Nachbar Hilfe — TypeScript-Typen
 
+// DB-Kategorien (englisch, CHECK-Constraint in help_requests)
 export type HelpCategory =
-  | "einkaufen"
-  | "begleitung"
-  | "haushalt"
-  | "garten"
-  | "technik"
-  | "vorlesen"
-  | "sonstiges";
+  | "garden"
+  | "shopping"
+  | "transport"
+  | "tech"
+  | "childcare"
+  | "handwork"
+  | "pet_care"
+  | "tutoring"
+  | "company"
+  | "other"
+  | "package"
+  | "noise"
+  | "board"
+  | "whohas";
 
+// Deutsche Labels fuer die UI
 export const HELP_CATEGORY_LABELS: Record<HelpCategory, string> = {
-  einkaufen: "Einkaufen",
-  begleitung: "Begleitung",
-  haushalt: "Haushalt",
-  garten: "Garten",
-  technik: "Technik",
-  vorlesen: "Vorlesen / Formulare",
-  sonstiges: "Sonstiges",
+  shopping: "Einkaufen",
+  company: "Begleitung",
+  handwork: "Haushalt",
+  garden: "Garten",
+  tech: "Technik",
+  tutoring: "Vorlesen / Formulare",
+  transport: "Transport",
+  childcare: "Kinderbetreuung",
+  pet_care: "Tierpflege",
+  package: "Paketannahme",
+  noise: "Laermmeldung",
+  board: "Schwarzes Brett",
+  whohas: "Wer hat...?",
+  other: "Sonstiges",
 };
 
-export type HelpRequestStatus = "open" | "matched" | "completed" | "cancelled";
+// Primaer-Kategorien fuer das Hilfe-Gesuch-Formular (Senioren-Modus, max 7)
+export const PRIMARY_HELP_CATEGORIES: HelpCategory[] = [
+  "shopping",
+  "company",
+  "handwork",
+  "garden",
+  "tech",
+  "tutoring",
+  "other",
+];
+
+export type HelpRequestType = "need" | "offer";
+export type HelpRequestStatus = "active" | "matched" | "closed";
 export type HelpSessionStatus = "draft" | "signed" | "receipt_created";
 
 export type ResearchStatus = 'checked_official_sources' | 'pending_research';
@@ -92,11 +120,15 @@ export interface NeighborhoodHelper {
 export interface HelpRequest {
   id: string;
   user_id: string;
-  quarter_id: string;
+  type: HelpRequestType;
   category: HelpCategory;
+  title: string;
   description: string | null;
-  preferred_time: string | null;
+  subcategory: string | null;
+  quarter_id: string | null;
+  image_url: string | null;
   status: HelpRequestStatus;
+  expires_at: string | null;
   created_at: string;
 }
 

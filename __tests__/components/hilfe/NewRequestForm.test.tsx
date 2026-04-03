@@ -66,9 +66,10 @@ describe("NewRequestForm", () => {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           quarter_id: "q-test-001",
-          category: "einkaufen",
+          category: "shopping",
+          title: "Einkaufen gesucht",
           description: "Wocheneinkauf bitte",
-          preferred_time: null,
+          type: "need",
         }),
       });
     });

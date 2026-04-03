@@ -63,10 +63,10 @@ export default function HilfePage() {
           if (loading) return null;
           const filtered =
             hilfeFilter === "Offen"
-              ? requests.filter((r) => r.status === "open")
+              ? requests.filter((r) => r.status === "active")
               : hilfeFilter === "Vermittelt"
                 ? requests.filter(
-                    (r) => r.status === "matched" || r.status === "completed",
+                    (r) => r.status === "matched" || r.status === "closed",
                   )
                 : requests;
           return filtered.length > 0 ? (

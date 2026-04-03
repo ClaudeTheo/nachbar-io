@@ -47,8 +47,8 @@ describe("/api/hilfe/requests", () => {
       mockSupabase.setUser({ id: "user-1", email: "test@test.de" });
       mockSupabase.addResponse("help_requests", {
         data: [
-          { id: "req-1", category: "einkaufen", status: "open" },
-          { id: "req-2", category: "garten", status: "open" },
+          { id: "req-1", type: "need", category: "shopping", title: "Einkaufen gesucht", status: "active" },
+          { id: "req-2", type: "need", category: "garden", title: "Garten gesucht", status: "active" },
         ],
         error: null,
       });
@@ -67,8 +67,10 @@ describe("/api/hilfe/requests", () => {
         data: [
           {
             id: "req-3",
-            category: "technik",
-            status: "open",
+            type: "need",
+            category: "tech",
+            title: "Technik gesucht",
+            status: "active",
             quarter_id: "q-1",
           },
         ],
@@ -95,8 +97,10 @@ describe("/api/hilfe/requests", () => {
           id: "req-new",
           user_id: "user-3",
           quarter_id: "q-1",
-          category: "einkaufen",
-          status: "open",
+          type: "need",
+          category: "shopping",
+          title: "Einkaufen gesucht",
+          status: "active",
         },
         error: null,
       });
@@ -105,13 +109,14 @@ describe("/api/hilfe/requests", () => {
       const response = await POST(
         makePostRequest({
           quarter_id: "q-1",
-          category: "einkaufen",
+          category: "shopping",
+          title: "Einkaufen gesucht",
           description: "Brauche Hilfe beim Einkaufen",
         }),
       );
       expect(response.status).toBe(201);
       const body = await response.json();
-      expect(body.category).toBe("einkaufen");
+      expect(body.category).toBe("shopping");
       expect(body.quarter_id).toBe("q-1");
     });
 
@@ -127,7 +132,7 @@ describe("/api/hilfe/requests", () => {
       );
       expect(response.status).toBe(400);
       const body = await response.json();
-      expect(body.error).toContain("Ungültige Kategorie");
+      expect(body.error).toContain("Ungueltige Kategorie");
     });
 
     it("lehnt fehlendes quarter_id ab (400)", async () => {
@@ -136,7 +141,7 @@ describe("/api/hilfe/requests", () => {
       const { POST } = await import("@/app/api/hilfe/requests/route");
       const response = await POST(
         makePostRequest({
-          category: "einkaufen",
+          category: "shopping",
         }),
       );
       expect(response.status).toBe(400);

@@ -1,13 +1,13 @@
-'use client';
+"use client";
 
-import { useState, useMemo, type FormEvent } from 'react';
-import { Button } from '@/components/ui/button';
-import SignaturePad from '@/modules/hilfe/components/SignaturePad';
+import { useState, useMemo, type FormEvent } from "react";
+import { Button } from "@/components/ui/button";
+import SignaturePad from "@/modules/hilfe/components/SignaturePad";
 import {
   HELP_CATEGORY_LABELS,
   type HelpCategory,
   type HelpSessionStatus,
-} from '@/modules/hilfe/services/types';
+} from "@/modules/hilfe/services/types";
 
 interface Props {
   matchId: string;
@@ -21,36 +21,38 @@ interface Props {
  */
 export default function SessionDocForm({ matchId, helperRate = 0 }: Props) {
   const [sessionDate, setSessionDate] = useState(
-    new Date().toISOString().slice(0, 10)
+    new Date().toISOString().slice(0, 10),
   );
-  const [startTime, setStartTime] = useState('');
-  const [endTime, setEndTime] = useState('');
-  const [category, setCategory] = useState<HelpCategory>('einkaufen');
-  const [description, setDescription] = useState('');
+  const [startTime, setStartTime] = useState("");
+  const [endTime, setEndTime] = useState("");
+  const [category, setCategory] = useState<HelpCategory>("shopping");
+  const [description, setDescription] = useState("");
   const [helperSignature, setHelperSignature] = useState<string | null>(null);
-  const [residentSignature, setResidentSignature] = useState<string | null>(null);
-  const [status, setStatus] = useState<HelpSessionStatus>('draft');
+  const [residentSignature, setResidentSignature] = useState<string | null>(
+    null,
+  );
+  const [status, setStatus] = useState<HelpSessionStatus>("draft");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   // Dauer in Minuten berechnen
   const durationMinutes = useMemo(() => {
     if (!startTime || !endTime) return 0;
-    const [sh, sm] = startTime.split(':').map(Number);
-    const [eh, em] = endTime.split(':').map(Number);
-    const diff = (eh * 60 + em) - (sh * 60 + sm);
+    const [sh, sm] = startTime.split(":").map(Number);
+    const [eh, em] = endTime.split(":").map(Number);
+    const diff = eh * 60 + em - (sh * 60 + sm);
     return diff > 0 ? diff : 0;
   }, [startTime, endTime]);
 
   // Betrag in EUR berechnen
   const totalAmountEur = useMemo(() => {
-    if (durationMinutes <= 0 || helperRate <= 0) return '0,00';
+    if (durationMinutes <= 0 || helperRate <= 0) return "0,00";
     const cents = Math.round((durationMinutes / 60) * helperRate);
-    return (cents / 100).toFixed(2).replace('.', ',');
+    return (cents / 100).toFixed(2).replace(".", ",");
   }, [durationMinutes, helperRate]);
 
   // Stundensatz formatiert
-  const rateDisplay = (helperRate / 100).toFixed(2).replace('.', ',');
+  const rateDisplay = (helperRate / 100).toFixed(2).replace(".", ",");
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
@@ -59,9 +61,9 @@ export default function SessionDocForm({ matchId, helperRate = 0 }: Props) {
 
     try {
       // Session erstellen
-      const res = await fetch('/api/hilfe/sessions', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const res = await fetch("/api/hilfe/sessions", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           match_id: matchId,
           session_date: sessionDate,
@@ -76,7 +78,7 @@ export default function SessionDocForm({ matchId, helperRate = 0 }: Props) {
       });
 
       if (!res.ok) {
-        throw new Error('Einsatz konnte nicht gespeichert werden.');
+        throw new Error("Einsatz konnte nicht gespeichert werden.");
       }
 
       const session = await res.json();
@@ -85,10 +87,10 @@ export default function SessionDocForm({ matchId, helperRate = 0 }: Props) {
       // Unterschriften hochladen
       if (helperSignature) {
         await fetch(`/api/hilfe/sessions/${sessionId}/sign`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            type: 'helper',
+            type: "helper",
             signature_data_url: helperSignature,
           }),
         });
@@ -96,22 +98,20 @@ export default function SessionDocForm({ matchId, helperRate = 0 }: Props) {
 
       if (residentSignature) {
         await fetch(`/api/hilfe/sessions/${sessionId}/sign`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            type: 'resident',
+            type: "resident",
             signature_data_url: residentSignature,
           }),
         });
       }
 
       // Status aktualisieren
-      setStatus(
-        helperSignature && residentSignature ? 'signed' : 'draft'
-      );
+      setStatus(helperSignature && residentSignature ? "signed" : "draft");
     } catch (err) {
       setError(
-        err instanceof Error ? err.message : 'Ein Fehler ist aufgetreten.'
+        err instanceof Error ? err.message : "Ein Fehler ist aufgetreten.",
       );
     } finally {
       setSubmitting(false);
@@ -119,9 +119,9 @@ export default function SessionDocForm({ matchId, helperRate = 0 }: Props) {
   }
 
   const statusLabels: Record<HelpSessionStatus, string> = {
-    draft: 'Entwurf',
-    signed: 'Unterschrieben',
-    receipt_created: 'Quittung erstellt',
+    draft: "Entwurf",
+    signed: "Unterschrieben",
+    receipt_created: "Quittung erstellt",
   };
 
   return (
@@ -215,13 +215,13 @@ export default function SessionDocForm({ matchId, helperRate = 0 }: Props) {
           className="min-h-[80px] rounded-md border border-border px-4 text-lg"
           required
         >
-          {(Object.entries(HELP_CATEGORY_LABELS) as [HelpCategory, string][]).map(
-            ([key, label]) => (
-              <option key={key} value={key}>
-                {label}
-              </option>
-            )
-          )}
+          {(
+            Object.entries(HELP_CATEGORY_LABELS) as [HelpCategory, string][]
+          ).map(([key, label]) => (
+            <option key={key} value={key}>
+              {label}
+            </option>
+          ))}
         </select>
       </div>
 
@@ -262,7 +262,7 @@ export default function SessionDocForm({ matchId, helperRate = 0 }: Props) {
         disabled={submitting}
         className="min-h-[80px] w-full text-lg font-semibold"
       >
-        {submitting ? 'Wird gespeichert…' : 'Einsatz dokumentieren'}
+        {submitting ? "Wird gespeichert…" : "Einsatz dokumentieren"}
       </Button>
     </form>
   );

@@ -70,7 +70,7 @@ export function LeafletKarte({ quarterId: quarterIdProp }: LeafletKarteProps) {
         <LeafletMapInner
           center={[currentQuarter?.center_lat ?? 47.5670, currentQuarter?.center_lng ?? 8.0640]}
           zoom={currentQuarter?.zoom_level ?? 17}
-          tileUrl={mapConfig?.tileUrl ?? "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"}
+          tileUrl={mapConfig?.tileUrl ?? "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"}
           houses={visibleHouses}
           statuses={statuses}
           residentCounts={residentCounts}

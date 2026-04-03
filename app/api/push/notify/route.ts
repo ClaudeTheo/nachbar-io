@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { createClient as createSupabaseClient } from "@supabase/supabase-js";
 import { notifyUser } from "@/lib/services/push-notifications.service";
 import { handleServiceError } from "@/lib/services/service-error";
 
@@ -44,8 +45,16 @@ export async function POST(request: NextRequest) {
     );
   }
 
+  // Fuer interne API-Calls: Service-Role-Client verwenden (umgeht RLS)
+  const dbClient = hasInternalSecret
+    ? createSupabaseClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.SUPABASE_SERVICE_ROLE_KEY!,
+      )
+    : supabase;
+
   try {
-    const result = await notifyUser(supabase, {
+    const result = await notifyUser(dbClient, {
       userId: body.userId,
       title: body.title,
       body: body.body,

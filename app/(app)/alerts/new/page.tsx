@@ -201,6 +201,15 @@ export default function NewAlertPage() {
 
         {/* Schritt 1: Kategorie wählen */}
         {step === "category" && (
+          <div className="space-y-4">
+          {/* Statischer 112-Hinweis — IMMER sichtbar (FMEA FM-NB-02) */}
+          <div className="rounded-xl border-2 border-emergency-red bg-red-50 p-3 text-center">
+            <p className="text-sm font-bold text-emergency-red">
+              Bei lebensbedrohlichen Notfällen immer zuerst{" "}
+              <a href="tel:112" className="underline">112</a> oder{" "}
+              <a href="tel:110" className="underline">110</a> anrufen!
+            </p>
+          </div>
           <div className="grid grid-cols-2 gap-3">
             {ALERT_CATEGORIES.map((cat) => (
               <button
@@ -221,6 +230,7 @@ export default function NewAlertPage() {
                 </span>
               </button>
             ))}
+          </div>
           </div>
         )}
 

@@ -6,6 +6,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Check } from "lucide-react";
+import Link from "next/link";
 
 // Check-in-Status-Antwort vom Server
 interface CheckinStatusResponse {
@@ -130,10 +131,16 @@ export function DailyCheckinButton() {
   }
 
   // Fehler-Meldung (wird über dem aktuellen State angezeigt)
+  const isConsentError = error?.includes("Einwilligung");
   const errorBanner = error ? (
-    <p className="mb-2 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700" role="alert">
-      {error}
-    </p>
+    <div className="mb-2 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700" role="alert">
+      <p>{error}</p>
+      {isConsentError && (
+        <Link href="/care/consent" className="mt-1 block font-semibold underline">
+          Jetzt Einwilligung erteilen →
+        </Link>
+      )}
+    </div>
   ) : null;
 
   // Zustand: Alle Check-ins erledigt

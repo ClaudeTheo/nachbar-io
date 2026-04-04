@@ -1,8 +1,10 @@
 "use client";
 
-import { MapContainer, TileLayer, CircleMarker, Popup } from "react-leaflet";
+import { useEffect } from "react";
+import { MapContainer, TileLayer, CircleMarker, Popup, useMap } from "react-leaflet";
 import { COLOR_CFG, STREET_LABELS, type GeoMapHouseData, type LampColor } from "@/lib/map-houses";
 import "leaflet/dist/leaflet.css";
+import L from "leaflet";
 
 interface LeafletMapInnerProps {
   center: [number, number];
@@ -12,6 +14,33 @@ interface LeafletMapInnerProps {
   statuses: Record<string, LampColor>;
   residentCounts: Record<string, number>;
   onHouseClick: (house: GeoMapHouseData) => void;
+}
+
+// Stellt sicher dass die Karte korrekt initialisiert ist und alle Marker sichtbar sind.
+// Behebt den "M0 0" SVG-Bug bei CircleMarker (Leaflet rendert Marker bevor
+// das Container-Layout fertig ist → latLngToLayerPoint gibt (0,0) zurueck).
+function MapUpdater({ houses, center, zoom }: { houses: GeoMapHouseData[]; center: [number, number]; zoom: number }) {
+  const map = useMap();
+
+  useEffect(() => {
+    // invalidateSize zwingt Leaflet das Container-Layout neu zu berechnen
+    // — behebt den M0 0 Bug wenn der Container beim ersten Render noch 0px hat
+    const timer = setTimeout(() => {
+      map.invalidateSize();
+
+      if (houses.length > 0) {
+        const bounds = L.latLngBounds(houses.map((h) => [h.lat, h.lng] as L.LatLngTuple));
+        // Padding damit Marker nicht am Rand kleben
+        map.fitBounds(bounds, { padding: [40, 40], maxZoom: 17 });
+      } else {
+        map.setView(center, zoom);
+      }
+    }, 100);
+
+    return () => clearTimeout(timer);
+  }, [map, houses, center, zoom]);
+
+  return null;
 }
 
 export default function LeafletMapInner({
@@ -29,6 +58,8 @@ export default function LeafletMapInner({
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>'
         url={tileUrl}
       />
+
+      <MapUpdater houses={houses} center={center} zoom={zoom} />
 
       {houses.map((house) => {
         const color = statuses[house.id] ?? "green";

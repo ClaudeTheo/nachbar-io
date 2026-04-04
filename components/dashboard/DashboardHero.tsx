@@ -16,6 +16,7 @@ interface DashboardHeroProps {
   reputationLevel: number;
   greeting: { text: string; timeKey: string };
   greetingIcon: CategoryIconConfig;
+  quarterName?: string;
   weatherIcon?: string;
   weatherTemp?: number | null;
   weatherDescription?: string;
@@ -27,6 +28,7 @@ export function DashboardHero({
   reputationLevel,
   greeting,
   greetingIcon,
+  quarterName,
   weatherIcon,
   weatherTemp,
   weatherDescription,
@@ -108,7 +110,7 @@ export function DashboardHero({
                 )}
               </h1>
               <p className="text-sm text-muted-foreground mt-1">
-                Ihr Quartier auf einen Blick
+                {quarterName ?? "Ihr Quartier"} auf einen Blick
               </p>
             </div>
           </div>

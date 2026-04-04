@@ -107,6 +107,7 @@ export default function DashboardPage() {
               reputationLevel={reputationLevel}
               greeting={greeting}
               greetingIcon={greetingIcon}
+              quarterName={currentQuarter?.name}
               weatherIcon={weatherData?.icon}
               weatherTemp={weatherData?.temp}
               weatherDescription={weatherData?.description}
@@ -156,7 +157,7 @@ export default function DashboardPage() {
                       )}
                     </h1>
                     <p className="text-sm text-muted-foreground mt-1">
-                      Ihr Quartier auf einen Blick
+                      {currentQuarter?.name ?? "Ihr Quartier"} auf einen Blick
                     </p>
                   </div>
                 </div>

@@ -5,7 +5,7 @@ import { Star, Video, Calendar } from "lucide-react";
 interface DoctorProfile {
   id: string;
   user_id: string;
-  specialization: string[];
+  specialization: string[] | null;
   bio: string | null;
   avatar_url: string | null;
   video_consultation: boolean;
@@ -38,7 +38,7 @@ export function DoctorCard({ doctor, onRequestAppointment }: DoctorCardProps) {
         <div className="min-w-0 flex-1">
           {/* Fachrichtungen */}
           <div className="flex flex-wrap gap-1.5">
-            {doctor.specialization.map((spec) => (
+            {(doctor.specialization ?? []).map((spec) => (
               <span
                 key={spec}
                 className="inline-block rounded-full bg-quartier-green/10 px-2.5 py-0.5 text-xs font-medium text-quartier-green"

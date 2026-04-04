@@ -1,31 +1,31 @@
-'use client';
+"use client";
 
-import { useState, useEffect, useCallback } from 'react';
-import { Stethoscope } from 'lucide-react';
-import { PageHeader } from '@/components/ui/page-header';
-import { DoctorCard } from '@/components/consultation/DoctorCard';
-import { RequestAppointmentModal } from '@/components/consultation/RequestAppointmentModal';
+import { useState, useEffect, useCallback } from "react";
+import { Stethoscope } from "lucide-react";
+import { PageHeader } from "@/components/ui/page-header";
+import { DoctorCard } from "@/components/consultation/DoctorCard";
+import { RequestAppointmentModal } from "@/components/consultation/RequestAppointmentModal";
 
 interface DoctorProfile {
   id: string;
   user_id: string;
-  specialization: string[];
+  specialization: string[] | null;
   bio: string | null;
   avatar_url: string | null;
   video_consultation: boolean;
   accepts_new_patients: boolean;
-  quarter_ids: string[];
+  quarter_ids: string[] | null;
 }
 
 export default function SprechstundeDoctorsPage() {
   const [doctors, setDoctors] = useState<DoctorProfile[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedDoctorId, setSelectedDoctorId] = useState<string | null>(null);
-  const [successMessage, setSuccessMessage] = useState('');
+  const [successMessage, setSuccessMessage] = useState("");
 
   const loadDoctors = useCallback(async () => {
     try {
-      const res = await fetch('/api/doctors');
+      const res = await fetch("/api/doctors");
       if (res.ok) {
         const data = await res.json();
         setDoctors(data);
@@ -43,12 +43,14 @@ export default function SprechstundeDoctorsPage() {
 
   function handleSuccess() {
     setSelectedDoctorId(null);
-    setSuccessMessage('Ihr Terminwunsch wurde gesendet. Sie erhalten eine Benachrichtigung, sobald der Arzt antwortet.');
-    setTimeout(() => setSuccessMessage(''), 5000);
+    setSuccessMessage(
+      "Ihr Terminwunsch wurde gesendet. Sie erhalten eine Benachrichtigung, sobald der Arzt antwortet.",
+    );
+    setTimeout(() => setSuccessMessage(""), 5000);
   }
 
   // Quartier-ID aus dem ersten Arzt ableiten (oder leer)
-  const quarterId = doctors[0]?.quarter_ids?.[0] ?? '';
+  const quarterId = doctors[0]?.quarter_ids?.[0] ?? "";
 
   return (
     <div className="space-y-6 pb-24">
@@ -74,7 +76,9 @@ export default function SprechstundeDoctorsPage() {
             <DoctorCard
               key={doctor.id}
               doctor={doctor}
-              onRequestAppointment={(doctorUserId) => setSelectedDoctorId(doctorUserId)}
+              onRequestAppointment={(doctorUserId) =>
+                setSelectedDoctorId(doctorUserId)
+              }
             />
           ))}
         </div>
@@ -84,7 +88,9 @@ export default function SprechstundeDoctorsPage() {
       {!loading && doctors.length === 0 && (
         <div className="rounded-2xl bg-anthrazit/5 p-8 text-center">
           <Stethoscope className="mx-auto h-12 w-12 text-anthrazit/30" />
-          <p className="mt-3 text-xl text-anthrazit/60">Noch keine Ärzte verfügbar</p>
+          <p className="mt-3 text-xl text-anthrazit/60">
+            Noch keine Ärzte verfügbar
+          </p>
           <p className="text-anthrazit/40 mt-2">
             Sobald Ärzte Ihr Quartier betreuen, erscheinen sie hier.
           </p>

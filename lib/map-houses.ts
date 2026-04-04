@@ -8,9 +8,7 @@ export const MAP_W = 1083;
 export const MAP_H = 766;
 
 export type LampColor = "green" | "red" | "yellow" | "blue" | "orange";
-export type StreetCode = "PS" | "SN" | "OR" | "HS" | "MG" | "CS"
-  | "FS" | "KF" | "TS"   // Rheinfelden
-  | "AM" | "HM" | "SG" | "AB"; // Koeln
+export type StreetCode = string; // Dynamisch — Strassenname aus household oder Legacy-Code
 
 export interface MapHouseData {
   id: string;
@@ -70,12 +68,40 @@ export const STREET_CODE_TO_NAME: Record<StreetCode, string> = {
 
 export const COLOR_CYCLE: LampColor[] = ["green", "red", "yellow"];
 
-export const COLOR_CFG: Record<LampColor, { fill: string; ring: string; glow: string; label: string }> = {
-  green:  { fill: "#22c55e", ring: "#15803d", glow: "rgba(34,197,94,0.4)",  label: "Grün" },
-  red:    { fill: "#ef4444", ring: "#b91c1c", glow: "rgba(239,68,68,0.4)",  label: "Rot" },
-  yellow: { fill: "#eab308", ring: "#a16207", glow: "rgba(234,179,8,0.4)",  label: "Gelb" },
-  blue:   { fill: "#3b82f6", ring: "#1d4ed8", glow: "rgba(59,130,246,0.4)", label: "Urlaub" },
-  orange: { fill: "#f97316", ring: "#c2410c", glow: "rgba(249,115,22,0.4)", label: "Paket" },
+export const COLOR_CFG: Record<
+  LampColor,
+  { fill: string; ring: string; glow: string; label: string }
+> = {
+  green: {
+    fill: "#22c55e",
+    ring: "#15803d",
+    glow: "rgba(34,197,94,0.4)",
+    label: "Grün",
+  },
+  red: {
+    fill: "#ef4444",
+    ring: "#b91c1c",
+    glow: "rgba(239,68,68,0.4)",
+    label: "Rot",
+  },
+  yellow: {
+    fill: "#eab308",
+    ring: "#a16207",
+    glow: "rgba(234,179,8,0.4)",
+    label: "Gelb",
+  },
+  blue: {
+    fill: "#3b82f6",
+    ring: "#1d4ed8",
+    glow: "rgba(59,130,246,0.4)",
+    label: "Urlaub",
+  },
+  orange: {
+    fill: "#f97316",
+    ring: "#c2410c",
+    glow: "rgba(249,115,22,0.4)",
+    label: "Paket",
+  },
 };
 
 // Statische Haus-Daten (Fallback wenn Supabase leer oder nicht erreichbar)
@@ -170,7 +196,14 @@ export const DEFAULT_HOUSES: MapHouseData[] = [
   { id: "or9", num: "9", s: "OR", x: 377, y: 584, defaultColor: "green" },
   { id: "or11", num: "11", s: "OR", x: 431, y: 582, defaultColor: "green" },
   { id: "or13", num: "13", s: "OR", x: 551, y: 613, defaultColor: "green" },
-  { id: "or1517", num: "15-17", s: "OR", x: 637, y: 584, defaultColor: "green" },
+  {
+    id: "or1517",
+    num: "15-17",
+    s: "OR",
+    x: 637,
+    y: 584,
+    defaultColor: "green",
+  },
   { id: "or22b", num: "22b", s: "OR", x: 760, y: 596, defaultColor: "green" },
   { id: "or23", num: "23", s: "OR", x: 919, y: 573, defaultColor: "green" },
   { id: "or2b", num: "2b", s: "OR", x: 960, y: 435, defaultColor: "green" },
@@ -182,12 +215,21 @@ export const DEFAULT_HOUSES: MapHouseData[] = [
   { id: "or18b", num: "18b", s: "OR", x: 539, y: 682, defaultColor: "green" },
   { id: "or20b", num: "20b", s: "OR", x: 613, y: 681, defaultColor: "green" },
   { id: "or22c", num: "22c", s: "OR", x: 673, y: 677, defaultColor: "green" },
-  { id: "or24_26", num: "24-26", s: "OR", x: 893, y: 661, defaultColor: "green" },
+  {
+    id: "or24_26",
+    num: "24-26",
+    s: "OR",
+    x: 893,
+    y: 661,
+    defaultColor: "green",
+  },
   { id: "or28", num: "28", s: "OR", x: 980, y: 553, defaultColor: "green" },
 ];
 
 // Laedt Haeuser fuer ein bestimmtes Quartier aus der Datenbank
-export async function loadQuarterHouses(quarterId: string): Promise<MapHouseData[]> {
+export async function loadQuarterHouses(
+  quarterId: string,
+): Promise<MapHouseData[]> {
   const supabase = createClient();
   const { data, error } = await supabase
     .from("map_houses")
@@ -197,7 +239,7 @@ export async function loadQuarterHouses(quarterId: string): Promise<MapHouseData
 
   if (error || !data || data.length === 0) return [];
 
-  return data.map(h => ({
+  return data.map((h) => ({
     id: h.id,
     num: h.house_number,
     s: h.street_code as StreetCode,
@@ -212,30 +254,60 @@ export function isGeoQuarter(mapConfig?: Partial<MapConfig>): boolean {
   return mapConfig?.type === "leaflet";
 }
 
-// Laedt Haeuser mit Geo-Koordinaten fuer ein Leaflet-Quartier
-export async function loadGeoQuarterHouses(quarterId: string): Promise<GeoMapHouseData[]> {
+// Haversine-Distanz in km (fuer Geo-Validierung)
+function haversineKm(
+  lat1: number,
+  lng1: number,
+  lat2: number,
+  lng2: number,
+): number {
+  const R = 6371;
+  const dLat = ((lat2 - lat1) * Math.PI) / 180;
+  const dLng = ((lng2 - lng1) * Math.PI) / 180;
+  const a =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos((lat1 * Math.PI) / 180) *
+      Math.cos((lat2 * Math.PI) / 180) *
+      Math.sin(dLng / 2) ** 2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
+
+// Laedt Marker fuer Leaflet-Quartiere — direkt aus households (funktioniert automatisch)
+// centerLat/centerLng: Quartier-Zentrum fuer Geo-Validierung (filtert falsche Koordinaten)
+export async function loadGeoQuarterHouses(
+  quarterId: string,
+  centerLat?: number,
+  centerLng?: number,
+): Promise<GeoMapHouseData[]> {
   const supabase = createClient();
   const { data, error } = await supabase
-    .from("map_houses")
-    .select("id, house_number, street_code, x, y, default_color, lat, lng, quarter_id")
+    .from("households")
+    .select("id, street_name, house_number, lat, lng, quarter_id")
     .eq("quarter_id", quarterId)
     .not("lat", "is", null)
-    .not("lng", "is", null)
-    .order("street_code");
+    .not("lng", "is", null);
 
   if (error || !data || data.length === 0) return [];
 
-  return data.map(h => ({
-    id: h.id,
-    num: h.house_number,
-    s: h.street_code as StreetCode,
-    x: h.x ?? 0,
-    y: h.y ?? 0,
-    defaultColor: (h.default_color ?? "green") as LampColor,
-    lat: h.lat!,
-    lng: h.lng!,
-    quarterId: h.quarter_id ?? undefined,
-  }));
+  return data
+    .filter((h) => {
+      // Geo-Validierung: Nur Haushalte innerhalb 15km vom Quartier-Zentrum
+      if (centerLat && centerLng && h.lat && h.lng) {
+        return haversineKm(centerLat, centerLng, h.lat, h.lng) < 15;
+      }
+      return true;
+    })
+    .map((h) => ({
+      id: h.id,
+      num: h.house_number ?? "",
+      s: (h.street_name ?? "") as StreetCode,
+      x: 0,
+      y: 0,
+      defaultColor: "green" as LampColor,
+      lat: h.lat!,
+      lng: h.lng!,
+      quarterId: h.quarter_id ?? undefined,
+    }));
 }
 
 // Parst viewBox-String und gibt Breite/Hoehe zurueck (Fallback: MAP_W x MAP_H)

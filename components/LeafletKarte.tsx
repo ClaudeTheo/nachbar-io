@@ -9,7 +9,9 @@ import { HouseInfoPanel } from "@/components/HouseInfoPanel";
 import type { GeoMapHouseData } from "@/lib/map-houses";
 
 // Leaflet muss client-side geladen werden (kein SSR)
-const LeafletMapInner = dynamic(() => import("./LeafletMapInner"), { ssr: false });
+const LeafletMapInner = dynamic(() => import("./LeafletMapInner"), {
+  ssr: false,
+});
 
 interface LeafletKarteProps {
   quarterId?: string;
@@ -20,38 +22,69 @@ export function LeafletKarte({ quarterId: quarterIdProp }: LeafletKarteProps) {
   const quarterId = quarterIdProp ?? currentQuarter?.id;
   const mapConfig = currentQuarter?.map_config;
 
-  const { geoHouses, statuses, residentCounts, loading } = useMapStatuses(quarterId, mapConfig);
+  const { geoHouses, statuses, residentCounts, loading } = useMapStatuses(
+    quarterId,
+    mapConfig,
+    currentQuarter?.center_lat,
+    currentQuarter?.center_lng,
+  );
 
   const [filter, setFilter] = useState<string>("all");
-  const [selectedHouse, setSelectedHouse] = useState<GeoMapHouseData | null>(null);
+  const [selectedHouse, setSelectedHouse] = useState<GeoMapHouseData | null>(
+    null,
+  );
 
   // Nur Haeuser mit registrierten Bewohnern zaehlen (per map_house_id)
-  const occupiedIds = useMemo(() => new Set(
-    geoHouses.filter((h) => residentCounts[h.id]).map((h) => h.id),
-  ), [geoHouses, residentCounts]);
+  const occupiedIds = useMemo(
+    () =>
+      new Set(geoHouses.filter((h) => residentCounts[h.id]).map((h) => h.id)),
+    [geoHouses, residentCounts],
+  );
 
-  const counts = useMemo(() => ({
-    green: Object.entries(statuses).filter(([id, s]) => s === "green" && occupiedIds.has(id)).length,
-    red: Object.entries(statuses).filter(([id, s]) => s === "red" && occupiedIds.has(id)).length,
-    yellow: Object.entries(statuses).filter(([id, s]) => s === "yellow" && occupiedIds.has(id)).length,
-    blue: Object.entries(statuses).filter(([id, s]) => s === "blue" && occupiedIds.has(id)).length,
-    orange: Object.entries(statuses).filter(([id, s]) => s === "orange" && occupiedIds.has(id)).length,
-  }), [statuses, occupiedIds]);
+  const counts = useMemo(
+    () => ({
+      green: Object.entries(statuses).filter(
+        ([id, s]) => s === "green" && occupiedIds.has(id),
+      ).length,
+      red: Object.entries(statuses).filter(
+        ([id, s]) => s === "red" && occupiedIds.has(id),
+      ).length,
+      yellow: Object.entries(statuses).filter(
+        ([id, s]) => s === "yellow" && occupiedIds.has(id),
+      ).length,
+      blue: Object.entries(statuses).filter(
+        ([id, s]) => s === "blue" && occupiedIds.has(id),
+      ).length,
+      orange: Object.entries(statuses).filter(
+        ([id, s]) => s === "orange" && occupiedIds.has(id),
+      ).length,
+    }),
+    [statuses, occupiedIds],
+  );
 
   const handleReset = useCallback(() => setFilter("all"), []);
-  const handleHouseClick = useCallback((house: GeoMapHouseData) => setSelectedHouse(house), []);
+  const handleHouseClick = useCallback(
+    (house: GeoMapHouseData) => setSelectedHouse(house),
+    [],
+  );
 
   // Sichtbare Häuser filtern
-  const visibleHouses = useMemo(() =>
-    geoHouses.filter((h) => {
-      if (!residentCounts[h.id]) return false;
-      const color = statuses[h.id];
-      return filter === "all" || color === filter;
-    }),
-  [geoHouses, statuses, filter, residentCounts]);
+  const visibleHouses = useMemo(
+    () =>
+      geoHouses.filter((h) => {
+        if (!residentCounts[h.id]) return false;
+        const color = statuses[h.id];
+        return filter === "all" || color === filter;
+      }),
+    [geoHouses, statuses, filter, residentCounts],
+  );
 
   if (loading) {
-    return <div className="flex h-64 items-center justify-center text-muted-foreground">Karte wird geladen...</div>;
+    return (
+      <div className="flex h-64 items-center justify-center text-muted-foreground">
+        Karte wird geladen...
+      </div>
+    );
   }
 
   return (
@@ -65,12 +98,23 @@ export function LeafletKarte({ quarterId: quarterIdProp }: LeafletKarteProps) {
       />
 
       {/* Leaflet-Karte */}
-      <div className="w-full overflow-hidden rounded-xl shadow-lg"
-        style={{ boxShadow: "0 0 0 1px #1e293b, 0 4px 24px rgba(0,0,0,0.6)", height: "400px" }}>
+      <div
+        className="w-full overflow-hidden rounded-xl shadow-lg"
+        style={{
+          boxShadow: "0 0 0 1px #1e293b, 0 4px 24px rgba(0,0,0,0.6)",
+          height: "400px",
+        }}
+      >
         <LeafletMapInner
-          center={[currentQuarter?.center_lat ?? 47.5670, currentQuarter?.center_lng ?? 8.0640]}
+          center={[
+            currentQuarter?.center_lat ?? 47.567,
+            currentQuarter?.center_lng ?? 8.064,
+          ]}
           zoom={currentQuarter?.zoom_level ?? 17}
-          tileUrl={mapConfig?.tileUrl ?? "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"}
+          tileUrl={
+            mapConfig?.tileUrl ??
+            "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
+          }
           houses={visibleHouses}
           statuses={statuses}
           residentCounts={residentCounts}
@@ -80,7 +124,8 @@ export function LeafletKarte({ quarterId: quarterIdProp }: LeafletKarteProps) {
 
       {/* Fusszeile */}
       <div className="text-xs text-muted-foreground">
-        {Object.values(residentCounts).filter(c => c > 0).length} Nachbarn im Quartier
+        {Object.values(residentCounts).filter((c) => c > 0).length} Nachbarn im
+        Quartier
         {counts.blue > 0 && ` · ${counts.blue} Urlaub`}
         {counts.orange > 0 && ` · ${counts.orange} Paket`}
       </div>
@@ -89,7 +134,9 @@ export function LeafletKarte({ quarterId: quarterIdProp }: LeafletKarteProps) {
       {selectedHouse && (
         <HouseInfoPanel
           open={!!selectedHouse}
-          onOpenChange={(open) => { if (!open) setSelectedHouse(null); }}
+          onOpenChange={(open) => {
+            if (!open) setSelectedHouse(null);
+          }}
           streetCode={selectedHouse.s}
           houseNumber={selectedHouse.num}
         />

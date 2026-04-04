@@ -15,6 +15,7 @@ import {
   UserCog,
   Phone,
   Brain,
+  Stethoscope,
 } from "lucide-react";
 import Link from "next/link";
 import { PageHeader } from "@/components/ui/page-header";
@@ -49,7 +50,14 @@ interface SosEntry {
   resolved_at: string | null;
 }
 
-type Tab = "medikamente" | "checkins" | "sos" | "gedaechtnis";
+interface CareVisitEntry {
+  id: string;
+  visit_type: string;
+  visited_at: string;
+  org_name: string | null;
+}
+
+type Tab = "medikamente" | "checkins" | "sos" | "pflege" | "gedaechtnis";
 
 export default function SeniorDetailPage() {
   const params = useParams();
@@ -62,6 +70,7 @@ export default function SeniorDetailPage() {
   const [medications, setMedications] = useState<MedicationEntry[]>([]);
   const [checkins, setCheckins] = useState<CheckinEntry[]>([]);
   const [sosAlerts, setSosAlerts] = useState<SosEntry[]>([]);
+  const [careVisits, setCareVisits] = useState<CareVisitEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [lastHeartbeat, setLastHeartbeat] = useState<string | null>(null);
   const [lastCheckinStatus, setLastCheckinStatus] = useState<string | null>(
@@ -134,6 +143,28 @@ export default function SeniorDetailPage() {
         } else if (activeTab === "sos") {
           const res = await fetch(`/api/care/sos?senior_id=${seniorId}`);
           if (res.ok) setSosAlerts(await res.json());
+        } else if (activeTab === "pflege") {
+          // Pflege-Besuche laden (care_visits mit org_name, OHNE caregiver_user_id)
+          const supabase = createClient();
+          const { data: visits } = await supabase
+            .from("care_visits")
+            .select("id, visit_type, visited_at, org_id, organizations(name)")
+            .eq("resident_id", seniorId)
+            .order("visited_at", { ascending: false })
+            .limit(50);
+
+          if (visits) {
+            setCareVisits(
+              visits.map((v) => ({
+                id: v.id,
+                visit_type: v.visit_type,
+                visited_at: v.visited_at,
+                org_name:
+                  (v.organizations as unknown as { name: string } | null)
+                    ?.name ?? null,
+              })),
+            );
+          }
         }
       } catch {
         /* silent */
@@ -172,6 +203,11 @@ export default function SeniorDetailPage() {
       key: "sos",
       label: "SOS-Verlauf",
       icon: <TriangleAlert className="h-4 w-4" />,
+    },
+    {
+      key: "pflege",
+      label: "Pflege-Besuche",
+      icon: <Stethoscope className="h-4 w-4" />,
     },
     {
       key: "gedaechtnis",
@@ -456,6 +492,67 @@ export default function SeniorDetailPage() {
                     </p>
                   </div>
                 ))
+              )}
+            </div>
+          )}
+
+          {/* Pflege-Besuche-Tab */}
+          {activeTab === "pflege" && (
+            <div className="space-y-3">
+              <h2 className="text-sm font-medium text-muted-foreground">
+                Pflegedienst-Besuche
+              </h2>
+              {careVisits.length === 0 ? (
+                <p className="text-sm text-muted-foreground py-4 text-center">
+                  Keine Pflegebesuche dokumentiert.
+                </p>
+              ) : (
+                careVisits.map((v) => {
+                  const typeLabels: Record<string, string> = {
+                    grundpflege: "Grundpflege",
+                    behandlungspflege: "Behandlungspflege",
+                    hauswirtschaft: "Hauswirtschaft",
+                    betreuung: "Betreuung",
+                  };
+                  const typeColors: Record<string, string> = {
+                    grundpflege: "bg-blue-100 text-blue-700",
+                    behandlungspflege: "bg-purple-100 text-purple-700",
+                    hauswirtschaft: "bg-amber-100 text-amber-700",
+                    betreuung: "bg-green-100 text-green-700",
+                  };
+
+                  return (
+                    <div
+                      key={v.id}
+                      className="rounded-xl border bg-card p-4 flex items-center justify-between"
+                    >
+                      <div>
+                        <p className="text-sm font-medium text-anthrazit">
+                          {new Date(v.visited_at).toLocaleDateString("de-DE", {
+                            day: "2-digit",
+                            month: "2-digit",
+                            year: "numeric",
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          })}
+                        </p>
+                        {v.org_name && (
+                          <p className="text-xs text-muted-foreground mt-0.5">
+                            {v.org_name}
+                          </p>
+                        )}
+                      </div>
+                      <span
+                        className={`text-xs font-medium px-2 py-1 rounded-full ${
+                          typeColors[v.visit_type] ??
+                          "bg-gray-100 text-gray-600"
+                        }`}
+                      >
+                        {typeLabels[v.visit_type] ?? v.visit_type}
+                      </span>
+                    </div>
+                  );
+                })
               )}
             </div>
           )}

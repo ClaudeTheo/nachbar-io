@@ -1,27 +1,20 @@
 // Nachbar.io — Quartier-Info-Service
 // Zentralisiert alle Quartier-Informationen (Wetter, Pollen, NINA, Muell, OEPNV etc.).
-// Erhaelt SupabaseClient als Parameter.
+// Laedt Apotheken, Events, OEPNV-Stops und Rathaus-Links dynamisch aus municipal_config.
 
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { ServiceError } from "@/lib/services/service-error";
 import { fetchWeather } from "@/modules/info-hub/services/weather-client";
 import { fetchPollenData } from "@/modules/info-hub/services/pollen-client";
 import { fetchNinaWarnings } from "@/modules/info-hub/services/nina-client";
-import { RATHAUS_LINKS } from "@/modules/info-hub/services/rathaus-links";
 import { fetchDepartures } from "@/modules/info-hub/services/oepnv-client";
-import { OEPNV_STOPS_BAD_SAECKINGEN } from "@/modules/info-hub/services/oepnv-stops";
-import {
-  APOTHEKEN_BAD_SAECKINGEN,
-  NOTDIENST_URL,
-} from "@/modules/info-hub/services/apotheken";
-import {
-  EVENTS_BAD_SAECKINGEN,
-  EVENTS_CALENDAR_URL,
-} from "@/modules/info-hub/services/events";
 import type {
   QuartierInfoResponse,
   WasteNext,
   OepnvStop,
+  RathausLink,
+  Apotheke,
+  LocalEvent,
 } from "@/modules/info-hub/types";
 
 // ============================================================
@@ -35,6 +28,24 @@ export async function getQuartierInfo(
   if (!quarterId) {
     throw new ServiceError("quarter_id erforderlich", 400);
   }
+
+  // 0. municipal_config fuer dieses Quartier laden
+  const { data: config } = await supabase
+    .from("municipal_config")
+    .select(
+      "service_links, apotheken, events, oepnv_stops, notdienst_url, events_calendar_url",
+    )
+    .eq("quarter_id", quarterId)
+    .single();
+
+  // Dynamische Daten aus municipal_config (oder leere Defaults)
+  const rathausLinks: RathausLink[] = (config?.service_links as RathausLink[]) || [];
+  const apotheken: Apotheke[] = (config?.apotheken as Apotheke[]) || [];
+  const events: LocalEvent[] = (config?.events as LocalEvent[]) || [];
+  const oepnvStopConfigs: { id: string; name: string }[] =
+    (config?.oepnv_stops as { id: string; name: string }[]) || [];
+  const notdienstUrl: string = (config?.notdienst_url as string) || "";
+  const eventsCalendarUrl: string = (config?.events_calendar_url as string) || "";
 
   // 1. Cache lesen
   const { data: cached } = await supabase
@@ -84,7 +95,6 @@ export async function getQuartierInfo(
   let nina = cacheMap.get("nina") as QuartierInfoResponse["nina"] | undefined;
   if (!nina) {
     try {
-      // AGS-Code aus Quartier-Settings lesen
       const { data: quarterData } = await supabase
         .from("quarters")
         .select("settings")
@@ -125,16 +135,20 @@ export async function getQuartierInfo(
     // Muellabfuhr ist optional
   }
 
-  // 6. OEPNV — aus Cache oder Live-Fetch (5s Timeout)
+  // 6. OEPNV — aus Cache oder Live-Fetch mit dynamischen Haltestellen
   let oepnv = cacheMap.get("oepnv") as OepnvStop[] | undefined;
   if (!oepnv) {
     try {
-      const stops = await Promise.all(
-        OEPNV_STOPS_BAD_SAECKINGEN.map((stop) =>
-          fetchDepartures(stop.id, stop.name),
-        ),
-      );
-      oepnv = stops;
+      if (oepnvStopConfigs.length > 0) {
+        const stops = await Promise.all(
+          oepnvStopConfigs.map((stop) =>
+            fetchDepartures(stop.id, stop.name),
+          ),
+        );
+        oepnv = stops;
+      } else {
+        oepnv = [];
+      }
     } catch {
       oepnv = [];
     }
@@ -146,11 +160,11 @@ export async function getQuartierInfo(
     nina: nina || [],
     pollen: pollen || null,
     waste_next: wasteNext,
-    rathaus: RATHAUS_LINKS,
+    rathaus: rathausLinks,
     oepnv: oepnv || [],
-    apotheken: APOTHEKEN_BAD_SAECKINGEN,
-    events: EVENTS_BAD_SAECKINGEN,
-    notdienst_url: NOTDIENST_URL,
-    events_calendar_url: EVENTS_CALENDAR_URL,
+    apotheken,
+    events,
+    notdienst_url: notdienstUrl,
+    events_calendar_url: eventsCalendarUrl,
   };
 }

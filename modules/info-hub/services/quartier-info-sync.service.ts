@@ -8,7 +8,6 @@ import { ServiceError } from "@/lib/services/service-error";
 import { fetchWeather } from "@/modules/info-hub/services/weather-client";
 import { fetchPollenData } from "@/modules/info-hub/services/pollen-client";
 import { fetchDepartures } from "@/modules/info-hub/services/oepnv-client";
-import { OEPNV_STOPS_BAD_SAECKINGEN } from "@/modules/info-hub/services/oepnv-stops";
 
 export interface QuartierInfoSyncResult {
   message: string;
@@ -119,24 +118,32 @@ export async function runQuartierInfoSync(
       results.errors++;
     }
 
-    // OEPNV holen und cachen
+    // OEPNV holen und cachen — Haltestellen dynamisch aus municipal_config
     try {
-      const stops = await Promise.all(
-        OEPNV_STOPS_BAD_SAECKINGEN.map((stop) =>
-          fetchDepartures(stop.id, stop.name),
-        ),
-      );
-      await supabase.from("quartier_info_cache").upsert(
-        {
-          quarter_id: quarter.id,
-          source: "oepnv",
-          data: stops,
-          fetched_at: new Date().toISOString(),
-          expires_at: new Date(Date.now() + 60 * 60 * 1000).toISOString(), // 1h
-        },
-        { onConflict: "quarter_id,source" },
-      );
-      results.oepnv++;
+      const { data: mcConfig } = await supabase
+        .from("municipal_config")
+        .select("oepnv_stops")
+        .eq("quarter_id", quarter.id)
+        .single();
+
+      const stopConfigs =
+        (mcConfig?.oepnv_stops as { id: string; name: string }[]) || [];
+      if (stopConfigs.length > 0) {
+        const stops = await Promise.all(
+          stopConfigs.map((stop) => fetchDepartures(stop.id, stop.name)),
+        );
+        await supabase.from("quartier_info_cache").upsert(
+          {
+            quarter_id: quarter.id,
+            source: "oepnv",
+            data: stops,
+            fetched_at: new Date().toISOString(),
+            expires_at: new Date(Date.now() + 60 * 60 * 1000).toISOString(), // 1h
+          },
+          { onConflict: "quarter_id,source" },
+        );
+        results.oepnv++;
+      }
     } catch (err) {
       console.error(
         JSON.stringify({

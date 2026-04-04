@@ -35,14 +35,6 @@ import type {
   Apotheke,
   LocalEvent,
 } from "@/modules/info-hub/types";
-import {
-  APOTHEKEN_BAD_SAECKINGEN,
-  NOTDIENST_URL,
-} from "@/modules/info-hub/services/apotheken";
-import {
-  EVENTS_BAD_SAECKINGEN,
-  EVENTS_CALENDAR_URL,
-} from "@/modules/info-hub/services/events";
 import { LargeTitle } from "@/components/ui/LargeTitle";
 
 // Pollen-Balken (farbig)
@@ -385,7 +377,7 @@ export default function QuartierInfoPage() {
           <h2 className="text-base font-semibold text-anthrazit">Apotheken</h2>
         </div>
         <div className="space-y-3">
-          {APOTHEKEN_BAD_SAECKINGEN.map((apo: Apotheke) => (
+          {(data?.apotheken || []).map((apo: Apotheke) => (
             <div
               key={apo.name}
               className="flex items-start gap-3 py-3 border-b border-gray-50 last:border-0"
@@ -413,7 +405,7 @@ export default function QuartierInfoPage() {
           ))}
         </div>
         <a
-          href={NOTDIENST_URL}
+          href={data?.notdienst_url || ""}
           target="_blank"
           rel="noopener noreferrer"
           className="mt-4 flex items-center justify-center gap-2 w-full py-3 rounded-xl bg-amber-50 border border-amber-200 text-amber-900 font-medium text-sm hover:bg-amber-100 transition-colors min-h-[48px]"
@@ -436,7 +428,7 @@ export default function QuartierInfoPage() {
           </h2>
         </div>
         <div className="space-y-3">
-          {EVENTS_BAD_SAECKINGEN.map((evt: LocalEvent, i: number) => (
+          {(data?.events || []).map((evt: LocalEvent, i: number) => (
             <div
               key={i}
               className="flex items-start gap-3 rounded-xl border border-gray-100 p-4"
@@ -461,12 +453,12 @@ export default function QuartierInfoPage() {
           ))}
         </div>
         <a
-          href={EVENTS_CALENDAR_URL}
+          href={data?.events_calendar_url || ""}
           target="_blank"
           rel="noopener noreferrer"
           className="mt-3 text-xs text-quartier-green hover:underline inline-flex items-center gap-1"
         >
-          Alle Veranstaltungen in Bad Säckingen
+          Alle Veranstaltungen anzeigen
           <ExternalLink className="h-3 w-3" />
         </a>
       </section>

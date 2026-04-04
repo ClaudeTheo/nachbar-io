@@ -191,26 +191,26 @@ export default function CityServicesPage() {
           {/* Rathaus-Info-Karte */}
           <div className="rounded-xl bg-gradient-to-r from-blue-50 to-transparent p-4">
             <h2 className="font-semibold text-anthrazit">
-              Rathaus {config?.city_name ?? "Bad Säckingen"}
+              Rathaus {config?.city_name ?? currentQuarter?.city ?? "Ihre Kommune"}
             </h2>
-            {(config?.rathaus_phone ?? "07761 51-0") && (
+            {config?.rathaus_phone && (
               <p className="mt-1 text-sm text-muted-foreground">
                 Tel.{" "}
                 <a
-                  href={`tel:${(config?.rathaus_phone ?? "07761 51-0").replace(/\s/g, "")}`}
+                  href={`tel:${config.rathaus_phone.replace(/\s/g, "")}`}
                   className="text-quartier-green hover:underline"
                 >
-                  {config?.rathaus_phone ?? "07761 51-0"}
+                  {config.rathaus_phone}
                 </a>
               </p>
             )}
-            {(config?.rathaus_email ?? "info@bad-saeckingen.de") && (
+            {config?.rathaus_email && (
               <p className="text-sm text-muted-foreground">
                 <a
-                  href={`mailto:${config?.rathaus_email ?? "info@bad-saeckingen.de"}`}
+                  href={`mailto:${config.rathaus_email}`}
                   className="text-quartier-green hover:underline"
                 >
-                  {config?.rathaus_email ?? "info@bad-saeckingen.de"}
+                  {config.rathaus_email}
                 </a>
               </p>
             )}

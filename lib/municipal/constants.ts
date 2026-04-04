@@ -107,6 +107,12 @@ export const DISCLAIMERS = {
   reportPhoto: "Bitte fotografieren Sie nur den Mangel selbst. Vermeiden Sie Personen und Kfz-Kennzeichen.",
   reportRathaus: "Sie können diesen Mangel auch direkt beim Rathaus melden.",
   wasteCalendar: "Alle Angaben ohne Gewähr. Verbindliche Termine finden Sie bei der Abfallwirtschaft.",
-  announcements: "Diese Zusammenfassungen wurden automatisch aus dem Amtsblatt der Stadt Bad Säckingen erstellt. Verbindlich ist ausschließlich das Original-Amtsblatt.",
+  announcements: "Diese Zusammenfassungen wurden automatisch erstellt. Verbindlich ist ausschließlich das Original-Amtsblatt.",
   amtsblattSource: "Quelle: Amtsblatt \u201ETrompeterbl\u00E4ttle\u201C der Stadt Bad S\u00E4ckingen",
 } as const;
+
+/** Dynamischer Disclaimer mit Stadt-Name (skalierbar fuer alle Staedte) */
+export function announcementDisclaimer(cityName?: string): string {
+  const city = cityName ?? "Ihrer Stadt";
+  return `Diese Zusammenfassungen wurden automatisch aus dem Amtsblatt der Stadt ${city} erstellt. Verbindlich ist ausschließlich das Original-Amtsblatt.`;
+}

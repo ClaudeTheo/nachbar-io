@@ -11,6 +11,7 @@ import {
   WIKI_CATEGORIES,
   ANNOUNCEMENT_CATEGORIES,
   DISCLAIMERS,
+  announcementDisclaimer,
 } from "@/lib/municipal";
 import type {
   MunicipalAnnouncement,
@@ -442,19 +443,20 @@ export default function CityServicesPage() {
             </div>
           )}
 
-          {/* Disclaimer + Amtsblatt-Link */}
+          {/* Disclaimer + Amtsblatt-Link (dynamisch per Stadt) */}
           <div className="space-y-1 text-center">
             <p className="text-[10px] text-muted-foreground">
-              {DISCLAIMERS.announcements}
+              {announcementDisclaimer(config?.city_name)}
             </p>
-            <ExternalLink
-              href="https://www.bad-saeckingen.de/unsere-stadt/stadt-bad-saeckingen/amtsblatt"
-              title="Amtsblatt"
-              className="inline-flex items-center gap-1 text-[10px] text-quartier-green hover:underline"
-            >
-              <ExternalLinkIcon className="h-3 w-3" /> Original-Amtsblatt auf
-              bad-saeckingen.de
-            </ExternalLink>
+            {config?.rathaus_url && (
+              <ExternalLink
+                href={config.rathaus_url}
+                title="Rathaus-Website"
+                className="inline-flex items-center gap-1 text-[10px] text-quartier-green hover:underline"
+              >
+                <ExternalLinkIcon className="h-3 w-3" /> Rathaus {config.city_name}
+              </ExternalLink>
+            )}
           </div>
         </div>
       )}

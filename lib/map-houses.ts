@@ -8,7 +8,9 @@ export const MAP_W = 1083;
 export const MAP_H = 766;
 
 export type LampColor = "green" | "red" | "yellow" | "blue" | "orange";
-export type StreetCode = "PS" | "SN" | "OR" | "HS" | "MG" | "CS";
+export type StreetCode = "PS" | "SN" | "OR" | "HS" | "MG" | "CS"
+  | "FS" | "KF" | "TS"   // Rheinfelden
+  | "AM" | "HM" | "SG" | "AB"; // Koeln
 
 export interface MapHouseData {
   id: string;
@@ -34,9 +36,19 @@ export const STREET_LABELS: Record<string, string> = {
   HS: "Hauptstraße",
   MG: "Marktgasse",
   CS: "Codmanstraße",
+  // Rheinfelden
+  FS: "Friedrichstraße",
+  KF: "Karl-Fürstenberg-Str.",
+  TS: "Tutti-Straße",
+  // Koeln
+  AM: "Alter Markt",
+  HM: "Heumarkt",
+  SG: "Salzgasse",
+  AB: "Am Bollwerk",
 };
 
-// Mapping street_code → voller Strassenname (fuer Household-Lookup)
+// Mapping street_code → voller Strassenname (Legacy: nur fuer SVG-Karte)
+// Leaflet-Karten nutzen map_house_id statt Street-Code-Lookup (skalierbar)
 export const STREET_CODE_TO_NAME: Record<StreetCode, string> = {
   PS: "Purkersdorfer Straße",
   SN: "Sanarystraße",
@@ -45,6 +57,15 @@ export const STREET_CODE_TO_NAME: Record<StreetCode, string> = {
   HS: "Hauptstraße",
   MG: "Marktgasse",
   CS: "Codmanstraße",
+  // Rheinfelden
+  FS: "Friedrichstraße",
+  KF: "Karl-Fürstenberg-Straße",
+  TS: "Tutti-Straße",
+  // Koeln
+  AM: "Alter Markt",
+  HM: "Heumarkt",
+  SG: "Salzgasse",
+  AB: "Am Bollwerk",
 };
 
 export const COLOR_CYCLE: LampColor[] = ["green", "red", "yellow"];

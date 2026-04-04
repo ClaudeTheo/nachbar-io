@@ -34,7 +34,7 @@ export default function LeafletMapInner({
         const color = statuses[house.id] ?? "green";
         const cfg = COLOR_CFG[color];
         const streetName = STREET_LABELS[house.s] ?? house.s;
-        const rc = residentCounts[`${house.s}:${house.num}`] ?? 0;
+        const rc = residentCounts[house.id] ?? 0;
 
         return (
           <CircleMarker

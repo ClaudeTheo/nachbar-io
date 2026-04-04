@@ -8,11 +8,9 @@ import {
   loadQuarterHouses,
   loadGeoQuarterHouses,
   isGeoQuarter,
-  STREET_CODE_TO_NAME,
   type MapHouseData,
   type GeoMapHouseData,
   type LampColor,
-  type StreetCode,
 } from "@/lib/map-houses";
 import type { MapConfig } from "@/lib/quarters/types";
 
@@ -74,7 +72,28 @@ export function useMapStatuses(quarterId?: string, mapConfig?: MapConfig): MapSt
           return s;
         });
 
-        // Aktive Urlaube laden — Häuser blau färben
+        // Skalierbare Zuordnung: household → map_house_id (kein statisches Street-Code-Mapping)
+        const houseIds = loadedHouses.map(h => h.id);
+
+        // Haushalte fuer die Haeuser dieses Quartiers laden
+        const { data: hhData } = await supabase
+          .from("households")
+          .select("id, map_house_id")
+          .in("map_house_id", houseIds.length > 0 ? houseIds : ["__none__"]);
+
+        // Mapping: household_id → map_house_id
+        const hhToMapHouse = new Map<string, string>();
+        const hhIds: string[] = [];
+        if (hhData) {
+          for (const h of hhData) {
+            if (h.map_house_id) {
+              hhToMapHouse.set(h.id, h.map_house_id);
+              hhIds.push(h.id);
+            }
+          }
+        }
+
+        // Aktive Urlaube laden — Haeuser blau faerben
         const today = new Date().toISOString().split("T")[0];
         const { data: vacations } = await supabase
           .from("vacation_modes")
@@ -83,44 +102,31 @@ export function useMapStatuses(quarterId?: string, mapConfig?: MapConfig): MapSt
           .gte("end_date", today);
 
         if (vacations && vacations.length > 0) {
-          // User-IDs mit aktivem Urlaub
           const vacUserIds = vacations.map(v => v.user_id);
-
-          // Deren Haushalte finden
           const { data: members } = await supabase
             .from("household_members")
-            .select("household_id, user_id, households(street_name, house_number)")
+            .select("household_id")
             .in("user_id", vacUserIds)
+            .in("household_id", hhIds.length > 0 ? hhIds : ["__none__"])
             .not("verified_at", "is", null);
 
           if (members) {
-            const vacHouseKeys: Record<string, boolean> = {};
+            const vacHouseIds = new Set<string>();
             for (const m of members) {
-              const hh = m.households as unknown as { street_name: string; house_number: string } | null;
-              if (hh) {
-                // Finde den street_code für diesen Straßennamen
-                const code = (Object.entries(STREET_CODE_TO_NAME) as [StreetCode, string][])
-                  .find(([, name]) => name === hh.street_name)?.[0];
-                if (code) {
-                  vacHouseKeys[`${code}:${hh.house_number}`] = true;
-                }
-              }
+              const mapId = hhToMapHouse.get(m.household_id);
+              if (mapId) vacHouseIds.add(mapId);
             }
-
-            // Statuses aktualisieren
             setStatuses(prev => {
               const updated = { ...prev };
               for (const h of loadedHouses) {
-                if (vacHouseKeys[`${h.s}:${h.num}`]) {
-                  updated[h.id] = "blue";
-                }
+                if (vacHouseIds.has(h.id)) updated[h.id] = "blue";
               }
               return updated;
             });
           }
         }
 
-        // Aktive Paketannahmen laden — Häuser orange färben
+        // Aktive Paketannahmen laden — Haeuser orange faerben
         const { data: packages } = await supabase
           .from("paketannahme")
           .select("user_id")
@@ -130,28 +136,21 @@ export function useMapStatuses(quarterId?: string, mapConfig?: MapConfig): MapSt
           const pkgUserIds = packages.map(p => p.user_id);
           const { data: pkgMembers } = await supabase
             .from("household_members")
-            .select("household_id, user_id, households(street_name, house_number)")
+            .select("household_id")
             .in("user_id", pkgUserIds)
+            .in("household_id", hhIds.length > 0 ? hhIds : ["__none__"])
             .not("verified_at", "is", null);
 
           if (pkgMembers) {
-            const pkgHouseKeys: Record<string, boolean> = {};
+            const pkgHouseIds = new Set<string>();
             for (const m of pkgMembers) {
-              const hh = m.households as unknown as { street_name: string; house_number: string } | null;
-              if (hh) {
-                const code = (Object.entries(STREET_CODE_TO_NAME) as [StreetCode, string][])
-                  .find(([, name]) => name === hh.street_name)?.[0];
-                if (code) {
-                  pkgHouseKeys[`${code}:${hh.house_number}`] = true;
-                }
-              }
+              const mapId = hhToMapHouse.get(m.household_id);
+              if (mapId) pkgHouseIds.add(mapId);
             }
-
             setStatuses(prev => {
               const updated = { ...prev };
               for (const h of loadedHouses) {
-                // Paketannahme nur setzen wenn nicht schon blau (Urlaub hat Vorrang)
-                if (pkgHouseKeys[`${h.s}:${h.num}`] && updated[h.id] !== "blue") {
+                if (pkgHouseIds.has(h.id) && updated[h.id] !== "blue") {
                   updated[h.id] = "orange";
                 }
               }
@@ -160,26 +159,24 @@ export function useMapStatuses(quarterId?: string, mapConfig?: MapConfig): MapSt
           }
         }
 
-        // Bewohnerzahlen laden (aggregiert)
-        const { data: countData } = await supabase
-          .from("household_members")
-          .select("household_id, households(street_name, house_number)")
-          .not("verified_at", "is", null);
+        // Bewohnerzahlen per map_house_id (skaliert auf beliebig viele Staedte)
+        if (hhIds.length > 0) {
+          const { data: memberData } = await supabase
+            .from("household_members")
+            .select("household_id")
+            .in("household_id", hhIds)
+            .not("verified_at", "is", null);
 
-        if (countData) {
-          const counts: Record<string, number> = {};
-          for (const m of countData) {
-            const hh = m.households as unknown as { street_name: string; house_number: string } | null;
-            if (hh) {
-              const code = (Object.entries(STREET_CODE_TO_NAME) as [StreetCode, string][])
-                .find(([, name]) => name === hh.street_name)?.[0];
-              if (code) {
-                const key = `${code}:${hh.house_number}`;
-                counts[key] = (counts[key] ?? 0) + 1;
+          if (memberData) {
+            const counts: Record<string, number> = {};
+            for (const m of memberData) {
+              const mapHouseId = hhToMapHouse.get(m.household_id);
+              if (mapHouseId) {
+                counts[mapHouseId] = (counts[mapHouseId] ?? 0) + 1;
               }
             }
+            setResidentCounts(counts);
           }
-          setResidentCounts(counts);
         }
       } catch {
         // Fallback — nichts zu tun

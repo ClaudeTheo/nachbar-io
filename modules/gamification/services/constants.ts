@@ -17,6 +17,8 @@ export const POINTS_CONFIG: Record<
   profile_complete: { points: 50, dailyLimit: 1 },
   first_invite: { points: 30, dailyLimit: 1 },
   streak_7_days: { points: 25, dailyLimit: 1 },
+  prevention_daily: { points: 10, dailyLimit: 1 },
+  prevention_weekly: { points: 25, dailyLimit: 1 },
 };
 
 // Einmalige Aktionen — werden nur 1x im Leben vergeben
@@ -44,4 +46,6 @@ export const ACTION_LABELS: Record<string, string> = {
   profile_complete: "Profil vervollständigt",
   first_invite: "Ersten Nachbarn eingeladen",
   streak_7_days: "7-Tage-Streak",
+  prevention_daily: "Tägliche Übung",
+  prevention_weekly: "Wochen-Sitzung",
 };

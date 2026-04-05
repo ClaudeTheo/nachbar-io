@@ -76,17 +76,21 @@ export async function redeemInviteCode(
   const adminDb = getAdminSupabase();
 
   // Schritt 1: Invite atomar als "benutzt" markieren (Lock gegen Race Conditions)
-  // used_at IS NULL verhindert doppeltes Einloesen
+  // Prueft: used_at IS NULL UND expires_at > now() (Codex: Expiry-Boundary-Fix)
   const { data: claimed, error: claimError } = await adminDb
     .from("caregiver_invites")
     .update({ used_at: new Date().toISOString(), used_by: userId })
     .eq("id", invite.id)
     .is("used_at", null)
+    .gt("expires_at", new Date().toISOString())
     .select("id")
     .single();
 
   if (claimError || !claimed) {
-    throw new ServiceError("Einladungs-Code wurde bereits verwendet", 409);
+    throw new ServiceError(
+      "Einladungs-Code wurde bereits verwendet oder ist abgelaufen",
+      409,
+    );
   }
 
   // Schritt 2: Caregiver-Link erstellen (via Admin — RLS erlaubt kein User-INSERT)
@@ -98,10 +102,20 @@ export async function redeemInviteCode(
 
   if (linkError) {
     // Rollback: Invite wieder freigeben bei Fehler
-    await adminDb
+    const { error: rollbackError } = await adminDb
       .from("caregiver_invites")
       .update({ used_at: null, used_by: null })
       .eq("id", invite.id);
+
+    if (rollbackError) {
+      // Kritisch: Invite bleibt "verbraucht" ohne Link — manuelles Eingreifen noetig
+      careLog("caregiver", "CRITICAL_rollback_failed", {
+        inviteId: invite.id,
+        caregiverId: userId,
+        linkError: linkError.message,
+        rollbackError: rollbackError.message,
+      });
+    }
 
     if (linkError.code === "23505") {
       throw new ServiceError("Verknüpfung besteht bereits", 409);

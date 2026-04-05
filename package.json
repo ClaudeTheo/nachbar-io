@@ -39,6 +39,7 @@
     "@picovoice/porcupine-web": "^4.0.0",
     "@picovoice/web-voice-processor": "^4.0.9",
     "@radix-ui/react-switch": "^1.2.6",
+    "@react-pdf/renderer": "^4.3.3",
     "@sentry/nextjs": "^10.46.0",
     "@simplewebauthn/browser": "^13.3.0",
     "@simplewebauthn/server": "^13.3.0",

@@ -66,7 +66,7 @@ function BuchenFuerAndereContent() {
     try {
       const [coursesRes, linksRes] = await Promise.all([
         fetch("/api/prevention/courses"),
-        fetch("/api/care/caregiver/links"),
+        fetch("/api/caregiver/links"),
       ]);
 
       if (coursesRes.ok) {

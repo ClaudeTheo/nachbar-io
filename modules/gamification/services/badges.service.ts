@@ -122,6 +122,21 @@ export const BADGE_DEFINITIONS: BadgeDefinition[] = [
       return (count ?? 0) >= 3;
     },
   },
+  {
+    key: "achtsamkeits_meister",
+    title: "Achtsamkeits-Meister",
+    description: "Praeventionskurs erfolgreich abgeschlossen (8 Wochen)",
+    icon: "🧘",
+    check: async (supabase, userId) => {
+      // Mindestens eine abgeschlossene Kurs-Einschreibung
+      const { count } = await supabase
+        .from("prevention_enrollments")
+        .select("*", { count: "exact", head: true })
+        .eq("user_id", userId)
+        .not("completed_at", "is", null);
+      return (count ?? 0) >= 1;
+    },
+  },
 ];
 
 /** Alle Badge-Bedingungen pruefen und neue Badges vergeben */

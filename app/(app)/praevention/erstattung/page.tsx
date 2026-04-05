@@ -51,7 +51,13 @@ export default function ErstattungPage() {
           )
           .map((p: { enrollment: Enrollment }) => p.enrollment);
         setEnrollments(eligible);
-        if (eligible.length > 0) setSelectedEnrollment(eligible[0].id);
+        if (eligible.length > 0) {
+          setSelectedEnrollment(eligible[0].id);
+          // Fast-Lane: Wenn Kasse schon bekannt, vorauswählen
+          if (eligible[0].insurance_config_id) {
+            setSelectedInsurance(eligible[0].insurance_config_id);
+          }
+        }
       }
 
       if (insuranceRes.ok) {
@@ -145,6 +151,25 @@ export default function ErstattungPage() {
           <p className="text-sm text-gray-500">Schritt 1 von 4</p>
         </div>
       </div>
+
+      {/* Fast-Lane: Wenn Kasse schon bekannt, Schnellstart anbieten */}
+      {selectedInsurance && enrollments.length === 1 && (
+        <button
+          onClick={handleStart}
+          disabled={submitting}
+          className="mb-6 flex w-full items-center justify-center gap-2 rounded-2xl bg-emerald-600 px-6 py-4 text-base font-semibold text-white shadow-sm transition-colors hover:bg-emerald-700 disabled:opacity-50"
+          style={{ minHeight: "56px" }}
+        >
+          {submitting ? (
+            <Loader2 className="h-5 w-5 animate-spin" />
+          ) : (
+            <>
+              <ArrowRight className="h-5 w-5" />
+              Erstattung jetzt starten
+            </>
+          )}
+        </button>
+      )}
 
       {/* Info */}
       <div className="mb-6 rounded-2xl border border-emerald-100 bg-emerald-50 p-4">

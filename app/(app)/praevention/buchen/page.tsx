@@ -226,53 +226,58 @@ export default function BuchenPage() {
         </div>
       )}
 
-      {/* Krankenkasse */}
+      {/* Krankenkasse — grosse Buttons statt Dropdown */}
       <div className="mb-6">
         <label className="mb-2 block text-sm font-medium text-gray-700">
           Ihre Krankenkasse (optional — für Erstattung)
         </label>
-        <select
-          value={selectedInsurance}
-          onChange={(e) => setSelectedInsurance(e.target.value)}
-          className="w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-base text-gray-900"
-          style={{ minHeight: "48px" }}
-        >
-          <option value="">— Keine Angabe —</option>
+        <div className="grid grid-cols-2 gap-3">
           {insurances.map((ins) => (
-            <option key={ins.id} value={ins.id}>
-              {ins.name}
-            </option>
+            <button
+              key={ins.id}
+              onClick={() =>
+                setSelectedInsurance(
+                  selectedInsurance === ins.id ? "" : ins.id,
+                )
+              }
+              className={`rounded-xl border px-4 py-3 text-left transition-colors ${
+                selectedInsurance === ins.id
+                  ? "border-emerald-500 bg-emerald-50"
+                  : "border-gray-200 bg-white hover:bg-gray-50"
+              }`}
+              style={{ minHeight: "80px" }}
+            >
+              <span className="text-base font-medium text-gray-900">
+                {ins.short_name}
+              </span>
+              <p className="mt-0.5 text-xs text-gray-500">{ins.name}</p>
+            </button>
           ))}
-        </select>
-        <p className="mt-1 text-xs text-gray-500">
+          <button
+            onClick={() => setSelectedInsurance("")}
+            className={`rounded-xl border px-4 py-3 text-left transition-colors ${
+              selectedInsurance === ""
+                ? "border-emerald-500 bg-emerald-50"
+                : "border-gray-200 bg-white hover:bg-gray-50"
+            }`}
+            style={{ minHeight: "80px" }}
+          >
+            <span className="text-base font-medium text-gray-900">Andere</span>
+            <p className="mt-0.5 text-xs text-gray-500">Keine Angabe</p>
+          </button>
+        </div>
+        <p className="mt-2 text-xs text-gray-500">
           Die meisten Kassen erstatten 75-100% nach Abschluss.
         </p>
       </div>
 
-      {/* Zahlungsmethode (nicht im Pilot-Modus) */}
+      {/* Zahlungsmethode — Rechnung zuerst (seniorenfreundlich) */}
       {!PILOT_MODE && (
         <div className="mb-6">
           <label className="mb-2 block text-sm font-medium text-gray-700">
-            Zahlungsmethode
+            Wie möchten Sie bezahlen?
           </label>
           <div className="space-y-2">
-            <button
-              onClick={() => setPaymentMethod("card")}
-              className={`flex w-full items-center gap-3 rounded-xl border px-4 py-3 text-left transition-colors ${
-                paymentMethod === "card"
-                  ? "border-emerald-500 bg-emerald-50"
-                  : "border-gray-200 bg-white hover:bg-gray-50"
-              }`}
-              style={{ minHeight: "48px" }}
-            >
-              <CreditCard className="h-5 w-5 text-gray-600" />
-              <div>
-                <span className="font-medium text-gray-900">Karte / SEPA</span>
-                <p className="text-xs text-gray-500">
-                  Kredit-/Debitkarte oder Lastschrift
-                </p>
-              </div>
-            </button>
             <button
               onClick={() => setPaymentMethod("invoice")}
               className={`flex w-full items-center gap-3 rounded-xl border px-4 py-3 text-left transition-colors ${
@@ -280,15 +285,34 @@ export default function BuchenPage() {
                   ? "border-emerald-500 bg-emerald-50"
                   : "border-gray-200 bg-white hover:bg-gray-50"
               }`}
-              style={{ minHeight: "48px" }}
+              style={{ minHeight: "56px" }}
             >
               <Building2 className="h-5 w-5 text-gray-600" />
               <div>
                 <span className="font-medium text-gray-900">
-                  Rechnung (14 Tage)
+                  Rechnung / Überweisung
                 </span>
                 <p className="text-xs text-gray-500">
-                  Für Organisationen und Einrichtungen
+                  Bequem per Überweisung innerhalb von 14 Tagen
+                </p>
+              </div>
+            </button>
+            <button
+              onClick={() => setPaymentMethod("card")}
+              className={`flex w-full items-center gap-3 rounded-xl border px-4 py-3 text-left transition-colors ${
+                paymentMethod === "card"
+                  ? "border-emerald-500 bg-emerald-50"
+                  : "border-gray-200 bg-white hover:bg-gray-50"
+              }`}
+              style={{ minHeight: "56px" }}
+            >
+              <CreditCard className="h-5 w-5 text-gray-600" />
+              <div>
+                <span className="font-medium text-gray-900">
+                  Karte oder Lastschrift
+                </span>
+                <p className="text-xs text-gray-500">
+                  SEPA-Lastschrift, Kredit- oder Debitkarte
                 </p>
               </div>
             </button>

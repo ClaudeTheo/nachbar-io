@@ -168,7 +168,7 @@ export default function BuchenFuerAnderePage() {
             Für Angehörigen buchen
           </h1>
           <p className="text-sm text-gray-500">
-            Schenken Sie einen Präventionskurs
+            z. B. für Ihre Mutter, Ihren Vater oder eine nahestehende Person
           </p>
         </div>
       </div>

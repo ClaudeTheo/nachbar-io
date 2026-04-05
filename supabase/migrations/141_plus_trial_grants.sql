@@ -36,6 +36,22 @@ CREATE POLICY trial_grants_instructor ON plus_trial_grants FOR SELECT
     WHERE pc.instructor_id = auth.uid()
   ));
 
+-- Teilnehmer duerfen Grants fuer eigene Angehoerige erstellen
+CREATE POLICY trial_grants_insert ON plus_trial_grants FOR INSERT
+  WITH CHECK (
+    enrollment_id IN (
+      SELECT id FROM prevention_enrollments WHERE user_id = auth.uid()
+    )
+  );
+
+-- Teilnehmer duerfen eigene Grants updaten (Tier-Upgrade)
+CREATE POLICY trial_grants_update ON plus_trial_grants FOR UPDATE
+  USING (
+    enrollment_id IN (
+      SELECT id FROM prevention_enrollments WHERE user_id = auth.uid()
+    )
+  );
+
 -- 4. Kurs-Bewertungen (fuer Gold-Stufe)
 CREATE TABLE IF NOT EXISTS prevention_reviews (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),

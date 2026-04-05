@@ -33,7 +33,9 @@ export async function calculateRewardTier(
   // Enrollment laden
   const { data: enrollment } = await supabase
     .from("prevention_enrollments")
-    .select("id, certificate_generated, attendance_rate, pre_pss10_score, post_pss10_score")
+    .select(
+      "id, certificate_generated, attendance_rate, pre_pss10_score, post_pss10_score",
+    )
     .eq("id", enrollmentId)
     .single();
 
@@ -148,14 +150,22 @@ export async function grantPlusTrial(
     // Pruefen ob bereits ein aktiver Trial fuer diesen Enrollment existiert
     const { data: existing } = await supabase
       .from("plus_trial_grants")
-      .select("id, expires_at")
+      .select("id, tier, expires_at")
       .eq("enrollment_id", enrollmentId)
       .eq("caregiver_user_id", link.caregiver_id)
       .maybeSingle();
 
     if (existing) {
-      // Tier-Upgrade: laengeren Zeitraum setzen falls noetig
-      if (new Date(existing.expires_at) < expiresAt) {
+      // Nur echtes Tier-Upgrade erlauben (bronze→silber→gold)
+      // Gleiche oder niedrigere Stufe = kein Update (verhindert Exploit)
+      const tierOrder = { bronze: 1, silver: 2, gold: 3 } as Record<
+        string,
+        number
+      >;
+      const existingTierValue = tierOrder[existing.tier] ?? 0;
+      const newTierValue = tierOrder[tier] ?? 0;
+
+      if (newTierValue > existingTierValue) {
         await supabase
           .from("plus_trial_grants")
           .update({
@@ -165,6 +175,7 @@ export async function grantPlusTrial(
           })
           .eq("id", existing.id);
       }
+      // Sonst: kein Update, bestehendes Grant bleibt
     } else {
       // Neuen Grant erstellen
       await supabase.from("plus_trial_grants").insert({

@@ -98,17 +98,20 @@ export async function POST(request: NextRequest) {
     .eq("user_id", user.id)
     .maybeSingle();
 
+  // Leeren/Whitespace-Text normalisieren (verhindert Gold-Exploit mit leerem String)
+  const cleanText = body.text?.trim() || null;
+
   if (existing) {
     await supabase
       .from("prevention_reviews")
-      .update({ rating: body.rating, text: body.text ?? null })
+      .update({ rating: body.rating, text: cleanText })
       .eq("id", existing.id);
   } else {
     await supabase.from("prevention_reviews").insert({
       enrollment_id: body.enrollmentId,
       user_id: user.id,
       rating: body.rating,
-      text: body.text ?? null,
+      text: cleanText,
     });
   }
 

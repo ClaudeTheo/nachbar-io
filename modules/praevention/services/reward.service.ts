@@ -3,6 +3,7 @@
 // Design-Ref: docs/plans/2026-04-05-kursbelohnung-plus-trial-design.md
 
 import { SupabaseClient } from "@supabase/supabase-js";
+import { sendPush } from "@/modules/care/services/channels/push";
 
 export type RewardTier = "none" | "bronze" | "silver" | "gold";
 
@@ -77,11 +78,29 @@ export async function calculateAndStoreRewardTier(
 ): Promise<{ tier: RewardTier; upgradeHint?: string }> {
   const tier = await calculateRewardTier(supabase, enrollmentId);
 
-  // In DB speichern
-  await supabase
+  // In DB speichern — nur Upgrade, nie Downgrade (GREATEST-Logik)
+  // Verhindert Inkonsistenz wenn z.B. eine Bewertung geloescht wird
+  const { data: current } = await supabase
     .from("prevention_enrollments")
-    .update({ reward_tier: tier })
-    .eq("id", enrollmentId);
+    .select("reward_tier")
+    .eq("id", enrollmentId)
+    .single();
+
+  const tierOrder: Record<string, number> = {
+    none: 0,
+    bronze: 1,
+    silver: 2,
+    gold: 3,
+  };
+  const currentValue = tierOrder[current?.reward_tier ?? "none"] ?? 0;
+  const newValue = tierOrder[tier] ?? 0;
+
+  if (newValue >= currentValue) {
+    await supabase
+      .from("prevention_enrollments")
+      .update({ reward_tier: tier })
+      .eq("id", enrollmentId);
+  }
 
   // Upgrade-Hinweise
   let upgradeHint: string | undefined;
@@ -99,12 +118,15 @@ export async function calculateAndStoreRewardTier(
 /**
  * Plus-Trial an alle verbundenen Angehoerigen vergeben.
  * Erstellt plus_trial_grants + setzt caregiver_links.plus_trial_end.
- * Maximal 1 aktiver Trial pro Angehoeriger (bei mehreren Kursen: laengster gewinnt).
+ * WICHTIG: Nutzt atomic UPSERT (ON CONFLICT) statt Check-then-Insert.
+ * DB-Constraint uq_trial_grant_enrollment_caregiver verhindert Duplikate.
+ * Maximal 1 aktiver Trial pro Angehoeriger pro Kurs.
  */
 export async function grantPlusTrial(
   supabase: SupabaseClient,
   enrollmentId: string,
   tier: RewardTier,
+  requestingUserId?: string,
 ): Promise<RewardResult> {
   if (tier === "none") {
     return { tier, monthsGranted: 0, caregiversGranted: 0 };
@@ -121,6 +143,13 @@ export async function grantPlusTrial(
 
   if (!enrollment) {
     throw new Error("Einschreibung nicht gefunden");
+  }
+
+  // Ownership-Pruefung: Enrollment muss dem anfragenden User gehoeren
+  if (requestingUserId && enrollment.user_id !== requestingUserId) {
+    throw new Error(
+      "Zugriff verweigert: Einschreibung gehoert einem anderen Nutzer",
+    );
   }
 
   // Aktive Angehoerige des Teilnehmers laden
@@ -144,51 +173,68 @@ export async function grantPlusTrial(
   expiresAt.setMonth(expiresAt.getMonth() + months);
   const expiresIso = expiresAt.toISOString();
 
+  const tierOrder: Record<string, number> = { bronze: 1, silver: 2, gold: 3 };
+  const newTierValue = tierOrder[tier] ?? 0;
   let granted = 0;
 
   for (const link of caregiverLinks) {
-    // Pruefen ob bereits ein aktiver Trial fuer diesen Enrollment existiert
+    // Atomic UPSERT: DB UNIQUE (enrollment_id, caregiver_user_id) verhindert Duplikate
+    // Bei Konflikt: Nur upgraden wenn neue Stufe hoeher (App-seitige Pruefung noetig,
+    // da Supabase kein conditional ON CONFLICT unterstuetzt)
     const { data: existing } = await supabase
       .from("plus_trial_grants")
-      .select("id, tier, expires_at")
+      .select("id, tier")
       .eq("enrollment_id", enrollmentId)
       .eq("caregiver_user_id", link.caregiver_id)
       .maybeSingle();
 
+    let grantChanged = false;
+
     if (existing) {
       // Nur echtes Tier-Upgrade erlauben (bronze→silber→gold)
-      // Gleiche oder niedrigere Stufe = kein Update (verhindert Exploit)
-      const tierOrder = { bronze: 1, silver: 2, gold: 3 } as Record<
-        string,
-        number
-      >;
       const existingTierValue = tierOrder[existing.tier] ?? 0;
-      const newTierValue = tierOrder[tier] ?? 0;
+      if (newTierValue <= existingTierValue) continue;
 
-      if (newTierValue > existingTierValue) {
-        await supabase
-          .from("plus_trial_grants")
-          .update({
-            tier,
-            months_granted: months,
-            expires_at: expiresIso,
-          })
-          .eq("id", existing.id);
+      // WHERE-Guard: .neq("tier", tier) verhindert doppeltes Update bei parallelen Requests
+      const { data: updated, error: updateErr } = await supabase
+        .from("plus_trial_grants")
+        .update({ tier, months_granted: months, expires_at: expiresIso })
+        .eq("id", existing.id)
+        .neq("tier", tier)
+        .select("id");
+
+      if (updateErr) {
+        console.error(`[reward] Grant-Update fehlgeschlagen:`, updateErr);
+        continue;
       }
-      // Sonst: kein Update, bestehendes Grant bleibt
+      grantChanged = (updated?.length ?? 0) > 0;
     } else {
-      // Neuen Grant erstellen
-      await supabase.from("plus_trial_grants").insert({
-        enrollment_id: enrollmentId,
-        caregiver_user_id: link.caregiver_id,
-        tier,
-        months_granted: months,
-        expires_at: expiresIso,
-      });
+      // INSERT — bei Race Condition faengt UNIQUE Constraint den Duplikat ab
+      const { error: insertErr } = await supabase
+        .from("plus_trial_grants")
+        .insert({
+          enrollment_id: enrollmentId,
+          caregiver_user_id: link.caregiver_id,
+          tier,
+          months_granted: months,
+          expires_at: expiresIso,
+        });
+
+      if (insertErr) {
+        // UNIQUE-Violation = anderer Request war schneller → kein Fehler, kein Push
+        if (insertErr.code === "23505") {
+          console.info(
+            `[reward] Grant existiert bereits (Race Condition abgefangen)`,
+          );
+          continue;
+        }
+        console.error(`[reward] Grant-Insert fehlgeschlagen:`, insertErr);
+        continue;
+      }
+      grantChanged = true;
     }
 
     // caregiver_links.plus_trial_end auf das spaeteste Ablaufdatum setzen
-    // (koennten mehrere Trials von verschiedenen Kursen laufen)
     const { data: allGrants } = await supabase
       .from("plus_trial_grants")
       .select("expires_at")
@@ -203,6 +249,17 @@ export async function grantPlusTrial(
       .from("caregiver_links")
       .update({ plus_trial_end: latestExpiry })
       .eq("id", link.id);
+
+    // Push NUR bei echtem neuen/upgegradeten Grant (kein Push bei 23505 / Race-Skip)
+    if (grantChanged) {
+      sendPush(supabase, {
+        userId: link.caregiver_id,
+        title: "Nachbar Plus geschenkt!",
+        body: `Sie erhalten ${months} ${months === 1 ? "Monat" : "Monate"} Nachbar Plus gratis.`,
+        url: "/care",
+        tag: "plus-trial-granted",
+      }).catch((e) => console.warn(`[reward] Push fehlgeschlagen:`, e));
+    }
 
     granted++;
   }
@@ -273,13 +330,26 @@ export async function processTrialExpiries(
     }
   }
 
-  // 2. 7-Tage-Reminder
+  // 2. 7-Tage-Reminder (nur senden, nicht doppelt am naechsten Tag)
   const { data: remind7 } = await supabase
     .from("caregiver_links")
     .select("caregiver_id, plus_trial_end")
-    .gte("plus_trial_end", now.toISOString())
+    .gte("plus_trial_end", in1d.toISOString()) // > 1 Tag (sonst 1d-Reminder)
     .lte("plus_trial_end", in7d.toISOString())
     .not("plus_trial_end", "is", null);
+
+  if (remind7) {
+    for (const link of remind7) {
+      const endDate = new Date(link.plus_trial_end).toLocaleDateString("de-DE");
+      sendPush(supabase, {
+        userId: link.caregiver_id,
+        title: "Nachbar Plus endet bald",
+        body: `Ihr Gratis-Zeitraum endet am ${endDate}. Fuer 8,90 EUR/Monat weiter nutzen?`,
+        url: "/care",
+        tag: "plus-trial-7d-reminder",
+      }).catch((e) => console.warn(`[reward] Push fehlgeschlagen:`, e));
+    }
+  }
 
   // 3. 1-Tag-Reminder
   const { data: remind1 } = await supabase
@@ -289,7 +359,17 @@ export async function processTrialExpiries(
     .lte("plus_trial_end", in1d.toISOString())
     .not("plus_trial_end", "is", null);
 
-  // TODO: Push-Benachrichtigungen senden (wenn Push-Service implementiert)
+  if (remind1) {
+    for (const link of remind1) {
+      sendPush(supabase, {
+        userId: link.caregiver_id,
+        title: "Letzter Tag Nachbar Plus",
+        body: "Morgen endet Ihr Gratis-Zeitraum. Jetzt fuer 8,90 EUR/Monat weitermachen!",
+        url: "/care",
+        tag: "plus-trial-1d-reminder",
+      }).catch((e) => console.warn(`[reward] Push fehlgeschlagen:`, e));
+    }
+  }
 
   return {
     expired: expired?.length ?? 0,

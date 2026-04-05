@@ -9,6 +9,9 @@ import {
   grantPlusTrial,
 } from "@/modules/praevention/services/reward.service";
 
+const UUID_RE =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 export async function GET(request: NextRequest) {
   const supabase = await createClient();
   const {
@@ -23,9 +26,9 @@ export async function GET(request: NextRequest) {
   }
 
   const enrollmentId = request.nextUrl.searchParams.get("enrollmentId");
-  if (!enrollmentId) {
+  if (!enrollmentId || !UUID_RE.test(enrollmentId)) {
     return NextResponse.json(
-      { error: "enrollmentId erforderlich" },
+      { error: "Gueltige enrollmentId erforderlich" },
       { status: 400 },
     );
   }
@@ -59,15 +62,15 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Ungueltiges Format" }, { status: 400 });
   }
 
-  if (!body.enrollmentId) {
+  if (!body.enrollmentId || !UUID_RE.test(body.enrollmentId)) {
     return NextResponse.json(
-      { error: "enrollmentId erforderlich" },
+      { error: "Gueltige enrollmentId erforderlich" },
       { status: 400 },
     );
   }
 
   try {
-    // Stufe berechnen (User-scoped: liest eigene Enrollment)
+    // Stufe berechnen (User-scoped: RLS schuetzt, nur eigene Enrollments lesbar)
     const { tier } = await calculateAndStoreRewardTier(
       supabase,
       body.enrollmentId,
@@ -75,11 +78,18 @@ export async function POST(request: NextRequest) {
 
     // Trial vergeben (Admin-Client: Trigger auf caregiver_links erfordert service_role
     // fuer plus_trial_end Updates)
+    // requestingUserId: Ownership-Pruefung im Service (Defense-in-Depth neben RLS)
     const adminDb = getAdminSupabase();
-    const result = await grantPlusTrial(adminDb, body.enrollmentId, tier);
+    const result = await grantPlusTrial(
+      adminDb,
+      body.enrollmentId,
+      tier,
+      user.id,
+    );
     return NextResponse.json(result);
   } catch (err) {
     const message = err instanceof Error ? err.message : "Fehler";
-    return NextResponse.json({ error: message }, { status: 400 });
+    const status = message.includes("Zugriff verweigert") ? 403 : 400;
+    return NextResponse.json({ error: message }, { status });
   }
 }

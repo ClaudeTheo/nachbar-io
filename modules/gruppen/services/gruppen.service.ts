@@ -1,6 +1,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { ServiceError } from "@/lib/services/service-error";
 import { getUserQuarterId } from "@/lib/quarters/helpers";
+import { awardPoints } from "@/modules/gamification";
 import type {
   Group,
   GroupWithMembership,
@@ -43,7 +44,8 @@ export async function listGroups(
     .eq("quarter_id", quarterId)
     .order("member_count", { ascending: false });
 
-  if (error) throw new ServiceError("Gruppen konnten nicht geladen werden", 500);
+  if (error)
+    throw new ServiceError("Gruppen konnten nicht geladen werden", 500);
 
   // Eigene Mitgliedschaften laden
   const { data: memberships } = await supabase
@@ -95,7 +97,10 @@ export async function createGroup(
 
   // Validierung
   if (!payload.name || payload.name.length < 3 || payload.name.length > 60) {
-    throw new ServiceError("Der Gruppenname muss zwischen 3 und 60 Zeichen lang sein", 400);
+    throw new ServiceError(
+      "Der Gruppenname muss zwischen 3 und 60 Zeichen lang sein",
+      400,
+    );
   }
   if (!GROUP_CATEGORIES.includes(payload.category as GroupCategory)) {
     throw new ServiceError("Ungueltige Kategorie", 400);
@@ -107,7 +112,10 @@ export async function createGroup(
     .select("*", { count: "exact", head: true })
     .eq("quarter_id", quarterId);
   if ((quarterCount ?? 0) >= MAX_GROUPS_PER_QUARTER) {
-    throw new ServiceError(`Maximal ${MAX_GROUPS_PER_QUARTER} Gruppen pro Quartier erlaubt`, 400);
+    throw new ServiceError(
+      `Maximal ${MAX_GROUPS_PER_QUARTER} Gruppen pro Quartier erlaubt`,
+      400,
+    );
   }
 
   const { count: userCount } = await supabase
@@ -116,7 +124,10 @@ export async function createGroup(
     .eq("user_id", userId)
     .eq("status", "active");
   if ((userCount ?? 0) >= MAX_GROUPS_PER_USER) {
-    throw new ServiceError(`Sie koennen maximal ${MAX_GROUPS_PER_USER} Gruppen beitreten`, 400);
+    throw new ServiceError(
+      `Sie koennen maximal ${MAX_GROUPS_PER_USER} Gruppen beitreten`,
+      400,
+    );
   }
 
   // Gruppe erstellen
@@ -144,6 +155,11 @@ export async function createGroup(
     status: "active",
   });
 
+  // Gamification: Punkte fuer Gruppen-Erstellung (fire-and-forget)
+  awardPoints(supabase, userId, "group_create").catch((err) =>
+    console.error("[gamification] group_create awardPoints failed:", err),
+  );
+
   return group;
 }
 
@@ -164,12 +180,18 @@ export async function updateGroup(
     .single();
 
   if (!membership || !["founder", "admin"].includes(membership.role)) {
-    throw new ServiceError("Nur Gruender oder Admins koennen die Gruppe bearbeiten", 403);
+    throw new ServiceError(
+      "Nur Gruender oder Admins koennen die Gruppe bearbeiten",
+      403,
+    );
   }
 
-  const updates: Record<string, unknown> = { updated_at: new Date().toISOString() };
+  const updates: Record<string, unknown> = {
+    updated_at: new Date().toISOString(),
+  };
   if (payload.name !== undefined) updates.name = payload.name.trim();
-  if (payload.description !== undefined) updates.description = payload.description?.trim() || null;
+  if (payload.description !== undefined)
+    updates.description = payload.description?.trim() || null;
   if (payload.category !== undefined) updates.category = payload.category;
   if (payload.type !== undefined) updates.type = payload.type;
 
@@ -180,7 +202,8 @@ export async function updateGroup(
     .select()
     .single();
 
-  if (error) throw new ServiceError("Gruppe konnte nicht aktualisiert werden", 500);
+  if (error)
+    throw new ServiceError("Gruppe konnte nicht aktualisiert werden", 500);
   return data;
 }
 
@@ -201,7 +224,8 @@ export async function deleteGroup(
   }
 
   const { error } = await supabase.from("groups").delete().eq("id", groupId);
-  if (error) throw new ServiceError("Gruppe konnte nicht geloescht werden", 500);
+  if (error)
+    throw new ServiceError("Gruppe konnte nicht geloescht werden", 500);
 }
 
 // Beitreten (offen: sofort, geschlossen: Anfrage)
@@ -232,7 +256,10 @@ export async function joinGroup(
     .eq("user_id", userId)
     .eq("status", "active");
   if ((userCount ?? 0) >= MAX_GROUPS_PER_USER) {
-    throw new ServiceError(`Sie koennen maximal ${MAX_GROUPS_PER_USER} Gruppen beitreten`, 400);
+    throw new ServiceError(
+      `Sie koennen maximal ${MAX_GROUPS_PER_USER} Gruppen beitreten`,
+      400,
+    );
   }
 
   // Gruppentyp pruefen
@@ -284,9 +311,13 @@ export async function leaveGroup(
     .eq("status", "active")
     .single();
 
-  if (!membership) throw new ServiceError("Sie sind kein Mitglied dieser Gruppe", 400);
+  if (!membership)
+    throw new ServiceError("Sie sind kein Mitglied dieser Gruppe", 400);
   if (membership.role === "founder") {
-    throw new ServiceError("Als Gruender koennen Sie die Gruppe nicht verlassen. Loeschen Sie die Gruppe stattdessen.", 400);
+    throw new ServiceError(
+      "Als Gruender koennen Sie die Gruppe nicht verlassen. Loeschen Sie die Gruppe stattdessen.",
+      400,
+    );
   }
 
   await supabase
@@ -310,7 +341,8 @@ export async function listMembers(
     .in("status", ["active", "pending"])
     .order("joined_at", { ascending: true });
 
-  if (error) throw new ServiceError("Mitglieder konnten nicht geladen werden", 500);
+  if (error)
+    throw new ServiceError("Mitglieder konnten nicht geladen werden", 500);
   return data ?? [];
 }
 
@@ -331,7 +363,10 @@ export async function updateMember(
     .eq("status", "active")
     .single();
 
-  if (!adminMembership || !["founder", "admin"].includes(adminMembership.role)) {
+  if (
+    !adminMembership ||
+    !["founder", "admin"].includes(adminMembership.role)
+  ) {
     throw new ServiceError("Keine Berechtigung", 403);
   }
 
@@ -343,7 +378,8 @@ export async function updateMember(
     .select()
     .single();
 
-  if (error) throw new ServiceError("Mitglied konnte nicht aktualisiert werden", 500);
+  if (error)
+    throw new ServiceError("Mitglied konnte nicht aktualisiert werden", 500);
   if (updates.status) await syncMemberCount(supabase, groupId);
   return data;
 }

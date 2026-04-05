@@ -15,8 +15,13 @@ import { createCareLogger } from "@/lib/care/logger";
 import { checkCareConsent } from "@/lib/care/consent";
 import { getUserQuarterId } from "@/lib/quarters/helpers";
 import { ServiceError } from "@/lib/services/service-error";
-import type { CareCheckin, CareCheckinStatus, CareCheckinMood } from "@/lib/care/types";
+import type {
+  CareCheckin,
+  CareCheckinStatus,
+  CareCheckinMood,
+} from "@/lib/care/types";
 import { CHECKIN_DEFAULTS } from "@/modules/care/services/constants";
+import { awardPoints } from "@/modules/gamification";
 
 // Gültige Check-in-Status-Werte für die Eingabe
 const VALID_SUBMIT_STATUSES: CareCheckinStatus[] = [
@@ -164,6 +169,11 @@ export async function submitCheckin(
     status,
     mood: mood ?? null,
   });
+
+  // Gamification: Punkte fuer Check-in (fire-and-forget)
+  awardPoints(supabase, userId, "checkin").catch((err) =>
+    console.error("[gamification] checkin awardPoints failed:", err),
+  );
 
   // Audit-Log schreiben: ok → checkin_ok, not_well/need_help → checkin_not_well
   const auditEventType = status === "ok" ? "checkin_ok" : "checkin_not_well";
@@ -372,10 +382,7 @@ export async function getTodayCheckinStatus(
       "[care/checkin/status] Check-in-Abfrage fehlgeschlagen:",
       checkinsResult.error,
     );
-    throw new ServiceError(
-      "Check-in-Status konnte nicht geladen werden",
-      500,
-    );
+    throw new ServiceError("Check-in-Status konnte nicht geladen werden", 500);
   }
 
   if (profileResult.error) {
@@ -393,10 +400,10 @@ export async function getTodayCheckinStatus(
   ) as CareCheckin[];
 
   // Check-in-Zeiten und Aktivierungsstatus aus dem Profil oder Defaults laden
-  const checkinTimes: string[] =
-    profileResult.data?.checkin_times ?? [...CHECKIN_DEFAULTS.defaultTimes];
-  const checkinEnabled: boolean =
-    profileResult.data?.checkin_enabled ?? true;
+  const checkinTimes: string[] = profileResult.data?.checkin_times ?? [
+    ...CHECKIN_DEFAULTS.defaultTimes,
+  ];
+  const checkinEnabled: boolean = profileResult.data?.checkin_enabled ?? true;
 
   // Anzahl abgeschlossener Check-ins (completed_at ist gesetzt, Status nicht 'missed')
   const completedCount = todayCheckins.filter(

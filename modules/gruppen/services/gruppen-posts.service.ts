@@ -1,6 +1,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { ServiceError } from "@/lib/services/service-error";
 import type { GroupPost, GroupPostComment, CreatePostPayload } from "./types";
+import { awardPoints } from "@/modules/gamification";
 
 const POSTS_PER_PAGE = 20;
 
@@ -20,7 +21,8 @@ export async function listPosts(
     .order("created_at", { ascending: false })
     .range(from, to);
 
-  if (error) throw new ServiceError("Beitraege konnten nicht geladen werden", 500);
+  if (error)
+    throw new ServiceError("Beitraege konnten nicht geladen werden", 500);
 
   // Kommentar-Anzahl pro Post
   const posts = data ?? [];
@@ -60,7 +62,10 @@ export async function createPost(
     .single();
 
   if (!membership) {
-    throw new ServiceError("Sie muessen Mitglied der Gruppe sein, um Beitraege zu erstellen", 403);
+    throw new ServiceError(
+      "Sie muessen Mitglied der Gruppe sein, um Beitraege zu erstellen",
+      403,
+    );
   }
 
   if (!payload.content || payload.content.trim().length === 0) {
@@ -81,7 +86,14 @@ export async function createPost(
     .select("*, users(display_name, avatar_url)")
     .single();
 
-  if (error) throw new ServiceError("Beitrag konnte nicht erstellt werden", 500);
+  if (error)
+    throw new ServiceError("Beitrag konnte nicht erstellt werden", 500);
+
+  // Gamification: Punkte fuer Gruppen-Beitrag (fire-and-forget)
+  awardPoints(supabase, userId, "group_post").catch((err) =>
+    console.error("[gamification] group_post awardPoints failed:", err),
+  );
+
   return { ...data, comment_count: 0 };
 }
 
@@ -96,7 +108,8 @@ export async function listComments(
     .eq("post_id", postId)
     .order("created_at", { ascending: true });
 
-  if (error) throw new ServiceError("Kommentare konnten nicht geladen werden", 500);
+  if (error)
+    throw new ServiceError("Kommentare konnten nicht geladen werden", 500);
   return data ?? [];
 }
 
@@ -132,7 +145,10 @@ export async function createComment(
     .single();
 
   if (!membership) {
-    throw new ServiceError("Sie muessen Mitglied der Gruppe sein, um zu kommentieren", 403);
+    throw new ServiceError(
+      "Sie muessen Mitglied der Gruppe sein, um zu kommentieren",
+      403,
+    );
   }
 
   const { data, error } = await supabase
@@ -145,6 +161,7 @@ export async function createComment(
     .select("*, users(display_name, avatar_url)")
     .single();
 
-  if (error) throw new ServiceError("Kommentar konnte nicht erstellt werden", 500);
+  if (error)
+    throw new ServiceError("Kommentar konnte nicht erstellt werden", 500);
   return data;
 }

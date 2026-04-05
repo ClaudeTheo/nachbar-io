@@ -3,8 +3,12 @@
 
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { ServiceError } from "@/lib/services/service-error";
-import type { HelpCategory, HelpRequestType } from "@/modules/hilfe/services/types";
+import type {
+  HelpCategory,
+  HelpRequestType,
+} from "@/modules/hilfe/services/types";
 import { HELP_CATEGORY_LABELS } from "@/modules/hilfe/services/types";
+import { awardPoints } from "@/modules/gamification";
 
 const VALID_CATEGORIES = Object.keys(HELP_CATEGORY_LABELS) as HelpCategory[];
 
@@ -160,6 +164,11 @@ export async function confirmMatch(
     console.error("[hilfe/match] Status-Update fehlgeschlagen:", statusError);
     throw new ServiceError("Status-Update fehlgeschlagen", 500);
   }
+
+  // Gamification: Helfer bekommt Punkte fuer Match (fire-and-forget)
+  awardPoints(supabase, updatedMatch.helper_id, "help_match").catch((err) =>
+    console.error("[gamification] help_match awardPoints failed:", err),
+  );
 
   return updatedMatch;
 }

@@ -2,7 +2,7 @@
 // Nachbar.io — Check-in Scheduler Cron (Vercel Cron: alle 5 Minuten)
 
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
+import { getAdminSupabase } from "@/lib/supabase/admin";
 import { runCheckinCron } from "@/modules/care/services/cron-checkin.service";
 import { handleServiceError } from "@/lib/services/service-error";
 
@@ -22,7 +22,7 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const supabase = await createClient();
+    const supabase = getAdminSupabase();
     const result = await runCheckinCron(supabase);
     return NextResponse.json(result);
   } catch (error) {

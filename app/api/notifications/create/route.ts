@@ -61,7 +61,7 @@ export async function POST(request: NextRequest) {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            Cookie: request.headers.get("cookie") || "",
+            "x-internal-secret": process.env.INTERNAL_API_SECRET || "",
           },
           body: JSON.stringify({
             userId: body.userId,

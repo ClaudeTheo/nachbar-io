@@ -2,7 +2,7 @@
 // Nachbar.io — Medikamenten-Erinnerungs-Cron: Fällige Einnahmen erinnern und verpasste protokollieren (alle 5 Min)
 
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
+import { getAdminSupabase } from "@/lib/supabase/admin";
 import { handleServiceError } from "@/lib/services/service-error";
 import { runMedicationsCron } from "@/modules/care/services/cron-medications.service";
 
@@ -23,7 +23,7 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const supabase = await createClient();
+    const supabase = getAdminSupabase();
     const result = await runMedicationsCron(supabase);
     return NextResponse.json(result);
   } catch (error) {

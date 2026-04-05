@@ -2,7 +2,7 @@
 // Nachbar.io — Tasks-Erinnerungs-Cron (Vercel Cron: alle 2 Stunden)
 
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
+import { getAdminSupabase } from "@/lib/supabase/admin";
 import { runTasksCron } from "@/modules/care/services/cron-tasks.service";
 import { handleServiceError } from "@/lib/services/service-error";
 
@@ -22,7 +22,7 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const supabase = await createClient();
+    const supabase = getAdminSupabase();
     const result = await runTasksCron(supabase);
     return NextResponse.json(result);
   } catch (error) {

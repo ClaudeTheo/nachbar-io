@@ -2,7 +2,7 @@
 // Nachbar.io — Termin-Erinnerungs-Cron (Vercel Cron: alle 5 Minuten)
 
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
+import { getAdminSupabase } from "@/lib/supabase/admin";
 import { runAppointmentReminderCron } from "@/modules/care/services/cron-appointments.service";
 import { handleServiceError } from "@/lib/services/service-error";
 
@@ -22,7 +22,7 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const supabase = await createClient();
+    const supabase = getAdminSupabase();
     const result = await runAppointmentReminderCron(supabase);
     return NextResponse.json(result);
   } catch (error) {

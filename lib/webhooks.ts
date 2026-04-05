@@ -35,13 +35,42 @@ export function verifyWebhookSignature(
   }
 }
 
+// Private IP-Bereiche die fuer Webhooks blockiert werden (SSRF-Schutz)
+const BLOCKED_HOSTNAMES = ['localhost', '127.0.0.1', '[::1]', '0.0.0.0'];
+const BLOCKED_IP_PREFIXES = [
+  '10.',          // 10.0.0.0/8
+  '172.16.', '172.17.', '172.18.', '172.19.', '172.20.', '172.21.',
+  '172.22.', '172.23.', '172.24.', '172.25.', '172.26.', '172.27.',
+  '172.28.', '172.29.', '172.30.', '172.31.',  // 172.16.0.0/12
+  '192.168.',     // 192.168.0.0/16
+  '169.254.',     // 169.254.0.0/16 (Link-Local, AWS Metadata)
+  'fd',           // fc00::/7 IPv6 ULA
+  'fe80:',        // Link-Local IPv6
+];
+
 /**
- * Validiert ob die URL HTTPS verwendet (Pflicht fuer Webhooks).
+ * Validiert ob die URL HTTPS verwendet und keine internen IPs adressiert.
+ * Schuetzt gegen SSRF-Angriffe ueber Webhook-URLs.
  */
 export function isValidWebhookUrl(url: string): boolean {
   try {
     const parsed = new URL(url);
-    return parsed.protocol === 'https:';
+    if (parsed.protocol !== 'https:') return false;
+
+    const hostname = parsed.hostname.toLowerCase();
+
+    // Blockierte Hostnamen (localhost, loopback)
+    if (BLOCKED_HOSTNAMES.includes(hostname)) return false;
+
+    // Blockierte IP-Bereiche (Private, Link-Local, Metadata)
+    for (const prefix of BLOCKED_IP_PREFIXES) {
+      if (hostname.startsWith(prefix)) return false;
+    }
+
+    // Numerische IPv4 blockieren (z.B. 2130706433 = 127.0.0.1)
+    if (/^\d+$/.test(hostname)) return false;
+
+    return true;
   } catch {
     return false;
   }

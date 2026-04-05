@@ -189,7 +189,7 @@ export async function listDoctorReviews(
   // Nur sichtbare Bewertungen laden
   const { data, error } = await supabase
     .from("doctor_reviews")
-    .select("id, doctor_id, patient_id, rating, text, visible, created_at")
+    .select("id, doctor_id, rating, text, visible, created_at")
     .eq("doctor_id", doctorId)
     .eq("visible", true)
     .order("created_at", { ascending: false });

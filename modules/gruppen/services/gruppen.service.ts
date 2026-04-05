@@ -346,6 +346,9 @@ export async function listMembers(
   return data ?? [];
 }
 
+// Erlaubte Rollen fuer updateMember (founder NIEMALS setzbar)
+const ALLOWED_MEMBER_ROLES = ["member", "admin"];
+
 // Mitglied verwalten (Admin/Gruender)
 export async function updateMember(
   supabase: SupabaseClient,
@@ -368,6 +371,38 @@ export async function updateMember(
     !["founder", "admin"].includes(adminMembership.role)
   ) {
     throw new ServiceError("Keine Berechtigung", 403);
+  }
+
+  // SICHERHEIT: Rolle validieren — "founder" darf NIEMALS per API gesetzt werden
+  if (updates.role && !ALLOWED_MEMBER_ROLES.includes(updates.role)) {
+    throw new ServiceError(
+      `Ungueltige Rolle: "${updates.role}". Erlaubt: ${ALLOWED_MEMBER_ROLES.join(", ")}`,
+      400,
+    );
+  }
+
+  // SICHERHEIT: Gruender kann nicht degradiert oder entfernt werden
+  const { data: targetMembership } = await supabase
+    .from("group_members")
+    .select("role")
+    .eq("group_id", groupId)
+    .eq("user_id", targetUserId)
+    .eq("status", "active")
+    .single();
+
+  if (targetMembership?.role === "founder") {
+    throw new ServiceError(
+      "Der Gruender der Gruppe kann nicht bearbeitet werden",
+      403,
+    );
+  }
+
+  // SICHERHEIT: Nur Gruender darf Admins verwalten (nicht andere Admins)
+  if (targetMembership?.role === "admin" && adminMembership.role !== "founder") {
+    throw new ServiceError(
+      "Nur der Gruender kann Admins verwalten",
+      403,
+    );
   }
 
   const { data, error } = await supabase

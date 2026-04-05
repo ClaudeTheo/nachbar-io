@@ -2,7 +2,7 @@
 // Nachbar.io — Shopping-Erinnerungs-Cron (Vercel Cron: jede Stunde)
 
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
+import { getAdminSupabase } from "@/lib/supabase/admin";
 import { runShoppingCron } from "@/modules/care/services/cron-shopping.service";
 import { handleServiceError } from "@/lib/services/service-error";
 
@@ -22,7 +22,7 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const supabase = await createClient();
+    const supabase = getAdminSupabase();
     const result = await runShoppingCron(supabase);
     return NextResponse.json(result);
   } catch (error) {

@@ -147,6 +147,13 @@ export default function AGBPage() {
               Alltagsunterstützung. Sie ersetzen weder professionelle Pflege,
               ärztliche Beratung noch medizinische Notrufsysteme.
             </p>
+            <p className="mt-2">
+              Die Erinnerungs- und Medikamentenfunktionen dienen ausschließlich
+              der Alltagsorganisation. Einnahmehinweise basieren nur auf von
+              Ihnen selbst eingegebenen Notizen — die App gibt keine
+              Dosierungs-, Diagnose- oder Therapieempfehlungen. Konsultieren Sie
+              bei gesundheitlichen Fragen immer Ihren Arzt oder Apotheker.
+            </p>
 
             <h3 className="mt-3 font-semibold">5.2 Keine Notrufleistung</h3>
             <p>

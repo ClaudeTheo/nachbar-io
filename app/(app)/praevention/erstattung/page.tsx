@@ -16,8 +16,37 @@ interface Enrollment {
   id: string;
   certificate_generated: boolean;
   reimbursement_started_at: string | null;
+  reimbursement_submitted_at: string | null;
+  reimbursement_confirmed_at: string | null;
   insurance_config_id: string | null;
   course?: { title: string };
+}
+
+// Fast-Lane: Besten Einstiegspunkt berechnen
+function getResumeStep(e: Enrollment): {
+  label: string;
+  path: string;
+} {
+  if (e.reimbursement_submitted_at) {
+    return {
+      label: "Erstattung abgeschlossen — Status ansehen",
+      path: `/praevention/erstattung/fertig?enrollment=${e.id}`,
+    };
+  }
+  if (e.reimbursement_started_at) {
+    return {
+      label: "Erstattung fortsetzen — Einreichen",
+      path: `/praevention/erstattung/einreichen?enrollment=${e.id}`,
+    };
+  }
+  if (e.certificate_generated && e.insurance_config_id) {
+    return {
+      label: "Erstattung jetzt starten",
+      path: `/praevention/erstattung/bescheinigung?enrollment=${e.id}`,
+    };
+  }
+  // Kein Fast-Lane moeglich
+  return { label: "", path: "" };
 }
 
 export default function ErstattungPage() {
@@ -152,24 +181,23 @@ export default function ErstattungPage() {
         </div>
       </div>
 
-      {/* Fast-Lane: Wenn Kasse schon bekannt, Schnellstart anbieten */}
-      {selectedInsurance && enrollments.length === 1 && (
-        <button
-          onClick={handleStart}
-          disabled={submitting}
-          className="mb-6 flex w-full items-center justify-center gap-2 rounded-2xl bg-emerald-600 px-6 py-4 text-base font-semibold text-white shadow-sm transition-colors hover:bg-emerald-700 disabled:opacity-50"
-          style={{ minHeight: "56px" }}
-        >
-          {submitting ? (
-            <Loader2 className="h-5 w-5 animate-spin" />
-          ) : (
-            <>
+      {/* Fast-Lane: Nutzer zum sinnvollsten Einstiegspunkt leiten */}
+      {enrollments.length > 0 &&
+        (() => {
+          const selected = enrollments.find((e) => e.id === selectedEnrollment);
+          const resume = selected ? getResumeStep(selected) : null;
+          if (!resume?.path) return null;
+          return (
+            <button
+              onClick={() => router.push(resume.path)}
+              className="mb-6 flex w-full items-center justify-center gap-2 rounded-2xl bg-emerald-600 px-6 py-4 text-base font-semibold text-white shadow-sm transition-colors hover:bg-emerald-700"
+              style={{ minHeight: "56px" }}
+            >
               <ArrowRight className="h-5 w-5" />
-              Erstattung jetzt starten
-            </>
-          )}
-        </button>
-      )}
+              {resume.label}
+            </button>
+          );
+        })()}
 
       {/* Info */}
       <div className="mb-6 rounded-2xl border border-emerald-100 bg-emerald-50 p-4">

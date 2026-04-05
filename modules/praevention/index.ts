@@ -7,3 +7,4 @@ export * from "./services/sessions.service";
 export * from "./services/ki-session.service";
 export * from "./services/certificate.service";
 export * from "./services/payment.service";
+export * from "./services/visibility.service";

@@ -6,3 +6,4 @@ export * from "./services/enrollments.service";
 export * from "./services/sessions.service";
 export * from "./services/ki-session.service";
 export * from "./services/certificate.service";
+export * from "./services/payment.service";

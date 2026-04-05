@@ -45,6 +45,20 @@ export default function ImpressumPage() {
             </p>
           </section>
 
+          {/* Umsatzsteuer */}
+          <section>
+            <h2 className="mb-2 text-lg font-semibold text-anthrazit">
+              Umsatzsteuer
+            </h2>
+            <p>
+              Derzeit wird keine gewerbliche Tätigkeit ausgeübt. Die Plattform
+              befindet sich im nichtkommerziellen Pilotbetrieb. Eine
+              Umsatzsteuer-Identifikationsnummer gemäß § 27a UStG liegt nicht
+              vor. Diese Angabe wird bei Aufnahme einer gewerblichen Tätigkeit
+              aktualisiert.
+            </p>
+          </section>
+
           {/* Verantwortlich für den Inhalt */}
           <section>
             <h2 className="mb-2 text-lg font-semibold text-anthrazit">

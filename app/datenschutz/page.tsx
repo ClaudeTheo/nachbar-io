@@ -256,7 +256,10 @@ export default function DatenschutzPage() {
               </li>
               <li>
                 <strong>Speicherdauer:</strong> Bis der Hilferuf als erledigt
-                markiert wird, dann sofortige automatische Löschung
+                markiert wird, dann sofortige automatische Löschung.
+                Spätestens nach 72 Stunden werden Standortdaten automatisch
+                gelöscht, auch wenn der Hilferuf nicht als erledigt markiert
+                wurde (Art. 5 Abs. 1 lit. e DSGVO — Speicherbegrenzung)
               </li>
               <li>
                 <strong>Empfänger:</strong> Je nach Abo-Stufe — Angehörige
@@ -370,24 +373,29 @@ export default function DatenschutzPage() {
             </h4>
             <p>
               Supabase Inc., EU-Region Frankfurt. Alle Daten verbleiben in der
-              EU. Es gilt ein Auftragsverarbeitungsvertrag (AVV) gemäß Art. 28
-              DSGVO.
+              EU. Rechtsgrundlage: Art. 6 Abs. 1 lit. b DSGVO
+              (Vertragserfüllung). Es gilt ein Auftragsverarbeitungsvertrag
+              (AVV) gemäß Art. 28 DSGVO. Speicherdauer: Gemäß den in §8
+              genannten Fristen.
             </p>
 
             <h4 className="mt-2 font-medium">Vercel (Frontend-Hosting)</h4>
             <p>
-              Vercel Inc. Es gilt ein Data Processing Agreement (DPA). Über
-              Vercel werden Seitenzugriffe ausgeliefert; personenbezogene
-              Nutzerdaten werden nicht an Vercel übermittelt.
+              Vercel Inc., USA. Es gilt ein Data Processing Agreement (DPA) mit
+              SCCs. Über Vercel werden Seitenzugriffe ausgeliefert;
+              personenbezogene Nutzerdaten werden nicht an Vercel übermittelt.
+              Rechtsgrundlage: Art. 6 Abs. 1 lit. f DSGVO (berechtigtes
+              Interesse an zuverlässigem Hosting).
             </p>
 
             <h4 className="mt-2 font-medium">Twilio (SMS & Sprachanrufe)</h4>
             <p>
               Twilio Inc., USA. Wird für den Versand von SMS
               (Magic-Link-Fallback) und Sprachanrufe (SOS-Eskalation) genutzt.
-              Die Übermittlung erfolgt auf Grundlage von
-              EU-Standardvertragsklauseln (SCCs) gemäß Art. 46 Abs. 2 lit. c
-              DSGVO.
+              Rechtsgrundlage: Art. 6 Abs. 1 lit. b DSGVO
+              (Vertragserfüllung). Speicherdauer: Maximal 30 Tage
+              (Zustellprotokolle). Übermittlung auf Grundlage von SCCs gemäß
+              Art. 46 Abs. 2 lit. c DSGVO.
             </p>
 
             <h4 className="mt-2 font-medium">Stripe (Zahlungsabwicklung)</h4>
@@ -420,21 +428,61 @@ export default function DatenschutzPage() {
               Regelverstoßen (Spam, Belästigung, Betrug) an Anthropic
               übermittelt. Die Prüfung erfolgt in Echtzeit; Inhalte werden von
               Anthropic
-              <strong> nicht dauerhaft gespeichert</strong> und nicht zum
+              <strong> maximal 30 Tage gespeichert</strong> und nicht zum
               Training von KI-Modellen verwendet (Auftragsverarbeitung gemäß
-              Art. 28 DSGVO). Rechtsgrundlage: Art. 6 Abs. 1 lit. f DSGVO
-              (berechtigtes Interesse an Community-Schutz). Übermittlung auf
-              Grundlage von SCCs.
+              Art. 28 DSGVO, Zero Data Retention Policy). Rechtsgrundlage:
+              Art. 6 Abs. 1 lit. f DSGVO (berechtigtes Interesse an
+              Community-Schutz). Übermittlung auf Grundlage von SCCs.
             </p>
 
             <h4 className="mt-2 font-medium">Metered Networks (TURN-Server)</h4>
             <p>
-              Metered Networks Inc. Stellt TURN-Server für die
+              Metered Networks Inc., USA. Stellt TURN-Server für die
               Verbindungsherstellung bei Video-Anrufen bereit, falls eine
-              direkte Peer-to-Peer-Verbindung nicht möglich ist. Es werden nur
-              Verbindungsdaten (IP-Adressen) temporär verarbeitet, keine
-              Gesprächsinhalte.
+              direkte Peer-to-Peer-Verbindung nicht möglich ist.
+              Rechtsgrundlage: Art. 6 Abs. 1 lit. b DSGVO
+              (Vertragserfüllung). Es werden nur Verbindungsdaten
+              (IP-Adressen) während der aktiven Verbindung verarbeitet
+              (Speicherdauer: maximal 24 Stunden), keine Gesprächsinhalte.
+              Übermittlung auf Grundlage von SCCs.
             </p>
+
+            <h4 className="mt-2 font-medium">
+              Sentry (Fehlerüberwachung)
+            </h4>
+            <p>
+              Sentry Inc. (Functional Software Inc.), USA. Wird zur Erfassung
+              von Anwendungsfehlern und Performance-Metriken verwendet, um die
+              Stabilität und Zuverlässigkeit der Plattform sicherzustellen.
+            </p>
+            <ul className="ml-4 mt-1 list-disc space-y-1">
+              <li>
+                <strong>Rechtsgrundlage:</strong> Art. 6 Abs. 1 lit. f DSGVO
+                (berechtigtes Interesse an Fehlerbehebung und Systemstabilität)
+              </li>
+              <li>
+                <strong>Verarbeitete Daten:</strong> Fehlerberichte,
+                Performance-Metriken, Browser-/Gerätetyp, Seitenaufrufe bei
+                Fehlern. Personenbezogene Daten (E-Mail-Adressen, IP-Adressen,
+                Telefonnummern, Namen) werden vor der Übermittlung automatisch
+                entfernt (PII-Filter).
+              </li>
+              <li>
+                <strong>Session Replay:</strong> Bei 1 % der Sitzungen und bei
+                100 % der Fehlersitzungen wird eine anonymisierte
+                Bildschirmaufzeichnung erstellt, um Fehlerursachen
+                nachvollziehen zu können. Texteingaben werden dabei maskiert.
+              </li>
+              <li>
+                <strong>Speicherdauer:</strong> Fehlerberichte werden 90 Tage
+                gespeichert, danach automatisch gelöscht.
+              </li>
+              <li>
+                <strong>Vertrag:</strong> Data Processing Agreement (DPA) mit
+                EU-Standardvertragsklauseln (SCCs) gemäß Art. 46 Abs. 2 lit. c
+                DSGVO.
+              </li>
+            </ul>
 
             <h3 className="mt-3 font-semibold">
               6.3 Keine weiteren Drittanbieter
@@ -452,7 +500,7 @@ export default function DatenschutzPage() {
             </h2>
             <p>
               Einige unserer Auftragsverarbeiter haben ihren Sitz in den USA
-              (Twilio, Stripe, Anthropic, Metered Networks). Die Übermittlung
+              (Twilio, Stripe, Anthropic, Metered Networks, Sentry). Die Übermittlung
               personenbezogener Daten erfolgt auf Grundlage von:
             </p>
             <ul className="ml-4 mt-2 list-disc space-y-1">

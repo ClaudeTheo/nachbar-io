@@ -9,3 +9,4 @@ export * from "./services/certificate.service";
 export * from "./services/payment.service";
 export * from "./services/visibility.service";
 export * from "./services/reminders.service";
+export * from "./services/reward.service";

@@ -172,8 +172,22 @@ export default function ZertifikatPage() {
         </div>
       </div>
 
+      {/* Belohnungs-Hinweis */}
+      <div className="mt-6 rounded-xl bg-yellow-50 border border-yellow-200 p-4 text-center print:hidden">
+        <p className="text-sm text-yellow-800">
+          🎁 <strong>Kursbelohnung:</strong> Ihre Angehoerigen erhalten bis zu 3
+          Monate Nachbar Plus geschenkt!
+        </p>
+        <Link
+          href="/praevention/belohnung"
+          className="mt-2 inline-block text-sm font-medium text-yellow-700 underline"
+        >
+          Belohnung ansehen →
+        </Link>
+      </div>
+
       {/* Erstattungs-Hinweis */}
-      <div className="mt-6 rounded-xl bg-emerald-50 p-4 text-center print:hidden">
+      <div className="mt-4 rounded-xl bg-emerald-50 p-4 text-center print:hidden">
         <p className="text-sm text-emerald-800">
           Reichen Sie diese Bescheinigung bei Ihrer Krankenkasse ein, um bis zu
           120 € erstattet zu bekommen.

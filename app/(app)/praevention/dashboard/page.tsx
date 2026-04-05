@@ -134,13 +134,16 @@ export default function KursleiterDashboardPage() {
               Woche {data.nextCall.weekNumber}
               <br />
               <span className="text-xs font-normal text-gray-500">
-                {new Date(data.nextCall.scheduledAt).toLocaleDateString("de-DE", {
-                  weekday: "short",
-                  day: "2-digit",
-                  month: "short",
-                  hour: "2-digit",
-                  minute: "2-digit",
-                })}
+                {new Date(data.nextCall.scheduledAt).toLocaleDateString(
+                  "de-DE",
+                  {
+                    weekday: "short",
+                    day: "2-digit",
+                    month: "short",
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  },
+                )}
               </span>
             </span>
           ) : (
@@ -159,14 +162,16 @@ export default function KursleiterDashboardPage() {
             <div>
               <span className="text-xs text-gray-500">Vorher</span>
               <p className="text-lg font-bold text-gray-900">
-                {MOOD_LABELS[Math.round(data.aggregatedMood.before)] || data.aggregatedMood.before}
+                {MOOD_LABELS[Math.round(data.aggregatedMood.before)] ||
+                  data.aggregatedMood.before}
               </p>
             </div>
             <span className="text-gray-300">→</span>
             <div>
               <span className="text-xs text-gray-500">Nachher</span>
               <p className="text-lg font-bold text-emerald-600">
-                {MOOD_LABELS[Math.round(data.aggregatedMood.after)] || data.aggregatedMood.after}
+                {MOOD_LABELS[Math.round(data.aggregatedMood.after)] ||
+                  data.aggregatedMood.after}
               </p>
             </div>
           </div>
@@ -177,7 +182,7 @@ export default function KursleiterDashboardPage() {
       {data.warnings.length > 0 && (
         <div className="mb-6 rounded-2xl border border-amber-100 bg-amber-50 p-4">
           <h3 className="mb-2 text-sm font-semibold text-amber-800">
-            Inaktive Teilnehmer (>7 Tage)
+            Inaktive Teilnehmer ({">"}7 Tage)
           </h3>
           <ul className="space-y-2">
             {data.warnings.map((w) => (

@@ -50,6 +50,8 @@ import {
 import { VoiceSettings } from "@/modules/voice/components/companion/VoiceSettings";
 import { useVoicePreferences } from "@/hooks/useVoicePreferences";
 import { LargeTitle } from "@/components/ui/LargeTitle";
+import { PointsWidget } from "@/components/gamification/PointsWidget";
+import { BadgeGallery } from "@/components/gamification/BadgeGallery";
 import { formatCode, generateSecureCode } from "@/lib/invite-codes";
 import { toast } from "sonner";
 import type { User, Household, ReputationStats } from "@/lib/supabase/types";
@@ -331,6 +333,12 @@ export default function ProfilePage() {
           </div>
         </CardContent>
       </Card>
+
+      {/* Nachbarschaftspunkte */}
+      <PointsWidget />
+
+      {/* Abzeichen */}
+      <BadgeGallery />
 
       {/* Schnellzugriff — verschobene Features aus BottomNav (nur bei UX-Redesign) */}
       {isUxRedesignEnabled("UX_REDESIGN_NAV") && <QuickAccessCard />}

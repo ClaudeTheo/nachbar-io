@@ -34,7 +34,13 @@ export default function SitzungPage() {
           return;
         }
         const data = await res.json();
-        setProgress(data);
+        // API gibt Array zurueck — erste Einschreibung nehmen
+        const first = Array.isArray(data) ? data[0] : data;
+        if (!first || !first.enrollment) {
+          setError("not_enrolled");
+          return;
+        }
+        setProgress(first);
       } catch {
         setError("load_error");
       } finally {

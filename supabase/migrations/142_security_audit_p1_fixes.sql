@@ -1,5 +1,6 @@
 -- Migration 142: Security Audit P1 Fixes
 -- Gefunden durch Red-Team Analyse + 3 Codex Review-Iterationen
+-- Architektur-Entscheidung: Invite-Logik NUR im Service, NICHT in RLS
 
 -- P1-2: help_requests Cross-Quarter Datenleck fixen
 -- Vorher: USING=(status = 'open') → jeder sah ALLE offenen Requests
@@ -18,29 +19,15 @@ CREATE POLICY prevention_enrollments_update_own ON prevention_enrollments FOR UP
   USING (user_id = auth.uid());
 -- Kein DELETE fuer User — nur service_role/admin
 
--- P1-4: caregiver_links INSERT Policy (fehlte komplett)
--- Codex Iteration 1: Zu offene Policy (jeder konnte sich verknuepfen)
--- Codex Iteration 2: used_at Check → Order-of-Operations Bug (INSERT vor used_at)
--- Codex Iteration 3 (final): Pruefen ob unexpired Invite existiert
+-- P1-4: caregiver_links — kein User-INSERT, nur service_role
+-- Invite-Validierung + Link-Erstellung laeuft ueber redeemInviteCode() mit Admin-Client
+-- RLS hat bewusst KEINE INSERT Policy → erzwingt kontrollierten Service-Layer
 DROP POLICY IF EXISTS caregiver_links_insert ON caregiver_links;
 DROP POLICY IF EXISTS caregiver_links_insert_resident ON caregiver_links;
 DROP POLICY IF EXISTS caregiver_links_insert_safe ON caregiver_links;
-CREATE POLICY caregiver_links_insert_safe ON caregiver_links FOR INSERT
-  WITH CHECK (
-    -- Bewohner erstellt eigenen Link
-    auth.uid() = resident_id
-    OR
-    -- Caregiver: Es muss ein gueltiger (nicht abgelaufener) Invite fuer diese resident_id existieren
-    (auth.uid() = caregiver_id AND EXISTS (
-      SELECT 1 FROM caregiver_invites ci
-      WHERE ci.resident_id = caregiver_links.resident_id
-        AND ci.expires_at > now()
-        AND ci.used_at IS NULL
-    ))
-  );
 
--- P1-B (Codex Adversarial): Residents duerfen plus_trial_end nicht manipulieren
--- Trigger blockiert Aenderungen an plus_trial_end fuer nicht-service_role
+-- P1-B: Residents duerfen plus_trial_end nicht direkt manipulieren
+-- Trigger setzt Wert still zurueck wenn nicht-service_role aendert
 CREATE OR REPLACE FUNCTION protect_plus_trial_end()
 RETURNS TRIGGER AS $$
 BEGIN

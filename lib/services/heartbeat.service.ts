@@ -34,17 +34,7 @@ export async function recordHeartbeat(
 ): Promise<{ ok: true }> {
   const { source, device_type } = body;
 
-  // Rate-Limit: 1 Heartbeat pro Minute pro User
-  // Timestamp wird VOR dem Insert gesetzt (verhindert Race Condition bei parallelen Requests)
-  const now = Date.now();
-  const lastHeartbeat = heartbeatRateMap.get(userId);
-  if (lastHeartbeat && now - lastHeartbeat < HEARTBEAT_COOLDOWN_MS) {
-    throw new ServiceError("Maximal 1 Heartbeat pro Minute", 429);
-  }
-  // Sofort reservieren (Lock) — bei Insert-Fehler wird zurueckgesetzt
-  heartbeatRateMap.set(userId, now);
-
-  // Validierung
+  // Validierung ZUERST (vor Rate-Limit Lock, damit ungueltige Requests keinen Cooldown auslösen)
   if (!source || !VALID_SOURCES.includes(source as HeartbeatSource)) {
     throw new ServiceError("Ungültiger source-Wert", 400);
   }
@@ -54,6 +44,15 @@ export async function recordHeartbeat(
   ) {
     throw new ServiceError("Ungültiger device_type-Wert", 400);
   }
+
+  // Rate-Limit: 1 Heartbeat pro Minute pro User
+  // Lock VOR dem Insert (verhindert Race Condition bei parallelen Requests)
+  const now = Date.now();
+  const lastHeartbeat = heartbeatRateMap.get(userId);
+  if (lastHeartbeat && now - lastHeartbeat < HEARTBEAT_COOLDOWN_MS) {
+    throw new ServiceError("Maximal 1 Heartbeat pro Minute", 429);
+  }
+  heartbeatRateMap.set(userId, now);
 
   const { error } = await supabase.from("heartbeats").insert({
     user_id: userId,

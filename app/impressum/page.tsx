@@ -41,7 +41,7 @@ export default function ImpressumPage() {
             <p>
               E-Mail: ThomasTh@gmx.de
               <br />
-              Telefon: auf Anfrage
+              Telefon: +49 7761 5599557
             </p>
           </section>
 
@@ -188,6 +188,12 @@ export default function ImpressumPage() {
           </Link>
           <Link href="/agb" className="hover:text-anthrazit hover:underline">
             AGB
+          </Link>
+          <Link
+            href="/barrierefreiheit"
+            className="hover:text-anthrazit hover:underline"
+          >
+            Barrierefreiheit
           </Link>
         </div>
       </div>

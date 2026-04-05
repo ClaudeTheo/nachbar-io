@@ -731,6 +731,12 @@ export default function DatenschutzPage() {
           <Link href="/agb" className="hover:text-anthrazit hover:underline">
             AGB
           </Link>
+          <Link
+            href="/barrierefreiheit"
+            className="hover:text-anthrazit hover:underline"
+          >
+            Barrierefreiheit
+          </Link>
         </div>
       </div>
     </main>

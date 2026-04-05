@@ -371,6 +371,12 @@ export default function AGBPage() {
           <Link href="/agb" className="font-medium text-anthrazit">
             AGB
           </Link>
+          <Link
+            href="/barrierefreiheit"
+            className="hover:text-anthrazit hover:underline"
+          >
+            Barrierefreiheit
+          </Link>
         </div>
       </div>
     </main>

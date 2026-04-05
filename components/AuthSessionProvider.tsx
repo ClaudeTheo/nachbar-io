@@ -1,15 +1,19 @@
-'use client';
+"use client";
 
 // components/AuthSessionProvider.tsx
 // Stellt sicher, dass die Supabase-Session nach Kaltstart wiederhergestellt wird.
 // Lauscht auf Auth-Events und synchronisiert Cookie ↔ localStorage.
 
-import { useEffect, useRef } from 'react';
-import { useRouter } from 'next/navigation';
-import { createClient } from '@/lib/supabase/client';
-import { invalidateUserCache } from '@/lib/supabase/cached-auth';
+import { useEffect, useRef } from "react";
+import { useRouter } from "next/navigation";
+import { createClient } from "@/lib/supabase/client";
+import { invalidateUserCache } from "@/lib/supabase/cached-auth";
 
-export function AuthSessionProvider({ children }: { children: React.ReactNode }) {
+export function AuthSessionProvider({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   const router = useRouter();
   const isInitialMount = useRef(true);
 
@@ -21,28 +25,40 @@ export function AuthSessionProvider({ children }: { children: React.ReactNode })
       if (!session) {
         // Kein gültige Session — Redirect nur wenn auf geschützter Route
         const path = window.location.pathname;
-        const publicPaths = ['/', '/login', '/register', '/auth/callback', '/impressum', '/datenschutz', '/agb'];
-        if (!publicPaths.some(p => path === p || path.startsWith('/auth/'))) {
-          router.replace('/login');
+        const publicPaths = [
+          "/",
+          "/login",
+          "/register",
+          "/auth/callback",
+          "/impressum",
+          "/datenschutz",
+          "/agb",
+          "/barrierefreiheit",
+          "/richtlinien",
+        ];
+        if (!publicPaths.some((p) => path === p || path.startsWith("/auth/"))) {
+          router.replace("/login");
         }
       }
     });
 
     // Auf Auth-Änderungen lauschen (Token Refresh, Sign Out, etc.)
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
-      if (event === 'SIGNED_OUT') {
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((event) => {
+      if (event === "SIGNED_OUT") {
         invalidateUserCache();
-        router.replace('/login');
+        router.replace("/login");
       }
 
-      if (event === 'TOKEN_REFRESHED') {
+      if (event === "TOKEN_REFRESHED") {
         // Token wurde erneuert — Router aktualisieren damit
         // Server-Seite die neuen Cookies bekommt
         invalidateUserCache();
         router.refresh();
       }
 
-      if (event === 'SIGNED_IN') {
+      if (event === "SIGNED_IN") {
         invalidateUserCache();
         // Beim initialen Mount feuert SIGNED_IN wenn eine bestehende
         // Session erkannt wird — router.refresh() würde eine Endlosschleife

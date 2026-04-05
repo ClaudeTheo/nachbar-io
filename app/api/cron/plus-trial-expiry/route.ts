@@ -5,11 +5,11 @@ import { getAdminSupabase } from "@/lib/supabase/admin";
 import { processTrialExpiries } from "@/modules/praevention/services/reward.service";
 
 export async function POST(request: NextRequest) {
-  // CRON_SECRET pruefen (Vercel Cron oder manueller Aufruf)
+  // CRON_SECRET pruefen (PFLICHT — blockiert wenn Secret fehlt)
   const authHeader = request.headers.get("authorization");
   const cronSecret = process.env.CRON_SECRET;
 
-  if (cronSecret && authHeader !== `Bearer ${cronSecret}`) {
+  if (!cronSecret || authHeader !== `Bearer ${cronSecret}`) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 

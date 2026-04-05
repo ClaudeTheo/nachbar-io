@@ -11,9 +11,10 @@ import { runNinaSync } from "@/modules/info-hub/services/nina-sync.service";
  * Vercel Cron: Alle 5 Min (* /5 * * * *)
  */
 export async function GET(request: Request) {
-  // Cron-Secret pruefen
+  // Cron-Secret pruefen (PFLICHT — blockiert wenn Secret fehlt)
   const authHeader = request.headers.get("authorization");
-  if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+  const cronSecret = process.env.CRON_SECRET;
+  if (!cronSecret || authHeader !== `Bearer ${cronSecret}`) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 

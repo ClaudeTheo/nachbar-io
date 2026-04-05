@@ -11,9 +11,10 @@ import { handleServiceError } from "@/lib/services/service-error";
  * Pollen wird nur 1x/Tag aktualisiert.
  */
 export async function GET(request: Request) {
-  // Cron-Secret pruefen
+  // Cron-Secret pruefen (PFLICHT — blockiert wenn Secret fehlt)
   const authHeader = request.headers.get("authorization");
-  if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+  const cronSecret = process.env.CRON_SECRET;
+  if (!cronSecret || authHeader !== `Bearer ${cronSecret}`) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 

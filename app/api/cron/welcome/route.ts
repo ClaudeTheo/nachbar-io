@@ -9,9 +9,10 @@ import { findNewUsersForWelcomePack, sendWelcomePack } from '@/lib/welcome-pack'
  * Laeuft alle 30 Minuten via Vercel Cron.
  */
 export async function GET(request: Request) {
-  // Cron-Secret prüfen
+  // Cron-Secret pruefen (PFLICHT — blockiert wenn Secret fehlt)
   const authHeader = request.headers.get('authorization');
-  if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+  const cronSecret = process.env.CRON_SECRET;
+  if (!cronSecret || authHeader !== `Bearer ${cronSecret}`) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 

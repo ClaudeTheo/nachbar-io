@@ -1,7 +1,9 @@
 // GET /api/prevention/reward?enrollmentId=... — Belohnungsstufe berechnen
 // POST /api/prevention/reward — Trial an Angehoerige vergeben
+// WICHTIG: POST nutzt Admin-Client weil plus_trial_end Trigger service_role erfordert
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { getAdminSupabase } from "@/lib/supabase/admin";
 import {
   calculateAndStoreRewardTier,
   grantPlusTrial,
@@ -65,14 +67,16 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    // Stufe berechnen
+    // Stufe berechnen (User-scoped: liest eigene Enrollment)
     const { tier } = await calculateAndStoreRewardTier(
       supabase,
       body.enrollmentId,
     );
 
-    // Trial vergeben
-    const result = await grantPlusTrial(supabase, body.enrollmentId, tier);
+    // Trial vergeben (Admin-Client: Trigger auf caregiver_links erfordert service_role
+    // fuer plus_trial_end Updates)
+    const adminDb = getAdminSupabase();
+    const result = await grantPlusTrial(adminDb, body.enrollmentId, tier);
     return NextResponse.json(result);
   } catch (err) {
     const message = err instanceof Error ? err.message : "Fehler";

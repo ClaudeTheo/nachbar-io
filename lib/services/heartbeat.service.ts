@@ -35,11 +35,14 @@ export async function recordHeartbeat(
   const { source, device_type } = body;
 
   // Rate-Limit: 1 Heartbeat pro Minute pro User
+  // Timestamp wird VOR dem Insert gesetzt (verhindert Race Condition bei parallelen Requests)
   const now = Date.now();
   const lastHeartbeat = heartbeatRateMap.get(userId);
   if (lastHeartbeat && now - lastHeartbeat < HEARTBEAT_COOLDOWN_MS) {
     throw new ServiceError("Maximal 1 Heartbeat pro Minute", 429);
   }
+  // Sofort reservieren (Lock) — bei Insert-Fehler wird zurueckgesetzt
+  heartbeatRateMap.set(userId, now);
 
   // Validierung
   if (!source || !VALID_SOURCES.includes(source as HeartbeatSource)) {
@@ -59,11 +62,10 @@ export async function recordHeartbeat(
   });
 
   if (error) {
+    // Insert fehlgeschlagen → Rate-Limit-Lock zuruecksetzen
+    heartbeatRateMap.delete(userId);
     throw new ServiceError("Heartbeat konnte nicht gespeichert werden", 500);
   }
-
-  // Rate-Limit Timestamp setzen (erst NACH erfolgreichem Insert)
-  heartbeatRateMap.set(userId, now);
 
   // Alte Eintraege aufraeumen (Memory-Leak-Schutz, alle 1000 Eintraege)
   if (heartbeatRateMap.size > 1000) {

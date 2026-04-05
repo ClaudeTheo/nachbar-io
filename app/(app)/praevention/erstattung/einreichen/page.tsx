@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import {
   ArrowLeft,
@@ -38,6 +38,20 @@ const METHOD_LABELS: Record<string, string> = {
 };
 
 export default function EinreichenPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex min-h-[50vh] items-center justify-center">
+          <div className="h-8 w-8 animate-spin rounded-full border-4 border-emerald-200 border-t-emerald-600" />
+        </div>
+      }
+    >
+      <EinreichenContent />
+    </Suspense>
+  );
+}
+
+function EinreichenContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const enrollmentId = searchParams.get("enrollment") || "";

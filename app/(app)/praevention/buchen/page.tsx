@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import {
   ArrowLeft,
@@ -33,6 +33,20 @@ interface InsuranceConfig {
 const PILOT_MODE = process.env.NEXT_PUBLIC_PILOT_MODE === "true";
 
 export default function BuchenPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex min-h-[50vh] items-center justify-center">
+          <div className="h-8 w-8 animate-spin rounded-full border-4 border-emerald-200 border-t-emerald-600" />
+        </div>
+      }
+    >
+      <BuchenContent />
+    </Suspense>
+  );
+}
+
+function BuchenContent() {
   const searchParams = useSearchParams();
   const success = searchParams.get("success") === "true";
   const courseIdParam = searchParams.get("course_id");
@@ -236,9 +250,7 @@ export default function BuchenPage() {
             <button
               key={ins.id}
               onClick={() =>
-                setSelectedInsurance(
-                  selectedInsurance === ins.id ? "" : ins.id,
-                )
+                setSelectedInsurance(selectedInsurance === ins.id ? "" : ins.id)
               }
               className={`rounded-xl border px-4 py-3 text-left transition-colors ${
                 selectedInsurance === ins.id

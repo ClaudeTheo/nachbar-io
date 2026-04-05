@@ -1,10 +1,25 @@
 "use client";
 
+import { Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { ArrowLeft, ArrowRight, Download, FileText } from "lucide-react";
 import Link from "next/link";
 
 export default function BescheinigungPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex min-h-[50vh] items-center justify-center">
+          <div className="h-8 w-8 animate-spin rounded-full border-4 border-emerald-200 border-t-emerald-600" />
+        </div>
+      }
+    >
+      <BescheinigungContent />
+    </Suspense>
+  );
+}
+
+function BescheinigungContent() {
   const searchParams = useSearchParams();
   const enrollmentId = searchParams.get("enrollment") || "";
 

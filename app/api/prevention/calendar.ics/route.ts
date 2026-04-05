@@ -42,7 +42,7 @@ export async function GET(req: NextRequest) {
       return new NextResponse("Einschreibung nicht gefunden", { status: 404 });
     }
 
-    const course = enrollment.course as {
+    const course = enrollment.course as unknown as {
       id: string;
       title: string;
       starts_at: string;

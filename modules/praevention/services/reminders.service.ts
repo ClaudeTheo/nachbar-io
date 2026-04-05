@@ -48,9 +48,10 @@ export async function sendDailyReminder(): Promise<ReminderResult> {
 
     // Push-Nachricht via prevention_messages (system_reminder)
     const courseTitle =
-      (enrollment.course as { title: string })?.title || "Präventionskurs";
+      (enrollment.course as unknown as { title: string })?.title ||
+      "Präventionskurs";
     const { error } = await adminDb.from("prevention_messages").insert({
-      course_id: (enrollment.course as { id: string })?.id,
+      course_id: (enrollment.course as unknown as { id: string })?.id,
       sender_id: enrollment.user_id,
       recipient_id: enrollment.user_id,
       message_type: "system_reminder",

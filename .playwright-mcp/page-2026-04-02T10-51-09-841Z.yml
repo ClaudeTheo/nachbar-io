@@ -1,0 +1,27 @@
+- generic [ref=e1]:
+  - main [ref=e2]:
+    - generic [ref=e3]:
+      - generic [ref=e4]:
+        - generic [ref=e5]:
+          - generic [ref=e6]: 🏘️
+          - generic [ref=e7]: Anmelden
+          - paragraph [ref=e8]: Willkommen zurück in Ihrem Quartier
+        - generic [ref=e9]:
+          - generic [ref=e10]:
+            - generic [ref=e11]:
+              - generic [ref=e12]: E-Mail-Adresse
+              - textbox "E-Mail-Adresse" [active] [ref=e13]:
+                - /placeholder: ihre@email.de
+            - button "Anmelde-Code senden" [ref=e14]:
+              - img
+              - text: Anmelde-Code senden
+          - paragraph [ref=e16]:
+            - text: Noch kein Konto?
+            - link "Jetzt registrieren" [ref=e17] [cursor=pointer]:
+              - /url: /register
+      - button "Bug melden" [ref=e18]:
+        - img [ref=e19]
+    - generic [ref=e28]: V2.5
+  - region "Notifications alt+T"
+  - button "Open Next.js Dev Tools" [ref=e34] [cursor=pointer]:
+    - img [ref=e35]

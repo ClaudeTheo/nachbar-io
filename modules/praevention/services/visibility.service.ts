@@ -184,7 +184,8 @@ export async function getCaregiverPreventionStatus(
       .maybeSingle();
 
     // Aktuelle Woche berechnen
-    const courseStart = (e.course as { starts_at: string })?.starts_at;
+    const courseStart = (e.course as unknown as { starts_at: string })
+      ?.starts_at;
     const weeksSinceStart = courseStart
       ? Math.ceil(
           (Date.now() - new Date(courseStart).getTime()) /
@@ -194,8 +195,10 @@ export async function getCaregiverPreventionStatus(
 
     results.push({
       residentName:
-        (e.user as { display_name: string })?.display_name || "Bewohner",
-      courseTitle: (e.course as { title: string })?.title || "Präventionskurs",
+        (e.user as unknown as { display_name: string })?.display_name ||
+        "Bewohner",
+      courseTitle:
+        (e.course as unknown as { title: string })?.title || "Präventionskurs",
       currentWeek: Math.min(Math.max(weeksSinceStart, 1), 8),
       lastSessionAt: lastSession?.completed_at || null,
       attendanceRate: e.attendance_rate,

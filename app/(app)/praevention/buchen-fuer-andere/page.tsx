@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import {
   ArrowLeft,
@@ -29,6 +29,20 @@ interface Course {
 const PILOT_MODE = process.env.NEXT_PUBLIC_PILOT_MODE === "true";
 
 export default function BuchenFuerAnderePage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex min-h-[50vh] items-center justify-center">
+          <div className="h-8 w-8 animate-spin rounded-full border-4 border-emerald-200 border-t-emerald-600" />
+        </div>
+      }
+    >
+      <BuchenFuerAndereContent />
+    </Suspense>
+  );
+}
+
+function BuchenFuerAndereContent() {
   const searchParams = useSearchParams();
   const courseIdParam = searchParams.get("course_id");
 

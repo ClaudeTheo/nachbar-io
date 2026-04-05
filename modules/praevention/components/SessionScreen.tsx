@@ -4,11 +4,13 @@
 // Begruessung → MoodCheck → Uebung (Chat) → MoodCheck → Abschluss
 
 import { useState, useRef } from "react";
-import { ArrowLeft, Send, AlertTriangle } from "lucide-react";
+import { ArrowLeft, Send, AlertTriangle, Mic, MicOff } from "lucide-react";
 import MoodCheck from "./MoodCheck";
 import BreathAnimation from "./BreathAnimation";
+import VoiceConsentDialog from "./VoiceConsentDialog";
 
 type SessionPhase =
+  | "voice_consent"
   | "greeting"
   | "mood_before"
   | "exercise"
@@ -39,16 +41,89 @@ export default function SessionScreen({
   onComplete,
   onCancel,
 }: SessionScreenProps) {
-  const [phase, setPhase] = useState<SessionPhase>("greeting");
+  const [phase, setPhase] = useState<SessionPhase>("voice_consent");
+  const [voiceConsent, setVoiceConsent] = useState<boolean | null>(null);
   const [moodBefore, setMoodBefore] = useState<number | null>(null);
   const [moodAfter, setMoodAfter] = useState<number | null>(null);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [inputText, setInputText] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [isRecording, setIsRecording] = useState(false);
   const [showBreath, setShowBreath] = useState(false);
   const [escalationFlag, setEscalationFlag] = useState("normal");
   const startTimeRef = useRef(Date.now());
   const chatEndRef = useRef<HTMLDivElement>(null);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+
+  // Voice-Consent Entscheidung
+  const handleVoiceConsent = (consented: boolean) => {
+    setVoiceConsent(consented);
+    setPhase("greeting");
+  };
+
+  // Sprach-Aufnahme starten (wenn Voice-Consent)
+  const startRecording = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const recorder = new MediaRecorder(stream, { mimeType: "audio/webm" });
+      const chunks: Blob[] = [];
+
+      recorder.ondataavailable = (e) => chunks.push(e.data);
+      recorder.onstop = async () => {
+        stream.getTracks().forEach((t) => t.stop());
+        const blob = new Blob(chunks, { type: "audio/webm" });
+        const formData = new FormData();
+        formData.append("audio", blob, "audio.webm");
+
+        try {
+          const res = await fetch("/api/voice/transcribe", {
+            method: "POST",
+            body: formData,
+          });
+          if (res.ok) {
+            const { text } = await res.json();
+            if (text?.trim()) sendMessage(text.trim());
+          }
+        } catch {
+          // Transkription fehlgeschlagen — ignorieren
+        }
+        setIsRecording(false);
+      };
+
+      mediaRecorderRef.current = recorder;
+      recorder.start();
+      setIsRecording(true);
+    } catch {
+      // Mikrofon-Zugriff verweigert
+      setIsRecording(false);
+    }
+  };
+
+  // Sprach-Aufnahme stoppen
+  const stopRecording = () => {
+    mediaRecorderRef.current?.stop();
+    mediaRecorderRef.current = null;
+  };
+
+  // TTS: Antwort vorlesen (wenn Voice-Consent)
+  const speakText = async (text: string) => {
+    if (!voiceConsent) return;
+    try {
+      const res = await fetch("/api/voice/tts", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text, voice: "nova", speed: 0.85 }),
+      });
+      if (res.ok) {
+        const blob = await res.blob();
+        const url = URL.createObjectURL(blob);
+        const audio = new Audio(url);
+        audio.play();
+      }
+    } catch {
+      // TTS fehlgeschlagen — ignorieren
+    }
+  };
 
   // KI-Nachricht senden
   const sendMessage = async (text: string) => {
@@ -77,6 +152,11 @@ export default function SessionScreen({
         ...prev,
         { role: "assistant", content: data.reply },
       ]);
+
+      // TTS: Antwort vorlesen wenn Voice-Consent
+      if (voiceConsent && data.reply) {
+        speakText(data.reply);
+      }
 
       // Eskalation behandeln
       if (data.escalationLevel === "red") {
@@ -166,6 +246,12 @@ export default function SessionScreen({
           <p className="text-xs text-gray-500">Woche {weekNumber}</p>
         </div>
       </div>
+
+      {/* Voice-Consent Dialog */}
+      <VoiceConsentDialog
+        open={phase === "voice_consent"}
+        onDecision={handleVoiceConsent}
+      />
 
       {/* Content basierend auf Phase */}
       <div className="flex flex-1 flex-col items-center justify-center py-8">
@@ -262,6 +348,25 @@ export default function SessionScreen({
                 className="flex-1 rounded-xl border border-gray-200 px-4 py-3 text-sm focus:border-emerald-400 focus:outline-none"
                 disabled={isLoading}
               />
+              {/* Mikrofon-Button (nur bei Voice-Consent) */}
+              {voiceConsent && (
+                <button
+                  onClick={isRecording ? stopRecording : startRecording}
+                  disabled={isLoading}
+                  className={`flex h-12 w-12 items-center justify-center rounded-xl transition-all ${
+                    isRecording
+                      ? "animate-pulse bg-red-500 text-white"
+                      : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                  }`}
+                  aria-label={isRecording ? "Aufnahme stoppen" : "Sprechen"}
+                >
+                  {isRecording ? (
+                    <MicOff className="h-5 w-5" />
+                  ) : (
+                    <Mic className="h-5 w-5" />
+                  )}
+                </button>
+              )}
               <button
                 onClick={() => {
                   if (inputText.trim() && !isLoading) {

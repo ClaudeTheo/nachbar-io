@@ -10,6 +10,10 @@ import {
   Calendar,
   MessageCircle,
   List,
+  TrendingUp,
+  BarChart3,
+  FileText,
+  Award,
 } from "lucide-react";
 
 interface DashboardData {
@@ -220,6 +224,52 @@ export default function KursleiterDashboardPage() {
           <div className="flex items-center gap-3">
             <MessageCircle className="h-5 w-5 text-gray-500" />
             <span className="font-medium text-gray-900">Nachrichten</span>
+          </div>
+          <span className="text-gray-400">→</span>
+        </Link>
+
+        <Link
+          href="/praevention/dashboard/stimmung"
+          className="flex items-center justify-between rounded-xl border border-gray-100 bg-white p-4 shadow-sm transition-colors hover:bg-gray-50"
+        >
+          <div className="flex items-center gap-3">
+            <TrendingUp className="h-5 w-5 text-gray-500" />
+            <span className="font-medium text-gray-900">Stimmungsverlauf</span>
+          </div>
+          <span className="text-gray-400">→</span>
+        </Link>
+
+        <Link
+          href="/praevention/dashboard/evaluation"
+          className="flex items-center justify-between rounded-xl border border-gray-100 bg-white p-4 shadow-sm transition-colors hover:bg-gray-50"
+        >
+          <div className="flex items-center gap-3">
+            <BarChart3 className="h-5 w-5 text-gray-500" />
+            <span className="font-medium text-gray-900">PSS-10 Evaluation</span>
+          </div>
+          <span className="text-gray-400">→</span>
+        </Link>
+
+        <Link
+          href="/praevention/dashboard/inhalte"
+          className="flex items-center justify-between rounded-xl border border-gray-100 bg-white p-4 shadow-sm transition-colors hover:bg-gray-50"
+        >
+          <div className="flex items-center gap-3">
+            <FileText className="h-5 w-5 text-gray-500" />
+            <span className="font-medium text-gray-900">
+              Kurs-Inhalte & KI-Prompts
+            </span>
+          </div>
+          <span className="text-gray-400">→</span>
+        </Link>
+
+        <Link
+          href="/praevention/dashboard/zertifikate"
+          className="flex items-center justify-between rounded-xl border border-gray-100 bg-white p-4 shadow-sm transition-colors hover:bg-gray-50"
+        >
+          <div className="flex items-center gap-3">
+            <Award className="h-5 w-5 text-gray-500" />
+            <span className="font-medium text-gray-900">Bescheinigungen</span>
           </div>
           <span className="text-gray-400">→</span>
         </Link>

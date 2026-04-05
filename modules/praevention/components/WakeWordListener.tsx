@@ -8,12 +8,9 @@
 import { useState, useCallback, useRef, useEffect } from "react";
 import { Mic, MicOff } from "lucide-react";
 
-// Porcupine-Typen (dynamisch geladen)
-type PorcupineWorker = {
-  start: () => Promise<void>;
-  stop: () => Promise<void>;
-  release: () => Promise<void>;
-};
+// Porcupine Worker (dynamisch geladen, Typ-kompatibel)
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type PorcupineHandle = any;
 
 interface WakeWordListenerProps {
   /** Callback wenn Wake-Word erkannt oder Button gedrueckt */
@@ -32,7 +29,7 @@ export default function WakeWordListener({
   const [isListening, setIsListening] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const workerRef = useRef<PorcupineWorker | null>(null);
+  const workerRef = useRef<PorcupineHandle | null>(null);
 
   // Porcupine initialisieren (nur wenn Voice-Consent gegeben)
   const startListening = useCallback(async () => {
@@ -53,18 +50,21 @@ export default function WakeWordListener({
 
     try {
       // Dynamischer Import (WASM-Module, nur im Browser)
-      const { PorcupineWorker: PorcWorker } =
-        await import("@picovoice/porcupine-web");
+      // Porcupine v4 API — Typen dynamisch, WASM-Laden erfordert publicPath
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const porcupineModule: any = await import("@picovoice/porcupine-web");
+      const PorcWorker = porcupineModule.PorcupineWorker;
 
       const porcupineWorker = await PorcWorker.create(
         accessKey,
         // Built-in Keyword als Platzhalter — spaeter durch Custom "Hallo Nachbar" ersetzen
         // Custom Keywords benoetigen Picovoice Console Training (.ppn Datei)
-        { builtin: "Computer", sensitivity: 0.7 },
+        [{ builtin: "Computer", sensitivity: 0.7 }],
         (detection: { label: string }) => {
           console.log("[WakeWord] Erkannt:", detection.label);
           onActivated();
         },
+        { publicPath: "/porcupine/" },
       );
 
       await porcupineWorker.start();

@@ -112,7 +112,9 @@ export async function getDashboardOverview(
         : 999;
 
       if (daysSince > 7) {
-        const user = enrollment.user as { display_name: string } | null;
+        const user = enrollment.user as unknown as {
+          display_name: string;
+        } | null;
         warnings.push({
           userId: enrollment.user_id,
           displayName: user?.display_name ?? "Unbekannt",

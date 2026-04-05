@@ -7,6 +7,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Check } from "lucide-react";
 import Link from "next/link";
+import { showPointsToast } from "@/components/gamification/PointsToast";
 
 // Check-in-Status-Antwort vom Server
 interface CheckinStatusResponse {
@@ -26,12 +27,24 @@ type MoodOption = {
 
 const MOOD_OPTIONS: MoodOption[] = [
   { mood: "good", status: "ok", emoji: "\uD83D\uDE0A", label: "Gut" },
-  { mood: "neutral", status: "not_well", emoji: "\uD83D\uDE10", label: "Geht so" },
-  { mood: "bad", status: "need_help", emoji: "\uD83D\uDE1F", label: "Nicht gut" },
+  {
+    mood: "neutral",
+    status: "not_well",
+    emoji: "\uD83D\uDE10",
+    label: "Geht so",
+  },
+  {
+    mood: "bad",
+    status: "need_help",
+    emoji: "\uD83D\uDE1F",
+    label: "Nicht gut",
+  },
 ];
 
 export function DailyCheckinButton() {
-  const [phase, setPhase] = useState<"loading" | "pending" | "mood" | "submitting" | "done">("loading");
+  const [phase, setPhase] = useState<
+    "loading" | "pending" | "mood" | "submitting" | "done"
+  >("loading");
   const [completedCount, setCompletedCount] = useState(0);
   const [totalCount, setTotalCount] = useState(0);
   const [checkinEnabled, setCheckinEnabled] = useState(false);
@@ -116,9 +129,10 @@ export function DailyCheckinButton() {
         return;
       }
 
-      // Erfolg: Status aktualisieren
+      // Erfolg: Status aktualisieren + Punkte-Toast
       setCompletedCount((prev) => prev + 1);
       setPhase("done");
+      showPointsToast("checkin");
     } catch {
       setError("Verbindungsfehler");
       setPhase("mood");
@@ -133,10 +147,16 @@ export function DailyCheckinButton() {
   // Fehler-Meldung (wird über dem aktuellen State angezeigt)
   const isConsentError = error?.includes("Einwilligung");
   const errorBanner = error ? (
-    <div className="mb-2 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700" role="alert">
+    <div
+      className="mb-2 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700"
+      role="alert"
+    >
       <p>{error}</p>
       {isConsentError && (
-        <Link href="/care/consent" className="mt-1 block font-semibold underline">
+        <Link
+          href="/care/consent"
+          className="mt-1 block font-semibold underline"
+        >
           Jetzt Einwilligung erteilen →
         </Link>
       )}
@@ -173,7 +193,9 @@ export function DailyCheckinButton() {
     return (
       <div data-testid="checkin-mood" className="space-y-2">
         {errorBanner}
-        <p className="text-sm font-medium text-[#2D3142]">Wie fühlen Sie sich?</p>
+        <p className="text-sm font-medium text-[#2D3142]">
+          Wie fühlen Sie sich?
+        </p>
         <div className="grid grid-cols-3 gap-2">
           {MOOD_OPTIONS.map((option) => (
             <button
@@ -184,7 +206,9 @@ export function DailyCheckinButton() {
               style={{ minHeight: "80px", touchAction: "manipulation" }}
               data-testid={`mood-${option.mood}`}
             >
-              <span className="text-2xl" aria-hidden="true">{option.emoji}</span>
+              <span className="text-2xl" aria-hidden="true">
+                {option.emoji}
+              </span>
               <span className="mt-1 text-sm font-medium">{option.label}</span>
             </button>
           ))}

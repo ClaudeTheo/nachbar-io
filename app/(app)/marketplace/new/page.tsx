@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Check } from "lucide-react";
 import { PageHeader } from "@/components/ui/page-header";
 import { toast } from "sonner";
+import { showPointsToast } from "@/components/gamification/PointsToast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -112,7 +113,9 @@ export default function MarketplaceNewPage() {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ action: "marketplace_gift" }),
-        }).catch(() => {}); // Fire-and-forget
+        })
+          .then(() => showPointsToast("marketplace_gift"))
+          .catch(() => {});
       }
 
       setStep(4);

@@ -19,8 +19,12 @@ export interface HeartbeatBody {
   device_type?: string;
 }
 
+// Rate-Limit: max 1 Heartbeat pro Minute pro User (In-Memory)
+const heartbeatRateMap = new Map<string, number>();
+const HEARTBEAT_COOLDOWN_MS = 60_000;
+
 /**
- * Zeichnet einen Heartbeat auf (1 pro Session).
+ * Zeichnet einen Heartbeat auf (max 1 pro Minute pro User).
  * Validiert source + device_type, schreibt in heartbeats-Tabelle.
  */
 export async function recordHeartbeat(
@@ -29,6 +33,13 @@ export async function recordHeartbeat(
   body: HeartbeatBody,
 ): Promise<{ ok: true }> {
   const { source, device_type } = body;
+
+  // Rate-Limit: 1 Heartbeat pro Minute pro User
+  const now = Date.now();
+  const lastHeartbeat = heartbeatRateMap.get(userId);
+  if (lastHeartbeat && now - lastHeartbeat < HEARTBEAT_COOLDOWN_MS) {
+    throw new ServiceError("Maximal 1 Heartbeat pro Minute", 429);
+  }
 
   // Validierung
   if (!source || !VALID_SOURCES.includes(source as HeartbeatSource)) {
@@ -49,6 +60,17 @@ export async function recordHeartbeat(
 
   if (error) {
     throw new ServiceError("Heartbeat konnte nicht gespeichert werden", 500);
+  }
+
+  // Rate-Limit Timestamp setzen (erst NACH erfolgreichem Insert)
+  heartbeatRateMap.set(userId, now);
+
+  // Alte Eintraege aufraeumen (Memory-Leak-Schutz, alle 1000 Eintraege)
+  if (heartbeatRateMap.size > 1000) {
+    const cutoff = now - HEARTBEAT_COOLDOWN_MS;
+    for (const [uid, ts] of heartbeatRateMap) {
+      if (ts < cutoff) heartbeatRateMap.delete(uid);
+    }
   }
 
   careLog("heartbeat", "created", { userId, source, device_type });

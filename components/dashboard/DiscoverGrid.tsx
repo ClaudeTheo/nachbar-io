@@ -9,6 +9,7 @@ import {
   HandHeart,
   CalendarDays,
   AlertTriangle,
+  Users,
   PartyPopper,
   Star,
   Search,
@@ -62,6 +63,13 @@ const primaryItems: DiscoverItem[] = [
     icon: HandHeart,
     bgColor: "bg-amber-50",
     iconColor: "text-alert-amber",
+  },
+  {
+    href: "/gruppen",
+    label: "Gruppen",
+    icon: Users,
+    bgColor: "bg-emerald-50",
+    iconColor: "text-emerald-600",
   },
   {
     href: "/waste-calendar",

@@ -24,6 +24,7 @@ const ALLOWED_ROUTES = [
   '/marketplace/new', '/events', '/events/new', '/help', '/help/new',
   '/waste-calendar', '/map', '/profile', '/messages', '/experts',
   '/settings', '/amtsblatt', '/mitessen', '/mitessen/neu',
+  '/gruppen', '/gruppen/neue-gruppe',
 ] as const;
 
 /**
@@ -184,7 +185,52 @@ export const companionTools: CompanionToolDefinition[] = [
     },
   },
 
+  {
+    name: 'create_group',
+    description: 'Erstellt eine neue Gruppe/Interessengruppe im Quartier. Kategorien: nachbarschaft, sport, garten, kinder, senioren, kultur, ehrenamt, sonstiges.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        name: { type: 'string', description: 'Name der Gruppe (3-60 Zeichen)' },
+        category: {
+          type: 'string',
+          enum: ['nachbarschaft', 'sport', 'garten', 'kinder', 'senioren', 'kultur', 'ehrenamt', 'sonstiges'],
+          description: 'Kategorie der Gruppe',
+        },
+        description: { type: 'string', description: 'Kurze Beschreibung (optional, max 500 Zeichen)' },
+        type: {
+          type: 'string',
+          enum: ['open', 'closed'],
+          description: 'open = jeder kann beitreten, closed = Beitritt auf Anfrage. Standard: open',
+        },
+      },
+      required: ['name', 'category'],
+    },
+  },
+
+  {
+    name: 'create_group_post',
+    description: 'Erstellt einen neuen Beitrag in einer Gruppe. Der Nutzer muss Mitglied der Gruppe sein.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        group_name: { type: 'string', description: 'Name der Gruppe, in der gepostet werden soll' },
+        content: { type: 'string', description: 'Inhalt des Beitrags (max 1000 Zeichen)' },
+      },
+      required: ['group_name', 'content'],
+    },
+  },
+
   // ── Read-Tools (sofortige Ausfuehrung) ─────────────────────────
+
+  {
+    name: 'list_my_groups',
+    description: 'Zeigt alle Gruppen an, in denen der Nutzer Mitglied ist.',
+    input_schema: {
+      type: 'object',
+      properties: {},
+    },
+  },
 
   {
     name: 'list_meals',
@@ -241,4 +287,6 @@ export const WRITE_TOOLS = new Set([
   'send_message',
   'update_profile',
   'create_meal',
+  'create_group',
+  'create_group_post',
 ]);

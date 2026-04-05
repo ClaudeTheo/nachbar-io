@@ -456,6 +456,116 @@ export async function executeCompanionTool(
         };
       }
 
+      // ── Gruppen-Tools ──────────────────────────────────────────
+
+      case 'create_group': {
+        const ctx = await getUserContext(supabase, userId);
+        if (!ctx) return { success: false, summary: 'Kein Quartier zugeordnet.' };
+
+        const { data: group, error: groupErr } = await supabase
+          .from('groups')
+          .insert({
+            quarter_id: ctx.quarterId,
+            name: (params.name as string).trim(),
+            description: (params.description as string | undefined)?.trim() || null,
+            category: params.category as string,
+            type: (params.type as string) ?? 'open',
+            creator_id: userId,
+            member_count: 1,
+          })
+          .select()
+          .single();
+
+        if (groupErr) return { success: false, summary: `Fehler: ${groupErr.message}` };
+
+        await supabase.from('group_members').insert({
+          group_id: group.id,
+          user_id: userId,
+          role: 'founder',
+          status: 'active',
+        });
+
+        return {
+          success: true,
+          summary: `Gruppe "${group.name}" wurde erstellt. Sie sind automatisch als Gruender eingetragen.`,
+          data: group,
+          route: `/gruppen/${group.id}`,
+        };
+      }
+
+      case 'create_group_post': {
+        // Gruppe anhand Name finden
+        const groupName = (params.group_name as string).trim().toLowerCase();
+        const { data: groups } = await supabase
+          .from('groups')
+          .select('id, name')
+          .ilike('name', `%${groupName}%`)
+          .limit(5);
+
+        if (!groups || groups.length === 0) {
+          return { success: false, summary: `Keine Gruppe mit dem Namen "${params.group_name}" gefunden.` };
+        }
+
+        const targetGroup = groups[0];
+
+        // Mitgliedschaft pruefen
+        const { data: membership } = await supabase
+          .from('group_members')
+          .select('status')
+          .eq('group_id', targetGroup.id)
+          .eq('user_id', userId)
+          .eq('status', 'active')
+          .single();
+
+        if (!membership) {
+          return { success: false, summary: `Sie sind kein aktives Mitglied der Gruppe "${targetGroup.name}".` };
+        }
+
+        const { data: post, error: postErr } = await supabase
+          .from('group_posts')
+          .insert({
+            group_id: targetGroup.id,
+            user_id: userId,
+            content: (params.content as string).trim(),
+          })
+          .select()
+          .single();
+
+        if (postErr) return { success: false, summary: `Fehler: ${postErr.message}` };
+
+        return {
+          success: true,
+          summary: `Beitrag in "${targetGroup.name}" veroeffentlicht.`,
+          data: post,
+          route: `/gruppen/${targetGroup.id}`,
+        };
+      }
+
+      case 'list_my_groups': {
+        const { data: memberships } = await supabase
+          .from('group_members')
+          .select('group_id, groups(name, member_count, category)')
+          .eq('user_id', userId)
+          .eq('status', 'active');
+
+        if (!memberships || memberships.length === 0) {
+          return { success: true, summary: 'Sie sind noch keiner Gruppe beigetreten.' };
+        }
+
+        const lines = memberships.map((m, i) => {
+          const g = Array.isArray(m.groups) ? m.groups[0] : m.groups;
+          const group = g as { name: string; member_count: number; category: string } | null;
+          return `${i + 1}. ${group?.name ?? 'Unbekannt'} (${group?.member_count ?? 0} Mitglieder)`;
+        });
+
+        return {
+          success: true,
+          summary: `Sie sind Mitglied in ${memberships.length} ${memberships.length === 1 ? 'Gruppe' : 'Gruppen'}:\n${lines.join('\n')}`,
+          data: memberships,
+          route: '/gruppen',
+        };
+      }
+
       default:
         return { success: false, summary: `Unbekanntes Tool: ${toolName}` };
     }

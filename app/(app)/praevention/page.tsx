@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Heart, BookOpen, ArrowLeft } from "lucide-react";
+import { Heart, BookOpen, ArrowLeft, CalendarDays } from "lucide-react";
 import Link from "next/link";
 import { CourseCard } from "@/components/praevention/CourseCard";
 import { WeekProgress } from "@/components/praevention/WeekProgress";
@@ -145,14 +145,14 @@ export default function PraeventionPage() {
               <WeekProgress weeks={p.weeks} currentWeek={p.currentWeek} />
 
               {/* Quick Actions */}
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-3 gap-3">
                 <Link
                   href="/praevention/sitzung"
                   className="flex items-center justify-center gap-2 rounded-xl bg-emerald-600 px-4 py-3 text-base font-medium text-white transition-colors hover:bg-emerald-700"
                   style={{ minHeight: "48px" }}
                 >
                   <Heart className="h-5 w-5" />
-                  Tägliche Übung
+                  Übung
                 </Link>
                 <Link
                   href="/praevention/materialien"
@@ -160,8 +160,17 @@ export default function PraeventionPage() {
                   style={{ minHeight: "48px" }}
                 >
                   <BookOpen className="h-5 w-5" />
-                  Materialien
+                  Material
                 </Link>
+                <a
+                  href={`/api/prevention/calendar.ics?enrollmentId=${p.enrollment.id}`}
+                  download
+                  className="flex items-center justify-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-3 text-base font-medium text-gray-700 transition-colors hover:bg-gray-50"
+                  style={{ minHeight: "48px" }}
+                >
+                  <CalendarDays className="h-5 w-5" />
+                  Kalender
+                </a>
               </div>
             </div>
           ))}

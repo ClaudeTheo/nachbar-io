@@ -22,6 +22,7 @@ import {
   ShoppingCart,
   ClipboardList,
   Stethoscope,
+  Heart,
   ChevronDown,
 } from "lucide-react";
 import { haptic } from "@/lib/haptics";
@@ -70,6 +71,13 @@ const primaryItems: DiscoverItem[] = [
     icon: Users,
     bgColor: "bg-emerald-50",
     iconColor: "text-emerald-600",
+  },
+  {
+    href: "/praevention",
+    label: "Prävention",
+    icon: Heart,
+    bgColor: "bg-emerald-100",
+    iconColor: "text-emerald-700",
   },
   {
     href: "/waste-calendar",

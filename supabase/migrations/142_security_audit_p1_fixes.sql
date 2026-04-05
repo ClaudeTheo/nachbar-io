@@ -20,5 +20,20 @@ CREATE POLICY prevention_enrollments_update_own ON prevention_enrollments FOR UP
 
 -- P1-4: caregiver_links INSERT Policy (fehlte komplett)
 -- RLS war enabled, aber kein INSERT → Einladungs-Einloesung schlug still fehl
-CREATE POLICY IF NOT EXISTS caregiver_links_insert ON caregiver_links FOR INSERT
-  WITH CHECK (auth.uid() = caregiver_id OR auth.uid() = resident_id);
+-- Codex Review: Alte Policy war zu offen (Bypass ohne Invite moeglich)
+-- Neue Policy: Bewohner kann Link erstellen ODER Caregiver nur mit validem Invite
+DROP POLICY IF EXISTS caregiver_links_insert ON caregiver_links;
+DROP POLICY IF EXISTS caregiver_links_insert_resident ON caregiver_links;
+CREATE POLICY caregiver_links_insert_safe ON caregiver_links FOR INSERT
+  WITH CHECK (
+    -- Bewohner erstellt Link (Einladung)
+    auth.uid() = resident_id
+    OR
+    -- Caregiver loest Einladung ein: muss validen, eingeloesten Invite haben
+    (auth.uid() = caregiver_id AND EXISTS (
+      SELECT 1 FROM caregiver_invites ci
+      WHERE ci.resident_id = caregiver_links.resident_id
+        AND ci.used_by = auth.uid()
+        AND ci.used_at IS NOT NULL
+    ))
+  );

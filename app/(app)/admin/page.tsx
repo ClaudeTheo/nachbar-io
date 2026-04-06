@@ -48,6 +48,7 @@ import { QuarterWizard } from "./components/QuarterWizard";
 import { FeatureFlagManager } from "./components/FeatureFlagManager";
 import { BugReports } from "./components/BugReports";
 import { KpiDashboard } from "@/modules/admin/components/KpiDashboard";
+import YouthAdmin from "./components/YouthAdmin";
 import { useUserRole } from "@/lib/quarters";
 
 // ============================================================
@@ -297,6 +298,9 @@ export default function AdminPage() {
             <TabsTrigger value="events" className="text-xs flex-1 min-w-[55px]">
               <Calendar className="h-3.5 w-3.5 mr-1" />Events
             </TabsTrigger>
+            <TabsTrigger value="youth" className="text-xs flex-1 min-w-[55px]">
+              <Shield className="h-3.5 w-3.5 mr-1" />Jugend
+            </TabsTrigger>
           </TabsList>
         </Tabs>
 
@@ -435,6 +439,7 @@ export default function AdminPage() {
         {activeTab === "flags" && <FeatureFlagManager />}
         {activeTab === "kpi" && <KpiDashboard />}
         {activeTab === "bugs" && <BugReports />}
+        {activeTab === "youth" && <YouthAdmin />}
       </div>
     </div>
   );

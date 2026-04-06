@@ -32,8 +32,11 @@ export async function checkSecurity(
   const keys = await buildClientKeys(request);
 
   // --- Trap 1: Honeypot-Pfade (vor allem fuer Nicht-API-Pfade wie /.env) ---
+  const normalizedPath = pathname.toLowerCase();
   if (
-    HONEYPOT_PATHS.some((p) => pathname === p || pathname.startsWith(p + "/"))
+    HONEYPOT_PATHS.some(
+      (p) => normalizedPath === p || normalizedPath.startsWith(p + "/"),
+    )
   ) {
     await recordEvent(keys, "fake_admin", 40, ["ip", "session"]);
     logSecurityEvent({
@@ -44,13 +47,13 @@ export async function checkSecurity(
       stage: 2,
       routePattern: pathname,
     });
-    // 404 zurueckgeben (identisch mit echten 404s)
+    // 404 zurueckgeben (identisch mit echten API-404s — mit JSON-Body)
     return {
       allowed: false,
       stage: 2,
       effectiveScore: 40,
       rateLimitDivisor: 1,
-      response: new NextResponse(null, { status: 404 }),
+      response: NextResponse.json({ error: "Not found" }, { status: 404 }),
     };
   }
 

@@ -42,7 +42,10 @@ export interface ClientKeys {
 export async function buildClientKeys(request: {
   headers: { get(name: string): string | null };
   ip?: string | null;
-  cookies?: { get(name: string): { value: string } | undefined };
+  cookies?: {
+    get(name: string): { value: string } | undefined;
+    getAll?(): { name: string; value: string }[];
+  };
 }): Promise<ClientKeys> {
   // IP extrahieren (gleiche Logik wie rate-limit.ts)
   const forwarded = request.headers.get("x-forwarded-for");
@@ -50,14 +53,30 @@ export async function buildClientKeys(request: {
   const ip =
     forwarded?.split(",")[0].trim() || realIp || request.ip || "unknown";
 
-  // Session-Token aus Cookie (Supabase Auth)
-  const sessionCookie =
-    request.cookies?.get("sb-access-token")?.value ||
-    request.headers.get("authorization")?.replace("Bearer ", "");
+  // Session-Token extrahieren — primaer aus Authorization-Header,
+  // sekundaer aus Supabase SSR Cookies (Format: sb-<project-ref>-auth-token)
+  let sessionToken: string | null = null;
+
+  // 1. Authorization-Header (zuverlaessigster Weg)
+  const authHeader = request.headers.get("authorization");
+  if (authHeader?.startsWith("Bearer ")) {
+    sessionToken = authHeader.slice(7);
+  }
+
+  // 2. Fallback: Supabase SSR Cookie (Name haengt vom Projekt-Ref ab)
+  if (!sessionToken && request.cookies?.getAll) {
+    const allCookies = request.cookies.getAll();
+    const sbCookie = allCookies.find(
+      (c) => c.name.startsWith("sb-") && c.name.endsWith("-auth-token"),
+    );
+    if (sbCookie) {
+      sessionToken = sbCookie.value;
+    }
+  }
 
   return {
     ipHash: await hashIp(ip),
     userId: null, // Wird spaeter aus Auth-Context befuellt (nicht in Middleware verfuegbar)
-    sessionHash: sessionCookie ? await hashSession(sessionCookie) : null,
+    sessionHash: sessionToken ? await hashSession(sessionToken) : null,
   };
 }

@@ -25,10 +25,10 @@ export async function GET(request: NextRequest) {
     .order("created_at", { ascending: false })
     .limit(100);
 
-  // Aggregierte Stats
+  // Aggregierte Stats (inkl. resolved-Feld fuer unresolved-Zaehler)
   const { data: stats } = await supabase
     .from("security_events")
-    .select("severity, trap_type")
+    .select("severity, trap_type, resolved")
     .gte("created_at", since);
 
   const summary = {
@@ -50,7 +50,7 @@ export async function GET(request: NextRequest) {
         "cron_probe",
       ].map((t) => [t, stats?.filter((s) => s.trap_type === t).length ?? 0]),
     ),
-    unresolved: stats?.filter(() => true).length ?? 0, // RLS filtert
+    unresolved: stats?.filter((s) => s.resolved === false).length ?? 0,
   };
 
   return NextResponse.json({ events: events ?? [], summary });

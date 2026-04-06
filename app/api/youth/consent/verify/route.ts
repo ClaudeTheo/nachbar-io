@@ -4,9 +4,15 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { handleServiceError } from "@/lib/services/service-error";
 import { verifyYouthConsent } from "@/modules/youth/services/youth-routes.service";
+import { isFeatureEnabledServer } from "@/lib/feature-flags-server";
 
 export async function POST(request: NextRequest) {
   const supabase = await createClient();
+
+  const moduleEnabled = await isFeatureEnabledServer(supabase, "YOUTH_MODULE");
+  if (!moduleEnabled) {
+    return NextResponse.json({ error: "Jugend-Modul nicht verfügbar" }, { status: 404 });
+  }
 
   try {
     const body = await request.json();

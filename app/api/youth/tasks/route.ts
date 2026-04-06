@@ -7,9 +7,16 @@ import {
   listYouthTasks,
   createYouthTask,
 } from "@/modules/youth/services/youth-routes.service";
+import { isFeatureEnabledServer } from "@/lib/feature-flags-server";
 
 export async function GET(request: NextRequest) {
   const supabase = await createClient();
+
+  const moduleEnabled = await isFeatureEnabledServer(supabase, "YOUTH_MODULE");
+  if (!moduleEnabled) {
+    return NextResponse.json({ error: "Jugend-Modul nicht verfügbar" }, { status: 404 });
+  }
+
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -33,6 +40,12 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   const supabase = await createClient();
+
+  const moduleEnabled = await isFeatureEnabledServer(supabase, "YOUTH_MODULE");
+  if (!moduleEnabled) {
+    return NextResponse.json({ error: "Jugend-Modul nicht verfügbar" }, { status: 404 });
+  }
+
   const {
     data: { user },
   } = await supabase.auth.getUser();

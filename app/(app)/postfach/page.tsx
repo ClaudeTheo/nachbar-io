@@ -19,6 +19,7 @@ interface Thread {
   created_at: string;
   org_name: string;
   has_reply: boolean;
+  unread_count: number;
 }
 
 export default async function PostfachPage() {
@@ -111,12 +112,17 @@ export default async function PostfachPage() {
                   <span>
                     {format(new Date(thread.created_at), "dd.MM.yyyy")}
                   </span>
-                  {thread.has_reply && (
-                    <span className="inline-flex items-center gap-1 text-[#4CAF87]">
+                  {thread.unread_count > 0 ? (
+                    <span className="inline-flex items-center gap-1 font-medium text-[#4CAF87]">
+                      <MessageSquareReply className="h-3 w-3" />
+                      {thread.unread_count} neue {thread.unread_count === 1 ? "Antwort" : "Antworten"}
+                    </span>
+                  ) : thread.has_reply ? (
+                    <span className="inline-flex items-center gap-1 text-gray-400">
                       <MessageSquareReply className="h-3 w-3" />
                       Antwort vom Rathaus
                     </span>
-                  )}
+                  ) : null}
                 </div>
               </Link>
             );

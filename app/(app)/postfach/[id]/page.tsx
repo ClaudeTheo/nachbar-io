@@ -1,5 +1,5 @@
-// Nachbar.io — Thread-Detail (Buerger-Sicht, read-only)
-// Zeigt die eigene Anfrage + Antworten vom Rathaus
+// Nachbar.io — Thread-Detail (Buerger-Sicht)
+// Zeigt die eigene Anfrage + Antworten vom Rathaus + Antwort-Feld
 
 import { notFound, redirect } from "next/navigation";
 import { ArrowLeft, User, Building2, Clock } from "lucide-react";
@@ -8,6 +8,8 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { getAdminSupabase } from "@/lib/supabase/admin";
 import { decryptCivicField } from "@/lib/civic/encryption";
+import BuergerReplyBox from "./BuergerReplyBox";
+import CitizenReadMarker from "./CitizenReadMarker";
 
 interface Props {
   params: Promise<{ id: string }>;
@@ -144,7 +146,13 @@ export default async function PostfachDetailPage({ params }: Props) {
         })}
       </div>
 
-      {/* Kein Antwort-Feld — Schritt 2 ist read-only fuer Buerger */}
+      {/* Antwort-Box */}
+      <div className="mt-4">
+        <BuergerReplyBox threadId={id} />
+      </div>
+
+      {/* Unsichtbar: Setzt citizen_read_until */}
+      <CitizenReadMarker threadId={id} />
     </div>
   );
 }

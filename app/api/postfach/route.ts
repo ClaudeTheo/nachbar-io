@@ -23,7 +23,7 @@ export async function GET() {
   // Alle Nachrichten des Buergers laden (als Thread-Owner)
   const { data, error } = await admin
     .from("civic_messages")
-    .select("id, subject, status, created_at, org_id, thread_id, direction")
+    .select("id, subject, status, created_at, org_id, thread_id, direction, citizen_read_until")
     .eq("citizen_user_id", user.id)
     .order("created_at", { ascending: false });
 
@@ -44,18 +44,24 @@ export async function GET() {
     .in("id", orgIds);
   const orgMap = new Map((orgs ?? []).map((o) => [o.id, o.name]));
 
-  // Pro Root: Antwort-Info
+  // Pro Root: Antwort-Info + Unread-Count
   const threads = roots.map((root) => {
-    const hasReply = allMessages.some(
+    const staffReplies = allMessages.filter(
       (m) => m.thread_id === root.id && m.id !== root.id && m.direction === "staff_to_citizen",
     );
+    const citizenReadUntil = (root as Record<string, unknown>).citizen_read_until as string | null;
+    const unreadCount = citizenReadUntil
+      ? staffReplies.filter((r) => new Date(r.created_at) > new Date(citizenReadUntil)).length
+      : staffReplies.length;
+
     return {
       id: root.id,
       subject: root.subject,
       status: root.status,
       created_at: root.created_at,
       org_name: orgMap.get(root.org_id) ?? "Unbekannt",
-      has_reply: hasReply,
+      has_reply: staffReplies.length > 0,
+      unread_count: unreadCount,
     };
   });
 

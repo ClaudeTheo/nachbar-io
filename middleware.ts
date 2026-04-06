@@ -37,10 +37,12 @@ export async function middleware(request: NextRequest) {
     // result === null bedeutet: Route wird uebersprungen (z.B. Cron-Jobs)
     if (result && !result.allowed) {
       // Trap 5: Brute-Force-Eskalation bei 429 auf Auth-Routen
-      if (
+      // NICHT fuer check-invite (eigenes grosszuegiges Rate-Limit, read-only)
+      const isAuthRoute =
         pathname.startsWith("/api/auth/") ||
-        pathname.startsWith("/api/register/")
-      ) {
+        (pathname.startsWith("/api/register/") &&
+          !pathname.includes("check-invite"));
+      if (isAuthRoute) {
         const keys = await buildClientKeys(request);
         recordAuthRateLimit(keys).catch(() => {});
       }

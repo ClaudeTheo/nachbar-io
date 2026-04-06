@@ -46,13 +46,13 @@ export async function PATCH(
     });
     return NextResponse.json(updated);
   } catch (error) {
-    return handleServiceError(error);
+    return handleServiceError(error, request, "/api/care/tasks/[id]");
   }
 }
 
 // DELETE /api/care/tasks/[id] — Aufgabe löschen (nur Ersteller, nur offene)
 export async function DELETE(
-  _request: NextRequest,
+  request: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
   const { id } = await params;
@@ -70,6 +70,6 @@ export async function DELETE(
     });
     return NextResponse.json(result);
   } catch (error) {
-    return handleServiceError(error);
+    return handleServiceError(error, request, "/api/care/tasks/[id]");
   }
 }

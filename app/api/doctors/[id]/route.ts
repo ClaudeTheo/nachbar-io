@@ -11,7 +11,7 @@ import {
 
 // GET /api/doctors/[id] — Öffentliches Arzt-Profil abrufen
 export async function GET(
-  _request: NextRequest,
+  request: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
   try {
@@ -20,7 +20,7 @@ export async function GET(
     const data = await getDoctorProfile(supabase, id);
     return NextResponse.json(data);
   } catch (error) {
-    return handleServiceError(error);
+    return handleServiceError(error, request, "/api/doctors/[id]");
   }
 }
 
@@ -53,6 +53,6 @@ export async function PATCH(
         { status: 400 },
       );
     }
-    return handleServiceError(error);
+    return handleServiceError(error, request, "/api/doctors/[id]");
   }
 }

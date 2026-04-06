@@ -37,7 +37,7 @@ async function writeEvent(
 ): Promise<void> {
   const supabase = getAdminSupabase();
 
-  await supabase.from("security_events").insert({
+  const { error } = await supabase.from("security_events").insert({
     ip_hash: event.keys.ipHash,
     user_id: event.keys.userId,
     session_hash: event.keys.sessionHash,
@@ -49,6 +49,10 @@ async function writeEvent(
     route_pattern: event.routePattern,
     metadata: event.metadata ?? {},
   });
+
+  if (error) {
+    console.error("[security] Event-Insert fehlgeschlagen:", error.message);
+  }
 
   // Admin-Alarm bei High/Critical — MIT Cooldown
   if (severity === "high" || severity === "critical") {

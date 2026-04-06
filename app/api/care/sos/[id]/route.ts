@@ -11,7 +11,7 @@ import {
 
 // GET /api/care/sos/[id] — Einzelnen SOS-Alert mit Antworten und Senior-Profil abrufen
 export async function GET(
-  _request: NextRequest,
+  request: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
   const { id } = await params;
@@ -29,7 +29,7 @@ export async function GET(
     const result = await getSosAlert(supabase, user.id, id);
     return NextResponse.json(result);
   } catch (error) {
-    return handleServiceError(error);
+    return handleServiceError(error, request, "/api/care/sos/[id]");
   }
 }
 
@@ -63,6 +63,6 @@ export async function PATCH(
     const result = await updateSosStatus(supabase, user.id, id, body);
     return NextResponse.json(result);
   } catch (error) {
-    return handleServiceError(error);
+    return handleServiceError(error, request, "/api/care/sos/[id]");
   }
 }

@@ -32,7 +32,7 @@ function nonce(): string {
 }
 
 // Decay-Faktor berechnen: Wert * 2^(-t/halfLife)
-function decayedValue(
+export function decayedValue(
   points: number,
   ageMs: number,
   halfLifeMs: number,
@@ -60,7 +60,9 @@ async function computeScore(
   if (!members || members.length === 0) return { score: 0, trapTypes };
 
   // Async Pruning: Alte Events entfernen (fire-and-forget)
-  redis.zremrangebyscore(key, 0, minTimestamp - 1).catch(() => {});
+  redis.zremrangebyscore(key, 0, minTimestamp - 1).catch((err) =>
+    console.warn("[security] Redis-Pruning fehlgeschlagen:", err),
+  );
 
   let total = 0;
 

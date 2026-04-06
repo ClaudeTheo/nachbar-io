@@ -39,6 +39,6 @@ export async function PATCH(
     );
     return NextResponse.json(result);
   } catch (error) {
-    return handleServiceError(error);
+    return handleServiceError(error, request, "/api/caregiver/links/[id]");
   }
 }

@@ -12,7 +12,7 @@ import {
 
 // GET /api/appointments/[id] — Einzelnen Termin abrufen
 export async function GET(
-  _request: NextRequest,
+  request: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
   try {
@@ -32,7 +32,7 @@ export async function GET(
     const data = await getAppointment(supabase, user.id, id);
     return NextResponse.json(data);
   } catch (error) {
-    return handleServiceError(error);
+    return handleServiceError(error, request, "/api/appointments/[id]");
   }
 }
 
@@ -65,13 +65,13 @@ export async function PATCH(
         { status: 400 },
       );
     }
-    return handleServiceError(error);
+    return handleServiceError(error, request, "/api/appointments/[id]");
   }
 }
 
 // DELETE /api/appointments/[id] — Termin absagen (soft delete)
 export async function DELETE(
-  _request: NextRequest,
+  request: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
   try {
@@ -91,6 +91,6 @@ export async function DELETE(
     const data = await cancelAppointment(supabase, user.id, id);
     return NextResponse.json(data);
   } catch (error) {
-    return handleServiceError(error);
+    return handleServiceError(error, request, "/api/appointments/[id]");
   }
 }

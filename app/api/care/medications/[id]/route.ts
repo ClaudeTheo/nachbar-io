@@ -16,7 +16,7 @@ import {
 
 // GET /api/care/medications/[id]
 export async function GET(
-  _request: NextRequest,
+  request: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
   const { id } = await params;
@@ -29,7 +29,7 @@ export async function GET(
     const result = await getMedication(auth.supabase, auth.user.id, id);
     return NextResponse.json(result);
   } catch (error) {
-    return handleServiceError(error);
+    return handleServiceError(error, request, "/api/care/medications/[id]");
   }
 }
 
@@ -63,13 +63,13 @@ export async function PATCH(
     );
     return NextResponse.json(result);
   } catch (error) {
-    return handleServiceError(error);
+    return handleServiceError(error, request, "/api/care/medications/[id]");
   }
 }
 
 // DELETE /api/care/medications/[id] — Medikament deaktivieren (soft delete)
 export async function DELETE(
-  _request: NextRequest,
+  request: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
   const { id } = await params;
@@ -82,6 +82,6 @@ export async function DELETE(
     const result = await deactivateMedication(auth.supabase, auth.user.id, id);
     return NextResponse.json(result);
   } catch (error) {
-    return handleServiceError(error);
+    return handleServiceError(error, request, "/api/care/medications/[id]");
   }
 }

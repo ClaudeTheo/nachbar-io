@@ -16,7 +16,7 @@ import {
 
 // GET /api/care/appointments/[id]
 export async function GET(
-  _request: NextRequest,
+  request: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
   const { id } = await params;
@@ -30,7 +30,7 @@ export async function GET(
     const data = await getAppointment(auth.supabase, id, auth.user.id);
     return NextResponse.json(data);
   } catch (error) {
-    return handleServiceError(error);
+    return handleServiceError(error, request, "/api/care/appointments/[id]");
   }
 }
 
@@ -63,13 +63,13 @@ export async function PATCH(
     });
     return NextResponse.json(data);
   } catch (error) {
-    return handleServiceError(error);
+    return handleServiceError(error, request, "/api/care/appointments/[id]");
   }
 }
 
 // DELETE /api/care/appointments/[id] — Termin endgültig löschen
 export async function DELETE(
-  _request: NextRequest,
+  request: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
   const { id } = await params;
@@ -83,6 +83,6 @@ export async function DELETE(
     const data = await deleteAppointment(auth.supabase, id, auth.user.id);
     return NextResponse.json(data);
   } catch (error) {
-    return handleServiceError(error);
+    return handleServiceError(error, request, "/api/care/appointments/[id]");
   }
 }

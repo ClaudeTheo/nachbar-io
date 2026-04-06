@@ -5,7 +5,7 @@ import { getGroup, updateGroup, deleteGroup } from "@/modules/gruppen/services/g
 
 // GET /api/groups/[id] — Gruppen-Detail
 export async function GET(
-  _request: NextRequest,
+  request: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
   const { id } = await params;
@@ -17,7 +17,7 @@ export async function GET(
     const data = await getGroup(supabase, id);
     return NextResponse.json(data);
   } catch (error) {
-    return handleServiceError(error);
+    return handleServiceError(error, request, "/api/groups/[id]");
   }
 }
 
@@ -42,13 +42,13 @@ export async function PATCH(
     const data = await updateGroup(supabase, user.id, id, body as Parameters<typeof updateGroup>[3]);
     return NextResponse.json(data);
   } catch (error) {
-    return handleServiceError(error);
+    return handleServiceError(error, request, "/api/groups/[id]");
   }
 }
 
 // DELETE /api/groups/[id] — Gruppe loeschen
 export async function DELETE(
-  _request: NextRequest,
+  request: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
   const { id } = await params;
@@ -60,6 +60,6 @@ export async function DELETE(
     await deleteGroup(supabase, user.id, id);
     return NextResponse.json({ success: true });
   } catch (error) {
-    return handleServiceError(error);
+    return handleServiceError(error, request, "/api/groups/[id]");
   }
 }

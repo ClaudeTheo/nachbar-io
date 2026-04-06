@@ -1,4 +1,5 @@
 // Identitaets-Schritt: Name + E-Mail → Magic Link senden
+import { useState } from "react";
 import { MapPin, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -7,6 +8,8 @@ import { normalizeCode } from "@/lib/invite-codes";
 import type { StepProps } from "./types";
 
 export function RegisterStepIdentity({ state, setState, setStep }: StepProps) {
+  const [honeypot, setHoneypot] = useState("");
+
   // Registrierung abschliessen: User erstellen + Magic Link senden
   async function handleIdentitySubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -42,6 +45,7 @@ export function RegisterStepIdentity({ state, setState, setStep }: StepProps) {
           inviteCode: state.inviteCode ? normalizeCode(state.inviteCode) : undefined,
           referrerId: state.referrerId,
           quarterId: state.geoQuarter?.quarter_id || undefined,
+          website: honeypot, // Honeypot-Feld fuer Bot-Erkennung
         }),
       });
 
@@ -92,6 +96,19 @@ export function RegisterStepIdentity({ state, setState, setStep }: StepProps) {
 
   return (
     <form onSubmit={handleIdentitySubmit} className="space-y-4">
+      {/* Honeypot-Feld fuer Bot-Erkennung (unsichtbar fuer Menschen) */}
+      <input
+        name="website"
+        type="text"
+        value={honeypot}
+        onChange={(e) => setHoneypot(e.target.value)}
+        tabIndex={-1}
+        autoComplete="off"
+        style={{ position: "absolute", left: "-9999px", opacity: 0, height: 0 }}
+        aria-hidden="true"
+        data-testid="honeypot-field"
+      />
+
       <p className="text-sm text-muted-foreground">
         Noch Ihr Name und Ihre E-Mail — dann senden wir Ihnen einen Anmelde-Code.
       </p>

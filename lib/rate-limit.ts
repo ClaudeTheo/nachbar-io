@@ -257,6 +257,7 @@ function extractIp(request: {
 export function checkRateLimit(
   pathname: string,
   clientKey: string,
+  rateDivisor: number = 1,
 ): RateLimitResult | null {
   const category = getRouteCategory(pathname);
   if (!category) return null; // Route wird uebersprungen
@@ -264,5 +265,6 @@ export function checkRateLimit(
   // Key MUSS Kategorie enthalten — sonst teilen sich alle Routen
   // einer IP denselben Bucket (z.B. "default" 60/min frisst "auth" 5/min auf)
   const scopedKey = `${category.name}:${clientKey}`;
-  return rateLimiter.check(scopedKey, category.limit, category.windowMs);
+  const adjustedLimit = Math.max(1, Math.floor(category.limit / rateDivisor));
+  return rateLimiter.check(scopedKey, adjustedLimit, category.windowMs);
 }

@@ -2,6 +2,7 @@ import { updateSession } from "@/lib/supabase/middleware";
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { checkRateLimit, getClientKey } from "@/lib/rate-limit";
+import { checkSecurity } from "@/lib/security/security-middleware";
 
 // Oeffentliche Seiten: Kein Auth-Check noetig, statisch cachebar
 const PUBLIC_PATHS = ["/", "/b2b", "/impressum", "/datenschutz", "/agb"];
@@ -14,10 +15,22 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // Rate Limiting nur fuer API-Endpunkte
+  // Security-Check (Redis-basiert, fail-open)
+  const security = await checkSecurity(request);
+
+  // Blockiert? Sofort zurueckgeben (Honeypot-404 oder 403)
+  if (!security.allowed && security.response) {
+    return security.response;
+  }
+
+  // Rate Limiting fuer API-Endpunkte (adaptiv bei Stufe 2+)
   if (pathname.startsWith("/api/")) {
     const clientKey = getClientKey(request);
-    const result = checkRateLimit(pathname, clientKey);
+    const result = checkRateLimit(
+      pathname,
+      clientKey,
+      security.rateLimitDivisor,
+    );
 
     // result === null bedeutet: Route wird uebersprungen (z.B. Cron-Jobs)
     if (result && !result.allowed) {

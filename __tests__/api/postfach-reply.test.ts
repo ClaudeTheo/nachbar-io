@@ -29,6 +29,15 @@ vi.mock("@/lib/civic/attachment-utils", () => ({
   uploadAttachments: vi.fn(async () => ({})),
 }));
 
+vi.mock("next/server", async () => {
+  const actual = await vi.importActual<typeof import("next/server")>("next/server");
+  return { ...actual, after: vi.fn((cb: () => void) => cb()) };
+});
+
+vi.mock("@/lib/push-delivery", () => ({
+  notifyOrgStaff: vi.fn(async () => ({ sent: 0 })),
+}));
+
 const CITIZEN_ID = "citizen-1";
 const ROOT_MSG = {
   id: "root-1",

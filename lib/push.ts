@@ -95,6 +95,7 @@ export async function subscribeToPush(): Promise<boolean> {
         endpoint: subscription.endpoint,
         p256dh: subscriptionJson.keys?.p256dh ?? "",
         auth: subscriptionJson.keys?.auth ?? "",
+        portal: "io",
         user_agent: navigator.userAgent.substring(0, 200),
       },
       {

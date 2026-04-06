@@ -2,11 +2,12 @@
 // GET: Eigene Threads des Buergers auflisten
 // POST: Buerger sendet eine Nachricht an die zustaendige Kommune (FormData mit optionalen Dateien)
 
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest, NextResponse, after } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { getAdminSupabase } from "@/lib/supabase/admin";
 import { encryptCivicField } from "@/lib/civic/encryption";
 import { validateAttachmentFiles, uploadAttachments } from "@/lib/civic/attachment-utils";
+import { notifyOrgStaff } from "@/lib/push-delivery";
 
 const MAX_MESSAGES_PER_DAY = 5;
 
@@ -216,6 +217,16 @@ export async function POST(request: NextRequest) {
       console.error("[postfach] Attachment-Upload fehlgeschlagen:", uploadResult.error);
     }
   }
+
+  // Push an Staff der Ziel-Org (fire-and-forget nach Response)
+  after(async () => {
+    await notifyOrgStaff(org.id, {
+      title: "Neue Nachricht im Postfach",
+      body: "Ein Buerger hat Ihnen geschrieben.",
+      url: `/postfach/${messageId}`,
+      tag: `postfach-${messageId}`,
+    });
+  });
 
   return NextResponse.json(
     { message, org_name: org.name },

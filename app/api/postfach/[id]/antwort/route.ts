@@ -1,11 +1,12 @@
 // API-Route: POST /api/postfach/[id]/antwort
 // Buerger antwortet im bestehenden Thread (FormData mit optionalen Dateien)
 
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest, NextResponse, after } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { getAdminSupabase } from "@/lib/supabase/admin";
 import { encryptCivicField } from "@/lib/civic/encryption";
 import { validateAttachmentFiles, uploadAttachments } from "@/lib/civic/attachment-utils";
+import { notifyOrgStaff } from "@/lib/push-delivery";
 
 const MAX_MESSAGES_PER_DAY = 5;
 
@@ -145,6 +146,16 @@ export async function POST(
       console.error("[postfach/antwort] Attachment-Upload fehlgeschlagen:", uploadResult.error);
     }
   }
+
+  // Push an Staff der Ziel-Org (fire-and-forget nach Response)
+  after(async () => {
+    await notifyOrgStaff(root.org_id, {
+      title: "Neue Antwort im Postfach",
+      body: "Ein Buerger hat auf Ihre Nachricht geantwortet.",
+      url: `/postfach/${root.id}`,
+      tag: `postfach-${root.id}`,
+    });
+  });
 
   return NextResponse.json({ message: reply }, { status: 201 });
 }

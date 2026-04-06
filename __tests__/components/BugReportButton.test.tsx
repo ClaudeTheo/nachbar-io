@@ -265,7 +265,7 @@ describe('BugReportButton', () => {
       fireEvent.click(screen.getByTestId('bug-report-fab'));
 
       // Honeypot-Feld muss vorhanden sein
-      const honeypot = screen.getByTestId('honeypot-field');
+      const honeypot = screen.getByTestId('feedback-extra');
       expect(honeypot).toBeDefined();
       expect(honeypot.getAttribute('name')).toBe('website');
       expect(honeypot.getAttribute('aria-hidden')).toBe('true');
@@ -279,7 +279,7 @@ describe('BugReportButton', () => {
       fireEvent.click(screen.getByTestId('bug-report-fab'));
 
       // Honeypot-Feld darf NICHT vorhanden sein
-      expect(screen.queryByTestId('honeypot-field')).toBeNull();
+      expect(screen.queryByTestId('feedback-extra')).toBeNull();
     });
 
     it('sendet an /api/bug-reports/anonymous wenn anonymous=true', async () => {

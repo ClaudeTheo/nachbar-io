@@ -286,7 +286,7 @@ export function BugReportButton({ anonymous = false }: BugReportButtonProps) {
                 autoComplete="off"
                 style={{ position: "absolute", left: "-9999px", opacity: 0, height: 0 }}
                 aria-hidden="true"
-                data-testid="honeypot-field"
+                data-testid="feedback-extra"
               />
             )}
 

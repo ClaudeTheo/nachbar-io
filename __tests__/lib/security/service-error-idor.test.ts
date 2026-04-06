@@ -16,6 +16,8 @@ vi.mock("@/lib/security/traps/idor-detector", () => ({
 }));
 
 import { ServiceError, handleServiceError } from "@/lib/services/service-error";
+import { buildClientKeysNode } from "@/lib/security/traps/trap-utils";
+import { recordIdorAttempt } from "@/lib/security/traps/idor-detector";
 
 function mockNextRequest(): any {
   return {
@@ -50,21 +52,14 @@ describe("handleServiceError mit IDOR-Detection", () => {
 
     handleServiceError(error, req, "/api/care/medications/[id]");
 
-    // Fire-and-forget — kurz warten fuer async Import
-    await new Promise((r) => setTimeout(r, 100));
-
-    const { buildClientKeysNode } = await import(
-      "@/lib/security/traps/trap-utils"
-    );
-    const { recordIdorAttempt } = await import(
-      "@/lib/security/traps/idor-detector"
-    );
-
-    expect(buildClientKeysNode).toHaveBeenCalledWith(req);
-    expect(recordIdorAttempt).toHaveBeenCalledWith(
-      expect.objectContaining({ ipHash: "test123" }),
-      "/api/care/medications/[id]",
-    );
+    // vi.waitFor wartet bis Assertion erfuellt (robuster als setTimeout)
+    await vi.waitFor(() => {
+      expect(buildClientKeysNode).toHaveBeenCalledWith(req);
+      expect(recordIdorAttempt).toHaveBeenCalledWith(
+        expect.objectContaining({ ipHash: "test123" }),
+        "/api/care/medications/[id]",
+      );
+    });
   });
 
   it("triggert IDOR bei 404 mit Request", async () => {
@@ -73,12 +68,9 @@ describe("handleServiceError mit IDOR-Detection", () => {
 
     handleServiceError(error, req, "/api/groups/[id]");
 
-    await new Promise((r) => setTimeout(r, 100));
-
-    const { recordIdorAttempt } = await import(
-      "@/lib/security/traps/idor-detector"
-    );
-    expect(recordIdorAttempt).toHaveBeenCalled();
+    await vi.waitFor(() => {
+      expect(recordIdorAttempt).toHaveBeenCalled();
+    });
   });
 
   it("triggert KEINE IDOR bei 400 (Bad Request)", async () => {
@@ -87,11 +79,10 @@ describe("handleServiceError mit IDOR-Detection", () => {
 
     handleServiceError(error, req, "/api/care/medications/[id]");
 
-    await new Promise((r) => setTimeout(r, 100));
+    // Kurz warten damit fire-and-forget haette triggern koennen
+    await vi.advanceTimersByTimeAsync?.(50).catch(() => {});
+    await new Promise((r) => setTimeout(r, 50));
 
-    const { recordIdorAttempt } = await import(
-      "@/lib/security/traps/idor-detector"
-    );
     expect(recordIdorAttempt).not.toHaveBeenCalled();
   });
 
@@ -100,11 +91,8 @@ describe("handleServiceError mit IDOR-Detection", () => {
 
     handleServiceError(error); // Kein Request → kein IDOR
 
-    await new Promise((r) => setTimeout(r, 100));
+    await new Promise((r) => setTimeout(r, 50));
 
-    const { recordIdorAttempt } = await import(
-      "@/lib/security/traps/idor-detector"
-    );
     expect(recordIdorAttempt).not.toHaveBeenCalled();
   });
 
@@ -114,11 +102,8 @@ describe("handleServiceError mit IDOR-Detection", () => {
 
     handleServiceError(error, req); // Kein Pattern → kein IDOR
 
-    await new Promise((r) => setTimeout(r, 100));
+    await new Promise((r) => setTimeout(r, 50));
 
-    const { recordIdorAttempt } = await import(
-      "@/lib/security/traps/idor-detector"
-    );
     expect(recordIdorAttempt).not.toHaveBeenCalled();
   });
 });

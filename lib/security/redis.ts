@@ -13,8 +13,10 @@ const FAIL_ALERT_COOLDOWN_MS = 5 * 60 * 1000; // 5 Minuten zwischen Alerts
 export function getSecurityRedis(): Redis | null {
   if (redis) return redis;
 
-  const url = process.env.UPSTASH_REDIS_REST_URL;
-  const token = process.env.UPSTASH_REDIS_REST_TOKEN;
+  // Vercel Marketplace setzt KV_REST_API_*, Legacy: UPSTASH_REDIS_REST_*
+  const url = process.env.KV_REST_API_URL || process.env.UPSTASH_REDIS_REST_URL;
+  const token =
+    process.env.KV_REST_API_TOKEN || process.env.UPSTASH_REDIS_REST_TOKEN;
 
   if (!url || !token) {
     console.warn(

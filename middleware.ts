@@ -3,6 +3,8 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { checkRateLimit, getClientKey } from "@/lib/rate-limit";
 import { checkSecurity } from "@/lib/security/security-middleware";
+import { recordAuthRateLimit } from "@/lib/security/traps/brute-force";
+import { buildClientKeys } from "@/lib/security/client-key";
 
 // Oeffentliche Seiten: Kein Auth-Check noetig, statisch cachebar
 const PUBLIC_PATHS = ["/", "/b2b", "/impressum", "/datenschutz", "/agb"];
@@ -34,6 +36,15 @@ export async function middleware(request: NextRequest) {
 
     // result === null bedeutet: Route wird uebersprungen (z.B. Cron-Jobs)
     if (result && !result.allowed) {
+      // Trap 5: Brute-Force-Eskalation bei 429 auf Auth-Routen
+      if (
+        pathname.startsWith("/api/auth/") ||
+        pathname.startsWith("/api/register/")
+      ) {
+        const keys = await buildClientKeys(request);
+        recordAuthRateLimit(keys).catch(() => {});
+      }
+
       const retryAfterSeconds = Math.ceil(result.resetMs / 1000);
 
       return NextResponse.json(

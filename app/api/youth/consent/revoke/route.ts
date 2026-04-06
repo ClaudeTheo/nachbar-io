@@ -3,6 +3,7 @@
 // Auth-Check: Nur der Jugendliche selbst ODER ein Admin darf widerrufen
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { getAdminSupabase } from "@/lib/supabase/admin";
 import { handleServiceError } from "@/lib/services/service-error";
 import { revokeYouthConsent } from "@/modules/youth/services/youth-routes.service";
 import { isFeatureEnabledServer } from "@/lib/feature-flags-server";
@@ -64,7 +65,9 @@ export async function POST(request: NextRequest) {
       ip: request.headers.get("x-forwarded-for") || "",
       userAgent: request.headers.get("user-agent") || "",
     };
-    const result = await revokeYouthConsent(supabase, body, headers);
+    // Admin-Pfad: Service-Client (umgeht RLS), eigener Pfad: request-scoped Client
+    const dbClient = isOwnConsent ? supabase : getAdminSupabase();
+    const result = await revokeYouthConsent(dbClient, body, headers);
     return NextResponse.json(result, { status: 200 });
   } catch (error) {
     if (error instanceof SyntaxError) {

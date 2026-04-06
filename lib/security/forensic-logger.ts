@@ -32,7 +32,15 @@ export interface ForensicData {
  */
 export function logForensicData(data: ForensicData): void {
   // Fire-and-forget: Interne Route verschluesselt und speichert
-  const ingestUrl = `${process.env.NEXT_PUBLIC_SITE_URL || "https://nachbar-io.vercel.app"}/api/security/forensic-ingest`;
+  // KEIN Fallback auf Produktions-URL — wenn NEXT_PUBLIC_SITE_URL fehlt, kein Forensik-Log
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL;
+  if (!siteUrl) {
+    console.warn(
+      "[security-forensic] NEXT_PUBLIC_SITE_URL nicht gesetzt — Forensik deaktiviert",
+    );
+    return;
+  }
+  const ingestUrl = `${siteUrl}/api/security/forensic-ingest`;
 
   fetch(ingestUrl, {
     method: "POST",
@@ -67,7 +75,7 @@ export async function writeForensicRecord(data: ForensicData): Promise<void> {
     return;
   }
 
-  await supabase.from("security_forensics").insert({
+  const { error } = await supabase.from("security_forensics").insert({
     event_id: data.eventId ?? null,
     ip_encrypted: ipEncrypted,
     user_agent_encrypted: uaEncrypted,
@@ -76,6 +84,10 @@ export async function writeForensicRecord(data: ForensicData): Promise<void> {
     response_status: data.responseStatus ?? null,
     trap_type: data.trapType,
   });
+
+  if (error) {
+    throw new Error(`Forensik-Insert fehlgeschlagen: ${error.message}`);
+  }
 }
 
 /** Cron-Job: Abgelaufene Forensik-Daten loeschen (7 Tage Retention) */

@@ -1,10 +1,15 @@
 // lib/security/security-logger.ts
 // Async Supabase-Event-Writer (fire-and-forget)
 // Nutzt Admin-Client (service_role) weil kein INSERT-Policy auf security_events
+// Admin-Alert-Rate-Limiting: Max 1 Push pro Severity pro 5 Minuten
 
 import { getAdminSupabase } from "@/lib/supabase/admin";
 import { determineSeverity, type TrapType, type Severity } from "./config";
 import type { ClientKeys } from "./client-key";
+
+// Alert-Cooldown: Verhindert Notification-Spam bei Angriffen
+const alertCooldowns = new Map<string, number>();
+const ALERT_COOLDOWN_MS = 5 * 60 * 1000; // 5 Minuten
 
 export interface SecurityEvent {
   keys: ClientKeys;
@@ -26,7 +31,10 @@ export function logSecurityEvent(event: SecurityEvent): void {
   );
 }
 
-async function writeEvent(event: SecurityEvent, severity: Severity): Promise<void> {
+async function writeEvent(
+  event: SecurityEvent,
+  severity: Severity,
+): Promise<void> {
   const supabase = getAdminSupabase();
 
   await supabase.from("security_events").insert({
@@ -42,17 +50,34 @@ async function writeEvent(event: SecurityEvent, severity: Severity): Promise<voi
     metadata: event.metadata ?? {},
   });
 
-  // Admin-Alarm bei High/Critical
+  // Admin-Alarm bei High/Critical — MIT Cooldown
   if (severity === "high" || severity === "critical") {
-    await notifyAdmin(event, severity);
+    if (shouldAlert(severity)) {
+      await notifyAdmin(event, severity);
+    }
   }
 }
 
-async function notifyAdmin(event: SecurityEvent, severity: Severity): Promise<void> {
+/** Prueft ob ein Alert fuer diese Severity gesendet werden darf (Cooldown) */
+function shouldAlert(severity: string): boolean {
+  const now = Date.now();
+  const lastAlert = alertCooldowns.get(severity) ?? 0;
+
+  if (now - lastAlert < ALERT_COOLDOWN_MS) {
+    return false; // Noch im Cooldown
+  }
+
+  alertCooldowns.set(severity, now);
+  return true;
+}
+
+async function notifyAdmin(
+  event: SecurityEvent,
+  severity: Severity,
+): Promise<void> {
   try {
     const supabase = getAdminSupabase();
 
-    // Alle org_admins laden
     const { data: admins } = await supabase
       .from("org_members")
       .select("user_id")
@@ -60,12 +85,12 @@ async function notifyAdmin(event: SecurityEvent, severity: Severity): Promise<vo
 
     if (!admins?.length) return;
 
-    // Push an jeden Admin (nur importieren wenn noetig)
     const { sendPush } = await import("@/modules/care/services/channels/push");
 
-    const title = severity === "critical"
-      ? "SECURITY ALERT: Aktiver Angriff erkannt"
-      : "Security: Verdaechtiges Verhalten";
+    const title =
+      severity === "critical"
+        ? "SECURITY ALERT: Aktiver Angriff erkannt"
+        : "Security: Verdaechtiges Verhalten";
 
     const body = `Trap: ${event.trapType}, Score: ${event.effectiveScore}, Stufe: ${event.stage}`;
 

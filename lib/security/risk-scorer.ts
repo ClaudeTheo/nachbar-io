@@ -3,7 +3,7 @@
 // 3 Dimensionen (IP, User, Session), differenzierter Decay, effectiveScore-Berechnung
 // Fail-open: Bei Redis-Fehler → Score 0, kein Nutzer ausgesperrt
 
-import { getSecurityRedis } from "./redis";
+import { getSecurityRedis, reportRedisFailure } from "./redis";
 import {
   REDIS_KEY_PREFIX,
   REDIS_KEY_TTL_SECONDS,
@@ -40,7 +40,10 @@ function decayedValue(
   return points * Math.pow(2, -ageMs / halfLifeMs);
 }
 
-// Score aus Redis Sorted Set berechnen (mit Decay)
+// Maximales Alter fuer Events (4h, passend zur Redis TTL)
+const MAX_EVENT_AGE_MS = REDIS_KEY_TTL_SECONDS * 1000;
+
+// Score aus Redis Sorted Set berechnen (mit Decay + Pruning)
 async function computeScore(
   redis: NonNullable<ReturnType<typeof getSecurityRedis>>,
   key: string,
@@ -48,13 +51,16 @@ async function computeScore(
   const now = Date.now();
   const trapTypes = new Set<string>();
 
-  // Alle Member mit Scores laden (Score = Timestamp)
-  // Upstash: zrange mit byScore + withScores ersetzt zrangebyscore WITHSCORES
-  const members = await redis.zrange<string[]>(key, 0, now, {
+  // Nur Events der letzten 4h laden (nicht ab Timestamp 0)
+  const minTimestamp = now - MAX_EVENT_AGE_MS;
+  const members = await redis.zrange<string[]>(key, minTimestamp, now, {
     byScore: true,
     withScores: true,
   });
   if (!members || members.length === 0) return { score: 0, trapTypes };
+
+  // Async Pruning: Alte Events entfernen (fire-and-forget)
+  redis.zremrangebyscore(key, 0, minTimestamp - 1).catch(() => {});
 
   let total = 0;
 
@@ -158,7 +164,7 @@ export async function getScores(keys: ClientKeys): Promise<ScoreResult> {
       elevatedDimensions,
     };
   } catch (err) {
-    console.error("[security] Redis-Fehler bei Score-Abfrage:", err);
+    reportRedisFailure("getScores", err);
     // Fail-open
     return {
       ipScore: 0,
@@ -210,7 +216,7 @@ export async function recordEvent(
 
     await pipeline.exec();
   } catch (err) {
-    console.error("[security] Redis-Fehler bei Event-Aufzeichnung:", err);
+    reportRedisFailure("recordEvent", err);
     // Fail-open: Event geht verloren, aber System laeuft weiter
   }
 }

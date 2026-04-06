@@ -9,6 +9,8 @@ vi.mock("@/lib/security/traps/trap-utils", () => ({
     ipHash: "test123",
     userId: null,
     sessionHash: null,
+    deviceHash: "device123",
+    headerBitmap: 0xff,
   }),
 }));
 vi.mock("@/lib/security/traps/idor-detector", () => ({

@@ -5,7 +5,12 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { buildClientKeys } from "./client-key";
-import { getScores, recordEvent } from "./risk-scorer";
+import {
+  getScores,
+  recordEvent,
+  checkFingerprintStability,
+  checkSessionDeviceDrift,
+} from "./risk-scorer";
 import { logSecurityEvent } from "./security-logger";
 import { logForensicData } from "./forensic-logger";
 import {
@@ -54,6 +59,15 @@ export async function checkSecurity(
 ): Promise<SecurityCheckResult> {
   const { pathname } = request.nextUrl;
   const keys = await buildClientKeys(request);
+
+  // Observability: Niedrige Bitmaps loggen (potenzielle Bots)
+  // Echte Browser haben typischerweise >= 0x07 (accept+lang+encoding)
+  // Nur loggen bei API-Requests (Seiten-Requests haben andere Patterns)
+  if (pathname.startsWith("/api/") && keys.headerBitmap < 0x07) {
+    console.log(
+      `[DEVICE-FP] low-bitmap ip=${keys.ipHash.slice(0, 8)} bitmap=0x${keys.headerBitmap.toString(16).padStart(2, "0")} path=${pathname.split("/").slice(0, 4).join("/")} device=${keys.deviceHash?.slice(0, 8) ?? "none"}`,
+    );
+  }
 
   // --- Trap 1: Honeypot-Pfade (vor allem fuer Nicht-API-Pfade wie /.env) ---
   const normalizedPath = pathname.toLowerCase();
@@ -116,6 +130,37 @@ export async function checkSecurity(
 
   // --- Score laden und Stufe bestimmen ---
   const scores = await getScores(keys);
+
+  // --- Device Fingerprint Stabilitaet + Drift (NUR bei Grundverdacht) ---
+  // Shared-IP/NAT-Schutz: FP-Checks laufen NUR wenn bereits ein echtes
+  // Trap-Event den Score erhoeht hat (baseScore >= 10). Normale Nutzer
+  // hinter gemeinsamer IP/VPN werden nie durch FP-Instabilitaet bestraft.
+  // Minimaler Detektions-Delay bei Angreifern (~1-2 Requests).
+  if (scores.effectiveScore >= 10) {
+    const [fpStability, sessionDrift] = await Promise.all([
+      checkFingerprintStability(keys),
+      checkSessionDeviceDrift(keys),
+    ]);
+
+    // fp_instability NUR auf device (NICHT auf IP → Shared-IP-Schutz)
+    if (fpStability.points > 0) {
+      await recordEvent(keys, "fp_instability", fpStability.points, ["device"]);
+      console.log(
+        `[DEVICE-FP] instability ip=${keys.ipHash.slice(0, 8)} unique=${fpStability.uniqueHashes} points=${fpStability.points} bitmap=0x${keys.headerBitmap.toString(16).padStart(2, "0")}`,
+      );
+    }
+
+    // session_drift auf session + device (Session ist client-spezifisch, kein NAT-Problem)
+    if (sessionDrift.points > 0) {
+      await recordEvent(keys, "session_drift", sessionDrift.points, [
+        "session",
+        "device",
+      ]);
+      console.log(
+        `[DEVICE-FP] drift session=${keys.sessionHash?.slice(0, 8) ?? "none"} unique=${sessionDrift.uniqueHashes} points=${sessionDrift.points}`,
+      );
+    }
+  }
   const routeCategory = classifyRoute(pathname);
   const thresholds = STAGE_THRESHOLDS[routeCategory];
 

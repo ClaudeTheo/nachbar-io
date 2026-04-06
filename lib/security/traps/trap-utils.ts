@@ -32,9 +32,43 @@ export function buildClientKeysNode(
     (request as { ip?: string }).ip ||
     "unknown";
 
+  // SYNC: Device-Hash muss mit buildDeviceHash() in client-key.ts uebereinstimmen
+  // Gleiche Signal-Reihenfolge, gleicher Bitmap, gleicher Salt — nur Node.js crypto statt Web Crypto
+  const headerSignals = [
+    request.headers.get("accept-language") || "",
+    request.headers.get("accept-encoding") || "",
+    request.headers.get("sec-ch-ua") || "",
+    request.headers.get("sec-ch-ua-platform") || "",
+    request.headers.get("sec-ch-ua-mobile") || "",
+  ].join("|");
+  const bitmap = buildHeaderPresenceBitmapNode(request.headers);
+  const deviceHash = createHash("sha256")
+    .update(headerSignals + "|" + bitmap.toString(16) + getDailySalt())
+    .digest("hex")
+    .slice(0, 16);
+
   return {
     ipHash: hashIpNode(ip),
     userId: userId ?? null,
     sessionHash: null, // In API-Routes nicht zwingend noetig
+    deviceHash,
+    headerBitmap: bitmap,
   };
+}
+
+// SYNC: Header-Presence-Bitmap muss mit buildHeaderPresenceBitmap() in client-key.ts uebereinstimmen
+// Gleiche Bit-Zuordnung, nur als Node.js-kompatible Funktion
+function buildHeaderPresenceBitmapNode(headers: {
+  get(name: string): string | null;
+}): number {
+  let bitmap = 0;
+  if (headers.get("accept")) bitmap |= 0x01;
+  if (headers.get("accept-language")) bitmap |= 0x02;
+  if (headers.get("accept-encoding")) bitmap |= 0x04;
+  if (headers.get("sec-ch-ua")) bitmap |= 0x08;
+  if (headers.get("sec-fetch-site")) bitmap |= 0x10;
+  if (headers.get("sec-fetch-mode")) bitmap |= 0x20;
+  if (headers.get("upgrade-insecure-requests")) bitmap |= 0x40;
+  if (headers.get("referer")) bitmap |= 0x80;
+  return bitmap;
 }

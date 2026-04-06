@@ -37,6 +37,44 @@ export interface ClientKeys {
   ipHash: string;
   userId: string | null;
   sessionHash: string | null;
+  deviceHash: string | null;
+  headerBitmap: number;
+}
+
+// Header-Presence-Bitmap: Echte Browser senden bestimmte Header,
+// Bots/Scripts lassen sie oft weg. Nur Score-Faktor, kein Block-Mechanismus.
+// Safari/Firefox/iOS/WebViews haben unterschiedliche Bitmaps — das ist normal.
+export function buildHeaderPresenceBitmap(headers: {
+  get(name: string): string | null;
+}): number {
+  let bitmap = 0;
+  if (headers.get("accept")) bitmap |= 0x01;
+  if (headers.get("accept-language")) bitmap |= 0x02;
+  if (headers.get("accept-encoding")) bitmap |= 0x04;
+  if (headers.get("sec-ch-ua")) bitmap |= 0x08;
+  if (headers.get("sec-fetch-site")) bitmap |= 0x10;
+  if (headers.get("sec-fetch-mode")) bitmap |= 0x20;
+  if (headers.get("upgrade-insecure-requests")) bitmap |= 0x40;
+  if (headers.get("referer")) bitmap |= 0x80;
+  return bitmap;
+}
+
+// Combined Device Hash: Header-Werte + Presence-Bitmap + Daily Salt
+// Stabiler als IP (ueberlebt IP-Wechsel), pseudonymisiert durch SHA-256
+export async function buildDeviceHash(headers: {
+  get(name: string): string | null;
+}): Promise<string> {
+  const signals = [
+    headers.get("accept-language") || "",
+    headers.get("accept-encoding") || "",
+    headers.get("sec-ch-ua") || "",
+    headers.get("sec-ch-ua-platform") || "",
+    headers.get("sec-ch-ua-mobile") || "",
+  ].join("|");
+
+  const bitmap = buildHeaderPresenceBitmap(headers);
+  const hex = await sha256Hex(signals + "|" + bitmap.toString(16) + getDailySalt());
+  return hex.slice(0, 16);
 }
 
 export async function buildClientKeys(request: {
@@ -78,5 +116,7 @@ export async function buildClientKeys(request: {
     ipHash: await hashIp(ip),
     userId: null, // Wird spaeter aus Auth-Context befuellt (nicht in Middleware verfuegbar)
     sessionHash: sessionToken ? await hashSession(sessionToken) : null,
+    deviceHash: await buildDeviceHash(request.headers),
+    headerBitmap: buildHeaderPresenceBitmap(request.headers),
   };
 }

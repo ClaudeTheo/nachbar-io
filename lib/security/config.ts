@@ -8,7 +8,9 @@ export type TrapType =
   | "idor"
   | "brute_force"
   | "scanner_header"
-  | "cron_probe";
+  | "cron_probe"
+  | "fp_instability"
+  | "session_drift";
 
 export type Severity = "info" | "warning" | "high" | "critical";
 export type RouteCategory = "critical" | "sensitive" | "standard" | "public";
@@ -30,6 +32,8 @@ export const TRAP_DECAY_CATEGORY: Record<TrapType, keyof typeof DECAY_HALF_LIFE>
   brute_force: "auth",
   scanner_header: "bot",
   cron_probe: "critical",
+  fp_instability: "bot",
+  session_drift: "scanner",
 };
 
 // Route-Klassifikation: Welche Routen sind wie sensibel

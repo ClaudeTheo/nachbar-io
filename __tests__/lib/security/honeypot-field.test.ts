@@ -20,6 +20,8 @@ const mockKeys: ClientKeys = {
   ipHash: "abc123def456",
   userId: null,
   sessionHash: null,
+  deviceHash: "device123abc",
+  headerBitmap: 0xff,
 };
 
 describe("checkHoneypotField", () => {

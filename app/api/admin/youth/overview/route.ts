@@ -28,33 +28,28 @@ export async function GET() {
   // --- Admin-Queries (Service-Role, umgeht RLS) ---
   const adminDb = getAdminSupabase();
 
-  // KPIs: Anzahl Youth-Profile
-  const { data: allProfiles } = await adminDb
-    .from("youth_profiles")
-    .select("id");
-  const totalProfiles = allProfiles?.length ?? 0;
+  // KPIs: head:true Counts (kein N+1, nur Zaehler zurueck)
+  const [profilesRes, pendingRes, grantedRes, revokedRes] = await Promise.all([
+    adminDb.from("youth_profiles").select("id", { count: "exact", head: true }),
+    adminDb.from("youth_guardian_consents").select("id", { count: "exact", head: true }).eq("status", "pending"),
+    adminDb.from("youth_guardian_consents").select("id", { count: "exact", head: true }).eq("status", "granted"),
+    adminDb.from("youth_guardian_consents").select("id", { count: "exact", head: true }).eq("status", "revoked"),
+  ]);
 
-  // KPIs: Consent-Status zaehlen
-  const { data: pendingConsents } = await adminDb
-    .from("youth_guardian_consents")
-    .select("id")
-    .eq("status", "pending");
-  const consentsPending = pendingConsents?.length ?? 0;
+  // Fehlerbehandlung KPIs
+  const kpiErrors = [profilesRes.error, pendingRes.error, grantedRes.error, revokedRes.error].filter(Boolean);
+  if (kpiErrors.length > 0) {
+    console.error("[admin/youth/overview] DB-Fehler (KPIs):", kpiErrors);
+    return NextResponse.json({ error: "Datenbankfehler" }, { status: 500 });
+  }
 
-  const { data: grantedConsents } = await adminDb
-    .from("youth_guardian_consents")
-    .select("id")
-    .eq("status", "granted");
-  const consentsGranted = grantedConsents?.length ?? 0;
-
-  const { data: revokedConsents } = await adminDb
-    .from("youth_guardian_consents")
-    .select("id")
-    .eq("status", "revoked");
-  const consentsRevoked = revokedConsents?.length ?? 0;
+  const totalProfiles = profilesRes.count ?? 0;
+  const consentsPending = pendingRes.count ?? 0;
+  const consentsGranted = grantedRes.count ?? 0;
+  const consentsRevoked = revokedRes.count ?? 0;
 
   // Consents-Liste: JOIN youth_profiles -> users, quarters, consents
-  const { data: consents } = await adminDb
+  const { data: consents, error: consentsError } = await adminDb
     .from("youth_profiles")
     .select(
       "id, user_id, birth_year, created_at, users(first_name), quarters(name), youth_guardian_consents(status, granted_at, token_send_count)"
@@ -62,19 +57,30 @@ export async function GET() {
     .order("created_at", { ascending: false })
     .limit(100);
 
-  // Moderation: flagged count
-  const { count: flaggedCount } = await adminDb
-    .from("youth_moderation_log")
-    .select("id", { count: "exact", head: true })
-    .eq("action", "flagged");
+  if (consentsError) {
+    console.error("[admin/youth/overview] DB-Fehler (Consents):", consentsError);
+    return NextResponse.json({ error: "Datenbankfehler" }, { status: 500 });
+  }
 
-  // Moderation: suspended items
-  const { data: suspendedItems } = await adminDb
-    .from("youth_moderation_log")
-    .select("id, action, target_id, created_at, details")
-    .eq("action", "suspended")
-    .order("created_at", { ascending: false })
-    .limit(50);
+  // Moderation: flagged count + suspended items
+  const [flaggedRes, suspendedRes] = await Promise.all([
+    adminDb
+      .from("youth_moderation_log")
+      .select("id", { count: "exact", head: true })
+      .eq("action", "flagged"),
+    adminDb
+      .from("youth_moderation_log")
+      .select("id, action, target_id, created_at, details")
+      .eq("action", "suspended")
+      .order("created_at", { ascending: false })
+      .limit(50),
+  ]);
+
+  const modErrors = [flaggedRes.error, suspendedRes.error].filter(Boolean);
+  if (modErrors.length > 0) {
+    console.error("[admin/youth/overview] DB-Fehler (Moderation):", modErrors);
+    return NextResponse.json({ error: "Datenbankfehler" }, { status: 500 });
+  }
 
   return NextResponse.json({
     kpis: {
@@ -85,8 +91,8 @@ export async function GET() {
     },
     consents: consents ?? [],
     moderation: {
-      flaggedCount: flaggedCount ?? 0,
-      suspendedItems: suspendedItems ?? [],
+      flaggedCount: flaggedRes.count ?? 0,
+      suspendedItems: suspendedRes.data ?? [],
     },
   });
 }

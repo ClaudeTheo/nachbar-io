@@ -88,22 +88,22 @@ function buildAdminMock() {
 
       if (table === "youth_profiles") {
         if (callIdx === 1) {
-          // Erster Aufruf: .select("id") -> alle Profile (KPI totalProfiles)
-          return chainable({ data: [{ id: "yp-1" }, { id: "yp-2" }], error: null });
+          // Erster Aufruf: head:true Count (KPI totalProfiles)
+          return chainable({ count: 2, data: null, error: null });
         }
         // Zweiter Aufruf: JOIN-Query fuer consents-Liste
         return chainable({ data: mockConsentsList, error: null });
       }
 
       if (table === "youth_guardian_consents") {
-        // 3 Aufrufe: pending, granted, revoked
+        // 3 Aufrufe: head:true Counts fuer pending, granted, revoked
         if (callIdx === 1) {
-          return chainable({ data: [{ id: "c-1" }], error: null }); // pending: 1
+          return chainable({ count: 1, data: null, error: null }); // pending: 1
         }
         if (callIdx === 2) {
-          return chainable({ data: [{ id: "c-2" }, { id: "c-3" }], error: null }); // granted: 2
+          return chainable({ count: 2, data: null, error: null }); // granted: 2
         }
-        return chainable({ data: [], error: null }); // revoked: 0
+        return chainable({ count: 0, data: null, error: null }); // revoked: 0
       }
 
       if (table === "youth_moderation_log") {

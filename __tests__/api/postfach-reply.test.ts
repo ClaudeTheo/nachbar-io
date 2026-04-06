@@ -24,6 +24,11 @@ vi.mock("@/lib/civic/encryption", () => ({
   encryptCivicField: vi.fn((text: string) => `civic:encrypted:${text}`),
 }));
 
+vi.mock("@/lib/civic/attachment-utils", () => ({
+  validateAttachmentFiles: vi.fn(() => ({ files: [] })),
+  uploadAttachments: vi.fn(async () => ({})),
+}));
+
 const CITIZEN_ID = "citizen-1";
 const ROOT_MSG = {
   id: "root-1",
@@ -33,11 +38,14 @@ const ROOT_MSG = {
   thread_id: "root-1",
 };
 
-function createRequest(body: Record<string, unknown>) {
+function createRequest(fields: Record<string, string>) {
+  const fd = new FormData();
+  for (const [k, v] of Object.entries(fields)) {
+    fd.append(k, v);
+  }
   return new Request("http://localhost/api/postfach/root-1/antwort", {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(body),
+    body: fd,
   }) as unknown as import("next/server").NextRequest;
 }
 

@@ -1,10 +1,11 @@
 // API-Route: POST /api/postfach/[id]/antwort
-// Buerger antwortet im bestehenden Thread
+// Buerger antwortet im bestehenden Thread (FormData mit optionalen Dateien)
 
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { getAdminSupabase } from "@/lib/supabase/admin";
 import { encryptCivicField } from "@/lib/civic/encryption";
+import { validateAttachmentFiles, uploadAttachments } from "@/lib/civic/attachment-utils";
 
 const MAX_MESSAGES_PER_DAY = 5;
 
@@ -23,18 +24,18 @@ export async function POST(
     return NextResponse.json({ error: "Nicht angemeldet" }, { status: 401 });
   }
 
-  // 2. Request-Body validieren
-  let body: { body?: string };
+  // 2. Request-Body validieren (FormData)
+  let formData: FormData;
   try {
-    body = await request.json();
+    formData = await request.formData();
   } catch {
     return NextResponse.json(
-      { error: "Ungueltiger Request-Body" },
+      { error: "Ungueltiger Request-Body (FormData erwartet)" },
       { status: 400 },
     );
   }
 
-  const messageBody = body.body?.trim();
+  const messageBody = (formData.get("body") as string | null)?.trim();
   if (!messageBody || messageBody.length < 10 || messageBody.length > 2000) {
     return NextResponse.json(
       { error: "Antwort muss zwischen 10 und 2000 Zeichen lang sein" },
@@ -93,10 +94,19 @@ export async function POST(
     );
   }
 
-  // 7. Body verschluesseln
+  // 7. Datei-Validierung (optional)
+  const fileResult = validateAttachmentFiles(formData);
+  if ("error" in fileResult) {
+    return NextResponse.json(
+      { error: fileResult.error },
+      { status: fileResult.status },
+    );
+  }
+
+  // 8. Body verschluesseln
   const bodyEncrypted = encryptCivicField(messageBody);
 
-  // 8. Antwort einfuegen
+  // 9. Antwort einfuegen
   const replyId = crypto.randomUUID();
   const { data: reply, error: insertError } = await admin
     .from("civic_messages")
@@ -120,6 +130,20 @@ export async function POST(
       { error: "Antwort konnte nicht gesendet werden." },
       { status: 500 },
     );
+  }
+
+  // 10. Dateien hochladen (falls vorhanden)
+  if (fileResult.files.length > 0) {
+    const uploadResult = await uploadAttachments(
+      admin,
+      replyId,
+      root.org_id,
+      user.id,
+      fileResult.files,
+    );
+    if (uploadResult.error) {
+      console.error("[postfach/antwort] Attachment-Upload fehlgeschlagen:", uploadResult.error);
+    }
   }
 
   return NextResponse.json({ message: reply }, { status: 201 });

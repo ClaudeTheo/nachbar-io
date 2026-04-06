@@ -1,11 +1,12 @@
 // API-Route: GET + POST /api/postfach
 // GET: Eigene Threads des Buergers auflisten
-// POST: Buerger sendet eine Nachricht an die zustaendige Kommune
+// POST: Buerger sendet eine Nachricht an die zustaendige Kommune (FormData mit optionalen Dateien)
 
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { getAdminSupabase } from "@/lib/supabase/admin";
 import { encryptCivicField } from "@/lib/civic/encryption";
+import { validateAttachmentFiles, uploadAttachments } from "@/lib/civic/attachment-utils";
 
 const MAX_MESSAGES_PER_DAY = 5;
 
@@ -78,19 +79,19 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Nicht angemeldet" }, { status: 401 });
   }
 
-  // 2. Request-Body validieren
-  let body: { subject?: string; body?: string };
+  // 2. Request-Body validieren (FormData — unterstuetzt optionale Dateien)
+  let formData: FormData;
   try {
-    body = await request.json();
+    formData = await request.formData();
   } catch {
     return NextResponse.json(
-      { error: "Ungueltiger Request-Body" },
+      { error: "Ungueltiger Request-Body (FormData erwartet)" },
       { status: 400 },
     );
   }
 
-  const subject = body.subject?.trim();
-  const messageBody = body.body?.trim();
+  const subject = (formData.get("subject") as string | null)?.trim();
+  const messageBody = (formData.get("body") as string | null)?.trim();
 
   if (!subject || subject.length < 3 || subject.length > 200) {
     return NextResponse.json(
@@ -164,10 +165,19 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  // 6. Body serverseitig verschluesseln
+  // 6. Datei-Validierung (optional, 0-3 Dateien)
+  const fileResult = validateAttachmentFiles(formData);
+  if ("error" in fileResult) {
+    return NextResponse.json(
+      { error: fileResult.error },
+      { status: fileResult.status },
+    );
+  }
+
+  // 7. Body serverseitig verschluesseln
   const bodyEncrypted = encryptCivicField(messageBody);
 
-  // 7. Nachricht in civic_messages speichern (thread_id = id = Selbstreferenz)
+  // 8. Nachricht in civic_messages speichern (thread_id = id = Selbstreferenz)
   const messageId = crypto.randomUUID();
   const { data: message, error } = await admin
     .from("civic_messages")
@@ -190,6 +200,21 @@ export async function POST(request: NextRequest) {
       { error: "Nachricht konnte nicht gesendet werden." },
       { status: 500 },
     );
+  }
+
+  // 9. Dateien hochladen (falls vorhanden)
+  if (fileResult.files.length > 0) {
+    const uploadResult = await uploadAttachments(
+      admin,
+      messageId,
+      org.id,
+      user.id,
+      fileResult.files,
+    );
+    if (uploadResult.error) {
+      // Nachricht wurde bereits erstellt — Attachments fehlgeschlagen, nicht fatal
+      console.error("[postfach] Attachment-Upload fehlgeschlagen:", uploadResult.error);
+    }
   }
 
   return NextResponse.json(

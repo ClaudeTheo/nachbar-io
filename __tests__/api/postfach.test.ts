@@ -1,18 +1,12 @@
 // Tests: POST /api/postfach — Buerger→Rathaus Nachricht
 // Validierung, Rate-Limiting, Encryption, Org-Mapping
+// Aktualisiert: FormData statt JSON (Schritt 4 Attachments)
 
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
 // Mock Supabase Clients
 const mockGetUser = vi.fn();
-const mockSelect = vi.fn();
-const mockInsert = vi.fn();
 const mockFrom = vi.fn();
-const mockEq = vi.fn();
-const mockSingle = vi.fn();
-const mockContains = vi.fn();
-const mockLimit = vi.fn();
-const mockGte = vi.fn();
 
 vi.mock("@/lib/supabase/server", () => ({
   createClient: vi.fn(async () => ({
@@ -30,6 +24,23 @@ vi.mock("@/lib/civic/encryption", () => ({
   encryptCivicField: vi.fn((text: string) => `civic:encrypted:${text}`),
 }));
 
+vi.mock("@/lib/civic/attachment-utils", () => ({
+  validateAttachmentFiles: vi.fn(() => ({ files: [] })),
+  uploadAttachments: vi.fn(async () => ({})),
+}));
+
+// Hilfsfunktion: FormData-Request erstellen
+function makeFormDataRequest(fields: Record<string, string>): Request {
+  const fd = new FormData();
+  for (const [k, v] of Object.entries(fields)) {
+    fd.append(k, v);
+  }
+  return new Request("http://localhost/api/postfach", {
+    method: "POST",
+    body: fd,
+  });
+}
+
 function setupAdminChain(responses: Record<string, unknown>) {
   mockFrom.mockImplementation((table: string) => {
     if (table === "household_members") {
@@ -41,9 +52,17 @@ function setupAdminChain(responses: Record<string, unknown>) {
                 single: () =>
                   Promise.resolve({
                     data: responses.household
-                      ? { households: { quarter_id: responses.household.quarter_id } }
+                      ? {
+                          households: {
+                            quarter_id: (
+                              responses.household as { quarter_id: string }
+                            ).quarter_id,
+                          },
+                        }
                       : null,
-                    error: responses.household ? null : { message: "not found" },
+                    error: responses.household
+                      ? null
+                      : { message: "not found" },
                   }),
               }),
             }),
@@ -64,7 +83,6 @@ function setupAdminChain(responses: Record<string, unknown>) {
       };
     }
     if (table === "civic_messages") {
-      // COUNT query fuer Rate-Limit
       if (!responses.insertCalled) {
         return {
           select: () => ({
@@ -130,9 +148,9 @@ describe("POST /api/postfach", () => {
     mockGetUser.mockResolvedValue({ data: { user: null } });
 
     const { POST } = await import("@/app/api/postfach/route");
-    const req = new Request("http://localhost/api/postfach", {
-      method: "POST",
-      body: JSON.stringify({ subject: "Test", body: "Testnachricht hier" }),
+    const req = makeFormDataRequest({
+      subject: "Test",
+      body: "Testnachricht hier",
     });
     const res = await POST(req as never);
     expect(res.status).toBe(401);
@@ -147,9 +165,9 @@ describe("POST /api/postfach", () => {
     });
 
     const { POST } = await import("@/app/api/postfach/route");
-    const req = new Request("http://localhost/api/postfach", {
-      method: "POST",
-      body: JSON.stringify({ subject: "Hi", body: "Testnachricht hier genug" }),
+    const req = makeFormDataRequest({
+      subject: "Hi",
+      body: "Testnachricht hier genug",
     });
     const res = await POST(req as never);
     expect(res.status).toBe(400);
@@ -166,10 +184,7 @@ describe("POST /api/postfach", () => {
     });
 
     const { POST } = await import("@/app/api/postfach/route");
-    const req = new Request("http://localhost/api/postfach", {
-      method: "POST",
-      body: JSON.stringify({ subject: "Guter Betreff", body: "Kurz" }),
-    });
+    const req = makeFormDataRequest({ subject: "Guter Betreff", body: "Kurz" });
     const res = await POST(req as never);
     expect(res.status).toBe(400);
     const data = await res.json();
@@ -185,12 +200,9 @@ describe("POST /api/postfach", () => {
     });
 
     const { POST } = await import("@/app/api/postfach/route");
-    const req = new Request("http://localhost/api/postfach", {
-      method: "POST",
-      body: JSON.stringify({
-        subject: "Guter Betreff",
-        body: "Nachricht mit genug Zeichen",
-      }),
+    const req = makeFormDataRequest({
+      subject: "Guter Betreff",
+      body: "Nachricht mit genug Zeichen",
     });
     const res = await POST(req as never);
     expect(res.status).toBe(400);
@@ -207,12 +219,9 @@ describe("POST /api/postfach", () => {
     });
 
     const { POST } = await import("@/app/api/postfach/route");
-    const req = new Request("http://localhost/api/postfach", {
-      method: "POST",
-      body: JSON.stringify({
-        subject: "Guter Betreff",
-        body: "Nachricht mit genug Zeichen",
-      }),
+    const req = makeFormDataRequest({
+      subject: "Guter Betreff",
+      body: "Nachricht mit genug Zeichen",
     });
     const res = await POST(req as never);
     expect(res.status).toBe(404);
@@ -229,12 +238,9 @@ describe("POST /api/postfach", () => {
     });
 
     const { POST } = await import("@/app/api/postfach/route");
-    const req = new Request("http://localhost/api/postfach", {
-      method: "POST",
-      body: JSON.stringify({
-        subject: "Guter Betreff",
-        body: "Nachricht mit genug Zeichen",
-      }),
+    const req = makeFormDataRequest({
+      subject: "Guter Betreff",
+      body: "Nachricht mit genug Zeichen",
     });
     const res = await POST(req as never);
     expect(res.status).toBe(429);

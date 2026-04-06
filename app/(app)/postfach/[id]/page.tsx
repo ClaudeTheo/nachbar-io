@@ -2,14 +2,21 @@
 // Zeigt die eigene Anfrage + Antworten vom Rathaus + Antwort-Feld
 
 import { notFound, redirect } from "next/navigation";
-import { ArrowLeft, User, Building2, Clock } from "lucide-react";
+import { ArrowLeft, User, Building2, Clock, FileText, ImageIcon, Download } from "lucide-react";
 import { format } from "date-fns";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { getAdminSupabase } from "@/lib/supabase/admin";
 import { decryptCivicField } from "@/lib/civic/encryption";
+import { loadAttachmentsForMessages } from "@/lib/civic/attachment-utils";
 import BuergerReplyBox from "./BuergerReplyBox";
 import CitizenReadMarker from "./CitizenReadMarker";
+
+function formatFileSize(bytes: number): string {
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(0)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}
 
 interface Props {
   params: Promise<{ id: string }>;
@@ -60,8 +67,14 @@ export default async function PostfachDetailPage({ params }: Props) {
     .eq("id", root.org_id)
     .single();
 
-  // 5. Alle entschluesseln
+  // 5. Attachments laden
   const allRaw = [root, ...(replies ?? [])];
+  const attachmentMap = await loadAttachmentsForMessages(
+    admin,
+    allRaw.map((m) => m.id),
+  );
+
+  // 6. Alle entschluesseln + Attachments zuordnen
   const messages = allRaw.map((msg) => {
     let body: string;
     try {
@@ -74,6 +87,7 @@ export default async function PostfachDetailPage({ params }: Props) {
       direction: msg.direction,
       body,
       created_at: msg.created_at,
+      attachments: attachmentMap[msg.id] ?? [],
     };
   });
 
@@ -141,6 +155,30 @@ export default async function PostfachDetailPage({ params }: Props) {
               <p className="whitespace-pre-wrap text-sm leading-relaxed text-[#2D3142]">
                 {msg.body}
               </p>
+
+              {/* Attachments */}
+              {msg.attachments.length > 0 && (
+                <div className="mt-3 space-y-1.5 border-t border-gray-100 pt-3">
+                  {msg.attachments.map((att) => (
+                    <a
+                      key={att.id}
+                      href={`/api/postfach/${id}/attachments/${att.id}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex min-h-[48px] items-center gap-2 rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm transition-colors hover:bg-gray-100"
+                    >
+                      {att.mime_type === "application/pdf" ? (
+                        <FileText className="h-4 w-4 flex-shrink-0 text-red-500" />
+                      ) : (
+                        <ImageIcon className="h-4 w-4 flex-shrink-0 text-blue-500" />
+                      )}
+                      <span className="flex-1 truncate text-[#2D3142]">{att.filename}</span>
+                      <span className="text-xs text-gray-400">{formatFileSize(att.file_size)}</span>
+                      <Download className="h-4 w-4 text-gray-400" />
+                    </a>
+                  ))}
+                </div>
+              )}
             </div>
           );
         })}

@@ -5,6 +5,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { getAdminSupabase } from "@/lib/supabase/admin";
 import { decryptCivicField } from "@/lib/civic/encryption";
+import { loadAttachmentsForMessages } from "@/lib/civic/attachment-utils";
 
 export async function GET(
   _request: NextRequest,
@@ -70,8 +71,15 @@ export async function GET(
     .eq("id", root.org_id)
     .single();
 
-  // 7. Alle entschluesseln
-  const messages = [root, ...(replies ?? [])].map((msg) => {
+  // 7. Attachments laden
+  const allMsgs = [root, ...(replies ?? [])];
+  const attachmentMap = await loadAttachmentsForMessages(
+    admin,
+    allMsgs.map((m) => m.id),
+  );
+
+  // 8. Alle entschluesseln + Attachments zuordnen
+  const messages = allMsgs.map((msg) => {
     let body: string;
     try {
       body = decryptCivicField(msg.body_encrypted);
@@ -83,6 +91,7 @@ export async function GET(
       direction: msg.direction,
       body,
       created_at: msg.created_at,
+      attachments: attachmentMap[msg.id] ?? [],
     };
   });
 

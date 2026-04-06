@@ -1,6 +1,6 @@
-// API-Route: POST /api/postfach
-// Buerger sendet eine Nachricht an die zustaendige Kommune
-// Serverseitige Verschluesselung — kein Secret im Browser
+// API-Route: GET + POST /api/postfach
+// GET: Eigene Threads des Buergers auflisten
+// POST: Buerger sendet eine Nachricht an die zustaendige Kommune
 
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
@@ -8,6 +8,59 @@ import { getAdminSupabase } from "@/lib/supabase/admin";
 import { encryptCivicField } from "@/lib/civic/encryption";
 
 const MAX_MESSAGES_PER_DAY = 5;
+
+export async function GET() {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) {
+    return NextResponse.json({ error: "Nicht angemeldet" }, { status: 401 });
+  }
+
+  const admin = getAdminSupabase();
+
+  // Alle Nachrichten des Buergers laden (als Thread-Owner)
+  const { data, error } = await admin
+    .from("civic_messages")
+    .select("id, subject, status, created_at, org_id, thread_id, direction")
+    .eq("citizen_user_id", user.id)
+    .order("created_at", { ascending: false });
+
+  if (error) {
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+
+  const allMessages = data ?? [];
+
+  // Nur Roots (thread_id = id)
+  const roots = allMessages.filter((m) => m.thread_id === m.id);
+
+  // Org-IDs sammeln + Namen resolven
+  const orgIds = [...new Set(roots.map((r) => r.org_id))];
+  const { data: orgs } = await admin
+    .from("civic_organizations")
+    .select("id, name")
+    .in("id", orgIds);
+  const orgMap = new Map((orgs ?? []).map((o) => [o.id, o.name]));
+
+  // Pro Root: Antwort-Info
+  const threads = roots.map((root) => {
+    const hasReply = allMessages.some(
+      (m) => m.thread_id === root.id && m.id !== root.id && m.direction === "staff_to_citizen",
+    );
+    return {
+      id: root.id,
+      subject: root.subject,
+      status: root.status,
+      created_at: root.created_at,
+      org_name: orgMap.get(root.org_id) ?? "Unbekannt",
+      has_reply: hasReply,
+    };
+  });
+
+  return NextResponse.json(threads);
+}
 
 export async function POST(request: NextRequest) {
   // 1. User aus Server-Session
@@ -108,14 +161,19 @@ export async function POST(request: NextRequest) {
   // 6. Body serverseitig verschluesseln
   const bodyEncrypted = encryptCivicField(messageBody);
 
-  // 7. Nachricht in civic_messages speichern
+  // 7. Nachricht in civic_messages speichern (thread_id = id = Selbstreferenz)
+  const messageId = crypto.randomUUID();
   const { data: message, error } = await admin
     .from("civic_messages")
     .insert({
+      id: messageId,
       org_id: org.id,
       citizen_user_id: user.id,
       subject,
       body_encrypted: bodyEncrypted,
+      thread_id: messageId,
+      direction: "citizen_to_staff",
+      sender_user_id: user.id,
     })
     .select("id, subject, status, created_at")
     .single();

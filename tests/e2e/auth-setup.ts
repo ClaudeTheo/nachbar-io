@@ -177,12 +177,29 @@ async function loginAndSave(
       break;
     }
 
+    // 429 = Rate-Limit → Retry; 401 = Credentials falsch → 2 Retries, dann Supabase-Direkt
     const isRetryable =
       status === 429 ||
       (status === 401 && text.includes("Invalid login credentials"));
 
-    if (!isRetryable || attempt === 4) {
+    if (!isRetryable) {
       console.warn(`[AUTH] ${agentId} Login fehlgeschlagen: ${status} ${text}`);
+      return;
+    }
+
+    // Nach 2 fehlgeschlagenen 401-Retries: Supabase-Direkt-Fallback
+    if (status === 401 && attempt >= 2) {
+      console.log(
+        `[AUTH] ${agentId} Test-Login 401 nach ${attempt + 1} Versuchen → Supabase-Direkt-Auth`,
+      );
+      useSupabaseDirect = true;
+      break;
+    }
+
+    if (attempt === 4) {
+      console.warn(
+        `[AUTH] ${agentId} Login fehlgeschlagen nach 5 Versuchen: ${status} ${text}`,
+      );
       return;
     }
   }

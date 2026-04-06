@@ -57,6 +57,13 @@ function logForensic(
 export async function checkSecurity(
   request: NextRequest,
 ): Promise<SecurityCheckResult> {
+  // E2E-Bypass: Nur wenn Server-seitiger Secret gesetzt UND Header stimmt
+  // SECURITY_E2E_BYPASS wird nur in Test-Umgebungen gesetzt, nicht in Produktion
+  const e2eBypass = process.env.SECURITY_E2E_BYPASS;
+  if (e2eBypass && request.headers.get("x-nachbar-test-mode") === e2eBypass) {
+    return { allowed: true, stage: 0, effectiveScore: 0, rateLimitDivisor: 1 };
+  }
+
   const { pathname } = request.nextUrl;
   const keys = await buildClientKeys(request);
 

@@ -25,6 +25,12 @@ export default defineConfig({
       testDir: "./tests/e2e/multi-agent",
       use: { ...devices["Desktop Chrome"] },
     },
+    {
+      name: "cross-portal",
+      testDir: "./tests/e2e/cross-portal",
+      timeout: 60_000,
+      use: { ...devices["Desktop Chrome"] },
+    },
   ],
   webServer: {
     command: "npm run dev",

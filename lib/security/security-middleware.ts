@@ -7,6 +7,7 @@ import type { NextRequest } from "next/server";
 import { buildClientKeys } from "./client-key";
 import { getScores, recordEvent } from "./risk-scorer";
 import { logSecurityEvent } from "./security-logger";
+import { logForensicData } from "./forensic-logger";
 import {
   classifyRoute,
   STAGE_THRESHOLDS,
@@ -22,6 +23,29 @@ export interface SecurityCheckResult {
   effectiveScore: number;
   rateLimitDivisor: number; // 1 = normal, 3 = gedrosselt
   response?: NextResponse; // Nur wenn blockiert
+}
+
+// Klartext-IP extrahieren (fuer Forensik-Log, BEVOR sie gehasht wird)
+function extractRawIp(request: NextRequest): string {
+  const forwarded = request.headers.get("x-forwarded-for");
+  const realIp = request.headers.get("x-real-ip");
+  return forwarded?.split(",")[0].trim() || realIp || "unknown";
+}
+
+// Forensik-Log fuer Trap-Treffer (fire-and-forget)
+function logForensic(
+  request: NextRequest,
+  trapType: TrapType,
+  status: number,
+): void {
+  logForensicData({
+    ip: extractRawIp(request),
+    userAgent: request.headers.get("user-agent"),
+    requestUrl: request.nextUrl.pathname + request.nextUrl.search,
+    requestMethod: request.method,
+    responseStatus: status,
+    trapType,
+  });
 }
 
 /** Hauptfunktion: In Middleware aufrufen fuer jeden API-Request */
@@ -47,7 +71,7 @@ export async function checkSecurity(
       stage: 2,
       routePattern: pathname,
     });
-    // 404 zurueckgeben (identisch mit echten API-404s — mit JSON-Body)
+    logForensic(request, "fake_admin", 404);
     return {
       allowed: false,
       stage: 2,
@@ -69,6 +93,7 @@ export async function checkSecurity(
       stage: headerPoints >= 40 ? 2 : 1,
       routePattern: pathname.split("/").slice(0, 3).join("/") + "/*",
     });
+    if (headerPoints >= 20) logForensic(request, "scanner_header", 200);
   }
 
   // --- Trap 7: Cron-Probing (ohne gueltigen Token) ---
@@ -85,7 +110,7 @@ export async function checkSecurity(
         stage: 3,
         routePattern: "/api/cron/*",
       });
-      // Cron-Route wird durch bestehende Auth abgefangen → hier nur scoren
+      logForensic(request, "cron_probe", 401);
     }
   }
 
@@ -103,6 +128,7 @@ export async function checkSecurity(
 
   // --- Reaktion ---
   if (routeStage >= 4) {
+    logForensic(request, "fake_admin", 403); // Stage-4-Block forensisch dokumentieren
     return {
       allowed: false,
       stage: 4,
@@ -116,6 +142,7 @@ export async function checkSecurity(
   }
 
   if (routeStage >= 3 && routeCategory !== "public") {
+    logForensic(request, "fake_admin", 403); // Stage-3-Block forensisch dokumentieren
     return {
       allowed: false,
       stage: 3,

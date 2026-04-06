@@ -36,16 +36,16 @@ interface KPIs {
   consentsRevoked: number;
 }
 
+// Normalisiertes Format von der API (serverseitig kanonischer Consent gewaehlt)
 interface ConsentEntry {
-  id: string;
-  user_id: string;
-  birth_year: number;
-  created_at: string;
-  users: { first_name: string } | null;
-  quarters: { name: string } | null;
-  youth_guardian_consents:
-    | { status: string; granted_at: string | null; token_send_count: number }[]
-    | null;
+  userId: string;
+  firstName: string;
+  quarterName: string;
+  ageGroup: string | null;
+  accessLevel: string | null;
+  consentStatus: string;
+  grantedAt: string | null;
+  tokenSendCount: number;
 }
 
 interface SuspendedItem {
@@ -91,35 +91,10 @@ const ACCESS_LABELS: Record<string, string> = {
   freigeschaltet: "Freigeschaltet",
 };
 
-function getAgeGroup(birthYear: number): string {
-  const age = new Date().getFullYear() - birthYear;
-  if (age < 16) return "Unter 16";
-  return "16\u201317";
-}
-
-function getAccessLevel(birthYear: number): string {
-  const age = new Date().getFullYear() - birthYear;
-  if (age < 16) return "basis";
-  return "erweitert";
-}
-
-function getConsentStatus(entry: ConsentEntry): string {
-  const consents = entry.youth_guardian_consents;
-  if (!consents || consents.length === 0) return "none";
-  return consents[0].status ?? "none";
-}
-
-function getGrantedAt(entry: ConsentEntry): string | null {
-  const consents = entry.youth_guardian_consents;
-  if (!consents || consents.length === 0) return null;
-  return consents[0].granted_at ?? null;
-}
-
-function getTokenSendCount(entry: ConsentEntry): number {
-  const consents = entry.youth_guardian_consents;
-  if (!consents || consents.length === 0) return 0;
-  return consents[0].token_send_count ?? 0;
-}
+const AGE_LABELS: Record<string, string> = {
+  u16: "Unter 16",
+  "16_17": "16\u201317",
+};
 
 // --- Hauptkomponente ---
 
@@ -190,12 +165,10 @@ export default function YouthAdmin() {
 
   // --- Client-side Filterung ---
   const filteredConsents = consents.filter((entry) => {
-    const status = getConsentStatus(entry);
-    if (statusFilter !== "all" && status !== statusFilter) return false;
+    if (statusFilter !== "all" && entry.consentStatus !== statusFilter) return false;
     if (ageFilter !== "all") {
-      const group = getAgeGroup(entry.birth_year);
-      if (ageFilter === "unter16" && group !== "Unter 16") return false;
-      if (ageFilter === "16-17" && group !== "16\u201317") return false;
+      if (ageFilter === "unter16" && entry.ageGroup !== "u16") return false;
+      if (ageFilter === "16-17" && entry.ageGroup !== "16_17") return false;
     }
     return true;
   });
@@ -278,49 +251,42 @@ export default function YouthAdmin() {
               Keine Eintraege gefunden
             </p>
           ) : (
-            filteredConsents.map((entry) => {
-              const status = getConsentStatus(entry);
-              const grantedAt = getGrantedAt(entry);
-              const tokenCount = getTokenSendCount(entry);
-              const ageGroup = getAgeGroup(entry.birth_year);
-              const accessLevel = getAccessLevel(entry.birth_year);
-
-              return (
+            filteredConsents.map((entry, idx) => (
                 <div
-                  key={entry.id}
+                  key={entry.userId ?? idx}
                   className="flex flex-wrap items-center justify-between gap-2 rounded-lg border p-3"
                 >
                   <div className="min-w-0">
                     <p className="text-sm font-medium text-anthrazit truncate">
-                      {entry.users?.first_name ?? "Unbekannt"}
+                      {entry.firstName}
                     </p>
                     <p className="text-xs text-muted-foreground truncate">
-                      {entry.quarters?.name ?? "Kein Quartier"}
+                      {entry.quarterName}
                     </p>
                   </div>
 
                   <div className="flex flex-wrap items-center gap-1.5">
                     <Badge variant="outline" className="text-xs">
-                      {ageGroup}
+                      {AGE_LABELS[entry.ageGroup ?? ""] ?? entry.ageGroup ?? "–"}
                     </Badge>
                     <Badge variant="outline" className="text-xs">
-                      {ACCESS_LABELS[accessLevel] ?? accessLevel}
+                      {ACCESS_LABELS[entry.accessLevel ?? ""] ?? entry.accessLevel ?? "–"}
                     </Badge>
-                    <Badge className={`text-xs ${STATUS_COLORS[status] ?? STATUS_COLORS.none}`}>
-                      {STATUS_LABELS[status] ?? status}
+                    <Badge className={`text-xs ${STATUS_COLORS[entry.consentStatus] ?? STATUS_COLORS.none}`}>
+                      {STATUS_LABELS[entry.consentStatus] ?? entry.consentStatus}
                     </Badge>
-                    {grantedAt && (
+                    {entry.grantedAt && (
                       <span className="text-xs text-muted-foreground">
-                        {new Date(grantedAt).toLocaleDateString("de-DE")}
+                        {new Date(entry.grantedAt).toLocaleDateString("de-DE")}
                       </span>
                     )}
                     <span className="text-xs text-muted-foreground">
-                      SMS {tokenCount}/3
+                      SMS {entry.tokenSendCount}/3
                     </span>
                   </div>
                 </div>
-              );
-            })
+              ))
+
           )}
         </CardContent>
       </Card>

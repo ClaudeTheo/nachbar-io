@@ -9,26 +9,54 @@ vi.mock("sonner", () => ({ toast: { success: vi.fn(), error: vi.fn() } }));
 
 // Mock lucide-react Icons — geben einfache SVG-Elemente zurueck
 vi.mock("lucide-react", () => ({
-  Users: (props: Record<string, unknown>) => <svg data-testid="icon-users" {...props} />,
-  Clock: (props: Record<string, unknown>) => <svg data-testid="icon-clock" {...props} />,
-  CheckCircle: (props: Record<string, unknown>) => <svg data-testid="icon-check" {...props} />,
-  XCircle: (props: Record<string, unknown>) => <svg data-testid="icon-xcircle" {...props} />,
-  Shield: (props: Record<string, unknown>) => <svg data-testid="icon-shield" {...props} />,
-  RefreshCw: (props: Record<string, unknown>) => <svg data-testid="icon-refresh" {...props} />,
-  AlertTriangle: (props: Record<string, unknown>) => <svg data-testid="icon-alert" {...props} />,
+  Users: (props: Record<string, unknown>) => (
+    <svg data-testid="icon-users" {...props} />
+  ),
+  Clock: (props: Record<string, unknown>) => (
+    <svg data-testid="icon-clock" {...props} />
+  ),
+  CheckCircle: (props: Record<string, unknown>) => (
+    <svg data-testid="icon-check" {...props} />
+  ),
+  XCircle: (props: Record<string, unknown>) => (
+    <svg data-testid="icon-xcircle" {...props} />
+  ),
+  Shield: (props: Record<string, unknown>) => (
+    <svg data-testid="icon-shield" {...props} />
+  ),
+  RefreshCw: (props: Record<string, unknown>) => (
+    <svg data-testid="icon-refresh" {...props} />
+  ),
+  AlertTriangle: (props: Record<string, unknown>) => (
+    <svg data-testid="icon-alert" {...props} />
+  ),
 }));
 
 // Mock shadcn Select — rendert nur den Trigger-Text
 vi.mock("@/components/ui/select", () => ({
-  Select: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
-  SelectTrigger: ({ children, className }: { children: React.ReactNode; className?: string }) => (
-    <button className={className}>{children}</button>
+  Select: ({ children }: { children: React.ReactNode }) => (
+    <div>{children}</div>
   ),
-  SelectContent: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
-  SelectItem: ({ children, value }: { children: React.ReactNode; value: string }) => (
-    <option value={value}>{children}</option>
+  SelectTrigger: ({
+    children,
+    className,
+  }: {
+    children: React.ReactNode;
+    className?: string;
+  }) => <button className={className}>{children}</button>,
+  SelectContent: ({ children }: { children: React.ReactNode }) => (
+    <div>{children}</div>
   ),
-  SelectValue: ({ placeholder }: { placeholder?: string }) => <span>{placeholder}</span>,
+  SelectItem: ({
+    children,
+    value,
+  }: {
+    children: React.ReactNode;
+    value: string;
+  }) => <option value={value}>{children}</option>,
+  SelectValue: ({ placeholder }: { placeholder?: string }) => (
+    <span>{placeholder}</span>
+  ),
 }));
 
 // --- Mock-Daten (exakte API-Response-Form) ---
@@ -41,26 +69,24 @@ const mockData = {
   },
   consents: [
     {
-      id: "yp-001",
-      user_id: "u-001",
-      birth_year: 2011,
-      created_at: "2026-04-01T10:00:00Z",
-      users: { first_name: "Lena" },
-      quarters: { name: "Oberer Rebberg" },
-      youth_guardian_consents: [
-        { status: "granted", granted_at: "2026-04-02T12:00:00Z", token_send_count: 1 },
-      ],
+      userId: "u-001",
+      firstName: "Lena",
+      quarterName: "Oberer Rebberg",
+      ageGroup: "u16",
+      accessLevel: "freigeschaltet",
+      consentStatus: "granted",
+      grantedAt: "2026-04-02T12:00:00Z",
+      tokenSendCount: 1,
     },
     {
-      id: "yp-002",
-      user_id: "u-002",
-      birth_year: 2010,
-      created_at: "2026-04-01T09:00:00Z",
-      users: { first_name: "Tim" },
-      quarters: { name: "Sanarystrasse" },
-      youth_guardian_consents: [
-        { status: "pending", granted_at: null, token_send_count: 2 },
-      ],
+      userId: "u-002",
+      firstName: "Tim",
+      quarterName: "Sanarystrasse",
+      ageGroup: "16_17",
+      accessLevel: "basis",
+      consentStatus: "pending",
+      grantedAt: null,
+      tokenSendCount: 2,
     },
   ],
   moderation: {
@@ -110,7 +136,9 @@ describe("YouthAdmin", () => {
 
   it("zeigt Lade-Zustand initial", () => {
     // fetch bleibt pending — Promise wird nie aufgeloest
-    (global.fetch as ReturnType<typeof vi.fn>).mockReturnValue(new Promise(() => {}));
+    (global.fetch as ReturnType<typeof vi.fn>).mockReturnValue(
+      new Promise(() => {}),
+    );
 
     const { container } = render(<YouthAdmin />);
 

@@ -42,14 +42,14 @@ export async function POST(request: NextRequest) {
     const isOwnConsent = user.id === youth_user_id;
 
     if (!isOwnConsent) {
-      // Admin-Check: Pruefe is_admin in profiles
-      const { data: profile } = await supabase
-        .from("profiles")
+      // Admin-Check: Pruefe is_admin in users (NICHT profiles)
+      const { data: adminProfile } = await supabase
+        .from("users")
         .select("is_admin")
         .eq("id", user.id)
         .single();
 
-      if (!profile?.is_admin) {
+      if (!adminProfile?.is_admin) {
         return NextResponse.json(
           {
             error:

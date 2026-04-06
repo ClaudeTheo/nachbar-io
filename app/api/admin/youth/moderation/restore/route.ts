@@ -36,15 +36,43 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // --- Admin-DB: action auf 'restored' setzen ---
+    // --- Admin-DB: Append-Only — bestehenden Eintrag laden, neuen restored-Eintrag anlegen ---
     const adminDb = getAdminSupabase();
-    const { error } = await adminDb
-      .from("youth_moderation_log")
-      .update({ action: "restored" })
-      .eq("id", itemId);
 
-    if (error) {
-      console.error("[admin/youth/moderation/restore] DB-Fehler:", error);
+    // 1. Bestehenden suspended-Eintrag laden und validieren
+    const { data: existing, error: lookupError } = await adminDb
+      .from("youth_moderation_log")
+      .select("id, action, target_type, target_id")
+      .eq("id", itemId)
+      .single();
+
+    if (lookupError || !existing) {
+      return NextResponse.json(
+        { error: "Moderation-Eintrag nicht gefunden" },
+        { status: 404 },
+      );
+    }
+
+    if (existing.action !== "suspended") {
+      return NextResponse.json(
+        { error: "Nur gesperrte Inhalte können wiederhergestellt werden" },
+        { status: 400 },
+      );
+    }
+
+    // 2. Neuen restored-Eintrag INSERT (Audit-Historie bleibt erhalten)
+    const { error: insertError } = await adminDb
+      .from("youth_moderation_log")
+      .insert({
+        target_type: existing.target_type,
+        target_id: existing.target_id,
+        action: "restored",
+        reason: `Wiederhergestellt durch Admin (Ref: ${itemId})`,
+        moderator_id: user.id,
+      });
+
+    if (insertError) {
+      console.error("[admin/youth/moderation/restore] DB-Fehler:", insertError);
       return NextResponse.json({ error: "Datenbankfehler" }, { status: 500 });
     }
 

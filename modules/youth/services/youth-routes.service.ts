@@ -538,9 +538,12 @@ export async function registerYouthProfile(
 
 /**
  * Elternfreigabe verifizieren — Guardian klickt SMS-Link
+ * WICHTIG: Guardian ist NICHT authentifiziert (oeffentlicher SMS-Link).
+ * Daher muss ein Service-Client (adminDb) fuer alle DB-Operationen verwendet werden,
+ * da RLS auf youth_guardian_consents nur auth.uid() = youth_user_id erlaubt.
  */
 export async function verifyYouthConsent(
-  supabase: SupabaseClient,
+  adminDb: SupabaseClient,
   body: ConsentVerifyBody,
   headers: RequestHeaders,
 ) {
@@ -551,34 +554,38 @@ export async function verifyYouthConsent(
 
   const tokenHash = hashToken(token);
 
-  // Consent-Eintrag finden
-  const { data: consent } = await supabase
+  // Consent-Eintrag finden — NUR pending, genau 1 Treffer
+  const { data: consent, error: lookupError } = await adminDb
     .from("youth_guardian_consents")
     .select("id, youth_user_id, token_expires_at, status")
     .eq("token_hash", tokenHash)
     .eq("status", "pending")
     .single();
 
-  if (!consent) {
+  if (lookupError || !consent) {
     throw new ServiceError(
       "Ungültiger oder bereits verwendeter Freigabe-Link",
       404,
     );
   }
 
+  // Abgelaufene Tokens sauber auf expired setzen
   if (isTokenExpired(consent.token_expires_at)) {
-    await supabase
+    const { error: expireError } = await adminDb
       .from("youth_guardian_consents")
       .update({ status: "expired" })
       .eq("id", consent.id);
+    if (expireError) {
+      console.error("[consent/verify] Fehler beim Expire-Update:", expireError);
+    }
     throw new ServiceError(
       "Der Freigabe-Link ist abgelaufen. Bitte fordern Sie einen neuen an.",
       410,
     );
   }
 
-  // Consent erteilen
-  await supabase
+  // Consent erteilen — Error-Check!
+  const { error: grantError } = await adminDb
     .from("youth_guardian_consents")
     .update({
       status: "granted",
@@ -590,11 +597,19 @@ export async function verifyYouthConsent(
     })
     .eq("id", consent.id);
 
-  // Youth-Profil auf 'freigeschaltet' upgraden
-  await supabase
+  if (grantError) {
+    throw new ServiceError("Freigabe konnte nicht gespeichert werden", 500);
+  }
+
+  // Youth-Profil auf 'freigeschaltet' upgraden — erst NACH erfolgreichem Consent-Update
+  const { error: upgradeError } = await adminDb
     .from("youth_profiles")
     .update({ access_level: "freigeschaltet" })
     .eq("user_id", consent.youth_user_id);
+
+  if (upgradeError) {
+    throw new ServiceError("Profil-Upgrade fehlgeschlagen", 500);
+  }
 
   return { success: true, message: "Freigabe erteilt" };
 }
@@ -692,6 +707,8 @@ export async function sendYouthConsentSms(
 
 /**
  * Elternfreigabe widerrufen — Profil zurueckstufen
+ * Reihenfolge: 1. Consent revoken → 2. erst bei Erfolg Profil downgraden
+ * Consent und Profil bleiben konsistent: kein Downgrade ohne erfolgreichen Revoke.
  */
 export async function revokeYouthConsent(
   supabase: SupabaseClient,
@@ -701,19 +718,19 @@ export async function revokeYouthConsent(
   const { youth_user_id, revoked_via } = body;
 
   // Aktiven Consent finden
-  const { data: consent } = await supabase
+  const { data: consent, error: lookupError } = await supabase
     .from("youth_guardian_consents")
     .select("id")
     .eq("youth_user_id", youth_user_id)
     .eq("status", "granted")
     .single();
 
-  if (!consent) {
+  if (lookupError || !consent) {
     throw new ServiceError("Keine aktive Freigabe gefunden", 404);
   }
 
-  // Consent widerrufen
-  await supabase
+  // Schritt 1: Consent widerrufen — MUSS erfolgreich sein vor Profil-Downgrade
+  const { error: revokeError } = await supabase
     .from("youth_guardian_consents")
     .update({
       status: "revoked",
@@ -724,21 +741,34 @@ export async function revokeYouthConsent(
     })
     .eq("id", consent.id);
 
-  // Youth-Profil zurueckstufen
-  const { data: profile } = await supabase
+  if (revokeError) {
+    throw new ServiceError("Widerruf konnte nicht gespeichert werden", 500);
+  }
+
+  // Schritt 2: Profil zurueckstufen — erst NACH erfolgreichem Revoke
+  const { data: profile, error: profileLookupError } = await supabase
     .from("youth_profiles")
     .select("age_group")
     .eq("user_id", youth_user_id)
     .single();
 
-  const newLevel = profile
-    ? getAccessLevel(profile.age_group as "u16" | "16_17", false)
-    : "basis";
+  if (profileLookupError || !profile) {
+    throw new ServiceError("Jugend-Profil nicht gefunden", 404);
+  }
 
-  await supabase
+  const newLevel = getAccessLevel(
+    profile.age_group as "u16" | "16_17",
+    false,
+  );
+
+  const { error: downgradeError } = await supabase
     .from("youth_profiles")
     .update({ access_level: newLevel })
     .eq("user_id", youth_user_id);
+
+  if (downgradeError) {
+    throw new ServiceError("Profil-Downgrade fehlgeschlagen", 500);
+  }
 
   return { success: true, new_level: newLevel };
 }

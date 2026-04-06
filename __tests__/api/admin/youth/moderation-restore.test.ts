@@ -41,7 +41,19 @@ function buildMockClient(opts: {
 // --- Helper: chainable Mock fuer Supabase-Query ---
 function chainable(resolvedValue: unknown) {
   const obj: Record<string, any> = {};
-  const methods = ["select", "eq", "neq", "gt", "lt", "order", "limit", "single", "maybeSingle", "update", "set"];
+  const methods = [
+    "select",
+    "eq",
+    "neq",
+    "gt",
+    "lt",
+    "order",
+    "limit",
+    "single",
+    "maybeSingle",
+    "update",
+    "set",
+  ];
   for (const m of methods) {
     obj[m] = vi.fn().mockReturnValue(obj);
   }
@@ -63,11 +75,14 @@ import { getAdminSupabase } from "@/lib/supabase/admin";
 
 // Helper: erstellt eine NextRequest mit JSON-Body
 function makeRequest(body: unknown): NextRequest {
-  return new NextRequest("http://localhost:3000/api/admin/youth/moderation/restore", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(body),
-  });
+  return new NextRequest(
+    "http://localhost:3000/api/admin/youth/moderation/restore",
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    },
+  );
 }
 
 describe("POST /api/admin/youth/moderation/restore", () => {
@@ -78,10 +93,11 @@ describe("POST /api/admin/youth/moderation/restore", () => {
 
   it("401 wenn nicht authentifiziert", async () => {
     vi.mocked(createClient).mockResolvedValue(
-      buildMockClient({ user: null, isAdmin: false }) as any
+      buildMockClient({ user: null, isAdmin: false }) as any,
     );
 
-    const { POST } = await import("@/app/api/admin/youth/moderation/restore/route");
+    const { POST } =
+      await import("@/app/api/admin/youth/moderation/restore/route");
     const req = makeRequest({ itemId: "mod-1" });
     const res = await POST(req);
     expect(res.status).toBe(401);
@@ -91,10 +107,11 @@ describe("POST /api/admin/youth/moderation/restore", () => {
 
   it("400 wenn itemId fehlt", async () => {
     vi.mocked(createClient).mockResolvedValue(
-      buildMockClient({ user: mockAdminUser, isAdmin: true }) as any
+      buildMockClient({ user: mockAdminUser, isAdmin: true }) as any,
     );
 
-    const { POST } = await import("@/app/api/admin/youth/moderation/restore/route");
+    const { POST } =
+      await import("@/app/api/admin/youth/moderation/restore/route");
     const req = makeRequest({});
     const res = await POST(req);
     expect(res.status).toBe(400);
@@ -102,22 +119,81 @@ describe("POST /api/admin/youth/moderation/restore", () => {
     expect(body.error).toContain("itemId");
   });
 
-  it("200 bei erfolgreichem Restore", async () => {
+  it("200 bei erfolgreichem Restore (append-only)", async () => {
     vi.mocked(createClient).mockResolvedValue(
-      buildMockClient({ user: mockAdminUser, isAdmin: true }) as any
+      buildMockClient({ user: mockAdminUser, isAdmin: true }) as any,
     );
 
-    // Admin-Supabase-Mock: update().eq() -> Erfolg
+    // Admin-Supabase-Mock:
+    // 1. from("youth_moderation_log").select().eq().single() → suspended-Eintrag
+    // 2. from("youth_moderation_log").insert() → Erfolg
+    let callCount = 0;
     const mockAdminDb = {
-      from: vi.fn(() => chainable({ data: null, error: null })),
+      from: vi.fn(() => {
+        callCount++;
+        if (callCount === 1) {
+          // SELECT: bestehenden suspended-Eintrag laden
+          return {
+            select: vi.fn().mockReturnValue({
+              eq: vi.fn().mockReturnValue({
+                single: vi.fn().mockResolvedValue({
+                  data: {
+                    id: "mod-1",
+                    action: "suspended",
+                    target_type: "task",
+                    target_id: "task-1",
+                  },
+                  error: null,
+                }),
+              }),
+            }),
+          };
+        }
+        // INSERT: neuen restored-Eintrag
+        return {
+          insert: vi.fn().mockResolvedValue({ error: null }),
+        };
+      }),
     };
     vi.mocked(getAdminSupabase).mockReturnValue(mockAdminDb as any);
 
-    const { POST } = await import("@/app/api/admin/youth/moderation/restore/route");
+    const { POST } =
+      await import("@/app/api/admin/youth/moderation/restore/route");
     const req = makeRequest({ itemId: "mod-1" });
     const res = await POST(req);
     expect(res.status).toBe(200);
     const body = await res.json();
     expect(body.success).toBe(true);
+  });
+
+  it("400 wenn Eintrag nicht suspended ist", async () => {
+    vi.mocked(createClient).mockResolvedValue(
+      buildMockClient({ user: mockAdminUser, isAdmin: true }) as any,
+    );
+
+    const mockAdminDb = {
+      from: vi.fn(() => ({
+        select: vi.fn().mockReturnValue({
+          eq: vi.fn().mockReturnValue({
+            single: vi.fn().mockResolvedValue({
+              data: {
+                id: "mod-2",
+                action: "flagged",
+                target_type: "task",
+                target_id: "task-2",
+              },
+              error: null,
+            }),
+          }),
+        }),
+      })),
+    };
+    vi.mocked(getAdminSupabase).mockReturnValue(mockAdminDb as any);
+
+    const { POST } =
+      await import("@/app/api/admin/youth/moderation/restore/route");
+    const req = makeRequest({ itemId: "mod-2" });
+    const res = await POST(req);
+    expect(res.status).toBe(400);
   });
 });

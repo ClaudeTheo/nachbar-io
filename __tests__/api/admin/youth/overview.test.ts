@@ -11,22 +11,36 @@ const mockConsentsList = [
     id: "yp-1",
     user_id: "u-teen-1",
     birth_year: 2012,
+    age_group: "u16",
+    access_level: "freigeschaltet",
     created_at: "2026-04-01T10:00:00Z",
     users: { first_name: "Lena" },
     quarters: { name: "Rebberg" },
     youth_guardian_consents: [
-      { status: "granted", granted_at: "2026-04-02T10:00:00Z", token_send_count: 1 },
+      {
+        status: "granted",
+        granted_at: "2026-04-02T10:00:00Z",
+        token_send_count: 1,
+        created_at: "2026-04-01T10:00:00Z",
+      },
     ],
   },
   {
     id: "yp-2",
     user_id: "u-teen-2",
     birth_year: 2013,
+    age_group: "u16",
+    access_level: "basis",
     created_at: "2026-04-02T10:00:00Z",
     users: { first_name: "Max" },
     quarters: { name: "Sanarystrasse" },
     youth_guardian_consents: [
-      { status: "pending", granted_at: null, token_send_count: 2 },
+      {
+        status: "pending",
+        granted_at: null,
+        token_send_count: 2,
+        created_at: "2026-04-02T10:00:00Z",
+      },
     ],
   },
 ];
@@ -67,7 +81,17 @@ function chainable(resolvedValue: unknown) {
   const obj: Record<string, any> = {};
   // Jede Methode gibt dasselbe chainable-Objekt zurueck,
   // am Ende wird es wie ein Promise aufgeloest.
-  const methods = ["select", "eq", "neq", "gt", "lt", "order", "limit", "single", "maybeSingle"];
+  const methods = [
+    "select",
+    "eq",
+    "neq",
+    "gt",
+    "lt",
+    "order",
+    "limit",
+    "single",
+    "maybeSingle",
+  ];
   for (const m of methods) {
     obj[m] = vi.fn().mockReturnValue(obj);
   }
@@ -113,7 +137,15 @@ function buildAdminMock() {
         }
         // Suspended items
         return chainable({
-          data: [{ id: "mod-1", action: "suspended", target_id: "post-1", created_at: "2026-04-05T08:00:00Z", details: null }],
+          data: [
+            {
+              id: "mod-1",
+              action: "suspended",
+              target_id: "post-1",
+              created_at: "2026-04-05T08:00:00Z",
+              details: null,
+            },
+          ],
           error: null,
         });
       }
@@ -143,7 +175,7 @@ describe("GET /api/admin/youth/overview", () => {
 
   it("401 wenn nicht authentifiziert", async () => {
     vi.mocked(createClient).mockResolvedValue(
-      buildMockClient({ user: null, isAdmin: false }) as any
+      buildMockClient({ user: null, isAdmin: false }) as any,
     );
 
     const { GET } = await import("@/app/api/admin/youth/overview/route");
@@ -155,7 +187,7 @@ describe("GET /api/admin/youth/overview", () => {
 
   it("403 wenn kein Admin", async () => {
     vi.mocked(createClient).mockResolvedValue(
-      buildMockClient({ user: mockAdminUser, isAdmin: false }) as any
+      buildMockClient({ user: mockAdminUser, isAdmin: false }) as any,
     );
 
     const { GET } = await import("@/app/api/admin/youth/overview/route");
@@ -167,7 +199,7 @@ describe("GET /api/admin/youth/overview", () => {
 
   it("200 mit korrekter Struktur fuer Admin", async () => {
     vi.mocked(createClient).mockResolvedValue(
-      buildMockClient({ user: mockAdminUser, isAdmin: true }) as any
+      buildMockClient({ user: mockAdminUser, isAdmin: true }) as any,
     );
     vi.mocked(getAdminSupabase).mockReturnValue(buildAdminMock() as any);
 
@@ -192,9 +224,17 @@ describe("GET /api/admin/youth/overview", () => {
     expect(typeof body.kpis.consentsRevoked).toBe("number");
     expect(body.kpis.consentsRevoked).toBe(0);
 
-    // Consents: Array mit korrekten Feldern
+    // Consents: normalisiertes Array mit kanonischem Consent pro Profil
     expect(Array.isArray(body.consents)).toBe(true);
     expect(body.consents).toHaveLength(2);
+    // Erstes Profil: normalisierte Felder pruefen
+    expect(body.consents[0].firstName).toBe("Lena");
+    expect(body.consents[0].quarterName).toBe("Rebberg");
+    expect(body.consents[0].ageGroup).toBe("u16");
+    expect(body.consents[0].accessLevel).toBe("freigeschaltet");
+    expect(body.consents[0].consentStatus).toBe("granted");
+    expect(body.consents[0].grantedAt).toBe("2026-04-02T10:00:00Z");
+    expect(body.consents[0].tokenSendCount).toBe(1);
 
     // Moderation: flaggedCount + suspendedItems
     expect(typeof body.moderation.flaggedCount).toBe("number");

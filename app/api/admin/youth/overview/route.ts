@@ -49,10 +49,12 @@ export async function GET() {
   const consentsRevoked = revokedRes.count ?? 0;
 
   // Consents-Liste: JOIN youth_profiles -> users, quarters, consents
+  // youth_guardian_consents kann mehrere Eintraege haben (revoked + neues pending).
+  // Wir holen alle und waehlen serverseitig den kanonischen Consent aus.
   const { data: consents, error: consentsError } = await adminDb
     .from("youth_profiles")
     .select(
-      "id, user_id, birth_year, created_at, users(first_name), quarters(name), youth_guardian_consents(status, granted_at, token_send_count)"
+      "id, user_id, birth_year, age_group, access_level, created_at, users(first_name), quarters(name), youth_guardian_consents(status, granted_at, token_send_count, created_at)"
     )
     .order("created_at", { ascending: false })
     .limit(100);
@@ -82,6 +84,51 @@ export async function GET() {
     return NextResponse.json({ error: "Datenbankfehler" }, { status: 500 });
   }
 
+  // Consent-Normalisierung: Pro Profil genau EINEN kanonischen Consent waehlen
+  // Prioritaet: granted > pending > revoked > expired (neuester je Status)
+  const STATUS_PRIORITY: Record<string, number> = {
+    granted: 0,
+    pending: 1,
+    revoked: 2,
+    expired: 3,
+  };
+
+  const normalizedConsents = (consents ?? []).map(
+    (profile: Record<string, unknown>) => {
+      const consentArr = Array.isArray(profile.youth_guardian_consents)
+        ? (profile.youth_guardian_consents as Record<string, unknown>[])
+        : [];
+
+      // Kanonischen Consent waehlen: Prioritaet nach Status, dann neuester
+      const canonical =
+        consentArr.length > 0
+          ? consentArr.sort((a, b) => {
+              const prioA = STATUS_PRIORITY[a.status as string] ?? 99;
+              const prioB = STATUS_PRIORITY[b.status as string] ?? 99;
+              if (prioA !== prioB) return prioA - prioB;
+              // Gleicher Status: neuester zuerst
+              return (
+                new Date(b.created_at as string).getTime() -
+                new Date(a.created_at as string).getTime()
+              );
+            })[0]
+          : null;
+
+      return {
+        userId: profile.user_id,
+        firstName:
+          (profile.users as Record<string, unknown> | null)?.first_name ?? "–",
+        quarterName:
+          (profile.quarters as Record<string, unknown> | null)?.name ?? "–",
+        ageGroup: profile.age_group ?? null,
+        accessLevel: profile.access_level ?? null,
+        consentStatus: (canonical?.status as string) ?? "none",
+        grantedAt: (canonical?.granted_at as string) ?? null,
+        tokenSendCount: (canonical?.token_send_count as number) ?? 0,
+      };
+    },
+  );
+
   return NextResponse.json({
     kpis: {
       totalProfiles,
@@ -89,7 +136,7 @@ export async function GET() {
       consentsGranted,
       consentsRevoked,
     },
-    consents: consents ?? [],
+    consents: normalizedConsents,
     moderation: {
       flaggedCount: flaggedRes.count ?? 0,
       suspendedItems: suspendedRes.data ?? [],

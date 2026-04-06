@@ -29,7 +29,7 @@ export async function checkSecurity(
   request: NextRequest,
 ): Promise<SecurityCheckResult> {
   const { pathname } = request.nextUrl;
-  const keys = buildClientKeys(request);
+  const keys = await buildClientKeys(request);
 
   // --- Trap 1: Honeypot-Pfade (vor allem fuer Nicht-API-Pfade wie /.env) ---
   if (

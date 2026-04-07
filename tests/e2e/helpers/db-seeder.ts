@@ -236,7 +236,14 @@ async function seedAgent(
   }
 
   // 4. Care-Consent anlegen (Art. 9 DSGVO — noetig fuer Check-in, SOS, Medikamente)
-  const consentFeatures = ["checkin", "sos", "medications", "heartbeat"];
+  // Gueltige Werte laut care_consents_feature_check: sos, checkin, medications, care_profile, emergency_contacts
+  const consentFeatures = [
+    "checkin",
+    "sos",
+    "medications",
+    "care_profile",
+    "emergency_contacts",
+  ];
   for (const feature of consentFeatures) {
     const { error: consentError } = await supabaseAdmin(
       "care_consents",
@@ -314,7 +321,11 @@ async function seedRoleSpecificData(
       verification_status: "verified",
       avv_signed_at: new Date().toISOString(),
     });
-    if (orgError && !orgError.includes("duplicate") && !orgError.includes("409")) {
+    if (
+      orgError &&
+      !orgError.includes("duplicate") &&
+      !orgError.includes("409")
+    ) {
       console.warn(`[SEED] Organisation: ${orgError}`);
     } else {
       console.log(`[SEED] Organisation angelegt: ${orgId}`);
@@ -327,7 +338,11 @@ async function seedRoleSpecificData(
       role: "admin",
       assigned_quarters: quarterId ? [quarterId] : [],
     });
-    if (memberError && !memberError.includes("duplicate") && !memberError.includes("409")) {
+    if (
+      memberError &&
+      !memberError.includes("duplicate") &&
+      !memberError.includes("409")
+    ) {
       console.warn(`[SEED] Org-Member stadt_k: ${memberError}`);
     } else {
       console.log(`[SEED] stadt_k als org_admin zugewiesen`);
@@ -344,7 +359,11 @@ async function seedRoleSpecificData(
       visible: true,
       quarter_ids: quarterId ? [quarterId] : [],
     });
-    if (docError && !docError.includes("duplicate") && !docError.includes("409")) {
+    if (
+      docError &&
+      !docError.includes("duplicate") &&
+      !docError.includes("409")
+    ) {
       console.warn(`[SEED] Doctor-Profil arzt_d: ${docError}`);
     } else {
       console.log(`[SEED] arzt_d Doctor-Profil angelegt`);
@@ -355,12 +374,20 @@ async function seedRoleSpecificData(
   const seniorUserId = userMap.get("senior_s");
   const betreuerUserId = userMap.get("betreuer_t");
   if (seniorUserId && betreuerUserId) {
-    const { error: linkError } = await supabaseAdmin("caregiver_links", "POST", {
-      resident_id: seniorUserId,
-      caregiver_id: betreuerUserId,
-      permissions: { heartbeat: true, checkin: true, chat: true },
-    });
-    if (linkError && !linkError.includes("duplicate") && !linkError.includes("409")) {
+    const { error: linkError } = await supabaseAdmin(
+      "caregiver_links",
+      "POST",
+      {
+        resident_id: seniorUserId,
+        caregiver_id: betreuerUserId,
+        permissions: { heartbeat: true, checkin: true, chat: true },
+      },
+    );
+    if (
+      linkError &&
+      !linkError.includes("duplicate") &&
+      !linkError.includes("409")
+    ) {
       console.warn(`[SEED] Caregiver-Link: ${linkError}`);
     } else {
       console.log(`[SEED] Caregiver-Link senior_s → betreuer_t angelegt`);

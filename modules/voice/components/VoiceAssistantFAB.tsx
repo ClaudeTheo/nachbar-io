@@ -69,8 +69,6 @@ export function VoiceAssistantFAB() {
   );
   const [exchangeCount, setExchangeCount] = useState(0);
   const audioRef = useRef<HTMLAudioElement | null>(null);
-  // iOS Audio Unlock: Audio-Element das bei User-Geste erstellt wurde (BUG-01)
-  const unlockedAudioRef = useRef<HTMLAudioElement | null>(null);
   // Push-to-Talk: Startzeitpunkt fuer Mindestdauer-Pruefung
   const recordingStartTimeRef = useRef<number>(0);
   // Streaming Tool-Ergebnisse und Bestaetigungen sammeln
@@ -219,10 +217,7 @@ export function VoiceAssistantFAB() {
           if (ttsRes.ok) {
             const audioBlob = await ttsRes.blob();
             const audioUrl = URL.createObjectURL(audioBlob);
-            // iOS: Unlocked Audio-Element wiederverwenden (BUG-01)
-            const audio = unlockedAudioRef.current ?? new Audio();
-            unlockedAudioRef.current = null; // Einmal verwenden
-            audio.src = audioUrl;
+            const audio = new Audio(audioUrl);
             audioRef.current = audio;
 
             audio.onended = () => {
@@ -296,35 +291,17 @@ export function VoiceAssistantFAB() {
     }
   }, [sheetState]);
 
-  // iOS Audio Unlock — muss synchron in User-Geste passieren (BUG-01)
-  const unlockAudio = useCallback(() => {
-    if (unlockedAudioRef.current) return;
-    try {
-      const audio = new Audio();
-      audio.volume = 0;
-      // play() Promise wird absichtlich nicht awaited — synchroner Unlock-Versuch
-      const playPromise = audio.play();
-      if (playPromise) playPromise.catch(() => {});
-      audio.pause();
-      audio.volume = 1;
-      unlockedAudioRef.current = audio;
-    } catch {
-      // JSDOM/Test-Umgebung: Audio nicht verfuegbar
-    }
-  }, []);
-
   // Push-to-Talk: Druecken startet Aufnahme
   const handlePushStart = useCallback(
     (e: React.MouseEvent | React.TouchEvent) => {
       if ("touches" in e) e.preventDefault();
-      unlockAudio(); // iOS: Audio fuer spaetere TTS-Wiedergabe freischalten
       recordingStartTimeRef.current = Date.now();
       startRecording();
       if (typeof navigator !== "undefined" && navigator.vibrate) {
         navigator.vibrate(50);
       }
     },
-    [startRecording, unlockAudio],
+    [startRecording],
   );
 
   // Push-to-Talk: Loslassen stoppt Aufnahme (mit Mindestdauer-Pruefung)

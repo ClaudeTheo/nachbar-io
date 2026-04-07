@@ -92,16 +92,6 @@ export function VoiceSettings({ settings, onChange }: VoiceSettingsProps) {
       return
     }
 
-    // iOS Safari Audio Unlock (BUG-01):
-    // Audio-Element SYNCHRON im Button-Click-Handler erstellen und stummschalten.
-    // Dies "entsperrt" Audio fuer die gesamte Session, auch nach async Fetch.
-    const audio = new Audio()
-    audio.volume = 0
-    try { await audio.play() } catch { /* iOS braucht dies zum Unlock */ }
-    audio.pause()
-    audio.volume = 1
-    audioRef.current = audio
-
     setPreviewState('loading')
     abortRef.current = new AbortController()
 
@@ -122,15 +112,14 @@ export function VoiceSettings({ settings, onChange }: VoiceSettingsProps) {
 
       if (!res.ok) {
         setPreviewState('idle')
-        audioRef.current = null
         return
       }
 
       const blob = await res.blob()
       const url = URL.createObjectURL(blob)
 
-      // Dasselbe Audio-Element wiederverwenden (bereits durch iOS unlocked)
-      audio.src = url
+      const audio = new Audio(url)
+      audioRef.current = audio
 
       audio.onended = () => {
         setTimeout(() => URL.revokeObjectURL(url), 3000)

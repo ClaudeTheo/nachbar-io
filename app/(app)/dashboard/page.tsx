@@ -93,9 +93,7 @@ export default function DashboardPage() {
   return (
     <>
       <PullToRefresh onRefresh={loadDashboard}>
-        <div className="space-y-8 animate-fade-in-up">
-          <LargeTitle title="Zuhause" />
-
+        <div className="space-y-6 animate-fade-in-up">
           {/* NINA-Warnungen (vor Hero, nach Notfall-Banner) */}
           <NinaAlert />
 

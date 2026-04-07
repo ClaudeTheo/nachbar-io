@@ -25,7 +25,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         Zum Inhalt springen
       </a>
       {/* Verifikations-Banner fuer pending Nutzer */}
-      <div className="mx-auto max-w-lg pt-4">
+      <div className="mx-auto max-w-lg pt-2">
         <PendingVerificationBanner />
       </div>
       {/* Quartier-Kontext + Hauptinhalt */}
@@ -36,7 +36,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
               <HeartbeatProvider>
                 <GlobalCallListener />
                 <PresenceHeartbeat />
-                <main id="main-content" className="mx-auto max-w-lg px-4 pt-4">
+                <main id="main-content" className="mx-auto max-w-lg px-4 pt-2">
                   <ErrorBoundary>
                     <PageTransition>{children}</PageTransition>
                   </ErrorBoundary>

@@ -106,6 +106,10 @@
     {
       "path": "/api/cron/forensic-cleanup",
       "schedule": "0 4 * * *"
+    },
+    {
+      "path": "/api/cron/synthetic-smoke",
+      "schedule": "*/30 * * * *"
     }
   ],
   "headers": [

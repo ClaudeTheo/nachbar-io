@@ -6,7 +6,7 @@ import { ServiceError } from "./service-error";
 import { careLog } from "@/lib/care/api-helpers";
 import type { HeartbeatSource, HeartbeatDeviceType } from "@/lib/care/types";
 
-const VALID_SOURCES: HeartbeatSource[] = ["app", "kiosk", "web"];
+const VALID_SOURCES: HeartbeatSource[] = ["app", "kiosk", "web", "synthetic"];
 const VALID_DEVICE_TYPES: HeartbeatDeviceType[] = [
   "mobile",
   "tablet",

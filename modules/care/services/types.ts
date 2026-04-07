@@ -303,7 +303,7 @@ export interface ConsultationConsent {
 
 // === Heartbeat + Caregiver (Plus-Features) ===
 
-export type HeartbeatSource = 'app' | 'kiosk' | 'web';
+export type HeartbeatSource = 'app' | 'kiosk' | 'web' | 'synthetic';
 export type HeartbeatDeviceType = 'mobile' | 'tablet' | 'kiosk' | 'desktop';
 
 export type CaregiverRelationshipType =

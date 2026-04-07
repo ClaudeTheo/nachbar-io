@@ -61,9 +61,8 @@ export default function HelferRequestsPage() {
         const supabase = createClient();
         const { data } = await supabase
           .from("help_requests")
-          .select("id, title, description, category, urgency, created_at, requester:users!requester_id(display_name)")
+          .select("id, title, description, category, created_at, requester:users!user_id(display_name)")
           .eq("status", "open")
-          .is("helper_id", null)
           .order("created_at", { ascending: false })
           .limit(30);
 
@@ -75,7 +74,7 @@ export default function HelferRequestsPage() {
               description: (d.description as string) || "",
               category: (d.category as string) || "",
               requester_name: ((d.requester as Record<string, unknown>)?.display_name as string) || "Nachbar",
-              urgency: (d.urgency as Urgency) || "normal",
+              urgency: "normal" as Urgency,
               created_at: d.created_at as string,
               distance_km: null,
             }))
@@ -100,7 +99,7 @@ export default function HelferRequestsPage() {
       const supabase = createClient();
       await supabase
         .from("help_requests")
-        .update({ helper_id: user.id, status: "in_progress" })
+        .update({ status: "in_progress" })
         .eq("id", requestId);
 
       setRequests((prev) => prev.filter((r) => r.id !== requestId));

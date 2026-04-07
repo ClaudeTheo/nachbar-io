@@ -14,6 +14,7 @@ const cspDirectives = [
   "img-src 'self' data: blob: https://*.tile.openstreetmap.org https://*.basemaps.cartocdn.com https://cdnjs.cloudflare.com https://*.supabase.co",
   "font-src 'self'",
   `connect-src 'self' https://${supabaseDomain} wss://${supabaseDomain} https://api.anthropic.com https://api.open-meteo.com https://api.twilio.com https://*.ingest.de.sentry.io https://*.tile.openstreetmap.org https://*.basemaps.cartocdn.com`,
+  "media-src 'self' blob:",
   "worker-src 'self'",
   "manifest-src 'self'",
   "object-src 'none'",

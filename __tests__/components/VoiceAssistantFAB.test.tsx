@@ -268,9 +268,7 @@ describe("VoiceAssistantFAB (Push-to-Talk + Companion)", () => {
   });
 
   it("ruft /api/companion/chat auf nach Transkription", async () => {
-    mockFetch
-      .mockResolvedValueOnce(sseResponse("Ich helfe Ihnen gerne."))
-      .mockResolvedValueOnce({ ok: false, status: 500 }); // TTS fallback
+    mockFetch.mockResolvedValueOnce(sseResponse("Ich helfe Ihnen gerne.")); // Kein TTS-Mock noetig (Auto-TTS entfernt)
 
     const { VoiceAssistantFAB } =
       await import("@/modules/voice/components/VoiceAssistantFAB");
@@ -298,11 +296,9 @@ describe("VoiceAssistantFAB (Push-to-Talk + Companion)", () => {
   });
 
   it("zeigt Ergebnis-Nachricht nach API-Antwort", async () => {
-    mockFetch
-      .mockResolvedValueOnce(
-        sseResponse("Ich erstelle eine Hilfsanfrage fuer Sie."),
-      )
-      .mockResolvedValueOnce({ ok: false, status: 500 }); // TTS fallback
+    mockFetch.mockResolvedValueOnce(
+      sseResponse("Ich erstelle eine Hilfsanfrage fuer Sie."),
+    ); // Kein TTS-Mock noetig (Auto-TTS entfernt)
 
     const { VoiceAssistantFAB } =
       await import("@/modules/voice/components/VoiceAssistantFAB");
@@ -321,9 +317,7 @@ describe("VoiceAssistantFAB (Push-to-Talk + Companion)", () => {
   });
 
   it('zeigt "Nochmal sprechen" Button nach Ergebnis', async () => {
-    mockFetch
-      .mockResolvedValueOnce(sseResponse("OK"))
-      .mockResolvedValueOnce({ ok: false, status: 500 }); // TTS fallback
+    mockFetch.mockResolvedValueOnce(sseResponse("OK")); // Kein TTS-Mock noetig (Auto-TTS entfernt)
 
     const { VoiceAssistantFAB } =
       await import("@/modules/voice/components/VoiceAssistantFAB");
@@ -342,9 +336,7 @@ describe("VoiceAssistantFAB (Push-to-Talk + Companion)", () => {
   });
 
   it('"Nochmal sprechen" kehrt zum idle-State zurueck', async () => {
-    mockFetch
-      .mockResolvedValueOnce(sseResponse("OK"))
-      .mockResolvedValueOnce({ ok: false, status: 500 }); // TTS fallback
+    mockFetch.mockResolvedValueOnce(sseResponse("OK"));
 
     const { VoiceAssistantFAB } =
       await import("@/modules/voice/components/VoiceAssistantFAB");
@@ -368,9 +360,7 @@ describe("VoiceAssistantFAB (Push-to-Talk + Companion)", () => {
   });
 
   it('Sheet schliesst bei "Schließen" Button', async () => {
-    mockFetch
-      .mockResolvedValueOnce(sseResponse("Test"))
-      .mockResolvedValueOnce({ ok: false, status: 500 }); // TTS fallback
+    mockFetch.mockResolvedValueOnce(sseResponse("Test"));
 
     const { VoiceAssistantFAB } =
       await import("@/modules/voice/components/VoiceAssistantFAB");
@@ -435,23 +425,14 @@ describe("VoiceAssistantFAB (Push-to-Talk + Companion)", () => {
     });
   });
 
-  it("zeigt Speaking-State mit SpeakerAnimation nach Companion-Antwort", async () => {
-    // Companion API antwortet, TTS haengt (pending promise)
-    let resolveTts: (value: unknown) => void;
-    mockFetch
-      .mockResolvedValueOnce(
-        sseResponse("Ich erstelle eine Hilfsanfrage fuer Sie."),
-      )
-      .mockImplementationOnce(
-        () =>
-          new Promise((resolve) => {
-            resolveTts = resolve;
-          }),
-      );
+  it("zeigt KI-Antwort als lesbaren Text im Result-State (kein Auto-TTS)", async () => {
+    mockFetch.mockResolvedValueOnce(
+      sseResponse("Ich erstelle eine Hilfsanfrage fuer Sie."),
+    );
 
     const { VoiceAssistantFAB } =
       await import("@/modules/voice/components/VoiceAssistantFAB");
-    const { getByTestId } = render(<VoiceAssistantFAB />);
+    const { getByTestId, getByText } = render(<VoiceAssistantFAB />);
     fireEvent.click(getByTestId("voice-assistant-fab"));
     fireEvent.mouseDown(getByTestId("push-to-talk-btn"));
 
@@ -460,24 +441,22 @@ describe("VoiceAssistantFAB (Push-to-Talk + Companion)", () => {
       callbacks.onTranscript("Hilfe");
     });
 
+    // Direkt zum Result — kein Auto-TTS, Text ist prominent sichtbar
     await waitFor(() => {
-      expect(getByTestId("speaker-animation")).toBeDefined();
+      expect(getByText(/Ich erstelle eine Hilfsanfrage/)).toBeDefined();
+      expect(getByText(/Nochmal sprechen/)).toBeDefined();
     });
-
-    // Cleanup: TTS promise aufloesen damit kein offener Handle bleibt
-    resolveTts!({ ok: false, status: 500 });
   });
 
-  it('zeigt "Vorlesen stoppen" Button waehrend Speaking', async () => {
-    let resolveTts: (value: unknown) => void;
-    mockFetch
-      .mockResolvedValueOnce(sseResponse("Alles klar!"))
-      .mockImplementationOnce(
-        () =>
-          new Promise((resolve) => {
-            resolveTts = resolve;
-          }),
-      );
+  it('zeigt "Überspringen" Button waehrend Streaming', async () => {
+    // Stream der nie endet
+    let resolveStream: (value: unknown) => void;
+    mockFetch.mockImplementationOnce(
+      () =>
+        new Promise((resolve) => {
+          resolveStream = resolve;
+        }),
+    );
 
     const { VoiceAssistantFAB } =
       await import("@/modules/voice/components/VoiceAssistantFAB");
@@ -490,17 +469,17 @@ describe("VoiceAssistantFAB (Push-to-Talk + Companion)", () => {
       callbacks.onTranscript("Test");
     });
 
+    // Waehrend Verarbeitung/Streaming: Ueberspringen-Button verfuegbar
     await waitFor(() => {
-      expect(getByText(/Vorlesen stoppen/)).toBeDefined();
+      expect(getByText(/Überspringen/)).toBeDefined();
     });
 
-    resolveTts!({ ok: false, status: 500 });
+    // Cleanup: pending stream aufloesen
+    resolveStream!(sseResponse("late"));
   });
 
-  it("wechselt zu result-State nach TTS-Fehler (graceful fallback)", async () => {
-    mockFetch
-      .mockResolvedValueOnce(sseResponse("Hilfe"))
-      .mockResolvedValueOnce({ ok: false, status: 500 }); // TTS fail
+  it("wechselt direkt zu result-State nach Streaming-Ende (kein Auto-TTS)", async () => {
+    mockFetch.mockResolvedValueOnce(sseResponse("Hilfe"));
 
     const { VoiceAssistantFAB } =
       await import("@/modules/voice/components/VoiceAssistantFAB");
@@ -513,22 +492,20 @@ describe("VoiceAssistantFAB (Push-to-Talk + Companion)", () => {
       callbacks.onTranscript("Hilfe");
     });
 
-    // Bei TTS-Fehler direkt zu result
+    // Direkt zu result (kein Auto-TTS mehr)
     await waitFor(() => {
       expect(getByText("Quartier-Lotse")).toBeDefined();
     });
   });
 
   it("zeigt Tool-Ergebnisse als ActionCards", async () => {
-    mockFetch
-      .mockResolvedValueOnce(
-        sseResponse("Hier sind Ihre Termine.", {
-          toolEvents: [
-            'event: tool\ndata: {"name":"get_waste_dates","result":{"success":true,"summary":"Mo, 24.03.2026: Restmuell"}}',
-          ],
-        }),
-      )
-      .mockResolvedValueOnce({ ok: false, status: 500 }); // TTS fallback
+    mockFetch.mockResolvedValueOnce(
+      sseResponse("Hier sind Ihre Termine.", {
+        toolEvents: [
+          'event: tool\ndata: {"name":"get_waste_dates","result":{"success":true,"summary":"Mo, 24.03.2026: Restmuell"}}',
+        ],
+      }),
+    );
 
     const { VoiceAssistantFAB } =
       await import("@/modules/voice/components/VoiceAssistantFAB");
@@ -548,15 +525,13 @@ describe("VoiceAssistantFAB (Push-to-Talk + Companion)", () => {
   });
 
   it("zeigt Bestaetigungen als ConfirmationCards", async () => {
-    mockFetch
-      .mockResolvedValueOnce(
-        sseResponse("Soll ich den Beitrag erstellen?", {
-          confirmationEvents: [
-            'event: confirmation\ndata: {"tool":"create_bulletin_post","params":{"title":"Test","text":"Hallo"},"description":"Beitrag \\"Test\\" auf dem Schwarzen Brett veroeffentlichen"}',
-          ],
-        }),
-      )
-      .mockResolvedValueOnce({ ok: false, status: 500 }); // TTS fallback
+    mockFetch.mockResolvedValueOnce(
+      sseResponse("Soll ich den Beitrag erstellen?", {
+        confirmationEvents: [
+          'event: confirmation\ndata: {"tool":"create_bulletin_post","params":{"title":"Test","text":"Hallo"},"description":"Beitrag \\"Test\\" auf dem Schwarzen Brett veroeffentlichen"}',
+        ],
+      }),
+    );
 
     const { VoiceAssistantFAB } =
       await import("@/modules/voice/components/VoiceAssistantFAB");
@@ -585,12 +560,11 @@ describe("VoiceAssistantFAB (Push-to-Talk + Companion)", () => {
           ],
         }),
       )
-      .mockResolvedValueOnce({ ok: false, status: 500 }) // TTS fallback
       .mockResolvedValueOnce(
         companionResponse("Erledigt!", {
           toolResults: [{ success: true, summary: "Beitrag erstellt." }],
         }),
-      ); // confirmTool bleibt JSON
+      ); // confirmTool (kein TTS-Mock mehr noetig)
 
     const { VoiceAssistantFAB } =
       await import("@/modules/voice/components/VoiceAssistantFAB");
@@ -612,21 +586,19 @@ describe("VoiceAssistantFAB (Push-to-Talk + Companion)", () => {
     });
 
     await waitFor(() => {
-      // Zweiter API-Aufruf muss confirmTool enthalten
-      const secondCall = mockFetch.mock.calls[2]; // [0]=companion, [1]=tts, [2]=confirm
-      const secondBody = JSON.parse(secondCall[1].body);
-      expect(secondBody.confirmTool).toBeDefined();
-      expect(secondBody.confirmTool.tool).toBe("create_bulletin_post");
+      // Zweiter API-Aufruf muss confirmTool enthalten (kein TTS dazwischen)
+      const confirmCall = mockFetch.mock.calls[1]; // [0]=companion, [1]=confirm
+      const confirmBody = JSON.parse(confirmCall[1].body);
+      expect(confirmBody.confirmTool).toBeDefined();
+      expect(confirmBody.confirmTool.tool).toBe("create_bulletin_post");
     });
   });
 
   // --- Codex-Review Regressions-Tests ---
 
   it("persistiert User-Nachricht in sheetMessages nach Voice-Input (Codex Fix #1)", async () => {
-    // Erster Turn
-    mockFetch
-      .mockResolvedValueOnce(sseResponse("Antwort 1"))
-      .mockResolvedValueOnce({ ok: false, status: 500 }); // TTS
+    // Erster Turn (kein TTS-Mock noetig — Auto-TTS entfernt)
+    mockFetch.mockResolvedValueOnce(sseResponse("Antwort 1"));
 
     const { VoiceAssistantFAB } =
       await import("@/modules/voice/components/VoiceAssistantFAB");
@@ -646,12 +618,13 @@ describe("VoiceAssistantFAB (Push-to-Talk + Companion)", () => {
     // Pruefen: Erster API-Call hatte User-Nachricht
     const firstCallBody = JSON.parse(mockFetch.mock.calls[0][1].body);
     expect(firstCallBody.messages).toHaveLength(1);
-    expect(firstCallBody.messages[0]).toEqual({ role: "user", content: "Erster Turn" });
+    expect(firstCallBody.messages[0]).toEqual({
+      role: "user",
+      content: "Erster Turn",
+    });
 
     // Zweiter Turn
-    mockFetch
-      .mockResolvedValueOnce(sseResponse("Antwort 2"))
-      .mockResolvedValueOnce({ ok: false, status: 500 }); // TTS
+    mockFetch.mockResolvedValueOnce(sseResponse("Antwort 2"));
 
     fireEvent.click(getByText(/Nochmal sprechen/));
     fireEvent.mouseDown(getByTestId("push-to-talk-btn"));
@@ -662,19 +635,26 @@ describe("VoiceAssistantFAB (Push-to-Talk + Companion)", () => {
     });
 
     await waitFor(() => {
-      // Zweiter API-Call muss ALLE bisherigen Nachrichten enthalten (User+Assistant+User)
-      const secondCallBody = JSON.parse(mockFetch.mock.calls[2][1].body);
+      // Zweiter API-Call muss ALLE bisherigen Nachrichten enthalten (kein TTS dazwischen)
+      const secondCallBody = JSON.parse(mockFetch.mock.calls[1][1].body);
       expect(secondCallBody.messages.length).toBeGreaterThanOrEqual(3);
-      expect(secondCallBody.messages[0]).toEqual({ role: "user", content: "Erster Turn" });
-      expect(secondCallBody.messages[1]).toEqual({ role: "assistant", content: "Antwort 1" });
-      expect(secondCallBody.messages[2]).toEqual({ role: "user", content: "Zweiter Turn" });
+      expect(secondCallBody.messages[0]).toEqual({
+        role: "user",
+        content: "Erster Turn",
+      });
+      expect(secondCallBody.messages[1]).toEqual({
+        role: "assistant",
+        content: "Antwort 1",
+      });
+      expect(secondCallBody.messages[2]).toEqual({
+        role: "user",
+        content: "Zweiter Turn",
+      });
     });
   });
 
   it("setzt transcript im Voice-Pfad (Codex Fix #3)", async () => {
-    mockFetch
-      .mockResolvedValueOnce(sseResponse("Antwort"))
-      .mockResolvedValueOnce({ ok: false, status: 500 }); // TTS
+    mockFetch.mockResolvedValueOnce(sseResponse("Antwort"));
 
     const { VoiceAssistantFAB } =
       await import("@/modules/voice/components/VoiceAssistantFAB");
@@ -697,12 +677,17 @@ describe("VoiceAssistantFAB (Push-to-Talk + Companion)", () => {
     // Stream der nie endet
     let resolveStream: (value: unknown) => void;
     mockFetch.mockImplementationOnce(
-      () => new Promise((resolve) => { resolveStream = resolve; })
+      () =>
+        new Promise((resolve) => {
+          resolveStream = resolve;
+        }),
     );
 
     const { VoiceAssistantFAB } =
       await import("@/modules/voice/components/VoiceAssistantFAB");
-    const { getByTestId, getByText, queryByTestId } = render(<VoiceAssistantFAB />);
+    const { getByTestId, getByText, queryByTestId } = render(
+      <VoiceAssistantFAB />,
+    );
     fireEvent.click(getByTestId("voice-assistant-fab"));
     fireEvent.mouseDown(getByTestId("push-to-talk-btn"));
 
@@ -735,10 +720,7 @@ describe("VoiceAssistantFAB (Push-to-Talk + Companion)", () => {
   });
 
   it("handleRetry bricht laufendes Streaming ab (Codex Fix #2)", async () => {
-    // SSE Response die sofort resolved
-    mockFetch
-      .mockResolvedValueOnce(sseResponse("Erste Antwort"))
-      .mockResolvedValueOnce({ ok: false, status: 500 }); // TTS
+    mockFetch.mockResolvedValueOnce(sseResponse("Erste Antwort"));
 
     const { VoiceAssistantFAB } =
       await import("@/modules/voice/components/VoiceAssistantFAB");
@@ -771,12 +753,11 @@ describe("VoiceAssistantFAB (Push-to-Talk + Companion)", () => {
           ],
         }),
       )
-      .mockResolvedValueOnce({ ok: false, status: 500 }) // TTS fallback
       .mockResolvedValueOnce(
         companionResponse("Erledigt!", {
           toolResults: [{ success: true, summary: "Erstellt." }],
         }),
-      ); // confirmTool
+      ); // confirmTool (kein TTS-Mock)
 
     const { VoiceAssistantFAB } =
       await import("@/modules/voice/components/VoiceAssistantFAB");
@@ -798,14 +779,19 @@ describe("VoiceAssistantFAB (Push-to-Talk + Companion)", () => {
       fireEvent.click(getByTestId("confirm-btn-0"));
     });
 
-    // confirmTool-Request muss messages mit dem User-Turn enthalten
+    // confirmTool-Request muss messages mit dem User-Turn enthalten (kein TTS dazwischen)
     await waitFor(() => {
-      const confirmCall = mockFetch.mock.calls[2];
+      const confirmCall = mockFetch.mock.calls[1]; // [0]=companion, [1]=confirm
       const confirmBody = JSON.parse(confirmCall[1].body);
       expect(confirmBody.confirmTool).toBeDefined();
       expect(confirmBody.confirmTool.tool).toBe("create_post");
       // Messages muessen den User-Turn enthalten (Fix #1)
-      expect(confirmBody.messages.some((m: { role: string; content: string }) => m.role === "user" && m.content === "Beitrag erstellen")).toBe(true);
+      expect(
+        confirmBody.messages.some(
+          (m: { role: string; content: string }) =>
+            m.role === "user" && m.content === "Beitrag erstellen",
+        ),
+      ).toBe(true);
     });
   });
 

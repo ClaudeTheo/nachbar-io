@@ -297,7 +297,7 @@ async function deploy() {
   const dryRun = process.argv.includes("--dry-run");
 
   const config = {
-    firewallEnabled: false,  // AUS — Vercel built-in Schutz blockiert nach WAF-Toggle
+    firewallEnabled: true,  // EIN — Session 58, alle challenge-Actions entfernt
     rules: RULES,
     crs: CRS_CONFIG,
     ips: [

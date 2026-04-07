@@ -205,41 +205,9 @@ export function VoiceAssistantFAB() {
         return;
       }
 
-      // TTS: Antwort vorlesen
-      (async () => {
-        try {
-          const ttsRes = await fetch("/api/voice/tts", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ text: streamingText }),
-          });
-
-          if (ttsRes.ok) {
-            const audioBlob = await ttsRes.blob();
-            const audioUrl = URL.createObjectURL(audioBlob);
-            const audio = new Audio(audioUrl);
-            audioRef.current = audio;
-
-            audio.onended = () => {
-              URL.revokeObjectURL(audioUrl);
-              audioRef.current = null;
-              setSheetState("result");
-            };
-
-            audio.onerror = () => {
-              URL.revokeObjectURL(audioUrl);
-              audioRef.current = null;
-              setSheetState("result");
-            };
-
-            await audio.play();
-          } else {
-            setSheetState("result");
-          }
-        } catch {
-          setSheetState("result");
-        }
-      })();
+      // Kein Auto-TTS — iOS blockiert Autoplay ohne User-Geste.
+      // Stattdessen: Text prominent anzeigen + manueller "Vorlesen"-Button.
+      setSheetState("result");
     }
     prevStreamingRef.current = isStreamingChat;
   }, [isStreamingChat, streamingText, sheetState, router]);

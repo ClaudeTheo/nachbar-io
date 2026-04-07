@@ -12,18 +12,16 @@ import {
   MessageCircle,
   RotateCcw,
   X,
-  Volume2,
-  VolumeX,
   ArrowRight,
   Send,
 } from "lucide-react";
+import { TTSButton } from "../companion/TTSButton";
 import {
   SheetContent as ShadcnSheetContent,
   SheetHeader,
   SheetTitle,
   SheetDescription,
 } from "@/components/ui/sheet";
-import { SpeakerAnimation } from "../voice/SpeakerAnimation";
 import { StreamingTextDisplay } from "../companion/StreamingTextDisplay";
 import { PushToTalkButton } from "./PushToTalkButton";
 import { ToolResultsDisplay } from "./ToolResultsDisplay";
@@ -116,8 +114,8 @@ export function VoiceSheetContent({
           )}
           {sheetState === "speaking" && (
             <>
-              <Volume2 className="h-5 w-5 text-[#4CAF87]" />
-              Sprachausgabe
+              <Loader2 className="h-5 w-5 text-[#4CAF87] animate-spin" />
+              Quartier-Lotse antwortet...
             </>
           )}
           {sheetState === "result" && (
@@ -137,8 +135,8 @@ export function VoiceSheetContent({
           {sheetState === "idle" && "Bereit zum Sprechen"}
           {sheetState === "recording" && "Sprechen Sie jetzt..."}
           {sheetState === "processing" && "Ihre Anfrage wird analysiert..."}
-          {sheetState === "speaking" && (responseMessage || "")}
-          {sheetState === "result" && (responseMessage || "")}
+          {sheetState === "speaking" && "Antwort wird geladen..."}
+          {sheetState === "result" && "Antwort erhalten"}
           {sheetState === "error" && errorMessage}
         </SheetDescription>
       </SheetHeader>
@@ -264,28 +262,22 @@ export function VoiceSheetContent({
           </div>
         )}
 
-        {/* SPEAKING: Streaming-Text oder Lautsprecher-Animation + Text + Stopp */}
+        {/* SPEAKING: Streaming-Text waehrend KI antwortet */}
         {sheetState === "speaking" && (
           <>
-            {isStreamingChat ? (
-              <div className="text-center text-lg font-medium text-[#2D3142]">
-                <StreamingTextDisplay text={streamingText} isStreaming={true} />
-              </div>
-            ) : (
-              <>
-                <SpeakerAnimation isPlaying={true} />
-                <p className="text-center text-lg font-medium text-[#2D3142]">
-                  {responseMessage}
-                </p>
-              </>
-            )}
+            <div className="rounded-xl border border-border bg-white p-4 text-base leading-relaxed text-[#2D3142]">
+              <StreamingTextDisplay
+                text={streamingText}
+                isStreaming={isStreamingChat}
+              />
+            </div>
             <button
               onClick={onStopSpeaking}
               className="w-full flex items-center justify-center gap-2 rounded-xl border border-gray-200 text-[#2D3142] font-medium text-base transition-all hover:bg-gray-50 active:scale-95"
               style={{ minHeight: "48px", touchAction: "manipulation" }}
             >
-              <VolumeX className="h-5 w-5" />
-              Vorlesen stoppen
+              <X className="h-4 w-4" />
+              Überspringen
             </button>
           </>
         )}
@@ -293,10 +285,22 @@ export function VoiceSheetContent({
         {/* RESULT: Ergebnis + Tool-Results + Bestaetigungen + Buttons */}
         {sheetState === "result" && (
           <>
-            {/* Transkript */}
+            {/* Transkript (Nutzer-Frage) */}
             {transcript && (
               <div className="rounded-lg bg-muted/50 p-3 text-sm text-muted-foreground italic">
                 &bdquo;{transcript}&ldquo;
+              </div>
+            )}
+
+            {/* KI-Antwort prominent als lesbarer Text (Accessibility) */}
+            {responseMessage && (
+              <div className="rounded-xl border border-border bg-white p-4">
+                <p className="whitespace-pre-wrap text-base leading-relaxed text-[#2D3142]">
+                  {responseMessage}
+                </p>
+                <div className="mt-2 flex items-center">
+                  <TTSButton text={responseMessage} />
+                </div>
               </div>
             )}
 

@@ -73,7 +73,7 @@ export default function SeniorCheckinPage() {
       </p>
 
       <div className="rounded-lg bg-muted p-4">
-        <p className="text-sm text-muted-foreground">
+        <p className="senior-text text-muted-foreground">
           Falls Sie bis 12:00 Uhr nicht eingecheckt haben, kann Ihre
           Vertrauensperson optional informiert werden. Diese Funktion ist
           nur aktiv, wenn Sie ausdrücklich zugestimmt haben.

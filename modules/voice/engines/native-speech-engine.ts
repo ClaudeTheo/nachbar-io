@@ -64,10 +64,14 @@ const DEFAULT_ERROR = 'Spracherkennung fehlgeschlagen. Bitte erneut versuchen.';
  * Bevorzugtes Backend — keine API-Aufrufe, keine Kosten.
  * Unterstuetzt Chrome, Edge, Safari (mit webkit-Prefix).
  */
+/** Maximale Wartezeit bis Ergebnis oder Timeout (iOS Safari haengt sonst) */
+const RECOGNITION_TIMEOUT_MS = 10_000;
+
 export class NativeSpeechEngine implements SpeechEngine {
   private recognition: SpeechRecognitionInstance | null = null;
   private callbacks: SpeechEngineCallbacks | null = null;
   private isListeningActive = false;
+  private timeoutId: ReturnType<typeof setTimeout> | null = null;
 
   /** Prueft ob SpeechRecognition im Browser verfuegbar ist */
   isAvailable(): boolean {
@@ -94,6 +98,9 @@ export class NativeSpeechEngine implements SpeechEngine {
     recognition.continuous = false;
 
     recognition.onresult = (event: SpeechRecognitionEvent) => {
+      // Timeout bei jedem Zwischenergebnis zuruecksetzen (User spricht noch)
+      this.resetTimeout(callbacks);
+
       // Audio-Level aus Zwischenergebnissen simulieren (Web Speech API hat kein echtes Audio-Level)
       const lastResult = event.results[event.results.length - 1];
       if (lastResult && !lastResult.isFinal) {
@@ -105,6 +112,7 @@ export class NativeSpeechEngine implements SpeechEngine {
 
       // Finale Ergebnisse an Callback weiterleiten
       if (lastResult?.isFinal) {
+        this.clearTimeout();
         const transcript = lastResult[0]?.transcript?.trim() || '';
         if (transcript) {
           callbacks.onTranscript(transcript);
@@ -113,7 +121,8 @@ export class NativeSpeechEngine implements SpeechEngine {
     };
 
     recognition.onerror = (event: SpeechRecognitionErrorEvent) => {
-      // 'aborted' ignorieren — wird bei manuellem Stop ausgeloest
+      this.clearTimeout();
+      // 'aborted' ignorieren — wird bei manuellem Stop oder Timeout ausgeloest
       if (event.error === 'aborted') return;
 
       const message = ERROR_MESSAGES[event.error] || DEFAULT_ERROR;
@@ -123,6 +132,7 @@ export class NativeSpeechEngine implements SpeechEngine {
     };
 
     recognition.onend = () => {
+      this.clearTimeout();
       // Audio-Level auf 0 setzen wenn Erkennung endet
       callbacks.onAudioLevel(0);
       if (this.isListeningActive) {
@@ -134,6 +144,8 @@ export class NativeSpeechEngine implements SpeechEngine {
     try {
       recognition.start();
       callbacks.onStateChange('listening');
+      // Timeout starten: Verhindert Endlos-Haengen auf iOS Safari (BUG-07)
+      this.startTimeout(callbacks);
     } catch {
       callbacks.onError('Spracherkennung konnte nicht gestartet werden.');
       callbacks.onStateChange('idle');
@@ -143,6 +155,7 @@ export class NativeSpeechEngine implements SpeechEngine {
 
   /** Stoppt die laufende Spracherkennung */
   stopListening(): void {
+    this.clearTimeout();
     this.isListeningActive = false;
     if (this.recognition) {
       try {
@@ -158,6 +171,39 @@ export class NativeSpeechEngine implements SpeechEngine {
     this.stopListening();
     this.recognition = null;
     this.callbacks = null;
+  }
+
+  /** Startet den Timeout-Timer (iOS Safari Freeze-Schutz, BUG-07) */
+  private startTimeout(callbacks: SpeechEngineCallbacks): void {
+    this.clearTimeout();
+    this.timeoutId = setTimeout(() => {
+      if (!this.isListeningActive) return;
+      // Recognition abbrechen und Fehler melden
+      if (this.recognition) {
+        try {
+          this.recognition.abort();
+        } catch {
+          // Ignorieren
+        }
+      }
+      this.isListeningActive = false;
+      callbacks.onAudioLevel(0);
+      callbacks.onError('Keine Sprache erkannt. Bitte erneut versuchen oder stattdessen tippen.');
+      callbacks.onStateChange('idle');
+    }, RECOGNITION_TIMEOUT_MS);
+  }
+
+  /** Setzt den Timeout zurueck (z.B. bei Zwischenergebnissen) */
+  private resetTimeout(callbacks: SpeechEngineCallbacks): void {
+    this.startTimeout(callbacks);
+  }
+
+  /** Loescht den Timeout-Timer */
+  private clearTimeout(): void {
+    if (this.timeoutId) {
+      globalThis.clearTimeout(this.timeoutId);
+      this.timeoutId = null;
+    }
   }
 
   /** Holt den SpeechRecognition-Konstruktor (mit webkit-Prefix-Fallback) */

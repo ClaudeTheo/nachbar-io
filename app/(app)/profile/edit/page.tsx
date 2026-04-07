@@ -12,19 +12,16 @@ import { Textarea } from "@/components/ui/textarea";
 import { AvatarPicker } from "@/components/AvatarPicker";
 import { createClient } from "@/lib/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
-import { useQuarter } from "@/lib/quarters";
 import { getProfile, updateProfile } from "@/lib/services";
 import type { User } from "@/lib/supabase/types";
 
-interface HouseholdOption {
-  id: string;
+interface HouseholdAddress {
   street_name: string;
   house_number: string;
 }
 
 export default function ProfileEditPage() {
   const router = useRouter();
-  const { currentQuarter } = useQuarter();
   const { user: authUser } = useAuth();
   const [user, setUser] = useState<User | null>(null);
   const [displayName, setDisplayName] = useState("");
@@ -35,10 +32,15 @@ export default function ProfileEditPage() {
   const [saving, setSaving] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  // Adresse
+  // Adresse — DSGVO-konform: Nur eigene Adresse anzeigen, NIE alle Haushalte
   const [currentHouseholdId, setCurrentHouseholdId] = useState<string | null>(null);
   const [selectedHouseholdId, setSelectedHouseholdId] = useState<string | null>(null);
-  const [households, setHouseholds] = useState<HouseholdOption[]>([]);
+  const [currentAddress, setCurrentAddress] = useState<HouseholdAddress | null>(null);
+  const [showAddressEdit, setShowAddressEdit] = useState(false);
+  const [addressStreet, setAddressStreet] = useState("");
+  const [addressNumber, setAddressNumber] = useState("");
+  const [addressMatching, setAddressMatching] = useState(false);
+  const [addressError, setAddressError] = useState<string | null>(null);
   // Passwort-Aenderung
   const [showPasswordForm, setShowPasswordForm] = useState(false);
   const [currentPassword, setCurrentPassword] = useState("");
@@ -62,15 +64,19 @@ export default function ProfileEditPage() {
         // Profil konnte nicht geladen werden
       }
 
-      // Haushalt laden
+      // Eigenen Haushalt + Adresse laden (NICHT alle Haushalte — DSGVO BUG-23)
       const { data: membership } = await supabase
         .from("household_members")
-        .select("household_id")
+        .select("household_id, households(street_name, house_number)")
         .eq("user_id", authUser.id)
         .maybeSingle();
       if (membership?.household_id) {
         setCurrentHouseholdId(membership.household_id);
         setSelectedHouseholdId(membership.household_id);
+        const hh = membership.households as unknown as HouseholdAddress | null;
+        if (hh) {
+          setCurrentAddress(hh);
+        }
       }
 
       // Skills pruefen
@@ -83,21 +89,38 @@ export default function ProfileEditPage() {
     load();
   }, [authUser]);
 
-  // Alle Häuser im Quartier laden
-  useEffect(() => {
-    if (!currentQuarter) return;
-    async function loadHouseholds() {
-      const supabase = createClient();
-      const { data } = await supabase
-        .from("households")
-        .select("id, street_name, house_number")
-        .eq("quarter_id", currentQuarter!.id)
-        .order("street_name")
-        .order("house_number");
-      if (data) setHouseholds(data);
+  // Adresse serverseitig matchen (DSGVO-konform, BUG-23 Fix)
+  async function matchHousehold() {
+    if (!addressStreet.trim() || !addressNumber.trim()) {
+      setAddressError("Bitte Straße und Hausnummer eingeben.");
+      return;
     }
-    loadHouseholds();
-  }, [currentQuarter]);
+    setAddressMatching(true);
+    setAddressError(null);
+    try {
+      const res = await fetch("/api/profile/match-household", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          street_name: addressStreet.trim(),
+          house_number: addressNumber.trim(),
+        }),
+      });
+      const data = await res.json();
+      if (res.ok && data.household_id) {
+        setSelectedHouseholdId(data.household_id);
+        setCurrentAddress({ street_name: data.street_name, house_number: data.house_number });
+        setShowAddressEdit(false);
+        setAddressError(null);
+        toast.success(`Adresse gefunden: ${data.street_name} ${data.house_number}`);
+      } else {
+        setAddressError(data.error || "Adresse nicht gefunden.");
+      }
+    } catch {
+      setAddressError("Netzwerkfehler. Bitte erneut versuchen.");
+    }
+    setAddressMatching(false);
+  }
 
   const addressChanged = selectedHouseholdId !== null && selectedHouseholdId !== currentHouseholdId;
   const hasChanges = user && (
@@ -108,12 +131,12 @@ export default function ProfileEditPage() {
     addressChanged
   );
 
-  // Profil-Vollstaendigkeit
+  // Profil-Vollstaendigkeit — IDs fuer Scroll-to-Field (BUG-24)
   const completionSteps = [
-    { done: !!avatarUrl, label: "Avatar" },
-    { done: bio.trim().length > 0, label: "Bio" },
-    { done: hasSkills, label: "Kompetenzen" },
-    { done: phone.trim().length > 0, label: "Telefon" },
+    { done: !!avatarUrl, label: "Avatar", id: "avatarPicker" },
+    { done: bio.trim().length > 0, label: "Über mich", id: "bio" },
+    { done: hasSkills, label: "Kompetenzen", id: "skills" },
+    { done: phone.trim().length > 0, label: "Telefon", id: "phone" },
   ];
   const completedCount = completionSteps.filter((s) => s.done).length;
 
@@ -235,10 +258,10 @@ export default function ProfileEditPage() {
     <div className="space-y-6">
       <PageHeader title="Profil bearbeiten" backHref="/profile" />
 
-      {/* Profil-Vollstaendigkeit */}
+      {/* Profil-Vollstaendigkeit — fehlende Schritte klickbar (BUG-24 Fix) */}
       {completedCount < 4 && (
         <div className="rounded-lg border border-quartier-green/20 bg-quartier-green/5 p-3">
-          <p className="text-sm text-quartier-green">
+          <p className="text-sm font-medium text-quartier-green">
             Profil {completedCount}/4 vervollständigt
           </p>
           <div className="mt-1.5 flex gap-1">
@@ -248,15 +271,33 @@ export default function ProfileEditPage() {
                 className={`h-1.5 flex-1 rounded-full ${
                   step.done ? "bg-quartier-green" : "bg-quartier-green/20"
                 }`}
-                title={step.label}
               />
+            ))}
+          </div>
+          <div className="mt-2 flex flex-wrap gap-1.5">
+            {completionSteps.filter(s => !s.done).map((step) => (
+              <button
+                key={step.label}
+                type="button"
+                onClick={() => {
+                  if (step.id === "skills") {
+                    router.push("/profile/skills");
+                  } else {
+                    document.getElementById(step.id)?.focus();
+                    document.getElementById(step.id)?.scrollIntoView({ behavior: "smooth", block: "center" });
+                  }
+                }}
+                className="rounded-full border border-quartier-green/30 bg-white px-2.5 py-1 text-xs font-medium text-quartier-green transition-colors hover:bg-quartier-green/10 active:bg-quartier-green/20"
+              >
+                + {step.label}
+              </button>
             ))}
           </div>
         </div>
       )}
 
       {/* Avatar-Picker */}
-      <div className="flex justify-center">
+      <div id="avatarPicker" className="flex justify-center">
         <AvatarPicker
           currentAvatarUrl={avatarUrl}
           onAvatarChange={setAvatarUrl}
@@ -310,32 +351,81 @@ export default function ProfileEditPage() {
           </p>
         </div>
 
-        {/* Adresse */}
+        {/* Adresse — DSGVO-konform: Nur eigene Adresse sichtbar (BUG-23 Fix) */}
         <div className="space-y-2">
-          <label htmlFor="address" className="text-sm font-medium text-anthrazit">Adresse</label>
-          {households.length > 0 ? (
-            <select
-              id="address"
-              value={selectedHouseholdId ?? ""}
-              onChange={(e) => setSelectedHouseholdId(e.target.value || null)}
-              className="w-full rounded-lg border border-input bg-white px-3 py-2 text-sm text-anthrazit focus:border-quartier-green focus:outline-none focus:ring-1 focus:ring-quartier-green"
-            >
-              <option value="">Bitte wählen...</option>
-              {households.map((h) => (
-                <option key={h.id} value={h.id}>
-                  {h.street_name} {h.house_number}
-                </option>
-              ))}
-            </select>
+          <label className="text-sm font-medium text-anthrazit">Adresse</label>
+
+          {!showAddressEdit ? (
+            <>
+              <div className="flex items-center gap-2">
+                <Input
+                  value={currentAddress
+                    ? `${currentAddress.street_name} ${currentAddress.house_number}`
+                    : "Keine Adresse hinterlegt"}
+                  disabled
+                  className="flex-1"
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setShowAddressEdit(true)}
+                >
+                  Ändern
+                </Button>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Ihre aktuelle Adresse im Quartier.
+              </p>
+            </>
           ) : (
-            <Input
-              value={currentHouseholdId ? "Wird geladen..." : "Keine Adresse hinterlegt"}
-              disabled
-            />
+            <div className="space-y-2 rounded-lg border border-input p-3">
+              <p className="text-xs text-muted-foreground">
+                Geben Sie Ihre neue Adresse ein:
+              </p>
+              <div className="flex gap-2">
+                <Input
+                  value={addressStreet}
+                  onChange={(e) => setAddressStreet(e.target.value)}
+                  placeholder="Straße (z.B. Sanarystraße)"
+                  className="flex-1"
+                />
+                <Input
+                  value={addressNumber}
+                  onChange={(e) => setAddressNumber(e.target.value)}
+                  placeholder="Nr."
+                  className="w-20"
+                />
+              </div>
+              {addressError && (
+                <p className="text-xs text-emergency-red">{addressError}</p>
+              )}
+              <div className="flex gap-2">
+                <Button
+                  type="button"
+                  size="sm"
+                  onClick={matchHousehold}
+                  disabled={addressMatching || !addressStreet.trim() || !addressNumber.trim()}
+                  className="bg-quartier-green hover:bg-quartier-green-dark"
+                >
+                  {addressMatching ? "Suche..." : "Adresse prüfen"}
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    setShowAddressEdit(false);
+                    setAddressError(null);
+                    setAddressStreet("");
+                    setAddressNumber("");
+                  }}
+                >
+                  Abbrechen
+                </Button>
+              </div>
+            </div>
           )}
-          <p className="text-xs text-muted-foreground">
-            Wählen Sie Ihre aktuelle Adresse im Quartier.
-          </p>
         </div>
 
         {/* Kompetenzen-Link */}

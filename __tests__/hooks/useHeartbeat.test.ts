@@ -1,27 +1,31 @@
 // __tests__/hooks/useHeartbeat.test.ts
 // Nachbar.io — Tests fuer useHeartbeat Hook
 
-import { renderHook, act } from '@testing-library/react';
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { renderHook, act } from "@testing-library/react";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 
 // Mocks VOR dem Import
 const mockGetCachedUser = vi.fn();
-vi.mock('@/lib/supabase/client', () => ({
+vi.mock("@/lib/supabase/client", () => ({
   createClient: vi.fn(() => ({})),
 }));
-vi.mock('@/lib/supabase/cached-auth', () => ({
+vi.mock("@/lib/supabase/cached-auth", () => ({
   getCachedUser: (...args: unknown[]) => mockGetCachedUser(...args),
 }));
 
 const mockFetch = vi.fn();
 global.fetch = mockFetch;
 
-import { useHeartbeat } from '@/lib/care/hooks/useHeartbeat';
+import {
+  useHeartbeat,
+  _resetHeartbeatForTesting,
+} from "@/lib/care/hooks/useHeartbeat";
 
-describe('useHeartbeat', () => {
+describe("useHeartbeat", () => {
   beforeEach(() => {
+    _resetHeartbeatForTesting(); // Globalen State zwischen Tests zuruecksetzen
     vi.useFakeTimers();
-    mockGetCachedUser.mockResolvedValue({ user: { id: 'user-1' } });
+    mockGetCachedUser.mockResolvedValue({ user: { id: "user-1" } });
     mockFetch.mockResolvedValue({ ok: true });
   });
 
@@ -30,23 +34,26 @@ describe('useHeartbeat', () => {
     vi.clearAllMocks();
   });
 
-  it('sendet Heartbeat beim Mount wenn User eingeloggt', async () => {
+  it("sendet Heartbeat beim Mount wenn User eingeloggt", async () => {
     await act(async () => {
       renderHook(() => useHeartbeat());
     });
 
-    expect(mockFetch).toHaveBeenCalledWith('/api/heartbeat', expect.objectContaining({
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-    }));
+    expect(mockFetch).toHaveBeenCalledWith(
+      "/api/heartbeat",
+      expect.objectContaining({
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+      }),
+    );
 
     // Pruefe body-Inhalt
     const callBody = JSON.parse(mockFetch.mock.calls[0][1].body);
-    expect(callBody.source).toBe('app');
+    expect(callBody.source).toBe("app");
     expect(callBody.device_type).toBeDefined();
   });
 
-  it('sendet keinen Heartbeat wenn kein User', async () => {
+  it("sendet keinen Heartbeat wenn kein User", async () => {
     mockGetCachedUser.mockResolvedValue({ user: null });
 
     await act(async () => {
@@ -56,18 +63,18 @@ describe('useHeartbeat', () => {
     expect(mockFetch).not.toHaveBeenCalled();
   });
 
-  it('erkennt desktop als device_type im Test-Kontext', async () => {
+  it("erkennt desktop als device_type im Test-Kontext", async () => {
     await act(async () => {
       renderHook(() => useHeartbeat());
     });
 
     const callBody = JSON.parse(mockFetch.mock.calls[0][1].body);
     // In jsdom ist userAgent nicht mobile/kiosk/tablet
-    expect(callBody.device_type).toBe('desktop');
+    expect(callBody.device_type).toBe("desktop");
   });
 
-  it('blockiert fetch-Fehler ohne Exception', async () => {
-    mockFetch.mockRejectedValue(new Error('Netzwerkfehler'));
+  it("blockiert fetch-Fehler ohne Exception", async () => {
+    mockFetch.mockRejectedValue(new Error("Netzwerkfehler"));
 
     // Darf keinen Fehler werfen
     await act(async () => {
@@ -77,7 +84,7 @@ describe('useHeartbeat', () => {
     expect(true).toBe(true);
   });
 
-  it('sendet nur einmal innerhalb 60s Rate-Limit', async () => {
+  it("sendet nur einmal innerhalb 60s Rate-Limit (global, BUG-10 Fix)", async () => {
     const { unmount } = await act(async () => {
       return renderHook(() => useHeartbeat());
     });
@@ -85,14 +92,13 @@ describe('useHeartbeat', () => {
 
     expect(mockFetch).toHaveBeenCalledTimes(1);
 
-    // Sofort neuer Mount — sollte durch Rate-Limit blockiert werden
-    // (lastSent ist useRef, also pro Instanz)
+    // Sofort neuer Mount — Rate-Limit ist jetzt GLOBAL (nicht pro Instanz)
+    // Daher wird der zweite Heartbeat korrekt blockiert
     await act(async () => {
       renderHook(() => useHeartbeat());
     });
 
-    // Zweite Instanz hat eigenes useRef, daher AUCH 1 Aufruf
-    // Rate-Limit gilt pro Hook-Instanz, nicht global
-    expect(mockFetch).toHaveBeenCalledTimes(2);
+    // BUG-10 Fix: Globaler Rate-Limiter verhindert doppelte Heartbeats bei Navigation
+    expect(mockFetch).toHaveBeenCalledTimes(1);
   });
 });

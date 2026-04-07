@@ -40,19 +40,65 @@ export default function MapPositionPage() {
     streetName: string;
     houseNumber: string;
     streetCode: StreetCode;
+    quarterId: string;
   } | null>(null);
   const [isNewEntry, setIsNewEntry] = useState(false);
+
+  // Quartier-Name fuer Anzeige (BUG-22: falsches Quartier)
+  const [quarterName, setQuarterName] = useState<string | null>(null);
+  const [quarterHasSvgMap, setQuarterHasSvgMap] = useState(true);
 
   useEffect(() => {
     async function init() {
       if (!user) return;
       const supabase = createClient();
 
-      // Haeuser laden
-      const { data: mapData } = await supabase
+      // Quartier des Users ermitteln (BUG-22 Fix)
+      const { data: userProfile } = await supabase
+        .from("users")
+        .select("quarter_id")
+        .eq("id", user.id)
+        .maybeSingle();
+
+      let quarterId: string | null = userProfile?.quarter_id ?? null;
+
+      // Fallback: Quartier aus household_members
+      if (!quarterId) {
+        const { data: hm } = await supabase
+          .from("household_members")
+          .select("households(quarter_id)")
+          .eq("user_id", user.id)
+          .maybeSingle();
+        if (hm?.households) {
+          const hh = hm.households as unknown as { quarter_id: string };
+          quarterId = hh.quarter_id;
+        }
+      }
+
+      // Quartier-Name laden
+      if (quarterId) {
+        const { data: q } = await supabase
+          .from("quarters")
+          .select("name, slug")
+          .eq("id", quarterId)
+          .maybeSingle();
+        if (q) {
+          setQuarterName(q.name);
+          // Nur Bad Saeckingen hat eine SVG-Karte (Pilotquartier)
+          setQuarterHasSvgMap(q.slug === "bad-saeckingen" || q.slug === "pilotquartier");
+        }
+      }
+
+      // Haeuser laden — nur fuer das eigene Quartier (BUG-22 Fix)
+      const query = supabase
         .from("map_houses")
         .select("id, house_number, street_code, x, y, default_color")
         .order("street_code");
+      // Quarter-Filter falls vorhanden
+      if (quarterId) {
+        query.eq("quarter_id", quarterId);
+      }
+      const { data: mapData } = await query;
 
       const loadedHouses: MapHouseData[] =
         mapData && mapData.length > 0
@@ -87,12 +133,13 @@ export default function MapPositionPage() {
             Object.entries(STREET_CODE_TO_NAME) as [StreetCode, string][]
           ).find(([, name]) => name === hh.street_name)?.[0];
 
-          if (code) {
+          if (code && quarterId) {
             setHouseholdInfo({
               householdId: membership.household_id,
               streetName: hh.street_name,
               houseNumber: hh.house_number,
               streetCode: code,
+              quarterId,
             });
 
             // Suche bestehendes Haus auf der Karte
@@ -182,6 +229,7 @@ export default function MapPositionPage() {
           y: position.y,
           default_color: "green",
           household_id: householdInfo.householdId,
+          quarter_id: householdInfo.quarterId,
         },
         { onConflict: "id" },
       );
@@ -232,13 +280,25 @@ export default function MapPositionPage() {
         className="mb-4"
       />
 
+      {/* BUG-22: Hinweis wenn Quartier keine SVG-Karte hat */}
+      {!quarterHasSvgMap && (
+        <div className="rounded-lg border border-alert-amber/30 bg-alert-amber/5 p-4 text-center">
+          <p className="text-sm text-anthrazit">
+            Für Ihr Quartier{quarterName ? ` (${quarterName})` : ""} ist die Kartenansicht noch in Vorbereitung.
+          </p>
+          <p className="mt-1 text-xs text-muted-foreground">
+            Sie können Ihre Position aktuell über &quot;Profil bearbeiten&quot; → Adresse anpassen.
+          </p>
+        </div>
+      )}
+
       {!myHouse ? (
         <div className="rounded-lg border border-border bg-muted/30 p-6 text-center">
           <p className="mt-2 text-sm text-muted-foreground">
             Kein Haushalt zugeordnet. Bitte melden Sie sich zuerst an.
           </p>
         </div>
-      ) : (
+      ) : !quarterHasSvgMap ? null : (
         <>
           {/* Info */}
           <div className="mb-3 rounded-lg border border-quartier-green/20 bg-quartier-green/5 p-3">

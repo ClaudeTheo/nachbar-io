@@ -3,8 +3,10 @@
 // components/voice-assistant/SheetContent.tsx
 // Nachbar.io — Sheet-Inhalt fuer den Voice-Assistenten (per-state Rendering)
 
+import { useState } from "react";
 import {
   Mic,
+  Keyboard,
   Loader2,
   TriangleAlert,
   MessageCircle,
@@ -13,6 +15,7 @@ import {
   Volume2,
   VolumeX,
   ArrowRight,
+  Send,
 } from "lucide-react";
 import {
   SheetContent as ShadcnSheetContent,
@@ -57,6 +60,8 @@ interface VoiceSheetContentProps {
   onGoToCompanion: () => void;
   /** Handler: Sheet schliessen */
   onClose: () => void;
+  /** Handler: Text-Eingabe als Fallback absenden (BUG-07 iOS Fix) */
+  onTextSubmit?: (text: string) => void;
 }
 
 /** Sheet-Inhalt: Rendert je nach Zustand unterschiedliche UI-Elemente */
@@ -79,7 +84,11 @@ export function VoiceSheetContent({
   onNavigate,
   onGoToCompanion,
   onClose,
+  onTextSubmit,
 }: VoiceSheetContentProps) {
+  // Fallback-Texteingabe (BUG-07: iOS Safari SpeechRecognition freeze)
+  const [showTextInput, setShowTextInput] = useState(false);
+  const [textInputValue, setTextInputValue] = useState("");
   return (
     <ShadcnSheetContent
       side="bottom"
@@ -135,14 +144,78 @@ export function VoiceSheetContent({
       </SheetHeader>
 
       <div className="mt-4 space-y-4">
-        {/* IDLE: Push-to-Talk Button */}
+        {/* IDLE: Push-to-Talk Button + Fallback-Texteingabe (BUG-07) */}
         {sheetState === "idle" && !showContinueHint && (
-          <PushToTalkButton
-            sheetState={sheetState}
-            audioLevel={audioLevel}
-            onPushStart={onPushStart}
-            onPushEnd={onPushEnd}
-          />
+          <>
+            {!showTextInput ? (
+              <>
+                <PushToTalkButton
+                  sheetState={sheetState}
+                  audioLevel={audioLevel}
+                  onPushStart={onPushStart}
+                  onPushEnd={onPushEnd}
+                />
+                {/* Fallback: Stattdessen tippen */}
+                {onTextSubmit && (
+                  <button
+                    onClick={() => setShowTextInput(true)}
+                    className="w-full flex items-center justify-center gap-2 rounded-xl border border-gray-200 text-[#2D3142] font-medium text-sm transition-all hover:bg-gray-50 active:scale-95"
+                    style={{ minHeight: "44px", touchAction: "manipulation" }}
+                    data-testid="type-instead-btn"
+                  >
+                    <Keyboard className="h-4 w-4" />
+                    Stattdessen tippen
+                  </button>
+                )}
+              </>
+            ) : (
+              <div className="space-y-3">
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={textInputValue}
+                    onChange={(e) => setTextInputValue(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" && textInputValue.trim()) {
+                        onTextSubmit?.(textInputValue.trim());
+                        setTextInputValue("");
+                        setShowTextInput(false);
+                      }
+                    }}
+                    placeholder="Ihre Frage eingeben..."
+                    className="flex-1 rounded-lg border border-gray-300 px-3 py-2 text-base focus:outline-none focus:ring-2 focus:ring-[#4CAF87] focus:border-transparent"
+                    style={{ minHeight: "48px" }}
+                    autoFocus
+                  />
+                  <button
+                    onClick={() => {
+                      if (textInputValue.trim()) {
+                        onTextSubmit?.(textInputValue.trim());
+                        setTextInputValue("");
+                        setShowTextInput(false);
+                      }
+                    }}
+                    disabled={!textInputValue.trim()}
+                    className="rounded-lg bg-[#4CAF87] text-white px-4 disabled:opacity-50 transition-all active:scale-95"
+                    style={{ minHeight: "48px", touchAction: "manipulation" }}
+                  >
+                    <Send className="h-5 w-5" />
+                  </button>
+                </div>
+                <button
+                  onClick={() => {
+                    setShowTextInput(false);
+                    setTextInputValue("");
+                  }}
+                  className="w-full flex items-center justify-center gap-2 rounded-xl border border-gray-200 text-[#2D3142] font-medium text-sm transition-all hover:bg-gray-50 active:scale-95"
+                  style={{ minHeight: "40px", touchAction: "manipulation" }}
+                >
+                  <Mic className="h-4 w-4" />
+                  Zurück zum Sprechen
+                </button>
+              </div>
+            )}
+          </>
         )}
 
         {/* IDLE + MAX_EXCHANGES erreicht: Weiterplaudern-Hinweis */}
@@ -256,7 +329,7 @@ export function VoiceSheetContent({
           </>
         )}
 
-        {/* ERROR: Fehler + Nochmal versuchen + Schliessen */}
+        {/* ERROR: Fehler + Nochmal versuchen + Stattdessen tippen + Schliessen */}
         {sheetState === "error" && (
           <div className="flex flex-col gap-2">
             <button
@@ -268,6 +341,21 @@ export function VoiceSheetContent({
               <RotateCcw className="h-4 w-4" />
               Nochmal versuchen
             </button>
+            {onTextSubmit && (
+              <button
+                onClick={() => {
+                  onRetry();
+                  // Kurz warten bis idle-State, dann Texteingabe oeffnen
+                  setTimeout(() => setShowTextInput(true), 100);
+                }}
+                className="w-full flex items-center justify-center gap-2 rounded-xl border border-[#4CAF87] text-[#4CAF87] font-medium text-base transition-all hover:bg-[#4CAF87]/10 active:scale-95"
+                style={{ minHeight: "48px", touchAction: "manipulation" }}
+                data-testid="type-instead-error-btn"
+              >
+                <Keyboard className="h-4 w-4" />
+                Stattdessen tippen
+              </button>
+            )}
             <button
               onClick={onClose}
               className="w-full flex items-center justify-center rounded-xl border border-gray-200 text-[#2D3142] font-medium text-base transition-all hover:bg-gray-50 active:scale-95"

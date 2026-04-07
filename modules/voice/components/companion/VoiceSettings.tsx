@@ -92,6 +92,16 @@ export function VoiceSettings({ settings, onChange }: VoiceSettingsProps) {
       return
     }
 
+    // iOS Safari Audio Unlock (BUG-01):
+    // Audio-Element SYNCHRON im Button-Click-Handler erstellen und stummschalten.
+    // Dies "entsperrt" Audio fuer die gesamte Session, auch nach async Fetch.
+    const audio = new Audio()
+    audio.volume = 0
+    try { await audio.play() } catch { /* iOS braucht dies zum Unlock */ }
+    audio.pause()
+    audio.volume = 1
+    audioRef.current = audio
+
     setPreviewState('loading')
     abortRef.current = new AbortController()
 
@@ -112,14 +122,15 @@ export function VoiceSettings({ settings, onChange }: VoiceSettingsProps) {
 
       if (!res.ok) {
         setPreviewState('idle')
+        audioRef.current = null
         return
       }
 
       const blob = await res.blob()
       const url = URL.createObjectURL(blob)
 
-      const audio = new Audio(url)
-      audioRef.current = audio
+      // Dasselbe Audio-Element wiederverwenden (bereits durch iOS unlocked)
+      audio.src = url
 
       audio.onended = () => {
         setTimeout(() => URL.revokeObjectURL(url), 3000)
@@ -133,16 +144,12 @@ export function VoiceSettings({ settings, onChange }: VoiceSettingsProps) {
         audioRef.current = null
       }
 
-      await audio.play().catch((playErr) => {
-        // Safari/iOS blockiert audio.play() bei stummem Modus oder fehlender User-Geste
-        URL.revokeObjectURL(url)
-        audioRef.current = null
-        throw playErr
-      })
+      await audio.play()
       setPreviewState('playing')
     } catch (err) {
       // AbortError ignorieren (Nutzer hat abgebrochen)
       if (err instanceof DOMException && err.name === 'AbortError') return
+      audioRef.current = null
       setPreviewState('idle')
     }
   }, [settings.voice, settings.speed, settings.formality, previewState, stopPreview])

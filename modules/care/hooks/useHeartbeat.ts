@@ -1,30 +1,40 @@
 // lib/care/hooks/useHeartbeat.ts
 // Nachbar.io — Heartbeat-Hook: Sendet bei App-Oeffnung automatisch einen Heartbeat
 
-'use client';
+"use client";
 
-import { useEffect, useRef } from 'react';
-import { createClient } from '@/lib/supabase/client';
+import { useEffect } from "react";
+import { createClient } from "@/lib/supabase/client";
 import { getCachedUser } from "@/lib/supabase/cached-auth";
 
 // Heartbeat maximal alle 60 Sekunden senden (Rate-Limit Client-seitig)
 const HEARTBEAT_INTERVAL_MS = 60_000;
 
+// BUG-10 Fix: Globaler Zeitstempel statt useRef — bleibt bei Navigation erhalten
+let lastSentGlobal = 0;
+
+/** Nur fuer Tests: Globalen Zeitstempel zuruecksetzen */
+export function _resetHeartbeatForTesting() {
+  lastSentGlobal = 0;
+}
+
 function getDeviceType(): string {
-  if (typeof window === 'undefined') return 'desktop';
+  if (typeof window === "undefined") return "desktop";
   const ua = navigator.userAgent.toLowerCase();
-  if (ua.includes('kiosk') || ua.includes('tauri')) return 'kiosk';
-  if (ua.includes('tablet') || ua.includes('ipad')) return 'tablet';
-  if (ua.includes('mobile') || ua.includes('iphone') || ua.includes('android')) return 'mobile';
-  return 'desktop';
+  if (ua.includes("kiosk") || ua.includes("tauri")) return "kiosk";
+  if (ua.includes("tablet") || ua.includes("ipad")) return "tablet";
+  if (ua.includes("mobile") || ua.includes("iphone") || ua.includes("android"))
+    return "mobile";
+  return "desktop";
 }
 
 export function useHeartbeat() {
-  const lastSent = useRef<number>(0);
-
   useEffect(() => {
     const now = Date.now();
-    if (now - lastSent.current < HEARTBEAT_INTERVAL_MS) return;
+    if (now - lastSentGlobal < HEARTBEAT_INTERVAL_MS) return;
+
+    // Lock SOFORT setzen — verhindert Race bei parallelen Mounts (Codex-Review)
+    lastSentGlobal = now;
 
     const sendHeartbeat = async () => {
       try {
@@ -32,16 +42,14 @@ export function useHeartbeat() {
         const { user } = await getCachedUser(supabase);
         if (!user) return;
 
-        await fetch('/api/heartbeat', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+        await fetch("/api/heartbeat", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            source: 'app',
+            source: "app",
             device_type: getDeviceType(),
           }),
         });
-
-        lastSent.current = Date.now();
       } catch {
         // Heartbeat-Fehler darf App nicht blockieren
       }

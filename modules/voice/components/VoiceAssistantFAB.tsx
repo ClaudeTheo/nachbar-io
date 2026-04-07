@@ -69,6 +69,8 @@ export function VoiceAssistantFAB() {
   );
   const [exchangeCount, setExchangeCount] = useState(0);
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  // iOS Audio Unlock: Audio-Element das bei User-Geste erstellt wurde (BUG-01)
+  const unlockedAudioRef = useRef<HTMLAudioElement | null>(null);
   // Push-to-Talk: Startzeitpunkt fuer Mindestdauer-Pruefung
   const recordingStartTimeRef = useRef<number>(0);
   // Streaming Tool-Ergebnisse und Bestaetigungen sammeln
@@ -80,6 +82,7 @@ export function VoiceAssistantFAB() {
     streamingText,
     isStreaming: isStreamingChat,
     sendStreaming,
+    reset: resetStreaming,
   } = useStreamingChat({
     onToolResult: (event) => {
       const result = event.result as CompanionToolResult;
@@ -148,11 +151,15 @@ export function VoiceAssistantFAB() {
         }
 
         // Nachrichten-Array aufbauen mit neuer User-Nachricht
-        const newMessages: ChatMessage[] = [
-          ...sheetMessages,
-          { role: "user" as const, content: text },
-        ];
+        const userMessage: ChatMessage = {
+          role: "user" as const,
+          content: text,
+        };
+        const newMessages: ChatMessage[] = [...sheetMessages, userMessage];
         const limitedMessages = newMessages.slice(-(MAX_EXCHANGES * 2));
+
+        // User-Nachricht in State persistieren (Codex-Review: Multi-Turn war kaputt)
+        setSheetMessages(newMessages);
 
         // Streaming-Request
         setSheetState("speaking");
@@ -212,7 +219,10 @@ export function VoiceAssistantFAB() {
           if (ttsRes.ok) {
             const audioBlob = await ttsRes.blob();
             const audioUrl = URL.createObjectURL(audioBlob);
-            const audio = new Audio(audioUrl);
+            // iOS: Unlocked Audio-Element wiederverwenden (BUG-01)
+            const audio = unlockedAudioRef.current ?? new Audio();
+            unlockedAudioRef.current = null; // Einmal verwenden
+            audio.src = audioUrl;
             audioRef.current = audio;
 
             audio.onended = () => {
@@ -250,6 +260,7 @@ export function VoiceAssistantFAB() {
 
     const callbacks: SpeechEngineCallbacks = {
       onTranscript: (text: string) => {
+        setTranscript(text); // Codex-Review: transcript war nie gesetzt im Voice-Pfad
         sendToCompanion(text);
       },
       onAudioLevel: (level: number) => {
@@ -285,17 +296,35 @@ export function VoiceAssistantFAB() {
     }
   }, [sheetState]);
 
+  // iOS Audio Unlock — muss synchron in User-Geste passieren (BUG-01)
+  const unlockAudio = useCallback(() => {
+    if (unlockedAudioRef.current) return;
+    try {
+      const audio = new Audio();
+      audio.volume = 0;
+      // play() Promise wird absichtlich nicht awaited — synchroner Unlock-Versuch
+      const playPromise = audio.play();
+      if (playPromise) playPromise.catch(() => {});
+      audio.pause();
+      audio.volume = 1;
+      unlockedAudioRef.current = audio;
+    } catch {
+      // JSDOM/Test-Umgebung: Audio nicht verfuegbar
+    }
+  }, []);
+
   // Push-to-Talk: Druecken startet Aufnahme
   const handlePushStart = useCallback(
     (e: React.MouseEvent | React.TouchEvent) => {
       if ("touches" in e) e.preventDefault();
+      unlockAudio(); // iOS: Audio fuer spaetere TTS-Wiedergabe freischalten
       recordingStartTimeRef.current = Date.now();
       startRecording();
       if (typeof navigator !== "undefined" && navigator.vibrate) {
         navigator.vibrate(50);
       }
     },
-    [startRecording],
+    [startRecording, unlockAudio],
   );
 
   // Push-to-Talk: Loslassen stoppt Aufnahme (mit Mindestdauer-Pruefung)
@@ -336,8 +365,19 @@ export function VoiceAssistantFAB() {
     [sendToCompanion, transcript],
   );
 
+  // Fallback: Texteingabe statt Sprache (BUG-07 iOS Fix)
+  const handleTextSubmit = useCallback(
+    (text: string) => {
+      setTranscript(text);
+      // User-Message wird von sendToCompanion persistiert (Fix #1)
+      sendToCompanion(text);
+    },
+    [sendToCompanion],
+  );
+
   // "Nochmal sprechen": Zurueck zum idle-State (Konversation bleibt erhalten)
   const handleRetry = useCallback(() => {
+    resetStreaming(); // Laufende Streams abbrechen (Codex-Review: Ghost-Responses)
     if (audioRef.current) {
       audioRef.current.pause();
       audioRef.current = null;
@@ -347,7 +387,7 @@ export function VoiceAssistantFAB() {
     setToolResults([]);
     setConfirmations([]);
     setSheetState("idle");
-  }, []);
+  }, [resetStreaming]);
 
   // Navigation zu einem Tool-Ergebnis mit Route
   const handleNavigate = useCallback(
@@ -360,6 +400,7 @@ export function VoiceAssistantFAB() {
 
   // Sheet schliessen
   const handleClose = useCallback(() => {
+    resetStreaming(); // Laufende Streams abbrechen (Codex-Review: Ghost-Responses)
     engineRef.current?.stopListening();
     if (audioRef.current) {
       audioRef.current.pause();
@@ -373,7 +414,7 @@ export function VoiceAssistantFAB() {
     setSheetMessages([]);
     setExchangeCount(0);
     setAudioLevel(0);
-  }, []);
+  }, [resetStreaming]);
 
   // Nichts rendern wenn nicht gemountet oder keine Engine verfuegbar
   if (!mounted || !engineRef.current) {
@@ -412,6 +453,7 @@ export function VoiceAssistantFAB() {
           onNavigate={handleNavigate}
           onGoToCompanion={() => router.push("/companion")}
           onClose={handleClose}
+          onTextSubmit={handleTextSubmit}
         />
       </Sheet>
     </>

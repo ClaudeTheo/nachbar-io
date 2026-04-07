@@ -345,6 +345,143 @@ describe("NativeSpeechEngine", () => {
     expect(callbacks.onStateChange).toHaveBeenCalledWith("idle");
   });
 
+  // --- BUG-07 Regressions-Tests: Timeout-Schutz gegen iOS Safari Freeze ---
+
+  it("feuert Timeout nach 10s ohne Ergebnis und ruft abort()", async () => {
+    vi.useFakeTimers();
+    const { NativeSpeechEngine } =
+      await import("@/modules/voice/engines/native-speech-engine");
+    const engine = new NativeSpeechEngine();
+
+    const callbacks = {
+      onTranscript: vi.fn(),
+      onAudioLevel: vi.fn(),
+      onStateChange: vi.fn(),
+      onError: vi.fn(),
+    };
+
+    engine.startListening(callbacks);
+    callbacks.onStateChange.mockClear();
+    callbacks.onError.mockClear();
+
+    // 10 Sekunden vergehen ohne Ergebnis
+    vi.advanceTimersByTime(10_000);
+
+    expect(mockRecognitionInstance!.abort).toHaveBeenCalled();
+    expect(callbacks.onError).toHaveBeenCalledWith(
+      expect.stringContaining("Keine Sprache erkannt"),
+    );
+    expect(callbacks.onAudioLevel).toHaveBeenCalledWith(0);
+    expect(callbacks.onStateChange).toHaveBeenCalledWith("idle");
+
+    vi.useRealTimers();
+  });
+
+  it("setzt Timeout bei Interim-Ergebnis zurueck", async () => {
+    vi.useFakeTimers();
+    const { NativeSpeechEngine } =
+      await import("@/modules/voice/engines/native-speech-engine");
+    const engine = new NativeSpeechEngine();
+
+    const callbacks = {
+      onTranscript: vi.fn(),
+      onAudioLevel: vi.fn(),
+      onStateChange: vi.fn(),
+      onError: vi.fn(),
+    };
+
+    engine.startListening(callbacks);
+
+    // 8 Sekunden vergehen
+    vi.advanceTimersByTime(8_000);
+
+    // Interim-Ergebnis kommt — Timeout sollte zurueckgesetzt werden
+    const interimEvent = {
+      results: [{
+        isFinal: false,
+        length: 1,
+        0: { transcript: "Hallo", confidence: 0.5 },
+        item(i: number) { return this[i as unknown as keyof typeof this]; },
+      }],
+      resultIndex: 0,
+    };
+    mockRecognitionInstance!.onresult?.(interimEvent);
+
+    // Weitere 5 Sekunden (insgesamt 13s seit Start, aber nur 5s seit Reset)
+    vi.advanceTimersByTime(5_000);
+
+    // Kein Timeout — weil Reset nach Interim
+    expect(callbacks.onError).not.toHaveBeenCalled();
+
+    // Noch 5 Sekunden → jetzt Timeout (10s seit letztem Interim)
+    vi.advanceTimersByTime(5_000);
+    expect(callbacks.onError).toHaveBeenCalled();
+
+    vi.useRealTimers();
+  });
+
+  it("loescht Timeout bei finalem Ergebnis", async () => {
+    vi.useFakeTimers();
+    const { NativeSpeechEngine } =
+      await import("@/modules/voice/engines/native-speech-engine");
+    const engine = new NativeSpeechEngine();
+
+    const callbacks = {
+      onTranscript: vi.fn(),
+      onAudioLevel: vi.fn(),
+      onStateChange: vi.fn(),
+      onError: vi.fn(),
+    };
+
+    engine.startListening(callbacks);
+
+    // Finales Ergebnis kommt nach 3 Sekunden
+    vi.advanceTimersByTime(3_000);
+    const finalEvent = {
+      results: [{
+        isFinal: true,
+        length: 1,
+        0: { transcript: "Hilfe", confidence: 0.95 },
+        item(i: number) { return this[i as unknown as keyof typeof this]; },
+      }],
+      resultIndex: 0,
+    };
+    mockRecognitionInstance!.onresult?.(finalEvent);
+
+    expect(callbacks.onTranscript).toHaveBeenCalledWith("Hilfe");
+
+    // 10 weitere Sekunden → kein Timeout weil clearTimeout bei isFinal
+    vi.advanceTimersByTime(10_000);
+    expect(callbacks.onError).not.toHaveBeenCalled();
+
+    vi.useRealTimers();
+  });
+
+  it("loescht Timeout bei stopListening()", async () => {
+    vi.useFakeTimers();
+    const { NativeSpeechEngine } =
+      await import("@/modules/voice/engines/native-speech-engine");
+    const engine = new NativeSpeechEngine();
+
+    const callbacks = {
+      onTranscript: vi.fn(),
+      onAudioLevel: vi.fn(),
+      onStateChange: vi.fn(),
+      onError: vi.fn(),
+    };
+
+    engine.startListening(callbacks);
+    callbacks.onError.mockClear();
+
+    engine.stopListening();
+
+    // 10 Sekunden vergehen → kein Timeout weil gestoppt
+    vi.advanceTimersByTime(10_000);
+    expect(callbacks.onError).not.toHaveBeenCalled();
+
+    vi.useRealTimers();
+  });
+
   it("ruft onError wenn SpeechRecognition nicht verfuegbar", async () => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     delete (globalThis as any).SpeechRecognition;

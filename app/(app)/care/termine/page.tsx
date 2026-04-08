@@ -2,7 +2,7 @@
 // Nachbar.io — Meine Termine (kommende + vergangene)
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { Suspense, useState, useEffect, useCallback } from "react";
 import { useSearchParams } from "next/navigation";
 import { Calendar, Building2, Phone, Video, X } from "lucide-react";
 import { PageHeader } from "@/components/ui/page-header";
@@ -51,6 +51,20 @@ const TYPE_CONFIG: Record<
 };
 
 export default function MeineTerminePage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="p-4">
+          <div className="h-8 bg-gray-200 rounded animate-pulse" />
+        </div>
+      }
+    >
+      <MeineTermineContent />
+    </Suspense>
+  );
+}
+
+function MeineTermineContent() {
   const searchParams = useSearchParams();
   const showSuccess = searchParams.get("success") === "true";
 

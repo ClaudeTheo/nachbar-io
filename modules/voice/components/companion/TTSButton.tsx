@@ -130,6 +130,7 @@ export function TTSButton({ text }: TTSButtonProps) {
       const audioManager = getIOSAudioManager();
       if (audioManager.canPlay()) {
         try {
+          setLoading(false); // Loading AUS bevor Audio startet — sonst bleibt Button disabled!
           setPlaying(true);
           await audioManager.playBlob(blob);
           setPlaying(false);
@@ -161,6 +162,7 @@ export function TTSButton({ text }: TTSButtonProps) {
         toast.error("Wiedergabefehler.");
       };
 
+      setLoading(false); // Loading AUS bevor Audio startet — sonst bleibt Button disabled!
       await audio.play().catch(() => {
         toast.error(
           "Wiedergabe blockiert — bitte prüfen Sie den Lautstärke-/Stummschalter.",
@@ -171,7 +173,6 @@ export function TTSButton({ text }: TTSButtonProps) {
       setPlaying(true);
     } catch {
       toast.error("Sprachausgabe nicht verfügbar.");
-    } finally {
       setLoading(false);
     }
   }, [text, playing]);

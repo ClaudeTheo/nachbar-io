@@ -168,11 +168,15 @@ export function useCompanionChat(): UseCompanionChatReturn {
 
   const prevStreamingRef = useRef(false);
   useEffect(() => {
-    if (prevStreamingRef.current && !isStreaming && streamingText) {
+    // Auch ohne Text eine Message erstellen wenn Confirmations/ToolResults vorhanden
+    const hasContent = streamingText
+      || streamingToolResults.current.length > 0
+      || streamingConfirmations.current.length > 0;
+    if (prevStreamingRef.current && !isStreaming && hasContent) {
       const assistantMsg: ChatMessage = {
         id: generateId(),
         role: "assistant",
-        content: streamingText,
+        content: streamingText || "",
         toolResults:
           streamingToolResults.current.length > 0
             ? [...streamingToolResults.current]

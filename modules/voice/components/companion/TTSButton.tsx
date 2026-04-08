@@ -144,17 +144,19 @@ export function TTSButton({ text }: TTSButtonProps) {
   return (
     <Button
       data-testid="tts-button"
-      variant="ghost"
-      size="sm"
+      variant="outline"
       onClick={handlePlay}
       disabled={loading || !text}
-      className="mt-1 h-8 gap-1 text-xs text-muted-foreground hover:text-quartier-green"
-      aria-label="Vorlesen"
+      className="mt-2 w-full gap-2 rounded-xl border-[#4CAF87] text-[#4CAF87] font-medium text-base transition-all hover:bg-[#4CAF87]/10 active:scale-95"
+      style={{ minHeight: "48px", touchAction: "manipulation" }}
+      aria-label={playing ? "Stoppen" : "Vorlesen"}
     >
       {loading ? (
-        <Loader2 className="h-3.5 w-3.5 animate-spin" />
+        <Loader2 className="h-5 w-5 animate-spin" />
+      ) : playing ? (
+        <Square className="h-5 w-5" />
       ) : (
-        <Volume2 className="h-3.5 w-3.5" />
+        <Volume2 className="h-5 w-5" />
       )}
       {playing ? 'Stoppen' : 'Vorlesen'}
     </Button>

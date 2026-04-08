@@ -1,58 +1,62 @@
 // app/api/doctors/[id]/route.ts
-// Nachbar.io — Einzelnes Arzt-Profil lesen + aktualisieren (Thin Wrapper)
+// Nachbar.io — Einzelnes Arzt-Profil abrufen (GET)
 
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import { handleServiceError } from "@/lib/services/service-error";
-import {
-  getDoctorProfile,
-  updateDoctorProfile,
-} from "@/lib/services/doctors.service";
+import { calculateDistance } from "@/lib/geo/haversine";
 
-// GET /api/doctors/[id] — Öffentliches Arzt-Profil abrufen
+export const dynamic = "force-dynamic";
+
+// Quartier-Zentrum Bad Saeckingen
+const CENTER_LAT = 47.5535;
+const CENTER_LNG = 7.964;
+
+/**
+ * GET /api/doctors/[id]
+ * Einzelnes Arzt-Profil laden (user_id = id).
+ * Gibt 404 zurueck wenn nicht gefunden oder nicht sichtbar.
+ */
 export async function GET(
-  request: NextRequest,
+  _request: Request,
   { params }: { params: Promise<{ id: string }> },
 ) {
-  try {
-    const { id } = await params;
-    const supabase = await createClient();
-    const data = await getDoctorProfile(supabase, id);
-    return NextResponse.json(data);
-  } catch (error) {
-    return handleServiceError(error, request, "/api/doctors/[id]");
+  const { id } = await params;
+  const supabase = await createClient();
+
+  const { data, error } = await supabase
+    .from("doctor_profiles")
+    .select(
+      "user_id, specialization, bio, visible, accepts_new_patients, video_consultation, quarter_ids, latitude, longitude, address, phone, users(display_name, avatar_url)",
+    )
+    .eq("user_id", id)
+    .eq("visible", true)
+    .maybeSingle();
+
+  if (error) {
+    console.error("[doctors] Fehler beim Laden:", error);
+    return NextResponse.json(
+      { error: "Arzt-Profil konnte nicht geladen werden" },
+      { status: 500 },
+    );
   }
-}
 
-// PATCH /api/doctors/[id] — Eigenes Arzt-Profil aktualisieren
-export async function PATCH(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> },
-) {
-  try {
-    const { id } = await params;
-    const supabase = await createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-
-    if (!user) {
-      return NextResponse.json(
-        { error: "Nicht authentifiziert" },
-        { status: 401 },
-      );
-    }
-
-    const body = await request.json();
-    const profile = await updateDoctorProfile(supabase, user.id, id, body);
-    return NextResponse.json(profile);
-  } catch (error) {
-    if (error instanceof SyntaxError) {
-      return NextResponse.json(
-        { error: "Ungültiges Anfrage-Format" },
-        { status: 400 },
-      );
-    }
-    return handleServiceError(error, request, "/api/doctors/[id]");
+  if (!data) {
+    return NextResponse.json(
+      { error: "Arzt nicht gefunden" },
+      { status: 404 },
+    );
   }
+
+  // Distanz berechnen (nur wenn Koordinaten vorhanden)
+  let distance_km: number | null = null;
+  if (data.latitude != null && data.longitude != null) {
+    distance_km = calculateDistance(
+      CENTER_LAT,
+      CENTER_LNG,
+      data.latitude as number,
+      data.longitude as number,
+    );
+  }
+
+  return NextResponse.json({ ...data, distance_km });
 }

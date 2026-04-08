@@ -1,96 +1,57 @@
 // app/api/appointments/[id]/route.ts
-// Nachbar.io — Einzelnen Termin lesen, aktualisieren, absagen (Thin Wrapper)
+// Nachbar.io — Termin absagen (DELETE)
 
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import { handleServiceError } from "@/lib/services/service-error";
-import {
-  getAppointment,
-  updateAppointment,
-  cancelAppointment,
-} from "@/lib/services/appointments.service";
 
-// GET /api/appointments/[id] — Einzelnen Termin abrufen
-export async function GET(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> },
-) {
-  try {
-    const { id } = await params;
-    const supabase = await createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+export const dynamic = "force-dynamic";
 
-    if (!user) {
-      return NextResponse.json(
-        { error: "Nicht authentifiziert" },
-        { status: 401 },
-      );
-    }
-
-    const data = await getAppointment(supabase, user.id, id);
-    return NextResponse.json(data);
-  } catch (error) {
-    return handleServiceError(error, request, "/api/appointments/[id]");
-  }
-}
-
-// PATCH /api/appointments/[id] — Status aktualisieren, Notizen ändern
-export async function PATCH(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> },
-) {
-  try {
-    const { id } = await params;
-    const supabase = await createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-
-    if (!user) {
-      return NextResponse.json(
-        { error: "Nicht authentifiziert" },
-        { status: 401 },
-      );
-    }
-
-    const body = await request.json();
-    const appointment = await updateAppointment(supabase, user.id, id, body);
-    return NextResponse.json(appointment);
-  } catch (error) {
-    if (error instanceof SyntaxError) {
-      return NextResponse.json(
-        { error: "Ungültiges Anfrage-Format" },
-        { status: 400 },
-      );
-    }
-    return handleServiceError(error, request, "/api/appointments/[id]");
-  }
-}
-
-// DELETE /api/appointments/[id] — Termin absagen (soft delete)
+/**
+ * DELETE /api/appointments/[id]
+ * Eigenen Termin absagen: Setzt status auf 'cancelled' und loescht patient_id.
+ * Nur fuer den eigenen Termin (patient_id = user.id).
+ */
 export async function DELETE(
-  request: NextRequest,
+  _request: Request,
   { params }: { params: Promise<{ id: string }> },
 ) {
-  try {
-    const { id } = await params;
-    const supabase = await createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+  const { id } = await params;
+  const supabase = await createClient();
 
-    if (!user) {
+  // Auth pruefen
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) {
+    return NextResponse.json(
+      { error: "Nicht authentifiziert", code: "UNAUTHORIZED" },
+      { status: 401 },
+    );
+  }
+
+  // Nur eigene Termine absagen (patient_id = user.id)
+  const { data, error } = await supabase
+    .from("appointments")
+    .update({ status: "cancelled", patient_id: null })
+    .eq("id", id)
+    .eq("patient_id", user.id)
+    .select()
+    .single();
+
+  if (error) {
+    console.error("[appointments] Fehler beim Absagen:", error);
+    // PGRST116 = kein Ergebnis → Termin nicht gefunden oder nicht eigener
+    if (error.code === "PGRST116") {
       return NextResponse.json(
-        { error: "Nicht authentifiziert" },
-        { status: 401 },
+        { error: "Termin nicht gefunden oder keine Berechtigung" },
+        { status: 404 },
       );
     }
-
-    const data = await cancelAppointment(supabase, user.id, id);
-    return NextResponse.json(data);
-  } catch (error) {
-    return handleServiceError(error, request, "/api/appointments/[id]");
+    return NextResponse.json(
+      { error: "Termin konnte nicht abgesagt werden" },
+      { status: 500 },
+    );
   }
+
+  return NextResponse.json(data);
 }

@@ -38,7 +38,7 @@ export function useVoicePreferences() {
 
         if (data?.voice_preferences) {
           const prefs = data.voice_preferences as Record<string, unknown>;
-          setPreferences({
+          const resolved: VoicePreferences = {
             // Migration: "onyx" → "ash" (wärmere Stimme, Session 59)
             voice: (prefs.voice === "ash" || prefs.voice === "onyx"
               ? "ash"
@@ -47,7 +47,12 @@ export function useVoicePreferences() {
             formality: (prefs.formality === "informal"
               ? "informal"
               : "formal") as VoicePreferences["formality"],
-          });
+          };
+          setPreferences(resolved);
+          // Sync nach localStorage fuer TTSButton (liest ohne Supabase-Call)
+          try {
+            localStorage.setItem("quartier-voice-prefs-synced", JSON.stringify(resolved));
+          } catch { /* localStorage voll */ }
         }
       } catch (err) {
         console.error("[useVoicePreferences] Laden fehlgeschlagen:", err);
@@ -62,6 +67,11 @@ export function useVoicePreferences() {
   const updatePreferences = useCallback(
     async (newPrefs: VoicePreferences) => {
       setPreferences(newPrefs);
+      // Sync nach localStorage fuer TTSButton
+      try {
+        localStorage.setItem("quartier-voice-prefs-synced", JSON.stringify(newPrefs));
+      } catch { /* localStorage voll */ }
+
       if (!user) return;
 
       try {

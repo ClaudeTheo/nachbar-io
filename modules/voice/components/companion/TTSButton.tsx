@@ -1,20 +1,14 @@
 // components/companion/TTSButton.tsx
-// Vorlesen-Button mit Stimm-Einstellungen (Geschlecht + Tempo)
-// Session 59: iOS AudioManager + Voice Preferences
+// Vorlesen-Button — nutzt Stimm-Einstellungen aus dem Profil (Supabase)
+// Session 59: iOS AudioManager, Profil-basierte Preferences
 
 "use client";
 
 import { useState, useRef, useCallback, useEffect } from "react";
-import { Volume2, Loader2, Square, Lock, Gauge, User } from "lucide-react";
+import { Volume2, Loader2, Square, Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { getIOSAudioManager } from "../../services/ios-audio-manager";
-import {
-  useVoicePreferences,
-  SPEED_LABELS,
-  GENDER_LABELS,
-  type VoiceSpeed,
-} from "../../hooks/useVoicePreferences";
 
 interface TTSButtonProps {
   text: string;
@@ -23,18 +17,34 @@ interface TTSButtonProps {
 // Pilot-Modus: TTS fuer alle Nutzer freigeschalten
 const PILOT_MODE = process.env.NEXT_PUBLIC_PILOT_MODE === "true";
 
+/**
+ * Liest Stimm-Einstellungen aus dem Profil (Supabase, gespeichert in users.voice_preferences).
+ * Fallback auf localStorage wenn Supabase nicht geladen.
+ */
+function getVoiceSettings(): { voice: string; speed: number } {
+  if (typeof window === "undefined") return { voice: "nova", speed: 1.0 };
+
+  try {
+    // Primaer: Supabase voice_preferences (wird vom useVoicePreferences Hook geladen)
+    // Diese werden als data-Attribute am Body gespeichert vom Profil-Hook
+    const stored = localStorage.getItem("quartier-voice-prefs-synced");
+    if (stored) {
+      const parsed = JSON.parse(stored);
+      return {
+        voice: parsed.voice || "nova",
+        speed: typeof parsed.speed === "number" ? parsed.speed : 1.0,
+      };
+    }
+  } catch {
+    // Fallback
+  }
+  return { voice: "nova", speed: 1.0 };
+}
+
 export function TTSButton({ text }: TTSButtonProps) {
   const [loading, setLoading] = useState(false);
   const [playing, setPlaying] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
-  const {
-    gender,
-    speed,
-    voiceId,
-    speedValue,
-    toggleGender,
-    cycleSpeed,
-  } = useVoicePreferences();
 
   const isTtsAvailable = PILOT_MODE || true;
 
@@ -62,13 +72,16 @@ export function TTSButton({ text }: TTSButtonProps) {
 
     setLoading(true);
     try {
+      // Stimm-Einstellungen aus Profil lesen
+      const { voice, speed } = getVoiceSettings();
+
       const res = await fetch("/api/voice/tts", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           text: text.slice(0, 1000),
-          voice: voiceId,
-          speed: speedValue,
+          voice,
+          speed,
         }),
       });
 
@@ -126,7 +139,7 @@ export function TTSButton({ text }: TTSButtonProps) {
     } finally {
       setLoading(false);
     }
-  }, [text, playing, voiceId, speedValue]);
+  }, [text, playing]);
 
   if (!isTtsAvailable) {
     return (
@@ -145,48 +158,23 @@ export function TTSButton({ text }: TTSButtonProps) {
   }
 
   return (
-    <div className="mt-2 space-y-2">
-      {/* Vorlesen-Button */}
-      <Button
-        data-testid="tts-button"
-        variant="outline"
-        onClick={handlePlay}
-        disabled={loading || !text}
-        className="w-full gap-2 rounded-xl border-[#4CAF87] text-[#4CAF87] font-medium text-base transition-all hover:bg-[#4CAF87]/10 active:scale-95"
-        style={{ minHeight: "48px", touchAction: "manipulation" }}
-        aria-label={playing ? "Stoppen" : "Vorlesen"}
-      >
-        {loading ? (
-          <Loader2 className="h-5 w-5 animate-spin" />
-        ) : playing ? (
-          <Square className="h-5 w-5" />
-        ) : (
-          <Volume2 className="h-5 w-5" />
-        )}
-        {playing ? "Stoppen" : "Vorlesen"}
-      </Button>
-
-      {/* Stimm-Einstellungen: Geschlecht + Tempo */}
-      <div className="flex gap-2">
-        <button
-          onClick={toggleGender}
-          className="flex-1 flex items-center justify-center gap-1.5 rounded-lg border border-gray-200 px-3 py-2 text-sm text-[#2D3142] transition-all hover:bg-gray-50 active:scale-95"
-          style={{ minHeight: "40px", touchAction: "manipulation" }}
-          aria-label={`Stimme: ${GENDER_LABELS[gender]}`}
-        >
-          <User className="h-4 w-4" />
-          {GENDER_LABELS[gender]}
-        </button>
-        <button
-          onClick={cycleSpeed}
-          className="flex-1 flex items-center justify-center gap-1.5 rounded-lg border border-gray-200 px-3 py-2 text-sm text-[#2D3142] transition-all hover:bg-gray-50 active:scale-95"
-          style={{ minHeight: "40px", touchAction: "manipulation" }}
-          aria-label={`Tempo: ${SPEED_LABELS[speed as VoiceSpeed]}`}
-        >
-          <Gauge className="h-4 w-4" />
-          {SPEED_LABELS[speed as VoiceSpeed]}
-        </button>
-      </div>
-    </div>
+    <Button
+      data-testid="tts-button"
+      variant="outline"
+      onClick={handlePlay}
+      disabled={loading || !text}
+      className="mt-2 w-full gap-2 rounded-xl border-[#4CAF87] text-[#4CAF87] font-medium text-base transition-all hover:bg-[#4CAF87]/10 active:scale-95"
+      style={{ minHeight: "48px", touchAction: "manipulation" }}
+      aria-label={playing ? "Stoppen" : "Vorlesen"}
+    >
+      {loading ? (
+        <Loader2 className="h-5 w-5 animate-spin" />
+      ) : playing ? (
+        <Square className="h-5 w-5" />
+      ) : (
+        <Volume2 className="h-5 w-5" />
+      )}
+      {playing ? "Stoppen" : "Vorlesen"}
+    </Button>
   );
 }

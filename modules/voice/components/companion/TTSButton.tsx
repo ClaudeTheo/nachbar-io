@@ -1,43 +1,44 @@
 // components/companion/TTSButton.tsx
-// Vorlesen-Button — nur für Plus/Pro Nutzer (Pilot: alle freigeschalten)
-// Session 59: iOS Audio-Manager Integration fuer zuverlaessige Wiedergabe
+// Vorlesen-Button mit Stimm-Einstellungen (Geschlecht + Tempo)
+// Session 59: iOS AudioManager + Voice Preferences
 
 "use client";
 
 import { useState, useRef, useCallback, useEffect } from "react";
-import { Volume2, Loader2, Square, Lock } from "lucide-react";
+import { Volume2, Loader2, Square, Lock, Gauge, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { getIOSAudioManager } from "../../services/ios-audio-manager";
+import {
+  useVoicePreferences,
+  SPEED_LABELS,
+  GENDER_LABELS,
+  type VoiceSpeed,
+} from "../../hooks/useVoicePreferences";
 
 interface TTSButtonProps {
   text: string;
 }
 
-// Pilot-Modus: TTS für alle Nutzer freigeschalten
+// Pilot-Modus: TTS fuer alle Nutzer freigeschalten
 const PILOT_MODE = process.env.NEXT_PUBLIC_PILOT_MODE === "true";
 
-/**
- * Spricht den übergebenen Text via OpenAI TTS vor.
- * Feature-Gate: In der Pilot-Phase ist TTS für alle Nutzer verfügbar.
- * Nach Pilot: Nur Plus/Pro Nutzer (useSubscription-Check).
- *
- * Nutzt den iOS Audio-Manager fuer zuverlaessige Wiedergabe auf iOS Safari.
- * Fallback auf HTMLAudioElement wenn AudioContext nicht verfuegbar (Desktop).
- *
- * TODO: Feature-Gate nach Pilot-Phase — useSubscription() einbinden
- * und Free-Nutzer mit Upgrade-Hinweis blockieren.
- */
 export function TTSButton({ text }: TTSButtonProps) {
   const [loading, setLoading] = useState(false);
   const [playing, setPlaying] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const {
+    gender,
+    speed,
+    voiceId,
+    speedValue,
+    toggleGender,
+    cycleSpeed,
+  } = useVoicePreferences();
 
-  // Feature-Gate: Im Pilot-Modus ist TTS für alle freigeschaltet.
-  // Nach Pilot: useSubscription() prüfen (Plus/Pro erforderlich).
-  const isTtsAvailable = PILOT_MODE || true; // TODO: nach Pilot → useSubscription().plan !== 'free'
+  const isTtsAvailable = PILOT_MODE || true;
 
-  // Cleanup: Audio stoppen wenn Komponente unmountet (z.B. Sheet schliesst)
+  // Cleanup: Audio stoppen wenn Komponente unmountet
   useEffect(() => {
     return () => {
       if (audioRef.current) {
@@ -52,7 +53,6 @@ export function TTSButton({ text }: TTSButtonProps) {
   }, []);
 
   const handlePlay = useCallback(async () => {
-    // Wenn bereits abspielend → stoppen
     if (playing && audioRef.current) {
       audioRef.current.pause();
       audioRef.current.currentTime = 0;
@@ -65,7 +65,11 @@ export function TTSButton({ text }: TTSButtonProps) {
       const res = await fetch("/api/voice/tts", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text: text.slice(0, 1000) }),
+        body: JSON.stringify({
+          text: text.slice(0, 1000),
+          voice: voiceId,
+          speed: speedValue,
+        }),
       });
 
       if (!res.ok) {
@@ -74,7 +78,7 @@ export function TTSButton({ text }: TTSButtonProps) {
 
       const blob = await res.blob();
 
-      // iOS Audio-Manager versuchen (zuverlaessiger auf iOS Safari)
+      // iOS Audio-Manager versuchen
       const audioManager = getIOSAudioManager();
       if (audioManager.canPlay()) {
         try {
@@ -83,15 +87,13 @@ export function TTSButton({ text }: TTSButtonProps) {
           setPlaying(false);
           return;
         } catch {
-          // AudioManager fehlgeschlagen — Fallback auf HTMLAudioElement
           setPlaying(false);
         }
       }
 
-      // Fallback: HTMLAudioElement (Desktop + wenn AudioManager fehlschlaegt)
+      // Fallback: HTMLAudioElement
       const url = URL.createObjectURL(blob);
 
-      // Vorheriges Audio aufräumen
       if (audioRef.current) {
         audioRef.current.pause();
         URL.revokeObjectURL(audioRef.current.src);
@@ -102,7 +104,6 @@ export function TTSButton({ text }: TTSButtonProps) {
 
       audio.onended = () => {
         setPlaying(false);
-        // Verzögertes Revoke — Safari kann bei sofortigem Revoke abbrechen
         setTimeout(() => URL.revokeObjectURL(url), 3000);
       };
 
@@ -113,7 +114,6 @@ export function TTSButton({ text }: TTSButtonProps) {
       };
 
       await audio.play().catch(() => {
-        // Safari/iOS blockiert audio.play() ohne User-Geste oder bei stummem Modus
         toast.error(
           "Wiedergabe blockiert — bitte prüfen Sie den Lautstärke-/Stummschalter.",
         );
@@ -126,9 +126,8 @@ export function TTSButton({ text }: TTSButtonProps) {
     } finally {
       setLoading(false);
     }
-  }, [text, playing]);
+  }, [text, playing, voiceId, speedValue]);
 
-  // Gesperrte Anzeige für Free-Nutzer (nach Pilot-Phase)
   if (!isTtsAvailable) {
     return (
       <Button
@@ -146,23 +145,48 @@ export function TTSButton({ text }: TTSButtonProps) {
   }
 
   return (
-    <Button
-      data-testid="tts-button"
-      variant="outline"
-      onClick={handlePlay}
-      disabled={loading || !text}
-      className="mt-2 w-full gap-2 rounded-xl border-[#4CAF87] text-[#4CAF87] font-medium text-base transition-all hover:bg-[#4CAF87]/10 active:scale-95"
-      style={{ minHeight: "48px", touchAction: "manipulation" }}
-      aria-label={playing ? "Stoppen" : "Vorlesen"}
-    >
-      {loading ? (
-        <Loader2 className="h-5 w-5 animate-spin" />
-      ) : playing ? (
-        <Square className="h-5 w-5" />
-      ) : (
-        <Volume2 className="h-5 w-5" />
-      )}
-      {playing ? "Stoppen" : "Vorlesen"}
-    </Button>
+    <div className="mt-2 space-y-2">
+      {/* Vorlesen-Button */}
+      <Button
+        data-testid="tts-button"
+        variant="outline"
+        onClick={handlePlay}
+        disabled={loading || !text}
+        className="w-full gap-2 rounded-xl border-[#4CAF87] text-[#4CAF87] font-medium text-base transition-all hover:bg-[#4CAF87]/10 active:scale-95"
+        style={{ minHeight: "48px", touchAction: "manipulation" }}
+        aria-label={playing ? "Stoppen" : "Vorlesen"}
+      >
+        {loading ? (
+          <Loader2 className="h-5 w-5 animate-spin" />
+        ) : playing ? (
+          <Square className="h-5 w-5" />
+        ) : (
+          <Volume2 className="h-5 w-5" />
+        )}
+        {playing ? "Stoppen" : "Vorlesen"}
+      </Button>
+
+      {/* Stimm-Einstellungen: Geschlecht + Tempo */}
+      <div className="flex gap-2">
+        <button
+          onClick={toggleGender}
+          className="flex-1 flex items-center justify-center gap-1.5 rounded-lg border border-gray-200 px-3 py-2 text-sm text-[#2D3142] transition-all hover:bg-gray-50 active:scale-95"
+          style={{ minHeight: "40px", touchAction: "manipulation" }}
+          aria-label={`Stimme: ${GENDER_LABELS[gender]}`}
+        >
+          <User className="h-4 w-4" />
+          {GENDER_LABELS[gender]}
+        </button>
+        <button
+          onClick={cycleSpeed}
+          className="flex-1 flex items-center justify-center gap-1.5 rounded-lg border border-gray-200 px-3 py-2 text-sm text-[#2D3142] transition-all hover:bg-gray-50 active:scale-95"
+          style={{ minHeight: "40px", touchAction: "manipulation" }}
+          aria-label={`Tempo: ${SPEED_LABELS[speed as VoiceSpeed]}`}
+        >
+          <Gauge className="h-4 w-4" />
+          {SPEED_LABELS[speed as VoiceSpeed]}
+        </button>
+      </div>
+    </div>
   );
 }

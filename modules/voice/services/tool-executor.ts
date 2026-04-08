@@ -713,7 +713,10 @@ export async function executeCompanionTool(
       case "web_search": {
         const query = (params.query as string)?.trim();
         if (!query) {
-          return { success: false, summary: "Bitte geben Sie einen Suchbegriff an." };
+          return {
+            success: false,
+            summary: "Bitte geben Sie einen Suchbegriff an.",
+          };
         }
 
         // Multi-Provider: Tavily (primaer) → Brave (fallback) → SearXNG (Zukunft)
@@ -723,7 +726,8 @@ export async function executeCompanionTool(
         if (!tavilyKey && !braveKey) {
           return {
             success: false,
-            summary: "Internetsuche ist gerade nicht verfuegbar. Bitte versuchen Sie es spaeter.",
+            summary:
+              "Internetsuche ist gerade nicht verfuegbar. Bitte versuchen Sie es spaeter.",
           };
         }
 
@@ -732,17 +736,20 @@ export async function executeCompanionTool(
 
           // Provider 1: Tavily (primaer — kein Kreditkartenzwang, KI-optimiert)
           if (tavilyKey) {
+            const tavilyBody = JSON.stringify({
+              api_key: tavilyKey,
+              query,
+              search_depth: "basic",
+              max_results: 5,
+              include_answer: true,
+              include_raw_content: false,
+            });
+            console.log("[web_search] Tavily query:", query);
+
             const tavilyRes = await fetch("https://api.tavily.com/search", {
               method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                api_key: tavilyKey,
-                query,
-                search_depth: "basic",
-                max_results: 5,
-                include_answer: true,
-                include_raw_content: false,
-              }),
+              headers: { "Content-Type": "application/json; charset=utf-8" },
+              body: tavilyBody,
             });
 
             if (tavilyRes.ok) {
@@ -752,15 +759,20 @@ export async function executeCompanionTool(
               const answer = tavilyData.answer as string | undefined;
               const tavilyResults = (tavilyData.results ?? []).slice(0, 5);
 
-              results = tavilyResults.map((r: { title: string; content: string; url: string }) => ({
-                title: r.title,
-                snippet: r.content?.slice(0, 200) ?? "",
-                url: r.url,
-              }));
+              results = tavilyResults.map(
+                (r: { title: string; content: string; url: string }) => ({
+                  title: r.title,
+                  snippet: r.content?.slice(0, 200) ?? "",
+                  url: r.url,
+                }),
+              );
 
               // Wenn Tavily eine direkte Antwort hat, diese bevorzugen
               if (answer) {
-                const sources = results.slice(0, 3).map((r) => r.url).join("\n");
+                const sources = results
+                  .slice(0, 3)
+                  .map((r) => r.url)
+                  .join("\n");
                 return {
                   success: true,
                   summary: `${answer}\n\nQuellen:\n${sources}`,
@@ -768,7 +780,12 @@ export async function executeCompanionTool(
                 };
               }
             } else {
-              console.error("[web_search] Tavily Fehler:", tavilyRes.status);
+              const errBody = await tavilyRes.text().catch(() => "");
+              console.error(
+                "[web_search] Tavily Fehler:",
+                tavilyRes.status,
+                errBody,
+              );
             }
           }
 
@@ -785,24 +802,30 @@ export async function executeCompanionTool(
 
             if (braveRes.ok) {
               const braveData = await braveRes.json();
-              results = (braveData.web?.results ?? []).slice(0, 5).map(
-                (r: { title: string; description: string; url: string }) => ({
-                  title: r.title,
-                  snippet: r.description,
-                  url: r.url,
-                }),
-              );
+              results = (braveData.web?.results ?? [])
+                .slice(0, 5)
+                .map(
+                  (r: { title: string; description: string; url: string }) => ({
+                    title: r.title,
+                    snippet: r.description,
+                    url: r.url,
+                  }),
+                );
             } else {
               console.error("[web_search] Brave Fehler:", braveRes.status);
             }
           }
 
           if (results.length === 0) {
-            return { success: true, summary: `Keine Ergebnisse gefunden fuer "${query}".` };
+            return {
+              success: true,
+              summary: `Keine Ergebnisse gefunden fuer "${query}".`,
+            };
           }
 
           const lines = results.map(
-            (r, i: number) => `${i + 1}. ${r.title}\n   ${r.snippet}\n   Quelle: ${r.url}`,
+            (r, i: number) =>
+              `${i + 1}. ${r.title}\n   ${r.snippet}\n   Quelle: ${r.url}`,
           );
 
           return {

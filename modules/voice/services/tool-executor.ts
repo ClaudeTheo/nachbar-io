@@ -716,8 +716,11 @@ export async function executeCompanionTool(
           return { success: false, summary: "Bitte geben Sie einen Suchbegriff an." };
         }
 
+        // Multi-Provider: Tavily (primaer) → Brave (fallback) → SearXNG (Zukunft)
+        const tavilyKey = process.env.TAVILY_API_KEY;
         const braveKey = process.env.BRAVE_SEARCH_API_KEY;
-        if (!braveKey) {
+
+        if (!tavilyKey && !braveKey) {
           return {
             success: false,
             summary: "Internetsuche ist gerade nicht verfuegbar. Bitte versuchen Sie es spaeter.",
@@ -725,41 +728,87 @@ export async function executeCompanionTool(
         }
 
         try {
-          const searchUrl = `https://api.search.brave.com/res/v1/web/search?q=${encodeURIComponent(query)}&count=5&search_lang=de&country=de&text_decorations=false`;
-          const searchRes = await fetch(searchUrl, {
-            headers: {
-              Accept: "application/json",
-              "Accept-Encoding": "gzip",
-              "X-Subscription-Token": braveKey,
-            },
-          });
+          let results: { title: string; snippet: string; url: string }[] = [];
 
-          if (!searchRes.ok) {
-            console.error("[web_search] Brave API Fehler:", searchRes.status);
-            return { success: false, summary: "Internetsuche fehlgeschlagen." };
+          // Provider 1: Tavily (primaer — kein Kreditkartenzwang, KI-optimiert)
+          if (tavilyKey) {
+            const tavilyRes = await fetch("https://api.tavily.com/search", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                api_key: tavilyKey,
+                query,
+                search_depth: "basic",
+                max_results: 5,
+                include_answer: true,
+                include_raw_content: false,
+              }),
+            });
+
+            if (tavilyRes.ok) {
+              const tavilyData = await tavilyRes.json();
+
+              // Tavily liefert eine fertige KI-Antwort + Quellen
+              const answer = tavilyData.answer as string | undefined;
+              const tavilyResults = (tavilyData.results ?? []).slice(0, 5);
+
+              results = tavilyResults.map((r: { title: string; content: string; url: string }) => ({
+                title: r.title,
+                snippet: r.content?.slice(0, 200) ?? "",
+                url: r.url,
+              }));
+
+              // Wenn Tavily eine direkte Antwort hat, diese bevorzugen
+              if (answer) {
+                const sources = results.slice(0, 3).map((r) => r.url).join("\n");
+                return {
+                  success: true,
+                  summary: `${answer}\n\nQuellen:\n${sources}`,
+                  data: results,
+                };
+              }
+            } else {
+              console.error("[web_search] Tavily Fehler:", tavilyRes.status);
+            }
           }
 
-          const searchData = await searchRes.json();
-          const results = (searchData.web?.results ?? []).slice(0, 5);
+          // Provider 2: Brave Search (Fallback)
+          if (results.length === 0 && braveKey) {
+            const searchUrl = `https://api.search.brave.com/res/v1/web/search?q=${encodeURIComponent(query)}&count=5&search_lang=de&country=de&text_decorations=false`;
+            const braveRes = await fetch(searchUrl, {
+              headers: {
+                Accept: "application/json",
+                "Accept-Encoding": "gzip",
+                "X-Subscription-Token": braveKey,
+              },
+            });
+
+            if (braveRes.ok) {
+              const braveData = await braveRes.json();
+              results = (braveData.web?.results ?? []).slice(0, 5).map(
+                (r: { title: string; description: string; url: string }) => ({
+                  title: r.title,
+                  snippet: r.description,
+                  url: r.url,
+                }),
+              );
+            } else {
+              console.error("[web_search] Brave Fehler:", braveRes.status);
+            }
+          }
 
           if (results.length === 0) {
             return { success: true, summary: `Keine Ergebnisse gefunden fuer "${query}".` };
           }
 
-          // Ergebnisse kompakt fuer Claude zusammenfassen
           const lines = results.map(
-            (r: { title: string; description: string; url: string }, i: number) =>
-              `${i + 1}. ${r.title}\n   ${r.description}\n   Quelle: ${r.url}`,
+            (r, i: number) => `${i + 1}. ${r.title}\n   ${r.snippet}\n   Quelle: ${r.url}`,
           );
 
           return {
             success: true,
             summary: `Suchergebnisse fuer "${query}":\n\n${lines.join("\n\n")}`,
-            data: results.map((r: { title: string; description: string; url: string }) => ({
-              title: r.title,
-              snippet: r.description,
-              url: r.url,
-            })),
+            data: results,
           };
         } catch (err) {
           console.error("[web_search] Fehler:", err);

@@ -18,27 +18,57 @@ interface TTSButtonProps {
 const PILOT_MODE = process.env.NEXT_PUBLIC_PILOT_MODE === "true";
 
 /**
- * Liest Stimm-Einstellungen aus dem Profil (Supabase, gespeichert in users.voice_preferences).
- * Fallback auf localStorage wenn Supabase nicht geladen.
+ * Liest Stimm-Einstellungen aus localStorage (Sync vom Profil-Hook).
+ * Falls noch nichts im localStorage: laedt direkt aus Supabase und cached.
  */
-function getVoiceSettings(): { voice: string; speed: number } {
-  if (typeof window === "undefined") return { voice: "nova", speed: 1.0 };
+async function getVoiceSettings(): Promise<{ voice: string; speed: number }> {
+  const defaults = { voice: "ash", speed: 0.95 };
+  if (typeof window === "undefined") return defaults;
 
   try {
-    // Primaer: Supabase voice_preferences (wird vom useVoicePreferences Hook geladen)
-    // Diese werden als data-Attribute am Body gespeichert vom Profil-Hook
+    // 1. Primaer: localStorage (vom useVoicePreferences Hook gesetzt)
     const stored = localStorage.getItem("quartier-voice-prefs-synced");
     if (stored) {
       const parsed = JSON.parse(stored);
       return {
-        voice: parsed.voice || "nova",
-        speed: typeof parsed.speed === "number" ? parsed.speed : 1.0,
+        voice: parsed.voice || defaults.voice,
+        speed: typeof parsed.speed === "number" ? parsed.speed : defaults.speed,
       };
     }
+
+    // 2. Fallback: Direkt aus Supabase laden (Initial-Sync)
+    const { createClient } = await import("@/lib/supabase/client");
+    const supabase = createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (user) {
+      const { data } = await supabase
+        .from("users")
+        .select("voice_preferences")
+        .eq("id", user.id)
+        .single();
+      if (data?.voice_preferences) {
+        const prefs = data.voice_preferences as Record<string, unknown>;
+        const resolved = {
+          voice: (prefs.voice === "ash" || prefs.voice === "onyx"
+            ? "ash"
+            : "nova") as string,
+          speed: typeof prefs.speed === "number" ? prefs.speed : defaults.speed,
+          formality: prefs.formality || "formal",
+        };
+        // In localStorage cachen fuer naechstes Mal
+        localStorage.setItem(
+          "quartier-voice-prefs-synced",
+          JSON.stringify(resolved),
+        );
+        return { voice: resolved.voice, speed: resolved.speed };
+      }
+    }
   } catch {
-    // Fallback
+    // Fallback bei Fehler
   }
-  return { voice: "nova", speed: 1.0 };
+  return defaults;
 }
 
 export function TTSButton({ text }: TTSButtonProps) {
@@ -72,8 +102,8 @@ export function TTSButton({ text }: TTSButtonProps) {
 
     setLoading(true);
     try {
-      // Stimm-Einstellungen aus Profil lesen
-      const { voice, speed } = getVoiceSettings();
+      // Stimm-Einstellungen aus Profil lesen (async: laedt ggf. aus Supabase)
+      const { voice, speed } = await getVoiceSettings();
 
       const res = await fetch("/api/voice/tts", {
         method: "POST",

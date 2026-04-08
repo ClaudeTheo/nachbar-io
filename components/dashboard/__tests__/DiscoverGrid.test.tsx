@@ -26,7 +26,7 @@ describe("DiscoverGrid", () => {
     const { container } = render(<DiscoverGrid />);
     const grid = container.querySelector('[data-testid="discover-grid"]')!;
     const links = grid.querySelectorAll("a");
-    expect(links.length).toBe(8);
+    expect(links.length).toBe(10);
   });
 
   it("zeigt 'Mehr entdecken' Button", () => {
@@ -43,8 +43,8 @@ describe("DiscoverGrid", () => {
     fireEvent.click(btn);
     const grid = container.querySelector('[data-testid="discover-grid"]')!;
     const links = grid.querySelectorAll("a");
-    // 8 primär + 10 sekundaer = 18
-    expect(links.length).toBe(18);
+    // 10 primaer + 10 sekundaer = 20
+    expect(links.length).toBe(20);
     // Button verschwindet
     expect(
       container.querySelector('[data-testid="discover-expand"]'),
@@ -55,6 +55,6 @@ describe("DiscoverGrid", () => {
     const { container } = render(<DiscoverGrid />);
     const grid = container.querySelector('[data-testid="discover-grid"]')!;
     const svgs = grid.querySelectorAll("svg");
-    expect(svgs.length).toBe(8);
+    expect(svgs.length).toBe(10);
   });
 });

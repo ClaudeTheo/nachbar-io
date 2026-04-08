@@ -2,8 +2,8 @@ import { describe, it, expect } from "vitest";
 import { companionTools, WRITE_TOOLS } from "@/modules/voice/services/tools";
 
 describe("companionTools", () => {
-  it("definiert genau 13 Tools", () => {
-    expect(companionTools).toHaveLength(13);
+  it("definiert genau 21 Tools", () => {
+    expect(companionTools).toHaveLength(21);
   });
 
   it("jedes Tool hat gueltiges Anthropic-Format (name, description, input_schema)", () => {
@@ -75,8 +75,8 @@ describe("companionTools", () => {
 });
 
 describe("WRITE_TOOLS", () => {
-  it("enthaelt genau 9 Write-Tool-Namen", () => {
-    expect(WRITE_TOOLS.size).toBe(9);
+  it("enthaelt genau 12 Write-Tool-Namen", () => {
+    expect(WRITE_TOOLS.size).toBe(12);
   });
 
   it("enthaelt alle Write-Tools", () => {

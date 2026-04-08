@@ -68,6 +68,13 @@ vi.mock("@/lib/care/audit", () => ({
   writeAuditLog: vi.fn().mockResolvedValue(undefined),
 }));
 
+// Admin-Client Mock (fuer privilegierte Schreiboperationen in redeem.service.ts)
+let mockAdminSupabase: ReturnType<typeof createMockSupabase>;
+
+vi.mock("@/lib/supabase/admin", () => ({
+  getAdminSupabase: vi.fn().mockImplementation(() => mockAdminSupabase),
+}));
+
 // --- Hilfsfunktion ---
 function makeRequest(body: Record<string, unknown>) {
   return new Request("http://localhost/api/caregiver/redeem", {
@@ -86,8 +93,9 @@ describe("POST /api/caregiver/redeem", () => {
   });
 
   it("loest gueltigen Code ein und erstellt Caregiver-Link", async () => {
+    // supabase (User-Client): subscription check → invite read → resident name
     mockSupabase = createMockSupabase([
-      // 1. caregiver_invites: Code gefunden
+      // 1. caregiver_invites: Code gefunden (via supabase)
       {
         data: {
           id: "inv-1",
@@ -97,15 +105,51 @@ describe("POST /api/caregiver/redeem", () => {
         },
         error: null,
       },
-      // 2. caregiver_links: Insert erfolgreich
-      { data: null, error: null },
-      // 3. caregiver_invites: Update used_at
-      { data: null, error: null },
-      // 4. users: Bewohner-Name
+      // 2. users: Bewohner-Name (via supabase)
       { data: { display_name: "Frau Mueller" }, error: null },
-      // 5. care_audit_log
+      // 3. care_audit_log (via supabase)
       { data: null, error: null },
     ]);
+
+    // adminDb: claim invite → create link (via getAdminSupabase)
+    mockAdminSupabase = createMockSupabase([
+      // 1. caregiver_invites: Update (claim) erfolgreich
+      { data: { id: "inv-1" }, error: null },
+      // 2. caregiver_links: Insert erfolgreich
+      { data: null, error: null },
+    ]);
+    // Admin-Client hat kein auth — Subscription vorangestellt entfernen
+    // Hack: Setze callIndex auf 1 um PLUS_SUB_RESULT zu ueberspringen
+    // Besser: Erstelle Admin-Mock ohne Subscription-Prefix
+    // Da createMockSupabase automatisch PLUS_SUB_RESULT voranstellt,
+    // brauchen wir 2 Dummy-Aufrufe mehr. Stattdessen: einfacher Admin-Mock
+    const adminCallResults = [
+      { data: { id: "inv-1" }, error: null }, // claim invite
+      { data: null, error: null }, // create link
+    ];
+    let adminCallIndex = 0;
+    mockAdminSupabase = {
+      auth: { getUser: vi.fn() },
+      from: vi.fn().mockImplementation(() => {
+        const response = adminCallResults[adminCallIndex] ?? {
+          data: null,
+          error: null,
+        };
+        adminCallIndex++;
+        const chain: Record<string, unknown> = {};
+        const terminalResult = Promise.resolve(response);
+        chain.select = vi.fn().mockReturnValue(chain);
+        chain.insert = vi.fn().mockReturnValue(terminalResult);
+        chain.update = vi.fn().mockReturnValue(chain);
+        chain.eq = vi.fn().mockReturnValue(chain);
+        chain.is = vi.fn().mockReturnValue(chain);
+        chain.gt = vi.fn().mockReturnValue(chain);
+        chain.single = vi.fn().mockReturnValue(terminalResult);
+        chain.maybeSingle = vi.fn().mockReturnValue(terminalResult);
+        chain.then = terminalResult.then.bind(terminalResult);
+        return chain;
+      }),
+    } as unknown as ReturnType<typeof createMockSupabase>;
 
     const { POST } = await import("@/app/api/caregiver/redeem/route");
     const response = await POST(

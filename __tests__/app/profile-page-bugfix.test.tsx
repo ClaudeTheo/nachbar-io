@@ -76,6 +76,9 @@ vi.mock("lucide-react", () => {
 // VoiceSettings + Hook Mock
 vi.mock("@/modules/voice/components/companion/VoiceSettings", () => ({
   VoiceSettings: () => <div data-testid="voice-settings">VoiceSettings</div>,
+  CollapsibleVoiceSettings: () => (
+    <div data-testid="collapsible-voice-settings">CollapsibleVoiceSettings</div>
+  ),
 }));
 vi.mock("@/hooks/useVoicePreferences", () => ({
   useVoicePreferences: () => ({

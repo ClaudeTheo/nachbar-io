@@ -23,7 +23,7 @@ describe("VoiceSettings", () => {
     render(<VoiceSettings settings={defaults} onChange={onChange} />);
     fireEvent.click(screen.getByText(/Männlich/i));
     expect(onChange).toHaveBeenCalledWith(
-      expect.objectContaining({ voice: "onyx" }),
+      expect.objectContaining({ voice: "ash" }),
     );
   });
 

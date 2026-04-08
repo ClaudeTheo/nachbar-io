@@ -223,7 +223,13 @@ vi.mock("lucide-react", () => ({
 }));
 
 import CityServicesPage from "@/app/(app)/city-services/page";
-import { DISCLAIMERS, SERVICE_LINK_CATEGORIES } from "@/lib/municipal";
+import {
+  SERVICE_LINK_CATEGORIES,
+  announcementDisclaimer,
+} from "@/lib/municipal";
+
+// Dynamischer Disclaimer-Text fuer Bad Saeckingen
+const EXPECTED_DISCLAIMER = announcementDisclaimer("Bad Säckingen");
 
 beforeEach(() => {
   vi.clearAllMocks();
@@ -483,7 +489,7 @@ describe("CityServicesPage — Bekanntmachungen Leerzustand", () => {
 
   it("zeigt Disclaimer-Text", async () => {
     await renderAnnouncementsTab();
-    expect(screen.getByText(DISCLAIMERS.announcements)).toBeDefined();
+    expect(screen.getByText(EXPECTED_DISCLAIMER)).toBeDefined();
   });
 });
 
@@ -611,7 +617,7 @@ describe("CityServicesPage — Bekanntmachungen mit Daten", () => {
   it("zeigt Disclaimer auch bei vorhandenen Daten", async () => {
     renderAnnouncementsWithData();
     await waitFor(() => {
-      expect(screen.getByText(DISCLAIMERS.announcements)).toBeDefined();
+      expect(screen.getByText(EXPECTED_DISCLAIMER)).toBeDefined();
     });
   });
 });
@@ -921,7 +927,7 @@ describe("CityServicesPage — Disclaimers", () => {
   it("Bekanntmachungen-Disclaimer verweist auf Amtsblatt", () => {
     render(<CityServicesPage />);
     fireEvent.click(screen.getByText("Bekanntmachungen"));
-    const disclaimer = screen.getByText(DISCLAIMERS.announcements);
+    const disclaimer = screen.getByText(EXPECTED_DISCLAIMER);
     expect(disclaimer).toBeDefined();
     expect(disclaimer.className).toContain("text-[10px]");
   });
@@ -929,7 +935,7 @@ describe("CityServicesPage — Disclaimers", () => {
   it("Disclaimer ist zentriert", () => {
     render(<CityServicesPage />);
     fireEvent.click(screen.getByText("Bekanntmachungen"));
-    const disclaimer = screen.getByText(DISCLAIMERS.announcements);
+    const disclaimer = screen.getByText(EXPECTED_DISCLAIMER);
     // text-center ist auf dem Parent-Wrapper (div), nicht auf dem p-Element
     const wrapper = disclaimer.closest("div");
     expect(wrapper?.className).toContain("text-center");

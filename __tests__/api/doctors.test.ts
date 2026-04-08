@@ -1,10 +1,39 @@
 // __tests__/api/doctors.test.ts
-// Tests fuer GET /api/doctors — Oeffentliche Arzt-Liste
+// Tests fuer GET /api/doctors — Arzt-Liste mit Haversine-Distanz
 
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from "vitest";
+import { calculateDistance } from "@/lib/geo/haversine";
 
-// --- Mocks ---
-vi.mock('next/headers', () => ({
+// --- Haversine Tests (reine Funktion, kein Mock noetig) ---
+
+describe("calculateDistance (Haversine)", () => {
+  it("berechnet Distanz Bad Saeckingen → Laufenburg korrekt (~8km)", () => {
+    const dist = calculateDistance(47.5535, 7.964, 47.5667, 8.0614);
+    expect(dist).toBeGreaterThan(6);
+    expect(dist).toBeLessThan(10);
+  });
+
+  it("berechnet Distanz Bad Saeckingen → Rheinfelden korrekt (~13km)", () => {
+    const dist = calculateDistance(47.5535, 7.964, 47.5543, 7.7928);
+    expect(dist).toBeGreaterThan(10);
+    expect(dist).toBeLessThan(16);
+  });
+
+  it("gibt 0 fuer gleiche Koordinaten", () => {
+    const dist = calculateDistance(47.5535, 7.964, 47.5535, 7.964);
+    expect(dist).toBe(0);
+  });
+
+  it("filtert Aerzte ausserhalb 20km", () => {
+    // Freiburg ist ~65km von Bad Saeckingen entfernt
+    const dist = calculateDistance(47.5535, 7.964, 47.999, 7.842);
+    expect(dist).toBeGreaterThan(20);
+  });
+});
+
+// --- API-Route Tests (mit Mocks) ---
+
+vi.mock("next/headers", () => ({
   cookies: vi.fn().mockResolvedValue({
     getAll: () => [],
     set: vi.fn(),
@@ -13,7 +42,7 @@ vi.mock('next/headers', () => ({
 
 let mockQueryResult: { data: unknown; error: unknown };
 
-vi.mock('@/lib/supabase/server', () => ({
+vi.mock("@/lib/supabase/server", () => ({
   createClient: vi.fn().mockImplementation(() =>
     Promise.resolve({
       from: vi.fn(() => {
@@ -22,23 +51,20 @@ vi.mock('@/lib/supabase/server', () => ({
 
         chain.select = vi.fn().mockReturnValue(chain);
         chain.eq = vi.fn().mockReturnValue(chain);
+        chain.not = vi.fn().mockReturnValue(chain);
         chain.contains = vi.fn().mockReturnValue(chain);
         chain.order = vi.fn().mockReturnValue(chain);
         chain.then = terminalResult.then.bind(terminalResult);
 
         return chain;
       }),
-    })
+    }),
   ),
 }));
 
-// NextRequest braucht nextUrl — wir bauen einen Minimal-Mock
 function makeNextRequest(url: string) {
   const parsed = new URL(url);
-  return {
-    nextUrl: parsed,
-    headers: new Headers(),
-  };
+  return { nextUrl: parsed, url, headers: new Headers() };
 }
 
 beforeEach(() => {
@@ -46,66 +72,115 @@ beforeEach(() => {
   mockQueryResult = { data: [], error: null };
 });
 
-describe('GET /api/doctors', () => {
-  it('gibt eine Liste sichtbarer Aerzte zurueck', async () => {
+describe("GET /api/doctors", () => {
+  it("gibt Aerzte mit Distanz zurueck", async () => {
     mockQueryResult = {
       data: [
-        { id: 'd-1', user_id: 'u-1', specialization: ['Allgemeinmedizin'], visible: true },
-        { id: 'd-2', user_id: 'u-2', specialization: ['Kardiologie'], visible: true },
+        {
+          id: "d-1",
+          user_id: "u-1",
+          specialization: ["Allgemeinmedizin"],
+          visible: true,
+          latitude: 47.5535,
+          longitude: 7.964,
+          user: { display_name: "Dr. Test", avatar_url: null },
+        },
       ],
       error: null,
     };
 
-    const { GET } = await import('@/app/api/doctors/route');
-    const response = await GET(makeNextRequest('http://localhost/api/doctors') as never);
+    const { GET } = await import("@/app/api/doctors/route");
+    const response = await GET(
+      makeNextRequest("http://localhost/api/doctors") as never,
+    );
     const json = await response.json();
 
     expect(response.status).toBe(200);
-    expect(json).toHaveLength(2);
-    expect(json[0].specialization).toContain('Allgemeinmedizin');
+    expect(Array.isArray(json)).toBe(true);
+    expect(json[0].distance_km).toBeDefined();
+    expect(json[0].specialization).toContain("Allgemeinmedizin");
   });
 
-  it('gibt leere Liste zurueck wenn keine Aerzte vorhanden', async () => {
+  it("gibt leere Liste zurueck wenn keine Aerzte vorhanden", async () => {
     mockQueryResult = { data: [], error: null };
 
-    const { GET } = await import('@/app/api/doctors/route');
-    const response = await GET(makeNextRequest('http://localhost/api/doctors') as never);
+    const { GET } = await import("@/app/api/doctors/route");
+    const response = await GET(
+      makeNextRequest("http://localhost/api/doctors") as never,
+    );
     const json = await response.json();
 
     expect(response.status).toBe(200);
     expect(json).toEqual([]);
   });
 
-  it('gibt 500 bei Datenbankfehler', async () => {
-    mockQueryResult = { data: null, error: { message: 'Query failed' } };
+  it("gibt 500 bei Datenbankfehler", async () => {
+    mockQueryResult = { data: null, error: { message: "Query failed" } };
 
-    const { GET } = await import('@/app/api/doctors/route');
-    const response = await GET(makeNextRequest('http://localhost/api/doctors') as never);
+    const { GET } = await import("@/app/api/doctors/route");
+    const response = await GET(
+      makeNextRequest("http://localhost/api/doctors") as never,
+    );
 
     expect(response.status).toBe(500);
   });
 
-  it('unterstuetzt Filter nach quarter_id', async () => {
+  it("filtert Aerzte ausserhalb 20km Radius", async () => {
     mockQueryResult = {
-      data: [{ id: 'd-1', quarter_ids: ['q-1'] }],
+      data: [
+        {
+          id: "d-near",
+          latitude: 47.5535,
+          longitude: 7.964,
+          user: { display_name: "Nah" },
+        },
+        {
+          id: "d-far",
+          latitude: 48.5,
+          longitude: 9.0,
+          user: { display_name: "Weit" },
+        },
+      ],
       error: null,
     };
 
-    const { GET } = await import('@/app/api/doctors/route');
-    const response = await GET(makeNextRequest('http://localhost/api/doctors?quarter_id=q-1') as never);
+    const { GET } = await import("@/app/api/doctors/route");
+    const response = await GET(
+      makeNextRequest("http://localhost/api/doctors") as never,
+    );
+    const json = await response.json();
 
-    expect(response.status).toBe(200);
+    // Nur der nahe Arzt sollte zurueckgegeben werden
+    expect(json.length).toBe(1);
+    expect(json[0].id).toBe("d-near");
   });
 
-  it('unterstuetzt Filter nach specialization', async () => {
+  it("sortiert nach Distanz aufsteigend", async () => {
     mockQueryResult = {
-      data: [{ id: 'd-1', specialization: ['Allgemeinmedizin'] }],
+      data: [
+        {
+          id: "d-far",
+          latitude: 47.5667,
+          longitude: 8.0614,
+          user: { display_name: "Weiter" },
+        },
+        {
+          id: "d-near",
+          latitude: 47.5535,
+          longitude: 7.964,
+          user: { display_name: "Naeher" },
+        },
+      ],
       error: null,
     };
 
-    const { GET } = await import('@/app/api/doctors/route');
-    const response = await GET(makeNextRequest('http://localhost/api/doctors?specialization=Allgemeinmedizin') as never);
+    const { GET } = await import("@/app/api/doctors/route");
+    const response = await GET(
+      makeNextRequest("http://localhost/api/doctors") as never,
+    );
+    const json = await response.json();
 
-    expect(response.status).toBe(200);
+    expect(json[0].id).toBe("d-near");
+    expect(json[1].id).toBe("d-far");
   });
 });

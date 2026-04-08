@@ -10,6 +10,7 @@ import { useRouter } from "next/navigation";
 import { Sheet } from "@/components/ui/sheet";
 import { toast } from "sonner";
 import { createSpeechEngine } from "../engines/create-speech-engine";
+import { getIOSAudioManager } from "../services/ios-audio-manager";
 import { useStreamingChat } from "@/hooks/useStreamingChat";
 import type {
   SpeechEngine,
@@ -30,7 +31,12 @@ export function VoiceAssistantFAB() {
   const router = useRouter();
   // SSR-Guard: Verhindert Hydration-Mismatch (Server rendert null, Client rendert Button)
   const [mounted, setMounted] = useState(false);
-  useEffect(() => setMounted(true), []);
+  useEffect(() => {
+    setMounted(true);
+    // iOS Audio-Manager frueh initialisieren — registriert Touch/Click-Listener
+    // fuer Silent-Buffer-Unlock (muss VOR dem ersten TTS-Aufruf passieren)
+    getIOSAudioManager().init();
+  }, []);
 
   // Scroll-Hide: FAB verschwindet bei Scroll-Down, erscheint bei Scroll-Up
   const [fabVisible, setFabVisible] = useState(true);

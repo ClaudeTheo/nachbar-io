@@ -1,5 +1,6 @@
 // components/companion/TTSButton.tsx
 // Vorlesen-Button — nur für Plus/Pro Nutzer (Pilot: alle freigeschalten)
+// Session 59: iOS Audio-Manager Integration fuer zuverlaessige Wiedergabe
 
 'use client';
 
@@ -7,6 +8,7 @@ import { useState, useRef, useCallback } from 'react';
 import { Volume2, Loader2, Lock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
+import { getIOSAudioManager } from '../../services/ios-audio-manager';
 
 interface TTSButtonProps {
   text: string;
@@ -19,6 +21,9 @@ const PILOT_MODE = process.env.NEXT_PUBLIC_PILOT_MODE === 'true';
  * Spricht den übergebenen Text via OpenAI TTS vor.
  * Feature-Gate: In der Pilot-Phase ist TTS für alle Nutzer verfügbar.
  * Nach Pilot: Nur Plus/Pro Nutzer (useSubscription-Check).
+ *
+ * Nutzt den iOS Audio-Manager fuer zuverlaessige Wiedergabe auf iOS Safari.
+ * Fallback auf HTMLAudioElement wenn AudioContext nicht verfuegbar (Desktop).
  *
  * TODO: Feature-Gate nach Pilot-Phase — useSubscription() einbinden
  * und Free-Nutzer mit Upgrade-Hinweis blockieren.
@@ -54,6 +59,20 @@ export function TTSButton({ text }: TTSButtonProps) {
       }
 
       const blob = await res.blob();
+
+      // iOS Audio-Manager versuchen (zuverlaessiger auf iOS Safari)
+      const audioManager = getIOSAudioManager();
+      if (audioManager.canPlay()) {
+        setPlaying(true);
+        try {
+          await audioManager.playBlob(blob);
+        } finally {
+          setPlaying(false);
+        }
+        return;
+      }
+
+      // Fallback: HTMLAudioElement (Desktop-Browser)
       const url = URL.createObjectURL(blob);
 
       // Vorheriges Audio aufräumen

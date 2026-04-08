@@ -786,6 +786,13 @@ export async function executeCompanionTool(
                 tavilyRes.status,
                 errBody,
               );
+              // Bei Auth-Fehler: Fehlerdetails zurueckgeben statt stille "keine Ergebnisse"
+              if (tavilyRes.status === 401 || tavilyRes.status === 403) {
+                return {
+                  success: false,
+                  summary: `Internetsuche fehlgeschlagen (${tavilyRes.status}). Bitte spaeter erneut versuchen.`,
+                };
+              }
             }
           }
 

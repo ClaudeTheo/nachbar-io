@@ -1,17 +1,13 @@
 name: Deploy to Vercel Production
 
 on:
-  push:
-    branches: [master]
-    paths-ignore:
-      - '**/*.md'
-      - 'docs/**'
-      - 'LICENSE'
-      - '.vscode/**'
-  # Manueller Trigger fuer Notfall-Deploys
+  # Automatischer Deploy: maximal alle 3 Stunden (Minute 17 zur Lastverteilung)
+  schedule:
+    - cron: '17 */3 * * *'
+  # Manueller Sofort-Deploy (Notfall, dringende Fixes)
   workflow_dispatch:
 
-# Bei schnellen Commits: nur den letzten deployen, vorherige abbrechen
+# Parallele Runs verhindern
 concurrency:
   group: deploy-production
   cancel-in-progress: true
@@ -21,12 +17,48 @@ env:
   VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
 
 jobs:
-  # Tests laufen parallel, blockieren Deploy NICHT
+  # Schritt 1: Pruefen ob neue Commits seit letztem Deploy
+  check:
+    name: Check for changes
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      should_deploy: ${{ steps.check.outputs.should_deploy }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Compare HEAD with last Vercel deploy
+        id: check
+        run: |
+          # Bei manuellem Trigger: immer deployen
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "Manueller Trigger — Deploy wird ausgefuehrt"
+            echo "should_deploy=true" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+
+          # Letzte erfolgreich deployte SHA von Vercel holen
+          LAST_SHA=$(curl -s -H "Authorization: Bearer ${{ secrets.VERCEL_TOKEN }}" \
+            "https://api.vercel.com/v6/deployments?projectId=${{ secrets.VERCEL_PROJECT_ID }}&limit=1&target=production&state=READY" \
+            | jq -r '.deployments[0].meta.githubCommitSha // empty')
+
+          CURRENT_SHA=$(git rev-parse HEAD)
+
+          if [ -n "$LAST_SHA" ] && [ "$LAST_SHA" = "$CURRENT_SHA" ]; then
+            echo "Keine neuen Commits seit letztem Deploy ($CURRENT_SHA)"
+            echo "should_deploy=false" >> $GITHUB_OUTPUT
+          else
+            echo "Neue Commits: ${LAST_SHA:-unbekannt} -> $CURRENT_SHA"
+            echo "should_deploy=true" >> $GITHUB_OUTPUT
+          fi
+
+  # Schritt 2: Tests (parallel zum Deploy, blockiert nicht)
   test:
     name: Lint & Test
+    needs: check
+    if: needs.check.outputs.should_deploy == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 10
-    # Test-Fehler blockieren NICHT den Deploy (Solo-Dev, manuelle QA)
     continue-on-error: true
     steps:
       - uses: actions/checkout@v4
@@ -45,11 +77,13 @@ jobs:
       - name: Unit Tests (Vitest)
         run: npm run test || echo "::warning::Tests fehlgeschlagen — Deploy laeuft trotzdem"
 
+  # Schritt 3: Build & Deploy (nur bei neuen Commits oder manuellem Trigger)
   deploy:
     name: Build & Deploy
+    needs: check
+    if: needs.check.outputs.should_deploy == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 10
-    # KEIN needs: test — Deploy laeuft IMMER bei Push auf master
     steps:
       - uses: actions/checkout@v4
 
@@ -80,5 +114,5 @@ jobs:
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "- **URL:** https://nachbar-io.vercel.app" >> $GITHUB_STEP_SUMMARY
           echo "- **Preview:** ${{ steps.deploy.outputs.deployment_url }}" >> $GITHUB_STEP_SUMMARY
-          echo "- **Branch:** master" >> $GITHUB_STEP_SUMMARY
+          echo "- **Trigger:** ${{ github.event_name }}" >> $GITHUB_STEP_SUMMARY
           echo "- **Commit:** ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY

@@ -1,15 +1,14 @@
 'use client'
 
-// Stimmen-Einstellungen für den KI-Companion
-// Drei Toggles: Stimme (Weiblich/Maennlich), Tempo (Normal/Langsam), Anrede (Foermlich/Vertraut)
-// + Vorschau-Button zum Probehören der aktuellen Stimme
+// Stimmen-Einstellungen fuer den KI-Companion
+// Session 59: 3 Tempos (Schnell/Normal/Langsam), ash statt onyx, zuklappbar
 
 import { useState, useRef, useCallback } from 'react'
-import { Volume2, Square, Loader2 } from 'lucide-react'
+import { Volume2, Square, Loader2, ChevronDown } from 'lucide-react'
 
 export interface VoicePreferences {
-  voice: 'nova' | 'onyx'     // nova = weiblich, onyx = männlich
-  speed: number               // 1.0 = normal, 0.85 = langsam
+  voice: 'nova' | 'ash'     // nova = weiblich, ash = maennlich (warm, akzentfrei)
+  speed: number              // 1.15 = schnell, 1.0 = normal, 0.85 = langsam
   formality: 'formal' | 'informal'
 }
 
@@ -24,15 +23,15 @@ interface ToggleOption {
   active: boolean
 }
 
-// Vorschau-Sätze je nach Anrede und Stimme
+// Vorschau-Saetze je nach Anrede und Stimme
 const PREVIEW_TEXTS: Record<string, Record<string, string>> = {
   formal: {
-    nova: 'Guten Tag, ich bin Ihre digitale Nachbarschaftshelferin. Wie kann ich Ihnen heute behilflich sein?',
-    onyx: 'Guten Tag, ich bin Ihr digitaler Nachbarschaftshelfer. Wie kann ich Ihnen heute behilflich sein?',
+    nova: 'Guten Tag! Ich freue mich, dass Sie da sind. Wie kann ich Ihnen heute helfen?',
+    ash: 'Guten Tag! Schön, dass Sie da sind. Wie kann ich Ihnen heute behilflich sein?',
   },
   informal: {
-    nova: 'Hallo, ich bin deine digitale Nachbarschaftshelferin. Wie kann ich dir heute helfen?',
-    onyx: 'Hallo, ich bin dein digitaler Nachbarschaftshelfer. Wie kann ich dir heute helfen?',
+    nova: 'Hallo! Schön, dass du da bist. Wie kann ich dir heute helfen?',
+    ash: 'Hey! Gut, dass du da bist. Wie kann ich dir heute helfen?',
   },
 }
 
@@ -58,6 +57,7 @@ function ToggleGroup({
                 ? 'bg-[#4CAF87] text-white'
                 : 'border border-border bg-white text-[#2D3142]/70 hover:bg-gray-50'
             }`}
+            style={{ touchAction: 'manipulation' }}
           >
             {opt.label}
           </button>
@@ -86,7 +86,6 @@ export function VoiceSettings({ settings, onChange }: VoiceSettingsProps) {
   }, [])
 
   const playPreview = useCallback(async () => {
-    // Falls gerade abgespielt wird: stoppen
     if (previewState === 'playing' || previewState === 'loading') {
       stopPreview()
       return
@@ -136,36 +135,37 @@ export function VoiceSettings({ settings, onChange }: VoiceSettingsProps) {
       await audio.play()
       setPreviewState('playing')
     } catch (err) {
-      // AbortError ignorieren (Nutzer hat abgebrochen)
       if (err instanceof DOMException && err.name === 'AbortError') return
       audioRef.current = null
       setPreviewState('idle')
     }
   }, [settings.voice, settings.speed, settings.formality, previewState, stopPreview])
 
-  return (
-    <div className="flex flex-col gap-4 rounded-2xl border border-border bg-white p-4">
-      <h3 className="text-base font-semibold text-[#2D3142]">Stimme einstellen</h3>
+  // Migriere alte "onyx" Einstellung zu "ash"
+  const currentVoice = settings.voice === 'onyx' as string ? 'ash' : settings.voice
 
+  return (
+    <div className="flex flex-col gap-4">
       {/* Stimme: Weiblich / Maennlich */}
       <ToggleGroup
         label="Stimme"
         options={[
-          { label: 'Weiblich', value: 'nova', active: settings.voice === 'nova' },
-          { label: 'Männlich', value: 'onyx', active: settings.voice === 'onyx' },
+          { label: 'Weiblich', value: 'nova', active: currentVoice === 'nova' },
+          { label: 'Männlich', value: 'ash', active: currentVoice === 'ash' },
         ]}
         onSelect={(value) => {
           stopPreview()
-          onChange({ ...settings, voice: value as 'nova' | 'onyx' })
+          onChange({ ...settings, voice: value as 'nova' | 'ash' })
         }}
       />
 
-      {/* Tempo: Normal / Langsam */}
+      {/* Tempo: Schnell / Normal / Langsam */}
       <ToggleGroup
         label="Tempo"
         options={[
-          { label: 'Normal', value: '1.0', active: settings.speed === 1.0 },
-          { label: 'Langsam', value: '0.85', active: settings.speed === 0.85 },
+          { label: 'Schnell', value: '1.15', active: settings.speed >= 1.1 },
+          { label: 'Normal', value: '1.0', active: settings.speed >= 0.95 && settings.speed < 1.1 },
+          { label: 'Langsam', value: '0.85', active: settings.speed < 0.95 },
         ]}
         onSelect={(value) => {
           stopPreview()
@@ -194,6 +194,7 @@ export function VoiceSettings({ settings, onChange }: VoiceSettingsProps) {
             ? 'bg-[#2D3142] text-white'
             : 'border border-[#4CAF87] text-[#4CAF87] hover:bg-[#4CAF87]/10'
         }`}
+        style={{ touchAction: 'manipulation' }}
       >
         {previewState === 'loading' && (
           <>
@@ -214,6 +215,34 @@ export function VoiceSettings({ settings, onChange }: VoiceSettingsProps) {
           </>
         )}
       </button>
+    </div>
+  )
+}
+
+/**
+ * Zuklappbarer Wrapper fuer VoiceSettings auf der Profilseite.
+ * Spart Platz — oeffnet sich erst bei Klick.
+ */
+export function CollapsibleVoiceSettings({ settings, onChange }: VoiceSettingsProps) {
+  const [open, setOpen] = useState(false)
+
+  return (
+    <div>
+      <button
+        onClick={() => setOpen(!open)}
+        className="flex w-full items-center justify-between py-1"
+        style={{ touchAction: 'manipulation' }}
+      >
+        <span className="text-base font-semibold text-[#2D3142]">Stimme einstellen</span>
+        <ChevronDown
+          className={`h-5 w-5 text-muted-foreground transition-transform ${open ? 'rotate-180' : ''}`}
+        />
+      </button>
+      {open && (
+        <div className="mt-3">
+          <VoiceSettings settings={settings} onChange={onChange} />
+        </div>
+      )}
     </div>
   )
 }

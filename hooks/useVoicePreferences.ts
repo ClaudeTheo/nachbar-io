@@ -39,8 +39,9 @@ export function useVoicePreferences() {
         if (data?.voice_preferences) {
           const prefs = data.voice_preferences as Record<string, unknown>;
           setPreferences({
-            voice: (prefs.voice === "onyx"
-              ? "onyx"
+            // Migration: "onyx" → "ash" (wärmere Stimme, Session 59)
+            voice: (prefs.voice === "ash" || prefs.voice === "onyx"
+              ? "ash"
               : "nova") as VoicePreferences["voice"],
             speed: typeof prefs.speed === "number" ? prefs.speed : 1.0,
             formality: (prefs.formality === "informal"

@@ -47,7 +47,7 @@ import {
   getHouseholdForUser,
   toggleUiMode as toggleUiModeService,
 } from "@/lib/services";
-import { VoiceSettings } from "@/modules/voice/components/companion/VoiceSettings";
+import { CollapsibleVoiceSettings } from "@/modules/voice/components/companion/VoiceSettings";
 import { useVoicePreferences } from "@/hooks/useVoicePreferences";
 import { LargeTitle } from "@/components/ui/LargeTitle";
 import { PointsWidget } from "@/components/gamification/PointsWidget";
@@ -613,13 +613,12 @@ export default function ProfilePage() {
 
           <Separator />
 
-          {/* KI-Stimme Einstellungen */}
+          {/* KI-Stimme Einstellungen (zuklappbar) */}
           <div className="p-4">
-            <div className="flex items-center gap-3 mb-3">
+            <div className="flex items-center gap-3 mb-1">
               <Mic className="h-5 w-5 text-muted-foreground" />
-              <span className="font-medium text-anthrazit">KI-Stimme</span>
+              <CollapsibleVoiceSettings settings={voicePrefs} onChange={updateVoicePrefs} />
             </div>
-            <VoiceSettings settings={voicePrefs} onChange={updateVoicePrefs} />
           </div>
 
           <Separator />

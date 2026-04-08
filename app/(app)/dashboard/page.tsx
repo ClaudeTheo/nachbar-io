@@ -3,12 +3,13 @@
 import Link from "next/link";
 import {
   Bell,
-  TriangleAlert,
+  ShieldAlert,
   CheckCircle2,
   MessageCircle,
   Newspaper,
   Bot,
 } from "lucide-react";
+import { useSos } from "@/components/sos/SosContext";
 import { CategoryIcon } from "@/components/CategoryIcon";
 import { GREETING_ICON_MAP } from "@/lib/category-icons";
 import { isUxRedesignEnabled } from "@/lib/ux-flags";
@@ -33,6 +34,7 @@ import { useDashboardData, getGreeting } from "./hooks/useDashboardData";
 // import { EmptyState } from "./components/EmptyState";
 
 export default function DashboardPage() {
+  const { openSos } = useSos();
   const {
     // Moved to Quartier/Gesundheit hub — kept in hook for compatibility
     // alerts,
@@ -223,20 +225,21 @@ export default function DashboardPage() {
             </div>
           )}
 
-          {/* SOS-Kachel — volle Breite, rote Umrandung, Platzhalter für Task 13-15 */}
-          <Link
-            href="/alerts/new"
-            className="flex items-center gap-3 rounded-xl border-2 border-emergency-red bg-red-50 p-4 min-h-[80px] hover:bg-red-100 transition-colors active:scale-[0.98]"
+          {/* SOS-Kachel — oeffnet SOS-Bestaetigungsblatt (Triple-Safety) */}
+          <button
+            onClick={openSos}
+            className="w-full flex items-center gap-4 rounded-xl border-2 border-[#EF4444] bg-white p-4 min-h-[80px] transition-colors active:bg-red-50"
             data-testid="dashboard-sos-tile"
+            style={{ touchAction: "manipulation" }}
           >
-            <TriangleAlert className="h-8 w-8 text-emergency-red flex-shrink-0" />
-            <div>
-              <p className="font-bold text-emergency-red text-lg">SOS-Notruf</p>
-              <p className="text-sm text-anthrazit/70">
-                Im Notfall: 112 anrufen. Hier Hilfe im Quartier anfordern.
-              </p>
+            <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-[#EF4444]">
+              <ShieldAlert className="h-6 w-6 text-white" />
             </div>
-          </Link>
+            <div className="text-left">
+              <p className="font-bold text-[#EF4444] text-lg">Notfall / SOS</p>
+              <p className="text-sm text-gray-500">112 anrufen · Hilfe holen</p>
+            </div>
+          </button>
 
           {/* 4 Schnellzugriff-Kacheln */}
           <div className="grid grid-cols-2 gap-3">

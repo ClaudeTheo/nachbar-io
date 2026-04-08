@@ -12,6 +12,9 @@ import { AuthSessionProvider } from "@/components/AuthSessionProvider";
 import { AuthProvider } from "@/components/providers/auth-provider";
 import { GlobalCallListener } from "@/components/video/GlobalCallListener";
 import { PresenceHeartbeat } from "@/components/video/PresenceHeartbeat";
+import { SosProvider } from "@/components/sos/SosContext";
+import { SosConfirmationSheet } from "@/components/sos/SosConfirmationSheet";
+import { SosHeaderIcon } from "@/components/sos/SosHeaderIcon";
 
 // Layout fuer den aktiven Modus — mit Bottom-Navigation + Bug-Report
 export default function AppLayout({ children }: { children: React.ReactNode }) {
@@ -33,17 +36,26 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         <AuthSessionProvider>
           <QuarterProvider>
             <ExternalLinkProvider>
-              <HeartbeatProvider>
-                <GlobalCallListener />
-                <PresenceHeartbeat />
-                <main id="main-content" className="mx-auto max-w-lg px-4 pt-2">
-                  <ErrorBoundary>
-                    <PageTransition>{children}</PageTransition>
-                  </ErrorBoundary>
-                </main>
-              </HeartbeatProvider>
-              <BugReportButton />
-              <VoiceAssistantFAB />
+              <SosProvider>
+                <HeartbeatProvider>
+                  <GlobalCallListener />
+                  <PresenceHeartbeat />
+                  {/* SOS-Header-Icon (auf allen Seiten ausser Dashboard) */}
+                  <SosHeaderIcon />
+                  <main
+                    id="main-content"
+                    className="mx-auto max-w-lg px-4 pt-2"
+                  >
+                    <ErrorBoundary>
+                      <PageTransition>{children}</PageTransition>
+                    </ErrorBoundary>
+                  </main>
+                </HeartbeatProvider>
+                {/* SOS-Bestaetigungsblatt (globaler Sheet) */}
+                <SosConfirmationSheet />
+                <BugReportButton />
+                <VoiceAssistantFAB />
+              </SosProvider>
             </ExternalLinkProvider>
           </QuarterProvider>
         </AuthSessionProvider>

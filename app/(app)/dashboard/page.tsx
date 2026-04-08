@@ -15,7 +15,7 @@ import { InfoBar } from "@/modules/info-hub/components/InfoBar";
 import { NinaAlert } from "@/modules/info-hub/components/NinaAlert";
 import { HeroCard } from "@/components/HeroCard";
 import { InviteNeighborModal } from "@/components/InviteNeighborModal";
-import { DailyCheckinButton } from "@/modules/care/components/checkin/DailyCheckinButton";
+import { DailyCheckinBubble } from "@/modules/care/components/checkin/DailyCheckinBubble";
 import { RedeemCodeBanner } from "@/modules/care/components/subscription/RedeemCodeBanner";
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -176,9 +176,7 @@ export default function DashboardPage() {
                   )}
                 </Link>
               </div>
-              <div className="mt-4">
-                <DailyCheckinButton />
-              </div>
+              {/* Check-in wird als Sprechblase nach 5 Sek eingeblendet (siehe DailyCheckinBubble) */}
               {/* Quartier-Info-Bar (Wetter, Pollen, Muellabfuhr) — kompakt in der HeroCard */}
               <div className="mt-3 -mx-1">
                 <InfoBar />
@@ -264,6 +262,9 @@ export default function DashboardPage() {
         open={showInviteModal}
         onClose={() => setShowInviteModal(false)}
       />
+
+      {/* Check-in Sprechblase — erscheint nach 5 Sek, Nutzer muss antworten */}
+      <DailyCheckinBubble />
     </>
   );
 }

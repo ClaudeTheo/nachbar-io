@@ -23,13 +23,14 @@ interface ValidatedTtsInput {
  * Voice-Instruktionen fuer die seniorenfreundliche Sprachausgabe.
  * Steuert Tonfall, Tempo und Ausdruck der gpt-4o-mini-tts Stimme.
  */
-const SENIOR_VOICE_INSTRUCTIONS = `Sprich klares, akzentfreies Hochdeutsch.
-Deine Stimme ist warm, freundlich und geduldig — wie eine nette Nachbarin, die gerne hilft.
-Sprich in einem ruhigen, gleichmaessigen Tempo — nicht zu schnell, nicht zu langsam.
-Betone wichtige Informationen wie Uhrzeiten, Adressen und Namen leicht.
-Mache kurze Pausen zwischen Saetzen fuer besseres Verstaendnis.
-Klinge natuerlich und sympathisch, niemals roboterhaft oder kuenstlich.
-Verwende eine mittlere Tonlage, die angenehm und leicht verstaendlich ist.`;
+const SENIOR_VOICE_INSTRUCTIONS = `Sprich klares, akzentfreies Hochdeutsch mit viel Emotion und Dynamik.
+Deine Stimme ist warm, lebendig und herzlich — wie eine gute Freundin, die sich wirklich freut zu helfen.
+Variiere dein Tempo und deine Betonung natuerlich — mal schneller bei spannenden Infos, mal langsamer bei wichtigen Details.
+Betone wichtige Informationen wie Uhrzeiten, Adressen und Namen deutlich mit leichtem Nachdruck.
+Mache kurze natuerliche Pausen zwischen Saetzen — wie in einem echten Gespraech.
+Klinge lebendig, sympathisch und engagiert — NICHT monoton oder roboterhaft.
+Zeige Emotion: Freude bei guten Nachrichten, Mitgefuehl bei Sorgen, Begeisterung bei Tipps.
+Verwende eine mittlere Tonlage mit natuerlicher Melodie in der Stimme.`;
 
 /**
  * Validiert und normalisiert TTS-Eingabeparameter.

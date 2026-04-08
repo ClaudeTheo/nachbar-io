@@ -1,5 +1,6 @@
 // Nachbar.io — Text-to-Speech Service
 // Proxy fuer OpenAI TTS API — gibt MP3 Audio-Stream zurueck
+// Session 59: Seniorenfreundliche Stimme mit instructions-Parameter
 
 import { ServiceError } from "@/lib/services/service-error";
 
@@ -15,7 +16,20 @@ interface ValidatedTtsInput {
   text: string;
   voice: string;
   speed: number;
+  instructions: string;
 }
+
+/**
+ * Voice-Instruktionen fuer die seniorenfreundliche Sprachausgabe.
+ * Steuert Tonfall, Tempo und Ausdruck der gpt-4o-mini-tts Stimme.
+ */
+const SENIOR_VOICE_INSTRUCTIONS = `Sprich klares, akzentfreies Hochdeutsch.
+Deine Stimme ist warm, freundlich und geduldig — wie eine nette Nachbarin, die gerne hilft.
+Sprich in einem ruhigen, gleichmaessigen Tempo — nicht zu schnell, nicht zu langsam.
+Betone wichtige Informationen wie Uhrzeiten, Adressen und Namen leicht.
+Mache kurze Pausen zwischen Saetzen fuer besseres Verstaendnis.
+Klinge natuerlich und sympathisch, niemals roboterhaft oder kuenstlich.
+Verwende eine mittlere Tonlage, die angenehm und leicht verstaendlich ist.`;
 
 /**
  * Validiert und normalisiert TTS-Eingabeparameter.
@@ -29,15 +43,17 @@ function validateTtsInput(params: TtsRequest): ValidatedTtsInput {
     throw new ServiceError("Text zu lang (max. 1000 Zeichen).", 400);
   }
 
-  const voice = typeof params.voice === "string" ? params.voice : "nova";
+  // 'ash' klingt warm und natuerlich auf Deutsch, gut fuer Senioren
+  const voice = typeof params.voice === "string" ? params.voice : "ash";
+  // Etwas langsamer fuer besseres Verstaendnis bei aelteren Menschen
   const speed =
     typeof params.speed === "number" &&
     params.speed >= 0.25 &&
     params.speed <= 4.0
       ? params.speed
-      : 1.0;
+      : 0.95;
 
-  return { text, voice, speed };
+  return { text, voice, speed, instructions: SENIOR_VOICE_INSTRUCTIONS };
 }
 
 /**
@@ -50,7 +66,7 @@ export async function synthesizeSpeech(params: TtsRequest): Promise<Response> {
     throw new ServiceError("Sprachausgabe nicht verfügbar.", 503);
   }
 
-  const { text, voice, speed } = validateTtsInput(params);
+  const { text, voice, speed, instructions } = validateTtsInput(params);
 
   try {
     const res = await fetch("https://api.openai.com/v1/audio/speech", {
@@ -64,6 +80,7 @@ export async function synthesizeSpeech(params: TtsRequest): Promise<Response> {
         input: text,
         voice,
         speed,
+        instructions,
         response_format: "mp3",
       }),
     });

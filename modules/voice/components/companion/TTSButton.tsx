@@ -2,20 +2,20 @@
 // Vorlesen-Button — nur für Plus/Pro Nutzer (Pilot: alle freigeschalten)
 // Session 59: iOS Audio-Manager Integration fuer zuverlaessige Wiedergabe
 
-'use client';
+"use client";
 
-import { useState, useRef, useCallback, useEffect } from 'react';
-import { Volume2, Loader2, Square, Lock } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { toast } from 'sonner';
-import { getIOSAudioManager } from '../../services/ios-audio-manager';
+import { useState, useRef, useCallback, useEffect } from "react";
+import { Volume2, Loader2, Square, Lock } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
+import { getIOSAudioManager } from "../../services/ios-audio-manager";
 
 interface TTSButtonProps {
   text: string;
 }
 
 // Pilot-Modus: TTS für alle Nutzer freigeschalten
-const PILOT_MODE = process.env.NEXT_PUBLIC_PILOT_MODE === 'true';
+const PILOT_MODE = process.env.NEXT_PUBLIC_PILOT_MODE === "true";
 
 /**
  * Spricht den übergebenen Text via OpenAI TTS vor.
@@ -62,9 +62,9 @@ export function TTSButton({ text }: TTSButtonProps) {
 
     setLoading(true);
     try {
-      const res = await fetch('/api/voice/tts', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const res = await fetch("/api/voice/tts", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ text: text.slice(0, 1000) }),
       });
 
@@ -77,16 +77,18 @@ export function TTSButton({ text }: TTSButtonProps) {
       // iOS Audio-Manager versuchen (zuverlaessiger auf iOS Safari)
       const audioManager = getIOSAudioManager();
       if (audioManager.canPlay()) {
-        setPlaying(true);
         try {
+          setPlaying(true);
           await audioManager.playBlob(blob);
-        } finally {
+          setPlaying(false);
+          return;
+        } catch {
+          // AudioManager fehlgeschlagen — Fallback auf HTMLAudioElement
           setPlaying(false);
         }
-        return;
       }
 
-      // Fallback: HTMLAudioElement (Desktop-Browser)
+      // Fallback: HTMLAudioElement (Desktop + wenn AudioManager fehlschlaegt)
       const url = URL.createObjectURL(blob);
 
       // Vorheriges Audio aufräumen
@@ -107,18 +109,20 @@ export function TTSButton({ text }: TTSButtonProps) {
       audio.onerror = () => {
         setPlaying(false);
         URL.revokeObjectURL(url);
-        toast.error('Wiedergabefehler.');
+        toast.error("Wiedergabefehler.");
       };
 
       await audio.play().catch(() => {
         // Safari/iOS blockiert audio.play() ohne User-Geste oder bei stummem Modus
-        toast.error('Wiedergabe blockiert — bitte prüfen Sie den Lautstärke-/Stummschalter.');
+        toast.error(
+          "Wiedergabe blockiert — bitte prüfen Sie den Lautstärke-/Stummschalter.",
+        );
         URL.revokeObjectURL(url);
-        throw new Error('play blocked');
+        throw new Error("play blocked");
       });
       setPlaying(true);
     } catch {
-      toast.error('Sprachausgabe nicht verfügbar.');
+      toast.error("Sprachausgabe nicht verfügbar.");
     } finally {
       setLoading(false);
     }
@@ -158,7 +162,7 @@ export function TTSButton({ text }: TTSButtonProps) {
       ) : (
         <Volume2 className="h-5 w-5" />
       )}
-      {playing ? 'Stoppen' : 'Vorlesen'}
+      {playing ? "Stoppen" : "Vorlesen"}
     </Button>
   );
 }

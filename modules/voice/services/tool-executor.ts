@@ -710,6 +710,63 @@ export async function executeCompanionTool(
         };
       }
 
+      case "web_search": {
+        const query = (params.query as string)?.trim();
+        if (!query) {
+          return { success: false, summary: "Bitte geben Sie einen Suchbegriff an." };
+        }
+
+        const braveKey = process.env.BRAVE_SEARCH_API_KEY;
+        if (!braveKey) {
+          return {
+            success: false,
+            summary: "Internetsuche ist gerade nicht verfuegbar. Bitte versuchen Sie es spaeter.",
+          };
+        }
+
+        try {
+          const searchUrl = `https://api.search.brave.com/res/v1/web/search?q=${encodeURIComponent(query)}&count=5&search_lang=de&country=de&text_decorations=false`;
+          const searchRes = await fetch(searchUrl, {
+            headers: {
+              Accept: "application/json",
+              "Accept-Encoding": "gzip",
+              "X-Subscription-Token": braveKey,
+            },
+          });
+
+          if (!searchRes.ok) {
+            console.error("[web_search] Brave API Fehler:", searchRes.status);
+            return { success: false, summary: "Internetsuche fehlgeschlagen." };
+          }
+
+          const searchData = await searchRes.json();
+          const results = (searchData.web?.results ?? []).slice(0, 5);
+
+          if (results.length === 0) {
+            return { success: true, summary: `Keine Ergebnisse gefunden fuer "${query}".` };
+          }
+
+          // Ergebnisse kompakt fuer Claude zusammenfassen
+          const lines = results.map(
+            (r: { title: string; description: string; url: string }, i: number) =>
+              `${i + 1}. ${r.title}\n   ${r.description}\n   Quelle: ${r.url}`,
+          );
+
+          return {
+            success: true,
+            summary: `Suchergebnisse fuer "${query}":\n\n${lines.join("\n\n")}`,
+            data: results.map((r: { title: string; description: string; url: string }) => ({
+              title: r.title,
+              snippet: r.description,
+              url: r.url,
+            })),
+          };
+        } catch (err) {
+          console.error("[web_search] Fehler:", err);
+          return { success: false, summary: "Internetsuche fehlgeschlagen." };
+        }
+      }
+
       case "navigate_to": {
         const route = params.route as string;
         return {

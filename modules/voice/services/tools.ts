@@ -472,6 +472,23 @@ export const companionTools: CompanionToolDefinition[] = [
   },
 
   {
+    name: "web_search",
+    description:
+      'Durchsucht das Internet nach Informationen. Nutze dieses Tool wenn der Nutzer nach lokalen Geschaeften, Oeffnungszeiten, Telefonnummern, Adressen, Preisen, Wetter, Nachrichten oder anderen Informationen fragt, die NICHT in den Quartier-Daten enthalten sind. Beispiele: "Wann hat das Schwimmbad offen?", "Telefonnummer vom Rathaus", "Oeffnungszeiten Apotheke", "Wie wird das Wetter morgen?", "Was kostet ein Brief?". Die Suche wird automatisch auf die Region Bad Saeckingen / Hochrhein fokussiert.',
+    input_schema: {
+      type: "object",
+      properties: {
+        query: {
+          type: "string",
+          description:
+            "Suchanfrage — fuer lokale Ergebnisse den Ortsnamen ergaenzen (z.B. 'Schwimmbad Oeffnungszeiten Bad Saeckingen')",
+        },
+      },
+      required: ["query"],
+    },
+  },
+
+  {
     name: "navigate_to",
     description:
       "Navigiert den Nutzer zu einer bestimmten Seite in der App. Wichtige Routen: /dashboard (Startseite), /profile/edit (Profil/Adresse bearbeiten), /profile/location (Standort/Adresse aendern), /profile/map-position (Kartenposition anpassen), /profile/notifications (Benachrichtigungen einstellen), /news (Quartiersnews), /notifications (Alle Benachrichtigungen), /messages (Nachrichten), /map (Quartierskarte), /help (Nachbarschaftshilfe), /help/new (Neue Hilfsanfrage), /waste-calendar (Muellkalender), /events (Veranstaltungen), /marketplace (Marktplatz), /board (Pinnwand), /reports/new (Mangel/Problem melden), /praevention (Gesundheit & Praevention), /sprechstunde (Arzt-Sprechstunde), /senior/checkin (Tages-Check-in), /senior/medications (Medikamente), /tips (Alltags-Tipps), /city-services (Rathaus & Infos), /settings (Einstellungen).",

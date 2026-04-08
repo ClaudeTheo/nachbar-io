@@ -132,7 +132,7 @@ export default function SeniorSprechstundePage() {
   return (
     <div className="space-y-6">
       <Link
-        href="/"
+        href="/dashboard"
         className="inline-block rounded-2xl bg-gray-200 px-6 py-4 text-xl font-bold text-anthrazit"
         style={{ minHeight: "60px", touchAction: "manipulation" }}
       >

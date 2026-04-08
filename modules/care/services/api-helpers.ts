@@ -1,13 +1,13 @@
 // lib/care/api-helpers.ts
 // Nachbar.io — Gemeinsame API-Hilfsfunktionen fuer das Care-Modul
 
-import { NextResponse } from 'next/server';
-import type { SupabaseClient, AuthUser } from '@supabase/supabase-js';
-import { createClient } from '@/lib/supabase/server';
-import { canAccessFeature, getCareRole } from './permissions';
-import type { CareUserRole, CareSubscriptionPlan, GateCode } from './types';
-import { PLAN_HIERARCHY } from './billing';
-import { hasFeature } from './constants';
+import { NextResponse } from "next/server";
+import type { SupabaseClient, AuthUser } from "@supabase/supabase-js";
+import { createClient } from "@/lib/supabase/server";
+import { canAccessFeature, getCareRole } from "./permissions";
+import type { CareUserRole, CareSubscriptionPlan, GateCode } from "./types";
+import { PLAN_HIERARCHY } from "./billing";
+import { hasFeature } from "./constants";
 
 /** Standardisierte Fehler-Antwort mit Logging */
 export function errorResponse(message: string, status: number) {
@@ -26,7 +26,9 @@ export async function requireAuth(): Promise<{
   user: AuthUser;
 } | null> {
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
   if (!user) return null;
   return { supabase, user };
 }
@@ -35,7 +37,7 @@ export async function requireAuth(): Promise<{
 export async function requireFeature(
   supabase: SupabaseClient,
   seniorId: string,
-  feature: string
+  feature: string,
 ): Promise<boolean> {
   return canAccessFeature(supabase, seniorId, feature);
 }
@@ -43,12 +45,12 @@ export async function requireFeature(
 /** Admin-Check: prueft ob User Admin ist */
 export async function requireAdmin(
   supabase: SupabaseClient,
-  userId: string
+  userId: string,
 ): Promise<boolean> {
   const { data } = await supabase
-    .from('users')
-    .select('is_admin')
-    .eq('id', userId)
+    .from("users")
+    .select("is_admin")
+    .eq("id", userId)
     .single();
   return data?.is_admin === true;
 }
@@ -60,10 +62,10 @@ export async function requireAdmin(
  */
 export async function requireCareAccess(
   supabase: SupabaseClient,
-  seniorId: string
+  seniorId: string,
 ): Promise<CareUserRole | null> {
   const role = await getCareRole(supabase, seniorId);
-  if (role === 'none') return null;
+  if (role === "none") return null;
   return role;
 }
 
@@ -71,7 +73,7 @@ export async function requireCareAccess(
 export function careLog(
   module: string,
   action: string,
-  details?: Record<string, unknown>
+  details?: Record<string, unknown>,
 ) {
   const timestamp = new Date().toISOString();
   const logEntry = {
@@ -88,7 +90,7 @@ export function careError(
   module: string,
   action: string,
   error: unknown,
-  details?: Record<string, unknown>
+  details?: Record<string, unknown>,
 ) {
   const timestamp = new Date().toISOString();
   const message = error instanceof Error ? error.message : String(error);
@@ -107,12 +109,12 @@ export function careError(
 /** Einheitliche 403-Antwort fuer Feature-Gates */
 export function featureGateResponse(
   code: GateCode,
-  details: Record<string, string> = {}
+  details: Record<string, string> = {},
 ): NextResponse {
   const messages: Record<GateCode, string> = {
-    PLAN_REQUIRED: 'Feature nicht verfügbar',
-    ROLE_REQUIRED: 'Unzureichende Berechtigung',
-    TENANT_ACCESS_REQUIRED: 'Kein Zugriff auf diese Organisation',
+    PLAN_REQUIRED: "Feature nicht verfügbar",
+    ROLE_REQUIRED: "Unzureichende Berechtigung",
+    TENANT_ACCESS_REQUIRED: "Kein Zugriff auf diese Organisation",
   };
 
   const body: Record<string, string> = {
@@ -121,11 +123,11 @@ export function featureGateResponse(
     ...details,
   };
 
-  if (code === 'PLAN_REQUIRED') {
-    body.upgradeUrl = '/care/subscription';
+  if (code === "PLAN_REQUIRED") {
+    body.upgradeUrl = "/care/subscription";
   }
 
-  careLog('gate', code, { ...details });
+  careLog("gate", code, { ...details });
   return NextResponse.json(body, { status: 403 });
 }
 
@@ -134,12 +136,12 @@ export async function requireSubscription(
   supabase: SupabaseClient,
   userId: string,
   requiredPlan: CareSubscriptionPlan,
-  options?: { feature?: string }
+  options?: { feature?: string },
 ): Promise<{ plan: CareSubscriptionPlan; status: string } | NextResponse> {
   const { data: subscription } = await supabase
-    .from('care_subscriptions')
-    .select('plan, status')
-    .eq('user_id', userId)
+    .from("care_subscriptions")
+    .select("plan, status")
+    .eq("user_id", userId)
     .maybeSingle();
 
   let plan: CareSubscriptionPlan;
@@ -148,31 +150,40 @@ export async function requireSubscription(
   if (subscription) {
     plan = subscription.plan;
     status = subscription.status;
-  } else if (process.env.PILOT_MODE === 'true') {
-    plan = 'pro';
-    status = 'active';
-    careLog('gate', 'pilot_fallback', { userId });
+  } else if (process.env.PILOT_MODE?.trim() === "true") {
+    plan = "pro";
+    status = "active";
+    careLog("gate", "pilot_fallback", { userId });
   } else {
-    plan = 'free';
-    status = 'active';
+    plan = "free";
+    status = "active";
   }
 
   // Abgelaufene/gekuendigte Abos blockieren
-  const isActive = status === 'active' || status === 'trial';
+  const isActive = status === "active" || status === "trial";
   if (!isActive) {
-    return featureGateResponse('PLAN_REQUIRED', { requiredPlan, reason: 'subscription_inactive' });
+    return featureGateResponse("PLAN_REQUIRED", {
+      requiredPlan,
+      reason: "subscription_inactive",
+    });
   }
 
   // Plan-Hierarchie pruefen
   const currentIdx = PLAN_HIERARCHY.indexOf(plan);
   const requiredIdx = PLAN_HIERARCHY.indexOf(requiredPlan);
   if (currentIdx < requiredIdx) {
-    return featureGateResponse('PLAN_REQUIRED', { requiredPlan, reason: 'plan_insufficient' });
+    return featureGateResponse("PLAN_REQUIRED", {
+      requiredPlan,
+      reason: "plan_insufficient",
+    });
   }
 
   // Optionales Feature-Check
   if (options?.feature && !hasFeature(plan, options.feature)) {
-    return featureGateResponse('PLAN_REQUIRED', { requiredPlan, reason: 'feature_missing' });
+    return featureGateResponse("PLAN_REQUIRED", {
+      requiredPlan,
+      reason: "feature_missing",
+    });
   }
 
   return { plan, status };
@@ -183,21 +194,21 @@ export async function requireOrgAccess(
   supabase: SupabaseClient,
   userId: string,
   orgId: string,
-  minRole?: 'admin'
+  minRole?: "admin",
 ): Promise<Record<string, unknown> | NextResponse> {
   const { data: member, error } = await supabase
-    .from('org_members')
-    .select('role, org_id')
-    .eq('user_id', userId)
-    .eq('org_id', orgId)
+    .from("org_members")
+    .select("role, org_id")
+    .eq("user_id", userId)
+    .eq("org_id", orgId)
     .single();
 
   if (error || !member) {
-    return featureGateResponse('TENANT_ACCESS_REQUIRED');
+    return featureGateResponse("TENANT_ACCESS_REQUIRED");
   }
 
-  if (minRole === 'admin' && member.role !== 'admin') {
-    return featureGateResponse('ROLE_REQUIRED', { requiredRole: 'admin' });
+  if (minRole === "admin" && member.role !== "admin") {
+    return featureGateResponse("ROLE_REQUIRED", { requiredRole: "admin" });
   }
 
   return member;
@@ -206,16 +217,16 @@ export async function requireOrgAccess(
 /** Arzt-Zugriffs-Guard: prueft doctor_profiles-Eintrag */
 export async function requireDoctorAccess(
   supabase: SupabaseClient,
-  userId: string
+  userId: string,
 ): Promise<Record<string, unknown> | NextResponse> {
   const { data: profile } = await supabase
-    .from('doctor_profiles')
-    .select('user_id, visible')
-    .eq('user_id', userId)
+    .from("doctor_profiles")
+    .select("user_id, visible")
+    .eq("user_id", userId)
     .maybeSingle();
 
   if (!profile) {
-    return featureGateResponse('ROLE_REQUIRED', { requiredRole: 'doctor' });
+    return featureGateResponse("ROLE_REQUIRED", { requiredRole: "doctor" });
   }
 
   return profile;
@@ -224,7 +235,7 @@ export async function requireDoctorAccess(
 /** 401-Antwort fuer fehlende Auth */
 export function unauthorizedResponse(): NextResponse {
   return NextResponse.json(
-    { error: 'Nicht authentifiziert', code: 'UNAUTHORIZED' },
-    { status: 401 }
+    { error: "Nicht authentifiziert", code: "UNAUTHORIZED" },
+    { status: 401 },
   );
 }

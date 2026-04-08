@@ -319,7 +319,8 @@ async function getAssistantContext(
   userId: string,
 ): Promise<"plus_chat" | "free_chat"> {
   // PILOT_MODE: alle User sind Plus (spaeter Stripe-Check)
-  const isPilot = process.env.PILOT_MODE === "true";
+  // .trim() weil vercel env pull manchmal \n an Werte anhaengt
+  const isPilot = process.env.PILOT_MODE?.trim() === "true";
   if (isPilot) return "plus_chat";
 
   // Pruefen ob Plus-Abo aktiv (via users-Tabelle oder Stripe)

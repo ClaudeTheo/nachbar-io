@@ -93,9 +93,14 @@ export function TTSButton({ text }: TTSButtonProps) {
   }, []);
 
   const handlePlay = useCallback(async () => {
-    if (playing && audioRef.current) {
-      audioRef.current.pause();
-      audioRef.current.currentTime = 0;
+    if (playing) {
+      // Stoppe sowohl HTMLAudio als auch iOS AudioManager
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current.currentTime = 0;
+      }
+      const audioManager = getIOSAudioManager();
+      audioManager.stop();
       setPlaying(false);
       return;
     }

@@ -26,6 +26,7 @@ class IOSAudioManagerImpl {
   private ctx: AudioContext | null = null;
   private unlocked = false;
   private initialized = false;
+  private activeSource: AudioBufferSourceNode | null = null;
 
   /** Wurde der AudioContext erfolgreich freigeschaltet? */
   get isUnlocked(): boolean {
@@ -103,12 +104,17 @@ class IOSAudioManagerImpl {
     const source = this.ctx.createBufferSource();
     source.buffer = decoded;
     source.connect(this.ctx.destination);
+    this.activeSource = source;
 
     return new Promise<void>((resolve, reject) => {
-      source.onended = () => resolve();
+      source.onended = () => {
+        this.activeSource = null;
+        resolve();
+      };
       try {
         source.start(0);
       } catch (err) {
+        this.activeSource = null;
         reject(err);
       }
     });
@@ -132,6 +138,26 @@ class IOSAudioManagerImpl {
    */
   canPlay(): boolean {
     return this.unlocked && this.ctx !== null && this.ctx.state === "running";
+  }
+
+  /**
+   * Stoppt die aktuelle Wiedergabe sofort.
+   * Sicher aufrufbar auch wenn nichts spielt.
+   */
+  stop(): void {
+    if (this.activeSource) {
+      try {
+        this.activeSource.stop();
+      } catch {
+        // Bereits gestoppt — ignorieren
+      }
+      this.activeSource = null;
+    }
+  }
+
+  /** Spielt gerade Audio ab? */
+  get isPlaying(): boolean {
+    return this.activeSource !== null;
   }
 
   /** Gibt alle Ressourcen frei */

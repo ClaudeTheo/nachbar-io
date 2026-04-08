@@ -79,7 +79,7 @@ function LegacyBottomNav() {
   );
 }
 
-// --- Neue Navigation (5 Items, rollenadaptiv) ---
+// --- Neue Navigation (4 Items, rollenadaptiv) ---
 
 function RedesignBottomNav() {
   const pathname = usePathname();
@@ -101,7 +101,6 @@ function RedesignBottomNav() {
             icon={item.icon}
             activeColor={item.activeColor}
             isActive={isActive}
-            isEmergency={item.isEmergency}
             badge={item.href === "/profile" ? unreadCount : undefined}
           />
         );

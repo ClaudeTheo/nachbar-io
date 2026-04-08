@@ -1,18 +1,18 @@
 // components/nav/NavConfig.ts
-// Nachbar.io — Rollenadaptive Navigation (UX-Redesign Phase 1)
-// Definiert 5 Nav-Items pro Rolle + useNavRole() Hook.
+// Nachbar.io — Rollenadaptive Navigation (4-Tab-Layout)
+// 4 Nav-Items pro Rolle + useNavRole() Hook.
 "use client";
 
 import { useState, useEffect } from "react";
 import {
   Home,
-  TriangleAlert,
   Heart,
+  HeartPulse,
   HandHeart,
   User,
   ClipboardList,
-  MessageCircle,
-  Phone,
+  Building2,
+  Shield,
   type LucideIcon,
 } from "lucide-react";
 import { useAuth } from "@/components/providers/auth-provider";
@@ -28,37 +28,28 @@ export interface NavItemConfig {
   icon: LucideIcon;
   /** Farb-Klasse für aktives Icon (Tailwind text-*) */
   activeColor: string;
-  /** Ist das Notfall-Item (erhöhte Darstellung) */
-  isEmergency?: boolean;
 }
 
-// --- Nav-Konfigurationen pro Rolle ---
+// --- Nav-Konfigurationen pro Rolle (4 Tabs) ---
 
 const seniorNav: NavItemConfig[] = [
   {
     href: "/dashboard",
-    label: "Zuhause",
+    label: "Start",
     icon: Home,
-    activeColor: "text-quartier-green",
+    activeColor: "text-[#4CAF87]",
   },
   {
-    href: "/alerts/new",
-    label: "Notfall",
-    icon: TriangleAlert,
-    activeColor: "text-alert-amber",
-    isEmergency: true,
-  },
-  {
-    href: "/my-day",
-    label: "Mein Tag",
-    icon: Heart,
-    activeColor: "text-emergency-red",
-  },
-  {
-    href: "/hilfe",
-    label: "Hilfe",
-    icon: HandHeart,
+    href: "/quartier",
+    label: "Quartier",
+    icon: Building2,
     activeColor: "text-blue-500",
+  },
+  {
+    href: "/care",
+    label: "Gesundheit",
+    icon: Heart,
+    activeColor: "text-red-500",
   },
   {
     href: "/profile",
@@ -73,14 +64,7 @@ const helperNav: NavItemConfig[] = [
     href: "/dashboard",
     label: "Übersicht",
     icon: Home,
-    activeColor: "text-quartier-green",
-  },
-  {
-    href: "/alerts/new",
-    label: "Notfall",
-    icon: TriangleAlert,
-    activeColor: "text-alert-amber",
-    isEmergency: true,
+    activeColor: "text-[#4CAF87]",
   },
   {
     href: "/hilfe/tasks",
@@ -98,7 +82,7 @@ const helperNav: NavItemConfig[] = [
     href: "/profile",
     label: "Profil",
     icon: User,
-    activeColor: "text-quartier-green",
+    activeColor: "text-[#4CAF87]",
   },
 ];
 
@@ -107,30 +91,23 @@ const caregiverNav: NavItemConfig[] = [
     href: "/dashboard",
     label: "Übersicht",
     icon: Home,
-    activeColor: "text-quartier-green",
-  },
-  {
-    href: "/alerts/new",
-    label: "Notfall",
-    icon: TriangleAlert,
-    activeColor: "text-alert-amber",
-    isEmergency: true,
+    activeColor: "text-[#4CAF87]",
   },
   {
     href: "/care/status",
     label: "Status",
     icon: Heart,
-    activeColor: "text-quartier-green",
+    activeColor: "text-[#4CAF87]",
   },
   {
-    href: "/care/contact",
-    label: "Kontakt",
-    icon: Phone,
-    activeColor: "text-blue-500",
+    href: "/care",
+    label: "Gesundheit",
+    icon: HeartPulse,
+    activeColor: "text-red-500",
   },
   {
     href: "/profile",
-    label: "Profil",
+    label: "Ich",
     icon: User,
     activeColor: "text-violet-500",
   },
@@ -141,32 +118,25 @@ const orgAdminNav: NavItemConfig[] = [
     href: "/dashboard",
     label: "Übersicht",
     icon: Home,
-    activeColor: "text-quartier-green",
+    activeColor: "text-[#4CAF87]",
   },
   {
-    href: "/alerts/new",
-    label: "Notfall",
-    icon: TriangleAlert,
-    activeColor: "text-alert-amber",
-    isEmergency: true,
-  },
-  {
-    href: "/hilfe",
-    label: "Hilfe",
-    icon: HandHeart,
+    href: "/quartier",
+    label: "Quartier",
+    icon: Building2,
     activeColor: "text-blue-500",
   },
   {
-    href: "/notifications",
-    label: "Nachrichten",
-    icon: MessageCircle,
+    href: "/org",
+    label: "Verwaltung",
+    icon: Shield,
     activeColor: "text-violet-500",
   },
   {
     href: "/profile",
-    label: "Profil",
+    label: "Ich",
     icon: User,
-    activeColor: "text-quartier-green",
+    activeColor: "text-[#4CAF87]",
   },
 ];
 

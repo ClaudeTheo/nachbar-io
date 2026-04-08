@@ -1,35 +1,44 @@
 "use client";
 
 import Link from "next/link";
-import { Bell } from "lucide-react";
+import {
+  Bell,
+  TriangleAlert,
+  CheckCircle2,
+  MessageCircle,
+  Newspaper,
+  Bot,
+} from "lucide-react";
 import { CategoryIcon } from "@/components/CategoryIcon";
 import { GREETING_ICON_MAP } from "@/lib/category-icons";
 import { isUxRedesignEnabled } from "@/lib/ux-flags";
 import { DashboardHero } from "@/components/dashboard/DashboardHero";
 import { PullToRefresh } from "@/components/PullToRefresh";
 import { ReputationBadge } from "@/components/ReputationBadge";
-import { ProfileCompletionBanner } from "@/components/ProfileCompletionBanner";
+// Moved to Quartier/Gesundheit hub
+// import { ProfileCompletionBanner } from "@/components/ProfileCompletionBanner";
 import { FloatingHelpButton } from "@/components/FloatingHelpButton";
-import { LargeTitle } from "@/components/ui/LargeTitle";
 import { InfoBar } from "@/modules/info-hub/components/InfoBar";
 import { NinaAlert } from "@/modules/info-hub/components/NinaAlert";
 import { HeroCard } from "@/components/HeroCard";
-import { InviteNeighborModal } from "@/components/InviteNeighborModal";
+// Moved to Quartier hub
+// import { InviteNeighborModal } from "@/components/InviteNeighborModal";
 import { DailyCheckinBubble } from "@/modules/care/components/checkin/DailyCheckinBubble";
-import { RedeemCodeBanner } from "@/modules/care/components/subscription/RedeemCodeBanner";
 import { Skeleton } from "@/components/ui/skeleton";
 
 import { useDashboardData, getGreeting } from "./hooks/useDashboardData";
-import { AlertBanners } from "./components/AlertBanners";
-import { DashboardServices } from "./components/DashboardServices";
-import { EmptyState } from "./components/EmptyState";
+// Moved to Quartier/Gesundheit hub
+// import { AlertBanners } from "./components/AlertBanners";
+// import { DashboardServices } from "./components/DashboardServices";
+// import { EmptyState } from "./components/EmptyState";
 
 export default function DashboardPage() {
   const {
-    alerts,
-    news,
-    helpRequests,
-    marketplaceItems,
+    // Moved to Quartier/Gesundheit hub — kept in hook for compatibility
+    // alerts,
+    // news,
+    // helpRequests,
+    // marketplaceItems,
     userName,
     reputationLevel,
     loading,
@@ -39,8 +48,8 @@ export default function DashboardPage() {
     unreadCount,
     currentQuarter,
     quarterLoading,
-    showInviteModal,
-    setShowInviteModal,
+    // showInviteModal,
+    // setShowInviteModal,
     loadDashboard,
   } = useDashboardData();
 
@@ -97,7 +106,7 @@ export default function DashboardPage() {
           {/* NINA-Warnungen (vor Hero, nach Notfall-Banner) */}
           <NinaAlert />
 
-          {/* Hero-Bereich: Begruessung + Check-in */}
+          {/* Hero-Bereich: Begruessung + Wetter */}
           {isUxRedesignEnabled("UX_REDESIGN_DASHBOARD") ? (
             <DashboardHero
               userName={userName}
@@ -176,7 +185,6 @@ export default function DashboardPage() {
                   )}
                 </Link>
               </div>
-              {/* Check-in wird als Sprechblase nach 5 Sek eingeblendet (siehe DailyCheckinBubble) */}
               {/* Quartier-Info-Bar (Wetter, Pollen, Muellabfuhr) — kompakt in der HeroCard */}
               <div className="mt-3 -mx-1">
                 <InfoBar />
@@ -215,53 +223,107 @@ export default function DashboardPage() {
             </div>
           )}
 
-          {/* Services: Kommunal, Hilfe-Boerse, Marktplatz, News, Caregiver — Schnellzugriff oben */}
-          <DashboardServices
-            helpRequests={helpRequests}
-            marketplaceItems={marketplaceItems}
-            news={news}
-          />
+          {/* SOS-Kachel — volle Breite, rote Umrandung, Platzhalter für Task 13-15 */}
+          <Link
+            href="/alerts/new"
+            className="flex items-center gap-3 rounded-xl border-2 border-emergency-red bg-red-50 p-4 min-h-[80px] hover:bg-red-100 transition-colors active:scale-[0.98]"
+            data-testid="dashboard-sos-tile"
+          >
+            <TriangleAlert className="h-8 w-8 text-emergency-red flex-shrink-0" />
+            <div>
+              <p className="font-bold text-emergency-red text-lg">SOS-Notruf</p>
+              <p className="text-sm text-anthrazit/70">
+                Im Notfall: 112 anrufen. Hier Hilfe im Quartier anfordern.
+              </p>
+            </div>
+          </Link>
 
-          {/* Einladungs-Code Banner (Caregiver/Plus) */}
-          <RedeemCodeBanner />
+          {/* 4 Schnellzugriff-Kacheln */}
+          <div className="grid grid-cols-2 gap-3">
+            {/* 1. Check-in */}
+            <Link
+              href="/care/checkin"
+              className="bg-white rounded-xl border shadow-sm p-4 min-h-[80px] flex flex-col justify-center hover:bg-gray-50 transition-colors active:scale-[0.98]"
+            >
+              <div className="flex items-center gap-2">
+                <CheckCircle2 className="h-5 w-5 text-quartier-green" />
+                <span className="font-semibold text-anthrazit">Check-in</span>
+              </div>
+              <p className="text-xs text-muted-foreground mt-1">
+                Wie geht es Ihnen?
+              </p>
+            </Link>
 
-          {/* Profilvervollstaendigung */}
-          {profileData && (
-            <ProfileCompletionBanner
-              userId={profileData.userId}
-              avatarUrl={profileData.avatarUrl}
-              bio={profileData.bio}
-              phone={profileData.phone}
-              hasSkills={profileData.hasSkills}
-              settings={profileData.settings}
-            />
-          )}
+            {/* 2. Nachrichten */}
+            <Link
+              href="/notifications"
+              className="bg-white rounded-xl border shadow-sm p-4 min-h-[80px] flex flex-col justify-center hover:bg-gray-50 transition-colors active:scale-[0.98] relative"
+            >
+              <div className="flex items-center gap-2">
+                <MessageCircle className="h-5 w-5 text-blue-500" />
+                <span className="font-semibold text-anthrazit">
+                  Nachrichten
+                </span>
+              </div>
+              <p className="text-xs text-muted-foreground mt-1">
+                Benachrichtigungen
+              </p>
+              {unreadCount > 0 && (
+                <span className="absolute top-2 right-2 flex h-5 w-5 items-center justify-center rounded-full bg-emergency-red text-[10px] font-bold text-white">
+                  {unreadCount > 9 ? "9+" : unreadCount}
+                </span>
+              )}
+            </Link>
 
-          {/* Alerts + Hilfe-Button + Einladen */}
-          <AlertBanners
-            alerts={alerts}
-            onInviteClick={() => setShowInviteModal(true)}
-          />
+            {/* 3. Neuigkeiten */}
+            <Link
+              href="/news"
+              className="bg-white rounded-xl border shadow-sm p-4 min-h-[80px] flex flex-col justify-center hover:bg-gray-50 transition-colors active:scale-[0.98]"
+            >
+              <div className="flex items-center gap-2">
+                <Newspaper className="h-5 w-5 text-violet-500" />
+                <span className="font-semibold text-anthrazit">
+                  Neuigkeiten
+                </span>
+              </div>
+              <p className="text-xs text-muted-foreground mt-1">
+                Quartiers-News
+              </p>
+            </Link>
 
-          {/* Leer-Zustand mit Demo-Vorschau (nur ohne UX-Redesign) */}
-          <EmptyState
-            alerts={alerts}
-            news={news}
-            helpRequests={helpRequests}
-            marketplaceItems={marketplaceItems}
-            quarterName={currentQuarter?.name}
-          />
+            {/* 4. KI-Assistent */}
+            <Link
+              href="/companion"
+              className="bg-white rounded-xl border shadow-sm p-4 min-h-[80px] flex flex-col justify-center hover:bg-gray-50 transition-colors active:scale-[0.98]"
+            >
+              <div className="flex items-center gap-2">
+                <Bot className="h-5 w-5 text-emerald-600" />
+                <span className="font-semibold text-anthrazit">
+                  KI-Assistent
+                </span>
+              </div>
+              <p className="text-xs text-muted-foreground mt-1">
+                Fragen & Hilfe
+              </p>
+            </Link>
+          </div>
+
+          {/* Moved to Quartier/Gesundheit hub:
+              - DashboardServices (Kommunal, Hilfe-Boerse, Marktplatz, News, Caregiver)
+              - RedeemCodeBanner
+              - ProfileCompletionBanner
+              - AlertBanners
+              - EmptyState
+          */}
         </div>
       </PullToRefresh>
 
       {/* FAB Schnell-Hilfe */}
       <FloatingHelpButton />
 
-      {/* Nachbar-Einladungs-Modal */}
-      <InviteNeighborModal
-        open={showInviteModal}
-        onClose={() => setShowInviteModal(false)}
-      />
+      {/* Moved to Quartier hub:
+          - InviteNeighborModal
+      */}
 
       {/* Check-in Sprechblase — erscheint nach 5 Sek, Nutzer muss antworten */}
       <DailyCheckinBubble />

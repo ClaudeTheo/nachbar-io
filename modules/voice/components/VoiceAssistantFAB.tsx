@@ -235,8 +235,16 @@ export function VoiceAssistantFAB() {
       onAudioLevel: (level: number) => {
         setAudioLevel(level);
       },
-      onStateChange: () => {
-        // State wird ueber sheetState gesteuert
+      onStateChange: (state) => {
+        // WhisperEngine meldet 'processing' wenn MediaRecorder gestoppt und Transkription laeuft
+        // → sofort Spinner anzeigen statt auf Recording-Screen haengen zu bleiben
+        if (state === "processing") {
+          setSheetState("processing");
+          setAudioLevel(0);
+        } else if (state === "idle") {
+          // Engine zurueck im Idle (z.B. nach Fehler) → nur wenn noch nicht weitergeschaltet
+          setAudioLevel(0);
+        }
       },
       onError: (message: string) => {
         const userMessage =

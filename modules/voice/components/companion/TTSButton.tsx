@@ -4,8 +4,8 @@
 
 'use client';
 
-import { useState, useRef, useCallback } from 'react';
-import { Volume2, Loader2, Lock } from 'lucide-react';
+import { useState, useRef, useCallback, useEffect } from 'react';
+import { Volume2, Loader2, Square, Lock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { getIOSAudioManager } from '../../services/ios-audio-manager';
@@ -36,6 +36,20 @@ export function TTSButton({ text }: TTSButtonProps) {
   // Feature-Gate: Im Pilot-Modus ist TTS für alle freigeschaltet.
   // Nach Pilot: useSubscription() prüfen (Plus/Pro erforderlich).
   const isTtsAvailable = PILOT_MODE || true; // TODO: nach Pilot → useSubscription().plan !== 'free'
+
+  // Cleanup: Audio stoppen wenn Komponente unmountet (z.B. Sheet schliesst)
+  useEffect(() => {
+    return () => {
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current.currentTime = 0;
+        if (audioRef.current.src) {
+          URL.revokeObjectURL(audioRef.current.src);
+        }
+        audioRef.current = null;
+      }
+    };
+  }, []);
 
   const handlePlay = useCallback(async () => {
     // Wenn bereits abspielend → stoppen

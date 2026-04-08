@@ -179,6 +179,10 @@ export default function DashboardPage() {
               <div className="mt-4">
                 <DailyCheckinButton />
               </div>
+              {/* Quartier-Info-Bar (Wetter, Pollen, Muellabfuhr) — kompakt in der HeroCard */}
+              <div className="mt-3 -mx-1">
+                <InfoBar />
+              </div>
             </HeroCard>
           )}
 
@@ -212,9 +216,6 @@ export default function DashboardPage() {
               </div>
             </div>
           )}
-
-          {/* Quartier-Info-Bar (Wetter, Pollen, Muellabfuhr) */}
-          <InfoBar />
 
           {/* Services: Kommunal, Hilfe-Boerse, Marktplatz, News, Caregiver — Schnellzugriff oben */}
           <DashboardServices

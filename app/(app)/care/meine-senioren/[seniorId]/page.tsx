@@ -30,7 +30,7 @@ interface MedicationEntry {
   id: string;
   name: string;
   dosage: string;
-  schedule: string;
+  schedule: string | { type: string; times: string[] };
   status?: string;
 }
 
@@ -390,7 +390,9 @@ export default function SeniorDetailPage() {
                       {med.dosage}
                     </p>
                     <p className="text-xs text-muted-foreground mt-1">
-                      {med.schedule}
+                      {typeof med.schedule === "object" && med.schedule?.times
+                        ? med.schedule.times.join(", ") + " Uhr"
+                        : String(med.schedule ?? "")}
                     </p>
                   </div>
                 ))

@@ -1,7 +1,8 @@
 // components/companion/ActionCard.tsx
 // Zeigt eine ausgefuehrte KI-Aktion als kleine Karte im Chat an
 
-import { CircleCheck, CircleX } from 'lucide-react';
+import { CircleCheck, CircleX } from "lucide-react";
+import { Linkify } from "./Linkify";
 
 interface ActionCardProps {
   tool: string;
@@ -16,8 +17,8 @@ export function ActionCard({ tool, summary, success }: ActionCardProps) {
       data-testid="action-card"
       className={`mt-2 rounded-lg border p-3 text-sm ${
         success
-          ? 'border-quartier-green/30 bg-quartier-green/5'
-          : 'border-red-300 bg-red-50'
+          ? "border-quartier-green/30 bg-quartier-green/5"
+          : "border-red-300 bg-red-50"
       }`}
     >
       <div className="flex items-start gap-2">
@@ -28,7 +29,9 @@ export function ActionCard({ tool, summary, success }: ActionCardProps) {
         )}
         <div>
           <p className="font-medium text-anthrazit">{tool}</p>
-          <p className="text-muted-foreground">{summary}</p>
+          <p className="text-muted-foreground whitespace-pre-wrap break-words">
+            <Linkify text={summary} />
+          </p>
         </div>
       </div>
     </div>

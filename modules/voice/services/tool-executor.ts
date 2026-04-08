@@ -734,17 +734,17 @@ export async function executeCompanionTool(
         try {
           let results: { title: string; snippet: string; url: string }[] = [];
 
-          // Provider 1: Tavily (primaer — kein Kreditkartenzwang, KI-optimiert)
+          // Provider 1: Tavily (primaer — KI-optimiert, schnellste Antwort)
+          // Tavily generiert die Antwort direkt → Claude reicht sie nur durch = schneller
           if (tavilyKey) {
             const tavilyBody = JSON.stringify({
               api_key: tavilyKey,
-              query,
+              query: `${query} (antworte auf Deutsch, kurz, nur die wichtigsten Fakten)`,
               search_depth: "basic",
-              max_results: 5,
-              include_answer: true,
+              max_results: 3,
+              include_answer: "advanced",
               include_raw_content: false,
             });
-            console.log("[web_search] Tavily query:", query);
 
             const tavilyRes = await fetch("https://api.tavily.com/search", {
               method: "POST",
@@ -754,28 +754,22 @@ export async function executeCompanionTool(
 
             if (tavilyRes.ok) {
               const tavilyData = await tavilyRes.json();
-
-              // Tavily liefert eine fertige KI-Antwort + Quellen
               const answer = tavilyData.answer as string | undefined;
-              const tavilyResults = (tavilyData.results ?? []).slice(0, 5);
+              const tavilyResults = (tavilyData.results ?? []).slice(0, 3);
 
               results = tavilyResults.map(
                 (r: { title: string; content: string; url: string }) => ({
                   title: r.title,
-                  snippet: r.content?.slice(0, 200) ?? "",
+                  snippet: r.content?.slice(0, 150) ?? "",
                   url: r.url,
                 }),
               );
 
-              // Wenn Tavily eine direkte Antwort hat, diese bevorzugen
+              // Tavily-Antwort direkt nutzen (schneller als Claude nochmal verarbeiten zu lassen)
               if (answer) {
-                const sources = results
-                  .slice(0, 3)
-                  .map((r) => r.url)
-                  .join("\n");
                 return {
                   success: true,
-                  summary: `${answer}\n\nQuellen:\n${sources}`,
+                  summary: answer,
                   data: results,
                 };
               }
@@ -830,14 +824,14 @@ export async function executeCompanionTool(
             };
           }
 
+          // Kompakte Zusammenfassung ohne URLs — Claude formuliert die Antwort auf Deutsch
           const lines = results.map(
-            (r, i: number) =>
-              `${i + 1}. ${r.title}\n   ${r.snippet}\n   Quelle: ${r.url}`,
+            (r, i: number) => `${i + 1}. ${r.title}: ${r.snippet}`,
           );
 
           return {
             success: true,
-            summary: `Suchergebnisse fuer "${query}":\n\n${lines.join("\n\n")}`,
+            summary: `Gefundene Informationen zu "${query}":\n${lines.join("\n")}`,
             data: results,
           };
         } catch (err) {

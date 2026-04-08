@@ -126,9 +126,9 @@ export function DailyCheckinBubble() {
         style={{ animation: "fadeIn 0.3s ease-out" }}
       />
 
-      {/* Sprechblase — slided von rechts rein */}
+      {/* Sprechblase — zentriert im Viewport, nicht am unteren Rand */}
       <div
-        className="fixed z-50 bottom-24 right-4 left-4 max-w-sm mx-auto"
+        className="fixed z-50 top-1/2 left-4 right-4 max-w-sm mx-auto -translate-y-1/2"
         style={{
           animation: "slideInRight 0.4s ease-out",
         }}

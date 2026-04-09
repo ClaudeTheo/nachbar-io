@@ -110,6 +110,10 @@
     {
       "path": "/api/cron/synthetic-smoke",
       "schedule": "*/30 * * * *"
+    },
+    {
+      "path": "/api/cron/retention-cleanup",
+      "schedule": "0 2 * * 0"
     }
   ],
   "headers": [

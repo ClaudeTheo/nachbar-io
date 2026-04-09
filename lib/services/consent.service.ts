@@ -103,12 +103,24 @@ export async function grantConsent(
   return data;
 }
 
-// Consent widerrufen
+// Loeschnachweis-Objekt (DSGVO Art. 7 Abs. 3 + Art. 17)
+export interface DeletionReceipt {
+  consent_id: string;
+  subject_id: string;
+  grantee_id: string | null;
+  grantee_org_id: string | null;
+  purpose: string;
+  granted_at: string;
+  revoked_at: string;
+  deletion_receipt_issued_at: string;
+}
+
+// Consent widerrufen + Loeschnachweis ausstellen
 export async function revokeConsent(
   supabase: SupabaseClient,
   subjectId: string,
   consentId: string,
-): Promise<ConsentGrant> {
+): Promise<{ consent: ConsentGrant; deletion_receipt: DeletionReceipt }> {
   // Zuerst pruefen ob der Consent existiert und dem Bewohner gehoert
   const { data: existing, error: findError } = await supabase
     .from("consent_grants")
@@ -133,10 +145,12 @@ export async function revokeConsent(
     );
   }
 
+  const revokedAt = new Date().toISOString();
+
   // Widerrufen (revoked_at setzen)
   const { data, error } = await supabase
     .from("consent_grants")
-    .update({ revoked_at: new Date().toISOString() })
+    .update({ revoked_at: revokedAt })
     .eq("id", consentId)
     .eq("subject_id", subjectId)
     .select()
@@ -150,7 +164,33 @@ export async function revokeConsent(
     );
   }
 
-  return data;
+  // Audit-Log: Widerruf dokumentieren (append-only)
+  await supabase.from("org_audit_log").insert({
+    user_id: subjectId,
+    action: "consent_revoked",
+    target_user_id: existing.grantee_id,
+    details: {
+      consent_id: consentId,
+      purpose: existing.purpose,
+      grantee_org_id: existing.grantee_org_id,
+      granted_at: existing.granted_at,
+      revoked_at: revokedAt,
+    },
+  });
+
+  // Loeschnachweis erstellen (DSGVO Art. 7 Abs. 3)
+  const deletion_receipt: DeletionReceipt = {
+    consent_id: consentId,
+    subject_id: subjectId,
+    grantee_id: existing.grantee_id,
+    grantee_org_id: existing.grantee_org_id,
+    purpose: existing.purpose,
+    granted_at: existing.granted_at,
+    revoked_at: revokedAt,
+    deletion_receipt_issued_at: new Date().toISOString(),
+  };
+
+  return { consent: data, deletion_receipt };
 }
 
 // Eigene Consents auflisten (als Bewohner)

@@ -71,6 +71,9 @@ export async function middleware(request: NextRequest) {
     // Erlaubt: Weiterleiten an Route-Handler mit Rate-Limit-Headers
     const response = await updateSession(request);
 
+    // API-Version Header (A02)
+    response.headers.set("X-API-Version", "1");
+
     if (result) {
       response.headers.set("X-RateLimit-Limit", String(result.limit));
       response.headers.set("X-RateLimit-Remaining", String(result.remaining));

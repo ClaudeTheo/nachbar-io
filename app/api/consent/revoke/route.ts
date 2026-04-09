@@ -20,12 +20,12 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const result = await revokeConsent(
+    const { consent, deletion_receipt } = await revokeConsent(
       auth.supabase,
       auth.user.id,
       body.consent_id,
     );
-    return NextResponse.json(result);
+    return NextResponse.json({ consent, deletion_receipt });
   } catch (error) {
     return handleServiceError(error);
   }

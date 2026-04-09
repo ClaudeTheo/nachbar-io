@@ -1,0 +1,352 @@
+openapi: 3.1.0
+info:
+  title: QuartierApp API
+  description: REST API der QuartierApp (nachbar.io) — hyperlokale Community-Plattform
+  version: "1.0.0"
+  contact:
+    name: Thomas Theobald / Theobase GmbH (i.Gr.)
+    email: thomasth@gmx.de
+
+servers:
+  - url: https://nachbar-io.vercel.app/api
+    description: Production
+
+security:
+  - cookieAuth: []
+
+tags:
+  - name: Auth
+    description: Authentifizierung und MFA
+  - name: Consent
+    description: Einwilligungsverwaltung (DSGVO Art. 7)
+  - name: Privacy
+    description: Betroffenenrechte (DSGVO Art. 15-20)
+  - name: Care
+    description: Heartbeat, Check-in, Caregiver
+  - name: Health
+    description: System-Status
+
+paths:
+  /health:
+    get:
+      tags: [Health]
+      summary: Health-Check
+      description: Erreichbarkeitspruefung (kein Auth)
+      security: []
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: ok
+
+  /consent/grant:
+    post:
+      tags: [Consent]
+      summary: Einwilligung erteilen
+      description: Bewohner erteilt Einwilligung fuer Datenweitergabe
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [purpose]
+              properties:
+                grantee_id:
+                  type: string
+                  format: uuid
+                  description: Empfaenger-Person (Angehoeriger, Arzt)
+                grantee_org_id:
+                  type: string
+                  format: uuid
+                  description: Empfaenger-Organisation
+                purpose:
+                  type: string
+                  enum:
+                    - heartbeat_view
+                    - checkin_view
+                    - medication_confirm
+                    - escalation_notify
+                    - video_call
+                    - appointment_book
+                    - anamnesis_access
+                    - care_coordinate
+                    - civic_report
+      responses:
+        "200":
+          description: Consent erstellt
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ConsentGrant"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "409":
+          description: Consent existiert bereits
+
+  /consent/revoke:
+    post:
+      tags: [Consent]
+      summary: Einwilligung widerrufen
+      description: Bewohner widerruft Einwilligung. Gibt Loeschnachweis zurueck.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [consent_id]
+              properties:
+                consent_id:
+                  type: string
+                  format: uuid
+      responses:
+        "200":
+          description: Consent widerrufen + Loeschnachweis
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  consent:
+                    $ref: "#/components/schemas/ConsentGrant"
+                  deletion_receipt:
+                    $ref: "#/components/schemas/DeletionReceipt"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          description: Consent nicht gefunden
+
+  /consent/list:
+    get:
+      tags: [Consent]
+      summary: Eigene Einwilligungen abfragen
+      responses:
+        "200":
+          description: Liste der Consents
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ConsentGrant"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+  /privacy/export:
+    post:
+      tags: [Privacy]
+      summary: Datenauskunft (Art. 15) + Datenportabilitaet (Art. 20)
+      description: Exportiert alle persoenlichen Daten des Nutzers als JSON
+      responses:
+        "200":
+          description: Vollstaendiger Datenexport
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PrivacyExport"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+  /auth/mfa/status:
+    get:
+      tags: [Auth]
+      summary: MFA-Status abfragen
+      responses:
+        "200":
+          description: MFA-Status
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  required:
+                    type: boolean
+                  enabled:
+                    type: boolean
+                  verified:
+                    type: boolean
+
+  /auth/mfa/enroll:
+    post:
+      tags: [Auth]
+      summary: MFA-Enrollment starten (TOTP)
+      responses:
+        "200":
+          description: QR-Code + Secret fuer Authenticator-App
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  factor_id:
+                    type: string
+                  totp_uri:
+                    type: string
+                  qr_code:
+                    type: string
+                  secret:
+                    type: string
+
+  /auth/mfa/verify:
+    post:
+      tags: [Auth]
+      summary: MFA-Code verifizieren
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [factor_id, code]
+              properties:
+                factor_id:
+                  type: string
+                code:
+                  type: string
+                  pattern: "^[0-9]{6}$"
+      responses:
+        "200":
+          description: MFA verifiziert
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  verified:
+                    type: boolean
+                  assurance_level:
+                    type: string
+                    enum: [aal2]
+
+components:
+  securitySchemes:
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: sb-access-token
+      description: Supabase Auth Session Cookie
+
+  schemas:
+    ConsentGrant:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        subject_id:
+          type: string
+          format: uuid
+        grantee_id:
+          type: string
+          format: uuid
+          nullable: true
+        grantee_org_id:
+          type: string
+          format: uuid
+          nullable: true
+        purpose:
+          type: string
+        granted_at:
+          type: string
+          format: date-time
+        revoked_at:
+          type: string
+          format: date-time
+          nullable: true
+
+    DeletionReceipt:
+      type: object
+      properties:
+        consent_id:
+          type: string
+          format: uuid
+        subject_id:
+          type: string
+          format: uuid
+        grantee_id:
+          type: string
+          format: uuid
+          nullable: true
+        grantee_org_id:
+          type: string
+          format: uuid
+          nullable: true
+        purpose:
+          type: string
+        granted_at:
+          type: string
+          format: date-time
+        revoked_at:
+          type: string
+          format: date-time
+        deletion_receipt_issued_at:
+          type: string
+          format: date-time
+
+    PrivacyExport:
+      type: object
+      properties:
+        export_version:
+          type: string
+          example: "1.0"
+        exported_at:
+          type: string
+          format: date-time
+        subject_id:
+          type: string
+          format: uuid
+        data:
+          type: object
+          description: Alle persoenlichen Daten des Nutzers
+        retention_info:
+          type: object
+          description: Aufbewahrungsfristen pro Datenkategorie
+
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+        status:
+          type: integer
+        code:
+          type: string
+
+  responses:
+    BadRequest:
+      description: Ungueltige Anfrage
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+    Unauthorized:
+      description: Nicht authentifiziert
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+    Forbidden:
+      description: Zugriff verweigert
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+    RateLimited:
+      description: Rate Limit ueberschritten
+      headers:
+        Retry-After:
+          schema:
+            type: integer
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"

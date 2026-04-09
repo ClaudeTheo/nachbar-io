@@ -152,7 +152,10 @@ describe("revokeConsent", () => {
       SUBJECT_ID,
       "consent-1",
     );
-    expect(result.revoked_at).toBeTruthy();
+    expect(result.consent.revoked_at).toBeTruthy();
+    expect(result.deletion_receipt).toBeDefined();
+    expect(result.deletion_receipt.consent_id).toBe("consent-1");
+    expect(result.deletion_receipt.purpose).toBe("heartbeat_view");
   });
 
   it("gibt 404 bei unbekanntem Consent", async () => {

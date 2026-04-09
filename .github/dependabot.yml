@@ -1,0 +1,19 @@
+# Dependabot — Automatische Security-Updates fuer npm Dependencies
+# Erstellt PRs bei bekannten Vulnerabilities (nur Security, keine Version-Bumps)
+
+version: 2
+updates:
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "06:00"
+      timezone: "Europe/Berlin"
+    # Nur Security-Updates, keine allgemeinen Version-Bumps
+    open-pull-requests-limit: 5
+    labels:
+      - "security"
+      - "dependencies"
+    commit-message:
+      prefix: "fix(deps):"

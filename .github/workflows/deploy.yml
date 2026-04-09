@@ -77,6 +77,9 @@ jobs:
       - name: Unit Tests (Vitest)
         run: npm run test || echo "::warning::Tests fehlgeschlagen — Deploy laeuft trotzdem"
 
+      - name: Security Audit (npm audit)
+        run: npm audit --audit-level=high --omit=dev || echo "::warning::npm audit hat high/critical Vulnerabilities gefunden"
+
   # Schritt 3: Build & Deploy (nur bei neuen Commits oder manuellem Trigger)
   deploy:
     name: Build & Deploy

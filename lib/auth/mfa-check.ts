@@ -37,10 +37,9 @@ export async function checkMfaStatus(
   const enabled = totpFactors.length > 0;
 
   // Assurance Level pruefen (aal2 = MFA verifiziert in dieser Session)
-  const {
-    data: { currentLevel },
-  } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
-  const verified = currentLevel === "aal2";
+  const { data: assuranceData } =
+    await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+  const verified = assuranceData?.currentLevel === "aal2";
 
   return { required, enabled, verified };
 }

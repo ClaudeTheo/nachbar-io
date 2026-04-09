@@ -79,7 +79,7 @@ paths:
                     - care_coordinate
                     - civic_report
       responses:
-        "200":
+        "201":
           description: Consent erstellt
           content:
             application/json:

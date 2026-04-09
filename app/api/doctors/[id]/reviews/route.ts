@@ -1,11 +1,18 @@
 // app/api/doctors/[id]/reviews/route.ts
 // Nachbar.io — Arzt-Bewertungen: Abrufen (GET) und Erstellen (POST)
+// HINWEIS: In Phase A deaktiviert (ADR-007: Rolle Theobase als eigener
+// Verantwortlicher vs. Auftragsverarbeiter noch ungeklaert).
+// Aktivierung erst nach anwaltlicher Klaerung (Phase B).
 
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { validateReview } from "@/lib/doctors";
 
 export const dynamic = "force-dynamic";
+
+// Feature-Gate: Bewertungen erst nach ADR-007-Klaerung aktivieren
+const REVIEWS_ENABLED =
+  process.env.NEXT_PUBLIC_DOCTOR_REVIEWS_ENABLED === "true";
 
 /**
  * GET /api/doctors/[id]/reviews
@@ -16,6 +23,11 @@ export async function GET(
   _request: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
+  // Wenn Bewertungen deaktiviert: leeres Array zurueckgeben
+  if (!REVIEWS_ENABLED) {
+    return NextResponse.json([]);
+  }
+
   const { id } = await params;
   const supabase = await createClient();
 
@@ -47,6 +59,14 @@ export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
+  // Bewertungen in Phase A blockiert (ADR-007)
+  if (!REVIEWS_ENABLED) {
+    return NextResponse.json(
+      { error: "Bewertungen sind derzeit nicht verfuegbar", code: "FEATURE_GATED" },
+      { status: 403 },
+    );
+  }
+
   const { id } = await params;
   const supabase = await createClient();
 

@@ -66,8 +66,10 @@ export default function AGBPage() {
               </li>
               <li>
                 <strong>Nachbar Pro Medical</strong> (B2B, kostenpflichtig):
-                Online-Terminbuchung, ärztliche Videosprechstunde,
-                Patienten-CRM, digitale Anamnese
+                Online-Terminbuchung, ärztliche Videosprechstunde
+                (über KBV-zertifizierten Drittanbieter). Weitere Funktionen
+                (Patienten-CRM, digitale Anamnese) werden stufenweise
+                freigeschaltet.
               </li>
             </ul>
             <p className="mt-2">

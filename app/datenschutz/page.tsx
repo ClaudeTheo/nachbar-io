@@ -212,9 +212,12 @@ export default function DatenschutzPage() {
                 Arztprofil (Fachrichtung, Beschreibung, Quartierszuordnung)
               </li>
               <li>Terminbuchungen (Datum, Uhrzeit, Status)</li>
-              <li>Anamnese-Bögen (verschlüsselt gespeichert)</li>
-              <li>Patientenbewertungen</li>
             </ul>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Weitere Funktionen (digitale Anamnese-Bögen, Patientenbewertungen)
+              befinden sich in Vorbereitung und werden nach rechtlicher Prüfung
+              freigeschaltet.
+            </p>
 
             <h3 className="mt-3 font-semibold">5.7 Zahlungsdaten</h3>
             <p>

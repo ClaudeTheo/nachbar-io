@@ -13,7 +13,6 @@ export function LandingFooter() {
                 { label: "Für Angehörige", href: "#zielgruppen" },
                 { label: "Für Pflege", href: "#zielgruppen" },
                 { label: "Für Kommunen", href: "#zielgruppen" },
-                { label: "Für Ärzte", href: "#zielgruppen" },
               ].map((link) => (
                 <li key={link.label}>
                   <a

@@ -3,7 +3,6 @@ import {
   Heart,
   Shield,
   Building2,
-  Stethoscope,
   CircleCheck,
 } from "lucide-react";
 
@@ -70,22 +69,6 @@ const PLANS = [
       "Mängelmelder (9 Kategorien)",
       "Umfragen + Veranstaltungen",
     ],
-    highlighted: false,
-  },
-  {
-    name: "Pro Medical",
-    audience: "Ärzte",
-    icon: <Stethoscope className="h-6 w-6" />,
-    badge: "Kostenlos in der Pilot-Phase",
-    badgeColor: "bg-[#e8f5ee] text-[#266a4a]",
-    features: [
-      "Eigenes Arzt-Portal",
-      "Online-Terminbuchung",
-      "Video-Sprechstunde (KBV)",
-      "Digitale Anamnese-Bögen",
-      "GDT-Schnittstelle (PVS)",
-      "Recall-System",
-    ],
     highlighted: true,
   },
 ];
@@ -95,14 +78,14 @@ export function PricingOverview() {
     <section className="bg-[#f9f7f4] py-16 sm:py-24">
       <div className="mx-auto max-w-6xl px-6">
         <h2 className="text-center text-2xl font-extrabold text-[#2D3142] sm:text-3xl">
-          Fünf Versionen — eine Plattform
+          Vier Versionen — eine Plattform
         </h2>
         <p className="mx-auto mt-4 max-w-lg text-center text-sm text-gray-500">
           Aktuell kostenlos — Preise werden vor dem offiziellen Start
           bekanntgegeben.
         </p>
 
-        <div className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+        <div className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {PLANS.map((plan) => (
             <div
               key={plan.name}

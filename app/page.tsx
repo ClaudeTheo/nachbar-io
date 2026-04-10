@@ -19,7 +19,7 @@ function StructuredData() {
     applicationCategory: "SocialNetworkingApplication",
     operatingSystem: "Web, iOS, Android",
     description:
-      "Die App, die Nachbarschaften verbindet — für Bewohner, Angehörige, Pflege, Kommunen und Ärzte.",
+      "Die App, die Nachbarschaften verbindet — für Bewohner, Angehörige, Pflege und Kommunen.",
     url: "https://nachbar-io.vercel.app",
     offers: {
       "@type": "Offer",

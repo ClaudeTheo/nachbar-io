@@ -6,7 +6,6 @@ import {
   Heart,
   Shield,
   Building2,
-  Stethoscope,
   CircleCheck,
   ChevronDown,
 } from "lucide-react";
@@ -163,39 +162,6 @@ const TABS = [
           "Umfragen — Echtzeit-Ergebnisse, optional anonym",
           "Veranstaltungen — Kultur, Sport, Politik, Bildung",
           "Audit-Log + CSV/XLSX-Export",
-        ],
-      },
-    ],
-  },
-  {
-    id: "aerzte",
-    label: "Ärzte",
-    icon: <Stethoscope className="h-5 w-5" />,
-    tagline: "Patientenkommunikation im Quartier",
-    cta: {
-      text: "Praxis verbinden",
-      href: "mailto:thomasth@gmx.de?subject=QuartierApp%20Arztportal",
-    },
-    disclaimer:
-      "Kein Medizinprodukt. Kein TI-Zugang, keine KV-Abrechnung, kein PVS-Ersatz.",
-    groups: [
-      {
-        title: "Eigenes Arzt-Portal",
-        features: [
-          "Online-Terminbuchung — Patienten buchen selbst",
-          "Video-Sprechstunde — KBV-zertifiziert via Sprechstunde.online",
-          "Virtuelles Wartezimmer",
-          "Patienten-Kontaktverwaltung — Kontaktdaten, Notizen, Historie",
-          "Digitale Anamnese-Bögen — Vorlagen, Versand per Link",
-        ],
-      },
-      {
-        title: "Integration & Praxis",
-        features: [
-          "GDT-Schnittstelle — Bidirektionaler Datenaustausch mit PVS",
-          "Recall-System — Vorsorge-Erinnerungen automatisch",
-          "Praxis-News — Ankündigungen für Patienten",
-          "Arzt-Profil + Bewertungen auf QuartierApp",
         ],
       },
     ],

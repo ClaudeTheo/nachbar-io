@@ -14,7 +14,7 @@ export function Hero() {
         </h1>
         <p className="mx-auto mt-6 max-w-2xl text-lg text-gray-600 leading-relaxed">
           Die App, die Nachbarschaften verbindet — für Bewohner, Angehörige,
-          Pflege, Kommunen und Ärzte.
+          Pflege und Kommunen.
         </p>
         <div className="mt-10 flex flex-wrap justify-center gap-4">
           <Link

@@ -1,5 +1,5 @@
 // app/b2b/page.tsx
-// Nachbar.io — B2B-Landingpage für Organisationen und Ärzte
+// Nachbar.io — B2B-Landingpage für Organisationen (Kommunen, Pflegedienste, Wohnungsbau)
 export const dynamic = "force-static";
 import Link from "next/link";
 import {
@@ -7,9 +7,7 @@ import {
   Shield,
   BarChart3,
   Users,
-  Phone,
   Building2,
-  Stethoscope,
   CircleCheck,
   ArrowRight,
 } from "lucide-react";
@@ -59,7 +57,7 @@ const BENEFITS = [
     icon: <Heart className="h-6 w-6" />,
     title: "Lebenszeichen-Übersicht",
     description:
-      "Passive Lebenszeichen durch App-Nutzung. Optionale Erinnerung an den Bewohner und – mit dessen Einwilligung – Benachrichtigung der eingeladenen Angehörigen bei längerer Inaktivität.",
+      "App-Nutzung als Lebenszeichen. Optionale Erinnerung an den Bewohner und – mit dessen Einwilligung – Benachrichtigung der eingeladenen Angehörigen bei längerer Inaktivität.",
   },
   {
     icon: <Shield className="h-6 w-6" />,
@@ -71,19 +69,13 @@ const BENEFITS = [
     icon: <BarChart3 className="h-6 w-6" />,
     title: "Anonymisierte Statistiken",
     description:
-      "Quartier-Dashboard mit aggregierten KPIs: Aktivität, Heartbeat-Abdeckung, Check-in-Frequenz. CSV/XLSX-Export inklusive.",
+      "Quartier-Dashboard mit aggregierten KPIs: Aktivität, Aktivitätsabdeckung, Check-in-Rate. CSV/XLSX-Export inklusive.",
   },
   {
     icon: <Users className="h-6 w-6" />,
     title: "Content-Moderation",
     description:
       "Beiträge moderieren, Nutzer stummschalten oder sperren. Vollständiger Audit-Log für alle administrativen Aktionen.",
-  },
-  {
-    icon: <Phone className="h-6 w-6" />,
-    title: "Video-Sprechstunde",
-    description:
-      "KBV-zertifizierte Telemedizin für Ärzte im Quartier. Online-Terminbuchung, digitale Anamnesebögen, GDT-Schnittstelle.",
   },
   {
     icon: <CircleCheck className="h-6 w-6" />,
@@ -137,21 +129,6 @@ const PLANS = [
       "Nutzer stummschalten / sperren",
       "Anonymisierte Quartier-Aktivitätsübersicht",
     ],
-  },
-  {
-    name: "Pro Medical",
-    icon: <Stethoscope className="h-5 w-5" />,
-    price: "89",
-    unit: "/ Monat + 5 / Termin",
-    target: "Ärzte, Telemedizin-Anbieter",
-    features: [
-      "Online-Terminbuchung (Self-Service)",
-      "KBV-zertifizierte Video-Sprechstunde",
-      "Patienten-CRM + Anamnese",
-      "GDT-Schnittstelle (bidirektional)",
-      "Quartiers-Integration (Check-in-Status)",
-      "Arzt-Profil + Bewertungen",
-    ],
     highlight: true,
   },
 ];
@@ -167,7 +144,7 @@ function PricingSection() {
           Alle Preise netto zzgl. USt. Vertragslaufzeit: monatlich kündbar.
           Voraussetzung: Handelsregister-/Vereinsregister-Nachweis + AVV.
         </p>
-        <div className="mt-12 grid gap-8 sm:grid-cols-2">
+        <div className="mx-auto mt-12 grid max-w-md gap-8">
           {PLANS.map((plan) => (
             <div
               key={plan.name}

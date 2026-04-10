@@ -26,8 +26,8 @@ function HeroSection() {
         </h1>
         <p className="mt-6 max-w-2xl text-lg text-gray-200">
           QuartierApp verbindet Bewohner, Angehörige und Organisationen in einem
-          sicheren, DSGVO-konformen System. Heartbeat-Monitoring,
-          Einsamkeits-Prävention und anonymisierte Quartier-Statistiken — alles
+          sicheren, DSGVO-konformen System. Lebenszeichen-Übersicht,
+          nachbarschaftliche Vernetzung und anonymisierte Quartier-Statistiken — alles
           in einer Plattform.
         </p>
         <div className="mt-8 flex flex-wrap gap-4">
@@ -57,15 +57,15 @@ function HeroSection() {
 const BENEFITS = [
   {
     icon: <Heart className="h-6 w-6" />,
-    title: "Heartbeat-Monitoring",
+    title: "Lebenszeichen-Übersicht",
     description:
-      "Passive Lebenszeichen durch App-Nutzung. Automatische Eskalation bei Inaktivität — von Erinnerung bis Notfall-Alert.",
+      "Passive Lebenszeichen durch App-Nutzung. Optionale Erinnerung an den Bewohner und – mit dessen Einwilligung – Benachrichtigung der eingeladenen Angehörigen bei längerer Inaktivität.",
   },
   {
     icon: <Shield className="h-6 w-6" />,
-    title: "Einsamkeits-Prävention",
+    title: "Nachbarschaftliche Vernetzung",
     description:
-      "Frühwarnsystem für soziale Isolation. Anonymisierte Inaktivitäts-Daten helfen, gefährdete Bewohner frühzeitig zu erkennen.",
+      "Förderung sozialer Kontakte im Quartier durch Schwarzes Brett, Marktplatz und Nachbarschaftshilfe. Anonymisierte Aktivitätsstatistiken als Grundlage für Quartiersarbeit.",
   },
   {
     icon: <BarChart3 className="h-6 w-6" />,
@@ -135,7 +135,7 @@ const PLANS = [
       "Eskalationsmanagement",
       "CSV/XLSX-Export",
       "Nutzer stummschalten / sperren",
-      "Anonymisierte Einsamkeits-Indikatoren",
+      "Anonymisierte Quartier-Aktivitätsübersicht",
     ],
   },
   {

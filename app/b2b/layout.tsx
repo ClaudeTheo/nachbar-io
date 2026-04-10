@@ -3,8 +3,8 @@
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'QuartierApp fuer Organisationen | nachbar.io',
-  description: 'Digitale Quartiersvernetzung fuer Kommunen, Pflegedienste und Wohnungsbaugesellschaften. Heartbeat-Monitoring, Einsamkeits-Praevention, anonymisierte Statistiken.',
+  title: 'QuartierApp für Organisationen | nachbar.io',
+  description: 'Digitale Quartiersvernetzung für Kommunen, Pflegedienste und Wohnungsbaugesellschaften. Lebenszeichen-Übersicht, nachbarschaftliche Vernetzung und anonymisierte Quartiers-Statistiken.',
 };
 
 export default function B2BLayout({ children }: { children: React.ReactNode }) {

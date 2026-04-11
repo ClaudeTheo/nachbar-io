@@ -21,6 +21,7 @@ import type {
   QuartierWeather,
   NinaWarning,
   NinaSeverity,
+  PollenData,
   WasteNext,
   LocalEvent,
 } from "@/modules/info-hub/types";
@@ -58,6 +59,45 @@ function weatherSentence(weather: QuartierWeather | null): string {
   return `Heute ist es ${weather.description} bei ${weather.temp} Grad.`;
 }
 
+/**
+ * Baut den Pollenflug-Satz aus den DWD-Daten.
+ *
+ * Regeln:
+ *  - Keine Daten -> expliziter Fallback-Satz.
+ *  - Alle Intensitaeten 0 -> "Heute kaum Pollenflug" (positiv, keine Panik).
+ *  - Mindestens ein Eintrag >= 1.5 (mittel/hoch) -> den staerksten
+ *    Eintrag nennen, damit Allergiker eine klare Ansage bekommen.
+ *  - Werte zwischen 0.5 und 1 (gering) -> "Leichter Pollenflug"
+ *    ohne Einzel-Nennung, um den Brief nicht zu ueberladen.
+ *
+ * Bei Gleichstand wird der erste Eintrag in Record-Iteration-Reihenfolge
+ * gewaehlt — JavaScript-Objects behalten Insertion-Order, die API-Antwort
+ * ist stabil sortiert, also bleibt das deterministisch.
+ */
+function pollenSentence(pollen: PollenData | null | undefined): string {
+  if (!pollen || Object.keys(pollen.pollen).length === 0) {
+    return "Zum Pollenflug habe ich gerade keine Daten.";
+  }
+
+  let maxName: string | null = null;
+  let maxIntensity = 0;
+  for (const [name, entry] of Object.entries(pollen.pollen)) {
+    if (entry.today > maxIntensity) {
+      maxIntensity = entry.today;
+      maxName = name;
+    }
+  }
+
+  if (maxIntensity === 0) {
+    return "Heute ist kaum Pollenflug.";
+  }
+  if (maxIntensity < 1.5) {
+    return "Heute ist der Pollenflug nur gering.";
+  }
+  const level = maxIntensity >= 2.5 ? "hoch" : "mittel";
+  return `Beim Pollenflug ist ${maxName} heute auf Stufe ${level}.`;
+}
+
 function warningSentence(nina: NinaWarning[] | null | undefined): string {
   if (!nina || nina.length === 0) {
     return "Es liegen gerade keine Warnungen vor.";
@@ -93,16 +133,17 @@ function eventSentence(events: LocalEvent[] | null | undefined): string {
 /**
  * Baut den vollstaendigen Tagesueberblick-Text zum Vorlesen zusammen.
  *
- * Reihenfolge: Wetter -> Warnungen -> Muell -> Veranstaltungen.
+ * Reihenfolge: Wetter -> Pollenflug -> Warnungen -> Muell -> Veranstaltungen.
  * Trennung durch doppelten Zeilenumbruch fuer TTS-Pausen.
  *
  * @param data Die Rohdaten aus `/api/quartier-info`. Darf Partial-leer sein.
  * @returns Ein zusammenhaengender Sprechtext. Niemals leer —
- *          bei komplett leeren Daten werden vier Fallback-Saetze geliefert.
+ *          bei komplett leeren Daten werden fuenf Fallback-Saetze geliefert.
  */
 export function buildDailyBrief(data: Partial<QuartierInfoResponse>): string {
   const parts = [
     weatherSentence(data.weather ?? null),
+    pollenSentence(data.pollen),
     warningSentence(data.nina),
     wasteSentence(data.waste_next),
     eventSentence(data.events),

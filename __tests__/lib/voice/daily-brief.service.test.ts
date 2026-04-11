@@ -7,6 +7,7 @@ import type {
   QuartierInfoResponse,
   QuartierWeather,
   NinaWarning,
+  PollenData,
   WasteNext,
   LocalEvent,
 } from "@/modules/info-hub/types";
@@ -44,9 +45,19 @@ const fullEvent: LocalEvent = {
   icon: "calendar",
 };
 
+const fullPollen: PollenData = {
+  region: "Oberrhein",
+  pollen: {
+    Birke: { today: 2.5, tomorrow: 2 },
+    Graeser: { today: 1, tomorrow: 1 },
+    Erle: { today: 0, tomorrow: 0 },
+  },
+};
+
 const fullPayload: Partial<QuartierInfoResponse> = {
   weather: fullWeather,
   nina: [fullWarning],
+  pollen: fullPollen,
   waste_next: [fullWaste],
   events: [fullEvent],
 };
@@ -80,11 +91,19 @@ describe("buildDailyBrief", () => {
       expect(brief).toContain("Rathausplatz");
     });
 
-    it("trennt die vier Abschnitte mit doppeltem Zeilenumbruch", () => {
+    it("trennt die fuenf Abschnitte mit doppeltem Zeilenumbruch", () => {
       const brief = buildDailyBrief(fullPayload);
-      // Drei Trennstellen zwischen vier Saetzen
+      // Vier Trennstellen zwischen fuenf Saetzen
+      // (Wetter, Pollen, Warnungen, Muell, Veranstaltung)
       const separators = brief.split("\n\n").length - 1;
-      expect(separators).toBe(3);
+      expect(separators).toBe(4);
+    });
+
+    it("nennt bei Pollenflug den staerksten Allergen mit Stufe", () => {
+      const brief = buildDailyBrief(fullPayload);
+      // Birke hat today=2.5 -> Stufe "hoch"
+      expect(brief).toContain("Birke");
+      expect(brief).toContain("hoch");
     });
 
     it("ist deterministisch — zwei Aufrufe liefern denselben Text", () => {
@@ -141,12 +160,58 @@ describe("buildDailyBrief", () => {
       const brief = buildDailyBrief({ ...fullPayload, events: [] });
       expect(brief).toContain("Zu Veranstaltungen habe ich gerade keine Daten");
     });
+
+    it("sagt explizit, dass Pollendaten fehlen, wenn pollen=null", () => {
+      const brief = buildDailyBrief({ ...fullPayload, pollen: null });
+      expect(brief).toContain("Zum Pollenflug habe ich gerade keine Daten");
+      expect(brief).not.toContain("Birke");
+    });
+
+    it("meldet 'kaum Pollenflug' wenn alle Intensitaeten 0 sind", () => {
+      const zeroPollen: PollenData = {
+        region: "Oberrhein",
+        pollen: {
+          Birke: { today: 0, tomorrow: 0 },
+          Graeser: { today: 0, tomorrow: 0 },
+        },
+      };
+      const brief = buildDailyBrief({ ...fullPayload, pollen: zeroPollen });
+      expect(brief).toContain("kaum Pollenflug");
+    });
+
+    it("meldet 'nur gering' wenn max Intensitaet 0.5 oder 1 ist", () => {
+      const lowPollen: PollenData = {
+        region: "Oberrhein",
+        pollen: {
+          Birke: { today: 1, tomorrow: 1 },
+          Graeser: { today: 0.5, tomorrow: 0.5 },
+        },
+      };
+      const brief = buildDailyBrief({ ...fullPayload, pollen: lowPollen });
+      expect(brief).toContain("nur gering");
+      // Kein Einzel-Allergen-Name, weil unter Schwelle
+      expect(brief).not.toMatch(/Birke.*Stufe/);
+    });
+
+    it("nennt 'mittel' statt 'hoch' bei Intensitaet 1.5-2", () => {
+      const midPollen: PollenData = {
+        region: "Oberrhein",
+        pollen: {
+          Graeser: { today: 2, tomorrow: 2 },
+        },
+      };
+      const brief = buildDailyBrief({ ...fullPayload, pollen: midPollen });
+      expect(brief).toContain("Graeser");
+      expect(brief).toContain("mittel");
+      expect(brief).not.toContain("hoch");
+    });
   });
 
   describe("komplett leere Eingabe", () => {
-    it("liefert vier Fallback-Saetze, nie einen leeren String", () => {
+    it("liefert fuenf Fallback-Saetze, nie einen leeren String", () => {
       const brief = buildDailyBrief({});
       expect(brief).toContain("Zum Wetter habe ich gerade keine Daten");
+      expect(brief).toContain("Zum Pollenflug habe ich gerade keine Daten");
       expect(brief).toContain("Es liegen gerade keine Warnungen vor");
       expect(brief).toContain("Zur Muellabfuhr habe ich gerade keine Daten");
       expect(brief).toContain("Zu Veranstaltungen habe ich gerade keine Daten");

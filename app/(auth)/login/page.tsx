@@ -97,7 +97,8 @@ export default function LoginPage() {
       const { error: otpError } = await supabase.auth.signInWithOtp({
         email,
         options: {
-          emailRedirectTo: `${window.location.origin}/auth/callback?next=/dashboard`,
+          // Task B-4: /after-login dispatcht auf /kreis-start (Senior) vs. /dashboard
+          emailRedirectTo: `${window.location.origin}/auth/callback?next=/after-login`,
         },
       });
 
@@ -132,11 +133,10 @@ export default function LoginPage() {
 
     try {
       const supabase = createClient();
-      const { data: authData, error: authError } =
-        await supabase.auth.signInWithPassword({
-          email,
-          password,
-        });
+      const { error: authError } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
 
       if (authError) {
         console.error("Login-Fehler:", authError);
@@ -145,22 +145,9 @@ export default function LoginPage() {
         return;
       }
 
-      // UI-Modus pruefen → entsprechende Startseite
-      const userId = authData.user?.id;
-      if (userId) {
-        const { data: profile } = await supabase
-          .from("users")
-          .select("ui_mode")
-          .eq("id", userId)
-          .single();
-
-        if (profile?.ui_mode === "senior") {
-          router.push("/senior/home");
-          return;
-        }
-      }
-
-      router.push("/dashboard");
+      // Task B-4: Zentrale Dispatch-Seite — entscheidet anhand ui_mode,
+      // ob Senior-Start (/kreis-start) oder /dashboard geladen wird.
+      router.push("/after-login");
     } catch (err) {
       console.error("Login Netzwerkfehler:", err);
       setError("Verbindungsfehler. Bitte versuchen Sie es erneut.");
@@ -365,7 +352,7 @@ export default function LoginPage() {
           {mode === "magic_link_sent" && (
             <OtpCodeEntry
               email={email}
-              redirectTo="/dashboard"
+              redirectTo="/after-login"
               onBack={() => {
                 setMode("magic_link");
                 setError(null);
@@ -375,7 +362,7 @@ export default function LoginPage() {
                 supabase.auth.signInWithOtp({
                   email,
                   options: {
-                    emailRedirectTo: `${window.location.origin}/auth/callback?next=/dashboard`,
+                    emailRedirectTo: `${window.location.origin}/auth/callback?next=/after-login`,
                   },
                 });
               }}

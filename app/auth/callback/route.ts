@@ -7,7 +7,9 @@ import { createClient } from "@/lib/supabase/server";
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url);
   const code = searchParams.get("code");
-  const next = searchParams.get("next") ?? "/dashboard";
+  // Task B-4: /after-login dispatcht basierend auf ui_mode.
+  // Aeltere Magic-Links ohne ?next fallen automatisch auf den Dispatcher.
+  const next = searchParams.get("next") ?? "/after-login";
 
   if (code) {
     const supabase = await createClient();
@@ -17,7 +19,10 @@ export async function GET(request: Request) {
       return NextResponse.redirect(`${origin}${next}`);
     }
 
-    console.error("Auth Callback: Code-Exchange fehlgeschlagen:", error.message);
+    console.error(
+      "Auth Callback: Code-Exchange fehlgeschlagen:",
+      error.message,
+    );
   }
 
   // Fehlerfall: Zurueck zum Login

@@ -36,7 +36,8 @@ const TILES: TileDef[] = [
   {
     label: "Schreiben",
     description: "Nachricht oder Termin — mit KI-Hilfe",
-    // Route wird in Task H-1 final angelegt. Platzhalter bis dahin.
+    // Task H-1: /schreiben zeigt die Vertrauenskontakte als Kacheln und
+    // oeffnet WhatsApp mit einem Tap. KI-Hilfe folgt in Phase 2.
     href: "/schreiben",
     variant: "neutral",
   },

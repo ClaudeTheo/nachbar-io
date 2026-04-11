@@ -3,70 +3,132 @@
 
 // === Enums ===
 
-export type CareLevel = 'none' | '1' | '2' | '3' | '4' | '5';
+export type CareLevel = "none" | "1" | "2" | "3" | "4" | "5";
 
 export type CareSosCategory =
-  | 'medical_emergency'
-  | 'general_help'
-  | 'visit_wanted'
-  | 'shopping'
-  | 'medication_help';
+  | "medical_emergency"
+  | "general_help"
+  | "visit_wanted"
+  | "shopping"
+  | "medication_help";
 
 export type CareSosStatus =
-  | 'triggered'
-  | 'notified'
-  | 'accepted'
-  | 'helper_enroute'
-  | 'resolved'
-  | 'cancelled'
-  | 'escalated';
+  | "triggered"
+  | "notified"
+  | "accepted"
+  | "helper_enroute"
+  | "resolved"
+  | "cancelled"
+  | "escalated";
 
-export type CareSosSource = 'app' | 'device' | 'checkin_timeout';
+export type CareSosSource = "app" | "device" | "checkin_timeout";
 
-export type CareSosResponseType = 'accepted' | 'declined' | 'arrived' | 'completed';
+export type CareSosResponseType =
+  | "accepted"
+  | "declined"
+  | "arrived"
+  | "completed";
 
-export type CareCheckinStatus = 'ok' | 'not_well' | 'need_help' | 'missed' | 'reminded';
-export type CareCheckinMood = 'good' | 'neutral' | 'bad';
+export type CareCheckinStatus =
+  | "ok"
+  | "not_well"
+  | "need_help"
+  | "missed"
+  | "reminded";
+export type CareCheckinMood = "good" | "neutral" | "bad";
 
-export type CareMedicationLogStatus = 'taken' | 'skipped' | 'snoozed' | 'missed';
+export type CareMedicationLogStatus =
+  | "taken"
+  | "skipped"
+  | "snoozed"
+  | "missed";
 
 export type CareAppointmentType =
-  | 'doctor' | 'care_service' | 'therapy' | 'other'
-  | 'waste_collection' | 'quarter_meeting' | 'shopping' | 'personal' | 'birthday';
+  | "doctor"
+  | "care_service"
+  | "therapy"
+  | "other"
+  | "waste_collection"
+  | "quarter_meeting"
+  | "shopping"
+  | "personal"
+  | "birthday";
 
-export type CareAppointmentVisibility = 'private' | 'helpers' | 'quarter';
+export type CareAppointmentVisibility = "private" | "helpers" | "quarter";
 
-export type CareHelperRole = 'neighbor' | 'relative' | 'care_service';
-export type CareHelperVerification = 'pending' | 'verified' | 'revoked';
+export type CareHelperRole = "neighbor" | "relative" | "care_service";
+export type CareHelperVerification = "pending" | "verified" | "revoked";
 
 export type CareAuditEventType =
-  | 'sos_triggered' | 'sos_accepted' | 'sos_resolved' | 'sos_escalated' | 'sos_cancelled'
-  | 'checkin_ok' | 'checkin_not_well' | 'checkin_missed' | 'checkin_escalated'
-  | 'medication_taken' | 'medication_skipped' | 'medication_missed' | 'medication_snoozed'
-  | 'appointment_confirmed' | 'appointment_missed'
-  | 'visit_logged' | 'helper_registered' | 'helper_verified'
-  | 'task_created' | 'task_claimed' | 'task_unclaimed' | 'task_started'
-  | 'task_completed' | 'task_confirmed' | 'task_cancelled' | 'task_deleted'
-  | 'document_generated' | 'profile_updated' | 'subscription_changed'
-  | 'caregiver_invited' | 'caregiver_linked' | 'caregiver_revoked'
-  | 'heartbeat_toggle' | 'escalation_triggered' | 'escalation_resolved'
-  | 'consent_updated' | 'consent_revoked';
+  | "sos_triggered"
+  | "sos_accepted"
+  | "sos_resolved"
+  | "sos_escalated"
+  | "sos_cancelled"
+  | "checkin_ok"
+  | "checkin_not_well"
+  | "checkin_missed"
+  | "checkin_escalated"
+  | "medication_taken"
+  | "medication_skipped"
+  | "medication_missed"
+  | "medication_snoozed"
+  | "appointment_confirmed"
+  | "appointment_missed"
+  | "visit_logged"
+  | "helper_registered"
+  | "helper_verified"
+  | "task_created"
+  | "task_claimed"
+  | "task_unclaimed"
+  | "task_started"
+  | "task_completed"
+  | "task_confirmed"
+  | "task_cancelled"
+  | "task_deleted"
+  | "document_generated"
+  | "profile_updated"
+  | "subscription_changed"
+  | "caregiver_invited"
+  | "caregiver_linked"
+  | "caregiver_revoked"
+  | "heartbeat_toggle"
+  | "escalation_triggered"
+  | "escalation_resolved"
+  | "consent_updated"
+  | "consent_revoked";
 
 export type CareDocumentType =
-  | 'care_report_daily' | 'care_report_weekly' | 'care_report_monthly'
-  | 'emergency_log' | 'medication_report' | 'care_aid_application'
-  | 'tax_summary' | 'usage_report';
+  | "care_report_daily"
+  | "care_report_weekly"
+  | "care_report_monthly"
+  | "emergency_log"
+  | "medication_report"
+  | "care_aid_application"
+  | "tax_summary"
+  | "usage_report";
 
-export type CareSubscriptionPlan = 'free' | 'plus' | 'pro';
-export type CareSubscriptionStatus = 'active' | 'trial' | 'cancelled' | 'expired';
+export type CareSubscriptionPlan = "free" | "plus" | "pro";
+export type CareSubscriptionStatus =
+  | "active"
+  | "trial"
+  | "cancelled"
+  | "expired";
 
 export type CareNotificationType =
-  | 'care_sos' | 'care_sos_response' | 'care_checkin_reminder'
-  | 'care_checkin_missed' | 'care_medication_reminder'
-  | 'care_medication_missed' | 'care_appointment_reminder'
-  | 'care_escalation' | 'care_helper_verified'
-  | 'care_task_claimed' | 'care_task_completed'
-  | 'care_heartbeat_reminder' | 'care_heartbeat_alert';
+  | "care_sos"
+  | "care_sos_response"
+  | "care_checkin_reminder"
+  | "care_checkin_missed"
+  | "care_medication_reminder"
+  | "care_medication_missed"
+  | "care_appointment_reminder"
+  | "care_escalation"
+  | "care_helper_verified"
+  | "care_task_claimed"
+  | "care_task_completed"
+  | "care_heartbeat_reminder"
+  | "care_heartbeat_alert";
 
 // === Interfaces ===
 
@@ -74,7 +136,7 @@ export interface EmergencyContact {
   name: string;
   /** Telefonnummer — wird serverseitig per AES-256-GCM verschluesselt (DSGVO Art. 9) */
   phone: string;
-  role: 'relative' | 'care_service' | 'neighbor' | 'other';
+  role: "relative" | "care_service" | "neighbor" | "other";
   priority: number;
   relationship: string;
 }
@@ -86,7 +148,7 @@ export interface EscalationConfig {
 }
 
 export interface MedicationSchedule {
-  type: 'daily' | 'weekly' | 'interval';
+  type: "daily" | "weekly" | "interval";
   times?: string[];
   days?: string[];
   time?: string;
@@ -172,7 +234,7 @@ export interface CareMedicationLog {
   confirmed_at: string | null;
   snoozed_until: string | null;
   created_at: string;
-  medication?: Pick<CareMedication, 'name' | 'dosage'>;
+  medication?: Pick<CareMedication, "name" | "dosage">;
 }
 
 export interface CareAppointment {
@@ -249,23 +311,23 @@ export interface CareSubscription {
 }
 
 // === Aktive Rolle des eingeloggten Users im Care-Kontext ===
-export type CareUserRole = 'senior' | CareHelperRole | 'admin' | 'none';
+export type CareUserRole = "senior" | CareHelperRole | "admin" | "none";
 
 // === Online-Sprechstunde ===
 
-export type ConsultationProviderType = 'community' | 'medical';
+export type ConsultationProviderType = "community" | "medical";
 
 export type ConsultationStatus =
-  | 'scheduled'
-  | 'waiting'
-  | 'active'
-  | 'completed'
-  | 'cancelled'
-  | 'no_show'
-  | 'proposed'
-  | 'counter_proposed'
-  | 'confirmed'
-  | 'declined';
+  | "scheduled"
+  | "waiting"
+  | "active"
+  | "completed"
+  | "cancelled"
+  | "no_show"
+  | "proposed"
+  | "counter_proposed"
+  | "confirmed"
+  | "declined";
 
 export interface ConsultationSlot {
   id: string;
@@ -303,16 +365,23 @@ export interface ConsultationConsent {
 
 // === Heartbeat + Caregiver (Plus-Features) ===
 
-export type HeartbeatSource = 'app' | 'kiosk' | 'web' | 'synthetic';
-export type HeartbeatDeviceType = 'mobile' | 'tablet' | 'kiosk' | 'desktop';
+export type HeartbeatSource = "app" | "kiosk" | "web" | "synthetic";
+export type HeartbeatDeviceType = "mobile" | "tablet" | "kiosk" | "desktop";
 
 export type CaregiverRelationshipType =
-  | 'partner' | 'child' | 'grandchild' | 'friend' | 'volunteer' | 'other';
+  | "partner"
+  | "child"
+  | "grandchild"
+  | "friend"
+  | "volunteer"
+  | "other";
 
-export type EscalationStage =
-  | 'reminder_4h' | 'alert_8h' | 'lotse_12h' | 'urgent_24h';
+// Phase 1 (Design-Doc 2026-04-10 Abschnitt 4.5): 2 Stufen statt urspruenglich 4.
+// reminder_24h = sanfte Erinnerung an den Bewohner nach 24h Inaktivitaet
+// alert_48h    = Benachrichtigung an eingeladene Angehoerige nach 48h Inaktivitaet
+export type EscalationStage = "reminder_24h" | "alert_48h";
 
-export type ResidentStatus = 'ok' | 'warning' | 'missing' | 'critical';
+export type ResidentStatus = "ok" | "warning" | "missing" | "critical";
 
 export interface Heartbeat {
   id: string;
@@ -355,11 +424,20 @@ export interface EscalationEvent {
 }
 
 // === Feature-Gate Response Codes ===
-export type GateCode = 'PLAN_REQUIRED' | 'ROLE_REQUIRED' | 'TENANT_ACCESS_REQUIRED';
+export type GateCode =
+  | "PLAN_REQUIRED"
+  | "ROLE_REQUIRED"
+  | "TENANT_ACCESS_REQUIRED";
 
 // === Art. 9 Einwilligungsmanagement (DSFA M12) ===
 
-export const CONSENT_FEATURES = ['sos', 'checkin', 'medications', 'care_profile', 'emergency_contacts'] as const;
+export const CONSENT_FEATURES = [
+  "sos",
+  "checkin",
+  "medications",
+  "care_profile",
+  "emergency_contacts",
+] as const;
 export type CareConsentFeature = (typeof CONSENT_FEATURES)[number];
 
 export interface CareConsent {
@@ -379,12 +457,14 @@ export interface CareConsentHistory {
   consent_id: string;
   user_id: string;
   feature: CareConsentFeature;
-  action: 'granted' | 'revoked';
+  action: "granted" | "revoked";
   consent_version: string;
   created_at: string;
 }
 
 // Abhaengigkeitsregel: emergency_contacts erfordert sos
-export const CONSENT_DEPENDENCIES: Partial<Record<CareConsentFeature, CareConsentFeature>> = {
-  emergency_contacts: 'sos',
+export const CONSENT_DEPENDENCIES: Partial<
+  Record<CareConsentFeature, CareConsentFeature>
+> = {
+  emergency_contacts: "sos",
 };

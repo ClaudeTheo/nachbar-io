@@ -1,6 +1,9 @@
 // modules/care/services/heartbeat-escalation.service.ts
-// Nachbar.io — Heartbeat-Eskalation Service: Prüft ob Bewohner aktiv sind (Plus-Feature)
-// Eskalationsstufen: 0-4h ok, 4-8h reminder, 8-12h alert, 12-24h lotse, 24h+ urgent
+// Nachbar.io — Lebenszeichen-Eskalation Service (Phase 1: 2-Stufen-Modell)
+// Design-Doc 2026-04-10 Abschnitt 4.5:
+//   0-24h ok   -> null
+//   24h-48h    -> reminder_24h (sanfte Erinnerung an Bewohner)
+//   > 48h      -> alert_48h (Benachrichtigung an eingeladene Angehoerige)
 
 import { SupabaseClient } from "@supabase/supabase-js";
 import { writeAuditLog } from "@/lib/care/audit";
@@ -14,19 +17,15 @@ export interface HeartbeatEscalationResult {
   processed: number;
   reminder: number;
   alert: number;
-  lotse: number;
-  urgent: number;
   resolved: number;
   timestamp: string;
 }
 
 /** Berechnet die Eskalationsstufe basierend auf Stunden seit letztem Heartbeat */
 export function getEscalationStage(hoursAgo: number): EscalationStage | null {
-  if (hoursAgo <= HEARTBEAT_ESCALATION.ok_hours) return null;
-  if (hoursAgo <= HEARTBEAT_ESCALATION.reminder_hours) return "reminder_4h";
-  if (hoursAgo <= HEARTBEAT_ESCALATION.alert_hours) return "alert_8h";
-  if (hoursAgo <= HEARTBEAT_ESCALATION.lotse_hours) return "lotse_12h";
-  return "urgent_24h";
+  if (hoursAgo <= HEARTBEAT_ESCALATION.reminder_after_hours) return null;
+  if (hoursAgo <= HEARTBEAT_ESCALATION.alert_after_hours) return "reminder_24h";
+  return "alert_48h";
 }
 
 /** Heartbeat-Eskalation für alle aktiven Bewohner durchführen */
@@ -60,8 +59,6 @@ export async function runHeartbeatEscalation(
       processed: 0,
       reminder: 0,
       alert: 0,
-      lotse: 0,
-      urgent: 0,
       resolved: 0,
       timestamp: now.toISOString(),
     };
@@ -80,8 +77,6 @@ export async function runHeartbeatEscalation(
 
   let reminderCount = 0;
   let alertCount = 0;
-  let lotseCount = 0;
-  let urgentCount = 0;
   let resolvedCount = 0;
 
   for (const residentId of residentIds) {
@@ -145,13 +140,9 @@ export async function runHeartbeatEscalation(
 
         resolvedCount += openEvents.length;
 
-        // Entwarnung senden, wenn mindestens ein Event auf alert_8h oder hoeher war
-        const hadAlert = openEvents.some(
-          (e) =>
-            e.stage === "alert_8h" ||
-            e.stage === "lotse_12h" ||
-            e.stage === "urgent_24h",
-        );
+        // Entwarnung senden, wenn mindestens ein Event auf alert_48h war
+        // (reminder_24h geht nur an den Bewohner selbst, braucht keine Entwarnung an Angehoerige)
+        const hadAlert = openEvents.some((e) => e.stage === "alert_48h");
 
         if (hadAlert) {
           // Entwarnung an alle Caregivers dieses Bewohners
@@ -259,15 +250,17 @@ export async function runHeartbeatEscalation(
     }
 
     // === Benachrichtigungen nach Eskalationsstufe senden ===
+    // Phase 1 Design-Doc 4.5: nur 2 Stufen, keine Lotse/Urgent-Ketten.
     switch (stage) {
-      case "reminder_4h": {
-        // Push an den Bewohner: "Alles okay?"
+      case "reminder_24h": {
+        // Stufe 1: Sanfte Erinnerung an den Bewohner in der App.
+        // Keine Benachrichtigung an Angehoerige — das ist bewusst.
         try {
           await sendCareNotification(supabase, {
             userId: residentId,
             type: "care_heartbeat_reminder",
-            title: "Alles okay?",
-            body: "Wir haben länger nichts von Ihnen gehört. Bitte melden Sie sich kurz.",
+            title: "Alles gut bei Ihnen?",
+            body: "Wir haben seit einem Tag nichts von Ihnen gehört. Bitte melden Sie sich kurz.",
             referenceId: newEvent.id,
             referenceType: "escalation_events",
             url: "/care",
@@ -283,15 +276,15 @@ export async function runHeartbeatEscalation(
         break;
       }
 
-      case "alert_8h": {
-        // Push + SMS an alle Caregivers
+      case "alert_48h": {
+        // Stufe 2: Benachrichtigung an alle eingeladenen Angehoerigen (Push + SMS).
         for (const caregiverId of caregiverIds) {
           try {
             await sendCareNotification(supabase, {
               userId: caregiverId,
               type: "care_heartbeat_alert",
-              title: "Keine Aktivität seit 8+ Stunden",
-              body: "Ihr Angehöriger hat sich seit über 8 Stunden nicht gemeldet. Bitte prüfen Sie nach.",
+              title: "Keine Aktivität seit 48+ Stunden",
+              body: "Ihr Angehöriger hat sich seit über 48 Stunden nicht gemeldet und hat auch nicht auf die Erinnerung reagiert. Bitte prüfen Sie nach.",
               referenceId: newEvent.id,
               referenceType: "escalation_events",
               url: "/care/caregiver",
@@ -308,63 +301,6 @@ export async function runHeartbeatEscalation(
         alertCount++;
         break;
       }
-
-      case "lotse_12h": {
-        // Quartier-Admin benachrichtigen (falls vorhanden)
-        const { data: admins } = await supabase
-          .from("users")
-          .select("id")
-          .eq("is_admin", true);
-
-        if (admins && admins.length > 0) {
-          for (const admin of admins) {
-            try {
-              await sendCareNotification(supabase, {
-                userId: admin.id,
-                type: "care_escalation",
-                title: "Lotse: Bewohner inaktiv seit 12+ Stunden",
-                body: "Ein Bewohner hat seit über 12 Stunden keinen Heartbeat gesendet. Bitte eskalieren Sie.",
-                referenceId: newEvent.id,
-                referenceType: "escalation_events",
-                channels: ["push", "in_app", "admin_alert"],
-              });
-            } catch (notifyError) {
-              console.error(
-                `[care/cron/heartbeat-escalation] Lotse-Benachrichtigung fehlgeschlagen:`,
-                notifyError,
-              );
-            }
-          }
-        }
-        lotseCount++;
-        break;
-      }
-
-      case "urgent_24h": {
-        // Dringend: Push + SMS + Voice an alle Caregivers
-        for (const caregiverId of caregiverIds) {
-          try {
-            await sendCareNotification(supabase, {
-              userId: caregiverId,
-              type: "care_heartbeat_alert",
-              title: "DRINGEND: Keine Aktivität seit 24+ Stunden",
-              body: "Ihr Angehöriger hat sich seit über 24 Stunden nicht gemeldet. Bitte prüfen Sie SOFORT nach dem Rechten.",
-              referenceId: newEvent.id,
-              referenceType: "escalation_events",
-              url: "/care/caregiver",
-              channels: ["push", "sms", "voice", "in_app"],
-              enableFallback: true,
-            });
-          } catch (notifyError) {
-            console.error(
-              `[care/cron/heartbeat-escalation] Urgent an ${caregiverId} fehlgeschlagen:`,
-              notifyError,
-            );
-          }
-        }
-        urgentCount++;
-        break;
-      }
     }
   }
 
@@ -373,8 +309,6 @@ export async function runHeartbeatEscalation(
     residents: residentIds.length,
     reminder: reminderCount,
     alert: alertCount,
-    lotse: lotseCount,
-    urgent: urgentCount,
     resolved: resolvedCount,
   });
 
@@ -382,8 +316,6 @@ export async function runHeartbeatEscalation(
     processed: residentIds.length,
     reminder: reminderCount,
     alert: alertCount,
-    lotse: lotseCount,
-    urgent: urgentCount,
     resolved: resolvedCount,
     timestamp: now.toISOString(),
   };

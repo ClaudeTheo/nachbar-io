@@ -1,5 +1,6 @@
 // app/(app)/care/meine-senioren/page.tsx
-// Uebersichtsseite: Zeigt dem Angehoerigen/Pflegedienst alle zugewiesenen Senioren
+// Uebersichtsseite: Zeigt dem Bewohner seinen Vertrauenskreis (Phase 1 Umbenennung)
+// Route bleibt /care/meine-senioren, UI-Label ist "Mein Kreis" (Design-Doc 4.1).
 "use client";
 
 import { ArrowRight, Users, UserPlus } from "lucide-react";
@@ -7,7 +8,7 @@ import Link from "next/link";
 import { PageHeader } from "@/components/ui/page-header";
 import { useAssignedSeniors } from "@/lib/care/hooks/useAssignedSeniors";
 
-export default function MeineSeniorenPage() {
+export default function MeinKreisPage() {
   const { seniors, helperRole, loading, error } = useAssignedSeniors();
 
   if (loading) {
@@ -28,18 +29,18 @@ export default function MeineSeniorenPage() {
       <PageHeader
         title={
           <>
-            <Users className="h-6 w-6 text-quartier-green" /> Meine Senioren
+            <Users className="h-6 w-6 text-quartier-green" /> Mein Kreis
           </>
         }
         subtitle={
           helperRole === "relative"
-            ? "Ihre betreuten Angehoerigen"
+            ? "Personen in Ihrem Kreis"
             : helperRole === "care_service"
-              ? "Ihre betreuten Klienten"
-              : "Ihre zugewiesenen Senioren"
+              ? "Personen in Ihrem Kreis"
+              : "Personen in Ihrem Kreis"
         }
         backHref="/care"
-        backLabel="Zurück zum Pflege-Dashboard"
+        backLabel="Zurück"
       />
 
       {/* Fehler */}
@@ -54,18 +55,18 @@ export default function MeineSeniorenPage() {
         <div className="rounded-xl border-2 border-dashed border-muted p-8 text-center">
           <Users className="h-12 w-12 text-muted-foreground mx-auto mb-3" />
           <p className="text-lg font-medium text-anthrazit">
-            Keine Senioren zugewiesen
+            Ihr Kreis ist noch leer
           </p>
           <p className="text-sm text-muted-foreground mt-1 mb-4">
-            Sie sind noch keinem Senior zugewiesen. Registrieren Sie sich als
-            Helfer, um Senioren betreuen zu koennen.
+            Sie sind noch mit niemandem verknüpft. Laden Sie Familie oder
+            Freundinnen und Freunde in Ihren Kreis ein.
           </p>
           <Link
             href="/care/helpers"
             className="inline-flex items-center gap-2 rounded-lg bg-quartier-green px-4 py-2 text-sm font-medium text-white hover:bg-quartier-green/90"
           >
             <UserPlus className="h-4 w-4" />
-            Als Helfer registrieren
+            Jemanden einladen
           </Link>
         </div>
       )}
@@ -101,7 +102,7 @@ export default function MeineSeniorenPage() {
                   {senior.display_name}
                 </p>
                 <p className="text-sm text-muted-foreground">
-                  Medikamente, Check-ins und SOS-Verlauf einsehen
+                  Nachricht schreiben, anrufen oder Status sehen
                 </p>
               </div>
 

@@ -81,14 +81,15 @@ export function CaregiverSettings() {
 
   return (
     <div className="px-4 py-6 space-y-6 max-w-lg mx-auto">
-      {/* Überschrift */}
+      {/* Überschrift (Phase 1 Design-Doc 4.1: "Mein Kreis" Sprache) */}
       <div>
         <h1 className="text-2xl font-bold text-[#2D3142] flex items-center gap-2">
           <Users className="h-6 w-6 text-[#4CAF87]" />
-          Angehörige verwalten
+          Mein Kreis
         </h1>
         <p className="text-muted-foreground mt-1">
-          Laden Sie Angehörige ein, Ihren Aktivitätsstatus zu sehen.
+          Laden Sie Familie und Freunde in Ihren Kreis ein. Maximal{" "}
+          {MAX_CAREGIVERS_PER_RESIDENT} Personen.
         </p>
       </div>
 
@@ -105,17 +106,29 @@ export function CaregiverSettings() {
         </div>
       )}
 
-      {/* Einladungs-Button (Senior-Modus: min 80px) */}
-      <button
-        onClick={() => setShowInviteModal(true)}
-        disabled={activeLinks.length >= MAX_CAREGIVERS_PER_RESIDENT}
-        className="w-full flex items-center justify-center gap-2 rounded-xl bg-[#4CAF87] text-white font-semibold text-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-[#3d9a74] transition-colors"
-        style={{ minHeight: "80px" }}
-      >
-        <Plus className="h-5 w-5" />
-        Einladungs-Code erstellen ({activeLinks.length}/
-        {MAX_CAREGIVERS_PER_RESIDENT})
-      </button>
+      {/* Einladungs-Button (Senior-Modus: min 80px). Cap-Anzeige + Voll-Status */}
+      {activeLinks.length >= MAX_CAREGIVERS_PER_RESIDENT ? (
+        <div
+          className="w-full flex flex-col items-center justify-center gap-1 rounded-xl bg-gray-100 text-[#2D3142] font-semibold text-lg border-2 border-gray-300"
+          style={{ minHeight: "80px" }}
+          role="status"
+          aria-live="polite"
+        >
+          <span>Ihr Kreis ist voll</span>
+          <span className="text-sm font-normal text-muted-foreground">
+            {activeLinks.length} von {MAX_CAREGIVERS_PER_RESIDENT} Personen
+          </span>
+        </div>
+      ) : (
+        <button
+          onClick={() => setShowInviteModal(true)}
+          className="w-full flex items-center justify-center gap-2 rounded-xl bg-[#4CAF87] text-white font-semibold text-lg hover:bg-[#3d9a74] transition-colors"
+          style={{ minHeight: "80px" }}
+        >
+          <Plus className="h-5 w-5" />
+          Jemanden einladen ({activeLinks.length}/{MAX_CAREGIVERS_PER_RESIDENT})
+        </button>
+      )}
 
       {/* Liste der Angehörigen */}
       <CaregiverList

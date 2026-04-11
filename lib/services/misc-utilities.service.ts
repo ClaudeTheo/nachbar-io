@@ -221,11 +221,12 @@ export async function getResidentStatus(
     } else {
       const hoursAgo =
         (Date.now() - new Date(lastHeartbeat).getTime()) / 3600000;
-      if (hoursAgo <= HEARTBEAT_ESCALATION.ok_hours) status = "ok";
-      else if (hoursAgo <= HEARTBEAT_ESCALATION.reminder_hours)
+      // Phase 1 2-Stufen-Modell (Design-Doc 4.5):
+      //   <=24h -> ok, 24-48h -> warning (reminder), >48h -> missing (alert)
+      if (hoursAgo <= HEARTBEAT_ESCALATION.reminder_after_hours) status = "ok";
+      else if (hoursAgo <= HEARTBEAT_ESCALATION.alert_after_hours)
         status = "warning";
-      else if (hoursAgo <= HEARTBEAT_ESCALATION.alert_hours) status = "missing";
-      else status = "critical";
+      else status = "missing";
     }
   }
 

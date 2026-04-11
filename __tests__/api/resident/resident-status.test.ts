@@ -87,12 +87,17 @@ describe("GET /api/resident/status", () => {
     expect(json.last_checkin).toBeDefined();
   });
 
-  it("gibt warning-Status bei 6h altem Heartbeat zurueck", async () => {
-    const oldHeartbeat = new Date(Date.now() - 6 * 3600000).toISOString(); // vor 6h
+  // Phase-1 F-1: 2-Stufen-Modell (HEARTBEAT_ESCALATION)
+  //   <=24h -> ok, 24-48h -> warning (reminder_24h), >48h -> missing (alert_48h)
+  // "critical" existiert nicht mehr — der alte 25h/critical-Test wurde
+  // entfernt, weil der Status-Wert im 2-Stufen-Modell keine Entsprechung hat.
+
+  it("gibt warning-Status bei 30h altem Heartbeat zurueck (24-48h Fenster)", async () => {
+    const reminderWindow = new Date(Date.now() - 30 * 3600000).toISOString(); // vor 30h -> zwischen 24h und 48h
 
     mockSupabase = createStatusMock([
       { data: { id: "link-1", heartbeat_visible: true }, error: null },
-      { data: { created_at: oldHeartbeat }, error: null },
+      { data: { created_at: reminderWindow }, error: null },
       { data: null, error: null },
     ]);
 
@@ -107,12 +112,12 @@ describe("GET /api/resident/status", () => {
     expect(json.status).toBe("warning");
   });
 
-  it("gibt missing-Status bei 10h altem Heartbeat zurueck", async () => {
-    const veryOld = new Date(Date.now() - 10 * 3600000).toISOString(); // vor 10h
+  it("gibt missing-Status bei 50h altem Heartbeat zurueck (>48h)", async () => {
+    const alertWindow = new Date(Date.now() - 50 * 3600000).toISOString(); // vor 50h
 
     mockSupabase = createStatusMock([
       { data: { id: "link-1", heartbeat_visible: true }, error: null },
-      { data: { created_at: veryOld }, error: null },
+      { data: { created_at: alertWindow }, error: null },
       { data: null, error: null },
     ]);
 
@@ -125,26 +130,6 @@ describe("GET /api/resident/status", () => {
 
     expect(response.status).toBe(200);
     expect(json.status).toBe("missing");
-  });
-
-  it("gibt critical-Status bei 25h altem Heartbeat zurueck", async () => {
-    const critical = new Date(Date.now() - 25 * 3600000).toISOString(); // vor 25h
-
-    mockSupabase = createStatusMock([
-      { data: { id: "link-1", heartbeat_visible: true }, error: null },
-      { data: { created_at: critical }, error: null },
-      { data: null, error: null },
-    ]);
-
-    const { GET } = await import("@/app/api/resident/status/route");
-    const request = new NextRequest(
-      "http://localhost/api/resident/status?resident_id=senior-1",
-    );
-    const response = await GET(request as never);
-    const json = await response.json();
-
-    expect(response.status).toBe(200);
-    expect(json.status).toBe("critical");
   });
 
   it("gibt ok zurueck wenn heartbeat_visible=false (kein Heartbeat-Zugriff)", async () => {

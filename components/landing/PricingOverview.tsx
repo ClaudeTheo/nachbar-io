@@ -1,10 +1,4 @@
-import {
-  Users,
-  Heart,
-  Shield,
-  Building2,
-  CircleCheck,
-} from "lucide-react";
+import { Users, Heart, Building2, CircleCheck } from "lucide-react";
 
 const PLANS = [
   {
@@ -14,12 +8,12 @@ const PLANS = [
     badge: "Dauerhaft kostenlos",
     badgeColor: "bg-gray-100 text-gray-600",
     features: [
-      "Schwarzes Brett, Marktplatz, Leihbörse",
-      "Quartierskarte + Info-Hub",
-      "Müllkalender mit Erinnerungen",
-      "Notfall-System + Heartbeat",
-      "Nachbar Hilfe + Experten",
-      "Mein Tag + Check-in",
+      "Mein Kreis: Familie + Freunde (bis 10 Personen)",
+      "1:1 Nachrichten und Video-Call",
+      "Termine im Kreis",
+      "Hier bei mir: Wetter, Warnungen, Müllkalender, Karte",
+      "Schreiben mit KI-Hilfe (Voice-First)",
+      "Notfall-Knopf mit 112/110",
     ],
     highlighted: false,
   },
@@ -31,27 +25,11 @@ const PLANS = [
     badgeColor: "bg-[#e8f5ee] text-[#266a4a]",
     features: [
       "Alles aus Free",
-      "Heartbeat-Status des Bewohners",
+      "Lebenszeichen-Status des Bewohners",
       "Check-in-Historie (30 Tage)",
       "1:1 Video-Call (WebRTC)",
       "Chat mit dem Bewohner",
       "Automatische Eskalationskette",
-    ],
-    highlighted: false,
-  },
-  {
-    name: "Pro Pflege",
-    audience: "Pflegedienste",
-    icon: <Shield className="h-6 w-6" />,
-    badge: "Kostenlos in der Pilot-Phase",
-    badgeColor: "bg-[#e8f5ee] text-[#266a4a]",
-    features: [
-      "Eigenes Pflege-Portal",
-      "Bewohner-Dashboard mit Ampel",
-      "Eskalations-Inbox (Stufe 3/4)",
-      "Verordnungs-Tracker",
-      "Team-Verwaltung + Team-Chat",
-      "Notfallmappe (AES-256-GCM)",
     ],
     highlighted: false,
   },
@@ -78,14 +56,14 @@ export function PricingOverview() {
     <section className="bg-[#f9f7f4] py-16 sm:py-24">
       <div className="mx-auto max-w-6xl px-6">
         <h2 className="text-center text-2xl font-extrabold text-[#2D3142] sm:text-3xl">
-          Vier Versionen — eine Plattform
+          Drei Versionen — eine Plattform
         </h2>
         <p className="mx-auto mt-4 max-w-lg text-center text-sm text-gray-500">
           Aktuell kostenlos — Preise werden vor dem offiziellen Start
           bekanntgegeben.
         </p>
 
-        <div className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {PLANS.map((plan) => (
             <div
               key={plan.name}

@@ -1,14 +1,15 @@
 // __tests__/components/senior/SchreibenView.test.tsx
-// Task H-1: Rendering der /schreiben-Senior-Seite.
+// Task H-1 → H-2: Rendering der /schreiben-Senior-Seite.
 // Stateless Komponente — bekommt bereits transformierte Kontakte und rendert
 // sie als Senior-gerechte Kacheln (>=80px Touch-Target, Anthrazit-Kontur).
+// Gueltige Kontakte verlinken auf /schreiben/mic/:index (Voice-Flow).
 
 import { describe, it, expect, afterEach } from "vitest";
 import { render, screen, cleanup } from "@testing-library/react";
 import { SchreibenView } from "@/components/senior/SchreibenView";
 import type { SchreibenContact } from "@/lib/messaging/schreiben-contacts";
 
-describe("SchreibenView (H-1)", () => {
+describe("SchreibenView (H-1 → H-2)", () => {
   // vitest.setup.ts aktiviert kein globales Cleanup. Ohne das haeufen sich
   // gerenderte DOM-Fragmente zwischen Tests an und "multiple elements"-Fehler
   // sind die Folge. Lokaler afterEach laesst die umliegende Konfiguration
@@ -30,12 +31,14 @@ describe("SchreibenView (H-1)", () => {
       {
         name: "Anna Muster",
         relationship: "Tochter",
-        whatsappUrl: "https://wa.me/4917612345678",
+        phone: "+49 176 12345678",
+        index: 0,
       },
       {
         name: "Bernd Nachbar",
         relationship: "Nachbar",
-        whatsappUrl: "https://wa.me/4917699999999",
+        phone: "+49 176 99999999",
+        index: 1,
       },
     ];
     render(<SchreibenView contacts={contacts} />);
@@ -48,21 +51,40 @@ describe("SchreibenView (H-1)", () => {
     expect(screen.getByText("Nachbar")).toBeDefined();
   });
 
-  it("gueltige Kontakte sind Links auf den wa.me-URL", () => {
+  it("gueltige Kontakte verlinken auf /schreiben/mic/:index", () => {
     const contacts: SchreibenContact[] = [
       {
         name: "Anna Muster",
         relationship: "Tochter",
-        whatsappUrl: "https://wa.me/4917612345678",
+        phone: "+49 176 12345678",
+        index: 0,
       },
     ];
     render(<SchreibenView contacts={contacts} />);
 
     const link = screen.getByRole("link", { name: /Anna Muster/i });
-    expect(link.getAttribute("href")).toBe("https://wa.me/4917612345678");
-    // Muss in neuem Tab/der WhatsApp-App oeffnen
-    expect(link.getAttribute("target")).toBe("_blank");
-    expect(link.getAttribute("rel")).toContain("noopener");
+    expect(link.getAttribute("href")).toBe("/schreiben/mic/0");
+  });
+
+  it("zweiter Kontakt verlinkt auf /schreiben/mic/1", () => {
+    const contacts: SchreibenContact[] = [
+      {
+        name: "Anna Muster",
+        relationship: "Tochter",
+        phone: "+49 176 12345678",
+        index: 0,
+      },
+      {
+        name: "Bernd Nachbar",
+        relationship: "Nachbar",
+        phone: "+49 176 99999999",
+        index: 1,
+      },
+    ];
+    render(<SchreibenView contacts={contacts} />);
+
+    const link = screen.getByRole("link", { name: /Bernd Nachbar/i });
+    expect(link.getAttribute("href")).toBe("/schreiben/mic/1");
   });
 
   it("Kontakte ohne gueltige Nummer werden als ausgegraute Nicht-Links dargestellt", () => {
@@ -70,7 +92,8 @@ describe("SchreibenView (H-1)", () => {
       {
         name: "Oma Ohne Handy",
         relationship: "Mutter",
-        whatsappUrl: null,
+        phone: null,
+        index: 0,
       },
     ];
     render(<SchreibenView contacts={contacts} />);
@@ -88,7 +111,8 @@ describe("SchreibenView (H-1)", () => {
       {
         name: "Anna Muster",
         relationship: "Tochter",
-        whatsappUrl: "https://wa.me/4917612345678",
+        phone: "+49 176 12345678",
+        index: 0,
       },
     ];
     render(<SchreibenView contacts={contacts} />);

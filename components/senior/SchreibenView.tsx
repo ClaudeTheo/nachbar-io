@@ -1,5 +1,5 @@
 // components/senior/SchreibenView.tsx
-// Task H-1: Stateless View fuer /schreiben (Senior-UI).
+// Task H-1 → H-2: Stateless View fuer /schreiben (Senior-UI).
 //
 // Regeln aus Phase-1 Design-Doc 2026-04-10 (wie kreis-start):
 //   - Touch-Targets >=80px
@@ -11,11 +11,11 @@
 // Die Komponente laedt keine Daten — sie bekommt bereits transformierte
 // SchreibenContact[] und rendert drei Zustaende:
 //   1. Leer → Einrichtungs-Hinweis mit Link auf /care/profile
-//   2. Nur gueltige Nummern → anklickbare wa.me-Kacheln
+//   2. Nur gueltige Nummern → anklickbare Kacheln → /schreiben/mic/:index
 //   3. Gemischt → ungueltige Kontakte sind ausgegraute Nicht-Links
 //
-// wa.me-Links oeffnen in neuem Tab (target="_blank") damit der Senior
-// beim Zurueckkehren aus WhatsApp wieder im /schreiben-Screen landet.
+// Tippen auf eine Kachel navigiert zur Mikrofon-Seite, wo der Senior
+// eine Sprachnachricht diktiert (Voice-Flow H-2/H-3/H-4).
 
 import Link from "next/link";
 import type { SchreibenContact } from "@/lib/messaging/schreiben-contacts";
@@ -61,14 +61,13 @@ export function SchreibenView({ contacts }: SchreibenViewProps) {
     <section aria-label="Schreiben">
       <h1 className="text-2xl font-bold text-anthrazit mb-4">Schreiben</h1>
       <p className="mb-4 text-base text-anthrazit/80">
-        Tippen Sie auf eine Person, um ihr eine Nachricht per WhatsApp zu
-        schicken.
+        Tippen Sie auf eine Person, um ihr eine Nachricht zu diktieren.
       </p>
       <ul className="flex flex-col gap-3">
         {contacts.map((contact, index) => {
           const key = `${contact.name}-${index}`;
 
-          if (contact.whatsappUrl === null) {
+          if (contact.phone === null) {
             return (
               <li key={key}>
                 <div
@@ -93,11 +92,9 @@ export function SchreibenView({ contacts }: SchreibenViewProps) {
 
           return (
             <li key={key}>
-              <a
+              <Link
                 data-testid="schreiben-contact-tile"
-                href={contact.whatsappUrl}
-                target="_blank"
-                rel="noopener noreferrer"
+                href={`/schreiben/mic/${contact.index}`}
                 className="flex flex-col items-start justify-center rounded-2xl border-2 border-anthrazit bg-white p-4 text-anthrazit focus:outline-none focus:ring-4 focus:ring-quartier-green/40"
                 style={TILE_BASE_STYLE}
               >
@@ -107,7 +104,7 @@ export function SchreibenView({ contacts }: SchreibenViewProps) {
                 <span className="mt-1 text-base font-normal">
                   {contact.relationship}
                 </span>
-              </a>
+              </Link>
             </li>
           );
         })}

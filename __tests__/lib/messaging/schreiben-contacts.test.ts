@@ -1,5 +1,5 @@
 // __tests__/lib/messaging/schreiben-contacts.test.ts
-// Task H-1: Transformer der entschluesselten CareProfile.emergency_contacts
+// Task H-1 → H-2: Transformer der entschluesselten CareProfile.emergency_contacts
 // in die Zeilen-Struktur fuer den /schreiben-Senior-Screen umwandelt.
 //
 // Pure Funktion — kein Supabase, kein Decrypt. Die Eingabe wird bereits
@@ -20,18 +20,19 @@ function contact(overrides: Partial<EmergencyContact> = {}): EmergencyContact {
   };
 }
 
-describe("toSchreibenContacts (H-1)", () => {
+describe("toSchreibenContacts (H-1 → H-2)", () => {
   it("liefert eine leere Liste zurueck wenn keine Kontakte vorhanden sind", () => {
     expect(toSchreibenContacts([])).toEqual([]);
   });
 
-  it("mappt Name, Beziehung und wa.me-Link fuer einen gueltigen Kontakt", () => {
+  it("mappt Name, Beziehung, phone und index fuer einen gueltigen Kontakt", () => {
     const result = toSchreibenContacts([contact()]);
     expect(result).toEqual([
       {
         name: "Anna Muster",
         relationship: "Tochter",
-        whatsappUrl: "https://wa.me/4917612345678",
+        phone: "+49 176 12345678",
+        index: 0,
       },
     ]);
   });
@@ -45,11 +46,11 @@ describe("toSchreibenContacts (H-1)", () => {
     expect(result.map((c) => c.name)).toEqual(["Anna", "Berta", "Carla"]);
   });
 
-  it("setzt whatsappUrl auf null wenn die Nummer ungueltig ist (Kachel wird spaeter ausgegraut)", () => {
+  it("setzt phone auf null wenn die Nummer ungueltig ist (Kachel wird spaeter ausgegraut)", () => {
     const result = toSchreibenContacts([
       contact({ name: "Ohne Nummer", phone: "" }),
     ]);
-    expect(result[0]!.whatsappUrl).toBeNull();
+    expect(result[0]!.phone).toBeNull();
     expect(result[0]!.name).toBe("Ohne Nummer");
   });
 
@@ -60,5 +61,14 @@ describe("toSchreibenContacts (H-1)", () => {
       contact({ name: "Dritter", priority: 1 }),
     ]);
     expect(result.map((c) => c.name)).toEqual(["Erster", "Zweiter", "Dritter"]);
+  });
+
+  it("weist fortlaufende Indizes nach Sortierung zu", () => {
+    const result = toSchreibenContacts([
+      contact({ name: "Carla", priority: 3 }),
+      contact({ name: "Anna", priority: 1 }),
+      contact({ name: "Berta", priority: 2 }),
+    ]);
+    expect(result.map((c) => c.index)).toEqual([0, 1, 2]);
   });
 });

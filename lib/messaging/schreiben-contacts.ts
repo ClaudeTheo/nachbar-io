@@ -3,8 +3,11 @@
 //
 // Nimmt die bereits entschluesselten Notfall-/Vertrauenskontakte eines Seniors
 // (aus CareProfile.emergency_contacts) und liefert die View-Struktur fuer
-// die Schreiben-Kacheln: Name, Beziehung, wa.me-Link (oder null, wenn die
-// Nummer nicht verwertbar ist).
+// die Schreiben-Kacheln: Name, Beziehung, Telefonnummer und Index.
+//
+// Der Index wird fuer die Navigation zur Mikrofon-Seite benoetigt
+// (/schreiben/mic/:index). Die Telefonnummer dient zur Validierung
+// (null = keine gueltige Nummer = ausgegraut).
 //
 // Warum eine pure Funktion?
 //   - Testbar ohne Supabase-Mock
@@ -17,7 +20,8 @@ import { buildWhatsAppLink } from "@/lib/messaging/whatsapp-link";
 export interface SchreibenContact {
   name: string;
   relationship: string;
-  whatsappUrl: string | null;
+  phone: string | null;
+  index: number;
 }
 
 export function toSchreibenContacts(
@@ -29,9 +33,15 @@ export function toSchreibenContacts(
   // das erwartete Verhalten ist.
   const sorted = [...contacts].sort((a, b) => a.priority - b.priority);
 
-  return sorted.map((c) => ({
-    name: c.name,
-    relationship: c.relationship,
-    whatsappUrl: buildWhatsAppLink(c.phone),
-  }));
+  return sorted.map((c, i) => {
+    // buildWhatsAppLink gibt null zurueck wenn die Nummer ungueltig ist —
+    // wir nutzen das als Validierung fuer das phone-Feld.
+    const validatedUrl = buildWhatsAppLink(c.phone);
+    return {
+      name: c.name,
+      relationship: c.relationship,
+      phone: validatedUrl !== null ? c.phone : null,
+      index: i,
+    };
+  });
 }

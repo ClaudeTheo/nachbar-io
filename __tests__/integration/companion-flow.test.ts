@@ -14,8 +14,8 @@ describe("Companion Integration", () => {
     }
   });
 
-  it("should mark exactly 12 tools as write tools", () => {
-    expect(WRITE_TOOLS.size).toBe(12);
+  it("should mark exactly 13 tools as write tools", () => {
+    expect(WRITE_TOOLS.size).toBe(13);
   });
 
   it("should have 9 read-only tools", () => {
@@ -46,8 +46,8 @@ describe("Companion Integration", () => {
     }
   });
 
-  it("should have exactly 21 tools total", () => {
-    expect(companionTools.length).toBe(21);
+  it("should have exactly 22 tools total", () => {
+    expect(companionTools.length).toBe(22);
   });
 
   it("should have unique tool names", () => {

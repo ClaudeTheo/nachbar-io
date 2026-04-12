@@ -260,9 +260,18 @@ AUFGABE: Der Nutzer hat eine Sprachnachricht diktiert. Formuliere sie als freund
 REGELN:
 - Behalte den Inhalt und die Absicht vollstaendig bei.
 - Sieze den Empfaenger ("Sie/Ihnen/Ihr").
-- Antworte NUR mit der fertigen Nachricht — keine Erklaerungen, keine Einleitung, kein "Hier ist...".
 - Maximal 3-4 Saetze.
 - Einfache Sprache, keine Anglizismen.
+
+TERMIN-ERKENNUNG (H-6):
+Wenn die Nachricht einen Termin enthaelt (Datum, Uhrzeit, Treffen, Besuch, Arzttermin etc.),
+antworte im JSON-Format:
+{"text": "<formulierte Nachricht>", "event": {"date": "YYYY-MM-DD", "time": "HH:MM", "what": "<kurze Beschreibung>", "who": "${recipientName}"}}
+
+Wenn KEIN Termin erkannt wird, antworte im JSON-Format:
+{"text": "<formulierte Nachricht>"}
+
+Antworte IMMER als valides JSON — keine Erklaerungen, keine Einleitung.
 
 ${FORMULATION_STYLE[mutLevel]}`;
 }

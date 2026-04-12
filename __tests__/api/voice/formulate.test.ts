@@ -99,6 +99,34 @@ describe("POST /api/voice/formulate", () => {
     expect(body.text).toBe("Liebe Anna, ich wollte Ihnen sagen...");
   });
 
+  it("gibt event-Feld durch wenn Termin erkannt (H-6)", async () => {
+    mockFormulateMessage.mockResolvedValueOnce({
+      text: "Liebe Anna, koennen wir uns am Freitag um 14 Uhr zum Kaffee treffen?",
+      event: {
+        date: "2026-04-17",
+        time: "14:00",
+        what: "Kaffee trinken",
+        who: "Anna",
+      },
+    });
+
+    const { POST } = await import("@/app/api/voice/formulate/route");
+    const req = new Request("http://localhost/api/voice/formulate", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        transcript: "Sag Anna wir treffen uns Freitag um zwei zum Kaffee",
+        recipientName: "Anna",
+      }),
+    });
+    const res = await POST(req as never);
+    expect(res.status).toBe(200);
+    const body = await res.json();
+    expect(body.event).toBeDefined();
+    expect(body.event.date).toBe("2026-04-17");
+    expect(body.event.what).toBe("Kaffee trinken");
+  });
+
   it("uebergibt mutLevel an formulateMessage", async () => {
     mockFormulateMessage.mockResolvedValueOnce({ text: "Formuliert." });
 

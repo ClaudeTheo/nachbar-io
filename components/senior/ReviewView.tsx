@@ -22,6 +22,14 @@ import { TTSButton } from "@/modules/voice/components/companion/TTSButton";
 
 type ReviewState = "loading" | "suggestion" | "editing";
 
+/** Erkannter Termin aus der KI-Formulierung (H-6) */
+interface DetectedEvent {
+  date: string;
+  time?: string;
+  what: string;
+  who: string;
+}
+
 export interface ReviewViewProps {
   recipientName: string;
   recipientIndex: number;
@@ -39,6 +47,11 @@ export function ReviewView({
   const [suggestion, setSuggestion] = useState("");
   const [editText, setEditText] = useState("");
   const [kiFailed, setKiFailed] = useState(false);
+  const [detectedEvent, setDetectedEvent] = useState<DetectedEvent | null>(
+    null,
+  );
+  const [eventSaved, setEventSaved] = useState(false);
+  const [eventSaving, setEventSaving] = useState(false);
 
   // Aktuell angezeigter Text (KI-Vorschlag oder bearbeiteter Text)
   const currentText = suggestion;
@@ -61,6 +74,7 @@ export function ReviewView({
         if (cancelled) return;
 
         setSuggestion(data.text);
+        if (data.event) setDetectedEvent(data.event);
         setState("suggestion");
       } catch {
         if (cancelled) return;
@@ -135,8 +149,8 @@ export function ReviewView({
               role="alert"
               className="rounded-2xl border-2 border-amber-400 bg-amber-50 p-4 text-base text-amber-800"
             >
-              Die KI-Formulierung ist gerade nicht verfuegbar. Ihr
-              Original-Text wird verwendet.
+              Die KI-Formulierung ist gerade nicht verfuegbar. Ihr Original-Text
+              wird verwendet.
             </div>
           )}
 
@@ -174,6 +188,49 @@ export function ReviewView({
               </a>
             )}
           </div>
+
+          {/* Termin-Erkennung (H-6) */}
+          {detectedEvent && !eventSaved && (
+            <div className="rounded-2xl border-2 border-quartier-green/50 bg-quartier-green/5 p-4">
+              <p className="text-base font-semibold text-anthrazit">
+                Termin erkannt: {detectedEvent.what}
+                {detectedEvent.time && ` um ${detectedEvent.time} Uhr`}
+              </p>
+              <button
+                type="button"
+                disabled={eventSaving}
+                onClick={async () => {
+                  setEventSaving(true);
+                  try {
+                    const res = await fetch("/api/circle-events", {
+                      method: "POST",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({
+                        scheduledAt: `${detectedEvent.date}T${detectedEvent.time || "12:00"}:00`,
+                        title: `${detectedEvent.what} mit ${detectedEvent.who}`,
+                        whoComes: detectedEvent.who,
+                      }),
+                    });
+                    if (res.ok) setEventSaved(true);
+                  } catch {
+                    // Fehler ignorieren — kein kritischer Flow
+                  } finally {
+                    setEventSaving(false);
+                  }
+                }}
+                className="mt-3 w-full rounded-2xl border-2 border-quartier-green bg-quartier-green px-6 py-3 text-base font-semibold text-white focus:outline-none focus:ring-4 focus:ring-quartier-green/40"
+                style={{ minHeight: "56px" }}
+              >
+                {eventSaving ? "Wird eingetragen..." : "Termin eintragen"}
+              </button>
+            </div>
+          )}
+
+          {eventSaved && (
+            <div className="rounded-2xl border-2 border-quartier-green/50 bg-quartier-green/10 p-4 text-base font-semibold text-quartier-green">
+              Termin eingetragen!
+            </div>
+          )}
         </div>
       )}
 

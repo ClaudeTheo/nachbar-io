@@ -522,11 +522,24 @@ export async function processChat(
  * Formulierungshilfe (H-3): Nimmt ein Transkript und formuliert es als
  * WhatsApp-Nachricht. Leichtgewichtiger Pfad ohne Tools/Memory/Kontext.
  */
+/** Erkannter Termin aus der Formulierungshilfe (H-6) */
+export interface ExtractedEvent {
+  date: string;
+  time?: string;
+  what: string;
+  who: string;
+}
+
+export interface FormulateResult {
+  text: string;
+  event?: ExtractedEvent;
+}
+
 export async function formulateMessage(
   transcript: string,
   recipientName: string,
   mutLevel: MutLevel = 1,
-): Promise<{ text: string }> {
+): Promise<FormulateResult> {
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey) {
     throw new ServiceError("KI nicht verfuegbar.", 503);
@@ -541,13 +554,28 @@ export async function formulateMessage(
 
   const response = await client.messages.create({
     model: "claude-haiku-4-5-20251001",
-    max_tokens: 300,
+    max_tokens: 400,
     system: systemPrompt,
     messages: [{ role: "user", content: transcript }],
   });
 
   const textBlock = response.content.find((b) => b.type === "text");
-  return { text: textBlock?.text?.trim() ?? transcript };
+  const raw = textBlock?.text?.trim() ?? "";
+
+  // JSON-Parsing versuchen (Termin-Erkennung)
+  try {
+    const parsed = JSON.parse(raw);
+    if (typeof parsed.text === "string") {
+      return {
+        text: parsed.text,
+        event: parsed.event ?? undefined,
+      };
+    }
+  } catch {
+    // Fallback: Haiku hat Plaintext statt JSON zurueckgegeben
+  }
+
+  return { text: raw || transcript };
 }
 
 /**

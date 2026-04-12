@@ -9,12 +9,64 @@ import { buildClientKeys } from "@/lib/security/client-key";
 // Oeffentliche Seiten: Kein Auth-Check noetig, statisch cachebar
 const PUBLIC_PATHS = ["/", "/b2b", "/impressum", "/datenschutz", "/agb"];
 
+// Phase I: Legacy-Routen hinter Feature-Flags verstecken.
+// Solange die Flags in der DB "off" sind, werden diese Routen auf /kreis-start umgeleitet.
+// Routen-Prefixe die in Phase 1 NICHT aktiv sind:
+const LEGACY_ROUTE_PREFIXES = [
+  "/care/aerzte",
+  "/care/appointments",
+  "/care/consultations",
+  "/care/sprechstunde",
+  "/care/medications",
+  "/care/shopping",
+  "/care/tasks",
+  "/care/reports",
+  "/care/audit",
+  "/care/kiosk",
+  "/arzt",
+  "/anamnese",
+  "/board",
+  "/marketplace",
+  "/leihboerse",
+  "/experts",
+  "/handwerker",
+  "/ki-fragebogen",
+  "/pflegegrad-navigator",
+  "/pflege-einstellungen",
+  "/praevention",
+  "/whohas",
+  "/mitessen",
+  "/lost-found",
+  "/gruppen",
+  "/polls",
+  "/noise",
+  "/reports",
+  "/packages",
+  "/vouching",
+  "/companion",
+  "/jugend",
+  "/dashboard",
+];
+
+function isLegacyRoute(pathname: string): boolean {
+  return LEGACY_ROUTE_PREFIXES.some(
+    (prefix) => pathname === prefix || pathname.startsWith(prefix + "/"),
+  );
+}
+
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // Oeffentliche Seiten: Kein Supabase-Session-Check, direkt weiterleiten
   if (PUBLIC_PATHS.includes(pathname)) {
     return NextResponse.next();
+  }
+
+  // Phase I: Legacy-Routen auf /kreis-start umleiten
+  if (isLegacyRoute(pathname)) {
+    const url = request.nextUrl.clone();
+    url.pathname = "/kreis-start";
+    return NextResponse.redirect(url);
   }
 
   // Security-Check (Redis-basiert, fail-open)

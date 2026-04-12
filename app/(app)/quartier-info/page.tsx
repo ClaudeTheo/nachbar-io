@@ -25,6 +25,8 @@ import {
 import { WeatherWidget } from "@/components/weather/WeatherWidget";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useQuarter } from "@/lib/quarters";
+import { TTSButton } from "@/modules/voice/components/companion/TTSButton";
+import { buildDailyBrief } from "@/modules/voice/services/daily-brief.service";
 import type {
   QuartierInfoResponse,
   RathausLink,
@@ -151,6 +153,13 @@ export default function QuartierInfoPage() {
           />
         </button>
       </div>
+
+      {/* Vorlesen-Button (G-5) */}
+      {!loading && data && (
+        <section data-testid="info-vorlesen">
+          <TTSButton text={buildDailyBrief(data)} />
+        </section>
+      )}
 
       {/* 1. Wetter */}
       <section data-testid="info-weather">

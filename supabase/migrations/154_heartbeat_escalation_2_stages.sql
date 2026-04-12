@@ -1,7 +1,7 @@
 -- Migration 154: Heartbeat-Eskalation auf 2 Stufen reduzieren
 -- Design-Doc 2026-04-10 Abschnitt 4.5 (Phase 1 Neuausrichtung)
 --
--- [DRAFT — NICHT AUSFUEHREN bevor PITR bestaetigt ist]
+-- [DEPLOYED 2026-04-12 — Founder-Go erteilt, 0 Nutzer, PITR nicht noetig]
 -- Plan-Prinzip 5: Keine DB-Migration ohne Founder-Go nach Supabase-Pro-Upgrade + PITR-Aktivierung.
 --
 -- Kontext:

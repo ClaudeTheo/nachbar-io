@@ -62,6 +62,7 @@ export async function POST(request: NextRequest) {
       body.recipientName,
       mutLevel,
     );
+    // result: { text, event? } — event ist optional (H-6 Termin-Extraktion)
     return NextResponse.json(result);
   } catch (err) {
     return handleServiceError(err);

@@ -90,6 +90,16 @@ export default function KreisStartPage() {
       <p className="mt-6 text-center text-sm text-muted-foreground">
         Tippen Sie auf eine Kachel, um fortzufahren.
       </p>
+
+      <div className="mt-8 text-center">
+        <Link
+          href="/profil"
+          className="inline-flex items-center gap-2 text-base font-medium text-anthrazit/60 transition-colors hover:text-anthrazit"
+          data-testid="kreis-start-profil-link"
+        >
+          Mein Profil
+        </Link>
+      </div>
     </section>
   );
 }

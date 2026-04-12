@@ -11,6 +11,7 @@
 "use client";
 
 import Link from "next/link";
+import { PushToggle } from "./PushToggle";
 
 interface ProfilViewProps {
   displayName: string;
@@ -101,6 +102,14 @@ export function ProfilView({
             ))}
           </ul>
         )}
+      </div>
+
+      {/* Benachrichtigungen */}
+      <div className="mt-8">
+        <h2 className="text-xl font-bold text-anthrazit">Benachrichtigungen</h2>
+        <div className="mt-4">
+          <PushToggle />
+        </div>
       </div>
 
       {/* App-Info */}

@@ -46,6 +46,16 @@ describe("KreisStartPage (Phase 1 Design-Doc 3)", () => {
     }
   });
 
+  it("zeigt Termine-Link unterhalb der Kacheln", () => {
+    const { container } = render(<KreisStartPage />);
+    const link = container.querySelector(
+      '[data-testid="kreis-start-termine-link"]',
+    );
+    expect(link).not.toBeNull();
+    expect(link!.getAttribute("href")).toBe("/mein-kreis/termine");
+    expect(link!.textContent).toContain("Termine");
+  });
+
   it("keine Badges mit Zahlen (Design-Doc 3.1)", () => {
     render(<KreisStartPage />);
     // Screen-reader-text oder sichtbarer Text mit Zahlen in Kachel-Position

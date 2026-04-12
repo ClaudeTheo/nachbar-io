@@ -91,7 +91,14 @@ export default function KreisStartPage() {
         Tippen Sie auf eine Kachel, um fortzufahren.
       </p>
 
-      <div className="mt-8 text-center">
+      <div className="mt-8 flex justify-center gap-6">
+        <Link
+          href="/mein-kreis/termine"
+          className="inline-flex items-center gap-2 text-base font-medium text-anthrazit/60 transition-colors hover:text-anthrazit"
+          data-testid="kreis-start-termine-link"
+        >
+          Termine
+        </Link>
         <Link
           href="/profil"
           className="inline-flex items-center gap-2 text-base font-medium text-anthrazit/60 transition-colors hover:text-anthrazit"

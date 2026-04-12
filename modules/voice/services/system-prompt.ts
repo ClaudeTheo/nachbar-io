@@ -237,3 +237,32 @@ ${addressRule}
 
   return sections.join("\n\n");
 }
+
+/**
+ * Formulierungshilfe-Stil nach Mut-Stufe (H-3).
+ * Stufe 1 = minimale Korrektur, Stufe 4 = kreative Umformulierung.
+ */
+const FORMULATION_STYLE: Record<MutLevel, string> = {
+  1: "Aendere so wenig wie moeglich — nur Grammatik und offensichtliche Fehler korrigieren. Minimale Umformulierung.",
+  2: "Korrigiere Grammatik und formuliere klarer. Behalte den persoenlichen Stil bei.",
+  3: "Formuliere freundlich und warm um. Fuege einen netten Gruss hinzu wenn keiner vorhanden.",
+  4: "Formuliere kreativ und herzlich um. Fuege passende Grussformeln und warme Worte hinzu.",
+};
+
+export function buildFormulationPrompt(
+  recipientName: string,
+  mutLevel: MutLevel = 1,
+): string {
+  return `Du bist ein Formulierungsassistent fuer aeltere Menschen.
+
+AUFGABE: Der Nutzer hat eine Sprachnachricht diktiert. Formuliere sie als freundliche WhatsApp-Nachricht an "${recipientName}".
+
+REGELN:
+- Behalte den Inhalt und die Absicht vollstaendig bei.
+- Sieze den Empfaenger ("Sie/Ihnen/Ihr").
+- Antworte NUR mit der fertigen Nachricht — keine Erklaerungen, keine Einleitung, kein "Hier ist...".
+- Maximal 3-4 Saetze.
+- Einfache Sprache, keine Anglizismen.
+
+${FORMULATION_STYLE[mutLevel]}`;
+}

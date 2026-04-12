@@ -5,6 +5,7 @@ import { ServiceError } from "@/lib/services/service-error";
 import { loadQuarterContext } from "@/modules/voice/services/context-loader";
 import {
   buildSystemPrompt,
+  buildFormulationPrompt,
   type MutLevel,
 } from "@/modules/voice/services/system-prompt";
 import { companionTools } from "@/modules/voice/services/tools";
@@ -515,6 +516,38 @@ export async function processChat(
       supabase,
     ),
   );
+}
+
+/**
+ * Formulierungshilfe (H-3): Nimmt ein Transkript und formuliert es als
+ * WhatsApp-Nachricht. Leichtgewichtiger Pfad ohne Tools/Memory/Kontext.
+ */
+export async function formulateMessage(
+  transcript: string,
+  recipientName: string,
+  mutLevel: MutLevel = 1,
+): Promise<{ text: string }> {
+  const apiKey = process.env.ANTHROPIC_API_KEY;
+  if (!apiKey) {
+    throw new ServiceError("KI nicht verfuegbar.", 503);
+  }
+
+  if (!transcript.trim()) {
+    throw new ServiceError("Kein Transkript.", 400);
+  }
+
+  const client = new Anthropic({ apiKey });
+  const systemPrompt = buildFormulationPrompt(recipientName, mutLevel);
+
+  const response = await client.messages.create({
+    model: "claude-haiku-4-5-20251001",
+    max_tokens: 300,
+    system: systemPrompt,
+    messages: [{ role: "user", content: transcript }],
+  });
+
+  const textBlock = response.content.find((b) => b.type === "text");
+  return { text: textBlock?.text?.trim() ?? transcript };
 }
 
 /**

@@ -113,7 +113,7 @@ export function LeafletKarte({ quarterId: quarterIdProp }: LeafletKarteProps) {
           zoom={currentQuarter?.zoom_level ?? 17}
           tileUrl={
             mapConfig?.tileUrl ??
-            `https://api.maptiler.com/maps/streets-v2/256/{z}/{x}/{y}.png?key=${process.env.NEXT_PUBLIC_MAPTILER_KEY ?? ""}`
+            "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           }
           houses={visibleHouses}
           statuses={statuses}

@@ -8,6 +8,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { Check } from "lucide-react";
 import Link from "next/link";
 import { showPointsToast } from "@/components/gamification/PointsToast";
+import { offlineQueue } from "@/lib/offline-queue";
 
 // Check-in-Status-Antwort vom Server
 interface CheckinStatusResponse {
@@ -112,14 +113,16 @@ export function DailyCheckinButton() {
     setPhase("submitting");
     setError(null);
 
+    const bodyStr = JSON.stringify({
+      status: option.status,
+      mood: option.mood,
+    });
+
     try {
       const res = await fetch("/api/care/checkin", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          status: option.status,
-          mood: option.mood,
-        }),
+        body: bodyStr,
       });
 
       if (!res.ok) {
@@ -134,7 +137,8 @@ export function DailyCheckinButton() {
       setPhase("done");
       showPointsToast("checkin");
     } catch {
-      setError("Verbindungsfehler");
+      offlineQueue.enqueue("/api/care/checkin", bodyStr).catch(() => {});
+      setError("Wird gesendet sobald Sie wieder online sind");
       setPhase("mood");
     }
   };

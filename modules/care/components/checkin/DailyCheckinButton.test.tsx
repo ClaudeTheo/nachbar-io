@@ -2,12 +2,32 @@
 // Nachbar.io — Tests für den Dashboard Check-in Button
 
 import { describe, it, expect, vi, afterEach, beforeEach } from "vitest";
-import { render, screen, fireEvent, cleanup, waitFor } from "@testing-library/react";
+import {
+  render,
+  screen,
+  fireEvent,
+  cleanup,
+  waitFor,
+} from "@testing-library/react";
 import { DailyCheckinButton } from "./DailyCheckinButton";
+
+const mockEnqueue = vi.fn();
+vi.mock("@/lib/offline-queue", () => ({
+  offlineQueue: {
+    enqueue: (...args: unknown[]) => mockEnqueue(...args),
+    flush: vi.fn(),
+  },
+}));
 
 // Next.js Navigation-Mock
 vi.mock("next/navigation", () => ({
-  useRouter: () => ({ push: vi.fn(), replace: vi.fn(), back: vi.fn(), prefetch: vi.fn(), refresh: vi.fn() }),
+  useRouter: () => ({
+    push: vi.fn(),
+    replace: vi.fn(),
+    back: vi.fn(),
+    prefetch: vi.fn(),
+    refresh: vi.fn(),
+  }),
   usePathname: () => "/",
   useSearchParams: () => new URLSearchParams(),
 }));
@@ -23,6 +43,8 @@ describe("DailyCheckinButton", () => {
   beforeEach(() => {
     mockFetch = vi.fn();
     globalThis.fetch = mockFetch as typeof fetch;
+    mockEnqueue.mockReset();
+    mockEnqueue.mockResolvedValue(undefined);
   });
 
   it("zeigt Button wenn Check-in ausstehend", async () => {
@@ -131,5 +153,42 @@ describe("DailyCheckinButton", () => {
       expect(btn.style.minHeight).toBe("80px");
       expect(btn.style.touchAction).toBe("manipulation");
     });
+  });
+
+  it("zeigt Offline-Hinweis und enqueued bei Netzwerkfehler", async () => {
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: () =>
+        Promise.resolve({
+          checkinEnabled: true,
+          completedCount: 0,
+          totalCount: 1,
+          allCompleted: false,
+        }),
+    });
+
+    render(<DailyCheckinButton />);
+
+    await waitFor(() => {
+      expect(screen.getByTestId("checkin-button")).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByTestId("checkin-button"));
+
+    // Check-in POST throws network error
+    mockFetch.mockRejectedValueOnce(new Error("Failed to fetch"));
+
+    fireEvent.click(screen.getByTestId("mood-good"));
+
+    await waitFor(() => {
+      expect(
+        screen.getByText(/wird gesendet sobald Sie wieder online sind/i),
+      ).toBeInTheDocument();
+    });
+
+    expect(mockEnqueue).toHaveBeenCalledWith(
+      "/api/care/checkin",
+      expect.stringContaining('"status":"ok"'),
+    );
   });
 });

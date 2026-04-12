@@ -194,7 +194,7 @@ function BelohnungContent() {
               </p>
               <div className="rounded-xl bg-emerald-50 p-3">
                 <p className="text-sm text-emerald-700">
-                  Ihre Angehoerigen koennen jetzt Heartbeat-Status,
+                  Ihre Angehoerigen koennen jetzt Lebenszeichen-Status,
                   Check-in-Verlauf und Video-Anrufe nutzen.
                 </p>
               </div>
@@ -218,10 +218,7 @@ function BelohnungContent() {
 
         {/* Upgrade-Hinweis */}
         {result.tier !== "gold" && (
-          <UpgradeHints
-            currentTier={result.tier}
-            enrollmentId={enrollmentId}
-          />
+          <UpgradeHints currentTier={result.tier} enrollmentId={enrollmentId} />
         )}
       </div>
     );
@@ -257,9 +254,7 @@ function BelohnungContent() {
             className={`rounded-2xl border-2 ${config!.bg} p-6 text-center shadow-lg`}
           >
             <div className="mb-3 text-5xl">{config!.icon}</div>
-            <h2
-              className={`mb-1 text-xl font-bold ${config!.color}`}
-            >
+            <h2 className={`mb-1 text-xl font-bold ${config!.color}`}>
               {config!.label}-Stufe erreicht!
             </h2>
             <p className="mb-4 text-gray-600">

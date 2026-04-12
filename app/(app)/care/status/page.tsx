@@ -301,7 +301,7 @@ export default function CareStatusPage() {
       <div className="space-y-4" data-testid="care-status-loading">
         <PageHeader
           title="Status"
-          subtitle="Heartbeat Ihrer Angehörigen"
+          subtitle="Lebenszeichen Ihrer Angehörigen"
           backHref="/dashboard"
         />
         <div className="h-32 rounded-2xl bg-muted animate-shimmer" />
@@ -323,7 +323,7 @@ export default function CareStatusPage() {
         <div className="relative p-5">
           <h1 className="text-2xl font-bold text-anthrazit">Status</h1>
           <p className="text-sm text-muted-foreground mt-1">
-            Heartbeat und Check-in Ihrer Angehörigen
+            Lebenszeichen und Check-in Ihrer Angehörigen
           </p>
         </div>
       </div>

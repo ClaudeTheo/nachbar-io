@@ -45,7 +45,7 @@ const TABS = [
         title: "Sicherheit & Pflege",
         features: [
           "Notfall-System — SOS-Alerts mit 112/110 Banner",
-          "Heartbeat — Passives Lebenszeichen bei jeder Nutzung",
+          "Lebenszeichen — Passives Signal bei jeder Nutzung",
           "Tägliches Check-in — Gut / Geht so / Nicht gut",
           "Mein Tag — Tagesübersicht mit Kalender und Schnellaktionen",
           "Medikamenten-Erinnerungen",
@@ -74,7 +74,7 @@ const TABS = [
       {
         title: "Status & Sicherheit",
         features: [
-          "Heartbeat-Status — Letzte Aktivität des Bewohners sehen",
+          "Lebenszeichen-Status — Letzte Aktivität des Bewohners sehen",
           "Check-in-Historie — 30-Tage-Verlauf (gut/geht so/schlecht)",
           "Eskalationskette — Automatische Benachrichtigung bei Inaktivität",
           "Medikamenten-Bestätigung — Einnahme bestätigt (ohne Namen)",
@@ -115,7 +115,7 @@ const TABS = [
         title: "Eigenes Pflege-Portal",
         features: [
           "Bewohner-Dashboard — Alle Bewohner mit Ampel-Status",
-          "Heartbeat-Überwachung — Letzte Aktivität pro Bewohner",
+          "Lebenszeichen-Überwachung — Letzte Aktivität pro Bewohner",
           "Check-in-Status — Tages-Befinden auf einen Blick",
           "Eskalations-Inbox — Stufe 3/4 in Echtzeit",
           "Quartier-Karte — Bewohner-Verteilung mit Statistiken",

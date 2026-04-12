@@ -171,7 +171,7 @@ export default function DatenschutzPage() {
                 schlecht), Zeitstempel
               </li>
               <li>
-                <strong>Aktivitätssignal (Heartbeat):</strong> Zeitpunkt der
+                <strong>Aktivitätssignal (Lebenszeichen):</strong> Zeitpunkt der
                 letzten Interaktion mit der App — kein Inhalt, nur Zeitstempel
               </li>
               <li>
@@ -259,10 +259,10 @@ export default function DatenschutzPage() {
               </li>
               <li>
                 <strong>Speicherdauer:</strong> Bis der Hilferuf als erledigt
-                markiert wird, dann sofortige automatische Löschung.
-                Spätestens nach 72 Stunden werden Standortdaten automatisch
-                gelöscht, auch wenn der Hilferuf nicht als erledigt markiert
-                wurde (Art. 5 Abs. 1 lit. e DSGVO — Speicherbegrenzung)
+                markiert wird, dann sofortige automatische Löschung. Spätestens
+                nach 72 Stunden werden Standortdaten automatisch gelöscht, auch
+                wenn der Hilferuf nicht als erledigt markiert wurde (Art. 5 Abs.
+                1 lit. e DSGVO — Speicherbegrenzung)
               </li>
               <li>
                 <strong>Empfänger:</strong> Je nach Abo-Stufe — Angehörige
@@ -395,10 +395,9 @@ export default function DatenschutzPage() {
             <p>
               Twilio Inc., USA. Wird für den Versand von SMS
               (Magic-Link-Fallback) und Sprachanrufe (SOS-Eskalation) genutzt.
-              Rechtsgrundlage: Art. 6 Abs. 1 lit. b DSGVO
-              (Vertragserfüllung). Speicherdauer: Maximal 30 Tage
-              (Zustellprotokolle). Übermittlung auf Grundlage von SCCs gemäß
-              Art. 46 Abs. 2 lit. c DSGVO.
+              Rechtsgrundlage: Art. 6 Abs. 1 lit. b DSGVO (Vertragserfüllung).
+              Speicherdauer: Maximal 30 Tage (Zustellprotokolle). Übermittlung
+              auf Grundlage von SCCs gemäß Art. 46 Abs. 2 lit. c DSGVO.
             </p>
 
             <h4 className="mt-2 font-medium">Stripe (Zahlungsabwicklung)</h4>
@@ -433,8 +432,8 @@ export default function DatenschutzPage() {
               Anthropic
               <strong> maximal 30 Tage gespeichert</strong> und nicht zum
               Training von KI-Modellen verwendet (Auftragsverarbeitung gemäß
-              Art. 28 DSGVO, Zero Data Retention Policy). Rechtsgrundlage:
-              Art. 6 Abs. 1 lit. f DSGVO (berechtigtes Interesse an
+              Art. 28 DSGVO, Zero Data Retention Policy). Rechtsgrundlage: Art.
+              6 Abs. 1 lit. f DSGVO (berechtigtes Interesse an
               Community-Schutz). Übermittlung auf Grundlage von SCCs.
             </p>
 
@@ -443,16 +442,13 @@ export default function DatenschutzPage() {
               Metered Networks Inc., USA. Stellt TURN-Server für die
               Verbindungsherstellung bei Video-Anrufen bereit, falls eine
               direkte Peer-to-Peer-Verbindung nicht möglich ist.
-              Rechtsgrundlage: Art. 6 Abs. 1 lit. b DSGVO
-              (Vertragserfüllung). Es werden nur Verbindungsdaten
-              (IP-Adressen) während der aktiven Verbindung verarbeitet
-              (Speicherdauer: maximal 24 Stunden), keine Gesprächsinhalte.
-              Übermittlung auf Grundlage von SCCs.
+              Rechtsgrundlage: Art. 6 Abs. 1 lit. b DSGVO (Vertragserfüllung).
+              Es werden nur Verbindungsdaten (IP-Adressen) während der aktiven
+              Verbindung verarbeitet (Speicherdauer: maximal 24 Stunden), keine
+              Gesprächsinhalte. Übermittlung auf Grundlage von SCCs.
             </p>
 
-            <h4 className="mt-2 font-medium">
-              Sentry (Fehlerüberwachung)
-            </h4>
+            <h4 className="mt-2 font-medium">Sentry (Fehlerüberwachung)</h4>
             <p>
               Sentry Inc. (Functional Software Inc.), USA. Wird zur Erfassung
               von Anwendungsfehlern und Performance-Metriken verwendet, um die
@@ -503,8 +499,8 @@ export default function DatenschutzPage() {
             </h2>
             <p>
               Einige unserer Auftragsverarbeiter haben ihren Sitz in den USA
-              (Twilio, Stripe, Anthropic, Metered Networks, Sentry). Die Übermittlung
-              personenbezogener Daten erfolgt auf Grundlage von:
+              (Twilio, Stripe, Anthropic, Metered Networks, Sentry). Die
+              Übermittlung personenbezogener Daten erfolgt auf Grundlage von:
             </p>
             <ul className="ml-4 mt-2 list-disc space-y-1">
               <li>
@@ -532,8 +528,8 @@ export default function DatenschutzPage() {
                 <strong>Kontodaten:</strong> Bis zur Löschung Ihres Kontos
               </li>
               <li>
-                <strong>Aktivitätssignale (Heartbeats):</strong> 90 Tage, danach
-                automatische Löschung
+                <strong>Aktivitätssignale (Lebenszeichen):</strong> 90 Tage,
+                danach automatische Löschung
               </li>
               <li>
                 <strong>Tagescheck-Historie:</strong> 30 Tage (für Angehörige

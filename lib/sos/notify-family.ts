@@ -32,7 +32,7 @@ export async function notifyFamily(
     .eq("id", userId)
     .single();
 
-  const seniorName = userData?.display_name ?? "Ein Senior";
+  const seniorName = userData?.display_name ?? "Ihr Angehöriger";
 
   // 3. SMS an alle Kontakte mit Telefonnummer senden
   const message = `${seniorName} hat den Notfall-Knopf gedrückt und braucht Ihre Hilfe. Bitte melden Sie sich umgehend.`;

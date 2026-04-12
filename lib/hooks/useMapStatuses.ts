@@ -53,7 +53,8 @@ export function useMapStatuses(
       setLoading(true);
       try {
         const supabase = createClient();
-        const useGeo = isGeoQuarter(mapConfig);
+        const useGeo =
+          isGeoQuarter(mapConfig) || (centerLat != null && centerLng != null);
 
         // Haeuser fuer aktuelles Quartier laden (SVG oder Geo/Leaflet)
         let loadedHouses: MapHouseData[] = DEFAULT_HOUSES;

@@ -6,6 +6,10 @@ const DB_NAME = "nachbar_offline";
 const STORE_NAME = "queue";
 const DB_VERSION = 1;
 
+const MAX_ENTRIES = 50;
+const TTL_MS = 72 * 60 * 60 * 1000;
+const DEDUP_MS = 60_000;
+
 interface QueueEntry {
   id?: number;
   url: string;
@@ -33,14 +37,38 @@ function openDB(): Promise<IDBDatabase> {
 export class OfflineQueue {
   async enqueue(url: string, body: string): Promise<void> {
     const db = await openDB();
+
+    // Dedup: skip if same URL exists within DEDUP_MS
+    const existing = await this.getAll(db);
+    const now = Date.now();
+    const isDuplicate = existing.some(
+      (e) => e.url === url && now - e.createdAt < DEDUP_MS,
+    );
+    if (isDuplicate) {
+      db.close();
+      return;
+    }
+
+    // Add the new entry
     const tx = db.transaction(STORE_NAME, "readwrite");
     const store = tx.objectStore(STORE_NAME);
-    const entry: QueueEntry = { url, body, createdAt: Date.now() };
+    const entry: QueueEntry = { url, body, createdAt: now };
     store.add(entry);
     await new Promise<void>((resolve, reject) => {
       tx.oncomplete = () => resolve();
       tx.onerror = () => reject(tx.error);
     });
+
+    // Max entries: evict oldest if over limit
+    const allEntries = await this.getAll(db);
+    if (allEntries.length > MAX_ENTRIES) {
+      const sorted = allEntries.sort((a, b) => a.createdAt - b.createdAt);
+      const toDelete = sorted.slice(0, allEntries.length - MAX_ENTRIES);
+      for (const e of toDelete) {
+        await this.delete(db, e.id!);
+      }
+    }
+
     db.close();
   }
 
@@ -49,6 +77,12 @@ export class OfflineQueue {
     const entries = await this.getAll(db);
 
     for (const entry of entries) {
+      // TTL: discard entries older than 72h
+      if (Date.now() - entry.createdAt > TTL_MS) {
+        await this.delete(db, entry.id!);
+        continue;
+      }
+
       try {
         const res = await fetch(entry.url, {
           method: "POST",

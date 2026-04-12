@@ -2,6 +2,7 @@ import { describe, it, expect } from "vitest";
 import {
   buildSystemPrompt,
   type QuarterContext,
+  type MutLevel,
 } from "@/modules/voice/services/system-prompt";
 
 // Vollen Kontext fuer Tests
@@ -146,5 +147,92 @@ describe("buildSystemPrompt", () => {
       formality: "formal",
     });
     expect(promptDefault).toBe(promptFormal);
+  });
+
+  // Mut-Regler Tests (H-5)
+  describe("Mut-Regler (H-5)", () => {
+    it("Default ist Stufe 1 (konservativ)", () => {
+      const prompt = buildSystemPrompt(fullContext());
+      expect(prompt).toContain("Mut-Stufe 1");
+      expect(prompt).toContain("konservativ");
+      expect(prompt).toContain("kurz und faktisch");
+    });
+
+    it("Stufe 1 verbietet unaufgeforderte Vorschlaege", () => {
+      const prompt = buildSystemPrompt(fullContext(), { mutLevel: 1 });
+      expect(prompt).toContain("KEINE unaufgeforderten Vorschlaege");
+    });
+
+    it("Stufe 2 erlaubt relevante Zusatz-Tipps", () => {
+      const prompt = buildSystemPrompt(fullContext(), { mutLevel: 2 });
+      expect(prompt).toContain("Mut-Stufe 2");
+      expect(prompt).toContain("freundlich");
+      expect(prompt).toContain("Zusatz-Tipp");
+    });
+
+    it("Stufe 3 erlaubt verwandte Themen", () => {
+      const prompt = buildSystemPrompt(fullContext(), { mutLevel: 3 });
+      expect(prompt).toContain("Mut-Stufe 3");
+      expect(prompt).toContain("warm");
+      expect(prompt).toContain("verwandte Themen");
+    });
+
+    it("Stufe 4 erlaubt proaktive Vorschlaege", () => {
+      const prompt = buildSystemPrompt(fullContext(), { mutLevel: 4 });
+      expect(prompt).toContain("Mut-Stufe 4");
+      expect(prompt).toContain("proaktiv");
+      expect(prompt).toContain("Vorschlaege");
+    });
+
+    it("alle 4 Stufen erzeugen verschiedene Prompts", () => {
+      const prompts = ([1, 2, 3, 4] as MutLevel[]).map((mutLevel) =>
+        buildSystemPrompt(fullContext(), { mutLevel }),
+      );
+      const unique = new Set(prompts);
+      expect(unique.size).toBe(4);
+    });
+  });
+
+  // Phase-1 Guardrails Tests (H-7)
+  describe("Phase-1 Guardrails (H-7)", () => {
+    it("enthaelt Medikamenten-Verbot", () => {
+      const prompt = buildSystemPrompt(fullContext());
+      expect(prompt).toContain("KEINE Medikamenten-Fragen");
+    });
+
+    it("enthaelt Gesundheits-Verbot mit 116117-Verweis", () => {
+      const prompt = buildSystemPrompt(fullContext());
+      expect(prompt).toContain("KEINE Gesundheits-Fragen");
+      expect(prompt).toContain("116117");
+    });
+
+    it("enthaelt Wissensbasis-Verbot", () => {
+      const prompt = buildSystemPrompt(fullContext());
+      expect(prompt).toContain("KEINE Wissensbasis-Fragen");
+    });
+
+    it("enthaelt Aktions-Bestaetigung-Pflicht", () => {
+      const prompt = buildSystemPrompt(fullContext());
+      expect(prompt).toContain("KEINE Aktion ohne");
+      expect(prompt).toContain("Bestaetigung");
+    });
+
+    it("enthaelt Halluzinations-Verbot", () => {
+      const prompt = buildSystemPrompt(fullContext());
+      expect(prompt).toContain("halluziniere NICHT");
+    });
+
+    it("enthaelt Rechtsberatungs-Verbot", () => {
+      const prompt = buildSystemPrompt(fullContext());
+      expect(prompt).toContain("KEINE verbindliche Rechtsberatung");
+    });
+
+    it("Guardrails sind bei ALLEN Mut-Stufen vorhanden", () => {
+      for (const mutLevel of [1, 2, 3, 4] as MutLevel[]) {
+        const prompt = buildSystemPrompt(fullContext(), { mutLevel });
+        expect(prompt).toContain("HARTE REGELN");
+        expect(prompt).toContain("KEINE Medikamenten-Fragen");
+      }
+    });
   });
 });

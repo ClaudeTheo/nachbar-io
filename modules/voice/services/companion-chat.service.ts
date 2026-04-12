@@ -3,7 +3,10 @@
 
 import { ServiceError } from "@/lib/services/service-error";
 import { loadQuarterContext } from "@/modules/voice/services/context-loader";
-import { buildSystemPrompt } from "@/modules/voice/services/system-prompt";
+import {
+  buildSystemPrompt,
+  type MutLevel,
+} from "@/modules/voice/services/system-prompt";
 import { companionTools } from "@/modules/voice/services/tools";
 import {
   isWriteTool,
@@ -458,9 +461,27 @@ export async function processChat(
     content: m.content,
   }));
 
+  // Mut-Level aus User-Metadata lesen (H-5), Default=1
+  let mutLevel: MutLevel = 1;
+  if (supabase) {
+    try {
+      const { data: userData } = await supabase
+        .from("users")
+        .select("raw_user_meta_data")
+        .eq("id", userId)
+        .single();
+      const rawMut = userData?.raw_user_meta_data?.mut_level;
+      if (rawMut === 1 || rawMut === 2 || rawMut === 3 || rawMut === 4) {
+        mutLevel = rawMut;
+      }
+    } catch {
+      // Fehler beim Laden → Default 1 beibehalten
+    }
+  }
+
   // Context-Promise awaiten und System-Prompt bauen
   const context = await contextPromise;
-  let systemPrompt = buildSystemPrompt(context);
+  let systemPrompt = buildSystemPrompt(context, { mutLevel });
 
   // Memory-Block an System-Prompt anhaengen (Plus-User)
   if (memoryBlock) {

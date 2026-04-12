@@ -465,6 +465,8 @@ describe("POST /api/companion/chat", () => {
     await POST(req);
 
     expect(mockLoadQuarterContext).toHaveBeenCalledWith("user-42");
-    expect(mockBuildSystemPrompt).toHaveBeenCalledWith(defaultContext);
+    expect(mockBuildSystemPrompt).toHaveBeenCalledWith(defaultContext, {
+      mutLevel: 1,
+    });
   });
 });

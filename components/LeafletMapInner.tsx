@@ -1,8 +1,19 @@
 "use client";
 
 import { useEffect } from "react";
-import { MapContainer, TileLayer, CircleMarker, Popup, useMap } from "react-leaflet";
-import { COLOR_CFG, STREET_LABELS, type GeoMapHouseData, type LampColor } from "@/lib/map-houses";
+import {
+  MapContainer,
+  TileLayer,
+  CircleMarker,
+  Popup,
+  useMap,
+} from "react-leaflet";
+import {
+  COLOR_CFG,
+  STREET_LABELS,
+  type GeoMapHouseData,
+  type LampColor,
+} from "@/lib/map-houses";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 
@@ -19,7 +30,15 @@ interface LeafletMapInnerProps {
 // Stellt sicher dass die Karte korrekt initialisiert ist und alle Marker sichtbar sind.
 // Behebt den "M0 0" SVG-Bug bei CircleMarker (Leaflet rendert Marker bevor
 // das Container-Layout fertig ist → latLngToLayerPoint gibt (0,0) zurueck).
-function MapUpdater({ houses, center, zoom }: { houses: GeoMapHouseData[]; center: [number, number]; zoom: number }) {
+function MapUpdater({
+  houses,
+  center,
+  zoom,
+}: {
+  houses: GeoMapHouseData[];
+  center: [number, number];
+  zoom: number;
+}) {
   const map = useMap();
 
   useEffect(() => {
@@ -29,7 +48,9 @@ function MapUpdater({ houses, center, zoom }: { houses: GeoMapHouseData[]; cente
       map.invalidateSize();
 
       if (houses.length > 0) {
-        const bounds = L.latLngBounds(houses.map((h) => [h.lat, h.lng] as L.LatLngTuple));
+        const bounds = L.latLngBounds(
+          houses.map((h) => [h.lat, h.lng] as L.LatLngTuple),
+        );
         // Padding damit Marker nicht am Rand kleben
         map.fitBounds(bounds, { padding: [40, 40], maxZoom: 17 });
       } else {
@@ -44,7 +65,13 @@ function MapUpdater({ houses, center, zoom }: { houses: GeoMapHouseData[]; cente
 }
 
 export default function LeafletMapInner({
-  center, zoom, tileUrl, houses, statuses, residentCounts, onHouseClick,
+  center,
+  zoom,
+  tileUrl,
+  houses,
+  statuses,
+  residentCounts,
+  onHouseClick,
 }: LeafletMapInnerProps) {
   return (
     <MapContainer
@@ -55,7 +82,7 @@ export default function LeafletMapInner({
       zoomControl={true}
     >
       <TileLayer
-        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>'
+        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://www.maptiler.com/copyright/">MapTiler</a>'
         url={tileUrl}
       />
 
@@ -83,7 +110,9 @@ export default function LeafletMapInner({
             }}
           >
             <Popup>
-              <div className="text-sm font-semibold">{streetName} {house.num}</div>
+              <div className="text-sm font-semibold">
+                {streetName} {house.num}
+              </div>
               <div className="text-xs" style={{ color: cfg.fill }}>
                 {cfg.label} · {rc} {rc === 1 ? "Bewohner" : "Bewohner"}
               </div>

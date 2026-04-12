@@ -9,12 +9,16 @@ interface NachbarKarteProps {
   quarterId?: string;
 }
 
-// Router: Leaflet für Geo-Quartiere (Laufenburg etc.), SVG für Legacy (Bad Säckingen)
+// Router: Leaflet wenn Geo-Quartier ODER center_lat/lng vorhanden, sonst SVG-Fallback
 export function NachbarKarte({ quarterId }: NachbarKarteProps) {
   const { currentQuarter } = useQuarter();
   const mapConfig = currentQuarter?.map_config;
 
-  if (isGeoQuarter(mapConfig)) {
+  // Leaflet wenn explizit konfiguriert oder Geo-Koordinaten vorhanden
+  if (
+    isGeoQuarter(mapConfig) ||
+    (currentQuarter?.center_lat && currentQuarter?.center_lng)
+  ) {
     return <LeafletKarte quarterId={quarterId} />;
   }
 

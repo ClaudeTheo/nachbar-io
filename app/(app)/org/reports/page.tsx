@@ -2,6 +2,9 @@
 // Nachbar.io — Mängelmelder-Moderation für Org-Admins (Pro Community)
 "use client";
 
+// Seite braucht Auth — kein statisches Pre-Rendering
+export const dynamic = "force-dynamic";
+
 import { useEffect, useState, useCallback } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useAuth } from "@/hooks/use-auth";

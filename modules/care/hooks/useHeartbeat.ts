@@ -6,6 +6,7 @@
 import { useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { getCachedUser } from "@/lib/supabase/cached-auth";
+import { offlineQueue } from "@/lib/offline-queue";
 
 // Heartbeat maximal alle 60 Sekunden senden (Rate-Limit Client-seitig)
 const HEARTBEAT_INTERVAL_MS = 60_000;
@@ -37,6 +38,11 @@ export function useHeartbeat() {
     lastSentGlobal = now;
 
     const sendHeartbeat = async () => {
+      const bodyStr = JSON.stringify({
+        source: "app",
+        device_type: getDeviceType(),
+      });
+
       try {
         const supabase = createClient();
         const { user } = await getCachedUser(supabase);
@@ -45,16 +51,15 @@ export function useHeartbeat() {
         await fetch("/api/heartbeat", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            source: "app",
-            device_type: getDeviceType(),
-          }),
+          body: bodyStr,
         });
       } catch {
         // Heartbeat-Fehler darf App nicht blockieren
+        offlineQueue.enqueue("/api/heartbeat", bodyStr).catch(() => {});
       }
     };
 
     sendHeartbeat();
+    offlineQueue.flush().catch(() => {});
   }, []);
 }

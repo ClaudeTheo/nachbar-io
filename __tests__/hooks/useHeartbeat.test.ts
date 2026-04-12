@@ -13,6 +13,15 @@ vi.mock("@/lib/supabase/cached-auth", () => ({
   getCachedUser: (...args: unknown[]) => mockGetCachedUser(...args),
 }));
 
+const mockEnqueue = vi.fn();
+const mockFlush = vi.fn();
+vi.mock("@/lib/offline-queue", () => ({
+  offlineQueue: {
+    enqueue: (...args: unknown[]) => mockEnqueue(...args),
+    flush: (...args: unknown[]) => mockFlush(...args),
+  },
+}));
+
 const mockFetch = vi.fn();
 global.fetch = mockFetch;
 
@@ -27,6 +36,8 @@ describe("useHeartbeat", () => {
     vi.useFakeTimers();
     mockGetCachedUser.mockResolvedValue({ user: { id: "user-1" } });
     mockFetch.mockResolvedValue({ ok: true });
+    mockEnqueue.mockReset().mockResolvedValue(undefined);
+    mockFlush.mockReset().mockResolvedValue(undefined);
   });
 
   afterEach(() => {
@@ -82,6 +93,27 @@ describe("useHeartbeat", () => {
     });
     // Hook laeuft weiter — kein Crash
     expect(true).toBe(true);
+  });
+
+  it("enqueues heartbeat when fetch fails (offline)", async () => {
+    mockFetch.mockRejectedValue(new Error("Failed to fetch"));
+
+    await act(async () => {
+      renderHook(() => useHeartbeat());
+    });
+
+    expect(mockEnqueue).toHaveBeenCalledWith(
+      "/api/heartbeat",
+      expect.stringContaining('"source":"app"'),
+    );
+  });
+
+  it("flushes offline queue on mount", async () => {
+    await act(async () => {
+      renderHook(() => useHeartbeat());
+    });
+
+    expect(mockFlush).toHaveBeenCalled();
   });
 
   it("sendet nur einmal innerhalb 60s Rate-Limit (global, BUG-10 Fix)", async () => {

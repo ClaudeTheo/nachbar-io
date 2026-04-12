@@ -976,6 +976,50 @@ export async function executeCompanionTool(
         };
       }
 
+      case "create_circle_event": {
+        // Termin im Familienkreis erstellen (E-4)
+        const person = (params.person as string)?.trim();
+        const what = (params.what as string)?.trim();
+        const eventDate = params.date as string;
+        const eventTime = (params.time as string) ?? "12:00";
+
+        if (!person || !what) {
+          return {
+            success: false,
+            summary: "Bitte Person und Anlass angeben.",
+          };
+        }
+
+        const title = `${what} mit ${person}`;
+        const scheduledAt = new Date(
+          `${eventDate}T${eventTime}:00`,
+        ).toISOString();
+
+        const { error: evtError } = await supabase
+          .from("circle_events")
+          .insert({
+            resident_id: userId,
+            created_by: userId,
+            scheduled_at: scheduledAt,
+            title,
+            who_comes: person,
+            description: null,
+          });
+
+        if (evtError) {
+          return {
+            success: false,
+            summary: `Termin konnte nicht erstellt werden: ${evtError.message}`,
+          };
+        }
+
+        return {
+          success: true,
+          summary: `Termin "${title}" am ${formatDateDE(eventDate)} um ${eventTime} Uhr eingetragen.`,
+          route: "/mein-kreis/termine",
+        };
+      }
+
       default:
         return { success: false, summary: `Unbekanntes Tool: ${toolName}` };
     }

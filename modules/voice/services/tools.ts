@@ -106,6 +106,9 @@ const ALLOWED_ROUTES = [
   "/vouching",
   "/support",
   "/help-center",
+  // Familienkreis
+  "/mein-kreis",
+  "/mein-kreis/termine",
   // Care (Plus/Angehoerige)
   "/care",
   "/care/status",
@@ -381,6 +384,36 @@ export const companionTools: CompanionToolDefinition[] = [
     },
   },
 
+  {
+    name: "create_circle_event",
+    description:
+      "Erstellt einen Termin im Familienkreis des Bewohners (z.B. Arztbesuch, Friseur, Besuch). Wird verwendet wenn der Nutzer ueber SCHREIBEN einen Termin vereinbaren moechte.",
+    input_schema: {
+      type: "object",
+      properties: {
+        person: {
+          type: "string",
+          description:
+            "Name der Person mit der der Termin ist (z.B. 'Petra', 'Dr. Mueller')",
+        },
+        date: {
+          type: "string",
+          description: "Datum im Format YYYY-MM-DD",
+        },
+        time: {
+          type: "string",
+          description: "Uhrzeit im Format HH:MM",
+        },
+        what: {
+          type: "string",
+          description:
+            "Was steht an? (z.B. 'Arztbesuch', 'Gemeinsam spazieren gehen')",
+        },
+      },
+      required: ["person", "date", "what"],
+    },
+  },
+
   // ── Read-Tools (sofortige Ausfuehrung) ─────────────────────────
 
   {
@@ -521,4 +554,5 @@ export const WRITE_TOOLS = new Set([
   "create_group",
   "create_group_post",
   "do_checkin",
+  "create_circle_event",
 ]);

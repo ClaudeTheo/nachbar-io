@@ -2,7 +2,7 @@
   "name": "QuartierApp — Ihr digitaler Dorfplatz",
   "short_name": "QuartierApp",
   "description": "Nachbarschaftshilfe und lokale Informationen für Ihr Quartier in Bad Säckingen.",
-  "start_url": "/dashboard",
+  "start_url": "/after-login",
   "display": "standalone",
   "background_color": "#FAFAF8",
   "theme_color": "#4CAF87",

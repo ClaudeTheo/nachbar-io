@@ -84,9 +84,7 @@ export default function LeafletMapInner({
       <TileLayer
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://www.maptiler.com/copyright/">MapTiler</a>'
         url={tileUrl}
-        tileSize={512}
-        zoomOffset={-1}
-        crossOrigin
+        crossOrigin="anonymous"
       />
 
       <MapUpdater houses={houses} center={center} zoom={zoom} />

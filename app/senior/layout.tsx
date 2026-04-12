@@ -26,17 +26,24 @@ export default function SeniorLayout({
     <div className="min-h-screen bg-warmwhite">
       {/* Einfacher Header — Zurück + App-Name + Home */}
       <header className="sticky top-0 z-40 border-b-2 border-gray-200 bg-white">
-        <div className="mx-auto flex max-w-lg items-center justify-between px-4" style={{ minHeight: "64px" }}>
+        <div
+          className="mx-auto flex max-w-lg items-center justify-between px-4"
+          style={{ minHeight: "64px" }}
+        >
           <Link
-            href={isHome ? "/dashboard" : "/senior/home"}
+            href={isHome ? "/kreis-start" : "/senior/home"}
             className="flex items-center gap-2 rounded-xl p-3 text-anthrazit hover:bg-gray-100 active:bg-gray-200"
             style={{ minHeight: "56px", minWidth: "56px" }}
-            aria-label={isHome ? "Zum Dashboard" : "Zurück zur Startseite"}
+            aria-label={isHome ? "Zur Startseite" : "Zurück zur Startseite"}
           >
             <ArrowLeft className="h-7 w-7" />
-            <span className="text-lg font-semibold">{isHome ? "Dashboard" : "Zurück"}</span>
+            <span className="text-lg font-semibold">
+              {isHome ? "Start" : "Zurück"}
+            </span>
           </Link>
-          <span className="text-lg font-bold text-quartier-green">QuartierApp</span>
+          <span className="text-lg font-bold text-quartier-green">
+            QuartierApp
+          </span>
         </div>
       </header>
 

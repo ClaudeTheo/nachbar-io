@@ -4,8 +4,20 @@ import { render, screen, waitFor, cleanup } from "@testing-library/react";
 // Mocks muessen VOR dem Page-Import stehen
 vi.mock("@/lib/quarters", () => ({
   useQuarter: () => ({
-    currentQuarter: { id: "q-test-001", name: "Test-Quartier" },
+    currentQuarter: {
+      id: "q-test-001",
+      name: "Test-Quartier",
+      center_lat: 47.5535,
+      center_lng: 7.964,
+      zoom_level: 15,
+    },
   }),
+}));
+
+vi.mock("@/components/map/MapThumbnail", () => ({
+  MapThumbnail: ({ label }: { label?: string }) => (
+    <div data-testid="info-map-thumbnail">{label}</div>
+  ),
 }));
 
 vi.mock("next/link", () => ({
@@ -52,12 +64,21 @@ import { buildDailyBrief } from "@/modules/voice/services/daily-brief.service";
 
 const MOCK_DATA = {
   weather: { temp: 18, description: "sonnig", icon: "01d", forecast: [] },
-  pollen: { region: "Test", pollen: { Birke: { today: 2.0, tomorrow: 1.0 } } },
+  pollen: {
+    region: "Test",
+    pollen: {
+      Birke: {
+        today: 2.0 as 0 | 0.5 | 1 | 1.5 | 2 | 2.5 | 3,
+        tomorrow: 1.0 as 0 | 0.5 | 1 | 1.5 | 2 | 2.5 | 3,
+      },
+    },
+  },
   nina: [],
-  waste_next: [{ date: "2026-04-15", label: "Restmuell" }],
+  waste_next: [{ date: "2026-04-15", type: "restmuell", label: "Restmuell" }],
   events: [
     {
       title: "Wochenmarkt",
+      description: "Frische Waren aus der Region",
       schedule: "Mi 8-12 Uhr",
       location: "Muensterplatz",
       icon: "calendar",

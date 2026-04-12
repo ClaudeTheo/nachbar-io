@@ -38,6 +38,7 @@ import type {
   LocalEvent,
 } from "@/modules/info-hub/types";
 import { LargeTitle } from "@/components/ui/LargeTitle";
+import { MapThumbnail } from "@/components/map/MapThumbnail";
 
 // Pollen-Balken (farbig)
 function PollenBar({ intensity, label }: { intensity: number; label: string }) {
@@ -375,6 +376,18 @@ export default function QuartierInfoPage() {
           </p>
         )}
       </section>
+
+      {/* 5b. Karten-Thumbnail (G-4) */}
+      {currentQuarter && (
+        <section data-testid="info-map">
+          <MapThumbnail
+            lat={currentQuarter.center_lat}
+            lng={currentQuarter.center_lng}
+            zoom={currentQuarter.zoom_level}
+            label={`${currentQuarter.name} — Karte`}
+          />
+        </section>
+      )}
 
       {/* 6. Apotheken */}
       <section

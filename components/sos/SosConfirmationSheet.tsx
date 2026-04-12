@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Phone, Users, X } from "lucide-react";
 import { useSos } from "./SosContext";
 
@@ -13,6 +13,11 @@ import { useSos } from "./SosContext";
 export function SosConfirmationSheet() {
   const { isOpen, closeSos } = useSos();
   const sheetRef = useRef<HTMLDivElement>(null);
+  const [loading, setLoading] = useState(false);
+  const [feedback, setFeedback] = useState<{
+    type: "success" | "error" | "no-contacts";
+    text: string;
+  } | null>(null);
 
   // Escape-Taste schliesst das Sheet
   useEffect(() => {
@@ -35,11 +40,48 @@ export function SosConfirmationSheet() {
     }
   }, [isOpen]);
 
-  // Benachrichtigung an Angehoerige (Platzhalter — spaeter Push-Integration)
-  function handleNotifyCaregivers() {
-    // TODO: Push-Benachrichtigung an verknuepfte Angehoerige senden
-    alert("Benachrichtigung an Ihre Angehörigen wurde gesendet.");
-    closeSos();
+  // Feedback zuruecksetzen wenn Sheet geschlossen wird
+  useEffect(() => {
+    if (!isOpen) {
+      setFeedback(null);
+      setLoading(false);
+    }
+  }, [isOpen]);
+
+  // Benachrichtigung an Angehoerige via API
+  async function handleNotifyCaregivers() {
+    setLoading(true);
+    setFeedback(null);
+    try {
+      const res = await fetch("/api/sos/notify-family", { method: "POST" });
+      if (!res.ok) {
+        setFeedback({
+          type: "error",
+          text: "Benachrichtigung fehlgeschlagen. Bitte versuchen Sie es erneut.",
+        });
+        return;
+      }
+      const data = await res.json();
+      if (data.notified === 0 && data.failed === 0) {
+        setFeedback({
+          type: "no-contacts",
+          text: "Keine Angehörigen hinterlegt.",
+        });
+      } else if (data.notified > 0) {
+        setFeedback({
+          type: "success",
+          text: `${data.notified} Angehörige benachrichtigt.`,
+        });
+        setTimeout(() => closeSos(), 3000);
+      }
+    } catch {
+      setFeedback({
+        type: "error",
+        text: "Benachrichtigung fehlgeschlagen. Bitte versuchen Sie es erneut.",
+      });
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
@@ -89,22 +131,41 @@ export function SosConfirmationSheet() {
         </a>
 
         {/* 2. Angehoerige benachrichtigen */}
-        <button
-          onClick={handleNotifyCaregivers}
-          className="mb-3 flex w-full items-center gap-4 rounded-xl bg-[#F59E0B] p-4 text-white transition-colors hover:bg-amber-600 active:bg-amber-700"
-          style={{ minHeight: "80px", touchAction: "manipulation" }}
-          data-testid="sos-notify-caregivers"
-        >
-          <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-white/20">
-            <Users className="h-6 w-6" />
+        {feedback ? (
+          <div
+            className={`mb-3 flex w-full items-center justify-center rounded-xl p-4 text-center font-medium ${
+              feedback.type === "success"
+                ? "bg-green-100 text-green-800"
+                : feedback.type === "no-contacts"
+                  ? "bg-gray-100 text-gray-600"
+                  : "bg-red-100 text-red-800"
+            }`}
+            style={{ minHeight: "80px" }}
+            data-testid="sos-notify-feedback"
+          >
+            {feedback.text}
           </div>
-          <div className="text-left">
-            <p className="text-lg font-bold">Angehörige benachrichtigen</p>
-            <p className="text-sm text-white/80">
-              Push-Nachricht an Ihre Familie
-            </p>
-          </div>
-        </button>
+        ) : (
+          <button
+            onClick={handleNotifyCaregivers}
+            disabled={loading}
+            className={`mb-3 flex w-full items-center gap-4 rounded-xl bg-[#F59E0B] p-4 text-white transition-colors hover:bg-amber-600 active:bg-amber-700 ${
+              loading ? "opacity-50" : ""
+            }`}
+            style={{ minHeight: "80px", touchAction: "manipulation" }}
+            data-testid="sos-notify-caregivers"
+          >
+            <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-white/20">
+              <Users className="h-6 w-6" />
+            </div>
+            <div className="text-left">
+              <p className="text-lg font-bold">Angehörige benachrichtigen</p>
+              <p className="text-sm text-white/80">
+                Push-Nachricht an Ihre Familie
+              </p>
+            </div>
+          </button>
+        )}
 
         {/* 3. Abbrechen */}
         <button

@@ -31,8 +31,19 @@ function getDeviceType(): string {
 
 export function useHeartbeat() {
   useEffect(() => {
+    // Always register online listener — flush queue when connectivity returns
+    const handleOnline = () => {
+      offlineQueue.flush().catch(() => {});
+    };
+    window.addEventListener("online", handleOnline);
+
+    // Rate-limit check for heartbeat sending
     const now = Date.now();
-    if (now - lastSentGlobal < HEARTBEAT_INTERVAL_MS) return;
+    if (now - lastSentGlobal < HEARTBEAT_INTERVAL_MS) {
+      return () => {
+        window.removeEventListener("online", handleOnline);
+      };
+    }
 
     // Lock SOFORT setzen — verhindert Race bei parallelen Mounts (Codex-Review)
     lastSentGlobal = now;
@@ -61,5 +72,9 @@ export function useHeartbeat() {
 
     sendHeartbeat();
     offlineQueue.flush().catch(() => {});
+
+    return () => {
+      window.removeEventListener("online", handleOnline);
+    };
   }, []);
 }

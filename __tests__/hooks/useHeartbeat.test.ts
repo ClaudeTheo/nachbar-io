@@ -116,6 +116,22 @@ describe("useHeartbeat", () => {
     expect(mockFlush).toHaveBeenCalled();
   });
 
+  it("flushes offline queue when online event fires", async () => {
+    mockFlush.mockClear();
+
+    await act(async () => {
+      renderHook(() => useHeartbeat());
+    });
+
+    const mountFlushCount = mockFlush.mock.calls.length;
+
+    await act(async () => {
+      window.dispatchEvent(new Event("online"));
+    });
+
+    expect(mockFlush.mock.calls.length).toBeGreaterThan(mountFlushCount);
+  });
+
   it("sendet nur einmal innerhalb 60s Rate-Limit (global, BUG-10 Fix)", async () => {
     const { unmount } = await act(async () => {
       return renderHook(() => useHeartbeat());

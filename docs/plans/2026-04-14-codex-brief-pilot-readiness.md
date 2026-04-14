@@ -70,6 +70,31 @@ absichern.
   - `output/playwright/register-live-otp-visual.png`
   - `output/playwright/register-live-resend-cooldown.png`
 
+### Live-In-App-Smoke (eingeloggt)
+
+- Login mit `agent_a@test.nachbar.local` war auf dem Live-Deployment erfolgreich
+  und leitete in derselben Session auf `/kreis-start`.
+- In derselben Browser-Session wurden `/dashboard`, `/quartier-info`, `/care`,
+  `/profile` und `/map` erfolgreich geladen (jeweils HTTP `200`).
+- Die Quartierskarte auf `/map` wurde korrekt gerendert:
+  - `1` Leaflet-Container vorhanden
+  - initial `4` geladene Tiles
+  - `15` sichtbare Marker
+  - Zoom-Interaktion laedt weitere Tiles nach
+- Marker-Interaktion funktioniert:
+  - Klick auf einen Marker oeffnet Popup
+  - verifiziertes Beispiel: `E2E-Testweg 3`
+  - der Detaildialog oeffnet anschliessend ebenfalls
+- Filter-Interaktion funktioniert:
+  - Filter `0 Rot` blendet Marker vollstaendig aus (`0` Marker im DOM)
+  - `↺ Reset` stellt die `15` Marker wieder her
+- Screenshot:
+  - `output/playwright/live-map-smoke.png`
+- Einziger Laufzeitbefund im Schnell-Smoke:
+  - `POST /api/heartbeat` antwortete bei schnellem Seitenwechsel einmal mit
+    HTTP `429`
+  - keine sichtbare Folge fuer Login, Navigation oder Kartenrendering
+
 ---
 
 ## Nicht Teil dieses Briefs

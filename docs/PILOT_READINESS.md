@@ -1,7 +1,7 @@
 # Nachbar.io — Pilot-Readiness-Dokument
 
 > Zielgruppe: Kommunen, Pflegeorganisationen, Investoren
-> Stand: Maerz 2026 | Pilotquartier: Bad Saeckingen
+> Stand: April 2026 | Pilotquartier: Bad Saeckingen
 
 ---
 
@@ -300,6 +300,19 @@ Die Plattform bietet dedizierte Seiten fuer die Senioren-Nutzung:
 - Push-Benachrichtigungen muessen im Browser erlaubt sein
 - Keine App-Installation erforderlich (PWA-basiert)
 
+### Pilot-Zugang und Freigabestatus
+
+- **Registrierung:** Zugang fuer Pilotteilnehmende ueber Einladungscode oder
+  freigegebene Pilot-Haushalte.
+- **Login im Pilot:** OTP / Magic Link per E-Mail ist der freigegebene
+  Standardweg.
+- **Passwort-Login:** Im Pilot bewusst ausgeblendet, bis ein vollstaendiger
+  Recovery-Flow vorhanden ist.
+- **Freigabenachweise:** Siehe
+  `docs/plans/2026-03-18-p1-golive-audit.md`,
+  `docs/plans/2026-03-18-pilot-test-checklist.md` und
+  `docs/plans/2026-04-14-codex-brief-pilot-readiness.md`.
+
 ### Organisatorische Vorbereitung
 
 1. **Einverstaendniserklaerungen:** Datenschutz-Einwilligung aller
@@ -434,4 +447,4 @@ wenden Sie sich bitte an:
 
 ---
 
-*Dieses Dokument wird laufend aktualisiert. Letzter Stand: Maerz 2026.*
+*Dieses Dokument wird laufend aktualisiert. Letzter Stand: April 2026.*

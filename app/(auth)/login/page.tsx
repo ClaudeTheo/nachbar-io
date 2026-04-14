@@ -37,7 +37,7 @@ type LoginMode = "magic_link" | "password" | "magic_link_sent";
 // Recovery-Moeglichkeit koennten sich aussperren.
 // Reaktivierung: auf false setzen ODER Recovery-Flow implementieren
 // und dann "Passwort vergessen"-Link einfuegen (siehe Go-Live Audit B-2).
-const PILOT_HIDE_PASSWORD_LOGIN = false; // temporaer fuer Device-Tests
+const PILOT_HIDE_PASSWORD_LOGIN = true;
 // Passkey-Backend (API-Routen) noch nicht implementiert — Button ausblenden
 const PILOT_HIDE_PASSKEY_LOGIN = true;
 // Apple Sign-In erst sinnvoll mit nativer App — vorlaeufig ausblenden

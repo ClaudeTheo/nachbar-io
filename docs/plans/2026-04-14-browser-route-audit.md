@@ -1,0 +1,110 @@
+# Browser Route Audit — Live Deployment
+
+**Datum:** 2026-04-14
+**Ziel:** Breiter Browser-Sweep ueber die App-Routen auf
+`https://nachbar-io.vercel.app`
+**Session:** eingeloggte Live-Session mit vorhandenem E2E-Testnutzer
+**Rohreport:** `output/playwright/browser-route-audit-2026-04-14.json`
+
+---
+
+## Abdeckung
+
+- App-Router-Dateien gescannt: `208` eindeutige Routen
+- Davon statische Routen: `176`
+- Davon dynamische Muster: `32`
+- Im Browser getestet:
+  - `176/176` statische Routen
+  - `16` konkrete dynamische Unterseiten, die ueber echte Links in der App
+    gefunden wurden
+
+---
+
+## Ergebnisbild
+
+- `43` Routen luden im Sweep ohne Redirect oder Browserfehler
+- `67` Routen redirecteten, meist auf `/kreis-start`
+- `82` Roh-Treffer wurden als `client_error` markiert
+
+Wichtig: Der Rohwert `client_error` ist bewusst konservativ. Der Sweep hat sehr
+schnell navigiert und dabei haeufig:
+
+- `POST /api/heartbeat` mit `429` gesehen
+- abgebrochene RSC-Requests (`net::ERR_ABORTED`) durch Seitenwechsel gesehen
+
+Diese beiden Muster sind nicht automatisch gleichbedeutend mit einer kaputten
+Seite.
+
+---
+
+## Relevante Befunde
+
+### API-Fehler mit sichtbarer Auswirkung
+
+- `/einstellungen/favoriten`
+  - `GET /api/speed-dial` liefert `500`
+  - UI zeigt: `Favoriten konnten nicht geladen werden.`
+- `/kiosk/sprechstunde`
+  - `GET /api/doctors/profiles` liefert `500`
+- `/hilfe/tasks`
+  - Supabase-Request auf `help_requests` liefert `400`
+- `/profile/map-position`
+  - Supabase-Request auf `users?select=quarter_id...` liefert `400`
+
+### Klare Frontend-/Runtime-Befunde
+
+- `/kiosk/games/quiz`
+  - React Runtime-Fehler `Minified React error #418`
+- `/kiosk/health`
+  - React Runtime-Fehler `Minified React error #418`
+
+### Fehlende Endpunkte / 404
+
+- `/kiosk`
+  - `GET /api/weather` liefert `404`
+- `/kiosk/board`
+  - `GET /api/board` liefert `404`
+- `/kiosk/news`
+  - `GET /api/quartier-info/news` liefert `404`
+- `/hilfe/abo`
+  - `GET /api/hilfe/subscription` liefert `404`
+- `/my-day`
+  - Supabase-Request auf `checkins` liefert `404`
+- `/org` und `/org/announcements`
+  - interne RSC-Requests auf `/org/escalations`, `/org/audit`,
+    `/org/members` liefern `404`
+
+### Karten-/CSP-Befund
+
+- `/hier-bei-mir`
+- `/quartier-info`
+- Alias `/quartier` → redirectet auf `/quartier-info`
+
+Auf diesen Seiten werden Tile-Bilder von
+`https://basemaps.cartocdn.com/...` durch die Content-Security-Policy geblockt.
+Die Ursache ist sehr wahrscheinlich, dass die CSP `https://*.basemaps.cartocdn.com`
+erlaubt, aber nicht die Root-Domain `https://basemaps.cartocdn.com`.
+
+---
+
+## Bereits verifiziert
+
+- `/map` rendert sauber mit Leaflet
+- Marker, Zoom und Filter auf `/map` funktionieren
+- Mehrere Hauptseiten (`/dashboard`, `/quartier-info`, `/care`, `/profile`,
+  `/map`) wurden bereits separat im Live-Smoke manuell bestaetigt
+
+---
+
+## Nicht vollstaendig abgedeckt
+
+Die folgenden dynamischen Muster konnten in dieser Session nicht mit echten
+Werten befuellt werden, weil keine gueltigen IDs/Tokens aus der App-Navigation
+gefunden wurden:
+
+- Token-/Einmal-Links wie `/anamnese/[token]`, `/notfall/[token]`,
+  `/terminal/[token]`
+- mehrere entity-gebundene Detailrouten wie `/messages/[id]`,
+  `/call/[userId]`, `/care/meine-senioren/[seniorId]`
+
+Der Rohreport enthaelt die vollstaendige Liste der ungetesteten Muster.

@@ -87,7 +87,6 @@ describe("GET /api/speed-dial", () => {
     const mockEqProfile = vi.fn().mockReturnValue({ single: mockSingle });
     const mockSelectProfile = vi.fn().mockReturnValue({ eq: mockEqProfile });
 
-    let callCount = 0;
     mockFrom.mockImplementation((table: string) => {
       if (table === "speed_dial_favorites") {
         return { select: mockSelectFav };
@@ -107,6 +106,30 @@ describe("GET /api/speed-dial", () => {
     expect(body[0].display_name).toBe("Max Muster");
     expect(body[0].avatar_url).toBe("/img/max.jpg");
     expect(body[0].target_user_id).toBe("profile-1");
+  });
+
+  it("faellt bei Schema-Cache-Fehler auf leeres Array zurueck", async () => {
+    mockGetUser.mockResolvedValue({ data: { user: { id: "user-1" } } });
+    mockFrom.mockReturnValue({
+      select: vi.fn().mockReturnValue({
+        eq: vi.fn().mockReturnValue({
+          order: vi.fn().mockReturnValue({
+            data: null,
+            error: {
+              code: "PGRST205",
+              message:
+                "Could not find the table 'public.speed_dial_favorites' in the schema cache",
+            },
+          }),
+        }),
+      }),
+    });
+
+    const { GET } = await import("@/app/api/speed-dial/route");
+    const res = await GET(makeRequest("http://localhost/api/speed-dial"));
+    expect(res.status).toBe(200);
+    const body = await res.json();
+    expect(body).toEqual([]);
   });
 
   it("nutzt userId-Parameter fuer fremdes Profil", async () => {
@@ -135,7 +158,6 @@ describe("POST /api/speed-dial", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.resetModules();
-    (mockFrom as any)._callIdx = 0;
   });
 
   it("gibt 401 ohne Auth zurueck", async () => {
@@ -180,7 +202,7 @@ describe("POST /api/speed-dial", () => {
     const mockInsert = vi.fn().mockReturnValue({ select: mockInsertSelect });
 
     let callIdx = 0;
-    mockFrom.mockImplementation((table: string) => {
+    mockFrom.mockImplementation((_table: string) => {
       // Beide Aufrufe gehen an speed_dial_favorites
       callIdx++;
       if (callIdx === 1) {

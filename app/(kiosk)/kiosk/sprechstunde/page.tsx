@@ -11,6 +11,17 @@ interface DoctorProfile {
   visible: boolean;
 }
 
+interface DoctorApiEntry {
+  id?: string;
+  user_id?: string;
+  specialization?: string[] | null;
+  bio?: string | null;
+  visible?: boolean;
+  users?: {
+    display_name?: string | null;
+  } | null;
+}
+
 interface AppointmentSlot {
   id: string;
   scheduled_at: string;
@@ -55,11 +66,26 @@ export default function KioskSprechstundePage() {
   useEffect(() => {
     async function loadDoctors() {
       try {
-        const res = await fetch("/api/doctors/profiles");
+        const res = await fetch("/api/doctors");
         if (res.ok) {
           const data = await res.json();
           const visible = Array.isArray(data)
-            ? data.filter((d: DoctorProfile) => d.visible)
+            ? data
+                .map((entry: DoctorApiEntry) => ({
+                  id: entry.user_id ?? entry.id ?? "",
+                  name: entry.users?.display_name?.trim() || "Arztpraxis",
+                  specialization: Array.isArray(entry.specialization)
+                    ? entry.specialization
+                    : [],
+                  bio:
+                    entry.bio?.trim() ||
+                    "Quartiersarzt im Umkreis von Bad Säckingen.",
+                  visible: entry.visible !== false,
+                }))
+                .filter(
+                  (doctor: DoctorProfile) =>
+                    doctor.visible && doctor.id.length > 0,
+                )
             : [];
           if (visible.length > 0) {
             setDoctors(visible);

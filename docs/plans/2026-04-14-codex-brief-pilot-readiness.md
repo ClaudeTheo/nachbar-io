@@ -48,6 +48,30 @@ absichern.
 
 ---
 
+## Manuelle Sichtpruefung
+
+### Lokal auf Branch `feat/pilot-readiness`
+
+- Login-Seite zeigt nur E-Mail-Feld und `Anmelde-Code senden`.
+- Passwort-Toggle ist nicht sichtbar.
+- Screenshot: `output/playwright/login-local-visual.png`
+
+### Live-Deployment `nachbar-io.vercel.app`
+
+- Login-Seite zeigt aktuell noch den Passwort-Toggle
+  `Stattdessen mit Passwort anmelden`.
+- Das bestaetigt, dass der produktive Stand den Fix noch nicht enthaelt.
+- OTP-Screen und Resend-Cooldown wurden visuell geprueft:
+  - `output/playwright/login-live-otp-visual.png`
+  - `output/playwright/login-live-resend-cooldown.png`
+  - `output/playwright/register-live-entry.png`
+  - `output/playwright/register-live-invite-step.png`
+  - `output/playwright/register-live-identity-step.png`
+  - `output/playwright/register-live-otp-visual.png`
+  - `output/playwright/register-live-resend-cooldown.png`
+
+---
+
 ## Nicht Teil dieses Briefs
 
 - Recovery-Flow bauen

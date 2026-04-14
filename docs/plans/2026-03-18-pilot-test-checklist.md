@@ -121,3 +121,13 @@ aber das Risiko erneuter UI-Abweichungen im Pilotbetrieb.
 
 **Hinweis:** Live-Tests für Magic-Link in echter E-Mail, Logout + Relogin sowie
 Provider-Zustellbarkeit (GMX/Gmail/iCloud) bleiben separate Pilotchecks.
+
+### Sichtpruefung 2026-04-14
+
+| Prüfpunkt | Ergebnis | Umgebung |
+|---|---|---|
+| Login-Seite ohne Passwort-Toggle | **PASS** | Lokaler Branch `feat/pilot-readiness` |
+| OTP-Screen nach Login-Anfrage sichtbar | **PASS** | Live-Deployment mit gemockter OTP-Response |
+| Resend-Cooldown auf OTP-Screen sichtbar und deaktiviert | **PASS** | Live-Deployment mit gemockter OTP-Response |
+| Registrierungs-Entry, Invite-Step und Identity-Step visuell konsistent | **PASS** | Live-Deployment |
+| Live-Deployment zeigt noch Passwort-Toggle auf `/login` | **BEFUND** | Live-Deployment vor Merge |

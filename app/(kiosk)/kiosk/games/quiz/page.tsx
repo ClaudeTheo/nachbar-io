@@ -24,6 +24,13 @@ const ALL_QUESTIONS: Question[] = [
 
 const QUESTIONS_PER_GAME = 5;
 const subscribeToDayChange = () => () => {};
+let cachedQuestionDay = "";
+let cachedQuestions = ALL_QUESTIONS.slice(0, QUESTIONS_PER_GAME);
+
+function getQuestionCacheKey() {
+  const now = new Date();
+  return `${now.getFullYear()}-${now.getMonth()}-${now.getDate()}`;
+}
 
 /** Tagesbasierte Auswahl: 5 Fragen basierend auf dem Tag des Jahres */
 function getDailyQuestions(): Question[] {
@@ -40,12 +47,21 @@ function getDailyQuestions(): Question[] {
   return selected;
 }
 
+function getCachedDailyQuestions(): Question[] {
+  const cacheKey = getQuestionCacheKey();
+  if (cacheKey !== cachedQuestionDay) {
+    cachedQuestionDay = cacheKey;
+    cachedQuestions = getDailyQuestions();
+  }
+  return cachedQuestions;
+}
+
 /** Tagesquiz: 5 Fragen pro Tag, eine nach der anderen */
 export default function QuizGamePage() {
   const questions = useSyncExternalStore(
     subscribeToDayChange,
-    getDailyQuestions,
-    () => ALL_QUESTIONS.slice(0, QUESTIONS_PER_GAME),
+    getCachedDailyQuestions,
+    getCachedDailyQuestions,
   );
   const [current, setCurrent] = useState(0);
   const [score, setScore] = useState(0);

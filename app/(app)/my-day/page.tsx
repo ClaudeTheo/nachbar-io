@@ -24,6 +24,11 @@ import { haptic } from "@/lib/haptics";
 
 type CheckInStatus = "good" | "okay" | "bad" | null;
 
+function getCheckinStorageKey(userId: string): string {
+  const today = new Date().toISOString().split("T")[0];
+  return `my-day-checkin:${userId}:${today}`;
+}
+
 // Tageszeitabhängige Begrüßung
 function getGreeting(): string {
   const hour = new Date().getHours();
@@ -77,15 +82,12 @@ export default function MyDayPage() {
 
         // Heutigen Check-in laden
         const today = new Date().toISOString().split("T")[0];
-        const { data: checkin } = await supabase
-          .from("checkins")
-          .select("status")
-          .eq("user_id", user!.id)
-          .gte("created_at", `${today}T00:00:00`)
-          .limit(1);
-
-        if (checkin?.[0]?.status) {
-          setCheckinStatus(checkin[0].status as CheckInStatus);
+        const storedCheckin =
+          typeof window !== "undefined"
+            ? window.localStorage.getItem(getCheckinStorageKey(user.id))
+            : null;
+        if (storedCheckin === "good" || storedCheckin === "okay" || storedCheckin === "bad") {
+          setCheckinStatus(storedCheckin);
         }
 
         // Heutige Mülltermine laden
@@ -122,15 +124,8 @@ export default function MyDayPage() {
     if (!user?.id || !status) return;
     haptic("medium");
     setCheckinStatus(status);
-
-    try {
-      const supabase = createClient();
-      await supabase.from("checkins").insert({
-        user_id: user.id,
-        status,
-      });
-    } catch (err) {
-      console.error("[MyDay] Check-in Fehler:", err);
+    if (typeof window !== "undefined") {
+      window.localStorage.setItem(getCheckinStorageKey(user.id), status);
     }
   }
 

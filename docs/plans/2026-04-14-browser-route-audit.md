@@ -96,6 +96,33 @@ erlaubt, aber nicht die Root-Domain `https://basemaps.cartocdn.com`.
 
 ---
 
+## Follow-up auf `feat/pilot-readiness`
+
+Lokaler Browser-Recheck am `2026-04-14` auf `http://localhost:3002` mit
+eingeloggter Test-Session:
+
+- Behoben:
+  - `/kiosk/games/quiz`
+    - keine Runtime- oder Hydration-Fehler mehr
+  - `/kiosk/sprechstunde`
+    - `/api/doctors` liefert wieder `200`
+  - `/hilfe/tasks`
+    - keine fehlerhafte `help_requests`-Abfrage mehr, Seite zeigt leeren Zustand sauber
+  - `/hilfe/abo`
+    - `/api/hilfe/subscription` liefert fuer Nutzer ohne Helfer-Profil jetzt `200` mit `null`
+    - dadurch kein sichtbarer API-Fehler mehr auf der Seite
+  - `/my-day`
+    - keine `checkins`-404 mehr; Tages-Check-in laeuft lokal im Browser weiter
+
+- Weiterhin sichtbar, aber als Audit-Rauschen eingeordnet:
+  - `POST /api/heartbeat` kann bei schnellem Route-Sweep weiterhin `429` liefern
+
+- Noch nicht erneut breit gegen alle Live-Routen verifiziert:
+  - role-/kontextabhaengige Care-Unterseiten wie `/care/aerzte`, die in der
+    verwendeten Senior-/Kiosk-Session auf `/kreis-start` zuruecklenken
+
+---
+
 ## Nicht vollstaendig abgedeckt
 
 Die folgenden dynamischen Muster konnten in dieser Session nicht mit echten

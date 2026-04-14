@@ -52,6 +52,7 @@ vi.mock("@/lib/supabase/server", () => ({
         chain.select = vi.fn().mockReturnValue(chain);
         chain.eq = vi.fn().mockReturnValue(chain);
         chain.not = vi.fn().mockReturnValue(chain);
+        chain.in = vi.fn().mockReturnValue(chain);
         chain.contains = vi.fn().mockReturnValue(chain);
         chain.order = vi.fn().mockReturnValue(chain);
         chain.then = terminalResult.then.bind(terminalResult);

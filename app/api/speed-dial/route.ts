@@ -251,9 +251,16 @@ async function resolveContact(
         .eq("id", sourceId)
         .single();
       const content = data?.content;
+      const contentName =
+        typeof content === "object" &&
+        content !== null &&
+        "name" in content &&
+        typeof content.name === "string"
+          ? content.name
+          : null;
       return {
         display_name:
-          (typeof content === "object" && content?.name) ||
+          contentName ||
           (typeof content === "string" && content) ||
           "Kontakt",
         avatar_url: null,

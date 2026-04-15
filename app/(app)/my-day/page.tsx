@@ -56,6 +56,7 @@ export default function MyDayPage() {
 
   useEffect(() => {
     if (!user?.id) return;
+    const userId = user.id;
     const supabase = createClient();
 
     async function loadDayData() {
@@ -64,7 +65,7 @@ export default function MyDayPage() {
         const { data: heartbeat } = await supabase
           .from("heartbeats")
           .select("created_at")
-          .eq("user_id", user!.id)
+          .eq("user_id", userId)
           .order("created_at", { ascending: false })
           .limit(1);
 
@@ -84,7 +85,7 @@ export default function MyDayPage() {
         const today = new Date().toISOString().split("T")[0];
         const storedCheckin =
           typeof window !== "undefined"
-            ? window.localStorage.getItem(getCheckinStorageKey(user.id))
+            ? window.localStorage.getItem(getCheckinStorageKey(userId))
             : null;
         if (storedCheckin === "good" || storedCheckin === "okay" || storedCheckin === "bad") {
           setCheckinStatus(storedCheckin);

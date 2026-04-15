@@ -138,34 +138,33 @@ export default function HelferTasksPage() {
           requestRows.map((request) => [request.id, request]),
         );
 
-        setTasks(
-          matchRows
-            .map((match) => {
-              const request = requestMap.get(match.request_id);
-              if (!request) return null;
+        const nextTasks: HilfeTask[] = [];
+        for (const match of matchRows) {
+          const request = requestMap.get(match.request_id);
+          if (!request) continue;
 
-              let status: TaskStatus = "open";
-              if (request.status === "closed") {
-                status = "completed";
-              } else if (match.confirmed_at || request.status === "matched") {
-                status = "in_progress";
-              }
+          let status: TaskStatus = "open";
+          if (request.status === "closed") {
+            status = "completed";
+          } else if (match.confirmed_at || request.status === "matched") {
+            status = "in_progress";
+          }
 
-              return {
-                id: request.id,
-                title: request.title || request.category || "Hilfe-Anfrage",
-                description: request.description || "",
-                status,
-                requester_name:
-                  requesterMap.get(request.user_id) || "Nachbar",
-                category: request.category || "",
-                created_at: request.created_at,
-                scheduled_date: null,
-                distance_km: null,
-              };
-            })
-            .filter((task): task is HilfeTask => task !== null),
-        );
+          nextTasks.push({
+            id: request.id,
+            title: request.title || request.category || "Hilfe-Anfrage",
+            description: request.description || "",
+            status,
+            requester_name:
+              requesterMap.get(request.user_id) || "Nachbar",
+            category: request.category || "",
+            created_at: request.created_at,
+            scheduled_date: null,
+            distance_km: null,
+          });
+        }
+
+        setTasks(nextTasks);
       } catch (err) {
         console.error("[HelferTasks] Fehler:", err);
       } finally {

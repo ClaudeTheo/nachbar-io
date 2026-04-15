@@ -19,6 +19,7 @@ import {
 import { createClient } from "@/lib/supabase/client";
 import { getCachedUser } from "@/lib/supabase/cached-auth";
 import { QuarterContext } from "@/lib/quarters";
+import { resolveFabVisibility } from "@/lib/ui/fabVisibility";
 import { toast } from "sonner";
 
 // Konsolen-Fehler global erfassen
@@ -50,21 +51,14 @@ export function BugReportButton({ anonymous = false }: BugReportButtonProps) {
   useEffect(() => {
     const handleScroll = () => {
       const currentY = window.scrollY;
-      const compactViewport = window.innerWidth < 640;
-
-      if (!compactViewport) {
-        setFabVisible(true);
-        lastScrollYRef.current = currentY;
-        return;
-      }
-
-      if (currentY < 24) {
-        setFabVisible(true);
-      } else if (currentY > lastScrollYRef.current + 10) {
-        setFabVisible(false);
-      } else if (currentY < lastScrollYRef.current - 10) {
-        setFabVisible(true);
-      }
+      setFabVisible((currentVisible) =>
+        resolveFabVisibility({
+          currentY,
+          previousY: lastScrollYRef.current,
+          innerWidth: window.innerWidth,
+          currentVisible,
+        }),
+      );
 
       lastScrollYRef.current = currentY;
     };

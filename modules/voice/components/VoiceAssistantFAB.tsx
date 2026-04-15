@@ -12,6 +12,7 @@ import { toast } from "sonner";
 import { createSpeechEngine } from "../engines/create-speech-engine";
 import { getIOSAudioManager } from "../services/ios-audio-manager";
 import { useStreamingChat } from "@/hooks/useStreamingChat";
+import { resolveFabVisibility } from "@/lib/ui/fabVisibility";
 import type {
   SpeechEngine,
   SpeechEngineCallbacks,
@@ -45,15 +46,27 @@ export function VoiceAssistantFAB() {
   useEffect(() => {
     const handleScroll = () => {
       const currentY = window.scrollY;
-      if (currentY > lastScrollYRef.current + 10) {
-        setFabVisible(false);
-      } else if (currentY < lastScrollYRef.current - 10) {
-        setFabVisible(true);
-      }
+      setFabVisible((currentVisible) =>
+        resolveFabVisibility({
+          currentY,
+          previousY: lastScrollYRef.current,
+          innerWidth: window.innerWidth,
+          currentVisible,
+        }),
+      );
       lastScrollYRef.current = currentY;
     };
+
+    lastScrollYRef.current = window.scrollY;
+    handleScroll();
+
     window.addEventListener("scroll", handleScroll, { passive: true });
-    return () => window.removeEventListener("scroll", handleScroll);
+    window.addEventListener("resize", handleScroll);
+
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+      window.removeEventListener("resize", handleScroll);
+    };
   }, []);
 
   // Engine lazy initialisieren (nur im Browser)

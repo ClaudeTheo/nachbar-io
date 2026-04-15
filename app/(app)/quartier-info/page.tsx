@@ -121,6 +121,8 @@ export default function QuartierInfoPage() {
   );
   const [data, setData] = useState<QuartierInfoResponse | null>(null);
   const [loadingData, setLoadingData] = useState(true);
+  const pageShellClass =
+    "space-y-6 pb-24 animate-fade-in-up lg:relative lg:left-1/2 lg:w-[min(calc(100vw-4rem),960px)] lg:-translate-x-1/2 lg:space-y-8";
 
   const loadData = useCallback(async () => {
     if (!quarterId) {
@@ -167,7 +169,7 @@ export default function QuartierInfoPage() {
 
   if (!quarterLoading && !currentQuarter) {
     return (
-      <div className="space-y-6 pb-24 animate-fade-in-up">
+      <div className={pageShellClass}>
         <LargeTitle title="Mein Quartier" />
 
         <div className="flex items-center gap-3">
@@ -209,7 +211,7 @@ export default function QuartierInfoPage() {
   }
 
   return (
-    <div className="space-y-6 pb-24 animate-fade-in-up">
+    <div className={pageShellClass}>
       <LargeTitle title="Mein Quartier" />
 
       {/* Header */}

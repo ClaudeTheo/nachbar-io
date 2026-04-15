@@ -5,6 +5,30 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { decrypt } from "@/modules/care/services/crypto";
 
+function isMissingFavoritesTable(error: { code?: string; message?: string } | null | undefined) {
+  if (!error) return false;
+
+  return (
+    error.code === "42P01" ||
+    error.code === "PGRST205" ||
+    error.message?.includes("does not exist") === true ||
+    (error.message?.includes("schema cache") === true &&
+      error.message?.includes("speed_dial_favorites") === true)
+  );
+}
+
+type LooseQueryResult = { data: Record<string, unknown> | null };
+type LooseTableClient = {
+  from: (table: string) => {
+    select: (columns: string) => {
+      eq: (column: string, value: string) => {
+        single: () => Promise<LooseQueryResult>;
+        maybeSingle: () => Promise<LooseQueryResult>;
+      };
+    };
+  };
+};
+
 // GET /api/speed-dial?userId={bewohner_id}
 // Gibt aufgeloeste Favoriten als Array zurueck (Name, Foto, target_user_id)
 export async function GET(req: NextRequest) {
@@ -25,11 +49,11 @@ export async function GET(req: NextRequest) {
     .eq("user_id", userId)
     .order("sort_order", { ascending: true });
 
+  if (isMissingFavoritesTable(error)) {
+    return NextResponse.json([]);
+  }
+
   if (error) {
-    // Tabelle existiert moeglicherweise nicht (Kiosk-Feature, Mig. noch offen)
-    if (error.message.includes("does not exist") || error.code === "42P01") {
-      return NextResponse.json([]);
-    }
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
@@ -59,10 +83,21 @@ export async function POST(req: NextRequest) {
   const { user_id, source_type, source_id, sort_order } = body;
 
   // Validierung: Anzahl bestehender Eintraege pruefen
-  const { count } = await supabase
+  const { count, error: countError } = await supabase
     .from("speed_dial_favorites")
     .select("*", { count: "exact", head: true })
     .eq("user_id", user_id);
+
+  if (isMissingFavoritesTable(countError)) {
+    return NextResponse.json(
+      { error: "Kurzwahl ist in dieser Umgebung noch nicht aktiviert" },
+      { status: 503 },
+    );
+  }
+
+  if (countError) {
+    return NextResponse.json({ error: countError.message }, { status: 500 });
+  }
 
   if ((count || 0) >= 5) {
     return NextResponse.json(
@@ -99,6 +134,12 @@ export async function POST(req: NextRequest) {
       { status: 409 },
     );
   }
+  if (isMissingFavoritesTable(error)) {
+    return NextResponse.json(
+      { error: "Kurzwahl ist in dieser Umgebung noch nicht aktiviert" },
+      { status: 503 },
+    );
+  }
   if (error)
     return NextResponse.json({ error: error.message }, { status: 500 });
 
@@ -125,6 +166,13 @@ export async function DELETE(req: NextRequest) {
     .delete()
     .eq("id", id);
 
+  if (isMissingFavoritesTable(error)) {
+    return NextResponse.json(
+      { error: "Kurzwahl ist in dieser Umgebung noch nicht aktiviert" },
+      { status: 503 },
+    );
+  }
+
   if (error)
     return NextResponse.json({ error: error.message }, { status: 500 });
 
@@ -133,7 +181,11 @@ export async function DELETE(req: NextRequest) {
 
 // Hilfsfunktion: Kontaktdaten aus Quell-Tabelle laden
 // Keine Daten-Duplikation — Aufloesung zur Lesezeit
-async function resolveContact(supabase: ReturnType<typeof Object>, fav: Record<string, unknown>) {
+async function resolveContact(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  fav: Record<string, unknown>,
+) {
+  const db = supabase as unknown as LooseTableClient;
   const sourceType = fav.source_type as string;
   const sourceId = fav.source_id as string;
   const userId = fav.user_id as string;
@@ -141,7 +193,7 @@ async function resolveContact(supabase: ReturnType<typeof Object>, fav: Record<s
   switch (sourceType) {
     case "caregiver_link": {
       // Profil aus profiles-Tabelle laden (source_id = Profil-ID)
-      const { data } = await (supabase as any)
+      const { data } = await db
         .from("profiles")
         .select("id, full_name, avatar_url")
         .eq("id", sourceId)
@@ -158,7 +210,7 @@ async function resolveContact(supabase: ReturnType<typeof Object>, fav: Record<s
       // Notfallkontakt aus verschluesselter Notfallmappe laden
       // source_id = 'emergency_contact_1' oder 'emergency_contact_2'
       const idx = sourceId.endsWith("_2") ? 1 : 0; // Array-Index
-      const { data: profile } = await (supabase as any)
+      const { data: profile } = await db
         .from("emergency_profiles")
         .select("level1_encrypted")
         .eq("user_id", userId)
@@ -166,7 +218,9 @@ async function resolveContact(supabase: ReturnType<typeof Object>, fav: Record<s
 
       if (profile?.level1_encrypted) {
         try {
-          const level1 = JSON.parse(decrypt(profile.level1_encrypted));
+          const level1 = JSON.parse(
+            decrypt(profile.level1_encrypted as string),
+          );
           const contacts = level1.emergencyContacts || [];
           const contact = contacts[idx];
           if (contact) {
@@ -191,15 +245,22 @@ async function resolveContact(supabase: ReturnType<typeof Object>, fav: Record<s
 
     case "memory_contact": {
       // Kontakt aus Gedaechtnis-Eintraegen laden
-      const { data } = await (supabase as any)
+      const { data } = await db
         .from("memory_entries")
         .select("content")
         .eq("id", sourceId)
         .single();
       const content = data?.content;
+      const contentName =
+        typeof content === "object" &&
+        content !== null &&
+        "name" in content &&
+        typeof content.name === "string"
+          ? content.name
+          : null;
       return {
         display_name:
-          (typeof content === "object" && content?.name) ||
+          contentName ||
           (typeof content === "string" && content) ||
           "Kontakt",
         avatar_url: null,

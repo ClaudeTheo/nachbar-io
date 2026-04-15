@@ -9,9 +9,6 @@ import Link from "next/link";
 // Navigations-Tabs fuer den Org-Bereich
 const ORG_TABS = [
   { href: "/org", label: "Übersicht" },
-  { href: "/org/members", label: "Mitglieder" },
-  { href: "/org/audit", label: "Audit-Log" },
-  { href: "/org/escalations", label: "Eskalationen" },
   { href: "/org/reports", label: "Meldungen" },
   { href: "/org/announcements", label: "Bekanntmachungen" },
 ] as const;

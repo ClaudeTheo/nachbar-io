@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useMemo, useState, useSyncExternalStore } from 'react';
 import Link from 'next/link';
 import { HEALTH_TIPS, CATEGORY_EMOJIS, CATEGORY_LABELS, type HealthTip } from '../data/health-tips';
 
@@ -13,6 +13,7 @@ const CATEGORIES: Array<{ key: HealthTip['category'] | 'alle'; label: string }> 
   { key: 'vorsorge', label: 'Vorsorge' },
   { key: 'mental', label: 'Mental' },
 ];
+const subscribeToDayChange = () => () => {};
 
 /** Tipp des Tages: basierend auf dem Tag im Jahr */
 function getTipOfTheDay(): HealthTip {
@@ -25,7 +26,11 @@ function getTipOfTheDay(): HealthTip {
 
 export default function KioskHealthPage() {
   const [filter, setFilter] = useState<HealthTip['category'] | 'alle'>('alle');
-  const tipOfDay = useMemo(() => getTipOfTheDay(), []);
+  const tipOfDay = useSyncExternalStore(
+    subscribeToDayChange,
+    getTipOfTheDay,
+    () => HEALTH_TIPS[0],
+  );
 
   const filteredTips = useMemo(() => {
     if (filter === 'alle') return HEALTH_TIPS;

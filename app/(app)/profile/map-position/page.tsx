@@ -54,25 +54,15 @@ export default function MapPositionPage() {
       const supabase = createClient();
 
       // Quartier des Users ermitteln (BUG-22 Fix)
-      const { data: userProfile } = await supabase
-        .from("users")
-        .select("quarter_id")
-        .eq("id", user.id)
+      let quarterId: string | null = null;
+      const { data: hm } = await supabase
+        .from("household_members")
+        .select("households(quarter_id)")
+        .eq("user_id", user.id)
         .maybeSingle();
-
-      let quarterId: string | null = userProfile?.quarter_id ?? null;
-
-      // Fallback: Quartier aus household_members
-      if (!quarterId) {
-        const { data: hm } = await supabase
-          .from("household_members")
-          .select("households(quarter_id)")
-          .eq("user_id", user.id)
-          .maybeSingle();
-        if (hm?.households) {
-          const hh = hm.households as unknown as { quarter_id: string };
-          quarterId = hh.quarter_id;
-        }
+      if (hm?.households) {
+        const hh = hm.households as unknown as { quarter_id: string };
+        quarterId = hh.quarter_id;
       }
 
       // Quartier-Name laden
@@ -85,7 +75,9 @@ export default function MapPositionPage() {
         if (q) {
           setQuarterName(q.name);
           // Nur Bad Saeckingen hat eine SVG-Karte (Pilotquartier)
-          setQuarterHasSvgMap(q.slug === "bad-saeckingen" || q.slug === "pilotquartier");
+          setQuarterHasSvgMap(
+            q.slug === "bad-saeckingen" || q.slug === "pilotquartier",
+          );
         }
       }
 
@@ -284,7 +276,8 @@ export default function MapPositionPage() {
       {!quarterHasSvgMap && (
         <div className="rounded-lg border border-alert-amber/30 bg-alert-amber/5 p-4 text-center">
           <p className="text-sm text-anthrazit">
-            Für Ihr Quartier{quarterName ? ` (${quarterName})` : ""} ist die Kartenansicht noch in Vorbereitung.
+            Für Ihr Quartier{quarterName ? ` (${quarterName})` : ""} ist die
+            Kartenansicht noch in Vorbereitung.
           </p>
           <p className="mt-1 text-xs text-muted-foreground">
             Sie können Ihre Position aktuell über &quot;Profil bearbeiten&quot; → Adresse anpassen.

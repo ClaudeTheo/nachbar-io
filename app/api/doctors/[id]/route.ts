@@ -11,6 +11,22 @@ export const dynamic = "force-dynamic";
 const CENTER_LAT = 47.5535;
 const CENTER_LNG = 7.964;
 
+interface DoctorProfileRow {
+  id: string;
+  user_id: string;
+  specialization: string[] | null;
+  bio: string | null;
+  avatar_url: string | null;
+  visible: boolean | null;
+  accepts_new_patients: boolean | null;
+  video_consultation: boolean | null;
+  quarter_ids: string[] | null;
+  latitude: number | null;
+  longitude: number | null;
+  address: string | null;
+  phone: string | null;
+}
+
 /**
  * GET /api/doctors/[id]
  * Einzelnes Arzt-Profil laden (user_id = id).
@@ -26,7 +42,7 @@ export async function GET(
   const { data, error } = await supabase
     .from("doctor_profiles")
     .select(
-      "user_id, specialization, bio, visible, accepts_new_patients, video_consultation, quarter_ids, latitude, longitude, address, phone, users(display_name, avatar_url)",
+      "id, user_id, specialization, bio, avatar_url, visible, accepts_new_patients, video_consultation, quarter_ids, latitude, longitude, address, phone",
     )
     .eq("user_id", id)
     .eq("visible", true)
@@ -47,16 +63,36 @@ export async function GET(
     );
   }
 
+  const profile = data as DoctorProfileRow;
+  const { data: userProfile, error: userError } = await supabase
+    .from("users")
+    .select("display_name, avatar_url")
+    .eq("id", profile.user_id)
+    .maybeSingle();
+
+  if (userError) {
+    console.warn("[doctors] Nutzer-Profil konnte nicht geladen werden:", userError);
+  }
+
   // Distanz berechnen (nur wenn Koordinaten vorhanden)
   let distance_km: number | null = null;
-  if (data.latitude != null && data.longitude != null) {
+  if (profile.latitude != null && profile.longitude != null) {
     distance_km = calculateDistance(
       CENTER_LAT,
       CENTER_LNG,
-      data.latitude as number,
-      data.longitude as number,
+      profile.latitude,
+      profile.longitude,
     );
   }
 
-  return NextResponse.json({ ...data, distance_km });
+  return NextResponse.json({
+    ...profile,
+    distance_km,
+    users: userProfile
+      ? {
+          display_name: userProfile.display_name?.trim() || "Arzt",
+          avatar_url: userProfile.avatar_url ?? profile.avatar_url,
+        }
+      : null,
+  });
 }

@@ -20,6 +20,32 @@ import { haptic } from "@/lib/haptics";
 type TaskStatus = "open" | "in_progress" | "completed";
 type FilterStatus = "all" | TaskStatus;
 
+interface HelperProfileRow {
+  id: string;
+}
+
+interface HelpMatchRow {
+  id: string;
+  request_id: string;
+  confirmed_at: string | null;
+  created_at: string;
+}
+
+interface HelpRequestRow {
+  id: string;
+  user_id: string;
+  title: string;
+  description: string | null;
+  category: string;
+  created_at: string;
+  status: string;
+}
+
+interface UserRow {
+  id: string;
+  display_name: string | null;
+}
+
 interface HilfeTask {
   id: string;
   title: string;
@@ -64,28 +90,82 @@ export default function HelferTasksPage() {
     async function loadTasks() {
       try {
         const supabase = createClient();
-        const { data } = await supabase
-          .from("help_requests")
-          .select("id, title, description, status, category, created_at, scheduled_date, requester:users!requester_id(display_name)")
-          .eq("helper_id", user!.id)
-          .order("created_at", { ascending: false })
-          .limit(50);
+        const { data: helperProfile } = await supabase
+          .from("neighborhood_helpers")
+          .select("id")
+          .eq("user_id", user!.id)
+          .maybeSingle();
 
-        if (data) {
-          setTasks(
-            data.map((d: Record<string, unknown>) => ({
-              id: d.id as string,
-              title: (d.title as string) || (d.category as string) || "Hilfe-Anfrage",
-              description: (d.description as string) || "",
-              status: (d.status as TaskStatus) || "open",
-              requester_name: ((d.requester as Record<string, unknown>)?.display_name as string) || "Nachbar",
-              category: (d.category as string) || "",
-              created_at: d.created_at as string,
-              scheduled_date: d.scheduled_date as string | null,
-              distance_km: null,
-            }))
-          );
+        if (!helperProfile) {
+          setTasks([]);
+          return;
         }
+
+        const { data: matches } = await supabase
+          .from("help_matches")
+          .select("id, request_id, confirmed_at, created_at")
+          .eq("helper_id", (helperProfile as HelperProfileRow).id)
+          .order("created_at", { ascending: false });
+
+        const matchRows = (matches ?? []) as HelpMatchRow[];
+        if (matchRows.length === 0) {
+          setTasks([]);
+          return;
+        }
+
+        const requestIds = matchRows.map((match) => match.request_id);
+        const { data: requests } = await supabase
+          .from("help_requests")
+          .select("id, user_id, title, description, category, created_at, status")
+          .in("id", requestIds);
+
+        const requestRows = (requests ?? []) as HelpRequestRow[];
+        const requesterIds = Array.from(
+          new Set(requestRows.map((request) => request.user_id)),
+        );
+        const { data: requesters } = await supabase
+          .from("users")
+          .select("id, display_name")
+          .in("id", requesterIds);
+
+        const requesterMap = new Map(
+          ((requesters ?? []) as UserRow[]).map((requester) => [
+            requester.id,
+            requester.display_name?.trim() || "Nachbar",
+          ]),
+        );
+        const requestMap = new Map(
+          requestRows.map((request) => [request.id, request]),
+        );
+
+        setTasks(
+          matchRows
+            .map((match) => {
+              const request = requestMap.get(match.request_id);
+              if (!request) return null;
+
+              let status: TaskStatus = "open";
+              if (request.status === "closed") {
+                status = "completed";
+              } else if (match.confirmed_at || request.status === "matched") {
+                status = "in_progress";
+              }
+
+              return {
+                id: request.id,
+                title: request.title || request.category || "Hilfe-Anfrage",
+                description: request.description || "",
+                status,
+                requester_name:
+                  requesterMap.get(request.user_id) || "Nachbar",
+                category: request.category || "",
+                created_at: request.created_at,
+                scheduled_date: null,
+                distance_km: null,
+              };
+            })
+            .filter((task): task is HilfeTask => task !== null),
+        );
       } catch (err) {
         console.error("[HelferTasks] Fehler:", err);
       } finally {

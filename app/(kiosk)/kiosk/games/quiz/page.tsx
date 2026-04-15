@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState, useCallback, useMemo } from "react";
+import { useCallback, useState, useSyncExternalStore } from "react";
 
 interface Question {
   q: string;
@@ -23,6 +23,14 @@ const ALL_QUESTIONS: Question[] = [
 ];
 
 const QUESTIONS_PER_GAME = 5;
+const subscribeToDayChange = () => () => {};
+let cachedQuestionDay = "";
+let cachedQuestions = ALL_QUESTIONS.slice(0, QUESTIONS_PER_GAME);
+
+function getQuestionCacheKey() {
+  const now = new Date();
+  return `${now.getFullYear()}-${now.getMonth()}-${now.getDate()}`;
+}
 
 /** Tagesbasierte Auswahl: 5 Fragen basierend auf dem Tag des Jahres */
 function getDailyQuestions(): Question[] {
@@ -39,16 +47,29 @@ function getDailyQuestions(): Question[] {
   return selected;
 }
 
+function getCachedDailyQuestions(): Question[] {
+  const cacheKey = getQuestionCacheKey();
+  if (cacheKey !== cachedQuestionDay) {
+    cachedQuestionDay = cacheKey;
+    cachedQuestions = getDailyQuestions();
+  }
+  return cachedQuestions;
+}
+
 /** Tagesquiz: 5 Fragen pro Tag, eine nach der anderen */
 export default function QuizGamePage() {
-  const questions = useMemo(() => getDailyQuestions(), []);
+  const questions = useSyncExternalStore(
+    subscribeToDayChange,
+    getCachedDailyQuestions,
+    getCachedDailyQuestions,
+  );
   const [current, setCurrent] = useState(0);
   const [score, setScore] = useState(0);
   const [selected, setSelected] = useState<number | null>(null);
   const [locked, setLocked] = useState(false);
   const [finished, setFinished] = useState(false);
 
-  const question = questions[current];
+  const question = questions[current] ?? questions[0];
   const isCorrect = selected === question?.answer;
 
   const handleAnswer = useCallback(

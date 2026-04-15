@@ -103,3 +103,43 @@ Empfehlung: Offene 11 Tests vor breiterem Rollout abschließen, für Pilot mit 3
 
 ### Bekannte Einschränkung
 PILOT-Codes (PREFIX-XXXX-XXXX) zu lang für Eingabefeld (maxLength=9). Nur 8-Zeichen-Codes funktionieren. Fix vor Flyer-Druck nötig.
+
+---
+
+## Addendum 2026-04-14 — Lokale Regressionstests
+
+Die folgenden Punkte wurden am 2026-04-14 als **lokale automatisierte
+Regressionen** ergänzt. Sie ersetzen keine Live-Zustellbarkeitsprüfung, senken
+aber das Risiko erneuter UI-Abweichungen im Pilotbetrieb.
+
+| Prüfpunkt | Ergebnis | Methode |
+|---|---|---|
+| Passwort-Login im Pilot weiterhin ausgeblendet | **PASS** | `__tests__/app/login-page.test.tsx` |
+| OTP-Anforderung zeigt keine Enumeration-UI bei erfolgreicher Anfrage | **PASS** | `__tests__/app/login-page.test.tsx` |
+| "Code erneut senden" ist während Cooldown deaktiviert | **PASS** | `__tests__/components/auth/OtpCodeEntry.test.tsx` |
+| "Code erneut senden" ist nach 60s wieder aktivierbar | **PASS** | `__tests__/components/auth/OtpCodeEntry.test.tsx` |
+
+**Hinweis:** Live-Tests für Magic-Link in echter E-Mail, Logout + Relogin sowie
+Provider-Zustellbarkeit (GMX/Gmail/iCloud) bleiben separate Pilotchecks.
+
+### Sichtpruefung 2026-04-14
+
+| Prüfpunkt | Ergebnis | Umgebung |
+|---|---|---|
+| Login-Seite ohne Passwort-Toggle | **PASS** | Lokaler Branch `feat/pilot-readiness` |
+| OTP-Screen nach Login-Anfrage sichtbar | **PASS** | Live-Deployment mit gemockter OTP-Response |
+| Resend-Cooldown auf OTP-Screen sichtbar und deaktiviert | **PASS** | Live-Deployment mit gemockter OTP-Response |
+| Registrierungs-Entry, Invite-Step und Identity-Step visuell konsistent | **PASS** | Live-Deployment |
+| Live-Deployment zeigt noch Passwort-Toggle auf `/login` | **BEFUND** | Live-Deployment vor Merge |
+
+### In-App-Smoke + Karte 2026-04-14
+
+| Prüfpunkt | Ergebnis | Umgebung |
+|---|---|---|
+| Login mit E2E-Agent (`agent_a@test.nachbar.local`) erfolgreich | **PASS** | Live-Deployment |
+| `/dashboard`, `/quartier-info`, `/care`, `/profile`, `/map` laden mit `200` | **PASS** | Live-Deployment |
+| `/map` rendert Leaflet-Container, Tiles und `15` Marker | **PASS** | Live-Deployment |
+| Zoom auf der Karte laedt weitere Tiles nach | **PASS** | Live-Deployment |
+| Marker-Klick oeffnet Popup und Detaildialog | **PASS** | Live-Deployment |
+| Filter `0 Rot` blendet Marker aus, `↺ Reset` stellt sie wieder her | **PASS** | Live-Deployment |
+| `POST /api/heartbeat` antwortet im Schnell-Smoke einmal mit `429` | **BEFUND** | Live-Deployment |

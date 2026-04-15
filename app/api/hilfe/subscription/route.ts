@@ -2,7 +2,7 @@
 // POST /api/hilfe/subscription — Abo-Verwaltung (pause/resume/cancel)
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import { handleServiceError } from "@/lib/services/service-error";
+import { handleServiceError, ServiceError } from "@/lib/services/service-error";
 import {
   getSubscription,
   updateSubscription,
@@ -21,7 +21,16 @@ export async function GET() {
       );
     }
 
-    const result = await getSubscription(supabase, user.id);
+    let result;
+    try {
+      result = await getSubscription(supabase, user.id);
+    } catch (error) {
+      if (error instanceof ServiceError && error.status === 404) {
+        return NextResponse.json(null);
+      }
+      throw error;
+    }
+
     return NextResponse.json(result);
   } catch (error) {
     return handleServiceError(error);

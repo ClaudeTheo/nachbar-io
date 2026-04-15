@@ -19,6 +19,11 @@ export interface HeartbeatBody {
   device_type?: string;
 }
 
+export interface HeartbeatResult {
+  ok: true;
+  deduped?: boolean;
+}
+
 // Rate-Limit: max 1 Heartbeat pro Minute pro User (In-Memory)
 const heartbeatRateMap = new Map<string, number>();
 const HEARTBEAT_COOLDOWN_MS = 60_000;
@@ -31,7 +36,7 @@ export async function recordHeartbeat(
   supabase: SupabaseClient,
   userId: string,
   body: HeartbeatBody,
-): Promise<{ ok: true }> {
+): Promise<HeartbeatResult> {
   const { source, device_type } = body;
 
   // Validierung ZUERST (vor Rate-Limit Lock, damit ungueltige Requests keinen Cooldown auslösen)
@@ -50,7 +55,7 @@ export async function recordHeartbeat(
   const now = Date.now();
   const lastHeartbeat = heartbeatRateMap.get(userId);
   if (lastHeartbeat && now - lastHeartbeat < HEARTBEAT_COOLDOWN_MS) {
-    throw new ServiceError("Maximal 1 Heartbeat pro Minute", 429);
+    return { ok: true, deduped: true };
   }
   heartbeatRateMap.set(userId, now);
 

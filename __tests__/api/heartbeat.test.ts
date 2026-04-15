@@ -65,4 +65,25 @@ describe('POST /api/heartbeat', () => {
     const response = await POST(request as unknown as import('next/server').NextRequest);
     expect(response.status).toBe(400);
   });
+
+  it('behandelt doppelten Heartbeat innerhalb des Cooldowns als no-op', async () => {
+    mockGetUser.mockResolvedValue({ data: { user: { id: 'user-1' } } });
+    mockInsert.mockResolvedValue({ error: null });
+
+    const { POST } = await import('@/app/api/heartbeat/route');
+    const makeRequest = () =>
+      new Request('http://localhost/api/heartbeat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ source: 'app', device_type: 'mobile' }),
+      });
+
+    const first = await POST(makeRequest() as unknown as import('next/server').NextRequest);
+    const second = await POST(makeRequest() as unknown as import('next/server').NextRequest);
+
+    expect(first.status).toBe(201);
+    expect(second.status).toBe(200);
+    expect(mockInsert).toHaveBeenCalledTimes(1);
+    await expect(second.json()).resolves.toEqual({ ok: true, deduped: true });
+  });
 });

@@ -70,6 +70,13 @@ const RATE_LIMIT_CONFIG: RateLimitCategory[] = [
     limit: 30,
     windowMs: 60_000,
   },
+  // Passive Heartbeats werden serverseitig bereits pro User dedupliziert.
+  // Edge-IP-Limits erzeugen hier vor allem Audit-Rauschen ohne Sicherheitsgewinn.
+  {
+    name: "heartbeat",
+    prefixes: ["/api/heartbeat"],
+    skip: true,
+  },
   // Admin-Endpunkte: Großzuegig aber begrenzt
   {
     name: "admin",

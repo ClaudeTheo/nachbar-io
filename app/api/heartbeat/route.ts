@@ -17,7 +17,9 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const result = await recordHeartbeat(supabase, user.id, body);
 
-    return NextResponse.json(result, { status: 201 });
+    return NextResponse.json(result, {
+      status: result.deduped ? 200 : 201,
+    });
   } catch (error) {
     return handleServiceError(error);
   }

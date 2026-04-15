@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback } from "react";
+import { useMemo } from "react";
 import Link from "next/link";
 import { MapPin } from "lucide-react";
 
@@ -9,6 +9,82 @@ interface MapThumbnailProps {
   lng: number;
   zoom?: number;
   label?: string;
+}
+
+const TILE_SIZE = 256;
+const GRID_RADIUS = 1;
+const MAX_WEB_MERCATOR_LAT = 85.05112878;
+
+interface ThumbnailTile {
+  key: string;
+  tx: number;
+  ty: number;
+  left: number;
+  top: number;
+}
+
+interface ThumbnailLayout {
+  tiles: ThumbnailTile[];
+  width: number;
+  height: number;
+  offsetX: number;
+  offsetY: number;
+}
+
+function clamp(value: number, min: number, max: number): number {
+  return Math.min(Math.max(value, min), max);
+}
+
+function normalizeTileX(x: number, tileCount: number): number {
+  return ((x % tileCount) + tileCount) % tileCount;
+}
+
+export function createMapThumbnailLayout(
+  lat: number,
+  lng: number,
+  zoom: number,
+): ThumbnailLayout {
+  const safeLat = clamp(lat, -MAX_WEB_MERCATOR_LAT, MAX_WEB_MERCATOR_LAT);
+  const tileCount = 2 ** zoom;
+  const latRad = (safeLat * Math.PI) / 180;
+
+  const xFloat = ((lng + 180) / 360) * tileCount;
+  const yFloat =
+    ((1 - Math.log(Math.tan(latRad) + 1 / Math.cos(latRad)) / Math.PI) / 2) *
+    tileCount;
+
+  const tileX = Math.floor(xFloat);
+  const tileY = Math.floor(yFloat);
+  const fractionalX = xFloat - tileX;
+  const fractionalY = yFloat - tileY;
+
+  const gridSize = GRID_RADIUS * 2 + 1;
+  const originTileX = tileX - GRID_RADIUS;
+  const originTileY = tileY - GRID_RADIUS;
+
+  const tiles: ThumbnailTile[] = [];
+
+  for (let row = 0; row < gridSize; row += 1) {
+    for (let col = 0; col < gridSize; col += 1) {
+      const tx = normalizeTileX(originTileX + col, tileCount);
+      const ty = clamp(originTileY + row, 0, tileCount - 1);
+      tiles.push({
+        key: `${tx}-${ty}-${row}-${col}`,
+        tx,
+        ty,
+        left: col * TILE_SIZE,
+        top: row * TILE_SIZE,
+      });
+    }
+  }
+
+  return {
+    tiles,
+    width: gridSize * TILE_SIZE,
+    height: gridSize * TILE_SIZE,
+    offsetX: (GRID_RADIUS + fractionalX) * TILE_SIZE,
+    offsetY: (GRID_RADIUS + fractionalY) * TILE_SIZE,
+  };
 }
 
 /**
@@ -25,28 +101,10 @@ export function MapThumbnail({
   zoom = 15,
   label,
 }: MapThumbnailProps) {
-  // CARTO Voyager Tile — gleicher Style wie die Hauptkarte
-  const tileUrl = useCallback(
-    (z: number, x: number, y: number) =>
-      `https://basemaps.cartocdn.com/rastertiles/voyager/${z}/${x}/${y}@2x.png`,
-    [],
+  const layout = useMemo(
+    () => createMapThumbnailLayout(lat, lng, zoom),
+    [lat, lng, zoom],
   );
-
-  // Lon/Lat zu Tile-Koordinaten (Slippy Map Tilenames)
-  const x = Math.floor(((lng + 180) / 360) * Math.pow(2, zoom));
-  const latRad = (lat * Math.PI) / 180;
-  const y = Math.floor(
-    ((1 - Math.log(Math.tan(latRad) + 1 / Math.cos(latRad)) / Math.PI) / 2) *
-      Math.pow(2, zoom),
-  );
-
-  // 2x2 Grid fuer breitere Abdeckung (512x512 bei @2x Tiles)
-  const tiles = [
-    { tx: x, ty: y, pos: "0 0" },
-    { tx: x + 1, ty: y, pos: "256px 0" },
-    { tx: x, ty: y + 1, pos: "0 256px" },
-    { tx: x + 1, ty: y + 1, pos: "256px 256px" },
-  ];
 
   return (
     <Link
@@ -56,23 +114,30 @@ export function MapThumbnail({
       aria-label="Quartierskarte oeffnen"
     >
       <div className="relative w-full" style={{ height: 200 }}>
-        {/* Tile-Grid */}
+        {/* Tile-Mosaik exakt auf den Quartier-Mittelpunkt zentrieren */}
         <div
-          className="absolute inset-0"
+          className="absolute left-1/2 top-1/2"
           style={{
-            display: "grid",
-            gridTemplateColumns: "1fr 1fr",
-            gridTemplateRows: "1fr 1fr",
+            width: layout.width,
+            height: layout.height,
+            transform: `translate(${-layout.offsetX}px, ${-layout.offsetY}px)`,
           }}
         >
-          {tiles.map((t, i) => (
+          {layout.tiles.map((tile) => (
             <img
-              key={i}
-              src={tileUrl(zoom, t.tx, t.ty)}
+              key={tile.key}
+              src={`https://basemaps.cartocdn.com/rastertiles/voyager/${zoom}/${tile.tx}/${tile.ty}@2x.png`}
               alt=""
-              className="w-full h-full object-cover"
+              className="absolute object-cover"
+              style={{
+                width: TILE_SIZE,
+                height: TILE_SIZE,
+                left: tile.left,
+                top: tile.top,
+              }}
               loading="lazy"
               draggable={false}
+              referrerPolicy="no-referrer"
             />
           ))}
         </div>

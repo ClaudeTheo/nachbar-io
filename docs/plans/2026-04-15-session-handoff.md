@@ -1,13 +1,13 @@
-# Session Handoff — Quartier Live Polish
+# Session Handoff — Quartier / Map Live Polish
 
 **Datum:** 2026-04-15  
 **Repo:** `C:/Users/thoma/Documents/New project/nachbar-io`  
 **Branch:** `master`  
-**Aktueller Repo-Stand:** Handoff-Notizen sind auf `master` committed.  
-**Letzter Produktfix-Commit:** `2539169` (`Hide mobile FABs in first viewport`)  
+**Aktueller Repo-Stand:** alle Produktfixes bis `7af4e05` sind auf `origin/master` gepusht.  
+**Letzter live deployter Produktfix-Commit:** `7af4e05` (`Increase help tip tap target`)  
 **Live-URL:** `https://nachbar-io.vercel.app`  
-**Letzter Prod-Deploy:** `dpl_WUGcL6aPEUbb8nu8U99NrCRgKpBo`  
-**Inspector:** `https://vercel.com/thomasth1977s-projects/nachbar-io/WUGcL6aPEUbb8nu8U99NrCRgKpBo`
+**Letzter Prod-Deploy:** `dpl_GN3CMK62gXrjnMwKqMz2rkZTwm4c`  
+**Inspector:** `https://vercel.com/thomasth1977s-projects/nachbar-io/GN3CMK62gXrjnMwKqMz2rkZTwm4c`
 
 ## Wichtig
 
@@ -16,77 +16,120 @@
   - `output/`
 - Diese Artefakte nicht committen.
 - Der Chat-Kontext selbst ist nach Neustart nicht garantiert. Die verlässliche Quelle ist diese Datei.
+- Nutze nur die Infos aus dieser Handoff-Datei als Wahrheit.
+- Neue Deploy-Regel:
+  - Keine Mikro-Deploys mehr für einzelne kleine UI-Fixes.
+  - Mehrere zusammenhängende UX-/A11y-Fixes erst lokal bündeln, prüfen und dann in einem Paket einmal nach Produktion deployen.
 
-## Was in dieser Session erledigt wurde
+## Was seit dem alten Handoff erledigt wurde
 
-- `c5b8a2e` — `Fix quartier map thumbnail viewport`
-  - Das Karten-Thumbnail auf `/quartier-info` nutzt jetzt echte belegte Hauspunkte statt eines veralteten Quartier-Zentrums.
-  - String-Koordinaten aus Runtime-Daten werden robust zu Zahlen normalisiert.
-  - Tile-Zoom und berechneter Viewport stimmen jetzt überein.
-- `5574ad3` — `Hide bug report FAB while scrolling on mobile`
-  - Der orange Bug-Report-FAB verdeckt unterhalb des ersten Screens auf Mobile keine Inhalte mehr.
-  - Der Button blendet sich beim Herunterscrollen aus und beim Hochschrollen wieder ein.
-- `2539169` — `Hide mobile FABs in first viewport`
-  - Auf schmalen Viewports bleiben Bug-Report-FAB und Voice-FAB im ersten Screen verborgen.
-  - Dadurch liegen auf `/quartier-info` im Mobile-Startscreen keine Floating Buttons mehr über dem `Pollenflug`-Block.
-  - Die gemeinsame Sichtbarkeitsregel wurde in `lib/ui/fabVisibility.ts` zusammengezogen.
+- `89ad822` — `Hide mobile version badge overlay`
+  - Das fixe `V2.5`-Badge verdeckt auf Mobile in tieferen Bereichen von `/quartier-info` keine Inhalte mehr.
+- `3688ff3` — `Widen quartier info layout on desktop`
+  - `/quartier-info` bricht auf Desktop aus der zu schmalen Mobile-Spalte aus.
+- `37aeed2` — `Improve quartier info accessibility cues`
+  - Bottom-Nav-Kontraste erhöht.
+  - Zurück-Link auf `/quartier-info` mit zugänglichem Namen versehen.
+  - Versions-Badge innerhalb der Main-Landmark platziert.
+- `fd7b56f` — `Fix nav role loading state build`
+  - Build-Fix in `useNavRole()` nach dem Accessibility-Batch.
+- `af1cc6c` — `Widen map layout on desktop`
+  - `/map` nutzt auf Desktop eine breite Shell statt einer schmalen Mobile-Spalte.
+  - Die Kartenfläche ist auf großen Viewports höher und ruhiger gesetzt.
+- `12b2fda` — `Add mobile bottom spacing to map page`
+  - Die Zeile `15 Nachbarn im Quartier` klebt auf Mobile nicht mehr direkt an der Bottom-Nav.
+- `8832208` — `Improve map filter bar on mobile`
+  - Die obere Kartenleiste auf `/map` ist auf Mobile luftiger.
+  - Filterchips sind als klare Pills umgesetzt.
+  - Filterbuttons haben `aria-pressed` und sprechende `aria-label`s.
+- `491b47c` — `Fully hide mobile FABs when collapsed`
+  - Bug-Report-FAB und Voice-FAB fahren im Hidden-Zustand jetzt vollständig unter den Mobile-Viewport.
+  - Hidden-FABs fangen keine Pointer-Events mehr ab.
+- `7af4e05` — `Increase help tip tap target`
+  - `HelpTip`-Trigger von sehr klein auf ein mobiles Touch-Ziel vergroessert.
+  - `aria-expanded` und `aria-haspopup="dialog"` ergänzt.
 
 ## Live verifiziert
 
-Produktionschecks gegen `https://nachbar-io.vercel.app/quartier-info` mit dem E2E-Test-Login:
+### `/quartier-info`
 
-- Test-Login:
-  - `/api/test/login?email=agent_a@test.nachbar.local&password=TestPass123!&secret=e2e-test-secret-dev&next=/quartier-info`
-- Karten-Thumbnail:
-  - richtiger Ausschnitt
-  - richtige Marker-Position
-  - richtige Tile-URLs / richtiger Zoom
-- Mobile unterhalb des ersten Screens:
-  - Bug-FAB und Voice-FAB sind beim Lesen tieferer Inhalte ausgeblendet
-  - Karten und Listen werden dort nicht mehr verdeckt
-- Mobile im ersten Screen:
-  - Bug-FAB `fab-hidden`
-  - Voice-FAB `fab-hidden`
-  - `Pollenflug` liegt sichtbar frei ohne Overlay
-- Browser-Konsole:
-  - keine Errors im Live-Check
+- Mobile:
+  - Versions-Badge überlagert keine Inhalte mehr.
+  - `Veranstaltungen` und `Rathaus & Services` waren im Scrollbereich frei lesbar.
+- Desktop:
+  - Seite nutzt eine breitere Shell.
+- Accessibility:
+  - Live-`axe` auf Produktion meldete `0` Violations.
+- Konsole:
+  - nur erwartete Service-Worker-Logs.
+
+### `/map`
+
+- Desktop:
+  - breite Shell ist live.
+  - größere Kartenhöhe ist live.
+- Mobile:
+  - zusätzliche Bottom-Spacer sind live.
+  - Filterleiste ist live luftiger und besser lesbar.
+  - FABs liegen im Hidden-Zustand vollständig außerhalb des `664px`-Viewports.
+  - Hidden-FABs haben `pointer-events: none`.
+- Accessibility:
+  - Live-`axe` auf den letzten `/map`-Checks meldete `0` Violations.
+- Konsole:
+  - nur erwartete Service-Worker-Logs.
+
+## Noch nicht final live nachgeprüft
+
+- Der zuletzt deployte `HelpTip`-Fix aus `7af4e05` ist live auf Produktion, wurde nach dem Deploy aber noch nicht separat mit einem frischen echten Live-Check gegen `/map` gemessen.
+- Das ist der naechste erste Pflichtschritt vor weiteren UI-Aenderungen.
 
 ## Lokal verifiziert
 
-- `components/map/__tests__/MapThumbnail.test.tsx`
-- `__tests__/components/BugReportButton.test.tsx`
-- `__tests__/lib/fabVisibility.test.ts`
-- gezielter `eslint` auf die geänderten Dateien war sauber
+- gezieltes `eslint` auf die geänderten Dateien war sauber
+- mehrfaches `npm run build` war nach den Fixes sauber
 
-## Geänderte Dateien
+## Relevante Dateien
 
+- `app/(app)/layout.tsx`
 - `app/(app)/quartier-info/page.tsx`
-- `components/map/MapThumbnail.tsx`
-- `components/map/__tests__/MapThumbnail.test.tsx`
+- `app/(app)/map/page.tsx`
+- `app/globals.css`
+- `components/BottomNav.tsx`
 - `components/BugReportButton.tsx`
-- `modules/voice/components/VoiceAssistantFAB.tsx`
+- `components/HelpTip.tsx`
+- `components/LeafletKarte.tsx`
+- `components/MapFilterBar.tsx`
+- `components/nav/NavConfig.ts`
+- `components/nav/NavItem.tsx`
 - `lib/ui/fabVisibility.ts`
-- `__tests__/components/BugReportButton.test.tsx`
-- `__tests__/lib/fabVisibility.test.ts`
+- `modules/voice/components/VoiceAssistantFAB.tsx`
 
 ## Bekannter Kontext
 
-- Die Playwright-CLI wurde im Verlauf träge, vermutlich wegen vieler offener Sessions. Für stabile Einzelverifikationen funktionierte lokales Node-Playwright robuster.
-- Die große bestehende `__tests__/components/VoiceAssistantFAB.test.tsx`-Suite ist schwergewichtig und nicht als schneller Gate für kleine Scroll-/Viewport-Änderungen geeignet.
-- Deshalb wurde die neue FAB-Sichtbarkeitslogik bewusst in eine kleine Helper-Funktion ausgelagert und separat getestet.
+- Für stabile Einzelverifikationen funktionierte lokales Node-Playwright robuster als lange Playwright-CLI-Sessions.
+- Nützlicher Live-Login für Produktionschecks:
+  - `/api/test/login?email=agent_a@test.nachbar.local&password=TestPass123!&secret=e2e-test-secret-dev&next=/map`
+- Relevante Artefakt-Ordner aus dieser Session:
+  - `output/playwright/map-mobile-postdeploy/`
+  - `output/playwright/map-fab-postdeploy/`
+- Die Mobile-Bottom-Nav trägt aktuell `aria-label="Hauptnavigation"`, nicht `Hauptnavigation mobil`.
 
 ## Naechste sinnvolle Schritte
 
-1. `/quartier-info` live weiter nach unten prüfen, besonders:
-   - `Apotheken`
-   - `Veranstaltungen`
-   - `Rathaus & Services`
-2. Danach Desktop-Feinschliff und visuelle Dichte prüfen:
-   - Abstände
-   - unnötige Leerräume
-   - Kontrast / Lesbarkeit
-3. Wenn `/quartier-info` sauber ist, denselben Live-Polish auf `/map` und angrenzende Quartier-Seiten übertragen.
+1. Zuerst einen echten Live-Check von `/map` Mobile gegen den bereits live ausgerollten `HelpTip`-Fix aus `7af4e05` machen.
+   - Zielgröße des Help-Buttons prüfen
+   - Tooltip-Position auf schmalem Viewport prüfen
+   - Konsole prüfen
+   - optional kurz `axe` mitlaufen lassen
+2. Danach weitere `/map`-Punkte nicht einzeln deployen, sondern lokal zu einem Paket bündeln.
+   - naheliegende Kandidaten:
+   - Tooltip-Layout / Tooltip-Pfeil / Close-Hitbox
+   - visuelle Dichte rund um Header und Kartenleiste
+   - Feinschliff der Karten-Controls und Abstände im Mobile-Viewport
+3. Erst wenn 2-4 sinnvolle zusammenhängende Fixes gesammelt und lokal geprüft sind:
+   - einmal deployen
+   - einmal final live gegen Produktion prüfen
 
 ## Exakter Startsatz fuer die naechste Session
 
-Arbeite in `nachbar-io` auf `master` weiter. Der letzte Produktfix ist Commit `2539169`, live auf `https://nachbar-io.vercel.app` mit Deploy `dpl_WUGcL6aPEUbb8nu8U99NrCRgKpBo`. Lies `docs/plans/2026-04-15-session-handoff.md`, committe `.playwright-cli/` und `output/` nicht, und mache als Nächstes einen echten Live-Check von `/quartier-info` weiter unterhalb des aktuell bereits geprüften Bereichs. Behebe danach den nächsten sichtbaren UX- oder Accessibility-Fehler und deploye wieder nach Produktion.
+Arbeite in `nachbar-io` auf `master` weiter. Der letzte live deployte Produktfix ist Commit `7af4e05`, live auf `https://nachbar-io.vercel.app` mit Deploy `dpl_GN3CMK62gXrjnMwKqMz2rkZTwm4c`. Lies `docs/plans/2026-04-15-session-handoff.md` und nutze nur diese Datei als Wahrheit. Committe `.playwright-cli/` und `output/` nicht. Mache als Erstes einen echten Live-Check von `/map` Mobile gegen den bereits live ausgerollten HelpTip-Tap-Target-Fix und suche danach weiter am nächsten UX-/Accessibility-Paket. Deploye nicht für Einzel-Fixes, sondern bündele mehrere sinnvolle `/map`-Verbesserungen lokal und deploye erst dann einmal nach Produktion.

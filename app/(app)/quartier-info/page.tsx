@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useMemo } from "react";
 import Link from "next/link";
 import {
   Cloud,
@@ -39,6 +39,7 @@ import type {
 } from "@/modules/info-hub/types";
 import { LargeTitle } from "@/components/ui/LargeTitle";
 import { MapThumbnail } from "@/components/map/MapThumbnail";
+import { useMapStatuses } from "@/lib/hooks/useMapStatuses";
 
 // Pollen-Balken (farbig)
 function PollenBar({ intensity, label }: { intensity: number; label: string }) {
@@ -112,6 +113,12 @@ export default function QuartierInfoPage() {
   const { currentQuarter, loading: quarterLoading, refreshQuarter } =
     useQuarter();
   const quarterId = currentQuarter?.id;
+  const { geoHouses, residentCounts } = useMapStatuses(
+    quarterId,
+    currentQuarter?.map_config,
+    currentQuarter?.center_lat,
+    currentQuarter?.center_lng,
+  );
   const [data, setData] = useState<QuartierInfoResponse | null>(null);
   const [loadingData, setLoadingData] = useState(true);
 
@@ -150,6 +157,13 @@ export default function QuartierInfoPage() {
   const loading = quarterLoading || loadingData;
   const hasNotdienstUrl = Boolean(data?.notdienst_url);
   const hasEventsCalendarUrl = Boolean(data?.events_calendar_url);
+  const previewPoints = useMemo(
+    () =>
+      geoHouses
+        .filter((house) => residentCounts[house.id] > 0)
+        .map((house) => ({ lat: house.lat, lng: house.lng })),
+    [geoHouses, residentCounts],
+  );
 
   if (!quarterLoading && !currentQuarter) {
     return (
@@ -447,6 +461,7 @@ export default function QuartierInfoPage() {
             lng={currentQuarter.center_lng}
             zoom={currentQuarter.zoom_level}
             label={`${currentQuarter.name} — Karte`}
+            points={previewPoints}
           />
         </section>
       )}

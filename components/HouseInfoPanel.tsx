@@ -51,7 +51,8 @@ export function HouseInfoPanel({
   const [requestMessage, setRequestMessage] = useState("");
   const [sending, setSending] = useState(false);
 
-  const streetName = STREET_CODE_TO_NAME[streetCode];
+  // Leaflet reicht den echten Strassennamen durch, SVG den Legacy-Street-Code.
+  const streetName = STREET_CODE_TO_NAME[streetCode] ?? streetCode;
 
   const loadResidents = useCallback(async () => {
     if (!open) return;

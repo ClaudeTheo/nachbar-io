@@ -45,16 +45,6 @@ const nextConfig: NextConfig = {
   // Security + Performance Headers
   async headers() {
     return [
-      // Static Assets: Langzeit-Cache (Content-Hash im Dateinamen = sicher)
-      {
-        source: "/_next/static/(.*)",
-        headers: [
-          {
-            key: "Cache-Control",
-            value: "public, max-age=31536000, immutable",
-          },
-        ],
-      },
       // Icons + Fonts: 30 Tage Cache
       {
         source: "/icons/(.*)",

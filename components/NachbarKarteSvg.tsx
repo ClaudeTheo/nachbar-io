@@ -207,7 +207,10 @@ export function NachbarKarteSvg({ quarterId: quarterIdProp }: NachbarKarteSvgPro
           <div>
             <div className="text-sm font-bold text-[#f8fafc]">QuartierApp — {currentQuarter?.name ?? "Bad Säckingen"}</div>
             <div className="text-xs text-[#64748b]">
-              Klick auf ein Haus für Details · Hover für Adresse
+              <span className="sm:hidden">Tippe auf ein Haus für Details</span>
+              <span className="hidden sm:inline">
+                Klick auf ein Haus für Details · Hover für Adresse
+              </span>
             </div>
           </div>
           <HelpTip
@@ -222,6 +225,7 @@ export function NachbarKarteSvg({ quarterId: quarterIdProp }: NachbarKarteSvgPro
             return (
               <button
                 key={key}
+                type="button"
                 onClick={() => setFilter(filter === key ? "all" : key)}
                 className="flex cursor-pointer items-center gap-1.5 rounded-lg px-2.5 py-1 text-xs font-semibold transition-colors"
                 style={{
@@ -239,6 +243,7 @@ export function NachbarKarteSvg({ quarterId: quarterIdProp }: NachbarKarteSvgPro
             );
           })}
           <button
+            type="button"
             onClick={() => {
               const s: Record<string, LampColor> = {};
               houses.forEach((h) => { s[h.id] = h.defaultColor; });

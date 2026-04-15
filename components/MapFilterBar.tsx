@@ -38,7 +38,10 @@ export function MapFilterBar({ counts, filter, onFilterChange, onReset, quarterN
             QuartierApp — {quarterName}
           </div>
           <div className="mt-1 text-xs leading-snug text-[#94a3b8]">
-            Klick auf ein Haus für Details · Hover für Adresse
+            <span className="sm:hidden">Tippe auf ein Haus für Details</span>
+            <span className="hidden sm:inline">
+              Klick auf ein Haus für Details · Hover für Adresse
+            </span>
           </div>
         </div>
         <HelpTip

@@ -75,6 +75,7 @@ export default function LeafletMapInner({
 }: LeafletMapInnerProps) {
   return (
     <MapContainer
+      className="quartier-leaflet-map"
       center={center}
       zoom={zoom}
       style={{ height: "100%", width: "100%" }}
@@ -118,6 +119,7 @@ export default function LeafletMapInner({
                 {cfg.label} · {rc} {rc === 1 ? "Bewohner" : "Bewohner"}
               </div>
               <button
+                type="button"
                 className="mt-1 text-xs text-blue-600 underline"
                 onClick={() => onHouseClick(house)}
               >

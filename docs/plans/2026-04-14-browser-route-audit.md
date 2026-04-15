@@ -174,6 +174,22 @@ priorisierten Seiten geprueft.
 - die Route liegt dort in `LEGACY_ROUTE_PREFIXES` und ist damit global hinter
   dem Phase-I-Legacy-Gate verborgen
 
+### Nachgezogener Care-Recheck am 2026-04-15
+
+- `/care`
+  - Legacy-Ziele wie `Aerzte`, `Medikamente`, `Sprechstunde` und `Vorsorge`
+    werden live nicht mehr als klickbare Sackgassen gerendert
+  - stattdessen erscheinen sie sichtbar deaktiviert mit dem Hinweis
+    `Im Pilot noch deaktiviert`
+- `/care/termine`
+  - die Seite nutzt live wieder den Care-Endpoint
+    `GET /api/care/appointments?upcoming=true`
+  - der zuvor sichtbare `500` auf
+    `GET /api/appointments?status=upcoming` tritt im Production-Recheck nicht
+    mehr auf
+  - die Seite zeigt fuer den geprueften Nutzer den leeren Zustand sauber und
+    ohne Console-Fehler
+
 ---
 
 ## Nicht vollstaendig abgedeckt

@@ -157,3 +157,5 @@ Provider-Zustellbarkeit (GMX/Gmail/iCloud) bleiben separate Pilotchecks.
 | `/my-day` zeigt keine `checkins`-`404` mehr | **PASS** | Live-Deployment |
 | `POST /api/heartbeat` erzeugt im Recheck kein sichtbares `429` mehr | **PASS** | Live-Deployment |
 | `/care/aerzte` bleibt auf `/kreis-start` umgeleitet | **EINGEORDNET** | Absichtlicher Redirect via `middleware.ts` (`LEGACY_ROUTE_PREFIXES`) |
+| `/care` zeigt Legacy-Ziele als deaktivierte Kacheln statt als klickbare Dead Ends | **PASS** | Live-Deployment |
+| `/care/termine` laedt ohne `500` auf `/api/appointments`; `GET /api/care/appointments?upcoming=true` liefert `200` | **PASS** | Live-Deployment |

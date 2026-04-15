@@ -143,3 +143,17 @@ Provider-Zustellbarkeit (GMX/Gmail/iCloud) bleiben separate Pilotchecks.
 | Marker-Klick oeffnet Popup und Detaildialog | **PASS** | Live-Deployment |
 | Filter `0 Rot` blendet Marker aus, `↺ Reset` stellt sie wieder her | **PASS** | Live-Deployment |
 | `POST /api/heartbeat` antwortet im Schnell-Smoke einmal mit `429` | **BEFUND** | Live-Deployment |
+
+### Addendum 2026-04-15 - Post-Merge Live-Recheck
+
+| Prüfpunkt | Ergebnis | Umgebung |
+|---|---|---|
+| Production-Deploy nach Merge von PR `#13` erfolgreich | **PASS** | Live-Deployment |
+| `/login` zeigt live keinen Passwort-Toggle mehr | **PASS** | Live-Deployment |
+| `/kiosk/games/quiz` laedt ohne Console-Fehler | **PASS** | Live-Deployment |
+| `/kiosk/sprechstunde` zeigt Aerzteliste, `/api/doctors` liefert `200` | **PASS** | Live-Deployment |
+| `/hilfe/tasks` zeigt leeren Zustand ohne API-Fehler | **PASS** | Live-Deployment |
+| `/hilfe/abo` zeigt Hinweiszustand, `/api/hilfe/subscription` liefert `200` | **PASS** | Live-Deployment |
+| `/my-day` zeigt keine `checkins`-`404` mehr | **PASS** | Live-Deployment |
+| `POST /api/heartbeat` erzeugt im Recheck kein sichtbares `429` mehr | **PASS** | Live-Deployment |
+| `/care/aerzte` bleibt auf `/kreis-start` umgeleitet | **EINGEORDNET** | Absichtlicher Redirect via `middleware.ts` (`LEGACY_ROUTE_PREFIXES`) |

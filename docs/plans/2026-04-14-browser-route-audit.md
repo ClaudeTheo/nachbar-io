@@ -123,6 +123,59 @@ eingeloggter Test-Session:
 
 ---
 
+## Live-Recheck nach Merge am 2026-04-15
+
+Nach dem Merge von PR `#13` wurde das Production-Deployment zunaechst nicht
+automatisch sichtbar aktualisiert. Beim manuellen Produktions-Deploy wurden
+zwei TypeScript-Blocker auf `master` gefunden und direkt behoben:
+
+- `app/(app)/hilfe/tasks/page.tsx`
+  - `setTasks(...)` erhielt explizit ein `HilfeTask[]`, damit der Vercel-Build
+    nicht an `null`-Eintraegen scheitert
+- `app/(app)/my-day/page.tsx`
+  - `user.id` wurde fuer den Effekt in eine lokale Konstante gezogen, damit
+    der Nullability-Check auf Production nicht fehlschlaegt
+
+Anschliessend wurde das Live-Deployment erfolgreich erneut gebaut und gegen die
+priorisierten Seiten geprueft.
+
+### Production-Status
+
+- `/login`
+  - Passwort-Toggle ist live nicht mehr sichtbar
+- `POST /api/heartbeat`
+  - doppelte Heartbeats innerhalb des Cooldowns werden live als no-op
+    beantwortet (`200` statt `429`)
+  - das zuvor sichtbare `429`-Rauschen war im Recheck auf den Kernseiten nicht
+    mehr in der Browser-Konsole sichtbar
+
+### Live bestaetigt
+
+- `/kiosk/games/quiz`
+  - rendert sauber, keine Runtime- oder Console-Fehler sichtbar
+- `/kiosk/sprechstunde`
+  - Aerzteliste wird geladen
+  - `/api/doctors` liefert im Live-Recheck `200`
+- `/hilfe/tasks`
+  - zeigt den leeren Zustand sauber
+  - keine fehlerhafte `help_requests`-Abfrage sichtbar
+- `/hilfe/abo`
+  - zeigt fuer Nutzer ohne Helfer-Profil den erwarteten Hinweiszustand
+  - `/api/hilfe/subscription` liefert im Live-Recheck `200`
+- `/my-day`
+  - keine `checkins`-`404` mehr sichtbar
+  - Seite laedt mit Heartbeat-, Quartier- und Muell-Daten weiter sauber
+
+### Einordnung zu `/care/aerzte`
+
+- `/care/aerzte` leitet weiterhin auf `/kreis-start` um
+- das ist im aktuellen Stand **kein neuer Rollenfehler**, sondern ein bewusst
+  konfigurierter Redirect in `middleware.ts`
+- die Route liegt dort in `LEGACY_ROUTE_PREFIXES` und ist damit global hinter
+  dem Phase-I-Legacy-Gate verborgen
+
+---
+
 ## Nicht vollstaendig abgedeckt
 
 Die folgenden dynamischen Muster konnten in dieser Session nicht mit echten

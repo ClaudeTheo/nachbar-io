@@ -33,6 +33,7 @@ interface BugReportButtonProps {
 }
 
 export function BugReportButton({ anonymous = false }: BugReportButtonProps) {
+  const [fabVisible, setFabVisible] = useState(true);
   // Sicherer Quartier-Zugriff: useContext gibt null zurück wenn kein Provider
   // (im Gegensatz zu useQuarter() das wirft). Fuer Login-/Onboarding-Seiten.
   const quarterCtx = useContext(QuarterContext);
@@ -44,6 +45,41 @@ export function BugReportButton({ anonymous = false }: BugReportButtonProps) {
   const [honeypot, setHoneypot] = useState("");
   const consoleErrorsRef = useRef<CapturedError[]>([]);
   const originalConsoleError = useRef<typeof console.error | null>(null);
+  const lastScrollYRef = useRef(0);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const currentY = window.scrollY;
+      const compactViewport = window.innerWidth < 640;
+
+      if (!compactViewport) {
+        setFabVisible(true);
+        lastScrollYRef.current = currentY;
+        return;
+      }
+
+      if (currentY < 24) {
+        setFabVisible(true);
+      } else if (currentY > lastScrollYRef.current + 10) {
+        setFabVisible(false);
+      } else if (currentY < lastScrollYRef.current - 10) {
+        setFabVisible(true);
+      }
+
+      lastScrollYRef.current = currentY;
+    };
+
+    lastScrollYRef.current = window.scrollY;
+    handleScroll();
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    window.addEventListener("resize", handleScroll);
+
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+      window.removeEventListener("resize", handleScroll);
+    };
+  }, []);
 
   // Console.error wrappen um Fehler zu erfassen
   useEffect(() => {
@@ -253,8 +289,11 @@ export function BugReportButton({ anonymous = false }: BugReportButtonProps) {
       {/* Floating Action Button — unten-links, über der BottomNav */}
       <button
         onClick={() => setOpen(true)}
-        className="fixed bottom-24 left-4 z-40 flex h-12 w-12 items-center justify-center rounded-full bg-alert-amber shadow-lg transition-all hover:scale-110 hover:shadow-xl active:scale-95"
+        className={`fixed bottom-24 left-3 z-40 flex h-11 w-11 items-center justify-center rounded-full bg-alert-amber shadow-lg transition-all active:scale-95 sm:left-4 sm:h-12 sm:w-12 sm:hover:scale-110 sm:hover:shadow-xl ${
+          fabVisible ? "fab-visible" : "fab-hidden"
+        }`}
         aria-label="Bug melden"
+        aria-haspopup="dialog"
         data-testid="bug-report-fab"
       >
         <Bug className="h-5 w-5 text-white" />

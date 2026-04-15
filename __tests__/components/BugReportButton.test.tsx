@@ -9,6 +9,22 @@ import React from 'react';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, fireEvent, cleanup, waitFor } from '@testing-library/react';
 
+function setViewportWidth(width: number) {
+  Object.defineProperty(window, 'innerWidth', {
+    configurable: true,
+    writable: true,
+    value: width,
+  });
+}
+
+function setScrollY(scrollY: number) {
+  Object.defineProperty(window, 'scrollY', {
+    configurable: true,
+    writable: true,
+    value: scrollY,
+  });
+}
+
 // --- Hoisted Mocks (muessen VOR vi.mock deklariert werden) ---
 const { mockToastSuccess, mockToastError, mockGetUser, mockProfileSelect, mockBugReportInsert, mockFetch } = vi.hoisted(() => ({
   mockToastSuccess: vi.fn(),
@@ -118,6 +134,8 @@ import { BugReportButton } from '@/components/BugReportButton';
 describe('BugReportButton', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    setViewportWidth(1024);
+    setScrollY(0);
     // Standard: eingeloggter User
     mockGetUser.mockResolvedValue({
       data: { user: { id: 'user-001' } },
@@ -134,6 +152,24 @@ describe('BugReportButton', () => {
     const fab = screen.getByTestId('bug-report-fab');
     expect(fab).toBeDefined();
     expect(fab.getAttribute('aria-label')).toBe('Bug melden');
+    expect(fab.getAttribute('aria-haspopup')).toBe('dialog');
+    expect(fab.className).toContain('fab-visible');
+  });
+
+  it('blendet den FAB auf kleinen Viewports beim Scrollen aus und wieder ein', () => {
+    setViewportWidth(390);
+    render(<BugReportButton />);
+
+    const fab = screen.getByTestId('bug-report-fab');
+    expect(fab.className).toContain('fab-visible');
+
+    setScrollY(140);
+    fireEvent.scroll(window);
+    expect(fab.className).toContain('fab-hidden');
+
+    setScrollY(60);
+    fireEvent.scroll(window);
+    expect(fab.className).toContain('fab-visible');
   });
 
   it('oeffnet Sheet bei Klick auf FAB', () => {

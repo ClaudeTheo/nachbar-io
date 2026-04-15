@@ -1,61 +1,89 @@
 // app/(app)/care/termine/page.tsx
-// Nachbar.io — Meine Termine (kommende + vergangene)
+// Nachbar.io — Care-Termine (kommende + vergangene)
 "use client";
 
-import { Suspense, useState, useEffect, useCallback } from "react";
+import { Suspense, useCallback, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { Calendar, Building2, Phone, Video, X } from "lucide-react";
+import {
+  Activity,
+  Calendar,
+  Heart,
+  MapPin,
+  Stethoscope,
+  Trash2,
+  X,
+} from "lucide-react";
 import { PageHeader } from "@/components/ui/page-header";
 import { SegmentedControl } from "@/components/ui/SegmentedControl";
+import type { CareAppointment, CareAppointmentType } from "@/lib/care/types";
 
-// Typ fuer die API-Antwort von /api/appointments
-interface Appointment {
-  id: string;
-  doctor_id: string;
-  scheduled_at: string;
-  duration_minutes: number;
-  type: string | null;
-  status: string;
-  notes_encrypted: string | null;
-  created_at: string;
-  doctor_profiles: {
-    specialization: string[] | null;
-    bio: string | null;
-    users: {
-      display_name: string;
-      avatar_url: string | null;
-    } | null;
-  } | null;
-}
-
-// Typ-Badge Zuordnung
-const TYPE_CONFIG: Record<
-  string,
-  { label: string; icon: typeof Building2; color: string }
+const TYPE_CONFIG: Partial<
+  Record<
+    CareAppointmentType,
+    {
+      label: string;
+      icon: typeof Calendar;
+      color: string;
+    }
+  >
 > = {
-  in_person: {
-    label: "Vor Ort",
-    icon: Building2,
+  doctor: {
+    label: "Arzttermin",
+    icon: Stethoscope,
     color: "bg-blue-100 text-blue-700",
   },
-  phone: {
-    label: "Telefon",
-    icon: Phone,
+  care_service: {
+    label: "Pflegedienst",
+    icon: Heart,
+    color: "bg-rose-100 text-rose-700",
+  },
+  therapy: {
+    label: "Therapie",
+    icon: Activity,
+    color: "bg-emerald-100 text-emerald-700",
+  },
+  shopping: {
+    label: "Einkauf",
+    icon: MapPin,
     color: "bg-amber-100 text-amber-700",
   },
-  video: {
-    label: "Video",
-    icon: Video,
-    color: "bg-purple-100 text-purple-700",
+  quarter_meeting: {
+    label: "Quartier-Termin",
+    icon: Calendar,
+    color: "bg-violet-100 text-violet-700",
+  },
+  personal: {
+    label: "Persoenlicher Termin",
+    icon: Calendar,
+    color: "bg-slate-100 text-slate-700",
+  },
+  birthday: {
+    label: "Geburtstag",
+    icon: Calendar,
+    color: "bg-pink-100 text-pink-700",
+  },
+  waste_collection: {
+    label: "Abholung",
+    icon: Calendar,
+    color: "bg-lime-100 text-lime-700",
+  },
+  other: {
+    label: "Termin",
+    icon: Calendar,
+    color: "bg-gray-100 text-gray-700",
   },
 };
+
+function isPastAppointment(appointment: CareAppointment) {
+  return new Date(appointment.scheduled_at).getTime() < Date.now();
+}
 
 export default function MeineTerminePage() {
   return (
     <Suspense
       fallback={
         <div className="p-4">
-          <div className="h-8 bg-gray-200 rounded animate-pulse" />
+          <div className="h-8 rounded bg-gray-200 animate-pulse" />
         </div>
       }
     >
@@ -69,34 +97,47 @@ function MeineTermineContent() {
   const showSuccess = searchParams.get("success") === "true";
 
   const [tab, setTab] = useState("Kommende");
-  const [appointments, setAppointments] = useState<Appointment[]>([]);
+  const [appointments, setAppointments] = useState<CareAppointment[]>([]);
   const [loading, setLoading] = useState(true);
-  const [cancellingId, setCancellingId] = useState<string | null>(null);
-  const [confirmCancelId, setConfirmCancelId] = useState<string | null>(null);
+  const [errorMsg, setErrorMsg] = useState("");
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState(
-    showSuccess ? "Ihr Termin wurde erfolgreich gebucht." : "",
+    showSuccess ? "Ihr Termin wurde erfolgreich gespeichert." : "",
   );
 
-  // Erfolgsmeldung nach 5 Sekunden ausblenden
   useEffect(() => {
-    if (successMsg) {
-      const timer = setTimeout(() => setSuccessMsg(""), 5000);
-      return () => clearTimeout(timer);
-    }
+    if (!successMsg) return;
+    const timer = setTimeout(() => setSuccessMsg(""), 5000);
+    return () => clearTimeout(timer);
   }, [successMsg]);
 
-  // Termine laden
   const loadAppointments = useCallback(async () => {
     setLoading(true);
+    setErrorMsg("");
+
     try {
-      const status = tab === "Vergangene" ? "past" : "upcoming";
-      const res = await fetch(`/api/appointments?status=${status}`);
-      if (res.ok) {
-        const data: Appointment[] = await res.json();
-        setAppointments(data);
+      const showUpcoming = tab === "Kommende";
+      const res = await fetch(`/api/care/appointments?upcoming=${showUpcoming}`);
+      if (!res.ok) {
+        throw new Error("LOAD_FAILED");
       }
+
+      const data: CareAppointment[] = await res.json();
+      const normalizedAppointments = showUpcoming
+        ? data
+        : data
+            .filter(isPastAppointment)
+            .sort(
+              (a, b) =>
+                new Date(b.scheduled_at).getTime() -
+                new Date(a.scheduled_at).getTime(),
+            );
+
+      setAppointments(normalizedAppointments);
     } catch {
-      // Stille Fehlerbehandlung
+      setAppointments([]);
+      setErrorMsg("Termine konnten nicht geladen werden.");
     } finally {
       setLoading(false);
     }
@@ -106,29 +147,31 @@ function MeineTermineContent() {
     loadAppointments();
   }, [loadAppointments]);
 
-  // Termin absagen
-  async function handleCancel(appointmentId: string) {
-    setCancellingId(appointmentId);
+  async function handleDelete(appointmentId: string) {
+    setDeletingId(appointmentId);
+    setErrorMsg("");
+
     try {
-      const res = await fetch(`/api/appointments/${appointmentId}`, {
+      const res = await fetch(`/api/care/appointments/${appointmentId}`, {
         method: "DELETE",
       });
-      if (res.ok) {
-        setSuccessMsg("Termin wurde abgesagt.");
-        setConfirmCancelId(null);
-        // Liste neu laden
-        await loadAppointments();
+
+      if (!res.ok) {
+        throw new Error("DELETE_FAILED");
       }
+
+      setSuccessMsg("Termin wurde entfernt.");
+      setConfirmDeleteId(null);
+      await loadAppointments();
     } catch {
-      // Stille Fehlerbehandlung
+      setErrorMsg("Termin konnte nicht entfernt werden.");
     } finally {
-      setCancellingId(null);
+      setDeletingId(null);
     }
   }
 
   return (
     <div className="px-4 py-6 space-y-5 pb-24">
-      {/* Header */}
       <PageHeader
         title={
           <>
@@ -139,13 +182,12 @@ function MeineTermineContent() {
         backLabel="Zurueck zur Pflege"
       />
 
-      {/* Erfolgsmeldung */}
       {successMsg && (
         <div className="rounded-xl bg-[#4CAF87]/10 p-4 flex items-center justify-between">
           <p className="text-sm font-medium text-[#4CAF87]">{successMsg}</p>
           <button
             onClick={() => setSuccessMsg("")}
-            className="p-1 rounded hover:bg-[#4CAF87]/10"
+            className="rounded p-1 hover:bg-[#4CAF87]/10"
             aria-label="Meldung schliessen"
           >
             <X className="h-4 w-4 text-[#4CAF87]" />
@@ -153,65 +195,64 @@ function MeineTermineContent() {
         </div>
       )}
 
-      {/* Tab-Umschalter */}
       <SegmentedControl
         items={["Kommende", "Vergangene"]}
         active={tab}
         onChange={setTab}
       />
 
-      {/* Lade-Zustand */}
+      {errorMsg && !loading && (
+        <div className="rounded-xl border border-red-200 bg-red-50 p-4">
+          <p className="text-sm font-medium text-red-700">{errorMsg}</p>
+        </div>
+      )}
+
       {loading && (
         <div className="space-y-3">
           {[1, 2, 3].map((i) => (
-            <div key={i} className="h-24 bg-muted rounded-xl animate-pulse" />
+            <div key={i} className="h-24 rounded-xl bg-muted animate-pulse" />
           ))}
         </div>
       )}
 
-      {/* Termin-Karten */}
-      {!loading && appointments.length > 0 && (
+      {!loading && !errorMsg && appointments.length > 0 && (
         <div className="space-y-3">
-          {appointments.map((appt) => {
-            const typeConf = TYPE_CONFIG[appt.type ?? ""] ?? {
-              label: appt.type ?? "Termin",
-              icon: Calendar,
-              color: "bg-gray-100 text-gray-700",
-            };
+          {appointments.map((appointment) => {
+            const typeConf =
+              TYPE_CONFIG[appointment.type ?? "other"] ?? TYPE_CONFIG.other!;
             const TypeIcon = typeConf.icon;
-            const doctorName =
-              appt.doctor_profiles?.users?.display_name ?? "Arzt";
-            const dateStr = new Date(appt.scheduled_at).toLocaleDateString(
-              "de-DE",
-              {
-                weekday: "short",
-                day: "numeric",
-                month: "long",
-              },
-            );
-            const timeStr = new Date(appt.scheduled_at).toLocaleTimeString(
-              "de-DE",
-              {
-                hour: "2-digit",
-                minute: "2-digit",
-              },
-            );
+            const dateStr = new Date(
+              appointment.scheduled_at,
+            ).toLocaleDateString("de-DE", {
+              weekday: "short",
+              day: "numeric",
+              month: "long",
+            });
+            const timeStr = new Date(
+              appointment.scheduled_at,
+            ).toLocaleTimeString("de-DE", {
+              hour: "2-digit",
+              minute: "2-digit",
+            });
 
             return (
               <div
-                key={appt.id}
+                key={appointment.id}
                 className="rounded-xl border bg-white p-4 space-y-3"
               >
-                {/* Datum + Uhrzeit */}
-                <div className="flex items-center justify-between">
-                  <div>
+                <div className="flex items-start justify-between gap-3">
+                  <div className="space-y-1">
                     <p className="text-base font-semibold text-[#2D3142]">
-                      {dateStr}
+                      {appointment.title}
                     </p>
                     <p className="text-sm text-muted-foreground">
-                      {timeStr} Uhr
+                      {dateStr} · {timeStr} Uhr
+                      {appointment.duration_minutes
+                        ? ` · ${appointment.duration_minutes} Min.`
+                        : ""}
                     </p>
                   </div>
+
                   <span
                     className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-medium ${typeConf.color}`}
                   >
@@ -220,25 +261,34 @@ function MeineTermineContent() {
                   </span>
                 </div>
 
-                {/* Arzt-Name */}
-                <p className="text-sm text-[#2D3142]">{doctorName}</p>
+                {appointment.location && (
+                  <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
+                    <MapPin className="h-4 w-4 shrink-0" />
+                    <span>{appointment.location}</span>
+                  </div>
+                )}
 
-                {/* Absagen-Button (nur bei kommenden Terminen) */}
+                {appointment.notes && (
+                  <p className="border-t pt-2 text-sm text-muted-foreground">
+                    {appointment.notes}
+                  </p>
+                )}
+
                 {tab === "Kommende" && (
                   <>
-                    {confirmCancelId === appt.id ? (
+                    {confirmDeleteId === appointment.id ? (
                       <div className="flex items-center gap-2 pt-1">
                         <button
-                          onClick={() => handleCancel(appt.id)}
-                          disabled={cancellingId === appt.id}
+                          onClick={() => handleDelete(appointment.id)}
+                          disabled={deletingId === appointment.id}
                           className="rounded-lg bg-red-50 border border-red-200 px-4 py-2 text-sm font-medium text-red-700 hover:bg-red-100 disabled:opacity-50"
                         >
-                          {cancellingId === appt.id
-                            ? "Wird abgesagt..."
-                            : "Ja, absagen"}
+                          {deletingId === appointment.id
+                            ? "Wird entfernt..."
+                            : "Ja, entfernen"}
                         </button>
                         <button
-                          onClick={() => setConfirmCancelId(null)}
+                          onClick={() => setConfirmDeleteId(null)}
                           className="rounded-lg border px-4 py-2 text-sm font-medium text-muted-foreground hover:bg-gray-50"
                         >
                           Nein
@@ -246,34 +296,14 @@ function MeineTermineContent() {
                       </div>
                     ) : (
                       <button
-                        onClick={() => setConfirmCancelId(appt.id)}
-                        className="rounded-lg border border-red-200 px-4 py-2 text-sm font-medium text-red-600 hover:bg-red-50 transition-colors"
+                        onClick={() => setConfirmDeleteId(appointment.id)}
+                        className="inline-flex items-center gap-2 rounded-lg border border-red-200 px-4 py-2 text-sm font-medium text-red-600 hover:bg-red-50 transition-colors"
                       >
-                        Absagen
+                        <Trash2 className="h-4 w-4" />
+                        Entfernen
                       </button>
                     )}
                   </>
-                )}
-
-                {/* Status-Badge bei vergangenen Terminen */}
-                {tab === "Vergangene" && (
-                  <span
-                    className={`inline-block rounded-full px-2.5 py-1 text-xs font-medium ${
-                      appt.status === "completed"
-                        ? "bg-green-100 text-green-700"
-                        : appt.status === "cancelled"
-                          ? "bg-red-100 text-red-700"
-                          : "bg-gray-100 text-gray-700"
-                    }`}
-                  >
-                    {appt.status === "completed"
-                      ? "Abgeschlossen"
-                      : appt.status === "cancelled"
-                        ? "Abgesagt"
-                        : appt.status === "no_show"
-                          ? "Nicht erschienen"
-                          : appt.status}
-                  </span>
                 )}
               </div>
             );
@@ -281,8 +311,7 @@ function MeineTermineContent() {
         </div>
       )}
 
-      {/* Leerer Zustand */}
-      {!loading && appointments.length === 0 && (
+      {!loading && !errorMsg && appointments.length === 0 && (
         <div className="rounded-xl bg-gray-50 p-8 text-center">
           <Calendar className="mx-auto h-12 w-12 text-muted-foreground/30" />
           <p className="mt-3 text-lg font-medium text-[#2D3142]">
@@ -290,10 +319,10 @@ function MeineTermineContent() {
               ? "Keine kommenden Termine"
               : "Keine vergangenen Termine"}
           </p>
-          <p className="text-sm text-muted-foreground mt-1">
+          <p className="mt-1 text-sm text-muted-foreground">
             {tab === "Kommende"
-              ? "Buchen Sie einen Termin ueber die Aerzte-Seite."
-              : "Hier erscheinen Ihre abgeschlossenen Termine."}
+              ? "Neue Termine erscheinen hier, sobald sie fuer Sie angelegt wurden."
+              : "Vergangene Termine bleiben hier zur Uebersicht sichtbar."}
           </p>
         </div>
       )}

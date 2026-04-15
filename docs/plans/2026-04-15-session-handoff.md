@@ -3,7 +3,8 @@
 **Datum:** 2026-04-15  
 **Repo:** `C:/Users/thoma/Documents/New project/nachbar-io`  
 **Branch:** `master`  
-**Aktueller Commit:** `2539169` (`Hide mobile FABs in first viewport`)  
+**Aktueller Commit:** `0ec0d11` (`Update quartier handoff notes`)  
+**Letzter Produktfix-Commit:** `2539169` (`Hide mobile FABs in first viewport`)  
 **Live-URL:** `https://nachbar-io.vercel.app`  
 **Letzter Prod-Deploy:** `dpl_WUGcL6aPEUbb8nu8U99NrCRgKpBo`  
 **Inspector:** `https://vercel.com/thomasth1977s-projects/nachbar-io/WUGcL6aPEUbb8nu8U99NrCRgKpBo`
@@ -88,4 +89,4 @@ Produktionschecks gegen `https://nachbar-io.vercel.app/quartier-info` mit dem E2
 
 ## Exakter Startsatz fuer die naechste Session
 
-Arbeite in `nachbar-io` auf `master` weiter. Der aktuelle Stand ist Commit `2539169`, live auf `https://nachbar-io.vercel.app` mit Deploy `dpl_WUGcL6aPEUbb8nu8U99NrCRgKpBo`. Lies `docs/plans/2026-04-15-session-handoff.md`, committe `.playwright-cli/` und `output/` nicht, und mache als Nächstes einen echten Live-Check von `/quartier-info` weiter unterhalb des aktuell bereits geprüften Bereichs. Behebe danach den nächsten sichtbaren UX- oder Accessibility-Fehler und deploye wieder nach Produktion.
+Arbeite in `nachbar-io` auf `master` weiter. Der aktuelle Repo-Stand ist Commit `0ec0d11`, der letzte Produktfix ist `2539169`, live auf `https://nachbar-io.vercel.app` mit Deploy `dpl_WUGcL6aPEUbb8nu8U99NrCRgKpBo`. Lies `docs/plans/2026-04-15-session-handoff.md`, committe `.playwright-cli/` und `output/` nicht, und mache als Nächstes einen echten Live-Check von `/quartier-info` weiter unterhalb des aktuell bereits geprüften Bereichs. Behebe danach den nächsten sichtbaren UX- oder Accessibility-Fehler und deploye wieder nach Produktion.

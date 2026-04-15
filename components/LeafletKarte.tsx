@@ -88,7 +88,7 @@ export function LeafletKarte({ quarterId: quarterIdProp }: LeafletKarteProps) {
   }
 
   return (
-    <div className="flex flex-col items-center gap-2">
+    <div className="flex flex-col gap-3 lg:gap-4">
       <MapFilterBar
         counts={counts}
         filter={filter}
@@ -102,7 +102,7 @@ export function LeafletKarte({ quarterId: quarterIdProp }: LeafletKarteProps) {
         className="w-full overflow-hidden rounded-xl shadow-lg"
         style={{
           boxShadow: "0 0 0 1px #1e293b, 0 4px 24px rgba(0,0,0,0.6)",
-          height: "400px",
+          height: "clamp(400px, 62vh, 720px)",
         }}
       >
         <LeafletMapInner
@@ -123,7 +123,7 @@ export function LeafletKarte({ quarterId: quarterIdProp }: LeafletKarteProps) {
       </div>
 
       {/* Fusszeile */}
-      <div className="text-xs text-muted-foreground">
+      <div className="text-center text-xs text-muted-foreground">
         {Object.values(residentCounts).filter((c) => c > 0).length} Nachbarn im
         Quartier
         {counts.blue > 0 && ` · ${counts.blue} Urlaub`}

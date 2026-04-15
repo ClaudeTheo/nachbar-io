@@ -33,7 +33,7 @@
 - QuarterManagement: `app/(app)/admin/components/QuarterManagement.tsx`
 - Map: `components/NachbarKarte.tsx`, `lib/map-houses.ts`
 - Invite codes: `lib/invite-codes.ts`
-- Auth middleware: `lib/supabase/middleware.ts`, `middleware.ts`
+- Auth middleware: `lib/supabase/middleware.ts`, `proxy.ts`
 - Constants: `lib/constants.ts`
 - RLS helpers: defined in migrations (is_verified_member, is_admin, etc.)
 

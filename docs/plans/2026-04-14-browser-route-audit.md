@@ -170,7 +170,7 @@ priorisierten Seiten geprueft.
 
 - `/care/aerzte` leitet weiterhin auf `/kreis-start` um
 - das ist im aktuellen Stand **kein neuer Rollenfehler**, sondern ein bewusst
-  konfigurierter Redirect in `middleware.ts`
+  konfigurierter Redirect in `proxy.ts`
 - die Route liegt dort in `LEGACY_ROUTE_PREFIXES` und ist damit global hinter
   dem Phase-I-Legacy-Gate verborgen
 

@@ -312,7 +312,7 @@ nachbar-io/
 │   ├── supabase/
 │   │   ├── client.ts             # Browser Supabase-Client
 │   │   ├── server.ts             # Server Supabase-Client
-│   │   ├── middleware.ts          # Session-Verwaltung
+│   │   ├── proxy.ts               # Session-Verwaltung
 │   │   └── types.ts              # TypeScript-Definitionen
 │   └── utils.ts
 ├── supabase/

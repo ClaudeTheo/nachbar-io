@@ -33,7 +33,7 @@ export function NavItem({
       href={href}
       onClick={() => haptic("light")}
       className={`animate-nav-tap relative flex flex-col items-center gap-0.5 px-3 py-2 text-xs transition-all duration-200 ${
-        isActive ? activeColor : "text-anthrazit/60 hover:text-anthrazit"
+        isActive ? activeColor : "text-anthrazit/80 hover:text-anthrazit"
       }`}
       aria-current={isActive ? "page" : undefined}
     >

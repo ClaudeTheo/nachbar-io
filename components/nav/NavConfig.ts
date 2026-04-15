@@ -37,7 +37,7 @@ const seniorNav: NavItemConfig[] = [
     href: "/dashboard",
     label: "Start",
     icon: Home,
-    activeColor: "text-[#4CAF87]",
+    activeColor: "text-[#2F7A62]",
   },
   {
     // Task B-5: Drift-Aufloesung — /quartier-info ist der Gewinner.
@@ -46,19 +46,19 @@ const seniorNav: NavItemConfig[] = [
     href: "/quartier-info",
     label: "Quartier",
     icon: Building2,
-    activeColor: "text-blue-500",
+    activeColor: "text-blue-700",
   },
   {
     href: "/care",
     label: "Gesundheit",
     icon: Heart,
-    activeColor: "text-red-500",
+    activeColor: "text-red-700",
   },
   {
     href: "/profile",
     label: "Ich",
     icon: User,
-    activeColor: "text-violet-500",
+    activeColor: "text-violet-700",
   },
 ];
 
@@ -67,25 +67,25 @@ const helperNav: NavItemConfig[] = [
     href: "/dashboard",
     label: "Übersicht",
     icon: Home,
-    activeColor: "text-[#4CAF87]",
+    activeColor: "text-[#2F7A62]",
   },
   {
     href: "/hilfe/tasks",
     label: "Einsätze",
     icon: ClipboardList,
-    activeColor: "text-blue-500",
+    activeColor: "text-blue-700",
   },
   {
     href: "/hilfe/requests",
     label: "Anfragen",
     icon: HandHeart,
-    activeColor: "text-violet-500",
+    activeColor: "text-violet-700",
   },
   {
     href: "/profile",
     label: "Profil",
     icon: User,
-    activeColor: "text-[#4CAF87]",
+    activeColor: "text-[#2F7A62]",
   },
 ];
 
@@ -94,25 +94,25 @@ const caregiverNav: NavItemConfig[] = [
     href: "/dashboard",
     label: "Übersicht",
     icon: Home,
-    activeColor: "text-[#4CAF87]",
+    activeColor: "text-[#2F7A62]",
   },
   {
     href: "/care/status",
     label: "Status",
     icon: Heart,
-    activeColor: "text-[#4CAF87]",
+    activeColor: "text-[#2F7A62]",
   },
   {
     href: "/care",
     label: "Gesundheit",
     icon: HeartPulse,
-    activeColor: "text-red-500",
+    activeColor: "text-red-700",
   },
   {
     href: "/profile",
     label: "Ich",
     icon: User,
-    activeColor: "text-violet-500",
+    activeColor: "text-violet-700",
   },
 ];
 
@@ -121,26 +121,26 @@ const orgAdminNav: NavItemConfig[] = [
     href: "/dashboard",
     label: "Übersicht",
     icon: Home,
-    activeColor: "text-[#4CAF87]",
+    activeColor: "text-[#2F7A62]",
   },
   {
     // Task B-5: Drift-Aufloesung — /quartier-info ist der Gewinner (analog seniorNav).
     href: "/quartier-info",
     label: "Quartier",
     icon: Building2,
-    activeColor: "text-blue-500",
+    activeColor: "text-blue-700",
   },
   {
     href: "/org",
     label: "Verwaltung",
     icon: Shield,
-    activeColor: "text-violet-500",
+    activeColor: "text-violet-700",
   },
   {
     href: "/profile",
     label: "Ich",
     icon: User,
-    activeColor: "text-[#4CAF87]",
+    activeColor: "text-[#2F7A62]",
   },
 ];
 
@@ -206,12 +206,11 @@ async function detectNavRole(userId: string): Promise<NavRole> {
  */
 export function useNavRole(): { role: NavRole; loading: boolean } {
   const { user } = useAuth();
-  const [role, setRole] = useState<NavRole>("senior");
-  const [loading, setLoading] = useState(true);
+  const [resolvedRole, setResolvedRole] = useState<NavRole>("senior");
+  const [resolvedUserId, setResolvedUserId] = useState<string | null>(null);
 
   useEffect(() => {
     if (!user?.id) {
-      setLoading(false);
       return;
     }
 
@@ -219,12 +218,15 @@ export function useNavRole(): { role: NavRole; loading: boolean } {
     detectNavRole(user.id)
       .then((detected) => {
         if (!cancelled) {
-          setRole(detected);
-          setLoading(false);
+          setResolvedRole(detected);
+          setResolvedUserId(user.id);
         }
       })
       .catch(() => {
-        if (!cancelled) setLoading(false);
+        if (!cancelled) {
+          setResolvedRole("senior");
+          setResolvedUserId(user.id);
+        }
       });
 
     return () => {
@@ -232,5 +234,8 @@ export function useNavRole(): { role: NavRole; loading: boolean } {
     };
   }, [user?.id]);
 
-  return { role, loading };
+  return {
+    role: user?.id ? resolvedRole : "senior",
+    loading: Boolean(user?.id) && resolvedUserId !== user.id,
+  };
 }

@@ -175,6 +175,7 @@ export default function QuartierInfoPage() {
         <div className="flex items-center gap-3">
           <Link
             href="/dashboard"
+            aria-label="Zurück zum Dashboard"
             className="p-2 -ml-2 rounded-full hover:bg-gray-100 min-w-[44px] min-h-[44px] flex items-center justify-center"
           >
             <ArrowLeft className="h-5 w-5 text-anthrazit" />
@@ -218,6 +219,7 @@ export default function QuartierInfoPage() {
       <div className="flex items-center gap-3">
         <Link
           href="/dashboard"
+          aria-label="Zurück zum Dashboard"
           className="p-2 -ml-2 rounded-full hover:bg-gray-100 min-w-[44px] min-h-[44px] flex items-center justify-center"
         >
           <ArrowLeft className="h-5 w-5 text-anthrazit" />

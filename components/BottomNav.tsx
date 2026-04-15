@@ -49,8 +49,8 @@ function LegacyBottomNav() {
             onClick={() => haptic("light")}
             className={`relative flex flex-col items-center gap-0.5 px-3 py-2 text-xs transition-all duration-200 ${
               isActive
-                ? "text-quartier-green"
-                : "text-muted-foreground hover:text-anthrazit"
+                ? "text-[#2F7A62]"
+                : "text-anthrazit/80 hover:text-anthrazit"
             }`}
             aria-current={isActive ? "page" : undefined}
           >

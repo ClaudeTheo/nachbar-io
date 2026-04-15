@@ -49,6 +49,13 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                     <ErrorBoundary>
                       <PageTransition>{children}</PageTransition>
                     </ErrorBoundary>
+                    <span className="fixed bottom-[68px] left-2 z-10 hidden text-[10px] text-muted-foreground sm:block">
+                      V
+                      {(process.env.NEXT_PUBLIC_APP_VERSION || "1.0.0")
+                        .split(".")
+                        .slice(0, 2)
+                        .join(".")}
+                    </span>
                   </main>
                 </HeartbeatProvider>
                 {/* SOS-Bestaetigungsblatt (globaler Sheet) */}
@@ -60,13 +67,6 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           </QuarterProvider>
         </AuthSessionProvider>
       </AuthProvider>
-      <span className="fixed bottom-[68px] left-2 z-10 hidden text-[10px] text-muted-foreground/60 sm:block">
-        V
-        {(process.env.NEXT_PUBLIC_APP_VERSION || "1.0.0")
-          .split(".")
-          .slice(0, 2)
-          .join(".")}
-      </span>
       <BottomNav />
       <InstallPrompt />
     </div>

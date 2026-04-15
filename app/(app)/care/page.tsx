@@ -2,7 +2,7 @@
 // Gesundheit Hub — 6 große Kacheln (2-Spalten-Raster)
 "use client";
 
-import { useEffect, useState } from "react";
+import { type ComponentType, useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import {
   Heart,
@@ -21,6 +21,7 @@ import type { CareSosAlert, CareAppointment } from "@/lib/care/types";
 import { PLAN_FEATURES } from "@/lib/care/constants";
 import type { CareSubscriptionPlan } from "@/lib/care/types";
 import { useAuth } from "@/hooks/use-auth";
+import { isLegacyRoute } from "@/lib/legacy-routes";
 
 interface CheckinStatus {
   completedCount: number;
@@ -33,6 +34,55 @@ interface CheckinStatus {
 interface MedicationDueStatus {
   pendingCount: number;
   completedCount: number;
+}
+
+interface CareTileProps {
+  href: string;
+  label: string;
+  subtitle: string;
+  icon: ComponentType<{ className?: string }>;
+  iconClassName: string;
+}
+
+function CareTile({
+  href,
+  label,
+  subtitle,
+  icon: Icon,
+  iconClassName,
+}: CareTileProps) {
+  const disabled = isLegacyRoute(href);
+  const content = (
+    <>
+      <div className="flex items-center gap-2">
+        <Icon className={`h-5 w-5 ${iconClassName}`} />
+        <span className="font-semibold text-anthrazit">{label}</span>
+      </div>
+      <p className="text-sm text-muted-foreground mt-2">
+        {disabled ? "Im Pilot noch deaktiviert" : subtitle}
+      </p>
+    </>
+  );
+
+  if (disabled) {
+    return (
+      <div
+        aria-disabled="true"
+        className="rounded-xl border border-dashed bg-muted/35 p-4 min-h-[100px] flex flex-col justify-between"
+      >
+        {content}
+      </div>
+    );
+  }
+
+  return (
+    <Link
+      href={href}
+      className="bg-white rounded-xl border shadow-sm p-4 min-h-[100px] flex flex-col justify-between hover:bg-gray-50 transition-colors active:scale-[0.98]"
+    >
+      {content}
+    </Link>
+  );
 }
 
 export default function GesundheitHubPage() {
@@ -225,85 +275,61 @@ export default function GesundheitHubPage() {
 
       {/* 6 Kacheln im 2-Spalten-Raster */}
       <div className="grid grid-cols-2 gap-3">
-        {/* 1. Check-in */}
-        <Link
+        <CareTile
           href="/care/checkin"
-          className="bg-white rounded-xl border shadow-sm p-4 min-h-[100px] flex flex-col justify-between hover:bg-gray-50 transition-colors active:scale-[0.98]"
-        >
-          <div className="flex items-center gap-2">
-            <CheckCircle2 className="h-5 w-5 text-quartier-green" />
-            <span className="font-semibold text-anthrazit">Check-in</span>
-          </div>
-          <p className="text-sm text-muted-foreground mt-2">
-            {checkinStatus?.allCompleted
+          label="Check-in"
+          subtitle={
+            checkinStatus?.allCompleted
               ? "Alle erledigt"
               : checkinStatus
                 ? `${checkinStatus.completedCount}/${checkinStatus.totalCount} erledigt`
-                : "Wie geht es Ihnen?"}
-          </p>
-        </Link>
+                : "Wie geht es Ihnen?"
+          }
+          icon={CheckCircle2}
+          iconClassName="text-quartier-green"
+        />
 
-        {/* 2. Medikamente */}
-        <Link
+        <CareTile
           href="/care/medications"
-          className="bg-white rounded-xl border shadow-sm p-4 min-h-[100px] flex flex-col justify-between hover:bg-gray-50 transition-colors active:scale-[0.98]"
-        >
-          <div className="flex items-center gap-2">
-            <Pill className="h-5 w-5 text-blue-500" />
-            <span className="font-semibold text-anthrazit">Medikamente</span>
-          </div>
-          <p className="text-sm text-muted-foreground mt-2">{medSubtitle}</p>
-        </Link>
+          label="Medikamente"
+          subtitle={medSubtitle}
+          icon={Pill}
+          iconClassName="text-blue-500"
+        />
 
-        {/* 3. Ärzte */}
-        <Link
+        <CareTile
           href="/care/aerzte"
-          className="bg-white rounded-xl border shadow-sm p-4 min-h-[100px] flex flex-col justify-between hover:bg-gray-50 transition-colors active:scale-[0.98]"
-        >
-          <div className="flex items-center gap-2">
-            <Stethoscope className="h-5 w-5 text-emerald-600" />
-            <span className="font-semibold text-anthrazit">Ärzte</span>
-          </div>
-          <p className="text-sm text-muted-foreground mt-2">in der Nähe</p>
-        </Link>
+          label="Ärzte"
+          subtitle="in der Nähe"
+          icon={Stethoscope}
+          iconClassName="text-emerald-600"
+        />
 
-        {/* 4. Termine */}
-        <Link
+        <CareTile
           href="/care/termine"
-          className="bg-white rounded-xl border shadow-sm p-4 min-h-[100px] flex flex-col justify-between hover:bg-gray-50 transition-colors active:scale-[0.98]"
-        >
-          <div className="flex items-center gap-2">
-            <CalendarDays className="h-5 w-5 text-violet-500" />
-            <span className="font-semibold text-anthrazit">Termine</span>
-          </div>
-          <p className="text-sm text-muted-foreground mt-2">
-            {nextAppointment ? `Nächster: ${terminSubtitle}` : terminSubtitle}
-          </p>
-        </Link>
+          label="Termine"
+          subtitle={
+            nextAppointment ? `Nächster: ${terminSubtitle}` : terminSubtitle
+          }
+          icon={CalendarDays}
+          iconClassName="text-violet-500"
+        />
 
-        {/* 5. Sprechstunde */}
-        <Link
+        <CareTile
           href="/care/sprechstunde"
-          className="bg-white rounded-xl border shadow-sm p-4 min-h-[100px] flex flex-col justify-between hover:bg-gray-50 transition-colors active:scale-[0.98]"
-        >
-          <div className="flex items-center gap-2">
-            <Video className="h-5 w-5 text-red-500" />
-            <span className="font-semibold text-anthrazit">Sprechstunde</span>
-          </div>
-          <p className="text-sm text-muted-foreground mt-2">Video-Termin</p>
-        </Link>
+          label="Sprechstunde"
+          subtitle="Video-Termin"
+          icon={Video}
+          iconClassName="text-red-500"
+        />
 
-        {/* 6. Vorsorge */}
-        <Link
+        <CareTile
           href="/praevention"
-          className="bg-white rounded-xl border shadow-sm p-4 min-h-[100px] flex flex-col justify-between hover:bg-gray-50 transition-colors active:scale-[0.98]"
-        >
-          <div className="flex items-center gap-2">
-            <ShieldCheck className="h-5 w-5 text-amber-500" />
-            <span className="font-semibold text-anthrazit">Vorsorge</span>
-          </div>
-          <p className="text-sm text-muted-foreground mt-2">Erinnerungen</p>
-        </Link>
+          label="Vorsorge"
+          subtitle="Erinnerungen"
+          icon={ShieldCheck}
+          iconClassName="text-amber-500"
+        />
       </div>
     </div>
   );

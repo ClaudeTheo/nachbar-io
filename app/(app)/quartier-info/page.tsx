@@ -148,6 +148,8 @@ export default function QuartierInfoPage() {
   }, [loadData, quarterId, refreshQuarter]);
 
   const loading = quarterLoading || loadingData;
+  const hasNotdienstUrl = Boolean(data?.notdienst_url);
+  const hasEventsCalendarUrl = Boolean(data?.events_calendar_url);
 
   if (!quarterLoading && !currentQuarter) {
     return (
@@ -486,16 +488,26 @@ export default function QuartierInfoPage() {
             </div>
           ))}
         </div>
-        <a
-          href={data?.notdienst_url || ""}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="mt-4 flex items-center justify-center gap-2 w-full py-3 rounded-xl bg-amber-50 border border-amber-200 text-amber-900 font-medium text-sm hover:bg-amber-100 transition-colors min-h-[48px]"
-        >
-          <AlertTriangle className="h-4 w-4 text-amber-600" />
-          Notdienst jetzt prüfen
-          <ExternalLink className="h-3 w-3 text-amber-600" />
-        </a>
+        {hasNotdienstUrl ? (
+          <a
+            href={data?.notdienst_url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mt-4 flex items-center justify-center gap-2 w-full py-3 rounded-xl bg-amber-50 border border-amber-200 text-amber-900 font-medium text-sm hover:bg-amber-100 transition-colors min-h-[48px]"
+          >
+            <AlertTriangle className="h-4 w-4 text-amber-600" />
+            Notdienst jetzt prüfen
+            <ExternalLink className="h-3 w-3 text-amber-600" />
+          </a>
+        ) : (
+          <p
+            className="mt-4 text-xs text-muted-foreground"
+            data-testid="info-notdienst-unavailable"
+          >
+            Der Notdienst-Link ist fuer dieses Quartier aktuell noch nicht
+            hinterlegt.
+          </p>
+        )}
       </section>
 
       {/* 7. Veranstaltungen */}
@@ -534,15 +546,25 @@ export default function QuartierInfoPage() {
             </div>
           ))}
         </div>
-        <a
-          href={data?.events_calendar_url || ""}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="mt-3 text-xs text-quartier-green hover:underline inline-flex items-center gap-1"
-        >
-          Alle Veranstaltungen anzeigen
-          <ExternalLink className="h-3 w-3" />
-        </a>
+        {hasEventsCalendarUrl ? (
+          <a
+            href={data?.events_calendar_url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mt-3 text-xs text-quartier-green hover:underline inline-flex items-center gap-1"
+          >
+            Alle Veranstaltungen anzeigen
+            <ExternalLink className="h-3 w-3" />
+          </a>
+        ) : (
+          <p
+            className="mt-3 text-xs text-muted-foreground"
+            data-testid="info-events-calendar-unavailable"
+          >
+            Der Veranstaltungs-Kalender ist fuer dieses Quartier aktuell noch
+            nicht verlinkt.
+          </p>
+        )}
       </section>
 
       {/* 8. Rathaus & Services */}

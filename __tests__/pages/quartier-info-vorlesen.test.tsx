@@ -180,4 +180,29 @@ describe("QuartierInfoPage Vorlesen-Integration (G-5)", () => {
     expect(screen.queryByTestId("tts-button")).not.toBeInTheDocument();
     expect(fetchMock).not.toHaveBeenCalled();
   });
+
+  it("rendert keine leeren externen Links wenn Notdienst- oder Event-URLs fehlen", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue({
+        json: () => Promise.resolve(MOCK_DATA),
+        ok: true,
+      }),
+    );
+
+    render(<QuartierInfoPage />);
+
+    expect(
+      await screen.findByTestId("info-notdienst-unavailable"),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByTestId("info-events-calendar-unavailable"),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByRole("link", { name: /notdienst jetzt prüfen/i }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("link", { name: /alle veranstaltungen anzeigen/i }),
+    ).not.toBeInTheDocument();
+  });
 });

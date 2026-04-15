@@ -41,7 +41,7 @@ vi.mock("@/modules/waste", () => ({
   runWasteSync: mocks.runWasteSync,
 }));
 
-vi.mock("@/lib/security/forensic-logger", () => ({
+vi.mock("@/lib/security/forensic-storage", () => ({
   cleanupExpiredForensics: mocks.cleanupExpiredForensics,
 }));
 

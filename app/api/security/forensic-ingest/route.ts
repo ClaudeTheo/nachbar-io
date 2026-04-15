@@ -3,7 +3,7 @@
 // Auth: Interner Secret (CRON_SECRET), nicht oeffentlich zugaenglich.
 
 import { NextRequest, NextResponse } from "next/server";
-import { writeForensicRecord } from "@/lib/security/forensic-logger";
+import { writeForensicRecord } from "@/lib/security/forensic-storage";
 import type { TrapType } from "@/lib/security/config";
 
 // Node.js Runtime erzwingen (Crypto braucht Node.js)

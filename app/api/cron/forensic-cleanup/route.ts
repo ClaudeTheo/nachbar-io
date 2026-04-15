@@ -3,7 +3,7 @@
 // Vercel Cron: taeglich 4:00 Uhr
 
 import { NextRequest, NextResponse } from "next/server";
-import { cleanupExpiredForensics } from "@/lib/security/forensic-logger";
+import { cleanupExpiredForensics } from "@/lib/security/forensic-storage";
 
 // GET /api/cron/forensic-cleanup — Abgelaufene Forensik-Records loeschen
 export async function GET(request: NextRequest) {

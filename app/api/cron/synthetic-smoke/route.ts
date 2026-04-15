@@ -10,7 +10,7 @@ import { runHeartbeatEscalation } from "@/modules/care/services/heartbeat-escala
 import { runMedicationsCron } from "@/modules/care/services/cron-medications.service";
 import { runEscalationCron } from "@/modules/care/services/cron-escalation.service";
 import { runWasteSync } from "@/modules/waste";
-import { cleanupExpiredForensics } from "@/lib/security/forensic-logger";
+import { cleanupExpiredForensics } from "@/lib/security/forensic-storage";
 import * as Sentry from "@sentry/nextjs";
 
 const SYNTHETIC_USER_EMAIL = "max.rhein@nachbar-test.de";

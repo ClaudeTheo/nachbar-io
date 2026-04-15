@@ -11,8 +11,9 @@
 // ARCHITEKTUR-HINWEIS: Da die Middleware im Edge Runtime laeuft und Node.js-Crypto
 // fuer die Verschluesselung braucht, delegiert logForensicData() den eigentlichen
 // Write an eine interne API-Route (/api/security/forensic-ingest).
-// Alternativ: Wenn direkt aus einer Node.js-Route aufgerufen (z.B. Trap-Integration),
-// wird writeForensicRecord() direkt genutzt.
+// Alternativ: Wenn direkt aus einer Node.js-Route aufgerufen wird, liegen
+// Write/Cleanup-Funktionen in forensic-storage.ts, damit die Edge-Middleware
+// keine Node.js-Crypto-Abhaengigkeiten in den Bundle-Graph zieht.
 
 import type { TrapType } from "./config";
 
@@ -54,63 +55,3 @@ export function logForensicData(data: ForensicData): void {
   );
 }
 
-/**
- * Direkter Write (NUR aus Node.js-Runtime aufrufen, z.B. API-Routes).
- * Verschluesselt Felder mit AES-256-GCM.
- */
-export async function writeForensicRecord(data: ForensicData): Promise<void> {
-  const { getAdminSupabase } = await import("@/lib/supabase/admin");
-  const { encryptField } = await import("@/lib/care/field-encryption");
-
-  const supabase = getAdminSupabase();
-
-  const ipEncrypted = encryptField(data.ip);
-  const uaEncrypted = data.userAgent ? encryptField(data.userAgent) : null;
-  const urlEncrypted = encryptField(data.requestUrl);
-
-  if (!ipEncrypted) {
-    console.warn(
-      "[security-forensic] IP-Verschluesselung fehlgeschlagen — CARE_ENCRYPTION_KEY fehlt?",
-    );
-    return;
-  }
-
-  const { error } = await supabase.from("security_forensics").insert({
-    event_id: data.eventId ?? null,
-    ip_encrypted: ipEncrypted,
-    user_agent_encrypted: uaEncrypted,
-    request_url_encrypted: urlEncrypted,
-    request_method: data.requestMethod,
-    response_status: data.responseStatus ?? null,
-    trap_type: data.trapType,
-  });
-
-  if (error) {
-    throw new Error(`Forensik-Insert fehlgeschlagen: ${error.message}`);
-  }
-}
-
-/** Cron-Job: Abgelaufene Forensik-Daten loeschen (7 Tage Retention) */
-export async function cleanupExpiredForensics(): Promise<number> {
-  const { getAdminSupabase } = await import("@/lib/supabase/admin");
-  const supabase = getAdminSupabase();
-
-  const { data, error } = await supabase
-    .from("security_forensics")
-    .delete()
-    .lte("expires_at", new Date().toISOString())
-    .select("id");
-
-  if (error) {
-    console.error("[security-forensic] Cleanup fehlgeschlagen:", error);
-    return 0;
-  }
-
-  const count = data?.length ?? 0;
-  if (count > 0) {
-    console.info(
-      `[security-forensic] ${count} abgelaufene Forensik-Records geloescht`,
-    );
-  }
-  return count;
-}

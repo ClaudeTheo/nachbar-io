@@ -11,11 +11,15 @@ import {
 } from "@testing-library/react";
 import { SosConfirmationSheet } from "./SosConfirmationSheet";
 
+const mockSosState = vi.hoisted(() => ({
+  isOpen: true,
+}));
+
 const mockCloseSos = vi.fn();
 
 vi.mock("./SosContext", () => ({
   useSos: () => ({
-    isOpen: true,
+    isOpen: mockSosState.isOpen,
     openSos: vi.fn(),
     closeSos: mockCloseSos,
   }),
@@ -37,9 +41,21 @@ afterEach(() => {
   cleanup();
   vi.clearAllMocks();
   vi.restoreAllMocks();
+  mockSosState.isOpen = true;
 });
 
 describe("SosConfirmationSheet — notify-family", () => {
+  it("rendert geschlossen gar nicht im DOM", () => {
+    mockSosState.isOpen = false;
+
+    const { container } = render(<SosConfirmationSheet />);
+
+    expect(container).toBeEmptyDOMElement();
+    expect(
+      screen.queryByRole("dialog", { name: /was brauchen sie/i }),
+    ).not.toBeInTheDocument();
+  });
+
   it("calls /api/sos/notify-family on button click and shows success message", async () => {
     vi.spyOn(global, "fetch").mockResolvedValueOnce({
       ok: true,

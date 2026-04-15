@@ -84,6 +84,10 @@ export function SosConfirmationSheet() {
     }
   }
 
+  if (!isOpen) {
+    return null;
+  }
+
   return (
     <>
       {/* Hintergrund-Overlay */}

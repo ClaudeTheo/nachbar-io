@@ -5,9 +5,12 @@ export default function AboPage() {
   return (
     <div className="min-h-screen bg-gray-50 pb-24">
       <div className="bg-white border-b px-4 py-4">
-        <h1 className="text-xl font-bold text-gray-900">Abrechnungs-Modul</h1>
+        <h1 className="text-xl font-bold text-gray-900">
+          Pflegekassen-Abrechnung
+        </h1>
         <p className="text-sm text-gray-500 mt-1">
-          Verwalten Sie Ihr Abo fuer die Pflegekassen-Abrechnung
+          Quittungen, Monatsberichte und Budget-Ueberblick fuer Ihre
+          Nachbarschaftshilfe an einem Ort.
         </p>
       </div>
       <div className="p-4">

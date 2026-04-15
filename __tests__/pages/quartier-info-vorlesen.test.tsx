@@ -205,4 +205,29 @@ describe("QuartierInfoPage Vorlesen-Integration (G-5)", () => {
       screen.queryByRole("link", { name: /alle veranstaltungen anzeigen/i }),
     ).not.toBeInTheDocument();
   });
+
+  it("zeigt klare Leerstates fuer Apotheken und Veranstaltungen", async () => {
+    const emptySectionData = {
+      ...MOCK_DATA,
+      apotheken: [],
+      events: [],
+    };
+
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue({
+        json: () => Promise.resolve(emptySectionData),
+        ok: true,
+      }),
+    );
+
+    render(<QuartierInfoPage />);
+
+    expect(await screen.findByTestId("info-apotheken-empty")).toHaveTextContent(
+      /keine apothekeninformationen hinterlegt/i,
+    );
+    expect(await screen.findByTestId("info-events-empty")).toHaveTextContent(
+      /keine veranstaltungen hinterlegt/i,
+    );
+  });
 });

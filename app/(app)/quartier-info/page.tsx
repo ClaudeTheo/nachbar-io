@@ -461,32 +461,44 @@ export default function QuartierInfoPage() {
           <h2 className="text-base font-semibold text-anthrazit">Apotheken</h2>
         </div>
         <div className="space-y-3">
-          {(data?.apotheken || []).map((apo: Apotheke) => (
-            <div
-              key={apo.name}
-              className="flex items-start gap-3 py-3 border-b border-gray-50 last:border-0"
-            >
-              <div className="flex-1">
-                <p className="text-sm font-medium text-anthrazit">{apo.name}</p>
-                <p className="text-xs text-muted-foreground mt-0.5">
-                  {apo.address}
-                </p>
-                <div className="flex items-center gap-3 mt-1">
-                  <span className="text-xs text-muted-foreground flex items-center gap-1">
-                    <Clock className="h-3 w-3" />
-                    {apo.openingHours}
-                  </span>
-                </div>
-              </div>
-              <a
-                href={`tel:${apo.phone.replace(/\s/g, "")}`}
-                className="flex items-center justify-center w-10 h-10 rounded-full bg-green-50 hover:bg-green-100 transition-colors flex-shrink-0"
-                aria-label={`${apo.name} anrufen`}
+          {(data?.apotheken || []).length > 0 ? (
+            (data?.apotheken || []).map((apo: Apotheke) => (
+              <div
+                key={apo.name}
+                className="flex items-start gap-3 py-3 border-b border-gray-50 last:border-0"
               >
-                <Phone className="h-4 w-4 text-green-700" />
-              </a>
-            </div>
-          ))}
+                <div className="flex-1">
+                  <p className="text-sm font-medium text-anthrazit">
+                    {apo.name}
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    {apo.address}
+                  </p>
+                  <div className="flex items-center gap-3 mt-1">
+                    <span className="text-xs text-muted-foreground flex items-center gap-1">
+                      <Clock className="h-3 w-3" />
+                      {apo.openingHours}
+                    </span>
+                  </div>
+                </div>
+                <a
+                  href={`tel:${apo.phone.replace(/\s/g, "")}`}
+                  className="flex items-center justify-center w-10 h-10 rounded-full bg-green-50 hover:bg-green-100 transition-colors flex-shrink-0"
+                  aria-label={`${apo.name} anrufen`}
+                >
+                  <Phone className="h-4 w-4 text-green-700" />
+                </a>
+              </div>
+            ))
+          ) : (
+            <p
+              className="text-sm text-muted-foreground"
+              data-testid="info-apotheken-empty"
+            >
+              Fuer dieses Quartier sind aktuell keine Apothekeninformationen
+              hinterlegt.
+            </p>
+          )}
         </div>
         {hasNotdienstUrl ? (
           <a
@@ -522,29 +534,39 @@ export default function QuartierInfoPage() {
           </h2>
         </div>
         <div className="space-y-3">
-          {(data?.events || []).map((evt: LocalEvent, i: number) => (
-            <div
-              key={i}
-              className="flex items-start gap-3 rounded-xl border border-gray-100 p-4"
-            >
-              <DynamicIcon
-                name={evt.icon}
-                className="h-5 w-5 text-purple-500 flex-shrink-0 mt-0.5"
-              />
-              <div>
-                <p className="text-sm font-medium text-anthrazit">
-                  {evt.title}
-                </p>
-                <p className="text-xs text-muted-foreground mt-0.5">
-                  {evt.schedule}
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  <MapPin className="h-3 w-3 inline mr-0.5" />
-                  {evt.location}
-                </p>
+          {(data?.events || []).length > 0 ? (
+            (data?.events || []).map((evt: LocalEvent, i: number) => (
+              <div
+                key={i}
+                className="flex items-start gap-3 rounded-xl border border-gray-100 p-4"
+              >
+                <DynamicIcon
+                  name={evt.icon}
+                  className="h-5 w-5 text-purple-500 flex-shrink-0 mt-0.5"
+                />
+                <div>
+                  <p className="text-sm font-medium text-anthrazit">
+                    {evt.title}
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    {evt.schedule}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    <MapPin className="h-3 w-3 inline mr-0.5" />
+                    {evt.location}
+                  </p>
+                </div>
               </div>
-            </div>
-          ))}
+            ))
+          ) : (
+            <p
+              className="text-sm text-muted-foreground"
+              data-testid="info-events-empty"
+            >
+              Fuer dieses Quartier sind aktuell keine Veranstaltungen
+              hinterlegt.
+            </p>
+          )}
         </div>
         {hasEventsCalendarUrl ? (
           <a

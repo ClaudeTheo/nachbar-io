@@ -31,14 +31,14 @@ interface MapFilterBarProps {
 // Gemeinsame Steuerleiste für SVG- und Leaflet-Karten
 export function MapFilterBar({ counts, filter, onFilterChange, onReset, quarterName }: MapFilterBarProps) {
   return (
-    <div className="flex w-full flex-wrap items-center justify-between gap-2 rounded-lg bg-[#111827] px-3 py-2">
-      <div className="flex items-center gap-1.5">
-        <div>
-          <div className="text-sm font-bold text-[#f8fafc]">
+    <div className="w-full rounded-xl bg-[#111827] px-3 py-3 sm:px-4">
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0 flex-1">
+          <div className="text-[15px] font-bold leading-tight text-[#f8fafc] sm:text-sm">
             QuartierApp — {quarterName}
           </div>
-          <div className="text-xs text-[#64748b]">
-            Tippen Sie auf ein Haus für Details
+          <div className="mt-1 text-xs leading-snug text-[#94a3b8]">
+            Klick auf ein Haus für Details · Hover für Adresse
           </div>
         </div>
         <HelpTip
@@ -46,16 +46,19 @@ export function MapFilterBar({ counts, filter, onFilterChange, onReset, quarterN
           content="Grün = Alles in Ordnung. Rot = Dringend. Gelb = Hinweis. Blau = Bewohner im Urlaub (Nachbarn aufpassen!)."
         />
       </div>
-      <div className="flex flex-wrap items-center gap-1.5">
+      <div className="-mx-1 mt-3 flex gap-2 overflow-x-auto px-1 pb-1 sm:mx-0 sm:mt-2.5 sm:flex-wrap sm:overflow-visible sm:px-0 sm:pb-0">
         {FILTER_ITEMS.map(({ key, label, color, bg }) => {
           const count = counts[key] ?? 0;
           // Urlaub und Paket nur anzeigen wenn count > 0
           if (count === 0 && (key === "blue" || key === "orange")) return null;
           return (
             <button
+              type="button"
               key={key}
               onClick={() => onFilterChange(filter === key ? "all" : key)}
-              className="flex cursor-pointer items-center gap-1.5 rounded-lg px-2.5 py-1 text-xs font-semibold transition-colors"
+              aria-pressed={filter === key}
+              aria-label={`${label} filtern, ${count} Häuser`}
+              className="flex shrink-0 cursor-pointer items-center gap-1.5 whitespace-nowrap rounded-full px-3 py-1.5 text-xs font-semibold transition-colors"
               style={{
                 background: filter === key ? bg : "#1e293b",
                 border: `1.5px solid ${filter === key ? color : "#334155"}`,
@@ -71,8 +74,9 @@ export function MapFilterBar({ counts, filter, onFilterChange, onReset, quarterN
           );
         })}
         <button
+          type="button"
           onClick={onReset}
-          className="cursor-pointer rounded-lg border border-[#334155] bg-[#1e293b] px-2.5 py-1 text-xs text-[#64748b] transition-colors hover:text-[#94a3b8]"
+          className="shrink-0 cursor-pointer whitespace-nowrap rounded-full border border-[#334155] bg-[#1e293b] px-3 py-1.5 text-xs text-[#94a3b8] transition-colors hover:text-[#cbd5e1]"
         >
           ↺ Reset
         </button>

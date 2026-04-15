@@ -206,36 +206,37 @@ async function detectNavRole(userId: string): Promise<NavRole> {
  */
 export function useNavRole(): { role: NavRole; loading: boolean } {
   const { user } = useAuth();
+  const currentUserId = user?.id ?? null;
   const [resolvedRole, setResolvedRole] = useState<NavRole>("senior");
   const [resolvedUserId, setResolvedUserId] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!user?.id) {
+    if (!currentUserId) {
       return;
     }
 
     let cancelled = false;
-    detectNavRole(user.id)
+    detectNavRole(currentUserId)
       .then((detected) => {
         if (!cancelled) {
           setResolvedRole(detected);
-          setResolvedUserId(user.id);
+          setResolvedUserId(currentUserId);
         }
       })
       .catch(() => {
         if (!cancelled) {
           setResolvedRole("senior");
-          setResolvedUserId(user.id);
+          setResolvedUserId(currentUserId);
         }
       });
 
     return () => {
       cancelled = true;
     };
-  }, [user?.id]);
+  }, [currentUserId]);
 
   return {
-    role: user?.id ? resolvedRole : "senior",
-    loading: Boolean(user?.id) && resolvedUserId !== user.id,
+    role: currentUserId ? resolvedRole : "senior",
+    loading: Boolean(currentUserId) && resolvedUserId !== currentUserId,
   };
 }

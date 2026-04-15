@@ -2,16 +2,22 @@ import { describe, it, expect, vi, afterEach } from "vitest";
 import { render, screen, waitFor, cleanup } from "@testing-library/react";
 
 // Mocks muessen VOR dem Page-Import stehen
+const quarterState = vi.hoisted(() => ({
+  currentQuarter: {
+    id: "q-test-001",
+    name: "Test-Quartier",
+    center_lat: 47.5535,
+    center_lng: 7.964,
+    zoom_level: 15,
+  },
+  loading: false,
+  refreshQuarter: vi.fn(),
+  switchQuarter: vi.fn(),
+  allQuarters: [],
+}));
+
 vi.mock("@/lib/quarters", () => ({
-  useQuarter: () => ({
-    currentQuarter: {
-      id: "q-test-001",
-      name: "Test-Quartier",
-      center_lat: 47.5535,
-      center_lng: 7.964,
-      zoom_level: 15,
-    },
-  }),
+  useQuarter: () => quarterState,
 }));
 
 vi.mock("@/components/map/MapThumbnail", () => ({
@@ -94,6 +100,15 @@ const MOCK_DATA = {
 afterEach(() => {
   cleanup();
   vi.restoreAllMocks();
+  quarterState.currentQuarter = {
+    id: "q-test-001",
+    name: "Test-Quartier",
+    center_lat: 47.5535,
+    center_lng: 7.964,
+    zoom_level: 15,
+  };
+  quarterState.loading = false;
+  quarterState.refreshQuarter.mockReset();
 });
 
 describe("QuartierInfoPage Vorlesen-Integration (G-5)", () => {
@@ -149,5 +164,20 @@ describe("QuartierInfoPage Vorlesen-Integration (G-5)", () => {
     expect(text).toContain("Birke");
     expect(text).toContain("Restmuell");
     expect(text).toContain("Wochenmarkt");
+  });
+
+  it("zeigt einen klaren Fallback wenn kein Quartier zugeordnet ist", async () => {
+    quarterState.currentQuarter = null;
+    quarterState.loading = false;
+
+    const fetchMock = vi.fn();
+    vi.stubGlobal("fetch", fetchMock);
+
+    render(<QuartierInfoPage />);
+
+    expect(await screen.findByTestId("info-no-quarter")).toBeInTheDocument();
+    expect(screen.queryByTestId("info-map-thumbnail")).not.toBeInTheDocument();
+    expect(screen.queryByTestId("tts-button")).not.toBeInTheDocument();
+    expect(fetchMock).not.toHaveBeenCalled();
   });
 });

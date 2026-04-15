@@ -109,14 +109,19 @@ function DynamicIcon({
 }
 
 export default function QuartierInfoPage() {
-  const { currentQuarter } = useQuarter();
+  const { currentQuarter, loading: quarterLoading, refreshQuarter } =
+    useQuarter();
   const quarterId = currentQuarter?.id;
   const [data, setData] = useState<QuartierInfoResponse | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loadingData, setLoadingData] = useState(true);
 
   const loadData = useCallback(async () => {
-    if (!quarterId) return;
-    setLoading(true);
+    if (!quarterId) {
+      setData(null);
+      setLoadingData(false);
+      return;
+    }
+    setLoadingData(true);
     try {
       const res = await fetch(`/api/quartier-info?quarter_id=${quarterId}`);
       const d = await res.json();
@@ -124,13 +129,68 @@ export default function QuartierInfoPage() {
     } catch {
       // Fehler still ignorieren
     } finally {
-      setLoading(false);
+      setLoadingData(false);
     }
   }, [quarterId]);
 
   useEffect(() => {
+    if (quarterLoading) return;
     loadData();
-  }, [loadData]);
+  }, [quarterLoading, loadData]);
+
+  const handleRefresh = useCallback(async () => {
+    if (!quarterId) {
+      await refreshQuarter();
+      return;
+    }
+
+    await loadData();
+  }, [loadData, quarterId, refreshQuarter]);
+
+  const loading = quarterLoading || loadingData;
+
+  if (!quarterLoading && !currentQuarter) {
+    return (
+      <div className="space-y-6 pb-24 animate-fade-in-up">
+        <LargeTitle title="Mein Quartier" />
+
+        <div className="flex items-center gap-3">
+          <Link
+            href="/dashboard"
+            className="p-2 -ml-2 rounded-full hover:bg-gray-100 min-w-[44px] min-h-[44px] flex items-center justify-center"
+          >
+            <ArrowLeft className="h-5 w-5 text-anthrazit" />
+          </Link>
+          <button
+            onClick={handleRefresh}
+            className="ml-auto p-2 rounded-full hover:bg-gray-100 min-w-[44px] min-h-[44px] flex items-center justify-center"
+            aria-label="Quartier erneut laden"
+          >
+            <RefreshCw className="h-5 w-5 text-muted-foreground" />
+          </button>
+        </div>
+
+        <section
+          className="rounded-2xl bg-white shadow-sm border border-gray-100 p-5"
+          data-testid="info-no-quarter"
+        >
+          <h2 className="text-base font-semibold text-anthrazit mb-2">
+            Noch kein Quartier verknüpft
+          </h2>
+          <p className="text-sm text-muted-foreground">
+            Fuer dieses Konto ist aktuell noch kein Quartier hinterlegt. Sobald
+            die Zuordnung steht, erscheinen hier auch Karte und Quartierdaten.
+          </p>
+          <Link
+            href="/dashboard"
+            className="mt-4 inline-flex items-center justify-center rounded-xl bg-quartier-green text-white px-4 py-3 text-sm font-medium min-h-[48px] hover:opacity-90 transition-opacity"
+          >
+            Zurueck zum Dashboard
+          </Link>
+        </section>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6 pb-24 animate-fade-in-up">
@@ -145,7 +205,7 @@ export default function QuartierInfoPage() {
           <ArrowLeft className="h-5 w-5 text-anthrazit" />
         </Link>
         <button
-          onClick={loadData}
+          onClick={handleRefresh}
           className="ml-auto p-2 rounded-full hover:bg-gray-100 min-w-[44px] min-h-[44px] flex items-center justify-center"
           aria-label="Daten aktualisieren"
         >

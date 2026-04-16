@@ -114,6 +114,10 @@
     {
       "path": "/api/cron/retention-cleanup",
       "schedule": "0 2 * * 0"
+    },
+    {
+      "path": "/api/cron/external-warnings",
+      "schedule": "*/10 * * * *"
     }
   ],
   "headers": [

@@ -3,11 +3,14 @@
 import { useState, useMemo, useCallback } from "react";
 import dynamic from "next/dynamic";
 import { useQuarter } from "@/lib/quarters";
+import { useUserRole } from "@/lib/quarters/hooks";
 import { useMapStatuses } from "@/lib/hooks/useMapStatuses";
+import { useSubscription } from "@/lib/care/hooks/useSubscription";
 import { MapFilterBar } from "@/components/MapFilterBar";
 import { HouseInfoPanel } from "@/components/HouseInfoPanel";
 import type { GeoMapHouseData } from "@/lib/map-houses";
 import { MAP_STATUS_META } from "@/lib/map-statuses";
+import type { UserContext } from "@/lib/feature-flags";
 
 // Leaflet muss client-side geladen werden (kein SSR)
 const LeafletMapInner = dynamic(() => import("./LeafletMapInner"), {
@@ -20,6 +23,8 @@ interface LeafletKarteProps {
 
 export function LeafletKarte({ quarterId: quarterIdProp }: LeafletKarteProps) {
   const { currentQuarter } = useQuarter();
+  const { role } = useUserRole();
+  const { subscription } = useSubscription();
   const quarterId = quarterIdProp ?? currentQuarter?.id;
   const mapConfig = currentQuarter?.map_config;
 
@@ -33,6 +38,14 @@ export function LeafletKarte({ quarterId: quarterIdProp }: LeafletKarteProps) {
   const [filter, setFilter] = useState<string>("all");
   const [selectedHouse, setSelectedHouse] = useState<GeoMapHouseData | null>(
     null,
+  );
+  const userCtx: UserContext = useMemo(
+    () => ({
+      role,
+      plan: subscription?.plan ?? "free",
+      quarter_id: currentQuarter?.id,
+    }),
+    [currentQuarter?.id, role, subscription?.plan],
   );
 
   // Nur Haeuser mit registrierten Bewohnern zaehlen (per map_house_id)
@@ -148,6 +161,7 @@ export function LeafletKarte({ quarterId: quarterIdProp }: LeafletKarteProps) {
           houses={visibleHouses}
           statuses={statuses}
           residentCounts={residentCounts}
+          userCtx={userCtx}
           onHouseClick={handleHouseClick}
         />
       </div>

@@ -8,6 +8,7 @@ import {
   Popup,
   useMap,
 } from "react-leaflet";
+import { LglBwOutlinesLayer } from "@/components/map/lgl-bw-outlines-layer";
 import {
   COLOR_CFG,
   STREET_LABELS,
@@ -15,6 +16,7 @@ import {
   type LampColor,
 } from "@/lib/map-houses";
 import { MAP_STATUS_META } from "@/lib/map-statuses";
+import type { UserContext } from "@/lib/feature-flags";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 
@@ -25,6 +27,7 @@ interface LeafletMapInnerProps {
   houses: GeoMapHouseData[];
   statuses: Record<string, LampColor>;
   residentCounts: Record<string, number>;
+  userCtx: UserContext;
   onHouseClick: (house: GeoMapHouseData) => void;
 }
 
@@ -72,6 +75,7 @@ export default function LeafletMapInner({
   houses,
   statuses,
   residentCounts,
+  userCtx,
   onHouseClick,
 }: LeafletMapInnerProps) {
   return (
@@ -88,6 +92,7 @@ export default function LeafletMapInner({
         url={tileUrl}
         crossOrigin="anonymous"
       />
+      <LglBwOutlinesLayer userCtx={userCtx} />
 
       <MapUpdater houses={houses} center={center} zoom={zoom} />
 

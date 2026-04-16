@@ -24,6 +24,21 @@ import {
 } from "@/lib/map-houses";
 import { toast } from "sonner";
 
+interface BwSyncResult {
+  success: true;
+  address: {
+    streetName: string;
+    houseNumber: string;
+    postalCode: string | null;
+    city: string | null;
+  };
+  previous: { lat: number; lng: number } | null;
+  official: { lat: number; lng: number };
+  distanceMeters: number | null;
+  inspectedCount: number;
+  metadataSaved: boolean;
+}
+
 export default function MapPositionPage() {
   const _router = useRouter();
   const { user } = useAuth();
@@ -51,6 +66,24 @@ export default function MapPositionPage() {
   const [unsupportedAddressLabel, setUnsupportedAddressLabel] = useState<
     string | null
   >(null);
+  const [bwAddress, setBwAddress] = useState<{
+    streetName: string;
+    houseNumber: string;
+  } | null>(null);
+  const [geoPosition, setGeoPosition] = useState<{ lat: number; lng: number } | null>(
+    null,
+  );
+  const [quarterMeta, setQuarterMeta] = useState<{
+    city: string | null;
+    state: string | null;
+    postalCode: string | null;
+  }>({
+    city: null,
+    state: null,
+    postalCode: null,
+  });
+  const [bwSyncLoading, setBwSyncLoading] = useState(false);
+  const [bwSyncResult, setBwSyncResult] = useState<BwSyncResult | null>(null);
 
   // Quartier-Name fuer Anzeige (BUG-22: falsches Quartier)
   const [quarterName, setQuarterName] = useState<string | null>(null);
@@ -78,12 +111,17 @@ export default function MapPositionPage() {
       if (quarterId) {
         const { data: q } = await supabase
           .from("quarters")
-          .select("name, slug")
+          .select("name, slug, city, state, postal_code")
           .eq("id", quarterId)
           .maybeSingle();
         if (q) {
           setQuarterName(q.name);
           quarterSlug = q.slug;
+          setQuarterMeta({
+            city: q.city ?? null,
+            state: q.state ?? null,
+            postalCode: q.postal_code ?? null,
+          });
         }
       }
 
@@ -121,7 +159,7 @@ export default function MapPositionPage() {
       // Eigenen Haushalt finden
       const { data: membership } = await supabase
         .from("household_members")
-        .select("household_id, households(street_name, house_number)")
+        .select("household_id, households(street_name, house_number, lat, lng)")
         .eq("user_id", user.id)
         .not("verified_at", "is", null)
         .limit(1)
@@ -132,8 +170,22 @@ export default function MapPositionPage() {
         const hh = membership.households as unknown as {
           street_name: string;
           house_number: string;
+          lat: number | null;
+          lng: number | null;
         } | null;
         if (hh) {
+          setBwAddress({
+            streetName: hh.street_name,
+            houseNumber: hh.house_number,
+          });
+          if (
+            typeof hh.lat === "number" &&
+            typeof hh.lng === "number" &&
+            Math.abs(hh.lat) > 0 &&
+            Math.abs(hh.lng) > 0
+          ) {
+            setGeoPosition({ lat: hh.lat, lng: hh.lng });
+          }
           const addressLabel = `${hh.street_name} ${hh.house_number}`;
           const code = (
             Object.entries(STREET_CODE_TO_NAME) as [StreetCode, string][]
@@ -183,6 +235,38 @@ export default function MapPositionPage() {
     }
     init();
   }, [user]);
+
+  const isBwQuarter = quarterMeta.state
+    ? quarterMeta.state.toLowerCase().includes("baden")
+    : false;
+
+  async function handleBwSync() {
+    setBwSyncLoading(true);
+    try {
+      const response = await fetch("/api/household/position/resolve-bw", {
+        method: "POST",
+      });
+      const data = (await response.json()) as
+        | BwSyncResult
+        | { error?: string };
+
+      if (!response.ok || !("success" in data && data.success)) {
+        const message = "error" in data ? data.error : undefined;
+        toast.error(
+          message || "Amtliche Hauskoordinate konnte nicht geladen werden.",
+        );
+        return;
+      }
+
+      setBwSyncResult(data);
+      setGeoPosition(data.official);
+      toast.success("Amtliche Hauskoordinate gespeichert.");
+    } catch {
+      toast.error("Amtliche Hauskoordinate konnte nicht geladen werden.");
+    } finally {
+      setBwSyncLoading(false);
+    }
+  }
 
   // SVG-Koordinaten aus Mouse/Touch-Event berechnen
   const toSvgCoords = useCallback((clientX: number, clientY: number) => {
@@ -297,6 +381,72 @@ export default function MapPositionPage() {
         backHref="/profile"
         className="mb-4"
       />
+
+      {householdLinked && isBwQuarter && bwAddress && (
+        <div
+          className="rounded-xl border border-quartier-green/25 bg-quartier-green/5 p-4"
+          data-testid="bw-house-coordinate-card"
+        >
+          <p className="text-sm font-semibold text-anthrazit">
+            Amtliche Hauskoordinate fuer Leaflet
+          </p>
+          <p className="mt-1 text-sm text-muted-foreground">
+            {bwAddress.streetName} {bwAddress.houseNumber}
+            {(quarterMeta.postalCode || quarterMeta.city) &&
+              ` · ${quarterMeta.postalCode ?? ""} ${quarterMeta.city ?? ""}`.trim()}
+          </p>
+          <p className="mt-2 text-xs text-muted-foreground">
+            Dieser Schritt zieht die Hauskoordinate direkt aus dem LGL-BW-Dienst
+            und schreibt sie in die bestehende Leaflet-Quelle Ihres Haushalts.
+          </p>
+
+          <div className="mt-3 rounded-lg border border-border bg-background/80 p-3 text-xs text-muted-foreground">
+            <p data-testid="bw-house-coordinate-current">
+              Aktuell gespeichert:{" "}
+              {geoPosition
+                ? `${geoPosition.lat.toFixed(6)}, ${geoPosition.lng.toFixed(6)}`
+                : "keine Geo-Koordinate"}
+            </p>
+            {bwSyncResult && (
+              <>
+                <p
+                  className="mt-1 text-anthrazit"
+                  data-testid="bw-house-coordinate-result"
+                >
+                  Amtlicher Treffer: {bwSyncResult.official.lat.toFixed(6)},{" "}
+                  {bwSyncResult.official.lng.toFixed(6)}
+                </p>
+                {bwSyncResult.distanceMeters != null && (
+                  <p
+                    className="mt-1"
+                    data-testid="bw-house-coordinate-distance"
+                  >
+                    Abweichung zur bisherigen Position:{" "}
+                    {bwSyncResult.distanceMeters} m
+                  </p>
+                )}
+              </>
+            )}
+          </div>
+
+          <div className="mt-3 flex flex-wrap items-center gap-3">
+            <Button
+              type="button"
+              onClick={handleBwSync}
+              disabled={bwSyncLoading}
+              className="bg-quartier-green hover:bg-quartier-green/90"
+              data-testid="bw-house-coordinate-sync-button"
+            >
+              {bwSyncLoading
+                ? "Amtliche Koordinate wird geladen..."
+                : "Amtliche Hauskoordinate laden"}
+            </Button>
+            <span className="text-xs text-muted-foreground">
+              Danach sehen Leaflet-Karten diesen Punkt direkt.
+            </span>
+          </div>
+        </div>
+      )}
 
       {/* BUG-22: Hinweis wenn Quartier keine SVG-Karte hat */}
       {!quarterHasSvgMap && (

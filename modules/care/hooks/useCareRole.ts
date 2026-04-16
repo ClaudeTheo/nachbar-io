@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import type { CareUserRole } from '../services/types';
 import { getCachedUser } from "@/lib/supabase/cached-auth";
+import { mapCaregiverRelationshipToRole } from "@/lib/care/permissions";
 
 /**
  * Ermittelt die Care-Rolle des aktuellen Users
@@ -43,6 +44,23 @@ export function useCareRole(seniorId?: string) {
 
       if (helper?.assigned_seniors?.includes(seniorId)) {
         setRole(helper.role as CareUserRole);
+        setLoading(false);
+        return;
+      }
+
+      // Fallback fuer das neuere caregiver_links-Modell (Plus-Angehoerige)
+      const { data: caregiverLink } = await supabase
+        .from('caregiver_links')
+        .select('relationship_type')
+        .eq('caregiver_id', user.id)
+        .eq('resident_id', seniorId)
+        .is('revoked_at', null)
+        .maybeSingle();
+
+      if (caregiverLink?.relationship_type) {
+        setRole(
+          mapCaregiverRelationshipToRole(caregiverLink.relationship_type) as CareUserRole
+        );
       } else {
         setRole('none');
       }

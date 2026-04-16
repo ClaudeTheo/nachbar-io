@@ -15,6 +15,10 @@ vi.mock('@/lib/supabase/server', () => ({
   createClient: vi.fn().mockImplementation(() => Promise.resolve(mockSupabase.supabase)),
 }));
 
+vi.mock('@/lib/supabase/admin', () => ({
+  getAdminSupabase: vi.fn(() => mockSupabase.supabase),
+}));
+
 vi.mock('@/lib/care/audit', () => ({
   writeAuditLog: vi.fn().mockResolvedValue(undefined),
 }));

@@ -26,7 +26,7 @@ import { toast } from "sonner";
 import { ResidentBrowser } from "@/components/chat/ResidentBrowser";
 
 export default function MessagesPage() {
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const router = useRouter();
   const { currentQuarter } = useQuarter();
   const [conversations, setConversations] = useState<Conversation[]>([]);
@@ -49,7 +49,6 @@ export default function MessagesPage() {
       .order("last_message_at", { ascending: false });
 
     if (error || !data) {
-      setLoading(false);
       return;
     }
 
@@ -100,7 +99,6 @@ export default function MessagesPage() {
     );
 
     setConversations(enriched);
-    setLoading(false);
   }, []);
 
   // Offene Verbindungsanfragen laden (inkl. Adresse des Anfragenden)
@@ -153,20 +151,38 @@ export default function MessagesPage() {
   }, []);
 
   useEffect(() => {
+    let cancelled = false;
+
     async function init() {
-      if (!user) {
+      if (authLoading) {
+        setLoading(true);
+        return;
+      }
+
+      if (!user?.id) {
+        setConversations([]);
+        setPendingRequests([]);
         setLoading(false);
         return;
       }
 
+      setLoading(true);
       await Promise.all([
         loadConversations(user.id),
         loadPendingRequests(user.id),
       ]);
+
+      if (!cancelled) {
+        setLoading(false);
+      }
     }
-    init();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [loadConversations, loadPendingRequests]);
+
+    void init();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [authLoading, user?.id, loadConversations, loadPendingRequests]);
 
   // Supabase Realtime: bei neuen Nachrichten automatisch aktualisieren
   useEffect(() => {

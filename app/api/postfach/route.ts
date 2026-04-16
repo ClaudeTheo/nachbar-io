@@ -6,6 +6,7 @@ import { NextRequest, NextResponse, after } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { getAdminSupabase } from "@/lib/supabase/admin";
 import { encryptCivicField } from "@/lib/civic/encryption";
+import { listCitizenPostfachThreads } from "@/lib/civic/threads";
 import { validateAttachmentFiles, uploadAttachments } from "@/lib/civic/attachment-utils";
 import { notifyOrgStaff } from "@/lib/push-delivery";
 
@@ -20,54 +21,14 @@ export async function GET() {
     return NextResponse.json({ error: "Nicht angemeldet" }, { status: 401 });
   }
 
-  const admin = getAdminSupabase();
-
-  // Alle Nachrichten des Buergers laden (als Thread-Owner)
-  const { data, error } = await admin
-    .from("civic_messages")
-    .select("id, subject, status, created_at, org_id, thread_id, direction, citizen_read_until")
-    .eq("citizen_user_id", user.id)
-    .order("created_at", { ascending: false });
-
-  if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  try {
+    const threads = await listCitizenPostfachThreads(getAdminSupabase(), user.id);
+    return NextResponse.json(threads);
+  } catch (error) {
+    const message =
+      error instanceof Error ? error.message : "Postfach konnte nicht geladen werden";
+    return NextResponse.json({ error: message }, { status: 500 });
   }
-
-  const allMessages = data ?? [];
-
-  // Nur Roots (thread_id = id)
-  const roots = allMessages.filter((m) => m.thread_id === m.id);
-
-  // Org-IDs sammeln + Namen resolven
-  const orgIds = [...new Set(roots.map((r) => r.org_id))];
-  const { data: orgs } = await admin
-    .from("civic_organizations")
-    .select("id, name")
-    .in("id", orgIds);
-  const orgMap = new Map((orgs ?? []).map((o) => [o.id, o.name]));
-
-  // Pro Root: Antwort-Info + Unread-Count
-  const threads = roots.map((root) => {
-    const staffReplies = allMessages.filter(
-      (m) => m.thread_id === root.id && m.id !== root.id && m.direction === "staff_to_citizen",
-    );
-    const citizenReadUntil = (root as Record<string, unknown>).citizen_read_until as string | null;
-    const unreadCount = citizenReadUntil
-      ? staffReplies.filter((r) => new Date(r.created_at) > new Date(citizenReadUntil)).length
-      : staffReplies.length;
-
-    return {
-      id: root.id,
-      subject: root.subject,
-      status: root.status,
-      created_at: root.created_at,
-      org_name: orgMap.get(root.org_id) ?? "Unbekannt",
-      has_reply: staffReplies.length > 0,
-      unread_count: unreadCount,
-    };
-  });
-
-  return NextResponse.json(threads);
 }
 
 export async function POST(request: NextRequest) {

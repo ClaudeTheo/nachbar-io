@@ -5,7 +5,11 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 
 // --- Tests fuer buildHeaderPresenceBitmap (reine Funktion, kein Mock noetig) ---
 
-import { buildHeaderPresenceBitmap } from "@/lib/security/client-key";
+import {
+  buildDeviceHash,
+  buildHeaderPresenceBitmap,
+  hashSession,
+} from "@/lib/security/client-key";
 
 function makeHeaders(present: Record<string, string>): {
   get(name: string): string | null;
@@ -95,6 +99,87 @@ describe("buildHeaderPresenceBitmap", () => {
   });
 });
 
+describe("buildDeviceHash", () => {
+  it("bleibt fuer denselben Browser ueber Navigation und Fetch-Requests stabil", async () => {
+    const browserUa =
+      "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36";
+    const navigationHeaders = makeHeaders({
+      "user-agent": browserUa,
+      accept: "text/html,application/xhtml+xml",
+      "accept-language": "de-DE,de;q=0.9",
+      "accept-encoding": "gzip, deflate, br, zstd",
+      "sec-ch-ua": '"Chromium";v="135", "Not:A-Brand";v="24"',
+      "sec-ch-ua-platform": '"Windows"',
+      "sec-ch-ua-mobile": "?0",
+      "sec-fetch-site": "none",
+      "sec-fetch-mode": "navigate",
+      "upgrade-insecure-requests": "1",
+    });
+    const fetchHeaders = makeHeaders({
+      "user-agent": browserUa,
+      accept: "*/*",
+      "accept-language": "de-DE,de;q=0.9",
+      "accept-encoding": "gzip, deflate, br, zstd",
+      "sec-ch-ua": '"Chromium";v="135", "Not:A-Brand";v="24"',
+      "sec-ch-ua-platform": '"Windows"',
+      "sec-ch-ua-mobile": "?0",
+      "sec-fetch-site": "same-origin",
+      "sec-fetch-mode": "cors",
+      referer: "http://localhost:3001/map",
+    });
+
+    const navigationHash = await buildDeviceHash(navigationHeaders);
+    const fetchHash = await buildDeviceHash(fetchHeaders);
+
+    expect(fetchHash).toBe(navigationHash);
+  });
+
+  it("trennt Browser und Script-Clients trotz aehnlicher Basis-Header", async () => {
+    const browserHeaders = makeHeaders({
+      "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 14_4) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.4 Safari/605.1.15",
+      accept: "text/html",
+      "accept-language": "de-DE,de;q=0.9",
+      "accept-encoding": "gzip, deflate, br",
+    });
+    const scriptHeaders = makeHeaders({
+      "user-agent": "curl/8.7.1",
+      accept: "*/*",
+      "accept-encoding": "gzip",
+    });
+
+    const browserHash = await buildDeviceHash(browserHeaders);
+    const scriptHash = await buildDeviceHash(scriptHeaders);
+
+    expect(scriptHash).not.toBe(browserHash);
+  });
+});
+
+describe("hashSession", () => {
+  function toSupabaseCookie(payload: {
+    access_token?: string;
+    refresh_token?: string;
+  }): string {
+    return `base64-${Buffer.from(JSON.stringify(payload), "utf8").toString("base64")}`;
+  }
+
+  it("unterscheidet verschiedene Supabase-SSR-Sessions trotz gleichem Cookie-Praefix", async () => {
+    const sessionA = toSupabaseCookie({
+      access_token: "access-a",
+      refresh_token: "refresh-a",
+    });
+    const sessionB = toSupabaseCookie({
+      access_token: "access-a",
+      refresh_token: "refresh-b",
+    });
+
+    expect(await hashSession(sessionA)).not.toBe(await hashSession(sessionB));
+  });
+
+  it("faellt fuer normale Bearer-Token auf den Originalwert zurueck", async () => {
+    expect(await hashSession("token-a")).not.toBe(await hashSession("token-b"));
+  });
+});
+
 // --- Tests fuer fpInstabilityPoints + sessionDriftPoints (reine Funktionen) ---
 
 import {
@@ -178,7 +263,9 @@ function mockRedisWithScores(
     }),
     zremrangebyscore: vi.fn().mockResolvedValue(0),
   };
-  mockedGetRedis.mockReturnValue(mockRedis as any);
+  mockedGetRedis.mockReturnValue(
+    mockRedis as NonNullable<ReturnType<typeof getSecurityRedis>>,
+  );
   return { mockRedis, now };
 }
 

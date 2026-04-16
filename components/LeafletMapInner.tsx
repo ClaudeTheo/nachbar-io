@@ -14,6 +14,7 @@ import {
   type GeoMapHouseData,
   type LampColor,
 } from "@/lib/map-houses";
+import { MAP_STATUS_META } from "@/lib/map-statuses";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 
@@ -116,7 +117,8 @@ export default function LeafletMapInner({
                 {streetName} {house.num}
               </div>
               <div className="text-xs" style={{ color: cfg.fill }}>
-                {cfg.label} · {rc} {rc === 1 ? "Bewohner" : "Bewohner"}
+                {MAP_STATUS_META[color].statusLabel} · {rc}{" "}
+                {rc === 1 ? "Bewohner" : "Bewohner"}
               </div>
               <button
                 type="button"

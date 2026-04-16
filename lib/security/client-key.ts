@@ -21,10 +21,31 @@ export async function hashIp(ip: string): Promise<string> {
   return hex.slice(0, 16); // 16 Zeichen reichen fuer Eindeutigkeit
 }
 
+function normalizeSessionToken(sessionToken: string): string {
+  if (!sessionToken.startsWith("base64-")) {
+    return sessionToken;
+  }
+
+  try {
+    const decoded = atob(sessionToken.slice("base64-".length));
+    const parsed = JSON.parse(decoded) as {
+      access_token?: string;
+      refresh_token?: string;
+    };
+
+    return parsed.refresh_token || parsed.access_token || sessionToken;
+  } catch {
+    return sessionToken;
+  }
+}
+
 export async function hashSession(sessionToken: string): Promise<string> {
-  // Nur Praefix hashen (nicht den ganzen Token)
-  const prefix = sessionToken.slice(0, 32);
-  const hex = await sha256Hex(prefix);
+  // Supabase-SSR-Cookies beginnen mit einem weitgehend konstanten base64-JSON-
+  // Praefix. Fuer session_drift brauchen wir einen wirklich sitzungsindividuellen
+  // Fingerprint, deshalb normalisieren wir erst auf den eingebetteten Refresh-
+  // oder Access-Token und hashen dann diesen Wert.
+  const normalizedToken = normalizeSessionToken(sessionToken);
+  const hex = await sha256Hex(normalizedToken);
   return hex.slice(0, 16);
 }
 
@@ -59,21 +80,32 @@ export function buildHeaderPresenceBitmap(headers: {
   return bitmap;
 }
 
-// Combined Device Hash: Header-Werte + Presence-Bitmap + Daily Salt
-// Stabiler als IP (ueberlebt IP-Wechsel), pseudonymisiert durch SHA-256
-export async function buildDeviceHash(headers: {
+function buildStableDeviceFingerprintInput(headers: {
   get(name: string): string | null;
-}): Promise<string> {
-  const signals = [
+}): string {
+  return [
+    // User-Agent trennt echte Browserfamilien sauber voneinander.
+    headers.get("user-agent") || "",
     headers.get("accept-language") || "",
     headers.get("accept-encoding") || "",
     headers.get("sec-ch-ua") || "",
     headers.get("sec-ch-ua-platform") || "",
     headers.get("sec-ch-ua-mobile") || "",
   ].join("|");
+}
 
-  const bitmap = buildHeaderPresenceBitmap(headers);
-  const hex = await sha256Hex(signals + "|" + bitmap.toString(16) + getDailySalt());
+// Combined Device Hash: nur relativ stabile Client-Signale + Daily Salt.
+// Volatile Request-Shape-Header wie referer, sec-fetch-* oder
+// upgrade-insecure-requests duerfen hier NICHT einfliessen, weil sie
+// zwischen HTML-Navigation, RSC-Fetches und API-Calls derselben Sitzung
+// legitimerweise wechseln und sonst False Positives bei session_drift
+// und fp_instability ausloesen.
+export async function buildDeviceHash(headers: {
+  get(name: string): string | null;
+}): Promise<string> {
+  const hex = await sha256Hex(
+    buildStableDeviceFingerprintInput(headers) + getDailySalt(),
+  );
   return hex.slice(0, 16);
 }
 

@@ -316,7 +316,8 @@ async function seedRoleSpecificData(
     const { error: orgError } = await supabaseAdmin("organizations", "POST", {
       id: orgId,
       name: "Stadt Bad Säckingen (E2E)",
-      type: "kommune",
+      type: "municipality",
+      contact_email: "stadt-e2e@nachbar.local",
       hr_vr_number: "VR-E2E-12345",
       verification_status: "verified",
       avv_signed_at: new Date().toISOString(),
@@ -380,7 +381,8 @@ async function seedRoleSpecificData(
       {
         resident_id: seniorUserId,
         caregiver_id: betreuerUserId,
-        permissions: { heartbeat: true, checkin: true, chat: true },
+        relationship_type: "child",
+        heartbeat_visible: true,
       },
     );
     if (
@@ -391,6 +393,54 @@ async function seedRoleSpecificData(
       console.warn(`[SEED] Caregiver-Link: ${linkError}`);
     } else {
       console.log(`[SEED] Caregiver-Link senior_s → betreuer_t angelegt`);
+    }
+
+    const now = new Date();
+    const periodEnd = new Date(now);
+    periodEnd.setMonth(periodEnd.getMonth() + 1);
+
+    const subscriptionPayload = {
+      user_id: betreuerUserId,
+      plan: "plus",
+      status: "trial",
+      trial_ends_at: new Date(
+        now.getTime() + 14 * 24 * 60 * 60 * 1000,
+      ).toISOString(),
+      current_period_start: now.toISOString().split("T")[0],
+      current_period_end: periodEnd.toISOString().split("T")[0],
+    };
+
+    const { error: subscriptionError } = await supabaseAdmin(
+      "care_subscriptions",
+      "POST",
+      subscriptionPayload,
+    );
+    if (
+      subscriptionError &&
+      (subscriptionError.includes("duplicate") ||
+        subscriptionError.includes("409"))
+    ) {
+      const { error: patchError } = await supabaseAdmin(
+        "care_subscriptions",
+        "PATCH",
+        {
+          plan: subscriptionPayload.plan,
+          status: subscriptionPayload.status,
+          trial_ends_at: subscriptionPayload.trial_ends_at,
+          current_period_start: subscriptionPayload.current_period_start,
+          current_period_end: subscriptionPayload.current_period_end,
+        },
+        `user_id=eq.${betreuerUserId}`,
+      );
+      if (patchError) {
+        console.warn(`[SEED] Care-Subscription betreuer_t PATCH: ${patchError}`);
+      } else {
+        console.log(`[SEED] Care-Subscription betreuer_t aktualisiert`);
+      }
+    } else if (subscriptionError) {
+      console.warn(`[SEED] Care-Subscription betreuer_t: ${subscriptionError}`);
+    } else {
+      console.log(`[SEED] Care-Subscription betreuer_t angelegt`);
     }
   }
 }

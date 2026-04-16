@@ -2,14 +2,15 @@
 
 import { HelpTip } from "@/components/HelpTip";
 import type { LampColor } from "@/lib/map-houses";
+import { MAP_STATUS_HELP_TEXT, MAP_STATUS_META } from "@/lib/map-statuses";
 
 // Farb-Filter-Konfiguration für die Kartensteuerleiste
 const FILTER_ITEMS: { key: LampColor; label: string; color: string; bg: string }[] = [
-  { key: "green", label: "Grün", color: "#22c55e", bg: "#052e16" },
-  { key: "red", label: "Rot", color: "#ef4444", bg: "#2d0505" },
-  { key: "yellow", label: "Gelb", color: "#eab308", bg: "#2d2305" },
-  { key: "blue", label: "Urlaub", color: "#3b82f6", bg: "#0c1e3d" },
-  { key: "orange", label: "Paket", color: "#f97316", bg: "#2d1505" },
+  { key: "green", label: MAP_STATUS_META.green.chipLabel, color: "#22c55e", bg: "#052e16" },
+  { key: "red", label: MAP_STATUS_META.red.chipLabel, color: "#ef4444", bg: "#2d0505" },
+  { key: "yellow", label: MAP_STATUS_META.yellow.chipLabel, color: "#eab308", bg: "#2d2305" },
+  { key: "blue", label: MAP_STATUS_META.blue.chipLabel, color: "#3b82f6", bg: "#0c1e3d" },
+  { key: "orange", label: MAP_STATUS_META.orange.chipLabel, color: "#f97316", bg: "#2d1505" },
 ];
 
 interface FilterCounts {
@@ -46,7 +47,7 @@ export function MapFilterBar({ counts, filter, onFilterChange, onReset, quarterN
         </div>
         <HelpTip
           title="Farben auf der Karte"
-          content="Grün = Alles in Ordnung. Rot = Dringend. Gelb = Hinweis. Blau = Bewohner im Urlaub (Nachbarn aufpassen!)."
+          content={MAP_STATUS_HELP_TEXT}
         />
       </div>
       <div className="-mx-1 mt-3 flex gap-2 overflow-x-auto px-1 pb-1 sm:mx-0 sm:mt-2.5 sm:flex-wrap sm:overflow-visible sm:px-0 sm:pb-0">

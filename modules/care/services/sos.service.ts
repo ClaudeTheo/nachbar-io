@@ -21,6 +21,7 @@ import {
   getEscalationMeta,
 } from "@/lib/care/escalation";
 import { ServiceError } from "@/lib/services/service-error";
+import { getAdminSupabase } from "@/lib/supabase/admin";
 import type {
   CareSosCategory,
   CareSosSource,
@@ -38,6 +39,21 @@ const DEFAULT_ACTIVE_STATUSES = [
 ] as const;
 
 const VALID_SOURCES: CareSosSource[] = ["app", "device", "checkin_timeout"];
+
+const SOS_ALERT_SELECT = `*,
+      responses:care_sos_responses(
+        id,
+        helper_id,
+        response_type,
+        eta_minutes,
+        note,
+        created_at,
+        helper:users(display_name, avatar_url)
+      ),
+      senior:users!care_sos_alerts_senior_id_fkey(
+        display_name,
+        avatar_url
+      )`;
 
 // --- triggerSos: SOS auslösen ---
 
@@ -230,25 +246,14 @@ export async function listSosAlerts(
         .filter(Boolean)
     : [...DEFAULT_ACTIVE_STATUSES];
 
-  // SOS-Alerts mit Joins auf Antworten und Senioren-Profil abrufen
-  let query = supabase
+  const adminSupabase = getAdminSupabase();
+
+  // SOS-Alerts mit Joins auf Antworten und Senioren-Profil abrufen.
+  // Nach der Zugriffspruefung lesen wir mit Service-Role, weil caregiver_links
+  // bzw. Caregiver-Views nicht auf die care_sos_alerts-RLS vertrauen koennen.
+  let query = adminSupabase
     .from("care_sos_alerts")
-    .select(
-      `*,
-      responses:care_sos_responses(
-        id,
-        helper_id,
-        response_type,
-        eta_minutes,
-        note,
-        created_at,
-        helper:users(display_name, avatar_url)
-      ),
-      senior:users!care_sos_alerts_senior_id_fkey(
-        display_name,
-        avatar_url
-      )`,
-    )
+    .select(SOS_ALERT_SELECT)
     .in("status", statusFilter)
     .order("created_at", { ascending: false })
     .limit(50);
@@ -319,25 +324,32 @@ export async function getSosAlert(
   userId: string,
   alertId: string,
 ) {
-  // Alert mit Antworten (inkl. Helfer-Info) und Senior-Profil abfragen
-  const { data: alert, error } = await supabase
+  const adminSupabase = getAdminSupabase();
+
+  const { data: alertMeta, error: alertMetaError } = await adminSupabase
     .from("care_sos_alerts")
-    .select(
-      `*,
-      responses:care_sos_responses(
-        id,
-        helper_id,
-        response_type,
-        eta_minutes,
-        note,
-        created_at,
-        helper:users(display_name, avatar_url)
-      ),
-      senior:users!care_sos_alerts_senior_id_fkey(
-        display_name,
-        avatar_url
-      )`,
-    )
+    .select("id, senior_id")
+    .eq("id", alertId)
+    .single();
+
+  if (alertMetaError || !alertMeta) {
+    if (alertMetaError?.code === "PGRST116") {
+      throw new ServiceError("SOS-Alert nicht gefunden", 404);
+    }
+    console.error("[care/sos/id] Alert-Meta-Abfrage fehlgeschlagen:", alertMetaError);
+    throw new ServiceError("SOS-Alert konnte nicht geladen werden", 500);
+  }
+
+  // SICHERHEIT: Zugriffsprüfung — nur Senior, zugeordnete Helfer oder Admin
+  if (alertMeta.senior_id !== userId) {
+    const role = await requireCareAccess(supabase, alertMeta.senior_id);
+    if (!role) throw new ServiceError("Kein Zugriff auf diesen SOS-Alert", 403);
+  }
+
+  // Alert mit Antworten (inkl. Helfer-Info) und Senior-Profil abfragen
+  const { data: alert, error } = await adminSupabase
+    .from("care_sos_alerts")
+    .select(SOS_ALERT_SELECT)
     .eq("id", alertId)
     .single();
 
@@ -347,12 +359,6 @@ export async function getSosAlert(
     }
     console.error("[care/sos/id] Alert-Abfrage fehlgeschlagen:", error);
     throw new ServiceError("SOS-Alert konnte nicht geladen werden", 500);
-  }
-
-  // SICHERHEIT: Zugriffsprüfung — nur Senior, zugeordnete Helfer oder Admin
-  if (alert.senior_id !== userId) {
-    const role = await requireCareAccess(supabase, alert.senior_id);
-    if (!role) throw new ServiceError("Kein Zugriff auf diesen SOS-Alert", 403);
   }
 
   // SOS-Notes und Response-Notes entschlüsseln (Art. 9 DSGVO)

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ComponentType, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import {
@@ -32,6 +32,7 @@ import {
 } from "lucide-react";
 import { isUxRedesignEnabled } from "@/lib/ux-flags";
 import { useUnreadCount } from "@/lib/useUnreadCount";
+import { isLegacyRoute } from "@/lib/legacy-routes";
 import { PageHeader } from "@/components/ui/page-header";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -56,6 +57,32 @@ import { formatCode, generateSecureCode } from "@/lib/invite-codes";
 import { toast } from "sonner";
 import type { User, Household, ReputationStats } from "@/lib/supabase/types";
 
+interface DisabledProfileNavItemProps {
+  description?: string;
+  icon: ComponentType<{ className?: string }>;
+  iconClassName?: string;
+  title: ReactNode;
+}
+
+function DisabledProfileNavItem({
+  description = "Im Pilot noch deaktiviert",
+  icon: Icon,
+  iconClassName = "h-5 w-5 text-muted-foreground",
+  title,
+}: DisabledProfileNavItemProps) {
+  return (
+    <div aria-disabled="true" className="bg-muted/35 p-4">
+      <div className="flex items-start gap-3">
+        <Icon className={iconClassName} />
+        <div className="min-w-0">
+          <div className="font-medium text-anthrazit">{title}</div>
+          <p className="mt-1 text-xs text-muted-foreground">{description}</p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 /** Schnellzugriff-Karte fuer Features die aus der BottomNav verschoben wurden */
 function QuickAccessCard() {
   const { count: unreadCount } = useUnreadCount();
@@ -77,26 +104,46 @@ function QuickAccessCard() {
         <p className="px-4 pt-3 pb-1 text-xs font-medium text-muted-foreground uppercase tracking-wider">
           Schnellzugriff
         </p>
-        {quickItems.map((item, i) => (
-          <div key={item.href}>
-            {i > 0 && <Separator />}
-            <Link
-              href={item.href}
-              className="flex items-center justify-between p-4 hover:bg-muted/50"
-            >
-              <div className="flex items-center gap-3">
-                <item.icon className="h-5 w-5 text-muted-foreground" />
-                <span>{item.label}</span>
-                {item.badge != null && item.badge > 0 && (
-                  <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-emergency-red px-1.5 text-[11px] font-bold text-white">
-                    {item.badge > 99 ? "99+" : item.badge}
-                  </span>
-                )}
-              </div>
-              <ChevronRight className="h-4 w-4 text-muted-foreground" />
-            </Link>
-          </div>
-        ))}
+        {quickItems.map((item, i) => {
+          const disabled = isLegacyRoute(item.href);
+
+          return (
+            <div key={item.href}>
+              {i > 0 && <Separator />}
+              {disabled ? (
+                <DisabledProfileNavItem
+                  icon={item.icon}
+                  title={
+                    <div className="flex items-center gap-2">
+                      <span>{item.label}</span>
+                      {item.badge != null && item.badge > 0 && (
+                        <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-emergency-red px-1.5 text-[11px] font-bold text-white">
+                          {item.badge > 99 ? "99+" : item.badge}
+                        </span>
+                      )}
+                    </div>
+                  }
+                />
+              ) : (
+                <Link
+                  href={item.href}
+                  className="flex items-center justify-between p-4 hover:bg-muted/50"
+                >
+                  <div className="flex items-center gap-3">
+                    <item.icon className="h-5 w-5 text-muted-foreground" />
+                    <span>{item.label}</span>
+                    {item.badge != null && item.badge > 0 && (
+                      <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-emergency-red px-1.5 text-[11px] font-bold text-white">
+                        {item.badge > 99 ? "99+" : item.badge}
+                      </span>
+                    )}
+                  </div>
+                  <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                </Link>
+              )}
+            </div>
+          );
+        })}
       </CardContent>
     </Card>
   );
@@ -587,29 +634,11 @@ export default function ProfilePage() {
 
           <Separator />
 
-          <Link
-            href="/polls"
-            className="flex items-center justify-between p-4 hover:bg-muted/50"
-          >
-            <div className="flex items-center gap-3">
-              <BarChart3 className="h-5 w-5 text-muted-foreground" />
-              <span>Umfragen</span>
-            </div>
-            <ChevronRight className="h-4 w-4 text-muted-foreground" />
-          </Link>
+          <DisabledProfileNavItem icon={BarChart3} title="Umfragen" />
 
           <Separator />
 
-          <Link
-            href="/packages"
-            className="flex items-center justify-between p-4 hover:bg-muted/50"
-          >
-            <div className="flex items-center gap-3">
-              <Package className="h-5 w-5 text-muted-foreground" />
-              <span>Paketannahme</span>
-            </div>
-            <ChevronRight className="h-4 w-4 text-muted-foreground" />
-          </Link>
+          <DisabledProfileNavItem icon={Package} title="Paketannahme" />
 
           <Separator />
 

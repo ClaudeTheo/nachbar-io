@@ -1,12 +1,16 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
 import { Monitor, Eye, EyeOff, RefreshCw } from "lucide-react";
 import { PageHeader } from "@/components/ui/page-header";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/client";
+import { getProfile, updateProfile } from "@/lib/services/profile.service";
+import {
+  getKioskPinFromSettings,
+  withKioskPinInSettings,
+} from "@/lib/kiosk-pin";
 import { toast } from "sonner";
 
 /**
@@ -15,7 +19,6 @@ import { toast } from "sonner";
  * mit der er sich am Quartier-Kiosk (AWOW Tablet) anmelden kann.
  */
 export default function KioskPinPage() {
-  const router = useRouter();
   const [pin, setPin] = useState("");
   const [confirmPin, setConfirmPin] = useState("");
   const [currentPin, setCurrentPin] = useState<string | null>(null);
@@ -33,17 +36,16 @@ export default function KioskPinPage() {
         } = await supabase.auth.getUser();
         if (!user) return;
 
-        const { data } = await supabase
-          .from("profiles")
-          .select("kiosk_pin")
-          .eq("id", user.id)
-          .single();
+        const profile = await getProfile(user.id);
+        const savedPin =
+          getKioskPinFromSettings(profile.settings) ??
+          getKioskPinFromSettings(user.user_metadata);
 
-        if (data?.kiosk_pin) {
-          setCurrentPin(data.kiosk_pin);
+        if (savedPin) {
+          setCurrentPin(savedPin);
         }
       } catch {
-        // Spalte existiert evtl. noch nicht — kein Problem
+        // Kiosk-PIN ist optional — Seite bleibt trotzdem benutzbar
       }
     }
     loadPin();
@@ -73,17 +75,14 @@ export default function KioskPinPage() {
         return;
       }
 
-      const { error } = await supabase
-        .from("profiles")
-        .update({ kiosk_pin: pin })
-        .eq("id", user.id);
+      const profile = await getProfile(user.id);
+      await updateProfile(user.id, {
+        settings: withKioskPinInSettings(profile.settings, pin),
+      });
 
-      if (error) {
-        // Falls Spalte nicht existiert, in user_metadata speichern
-        await supabase.auth.updateUser({
-          data: { kiosk_pin: pin },
-        });
-      }
+      await supabase.auth.updateUser({
+        data: { kiosk_pin: pin },
+      });
 
       setCurrentPin(pin);
       setStep("view");
@@ -107,10 +106,10 @@ export default function KioskPinPage() {
       } = await supabase.auth.getUser();
       if (!user) return;
 
-      await supabase
-        .from("profiles")
-        .update({ kiosk_pin: null })
-        .eq("id", user.id);
+      const profile = await getProfile(user.id);
+      await updateProfile(user.id, {
+        settings: withKioskPinInSettings(profile.settings, null),
+      });
 
       await supabase.auth.updateUser({
         data: { kiosk_pin: null },

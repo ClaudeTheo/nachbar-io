@@ -16,9 +16,9 @@ describe("MapFilterBar", () => {
     const { container } = render(
       <MapFilterBar counts={defaultCounts} filter="all" onFilterChange={vi.fn()} onReset={vi.fn()} quarterName="Test" />
     );
-    expect(container.textContent).toContain("3 Grün");
-    expect(container.textContent).toContain("1 Rot");
-    expect(container.textContent).toContain("2 Gelb");
+    expect(container.textContent).toContain("3 Okay");
+    expect(container.textContent).toContain("1 SOS");
+    expect(container.textContent).toContain("2 Hilfe");
   });
 
   it("versteckt Urlaub/Paket bei count=0", () => {
@@ -34,9 +34,9 @@ describe("MapFilterBar", () => {
     const { container } = render(
       <MapFilterBar counts={defaultCounts} filter="all" onFilterChange={handler} onReset={vi.fn()} quarterName="Test" />
     );
-    // Finde den Button mit "Grün" Text
+    // Finde den Button mit "Okay" Text
     const buttons = container.querySelectorAll("button");
-    const greenButton = Array.from(buttons).find(b => b.textContent?.includes("Grün"));
+    const greenButton = Array.from(buttons).find(b => b.textContent?.includes("Okay"));
     expect(greenButton).toBeDefined();
     fireEvent.click(greenButton!);
     expect(handler).toHaveBeenCalledWith("green");

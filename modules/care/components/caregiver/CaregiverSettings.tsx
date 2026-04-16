@@ -10,6 +10,27 @@ import type { CaregiverLink } from "@/lib/care/types";
 import { InviteCodeModal } from "../subscription/InviteCodeModal";
 import { CaregiverList } from "./CaregiverList";
 
+function extractResidentLinks(payload: unknown): CaregiverLink[] {
+  if (typeof payload !== "object" || payload === null) {
+    return [];
+  }
+
+  const candidate = payload as {
+    as_resident?: CaregiverLink[];
+    data?: { as_resident?: CaregiverLink[] };
+  };
+
+  if (Array.isArray(candidate.as_resident)) {
+    return candidate.as_resident;
+  }
+
+  if (Array.isArray(candidate.data?.as_resident)) {
+    return candidate.data.as_resident;
+  }
+
+  return [];
+}
+
 export function CaregiverSettings() {
   const [links, setLinks] = useState<CaregiverLink[]>([]);
   const [loading, setLoading] = useState(true);
@@ -24,7 +45,8 @@ export function CaregiverSettings() {
       const res = await fetch("/api/caregiver/links");
       if (!res.ok) throw new Error("Laden fehlgeschlagen");
       const json = await res.json();
-      setLinks(json.data.as_resident ?? []);
+      setLinks(extractResidentLinks(json));
+      setError(null);
     } catch {
       setError("Angehörige konnten nicht geladen werden.");
     } finally {

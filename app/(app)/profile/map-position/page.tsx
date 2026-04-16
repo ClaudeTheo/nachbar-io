@@ -8,6 +8,10 @@ import { Button } from "@/components/ui/button";
 import { Save } from "lucide-react";
 import { PageHeader } from "@/components/ui/page-header";
 import {
+  getMapPositionEmptyState,
+  hasQuarterSvgMap,
+} from "@/lib/map-position";
+import {
   MAP_W,
   MAP_H,
   STREET_LABELS,
@@ -43,6 +47,10 @@ export default function MapPositionPage() {
     quarterId: string;
   } | null>(null);
   const [isNewEntry, setIsNewEntry] = useState(false);
+  const [householdLinked, setHouseholdLinked] = useState(false);
+  const [unsupportedAddressLabel, setUnsupportedAddressLabel] = useState<
+    string | null
+  >(null);
 
   // Quartier-Name fuer Anzeige (BUG-22: falsches Quartier)
   const [quarterName, setQuarterName] = useState<string | null>(null);
@@ -55,6 +63,7 @@ export default function MapPositionPage() {
 
       // Quartier des Users ermitteln (BUG-22 Fix)
       let quarterId: string | null = null;
+      let quarterSlug: string | null = null;
       const { data: hm } = await supabase
         .from("household_members")
         .select("households(quarter_id)")
@@ -74,10 +83,7 @@ export default function MapPositionPage() {
           .maybeSingle();
         if (q) {
           setQuarterName(q.name);
-          // Nur Bad Saeckingen hat eine SVG-Karte (Pilotquartier)
-          setQuarterHasSvgMap(
-            q.slug === "bad-saeckingen" || q.slug === "pilotquartier",
-          );
+          quarterSlug = q.slug;
         }
       }
 
@@ -105,6 +111,12 @@ export default function MapPositionPage() {
           : DEFAULT_HOUSES;
 
       setHouses(loadedHouses);
+      setQuarterHasSvgMap(
+        hasQuarterSvgMap({
+          slug: quarterSlug,
+          mapHouseCount: mapData?.length ?? 0,
+        }),
+      );
 
       // Eigenen Haushalt finden
       const { data: membership } = await supabase
@@ -116,14 +128,20 @@ export default function MapPositionPage() {
         .maybeSingle();
 
       if (membership) {
+        setHouseholdLinked(true);
         const hh = membership.households as unknown as {
           street_name: string;
           house_number: string;
         } | null;
         if (hh) {
+          const addressLabel = `${hh.street_name} ${hh.house_number}`;
           const code = (
             Object.entries(STREET_CODE_TO_NAME) as [StreetCode, string][]
           ).find(([, name]) => name === hh.street_name)?.[0];
+
+          if (!code) {
+            setUnsupportedAddressLabel(addressLabel);
+          }
 
           if (code && quarterId) {
             setHouseholdInfo({
@@ -258,6 +276,14 @@ export default function MapPositionPage() {
     );
   }
 
+  const emptyState = getMapPositionEmptyState({
+    isAuthenticated: Boolean(user),
+    householdLinked,
+    addressLabel: unsupportedAddressLabel,
+  });
+  const hideEmptyStateBecauseQuarterMapUnavailable =
+    !myHouse && !quarterHasSvgMap && Boolean(quarterName);
+
   return (
     <div className="animate-fade-in-up">
       {/* Header */}
@@ -286,11 +312,14 @@ export default function MapPositionPage() {
       )}
 
       {!myHouse ? (
+        hideEmptyStateBecauseQuarterMapUnavailable ? null : (
         <div className="rounded-lg border border-border bg-muted/30 p-6 text-center">
+          <p className="font-medium text-anthrazit">{emptyState.title}</p>
           <p className="mt-2 text-sm text-muted-foreground">
-            Kein Haushalt zugeordnet. Bitte melden Sie sich zuerst an.
+            {emptyState.body}
           </p>
         </div>
+        )
       ) : !quarterHasSvgMap ? null : (
         <>
           {/* Info */}

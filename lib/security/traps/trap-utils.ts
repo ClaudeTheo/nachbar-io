@@ -18,6 +18,19 @@ function hashIpNode(ip: string): string {
     .slice(0, 16);
 }
 
+function buildStableDeviceFingerprintInputNode(headers: {
+  get(name: string): string | null;
+}): string {
+  return [
+    headers.get("user-agent") || "",
+    headers.get("accept-language") || "",
+    headers.get("accept-encoding") || "",
+    headers.get("sec-ch-ua") || "",
+    headers.get("sec-ch-ua-platform") || "",
+    headers.get("sec-ch-ua-mobile") || "",
+  ].join("|");
+}
+
 /** Baut ClientKeys aus einem API-Route-Request (Node.js Runtime) */
 export function buildClientKeysNode(
   request: NextRequest,
@@ -33,17 +46,10 @@ export function buildClientKeysNode(
     "unknown";
 
   // SYNC: Device-Hash muss mit buildDeviceHash() in client-key.ts uebereinstimmen
-  // Gleiche Signal-Reihenfolge, gleicher Bitmap, gleicher Salt — nur Node.js crypto statt Web Crypto
-  const headerSignals = [
-    request.headers.get("accept-language") || "",
-    request.headers.get("accept-encoding") || "",
-    request.headers.get("sec-ch-ua") || "",
-    request.headers.get("sec-ch-ua-platform") || "",
-    request.headers.get("sec-ch-ua-mobile") || "",
-  ].join("|");
+  // Gleiche stabilen Signale, gleicher Salt — nur Node.js crypto statt Web Crypto
   const bitmap = buildHeaderPresenceBitmapNode(request.headers);
   const deviceHash = createHash("sha256")
-    .update(headerSignals + "|" + bitmap.toString(16) + getDailySalt())
+    .update(buildStableDeviceFingerprintInputNode(request.headers) + getDailySalt())
     .digest("hex")
     .slice(0, 16);
 

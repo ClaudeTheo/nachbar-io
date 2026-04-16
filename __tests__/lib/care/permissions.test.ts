@@ -18,6 +18,7 @@ function createMockSupabase(options: {
   isAdmin?: boolean;
   helperRole?: string | null;
   assignedSeniors?: string[];
+  caregiverLinkRelationship?: string | null;
   subscription?: { plan: string; status: string } | null;
 }) {
   return {
@@ -63,6 +64,25 @@ function createMockSupabase(options: {
           }),
         };
       }
+      if (table === "caregiver_links")
+        return {
+          select: vi.fn().mockReturnValue({
+            eq: vi.fn().mockReturnValue({
+              eq: vi.fn().mockReturnValue({
+                is: vi.fn().mockReturnValue({
+                  maybeSingle: vi.fn().mockResolvedValue({
+                    data: options.caregiverLinkRelationship
+                      ? {
+                          relationship_type: options.caregiverLinkRelationship,
+                        }
+                      : null,
+                    error: null,
+                  }),
+                }),
+              }),
+            }),
+          }),
+        };
       if (table === "care_subscriptions")
         return {
           select: vi.fn().mockReturnValue({
@@ -143,6 +163,20 @@ describe("getCareRole", () => {
       "senior-1",
     );
     expect(role).toBe("none");
+  });
+
+  it("gibt relative zurueck fuer caregiver_link mit Familienbezug", async () => {
+    const { getCareRole } = await import("@/lib/care/permissions");
+    const supabase = createMockSupabase({
+      user: { id: "caregiver-1" },
+      isAdmin: false,
+      caregiverLinkRelationship: "child",
+    });
+    const role = await getCareRole(
+      supabase as unknown as Parameters<typeof getCareRole>[0],
+      "senior-1",
+    );
+    expect(role).toBe("relative");
   });
 });
 

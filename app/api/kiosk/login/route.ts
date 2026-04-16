@@ -6,6 +6,8 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { getAdminSupabase } from "@/lib/supabase/admin";
+import { getKioskPinFromSettings } from "@/lib/kiosk-pin";
 
 // Einfacher In-Memory Store fuer Kiosk-Sessions (Produktion: Redis/DB)
 const kioskSessions = new Map<
@@ -98,9 +100,9 @@ export async function POST(request: NextRequest) {
         );
       }
 
-      // Display-Name aus Profil laden
+      // Display-Name aus Nutzerprofil laden
       const { data: profile } = await supabase
-        .from("profiles")
+        .from("users")
         .select("display_name")
         .eq("id", user.id)
         .single();
@@ -117,29 +119,22 @@ export async function POST(request: NextRequest) {
 
     // PIN-Login: 4-stellige PIN prüfen
     if (body.method === "pin" && body.pin) {
-      const supabase = await createClient();
-      // PIN in user_metadata gespeichert (z.B. bei Profil-Einstellungen gesetzt)
-      // Fuer Demo: PIN "1234" akzeptieren
-      if (body.pin === "1234") {
-        return NextResponse.json({
-          status: "confirmed",
-          user_id: "demo-user",
-          message: "PIN akzeptiert (Demo-Modus)",
-        });
-      }
-
-      // Produktion: PIN gegen Datenbank prüfen
-      const { data: profiles } = await supabase
-        .from("profiles")
-        .select("id, display_name")
-        .eq("kiosk_pin", body.pin)
+      const adminSupabase = getAdminSupabase();
+      const { data: users } = await adminSupabase
+        .from("users")
+        .select("id, display_name, settings")
+        .contains("settings", { kiosk_pin: body.pin })
         .limit(1);
 
-      if (profiles && profiles.length > 0) {
+      const matchedUser = users?.find(
+        (candidate) => getKioskPinFromSettings(candidate.settings) === body.pin,
+      );
+
+      if (matchedUser) {
         return NextResponse.json({
           status: "confirmed",
-          user_id: profiles[0].id,
-          display_name: profiles[0].display_name,
+          user_id: matchedUser.id,
+          display_name: matchedUser.display_name,
         });
       }
 

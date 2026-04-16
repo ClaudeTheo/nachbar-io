@@ -7,6 +7,7 @@ import { useMapStatuses } from "@/lib/hooks/useMapStatuses";
 import { MapFilterBar } from "@/components/MapFilterBar";
 import { HouseInfoPanel } from "@/components/HouseInfoPanel";
 import type { GeoMapHouseData } from "@/lib/map-houses";
+import { MAP_STATUS_META } from "@/lib/map-statuses";
 
 // Leaflet muss client-side geladen werden (kein SSR)
 const LeafletMapInner = dynamic(() => import("./LeafletMapInner"), {
@@ -68,6 +69,26 @@ export function LeafletKarte({ quarterId: quarterIdProp }: LeafletKarteProps) {
     [],
   );
 
+  const footerText = useMemo(
+    () =>
+      [
+        `${occupiedIds.size} Nachbarn im Quartier`,
+        counts.red > 0 ? `${counts.red} ${MAP_STATUS_META.red.chipLabel}` : null,
+        counts.yellow > 0
+          ? `${counts.yellow} ${MAP_STATUS_META.yellow.chipLabel}`
+          : null,
+        counts.blue > 0
+          ? `${counts.blue} ${MAP_STATUS_META.blue.chipLabel}`
+          : null,
+        counts.orange > 0
+          ? `${counts.orange} ${MAP_STATUS_META.orange.chipLabel}`
+          : null,
+      ]
+        .filter(Boolean)
+        .join(" · "),
+    [counts, occupiedIds],
+  );
+
   // Sichtbare Häuser filtern
   const visibleHouses = useMemo(
     () =>
@@ -124,10 +145,7 @@ export function LeafletKarte({ quarterId: quarterIdProp }: LeafletKarteProps) {
 
       {/* Fusszeile */}
       <div className="text-center text-xs text-muted-foreground">
-        {Object.values(residentCounts).filter((c) => c > 0).length} Nachbarn im
-        Quartier
-        {counts.blue > 0 && ` · ${counts.blue} Urlaub`}
-        {counts.orange > 0 && ` · ${counts.orange} Paket`}
+        {footerText}
       </div>
 
       {/* Haus-Info Panel */}

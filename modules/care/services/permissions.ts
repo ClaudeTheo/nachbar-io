@@ -2,9 +2,19 @@
 // Rollenbasierte Berechtigungspruefung fuer das Care-Modul
 
 import type { SupabaseClient } from '@supabase/supabase-js';
-import type { CareHelperRole, CareUserRole } from './types';
+import type {
+  CareHelperRole,
+  CareUserRole,
+  CaregiverRelationshipType,
+} from './types';
 import { hasFeature } from './constants';
 import type { CareSubscriptionPlan } from './types';
+
+export function mapCaregiverRelationshipToRole(
+  relationshipType: CaregiverRelationshipType
+): CareHelperRole {
+  return relationshipType === 'volunteer' ? 'neighbor' : 'relative';
+}
 
 /**
  * Ermittelt die aktive Care-Rolle des eingeloggten Users
@@ -48,6 +58,21 @@ export async function getCareRole(
     if (helperFull?.assigned_seniors?.includes(seniorId)) {
       return helper.role as CareHelperRole;
     }
+  }
+
+  // Fallback fuer das neuere caregiver_links-Modell (Plus-Angehoerige)
+  const { data: caregiverLink } = await supabase
+    .from('caregiver_links')
+    .select('relationship_type')
+    .eq('caregiver_id', user.id)
+    .eq('resident_id', seniorId)
+    .is('revoked_at', null)
+    .maybeSingle();
+
+  if (caregiverLink?.relationship_type) {
+    return mapCaregiverRelationshipToRole(
+      caregiverLink.relationship_type as CaregiverRelationshipType
+    );
   }
 
   return 'none';

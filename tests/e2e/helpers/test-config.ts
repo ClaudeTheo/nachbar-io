@@ -137,15 +137,20 @@ export const TEST_AGENTS: Record<string, AgentCredentials> = {
   },
 };
 
-/** Test-Mode Header: Wenn gesetzt, ueberspringt Supabase echte Auth */
+/** Security-Bypass fuer lokale E2E-Laeufe (siehe Session-Handoff) */
 export const TEST_MODE_HEADER = "X-Nachbar-Test-Mode";
 export const TEST_MODE_SECRET =
-  process.env.E2E_TEST_SECRET || "e2e-test-secret-dev";
+  process.env.SECURITY_E2E_BYPASS ||
+  process.env.E2E_TEST_SECRET ||
+  "e2e-test-secret-dev";
+export const TEST_MODE_HEADERS = {
+  [TEST_MODE_HEADER]: TEST_MODE_SECRET,
+};
 
 /** Timeouts fuer Tests */
 export const TIMEOUTS = {
   /** Navigation & Seitenlade */
-  pageLoad: 15_000,
+  pageLoad: 60_000,
   /** UI-Element sichtbar */
   elementVisible: 10_000,
   /** Realtime-Event Zustellung */

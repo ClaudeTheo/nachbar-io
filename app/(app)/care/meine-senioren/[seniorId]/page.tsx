@@ -48,6 +48,7 @@ interface SosEntry {
   status: string;
   created_at: string;
   resolved_at: string | null;
+  current_escalation_level?: number | null;
 }
 
 interface CareVisitEntry {
@@ -58,6 +59,41 @@ interface CareVisitEntry {
 }
 
 type Tab = "medikamente" | "checkins" | "sos" | "pflege" | "gedaechtnis";
+
+const SOS_CATEGORY_LABELS: Record<string, string> = {
+  general_help: "Allgemeine Hilfe",
+  medical_emergency: "Medizinischer Notfall",
+  fall: "Sturz",
+  safety_concern: "Sicherheitsbedenken",
+  orientation: "Orientierung",
+};
+
+const SOS_STATUS_LABELS: Record<string, string> = {
+  triggered: "Aktiv",
+  notified: "Benachrichtigt",
+  accepted: "Hilfe zugesagt",
+  helper_enroute: "Helfer unterwegs",
+  escalated: "Eskaliert",
+  resolved: "Geloest",
+  cancelled: "Abgebrochen",
+};
+
+async function fetchResidentOverview(seniorId: string) {
+  const [statusRes, sosRes] = await Promise.all([
+    fetch(`/api/resident/status?resident_id=${seniorId}`),
+    fetch(`/api/care/sos?senior_id=${seniorId}`),
+  ]);
+
+  const statusData = statusRes.ok ? await statusRes.json() : null;
+  const activeSosAlerts = sosRes.ok ? await sosRes.json() : [];
+
+  return {
+    statusData,
+    activeSosAlerts: Array.isArray(activeSosAlerts)
+      ? (activeSosAlerts as SosEntry[])
+      : [],
+  };
+}
 
 export default function SeniorDetailPage() {
   const params = useParams();
@@ -101,14 +137,13 @@ export default function SeniorDetailPage() {
         setSeniorName(data?.display_name ?? "Senior");
       });
 
-    // Heartbeat-Status
-    fetch(`/api/resident/status?resident_id=${seniorId}`)
-      .then((r) => (r.ok ? r.json() : null))
-      .then((data) => {
-        if (data) {
-          setLastHeartbeat(data.last_heartbeat ?? null);
-          setLastCheckinStatus(data.last_checkin_status ?? null);
+    fetchResidentOverview(seniorId)
+      .then(({ statusData, activeSosAlerts }) => {
+        if (statusData) {
+          setLastHeartbeat(statusData.last_heartbeat ?? null);
+          setLastCheckinStatus(statusData.last_checkin_status ?? null);
         }
+        setSosAlerts(activeSosAlerts);
       })
       .catch(() => {
         /* silent */
@@ -216,6 +251,8 @@ export default function SeniorDetailPage() {
     },
   ];
 
+  const activeSosAlert = sosAlerts[0] ?? null;
+
   return (
     <div className="px-4 py-6 space-y-6">
       {/* Header mit Refresh */}
@@ -234,15 +271,17 @@ export default function SeniorDetailPage() {
           <button
             onClick={async () => {
               setRefreshing(true);
-              const res = await fetch(
-                `/api/resident/status?resident_id=${seniorId}`,
-              );
-              if (res.ok) {
-                const data = await res.json();
-                setLastHeartbeat(data.last_heartbeat ?? null);
-                setLastCheckinStatus(data.last_checkin_status ?? null);
+              try {
+                const { statusData, activeSosAlerts } =
+                  await fetchResidentOverview(seniorId);
+                if (statusData) {
+                  setLastHeartbeat(statusData.last_heartbeat ?? null);
+                  setLastCheckinStatus(statusData.last_checkin_status ?? null);
+                }
+                setSosAlerts(activeSosAlerts);
+              } finally {
+                setRefreshing(false);
               }
-              setRefreshing(false);
             }}
             className="rounded-lg p-2 text-muted-foreground hover:bg-muted"
             aria-label="Aktualisieren"
@@ -304,7 +343,6 @@ export default function SeniorDetailPage() {
             <span className="text-muted-foreground">Letzte Aktivitaet</span>
             <span className="font-medium text-anthrazit">
               {(() => {
-                // eslint-disable-next-line react-hooks/purity
                 const diff = Date.now() - new Date(lastHeartbeat).getTime();
                 const min = Math.floor(diff / 60000);
                 const h = Math.floor(diff / 3600000);
@@ -318,7 +356,10 @@ export default function SeniorDetailPage() {
           </div>
         )}
         {lastCheckinStatus && (
-          <div className="flex items-center justify-between text-sm">
+          <div
+            data-testid="care-last-checkin-status"
+            className="flex items-center justify-between text-sm"
+          >
             <span className="text-muted-foreground">Letzter Check-in</span>
             <span className="font-medium text-anthrazit">
               {lastCheckinStatus === "ok"
@@ -332,12 +373,55 @@ export default function SeniorDetailPage() {
         <HeartbeatTimeline residentId={seniorId} />
       </div>
 
+      {activeSosAlert ? (
+        <div
+          data-testid="care-escalation-banner"
+          className="rounded-xl border border-red-200 bg-red-50 p-4 text-red-900"
+        >
+          <div className="flex items-start justify-between gap-3">
+            <div className="space-y-1">
+              <p className="text-sm font-semibold">
+                Aktive Hilfemeldung
+              </p>
+              <p className="text-sm">
+                {SOS_CATEGORY_LABELS[activeSosAlert.category] ??
+                  activeSosAlert.category.replace(/_/g, " ")}
+                {" · "}
+                {SOS_STATUS_LABELS[activeSosAlert.status] ??
+                  activeSosAlert.status}
+              </p>
+              <p className="text-xs text-red-700">
+                Seit{" "}
+                {new Date(activeSosAlert.created_at).toLocaleString("de-DE", {
+                  day: "2-digit",
+                  month: "2-digit",
+                  year: "numeric",
+                  hour: "2-digit",
+                  minute: "2-digit",
+                })}
+                {activeSosAlert.current_escalation_level
+                  ? ` · Stufe ${activeSosAlert.current_escalation_level}`
+                  : ""}
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => setActiveTab("sos")}
+              className="shrink-0 rounded-lg border border-red-200 bg-white px-3 py-2 text-xs font-medium text-red-700 hover:bg-red-100"
+            >
+              Zum SOS-Verlauf
+            </button>
+          </div>
+        </div>
+      ) : null}
+
       {/* Tabs */}
       <div className="flex gap-1 border-b">
         {tabs.map((tab) => (
           <button
             key={tab.key}
             onClick={() => setActiveTab(tab.key)}
+            data-testid={tab.key === "sos" ? "care-sos-tab" : undefined}
             className={`flex items-center gap-1.5 px-4 py-2.5 text-sm font-medium border-b-2 transition-colors ${
               activeTab === tab.key
                 ? "border-quartier-green text-quartier-green"
@@ -462,10 +546,15 @@ export default function SeniorDetailPage() {
                 </p>
               ) : (
                 sosAlerts.map((sos) => (
-                  <div key={sos.id} className="rounded-xl border bg-card p-4">
+                  <div
+                    key={sos.id}
+                    data-testid="care-sos-item"
+                    className="rounded-xl border bg-card p-4"
+                  >
                     <div className="flex items-center justify-between">
                       <p className="text-sm font-medium text-anthrazit capitalize">
-                        {sos.category.replace(/_/g, " ")}
+                        {SOS_CATEGORY_LABELS[sos.category] ??
+                          sos.category.replace(/_/g, " ")}
                       </p>
                       <span
                         className={`text-xs font-medium px-2 py-1 rounded-full ${
@@ -480,7 +569,7 @@ export default function SeniorDetailPage() {
                           ? "Geloest"
                           : sos.status === "cancelled"
                             ? "Abgebrochen"
-                            : "Aktiv"}
+                            : SOS_STATUS_LABELS[sos.status] ?? "Aktiv"}
                       </span>
                     </div>
                     <p className="text-xs text-muted-foreground mt-1">
@@ -492,6 +581,11 @@ export default function SeniorDetailPage() {
                         minute: "2-digit",
                       })}
                     </p>
+                    {sos.current_escalation_level ? (
+                      <p className="mt-1 text-xs text-muted-foreground">
+                        Eskalationsstufe {sos.current_escalation_level}
+                      </p>
+                    ) : null}
                   </div>
                 ))
               )}

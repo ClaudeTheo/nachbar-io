@@ -87,6 +87,15 @@ vi.mock("@/hooks/useVoicePreferences", () => ({
     isLoading: false,
   }),
 }));
+vi.mock("@/lib/ux-flags", () => ({
+  isUxRedesignEnabled: vi.fn(() => true),
+}));
+vi.mock("@/lib/useUnreadCount", () => ({
+  useUnreadCount: () => ({
+    count: 0,
+    refresh: vi.fn(),
+  }),
+}));
 
 // shadcn UI-Stubs
 vi.mock("@/components/ui/card", () => ({
@@ -398,5 +407,39 @@ describe("ProfilePage — Error-Handling Bugfixes", () => {
     await waitFor(() => {
       expect(screen.getByText("Zum aktiven Modus wechseln")).toBeDefined();
     });
+  });
+
+  it("zeigt legacy-gesperrte Profilziele deaktiviert statt als Links", async () => {
+    mockUserSelect.mockResolvedValue({
+      data: makeProfile(),
+      error: null,
+    });
+    mockHouseholdSelect.mockResolvedValue({ data: null, error: null });
+
+    render(<ProfilePage />);
+
+    await waitFor(() => {
+      expect(screen.getByText("Max Mustermann")).toBeDefined();
+    });
+
+    const companion = screen.getByText("KI-Assistent");
+    expect(companion.closest("a")).toBeNull();
+    expect(companion.closest('[aria-disabled="true"]')).not.toBeNull();
+
+    const polls = screen.getByText("Umfragen");
+    expect(polls.closest("a")).toBeNull();
+    expect(polls.closest('[aria-disabled="true"]')).not.toBeNull();
+
+    const packages = screen.getByText("Paketannahme");
+    expect(packages.closest("a")).toBeNull();
+    expect(packages.closest('[aria-disabled="true"]')).not.toBeNull();
+
+    expect(screen.getByText("Nachrichten").closest("a")?.getAttribute("href")).toBe(
+      "/notifications",
+    );
+    expect(screen.getByText("Karte").closest("a")?.getAttribute("href")).toBe(
+      "/map",
+    );
+    expect(screen.getAllByText("Im Pilot noch deaktiviert").length).toBe(3);
   });
 });

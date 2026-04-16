@@ -1,4 +1,4 @@
-// Tests fuer Phase I: Legacy-Route-Blocking in Middleware
+// Tests fuer Phase I: Legacy-Route-Blocking in Proxy/Middleware
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
 // Mock alle Middleware-Dependencies
@@ -21,7 +21,7 @@ vi.mock("@/lib/security/client-key", () => ({
   buildClientKeys: vi.fn(),
 }));
 
-import { middleware } from "@/middleware";
+import { proxy } from "@/proxy";
 
 function makeRequest(pathname: string) {
   const url = new URL(`http://localhost${pathname}`);
@@ -44,7 +44,6 @@ describe("Legacy Route Blocking (Phase I)", () => {
   const legacyRoutes = [
     "/board",
     "/marketplace",
-    "/dashboard",
     "/gruppen",
     "/polls",
     "/companion",
@@ -58,19 +57,20 @@ describe("Legacy Route Blocking (Phase I)", () => {
 
   for (const route of legacyRoutes) {
     it(`blockiert ${route} und leitet auf /kreis-start um`, async () => {
-      const res = await middleware(makeRequest(route));
+      const res = await proxy(makeRequest(route));
       expect(res.status).toBe(307);
       expect(res.headers.get("location")).toContain("/kreis-start");
     });
   }
 
   it("blockiert auch Sub-Routen wie /marketplace/123", async () => {
-    const res = await middleware(makeRequest("/marketplace/123"));
+    const res = await proxy(makeRequest("/marketplace/123"));
     expect(res.status).toBe(307);
     expect(res.headers.get("location")).toContain("/kreis-start");
   });
 
   const allowedRoutes = [
+    "/dashboard",
     "/mein-kreis",
     "/mein-kreis/termine",
     "/schreiben",
@@ -82,7 +82,7 @@ describe("Legacy Route Blocking (Phase I)", () => {
 
   for (const route of allowedRoutes) {
     it(`erlaubt Phase-1-Route ${route}`, async () => {
-      const res = await middleware(makeRequest(route));
+      const res = await proxy(makeRequest(route));
       // Sollte KEIN Redirect auf /kreis-start sein
       const location = res?.headers?.get("location") ?? "";
       expect(location).not.toContain("/kreis-start");

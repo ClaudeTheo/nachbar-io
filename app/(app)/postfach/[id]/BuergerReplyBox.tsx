@@ -95,6 +95,7 @@ export default function BuergerReplyBox({ threadId }: Props) {
   return (
     <form
       onSubmit={handleSubmit}
+      data-testid="postfach-reply-form"
       className="rounded-xl border border-gray-200 bg-white p-4"
     >
       <label
@@ -105,6 +106,7 @@ export default function BuergerReplyBox({ threadId }: Props) {
       </label>
 
       <textarea
+        data-testid="postfach-reply-input"
         id="reply-body"
         value={body}
         onChange={(e) => setBody(e.target.value)}
@@ -168,6 +170,7 @@ export default function BuergerReplyBox({ threadId }: Props) {
 
         <button
           type="submit"
+          data-testid="postfach-reply-send-button"
           disabled={!isValid || loading}
           className="inline-flex min-h-[44px] items-center gap-2 rounded-lg bg-[#4CAF87] px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-[#3d9a73] disabled:cursor-not-allowed disabled:opacity-50"
         >
@@ -178,7 +181,7 @@ export default function BuergerReplyBox({ threadId }: Props) {
 
       {error && <p className="mt-2 text-sm text-red-600">{error}</p>}
       {success && (
-        <p className="mt-2 text-sm text-[#4CAF87]">
+        <p data-testid="postfach-reply-success" className="mt-2 text-sm text-[#4CAF87]">
           Antwort wurde erfolgreich gesendet.
         </p>
       )}

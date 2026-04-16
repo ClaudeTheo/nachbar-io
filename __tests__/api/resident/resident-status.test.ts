@@ -39,6 +39,7 @@ function createStatusMock(
       chain.order = vi.fn().mockReturnValue(chain);
       chain.limit = vi.fn().mockReturnValue(chain);
       chain.single = vi.fn().mockReturnValue(terminalResult);
+      chain.maybeSingle = vi.fn().mockReturnValue(terminalResult);
       chain.then = terminalResult.then.bind(terminalResult);
 
       return chain;
@@ -50,6 +51,10 @@ let mockSupabase: ReturnType<typeof createStatusMock>;
 
 vi.mock("@/lib/supabase/server", () => ({
   createClient: vi.fn().mockImplementation(() => Promise.resolve(mockSupabase)),
+}));
+
+vi.mock("@/lib/supabase/admin", () => ({
+  getAdminSupabase: vi.fn().mockImplementation(() => mockSupabase),
 }));
 
 // --- Tests ---
@@ -67,10 +72,12 @@ describe("GET /api/resident/status", () => {
     mockSupabase = createStatusMock([
       // 1. caregiver_links: aktiver Link mit heartbeat_visible=true
       { data: { id: "link-1", heartbeat_visible: true }, error: null },
+      // 2. users: Name des Bewohners
+      { data: { display_name: "Gertrude H." }, error: null },
       // 2. heartbeats: letzter Heartbeat vor 2h
       { data: { created_at: recentHeartbeat }, error: null },
       // 3. care_checkins: letztes Check-in
-      { data: { status: "good", created_at: recentHeartbeat }, error: null },
+      { data: { status: "ok", created_at: recentHeartbeat }, error: null },
     ]);
 
     const { GET } = await import("@/app/api/resident/status/route");
@@ -82,8 +89,10 @@ describe("GET /api/resident/status", () => {
 
     expect(response.status).toBe(200);
     expect(json.status).toBe("ok");
+    expect(json.display_name).toBe("Gertrude H.");
     expect(json.heartbeat_visible).toBe(true);
     expect(json.last_heartbeat).toBeDefined();
+    expect(json.last_checkin_status).toBe("ok");
     expect(json.last_checkin).toBeDefined();
   });
 
@@ -97,6 +106,7 @@ describe("GET /api/resident/status", () => {
 
     mockSupabase = createStatusMock([
       { data: { id: "link-1", heartbeat_visible: true }, error: null },
+      { data: { display_name: "Gertrude H." }, error: null },
       { data: { created_at: reminderWindow }, error: null },
       { data: null, error: null },
     ]);
@@ -117,6 +127,7 @@ describe("GET /api/resident/status", () => {
 
     mockSupabase = createStatusMock([
       { data: { id: "link-1", heartbeat_visible: true }, error: null },
+      { data: { display_name: "Gertrude H." }, error: null },
       { data: { created_at: alertWindow }, error: null },
       { data: null, error: null },
     ]);
@@ -136,6 +147,7 @@ describe("GET /api/resident/status", () => {
     mockSupabase = createStatusMock([
       // Link existiert aber heartbeat_visible=false
       { data: { id: "link-1", heartbeat_visible: false }, error: null },
+      { data: { display_name: "Gertrude H." }, error: null },
       // care_checkins
       { data: null, error: null },
     ]);
@@ -149,6 +161,7 @@ describe("GET /api/resident/status", () => {
 
     expect(response.status).toBe(200);
     expect(json.status).toBe("ok");
+    expect(json.display_name).toBe("Gertrude H.");
     expect(json.last_heartbeat).toBeNull();
     expect(json.heartbeat_visible).toBe(false);
   });

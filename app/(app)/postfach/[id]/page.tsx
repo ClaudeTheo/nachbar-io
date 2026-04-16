@@ -129,6 +129,7 @@ export default async function PostfachDetailPage({ params }: Props) {
           return (
             <div
               key={msg.id}
+              data-testid="postfach-message"
               className={`rounded-xl border p-4 ${
                 isMine
                   ? "border-gray-200 bg-white"

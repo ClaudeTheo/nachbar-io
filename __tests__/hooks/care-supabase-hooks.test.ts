@@ -11,8 +11,19 @@ const mockSingle = vi.fn();
 const mockLimit = vi.fn().mockResolvedValue({ data: [], error: null });
 const mockIn = vi.fn().mockResolvedValue({ data: [], error: null });
 const mockOrder = vi.fn().mockReturnValue({ limit: mockLimit });
-const mockEq3 = vi.fn().mockReturnValue({ maybeSingle: mockMaybeSingle, order: mockOrder });
-const mockEq2 = vi.fn().mockReturnValue({ eq: mockEq3, maybeSingle: mockMaybeSingle, single: mockSingle, order: mockOrder });
+const mockIs = vi.fn().mockReturnValue({ maybeSingle: mockMaybeSingle });
+const mockEq3 = vi.fn().mockReturnValue({
+  maybeSingle: mockMaybeSingle,
+  order: mockOrder,
+  is: mockIs,
+});
+const mockEq2 = vi.fn().mockReturnValue({
+  eq: mockEq3,
+  maybeSingle: mockMaybeSingle,
+  single: mockSingle,
+  order: mockOrder,
+  is: mockIs,
+});
 const mockEq = vi.fn().mockReturnValue({ eq: mockEq2, order: mockOrder, single: mockSingle, in: mockIn });
 const mockSelect = vi.fn().mockReturnValue({ eq: mockEq, in: mockIn });
 const mockFrom = vi.fn().mockReturnValue({ select: mockSelect });
@@ -164,13 +175,28 @@ describe('useCareRole', () => {
     mockGetCachedUser.mockResolvedValue({ user: { id: 'helfer-1' } });
     mockSingle.mockResolvedValue({ data: { is_admin: false }, error: null });
     mockMaybeSingle.mockResolvedValue({
-      data: { role: 'caregiver', assigned_seniors: ['senior-1'] },
+      data: { role: 'relative', assigned_seniors: ['senior-1'] },
       error: null,
     });
 
     const { result } = renderHook(() => useCareRole('senior-1'));
     await waitFor(() => expect(result.current.loading).toBe(false));
-    expect(result.current.role).toBe('caregiver');
+    expect(result.current.role).toBe('relative');
+  });
+
+  it('erkennt caregiver_link als relative Rolle', async () => {
+    mockGetCachedUser.mockResolvedValue({ user: { id: 'caregiver-1' } });
+    mockSingle.mockResolvedValue({ data: { is_admin: false }, error: null });
+    mockMaybeSingle
+      .mockResolvedValueOnce({ data: null, error: null })
+      .mockResolvedValueOnce({
+        data: { relationship_type: 'child' },
+        error: null,
+      });
+
+    const { result } = renderHook(() => useCareRole('senior-1'));
+    await waitFor(() => expect(result.current.loading).toBe(false));
+    expect(result.current.role).toBe('relative');
   });
 
   it('gibt none wenn kein Zugriff', async () => {

@@ -8,6 +8,7 @@ import { createHash } from "crypto";
 import { computeReputationStats } from "@/lib/reputation";
 import { HEARTBEAT_ESCALATION } from "@/lib/care/constants";
 import type { ResidentStatus } from "@/lib/care/types";
+import { getAdminSupabase } from "@/lib/supabase/admin";
 
 // ============================================================
 // Anonyme Bug-Reports
@@ -169,9 +170,13 @@ export async function recomputeReputation(
 // ============================================================
 
 export interface ResidentStatusResult {
+  resident_id: string;
+  display_name: string;
   status: ResidentStatus;
   last_heartbeat: string | null;
   heartbeat_visible: boolean;
+  last_checkin_status: string | null;
+  last_checkin_at: string | null;
   last_checkin: { status: string; at: string } | null;
 }
 
@@ -200,6 +205,12 @@ export async function getResidentStatus(
   if (!link) {
     throw new ServiceError("Keine Verknüpfung zu diesem Bewohner", 403);
   }
+
+  const { data: residentProfile } = await supabase
+    .from("users")
+    .select("display_name")
+    .eq("id", residentId)
+    .maybeSingle();
 
   // Letzter Heartbeat (nur wenn heartbeat_visible)
   let lastHeartbeat: string | null = null;
@@ -231,18 +242,27 @@ export async function getResidentStatus(
   }
 
   // Letztes Check-in
-  const { data: checkin } = await supabase
+  // caregiver_links autorisiert den Zugriff, care_checkins-RLS jedoch nur
+  // care_helpers. Nach der expliziten Link-Prüfung lesen wir den letzten
+  // Check-in deshalb gezielt mit Service-Role, ohne Heartbeat-Sichtbarkeit
+  // oder Link-Prüfung zu umgehen.
+  const adminSupabase = getAdminSupabase();
+  const { data: checkin } = await adminSupabase
     .from("care_checkins")
     .select("status, created_at")
     .eq("senior_id", residentId)
     .order("created_at", { ascending: false })
     .limit(1)
-    .single();
+    .maybeSingle();
 
   return {
+    resident_id: residentId,
+    display_name: residentProfile?.display_name ?? "Bewohner",
     status,
     last_heartbeat: lastHeartbeat,
     heartbeat_visible: link.heartbeat_visible,
+    last_checkin_status: checkin?.status ?? null,
+    last_checkin_at: checkin?.created_at ?? null,
     last_checkin: checkin
       ? { status: checkin.status, at: checkin.created_at }
       : null,

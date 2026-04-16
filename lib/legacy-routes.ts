@@ -35,7 +35,6 @@ export const LEGACY_ROUTE_PREFIXES = [
   "/vouching",
   "/companion",
   "/jugend",
-  "/dashboard",
 ] as const;
 
 export function isLegacyRoute(pathname: string): boolean {

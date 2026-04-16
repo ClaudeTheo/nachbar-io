@@ -3,7 +3,7 @@
 // Jeder Agent bekommt eine eigene .auth/<agentId>.json Datei.
 import { test as setup } from "@playwright/test";
 import * as fs from "fs";
-import { TEST_AGENTS, TIMEOUTS } from "./helpers/test-config";
+import { TEST_AGENTS, TEST_MODE_HEADERS, TIMEOUTS } from "./helpers/test-config";
 import { AUTH_DIR, authFile } from "./helpers/auth-paths";
 
 // Re-export fuer Abwaertskompatibilitaet
@@ -132,6 +132,8 @@ async function loginAndSave(
   const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
   const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
+  await page.context().setExtraHTTPHeaders(TEST_MODE_HEADERS);
+
   // Erst eine Seite laden damit Cookies empfangen werden koennen
   await page.goto("/login");
   await page.waitForLoadState("networkidle").catch(() => {});
@@ -157,6 +159,7 @@ async function loginAndSave(
     }
 
     const response = await page.request.post(`${baseURL}/api/test/login`, {
+      headers: TEST_MODE_HEADERS,
       data: { email, password, secret: testSecret },
     });
 

@@ -15,6 +15,7 @@ import {
 } from "./types";
 import { authFile } from "../helpers/auth-paths";
 import { PORTAL_URLS } from "../helpers/portal-urls";
+import { TEST_MODE_HEADERS } from "../helpers/test-config";
 
 /** Typ-Map aller Rollen-Fixtures */
 type RoleFixtures = {
@@ -151,6 +152,7 @@ export const test = base.extend<RoleFixtures>({
       viewport: { width: 393, height: 851 }, // Pixel 5
       locale: "de-DE",
       timezoneId: "Europe/Berlin",
+      extraHTTPHeaders: TEST_MODE_HEADERS,
     });
     await addE2eFlags(ctx, stateFile, true);
     const page = await ctx.newPage();
@@ -166,6 +168,7 @@ export const test = base.extend<RoleFixtures>({
       viewport: { width: 1280, height: 720 },
       locale: "de-DE",
       timezoneId: "Europe/Berlin",
+      extraHTTPHeaders: TEST_MODE_HEADERS,
     });
     await addE2eFlags(ctx, stateFile, true);
     const page = await ctx.newPage();
@@ -181,6 +184,7 @@ export const test = base.extend<RoleFixtures>({
       viewport: { width: 1280, height: 720 },
       locale: "de-DE",
       timezoneId: "Europe/Berlin",
+      extraHTTPHeaders: TEST_MODE_HEADERS,
     });
     await addE2eFlags(ctx, stateFile);
     const page = await ctx.newPage();
@@ -196,6 +200,7 @@ export const test = base.extend<RoleFixtures>({
       viewport: { width: 1280, height: 720 },
       locale: "de-DE",
       timezoneId: "Europe/Berlin",
+      extraHTTPHeaders: TEST_MODE_HEADERS,
     });
     await addE2eFlags(ctx, stateFile);
     const page = await ctx.newPage();
@@ -211,6 +216,7 @@ export const test = base.extend<RoleFixtures>({
       viewport: { width: 1280, height: 720 },
       locale: "de-DE",
       timezoneId: "Europe/Berlin",
+      extraHTTPHeaders: TEST_MODE_HEADERS,
     });
     await addE2eFlags(ctx, stateFile);
     const page = await ctx.newPage();

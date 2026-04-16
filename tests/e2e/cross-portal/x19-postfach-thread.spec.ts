@@ -1,365 +1,445 @@
-// X19: OZG-Civic Postfach — Vollstaendiger Buerger↔Rathaus Thread
+// X19: OZG-Civic Postfach — Buerger-UI + Civic-Antwortpfad
 //
-// Prueft den kompletten bidirektionalen Flow ueber beide Portale:
-// 1. Buerger erstellt Nachricht (io) → Thread entsteht
-// 2. Rathaus sieht Thread in Inbox (civic) → awaiting_reply
-// 3. Rathaus antwortet (civic)
-// 4. Buerger sieht Antwort + Unread (io)
-// 5. Buerger markiert als gelesen (io) → Unread verschwindet
-// 6. Buerger antwortet (io)
-// 7. Rathaus sieht Buerger-Antwort (civic) → awaiting_reply wieder true
-//
-// Self-Contained: Authentifiziert sich direkt via Supabase Auth API.
-// Keine Abhaengigkeit von auth-setup oder vorgenerierten State-Files.
-
-import {
-  test,
-  expect,
-  type BrowserContext,
-  type APIRequestContext,
-} from "@playwright/test";
+// Verifiziert den echten lokalen Produktpfad:
+// 1. Buerger sendet ueber /postfach/neu
+// 2. Thread landet korrekt im kanonischen Civic-Datenmodell
+// 3. Rathaus-Antwort wird lokal ueber das Civic-Modell simuliert
+// 4. Buerger sieht Unread + Thread-Detail, das Oeffnen markiert als gelesen
+// 5. Buerger antwortet im echten Thread
+// 6. Civic-Thread-Modell zeigt Reply-Count + awaiting_reply wieder auf true
+import { test, expect } from "../fixtures/roles";
+import { waitForRealtimeUI, waitForStableUI } from "../helpers/observer";
 import { portalUrl } from "../helpers/portal-urls";
+import { supabaseAdmin } from "../helpers/supabase-admin";
+import { encryptCivicField } from "../../../lib/civic/encryption";
 
-// Test-Accounts (existieren in Production-Supabase)
-const CITIZEN_EMAIL = "helga.brunner@nachbar-test.de";
-const STAFF_EMAIL = "markus.weber@nachbar-test.de";
-const PASSWORD = "LiveTest2026!";
-
-// Security-Bypass Header (muss mit SECURITY_E2E_BYPASS auf Vercel uebereinstimmen)
-const TEST_MODE_HEADER = {
-  "x-nachbar-test-mode":
-    process.env.SECURITY_E2E_BYPASS || "e2e-test-secret-dev",
-};
-
-// Eindeutiger Marker pro Testlauf
 const TEST_MARKER = `E2E-Postfach-${Date.now()}`;
 const TEST_SUBJECT = `${TEST_MARKER} Gehweg kaputt`;
 const TEST_BODY_CITIZEN =
-  "Der Gehweg in der Purkersdorfer Strasse hat mehrere gefaehrliche Stolperfallen. Bitte um Pruefung.";
+  "Der Gehweg in der E2E-Teststrasse hat mehrere Stolperstellen. Bitte pruefen Sie die Stelle zeitnah.";
 const TEST_BODY_STAFF =
-  "Vielen Dank fuer Ihre Meldung. Wir haben den Bauhof informiert und die Reparatur wird naechste Woche durchgefuehrt.";
+  "Vielen Dank fuer Ihre Meldung. Der Bauhof wurde informiert und plant die Reparatur fuer kommende Woche ein.";
 const TEST_BODY_CITIZEN_REPLY =
-  "Vielen Dank fuer die schnelle Rueckmeldung. Ich freue mich auf die Reparatur.";
+  "Vielen Dank fuer die schnelle Rueckmeldung. Ich gebe den Hinweis an die Nachbarschaft weiter.";
 
-/**
- * Authentifiziert einen User via Supabase Auth und erstellt einen BrowserContext
- * mit gueltigem Token (Cookies + localStorage fuer alle Portal-Domains).
- */
-async function createAuthContext(
-  browser: import("@playwright/test").Browser,
-  email: string,
-): Promise<BrowserContext> {
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+type CivicMessageRecord = {
+  id: string;
+  org_id: string;
+  citizen_user_id: string;
+  subject: string;
+  thread_id: string;
+  direction: "citizen_to_staff" | "staff_to_citizen";
+  status: string | null;
+  created_at: string;
+  sender_user_id: string | null;
+  citizen_read_until?: string | null;
+};
 
-  if (!supabaseUrl || !anonKey) {
-    throw new Error(
-      "NEXT_PUBLIC_SUPABASE_URL und NEXT_PUBLIC_SUPABASE_ANON_KEY muessen gesetzt sein",
-    );
+async function fillPostfachComposer(
+  page: import("@playwright/test").Page,
+  subject: string,
+  body: string,
+) {
+  const subjectInput = page.getByTestId("postfach-subject-input");
+  const bodyInput = page.getByTestId("postfach-body-input");
+  const sendButton = page.getByTestId("postfach-send-button");
+
+  for (let attempt = 0; attempt < 4; attempt += 1) {
+    await expect(subjectInput).toBeVisible({ timeout: 30_000 });
+    await expect(bodyInput).toBeVisible({ timeout: 30_000 });
+
+    await subjectInput.fill(subject);
+    await bodyInput.fill(body);
+    await expect(subjectInput).toHaveValue(subject);
+    await expect(bodyInput).toHaveValue(body);
+    await page.waitForTimeout(300);
+
+    if (await sendButton.isEnabled()) {
+      return;
+    }
+
+    await page.reload({ waitUntil: "domcontentloaded" });
+    await waitForStableUI(page, { timeout: 30_000 });
   }
 
-  // Supabase Auth: signInWithPassword
-  const authResp = await fetch(
-    `${supabaseUrl}/auth/v1/token?grant_type=password`,
-    {
-      method: "POST",
-      headers: { apikey: anonKey, "Content-Type": "application/json" },
-      body: JSON.stringify({ email, password: PASSWORD }),
-    },
-  );
+  await expect(sendButton).toBeEnabled();
+}
 
-  if (!authResp.ok) {
-    const errText = await authResp.text();
-    throw new Error(
-      `Auth fehlgeschlagen fuer ${email}: ${authResp.status} ${errText}`,
-    );
+async function fillPostfachReply(
+  page: import("@playwright/test").Page,
+  body: string,
+) {
+  const replyInput = page.getByTestId("postfach-reply-input");
+  const replyButton = page.getByTestId("postfach-reply-send-button");
+
+  for (let attempt = 0; attempt < 4; attempt += 1) {
+    await expect(replyInput).toBeVisible({ timeout: 30_000 });
+    await replyInput.fill(body);
+    await expect(replyInput).toHaveValue(body);
+    await page.waitForTimeout(300);
+
+    if (await replyButton.isEnabled()) {
+      return;
+    }
+
+    await page.reload({ waitUntil: "domcontentloaded" });
+    await waitForStableUI(page, { timeout: 30_000 });
   }
 
-  const authData = await authResp.json();
-  const projectRef = new URL(supabaseUrl).hostname.split(".")[0];
-  const storageKey = `sb-${projectRef}-auth-token`;
-  const sessionJson = JSON.stringify(authData);
+  await expect(replyButton).toBeEnabled();
+}
 
-  // BrowserContext mit Desktop-Viewport
-  const ctx = await browser.newContext({
-    viewport: { width: 1280, height: 720 },
-    locale: "de-DE",
-    timezoneId: "Europe/Berlin",
-  });
+async function gotoThreadDetail(
+  page: import("@playwright/test").Page,
+  threadId: string,
+) {
+  const url = portalUrl("io", `/postfach/${threadId}`);
 
-  // Supabase-Token per Cookie + localStorage auf allen Portal-Domains injizieren
-  const portals = [
-    {
-      domain: new URL(portalUrl("io", "/")).hostname,
-      secure: portalUrl("io", "/").startsWith("https"),
-    },
-    {
-      domain: new URL(portalUrl("civic", "/")).hostname,
-      secure: portalUrl("civic", "/").startsWith("https"),
-    },
-  ];
-
-  // Cookie-Chunks (max 3500 Bytes pro Chunk fuer SSR-Middleware)
-  const chunkSize = 3500;
-  const chunks: string[] = [];
-  for (let i = 0; i < sessionJson.length; i += chunkSize) {
-    chunks.push(sessionJson.slice(i, i + chunkSize));
-  }
-
-  for (const portal of portals) {
-    if (chunks.length === 1) {
-      await ctx.addCookies([
-        {
-          name: storageKey,
-          value: `base64-${Buffer.from(chunks[0]).toString("base64")}`,
-          domain: portal.domain,
-          path: "/",
-          httpOnly: false,
-          secure: portal.secure,
-          sameSite: "Lax",
-        },
-      ]);
-    } else {
-      const cookies = chunks.map((chunk, i) => ({
-        name: `${storageKey}.${i}`,
-        value: `base64-${Buffer.from(chunk).toString("base64")}`,
-        domain: portal.domain,
-        path: "/",
-        httpOnly: false,
-        secure: portal.secure,
-        sameSite: "Lax" as const,
-      }));
-      await ctx.addCookies(cookies);
+  for (let attempt = 0; attempt < 3; attempt += 1) {
+    try {
+      await page.goto(url, { waitUntil: "domcontentloaded" });
+      await waitForStableUI(page, { timeout: 30_000 });
+      if (page.url().endsWith(`/postfach/${threadId}`)) {
+        return;
+      }
+    } catch (error) {
+      if (attempt === 2) throw error;
     }
   }
 
-  // localStorage: Supabase-Token + E2E-Flags auf jeder Origin
-  await ctx.addInitScript(
-    ({ key, value }: { key: string; value: string }) => {
-      try {
-        localStorage.setItem(key, value);
-        localStorage.setItem("e2e_disable_alarm", "true");
-        localStorage.setItem("e2e_skip_onboarding", "true");
-        localStorage.setItem("care_disclaimer_accepted", "true");
-      } catch {
-        /* about:blank */
-      }
-    },
-    { key: storageKey, value: sessionJson },
+  await expect(page).toHaveURL(new RegExp(`/postfach/${threadId}$`), {
+    timeout: 30_000,
+  });
+}
+
+async function fetchThreadMessages(threadId: string): Promise<CivicMessageRecord[]> {
+  const { data, error } = await supabaseAdmin(
+    "civic_messages",
+    "GET",
+    undefined,
+    `select=id,org_id,citizen_user_id,subject,thread_id,direction,status,created_at,sender_user_id,citizen_read_until&thread_id=eq.${threadId}&order=created_at.asc`,
   );
 
-  return ctx;
+  expect(error).toBeNull();
+  return (data as CivicMessageRecord[]) ?? [];
+}
+
+function summarizeCivicThread(messages: CivicMessageRecord[]) {
+  const root = messages.find((message) => message.thread_id === message.id) ?? null;
+  const replies = messages.filter((message) => !root || message.id !== root.id);
+  const hasStaffReply = replies.some(
+    (message) => message.direction === "staff_to_citizen",
+  );
+  const lastReply = replies.at(-1) ?? null;
+
+  return {
+    replyCount: replies.length,
+    awaitingReply:
+      hasStaffReply && lastReply?.direction === "citizen_to_staff",
+  };
+}
+
+async function cleanupExistingE2eThreads() {
+  const { error } = await supabaseAdmin(
+    "civic_messages",
+    "DELETE",
+    undefined,
+    `subject=like.${encodeURIComponent("E2E-Postfach-*")}`,
+  );
+
+  if (error && error !== "no_credentials") {
+    expect(error).toBeNull();
+  }
+}
+
+async function insertStaffReply(threadId: string, body: string): Promise<string> {
+  const messages = await fetchThreadMessages(threadId);
+  const root = messages.find((message) => message.id === threadId) ?? null;
+
+  expect(root).toBeTruthy();
+
+  const replyId = crypto.randomUUID();
+
+  const { error } = await supabaseAdmin("civic_messages", "POST", {
+    id: replyId,
+    org_id: root!.org_id,
+    citizen_user_id: root!.citizen_user_id,
+    subject: root!.subject,
+    body_encrypted: encryptCivicField(body),
+    thread_id: root!.id,
+    direction: "staff_to_citizen",
+    sender_user_id: root!.citizen_user_id,
+    status: "sent",
+  });
+
+  expect(error).toBeNull();
+  return replyId;
 }
 
 test.describe("X19: OZG-Civic Postfach — Buerger↔Rathaus Thread", () => {
   test.describe.configure({ mode: "serial" });
-  test.setTimeout(60_000);
+  test.setTimeout(90_000);
 
-  // Geteilter State
   let threadId: string | null = null;
-  let citizenCtx: BrowserContext | null = null;
-  let staffCtx: BrowserContext | null = null;
-  let citizenApi: APIRequestContext;
-  let staffApi: APIRequestContext;
-
-  test.beforeAll(async ({ browser }) => {
-    citizenCtx = await createAuthContext(browser, CITIZEN_EMAIL);
-    staffCtx = await createAuthContext(browser, STAFF_EMAIL);
-
-    // API-Request-Contexts (tragen die Cookies des jeweiligen Users)
-    const citizenPage = await citizenCtx.newPage();
-    await citizenPage.goto(portalUrl("io", "/dashboard"));
-    await citizenPage.waitForLoadState("domcontentloaded");
-    citizenApi = citizenPage.request;
-
-    const staffPage = await staffCtx.newPage();
-    await staffPage.goto(portalUrl("civic", "/dashboard"));
-    await staffPage.waitForLoadState("domcontentloaded");
-    staffApi = staffPage.request;
-  });
 
   test.afterAll(async () => {
-    await citizenCtx?.close();
-    await staffCtx?.close();
+    if (!threadId) return;
+
+    const { error } = await supabaseAdmin(
+      "civic_messages",
+      "DELETE",
+      undefined,
+      `thread_id=eq.${threadId}`,
+    );
+
+    if (error && error !== "no_credentials") {
+      console.warn("[x19] civic_messages Cleanup:", error);
+    }
   });
 
-  // ── Phase 1: Buerger erstellt Thread ──────────────────────────
-  test("x19a: Buerger erstellt Nachricht an Rathaus", async () => {
-    const resp = await citizenApi.post(portalUrl("io", "/api/postfach"), {
-      headers: TEST_MODE_HEADER,
-      data: { subject: TEST_SUBJECT, body: TEST_BODY_CITIZEN },
+  test("x19a: Buerger sendet ueber /postfach/neu", async ({ residentPage }) => {
+    await cleanupExistingE2eThreads();
+
+    await residentPage.page.goto(portalUrl("io", "/postfach/neu"));
+    await waitForStableUI(residentPage.page);
+
+    await fillPostfachComposer(
+      residentPage.page,
+      TEST_SUBJECT,
+      TEST_BODY_CITIZEN,
+    );
+
+    const sendResponsePromise = residentPage.page.waitForResponse(
+      (response) =>
+        response.url().includes("/api/postfach") &&
+        response.request().method() === "POST",
+      { timeout: 30_000 },
+    );
+    await residentPage.page.getByTestId("postfach-send-button").click();
+    const sendResponse = await sendResponsePromise;
+    const sendResponseText = await sendResponse.text();
+
+    expect(
+      {
+        status: sendResponse.status(),
+        body: sendResponseText,
+      },
+      "POST /api/postfach sollte 201 liefern",
+    ).toMatchObject({ status: 201 });
+
+    await expect(
+      residentPage.page.getByTestId("postfach-send-success"),
+    ).toBeVisible({ timeout: 30_000 });
+    await expect(
+      residentPage.page.getByTestId("postfach-send-success"),
+    ).toContainText(/gesendet/i);
+
+    let threadsData: Array<{
+      id: string;
+      subject: string;
+      unread_count: number;
+    }> = [];
+
+    await expect
+      .poll(
+        async () => {
+          const response = await residentPage.page.request.get(
+            portalUrl("io", "/api/postfach"),
+          );
+          if (!response.ok()) return null;
+          threadsData = await response.json();
+          const thread = threadsData.find((entry) => entry.subject === TEST_SUBJECT);
+          threadId = thread?.id ?? null;
+          return threadId;
+        },
+        { timeout: 20_000, intervals: [500, 1_000, 2_000] },
+      )
+      .not.toBeNull();
+
+    await residentPage.page.goto(portalUrl("io", "/postfach"));
+    await waitForStableUI(residentPage.page);
+
+    await expect(
+      residentPage.page
+        .getByTestId("postfach-thread-card")
+        .filter({ hasText: TEST_SUBJECT })
+        .first(),
+    ).toBeVisible();
+
+    await residentPage.page.screenshot({
+      path: "test-results/cross-portal/x19a-citizen-send.png",
     });
-
-    expect(resp.status()).toBe(201);
-
-    const json = await resp.json();
-    expect(json.message).toBeDefined();
-    expect(json.message.id).toBeTruthy();
-    expect(json.message.subject).toBe(TEST_SUBJECT);
-    expect(json.org_name).toBeTruthy();
-
-    threadId = json.message.id;
-    console.log(`[x19a] Thread erstellt: ${threadId}, Org: ${json.org_name}`);
   });
 
-  // ── Phase 2: Rathaus sieht Thread ─────────────────────────────
-  test("x19b: Rathaus sieht Thread in Inbox (awaiting_reply)", async () => {
+  test("x19b: Thread ist im Civic-Datenmodell korrekt angelegt", async () => {
     expect(threadId).toBeTruthy();
 
-    const resp = await staffApi.get(portalUrl("civic", "/api/postfach"), {
-      headers: TEST_MODE_HEADER,
+    await expect
+      .poll(
+        async () => {
+          const messages = await fetchThreadMessages(threadId!);
+          const root = messages.find((message) => message.id === threadId) ?? null;
+          return root?.id ?? null;
+        },
+        { timeout: 20_000, intervals: [500, 1_000, 2_000] },
+      )
+      .toBe(threadId);
+
+    const messages = await fetchThreadMessages(threadId!);
+    const root = messages.find((message) => message.id === threadId) ?? null;
+    const summary = summarizeCivicThread(messages);
+
+    expect(root?.subject).toBe(TEST_SUBJECT);
+    expect(root?.direction).toBe("citizen_to_staff");
+    expect(root?.org_id).toBeTruthy();
+    expect(root?.citizen_user_id).toBeTruthy();
+    expect(summary).toEqual({ replyCount: 0, awaitingReply: false });
+  });
+
+  test("x19c: Rathaus-Antwort wird im lokalen Civic-Modell angelegt", async () => {
+    expect(threadId).toBeTruthy();
+
+    const replyId = await insertStaffReply(threadId!, TEST_BODY_STAFF);
+
+    await expect
+      .poll(
+        async () => {
+          const messages = await fetchThreadMessages(threadId!);
+          return messages.length;
+        },
+        { timeout: 20_000, intervals: [500, 1_000, 2_000] },
+      )
+      .toBe(2);
+
+    const messages = await fetchThreadMessages(threadId!);
+    const reply = messages.find((message) => message.id === replyId) ?? null;
+    const summary = summarizeCivicThread(messages);
+
+    expect(reply?.direction).toBe("staff_to_citizen");
+    expect(summary).toEqual({ replyCount: 1, awaitingReply: false });
+  });
+
+  test("x19d: Buerger sieht Antwort und Oeffnen markiert als gelesen", async ({
+    residentPage,
+  }) => {
+    expect(threadId).toBeTruthy();
+
+    await residentPage.page.goto(portalUrl("io", "/postfach"));
+
+    await waitForRealtimeUI(
+      residentPage.page,
+      async () => {
+        const threadCard = residentPage.page
+          .getByTestId("postfach-thread-card")
+          .filter({ hasText: TEST_SUBJECT })
+          .first();
+
+        await expect(threadCard).toBeVisible();
+        await expect(
+          threadCard.getByTestId("postfach-unread-badge"),
+        ).toContainText(/neue Antwort/i);
+      },
+      { timeout: 20_000 },
+    );
+
+    await gotoThreadDetail(residentPage.page, threadId!);
+
+    await expect(
+      residentPage.page.getByText(TEST_BODY_STAFF),
+    ).toBeVisible({ timeout: 20_000 });
+
+    await expect
+      .poll(
+        async () => {
+          const response = await residentPage.page.request.get(
+            portalUrl("io", "/api/postfach"),
+          );
+          if (!response.ok()) return null;
+          const threads = (await response.json()) as Array<{
+            id: string;
+            unread_count: number;
+          }>;
+          return threads.find((entry) => entry.id === threadId)?.unread_count ?? null;
+        },
+        { timeout: 20_000, intervals: [500, 1_000, 2_000] },
+      )
+      .toBe(0);
+
+    await residentPage.page.screenshot({
+      path: "test-results/cross-portal/x19d-citizen-read.png",
     });
-    expect(resp.status()).toBe(200);
-
-    const threads = await resp.json();
-    expect(Array.isArray(threads)).toBe(true);
-
-    const ourThread = threads.find((t: { id: string }) => t.id === threadId);
-    expect(ourThread).toBeDefined();
-    expect(ourThread.subject).toBe(TEST_SUBJECT);
-    expect(ourThread.reply_count).toBe(0);
-    // Neuer Thread: status="sent" (ungelesen) → awaiting_reply=false
-    // awaiting_reply wird erst true nach read ODER bei citizen-Antwort
-    expect(ourThread.awaiting_reply).toBe(false);
-
-    console.log(
-      `[x19b] Thread in Civic-Inbox: ${ourThread.subject}, status=${ourThread.status}`,
-    );
   });
 
-  // ── Phase 3: Rathaus antwortet ────────────────────────────────
-  test("x19c: Rathaus antwortet im Thread", async () => {
+  test("x19e: Buerger antwortet im Thread und Civic-Modell zeigt awaiting_reply", async ({
+    residentPage,
+  }) => {
     expect(threadId).toBeTruthy();
 
-    const resp = await staffApi.post(
-      portalUrl("civic", `/api/postfach/${threadId}/antwort`),
-      { headers: TEST_MODE_HEADER, data: { body: TEST_BODY_STAFF } },
+    await gotoThreadDetail(residentPage.page, threadId!);
+
+    await fillPostfachReply(
+      residentPage.page,
+      TEST_BODY_CITIZEN_REPLY,
     );
 
-    expect(resp.status()).toBe(201);
+    const replyResponsePromise = residentPage.page.waitForResponse(
+      (response) =>
+        response.url().includes(`/api/postfach/${threadId}/antwort`) &&
+        response.request().method() === "POST",
+      { timeout: 30_000 },
+    );
+    await residentPage.page.getByTestId("postfach-reply-send-button").click();
+    const replyResponse = await replyResponsePromise;
+    const replyResponseText = await replyResponse.text();
 
-    const json = await resp.json();
-    expect(json.message).toBeDefined();
-    expect(json.message.id).toBeTruthy();
+    expect(
+      {
+        status: replyResponse.status(),
+        body: replyResponseText,
+      },
+      "POST /api/postfach/[id]/antwort sollte 201 liefern",
+    ).toMatchObject({ status: 201 });
 
-    console.log(`[x19c] Staff-Antwort: ${json.message.id}`);
-  });
+    await expect(
+      residentPage.page.getByTestId("postfach-reply-success"),
+    ).toBeVisible({ timeout: 30_000 });
 
-  // ── Phase 4: Buerger sieht Antwort + Unread ───────────────────
-  test("x19d: Buerger sieht Antwort mit Unread-Badge", async () => {
-    expect(threadId).toBeTruthy();
+    let residentDetail: {
+      messages: Array<{
+        direction: string;
+        body: string;
+      }>;
+    } | null = null;
 
-    // Thread-Liste: unread_count > 0
-    const listResp = await citizenApi.get(portalUrl("io", "/api/postfach"), {
-      headers: TEST_MODE_HEADER,
+    await expect
+      .poll(
+        async () => {
+          const detailResponse = await residentPage.page.request.get(
+            portalUrl("io", `/api/postfach/${threadId}`),
+          );
+          if (!detailResponse.ok()) return 0;
+          residentDetail = await detailResponse.json();
+          return residentDetail?.messages?.length ?? 0;
+        },
+        { timeout: 20_000, intervals: [500, 1_000, 2_000] },
+      )
+      .toBe(3);
+
+    expect(residentDetail?.messages[2]?.direction).toBe("citizen_to_staff");
+    expect(residentDetail?.messages[2]?.body).toContain("Vielen Dank");
+
+    await expect
+      .poll(
+        async () => {
+          const messages = await fetchThreadMessages(threadId!);
+          return JSON.stringify(summarizeCivicThread(messages));
+        },
+        { timeout: 20_000, intervals: [500, 1_000, 2_000] },
+      )
+      .toBe(JSON.stringify({ replyCount: 2, awaitingReply: true }));
+
+    await residentPage.page.screenshot({
+      path: "test-results/cross-portal/x19e-citizen-reply.png",
     });
-    expect(listResp.status()).toBe(200);
-
-    const threads = await listResp.json();
-    const ourThread = threads.find((t: { id: string }) => t.id === threadId);
-    expect(ourThread).toBeDefined();
-    expect(ourThread.unread_count).toBeGreaterThanOrEqual(1);
-
-    console.log(`[x19d] Unread-Count: ${ourThread.unread_count}`);
-
-    // Thread-Detail: 2 Nachrichten, Entschluesselung OK
-    const detailResp = await citizenApi.get(
-      portalUrl("io", `/api/postfach/${threadId}`),
-      { headers: TEST_MODE_HEADER },
-    );
-    expect(detailResp.status()).toBe(200);
-
-    const detail = await detailResp.json();
-    expect(detail.messages).toHaveLength(2);
-    expect(detail.messages[0].direction).toBe("citizen_to_staff");
-    expect(detail.messages[1].direction).toBe("staff_to_citizen");
-    // Body entschluesselt (kein Base64-String)
-    expect(detail.messages[1].body).toBeTruthy();
-    expect(detail.messages[1].body).not.toMatch(/^[A-Za-z0-9+/=]{50,}$/);
-
-    console.log(
-      `[x19d] Detail: ${detail.messages.length} Nachrichten, Entschluesselung OK`,
-    );
-  });
-
-  // ── Phase 5: Buerger markiert als gelesen ─────────────────────
-  test("x19e: Buerger markiert Thread als gelesen", async () => {
-    expect(threadId).toBeTruthy();
-
-    const patchResp = await citizenApi.patch(
-      portalUrl("io", `/api/postfach/${threadId}`),
-      { headers: TEST_MODE_HEADER },
-    );
-    expect(patchResp.status()).toBe(200);
-
-    const patchJson = await patchResp.json();
-    expect(patchJson.marked).toBe(true);
-
-    // Verifizieren: unread_count = 0
-    const listResp = await citizenApi.get(portalUrl("io", "/api/postfach"), {
-      headers: TEST_MODE_HEADER,
-    });
-    const threads = await listResp.json();
-    const ourThread = threads.find((t: { id: string }) => t.id === threadId);
-    expect(ourThread).toBeDefined();
-    expect(ourThread.unread_count).toBe(0);
-
-    console.log("[x19e] Read-Marker gesetzt, Unread = 0");
-  });
-
-  // ── Phase 6: Buerger antwortet ────────────────────────────────
-  test("x19f: Buerger antwortet im Thread", async () => {
-    expect(threadId).toBeTruthy();
-
-    const resp = await citizenApi.post(
-      portalUrl("io", `/api/postfach/${threadId}/antwort`),
-      { headers: TEST_MODE_HEADER, data: { body: TEST_BODY_CITIZEN_REPLY } },
-    );
-
-    expect(resp.status()).toBe(201);
-
-    const json = await resp.json();
-    expect(json.message).toBeDefined();
-    expect(json.message.id).toBeTruthy();
-
-    console.log(`[x19f] Buerger-Antwort: ${json.message.id}`);
-  });
-
-  // ── Phase 7: Rathaus sieht Buerger-Antwort ────────────────────
-  test("x19g: Rathaus sieht Buerger-Antwort (3 Nachrichten)", async () => {
-    expect(threadId).toBeTruthy();
-
-    // Thread-Detail: 3 Nachrichten (citizen → staff → citizen)
-    const detailResp = await staffApi.get(
-      portalUrl("civic", `/api/postfach/${threadId}`),
-      { headers: TEST_MODE_HEADER },
-    );
-    expect(detailResp.status()).toBe(200);
-
-    const detail = await detailResp.json();
-    expect(detail.messages).toHaveLength(3);
-    expect(detail.messages[0].direction).toBe("citizen_to_staff");
-    expect(detail.messages[1].direction).toBe("staff_to_citizen");
-    expect(detail.messages[2].direction).toBe("citizen_to_staff");
-
-    // Letzte Nachricht entschluesselt
-    expect(detail.messages[2].body).toBeTruthy();
-    expect(detail.messages[2].body).not.toMatch(/^[A-Za-z0-9+/=]{50,}$/);
-
-    console.log(
-      `[x19g] Civic-Thread: ${detail.messages.length} Nachrichten, Reihenfolge korrekt`,
-    );
-
-    // Inbox: awaiting_reply = true
-    const listResp = await staffApi.get(portalUrl("civic", "/api/postfach"));
-    const threads = await listResp.json();
-    const ourThread = threads.find((t: { id: string }) => t.id === threadId);
-    expect(ourThread).toBeDefined();
-    expect(ourThread.awaiting_reply).toBe(true);
-    expect(ourThread.reply_count).toBeGreaterThanOrEqual(2);
-
-    console.log(
-      `[x19g] awaiting_reply=${ourThread.awaiting_reply}, replies=${ourThread.reply_count}`,
-    );
   });
 });

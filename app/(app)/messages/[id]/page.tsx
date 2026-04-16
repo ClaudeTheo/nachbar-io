@@ -15,7 +15,7 @@ import { format, isToday, isYesterday } from "date-fns";
 import { de } from "date-fns/locale";
 
 export default function ChatPage() {
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const { id: conversationId } = useParams();
   const router = useRouter();
   const [messages, setMessages] = useState<DirectMessage[]>([]);
@@ -50,11 +50,18 @@ export default function ChatPage() {
 
   // Initiale Daten laden
   useEffect(() => {
+    let cancelled = false;
+
     async function load() {
+      if (authLoading) {
+        setLoading(true);
+        return;
+      }
+
       const supabase = createClient();
 
       // Aktuellen Benutzer laden
-      if (!user) {
+      if (!user?.id) {
         router.push("/login");
         return;
       }
@@ -84,6 +91,7 @@ export default function ChatPage() {
         conv.participant_1 === user.id
           ? conv.participant_2
           : conv.participant_1;
+      if (cancelled) return;
       setOtherUserId(resolvedOtherUserId);
 
       const { data: otherUser } = await supabase
@@ -111,11 +119,17 @@ export default function ChatPage() {
       // Ungelesene Nachrichten als gelesen markieren
       await markAsRead(user.id);
 
-      setLoading(false);
+      if (!cancelled) {
+        setLoading(false);
+      }
     }
-    load();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [conversationId, router, markAsRead]);
+
+    void load();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [authLoading, user?.id, conversationId, router, markAsRead]);
 
   // Nach dem Laden und bei neuen Nachrichten nach unten scrollen
   useEffect(() => {

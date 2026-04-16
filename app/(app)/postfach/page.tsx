@@ -1,6 +1,11 @@
 // Nachbar.io — Meine Nachrichten (Buerger-Postfach)
 // Thread-Liste: Eigene Anfragen an Kommunen + Antwort-Status
 
+import { getAdminSupabase } from "@/lib/supabase/admin";
+import {
+  listCitizenPostfachThreads,
+  type CitizenPostfachThread,
+} from "@/lib/civic/threads";
 import { createClient } from "@/lib/supabase/server";
 import { Mail, ArrowRight, MessageSquareReply, Plus } from "lucide-react";
 import { format } from "date-fns";
@@ -12,16 +17,6 @@ const statusLabels: Record<string, { label: string; color: string }> = {
   read: { label: "Gelesen", color: "bg-blue-100 text-blue-700" },
 };
 
-interface Thread {
-  id: string;
-  subject: string;
-  status: string;
-  created_at: string;
-  org_name: string;
-  has_reply: boolean;
-  unread_count: number;
-}
-
 export default async function PostfachPage() {
   const supabase = await createClient();
   const {
@@ -29,18 +24,11 @@ export default async function PostfachPage() {
   } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
-  // Server-side API-Call
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
-  let threads: Thread[] = [];
+  let threads: CitizenPostfachThread[] = [];
   try {
-    const res = await fetch(`${baseUrl}/api/postfach`, {
-      headers: { Cookie: `sb-access-token=${(await supabase.auth.getSession()).data.session?.access_token}` },
-      cache: "no-store",
-    });
-    if (res.ok) {
-      threads = await res.json();
-    }
-  } catch {
+    threads = await listCitizenPostfachThreads(getAdminSupabase(), user.id);
+  } catch (error) {
+    console.error("[postfach/page] Laden fehlgeschlagen:", error);
     // Fallback: leere Liste
   }
 
@@ -65,7 +53,10 @@ export default async function PostfachPage() {
       </div>
 
       {threads.length === 0 ? (
-        <div className="rounded-xl border border-gray-200 bg-white p-12 text-center">
+        <div
+          data-testid="postfach-empty"
+          className="rounded-xl border border-gray-200 bg-white p-12 text-center"
+        >
           <Mail className="mx-auto h-12 w-12 text-gray-300" />
           <h3 className="mt-4 text-lg font-medium text-[#2D3142]">
             Noch keine Nachrichten
@@ -90,6 +81,7 @@ export default async function PostfachPage() {
               <Link
                 key={thread.id}
                 href={`/postfach/${thread.id}`}
+                data-testid="postfach-thread-card"
                 className="block rounded-xl border border-gray-200 bg-white p-4 transition-colors hover:border-[#4CAF87]/30 hover:bg-gray-50"
               >
                 <div className="flex items-start justify-between gap-3">
@@ -113,7 +105,10 @@ export default async function PostfachPage() {
                     {format(new Date(thread.created_at), "dd.MM.yyyy")}
                   </span>
                   {thread.unread_count > 0 ? (
-                    <span className="inline-flex items-center gap-1 font-medium text-[#4CAF87]">
+                    <span
+                      data-testid="postfach-unread-badge"
+                      className="inline-flex items-center gap-1 font-medium text-[#4CAF87]"
+                    >
                       <MessageSquareReply className="h-3 w-3" />
                       {thread.unread_count} neue {thread.unread_count === 1 ? "Antwort" : "Antworten"}
                     </span>

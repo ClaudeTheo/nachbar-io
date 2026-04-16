@@ -105,7 +105,10 @@ export default function PostfachNeuPage() {
       />
 
       {success && (
-        <div className="mx-4 mt-4 flex items-center gap-3 rounded-lg bg-green-50 p-4 text-sm text-green-800">
+        <div
+          data-testid="postfach-send-success"
+          className="mx-4 mt-4 flex items-center gap-3 rounded-lg bg-green-50 p-4 text-sm text-green-800"
+        >
           <CheckCircle className="h-5 w-5 flex-shrink-0 text-green-600" />
           <div>
             <p className="font-medium">{success}</p>
@@ -133,6 +136,7 @@ export default function PostfachNeuPage() {
               Betreff
             </label>
             <input
+              data-testid="postfach-subject-input"
               id="postfach-subject"
               type="text"
               value={subject}
@@ -154,6 +158,7 @@ export default function PostfachNeuPage() {
               Nachricht
             </label>
             <textarea
+              data-testid="postfach-body-input"
               id="postfach-body"
               value={body}
               onChange={(e) => setBody(e.target.value.slice(0, 2000))}
@@ -228,6 +233,7 @@ export default function PostfachNeuPage() {
 
           <button
             type="submit"
+            data-testid="postfach-send-button"
             disabled={!canSubmit}
             className="inline-flex items-center gap-2 rounded-lg bg-[#4CAF87] px-5 py-2.5 text-sm font-medium text-white shadow-sm transition-colors hover:bg-[#3d9a73] disabled:cursor-not-allowed disabled:opacity-50"
           >

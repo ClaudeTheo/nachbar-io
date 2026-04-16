@@ -2,7 +2,7 @@
 import { Browser, BrowserContext, Page } from "@playwright/test";
 import * as fs from "fs";
 import type { AgentCredentials, AgentRole } from "./types";
-import { TEST_AGENTS, TIMEOUTS } from "./test-config";
+import { TEST_AGENTS, TEST_MODE_HEADERS, TIMEOUTS } from "./test-config";
 import { authFile } from "../helpers/auth-paths";
 
 export interface TestAgent {
@@ -11,6 +11,7 @@ export interface TestAgent {
   credentials: AgentCredentials;
   context: BrowserContext;
   page: Page;
+  userId?: string;
   /** Log-Prefix fuer Konsolen-Ausgabe */
   prefix: string;
 }
@@ -77,6 +78,7 @@ export async function createAgent(
     timezoneId: "Europe/Berlin",
     permissions: ["notifications"], // Push-Notifications erlauben
     deviceScaleFactor: 1,
+    extraHTTPHeaders: TEST_MODE_HEADERS,
     ...(hasStorageState ? { storageState: storagePath } : {}),
   });
 
@@ -99,6 +101,7 @@ export async function createAgent(
     credentials,
     context,
     page,
+    userId: undefined,
     prefix,
   };
 }
@@ -156,6 +159,7 @@ export async function loginAgent(agent: TestAgent): Promise<void> {
     }
 
     const response = await page.request.post(`${baseURL}/api/test/login`, {
+      headers: TEST_MODE_HEADERS,
       data: {
         email: credentials.email,
         password: credentials.password,
@@ -165,6 +169,7 @@ export async function loginAgent(agent: TestAgent): Promise<void> {
 
     if (response.ok()) {
       const result = await response.json();
+      agent.userId = result.userId;
       console.log(`${prefix} Test-Login OK → userId=${result.userId}`);
 
       // Onboarding-Redirect verhindern

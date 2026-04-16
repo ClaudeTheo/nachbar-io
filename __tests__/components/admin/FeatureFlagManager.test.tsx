@@ -2,7 +2,14 @@
 // Tests fuer die Feature-Flag Admin-Verwaltung
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { render, screen, cleanup, waitFor, fireEvent } from '@testing-library/react';
+import {
+  render,
+  screen,
+  cleanup,
+  waitFor,
+  fireEvent,
+  within,
+} from '@testing-library/react';
 
 // --- Mocks ---
 
@@ -48,6 +55,14 @@ const MOCK_FLAGS = [
   },
   {
     key: 'PILOT_MODE',
+    enabled: false,
+    required_roles: [],
+    required_plans: [],
+    enabled_quarters: [],
+    admin_override: true,
+  },
+  {
+    key: 'NINA_WARNINGS_ENABLED',
     enabled: false,
     required_roles: [],
     required_plans: [],
@@ -114,9 +129,37 @@ describe('FeatureFlagManager', () => {
     // Flag-Keys sichtbar
     expect(screen.getByText('CARE_MODULE')).toBeDefined();
     expect(screen.getByText('PILOT_MODE')).toBeDefined();
+    expect(screen.getByText('NINA_WARNINGS_ENABLED')).toBeDefined();
 
     // Ueberschrift
     expect(screen.getByText('Feature-Flags Verwaltung')).toBeDefined();
+  });
+
+  it('gruppiert externe API Flags unter "Externe APIs"', async () => {
+    setupSelectChain(MOCK_FLAGS);
+
+    const { FeatureFlagManager } = await import(
+      '@/app/(app)/admin/components/FeatureFlagManager'
+    );
+
+    render(<FeatureFlagManager />);
+
+    await waitFor(() => {
+      expect(screen.getByText('Externe APIs')).toBeDefined();
+    });
+
+    const externalApisHeading = screen.getByRole('heading', {
+      name: 'Externe APIs',
+    });
+    const externalApisSection = externalApisHeading.closest('section');
+
+    expect(externalApisSection).not.toBeNull();
+    expect(
+      within(externalApisSection as HTMLElement).getByText('NINA_WARNINGS_ENABLED')
+    ).toBeDefined();
+    expect(
+      within(externalApisSection as HTMLElement).getByText('Admin-Override')
+    ).toBeDefined();
   });
 
   it('zeigt Rollen-Badges korrekt an', async () => {
@@ -170,9 +213,9 @@ describe('FeatureFlagManager', () => {
     });
 
     // PILOT_MODE ist deaktiviert — Switch anklicken zum Aktivieren
-    const switches = screen.getAllByRole('switch');
-    // CARE_MODULE ist index 0 (enabled), PILOT_MODE ist index 1 (disabled)
-    const pilotSwitch = switches[1];
+    const pilotSwitch = screen.getByRole('switch', {
+      name: 'PILOT_MODE aktivieren',
+    });
     fireEvent.click(pilotSwitch);
 
     await waitFor(() => {

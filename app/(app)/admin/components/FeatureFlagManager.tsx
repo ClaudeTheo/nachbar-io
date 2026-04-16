@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useMemo, useState, useCallback } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { invalidateFlagCache } from "@/lib/feature-flags";
 import type { FeatureFlag } from "@/lib/feature-flags";
@@ -23,7 +23,33 @@ const FLAG_DESCRIPTIONS: Record<string, string> = {
   NEWS_AI: "KI-Nachrichtenzusammenfassung",
   PUSH_NOTIFICATIONS: "Push-Benachrichtigungen",
   KOMMUNAL_MODULE: "Kommunal-Modul (Mängelmelder, Müllkalender, Rathaus)",
+  NINA_WARNINGS_ENABLED: "NINA-Katastrophenwarnungen (BBK)",
+  DWD_WEATHER_WARNINGS_ENABLED: "DWD-Unwetter- und Hitzewarnungen",
+  UBA_AIR_QUALITY_ENABLED: "Umweltbundesamt Luftqualitaet",
+  DELFI_OEPNV_ENABLED: "DELFI OePNV-Abfahrten",
+  LGL_BW_BUILDING_OUTLINES_ENABLED: "LGL-BW Hausumringe als Karten-Layer",
+  OSM_POI_LAYER_ENABLED: "OpenStreetMap POIs in der Quartierkarte",
+  BKG_GEOCODER_FALLBACK_ENABLED: "BKG Geocoder als Nicht-BW-Fallback",
+  BFARM_DRUGS_ENABLED: "BfArM Medikamenten-Lookup",
+  DIGA_REGISTRY_ENABLED: "DiGA-Verzeichnis",
+  GKV_CARE_REGISTRY_ENABLED: "GKV-Pflegedienst-Verzeichnis",
 };
+
+const FLAG_GROUPS: Array<{ title: string; pattern: RegExp }> = [
+  {
+    title: "Kern-Module",
+    pattern:
+      /^(BOARD|EVENTS|NEWS|MARKETPLACE|BUSINESSES|INVITATIONS|HEARTBEAT|CARE_MODULE|KOMMUNAL_MODULE|LOST_FOUND|PUSH_NOTIFICATIONS)/,
+  },
+  { title: "Care / Plus", pattern: /^(CAREGIVER|VIDEO_CALL)/ },
+  { title: "Organisation", pattern: /^(ORG_|MODERATION|QUARTER_STATS)/ },
+  { title: "Arzt-Portal", pattern: /^(APPOINTMENTS|VIDEO_CONSULT|GDT)/ },
+  {
+    title: "Externe APIs",
+    pattern: /^(NINA|DWD|UBA|DELFI|LGL_BW|OSM|BKG|BFARM|DIGA|GKV)/,
+  },
+  { title: "Admin / Sonstige", pattern: /^(ADMIN|REFERRAL|QUARTER_PROGRESS|PILOT)/ },
+];
 
 /**
  * Admin-Komponente zur Verwaltung von Feature-Flags.
@@ -74,6 +100,26 @@ export function FeatureFlagManager() {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     loadFlags();
   }, [loadFlags]);
+
+  const groupedFlags = useMemo(() => {
+    const buckets = FLAG_GROUPS.map((group) => ({
+      title: group.title,
+      flags: flags
+        .filter((flag) => group.pattern.test(flag.key))
+        .sort((left, right) => left.key.localeCompare(right.key)),
+    })).filter((group) => group.flags.length > 0);
+
+    const groupedKeys = new Set(buckets.flatMap((group) => group.flags.map((flag) => flag.key)));
+    const unsorted = flags
+      .filter((flag) => !groupedKeys.has(flag.key))
+      .sort((left, right) => left.key.localeCompare(right.key));
+
+    if (unsorted.length > 0) {
+      buckets.push({ title: "Unsortiert", flags: unsorted });
+    }
+
+    return buckets;
+  }, [flags]);
 
   // Flag aktivieren/deaktivieren
   const handleToggle = async (flagKey: string, newValue: boolean) => {
@@ -158,77 +204,98 @@ export function FeatureFlagManager() {
           </h2>
         </div>
 
-        {/* Tabelle */}
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm" data-testid="flag-table">
-            <thead>
-              <tr className="border-b text-left text-xs text-muted-foreground">
-                <th className="pb-2 pr-4 font-medium">Flag Key</th>
-                <th className="pb-2 pr-4 font-medium">Beschreibung</th>
-                <th className="pb-2 pr-4 font-medium">Aktiv</th>
-                <th className="pb-2 pr-4 font-medium">Rollen</th>
-                <th className="pb-2 font-medium">Plaene</th>
-              </tr>
-            </thead>
-            <tbody>
-              {flags.map((flag) => (
-                <tr key={flag.key} className="border-b last:border-0">
-                  <td className="py-3 pr-4 font-mono text-xs text-anthrazit">
-                    {flag.key}
-                  </td>
-                  <td className="py-3 pr-4 text-xs text-muted-foreground">
-                    {FLAG_DESCRIPTIONS[flag.key] ?? "—"}
-                  </td>
-                  <td className="py-3 pr-4">
-                    <Switch
-                      checked={flag.enabled}
-                      disabled={updatingKey === flag.key}
-                      onCheckedChange={(val) => handleToggle(flag.key, val)}
-                      aria-label={`${flag.key} ${flag.enabled ? "deaktivieren" : "aktivieren"}`}
-                    />
-                  </td>
-                  <td className="py-3 pr-4">
-                    <div className="flex flex-wrap gap-1">
-                      {flag.required_roles.length > 0 ? (
-                        flag.required_roles.map((role) => (
-                          <Badge
-                            key={role}
-                            variant="secondary"
-                            className="text-[10px]"
-                          >
-                            {role}
-                          </Badge>
-                        ))
-                      ) : (
-                        <span className="text-xs text-muted-foreground">
-                          alle
-                        </span>
-                      )}
-                    </div>
-                  </td>
-                  <td className="py-3">
-                    <div className="flex flex-wrap gap-1">
-                      {flag.required_plans.length > 0 ? (
-                        flag.required_plans.map((plan) => (
-                          <Badge
-                            key={plan}
-                            variant="secondary"
-                            className="text-[10px] bg-quartier-green/10 text-quartier-green border-quartier-green/20"
-                          >
-                            {plan}
-                          </Badge>
-                        ))
-                      ) : (
-                        <span className="text-xs text-muted-foreground">
-                          alle
-                        </span>
-                      )}
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+        <div className="space-y-6" data-testid="flag-table">
+          {groupedFlags.map((group) => (
+            <section key={group.title} className="space-y-3">
+              <div className="flex items-center gap-2">
+                <h3 className="text-sm font-semibold text-anthrazit">
+                  {group.title}
+                </h3>
+                <Badge variant="secondary" className="text-[10px]">
+                  {group.flags.length}
+                </Badge>
+              </div>
+
+              <div className="overflow-x-auto rounded-xl border border-border/70">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b bg-muted/30 text-left text-xs text-muted-foreground">
+                      <th className="px-3 py-2 pr-4 font-medium">Flag Key</th>
+                      <th className="px-3 py-2 pr-4 font-medium">Beschreibung</th>
+                      <th className="px-3 py-2 pr-4 font-medium">Aktiv</th>
+                      <th className="px-3 py-2 pr-4 font-medium">Rollen</th>
+                      <th className="px-3 py-2 font-medium">Plaene</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {group.flags.map((flag) => (
+                      <tr key={flag.key} className="border-b last:border-0">
+                        <td className="px-3 py-3 pr-4 font-mono text-xs text-anthrazit">
+                          {flag.key}
+                        </td>
+                        <td className="px-3 py-3 pr-4 text-xs text-muted-foreground">
+                          {FLAG_DESCRIPTIONS[flag.key] ?? "—"}
+                        </td>
+                        <td className="px-3 py-3 pr-4">
+                          <div className="flex flex-col items-start gap-2">
+                            <Switch
+                              checked={flag.enabled}
+                              disabled={updatingKey === flag.key}
+                              onCheckedChange={(val) => handleToggle(flag.key, val)}
+                              aria-label={`${flag.key} ${flag.enabled ? "deaktivieren" : "aktivieren"}`}
+                            />
+                            {flag.admin_override ? (
+                              <Badge variant="secondary" className="text-[10px]">
+                                Admin-Override
+                              </Badge>
+                            ) : null}
+                          </div>
+                        </td>
+                        <td className="px-3 py-3 pr-4">
+                          <div className="flex flex-wrap gap-1">
+                            {flag.required_roles.length > 0 ? (
+                              flag.required_roles.map((role) => (
+                                <Badge
+                                  key={role}
+                                  variant="secondary"
+                                  className="text-[10px]"
+                                >
+                                  {role}
+                                </Badge>
+                              ))
+                            ) : (
+                              <span className="text-xs text-muted-foreground">
+                                alle
+                              </span>
+                            )}
+                          </div>
+                        </td>
+                        <td className="px-3 py-3">
+                          <div className="flex flex-wrap gap-1">
+                            {flag.required_plans.length > 0 ? (
+                              flag.required_plans.map((plan) => (
+                                <Badge
+                                  key={plan}
+                                  variant="secondary"
+                                  className="text-[10px] bg-quartier-green/10 text-quartier-green border-quartier-green/20"
+                                >
+                                  {plan}
+                                </Badge>
+                              ))
+                            ) : (
+                              <span className="text-xs text-muted-foreground">
+                                alle
+                              </span>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </section>
+          ))}
         </div>
       </CardContent>
     </Card>

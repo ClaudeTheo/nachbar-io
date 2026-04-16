@@ -108,6 +108,15 @@ export function LeafletKarte({ quarterId: quarterIdProp }: LeafletKarteProps) {
     );
   }
 
+  if (geoHouses.length === 0) {
+    return (
+      <div className="rounded-xl border border-border bg-background p-4 text-sm text-muted-foreground">
+        Für dieses Quartier sind aktuell noch keine bestätigten
+        Haushaltspositionen sichtbar.
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-col gap-3 lg:gap-4">
       <MapFilterBar

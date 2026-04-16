@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useRef, useCallback } from "react";
+import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
@@ -24,6 +25,11 @@ import {
 } from "@/lib/map-houses";
 import { toast } from "sonner";
 
+const PositionConfirmMap = dynamic(
+  () => import("@/components/municipal/GpsPickerMap"),
+  { ssr: false },
+);
+
 interface BwSyncResult {
   success: true;
   address: {
@@ -37,6 +43,17 @@ interface BwSyncResult {
   distanceMeters: number | null;
   inspectedCount: number;
   metadataSaved: boolean;
+}
+
+interface PositionConfirmResult {
+  success: true;
+  previous: { lat: number; lng: number } | null;
+  confirmed: { lat: number; lng: number };
+  distanceMeters: number | null;
+  manualOverride: boolean;
+  metadataSaved: boolean;
+  source: string;
+  accuracy: string;
 }
 
 export default function MapPositionPage() {
@@ -70,9 +87,11 @@ export default function MapPositionPage() {
     streetName: string;
     houseNumber: string;
   } | null>(null);
-  const [geoPosition, setGeoPosition] = useState<{ lat: number; lng: number } | null>(
-    null,
-  );
+  const [geoPosition, setGeoPosition] = useState<{ lat: number; lng: number } | null>(null);
+  const [pendingGeoPosition, setPendingGeoPosition] = useState<{
+    lat: number;
+    lng: number;
+  } | null>(null);
   const [quarterMeta, setQuarterMeta] = useState<{
     city: string | null;
     state: string | null;
@@ -84,6 +103,9 @@ export default function MapPositionPage() {
   });
   const [bwSyncLoading, setBwSyncLoading] = useState(false);
   const [bwSyncResult, setBwSyncResult] = useState<BwSyncResult | null>(null);
+  const [positionConfirmLoading, setPositionConfirmLoading] = useState(false);
+  const [positionConfirmResult, setPositionConfirmResult] =
+    useState<PositionConfirmResult | null>(null);
 
   // Quartier-Name fuer Anzeige (BUG-22: falsches Quartier)
   const [quarterName, setQuarterName] = useState<string | null>(null);
@@ -185,6 +207,7 @@ export default function MapPositionPage() {
             Math.abs(hh.lng) > 0
           ) {
             setGeoPosition({ lat: hh.lat, lng: hh.lng });
+            setPendingGeoPosition({ lat: hh.lat, lng: hh.lng });
           }
           const addressLabel = `${hh.street_name} ${hh.house_number}`;
           const code = (
@@ -239,6 +262,12 @@ export default function MapPositionPage() {
   const isBwQuarter = quarterMeta.state
     ? quarterMeta.state.toLowerCase().includes("baden")
     : false;
+  const supportsLeafletConfirmation = isBwQuarter || !quarterHasSvgMap;
+  const pendingGeoChanged =
+    !!geoPosition &&
+    !!pendingGeoPosition &&
+    (Math.abs(geoPosition.lat - pendingGeoPosition.lat) > 0.0000001 ||
+      Math.abs(geoPosition.lng - pendingGeoPosition.lng) > 0.0000001);
 
   async function handleBwSync() {
     setBwSyncLoading(true);
@@ -260,11 +289,50 @@ export default function MapPositionPage() {
 
       setBwSyncResult(data);
       setGeoPosition(data.official);
+      setPendingGeoPosition(data.official);
+      setPositionConfirmResult(null);
       toast.success("Amtliche Hauskoordinate gespeichert.");
     } catch {
       toast.error("Amtliche Hauskoordinate konnte nicht geladen werden.");
     } finally {
       setBwSyncLoading(false);
+    }
+  }
+
+  async function handleConfirmGeoPosition() {
+    if (!pendingGeoPosition) return;
+
+    setPositionConfirmLoading(true);
+    try {
+      const response = await fetch("/api/household/position/confirm", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          lat: pendingGeoPosition.lat,
+          lng: pendingGeoPosition.lng,
+          manualOverride: pendingGeoChanged,
+        }),
+      });
+      const data = (await response.json()) as
+        | PositionConfirmResult
+        | { error?: string };
+
+      if (!response.ok || !("success" in data && data.success)) {
+        const message = "error" in data ? data.error : undefined;
+        toast.error(message || "Position konnte nicht bestätigt werden.");
+        return;
+      }
+
+      setPositionConfirmResult(data);
+      setGeoPosition(data.confirmed);
+      setPendingGeoPosition(data.confirmed);
+      toast.success("Leaflet-Position bestätigt.");
+    } catch {
+      toast.error("Position konnte nicht bestätigt werden.");
+    } finally {
+      setPositionConfirmLoading(false);
     }
   }
 
@@ -445,6 +513,93 @@ export default function MapPositionPage() {
               Danach sehen Leaflet-Karten diesen Punkt direkt.
             </span>
           </div>
+
+          {bwSyncResult && !bwSyncResult.metadataSaved && (
+            <p className="mt-3 text-xs text-alert-amber">
+              Die Koordinate wurde gespeichert, aber die neuen
+              Positions-Metadaten fehlen in der angebundenen Datenbank noch.
+              Der verifizierte Leaflet-Filter wird erst nach Migration 156
+              wirksam.
+            </p>
+          )}
+        </div>
+      )}
+
+      {householdLinked && supportsLeafletConfirmation && pendingGeoPosition && (
+        <div
+          className="rounded-xl border border-border bg-background p-4 shadow-sm"
+          data-testid="bw-house-coordinate-confirm-card"
+        >
+          <p className="text-sm font-semibold text-anthrazit">
+            Leaflet-Punkt prüfen und bestätigen
+          </p>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Ziehen Sie den Marker bei Bedarf auf das richtige Gebäude und
+            bestätigen Sie erst dann die Position.
+          </p>
+
+          <div className="mt-3 overflow-hidden rounded-xl border border-border">
+            <PositionConfirmMap
+              lat={pendingGeoPosition.lat}
+              lng={pendingGeoPosition.lng}
+              onLocationChange={(lat, lng) => setPendingGeoPosition({ lat, lng })}
+            />
+          </div>
+
+          <div className="mt-3 rounded-lg border border-border bg-muted/30 p-3 text-xs text-muted-foreground">
+            <p data-testid="bw-house-coordinate-confirm-current">
+              Gespeichert:{" "}
+              {geoPosition
+                ? `${geoPosition.lat.toFixed(6)}, ${geoPosition.lng.toFixed(6)}`
+                : "keine Geo-Koordinate"}
+            </p>
+            <p className="mt-1" data-testid="bw-house-coordinate-confirm-pending">
+              Zur Bestätigung: {pendingGeoPosition.lat.toFixed(6)},{" "}
+              {pendingGeoPosition.lng.toFixed(6)}
+            </p>
+            {positionConfirmResult && (
+              <p className="mt-1 text-anthrazit">
+                Bestätigt. Quelle: {positionConfirmResult.source} · Genauigkeit:{" "}
+                {positionConfirmResult.accuracy}
+                {positionConfirmResult.distanceMeters != null &&
+                  ` · ${positionConfirmResult.distanceMeters} m Änderung`}
+              </p>
+            )}
+          </div>
+
+          <div className="mt-3 flex flex-wrap items-center gap-3">
+            <Button
+              type="button"
+              onClick={handleConfirmGeoPosition}
+              disabled={positionConfirmLoading}
+              className="bg-quartier-green hover:bg-quartier-green/90"
+              data-testid="bw-house-coordinate-confirm-button"
+            >
+              {positionConfirmLoading
+                ? "Position wird bestätigt..."
+                : pendingGeoChanged
+                  ? "Angepasste Position bestätigen"
+                  : "Position bestätigen"}
+            </Button>
+
+            {geoPosition && pendingGeoChanged && (
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setPendingGeoPosition(geoPosition)}
+              >
+                Auf gespeicherten Punkt zurücksetzen
+              </Button>
+            )}
+          </div>
+
+          {positionConfirmResult && !positionConfirmResult.metadataSaved && (
+            <p className="mt-3 text-xs text-alert-amber">
+              Die Koordinate ist gespeichert. Die Verifizierungs-Metadaten werden
+              erst geschrieben, sobald Migration 156 auf der Ziel-DB vorhanden
+              ist.
+            </p>
+          )}
         </div>
       )}
 

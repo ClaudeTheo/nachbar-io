@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { getAdminSupabase } from "@/lib/supabase/admin";
 import { ServiceError, handleServiceError } from "@/lib/services/service-error";
+import { isMissingHouseholdPositionMetadataColumn } from "@/lib/household-position-metadata";
 import {
   buildSearchBoundsFromPoints,
   expandSearchBounds,
@@ -35,18 +36,6 @@ function haversineMeters(from: GeoPoint, to: GeoPoint): number {
       Math.sin(dLng / 2) ** 2;
 
   return earthRadius * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-}
-
-function isMissingPositionMetadataColumn(error: {
-  message?: string | null;
-  details?: string | null;
-}): boolean {
-  const haystack = `${error.message ?? ""} ${error.details ?? ""}`.toLowerCase();
-  return (
-    haystack.includes("position_source") ||
-    haystack.includes("position_accuracy") ||
-    haystack.includes("position_verified")
-  );
 }
 
 export async function POST() {
@@ -200,6 +189,8 @@ export async function POST() {
     const metadataPatch: Record<string, unknown> = {
       lat: official.lat,
       lng: official.lng,
+      postal_code: quarter.postal_code,
+      city: quarter.city,
       position_source: "lgl_bw_house_coordinate",
       position_accuracy: "building",
       position_verified: true,
@@ -222,7 +213,7 @@ export async function POST() {
       .update(metadataPatch as never)
       .eq("id", household.id);
 
-    if (updateError && isMissingPositionMetadataColumn(updateError)) {
+    if (updateError && isMissingHouseholdPositionMetadataColumn(updateError)) {
       metadataSaved = false;
       const fallback = await admin
         .from("households")

@@ -1,6 +1,7 @@
 // Nachbar.io — Karten-Konfiguration (gemeinsam fuer NachbarKarte + MapEditor)
 
 import { createClient } from "@/lib/supabase/client";
+import { isMissingHouseholdPositionMetadataColumn } from "@/lib/household-position-metadata";
 import type { MapConfig } from "@/lib/quarters/types";
 
 // Standard-Kartengroesse (Pilot-Quartier), ueberschreibbar per map_config.viewBox
@@ -280,12 +281,38 @@ export async function loadGeoQuarterHouses(
   centerLng?: number,
 ): Promise<GeoMapHouseData[]> {
   const supabase = createClient();
-  const { data, error } = await supabase
+  type GeoHouseholdRow = {
+    id: string;
+    street_name: string | null;
+    house_number: string | null;
+    lat: number | null;
+    lng: number | null;
+    quarter_id: string | null;
+  };
+
+  let data: GeoHouseholdRow[] | null = null;
+  let error: { message?: string | null; details?: string | null } | null = null;
+
+  const primary = await supabase
     .from("households")
-    .select("id, street_name, house_number, lat, lng, quarter_id")
+    .select("id, street_name, house_number, lat, lng, quarter_id, position_verified")
     .eq("quarter_id", quarterId)
+    .eq("position_verified", true)
     .not("lat", "is", null)
     .not("lng", "is", null);
+  data = (primary.data ?? null) as GeoHouseholdRow[] | null;
+  error = primary.error;
+
+  if (error && isMissingHouseholdPositionMetadataColumn(error)) {
+    const fallback = await supabase
+      .from("households")
+      .select("id, street_name, house_number, lat, lng, quarter_id")
+      .eq("quarter_id", quarterId)
+      .not("lat", "is", null)
+      .not("lng", "is", null);
+    data = (fallback.data ?? null) as GeoHouseholdRow[] | null;
+    error = fallback.error;
+  }
 
   if (error || !data || data.length === 0) return [];
 

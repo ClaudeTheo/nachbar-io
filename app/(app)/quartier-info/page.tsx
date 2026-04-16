@@ -24,13 +24,13 @@ import {
 } from "lucide-react";
 import { WeatherWidget } from "@/components/weather/WeatherWidget";
 import { Skeleton } from "@/components/ui/skeleton";
+import { ExternalWarningBanner } from "@/components/warnings/external-warning-banner";
 import { useQuarter } from "@/lib/quarters";
 import { TTSButton } from "@/modules/voice/components/companion/TTSButton";
 import { buildDailyBrief } from "@/modules/voice/services/daily-brief.service";
 import type {
   QuartierInfoResponse,
   RathausLink,
-  NinaWarning,
   WasteNext,
   OepnvStop,
   OepnvDeparture,
@@ -311,47 +311,16 @@ export default function QuartierInfoPage() {
         </h2>
         {loading ? (
           <Skeleton className="h-8 w-full" />
-        ) : data?.nina && data.nina.length > 0 ? (
-          <div className="space-y-3">
-            {data.nina.map((w: NinaWarning) => {
-              const isHigh =
-                w.severity === "Extreme" || w.severity === "Severe";
-              return (
-                <div
-                  key={w.warning_id}
-                  className={`flex items-start gap-3 rounded-xl border p-4 ${
-                    isHigh
-                      ? "bg-red-50 border-red-200"
-                      : "bg-amber-50 border-amber-200"
-                  }`}
-                >
-                  <AlertTriangle
-                    className={`h-5 w-5 flex-shrink-0 mt-0.5 ${isHigh ? "text-red-600" : "text-amber-600"}`}
-                  />
-                  <div>
-                    <p
-                      className={`text-sm font-semibold ${isHigh ? "text-red-900" : "text-amber-900"}`}
-                    >
-                      {w.headline}
-                    </p>
-                    {w.description && (
-                      <p
-                        className={`text-xs mt-1 ${isHigh ? "text-red-800" : "text-amber-800"}`}
-                      >
-                        {w.description.slice(0, 300)}
-                        {w.description.length > 300 ? "…" : ""}
-                      </p>
-                    )}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
         ) : (
-          <div className="flex items-center gap-2 text-green-700">
-            <CheckCircle2 className="h-5 w-5" />
-            <span className="text-sm">Keine aktiven Warnungen</span>
-          </div>
+          <ExternalWarningBanner
+            showAction={false}
+            emptyState={
+              <div className="flex items-center gap-2 text-green-700">
+                <CheckCircle2 className="h-5 w-5" />
+                <span className="text-sm">Keine aktiven Warnungen</span>
+              </div>
+            }
+          />
         )}
       </section>
 

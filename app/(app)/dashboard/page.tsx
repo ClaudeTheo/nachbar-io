@@ -20,8 +20,8 @@ import { ReputationBadge } from "@/components/ReputationBadge";
 // import { ProfileCompletionBanner } from "@/components/ProfileCompletionBanner";
 import { FloatingHelpButton } from "@/components/FloatingHelpButton";
 import { InfoBar } from "@/modules/info-hub/components/InfoBar";
-import { NinaAlert } from "@/modules/info-hub/components/NinaAlert";
 import { HeroCard } from "@/components/HeroCard";
+import { ExternalWarningBanner } from "@/components/warnings/external-warning-banner";
 // Moved to Quartier hub
 // import { InviteNeighborModal } from "@/components/InviteNeighborModal";
 import { DailyCheckinBubble } from "@/modules/care/components/checkin/DailyCheckinBubble";
@@ -105,8 +105,7 @@ export default function DashboardPage() {
     <>
       <PullToRefresh onRefresh={loadDashboard}>
         <div className="space-y-6 animate-fade-in-up">
-          {/* NINA-Warnungen (vor Hero, nach Notfall-Banner) */}
-          <NinaAlert />
+          <ExternalWarningBanner maxItems={3} />
 
           {/* Hero-Bereich: Begruessung + Wetter */}
           {isUxRedesignEnabled("UX_REDESIGN_DASHBOARD") ? (

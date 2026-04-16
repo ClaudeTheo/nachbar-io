@@ -165,6 +165,34 @@ export async function POST() {
     }
 
     if (!resolved?.match) {
+      if (resolved?.candidate) {
+        // Nicht-exakter Treffer: Kandidat an UI zurueckgeben, damit der Nutzer
+        // ihn via Confirm-Flow (manual_pin_confirmation) bestaetigen kann.
+        return NextResponse.json({
+          success: true,
+          requiresConfirmation: true,
+          householdId: household.id,
+          address: {
+            streetName: household.street_name,
+            houseNumber: household.house_number,
+            postalCode: quarter.postal_code,
+            city: quarter.city,
+          },
+          candidate: {
+            lat: resolved.candidate.feature.lat,
+            lng: resolved.candidate.feature.lng,
+            streetName: resolved.candidate.feature.streetName,
+            houseNumber: resolved.candidate.feature.houseNumber,
+            postalCode: resolved.candidate.feature.postalCode,
+            city: resolved.candidate.feature.city,
+            confidence: resolved.candidate.confidence,
+            distanceMeters: resolved.candidate.distanceMeters,
+          },
+          inspectedCount: resolved.inspectedCount,
+          bbox: resolved.bbox,
+        });
+      }
+
       throw new ServiceError(
         `Keine amtliche Hauskoordinate fuer ${household.street_name} ${household.house_number} gefunden.`,
         404,

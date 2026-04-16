@@ -3,6 +3,7 @@ import {
   buildLglBwBbox,
   buildSearchBoundsFromPoints,
   findExactLglBwHouseCoordinate,
+  findNearestLglBwAddress,
   normalizeAddressText,
   normalizeHouseNumber,
   parseLglBwAddressFeatures,
@@ -164,5 +165,51 @@ describe("lgl-bw parser", () => {
       "purkersdorfer strasse",
     );
     expect(normalizeHouseNumber(" 11 a ")).toBe("11A");
+  });
+
+  describe("findNearestLglBwAddress", () => {
+    it("liefert nächstgelegenes Gebäude wenn Hausnummer nicht matcht", () => {
+      const features = parseLglBwAddressFeatures(SAMPLE_XML);
+
+      const candidate = findNearestLglBwAddress(
+        features,
+        {
+          streetName: "Purkersdorfer Str.",
+          houseNumber: "999", // existiert nicht in Sample-XML
+          postalCode: "79713",
+          city: "Bad Saeckingen",
+        },
+        { lat: 47.562469, lng: 7.947937 },
+      );
+
+      expect(candidate).not.toBeNull();
+      expect(candidate?.confidence).toBe("nearest_building");
+      expect(candidate?.feature.streetName).toBe("Purkersdorfer Straße");
+      expect(candidate?.distanceMeters).toBe(0);
+    });
+
+    it("liefert null wenn Strasse nicht matcht", () => {
+      const features = parseLglBwAddressFeatures(SAMPLE_XML);
+
+      const candidate = findNearestLglBwAddress(features, {
+        streetName: "Nicht-vorhandene Straße",
+        houseNumber: "1",
+      });
+
+      expect(candidate).toBeNull();
+    });
+
+    it("beruecksichtigt PLZ-Mismatch als Ausschlusskriterium", () => {
+      const features = parseLglBwAddressFeatures(SAMPLE_XML);
+
+      const candidate = findNearestLglBwAddress(features, {
+        streetName: "Purkersdorfer Str.",
+        houseNumber: "35",
+        postalCode: "12345", // falsche PLZ
+        city: "Bad Saeckingen",
+      });
+
+      expect(candidate).toBeNull();
+    });
   });
 });

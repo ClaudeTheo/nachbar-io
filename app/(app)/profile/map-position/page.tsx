@@ -32,6 +32,7 @@ const PositionConfirmMap = dynamic(
 
 interface BwSyncResult {
   success: true;
+  requiresConfirmation?: false;
   address: {
     streetName: string;
     houseNumber: string;
@@ -44,6 +45,30 @@ interface BwSyncResult {
   inspectedCount: number;
   metadataSaved: boolean;
 }
+
+interface BwCandidateResult {
+  success: true;
+  requiresConfirmation: true;
+  address: {
+    streetName: string;
+    houseNumber: string;
+    postalCode: string | null;
+    city: string | null;
+  };
+  candidate: {
+    lat: number;
+    lng: number;
+    streetName: string | null;
+    houseNumber: string;
+    postalCode: string | null;
+    city: string | null;
+    confidence: "street_only" | "nearest_building";
+    distanceMeters: number | null;
+  };
+  inspectedCount: number;
+}
+
+type BwResolveResponse = BwSyncResult | BwCandidateResult | { error?: string };
 
 interface PositionConfirmResult {
   success: true;
@@ -103,6 +128,9 @@ export default function MapPositionPage() {
   });
   const [bwSyncLoading, setBwSyncLoading] = useState(false);
   const [bwSyncResult, setBwSyncResult] = useState<BwSyncResult | null>(null);
+  const [bwCandidate, setBwCandidate] = useState<
+    BwCandidateResult["candidate"] | null
+  >(null);
   const [positionConfirmLoading, setPositionConfirmLoading] = useState(false);
   const [positionConfirmResult, setPositionConfirmResult] =
     useState<PositionConfirmResult | null>(null);
@@ -263,11 +291,16 @@ export default function MapPositionPage() {
     ? quarterMeta.state.toLowerCase().includes("baden")
     : false;
   const supportsLeafletConfirmation = isBwQuarter || !quarterHasSvgMap;
+  const suggestedGeoPosition = bwCandidate
+    ? { lat: bwCandidate.lat, lng: bwCandidate.lng }
+    : bwSyncResult
+      ? bwSyncResult.official
+      : geoPosition;
   const pendingGeoChanged =
-    !!geoPosition &&
+    !!suggestedGeoPosition &&
     !!pendingGeoPosition &&
-    (Math.abs(geoPosition.lat - pendingGeoPosition.lat) > 0.0000001 ||
-      Math.abs(geoPosition.lng - pendingGeoPosition.lng) > 0.0000001);
+    (Math.abs(suggestedGeoPosition.lat - pendingGeoPosition.lat) > 0.0000001 ||
+      Math.abs(suggestedGeoPosition.lng - pendingGeoPosition.lng) > 0.0000001);
 
   async function handleBwSync() {
     setBwSyncLoading(true);
@@ -275,19 +308,37 @@ export default function MapPositionPage() {
       const response = await fetch("/api/household/position/resolve-bw", {
         method: "POST",
       });
-      const data = (await response.json()) as
-        | BwSyncResult
-        | { error?: string };
+      const data = (await response.json()) as BwResolveResponse;
 
       if (!response.ok || !("success" in data && data.success)) {
-        const message = "error" in data ? data.error : undefined;
+        const message =
+          "error" in data && typeof data.error === "string"
+            ? data.error
+            : undefined;
         toast.error(
           message || "Amtliche Hauskoordinate konnte nicht geladen werden.",
         );
         return;
       }
 
+      if (data.requiresConfirmation) {
+        // Nicht-exakter Treffer: Kandidat in den Confirm-Flow einspielen,
+        // NICHT speichern — der Nutzer muss den Pin bestaetigen.
+        setBwCandidate(data.candidate);
+        setBwSyncResult(null);
+        setPendingGeoPosition({
+          lat: data.candidate.lat,
+          lng: data.candidate.lng,
+        });
+        setPositionConfirmResult(null);
+        toast.message(
+          "Kein exakter Treffer — bitte Pin pruefen und bestaetigen.",
+        );
+        return;
+      }
+
       setBwSyncResult(data);
+      setBwCandidate(null);
       setGeoPosition(data.official);
       setPendingGeoPosition(data.official);
       setPositionConfirmResult(null);
@@ -304,6 +355,19 @@ export default function MapPositionPage() {
 
     setPositionConfirmLoading(true);
     try {
+      // Wenn der Punkt aus einem nicht-exakten BW-Kandidaten stammt und der
+      // Nutzer ihn nicht verschoben hat: source/accuracy vom Kandidaten uebernehmen.
+      const candidateConfirmSource =
+        bwCandidate && !pendingGeoChanged
+          ? "lgl_bw_address_match"
+          : null;
+      const candidateConfirmAccuracy =
+        bwCandidate && !pendingGeoChanged
+          ? bwCandidate.confidence === "nearest_building"
+            ? "building"
+            : "street"
+          : null;
+
       const response = await fetch("/api/household/position/confirm", {
         method: "POST",
         headers: {
@@ -313,6 +377,8 @@ export default function MapPositionPage() {
           lat: pendingGeoPosition.lat,
           lng: pendingGeoPosition.lng,
           manualOverride: pendingGeoChanged,
+          source: candidateConfirmSource,
+          accuracy: candidateConfirmAccuracy,
         }),
       });
       const data = (await response.json()) as
@@ -328,6 +394,7 @@ export default function MapPositionPage() {
       setPositionConfirmResult(data);
       setGeoPosition(data.confirmed);
       setPendingGeoPosition(data.confirmed);
+      setBwCandidate(null);
       toast.success("Leaflet-Position bestätigt.");
     } catch {
       toast.error("Position konnte nicht bestätigt werden.");
@@ -537,6 +604,22 @@ export default function MapPositionPage() {
             Ziehen Sie den Marker bei Bedarf auf das richtige Gebäude und
             bestätigen Sie erst dann die Position.
           </p>
+
+          {bwCandidate && (
+            <p
+              className="mt-2 rounded-md border border-alert-amber/30 bg-alert-amber/10 p-2 text-xs text-anthrazit"
+              data-testid="bw-house-coordinate-candidate-hint"
+            >
+              Kein exakter amtlicher Treffer für {bwCandidate.streetName ?? ""}{" "}
+              {bwCandidate.houseNumber}.{" "}
+              {bwCandidate.confidence === "nearest_building"
+                ? "Nächstgelegenes Gebäude übernommen"
+                : "Straße erkannt, Hausnummer nicht eindeutig"}
+              {bwCandidate.distanceMeters != null &&
+                ` · ${bwCandidate.distanceMeters} m vom Hinweispunkt`}
+              . Bitte prüfen und ggf. verschieben.
+            </p>
+          )}
 
           <div className="mt-3 overflow-hidden rounded-xl border border-border">
             <PositionConfirmMap

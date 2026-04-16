@@ -33,6 +33,15 @@ export interface LglBwResolveResult {
   bbox: string;
   inspectedCount: number;
   match: LglBwAddressFeature | null;
+  candidate: LglBwCandidate | null;
+}
+
+export type LglBwCandidateConfidence = "street_only" | "nearest_building";
+
+export interface LglBwCandidate {
+  feature: LglBwAddressFeature;
+  confidence: LglBwCandidateConfidence;
+  distanceMeters: number | null;
 }
 
 interface PostalDescriptor {
@@ -207,6 +216,70 @@ function haversineMeters(from: GeoPoint, to: GeoPoint): number {
   return earthRadius * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
 
+export function findNearestLglBwAddress(
+  features: LglBwAddressFeature[],
+  address: StructuredAddress,
+  hint?: GeoPoint | null,
+): LglBwCandidate | null {
+  const normalizedStreet = normalizeAddressText(address.streetName);
+  const normalizedPostalCode = (address.postalCode ?? "").replace(/\D/g, "");
+  const normalizedCity = normalizeAddressText(address.city);
+
+  // Gleicher Straßenname + (falls vorhanden) PLZ/Ort, egal welche Hausnummer
+  const streetOnly = features.filter((feature) => {
+    if (!feature.streetName) return false;
+    if (normalizeAddressText(feature.streetName) !== normalizedStreet)
+      return false;
+    if (
+      normalizedPostalCode &&
+      (feature.postalCode ?? "").replace(/\D/g, "") !== normalizedPostalCode
+    ) {
+      return false;
+    }
+    if (
+      normalizedCity &&
+      normalizeAddressText(feature.city) !== normalizedCity
+    ) {
+      return false;
+    }
+    return true;
+  });
+
+  if (streetOnly.length === 0) {
+    return null;
+  }
+
+  // Bevorzugt Gebäude-Spezifikation (aussagekräftiger Pin)
+  const buildings = streetOnly.filter((feature) =>
+    isBuildingSpecification(feature.specification),
+  );
+  const pool = buildings.length > 0 ? buildings : streetOnly;
+  const confidence: LglBwCandidateConfidence =
+    buildings.length > 0 ? "nearest_building" : "street_only";
+
+  let chosen: LglBwAddressFeature;
+  let distanceMeters: number | null = null;
+
+  if (hint) {
+    const sorted = [...pool]
+      .map((feature) => ({
+        feature,
+        distance: haversineMeters(hint, feature),
+      }))
+      .sort((left, right) => left.distance - right.distance);
+    chosen = sorted[0].feature;
+    distanceMeters = Math.round(sorted[0].distance);
+  } else {
+    chosen = pool[0];
+  }
+
+  return {
+    feature: chosen,
+    confidence,
+    distanceMeters,
+  };
+}
+
 export function findExactLglBwHouseCoordinate(
   features: LglBwAddressFeature[],
   address: StructuredAddress,
@@ -292,10 +365,12 @@ export async function resolveLglBwHouseCoordinate(
 
   const xml = await response.text();
   const features = parseLglBwAddressFeatures(xml);
+  const match = findExactLglBwHouseCoordinate(features, address, hint);
 
   return {
     bbox,
     inspectedCount: features.length,
-    match: findExactLglBwHouseCoordinate(features, address, hint),
+    match,
+    candidate: match ? null : findNearestLglBwAddress(features, address, hint),
   };
 }

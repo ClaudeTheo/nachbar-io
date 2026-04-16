@@ -1,0 +1,48 @@
+[
+  {
+    "id": "mow.DE-TH-G-W109-20240628-001",
+    "version": "2024-06-28T19:43:20+02:00",
+    "startDate": "2024-06-28T19:43:20+02:00",
+    "expiresDate": "2024-06-29T01:43:20+02:00",
+    "severity": "Minor",
+    "urgency": "Immediate",
+    "type": "Cancel",
+    "i18nTitle": {
+      "de": "Entwarnung: Gefahr durch Rauchentwicklung - Fichtenhainichen"
+    },
+    "payload": {
+      "version": 5,
+      "type": "ALERT",
+      "id": "mow.DE-TH-G-W109-20240628-001",
+      "hash": "c67f714afd82e9417571e51bdbe0b171e37da292cf26118203714951538b0d29",
+      "data": {
+        "headline": "Entwarnung: Gefahr durch Rauchentwicklung - Fichtenhainichen",
+        "description": "Dies ist die Entwarnung zur Warnung \"Gefahr durch Rauchentwicklung - Fichtenhainichen\" vom 28.06.2024 09:34:12 gesendet durch LS Gera vS/E, Kreis (DEU, TH). Die Warnung ist aufgehoben.",
+        "instruction": "Meiden Sie das betroffene Gebiet. Schliessen Sie Fenster und Tueren und schalten Sie Lueftungen und Klimaanlagen ab.",
+        "category": "Fire",
+        "event": "BBK-EVC-010",
+        "provider": "MOWAS",
+        "severity": "Minor",
+        "urgency": "Immediate",
+        "msgType": "Cancel",
+        "transKeys": {
+          "event": "BBK-EVC-010"
+        },
+        "area": [
+          {
+            "areaDesc": "Fichtenhainichen",
+            "geocode": [
+              {
+                "valueName": "AreaId",
+                "value": "0"
+              }
+            ]
+          }
+        ],
+        "valid": true
+      }
+    },
+    "sent": "2024-06-28T19:43:20+02:00",
+    "expires": "2024-06-29T01:43:20+02:00"
+  }
+]

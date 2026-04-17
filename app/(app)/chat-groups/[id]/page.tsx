@@ -106,15 +106,19 @@ export default function GroupChatPage({
         >
           <ArrowLeft className="h-6 w-6" />
         </Link>
-        <div className="min-w-0 flex-1">
+        <Link
+          href={`/chat-groups/${groupId}/mitglieder`}
+          className="min-w-0 flex-1"
+          aria-label="Mitglieder verwalten"
+        >
           <h1 className="truncate text-lg font-bold text-[#2D3142]">
             {group?.name ?? "Gruppe"}
           </h1>
           <div className="flex items-center gap-1 text-xs text-[#2D3142]/60">
             <UsersIcon className="h-3 w-3" />
-            {memberCount} Mitglied{memberCount === 1 ? "" : "er"}
+            {memberCount} Mitglied{memberCount === 1 ? "" : "er"} · verwalten
           </div>
-        </div>
+        </Link>
       </header>
 
       {error ? (

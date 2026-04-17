@@ -10,6 +10,7 @@ import Link from "next/link";
 import { ArrowLeft, UserPlus } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { sendContactRequest } from "@/lib/chat/client";
+import { MyUserIdCard } from "@/components/chat/MyUserIdCard";
 
 export default function NeuerKontaktPage() {
   const router = useRouter();
@@ -57,10 +58,11 @@ export default function NeuerKontaktPage() {
       </header>
 
       <form onSubmit={handleSubmit} className="space-y-4 p-4">
+        <MyUserIdCard />
+
         <div className="rounded-2xl border border-[#2D3142]/10 bg-[#F8F9FA] p-4 text-sm text-[#2D3142]/80">
           <strong>Tipp:</strong> Fragen Sie Ihren Bekannten nach seiner
-          Nutzer-ID (unter Profil zu finden). Spaeter gibt es auch einen
-          Einladungs-Link.
+          Nutzer-ID. Spaeter gibt es auch einen Einladungs-Link.
         </div>
 
         <label className="block">

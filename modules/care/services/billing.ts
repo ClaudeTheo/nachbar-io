@@ -16,8 +16,8 @@ export const PLAN_METADATA: Record<CareSubscriptionPlan, {
   highlighted?: boolean;
 }> = {
   free: { label: 'Free', description: 'Grundlegende Nachbarschaft', price: 'Kostenlos' },
-  plus: { label: 'Plus', description: 'Voller Funktionsumfang', price: '4,99 EUR/Monat', priceYearly: '49,90 EUR/Jahr', highlighted: true },
-  pro: { label: 'Pro', description: 'Fuer Quartier-Manager & Pflegedienste', price: '14,99 EUR/Monat', priceYearly: '149,90 EUR/Jahr' },
+  plus: { label: 'Plus', description: 'Voller Funktionsumfang', price: '8,90 EUR/Monat', priceYearly: '89 EUR/Jahr', highlighted: true },
+  pro: { label: 'Pro Community', description: 'Fuer Quartier-Manager & Pflegedienste', price: '79 EUR/Monat', priceYearly: '790 EUR/Jahr' },
 };
 
 // Feature-Labels fuer UI-Anzeige

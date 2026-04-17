@@ -10,7 +10,10 @@ import { writeAuditLog } from "@/lib/care/audit";
 import { ServiceError } from "@/lib/services/service-error";
 
 // Gueltige bezahlte Plan-Typen
-const VALID_PAID_PLANS: PaidPlan[] = ["plus", "pro_community", "pro_medical"];
+// Phase 1 (Bad Saeckingen Pilot): Nur Plus. Pro Community = B2B-Direktvertrag (HR/VR-Pruefung),
+// Pro Medical ist geparkt bis MRR > 500 EUR. Bei Re-Aktivierung auch DB-Constraint (Mig. 060)
+// erweitern und UI (SubscriptionPlans) entsprechend anpassen.
+const VALID_PAID_PLANS: PaidPlan[] = ["plus"];
 
 // Erste 200 Nutzer bekommen alle Plaene kostenlos
 const EARLY_ADOPTER_LIMIT = 200;
@@ -201,8 +204,8 @@ export async function createBillingCheckout(
       mode: "subscription",
       customer_email: userEmail,
       line_items: [{ price: priceId, quantity: 1 }],
-      success_url: `${origin}/dashboard?checkout=success`,
-      cancel_url: `${origin}/dashboard?checkout=cancelled`,
+      success_url: `${origin}/care/subscription?checkout=success`,
+      cancel_url: `${origin}/care/subscription?checkout=cancelled`,
       allow_promotion_codes: true,
       metadata,
     });

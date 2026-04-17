@@ -61,8 +61,9 @@ export function SubscriptionPlans({ currentPlan = 'free', onSelectPlan }: Subscr
       </div>
 
       {/* Mobile: Karten-Layout */}
+      {/* Phase 1: Nur free + plus sichtbar. Pro Community = B2B-Direktvertrag (kein Self-Serve). */}
       <div className="space-y-3">
-        {PLAN_HIERARCHY.map(plan => {
+        {PLAN_HIERARCHY.filter(p => p !== 'pro').map(plan => {
           const meta = PLAN_METADATA[plan];
           const features = PLAN_FEATURES[plan] ?? [];
           const isCurrent = plan === currentPlan;

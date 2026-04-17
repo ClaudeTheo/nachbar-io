@@ -29,7 +29,8 @@ export function useSubscription() {
   /** Plan aendern — Checkout-Route entscheidet: gratis (Early Adopter) oder Stripe */
   const changePlan = useCallback(async (plan: CareSubscriptionPlan, billingCycle: 'monthly' | 'yearly' = 'monthly') => {
     try {
-      if (plan === 'plus' || plan === 'pro') {
+      // Phase 1: Nur Plus ueber Stripe-Checkout. 'pro' (Pro Community) ist B2B-Direktvertrag.
+      if (plan === 'plus') {
         const res = await fetch('/api/billing/checkout', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },

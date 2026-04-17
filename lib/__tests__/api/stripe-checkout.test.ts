@@ -178,23 +178,10 @@ describe("POST /api/billing/checkout", () => {
     expect(json.error).toBe("Ungültiger Plan");
   });
 
-  it("pro_community erfordert quarterId", async () => {
-    mockGetUser.mockResolvedValue({
-      data: { user: { id: "user-1", email: "test@test.de" } },
-    });
-
-    const req = createMockRequest({
-      planType: "pro_community",
-      interval: "monthly",
-    });
-    const res = await POST(req);
-    const json = await res.json();
-
-    expect(res.status).toBe(400);
-    expect(json.error).toContain("Quartier-ID");
-  });
-
-  it("akzeptiert pro_community mit quarterId", async () => {
+  // Phase 1 (Bad Saeckingen Pilot): Nur Plus ist Self-Serve. Pro Community = B2B-Direktvertrag,
+  // Pro Medical geparkt. Die folgenden Tests dokumentieren den aktuellen Contract — bei Phase-2-
+  // Re-Aktivierung muessen sie wieder auf 200 + URL/earlyAdopter umgestellt werden.
+  it("lehnt pro_community in Phase 1 ab (B2B-Direktvertrag)", async () => {
     mockGetUser.mockResolvedValue({
       data: { user: { id: "user-1", email: "test@test.de" } },
     });
@@ -207,9 +194,24 @@ describe("POST /api/billing/checkout", () => {
     const res = await POST(req);
     const json = await res.json();
 
-    // Entweder Stripe-Checkout-URL oder Early-Adopter-Antwort
-    expect(res.status).toBe(200);
-    expect(json.url || json.earlyAdopter).toBeTruthy();
+    expect(res.status).toBe(400);
+    expect(json.error).toBe("Ungültiger Plan");
+  });
+
+  it("lehnt pro_medical in Phase 1 ab (geparkt)", async () => {
+    mockGetUser.mockResolvedValue({
+      data: { user: { id: "user-1", email: "test@test.de" } },
+    });
+
+    const req = createMockRequest({
+      planType: "pro_medical",
+      interval: "monthly",
+    });
+    const res = await POST(req);
+    const json = await res.json();
+
+    expect(res.status).toBe(400);
+    expect(json.error).toBe("Ungültiger Plan");
   });
 
   it("akzeptiert plus ohne quarterId", async () => {
@@ -221,20 +223,6 @@ describe("POST /api/billing/checkout", () => {
     const res = await POST(req);
 
     // Sollte nicht 400 sein (kein Validierungsfehler)
-    expect(res.status).not.toBe(400);
-  });
-
-  it("akzeptiert pro_medical ohne quarterId", async () => {
-    mockGetUser.mockResolvedValue({
-      data: { user: { id: "user-1", email: "test@test.de" } },
-    });
-
-    const req = createMockRequest({
-      planType: "pro_medical",
-      interval: "monthly",
-    });
-    const res = await POST(req);
-
     expect(res.status).not.toBe(400);
   });
 

@@ -127,6 +127,18 @@ export default defineConfig({
         ...devices["Desktop Chrome"],
       },
     },
+
+    // ─── Pilot-Smoke (J-2): 12 Pilot-Kriterien, Auth senior_s ───
+    // Scope: docs/plans/2026-04-14-codex-brief-pilot-readiness.md Block 2.
+    // Abhaengig von "auth" damit storageState fuer senior_s bereitsteht.
+    {
+      name: "pilot-smoke",
+      testMatch: /pilot-smoke\.spec\.ts/,
+      dependencies: ["auth"],
+      use: {
+        ...devices["Pixel 5"], // Senior-UI ist fuer mobile Viewports ausgelegt
+      },
+    },
   ],
 
   // Live-Modus (E2E_LIVE=true): kein lokaler Server — Tests laufen gegen Vercel-URLs

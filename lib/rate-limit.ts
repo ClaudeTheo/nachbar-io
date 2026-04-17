@@ -77,6 +77,14 @@ const RATE_LIMIT_CONFIG: RateLimitCategory[] = [
     prefixes: ["/api/heartbeat"],
     skip: true,
   },
+  // Chat-Nachrichten: mittelgrosszuegig, Spam-Schutz
+  // Gilt fuer Nachrichten-POSTs in Conversations und Chat-Gruppen
+  {
+    name: "chat-messages",
+    prefixes: ["/api/conversations/", "/api/chat-groups/"],
+    limit: 30,
+    windowMs: 60_000,
+  },
   // Admin-Endpunkte: Großzuegig aber begrenzt
   {
     name: "admin",

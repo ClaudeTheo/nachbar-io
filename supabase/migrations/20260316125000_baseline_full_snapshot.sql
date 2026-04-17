@@ -10,6 +10,11 @@
 
 BEGIN;
 
+-- Enable PostGIS before any CREATE TABLE that uses geometry/geography types
+-- (quarters has geo_boundary/geo_center of type geometry in Prod; migration 079 enables
+--  postgis and adds OTHER geography columns, but not these two.)
+CREATE EXTENSION IF NOT EXISTS postgis;
+
 -- =============================================================
 -- Part 1: CREATE TABLE IF NOT EXISTS + ENABLE RLS (all 83 tables)
 -- =============================================================

@@ -1,7 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { isFeatureEnabledServer } from "@/lib/feature-flags-server";
 import { getAdminSupabase } from "@/lib/supabase/admin";
-import { fetchDwdWarnings, normalizeDwdWarncellId } from "@/lib/integrations/dwd/client";
+import {
+  fetchDwdWarnings,
+  normalizeDwdWarncellId,
+} from "@/lib/integrations/dwd/client";
 import { toCacheRow as dwdToCacheRow } from "@/lib/integrations/dwd/parser";
 import { fetchNinaWarnings } from "@/lib/integrations/nina/client";
 import { toCacheRow as ninaToCacheRow } from "@/lib/integrations/nina/parser";
@@ -15,6 +18,7 @@ import {
   toCacheRow as ubaToCacheRow,
 } from "@/lib/integrations/uba/parser";
 import type { UbaStation } from "@/lib/integrations/uba/types";
+import { isSimulationId } from "@/lib/integrations/__shared__/simulation-id";
 import type { Database } from "@/lib/supabase/database.types";
 
 type AdminClient = ReturnType<typeof getAdminSupabase>;
@@ -42,7 +46,10 @@ export async function GET(request: NextRequest) {
   const cronSecret = process.env.CRON_SECRET;
   if (!cronSecret) {
     console.error("[cron/external-warnings] CRON_SECRET nicht konfiguriert");
-    return NextResponse.json({ error: "Server-Konfigurationsfehler" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Server-Konfigurationsfehler" },
+      { status: 500 },
+    );
   }
 
   const authHeader = request.headers.get("authorization");
@@ -65,8 +72,7 @@ export async function GET(request: NextRequest) {
     try {
       ubaStations = await fetchUbaStations();
     } catch (error) {
-      ubaStationsError =
-        error instanceof Error ? error.message : String(error);
+      ubaStationsError = error instanceof Error ? error.message : String(error);
       console.error("[cron/external-warnings] UBA stations failed", error);
     }
   }
@@ -99,7 +105,13 @@ export async function GET(request: NextRequest) {
 
       if (providerEnabled.uba) {
         tasks.push(
-          syncUbaQuarter(admin, quarter, batchId, ubaStations, ubaStationsError),
+          syncUbaQuarter(
+            admin,
+            quarter,
+            batchId,
+            ubaStations,
+            ubaStationsError,
+          ),
         );
       }
 
@@ -323,7 +335,9 @@ async function persistProviderRows(
   const rowIds = new Set(rows.map((row) => row.external_id));
   const existingKeys = new Set(existing.map(createExistingKey));
 
-  const inserted = rows.filter((row) => !existingKeys.has(createCacheKey(row))).length;
+  const inserted = rows.filter(
+    (row) => !existingKeys.has(createCacheKey(row)),
+  ).length;
   const unchanged = rows.length - inserted;
 
   if (rows.length > 0) {
@@ -333,9 +347,11 @@ async function persistProviderRows(
       fetch_batch_id: metadata.batchId,
     }));
 
-    const upsertResult = await admin.from("external_warning_cache").upsert(upsertRows, {
-      onConflict: "provider,external_id,external_version",
-    });
+    const upsertResult = await admin
+      .from("external_warning_cache")
+      .upsert(upsertRows, {
+        onConflict: "provider,external_id,external_version",
+      });
 
     if (upsertResult.error) {
       throw upsertResult.error;
@@ -346,6 +362,7 @@ async function persistProviderRows(
     .filter(
       (row) =>
         row.status === "active" &&
+        !isSimulationId(row.external_id) &&
         rowIds.has(row.external_id) &&
         !rowKeys.has(createExistingKey(row)),
     )
@@ -362,10 +379,14 @@ async function persistProviderRows(
     }
   }
 
+  // Simulations-IDs (Prefix "sim-") sind manuelle Test-Daten und werden nie
+  // von echten Providern zurueckgeliefert. Ohne diese Ausnahme wuerde der
+  // erste Cron-Lauf sie als expired markieren.
   const expiredIds = existing
     .filter(
       (row) =>
         row.status === "active" &&
+        !isSimulationId(row.external_id) &&
         !rowIds.has(row.external_id) &&
         !rowKeys.has(createExistingKey(row)),
     )
@@ -416,9 +437,14 @@ function createExistingKey(row: {
 }
 
 async function writeSyncLog(admin: AdminClient, row: SyncLogInsert) {
-  const insertResult = await admin.from("external_warning_sync_log").insert(row);
+  const insertResult = await admin
+    .from("external_warning_sync_log")
+    .insert(row);
   if (insertResult.error) {
-    console.error("[cron/external-warnings] sync log insert failed", insertResult.error);
+    console.error(
+      "[cron/external-warnings] sync log insert failed",
+      insertResult.error,
+    );
   }
 }
 

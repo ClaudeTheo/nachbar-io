@@ -10,6 +10,16 @@ ALTER TABLE users ADD COLUMN IF NOT EXISTS retention_until TIMESTAMPTZ;
 ALTER TABLE users ADD COLUMN IF NOT EXISTS verified_by TEXT;
 ALTER TABLE users ADD COLUMN IF NOT EXISTS verification_notes TEXT;
 
+-- Nachzug 2026-04-17: Diese Spalten wurden urspruenglich in dieser Migration
+-- vergessen, in Produktion manuell angelegt. Damit neue Supabase-Branches die
+-- Migration replayen koennen, werden sie hier idempotent nachgetragen. Auf
+-- bestehenden DBs ist das ein No-op (IF NOT EXISTS).
+ALTER TABLE users ADD COLUMN IF NOT EXISTS lanr VARCHAR;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS bsnr VARCHAR;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS full_name TEXT;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS praxis_name TEXT;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS fachrichtung TEXT;
+
 -- 2. Consent-Versionen (Klartext + Hash fuer Pruefer)
 CREATE TABLE IF NOT EXISTS consent_versions (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),

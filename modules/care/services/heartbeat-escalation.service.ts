@@ -12,11 +12,19 @@ import { HEARTBEAT_ESCALATION } from "@/lib/care/constants";
 import { writeCronHeartbeat } from "@/lib/care/cron-heartbeat";
 import { ServiceError } from "@/lib/services/service-error";
 import type { EscalationStage } from "@/lib/care/types";
+import { getUserQuarterId } from "@/lib/quarters/helpers";
+import {
+  checkActiveHeatWarning,
+  getHeatAwareEscalationStage,
+  buildHeatAlertBody,
+  type HeatWarningInfo,
+} from "@/lib/care/heat-warning-check";
 
 export interface HeartbeatEscalationResult {
   processed: number;
   reminder: number;
   alert: number;
+  heatEscalated: number;
   resolved: number;
   timestamp: string;
 }
@@ -59,6 +67,7 @@ export async function runHeartbeatEscalation(
       processed: 0,
       reminder: 0,
       alert: 0,
+      heatEscalated: 0,
       resolved: 0,
       timestamp: now.toISOString(),
     };
@@ -77,6 +86,7 @@ export async function runHeartbeatEscalation(
 
   let reminderCount = 0;
   let alertCount = 0;
+  let heatEscalatedCount = 0;
   let resolvedCount = 0;
 
   for (const residentId of residentIds) {
@@ -103,7 +113,18 @@ export async function runHeartbeatEscalation(
         (1000 * 60 * 60)
       : Infinity; // Kein Heartbeat -> sofort hoechste Stufe
 
-    const stage = getEscalationStage(hoursAgo);
+    // DWD-Hitze-Check: Quartier des Bewohners ermitteln + Hitzewarnung prüfen
+    let heatWarning: HeatWarningInfo | null = null;
+    const baseStage = getEscalationStage(hoursAgo);
+    if (baseStage === "reminder_24h") {
+      // Nur im 24h-48h-Fenster lohnt sich der Hitze-Check
+      const quarterId = await getUserQuarterId(supabase, residentId);
+      heatWarning = await checkActiveHeatWarning(supabase, quarterId);
+    }
+
+    const stage = getHeatAwareEscalationStage(hoursAgo, heatWarning);
+    const wasHeatEscalated =
+      baseStage === "reminder_24h" && stage === "alert_48h";
 
     // === Heartbeat vorhanden und im gruenen Bereich: Offene Events auflösen ===
     if (stage === null) {
@@ -240,7 +261,14 @@ export async function runHeartbeatEscalation(
         eventType: "escalation_triggered",
         referenceType: "escalation_events",
         referenceId: newEvent.id,
-        metadata: { stage, hoursAgo: Math.round(hoursAgo * 10) / 10 },
+        metadata: {
+          stage,
+          hoursAgo: Math.round(hoursAgo * 10) / 10,
+          ...(wasHeatEscalated && {
+            heatEscalated: true,
+            heatHeadline: heatWarning?.headline,
+          }),
+        },
       });
     } catch (auditError) {
       console.error(
@@ -278,13 +306,22 @@ export async function runHeartbeatEscalation(
 
       case "alert_48h": {
         // Stufe 2: Benachrichtigung an alle eingeladenen Angehoerigen (Push + SMS).
+        // Bei Hitze-Eskalation: angepasster Text mit Hitze-Kontext.
+        const alertTitle = wasHeatEscalated
+          ? "Keine Aktivität bei Hitzewarnung"
+          : "Keine Aktivität seit 48+ Stunden";
+        const alertBaseBody = wasHeatEscalated
+          ? "Ihr Angehöriger hat sich seit über 24 Stunden nicht gemeldet."
+          : "Ihr Angehöriger hat sich seit über 48 Stunden nicht gemeldet und hat auch nicht auf die Erinnerung reagiert. Bitte prüfen Sie nach.";
+        const alertBody = buildHeatAlertBody(alertBaseBody, heatWarning);
+
         for (const caregiverId of caregiverIds) {
           try {
             await sendCareNotification(supabase, {
               userId: caregiverId,
               type: "care_heartbeat_alert",
-              title: "Keine Aktivität seit 48+ Stunden",
-              body: "Ihr Angehöriger hat sich seit über 48 Stunden nicht gemeldet und hat auch nicht auf die Erinnerung reagiert. Bitte prüfen Sie nach.",
+              title: alertTitle,
+              body: alertBody,
               referenceId: newEvent.id,
               referenceType: "escalation_events",
               url: "/care/caregiver",
@@ -299,6 +336,7 @@ export async function runHeartbeatEscalation(
           }
         }
         alertCount++;
+        if (wasHeatEscalated) heatEscalatedCount++;
         break;
       }
     }
@@ -309,6 +347,7 @@ export async function runHeartbeatEscalation(
     residents: residentIds.length,
     reminder: reminderCount,
     alert: alertCount,
+    heatEscalated: heatEscalatedCount,
     resolved: resolvedCount,
   });
 
@@ -316,6 +355,7 @@ export async function runHeartbeatEscalation(
     processed: residentIds.length,
     reminder: reminderCount,
     alert: alertCount,
+    heatEscalated: heatEscalatedCount,
     resolved: resolvedCount,
     timestamp: now.toISOString(),
   };

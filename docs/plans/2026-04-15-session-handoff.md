@@ -1,24 +1,28 @@
 # Session Handoff — Pilot-Readiness Bundle
 
+> Update 2026-04-16: Die aktuelle Cross-Agent-Übergabe für die nächste Session liegt in [2026-04-16-codex-claude-handoff.md](C:/Users/thoma/Documents/New project/nachbar-io/docs/plans/2026-04-16-codex-claude-handoff.md).
+
 **Datum:** 2026-04-16  
 **Repo:** `C:/Users/thoma/Documents/New project/nachbar-io`  
 **Branch:** `master`  
 **Live-URL:** `https://nachbar-io.vercel.app`  
 **Letzter live deployter Commit:** `6f98cb6` (`Polish map mobile help and controls`)  
-**Lokal letzter Commit:** `85a66c0` (`Fix leaflet map resident lookup`)  
+**Aktueller lokaler HEAD:** `0a13456` (`Bundle pilot fixes and cross-portal verification`)  
+**Vorheriger lokaler Commit:** `85a66c0` (`Fix leaflet map resident lookup`)  
 
 ## Wichtig
 
-- Diese Datei ist die maßgebliche Wahrheit für die nächste Session.
-- Seit diesem lokalen Bündel wurde **nichts gepusht und nichts deployed**.
-- `master` ist lokal **1 Commit vor `origin/master`**:
-  - lokaler `HEAD`: `85a66c0`
+- Für die nächste Session ist [2026-04-16-codex-claude-handoff.md](C:/Users/thoma/Documents/New project/nachbar-io/docs/plans/2026-04-16-codex-claude-handoff.md) die maßgebliche Übergabe; diese Datei bleibt als Verlauf/Hintergrund erhalten.
+- Seit `0a13456` wurde **nichts gepusht und nichts deployed**.
+- `master` ist lokal **2 Commits vor `origin/master`**:
+  - lokaler `HEAD`: `0a13456`
   - `origin/master`: `6f98cb6`
-- Zusätzlich liegt ein größerer **ungecommiteter lokaler Pilot-Fix-Bundle** im Worktree.
+- Der frühere ungecommitete Pilot-Fix-Bundle ist inzwischen in `0a13456` gebündelt.
 - `.playwright-cli/` und `output/` **nicht committen**.
 - Nutzerwunsch für Vercel:
   - keine Mikro-Pushes / keine Mini-Deploys
   - Änderungen lokal bündeln, testen, dann erst als sinnvolles Paket committen/pushen/deployen
+- Für den nächsten Block nicht wieder mit allgemeinem Smoke-Testing starten.
 
 ## Was lokal bereits fertig ist
 
@@ -27,8 +31,11 @@
 - `85a66c0` — `Fix leaflet map resident lookup`
   - behebt den kaputten Household-/Resident-Lookup im Leaflet-Hauspanel
   - Root Cause war **nicht** `onboarding_completed`, sondern der Straßen-/Lookup-Bruch im Panel
+- `0a13456` — `Bundle pilot fixes and cross-portal verification`
+  - bündelt den früheren lokalen Pilot-Fix-Stand
+  - enthält auch die lokal grün verifizierten Mehrnutzer-/Realtime-Flows `S12`, `X01` und `X19`
 
-### 2. Uncommitteter lokaler Pilot-Bundle
+### 2. Inhalt des inzwischen committeten Pilot-Bundles (`0a13456`)
 
 #### `/map` Status- und Farbpaket
 
@@ -156,59 +163,12 @@ Inhalt:
 
 ## Aktueller Worktree
 
-### Geändert, aber noch nicht committed
-
-- `__tests__/app/profile-page-bugfix.test.tsx`
-- `__tests__/components/MapFilterBar.test.tsx`
-- `__tests__/lib/security/device-fingerprint.test.ts`
-- `__tests__/middleware/legacy-routes.test.ts`
-- `app/(app)/profile/kiosk-pin/page.tsx`
-- `app/(app)/profile/map-position/page.tsx`
-- `app/(app)/profile/page.tsx`
-- `app/api/kiosk/login/route.ts`
-- `components/LeafletKarte.tsx`
-- `components/LeafletMapInner.tsx`
-- `components/MapFilterBar.tsx`
-- `components/NachbarKarteSvg.tsx`
-- `docs/plans/2026-04-15-session-handoff.md`
-- `lib/hooks/useMapStatuses.ts`
-- `lib/legacy-routes.ts`
-- `lib/security/client-key.ts`
-- `lib/security/traps/trap-utils.ts`
-- `modules/care/components/caregiver/CaregiverSettings.tsx`
-- `modules/care/hooks/useCareRole.ts`
-- `modules/care/services/permissions.ts`
-- `lib/services/misc-utilities.service.ts`
-- `tests/e2e/auth-setup.ts`
-- `tests/e2e/cross-portal/x01-checkin-heartbeat.spec.ts`
-- `tests/e2e/fixtures/roles.ts`
-- `tests/e2e/helpers/agent-factory.ts`
-- `tests/e2e/helpers/db-seeder.ts`
-- `tests/e2e/helpers/test-config.ts`
-- `tests/e2e/playwright.config.ts`
-- `app/(app)/messages/page.tsx`
-- `app/(app)/messages/[id]/page.tsx`
-- `__tests__/api/resident/resident-status.test.ts`
-- `__tests__/hooks/care-supabase-hooks.test.ts`
-- `__tests__/lib/care/permissions.test.ts`
-
-### Untracked, aber fachlich Teil des Bundles
-
-- `__tests__/api/kiosk-login.test.ts`
-- `__tests__/app/messages/page.test.tsx`
-- `__tests__/components/care/CaregiverSettings.test.tsx`
-- `lib/__tests__/kiosk-pin.test.ts`
-- `lib/__tests__/map-position.test.ts`
-- `lib/__tests__/map-statuses.test.ts`
-- `lib/kiosk-pin.ts`
-- `lib/map-position.ts`
-- `lib/map-statuses.ts`
-- `tests/e2e/scenarios/s12-neighbor-request-chat.spec.ts`
-
-### Untracked, nicht committen
-
-- `.playwright-cli/`
-- `output/`
+- Nach `0a13456` war der Feature-Worktree sauber.
+- Falls diese Handoff-Angleichung noch nicht separat committed wurde, sind aktuell nur die Plan-Dateien lokal geändert bzw. neu:
+  - `docs/plans/2026-04-15-session-handoff.md`
+  - `docs/plans/2026-04-16-codex-claude-handoff.md`
+  - `docs/plans/2026-04-16-bw-house-coordinates-implementation-plan.md`
+- `.playwright-cli/` und `output/` weiter nicht committen.
 
 ## Verifikation bis jetzt
 
@@ -349,12 +309,12 @@ Zusatz:
 
 ## Nächster sinnvoller Block
 
-Die offenen Mehrnutzer-/Realtime-Flows sind jetzt lokal abgedeckt. Der nächste sinnvolle Block ist daher:
+Die offenen Mehrnutzer-/Realtime-Flows sind jetzt lokal abgedeckt. Die kurze Design-/Planphase für den Kartenblock liegt inzwischen bereits als Draft vor:
 
-1. Commit-Grenze festziehen und das lokale Bündel in einem sauberen Paket committen
-2. Karten-/Adresslogik auf amtliche BW-Hauskoordinaten ausrichten
-3. Fallback-Geocoder nur mit Accuracy-Filter und Pin-Bestaetigung einsetzen
-4. `profile/map-position` von manueller SVG-Pflege zu "amtlich zuerst, manuell nur bei Bedarf" weiterentwickeln
+1. `docs/plans/2026-04-16-bw-house-coordinates-map-strategy.md` und `docs/plans/2026-04-16-bw-house-coordinates-implementation-plan.md` kurz reviewen
+2. Die offenen Founder-Entscheidungen daraus klären, vor allem LGL-BW-Zugang und Slice-1-Grenze
+3. Erst danach mit der eigentlichen Umsetzung beginnen
+4. Weiter nichts pushen oder deployen
 
 ## Relevante Dateien
 
@@ -385,7 +345,8 @@ Die offenen Mehrnutzer-/Realtime-Flows sind jetzt lokal abgedeckt. Der nächste 
 - `tests/e2e/cross-portal/x19-postfach-thread.spec.ts`
 - `tests/e2e/helpers/db-seeder.ts`
 - `docs/plans/2026-04-16-bw-house-coordinates-map-strategy.md`
+- `docs/plans/2026-04-16-bw-house-coordinates-implementation-plan.md`
 
 ## Exakter Startsatz für die nächste Session
 
-Arbeite in `nachbar-io` auf `master` weiter und nutze `docs/plans/2026-04-15-session-handoff.md` als maßgebliche Wahrheit. Live steht weiter auf `6f98cb6`, lokal steht `HEAD` auf `85a66c0` und `master` ist damit 1 Commit vor `origin/master`; zusätzlich liegt ein ungecommiteter lokaler Pilot-Fix-Bundle im Worktree. Seit diesem Bundle wurde nichts gepusht oder deployed. Committe `.playwright-cli/` und `output/` nicht. `S12`, `X01` und `X19` sind lokal grün; `X01` deckt jetzt auch `need_help`/SOS in der Care-Detailansicht ab. Für stabile lokale Cross-Portal-Läufe gegen den gestarteten Dev-Server nutze `E2E_LIVE=1`. Der nächste sinnvolle Block ist jetzt nicht weiterer Seitensmoke, sondern Commit-Bündelung plus Umsetzung der Karten-/Adressstrategie aus `docs/plans/2026-04-16-bw-house-coordinates-map-strategy.md`.
+Arbeite in `nachbar-io` auf `master` weiter und lies zuerst `docs/plans/2026-04-16-codex-claude-handoff.md` als maßgebliche Übergabe; diese Datei hier ist nur noch der ausführliche Verlauf. Live steht weiter auf `6f98cb6`, lokal steht `HEAD` auf `0a13456` und `master` ist damit 2 Commits vor `origin/master`. Seitdem wurde nichts gepusht oder deployed. Committe `.playwright-cli/` und `output/` nicht. `S12`, `X01` und `X19` sind lokal grün; `X01` deckt auch `need_help`/SOS in der Care-Detailansicht ab. Für stabile lokale Cross-Portal-Läufe gegen den gestarteten Dev-Server nutze `E2E_LIVE=1`. Der nächste sinnvolle Block ist jetzt der kurze Review der Karten-/Adressstrategie plus des Drafts `docs/plans/2026-04-16-bw-house-coordinates-implementation-plan.md`, dann die Klärung der offenen Founder-Entscheidungen und erst danach die Umsetzung.

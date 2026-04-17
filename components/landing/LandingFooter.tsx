@@ -31,6 +31,7 @@ export function LandingFooter() {
               {[
                 { label: "Impressum", href: "/impressum" },
                 { label: "Datenschutz", href: "/datenschutz" },
+                { label: "Datenquellen", href: "/datenquellen" },
                 { label: "AGB", href: "/agb" },
                 { label: "Barrierefreiheit", href: "/barrierefreiheit" },
               ].map((link) => (

@@ -747,10 +747,31 @@ export default function DatenschutzPage() {
             </p>
           </section>
 
-          {/* 17. Änderungen */}
+          {/* 17. Amtliche Warnungen und Umweltdaten */}
           <section>
             <h2 className="mb-2 text-lg font-semibold text-anthrazit">
-              17. Änderungen dieser Erklärung
+              17. Amtliche Warnungen und Umweltdaten
+            </h2>
+            <p>
+              Wir verarbeiten oeffentliche amtliche Warnungen (NINA/BBK, DWD,
+              UBA). Dabei werden keine personenbezogenen Daten an die
+              Datenquellen uebertragen. Die Daten werden ausschliesslich
+              serverseitig abgerufen und zwischengespeichert. Details zu den
+              einzelnen Quellen und Lizenzen finden Sie auf der Seite{" "}
+              <Link
+                href="/datenquellen"
+                className="text-primary hover:underline"
+              >
+                Datenquellen
+              </Link>
+              .
+            </p>
+          </section>
+
+          {/* 18. Änderungen */}
+          <section>
+            <h2 className="mb-2 text-lg font-semibold text-anthrazit">
+              18. Änderungen dieser Erklärung
             </h2>
             <p>
               Diese Datenschutzerklärung kann bei Bedarf aktualisiert werden.
@@ -774,6 +795,12 @@ export default function DatenschutzPage() {
           </Link>
           <Link href="/datenschutz" className="font-medium text-anthrazit">
             Datenschutz
+          </Link>
+          <Link
+            href="/datenquellen"
+            className="hover:text-anthrazit hover:underline"
+          >
+            Datenquellen
           </Link>
           <Link href="/agb" className="hover:text-anthrazit hover:underline">
             AGB

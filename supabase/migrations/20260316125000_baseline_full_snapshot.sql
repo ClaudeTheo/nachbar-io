@@ -24,6 +24,11 @@ BEGIN;
 -- migration 20260317084431 enables postgis but would run AFTER our CREATE TABLE.
 CREATE EXTENSION IF NOT EXISTS postgis;
 
+-- Pre-window column patches. Columns present in Prod pg but never added by any
+-- schema_migrations entry (squashed migration history). Later migrations reference
+-- them in CREATE POLICY USING clauses, so they must exist before those migrations run.
+ALTER TABLE public.households ADD COLUMN IF NOT EXISTS quarter_id uuid;
+
 -- ----- access_codes -----
 CREATE TABLE IF NOT EXISTS public.access_codes (
   id uuid DEFAULT gen_random_uuid() NOT NULL,

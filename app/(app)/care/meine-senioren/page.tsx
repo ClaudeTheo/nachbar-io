@@ -7,9 +7,12 @@ import { ArrowRight, Users, UserPlus } from "lucide-react";
 import Link from "next/link";
 import { PageHeader } from "@/components/ui/page-header";
 import { useAssignedSeniors } from "@/lib/care/hooks/useAssignedSeniors";
+import { PlusTeaserKarte } from "@/components/leistungen/PlusTeaserKarte";
+import { useLeistungenTeaserState } from "@/lib/leistungen/use-teaser-state";
 
 export default function MeinKreisPage() {
   const { seniors, helperRole, loading, error } = useAssignedSeniors();
+  const teaser = useLeistungenTeaserState();
 
   if (loading) {
     return (
@@ -111,6 +114,11 @@ export default function MeinKreisPage() {
             </Link>
           ))}
         </div>
+      )}
+
+      {/* Leistungen-Info-Teaser (flag-gated, plus-aware) */}
+      {teaser.ready && teaser.show && (
+        <PlusTeaserKarte hasPlus={teaser.hasPlus} />
       )}
     </div>
   );

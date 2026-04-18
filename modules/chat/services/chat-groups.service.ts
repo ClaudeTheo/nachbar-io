@@ -106,6 +106,8 @@ export async function createGroup(
     );
   }
 
+  // Trigger `on_chat_group_created` (Mig 165) fuegt den Creator atomar
+  // als Admin in chat_group_members ein, bevor der Return-SELECT greift.
   const { data: group, error: groupError } = await supabase
     .from("chat_groups")
     .insert({
@@ -122,26 +124,6 @@ export async function createGroup(
       500,
       "create_group_failed",
       { details: groupError?.message },
-    );
-  }
-
-  // Creator als Admin hinzufuegen
-  const { error: memberError } = await supabase
-    .from("chat_group_members")
-    .insert({
-      group_id: group.id,
-      user_id: userId,
-      role: "admin",
-    });
-
-  if (memberError) {
-    // Rollback: Gruppe wieder entfernen
-    await supabase.from("chat_groups").delete().eq("id", group.id);
-    throw new ServiceError(
-      "Gruppen-Mitgliedschaft konnte nicht angelegt werden",
-      500,
-      "add_creator_failed",
-      { details: memberError.message },
     );
   }
 

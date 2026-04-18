@@ -216,3 +216,41 @@ Wenn naechste Session ein komplett anderes Thema hat: einfach
 - 13 TypeScript-Module + 5 React-Komponenten + 1 Server-Page
 - 0 neue pre-existente Test-Fehler geoeffnet
 - Zeitbudget: ~4 h (eine Session, Plan schaetzte "~4 Arbeitstage")
+
+---
+
+## Nachtrag: Pitch-Deck Prof. Karin van Holten (BFH/Careum)
+
+**Workstream:** Akademischer Outreach. Nach Leistungen-Info-Deploy in derselben Session begonnen und abgeschlossen.
+
+### Was ist fertig
+- **Datei:** `C:\Users\thoma\Claud Code\Handy APP\pitch-vanholten\Nachbar-io-Pitch-vanHolten.pptx` (216 KB, 10 Folien, 16:9)
+- **Build-Script:** `C:\Users\thoma\Claud Code\Handy APP\pitch-vanholten\build-deck.js` (pptxgenjs 4.0.1 global)
+- **Liegt ausserhalb des nachbar-io-Repos** — ist ein persoenliches Deliverable, nicht Produkt-Code. Kein Commit in nachbar-io.
+- **Verifiziert:** 70 echte Umlaute, 23 Gedankenstriche, 5 deutsche Anfuehrungszeichen korrekt im XML. Keine Platzhalter-Reste (markitdown-grep gruen).
+
+### Folien-Reihenfolge
+1. Titel (dunkel) — "Eine digitale Caring Community fuer das Quartier"
+2. Warum dieser Pitch — Hook mit ihrem Zitat "groesste Spitex der Nation" + Unsere Uebersetzung
+3. Ausgangslage — 3 Stat-Karten: 96 %, 32 %, 63 % (aus van-Holten-Folien)
+4. Produkt — Familienkreis / Quartier-Infos / "Was steht uns zu?"
+5. Haltung — Partizipation statt Paternalismus
+6. "Was steht uns zu?" — Live-Feature seit heute (DE + CH + 6 Kantone)
+7. Wo wir stehen — 1 Quartier, 4 Versionen, 10 Leistungen, 2.500+ Tests
+8. Was uns fehlt — Forschungs-Anschluss / Praxis-Felder / Stimme
+9. Die Bitte — 3 Optionen gestaffelt (30-Min / Sparring / Namens-Empfehlung)
+10. Kontakt (dunkel) — Thomas + Mail + Beilagen
+
+### Was offen ist
+1. **Anschreiben-Entwurf** — persoenliche E-Mail an `karin.vanholten@bfh.ch`. Noch NICHT geschrieben. Naechste Session: Entwurf bereitstellen (3-4 Absaetze, Sie-Form, Bezug auf ihre Folien vom 15.04.2026, Frage nach Termin, Deck als Anhang).
+2. **Visuelle QA in PowerPoint** — Thomas soll das Deck einmal lokal oeffnen und Layout-Edges (Zeilenumbruch, Ueberlauf) pruefen. LibreOffice war auf dem Rechner nicht installiert, automatische Bild-QA fiel aus.
+3. **Optional: Ein-Seiter-PDF-Kondensat** fuer E-Mail-Anhang oder Weiterleitung.
+4. **Optional: Nachbar.io-Logo** auf Folie 1 einbinden, sobald PNG/SVG vorliegt.
+5. **Nach Versand:** Termin-Outcome in Memory nachziehen.
+
+### Details + Kernbotschaft
+Siehe Memory `project_pitch_vanholten.md` — enthaelt 4-Punkte-Botschaft, Asks, Source-PDFs, Design-Tokens.
+
+### Start-Instruktion fuer naechste Session (Pitch)
+- **Entwurf:** "Schreibe Anschreiben-Entwurf an Prof. van Holten mit Verweis auf Deck in `pitch-vanholten/Nachbar-io-Pitch-vanHolten.pptx`. Memory: `project_pitch_vanholten.md`."
+- **Alternativ Ein-Seiter:** "Generiere 1-seitige PDF-Kondensat-Version des Decks (Hook + Produkt + Bitte + Kontakt)."

@@ -59,6 +59,21 @@ Alle drei autonom entschieden (Handoff des Vorgaengers erlaubte Adaption):
 
 ## Offene User-Aktionen
 
+### ⚠ Schritt 0 — Deploy `cad504c` erzwingen (falls nicht automatisch)
+
+Push-Trigger ist laut project-memory defekt. Vor Flag-Aktivierung sicherstellen,
+dass Commit `cad504c` (URL-Fix) live ist. Entweder GitHub-Actions-Cron
+abwarten (laeuft alle 3h bei Minute 17) oder manuell:
+
+```bash
+cd "C:/Users/thoma/Claud Code/Handy APP/nachbar-io"
+npx vercel --prod --yes
+```
+
+Verifikation: `curl -sI https://nachbar-io.vercel.app/was-steht-uns-zu` →
+307 Location: /login (Code ist schon aus Commit b71e176 deployed, URL-Fix
+noch unverifiziert — via curl anonymem User nicht pruefbar).
+
 ### ⚠ Schritt 3 — Flag einschalten (Thomas, Admin-Dashboard)
 
 ```
@@ -103,11 +118,12 @@ npx vercel --prod --yes
    Session. Falls sie bei der nachsten Session aufploppen: das sind
    Fremd-Code-Issues, nicht Leistungen-relevante.
 
-2. **URL-Reachability der Content-Links** wurde nicht automatisch geprueft
-   (curl-Loop in Plan-Task-18 Step 1). Alle 10 Leistungen + 26
-   Sozialaemter-URLs wurden per Hand gewaehlt aus offiziellen Quellen am
-   2026-04-18, aber nicht systematisch `curl -sSI`-getestet. Empfehlung:
-   bei der naechsten Session einmal durchlaufen lassen.
+2. ~~URL-Reachability der Content-Links~~ **ERLEDIGT 2026-04-18 22:00** via
+   Commit `cad504c`: 15 defekte URLs repariert (5 BMG/BMFSFJ/GKV-DE-Links
+   + 10 CH-Sozialaemter-URLs inkl. SH/SO/GR/ZG/NE/OW/SZ/AI/GL/BL).
+   Finaler Stand: 42/42 URLs liefern 200/301/302 (1× 403 BL nur fuer curl,
+   im Browser 200). **Wichtig:** Dieser URL-Fix muss erst deployed sein,
+   bevor das Flag aktiviert wird — sonst sehen Plus-User 404s.
 
 3. **CH-EL-Kantonsbetraege fuer BL/BS/SH** sind mit dem Bundesminimum-Wert
    (5 000/10 000 CHF) + Kantons-Link versehen, nicht mit exakten

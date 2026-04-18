@@ -150,7 +150,9 @@ export default function ChatOverviewPage() {
             <ConversationListItem
               key={c.id}
               href={`/chat/${c.id}`}
-              title={`Chat mit ${c.peer_id.slice(0, 8)}…`}
+              title={
+                c.peer_display_name ?? `Chat mit ${c.peer_id.slice(0, 8)}…`
+              }
               lastMessageAt={c.last_message_at}
             />
           ))

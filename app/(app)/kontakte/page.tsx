@@ -118,7 +118,8 @@ export default function KontaktePage() {
                 >
                   <div className="min-w-0 flex-1">
                     <p className="truncate text-base font-semibold text-[#2D3142]">
-                      {c.other_user_id.slice(0, 8)}…
+                      {c.other_display_name ??
+                        `${c.other_user_id.slice(0, 8)}…`}
                     </p>
                     {c.note ? (
                       <p className="truncate text-sm text-[#2D3142]/70">
@@ -166,7 +167,8 @@ export default function KontaktePage() {
                 >
                   <div className="min-w-0 flex-1">
                     <p className="truncate text-base font-semibold text-[#2D3142]">
-                      {c.other_user_id.slice(0, 8)}…
+                      {c.other_display_name ??
+                        `${c.other_user_id.slice(0, 8)}…`}
                     </p>
                   </div>
                   <button
@@ -194,7 +196,8 @@ export default function KontaktePage() {
                 >
                   <div className="min-w-0 flex-1">
                     <p className="truncate text-base text-[#2D3142]">
-                      {c.other_user_id.slice(0, 8)}…
+                      {c.other_display_name ??
+                        `${c.other_user_id.slice(0, 8)}…`}
                     </p>
                     <p className="text-xs text-[#2D3142]/60">
                       wartet auf Antwort

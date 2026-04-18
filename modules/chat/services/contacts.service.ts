@@ -3,6 +3,7 @@
 
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { ServiceError } from "@/lib/services/service-error";
+import { fetchDisplayNames } from "./display-names";
 
 export type ContactStatus = "pending" | "accepted" | "rejected" | "blocked";
 
@@ -17,6 +18,7 @@ export interface ContactLink {
 
 export interface ContactWithProfile extends ContactLink {
   other_user_id: string;
+  other_display_name: string | null;
   direction: "outgoing" | "incoming";
 }
 
@@ -53,12 +55,22 @@ export async function listContacts(
     );
   }
 
-  return (data ?? []).map((row) => ({
-    ...row,
-    other_user_id:
-      row.requester_id === userId ? row.addressee_id : row.requester_id,
-    direction: row.requester_id === userId ? "outgoing" : "incoming",
-  }));
+  const rows = data ?? [];
+  const otherIds = rows.map((row) =>
+    row.requester_id === userId ? row.addressee_id : row.requester_id,
+  );
+  const names = await fetchDisplayNames(supabase, otherIds);
+
+  return rows.map((row) => {
+    const other =
+      row.requester_id === userId ? row.addressee_id : row.requester_id;
+    return {
+      ...row,
+      other_user_id: other,
+      other_display_name: names.get(other) ?? null,
+      direction: row.requester_id === userId ? "outgoing" : "incoming",
+    };
+  });
 }
 
 /**

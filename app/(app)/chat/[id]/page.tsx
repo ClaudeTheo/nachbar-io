@@ -33,6 +33,7 @@ export default function DirectChatPage({
   const { id: conversationId } = use(params);
   const [messages, setMessages] = useState<MessageViewModel[]>([]);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const [peerName, setPeerName] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -42,6 +43,30 @@ export default function DirectChatPage({
       setCurrentUserId(data.user?.id ?? null);
     });
   }, []);
+
+  useEffect(() => {
+    if (!currentUserId) return;
+    const supabase = createClient();
+    void (async () => {
+      const { data: conv } = await supabase
+        .from("conversations")
+        .select("participant_1, participant_2")
+        .eq("id", conversationId)
+        .maybeSingle();
+      if (!conv) return;
+      const peerId =
+        conv.participant_1 === currentUserId
+          ? conv.participant_2
+          : conv.participant_1;
+      const { data: names } = await supabase.rpc("get_display_names", {
+        peer_ids: [peerId],
+      });
+      const first = (
+        names as Array<{ display_name: string | null }> | null
+      )?.[0];
+      setPeerName(first?.display_name ?? null);
+    })();
+  }, [conversationId, currentUserId]);
 
   useEffect(() => {
     let cancelled = false;
@@ -100,7 +125,9 @@ export default function DirectChatPage({
         >
           <ArrowLeft className="h-6 w-6" />
         </Link>
-        <h1 className="truncate text-lg font-bold text-[#2D3142]">Chat</h1>
+        <h1 className="truncate text-lg font-bold text-[#2D3142]">
+          {peerName ?? "Chat"}
+        </h1>
       </header>
 
       {error ? (

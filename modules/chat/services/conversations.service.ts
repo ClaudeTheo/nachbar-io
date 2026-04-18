@@ -2,6 +2,7 @@
 
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { ServiceError } from "@/lib/services/service-error";
+import { fetchDisplayNames } from "./display-names";
 
 export interface Conversation {
   id: string;
@@ -14,6 +15,7 @@ export interface Conversation {
 
 export interface ConversationWithPeer extends Conversation {
   peer_id: string;
+  peer_display_name: string | null;
 }
 
 /**
@@ -48,11 +50,21 @@ export async function listConversations(
     );
   }
 
-  return (data ?? []).map((row) => ({
-    ...row,
-    peer_id:
-      row.participant_1 === userId ? row.participant_2 : row.participant_1,
-  }));
+  const rows = data ?? [];
+  const peerIds = rows.map((row) =>
+    row.participant_1 === userId ? row.participant_2 : row.participant_1,
+  );
+  const names = await fetchDisplayNames(supabase, peerIds);
+
+  return rows.map((row) => {
+    const peer =
+      row.participant_1 === userId ? row.participant_2 : row.participant_1;
+    return {
+      ...row,
+      peer_id: peer,
+      peer_display_name: names.get(peer) ?? null,
+    };
+  });
 }
 
 /**

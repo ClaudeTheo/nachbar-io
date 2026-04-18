@@ -11,6 +11,8 @@ import {
 import { Haftungsausschluss } from "@/components/leistungen/Haftungsausschluss";
 import { LeistungenClient } from "@/components/leistungen/LeistungenClient";
 import type { KantonsSchalterValue } from "@/components/leistungen/KantonsSchalter";
+import { TTSButton } from "@/modules/voice/components/companion/TTSButton";
+import { buildLeistungenTts } from "@/lib/leistungen/build-tts";
 
 export const dynamic = "force-dynamic";
 
@@ -56,6 +58,10 @@ export default async function WasStehtUnsZuPage() {
         country={ctx.country}
         lastReviewed={newestReviewDate}
       />
+
+      <div className="mb-6">
+        <TTSButton text={buildLeistungenTts(ctx.country, leistungen)} />
+      </div>
 
       <LeistungenClient
         leistungen={leistungen}

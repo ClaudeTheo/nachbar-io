@@ -51,7 +51,7 @@ export const LEISTUNG_CH_EL: Leistung = {
         "Bundesminimum 5 000 CHF / 10 000 CHF pro Jahr — exakter Wert per kantonaler ELV",
       note: "Details siehe Kantonales Sozialamt Schaffhausen.",
       officialLink:
-        "https://sh.ch/CMS/Webseite/Kanton-Schaffhausen/Beh-rde/Verwaltung/Departement-des-Innern/Sozialamt-184324-DE.html",
+        "https://sh.ch/CMS/Webseite/Kanton-Schaffhausen/Beh-rde/Verwaltung/Departement-des-Innern/Sozialamt-2795-DE.html",
     },
     TG: {
       amount:

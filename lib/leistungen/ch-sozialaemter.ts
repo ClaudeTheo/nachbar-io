@@ -17,7 +17,7 @@ export const CH_SOZIALAEMTER: Record<string, Sozialamt> = {
   },
   AI: {
     name: "Amt fuer Soziales Appenzell Innerrhoden",
-    url: "https://www.ai.ch/themen/gesundheit-und-soziales/soziales",
+    url: "https://www.ai.ch/verwaltung/gesundheits-und-sozialdepartement/sozialamt",
   },
   AR: {
     name: "Amt fuer Soziales Appenzell Ausserrhoden",
@@ -29,7 +29,7 @@ export const CH_SOZIALAEMTER: Record<string, Sozialamt> = {
   },
   BL: {
     name: "Kantonales Sozialamt Basel-Landschaft",
-    url: "https://www.baselland.ch/politik-und-behorden/direktionen/volkswirtschafts-und-gesundheitsdirektion/ksa",
+    url: "https://www.baselland.ch/politik-und-behorden/direktionen/finanz-und-kirchendirektion/sozialamt",
   },
   BS: {
     name: "Amt fuer Sozialbeitraege Basel-Stadt",
@@ -45,11 +45,11 @@ export const CH_SOZIALAEMTER: Record<string, Sozialamt> = {
   },
   GL: {
     name: "Abteilung Soziales Glarus",
-    url: "https://www.gl.ch/verwaltung/dvi/abteilung-soziales.html",
+    url: "https://www.gl.ch/verwaltung/volkswirtschaft-und-inneres/soziales.html/979",
   },
   GR: {
     name: "Sozialamt Graubuenden",
-    url: "https://www.sozialamt.gr.ch",
+    url: "https://www.gr.ch/DE/institutionen/verwaltung/dvs/soa/home/Seiten/Sozialamt.aspx",
   },
   JU: {
     name: "Service de l\u2019action sociale Jura",
@@ -61,7 +61,7 @@ export const CH_SOZIALAEMTER: Record<string, Sozialamt> = {
   },
   NE: {
     name: "Service de l\u2019action sociale Neuchatel",
-    url: "https://www.ne.ch/autorites/DEAS/SASO/Pages/accueil.aspx",
+    url: "https://www.ne.ch/autorites/DECS/SASO/Pages/accueil.aspx",
   },
   NW: {
     name: "Sozialamt Nidwalden",
@@ -69,7 +69,7 @@ export const CH_SOZIALAEMTER: Record<string, Sozialamt> = {
   },
   OW: {
     name: "Amt fuer Gesundheit und Soziales Obwalden",
-    url: "https://www.ow.ch/de/verwaltung/amter/?amt_id=6197",
+    url: "https://www.ow.ch/aemter/244",
   },
   SG: {
     name: "Kantonales Sozialamt St. Gallen",
@@ -77,15 +77,15 @@ export const CH_SOZIALAEMTER: Record<string, Sozialamt> = {
   },
   SH: {
     name: "Kantonales Sozialamt Schaffhausen",
-    url: "https://sh.ch/CMS/Webseite/Kanton-Schaffhausen/Beh-rde/Verwaltung/Departement-des-Innern/Sozialamt-184324-DE.html",
+    url: "https://sh.ch/CMS/Webseite/Kanton-Schaffhausen/Beh-rde/Verwaltung/Departement-des-Innern/Sozialamt-2795-DE.html",
   },
   SO: {
     name: "Amt fuer Gesellschaft und Soziales Solothurn",
-    url: "https://aksolothurn.ch",
+    url: "https://so.ch/verwaltung/departement-des-innern/amt-fuer-gesellschaft-und-soziales/",
   },
   SZ: {
     name: "Amt fuer Gesundheit und Soziales Schwyz",
-    url: "https://www.sz.ch/behoerden/verwaltung/departement-des-innern/amt-fuer-gesundheit-und-soziales.html",
+    url: "https://www.sz.ch/behoerden/verwaltung/departement-des-innern/amt-fuer-gesundheit-und-soziales.html/8756-8758-8802-9316-9317",
   },
   TG: {
     name: "Generalsekretariat DFS / Sozialamt Thurgau",
@@ -109,7 +109,7 @@ export const CH_SOZIALAEMTER: Record<string, Sozialamt> = {
   },
   ZG: {
     name: "Direktion des Innern / Amt fuer Sozialhilfe Zug",
-    url: "https://www.zg.ch/behoerden/direktion-des-innern/sozialamt",
+    url: "https://zg.ch/sozialamt",
   },
   ZH: {
     name: "Kantonales Sozialamt Zuerich",

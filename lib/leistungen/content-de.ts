@@ -26,7 +26,7 @@ export const LEISTUNGEN_DE: Leistung[] = [
       "Der Antrag wird formlos bei der Pflegekasse gestellt (angegliedert an die Krankenkasse). Die Begutachtung erfolgt durch den Medizinischen Dienst (MD) bei gesetzlich Versicherten oder Medicproof bei Privatversicherten. Bewertet werden sechs Module (u. a. Mobilitaet, Selbstversorgung, kognitive Faehigkeiten, Alltagsgestaltung). Je hoeher der Grad, desto mehr Leistungen.",
     legalSource: "Paragraf 14-15 SGB XI",
     officialLink:
-      "https://www.gkv-spitzenverband.de/pflegeversicherung/beguthaben/pflegegrade.jsp",
+      "https://www.gkv-spitzenverband.de/pflegeversicherung/pflegeversicherung.jsp",
     lastReviewed: REVIEW,
   },
   {
@@ -41,7 +41,7 @@ export const LEISTUNGEN_DE: Leistung[] = [
       "347 EUR (PG 2), 599 EUR (PG 3), 800 EUR (PG 4), 990 EUR (PG 5) pro Monat (Stand 2026)",
     legalSource: "Paragraf 37 SGB XI",
     officialLink:
-      "https://www.bundesgesundheitsministerium.de/themen/pflege/online-ratgeber-pflege/leistungen-pflegeversicherung/pflegegeld.html",
+      "https://www.bundesgesundheitsministerium.de/themen/pflege/online-ratgeber-pflege/leistungen-der-pflegeversicherung/leistungen-im-ueberblick",
     lastReviewed: REVIEW,
   },
   {
@@ -55,7 +55,7 @@ export const LEISTUNGEN_DE: Leistung[] = [
     amount: "131 EUR/Monat (ab Pflegegrad 1, Stand 2026)",
     legalSource: "Paragraf 45b SGB XI",
     officialLink:
-      "https://www.bundesgesundheitsministerium.de/themen/pflege/online-ratgeber-pflege/leistungen-pflegeversicherung/entlastungsbetrag.html",
+      "https://www.bundesgesundheitsministerium.de/themen/pflege/online-ratgeber-pflege/leistungen-der-pflegeversicherung/leistungen-im-ueberblick/entlastungsbetrag",
     lastReviewed: REVIEW,
   },
   {
@@ -70,7 +70,7 @@ export const LEISTUNGEN_DE: Leistung[] = [
       "bis 3.539 EUR/Jahr (Gemeinsamer Jahresbetrag mit Kurzzeitpflege, Stand 2026)",
     legalSource: "Paragraf 39 SGB XI",
     officialLink:
-      "https://www.bundesgesundheitsministerium.de/themen/pflege/online-ratgeber-pflege/leistungen-pflegeversicherung/verhinderungspflege.html",
+      "https://www.bundesgesundheitsministerium.de/themen/pflege/online-ratgeber-pflege/leistungen-der-pflegeversicherung/leistungen-im-ueberblick/verhinderungspflege",
     lastReviewed: REVIEW,
   },
   {
@@ -84,7 +84,7 @@ export const LEISTUNGEN_DE: Leistung[] = [
     amount: "ca. 90 % des ausgefallenen Nettoentgelts (ueber Pflegekasse)",
     legalSource: "Paragraf 2 PflegeZG + Paragraf 44a SGB XI",
     officialLink:
-      "https://www.bmfsfj.de/bmfsfj/themen/familie/familie-und-arbeitswelt/pflege-und-beruf/kurzzeitige-arbeitsverhinderung",
+      "https://www.bmfsfj.de/bmfsfj/themen/aeltere-menschen/vereinbarkeit-von-pflege-und-beruf/familienpflegezeit",
     lastReviewed: REVIEW,
   },
 ];

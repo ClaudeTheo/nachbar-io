@@ -18,16 +18,80 @@ vi.mock("@/lib/care/api-helpers", () => ({
     ),
 }));
 
+// Supabase Admin Mock (fuer Cache-Upload)
+const mockStorageUpload = vi.fn();
+vi.mock("@/lib/supabase/admin", () => ({
+  getAdminSupabase: () => ({
+    storage: {
+      from: () => ({ upload: mockStorageUpload }),
+    },
+  }),
+}));
+
 // Fetch Mock
 const mockFetch = vi.fn();
 global.fetch = mockFetch;
+
+const SUPA_URL = "https://test.supabase.co";
+
+/**
+ * Mock-Helfer: Cache-Hit (HEAD auf tts-cache ok, GET liefert Audio).
+ */
+function mockCacheHit(audio: Uint8Array = new Uint8Array([0xff, 0xfb])) {
+  mockFetch.mockImplementation((url: string, opts?: { method?: string }) => {
+    if (opts?.method === "HEAD" && url.includes("/tts-cache/")) {
+      return Promise.resolve({ ok: true, status: 200 });
+    }
+    if (url.includes("/tts-cache/")) {
+      return Promise.resolve({
+        ok: true,
+        body: new ReadableStream({
+          start(c) {
+            c.enqueue(audio);
+            c.close();
+          },
+        }),
+        headers: new Headers({ "content-type": "audio/mpeg" }),
+      });
+    }
+    throw new Error(`unexpected fetch: ${url}`);
+  });
+}
+
+/**
+ * Mock-Helfer: Cache-Miss (HEAD 404, OpenAI liefert Audio).
+ */
+function mockCacheMiss(audio: Uint8Array = new Uint8Array([0xff, 0xfb])) {
+  mockFetch.mockImplementation((url: string, opts?: { method?: string }) => {
+    if (opts?.method === "HEAD" && url.includes("/tts-cache/")) {
+      return Promise.resolve({ ok: false, status: 404 });
+    }
+    if (url.includes("api.openai.com")) {
+      return Promise.resolve({
+        ok: true,
+        body: new ReadableStream({
+          start(c) {
+            c.enqueue(audio);
+            c.close();
+          },
+        }),
+        headers: new Headers({ "content-type": "audio/mpeg" }),
+      });
+    }
+    throw new Error(`unexpected fetch: ${url}`);
+  });
+}
 
 describe("POST /api/voice/tts", () => {
   beforeEach(() => {
     vi.resetModules();
     mockFetch.mockClear();
+    mockStorageUpload.mockReset();
+    mockStorageUpload.mockResolvedValue({ data: { path: "ok" }, error: null });
     mockRequireAuth.mockResolvedValue({ userId: "test-user" });
     process.env.OPENAI_API_KEY = "test-key";
+    process.env.NEXT_PUBLIC_SUPABASE_URL = SUPA_URL;
+    process.env.SUPABASE_SERVICE_ROLE_KEY = "test-service-key";
   });
 
   it("gibt 401 zurueck wenn nicht authentifiziert", async () => {
@@ -76,18 +140,8 @@ describe("POST /api/voice/tts", () => {
     expect(res.status).toBe(400);
   });
 
-  it("ruft OpenAI TTS API auf und gibt Audio zurueck", async () => {
-    const audioData = new Uint8Array([0xff, 0xfb, 0x90, 0x00]);
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      body: new ReadableStream({
-        start(controller) {
-          controller.enqueue(audioData);
-          controller.close();
-        },
-      }),
-      headers: new Headers({ "content-type": "audio/mpeg" }),
-    });
+  it("ruft OpenAI TTS API auf und gibt Audio zurueck (Cache-Miss)", async () => {
+    mockCacheMiss(new Uint8Array([0xff, 0xfb, 0x90, 0x00]));
 
     const { POST } = await import("@/app/api/voice/tts/route");
     const req = new Request("http://localhost/api/voice/tts", {
@@ -101,17 +155,7 @@ describe("POST /api/voice/tts", () => {
   });
 
   it("sendet voice und speed an OpenAI API", async () => {
-    const audioData = new Uint8Array([0xff, 0xfb, 0x90, 0x00]);
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      body: new ReadableStream({
-        start(controller) {
-          controller.enqueue(audioData);
-          controller.close();
-        },
-      }),
-      headers: new Headers({ "content-type": "audio/mpeg" }),
-    });
+    mockCacheMiss();
 
     const { POST } = await import("@/app/api/voice/tts/route");
     const req = new Request("http://localhost/api/voice/tts", {
@@ -122,24 +166,17 @@ describe("POST /api/voice/tts", () => {
     const res = await POST(req as never);
     expect(res.status).toBe(200);
 
-    // Pruefe dass OpenAI mit den richtigen Parametern aufgerufen wurde
-    const callBody = JSON.parse(mockFetch.mock.calls[0][1].body);
+    const openaiCall = mockFetch.mock.calls.find(
+      (c) => typeof c[0] === "string" && c[0].includes("api.openai.com"),
+    );
+    expect(openaiCall).toBeDefined();
+    const callBody = JSON.parse(openaiCall![1].body);
     expect(callBody.voice).toBe("onyx");
     expect(callBody.speed).toBe(0.85);
   });
 
-  it("nutzt Default-Speed 1.0 wenn kein speed angegeben", async () => {
-    const audioData = new Uint8Array([0xff, 0xfb, 0x90, 0x00]);
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      body: new ReadableStream({
-        start(controller) {
-          controller.enqueue(audioData);
-          controller.close();
-        },
-      }),
-      headers: new Headers({ "content-type": "audio/mpeg" }),
-    });
+  it("nutzt Default-Voice 'ash' und Default-Speed 0.95", async () => {
+    mockCacheMiss();
 
     const { POST } = await import("@/app/api/voice/tts/route");
     const req = new Request("http://localhost/api/voice/tts", {
@@ -149,13 +186,25 @@ describe("POST /api/voice/tts", () => {
     });
     await POST(req as never);
 
-    const callBody = JSON.parse(mockFetch.mock.calls[0][1].body);
+    const openaiCall = mockFetch.mock.calls.find(
+      (c) => typeof c[0] === "string" && c[0].includes("api.openai.com"),
+    );
+    const callBody = JSON.parse(openaiCall![1].body);
     expect(callBody.voice).toBe("ash");
     expect(callBody.speed).toBe(0.95);
   });
 
   it("gibt 502 zurueck wenn OpenAI API fehlschlaegt", async () => {
-    mockFetch.mockResolvedValueOnce({ ok: false, status: 500 });
+    mockFetch.mockImplementation((url: string, opts?: { method?: string }) => {
+      if (opts?.method === "HEAD") {
+        return Promise.resolve({ ok: false, status: 404 });
+      }
+      if (url.includes("api.openai.com")) {
+        return Promise.resolve({ ok: false, status: 500 });
+      }
+      throw new Error(`unexpected fetch: ${url}`);
+    });
+
     const { POST } = await import("@/app/api/voice/tts/route");
     const req = new Request("http://localhost/api/voice/tts", {
       method: "POST",
@@ -164,5 +213,100 @@ describe("POST /api/voice/tts", () => {
     });
     const res = await POST(req as never);
     expect(res.status).toBe(502);
+  });
+
+  // ── Layer-1 Phrase-Cache ───────────────────────────────────────────────
+
+  it("Cache-Hit: liefert Audio aus Supabase-Storage OHNE OpenAI-Call", async () => {
+    mockCacheHit();
+
+    const { POST } = await import("@/app/api/voice/tts/route");
+    const req = new Request("http://localhost/api/voice/tts", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ text: "Guten Morgen" }),
+    });
+    const res = await POST(req as never);
+
+    expect(res.status).toBe(200);
+    expect(res.headers.get("content-type")).toBe("audio/mpeg");
+
+    const openaiCalls = mockFetch.mock.calls.filter(
+      (c) => typeof c[0] === "string" && c[0].includes("api.openai.com"),
+    );
+    expect(openaiCalls).toHaveLength(0);
+    expect(mockStorageUpload).not.toHaveBeenCalled();
+  });
+
+  it("Cache-Miss: ruft OpenAI auf und triggert Upload in tts-cache", async () => {
+    mockCacheMiss();
+
+    const { POST } = await import("@/app/api/voice/tts/route");
+    const req = new Request("http://localhost/api/voice/tts", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ text: "Guten Morgen" }),
+    });
+    const res = await POST(req as never);
+    // Body lesen, damit der tee-Stream im Hintergrund durchlaeuft
+    await res.arrayBuffer();
+
+    expect(res.status).toBe(200);
+    // Upload muss getriggert sein (asynchron). Warten.
+    await new Promise((r) => setTimeout(r, 30));
+    expect(mockStorageUpload).toHaveBeenCalledTimes(1);
+    const [uploadPath, uploadBody] = mockStorageUpload.mock.calls[0];
+    expect(uploadPath).toMatch(/^[a-f0-9]{64}\.mp3$/);
+    expect(uploadBody).toBeInstanceOf(ArrayBuffer);
+  });
+
+  it("Cache-Miss: Upload-Fehler killt die Response NICHT", async () => {
+    mockCacheMiss();
+    mockStorageUpload.mockRejectedValueOnce(new Error("upload boom"));
+
+    const { POST } = await import("@/app/api/voice/tts/route");
+    const req = new Request("http://localhost/api/voice/tts", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ text: "Guten Morgen" }),
+    });
+    const res = await POST(req as never);
+    const buf = await res.arrayBuffer();
+
+    expect(res.status).toBe(200);
+    expect(buf.byteLength).toBeGreaterThan(0);
+  });
+
+  it("Cache-Key: deterministisch fuer gleiche Inputs", async () => {
+    const { computeCacheKey } =
+      await import("@/modules/voice/services/tts.service");
+    const input = {
+      text: "Guten Morgen",
+      voice: "ash",
+      speed: 0.95,
+      instructionsVersion: "v1",
+    };
+    const a = await computeCacheKey(input);
+    const b = await computeCacheKey(input);
+    expect(a).toBe(b);
+    expect(a).toMatch(/^[a-f0-9]{64}$/);
+  });
+
+  it("Cache-Key: unterschiedlich bei anderer speed", async () => {
+    const { computeCacheKey } =
+      await import("@/modules/voice/services/tts.service");
+    const base = {
+      text: "Guten Morgen",
+      voice: "ash",
+      speed: 0.95,
+      instructionsVersion: "v1",
+    };
+    const a = await computeCacheKey(base);
+    const b = await computeCacheKey({ ...base, speed: 1.0 });
+    const c = await computeCacheKey({ ...base, text: "Guten Abend" });
+    const d = await computeCacheKey({ ...base, instructionsVersion: "v2" });
+    expect(b).not.toBe(a);
+    expect(c).not.toBe(a);
+    expect(d).not.toBe(a);
   });
 });

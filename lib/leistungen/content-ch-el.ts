@@ -34,24 +34,23 @@ export const LEISTUNG_CH_EL: Leistung = {
     },
     BL: {
       amount:
-        "Bundesminimum 5 000 CHF / 10 000 CHF pro Jahr — exakter Wert per kantonaler ELV",
-      note: "Details siehe SVA Basel-Landschaft.",
+        "5 000 CHF (Alleinstehende) / 10 000 CHF (Ehepaare oder mit Kindern) pro Jahr",
+      note: "Gemaess SVA Basel-Landschaft. Belege innerhalb von 15 Monaten ab Rechnungsdatum einreichen.",
       officialLink:
-        "https://www.sva-bl.ch/de/ausgleichskasse/ergaenzungsleistungen-zur-ahv/iv-el",
+        "https://www.sva-bl.ch/de/ausgleichskasse/ergaenzungsleistungen-zur-ahv/iv-el/krankheits-und-behinderungskosten-kk",
     },
     BS: {
       amount:
-        "Bundesminimum 5 000 CHF / 10 000 CHF pro Jahr — exakter Wert per kantonaler ELV",
-      note: "Basel-Stadt bietet zusaetzliche kantonale Leistungen ueber das Bundesminimum hinaus. Antrag bei Ausgleichskasse Basel-Stadt.",
+        "Hilfe und Pflege zu Hause bis 9 600 CHF/Jahr (max. 50 CHF/Std., 800 CHF/Monat) + 1 000 CHF Jahresvorschuss Krankenkassen-Selbstbehalt; weitere Kosten nach KBV",
+      note: "Basel-Stadt hat keinen pauschalen Hoechstbetrag, sondern kategoriespezifische Limiten (KBV). Antrag beim Amt fuer Sozialbeitraege Basel-Stadt.",
       officialLink:
-        "https://www.bs.ch/themen/finanzielle-hilfe/leistungen/ergaenzungsleistungen",
+        "https://www.bs.ch/themen/finanzielle-hilfe/leistungen/ergaenzungsleistungen/krankheits-und-behinderungskosten",
     },
     SH: {
       amount:
-        "Bundesminimum 5 000 CHF / 10 000 CHF pro Jahr — exakter Wert per kantonaler ELV",
-      note: "Details siehe Kantonales Sozialamt Schaffhausen.",
-      officialLink:
-        "https://sh.ch/CMS/Webseite/Kanton-Schaffhausen/Beh-rde/Verwaltung/Departement-des-Innern/Sozialamt-2795-DE.html",
+        "gemaess SHR 831.301 (Schaffhauser Verordnung) — exakte Maxima auf Anfrage bei SVA Schaffhausen",
+      note: "Kantonales Regelwerk: SHR 831.301 (rechtsbuch.sh.ch). Antrag bei SVA Schaffhausen.",
+      officialLink: "https://www.svash.ch/el/leistungen/",
     },
     TG: {
       amount:

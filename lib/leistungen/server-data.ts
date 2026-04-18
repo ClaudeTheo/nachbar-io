@@ -27,11 +27,11 @@ async function loadQuarterCountry(
     .maybeSingle();
 
   if (!membership) return null;
-  const household = Array.isArray(
-    (membership as { household?: unknown }).household,
-  )
-    ? (membership as { household: Array<{ quarter_id: string }> }).household[0]
-    : (membership as { household: { quarter_id: string } }).household;
+  const householdRaw = (membership as unknown as { household?: unknown })
+    .household;
+  const household = Array.isArray(householdRaw)
+    ? (householdRaw[0] as { quarter_id?: string | null } | undefined)
+    : (householdRaw as { quarter_id?: string | null } | undefined);
   const quarterId = household?.quarter_id;
   if (!quarterId) return null;
 

@@ -12,11 +12,11 @@ describe("PlusTeaserKarte", () => {
     expect(link.getAttribute("href")).toBe("/was-steht-uns-zu");
   });
 
-  it("leitet Free-Nutzer auf /einstellungen/abo mit from=leistungen", () => {
+  it("leitet Free-Nutzer auf /care/subscription mit from=leistungen", () => {
     render(<PlusTeaserKarte hasPlus={false} />);
     const link = screen.getByRole("link");
     expect(link.getAttribute("href")).toBe(
-      "/einstellungen/abo?from=leistungen",
+      "/care/subscription?from=leistungen",
     );
   });
 

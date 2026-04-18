@@ -1,4 +1,8 @@
 import Link from "next/link";
+import {
+  LEISTUNGEN_PAGE_ROUTE,
+  LEISTUNGEN_PAYWALL_REDIRECT,
+} from "@/lib/leistungen/routes";
 
 interface Props {
   hasPlus: boolean;
@@ -8,9 +12,7 @@ interface Props {
 // Plus-Nutzer landen direkt auf der Seite, Free-Nutzer auf der Abo-Uebersicht
 // (mit Herkunfts-Param fuer Analytics/Rueckweg).
 export function PlusTeaserKarte({ hasPlus }: Props) {
-  const href = hasPlus
-    ? "/was-steht-uns-zu"
-    : "/einstellungen/abo?from=leistungen";
+  const href = hasPlus ? LEISTUNGEN_PAGE_ROUTE : LEISTUNGEN_PAYWALL_REDIRECT;
 
   return (
     <Link

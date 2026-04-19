@@ -21,6 +21,7 @@ import {
   DEVICE_ID_LS_KEY,
   REFRESH_EXPIRES_LS_KEY,
 } from "@/lib/device-pairing/use-refresh-rotation";
+import { PairCodeNumpad } from "@/components/senior/PairCodeNumpad";
 
 const POLL_INTERVAL_MS = 2000;
 const PAIR_TOKEN_RENEW_MS = 9 * 60 * 1000; // 9 Minuten (TTL = 10 min)
@@ -28,6 +29,7 @@ const PAIR_TOKEN_RENEW_MS = 9 * 60 * 1000; // 9 Minuten (TTL = 10 min)
 type PairState =
   | { kind: "loading" }
   | { kind: "active"; token: string; pair_id: string }
+  | { kind: "code-entry" }
   | { kind: "paired" }
   | { kind: "error"; message: string };
 
@@ -168,10 +170,67 @@ export default function SeniorPairPage() {
     );
   }
 
+  if (state.kind === "code-entry") {
+    return (
+      <PairCodeNumpad
+        onCancel={() => {
+          // Zurueck zum QR: neuen pair_token holen (der alte ist noch gueltig,
+          // aber neuer Mount triggert sauberen Reset)
+          stoppedRef.current = false;
+          setState({ kind: "loading" });
+          void startPairing();
+        }}
+        onSubmit={async (code) => {
+          try {
+            const device_id = getOrCreateDeviceId();
+            const res = await fetch("/api/device/pair/claim-by-code", {
+              method: "POST",
+              headers: { "content-type": "application/json" },
+              body: JSON.stringify({ code, device_id }),
+            });
+            if (!res.ok) {
+              setState({
+                kind: "error",
+                message:
+                  "Der Code ist ungültig oder abgelaufen. Bitte erneut versuchen.",
+              });
+              return;
+            }
+            const data = (await res.json()) as {
+              refresh_token: string;
+              user_id: string;
+              device_id: string;
+              expires_at?: string;
+            };
+            window.localStorage.setItem(
+              REFRESH_TOKEN_LS_KEY,
+              data.refresh_token,
+            );
+            window.localStorage.setItem(USER_ID_LS_KEY, data.user_id);
+            if (data.expires_at) {
+              window.localStorage.setItem(
+                REFRESH_EXPIRES_LS_KEY,
+                data.expires_at,
+              );
+            }
+            setState({ kind: "paired" });
+            stopAll();
+            router.push("/");
+          } catch {
+            setState({
+              kind: "error",
+              message: "Es gab einen Fehler. Bitte erneut versuchen.",
+            });
+          }
+        }}
+      />
+    );
+  }
+
   if (state.kind === "error") {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center gap-6 px-6 text-center">
-        <h1 className="text-3xl font-semibold">Verbindung nicht moeglich</h1>
+        <h1 className="text-3xl font-semibold">Verbindung nicht möglich</h1>
         <p className="text-xl">{state.message}</p>
         <button
           type="button"
@@ -217,12 +276,7 @@ export default function SeniorPairPage() {
       />
       <button
         type="button"
-        onClick={() => {
-          // Weg 2: 8-stelliger Code (in Welle B noch nicht implementiert)
-          alert(
-            "Diese Funktion ist noch nicht verfuegbar. Bitte den QR-Code verwenden.",
-          );
-        }}
+        onClick={() => setState({ kind: "code-entry" })}
         className="text-lg text-anthrazit underline"
       >
         Ich habe einen Code

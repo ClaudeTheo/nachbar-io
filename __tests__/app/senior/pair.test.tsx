@@ -2,7 +2,13 @@
 // Welle B Task B6: Senior-Pair-Seite
 
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { render, screen, waitFor } from "@testing-library/react";
+import {
+  render,
+  screen,
+  waitFor,
+  fireEvent,
+  cleanup,
+} from "@testing-library/react";
 
 const mockPush = vi.fn();
 vi.mock("next/navigation", () => ({
@@ -29,6 +35,7 @@ describe("SeniorPairPage", () => {
   });
 
   afterEach(() => {
+    cleanup();
     vi.unstubAllGlobals();
     // Prototype zuruecksetzen, damit nachfolgende Tests keinen Leak-Mock sehen
     window.HTMLMediaElement.prototype.play = originalPlay;
@@ -149,8 +156,130 @@ describe("SeniorPairPage", () => {
     render(<PairPage />);
     await waitFor(() => {
       expect(
-        screen.getByText(/nicht moeglich|verbindung|fehler/i),
+        screen.getByRole("heading", { name: /verbindung nicht/i }),
       ).toBeInTheDocument();
+    });
+  });
+
+  it("Klick auf 'Ich habe einen Code' oeffnet das Numpad", async () => {
+    mockStartOk();
+    alwaysStatus({ status: "pending" });
+    const { default: PairPage } = await import("@/app/(senior)/pair/page");
+    render(<PairPage />);
+    await waitFor(() => {
+      expect(screen.getByText(/ich habe einen code/i)).toBeInTheDocument();
+    });
+    fireEvent.click(screen.getByText(/ich habe einen code/i));
+    await waitFor(() => {
+      expect(screen.getByTestId("numpad-display")).toBeInTheDocument();
+    });
+  });
+
+  it("Numpad-Submit claimt Code und navigiert bei Success", async () => {
+    mockStartOk();
+    fetchMock.mockImplementation(async (url: string) => {
+      if (typeof url === "string" && url.includes("/api/device/pair/status")) {
+        return {
+          ok: true,
+          json: async () => ({ status: "pending" }),
+        } as Response;
+      }
+      if (
+        typeof url === "string" &&
+        url.endsWith("/api/device/pair/claim-by-code")
+      ) {
+        return {
+          ok: true,
+          json: async () => ({
+            refresh_token: "rt-by-code-456",
+            user_id: "u-senior-b",
+            device_id: "dev-x",
+            expires_at: "2026-10-19T00:00:00.000Z",
+          }),
+        } as Response;
+      }
+      // initial /start
+      return {
+        ok: true,
+        json: async () => ({ token: "eyJTEST", pair_id: "pid-1" }),
+      } as Response;
+    });
+
+    const { default: PairPage } = await import("@/app/(senior)/pair/page");
+    render(<PairPage />);
+    await waitFor(() => {
+      expect(screen.getByText(/ich habe einen code/i)).toBeInTheDocument();
+    });
+    fireEvent.click(screen.getByText(/ich habe einen code/i));
+    for (const d of ["1", "2", "3", "4", "5", "6"]) {
+      fireEvent.click(await screen.findByRole("button", { name: d }));
+    }
+    await waitFor(() => {
+      expect(window.localStorage.getItem("nachbar.senior.refresh_token")).toBe(
+        "rt-by-code-456",
+      );
+      expect(mockPush).toHaveBeenCalledWith("/");
+    });
+  });
+
+  it("Numpad-Abbrechen kehrt zum QR zurueck", async () => {
+    mockStartOk();
+    alwaysStatus({ status: "pending" });
+    const { default: PairPage } = await import("@/app/(senior)/pair/page");
+    render(<PairPage />);
+    await waitFor(() => {
+      expect(screen.getByText(/ich habe einen code/i)).toBeInTheDocument();
+    });
+    fireEvent.click(screen.getByText(/ich habe einen code/i));
+
+    // Jetzt mockStart fuer Rueckweg + Status-Poll
+    fetchMock.mockImplementationOnce(async () => ({
+      ok: true,
+      json: async () => ({ token: "eyJBACK", pair_id: "pid-back" }),
+    }));
+    fireEvent.click(await screen.findByRole("button", { name: /abbrechen/i }));
+
+    await waitFor(() => {
+      expect(screen.getByTestId("qr-code")).toBeInTheDocument();
+    });
+  });
+
+  it("Numpad-Submit zeigt Fehler bei ungueltigem Code", async () => {
+    mockStartOk();
+    fetchMock.mockImplementation(async (url: string) => {
+      if (typeof url === "string" && url.includes("/api/device/pair/status")) {
+        return {
+          ok: true,
+          json: async () => ({ status: "pending" }),
+        } as Response;
+      }
+      if (
+        typeof url === "string" &&
+        url.endsWith("/api/device/pair/claim-by-code")
+      ) {
+        return {
+          ok: false,
+          status: 401,
+          json: async () => ({ error: "Code ungueltig" }),
+        } as Response;
+      }
+      return {
+        ok: true,
+        json: async () => ({ token: "eyJTEST", pair_id: "pid-1" }),
+      } as Response;
+    });
+
+    const { default: PairPage } = await import("@/app/(senior)/pair/page");
+    render(<PairPage />);
+    await waitFor(() => {
+      expect(screen.getByText(/ich habe einen code/i)).toBeInTheDocument();
+    });
+    fireEvent.click(screen.getByText(/ich habe einen code/i));
+    for (const d of ["9", "9", "9", "9", "9", "9"]) {
+      fireEvent.click(await screen.findByRole("button", { name: d }));
+    }
+    await waitFor(() => {
+      expect(screen.getByText(/ungültig|abgelaufen/i)).toBeInTheDocument();
     });
   });
 });

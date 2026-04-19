@@ -20,7 +20,12 @@ import { toast } from "sonner";
 import type { AIMessage } from "@/lib/ai/types";
 import type { SaveMemoryResult } from "@/lib/ai/tools/save-memory";
 
-export type OnboardingError = "unauthorized" | "ai_disabled" | "generic" | null;
+export type OnboardingError =
+  | "unauthorized"
+  | "ai_disabled"
+  | "consent_required"
+  | "generic"
+  | null;
 
 export type PendingConfirmation = Extract<
   SaveMemoryResult,
@@ -75,6 +80,12 @@ export function useOnboardingTurn(): UseOnboardingTurnReturn {
 
         if (res.status === 401) {
           setError("unauthorized");
+          return;
+        }
+        if (res.status === 403) {
+          // Welle C C6c: ai_onboarding-Einwilligung fehlt — UI zeigt Banner
+          // mit Grant-Button (statt Toast, weil dauerhafter UI-State).
+          setError("consent_required");
           return;
         }
         if (res.status === 503) {

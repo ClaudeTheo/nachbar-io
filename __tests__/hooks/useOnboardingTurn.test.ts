@@ -235,6 +235,27 @@ describe("useOnboardingTurn", () => {
     expect(result.current.error).toBe("unauthorized");
   });
 
+  it("setzt error='consent_required' bei 403 (C6c — kein Toast, UI zeigt Banner)", async () => {
+    vi.spyOn(globalThis, "fetch").mockResolvedValue(
+      jsonResponse(
+        {
+          error: "Einwilligung fuer KI-Assistent fehlt",
+          code: "consent_required",
+        },
+        403,
+      ),
+    );
+    const { result } = renderHook(() => useOnboardingTurn());
+
+    await act(async () => {
+      await result.current.sendUserInput("Hallo");
+    });
+
+    expect(result.current.error).toBe("consent_required");
+    expect(result.current.messages).toEqual([]); // KEIN history-append
+    expect(toastErrorMock).not.toHaveBeenCalled(); // Banner statt Toast
+  });
+
   it("setzt error='generic' bei 500 + zeigt Toast", async () => {
     vi.spyOn(globalThis, "fetch").mockResolvedValue(
       jsonResponse({ error: "Internal" }, 500),

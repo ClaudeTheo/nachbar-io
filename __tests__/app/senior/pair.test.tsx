@@ -17,15 +17,21 @@ vi.mock("qrcode.react", () => ({
 
 const fetchMock = vi.fn();
 
+const originalPlay = window.HTMLMediaElement.prototype.play;
+
 describe("SeniorPairPage", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.resetModules();
+    fetchMock.mockReset();
     vi.stubGlobal("fetch", fetchMock);
     window.localStorage.clear();
   });
 
   afterEach(() => {
     vi.unstubAllGlobals();
+    // Prototype zuruecksetzen, damit nachfolgende Tests keinen Leak-Mock sehen
+    window.HTMLMediaElement.prototype.play = originalPlay;
   });
 
   function mockStartOk(token = "eyJTEST", pair_id = "pid-1") {
@@ -97,6 +103,41 @@ describe("SeniorPairPage", () => {
       "u-senior",
     );
   });
+
+  it("spielt pair-welcome.mp3 genau einmal beim ersten Mount", async () => {
+    mockStartOk();
+    alwaysStatus({ status: "pending" });
+    const playMock = vi.fn().mockResolvedValue(undefined);
+    window.HTMLMediaElement.prototype.play = playMock;
+
+    const { default: PairPage } = await import("@/app/(senior)/pair/page");
+    render(<PairPage />);
+    await waitFor(() => {
+      expect(screen.getByTestId("pair-welcome-audio")).toBeInTheDocument();
+    });
+    const audio = screen.getByTestId("pair-welcome-audio") as HTMLAudioElement;
+    expect(audio).toHaveAttribute("src", "/audio/pair-welcome.mp3");
+    await waitFor(() => {
+      expect(playMock).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  it("spielt Audio auch nach mehreren Polls weiterhin nur einmal", async () => {
+    mockStartOk();
+    alwaysStatus({ status: "pending" });
+    const playMock = vi.fn().mockResolvedValue(undefined);
+    window.HTMLMediaElement.prototype.play = playMock;
+
+    const { default: PairPage } = await import("@/app/(senior)/pair/page");
+    render(<PairPage />);
+    await waitFor(() => {
+      expect(playMock).toHaveBeenCalledTimes(1);
+    });
+    // Kleine Pause, damit Polling-Timer mindestens einmal tickt
+    await new Promise((r) => setTimeout(r, 2100));
+    // Trotz mehrfacher Polls darf play() nur einmal aufgerufen sein
+    expect(playMock).toHaveBeenCalledTimes(1);
+  }, 10000);
 
   it("zeigt Fehler-Hinweis wenn /pair/start fehlschlaegt", async () => {
     fetchMock.mockImplementationOnce(async () => ({

@@ -46,6 +46,8 @@ export default function SeniorPairPage() {
   const [state, setState] = useState<PairState>({ kind: "loading" });
   const pollTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const stoppedRef = useRef(false);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const audioPlayedRef = useRef(false);
 
   const stopAll = useCallback(() => {
     stoppedRef.current = true;
@@ -102,6 +104,21 @@ export default function SeniorPairPage() {
     }, PAIR_TOKEN_RENEW_MS);
     return () => clearTimeout(t);
   }, [state, startPairing]);
+
+  // TTS-Voiceover: genau einmal beim ersten Mount in state "active".
+  // Nicht bei Token-Renewal wiederholen (audioPlayedRef bleibt true).
+  useEffect(() => {
+    if (state.kind !== "active") return;
+    if (audioPlayedRef.current) return;
+    audioPlayedRef.current = true;
+    const result = audioRef.current?.play();
+    // play() gibt Promise<void> im Browser, undefined in aelteren Umgebungen/jsdom.
+    if (result && typeof (result as Promise<void>).catch === "function") {
+      (result as Promise<void>).catch(() => {
+        // Autoplay-Policy blockt — stumm schlucken, visueller Text steht ja da
+      });
+    }
+  }, [state.kind]);
 
   // Polling
   useEffect(() => {
@@ -174,24 +191,30 @@ export default function SeniorPairPage() {
   if (state.kind === "paired") {
     return (
       <div className="flex min-h-screen items-center justify-center text-3xl">
-        Geraet verbunden — bitte warten ...
+        Gerät verbunden — bitte warten ...
       </div>
     );
   }
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center gap-8 px-6 text-center">
-      <h1 className="text-4xl font-semibold leading-snug">Geraet einrichten</h1>
+      <h1 className="text-4xl font-semibold leading-snug">Gerät einrichten</h1>
       <p className="text-2xl leading-relaxed">
-        Bitte bitten Sie einen Angehoerigen, diesen Code mit dem Handy
+        Bitte bitten Sie einen Angehörigen, diesen Code mit dem Handy
         abzufotografieren.
       </p>
       <div className="rounded-xl bg-white p-6 shadow-md">
         <QRCodeSVG value={state.token} size={320} level="M" />
       </div>
       <p className="text-base text-gray-600">
-        Der Code ist 10 Minuten gueltig und wird automatisch erneuert.
+        Der Code ist 10 Minuten gültig und wird automatisch erneuert.
       </p>
+      <audio
+        ref={audioRef}
+        src="/audio/pair-welcome.mp3"
+        data-testid="pair-welcome-audio"
+        preload="auto"
+      />
       <button
         type="button"
         onClick={() => {

@@ -22,6 +22,7 @@ import { PLAN_FEATURES } from "@/lib/care/constants";
 import type { CareSubscriptionPlan } from "@/lib/care/types";
 import { useAuth } from "@/hooks/use-auth";
 import { isLegacyRoute } from "@/lib/legacy-routes";
+import { computeTileDisabled } from "@/lib/health-feature-gate";
 
 interface CheckinStatus {
   completedCount: number;
@@ -44,14 +45,18 @@ interface CareTileProps {
   iconClassName: string;
 }
 
+interface CareTilePropsInternal extends CareTileProps {
+  disabled: boolean;
+}
+
 function CareTile({
   href,
   label,
   subtitle,
   icon: Icon,
   iconClassName,
-}: CareTileProps) {
-  const disabled = isLegacyRoute(href);
+  disabled,
+}: CareTilePropsInternal) {
   const content = (
     <>
       <div className="flex items-center gap-2">
@@ -97,8 +102,33 @@ export default function GesundheitHubPage() {
   const [nextAppointment, setNextAppointment] =
     useState<CareAppointment | null>(null);
   const [planFeatures, setPlanFeatures] = useState<string[]>([]);
+  const [healthFlagStates, setHealthFlagStates] = useState<
+    Record<string, boolean>
+  >({});
 
   const hasFeature = (feature: string) => planFeatures.includes(feature);
+
+  // Gesundheits-Flag-Status laden (alle 6 in einem Query)
+  useEffect(() => {
+    const supabase = createClient();
+    async function loadHealthFlags() {
+      const { data } = await supabase
+        .from("feature_flags")
+        .select("key, enabled")
+        .in("key", [
+          "MEDICATIONS_ENABLED",
+          "DOCTORS_ENABLED",
+          "APPOINTMENTS_ENABLED",
+          "VIDEO_CONSULTATION",
+          "HEARTBEAT_ENABLED",
+          "GDT_ENABLED",
+        ]);
+      const map: Record<string, boolean> = {};
+      for (const row of data ?? []) map[row.key] = row.enabled;
+      setHealthFlagStates(map);
+    }
+    loadHealthFlags();
+  }, []);
 
   // Abo-Plan laden für Feature-Gating
   useEffect(() => {
@@ -287,6 +317,7 @@ export default function GesundheitHubPage() {
           }
           icon={CheckCircle2}
           iconClassName="text-quartier-green"
+          disabled={computeTileDisabled("/care/checkin", healthFlagStates, isLegacyRoute)}
         />
 
         <CareTile
@@ -295,6 +326,7 @@ export default function GesundheitHubPage() {
           subtitle={medSubtitle}
           icon={Pill}
           iconClassName="text-blue-500"
+          disabled={computeTileDisabled("/care/medications", healthFlagStates, isLegacyRoute)}
         />
 
         <CareTile
@@ -303,6 +335,7 @@ export default function GesundheitHubPage() {
           subtitle="in der Nähe"
           icon={Stethoscope}
           iconClassName="text-emerald-600"
+          disabled={computeTileDisabled("/care/aerzte", healthFlagStates, isLegacyRoute)}
         />
 
         <CareTile
@@ -313,6 +346,7 @@ export default function GesundheitHubPage() {
           }
           icon={CalendarDays}
           iconClassName="text-violet-500"
+          disabled={computeTileDisabled("/care/termine", healthFlagStates, isLegacyRoute)}
         />
 
         <CareTile
@@ -321,6 +355,7 @@ export default function GesundheitHubPage() {
           subtitle="Video-Termin"
           icon={Video}
           iconClassName="text-red-500"
+          disabled={computeTileDisabled("/care/sprechstunde", healthFlagStates, isLegacyRoute)}
         />
 
         <CareTile
@@ -329,6 +364,7 @@ export default function GesundheitHubPage() {
           subtitle="Erinnerungen"
           icon={ShieldCheck}
           iconClassName="text-amber-500"
+          disabled={computeTileDisabled("/praevention", healthFlagStates, isLegacyRoute)}
         />
       </div>
     </div>

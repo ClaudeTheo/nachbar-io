@@ -1,6 +1,7 @@
 // app/(senior)/layout.tsx
 import type { ReactNode } from "react";
 import { PushBanner } from "@/components/senior/PushBanner";
+import { RefreshRotationMounter } from "@/components/senior/RefreshRotationMounter";
 
 export const metadata = {
   title: "QuartierApp — Senioren-Gerät",
@@ -24,6 +25,7 @@ export default function SeniorDeviceLayout({
         lineHeight: "1.6",
       }}
     >
+      <RefreshRotationMounter />
       <main className="mx-auto max-w-md px-6 py-8">
         <PushBanner />
         {children}

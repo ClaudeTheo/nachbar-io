@@ -15,11 +15,12 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { QRCodeSVG } from "qrcode.react";
-
-const REFRESH_TOKEN_LS_KEY = "nachbar.senior.refresh_token";
-const USER_ID_LS_KEY = "nachbar.senior.user_id";
-const DEVICE_ID_LS_KEY = "nachbar.senior.device_id";
-const REFRESH_EXPIRES_LS_KEY = "nachbar.senior.refresh_expires_at";
+import {
+  REFRESH_TOKEN_LS_KEY,
+  USER_ID_LS_KEY,
+  DEVICE_ID_LS_KEY,
+  REFRESH_EXPIRES_LS_KEY,
+} from "@/lib/device-pairing/use-refresh-rotation";
 
 const POLL_INTERVAL_MS = 2000;
 const PAIR_TOKEN_RENEW_MS = 9 * 60 * 1000; // 9 Minuten (TTL = 10 min)

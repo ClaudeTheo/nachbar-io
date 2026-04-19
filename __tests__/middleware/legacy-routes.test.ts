@@ -60,7 +60,6 @@ describe("Legacy Route Blocking (Phase I, hart)", () => {
     "/praevention",
     "/reports",
     "/mitessen",
-    "/jugend",
   ];
 
   for (const route of legacyRoutes) {
@@ -86,6 +85,8 @@ describe("Legacy Route Blocking (Phase I, hart)", () => {
     "/kreis-start",
     "/care",
     "/care/meine-senioren",
+    "/jugend",
+    "/admin",
   ];
 
   for (const route of allowedRoutes) {

@@ -14,7 +14,7 @@ const mockConsentsList = [
     age_group: "u16",
     access_level: "freigeschaltet",
     created_at: "2026-04-01T10:00:00Z",
-    users: { first_name: "Lena" },
+    users: { display_name: "Lena" },
     quarters: { name: "Rebberg" },
     youth_guardian_consents: [
       {
@@ -32,7 +32,7 @@ const mockConsentsList = [
     age_group: "u16",
     access_level: "basis",
     created_at: "2026-04-02T10:00:00Z",
-    users: { first_name: "Max" },
+    users: { display_name: "Max" },
     quarters: { name: "Sanarystrasse" },
     youth_guardian_consents: [
       {

@@ -54,7 +54,7 @@ export async function GET() {
   const { data: consents, error: consentsError } = await adminDb
     .from("youth_profiles")
     .select(
-      "id, user_id, birth_year, age_group, access_level, created_at, users(first_name), quarters(name), youth_guardian_consents(status, granted_at, token_send_count, created_at)"
+      "id, user_id, birth_year, age_group, access_level, created_at, users(display_name), quarters(name), youth_guardian_consents(status, granted_at, token_send_count, created_at)"
     )
     .order("created_at", { ascending: false })
     .limit(100);
@@ -117,7 +117,7 @@ export async function GET() {
       return {
         userId: profile.user_id,
         firstName:
-          (profile.users as Record<string, unknown> | null)?.first_name ?? "–",
+          (profile.users as Record<string, unknown> | null)?.display_name ?? "–",
         quarterName:
           (profile.quarters as Record<string, unknown> | null)?.name ?? "–",
         ageGroup: profile.age_group ?? null,

@@ -32,7 +32,10 @@ export const LEGACY_ROUTE_PREFIXES = [
   "/packages",
   "/vouching",
   "/companion",
-  "/jugend",
+  // /jugend ist wieder aktiv (2026-04-19). Gate ueber YOUTH_MODULE-Flag
+  // greift in den einzelnen Jugend-API-Routes (/api/youth/*), die
+  // End-User-Seite /jugend und das Admin-Tab /admin > Jugend sind
+  // ueber is_admin + Plan-Checks geschuetzt.
 ] as const;
 
 export function isLegacyRoute(pathname: string): boolean {

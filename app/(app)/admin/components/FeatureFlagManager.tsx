@@ -30,6 +30,22 @@ const FLAG_DESCRIPTIONS: Record<string, string> = {
   VIDEO_CONSULTATION: "Online-Sprechstunde (Video-Termin)",
   HEARTBEAT_ENABLED: "Lebenszeichen / Check-in (Care)",
   GDT_ENABLED: "GDT-Schnittstelle (Arzt-Portal)",
+  // Care-Access (QR-Scan)
+  CARE_ACCESS_FAMILY:
+    "Familie/Freunde duerfen Senior per QR scannen (Gruppe A, Default ON)",
+  CARE_ACCESS_INDIVIDUAL_CAREGIVER:
+    "Einzel-Pflegerin darf Senior scannen (Gruppe B, Stufe 2)",
+  CARE_ACCESS_CARE_COMPANY:
+    "Pflegefirma/Heim darf scannen (Gruppe C, Stufe 3 - nach Zulassung)",
+  CARE_ACCESS_EMERGENCY:
+    "Oeffentliche Notfall-Karte per QR-Token (Ersthelfer, Default ON)",
+  // KI-Provider (nur genau EINER sollte true sein)
+  AI_PROVIDER_CLAUDE:
+    "KI-Provider Claude Haiku 4 (Pilot-Default, beste Qualitaet)",
+  AI_PROVIDER_MISTRAL:
+    "KI-Provider Mistral Small Paris (volle EU-DSGVO-Alternative)",
+  AI_PROVIDER_OFF:
+    "KI komplett aus - Formular-only-Onboarding (Paranoia-Modus)",
   // Externe APIs
   NINA_WARNINGS_ENABLED: "NINA-Katastrophenwarnungen (BBK)",
   DWD_WEATHER_WARNINGS_ENABLED: "DWD-Unwetter- und Hitzewarnungen",
@@ -47,6 +63,10 @@ const FLAG_DESCRIPTIONS: Record<string, string> = {
 // Health-Flags). Reihenfolge im UI: Gesundheit zuerst, weil zentrale Feature-
 // Gruppe fuer den Pilot.
 const FLAG_GROUPS: Array<{ title: string; pattern: RegExp }> = [
+  {
+    title: "Care-Access",
+    pattern: /^(CARE_ACCESS_|AI_PROVIDER_)/,
+  },
   {
     title: "Gesundheit",
     pattern: /^(MEDICATIONS|DOCTORS|APPOINTMENTS|VIDEO_CONSULT|HEARTBEAT|GDT)/,

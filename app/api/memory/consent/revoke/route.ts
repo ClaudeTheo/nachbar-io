@@ -37,11 +37,26 @@ export async function POST(
 
     const targetUserId = target_user_id || user.id;
 
+    // Codex-Review BLOCKER F6.2: Memory-Consents sind hoechst-persoenlich
+    // (DSGVO Art. 7 Abs. 1) und nicht via Pflege-Link delegierbar — auch
+    // nicht der Widerruf. Caregiver darf den Status sehen (RLS Mig 174),
+    // aber nicht im Namen des Seniors widerrufen.
+    if (targetUserId !== user.id) {
+      return NextResponse.json(
+        {
+          success: false,
+          data: null,
+          error: "consent_self_only",
+        },
+        { status: 403 },
+      );
+    }
+
     await revokeConsent(supabase, {
       userId: targetUserId,
       consentType: consent_type,
       actorUserId: user.id,
-      actorRole: targetUserId === user.id ? "senior" : "caregiver",
+      actorRole: "senior",
     });
 
     return NextResponse.json({ success: true, data: null, error: null });

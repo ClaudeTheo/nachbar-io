@@ -39,6 +39,7 @@ export interface AIChatInput {
 export type AIProviderName = "claude" | "mistral" | "off" | "mock";
 
 export interface AIProvider {
+  /** Identifier fuer Telemetrie/Logging/Tests. Kein Routing-Key, nicht zur Provider-Auswahl gedacht. */
   readonly name: AIProviderName;
   chat(input: AIChatInput): Promise<AIResponse>;
 }

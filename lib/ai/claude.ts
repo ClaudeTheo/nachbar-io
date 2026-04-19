@@ -16,6 +16,9 @@ import {
 
 const CLAUDE_ENDPOINT = "https://api.anthropic.com/v1/messages";
 const ANTHROPIC_VERSION = "2023-06-01";
+// Offizieller Anthropic-Alias fuer Sonnet 4.6. Quelle: Anthropic Model-ID-Liste
+// (https://docs.anthropic.com/en/docs/about-claude/models). Override via
+// ANTHROPIC_MODEL in Env moeglich (siehe provider.ts).
 const DEFAULT_MODEL = "claude-sonnet-4-6";
 const DEFAULT_MAX_TOKENS = 1024;
 

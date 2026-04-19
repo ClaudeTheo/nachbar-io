@@ -92,6 +92,13 @@ describe("OffProvider", () => {
     );
   });
 
+  it("chat() throws AIProviderError (nicht rohen Error)", async () => {
+    const provider = createOffProvider();
+    await expect(
+      provider.chat({ system: "x", messages: [] }),
+    ).rejects.toBeInstanceOf(AIProviderError);
+  });
+
   it("has name 'off'", () => {
     expect(createOffProvider().name).toBe("off");
   });
@@ -122,6 +129,24 @@ describe("MockProvider", () => {
     expect(provider.calls).toHaveLength(2);
     expect(provider.calls[0]).toEqual(input);
     expect(provider.calls[1].system).toBe("s2");
+  });
+
+  it("reset() clears calls, queue and sticky response", async () => {
+    const provider = createMockProvider();
+    provider.setResponse({
+      text: "sticky",
+      tool_calls: [],
+      stop_reason: "end_turn",
+      usage: { input_tokens: 0, output_tokens: 0 },
+    });
+    await provider.chat({ system: "s", messages: [] });
+    expect(provider.calls).toHaveLength(1);
+
+    provider.reset();
+
+    expect(provider.calls).toHaveLength(0);
+    const afterReset = await provider.chat({ system: "s2", messages: [] });
+    expect(afterReset.text).toBe("mock response"); // wieder Default, nicht "sticky"
   });
 
   it("returns scripted response via setResponse()", async () => {

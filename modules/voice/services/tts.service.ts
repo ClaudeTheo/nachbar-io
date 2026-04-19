@@ -20,7 +20,7 @@ interface ValidatedTtsInput {
   instructions: string;
 }
 
-const SENIOR_VOICE_INSTRUCTIONS = `Sprich klares, akzentfreies Hochdeutsch mit viel Emotion und Dynamik.
+export const SENIOR_VOICE_INSTRUCTIONS = `Sprich klares, akzentfreies Hochdeutsch mit viel Emotion und Dynamik.
 Deine Stimme ist warm, lebendig und herzlich — wie eine gute Freundin, die sich wirklich freut zu helfen.
 Variiere dein Tempo und deine Betonung natuerlich — mal schneller bei spannenden Infos, mal langsamer bei wichtigen Details.
 Betone wichtige Informationen wie Uhrzeiten, Adressen und Namen deutlich mit leichtem Nachdruck.

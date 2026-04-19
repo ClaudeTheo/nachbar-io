@@ -245,6 +245,88 @@ describe("WizardChat", () => {
     expect(play).toHaveBeenCalledWith("Willkommen.");
   });
 
+  // --- C6c: Consent-Banner bei consent_required -----------------------
+  describe("Consent-Banner (C6c)", () => {
+    it("zeigt Banner mit Erlaeuterung wenn error='consent_required'", () => {
+      setOnboarding({ error: "consent_required" });
+      render(<WizardChat />);
+      // Header (h2) ist eindeutig identifizierbar
+      expect(
+        screen.getByRole("heading", { name: /brauche.*erlaubnis/i }),
+      ).toBeInTheDocument();
+      // Erlaeuterungstext im p (nicht im Button) — eindeutig durch "kennenlernen darf"
+      expect(
+        screen.getByText(/kennenlernen darf|uebertragen/i),
+      ).toBeInTheDocument();
+    });
+
+    it("blendet Eingabe-Bereich aus wenn error='consent_required'", () => {
+      setOnboarding({ error: "consent_required" });
+      render(<WizardChat />);
+      expect(
+        screen.queryByPlaceholderText(/ihre antwort|tippen|nachricht/i),
+      ).not.toBeInTheDocument();
+      expect(
+        screen.queryByRole("button", { name: /senden|abschicken/i }),
+      ).not.toBeInTheDocument();
+    });
+
+    it("Grant-Button hat 80px min-height (Senior-Mode)", () => {
+      setOnboarding({ error: "consent_required" });
+      render(<WizardChat />);
+      const btn = screen.getByRole("button", {
+        name: /einwilligung erteilen|jetzt erlauben/i,
+      });
+      expect(btn.style.minHeight).toBe("80px");
+    });
+
+    it("Klick auf Grant-Button POSTet /api/care/consent mit ai_onboarding=true", async () => {
+      const fetchMock = vi
+        .spyOn(globalThis, "fetch")
+        .mockResolvedValue(
+          new Response("{}", { status: 200 }) as unknown as Response,
+        );
+      setOnboarding({ error: "consent_required" });
+      const user = userEvent.setup();
+      render(<WizardChat />);
+
+      await user.click(
+        screen.getByRole("button", {
+          name: /einwilligung erteilen|jetzt erlauben/i,
+        }),
+      );
+
+      const call = fetchMock.mock.calls.find(
+        (c) => c[0] === "/api/care/consent",
+      );
+      expect(call).toBeDefined();
+      const init = call![1] as RequestInit;
+      expect(init.method).toBe("POST");
+      const body = JSON.parse(init.body as string);
+      expect(body.features.ai_onboarding).toBe(true);
+    });
+
+    it("ruft reset() nach erfolgreichem Grant (clearet error/messages)", async () => {
+      vi.spyOn(globalThis, "fetch").mockResolvedValue(
+        new Response("{}", { status: 200 }) as unknown as Response,
+      );
+      const reset = vi.fn();
+      setOnboarding({ error: "consent_required", reset });
+      const user = userEvent.setup();
+      render(<WizardChat />);
+
+      await user.click(
+        screen.getByRole("button", {
+          name: /einwilligung erteilen|jetzt erlauben/i,
+        }),
+      );
+
+      // Wait for async fetch to complete
+      await new Promise((r) => setTimeout(r, 0));
+      expect(reset).toHaveBeenCalled();
+    });
+  });
+
   // --- C6b: STT-Mikrofon ----------------------------------------------
   describe("Mikrofon-Button (C6b)", () => {
     it("rendert Mikrofon-Button wenn isAvailable=true", () => {

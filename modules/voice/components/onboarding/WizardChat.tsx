@@ -36,8 +36,10 @@ export function WizardChat() {
     sendUserInput,
     confirmMemory,
     dismissConfirmation,
+    reset,
   } = useOnboardingTurn();
   const { play, stop: stopTts } = useTtsPlayback();
+  const [granting, setGranting] = useState(false);
 
   const [input, setInput] = useState("");
   const lastSpokenIndexRef = useRef<number>(-1);
@@ -93,6 +95,57 @@ export function WizardChat() {
   };
 
   const firstPending = pendingConfirmations[0] ?? null;
+
+  // Welle C C6c: Wenn ai_onboarding-Einwilligung fehlt (403), zeigen wir einen
+  // dauerhaften Banner mit Grant-Button statt der normalen Eingabe — sonst
+  // wuerde der User in Endlos-Schleife auf "Senden" klicken und nichts
+  // passieren.
+  async function handleGrantConsent() {
+    setGranting(true);
+    try {
+      const res = await fetch("/api/care/consent", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ features: { ai_onboarding: true } }),
+      });
+      if (res.ok) {
+        // Reset clearet error+messages, der User kann jetzt frisch starten.
+        reset();
+      }
+    } finally {
+      setGranting(false);
+    }
+  }
+
+  if (error === "consent_required") {
+    return (
+      <div className="flex h-full flex-col items-center justify-center bg-white p-6">
+        <div className="w-full max-w-md space-y-4 rounded-2xl border-2 border-[#4CAF87]/30 bg-[#4CAF87]/5 p-6 text-center">
+          <h2 className="text-2xl font-bold text-[#2D3142]">
+            Brauche Ihre Erlaubnis
+          </h2>
+          <p className="text-lg text-[#2D3142]">
+            Damit der KI-Assistent Sie kennenlernen darf, brauchen wir Ihre
+            Einwilligung. Ihre Eingaben werden dabei an unseren KI-Anbieter
+            uebertragen.
+          </p>
+          <p className="text-base text-[#2D3142]/70">
+            Sie koennen die Einwilligung jederzeit unter{" "}
+            <em>Profil &rarr; Mein Gedaechtnis</em> widerrufen.
+          </p>
+          <button
+            type="button"
+            onClick={() => void handleGrantConsent()}
+            disabled={granting}
+            className="w-full rounded-2xl bg-[#4CAF87] px-6 text-lg font-semibold text-white hover:bg-[#4CAF87]/90 disabled:opacity-60"
+            style={{ minHeight: "80px", touchAction: "manipulation" }}
+          >
+            {granting ? "Einen Moment ..." : "Einwilligung erteilen"}
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex h-full flex-col bg-white">

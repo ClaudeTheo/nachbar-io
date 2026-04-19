@@ -23,6 +23,14 @@ const FLAG_DESCRIPTIONS: Record<string, string> = {
   NEWS_AI: "KI-Nachrichtenzusammenfassung",
   PUSH_NOTIFICATIONS: "Push-Benachrichtigungen",
   KOMMUNAL_MODULE: "Kommunal-Modul (Mängelmelder, Müllkalender, Rathaus)",
+  // Gesundheits-Features
+  MEDICATIONS_ENABLED: "Medikamentenplan (Care) - Plus-Feature",
+  DOCTORS_ENABLED: "Aerzte-Verzeichnis (Care)",
+  APPOINTMENTS_ENABLED: "Terminbuchung (Care)",
+  VIDEO_CONSULTATION: "Online-Sprechstunde (Video-Termin)",
+  HEARTBEAT_ENABLED: "Lebenszeichen / Check-in (Care)",
+  GDT_ENABLED: "GDT-Schnittstelle (Arzt-Portal)",
+  // Externe APIs
   NINA_WARNINGS_ENABLED: "NINA-Katastrophenwarnungen (BBK)",
   DWD_WEATHER_WARNINGS_ENABLED: "DWD-Unwetter- und Hitzewarnungen",
   UBA_AIR_QUALITY_ENABLED: "Umweltbundesamt Luftqualitaet",
@@ -35,20 +43,29 @@ const FLAG_DESCRIPTIONS: Record<string, string> = {
   GKV_CARE_REGISTRY_ENABLED: "GKV-Pflegedienst-Verzeichnis",
 };
 
+// HEARTBEAT wurde aus "Kern-Module" in "Gesundheit" verschoben (mit den neuen
+// Health-Flags). Reihenfolge im UI: Gesundheit zuerst, weil zentrale Feature-
+// Gruppe fuer den Pilot.
 const FLAG_GROUPS: Array<{ title: string; pattern: RegExp }> = [
+  {
+    title: "Gesundheit",
+    pattern: /^(MEDICATIONS|DOCTORS|APPOINTMENTS|VIDEO_CONSULT|HEARTBEAT|GDT)/,
+  },
   {
     title: "Kern-Module",
     pattern:
-      /^(BOARD|EVENTS|NEWS|MARKETPLACE|BUSINESSES|INVITATIONS|HEARTBEAT|CARE_MODULE|KOMMUNAL_MODULE|LOST_FOUND|PUSH_NOTIFICATIONS)/,
+      /^(BOARD|EVENTS|NEWS|MARKETPLACE|BUSINESSES|INVITATIONS|CARE_MODULE|KOMMUNAL_MODULE|LOST_FOUND|PUSH_NOTIFICATIONS)/,
   },
   { title: "Care / Plus", pattern: /^(CAREGIVER|VIDEO_CALL)/ },
   { title: "Organisation", pattern: /^(ORG_|MODERATION|QUARTER_STATS)/ },
-  { title: "Arzt-Portal", pattern: /^(APPOINTMENTS|VIDEO_CONSULT|GDT)/ },
   {
     title: "Externe APIs",
     pattern: /^(NINA|DWD|UBA|DELFI|LGL_BW|OSM|BKG|BFARM|DIGA|GKV)/,
   },
-  { title: "Admin / Sonstige", pattern: /^(ADMIN|REFERRAL|QUARTER_PROGRESS|PILOT)/ },
+  {
+    title: "Admin / Sonstige",
+    pattern: /^(ADMIN|REFERRAL|QUARTER_PROGRESS|PILOT)/,
+  },
 ];
 
 /**
@@ -109,7 +126,9 @@ export function FeatureFlagManager() {
         .sort((left, right) => left.key.localeCompare(right.key)),
     })).filter((group) => group.flags.length > 0);
 
-    const groupedKeys = new Set(buckets.flatMap((group) => group.flags.map((flag) => flag.key)));
+    const groupedKeys = new Set(
+      buckets.flatMap((group) => group.flags.map((flag) => flag.key)),
+    );
     const unsorted = flags
       .filter((flag) => !groupedKeys.has(flag.key))
       .sort((left, right) => left.key.localeCompare(right.key));
@@ -221,7 +240,9 @@ export function FeatureFlagManager() {
                   <thead>
                     <tr className="border-b bg-muted/30 text-left text-xs text-muted-foreground">
                       <th className="px-3 py-2 pr-4 font-medium">Flag Key</th>
-                      <th className="px-3 py-2 pr-4 font-medium">Beschreibung</th>
+                      <th className="px-3 py-2 pr-4 font-medium">
+                        Beschreibung
+                      </th>
                       <th className="px-3 py-2 pr-4 font-medium">Aktiv</th>
                       <th className="px-3 py-2 pr-4 font-medium">Rollen</th>
                       <th className="px-3 py-2 font-medium">Plaene</th>
@@ -241,11 +262,16 @@ export function FeatureFlagManager() {
                             <Switch
                               checked={flag.enabled}
                               disabled={updatingKey === flag.key}
-                              onCheckedChange={(val) => handleToggle(flag.key, val)}
+                              onCheckedChange={(val) =>
+                                handleToggle(flag.key, val)
+                              }
                               aria-label={`${flag.key} ${flag.enabled ? "deaktivieren" : "aktivieren"}`}
                             />
                             {flag.admin_override ? (
-                              <Badge variant="secondary" className="text-[10px]">
+                              <Badge
+                                variant="secondary"
+                                className="text-[10px]"
+                              >
                                 Admin-Override
                               </Badge>
                             ) : null}

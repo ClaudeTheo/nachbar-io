@@ -115,6 +115,15 @@ export default function SeniorDeviceHomePage() {
         ✅ Mir geht es gut
       </a>
 
+      {/* KI kennenlernen — Welle C C6c */}
+      <a
+        href="/kennenlernen"
+        className="block w-full rounded-2xl bg-indigo-600 px-8 py-8 text-2xl font-bold text-white shadow-lg active:bg-indigo-700 text-center"
+        style={{ minHeight: "80px", touchAction: "manipulation" }}
+      >
+        🤝 KI kennenlernen
+      </a>
+
       {/* Naechster Check-in */}
       {nextCheckin && (
         <p className="text-base text-gray-400">

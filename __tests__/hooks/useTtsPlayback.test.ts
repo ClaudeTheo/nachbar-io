@@ -259,6 +259,62 @@ describe("useTtsPlayback", () => {
     expect(result.current.isPlaying).toBe(false);
   });
 
+  it("AbortController (Codex NACHBESSERN F4): zweiter play() abortet in-flight fetch des ersten", async () => {
+    // Erster fetch: pending — wartet auf abort
+    let firstAbortSignal: AbortSignal | undefined;
+    const firstFetch = new Promise<Response>((_, reject) => {
+      // wird via signal abortieren
+      const checkAbort = () => {
+        if (firstAbortSignal?.aborted) {
+          reject(new DOMException("The operation was aborted.", "AbortError"));
+        }
+      };
+      // poll
+      const interval = setInterval(() => {
+        if (firstAbortSignal?.aborted) {
+          clearInterval(interval);
+          checkAbort();
+        }
+      }, 5);
+    });
+
+    let callCount = 0;
+    vi.spyOn(globalThis, "fetch").mockImplementation(
+      (_url, init?: RequestInit) => {
+        callCount += 1;
+        if (callCount === 1) {
+          firstAbortSignal = init?.signal ?? undefined;
+          return firstFetch;
+        }
+        // Zweiter Call: liefert sofort
+        return Promise.resolve(
+          new Response(new Blob(["b"], { type: "audio/mpeg" }), {
+            status: 200,
+          }) as unknown as Response,
+        );
+      },
+    );
+
+    const { result } = renderHook(() => useTtsPlayback());
+
+    // play("Erste") starten — fetch haengt
+    act(() => {
+      void result.current.play("Erste");
+    });
+    await waitFor(() => expect(result.current.isLoading).toBe(true));
+    expect(firstAbortSignal).toBeDefined();
+    expect(firstAbortSignal?.aborted).toBe(false);
+
+    // play("Zweite") — sollte abort signal des ersten setzen
+    await act(async () => {
+      await result.current.play("Zweite");
+    });
+
+    expect(firstAbortSignal?.aborted).toBe(true);
+    // Nur eine Audio-Instanz wurde erstellt (fuer "Zweite")
+    expect(MockAudio.lastInstance).not.toBeNull();
+  });
+
   it("Lazy-Sync (Codex ZUSATZ-FUND C): laedt voice_preferences aus Supabase wenn localStorage leer", async () => {
     // localStorage leeren
     localStorage.removeItem("quartier-voice-prefs-synced");

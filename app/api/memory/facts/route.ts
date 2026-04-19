@@ -68,11 +68,12 @@ export async function POST(
     }
 
     const body = await request.json();
-    const { category, key, value, targetUserId } = body as {
+    const { category, key, value, targetUserId, source } = body as {
       category: MemoryCategory;
       key: string;
       value: string;
       targetUserId?: string;
+      source?: "self" | "ai_learned";
     };
 
     if (!category || !key || !value) {
@@ -81,6 +82,14 @@ export async function POST(
         { status: 400 },
       );
     }
+
+    // Codex-Review NACHBESSERN F2: optionale Provenance.
+    // - "self"        = User hat den Fakt selbst eingegeben (Default).
+    // - "ai_learned"  = KI hat ihn vorgeschlagen, User hat im Wizard
+    //                   bestaetigt (confirm-mode aus save_memory-Tool).
+    // Whitelist verhindert dass Clients beliebige Source-Werte injizieren.
+    const explicitSource: "self" | "ai_learned" =
+      source === "ai_learned" ? "ai_learned" : "self";
 
     // Caregiver-Modus: targetUserId = Senior, fuer den gespeichert wird
     const isCaregiver = targetUserId && targetUserId !== user.id;
@@ -115,7 +124,11 @@ export async function POST(
 
     // Validierung
     const isSensitive = SENSITIVE_CATEGORIES.includes(category);
-    const factCount = await getFactCount(supabase, effectiveUserId, isSensitive);
+    const factCount = await getFactCount(
+      supabase,
+      effectiveUserId,
+      isSensitive,
+    );
     const maxFacts = isSensitive
       ? MEMORY_LIMITS.SENSITIVE_MAX
       : MEMORY_LIMITS.BASIS_MAX;
@@ -132,12 +145,18 @@ export async function POST(
       );
     }
 
+    // Caregiver-Source ueberschreibt explicitSource — Pflege-Interaktionen
+    // sollen immer als "caregiver" geloggt werden.
+    const finalSource: "self" | "caregiver" | "ai_learned" = isCaregiver
+      ? "caregiver"
+      : explicitSource;
+
     const fact = await saveFact(supabase, {
       category,
       key,
       value,
       targetUserId: effectiveUserId,
-      source: isCaregiver ? "caregiver" : "self",
+      source: finalSource,
       sourceUserId: user.id,
       confidence: 1.0,
       confirmed: true,

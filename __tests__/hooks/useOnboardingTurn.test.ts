@@ -288,6 +288,57 @@ describe("useOnboardingTurn", () => {
     });
   });
 
+  it("confirmMemory schickt source='ai_learned' im Body (Provenance, Codex F2)", async () => {
+    const fetchSpy = vi
+      .spyOn(globalThis, "fetch")
+      .mockImplementation(async (url) => {
+        const u = String(url);
+        if (u === "/api/ai/onboarding/turn") {
+          return jsonResponse({
+            assistant_text: "Soll ich speichern?",
+            tool_results: [
+              {
+                ok: true,
+                mode: "confirm",
+                factId: null,
+                category: "personal",
+                key: "geburtstag",
+                value: "1942-03-12",
+              },
+            ],
+            stop_reason: "end_turn",
+          });
+        }
+        if (u === "/api/memory/facts") {
+          return jsonResponse({
+            success: true,
+            data: { id: "fact-1" },
+            error: null,
+          });
+        }
+        return jsonResponse({}, 404);
+      });
+
+    const { result } = renderHook(() => useOnboardingTurn());
+    await act(async () => {
+      await result.current.sendUserInput("Mein Geburtstag.");
+    });
+    const item = result.current.pendingConfirmations[0];
+    await act(async () => {
+      await result.current.confirmMemory(item);
+    });
+
+    const factsCall = fetchSpy.mock.calls.find(
+      (c) => c[0] === "/api/memory/facts",
+    );
+    expect(factsCall).toBeDefined();
+    const body = JSON.parse((factsCall![1] as RequestInit).body as string);
+    expect(body.source).toBe("ai_learned");
+    expect(body.category).toBe("personal");
+    expect(body.key).toBe("geburtstag");
+    expect(body.value).toBe("1942-03-12");
+  });
+
   it("confirmMemory POSTet /api/memory/facts und entfernt aus pendingConfirmations", async () => {
     // Erst: Turn mit Confirm-Result
     vi.spyOn(globalThis, "fetch").mockImplementation(async (url) => {

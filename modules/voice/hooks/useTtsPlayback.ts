@@ -49,8 +49,21 @@ export function useTtsPlayback(): UseTtsPlaybackReturn {
   const [isPlaying, setIsPlaying] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const objectUrlRef = useRef<string | null>(null);
+  // Codex-Review NACHBESSERN F4: AbortController fuer in-flight TTS-Fetch.
+  // Ohne diesen koennte ein langsamer Fetch nach einem schnelleren noch
+  // Audio starten — Race-Condition zwischen ueberlappenden play()-Calls.
+  const abortRef = useRef<AbortController | null>(null);
 
   const stopInternal = useCallback(() => {
+    // 0. In-flight fetch abbrechen
+    if (abortRef.current) {
+      try {
+        abortRef.current.abort();
+      } catch {
+        // ignore
+      }
+      abortRef.current = null;
+    }
     // iOS-Manager
     try {
       getIOSAudioManager().stop();
@@ -87,10 +100,15 @@ export function useTtsPlayback(): UseTtsPlaybackReturn {
       const trimmed = text?.trim();
       if (!trimmed) return;
 
-      // Vorherige Wiedergabe stoppen
+      // Vorherige Wiedergabe stoppen (inkl. AbortController)
       stopInternal();
       setIsPlaying(false);
       setIsLoading(true);
+
+      // Neuen AbortController fuer diesen play()-Call
+      const controller = new AbortController();
+      abortRef.current = controller;
+      const signal = controller.signal;
 
       try {
         const { voice, speed } = readVoicePrefs();
@@ -98,11 +116,15 @@ export function useTtsPlayback(): UseTtsPlaybackReturn {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ text: trimmed.slice(0, 1000), voice, speed }),
+          signal,
         });
+        // Wenn zwischenzeitlich abortiert: nicht weiter starten
+        if (signal.aborted) return;
         if (!res.ok) {
           throw new Error(`TTS-Fehler: ${res.status}`);
         }
         const blob = await res.blob();
+        if (signal.aborted) return;
 
         // 1. iOS Audio Manager bevorzugt
         const manager = getIOSAudioManager();
@@ -153,7 +175,11 @@ export function useTtsPlayback(): UseTtsPlaybackReturn {
           setIsPlaying(false);
           throw new Error("playback_blocked");
         });
-      } catch {
+      } catch (err) {
+        // AbortError ist erwartet wenn play() durch neuen play() abgeloest wurde — kein Toast.
+        if ((err as Error)?.name === "AbortError") {
+          return;
+        }
         setIsLoading(false);
         setIsPlaying(false);
         toast.error("Sprachausgabe nicht verfuegbar.");

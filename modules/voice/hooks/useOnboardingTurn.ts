@@ -131,6 +131,10 @@ export function useOnboardingTurn(): UseOnboardingTurnReturn {
           category: item.category,
           key: item.key,
           value: item.value,
+          // Codex-Review NACHBESSERN F2: explizite Provenance, damit der Fakt
+          // im user_memory_facts.source-Feld als KI-vorgeschlagen +
+          // user-bestaetigt erkennbar ist (statt unterschiedslos "self").
+          source: "ai_learned",
         }),
       });
 

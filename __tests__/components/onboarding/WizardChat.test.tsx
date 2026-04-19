@@ -131,6 +131,16 @@ describe("WizardChat", () => {
     expect(btn).toBeDisabled();
   });
 
+  it("Senior-Mode: Input + Senden-Button haben min-height >= 80px", () => {
+    render(<WizardChat />);
+    const input = screen.getByPlaceholderText(
+      /ihre antwort|tippen|nachricht/i,
+    ) as HTMLInputElement;
+    const btn = screen.getByRole("button", { name: /senden|abschicken/i });
+    expect(input.style.minHeight).toBe("80px");
+    expect(btn.style.minHeight).toBe("80px");
+  });
+
   it("zeigt Fehlermeldung wenn error='ai_disabled'", () => {
     setOnboarding({ error: "ai_disabled" });
     render(<WizardChat />);

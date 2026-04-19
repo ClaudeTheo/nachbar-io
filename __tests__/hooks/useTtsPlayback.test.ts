@@ -259,6 +259,49 @@ describe("useTtsPlayback", () => {
     expect(result.current.isPlaying).toBe(false);
   });
 
+  it("Lazy-Sync (Codex ZUSATZ-FUND C): laedt voice_preferences aus Supabase wenn localStorage leer", async () => {
+    // localStorage leeren
+    localStorage.removeItem("quartier-voice-prefs-synced");
+
+    // Supabase-Mock vorbereiten — minimale chain fuer .from().select().eq().single()
+    const singleMock = vi.fn().mockResolvedValue({
+      data: { voice_preferences: { voice: "ash", speed: 0.85 } },
+      error: null,
+    });
+    const supabaseMock = {
+      auth: {
+        getUser: vi.fn().mockResolvedValue({
+          data: { user: { id: "u-1" } },
+          error: null,
+        }),
+      },
+      from: vi.fn().mockReturnValue({
+        select: vi.fn().mockReturnValue({
+          eq: vi.fn().mockReturnValue({
+            single: singleMock,
+          }),
+        }),
+      }),
+    };
+    vi.doMock("@/lib/supabase/client", () => ({
+      createClient: () => supabaseMock,
+    }));
+
+    // Hook mounten — triggert den Sync-Effekt
+    const { useTtsPlayback: useTtsFresh } =
+      await import("@/modules/voice/hooks/useTtsPlayback");
+    renderHook(() => useTtsFresh());
+
+    // Async: warte bis Supabase-Call durch ist und localStorage gefuellt
+    await waitFor(() => {
+      const stored = localStorage.getItem("quartier-voice-prefs-synced");
+      expect(stored).not.toBeNull();
+      const parsed = JSON.parse(stored!);
+      expect(parsed.voice).toBe("ash");
+      expect(parsed.speed).toBe(0.85);
+    });
+  });
+
   it("Unmount stoppt laufendes Audio", async () => {
     mockTtsFetch();
     const { result, unmount } = renderHook(() => useTtsPlayback());

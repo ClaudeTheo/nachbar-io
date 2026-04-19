@@ -25,6 +25,7 @@ const {
   mockBuildMemoryTool,
   mockSaveMemoryToolHandler,
   mockLoadSeniorAppKnowledge,
+  mockCheckCareConsent,
 } = vi.hoisted(() => ({
   mockRequireAuth: vi.fn(),
   mockGetProvider: vi.fn(),
@@ -32,6 +33,7 @@ const {
   mockBuildMemoryTool: vi.fn(),
   mockSaveMemoryToolHandler: vi.fn(),
   mockLoadSeniorAppKnowledge: vi.fn(),
+  mockCheckCareConsent: vi.fn(),
 }));
 
 vi.mock("@/lib/care/api-helpers", () => ({
@@ -67,6 +69,10 @@ vi.mock("@/lib/ai/tools/save-memory", () => ({
 
 vi.mock("@/lib/ai/system-prompts/loader", () => ({
   loadSeniorAppKnowledge: mockLoadSeniorAppKnowledge,
+}));
+
+vi.mock("@/modules/care/services/consent", () => ({
+  checkCareConsent: mockCheckCareConsent,
 }));
 
 function makeProvider(response: AIResponse | AIResponse[]): AIProvider {
@@ -116,6 +122,7 @@ beforeEach(() => {
   mockBuildMemoryTool.mockReset();
   mockSaveMemoryToolHandler.mockReset();
   mockLoadSeniorAppKnowledge.mockReset();
+  mockCheckCareConsent.mockReset();
 
   // Defaults, die die meisten Tests brauchen
   mockRequireAuth.mockResolvedValue(authed);
@@ -126,6 +133,9 @@ beforeEach(() => {
     input_schema: { type: "object", properties: {} },
   });
   mockLoadSeniorAppKnowledge.mockResolvedValue("WISSENSDOKUMENT_SENIOR_APP");
+  // Default: ai_onboarding-Consent ist granted, damit existierende
+  // Happy-Path-Tests nicht jedes Mal mocken muessen.
+  mockCheckCareConsent.mockResolvedValue(true);
 });
 
 // ---------------------------------------------------------------------------
@@ -178,6 +188,46 @@ describe("POST /api/ai/onboarding/turn — Auth & Validation", () => {
     const { POST } = await import("../route");
     const res = await POST(makeReq({ messages: [], userInput: "Hallo" }));
     expect(res.status).toBe(200);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Consent-Check (Codex-Review BLOCKER F6.1)
+// ---------------------------------------------------------------------------
+
+describe("POST /api/ai/onboarding/turn — Consent-Check ai_onboarding", () => {
+  it("gibt 403 consent_required zurueck wenn ai_onboarding nicht granted", async () => {
+    mockCheckCareConsent.mockResolvedValue(false);
+
+    const { POST } = await import("../route");
+    const res = await POST(makeReq({ messages: [], userInput: "Hallo" }));
+    expect(res.status).toBe(403);
+
+    const data = await res.json();
+    expect(data.error).toMatch(/einwilligung|consent|zustimmung/i);
+  });
+
+  it("ruft checkCareConsent mit user.id und 'ai_onboarding' auf", async () => {
+    mockGetProvider.mockReturnValue(makeProvider(textResponse("ok")));
+
+    const { POST } = await import("../route");
+    await POST(makeReq({ messages: [], userInput: "Hallo" }));
+
+    expect(mockCheckCareConsent).toHaveBeenCalledWith(
+      mockSupabase,
+      "user-senior-001",
+      "ai_onboarding",
+    );
+  });
+
+  it("ruft NICHT loadMemoryContext oder getProvider auf wenn Consent fehlt", async () => {
+    mockCheckCareConsent.mockResolvedValue(false);
+
+    const { POST } = await import("../route");
+    await POST(makeReq({ messages: [], userInput: "Hallo" }));
+
+    expect(mockLoadMemoryContext).not.toHaveBeenCalled();
+    expect(mockGetProvider).not.toHaveBeenCalled();
   });
 });
 

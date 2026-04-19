@@ -437,6 +437,7 @@ export const CONSENT_FEATURES = [
   "medications",
   "care_profile",
   "emergency_contacts",
+  "ai_onboarding",
 ] as const;
 export type CareConsentFeature = (typeof CONSENT_FEATURES)[number];
 

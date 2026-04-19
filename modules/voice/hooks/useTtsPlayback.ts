@@ -169,5 +169,43 @@ export function useTtsPlayback(): UseTtsPlaybackReturn {
     };
   }, [stopInternal]);
 
+  // Lazy-Sync (Codex-Review ZUSATZ-FUND C):
+  // Wenn localStorage leer ist (Wizard-Page wurde direkt ohne useVoicePreferences-
+  // Mount geladen), Profil-Prefs einmalig aus Supabase nachladen — wie der alte
+  // TTSButton es tat. Best-effort, fire-and-forget.
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    if (localStorage.getItem("quartier-voice-prefs-synced")) return;
+
+    void (async () => {
+      try {
+        const { createClient } = await import("@/lib/supabase/client");
+        const supabase = createClient();
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
+        if (!user) return;
+        const { data } = await supabase
+          .from("users")
+          .select("voice_preferences")
+          .eq("id", user.id)
+          .single();
+        if (!data?.voice_preferences) return;
+        const prefs = data.voice_preferences as Record<string, unknown>;
+        const resolved = {
+          voice:
+            prefs.voice === "ash" || prefs.voice === "onyx" ? "ash" : "nova",
+          speed: typeof prefs.speed === "number" ? prefs.speed : DEFAULTS.speed,
+        };
+        localStorage.setItem(
+          "quartier-voice-prefs-synced",
+          JSON.stringify(resolved),
+        );
+      } catch {
+        // best-effort, Defaults sind ok
+      }
+    })();
+  }, []);
+
   return { play, stop, isLoading, isPlaying };
 }

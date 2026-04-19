@@ -22,6 +22,10 @@ const FEATURE_DATA_TABLES: Record<
   ],
   care_profile: [{ table: "care_profiles", column: "user_id" }],
   emergency_contacts: [],
+  // ai_onboarding-Consent steuert nur den Zugriff zur KI-Route, keine eigenen
+  // Datentabellen — Memory-Fakten landen in user_memory_facts (mit eigenem
+  // user_memory_consents-Trigger), nicht hier.
+  ai_onboarding: [],
 };
 
 /**

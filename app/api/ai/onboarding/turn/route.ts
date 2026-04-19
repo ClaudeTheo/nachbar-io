@@ -30,6 +30,7 @@ import {
   type SaveMemoryResult,
 } from "@/lib/ai/tools/save-memory";
 import { loadSeniorAppKnowledge } from "@/lib/ai/system-prompts/loader";
+import { checkCareConsent } from "@/modules/care/services/consent";
 
 // Max Tool-Calls pro Turn. Schuetzt vor Runaway wenn der Provider
 // unerwartet viele save_memory-Calls in einer Response emittiert.
@@ -106,7 +107,19 @@ export async function POST(request: NextRequest) {
   }
   const { messages, userInput } = parsed.data;
 
-  // 3. Memory-Kontext laden (relevant fuer den neuen userInput)
+  // 3. Consent-Check (Codex-Review BLOCKER F6.1):
+  //    DSGVO Art. 6/28 — KI-Datenuebermittlung an Claude/Mistral darf nur
+  //    nach expliziter ai_onboarding-Einwilligung passieren. Vor jedem
+  //    Memory-Load oder Provider-Call pruefen.
+  const aiConsent = await checkCareConsent(supabase, user.id, "ai_onboarding");
+  if (!aiConsent) {
+    return errorResponse(
+      "Einwilligung fuer KI-Assistent fehlt (consent_required)",
+      403,
+    );
+  }
+
+  // 4. Memory-Kontext laden (relevant fuer den neuen userInput)
   let memoryBlock = "";
   try {
     memoryBlock = await loadMemoryContext(

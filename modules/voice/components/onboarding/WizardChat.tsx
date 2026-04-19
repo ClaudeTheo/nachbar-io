@@ -116,13 +116,13 @@ export function WizardChat() {
             disabled={isLoading}
             aria-label="Ihre Antwort"
             className="flex-1 rounded-xl border border-[#2D3142]/20 bg-white px-4 py-3 text-lg text-[#2D3142] outline-none focus:border-[#4CAF87]"
-            style={{ minHeight: "60px" }}
+            style={{ minHeight: "80px" }}
           />
           <Button
             onClick={() => void handleSend()}
             disabled={isLoading || input.trim().length === 0}
             className="rounded-xl bg-[#4CAF87] px-6 text-lg font-semibold text-white hover:bg-[#4CAF87]/90"
-            style={{ minHeight: "60px", touchAction: "manipulation" }}
+            style={{ minHeight: "80px", touchAction: "manipulation" }}
           >
             Senden
           </Button>

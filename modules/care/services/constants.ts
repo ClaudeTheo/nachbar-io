@@ -273,6 +273,7 @@ export const CARE_CONSENT_FEATURES: CareConsentFeature[] = [
   "medications",
   "care_profile",
   "emergency_contacts",
+  "ai_onboarding",
 ];
 
 export const CARE_CONSENT_LABELS: Record<CareConsentFeature, string> = {
@@ -281,6 +282,7 @@ export const CARE_CONSENT_LABELS: Record<CareConsentFeature, string> = {
   medications: "Medikamenten-Verwaltung",
   care_profile: "Pflegeprofil",
   emergency_contacts: "Notfallkontakte & Eskalation",
+  ai_onboarding: "KI-Assistent",
 };
 
 export const CARE_CONSENT_DESCRIPTIONS: Record<CareConsentFeature, string> = {
@@ -290,6 +292,8 @@ export const CARE_CONSENT_DESCRIPTIONS: Record<CareConsentFeature, string> = {
   care_profile: "Pflegegrad, medizinische Notizen und Versicherungsnummer",
   emergency_contacts:
     "Telefonnummern und Beziehungen Ihrer Notfallkontakte (erfordert SOS-Einwilligung)",
+  ai_onboarding:
+    "Übermittlung Ihrer Eingaben an Claude/Mistral für den Kennenlern-Wizard",
 };
 
 export const CURRENT_CONSENT_VERSION = "1.0";

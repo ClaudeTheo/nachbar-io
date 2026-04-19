@@ -91,12 +91,19 @@ export function useOnboardingTurn(): UseOnboardingTurnReturn {
 
         const data = (await res.json()) as TurnResponse;
 
-        // History fortschreiben (user + assistant)
-        setMessages((prev) => [
-          ...prev,
-          { role: "user", content: trimmed },
-          { role: "assistant", content: data.assistant_text },
-        ]);
+        // History fortschreiben:
+        //  - User-Input immer.
+        //  - Assistant-Text nur wenn nicht leer/whitespace
+        //    (Codex-Review ZUSATZ-FUND B: tool-only-Responses haetten sonst
+        //    leere Bubbles erzeugt).
+        setMessages((prev) => {
+          const next = [...prev, { role: "user" as const, content: trimmed }];
+          const assistantText = data.assistant_text?.trim() ?? "";
+          if (assistantText.length > 0) {
+            next.push({ role: "assistant", content: data.assistant_text });
+          }
+          return next;
+        });
 
         // Confirm-Tool-Results sammeln
         const newConfirms = (data.tool_results ?? []).filter(
@@ -133,20 +140,17 @@ export function useOnboardingTurn(): UseOnboardingTurnReturn {
       }
 
       toast.success("Gespeichert.");
-      setPendingConfirmations((prev) =>
-        prev.filter(
-          (p) => !(p.category === item.category && p.key === item.key),
-        ),
-      );
+      // Reference-Equality (Codex-Review ZUSATZ-FUND D): zwei Confirmations
+      // mit identischer category+key duerfen unabhaengig bestaetigt/verworfen
+      // werden. Der Filter trifft genau die uebergebene Instanz.
+      setPendingConfirmations((prev) => prev.filter((p) => p !== item));
     } catch {
       toast.error("Verbindungsfehler beim Speichern.");
     }
   }, []);
 
   const dismissConfirmation = useCallback((item: PendingConfirmation) => {
-    setPendingConfirmations((prev) =>
-      prev.filter((p) => !(p.category === item.category && p.key === item.key)),
-    );
+    setPendingConfirmations((prev) => prev.filter((p) => p !== item));
   }, []);
 
   const reset = useCallback(() => {

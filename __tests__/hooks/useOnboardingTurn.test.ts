@@ -87,6 +87,51 @@ describe("useOnboardingTurn", () => {
     ]);
   });
 
+  it("appendet KEINE assistant-Message wenn assistant_text leer ist (tool-only)", async () => {
+    vi.spyOn(globalThis, "fetch").mockResolvedValue(
+      jsonResponse({
+        assistant_text: "",
+        tool_results: [
+          {
+            ok: true,
+            mode: "save",
+            factId: "abc",
+            category: "preference",
+            key: "tee",
+          },
+        ],
+        stop_reason: "tool_use",
+      }),
+    );
+    const { result } = renderHook(() => useOnboardingTurn());
+
+    await act(async () => {
+      await result.current.sendUserInput("Ich trinke Tee.");
+    });
+
+    // Nur der user-Input ist in der History — keine leere Assistant-Bubble
+    expect(result.current.messages).toEqual([
+      { role: "user", content: "Ich trinke Tee." },
+    ]);
+  });
+
+  it("appendet KEINE assistant-Message wenn assistant_text nur whitespace ist", async () => {
+    vi.spyOn(globalThis, "fetch").mockResolvedValue(
+      jsonResponse({
+        assistant_text: "   \n  ",
+        tool_results: [],
+        stop_reason: "end_turn",
+      }),
+    );
+    const { result } = renderHook(() => useOnboardingTurn());
+
+    await act(async () => {
+      await result.current.sendUserInput("Hi");
+    });
+
+    expect(result.current.messages).toEqual([{ role: "user", content: "Hi" }]);
+  });
+
   it("zweiter sendUserInput schickt vorherige History mit", async () => {
     const fetchSpy = vi.spyOn(globalThis, "fetch") as unknown as ReturnType<
       typeof vi.fn
@@ -288,6 +333,51 @@ describe("useOnboardingTurn", () => {
 
     expect(result.current.pendingConfirmations).toHaveLength(0);
     expect(toastSuccessMock).toHaveBeenCalled();
+  });
+
+  it("dismissConfirmation entfernt NUR das uebergebene item (reference-equality, auch bei gleichem key)", async () => {
+    // Zwei Confirmations mit IDENTISCHER category+key, aber unterschiedlichem value.
+    // Mit category+key-Filter wuerde dismiss BEIDE entfernen — Codex-Review
+    // ZUSATZ-FUND D. Mit reference-equality nur das angegebene.
+    vi.spyOn(globalThis, "fetch").mockResolvedValue(
+      jsonResponse({
+        assistant_text: "Soll ich beides speichern?",
+        tool_results: [
+          {
+            ok: true,
+            mode: "confirm",
+            factId: null,
+            category: "preference",
+            key: "tee",
+            value: "Schwarztee",
+          },
+          {
+            ok: true,
+            mode: "confirm",
+            factId: null,
+            category: "preference",
+            key: "tee",
+            value: "Pfefferminz",
+          },
+        ],
+        stop_reason: "end_turn",
+      }),
+    );
+    const { result } = renderHook(() => useOnboardingTurn());
+
+    await act(async () => {
+      await result.current.sendUserInput("Ich mag verschiedene Tees.");
+    });
+
+    expect(result.current.pendingConfirmations).toHaveLength(2);
+    const first = result.current.pendingConfirmations[0];
+
+    act(() => {
+      result.current.dismissConfirmation(first);
+    });
+
+    expect(result.current.pendingConfirmations).toHaveLength(1);
+    expect(result.current.pendingConfirmations[0].value).toBe("Pfefferminz");
   });
 
   it("dismissConfirmation entfernt aus pendingConfirmations OHNE fetch", async () => {

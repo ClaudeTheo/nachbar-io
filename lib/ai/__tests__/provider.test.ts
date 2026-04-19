@@ -398,6 +398,64 @@ describe("ClaudeProvider", () => {
       },
     ]);
   });
+
+  it("sends system as cached content-block array when system_cached=true", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          content: [{ type: "text", text: "ok" }],
+          stop_reason: "end_turn",
+          usage: { input_tokens: 1, output_tokens: 1 },
+        }),
+        { status: 200 },
+      ),
+    );
+    const provider = createClaudeProvider({
+      apiKey: "sk-test",
+      fetchImpl: fetchMock,
+    });
+    await provider.chat({
+      system: "long system prompt",
+      messages: [],
+      system_cached: true,
+    });
+    const body = JSON.parse(
+      (fetchMock.mock.calls[0]?.[1] as RequestInit).body as string,
+    );
+    expect(body.system).toEqual([
+      {
+        type: "text",
+        text: "long system prompt",
+        cache_control: { type: "ephemeral" },
+      },
+    ]);
+  });
+
+  it("sends system as plain string when system_cached=false", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          content: [{ type: "text", text: "ok" }],
+          stop_reason: "end_turn",
+          usage: { input_tokens: 1, output_tokens: 1 },
+        }),
+        { status: 200 },
+      ),
+    );
+    const provider = createClaudeProvider({
+      apiKey: "sk-test",
+      fetchImpl: fetchMock,
+    });
+    await provider.chat({
+      system: "p",
+      messages: [],
+      system_cached: false,
+    });
+    const body = JSON.parse(
+      (fetchMock.mock.calls[0]?.[1] as RequestInit).body as string,
+    );
+    expect(body.system).toBe("p");
+  });
 });
 
 describe("MistralProvider", () => {

@@ -34,6 +34,13 @@ export interface AIChatInput {
   messages: AIMessage[];
   tools?: AIToolSchema[];
   max_tokens?: number; // Default 1024
+  /**
+   * Provider-neutraler Hinweis: System-Prompt gilt als statisch und darf
+   * gecached werden. Claude packt den Prompt dann in einen Content-Block mit
+   * cache_control:ephemeral (5 min TTL, -90% Input-Kosten). Andere Provider
+   * ignorieren das Flag.
+   */
+  system_cached?: boolean;
 }
 
 export type AIProviderName = "claude" | "mistral" | "off" | "mock";

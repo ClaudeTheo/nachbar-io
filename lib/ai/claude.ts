@@ -66,10 +66,23 @@ class ClaudeProvider implements AIProvider {
   ) {}
 
   async chat(input: AIChatInput): Promise<AIResponse> {
+    // Prompt-Caching: bei system_cached=true wird der System-Prompt als
+    // Content-Block-Array mit cache_control:ephemeral gesendet. 5 min TTL,
+    // spart -90% Input-Kosten bei wiederholten Calls mit identischem Prompt.
+    const systemPayload = input.system_cached
+      ? [
+          {
+            type: "text" as const,
+            text: input.system,
+            cache_control: { type: "ephemeral" as const },
+          },
+        ]
+      : input.system;
+
     const body = {
       model: this.model,
       max_tokens: input.max_tokens ?? DEFAULT_MAX_TOKENS,
-      system: input.system,
+      system: systemPayload,
       messages: input.messages,
       ...(input.tools && input.tools.length > 0 ? { tools: input.tools } : {}),
     };

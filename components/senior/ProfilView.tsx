@@ -112,6 +112,28 @@ export function ProfilView({
         </div>
       </div>
 
+      {/* DSGVO: KI-Memory-Uebersicht (Welle C C7) */}
+      <div className="mt-8">
+        <h2 className="text-xl font-bold text-anthrazit">KI-Assistent</h2>
+        <Link
+          href="/profil/gedaechtnis"
+          className="mt-4 flex w-full items-center justify-between rounded-2xl border-2 border-anthrazit/10 bg-white p-4"
+          style={{ minHeight: "80px", touchAction: "manipulation" }}
+        >
+          <span>
+            <span className="block text-lg font-bold text-anthrazit">
+              Mein Gedaechtnis
+            </span>
+            <span className="mt-1 block text-base text-anthrazit/70">
+              Sehen und loeschen, was die KI ueber Sie weiss
+            </span>
+          </span>
+          <span aria-hidden="true" className="text-2xl text-anthrazit/40">
+            &rarr;
+          </span>
+        </Link>
+      </div>
+
       {/* App-Info */}
       <p className="mt-12 text-center text-sm text-gray-400">
         QuartierApp Bad S&auml;ckingen

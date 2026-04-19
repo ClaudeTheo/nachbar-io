@@ -45,13 +45,11 @@ export default function SeniorPairPage() {
   const router = useRouter();
   const [state, setState] = useState<PairState>({ kind: "loading" });
   const pollTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const renewTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const stoppedRef = useRef(false);
 
   const stopAll = useCallback(() => {
     stoppedRef.current = true;
     if (pollTimerRef.current) clearInterval(pollTimerRef.current);
-    if (renewTimerRef.current) clearTimeout(renewTimerRef.current);
   }, []);
 
   const startPairing = useCallback(async () => {
@@ -79,11 +77,6 @@ export default function SeniorPairPage() {
       }
       const data = (await res.json()) as { token: string; pair_id: string };
       setState({ kind: "active", token: data.token, pair_id: data.pair_id });
-
-      if (renewTimerRef.current) clearTimeout(renewTimerRef.current);
-      renewTimerRef.current = setTimeout(() => {
-        void startPairing();
-      }, PAIR_TOKEN_RENEW_MS);
     } catch {
       setState({
         kind: "error",
@@ -94,11 +87,21 @@ export default function SeniorPairPage() {
 
   // Initial Pair-Start
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     void startPairing();
     return () => {
       stopAll();
     };
   }, [startPairing, stopAll]);
+
+  // Token-Renewal: holt nach 9 min einen frischen pair_token (TTL = 10 min).
+  useEffect(() => {
+    if (state.kind !== "active") return;
+    const t = setTimeout(() => {
+      void startPairing();
+    }, PAIR_TOKEN_RENEW_MS);
+    return () => clearTimeout(t);
+  }, [state, startPairing]);
 
   // Polling
   useEffect(() => {

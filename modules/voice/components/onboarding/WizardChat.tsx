@@ -1,19 +1,22 @@
 // modules/voice/components/onboarding/WizardChat.tsx
-// Welle C C6 — KI-Wizard-Chat (Text-Input MVP).
+// Welle C C6 — KI-Wizard-Chat (Text-Input + STT-Mikrofon).
 //
 // Komposition:
 //   - useOnboardingTurn  -> Conversation gegen /api/ai/onboarding/turn
 //   - useTtsPlayback     -> Auto-Play der Assistant-Antwort
+//   - useSpeechInput     -> STT-Mikrofon (C6b, Whisper-First / Native-Fallback)
 //   - MemoryConfirmDialog -> Bestaetigungs-Dialog fuer mode='confirm'
 //
-// MVP: Text-Input + Senden-Button. STT-Mikrofon kommt in C6b.
 // Senior-Mode: 80px Touch-Targets, hohe Schrift, kontrastreiche Farben.
+// Race-Fix C6b: vor Mikro-Start IMMER tts.stop() — sonst hoert das Mikro die
+// Auto-Play-Antwort der KI mit und sendet sie als User-Eingabe zurueck.
 
 "use client";
 
 import { useEffect, useRef, useState } from "react";
 import { useOnboardingTurn } from "@/modules/voice/hooks/useOnboardingTurn";
 import { useTtsPlayback } from "@/modules/voice/hooks/useTtsPlayback";
+import { useSpeechInput } from "@/modules/voice/hooks/useSpeechInput";
 import { MemoryConfirmDialog } from "@/modules/voice/components/onboarding/MemoryConfirmDialog";
 import { Button } from "@/components/ui/button";
 
@@ -34,10 +37,35 @@ export function WizardChat() {
     confirmMemory,
     dismissConfirmation,
   } = useOnboardingTurn();
-  const { play } = useTtsPlayback();
+  const { play, stop: stopTts } = useTtsPlayback();
 
   const [input, setInput] = useState("");
   const lastSpokenIndexRef = useRef<number>(-1);
+
+  const {
+    isAvailable: speechAvailable,
+    recording,
+    start: startSpeech,
+    stop: stopSpeech,
+  } = useSpeechInput({
+    onTranscript: (text) => {
+      // STT-Ergebnis ins Eingabefeld — User sieht es und kann mit Senden bestaetigen
+      // oder editieren. Bewusst kein Auto-Send: bei Spracherkennungs-Fehlern darf
+      // der Senior das Ergebnis korrigieren, bevor es an die KI geht.
+      setInput(text);
+    },
+  });
+
+  const handleMicClick = () => {
+    if (recording) {
+      stopSpeech();
+      return;
+    }
+    // Race-Fix: laufendes TTS stoppen, bevor das Mikro hochfaehrt — sonst
+    // hoert es die KI-Antwort mit und der Wizard echot sich selbst.
+    stopTts();
+    startSpeech();
+  };
 
   // Auto-Play TTS bei neuer Assistant-Antwort
   useEffect(() => {
@@ -118,6 +146,23 @@ export function WizardChat() {
             className="flex-1 rounded-xl border border-[#2D3142]/20 bg-white px-4 py-3 text-lg text-[#2D3142] outline-none focus:border-[#4CAF87]"
             style={{ minHeight: "80px" }}
           />
+          {speechAvailable && (
+            <Button
+              onClick={handleMicClick}
+              disabled={isLoading}
+              aria-label={
+                recording ? "Aufnahme beenden" : "Mikrofon — sprechen"
+              }
+              className={
+                recording
+                  ? "rounded-xl bg-[#EF4444] px-4 text-lg font-semibold text-white hover:bg-[#EF4444]/90"
+                  : "rounded-xl bg-[#2D3142] px-4 text-lg font-semibold text-white hover:bg-[#2D3142]/90"
+              }
+              style={{ minHeight: "80px", touchAction: "manipulation" }}
+            >
+              {recording ? "■" : "🎤"}
+            </Button>
+          )}
           <Button
             onClick={() => void handleSend()}
             disabled={isLoading || input.trim().length === 0}

@@ -6,6 +6,8 @@ import { checkSecurity } from "@/lib/security/security-middleware";
 import { recordAuthRateLimit } from "@/lib/security/traps/brute-force";
 import { buildClientKeys } from "@/lib/security/client-key";
 import { isLegacyRoute } from "@/lib/legacy-routes";
+import { getRequiredFlagForRoute } from "@/lib/health-feature-gate";
+import { getCachedFlagEnabled } from "@/lib/feature-flags-middleware-cache";
 
 // Oeffentliche Seiten: Kein Auth-Check noetig, statisch cachebar
 const PUBLIC_PATHS = ["/", "/b2b", "/impressum", "/datenschutz", "/agb"];
@@ -16,6 +18,18 @@ export async function proxy(request: NextRequest) {
   // Oeffentliche Seiten: Kein Supabase-Session-Check, direkt weiterleiten
   if (PUBLIC_PATHS.includes(pathname)) {
     return NextResponse.next();
+  }
+
+  // Phase I: Gesundheits-Routes flag-gated. Wenn Flag OFF -> Redirect.
+  const healthFlag = getRequiredFlagForRoute(pathname);
+  if (healthFlag) {
+    const enabled = await getCachedFlagEnabled(healthFlag);
+    if (!enabled) {
+      const url = request.nextUrl.clone();
+      url.pathname = "/kreis-start";
+      return NextResponse.redirect(url);
+    }
+    // Flag aktiv: normal weiter (Auth, Rate-Limit etc. laufen durch).
   }
 
   // Phase I: Legacy-Routen auf /kreis-start umleiten

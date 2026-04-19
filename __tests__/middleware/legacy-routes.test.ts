@@ -1,4 +1,4 @@
-// Tests fuer Phase I: Legacy-Route-Blocking in Proxy/Middleware
+// Tests fuer Phase I: Legacy-Route-Blocking + Gesundheits-Flag-Gate in Proxy.
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
 // Mock alle Middleware-Dependencies
@@ -21,6 +21,13 @@ vi.mock("@/lib/security/client-key", () => ({
   buildClientKeys: vi.fn(),
 }));
 
+const { mockGetCachedFlagEnabled } = vi.hoisted(() => ({
+  mockGetCachedFlagEnabled: vi.fn(),
+}));
+vi.mock("@/lib/feature-flags-middleware-cache", () => ({
+  getCachedFlagEnabled: mockGetCachedFlagEnabled,
+}));
+
 import { proxy } from "@/proxy";
 
 function makeRequest(pathname: string) {
@@ -38,8 +45,11 @@ function makeRequest(pathname: string) {
   } as never;
 }
 
-describe("Legacy Route Blocking (Phase I)", () => {
-  beforeEach(() => vi.clearAllMocks());
+describe("Legacy Route Blocking (Phase I, hart)", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mockGetCachedFlagEnabled.mockResolvedValue(false);
+  });
 
   const legacyRoutes = [
     "/board",
@@ -48,8 +58,6 @@ describe("Legacy Route Blocking (Phase I)", () => {
     "/polls",
     "/companion",
     "/praevention",
-    "/care/medications",
-    "/care/sprechstunde",
     "/reports",
     "/mitessen",
     "/jugend",
@@ -88,4 +96,44 @@ describe("Legacy Route Blocking (Phase I)", () => {
       expect(location).not.toContain("/kreis-start");
     });
   }
+});
+
+describe("Gesundheits-Routes (flag-gated)", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  const healthRoutes = [
+    { path: "/care/medications", flag: "MEDICATIONS_ENABLED" },
+    { path: "/care/aerzte", flag: "DOCTORS_ENABLED" },
+    { path: "/care/appointments", flag: "APPOINTMENTS_ENABLED" },
+    { path: "/care/sprechstunde", flag: "VIDEO_CONSULTATION" },
+    { path: "/care/consultations", flag: "VIDEO_CONSULTATION" },
+    { path: "/care/heartbeat", flag: "HEARTBEAT_ENABLED" },
+    { path: "/care/checkin", flag: "HEARTBEAT_ENABLED" },
+    { path: "/arzt", flag: "GDT_ENABLED" },
+  ];
+
+  for (const { path, flag } of healthRoutes) {
+    it(`${path}: Flag OFF -> Redirect auf /kreis-start`, async () => {
+      mockGetCachedFlagEnabled.mockResolvedValue(false);
+      const res = await proxy(makeRequest(path));
+      expect(res.status).toBe(307);
+      expect(res.headers.get("location")).toContain("/kreis-start");
+      expect(mockGetCachedFlagEnabled).toHaveBeenCalledWith(flag);
+    });
+
+    it(`${path}: Flag ON -> kein Redirect`, async () => {
+      mockGetCachedFlagEnabled.mockResolvedValue(true);
+      const res = await proxy(makeRequest(path));
+      const location = res?.headers?.get("location") ?? "";
+      expect(location).not.toContain("/kreis-start");
+    });
+  }
+
+  it("Sub-Path /care/medications/42: Flag OFF -> Redirect", async () => {
+    mockGetCachedFlagEnabled.mockResolvedValue(false);
+    const res = await proxy(makeRequest("/care/medications/42"));
+    expect(res.status).toBe(307);
+  });
 });

@@ -3,17 +3,15 @@
 // auf /kreis-start umgeleitet.
 
 export const LEGACY_ROUTE_PREFIXES = [
-  "/care/aerzte",
-  "/care/appointments",
-  "/care/consultations",
-  "/care/sprechstunde",
-  "/care/medications",
+  // Gesundheits-Routes (aerzte, appointments, consultations, sprechstunde,
+  // medications, arzt) sind NICHT mehr hier: sie werden in proxy.ts via
+  // health-feature-gate Flag-abhaengig geroutet. Siehe
+  // docs/plans/2026-04-19-gesundheits-flags-stufe-3.md.
   "/care/shopping",
   "/care/tasks",
   "/care/reports",
   "/care/audit",
   "/care/kiosk",
-  "/arzt",
   "/anamnese",
   "/board",
   "/marketplace",

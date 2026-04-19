@@ -37,7 +37,6 @@ import type {
   Apotheke,
   LocalEvent,
 } from "@/modules/info-hub/types";
-import { LargeTitle } from "@/components/ui/LargeTitle";
 import { MapThumbnail } from "@/components/map/MapThumbnail";
 import { useMapStatuses } from "@/lib/hooks/useMapStatuses";
 
@@ -110,8 +109,11 @@ function DynamicIcon({
 }
 
 export default function QuartierInfoPage() {
-  const { currentQuarter, loading: quarterLoading, refreshQuarter } =
-    useQuarter();
+  const {
+    currentQuarter,
+    loading: quarterLoading,
+    refreshQuarter,
+  } = useQuarter();
   const quarterId = currentQuarter?.id;
   const { geoHouses, residentCounts } = useMapStatuses(
     quarterId,
@@ -170,8 +172,6 @@ export default function QuartierInfoPage() {
   if (!quarterLoading && !currentQuarter) {
     return (
       <div className={pageShellClass}>
-        <LargeTitle title="Mein Quartier" />
-
         <div className="flex items-center gap-3">
           <Link
             href="/dashboard"
@@ -213,8 +213,6 @@ export default function QuartierInfoPage() {
 
   return (
     <div className={pageShellClass}>
-      <LargeTitle title="Mein Quartier" />
-
       {/* Header */}
       <div className="flex items-center gap-3">
         <Link

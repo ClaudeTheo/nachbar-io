@@ -61,3 +61,12 @@ android/*.jks
 android/*.keystore
 *.keystore
 .env*.local
+
+# Codex session logs
+.codex-*.log
+
+# Playwright CLI cache
+.playwright-cli/
+
+# Local build/test output
+output/

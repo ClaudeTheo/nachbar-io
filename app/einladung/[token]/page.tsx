@@ -7,6 +7,8 @@ type InfoResponse = {
   expiresAt: string;
 };
 
+const PUBLIC_INVITATION_ERROR = "Einladung ungueltig oder abgelaufen.";
+
 type Props = {
   params: Promise<{ token: string }>;
 };
@@ -38,13 +40,13 @@ export default function EinladungLandingPage({ params }: Props) {
         const data = await res.json();
         if (cancelled) return;
         if (!res.ok) {
-          setError(data.error ?? "Einladung nicht gefunden oder abgelaufen");
+          setError(PUBLIC_INVITATION_ERROR);
         } else {
           setInfo(data);
         }
       } catch (e) {
         if (!cancelled) {
-          setError(e instanceof Error ? e.message : "Netzwerk-Fehler");
+          setError(PUBLIC_INVITATION_ERROR);
         }
       } finally {
         if (!cancelled) setLoading(false);

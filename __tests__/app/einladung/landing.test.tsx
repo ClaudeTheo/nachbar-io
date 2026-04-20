@@ -38,7 +38,7 @@ describe("EinladungLandingPage", () => {
     (global.fetch as unknown as ReturnType<typeof vi.fn>).mockResolvedValue({
       ok: false,
       status: 404,
-      json: async () => ({ error: "Einladung nicht gefunden oder abgelaufen" }),
+      json: async () => ({ error: "invitation_not_found" }),
     });
 
     render(
@@ -46,7 +46,30 @@ describe("EinladungLandingPage", () => {
     );
 
     await waitFor(() => {
-      expect(screen.getByText(/nicht gefunden|abgelaufen/i)).toBeTruthy();
+      expect(
+        screen.getByText("Einladung ungueltig oder abgelaufen."),
+      ).toBeTruthy();
+    });
+  });
+
+  it("zeigt auch bei technischem API-Fehler nur generischen Text", async () => {
+    (global.fetch as unknown as ReturnType<typeof vi.fn>).mockResolvedValue({
+      ok: false,
+      status: 404,
+      json: async () => ({
+        error:
+          "Could not find the table 'public.housing_invitations' in the schema cache",
+      }),
+    });
+
+    render(
+      <EinladungLandingPage params={Promise.resolve({ token: "unknown" })} />,
+    );
+
+    await waitFor(() => {
+      expect(
+        screen.getByText("Einladung ungueltig oder abgelaufen."),
+      ).toBeTruthy();
     });
   });
 });

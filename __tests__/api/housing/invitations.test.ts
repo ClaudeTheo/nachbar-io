@@ -206,7 +206,7 @@ describe("POST /api/housing/invitations/consume", () => {
 // GET /api/housing/invitations/[token]/info — public Landing-Info
 // ============================================================
 describe("GET /api/housing/invitations/[token]/info", () => {
-  function invitationLookup(data: unknown) {
+  function invitationLookup(data: unknown, error: unknown = null) {
     adminFrom.mockImplementation((table: string) => {
       if (table === "housing_invitations") {
         return {
@@ -214,7 +214,7 @@ describe("GET /api/housing/invitations/[token]/info", () => {
           or: vi.fn().mockReturnThis(),
           is: vi.fn().mockReturnThis(),
           gt: vi.fn().mockReturnThis(),
-          maybeSingle: vi.fn().mockResolvedValue({ data, error: null }),
+          maybeSingle: vi.fn().mockResolvedValue({ data, error }),
         };
       }
       throw new Error(`unexpected table ${table}`);
@@ -232,6 +232,51 @@ describe("GET /api/housing/invitations/[token]/info", () => {
       { params: Promise.resolve({ token: "unknown" }) },
     );
     expect(res.status).toBe(404);
+    await expect(res.json()).resolves.toEqual({
+      error: "invitation_not_found",
+    });
+  });
+
+  it("404 + generische Fehlermeldung bei PGRST116", async () => {
+    invitationLookup(null, { code: "PGRST116", message: "not found" });
+    const { GET } =
+      await import("@/app/api/housing/invitations/[token]/info/route");
+    const res = await GET(
+      new Request(
+        "http://localhost/api/housing/invitations/x/info",
+      ) as unknown as import("next/server").NextRequest,
+      { params: Promise.resolve({ token: "unknown" }) },
+    );
+    expect(res.status).toBe(404);
+    await expect(res.json()).resolves.toEqual({
+      error: "invitation_not_found",
+    });
+  });
+
+  it("404 ohne interne Details bei Schema-Fehler", async () => {
+    const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+    invitationLookup(null, {
+      code: "PGRST205",
+      message:
+        "Could not find the table 'public.housing_invitations' in the schema cache",
+    });
+    const { GET } =
+      await import("@/app/api/housing/invitations/[token]/info/route");
+    const res = await GET(
+      new Request(
+        "http://localhost/api/housing/invitations/x/info",
+      ) as unknown as import("next/server").NextRequest,
+      { params: Promise.resolve({ token: "unknown" }) },
+    );
+
+    expect(res.status).toBe(404);
+    const body = await res.json();
+    expect(body).toEqual({ error: "invitation_not_found" });
+    expect(JSON.stringify(body)).not.toMatch(
+      /housing_invitations|schema cache|public\./i,
+    );
+    expect(errorSpy).toHaveBeenCalled();
+    errorSpy.mockRestore();
   });
 
   it("200 + expectedOrgName + expiresAt bei Erfolg", async () => {

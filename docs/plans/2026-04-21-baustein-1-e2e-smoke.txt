@@ -1,0 +1,131 @@
+
+> nachbar-io@2.5.0 test:e2e:smoke
+> playwright test --config=tests/e2e/playwright.config.ts --project=smoke
+
+[dotenv@17.3.1] injecting env (67) from .env.local -- tip: ⚙️  suppress all logs with { quiet: true }
+[2m[WebServer] [22m
+[2m[WebServer] [22m> nachbar-io@2.5.0 dev
+[2m[WebServer] [22m> next dev --webpack
+[2m[WebServer] [22m
+[2m[WebServer] [22m[1m[38;2;173;127;168m▲ Next.js 16.2.1[39m[22m (webpack)
+[2m[WebServer] [22m- Local:         http://localhost:3000
+[2m[WebServer] [22m- Network:       http://100.88.2.42:3000
+[2m[WebServer] [22m- Environments: .env.local
+[2m[WebServer] [22m[32m[1m✓[22m[39m Ready in 568ms
+[2m[WebServer] [22m[33m[1m⚠[22m[39m Warning: Next.js inferred your workspace root, but it may not be correct.
+[2m[WebServer] [22m We detected multiple lockfiles and selected the directory of C:\Users\thoma\Claud Code\Handy APP\package-lock.json as the root directory.
+[2m[WebServer] [22m To silence this warning, set `outputFileTracingRoot` in your Next.js config, or consider removing one of the lockfiles if it's not needed.
+[2m[WebServer] [22m   See https://nextjs.org/docs/app/api-reference/config/next-config-js/output#caveats for more information.
+[2m[WebServer] [22m Detected additional lockfiles: 
+[2m[WebServer] [22m   * C:\Users\thoma\Claud Code\Handy APP\nachbar-io\package-lock.json
+[2m[WebServer] [22m
+[2m[WebServer] [22m[@sentry/nextjs] DEPRECATION WARNING: It is recommended renaming your `sentry.client.config.ts` file, or moving its content to `instrumentation-client.ts`. When using Turbopack `sentry.client.config.ts` will no longer work. Read more about the `instrumentation-client.ts` file: https://nextjs.org/docs/app/api-reference/file-conventions/instrumentation-client
+[2m[WebServer] [22m- Experiments (use with caution):
+[2m[WebServer] [22m  · clientTraceMetadata
+[2m[WebServer] [22m  · optimizePackageImports
+[2m[WebServer] [22m
+[2m[WebServer] [22m[37m[1m○[22m[39m Compiling / ...
+
+Running 12 tests using 4 workers
+
+[2m[WebServer] [22m GET / [32m200[39m in 7.7s[2m (next.js: 6.2s, proxy.ts: 665ms, application-code: 865ms)[22m
+[dotenv@17.3.1] injecting env (0) from .env.local -- tip: 🔐 encrypt with Dotenvx: https://dotenvx.com
+[dotenv@17.3.1] injecting env (0) from .env.local -- tip: 🔐 prevent committing .env to code: https://dotenvx.com/precommit
+[dotenv@17.3.1] injecting env (0) from .env.local -- tip: ⚙️  load multiple .env files with { path: ['.env.local', '.env'] }
+[dotenv@17.3.1] injecting env (0) from .env.local -- tip: ⚙️  write to custom object with { processEnv: myObject }
+[2m[WebServer] [22m[37m[1m○[22m[39m Compiling /login ...
+[2m[WebServer] [22m GET /register [32m200[39m in 6.3s[2m (next.js: 4.7s, proxy.ts: 693ms, application-code: 965ms)[22m
+[2m[WebServer] [22m GET /login [32m200[39m in 6.3s[2m (next.js: 4.7s, proxy.ts: 689ms, application-code: 966ms)[22m
+[2m[WebServer] [22m GET / [32m200[39m in 6.3s[2m (next.js: 5.0s, proxy.ts: 398ms, application-code: 978ms)[22m
+[2m[WebServer] [22m GET /datenschutz [32m200[39m in 6.3s[2m (next.js: 5.0s, proxy.ts: 399ms, application-code: 984ms)[22m
+[2m[WebServer] [22m GET /login [32m200[39m in 181ms[2m (next.js: 6ms, proxy.ts: 125ms, application-code: 50ms)[22m
+[SMOKE] /register → OK
+[SMOKE] /login → OK
+  ok  4 [smoke] › tests\e2e\scenarios\s7-smoke.spec.ts:24:7 › S7: Smoke / Regression Quick Pack › S7.2 — Login-Seite rendert korrekt (8.6s)
+  ok  3 [smoke] › tests\e2e\scenarios\s7-smoke.spec.ts:42:7 › S7: Smoke / Regression Quick Pack › S7.3 — Registrierungs-Seite rendert korrekt (8.6s)
+[2m[WebServer] [22m[DEVICE-FP] low-bitmap ip=60f72b21 bitmap=0x05 path=/api/admin/health device=5132d43c
+[SMOKE] / → 200 (0 Konsolenfehler)
+[SMOKE] /datenschutz → OK
+  ok  1 [smoke] › tests\e2e\scenarios\s7-smoke.spec.ts:11:7 › S7: Smoke / Regression Quick Pack › S7.1 — Root-Seite laed ohne Server-Error (9.5s)
+  ok  2 [smoke] › tests\e2e\scenarios\s7-smoke.spec.ts:56:7 › S7: Smoke / Regression Quick Pack › S7.4 — Datenschutz-Seite laed (9.5s)
+[2m[WebServer] [22m GET /api/admin/health [33m401[39m in 3.4s[2m (next.js: 3.0s, proxy.ts: 181ms, application-code: 282ms)[22m
+[SMOKE] /api/admin/health → 401
+  ok  6 [smoke] › tests\e2e\scenarios\s7-smoke.spec.ts:72:7 › S7: Smoke / Regression Quick Pack › S7.6 — API Health-Check (3.5s)
+[2m[WebServer] [22m GET /impressum [32m200[39m in 3.5s[2m (next.js: 3.1s, proxy.ts: 8ms, application-code: 428ms)[22m
+[2m[WebServer] [22m GET / [32m200[39m in 666ms[2m (next.js: 13ms, proxy.ts: 523ms, application-code: 131ms)[22m
+[2m[WebServer] [22m GET /login [32m200[39m in 259ms[2m (next.js: 3ms, proxy.ts: 123ms, application-code: 133ms)[22m
+[2m[WebServer] [22m GET /login [32m200[39m in 233ms[2m (next.js: 6ms, proxy.ts: 146ms, application-code: 81ms)[22m
+[2m[WebServer] [22m GET /login [32m200[39m in 183ms[2m (next.js: 5ms, proxy.ts: 135ms, application-code: 44ms)[22m
+[SMOKE] / → 200
+[2m[WebServer] [22m GET /login [32m200[39m in 300ms[2m (next.js: 6ms, proxy.ts: 134ms, application-code: 159ms)[22m
+[2m[WebServer] [22m GET /login [32m200[39m in 290ms[2m (next.js: 4ms, proxy.ts: 142ms, application-code: 144ms)[22m
+[2m[WebServer] [22m GET /login [32m200[39m in 289ms[2m (next.js: 11ms, proxy.ts: 184ms, application-code: 93ms)[22m
+[2m[WebServer] [22m GET /login [32m200[39m in 398ms[2m (next.js: 18ms, proxy.ts: 188ms, application-code: 192ms)[22m
+[2m[WebServer] [22m GET /login [32m200[39m in 399ms[2m (next.js: 57ms, proxy.ts: 192ms, application-code: 150ms)[22m
+[2m[WebServer] [22m GET /login [32m200[39m in 392ms[2m (next.js: 97ms, proxy.ts: 188ms, application-code: 108ms)[22m
+[2m[WebServer] [22m GET /impressum [32m200[39m in 325ms[2m (next.js: 8ms, proxy.ts: 10ms, application-code: 307ms)[22m
+[SMOKE] /impressum → OK
+  ok  5 [smoke] › tests\e2e\scenarios\s7-smoke.spec.ts:64:7 › S7: Smoke / Regression Quick Pack › S7.5 — Impressum-Seite laed (6.1s)
+[2m[WebServer] [22m GET /login [32m200[39m in 187ms[2m (next.js: 5ms, proxy.ts: 124ms, application-code: 58ms)[22m
+[SMOKE] Page Title: "QuartierApp — Ihr digitaler Dorfplatz"
+  ok  9 [smoke] › tests\e2e\scenarios\s7-smoke.spec.ts:124:7 › S7: Smoke / Regression Quick Pack › S7.9 — Meta-Tags und Title vorhanden (2.8s)
+[2m[WebServer] [22m GET /login [32m200[39m in 190ms[2m (next.js: 5ms, proxy.ts: 128ms, application-code: 57ms)[22m
+[2m[WebServer] [22m GET /login [32m200[39m in 185ms[2m (next.js: 7ms, proxy.ts: 122ms, application-code: 56ms)[22m
+[SMOKE] /login → 200
+[2m[WebServer] [22m GET /register [32m200[39m in 215ms[2m (next.js: 13ms, proxy.ts: 121ms, application-code: 81ms)[22m
+[2m[WebServer] [22m GET /login [32m200[39m in 197ms[2m (next.js: 5ms, proxy.ts: 130ms, application-code: 63ms)[22m
+[2m[WebServer] [22m GET /login [32m200[39m in 224ms[2m (next.js: 15ms, proxy.ts: 142ms, application-code: 68ms)[22m
+[SMOKE] /register → 200
+[2m[WebServer] [22m GET /login [32m200[39m in 332ms[2m (next.js: 10ms, proxy.ts: 179ms, application-code: 143ms)[22m
+[2m[WebServer] [22m GET /login [32m200[39m in 302ms[2m (next.js: 37ms, proxy.ts: 151ms, application-code: 114ms)[22m
+[2m[WebServer] [22m GET /datenschutz [32m200[39m in 306ms[2m (next.js: 13ms, proxy.ts: 10ms, application-code: 283ms)[22m
+  ok 10 [smoke] › tests\e2e\scenarios\s7-smoke.spec.ts:134:7 › S7: Smoke / Regression Quick Pack › S7.10 — Keine doppelten IDs im DOM (2.8s)
+[2m[WebServer] [22m GET /login [32m200[39m in 371ms[2m (next.js: 9ms, proxy.ts: 262ms, application-code: 99ms)[22m
+  x  11 [smoke] › tests\e2e\scenarios\s7-smoke.spec.ts:158:7 › S7: Smoke / Regression Quick Pack › S7.11 — CSS laed korrekt (kein unstyled Content) (2.9s)
+[2m[WebServer] [22m GET /login [32m200[39m in 313ms[2m (next.js: 7ms, proxy.ts: 184ms, application-code: 122ms)[22m
+[2m[WebServer] [22m GET /login [32m200[39m in 297ms[2m (next.js: 6ms, proxy.ts: 218ms, application-code: 73ms)[22m
+[SMOKE] /datenschutz → 200
+[2m[WebServer] [22m GET /impressum [32m200[39m in 168ms[2m (next.js: 9ms, proxy.ts: 9ms, application-code: 150ms)[22m
+[2m[WebServer] [22m GET /login [32m200[39m in 246ms[2m (next.js: 5ms, proxy.ts: 145ms, application-code: 96ms)[22m
+[dotenv@17.3.1] injecting env (0) from .env.local -- tip: ⚙️  write to custom object with { processEnv: myObject }
+[SMOKE] /impressum → 200
+[2m[WebServer] [22m GET /login [32m200[39m in 185ms[2m (next.js: 5ms, proxy.ts: 120ms, application-code: 61ms)[22m
+  ok  7 [smoke] › tests\e2e\scenarios\s7-smoke.spec.ts:79:7 › S7: Smoke / Regression Quick Pack › S7.7 — Keine 500-Fehler auf oeffentlichen Seiten (10.4s)
+[2m[WebServer] [22m GET /login [32m200[39m in 181ms[2m (next.js: 4ms, proxy.ts: 132ms, application-code: 44ms)[22m
+[2m[WebServer] [22m GET /login [32m200[39m in 178ms[2m (next.js: 4ms, proxy.ts: 125ms, application-code: 49ms)[22m
+  ok 12 [smoke] › tests\e2e\scenarios\s7-smoke.spec.ts:174:7 › S7: Smoke / Regression Quick Pack › S7.12 — JavaScript Bundle laed ohne Fehler (2.8s)
+[2m[WebServer] [22m GET /login [32m200[39m in 183ms[2m (next.js: 3ms, proxy.ts: 120ms, application-code: 59ms)[22m
+[2m[WebServer] [22m GET /login [32m200[39m in 172ms[2m (next.js: 3ms, proxy.ts: 118ms, application-code: 51ms)[22m
+[2m[WebServer] [22m GET /login [32m200[39m in 167ms[2m (next.js: 4ms, proxy.ts: 121ms, application-code: 42ms)[22m
+[2m[WebServer] [22m GET /login [32m200[39m in 201ms[2m (next.js: 3ms, proxy.ts: 159ms, application-code: 39ms)[22m
+[SMOKE] CSS geladen ✓
+[2m[WebServer] [22m GET /login [32m200[39m in 165ms[2m (next.js: 3ms, proxy.ts: 118ms, application-code: 43ms)[22m
+  ok 13 [smoke] › tests\e2e\scenarios\s7-smoke.spec.ts:158:7 › S7: Smoke / Regression Quick Pack › S7.11 — CSS laed korrekt (kein unstyled Content) (retry #1) (3.9s)
+[2m[WebServer] [22m GET /login [32m200[39m in 160ms[2m (next.js: 3ms, proxy.ts: 118ms, application-code: 39ms)[22m
+[2m[WebServer] [22m GET /login [32m200[39m in 187ms[2m (next.js: 4ms, proxy.ts: 125ms, application-code: 57ms)[22m
+[SMOKE] 10 Protected Routes geprueft
+  ok  8 [smoke] › tests\e2e\scenarios\s7-smoke.spec.ts:98:7 › S7: Smoke / Regression Quick Pack › S7.8 — Auth-Protected Routes redirecten zu Login (16.8s)
+
+
+  1) [smoke] › tests\e2e\scenarios\s7-smoke.spec.ts:158:7 › S7: Smoke / Regression Quick Pack › S7.11 — CSS laed korrekt (kein unstyled Content) 
+
+    Error: page.evaluate: Execution context was destroyed, most likely because of a navigation
+
+      161 |
+      162 |     // Pruefen ob Tailwind CSS geladen ist
+    > 163 |     const hasStyles = await page.evaluate(() => {
+          |                                  ^
+      164 |       const body = document.body;
+      165 |       const computedStyle = window.getComputedStyle(body);
+      166 |       // Wenn CSS laed, hat der Body mindestens eine font-family
+        at C:\Users\thoma\Claud Code\Handy APP\nachbar-io\tests\e2e\scenarios\s7-smoke.spec.ts:163:34
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\scenarios-s7-smoke-S7-Smok-82c4b-rekt-kein-unstyled-Content--smoke\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\scenarios-s7-smoke-S7-Smok-82c4b-rekt-kein-unstyled-Content--smoke\error-context.md
+
+  1 flaky
+    [smoke] › tests\e2e\scenarios\s7-smoke.spec.ts:158:7 › S7: Smoke / Regression Quick Pack › S7.11 — CSS laed korrekt (kein unstyled Content) 
+  11 passed (48.5s)

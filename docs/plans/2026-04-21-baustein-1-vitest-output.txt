@@ -1,0 +1,408 @@
+
+> nachbar-io@2.5.0 test
+> vitest run
+
+
+[1m[46m RUN [49m[22m [36mv4.1.0 [39m[90mC:/Users/thoma/Claud Code/Handy APP/nachbar-io[39m
+
+[vitest-pool]: Failed to terminate forks worker for test files C:/Users/thoma/Claud Code/Handy APP/nachbar-io/__tests__/api/billing-checkout.test.ts. Error: The child process was torn down or never initialized. This is a bug in Vitest.
+    at ForksPoolWorker.get fork [as fork] (file:///C:/Users/thoma/Claud%20Code/Handy%20APP/nachbar-io/node_modules/vitest/dist/chunks/cli-api.DuT9iuvY.js:3123:26)
+    at ForksPoolWorker.off (file:///C:/Users/thoma/Claud%20Code/Handy%20APP/nachbar-io/node_modules/vitest/dist/chunks/cli-api.DuT9iuvY.js:3072:8)
+    at PoolRunner.stop (file:///C:/Users/thoma/Claud%20Code/Handy%20APP/nachbar-io/node_modules/vitest/dist/chunks/cli-api.DuT9iuvY.js:2953:16)
+    at Pool.schedule (file:///C:/Users/thoma/Claud%20Code/Handy%20APP/nachbar-io/node_modules/vitest/dist/chunks/cli-api.DuT9iuvY.js:3474:35)
+[vitest-pool]: Failed to terminate forks worker for test files C:/Users/thoma/Claud Code/Handy APP/nachbar-io/modules/care/components/checkin/CheckinDialog.test.tsx. Error: The child process was torn down or never initialized. This is a bug in Vitest.
+    at ForksPoolWorker.get fork [as fork] (file:///C:/Users/thoma/Claud%20Code/Handy%20APP/nachbar-io/node_modules/vitest/dist/chunks/cli-api.DuT9iuvY.js:3123:26)
+    at ForksPoolWorker.off (file:///C:/Users/thoma/Claud%20Code/Handy%20APP/nachbar-io/node_modules/vitest/dist/chunks/cli-api.DuT9iuvY.js:3072:8)
+    at PoolRunner.stop (file:///C:/Users/thoma/Claud%20Code/Handy%20APP/nachbar-io/node_modules/vitest/dist/chunks/cli-api.DuT9iuvY.js:2953:16)
+    at Pool.schedule (file:///C:/Users/thoma/Claud%20Code/Handy%20APP/nachbar-io/node_modules/vitest/dist/chunks/cli-api.DuT9iuvY.js:3474:35)
+[vitest-pool]: Failed to terminate forks worker for test files C:/Users/thoma/Claud Code/Handy APP/nachbar-io/modules/care/components/appointments/AppointmentCalendar.test.tsx. Error: The child process was torn down or never initialized. This is a bug in Vitest.
+    at ForksPoolWorker.get fork [as fork] (file:///C:/Users/thoma/Claud%20Code/Handy%20APP/nachbar-io/node_modules/vitest/dist/chunks/cli-api.DuT9iuvY.js:3123:26)
+    at ForksPoolWorker.off (file:///C:/Users/thoma/Claud%20Code/Handy%20APP/nachbar-io/node_modules/vitest/dist/chunks/cli-api.DuT9iuvY.js:3072:8)
+    at PoolRunner.stop (file:///C:/Users/thoma/Claud%20Code/Handy%20APP/nachbar-io/node_modules/vitest/dist/chunks/cli-api.DuT9iuvY.js:2953:16)
+    at Pool.schedule (file:///C:/Users/thoma/Claud%20Code/Handy%20APP/nachbar-io/node_modules/vitest/dist/chunks/cli-api.DuT9iuvY.js:3474:35)
+[vitest-pool]: Failed to terminate forks worker for test files C:/Users/thoma/Claud Code/Handy APP/nachbar-io/modules/care/components/tasks/TaskCard.test.tsx. Error: The child process was torn down or never initialized. This is a bug in Vitest.
+    at ForksPoolWorker.get fork [as fork] (file:///C:/Users/thoma/Claud%20Code/Handy%20APP/nachbar-io/node_modules/vitest/dist/chunks/cli-api.DuT9iuvY.js:3123:26)
+    at ForksPoolWorker.off (file:///C:/Users/thoma/Claud%20Code/Handy%20APP/nachbar-io/node_modules/vitest/dist/chunks/cli-api.DuT9iuvY.js:3072:8)
+    at PoolRunner.stop (file:///C:/Users/thoma/Claud%20Code/Handy%20APP/nachbar-io/node_modules/vitest/dist/chunks/cli-api.DuT9iuvY.js:2953:16)
+    at Pool.schedule (file:///C:/Users/thoma/Claud%20Code/Handy%20APP/nachbar-io/node_modules/vitest/dist/chunks/cli-api.DuT9iuvY.js:3474:35)
+[vitest-pool]: Failed to terminate forks worker for test files C:/Users/thoma/Claud Code/Handy APP/nachbar-io/__tests__/components/moderation-dialog.test.tsx. Error: The child process was torn down or never initialized. This is a bug in Vitest.
+    at ForksPoolWorker.get fork [as fork] (file:///C:/Users/thoma/Claud%20Code/Handy%20APP/nachbar-io/node_modules/vitest/dist/chunks/cli-api.DuT9iuvY.js:3123:26)
+    at ForksPoolWorker.off (file:///C:/Users/thoma/Claud%20Code/Handy%20APP/nachbar-io/node_modules/vitest/dist/chunks/cli-api.DuT9iuvY.js:3072:8)
+    at PoolRunner.stop (file:///C:/Users/thoma/Claud%20Code/Handy%20APP/nachbar-io/node_modules/vitest/dist/chunks/cli-api.DuT9iuvY.js:2953:16)
+    at Pool.schedule (file:///C:/Users/thoma/Claud%20Code/Handy%20APP/nachbar-io/node_modules/vitest/dist/chunks/cli-api.DuT9iuvY.js:3474:35)
+[vitest-pool]: Failed to terminate forks worker for test files C:/Users/thoma/Claud Code/Handy APP/nachbar-io/__tests__/components/VoiceAssistantFAB.test.tsx. Error: The child process was torn down or never initialized. This is a bug in Vitest.
+    at ForksPoolWorker.get fork [as fork] (file:///C:/Users/thoma/Claud%20Code/Handy%20APP/nachbar-io/node_modules/vitest/dist/chunks/cli-api.DuT9iuvY.js:3123:26)
+    at ForksPoolWorker.off (file:///C:/Users/thoma/Claud%20Code/Handy%20APP/nachbar-io/node_modules/vitest/dist/chunks/cli-api.DuT9iuvY.js:3072:8)
+    at PoolRunner.stop (file:///C:/Users/thoma/Claud%20Code/Handy%20APP/nachbar-io/node_modules/vitest/dist/chunks/cli-api.DuT9iuvY.js:2953:16)
+    at Pool.schedule (file:///C:/Users/thoma/Claud%20Code/Handy%20APP/nachbar-io/node_modules/vitest/dist/chunks/cli-api.DuT9iuvY.js:3474:35)
+[vitest-pool]: Failed to terminate forks worker for test files C:/Users/thoma/Claud Code/Handy APP/nachbar-io/__tests__/components/hilfe/SubscriptionManager.test.tsx. Error: The child process was torn down or never initialized. This is a bug in Vitest.
+    at ForksPoolWorker.get fork [as fork] (file:///C:/Users/thoma/Claud%20Code/Handy%20APP/nachbar-io/node_modules/vitest/dist/chunks/cli-api.DuT9iuvY.js:3123:26)
+    at ForksPoolWorker.off (file:///C:/Users/thoma/Claud%20Code/Handy%20APP/nachbar-io/node_modules/vitest/dist/chunks/cli-api.DuT9iuvY.js:3072:8)
+    at PoolRunner.stop (file:///C:/Users/thoma/Claud%20Code/Handy%20APP/nachbar-io/node_modules/vitest/dist/chunks/cli-api.DuT9iuvY.js:2953:16)
+    at Pool.schedule (file:///C:/Users/thoma/Claud%20Code/Handy%20APP/nachbar-io/node_modules/vitest/dist/chunks/cli-api.DuT9iuvY.js:3474:35)
+[low_level_alloc.cc : 554] RAW: Check new_pages != nullptr failed: VirtualAlloc failed
+[low_level_alloc.cc : 554] RAW: Check new_pages != nullptr failed: VirtualAlloc failed
+[vitest-pool]: Timeout terminating forks worker for test files C:/Users/thoma/Claud Code/Handy APP/nachbar-io/__tests__/api/billing-checkout.test.ts.
+[vitest-pool]: Timeout terminating forks worker for test files C:/Users/thoma/Claud Code/Handy APP/nachbar-io/modules/care/components/checkin/CheckinDialog.test.tsx.
+[vitest-pool]: Timeout terminating forks worker for test files C:/Users/thoma/Claud Code/Handy APP/nachbar-io/modules/care/components/appointments/AppointmentCalendar.test.tsx.
+[vitest-pool]: Timeout terminating forks worker for test files C:/Users/thoma/Claud Code/Handy APP/nachbar-io/modules/care/components/tasks/TaskCard.test.tsx.
+[vitest-pool]: Timeout terminating forks worker for test files C:/Users/thoma/Claud Code/Handy APP/nachbar-io/__tests__/components/moderation-dialog.test.tsx.
+[vitest-pool]: Timeout terminating forks worker for test files C:/Users/thoma/Claud Code/Handy APP/nachbar-io/__tests__/components/VoiceAssistantFAB.test.tsx.
+[vitest-pool]: Timeout terminating forks worker for test files C:/Users/thoma/Claud Code/Handy APP/nachbar-io/__tests__/components/hilfe/SubscriptionManager.test.tsx.
+[90mstderr[2m | __tests__/api/care/sos/sos-detail.test.ts[2m > [22m[2mGET /api/care/sos/[id][2m > [22m[2mgibt einzelnen SOS-Alert mit Antworten zurueck (200)
+[22m[39mUnhandled error: Error: SUPABASE_SERVICE_ROLE_KEY nicht konfiguriert
+    at getAdminSupabase (C:/Users/thoma/Claud Code/Handy APP/nachbar-io/lib/supabase/admin.ts:16:11)
+    at getSosAlert (C:/Users/thoma/Claud Code/Handy APP/nachbar-io/modules/care/services/sos.service.ts:327:25)
+    at GET (C:/Users/thoma/Claud Code/Handy APP/nachbar-io/app/api/care/sos/[id]/route.ts:29:26)
+[90m    at processTicksAndRejections (node:internal/process/task_queues:103:5)[39m
+    at C:/Users/thoma/Claud Code/Handy APP/nachbar-io/__tests__/api/care/sos/sos-detail.test.ts:80:17
+    at [90mfile:///C:/Users/thoma/Claud%20Code/Handy%20APP/nachbar-io/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:1258:20
+
+ [31m❯[39m __tests__/api/care/sos/sos-detail.test.ts [2m([22m[2m8 tests[22m[2m | [22m[31m1 failed[39m[2m)[22m[33m 334[2mms[22m[39m
+[31m     [31m×[31m gibt einzelnen SOS-Alert mit Antworten zurueck (200)[39m[33m 321[2mms[22m[39m
+ [31m❯[39m __tests__/lib/care/consent.test.ts [2m([22m[2m8 tests[22m[2m | [22m[31m1 failed[39m[2m)[22m[32m 26[2mms[22m[39m
+[31m     [31m×[31m mappt alle 5 Features[39m[32m 16[2mms[22m[39m
+ [31m❯[39m __tests__/integration/care-consent-flow.test.ts [2m([22m[2m11 tests[22m[2m | [22m[31m1 failed[39m[2m)[22m[32m 24[2mms[22m[39m
+[31m       [31m×[31m hat 5 Features in allen Definitionen[39m[32m 13[2mms[22m[39m
+ [31m❯[39m __tests__/lib/care/consent-types.test.ts [2m([22m[2m3 tests[22m[2m | [22m[31m1 failed[39m[2m)[22m[32m 15[2mms[22m[39m
+[31m     [31m×[31m definiert 5 Consent-Features[39m[32m 11[2mms[22m[39m
+
+[31m⎯⎯⎯⎯⎯⎯⎯[39m[1m[41m Failed Tests 4 [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+
+[41m[1m FAIL [22m[49m __tests__/integration/care-consent-flow.test.ts[2m > [22mCare Consent Flow (Integration)[2m > [22mConsent-Konfiguration[2m > [22mhat 5 Features in allen Definitionen
+[31m[1mAssertionError[22m: expected [ 'sos', 'checkin', …(4) ] to have a length of 5 but got 6[39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- 5[39m
+[31m+ 6[39m
+
+[36m [2m❯[22m __tests__/integration/care-consent-flow.test.ts:[2m9:32[22m[39m
+    [90m  7|[39m   [34mdescribe[39m([32m'Consent-Konfiguration'[39m[33m,[39m () [33m=>[39m {
+    [90m  8|[39m     [34mit[39m([32m'hat 5 Features in allen Definitionen'[39m[33m,[39m () [33m=>[39m {
+    [90m  9|[39m       [34mexpect[39m([33mCONSENT_FEATURES[39m)[33m.[39m[34mtoHaveLength[39m([34m5[39m)[33m;[39m
+    [90m   |[39m                                [31m^[39m
+    [90m 10|[39m       [34mexpect[39m([33mCARE_CONSENT_FEATURES[39m)[33m.[39m[34mtoHaveLength[39m([34m5[39m)[33m;[39m
+    [90m 11|[39m       [34mexpect[39m([33mObject[39m[33m.[39m[34mkeys[39m([33mCARE_CONSENT_LABELS[39m))[33m.[39m[34mtoHaveLength[39m([34m5[39m)[33m;[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/4]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m __tests__/lib/care/consent-types.test.ts[2m > [22mCare Consent Constants[2m > [22mdefiniert 5 Consent-Features
+[31m[1mAssertionError[22m: expected [ 'sos', 'checkin', …(4) ] to have a length of 5 but got 6[39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- 5[39m
+[31m+ 6[39m
+
+[36m [2m❯[22m __tests__/lib/care/consent-types.test.ts:[2m6:35[22m[39m
+    [90m  4|[39m [34mdescribe[39m([32m'Care Consent Constants'[39m[33m,[39m () [33m=>[39m {
+    [90m  5|[39m   [34mit[39m([32m'definiert 5 Consent-Features'[39m[33m,[39m () [33m=>[39m {
+    [90m  6|[39m     [34mexpect[39m([33mCARE_CONSENT_FEATURES[39m)[33m.[39m[34mtoHaveLength[39m([34m5[39m)[33m;[39m
+    [90m   |[39m                                   [31m^[39m
+    [90m  7|[39m     [34mexpect[39m([33mCARE_CONSENT_FEATURES[39m)[33m.[39m[34mtoContain[39m([32m'sos'[39m)[33m;[39m
+    [90m  8|[39m     [34mexpect[39m([33mCARE_CONSENT_FEATURES[39m)[33m.[39m[34mtoContain[39m([32m'checkin'[39m)[33m;[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/4]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m __tests__/lib/care/consent.test.ts[2m > [22mCONSENT_FEATURE_TO_API_ROUTES[2m > [22mmappt alle 5 Features
+[31m[1mAssertionError[22m: expected [ 'sos', 'checkin', …(4) ] to have a length of 5 but got 6[39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- 5[39m
+[31m+ 6[39m
+
+[36m [2m❯[22m __tests__/lib/care/consent.test.ts:[2m83:56[22m[39m
+    [90m 81|[39m [34mdescribe[39m([32m"CONSENT_FEATURE_TO_API_ROUTES"[39m[33m,[39m () [33m=>[39m {
+    [90m 82|[39m   [34mit[39m([32m"mappt alle 5 Features"[39m[33m,[39m () [33m=>[39m {
+    [90m 83|[39m     [34mexpect[39m([33mObject[39m[33m.[39m[34mkeys[39m([33mCONSENT_FEATURE_TO_API_ROUTES[39m))[33m.[39m[34mtoHaveLength[39m([34m5[39m)[33m;[39m
+    [90m   |[39m                                                        [31m^[39m
+    [90m 84|[39m   })[33m;[39m
+    [90m 85|[39m })[33m;[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/4]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m __tests__/api/care/sos/sos-detail.test.ts[2m > [22mGET /api/care/sos/[id][2m > [22mgibt einzelnen SOS-Alert mit Antworten zurueck (200)
+[31m[1mAssertionError[22m: expected 500 to be 200 // Object.is equality[39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- 200[39m
+[31m+ 500[39m
+
+[36m [2m❯[22m __tests__/api/care/sos/sos-detail.test.ts:[2m81:24[22m[39m
+    [90m 79|[39m     [35mconst[39m req [33m=[39m [35mnew[39m [33mNextRequest[39m([32m"http://localhost/api/care/sos/sos-1"[39m)[33m;[39m
+    [90m 80|[39m     const res = await GET(req, { params: Promise.resolve({ id: "sos-1"…
+    [90m 81|[39m     [34mexpect[39m(res[33m.[39mstatus)[33m.[39m[34mtoBe[39m([34m200[39m)[33m;[39m
+    [90m   |[39m                        [31m^[39m
+    [90m 82|[39m     [35mconst[39m data [33m=[39m [35mawait[39m res[33m.[39m[34mjson[39m()[33m;[39m
+    [90m 83|[39m     [34mexpect[39m(data[33m.[39mid)[33m.[39m[34mtoBe[39m([32m"sos-1"[39m)[33m;[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/4]⎯[22m[39m
+
+[31m⎯⎯⎯⎯⎯⎯[39m[1m[41m Unhandled Errors [49m[22m[31m⎯⎯⎯⎯⎯⎯[39m
+[31m[1m
+Vitest caught 13 unhandled errors during the test run.
+This might cause false positive tests. Resolve unhandled errors to make sure your tests are not affected.[22m[39m
+
+[31m⎯⎯⎯⎯⎯⎯[39m[1m[41m Unhandled Error [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+[31m[1mError[22m: [vitest-pool]: Worker forks emitted error.[39m
+[90m [2m❯[22m EventEmitter.<anonymous> ../../../Claud%20Code/Handy%20APP/nachbar-io/node_modules/vitest/dist/chunks/cli-api.DuT9iuvY.js:[2m3452:22[22m[39m
+[90m [2m❯[22m EventEmitter.emit node:events:[2m508:28[22m[39m
+[90m [2m❯[22m ChildProcess.emitWorkerError ../../../Claud%20Code/Handy%20APP/nachbar-io/node_modules/vitest/dist/chunks/cli-api.DuT9iuvY.js:[2m3006:22[22m[39m
+[90m [2m❯[22m ChildProcess.emit node:events:[2m508:28[22m[39m
+[90m [2m❯[22m node:internal/child_process:[2m881:39[22m[39m
+[90m [2m❯[22m processTicksAndRejections node:internal/process/task_queues:[2m84:11[22m[39m
+
+[31m[1mCaused by: Error[22m: write EPIPE[39m
+[90m [2m❯[22m ChildProcess.target._send node:internal/child_process:[2m877:20[22m[39m
+[90m [2m❯[22m ChildProcess.target.send node:internal/child_process:[2m751:19[22m[39m
+[90m [2m❯[22m ForksPoolWorker.send ../../../Claud%20Code/Handy%20APP/nachbar-io/node_modules/vitest/dist/chunks/cli-api.DuT9iuvY.js:[2m3075:13[22m[39m
+[90m [2m❯[22m PoolRunner.postMessage ../../../Claud%20Code/Handy%20APP/nachbar-io/node_modules/vitest/dist/chunks/cli-api.DuT9iuvY.js:[2m2857:63[22m[39m
+[90m [2m❯[22m PoolRunner.start ../../../Claud%20Code/Handy%20APP/nachbar-io/node_modules/vitest/dist/chunks/cli-api.DuT9iuvY.js:[2m2906:9[22m[39m
+[90m [2m❯[22m Pool.schedule ../../../Claud%20Code/Handy%20APP/nachbar-io/node_modules/vitest/dist/chunks/cli-api.DuT9iuvY.js:[2m3455:5[22m[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[22m[39m
+[31m[1mSerialized Error:[22m[39m [90m{ errno: -4047, code: 'EPIPE', syscall: 'write' }[39m
+
+[31m⎯⎯⎯⎯⎯⎯[39m[1m[41m Unhandled Error [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+[31m[1mError[22m: [vitest-pool]: Failed to start forks worker for test files C:/Users/thoma/Claud Code/Handy APP/nachbar-io/__tests__/api/billing-checkout.test.ts.[39m
+[90m [2m❯[22m ../../../Claud%20Code/Handy%20APP/nachbar-io/node_modules/vitest/dist/chunks/cli-api.DuT9iuvY.js:[2m3455:94[22m[39m
+[90m [2m❯[22m Pool.schedule ../../../Claud%20Code/Handy%20APP/nachbar-io/node_modules/vitest/dist/chunks/cli-api.DuT9iuvY.js:[2m3455:5[22m[39m
+
+[31m[1mCaused by: Error[22m: spawn UNKNOWN[39m
+[90m [2m❯[22m ChildProcess.spawn node:internal/child_process:[2m421:11[22m[39m
+[90m [2m❯[22m spawn node:child_process:[2m796:9[22m[39m
+[90m [2m❯[22m fork node:child_process:[2m174:10[22m[39m
+[90m [2m❯[22m ForksPoolWorker.start ../../../Claud%20Code/Handy%20APP/nachbar-io/node_modules/vitest/dist/chunks/cli-api.DuT9iuvY.js:[2m3078:18[22m[39m
+[90m [2m❯[22m ../../../Claud%20Code/Handy%20APP/nachbar-io/node_modules/vitest/dist/chunks/cli-api.DuT9iuvY.js:[2m2894:119[22m[39m
+[90m [2m❯[22m Traces.$ ../../../Claud%20Code/Handy%20APP/nachbar-io/node_modules/vitest/dist/chunks/traces.CCmnQaNT.js:[2m142:27[22m[39m
+[90m [2m❯[22m PoolRunner.start ../../../Claud%20Code/Handy%20APP/nachbar-io/node_modules/vitest/dist/chunks/cli-api.DuT9iuvY.js:[2m2894:23[22m[39m
+[90m [2m❯[22m Pool.schedule ../../../Claud%20Code/Handy%20APP/nachbar-io/node_modules/vitest/dist/chunks/cli-api.DuT9iuvY.js:[2m3455:18[22m[39m
+[90m [2m❯[22m Pool.run ../../../Claud%20Code/Handy%20APP/nachbar-io/node_modules/vitest/dist/chunks/cli-api.DuT9iuvY.js:[2m3417:8[22m[39m
+[90m [2m❯[22m ../../../Claud%20Code/Handy%20APP/nachbar-io/node_modules/vitest/dist/chunks/cli-api.DuT9iuvY.js:[2m3690:17[22m[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[22m[39m
+[31m[1mSerialized Error:[22m[39m [90m{ errno: -4094, code: 'UNKNOWN', syscall: 'spawn' }[39m
+
+[31m⎯⎯⎯⎯⎯⎯[39m[1m[41m Unhandled Error [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+[31m[1mError[22m: [vitest-pool]: Worker forks emitted error.[39m
+[90m [2m❯[22m EventEmitter.<anonymous> ../../../Claud%20Code/Handy%20APP/nachbar-io/node_modules/vitest/dist/chunks/cli-api.DuT9iuvY.js:[2m3452:22[22m[39m
+[90m [2m❯[22m EventEmitter.emit node:events:[2m508:28[22m[39m
+[90m [2m❯[22m ChildProcess.emitWorkerError ../../../Claud%20Code/Handy%20APP/nachbar-io/node_modules/vitest/dist/chunks/cli-api.DuT9iuvY.js:[2m3006:22[22m[39m
+[90m [2m❯[22m ChildProcess.emit node:events:[2m508:28[22m[39m
+[90m [2m❯[22m node:internal/child_process:[2m881:39[22m[39m
+[90m [2m❯[22m processTicksAndRejections node:internal/process/task_queues:[2m84:11[22m[39m
+
+[31m[1mCaused by: Error[22m: write EPIPE[39m
+[90m [2m❯[22m ChildProcess.target._send node:internal/child_process:[2m877:20[22m[39m
+[90m [2m❯[22m ChildProcess.target.send node:internal/child_process:[2m751:19[22m[39m
+[90m [2m❯[22m ForksPoolWorker.send ../../../Claud%20Code/Handy%20APP/nachbar-io/node_modules/vitest/dist/chunks/cli-api.DuT9iuvY.js:[2m3075:13[22m[39m
+[90m [2m❯[22m PoolRunner.postMessage ../../../Claud%20Code/Handy%20APP/nachbar-io/node_modules/vitest/dist/chunks/cli-api.DuT9iuvY.js:[2m2857:63[22m[39m
+[90m [2m❯[22m PoolRunner.start ../../../Claud%20Code/Handy%20APP/nachbar-io/node_modules/vitest/dist/chunks/cli-api.DuT9iuvY.js:[2m2906:9[22m[39m
+[90m [2m❯[22m Pool.schedule ../../../Claud%20Code/Handy%20APP/nachbar-io/node_modules/vitest/dist/chunks/cli-api.DuT9iuvY.js:[2m3455:5[22m[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[22m[39m
+[31m[1mSerialized Error:[22m[39m [90m{ errno: -4047, code: 'EPIPE', syscall: 'write' }[39m
+
+[31m⎯⎯⎯⎯⎯⎯[39m[1m[41m Unhandled Error [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+[31m[1mError[22m: [vitest-pool]: Failed to start forks worker for test files C:/Users/thoma/Claud Code/Handy APP/nachbar-io/modules/care/components/checkin/CheckinDialog.test.tsx.[39m
+[90m [2m❯[22m ../../../Claud%20Code/Handy%20APP/nachbar-io/node_modules/vitest/dist/chunks/cli-api.DuT9iuvY.js:[2m3455:94[22m[39m
+[90m [2m❯[22m Pool.schedule ../../../Claud%20Code/Handy%20APP/nachbar-io/node_modules/vitest/dist/chunks/cli-api.DuT9iuvY.js:[2m3455:5[22m[39m
+
+[31m[1mCaused by: Error[22m: spawn UNKNOWN[39m
+[90m [2m❯[22m ChildProcess.spawn node:internal/child_process:[2m421:11[22m[39m
+[90m [2m❯[22m spawn node:child_process:[2m796:9[22m[39m
+[90m [2m❯[22m fork node:child_process:[2m174:10[22m[39m
+[90m [2m❯[22m ForksPoolWorker.start ../../../Claud%20Code/Handy%20APP/nachbar-io/node_modules/vitest/dist/chunks/cli-api.DuT9iuvY.js:[2m3078:18[22m[39m
+[90m [2m❯[22m ../../../Claud%20Code/Handy%20APP/nachbar-io/node_modules/vitest/dist/chunks/cli-api.DuT9iuvY.js:[2m2894:119[22m[39m
+[90m [2m❯[22m Traces.$ ../../../Claud%20Code/Handy%20APP/nachbar-io/node_modules/vitest/dist/chunks/traces.CCmnQaNT.js:[2m142:27[22m[39m
+[90m [2m❯[22m PoolRunner.start ../../../Claud%20Code/Handy%20APP/nachbar-io/node_modules/vitest/dist/chunks/cli-api.DuT9iuvY.js:[2m2894:23[22m[39m
+[90m [2m❯[22m Pool.schedule ../../../Claud%20Code/Handy%20APP/nachbar-io/node_modules/vitest/dist/chunks/cli-api.DuT9iuvY.js:[2m3455:18[22m[39m
+[90m [2m❯[22m Pool.run ../../../Claud%20Code/Handy%20APP/nachbar-io/node_modules/vitest/dist/chunks/cli-api.DuT9iuvY.js:[2m3417:8[22m[39m
+[90m [2m❯[22m ../../../Claud%20Code/Handy%20APP/nachbar-io/node_modules/vitest/dist/chunks/cli-api.DuT9iuvY.js:[2m3690:17[22m[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[22m[39m
+[31m[1mSerialized Error:[22m[39m [90m{ errno: -4094, code: 'UNKNOWN', syscall: 'spawn' }[39m
+
+[31m⎯⎯⎯⎯⎯⎯[39m[1m[41m Unhandled Error [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+[31m[1mError[22m: [vitest-pool]: Worker forks emitted error.[39m
+[90m [2m❯[22m EventEmitter.<anonymous> ../../../Claud%20Code/Handy%20APP/nachbar-io/node_modules/vitest/dist/chunks/cli-api.DuT9iuvY.js:[2m3452:22[22m[39m
+[90m [2m❯[22m EventEmitter.emit node:events:[2m508:28[22m[39m
+[90m [2m❯[22m ChildProcess.emitWorkerError ../../../Claud%20Code/Handy%20APP/nachbar-io/node_modules/vitest/dist/chunks/cli-api.DuT9iuvY.js:[2m3006:22[22m[39m
+[90m [2m❯[22m ChildProcess.emit node:events:[2m508:28[22m[39m
+[90m [2m❯[22m node:internal/child_process:[2m881:39[22m[39m
+[90m [2m❯[22m processTicksAndRejections node:internal/process/task_queues:[2m84:11[22m[39m
+
+[31m[1mCaused by: Error[22m: write EPIPE[39m
+[90m [2m❯[22m ChildProcess.target._send node:internal/child_process:[2m877:20[22m[39m
+[90m [2m❯[22m ChildProcess.target.send node:internal/child_process:[2m751:19[22m[39m
+[90m [2m❯[22m ForksPoolWorker.send ../../../Claud%20Code/Handy%20APP/nachbar-io/node_modules/vitest/dist/chunks/cli-api.DuT9iuvY.js:[2m3075:13[22m[39m
+[90m [2m❯[22m PoolRunner.postMessage ../../../Claud%20Code/Handy%20APP/nachbar-io/node_modules/vitest/dist/chunks/cli-api.DuT9iuvY.js:[2m2857:63[22m[39m
+[90m [2m❯[22m PoolRunner.start ../../../Claud%20Code/Handy%20APP/nachbar-io/node_modules/vitest/dist/chunks/cli-api.DuT9iuvY.js:[2m2906:9[22m[39m
+[90m [2m❯[22m Pool.schedule ../../../Claud%20Code/Handy%20APP/nachbar-io/node_modules/vitest/dist/chunks/cli-api.DuT9iuvY.js:[2m3455:5[22m[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[22m[39m
+[31m[1mSerialized Error:[22m[39m [90m{ errno: -4047, code: 'EPIPE', syscall: 'write' }[39m
+
+[31m⎯⎯⎯⎯⎯⎯[39m[1m[41m Unhandled Error [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+[31m[1mError[22m: [vitest-pool]: Failed to start forks worker for test files C:/Users/thoma/Claud Code/Handy APP/nachbar-io/modules/care/components/appointments/AppointmentCalendar.test.tsx.[39m
+[90m [2m❯[22m ../../../Claud%20Code/Handy%20APP/nachbar-io/node_modules/vitest/dist/chunks/cli-api.DuT9iuvY.js:[2m3455:94[22m[39m
+[90m [2m❯[22m Pool.schedule ../../../Claud%20Code/Handy%20APP/nachbar-io/node_modules/vitest/dist/chunks/cli-api.DuT9iuvY.js:[2m3455:5[22m[39m
+
+[31m[1mCaused by: Error[22m: spawn UNKNOWN[39m
+[90m [2m❯[22m ChildProcess.spawn node:internal/child_process:[2m421:11[22m[39m
+[90m [2m❯[22m spawn node:child_process:[2m796:9[22m[39m
+[90m [2m❯[22m fork node:child_process:[2m174:10[22m[39m
+[90m [2m❯[22m ForksPoolWorker.start ../../../Claud%20Code/Handy%20APP/nachbar-io/node_modules/vitest/dist/chunks/cli-api.DuT9iuvY.js:[2m3078:18[22m[39m
+[90m [2m❯[22m ../../../Claud%20Code/Handy%20APP/nachbar-io/node_modules/vitest/dist/chunks/cli-api.DuT9iuvY.js:[2m2894:119[22m[39m
+[90m [2m❯[22m Traces.$ ../../../Claud%20Code/Handy%20APP/nachbar-io/node_modules/vitest/dist/chunks/traces.CCmnQaNT.js:[2m142:27[22m[39m
+[90m [2m❯[22m PoolRunner.start ../../../Claud%20Code/Handy%20APP/nachbar-io/node_modules/vitest/dist/chunks/cli-api.DuT9iuvY.js:[2m2894:23[22m[39m
+[90m [2m❯[22m Pool.schedule ../../../Claud%20Code/Handy%20APP/nachbar-io/node_modules/vitest/dist/chunks/cli-api.DuT9iuvY.js:[2m3455:18[22m[39m
+[90m [2m❯[22m Pool.run ../../../Claud%20Code/Handy%20APP/nachbar-io/node_modules/vitest/dist/chunks/cli-api.DuT9iuvY.js:[2m3417:8[22m[39m
+[90m [2m❯[22m ../../../Claud%20Code/Handy%20APP/nachbar-io/node_modules/vitest/dist/chunks/cli-api.DuT9iuvY.js:[2m3690:17[22m[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[22m[39m
+[31m[1mSerialized Error:[22m[39m [90m{ errno: -4094, code: 'UNKNOWN', syscall: 'spawn' }[39m
+
+[31m⎯⎯⎯⎯⎯⎯[39m[1m[41m Unhandled Error [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+[31m[1mError[22m: [vitest-pool]: Failed to start forks worker for test files C:/Users/thoma/Claud Code/Handy APP/nachbar-io/modules/care/components/tasks/TaskCard.test.tsx.[39m
+[90m [2m❯[22m ../../../Claud%20Code/Handy%20APP/nachbar-io/node_modules/vitest/dist/chunks/cli-api.DuT9iuvY.js:[2m3455:94[22m[39m
+[90m [2m❯[22m Pool.schedule ../../../Claud%20Code/Handy%20APP/nachbar-io/node_modules/vitest/dist/chunks/cli-api.DuT9iuvY.js:[2m3455:5[22m[39m
+
+[31m[1mCaused by: Error[22m: spawn UNKNOWN[39m
+[90m [2m❯[22m ChildProcess.spawn node:internal/child_process:[2m421:11[22m[39m
+[90m [2m❯[22m spawn node:child_process:[2m796:9[22m[39m
+[90m [2m❯[22m fork node:child_process:[2m174:10[22m[39m
+[90m [2m❯[22m ForksPoolWorker.start ../../../Claud%20Code/Handy%20APP/nachbar-io/node_modules/vitest/dist/chunks/cli-api.DuT9iuvY.js:[2m3078:18[22m[39m
+[90m [2m❯[22m ../../../Claud%20Code/Handy%20APP/nachbar-io/node_modules/vitest/dist/chunks/cli-api.DuT9iuvY.js:[2m2894:119[22m[39m
+[90m [2m❯[22m Traces.$ ../../../Claud%20Code/Handy%20APP/nachbar-io/node_modules/vitest/dist/chunks/traces.CCmnQaNT.js:[2m142:27[22m[39m
+[90m [2m❯[22m PoolRunner.start ../../../Claud%20Code/Handy%20APP/nachbar-io/node_modules/vitest/dist/chunks/cli-api.DuT9iuvY.js:[2m2894:23[22m[39m
+[90m [2m❯[22m Pool.schedule ../../../Claud%20Code/Handy%20APP/nachbar-io/node_modules/vitest/dist/chunks/cli-api.DuT9iuvY.js:[2m3455:18[22m[39m
+[90m [2m❯[22m Pool.run ../../../Claud%20Code/Handy%20APP/nachbar-io/node_modules/vitest/dist/chunks/cli-api.DuT9iuvY.js:[2m3417:8[22m[39m
+[90m [2m❯[22m ../../../Claud%20Code/Handy%20APP/nachbar-io/node_modules/vitest/dist/chunks/cli-api.DuT9iuvY.js:[2m3690:17[22m[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[22m[39m
+[31m[1mSerialized Error:[22m[39m [90m{ errno: -4094, code: 'UNKNOWN', syscall: 'spawn' }[39m
+
+[31m⎯⎯⎯⎯⎯⎯[39m[1m[41m Unhandled Error [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+[31m[1mError[22m: [vitest-pool]: Failed to start forks worker for test files C:/Users/thoma/Claud Code/Handy APP/nachbar-io/__tests__/components/moderation-dialog.test.tsx.[39m
+[90m [2m❯[22m ../../../Claud%20Code/Handy%20APP/nachbar-io/node_modules/vitest/dist/chunks/cli-api.DuT9iuvY.js:[2m3455:94[22m[39m
+[90m [2m❯[22m Pool.schedule ../../../Claud%20Code/Handy%20APP/nachbar-io/node_modules/vitest/dist/chunks/cli-api.DuT9iuvY.js:[2m3455:5[22m[39m
+
+[31m[1mCaused by: Error[22m: spawn UNKNOWN[39m
+[90m [2m❯[22m ChildProcess.spawn node:internal/child_process:[2m421:11[22m[39m
+[90m [2m❯[22m spawn node:child_process:[2m796:9[22m[39m
+[90m [2m❯[22m fork node:child_process:[2m174:10[22m[39m
+[90m [2m❯[22m ForksPoolWorker.start ../../../Claud%20Code/Handy%20APP/nachbar-io/node_modules/vitest/dist/chunks/cli-api.DuT9iuvY.js:[2m3078:18[22m[39m
+[90m [2m❯[22m ../../../Claud%20Code/Handy%20APP/nachbar-io/node_modules/vitest/dist/chunks/cli-api.DuT9iuvY.js:[2m2894:119[22m[39m
+[90m [2m❯[22m Traces.$ ../../../Claud%20Code/Handy%20APP/nachbar-io/node_modules/vitest/dist/chunks/traces.CCmnQaNT.js:[2m142:27[22m[39m
+[90m [2m❯[22m PoolRunner.start ../../../Claud%20Code/Handy%20APP/nachbar-io/node_modules/vitest/dist/chunks/cli-api.DuT9iuvY.js:[2m2894:23[22m[39m
+[90m [2m❯[22m Pool.schedule ../../../Claud%20Code/Handy%20APP/nachbar-io/node_modules/vitest/dist/chunks/cli-api.DuT9iuvY.js:[2m3455:18[22m[39m
+[90m [2m❯[22m Pool.run ../../../Claud%20Code/Handy%20APP/nachbar-io/node_modules/vitest/dist/chunks/cli-api.DuT9iuvY.js:[2m3417:8[22m[39m
+[90m [2m❯[22m ../../../Claud%20Code/Handy%20APP/nachbar-io/node_modules/vitest/dist/chunks/cli-api.DuT9iuvY.js:[2m3690:17[22m[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[22m[39m
+[31m[1mSerialized Error:[22m[39m [90m{ errno: -4094, code: 'UNKNOWN', syscall: 'spawn' }[39m
+
+[31m⎯⎯⎯⎯⎯⎯[39m[1m[41m Unhandled Error [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+[31m[1mError[22m: [vitest-pool]: Worker forks emitted error.[39m
+[90m [2m❯[22m EventEmitter.<anonymous> ../../../Claud%20Code/Handy%20APP/nachbar-io/node_modules/vitest/dist/chunks/cli-api.DuT9iuvY.js:[2m3452:22[22m[39m
+[90m [2m❯[22m EventEmitter.emit node:events:[2m508:28[22m[39m
+[90m [2m❯[22m ChildProcess.emitWorkerError ../../../Claud%20Code/Handy%20APP/nachbar-io/node_modules/vitest/dist/chunks/cli-api.DuT9iuvY.js:[2m3006:22[22m[39m
+[90m [2m❯[22m ChildProcess.emit node:events:[2m508:28[22m[39m
+[90m [2m❯[22m node:internal/child_process:[2m881:39[22m[39m
+[90m [2m❯[22m processTicksAndRejections node:internal/process/task_queues:[2m84:11[22m[39m
+
+[31m[1mCaused by: Error[22m: write EPIPE[39m
+[90m [2m❯[22m ChildProcess.target._send node:internal/child_process:[2m877:20[22m[39m
+[90m [2m❯[22m ChildProcess.target.send node:internal/child_process:[2m751:19[22m[39m
+[90m [2m❯[22m ForksPoolWorker.send ../../../Claud%20Code/Handy%20APP/nachbar-io/node_modules/vitest/dist/chunks/cli-api.DuT9iuvY.js:[2m3075:13[22m[39m
+[90m [2m❯[22m PoolRunner.postMessage ../../../Claud%20Code/Handy%20APP/nachbar-io/node_modules/vitest/dist/chunks/cli-api.DuT9iuvY.js:[2m2857:63[22m[39m
+[90m [2m❯[22m PoolRunner.start ../../../Claud%20Code/Handy%20APP/nachbar-io/node_modules/vitest/dist/chunks/cli-api.DuT9iuvY.js:[2m2906:9[22m[39m
+[90m [2m❯[22m Pool.schedule ../../../Claud%20Code/Handy%20APP/nachbar-io/node_modules/vitest/dist/chunks/cli-api.DuT9iuvY.js:[2m3455:5[22m[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[22m[39m
+[31m[1mSerialized Error:[22m[39m [90m{ errno: -4047, code: 'EPIPE', syscall: 'write' }[39m
+
+[31m⎯⎯⎯⎯⎯⎯[39m[1m[41m Unhandled Error [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+[31m[1mError[22m: [vitest-pool]: Failed to start forks worker for test files C:/Users/thoma/Claud Code/Handy APP/nachbar-io/__tests__/components/VoiceAssistantFAB.test.tsx.[39m
+[90m [2m❯[22m ../../../Claud%20Code/Handy%20APP/nachbar-io/node_modules/vitest/dist/chunks/cli-api.DuT9iuvY.js:[2m3455:94[22m[39m
+[90m [2m❯[22m Pool.schedule ../../../Claud%20Code/Handy%20APP/nachbar-io/node_modules/vitest/dist/chunks/cli-api.DuT9iuvY.js:[2m3455:5[22m[39m
+
+[31m[1mCaused by: Error[22m: spawn UNKNOWN[39m
+[90m [2m❯[22m ChildProcess.spawn node:internal/child_process:[2m421:11[22m[39m
+[90m [2m❯[22m spawn node:child_process:[2m796:9[22m[39m
+[90m [2m❯[22m fork node:child_process:[2m174:10[22m[39m
+[90m [2m❯[22m ForksPoolWorker.start ../../../Claud%20Code/Handy%20APP/nachbar-io/node_modules/vitest/dist/chunks/cli-api.DuT9iuvY.js:[2m3078:18[22m[39m
+[90m [2m❯[22m ../../../Claud%20Code/Handy%20APP/nachbar-io/node_modules/vitest/dist/chunks/cli-api.DuT9iuvY.js:[2m2894:119[22m[39m
+[90m [2m❯[22m Traces.$ ../../../Claud%20Code/Handy%20APP/nachbar-io/node_modules/vitest/dist/chunks/traces.CCmnQaNT.js:[2m142:27[22m[39m
+[90m [2m❯[22m PoolRunner.start ../../../Claud%20Code/Handy%20APP/nachbar-io/node_modules/vitest/dist/chunks/cli-api.DuT9iuvY.js:[2m2894:23[22m[39m
+[90m [2m❯[22m Pool.schedule ../../../Claud%20Code/Handy%20APP/nachbar-io/node_modules/vitest/dist/chunks/cli-api.DuT9iuvY.js:[2m3455:18[22m[39m
+[90m [2m❯[22m Pool.run ../../../Claud%20Code/Handy%20APP/nachbar-io/node_modules/vitest/dist/chunks/cli-api.DuT9iuvY.js:[2m3417:8[22m[39m
+[90m [2m❯[22m ../../../Claud%20Code/Handy%20APP/nachbar-io/node_modules/vitest/dist/chunks/cli-api.DuT9iuvY.js:[2m3690:17[22m[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[22m[39m
+[31m[1mSerialized Error:[22m[39m [90m{ errno: -4094, code: 'UNKNOWN', syscall: 'spawn' }[39m
+
+[31m⎯⎯⎯⎯⎯⎯[39m[1m[41m Unhandled Error [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+[31m[1mError[22m: [vitest-pool]: Failed to start forks worker for test files C:/Users/thoma/Claud Code/Handy APP/nachbar-io/__tests__/components/hilfe/SubscriptionManager.test.tsx.[39m
+[90m [2m❯[22m ../../../Claud%20Code/Handy%20APP/nachbar-io/node_modules/vitest/dist/chunks/cli-api.DuT9iuvY.js:[2m3455:94[22m[39m
+[90m [2m❯[22m Pool.schedule ../../../Claud%20Code/Handy%20APP/nachbar-io/node_modules/vitest/dist/chunks/cli-api.DuT9iuvY.js:[2m3455:5[22m[39m
+
+[31m[1mCaused by: Error[22m: spawn UNKNOWN[39m
+[90m [2m❯[22m ChildProcess.spawn node:internal/child_process:[2m421:11[22m[39m
+[90m [2m❯[22m spawn node:child_process:[2m796:9[22m[39m
+[90m [2m❯[22m fork node:child_process:[2m174:10[22m[39m
+[90m [2m❯[22m ForksPoolWorker.start ../../../Claud%20Code/Handy%20APP/nachbar-io/node_modules/vitest/dist/chunks/cli-api.DuT9iuvY.js:[2m3078:18[22m[39m
+[90m [2m❯[22m ../../../Claud%20Code/Handy%20APP/nachbar-io/node_modules/vitest/dist/chunks/cli-api.DuT9iuvY.js:[2m2894:119[22m[39m
+[90m [2m❯[22m Traces.$ ../../../Claud%20Code/Handy%20APP/nachbar-io/node_modules/vitest/dist/chunks/traces.CCmnQaNT.js:[2m142:27[22m[39m
+[90m [2m❯[22m PoolRunner.start ../../../Claud%20Code/Handy%20APP/nachbar-io/node_modules/vitest/dist/chunks/cli-api.DuT9iuvY.js:[2m2894:23[22m[39m
+[90m [2m❯[22m Pool.schedule ../../../Claud%20Code/Handy%20APP/nachbar-io/node_modules/vitest/dist/chunks/cli-api.DuT9iuvY.js:[2m3455:18[22m[39m
+[90m [2m❯[22m Pool.run ../../../Claud%20Code/Handy%20APP/nachbar-io/node_modules/vitest/dist/chunks/cli-api.DuT9iuvY.js:[2m3417:8[22m[39m
+[90m [2m❯[22m ../../../Claud%20Code/Handy%20APP/nachbar-io/node_modules/vitest/dist/chunks/cli-api.DuT9iuvY.js:[2m3690:17[22m[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[22m[39m
+[31m[1mSerialized Error:[22m[39m [90m{ errno: -4094, code: 'UNKNOWN', syscall: 'spawn' }[39m
+
+[31m⎯⎯⎯⎯⎯⎯[39m[1m[41m Unhandled Error [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+[31m[1mError[22m: [vitest-pool]: Worker forks emitted error.[39m
+[90m [2m❯[22m EventEmitter.<anonymous> ../../../Claud%20Code/Handy%20APP/nachbar-io/node_modules/vitest/dist/chunks/cli-api.DuT9iuvY.js:[2m3452:22[22m[39m
+[90m [2m❯[22m EventEmitter.emit node:events:[2m508:28[22m[39m
+[90m [2m❯[22m ChildProcess.emitUnexpectedExit ../../../Claud%20Code/Handy%20APP/nachbar-io/node_modules/vitest/dist/chunks/cli-api.DuT9iuvY.js:[2m3019:22[22m[39m
+[90m [2m❯[22m ChildProcess.emit node:events:[2m508:28[22m[39m
+[90m [2m❯[22m Process.ChildProcess._handle.onexit node:internal/child_process:[2m294:12[22m[39m
+
+[31m[1mCaused by: Error[22m: Worker exited unexpectedly[39m
+[90m [2m❯[22m ChildProcess.emitUnexpectedExit ../../../Claud%20Code/Handy%20APP/nachbar-io/node_modules/vitest/dist/chunks/cli-api.DuT9iuvY.js:[2m3018:33[22m[39m
+[90m [2m❯[22m ChildProcess.emit node:events:[2m508:28[22m[39m
+[90m [2m❯[22m Process.ChildProcess._handle.onexit node:internal/child_process:[2m294:12[22m[39m
+
+
+[31m⎯⎯⎯⎯⎯⎯[39m[1m[41m Unhandled Error [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+[31m[1mError[22m: [vitest-pool]: Worker forks emitted error.[39m
+[90m [2m❯[22m EventEmitter.<anonymous> ../../../Claud%20Code/Handy%20APP/nachbar-io/node_modules/vitest/dist/chunks/cli-api.DuT9iuvY.js:[2m3452:22[22m[39m
+[90m [2m❯[22m EventEmitter.emit node:events:[2m508:28[22m[39m
+[90m [2m❯[22m ChildProcess.emitUnexpectedExit ../../../Claud%20Code/Handy%20APP/nachbar-io/node_modules/vitest/dist/chunks/cli-api.DuT9iuvY.js:[2m3019:22[22m[39m
+[90m [2m❯[22m ChildProcess.emit node:events:[2m508:28[22m[39m
+[90m [2m❯[22m Process.ChildProcess._handle.onexit node:internal/child_process:[2m294:12[22m[39m
+
+[31m[1mCaused by: Error[22m: Worker exited unexpectedly[39m
+[90m [2m❯[22m ChildProcess.emitUnexpectedExit ../../../Claud%20Code/Handy%20APP/nachbar-io/node_modules/vitest/dist/chunks/cli-api.DuT9iuvY.js:[2m3018:33[22m[39m
+[90m [2m❯[22m ChildProcess.emit node:events:[2m508:28[22m[39m
+[90m [2m❯[22m Process.ChildProcess._handle.onexit node:internal/child_process:[2m294:12[22m[39m
+
+[31m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[39m
+
+
+[2m Test Files [22m [1m[31m4 failed[39m[22m[2m | [22m[1m[32m440 passed[39m[22m[90m (444)[39m
+[2m      Tests [22m [1m[31m4 failed[39m[22m[2m | [22m[1m[32m3464 passed[39m[22m[90m (3468)[39m
+[2m     Errors [22m [1m[31m13 errors[39m[22m
+[2m   Start at [22m 11:07:42
+[2m   Duration [22m 123.41s[2m (transform 29.94s, setup 161.79s, import 211.72s, tests 81.06s, environment 1039.23s)[22m
+

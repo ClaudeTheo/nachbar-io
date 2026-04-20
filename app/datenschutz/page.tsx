@@ -339,6 +339,55 @@ export default function DatenschutzPage() {
             </p>
           </section>
 
+          {/* 5.11 KI-Assistent (Chatbot) */}
+          <section>
+            <h3 className="mb-1 font-semibold text-anthrazit">
+              5.11 KI-Assistent (Chatbot)
+            </h3>
+            <p>
+              Sofern Sie den KI-Assistenten der QuartierApp nutzen, werden Ihre
+              eingegebenen Fragen und die vorausgegangenen Nachrichten des
+              aktuellen Chats an unseren Auftragsverarbeiter Mistral AI SAS
+              (Paris, Frankreich) übermittelt und dort verarbeitet.
+            </p>
+            <ul className="ml-4 mt-2 list-disc space-y-1">
+              <li>
+                <strong>Rechtsgrundlage:</strong> Art. 6 Abs. 1 lit. b DSGVO
+                (Vertragserfüllung) sowie Art. 6 Abs. 1 lit. f DSGVO
+                (berechtigtes Interesse an effizientem Support)
+              </li>
+              <li>
+                <strong>Verarbeitung:</strong> ausschließlich auf EU-Servern
+                (Paris)
+              </li>
+              <li>
+                <strong>Speicherdauer:</strong> Chat-Verläufe werden nach 30
+                Tagen automatisch gelöscht. Ihre Nutzer-ID wird in den
+                Audit-Logs pseudonymisiert (HMAC-Hash) gespeichert.
+              </li>
+              <li>
+                <strong>Kein Training:</strong> Mistral AI verwendet die über
+                die API übermittelten Eingaben gemäß
+                Auftragsverarbeitungs­vertrag nicht zum Training ihrer Modelle
+              </li>
+              <li>
+                <strong>Nutzungsbegrenzung:</strong> max. 50 Nachrichten pro
+                Nutzerin oder Nutzer pro Tag
+              </li>
+              <li>
+                <strong>Hinweis nach Art. 50 EU KI-Verordnung:</strong> Sie
+                interagieren mit einer KI, nicht mit einem Menschen. Vor jedem
+                Chat-Start wird dies ausdrücklich angezeigt.
+              </li>
+            </ul>
+            <p className="mt-2">
+              Bitte geben Sie im Chat keine sensiblen personenbezogenen Daten
+              ein (Gesundheit, Finanzen, politische oder religiöse
+              Überzeugungen). Der KI-Assistent erteilt keine Rechts-, Medizin-,
+              Steuer- oder Finanzberatung.
+            </p>
+          </section>
+
           {/* 6. Empfänger und Datenweitergabe */}
           <section>
             <h2 className="mb-2 text-lg font-semibold text-anthrazit">
@@ -483,6 +532,17 @@ export default function DatenschutzPage() {
               </li>
             </ul>
 
+            <h4 className="mt-2 font-medium">Mistral AI (KI-Assistent)</h4>
+            <p>
+              Mistral AI SAS, 15 rue des Halles, 75001 Paris, Frankreich.
+              Verarbeitet die Eingaben und den Kontext des aktuellen Chats im
+              KI-Assistenten. Ausschließlich EU-Server (Paris). Kein Modell-
+              Training auf API-Eingaben (laut AVV). Rechtsgrundlage: Art. 6 Abs.
+              1 lit. b und f DSGVO. Auftragsverarbeitungsvertrag (AVV) gemäß
+              Art. 28 DSGVO liegt vor. Speicherdauer Chat-Verläufe: 30 Tage
+              (pseudonymisiert via HMAC). Details siehe § 5.11.
+            </p>
+
             <h3 className="mt-3 font-semibold">
               6.3 Keine weiteren Drittanbieter
             </h3>
@@ -544,6 +604,10 @@ export default function DatenschutzPage() {
               </li>
               <li>
                 <strong>IP-Adressen:</strong> Maximal 7 Tage
+              </li>
+              <li>
+                <strong>KI-Assistent Chat-Verläufe:</strong> 30 Tage, danach
+                automatische Löschung (pseudonymisiert via HMAC-Hash)
               </li>
             </ul>
             <p className="mt-2">

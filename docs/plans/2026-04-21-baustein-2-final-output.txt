@@ -1,0 +1,344 @@
+
+> nachbar-io@2.5.0 test
+> vitest run
+
+
+[1m[46m RUN [49m[22m [36mv4.1.0 [39m[90mC:/Users/thoma/Claud Code/Handy APP/nachbar-io[39m
+
+
+<--- Last few GCs --->
+
+[39600:0000019F26579000]     1205 ms: Scavenge (interleaved) 37.7 (55.8) -> 37.4 (94.3) MB, pooled: 0 MB, 10.26 / 0.00 ms  (average mu = 0.989, current mu = 0.989) allocation failure; 
+
+FATAL ERROR: AlignedAlloc Allocation failed - process out of memory
+----- Native stack trace -----
+
+
+<--- Last few GCs --->
+
+[60588:0000019DC1F88000]     1299 ms: Scavenge (interleaved) 38.7 (57.8) -> 38.4 (97.0) MB, pooled: 0 MB, 8.39 / 0.00 ms  (average mu = 0.996, current mu = 0.996) allocation failure; 
+
+FATAL ERROR: AlignedAlloc Allocation failed - process out of memory
+----- Native stack trace -----
+
+
+<--- Last few GCs --->
+
+[41380:00000199CE83C000]     1326 ms: Scavenge (interleaved) 37.4 (55.7) -> 36.9 (93.9) MB, pooled: 0 MB, 9.00 / 0.00 ms  (average mu = 0.992, current mu = 0.992) allocation failure; 
+
+FATAL ERROR: AlignedAlloc Allocation failed - process out of memory
+----- Native stack trace -----
+
+
+<--- Last few GCs --->
+
+[83040:000002B41EE7A000]     1173 ms: Scavenge (interleaved) 37.5 (55.7) -> 37.2 (93.9) MB, pooled: 0 MB, 8.14 / 0.00 ms  (average mu = 0.992, current mu = 0.992) allocation failure; 
+
+FATAL ERROR: AlignedAlloc Allocation failed - process out of memory
+----- Native stack trace -----
+
+
+<--- Last few GCs --->
+
+[76020:0000019763828000]     1317 ms: Scavenge (interleaved) 37.7 (56.3) -> 37.5 (94.3) MB, pooled: 0 MB, 8.21 / 0.00 ms  (average mu = 0.994, current mu = 0.994) allocation failure; 
+
+FATAL ERROR: AlignedAlloc Allocation failed - process out of memory
+----- Native stack trace -----
+
+
+<--- Last few GCs --->
+
+[36008:000001C9C6E29000]     1351 ms: Scavenge (interleaved) 37.7 (56.0) -> 37.4 (94.5) MB, pooled: 0 MB, 7.67 / 0.00 ms  (average mu = 0.997, current mu = 0.997) allocation failure; 
+
+FATAL ERROR: AlignedAlloc Allocation failed - process out of memory
+----- Native stack trace -----
+
+
+<--- Last few GCs --->
+
+[29192:000002B07BCE7000]     1329 ms: Scavenge (interleaved) 37.8 (56.3) -> 37.4 (95.3) MB, pooled: 0 MB, 13.52 / 0.00 ms  (average mu = 0.994, current mu = 0.994) allocation failure; 
+
+FATAL ERROR: AlignedAlloc Allocation failed - process out of memory
+----- Native stack trace -----
+
+ 1: 00007FF6F097B6AF 
+ 2: 00007FF6F15C3257 
+ 3: 00007FF6F0F40FDE 
+ 4: 00007FF6F10BB03B 
+ 5: 00007FF6F10B9442 
+ 6: 00007FF6F1402855 
+ 7: 00007FF6F0F9A312 
+ 8: 000001971FE7733A 
+ 1: 00007FF6F097B6AF 
+ 2: 00007FF6F15C3257 
+ 3: 00007FF6F0F40FDE 
+ 4: 00007FF6F10BB03B 
+ 5: 00007FF6F10B9442 
+ 6: 00007FF6F1402855 
+ 7: 00007FF6F0F9A312 
+ 8: 000001C9FF53733A 
+
+<--- Last few GCs --->
+
+[75560:000002003EBD7000]     1312 ms: Scavenge (interleaved) 37.8 (56.3) -> 37.4 (94.5) MB, pooled: 0 MB, 8.68 / 0.00 ms  (average mu = 0.995, current mu = 0.995) allocation failure; 
+
+FATAL ERROR: AlignedAlloc Allocation failed - process out of memory
+----- Native stack trace -----
+
+
+<--- Last few GCs --->
+
+[72020:000002867138C000]     1384 ms: Scavenge (interleaved) 37.8 (56.8) -> 37.4 (94.8) MB, pooled: 0 MB, 9.55 / 0.00 ms  (average mu = 0.995, current mu = 0.995) allocation failure; 
+[72020:000002867138C000]    10696 ms: Mark-Compact 45.8 (95.0) -> 28.8 (96.0) MB, pooled: 0 MB, 4037.57 / 0.00 ms  (average mu = 0.622, current mu = 0.587) external memory pressure; GC in old space requested
+
+FATAL ERROR: AlignedAlloc Allocation failed - process out of memory
+----- Native stack trace -----
+
+
+<--- Last few GCs --->
+
+[67500:000001EC4B67E000]     1395 ms: Scavenge (interleaved) 37.4 (55.2) -> 37.0 (93.4) MB, pooled: 0 MB, 5.37 / 0.00 ms  (average mu = 0.992, current mu = 0.992) allocation failure; 
+
+FATAL ERROR: AlignedAlloc Allocation failed - process out of memory
+----- Native stack trace -----
+
+ 1: 00007FF6F097B6AF 
+ 2: 00007FF6F15C3257 
+ 3: 00007FF6F0F40FDE 
+ 4: 00007FF6F10BB03B 
+ 5: 00007FF6F10B9442 
+ 6: 00007FF6F1402855 
+ 7: 00007FF6F0F9A312 
+ 8: 000002B4574B733A 
+ 1: 00007FF6F097B6AF 
+ 2: 00007FF6F15C3257 
+ 3: 00007FF6F0F40FDE 
+ 4: 00007FF6F10BB03B 
+ 5: 00007FF6F10B9442 
+ 6: 00007FF6F1402855 
+ 7: 00007FF6F0F9A312 
+ 8: 0000019F5EBB733A 
+ 1: 00007FF6F097B6AF 
+ 2: 00007FF6F15C3257 
+ 3: 00007FF6F0F40FDE 
+ 4: 00007FF6F10BB03B 
+ 5: 00007FF6F10B9442 
+ 6: 00007FF6F1402855 
+ 7: 00007FF6F0F9A312 
+ 8: 0000019DFA67733A 
+ 1: 00007FF6F097B6AF 
+ 2: 00007FF6F15C3257 
+ 3: 00007FF6F0F40FDE 
+ 4: 00007FF6F10BB03B 
+ 5: 00007FF6F10B9442 
+ 6: 00007FF6F1402855 
+ 7: 00007FF6F0F9A312 
+ 8: 000002007733733A 
+ 1: 00007FF6F097B6AF 
+ 2: 00007FF6F15C3257 
+ 3: 00007FF6F0F40FDE 
+ 4: 00007FF6F10BB03B 
+ 5: 00007FF6F10B9442 
+ 6: 00007FF6F1402855 
+ 7: 00007FF6F0F9A312 
+ 8: 000002B037E7733A 
+ 1: 00007FF6F097B6AF 
+ 2: 00007FF6F15C3257 
+ 3: 00007FF6F0F40FDE 
+ 4: 00007FF6F10BB03B 
+ 5: 00007FF6F10B9442 
+ 6: 00007FF6F1402855 
+ 7: 00007FF6F0F9A312 
+ 8: 000001999FE7733A 
+ 1: 00007FF6F097B6AF node::OnFatalError+1343
+ 2: 00007FF6F15C3257 v8::Function::NewInstance+423
+ 3: 00007FF6F0F40FDE v8::internal::Version::GetSONAME+11038
+ 4: 00007FF6F10BB03B v8::MemorySpan<v8::internal::DirectHandle<v8::internal::Map> >::operator[]+82043
+ 5: 00007FF6F10B902C v8::MemorySpan<v8::internal::DirectHandle<v8::internal::Map> >::operator[]+73836
+ 6: 00007FF6F13FE617 uv_timer_set_repeat+112071
+ 7: 00007FF6F15B9851 X509_STORE_set_get_issuer+735537
+ 8: 00007FF6F15BA4FB X509_STORE_set_get_issuer+738779
+ 9: 00007FF6F106B02E EC_KEY_METHOD_set_verify+219102
+10: 00007FF6F106A76A EC_KEY_METHOD_set_verify+216858
+11: 00007FF6F1065D99 EC_KEY_METHOD_set_verify+197961
+12: 00007FF6F1540BFF X509_STORE_set_get_issuer+240863
+13: 00007FF6F1543A01 X509_STORE_set_get_issuer+252641
+14: 00007FF6F15CC713 v8::ScriptCompiler::CompileFunction+1011
+15: 00007FF6F09982C3 node::GetCurrentEnvironment+20883
+16: 00007FF6F0996A6E node::GetCurrentEnvironment+14654
+17: 000002862FDCF64D 
+ 1: 00007FF6F097B6AF node::OnFatalError+1343
+ 2: 00007FF6F15C3257 v8::Function::NewInstance+423
+ 3: 00007FF6F0F40FDE v8::internal::Version::GetSONAME+11038
+ 4: 00007FF6F10BB03B v8::MemorySpan<v8::internal::DirectHandle<v8::internal::Map> >::operator[]+82043
+ 5: 00007FF6F10B9442 v8::MemorySpan<v8::internal::DirectHandle<v8::internal::Map> >::operator[]+74882
+ 6: 00007FF6F1402855 uv_timer_set_repeat+129029
+ 7: 00007FF6F0F9A312 v8::String::Utf8Value::~Utf8Value+8594
+ 8: 000001EC1FE7733A 
+[31m⎯⎯⎯⎯⎯⎯[39m[1m[41m Unhandled Errors [49m[22m[31m⎯⎯⎯⎯⎯⎯[39m
+[31m[1m
+Vitest caught 11 unhandled errors during the test run.
+This might cause false positive tests. Resolve unhandled errors to make sure your tests are not affected.[22m[39m
+
+[31m⎯⎯⎯⎯⎯⎯[39m[1m[41m Unhandled Error [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+[31m[1mError[22m: [vitest-pool]: Worker forks emitted error.[39m
+[90m [2m❯[22m EventEmitter.<anonymous> ../../../Claud%20Code/Handy%20APP/nachbar-io/node_modules/vitest/dist/chunks/cli-api.DuT9iuvY.js:[2m3452:22[22m[39m
+[90m [2m❯[22m EventEmitter.emit node:events:[2m508:28[22m[39m
+[90m [2m❯[22m ChildProcess.emitUnexpectedExit ../../../Claud%20Code/Handy%20APP/nachbar-io/node_modules/vitest/dist/chunks/cli-api.DuT9iuvY.js:[2m3019:22[22m[39m
+[90m [2m❯[22m ChildProcess.emit node:events:[2m508:28[22m[39m
+[90m [2m❯[22m Process.ChildProcess._handle.onexit node:internal/child_process:[2m294:12[22m[39m
+
+[31m[1mCaused by: Error[22m: Worker exited unexpectedly[39m
+[90m [2m❯[22m ChildProcess.emitUnexpectedExit ../../../Claud%20Code/Handy%20APP/nachbar-io/node_modules/vitest/dist/chunks/cli-api.DuT9iuvY.js:[2m3018:33[22m[39m
+[90m [2m❯[22m ChildProcess.emit node:events:[2m508:28[22m[39m
+[90m [2m❯[22m Process.ChildProcess._handle.onexit node:internal/child_process:[2m294:12[22m[39m
+
+
+[31m⎯⎯⎯⎯⎯⎯[39m[1m[41m Unhandled Error [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+[31m[1mError[22m: [vitest-pool]: Worker forks emitted error.[39m
+[90m [2m❯[22m EventEmitter.<anonymous> ../../../Claud%20Code/Handy%20APP/nachbar-io/node_modules/vitest/dist/chunks/cli-api.DuT9iuvY.js:[2m3452:22[22m[39m
+[90m [2m❯[22m EventEmitter.emit node:events:[2m508:28[22m[39m
+[90m [2m❯[22m ChildProcess.emitUnexpectedExit ../../../Claud%20Code/Handy%20APP/nachbar-io/node_modules/vitest/dist/chunks/cli-api.DuT9iuvY.js:[2m3019:22[22m[39m
+[90m [2m❯[22m ChildProcess.emit node:events:[2m508:28[22m[39m
+[90m [2m❯[22m Process.ChildProcess._handle.onexit node:internal/child_process:[2m294:12[22m[39m
+
+[31m[1mCaused by: Error[22m: Worker exited unexpectedly[39m
+[90m [2m❯[22m ChildProcess.emitUnexpectedExit ../../../Claud%20Code/Handy%20APP/nachbar-io/node_modules/vitest/dist/chunks/cli-api.DuT9iuvY.js:[2m3018:33[22m[39m
+[90m [2m❯[22m ChildProcess.emit node:events:[2m508:28[22m[39m
+[90m [2m❯[22m Process.ChildProcess._handle.onexit node:internal/child_process:[2m294:12[22m[39m
+
+
+[31m⎯⎯⎯⎯⎯⎯[39m[1m[41m Unhandled Error [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+[31m[1mError[22m: [vitest-pool]: Worker forks emitted error.[39m
+[90m [2m❯[22m EventEmitter.<anonymous> ../../../Claud%20Code/Handy%20APP/nachbar-io/node_modules/vitest/dist/chunks/cli-api.DuT9iuvY.js:[2m3452:22[22m[39m
+[90m [2m❯[22m EventEmitter.emit node:events:[2m508:28[22m[39m
+[90m [2m❯[22m ChildProcess.emitUnexpectedExit ../../../Claud%20Code/Handy%20APP/nachbar-io/node_modules/vitest/dist/chunks/cli-api.DuT9iuvY.js:[2m3019:22[22m[39m
+[90m [2m❯[22m ChildProcess.emit node:events:[2m508:28[22m[39m
+[90m [2m❯[22m Process.ChildProcess._handle.onexit node:internal/child_process:[2m294:12[22m[39m
+
+[31m[1mCaused by: Error[22m: Worker exited unexpectedly[39m
+[90m [2m❯[22m ChildProcess.emitUnexpectedExit ../../../Claud%20Code/Handy%20APP/nachbar-io/node_modules/vitest/dist/chunks/cli-api.DuT9iuvY.js:[2m3018:33[22m[39m
+[90m [2m❯[22m ChildProcess.emit node:events:[2m508:28[22m[39m
+[90m [2m❯[22m Process.ChildProcess._handle.onexit node:internal/child_process:[2m294:12[22m[39m
+
+
+[31m⎯⎯⎯⎯⎯⎯[39m[1m[41m Unhandled Error [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+[31m[1mError[22m: [vitest-pool]: Worker forks emitted error.[39m
+[90m [2m❯[22m EventEmitter.<anonymous> ../../../Claud%20Code/Handy%20APP/nachbar-io/node_modules/vitest/dist/chunks/cli-api.DuT9iuvY.js:[2m3452:22[22m[39m
+[90m [2m❯[22m EventEmitter.emit node:events:[2m508:28[22m[39m
+[90m [2m❯[22m ChildProcess.emitUnexpectedExit ../../../Claud%20Code/Handy%20APP/nachbar-io/node_modules/vitest/dist/chunks/cli-api.DuT9iuvY.js:[2m3019:22[22m[39m
+[90m [2m❯[22m ChildProcess.emit node:events:[2m508:28[22m[39m
+[90m [2m❯[22m Process.ChildProcess._handle.onexit node:internal/child_process:[2m294:12[22m[39m
+
+[31m[1mCaused by: Error[22m: Worker exited unexpectedly[39m
+[90m [2m❯[22m ChildProcess.emitUnexpectedExit ../../../Claud%20Code/Handy%20APP/nachbar-io/node_modules/vitest/dist/chunks/cli-api.DuT9iuvY.js:[2m3018:33[22m[39m
+[90m [2m❯[22m ChildProcess.emit node:events:[2m508:28[22m[39m
+[90m [2m❯[22m Process.ChildProcess._handle.onexit node:internal/child_process:[2m294:12[22m[39m
+
+
+[31m⎯⎯⎯⎯⎯⎯[39m[1m[41m Unhandled Error [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+[31m[1mError[22m: [vitest-pool]: Worker forks emitted error.[39m
+[90m [2m❯[22m EventEmitter.<anonymous> ../../../Claud%20Code/Handy%20APP/nachbar-io/node_modules/vitest/dist/chunks/cli-api.DuT9iuvY.js:[2m3452:22[22m[39m
+[90m [2m❯[22m EventEmitter.emit node:events:[2m508:28[22m[39m
+[90m [2m❯[22m ChildProcess.emitUnexpectedExit ../../../Claud%20Code/Handy%20APP/nachbar-io/node_modules/vitest/dist/chunks/cli-api.DuT9iuvY.js:[2m3019:22[22m[39m
+[90m [2m❯[22m ChildProcess.emit node:events:[2m508:28[22m[39m
+[90m [2m❯[22m Process.ChildProcess._handle.onexit node:internal/child_process:[2m294:12[22m[39m
+
+[31m[1mCaused by: Error[22m: Worker exited unexpectedly[39m
+[90m [2m❯[22m ChildProcess.emitUnexpectedExit ../../../Claud%20Code/Handy%20APP/nachbar-io/node_modules/vitest/dist/chunks/cli-api.DuT9iuvY.js:[2m3018:33[22m[39m
+[90m [2m❯[22m ChildProcess.emit node:events:[2m508:28[22m[39m
+[90m [2m❯[22m Process.ChildProcess._handle.onexit node:internal/child_process:[2m294:12[22m[39m
+
+
+[31m⎯⎯⎯⎯⎯⎯[39m[1m[41m Unhandled Error [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+[31m[1mError[22m: [vitest-pool]: Worker forks emitted error.[39m
+[90m [2m❯[22m EventEmitter.<anonymous> ../../../Claud%20Code/Handy%20APP/nachbar-io/node_modules/vitest/dist/chunks/cli-api.DuT9iuvY.js:[2m3452:22[22m[39m
+[90m [2m❯[22m EventEmitter.emit node:events:[2m508:28[22m[39m
+[90m [2m❯[22m ChildProcess.emitUnexpectedExit ../../../Claud%20Code/Handy%20APP/nachbar-io/node_modules/vitest/dist/chunks/cli-api.DuT9iuvY.js:[2m3019:22[22m[39m
+[90m [2m❯[22m ChildProcess.emit node:events:[2m508:28[22m[39m
+[90m [2m❯[22m Process.ChildProcess._handle.onexit node:internal/child_process:[2m294:12[22m[39m
+
+[31m[1mCaused by: Error[22m: Worker exited unexpectedly[39m
+[90m [2m❯[22m ChildProcess.emitUnexpectedExit ../../../Claud%20Code/Handy%20APP/nachbar-io/node_modules/vitest/dist/chunks/cli-api.DuT9iuvY.js:[2m3018:33[22m[39m
+[90m [2m❯[22m ChildProcess.emit node:events:[2m508:28[22m[39m
+[90m [2m❯[22m Process.ChildProcess._handle.onexit node:internal/child_process:[2m294:12[22m[39m
+
+
+[31m⎯⎯⎯⎯⎯⎯[39m[1m[41m Unhandled Error [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+[31m[1mError[22m: [vitest-pool]: Worker forks emitted error.[39m
+[90m [2m❯[22m EventEmitter.<anonymous> ../../../Claud%20Code/Handy%20APP/nachbar-io/node_modules/vitest/dist/chunks/cli-api.DuT9iuvY.js:[2m3452:22[22m[39m
+[90m [2m❯[22m EventEmitter.emit node:events:[2m508:28[22m[39m
+[90m [2m❯[22m ChildProcess.emitUnexpectedExit ../../../Claud%20Code/Handy%20APP/nachbar-io/node_modules/vitest/dist/chunks/cli-api.DuT9iuvY.js:[2m3019:22[22m[39m
+[90m [2m❯[22m ChildProcess.emit node:events:[2m508:28[22m[39m
+[90m [2m❯[22m Process.ChildProcess._handle.onexit node:internal/child_process:[2m294:12[22m[39m
+
+[31m[1mCaused by: Error[22m: Worker exited unexpectedly[39m
+[90m [2m❯[22m ChildProcess.emitUnexpectedExit ../../../Claud%20Code/Handy%20APP/nachbar-io/node_modules/vitest/dist/chunks/cli-api.DuT9iuvY.js:[2m3018:33[22m[39m
+[90m [2m❯[22m ChildProcess.emit node:events:[2m508:28[22m[39m
+[90m [2m❯[22m Process.ChildProcess._handle.onexit node:internal/child_process:[2m294:12[22m[39m
+
+
+[31m⎯⎯⎯⎯⎯⎯[39m[1m[41m Unhandled Error [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+[31m[1mError[22m: [vitest-pool]: Worker forks emitted error.[39m
+[90m [2m❯[22m EventEmitter.<anonymous> ../../../Claud%20Code/Handy%20APP/nachbar-io/node_modules/vitest/dist/chunks/cli-api.DuT9iuvY.js:[2m3452:22[22m[39m
+[90m [2m❯[22m EventEmitter.emit node:events:[2m508:28[22m[39m
+[90m [2m❯[22m ChildProcess.emitUnexpectedExit ../../../Claud%20Code/Handy%20APP/nachbar-io/node_modules/vitest/dist/chunks/cli-api.DuT9iuvY.js:[2m3019:22[22m[39m
+[90m [2m❯[22m ChildProcess.emit node:events:[2m508:28[22m[39m
+[90m [2m❯[22m Process.ChildProcess._handle.onexit node:internal/child_process:[2m294:12[22m[39m
+
+[31m[1mCaused by: Error[22m: Worker exited unexpectedly[39m
+[90m [2m❯[22m ChildProcess.emitUnexpectedExit ../../../Claud%20Code/Handy%20APP/nachbar-io/node_modules/vitest/dist/chunks/cli-api.DuT9iuvY.js:[2m3018:33[22m[39m
+[90m [2m❯[22m ChildProcess.emit node:events:[2m508:28[22m[39m
+[90m [2m❯[22m Process.ChildProcess._handle.onexit node:internal/child_process:[2m294:12[22m[39m
+
+
+[31m⎯⎯⎯⎯⎯⎯[39m[1m[41m Unhandled Error [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+[31m[1mError[22m: [vitest-pool]: Worker forks emitted error.[39m
+[90m [2m❯[22m EventEmitter.<anonymous> ../../../Claud%20Code/Handy%20APP/nachbar-io/node_modules/vitest/dist/chunks/cli-api.DuT9iuvY.js:[2m3452:22[22m[39m
+[90m [2m❯[22m EventEmitter.emit node:events:[2m508:28[22m[39m
+[90m [2m❯[22m ChildProcess.emitUnexpectedExit ../../../Claud%20Code/Handy%20APP/nachbar-io/node_modules/vitest/dist/chunks/cli-api.DuT9iuvY.js:[2m3019:22[22m[39m
+[90m [2m❯[22m ChildProcess.emit node:events:[2m508:28[22m[39m
+[90m [2m❯[22m Process.ChildProcess._handle.onexit node:internal/child_process:[2m294:12[22m[39m
+
+[31m[1mCaused by: Error[22m: Worker exited unexpectedly[39m
+[90m [2m❯[22m ChildProcess.emitUnexpectedExit ../../../Claud%20Code/Handy%20APP/nachbar-io/node_modules/vitest/dist/chunks/cli-api.DuT9iuvY.js:[2m3018:33[22m[39m
+[90m [2m❯[22m ChildProcess.emit node:events:[2m508:28[22m[39m
+[90m [2m❯[22m Process.ChildProcess._handle.onexit node:internal/child_process:[2m294:12[22m[39m
+
+
+[31m⎯⎯⎯⎯⎯⎯[39m[1m[41m Unhandled Error [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+[31m[1mError[22m: [vitest-pool]: Worker forks emitted error.[39m
+[90m [2m❯[22m EventEmitter.<anonymous> ../../../Claud%20Code/Handy%20APP/nachbar-io/node_modules/vitest/dist/chunks/cli-api.DuT9iuvY.js:[2m3452:22[22m[39m
+[90m [2m❯[22m EventEmitter.emit node:events:[2m508:28[22m[39m
+[90m [2m❯[22m ChildProcess.emitUnexpectedExit ../../../Claud%20Code/Handy%20APP/nachbar-io/node_modules/vitest/dist/chunks/cli-api.DuT9iuvY.js:[2m3019:22[22m[39m
+[90m [2m❯[22m ChildProcess.emit node:events:[2m508:28[22m[39m
+[90m [2m❯[22m Process.ChildProcess._handle.onexit node:internal/child_process:[2m294:12[22m[39m
+
+[31m[1mCaused by: Error[22m: Worker exited unexpectedly[39m
+[90m [2m❯[22m ChildProcess.emitUnexpectedExit ../../../Claud%20Code/Handy%20APP/nachbar-io/node_modules/vitest/dist/chunks/cli-api.DuT9iuvY.js:[2m3018:33[22m[39m
+[90m [2m❯[22m ChildProcess.emit node:events:[2m508:28[22m[39m
+[90m [2m❯[22m Process.ChildProcess._handle.onexit node:internal/child_process:[2m294:12[22m[39m
+
+
+[31m⎯⎯⎯⎯⎯⎯[39m[1m[41m Unhandled Error [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+[31m[1mError[22m: [vitest-pool]: Worker forks emitted error.[39m
+[90m [2m❯[22m EventEmitter.<anonymous> ../../../Claud%20Code/Handy%20APP/nachbar-io/node_modules/vitest/dist/chunks/cli-api.DuT9iuvY.js:[2m3452:22[22m[39m
+[90m [2m❯[22m EventEmitter.emit node:events:[2m508:28[22m[39m
+[90m [2m❯[22m ChildProcess.emitUnexpectedExit ../../../Claud%20Code/Handy%20APP/nachbar-io/node_modules/vitest/dist/chunks/cli-api.DuT9iuvY.js:[2m3019:22[22m[39m
+[90m [2m❯[22m ChildProcess.emit node:events:[2m508:28[22m[39m
+[90m [2m❯[22m Process.ChildProcess._handle.onexit node:internal/child_process:[2m294:12[22m[39m
+
+[31m[1mCaused by: Error[22m: Worker exited unexpectedly[39m
+[90m [2m❯[22m ChildProcess.emitUnexpectedExit ../../../Claud%20Code/Handy%20APP/nachbar-io/node_modules/vitest/dist/chunks/cli-api.DuT9iuvY.js:[2m3018:33[22m[39m
+[90m [2m❯[22m ChildProcess.emit node:events:[2m508:28[22m[39m
+[90m [2m❯[22m Process.ChildProcess._handle.onexit node:internal/child_process:[2m294:12[22m[39m
+
+[31m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[39m
+
+
+[2m Test Files [22m [1m[32m446 passed[39m[22m[90m (446)[39m
+[2m      Tests [22m [1m[32m3480 passed[39m[22m[2m | [22m[33m3 skipped[39m[90m (3483)[39m
+[2m     Errors [22m [1m[31m11 errors[39m[22m
+[2m   Start at [22m 11:40:11
+[2m   Duration [22m 118.42s[2m (transform 57.32s, setup 150.61s, import 227.11s, tests 56.90s, environment 937.50s)[22m
+

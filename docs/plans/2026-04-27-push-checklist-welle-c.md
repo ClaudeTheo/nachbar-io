@@ -1,9 +1,27 @@
 # Push-Checklist — Welle C (Zieldatum 27.04.2026 / nach HRB)
 
 **Erzeugt:** 2026-04-20 (Aktionsplan-Option A)
-**Ziel-Push:** `nachbar-io` HEAD `cd543f0` (24 lokale Commits seit `5de2a58`) auf origin/master.
+**Letzte Aktualisierung:** 2026-04-21 (B6 Task 6.3, vorgezogen via Variante B)
+**Ziel-Push:** `nachbar-io` HEAD `328c354` (47 lokale Commits seit `5de2a58`) auf origin/master.
 **Ausloeser:** Theobase GmbH im Handelsregister eingetragen + beide AVV signiert (Anthropic + Mistral).
 **Nicht fruehzeitig pushen!** Rote Zone — jeder Schritt braucht Founder-Go.
+
+---
+
+## Status der Code-Checks (Stand 2026-04-21 Abend)
+
+Haertungs-Runde Bausteine B1-B3 abgeschlossen, B6 Task 6.2 (Release-Notes)
+vorgezogen. Damit sind die "Claude erledigt autonom"-Checks unten zum
+groessten Teil schon einmal durchgelaufen — der Push-Tag-Re-Verify (B6
+Task 6.1) wiederholt sie zur Sicherheit.
+
+| Check | Stand 2026-04-21 | Re-Verify am Push-Tag |
+|---|---|---|
+| Vitest Voll-Suite | ✅ 3480 passed / 3 skipped / 0 failed | erneut laufen |
+| `npx tsc --noEmit` | ✅ 0 Errors (Skip-Liste leer, B3 `dda2a66`) | erneut laufen |
+| E2E Smoke | ✅ 11 passed + 1 flaky (Retry gruen) | optional erneut |
+| Release-Notes Draft | ✅ `328c354` — `2026-04-27-release-notes-welle-c.md` | Final-Review vor Push |
+| Walkthrough-Checkliste | ✅ `ca70c34` — Termin Fr 24.04. ausstehend | Stolperstellen-Fixes pro Commit |
 
 ---
 
@@ -24,7 +42,16 @@
 ```bash
 cd nachbar-io && git log --oneline 5de2a58..HEAD
 ```
-Erwartung: **24 Commits** (9 Welle-C-feature-Commits + 7 Codex-Fix-/STT-/C7-/C6c-Commits + 6 Doku-Commits + 2 Aktionsplan/Handoff = 24). Abweichung = STOP + melden.
+Erwartung: **47 Commits** (Stand 2026-04-21):
+- 9 Welle-C-Feature-Commits (C0-C7) bis `cd543f0`
+- 8 C8-Commits inkl. UX-Upgrade + E2E-Skelett bis `a46cc15`
+- 6 Doku-/Aktionsplan-Commits (Handoffs, Aktionsplan E-D-A-B)
+- 2 Plan-Commits (Haertungs-Runde Plan + Freigabe) bis `677d320`
+- 8 Haertungs-Runde-Commits B1-B4 (`41106a9`, `4b0fdd1`, `78a7aa7`, `226f390`, `4b6e676`, `dda2a66`, `ca70c34`, `4e83d43`)
+- 1 Release-Notes-Commit (`328c354`)
+- weitere Push-Prep-Commits am Mo 26.04. moeglich (B6 Task 6.1 + 6.3 + Walkthrough-Fixes)
+
+Abweichung = STOP + melden.
 
 ### 2. Uncommitted Reste pruefen
 ```bash
@@ -40,21 +67,26 @@ Erwartung: nur dokumentierte Uncommitted-Artefakte aus Handoff (`M app/datenschu
 # Welle-C-Smoke-Suite
 npx vitest run __tests__/modules/memory/ \
                __tests__/components/senior/ \
+               __tests__/components/caregiver/ \
+               __tests__/api/memory/ \
                __tests__/hooks/useTtsPlayback.test.ts \
                __tests__/hooks/useOnboardingTurn.test.ts \
                __tests__/hooks/useSpeechInput.test.ts \
-               __tests__/components/onboarding/
+               __tests__/components/onboarding/ \
+               lib/ai/__tests__/provider.test.ts \
+               lib/ai/tools/__tests__/save-memory.test.ts \
+               app/api/ai/onboarding/turn/__tests__/route.test.ts
 
-# Voll-Suite (optional, bei Zeitdruck skippable)
+# Voll-Suite (Pflicht am Push-Tag, B6 Task 6.1)
 npm run test
 ```
-Erwartung Welle-C-Smoke: **158/158 gruen**. Voll-Suite darf die bekannten 4 Pre-Existing-Failures haben (sos-detail, billing-checkout, hilfe/tasks × 2), nicht mehr.
+Erwartung Voll-Suite (Stand 2026-04-21 nach B2): **3480 passed / 3 skipped / 0 failed**. Skips dokumentiert in `.claude/rules/testing.md` (billing-checkout, hilfe/tasks ×2 — Reaktivierungs-Tickets vorhanden, kein Welle-C-Regress).
 
 ### 4. Type-Check sauber
 ```bash
 npx tsc --noEmit
 ```
-Erwartung: **clean** ausser den 8 preexistenten Skip-Liste-Errors (`device-fingerprint.test.ts:267`, `quartier-info-vorlesen.test.tsx:170`, `x01-checkin-heartbeat.spec.ts:134-136`, `x19-postfach-thread.spec.ts:428-429`, `s12-neighbor-request-chat.spec.ts:92`).
+Erwartung (Stand 2026-04-21 nach B3): **0 Errors**. Skip-Liste leer, alle 9 vorherigen tsc-Errors via Typ-Casts behoben (`dda2a66`). Keine `@ts-expect-error`-Marker im Repo (ausser Test-Setup falls neu hinzugekommen).
 
 ### 5. Audit
 ```bash
@@ -168,10 +200,16 @@ Vercel-Dashboard → Deployments → letzten vorherigen Deploy "Promote to Produ
 
 ## Was nach erfolgreichem Push dran ist (nicht Teil dieser Checklist)
 
-- C8 Caregiver-Scope (Architektur-Entscheidung 1b+2a+3a vorliegend — 2-3h)
+- ~~C8 Caregiver-Scope~~ ✅ DONE (2026-04-20, 8 Commits, lokal Teil dieses Push)
+- ~~F7 cache_control-Rename~~ ✅ DONE (Patch in Welle C, `cache_control.system`)
+- ~~B1-B3 Haertungs-Runde Tests + tsc~~ ✅ DONE (2026-04-21)
+- ~~B6 Task 6.2 Release-Notes Draft~~ ✅ DONE (2026-04-21, `328c354`)
+- B4 Founder-Walkthrough Fr 24.04. — Stolperstellen-Fixes pro Commit
+- B5 E2E x20b-e (optional, Rote Zone Senior-Seed) — Sa/So 25./26.04.
+- B6 Task 6.1 Final-Re-Verify am Mo 26.04. abend
 - C9 Deploy-Konsolidierung + Monitoring-Alerts fuer Anthropic-Rate-Limits
 - Founder-Aufbau des Bad-Saeckingen-Pilot (5-10 Familien)
-- F7 cache_control-Rename (Codex NACHBESSERN, separat)
+- Hausmeister-Modul (Founder-Wunsch 2026-04-20, brainstorming nach Push)
 
 ---
 

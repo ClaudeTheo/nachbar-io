@@ -2,6 +2,26 @@
 
 > **For Claude:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task.
 
+---
+
+## ⚠️ ERRATUM 2026-04-20 (nach A1-A7-Bau)
+
+Dieser Plan-Text ist NICHT mehr die einzige Wahrheit. Drift-Punkte gegenueber dem real gebauten Code (`feature/hausverwaltung` HEAD `f8a3f03`):
+
+1. **Mig-Nummerierung verschoben:** Geplant 175 / 178 / 176 / 177 → real **175 / 176 / 177 / 178** (housing_resident_links wurde 176 statt 178; report_category wurde noch nicht verteilt — Teil B). Plus **A2b unplanmaessig** (Mig 177 Feature-Flags + FeatureFlagManager Admin-Gruppe).
+2. **A3-Pivot (Founder-Direktive 2026-04-20):** Schatten-Skip-Pfad VERWORFEN. Adresse ist immer Pflicht. Free-First wird ueber **PLZ-Auto-Quartier** (Mig 178: `quarters.auto_created` + `scope`) realisiert. Erster User pro PLZ wird automatisch `quarter_admin`. Schatten-Quartier (`SHADOW_QUARTER_ID`) bleibt nur als technischer Notfall-Fallback im Code, kein UI-Pfad mehr.
+3. **Tor-Bedingung 3 verworfen:** „Hausverwalter-Email-Antwort" ist NICHT mehr Voraussetzung (Founder 2026-04-21 Abend). Default-Reihenfolge: **Maengel > Mitteilungen > Postfach > Termine**.
+4. **Teil H ergaenzt (vor Teil B):** Bewohner laedt HV ein via Triple-Choice (mailto / Web-Share-API / PDF) — **anwaltsfrei, kein Resend-SMTP**. Mig 180 `housing_invitations`. Siehe Handoff `2026-04-20-handoff-housing-part-h-and-deploy.md`.
+5. **A4+A5 als Block gebaut:** `detectNavRole` prueft `civic_members` zusaetzlich; `notifyCivicOrgStaff(civicOrgId, payload)` als neue Funktion (statt Refactor von `notifyOrgStaff` — vermeidet Breaking-Change).
+6. **A6 minimal gefixt:** Voice-Tool `report_issue` schreibt jetzt nach `municipal_reports` (Welle 1, Mig 097). Housing-Routing per `target_org_id` kommt erst in Teil B1.
+7. **A7 ergaenzt:** `lib/housing/feature-flags.ts` mit `useHousingFeature`-Hook + `isHousingFeatureEnabled`-Server-Util. Master×Teilfunktion-Logik (Teilfunktion false wenn Master false).
+
+**Authoritative Quelle ab Part A:** [memory/topics/housing.md](../../../memory/topics/housing.md) (vom Founder gepflegt, mit allen Commits + Tests).
+
+Der Rest dieses Plan-Files bleibt nuetzlich fuer Teile B-G (TDD-Pattern, RLS-Policy-Skizzen). Bei Konflikt zwischen Plan und Code gewinnt der Code (siehe `.claude/rules/pre-check.md`).
+
+---
+
 **Goal:** Free-first Bewohner-App mit optionalem Hausverwaltungs-Layer bauen — 4 Funktionen (Maengel, Mitteilungen, Postfach, Termine) als civic-Adaption, ohne neue Org-Welt, mit Senior-Modus.
 
 **Architecture:** 5 Migrationen (175-179) + Adaption bestehender civic-Bausteine. HV lebt in `civic_organizations.type='housing'`. Bewohner wird ueber `housing_resident_links` verknuepft. Cockpit unter `app/(app)/org/housing/*`. Bewohner-UI unter `app/(app)/hausverwaltung/*`. Dashboard-Kachel an 4 Stellen hart eingehaengt.
@@ -10,10 +30,10 @@
 
 **Design-Referenz:** `docs/plans/2026-04-21-hausverwaltung-modul-design.md` (Commit `70499e6`)
 
-**Tor-Bedingungen vor Start:**
+**Tor-Bedingungen vor Start (urspruenglich, Erratum oben beachten):**
 1. Welle-C-Push live
 2. GmbH-Eintragung (Notar 27.04.) + AVV Anthropic/Mistral unterschrieben
-3. Hausverwalter-Email-Antwort da (bestimmt Priorisierung B/C/D/E)
+3. ~~Hausverwalter-Email-Antwort~~ — VERWORFEN (Founder 2026-04-21)
 
 **Kein Push waehrend Implementation.** Jede Migration: File-first, lokaler Commit, DANN Prod-Apply mit Founder-Go. RLS-Policies idempotent (`DO`-Block mit `pg_policies`-Lookup).
 

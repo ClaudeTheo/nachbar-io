@@ -119,6 +119,11 @@ export function SeniorMemoryFactList({
                     <p className="text-lg font-medium text-[#2D3142]">
                       {fact.value}
                     </p>
+                    {fact.source === "caregiver" && (
+                      <span className="mt-2 inline-block rounded-full bg-[#4CAF87]/15 px-3 py-1 text-sm font-semibold text-[#4CAF87]">
+                        Von Angehoerigen
+                      </span>
+                    )}
                     <p className="mt-1 text-sm text-[#2D3142]/70">
                       {SOURCE_LABELS[fact.source]}
                     </p>

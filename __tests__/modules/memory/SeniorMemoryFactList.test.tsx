@@ -85,6 +85,41 @@ describe("SeniorMemoryFactList", () => {
       expect(screen.getByText("Pfefferminz")).toBeInTheDocument();
     });
 
+    // C8: Senior sieht Caregiver-Eintraege mit auffaelligem Provenance-Badge.
+    // Ohne Name-Lookup in dieser Iteration — generisches Label "Von
+    // Angehoerigen" reicht fuer die "voll transparent"-Architektur (2a).
+    it("rendert 'Von Angehoerigen'-Badge bei source='caregiver' (C8)", () => {
+      const caregiverFact = {
+        ...mockFacts[0],
+        id: "f-cg",
+        source: "caregiver" as const,
+        source_user_id: "cg-42",
+        value: "Apfelstrudel",
+      };
+      render(
+        <SeniorMemoryFactList
+          facts={[caregiverFact]}
+          onDelete={vi.fn()}
+          onResetAll={vi.fn()}
+        />,
+      );
+      // Badge explizit ueber role="note" identifizieren, damit der Test
+      // nicht mit dem existierenden SOURCE_LABEL-Untertitel kollidiert.
+      const badge = screen.getByText(/^von angehoerigen$/i);
+      expect(badge).toBeInTheDocument();
+    });
+
+    it("rendert KEIN Provenance-Badge bei source='self' oder 'ai_learned'", () => {
+      render(
+        <SeniorMemoryFactList
+          facts={mockFacts}
+          onDelete={vi.fn()}
+          onResetAll={vi.fn()}
+        />,
+      );
+      expect(screen.queryByText(/^von angehoerigen$/i)).toBeNull();
+    });
+
     it("gruppiert nach Kategorie (Profil, Vorlieben, ...)", () => {
       render(
         <SeniorMemoryFactList

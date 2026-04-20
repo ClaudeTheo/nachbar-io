@@ -136,7 +136,8 @@ describe("buildDeviceHash", () => {
 
   it("trennt Browser und Script-Clients trotz aehnlicher Basis-Header", async () => {
     const browserHeaders = makeHeaders({
-      "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 14_4) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.4 Safari/605.1.15",
+      "user-agent":
+        "Mozilla/5.0 (Macintosh; Intel Mac OS X 14_4) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.4 Safari/605.1.15",
       accept: "text/html",
       "accept-language": "de-DE,de;q=0.9",
       "accept-encoding": "gzip, deflate, br",
@@ -263,8 +264,11 @@ function mockRedisWithScores(
     }),
     zremrangebyscore: vi.fn().mockResolvedValue(0),
   };
+  // Partial-Mock: nur zrange/zremrangebyscore sind im Test in Gebrauch.
+  // Direct-Cast schlaegt fehl (TS2352: Redis hat 176+ weitere Properties),
+  // daher via unknown.
   mockedGetRedis.mockReturnValue(
-    mockRedis as NonNullable<ReturnType<typeof getSecurityRedis>>,
+    mockRedis as unknown as NonNullable<ReturnType<typeof getSecurityRedis>>,
   );
   return { mockRedis, now };
 }

@@ -2,6 +2,15 @@ import { describe, it, expect, vi, afterEach } from "vitest";
 import { render, screen, waitFor, cleanup } from "@testing-library/react";
 
 // Mocks muessen VOR dem Page-Import stehen
+// Explicit nullable-Typ: "kein Quartier zugeordnet"-Test (Zeile ~170)
+// weist currentQuarter = null zu, muss also im State-Typ erlaubt sein.
+type QuarterMock = {
+  id: string;
+  name: string;
+  center_lat: number;
+  center_lng: number;
+  zoom_level: number;
+};
 const quarterState = vi.hoisted(() => ({
   currentQuarter: {
     id: "q-test-001",
@@ -9,7 +18,7 @@ const quarterState = vi.hoisted(() => ({
     center_lat: 47.5535,
     center_lng: 7.964,
     zoom_level: 15,
-  },
+  } as QuarterMock | null,
   loading: false,
   refreshQuarter: vi.fn(),
   switchQuarter: vi.fn(),

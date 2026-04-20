@@ -9,10 +9,7 @@ import {
 } from "../helpers/agent-factory";
 import { hashHouseholdId, hashUserId } from "@/lib/quarter/resident-hash";
 import { withAgent } from "../helpers/scenario-runner";
-import {
-  waitForStableUI,
-  waitForChatMessage,
-} from "../helpers/observer";
+import { waitForStableUI, waitForChatMessage } from "../helpers/observer";
 import { TEST_MODE_HEADERS, TIMEOUTS } from "../helpers/test-config";
 import { supabaseAdmin } from "../helpers/supabase-admin";
 import { TEST_HOUSEHOLDS } from "../helpers/test-config";
@@ -89,7 +86,8 @@ test.describe("S12: Kontaktanfrage -> Annahme -> Chat", () => {
         {
           headers: TEST_MODE_HEADERS,
           data: {
-            hashedId: hashUserId(userIdB),
+            // Non-null assertion: oben per expect(userIdB).toBeTruthy() abgesichert
+            hashedId: hashUserId(userIdB!),
             householdId: hashHouseholdId(TEST_HOUSEHOLDS[1].id),
             message: requestMessage,
           },
@@ -98,71 +96,88 @@ test.describe("S12: Kontaktanfrage -> Annahme -> Chat", () => {
       expect(requestResponse.status()).toBe(201);
     });
 
-    await withAgent(agentB, "Anfrage annehmen und antworten", async ({ page }) => {
-      await page.goto("/messages");
-      await waitForStableUI(page);
-
-      const pendingCard = page
-        .locator("div.rounded-lg")
-        .filter({ hasText: requestMessage })
-        .first();
-
-      try {
-        await pendingCard.waitFor({
-          state: "visible",
-          timeout: TIMEOUTS.realtimeDelivery,
-        });
-      } catch {
-        await page.reload();
+    await withAgent(
+      agentB,
+      "Anfrage annehmen und antworten",
+      async ({ page }) => {
+        await page.goto("/messages");
         await waitForStableUI(page);
-        await pendingCard.waitFor({
+
+        const pendingCard = page
+          .locator("div.rounded-lg")
+          .filter({ hasText: requestMessage })
+          .first();
+
+        try {
+          await pendingCard.waitFor({
+            state: "visible",
+            timeout: TIMEOUTS.realtimeDelivery,
+          });
+        } catch {
+          await page.reload();
+          await waitForStableUI(page);
+          await pendingCard.waitFor({
+            state: "visible",
+            timeout: TIMEOUTS.elementVisible,
+          });
+        }
+
+        await pendingCard.getByRole("button", { name: /Annehmen/i }).click();
+        await page.waitForURL(/\/messages\/.+/, { timeout: TIMEOUTS.pageLoad });
+
+        await expect(
+          page.locator("[data-testid='chat-partner-name']"),
+        ).toHaveText(/Anna T\./i);
+
+        await page.locator("[data-testid='chat-input']").fill(replyMessage);
+        await page.locator("[data-testid='chat-send']").click();
+
+        await expect(
+          page
+            .locator("[data-testid='chat-message']")
+            .filter({ hasText: replyMessage })
+            .first(),
+        ).toBeVisible({ timeout: TIMEOUTS.elementVisible });
+      },
+    );
+
+    await withAgent(
+      agentA,
+      "Antwort empfangen und zurueckschreiben",
+      async ({ page }) => {
+        await page.goto("/messages");
+        await waitForStableUI(page);
+
+        const conversationCard = page
+          .locator("[data-testid='conversation-card']")
+          .filter({ hasText: /Bernd M\./i })
+          .first();
+        await conversationCard.waitFor({
           state: "visible",
           timeout: TIMEOUTS.elementVisible,
         });
-      }
+        await conversationCard.click();
+        await page.waitForURL(/\/messages\/.+/, { timeout: TIMEOUTS.pageLoad });
 
-      await pendingCard.getByRole("button", { name: /Annehmen/i }).click();
-      await page.waitForURL(/\/messages\/.+/, { timeout: TIMEOUTS.pageLoad });
+        try {
+          await waitForChatMessage(page, replyMessage, {
+            timeout: TIMEOUTS.realtimeDelivery,
+          });
+        } catch {
+          await page.reload();
+          await waitForStableUI(page);
+          await expect(
+            page
+              .locator("[data-testid='chat-message']")
+              .filter({ hasText: replyMessage })
+              .first(),
+          ).toBeVisible({ timeout: TIMEOUTS.elementVisible });
+        }
 
-      await expect(page.locator("[data-testid='chat-partner-name']")).toHaveText(
-        /Anna T\./i,
-      );
-
-      await page.locator("[data-testid='chat-input']").fill(replyMessage);
-      await page.locator("[data-testid='chat-send']").click();
-
-      await expect(
-        page.locator("[data-testid='chat-message']").filter({ hasText: replyMessage }).first(),
-      ).toBeVisible({ timeout: TIMEOUTS.elementVisible });
-    });
-
-    await withAgent(agentA, "Antwort empfangen und zurueckschreiben", async ({ page }) => {
-      await page.goto("/messages");
-      await waitForStableUI(page);
-
-      const conversationCard = page
-        .locator("[data-testid='conversation-card']")
-        .filter({ hasText: /Bernd M\./i })
-        .first();
-      await conversationCard.waitFor({ state: "visible", timeout: TIMEOUTS.elementVisible });
-      await conversationCard.click();
-      await page.waitForURL(/\/messages\/.+/, { timeout: TIMEOUTS.pageLoad });
-
-      try {
-        await waitForChatMessage(page, replyMessage, {
-          timeout: TIMEOUTS.realtimeDelivery,
-        });
-      } catch {
-        await page.reload();
-        await waitForStableUI(page);
-        await expect(
-          page.locator("[data-testid='chat-message']").filter({ hasText: replyMessage }).first(),
-        ).toBeVisible({ timeout: TIMEOUTS.elementVisible });
-      }
-
-      await page.locator("[data-testid='chat-input']").fill(followUpMessage);
-      await page.locator("[data-testid='chat-send']").click();
-    });
+        await page.locator("[data-testid='chat-input']").fill(followUpMessage);
+        await page.locator("[data-testid='chat-send']").click();
+      },
+    );
 
     await withAgent(agentB, "Rueckfrage empfangen", async ({ page }) => {
       try {

@@ -1,0 +1,10 @@
+__tests__/lib/security/device-fingerprint.test.ts(267,5): error TS2352: Conversion of type '{ zrange: Mock<Procedure>; zremrangebyscore: Mock<Procedure>; }' to type 'Redis' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+  Type '{ zrange: Mock<Procedure>; zremrangebyscore: Mock<Procedure>; }' is missing the following properties from type 'Redis': client, enableTelemetry, enableAutoPipelining, readYourWritesSyncToken, and 176 more.
+__tests__/pages/quartier-info-vorlesen.test.tsx(170,5): error TS2322: Type 'null' is not assignable to type '{ id: string; name: string; center_lat: number; center_lng: number; zoom_level: number; }'.
+tests/e2e/cross-portal/x01-checkin-heartbeat.spec.ts(134,24): error TS2339: Property 'display_name' does not exist on type 'never'.
+tests/e2e/cross-portal/x01-checkin-heartbeat.spec.ts(135,24): error TS2339: Property 'last_checkin_status' does not exist on type 'never'.
+tests/e2e/cross-portal/x01-checkin-heartbeat.spec.ts(136,24): error TS2339: Property 'last_checkin_at' does not exist on type 'never'.
+tests/e2e/cross-portal/x19-postfach-thread.spec.ts(428,28): error TS2339: Property 'messages' does not exist on type 'never'.
+tests/e2e/cross-portal/x19-postfach-thread.spec.ts(429,28): error TS2339: Property 'messages' does not exist on type 'never'.
+tests/e2e/scenarios/s12-neighbor-request-chat.spec.ts(92,34): error TS2345: Argument of type 'string | null' is not assignable to parameter of type 'string'.
+  Type 'null' is not assignable to type 'string'.

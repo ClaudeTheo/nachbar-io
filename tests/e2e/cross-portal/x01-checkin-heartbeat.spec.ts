@@ -3,7 +3,11 @@
 // 1. Senior sendet Check-in "ok/good" -> Caregiver sieht "Alles gut" im Detail
 // 2. Senior sendet Check-in "need_help" -> Caregiver sieht "Braucht Hilfe" + aktive SOS-Sicht
 import { test, expect } from "../fixtures/roles";
-import { gotoCare, waitForApiResult, waitForStableUI } from "../helpers/observer";
+import {
+  gotoCare,
+  waitForApiResult,
+  waitForStableUI,
+} from "../helpers/observer";
 import { portalUrl } from "../helpers/portal-urls";
 import { TIMEOUTS } from "../helpers/test-config";
 import { supabaseAdmin } from "../helpers/supabase-admin";
@@ -111,11 +115,12 @@ test.describe("X1: Bewohner Check-in -> Angehoeriger Status", () => {
   }) => {
     expect(residentId).toBeTruthy();
 
-    let statusData: {
+    type ResidentStatus = {
       display_name?: string;
       last_checkin_status?: string | null;
       last_checkin_at?: string | null;
-    } | null = null;
+    };
+    let statusData: ResidentStatus | null = null;
 
     await expect
       .poll(
@@ -131,9 +136,12 @@ test.describe("X1: Bewohner Check-in -> Angehoeriger Status", () => {
       )
       .toBe("ok");
 
-    expect(statusData?.display_name).toBeTruthy();
-    expect(statusData?.last_checkin_status).toBe("ok");
-    expect(statusData?.last_checkin_at).toBeTruthy();
+    // TS-Control-Flow-Analysis trackt die Async-Callback-Zuweisung nicht und
+    // narrowed statusData hier zu never. "as"-Cast ueberbrueckt die Luecke.
+    const status = statusData as ResidentStatus | null;
+    expect(status?.display_name).toBeTruthy();
+    expect(status?.last_checkin_status).toBe("ok");
+    expect(status?.last_checkin_at).toBeTruthy();
 
     await caregiverPage.page.goto(
       portalUrl("io", `/care/meine-senioren/${residentId}`),
@@ -141,7 +149,7 @@ test.describe("X1: Bewohner Check-in -> Angehoeriger Status", () => {
     await waitForStableUI(caregiverPage.page, { timeout: TIMEOUTS.pageLoad });
 
     await expect(
-      caregiverPage.page.getByText(statusData!.display_name!).first(),
+      caregiverPage.page.getByText(status!.display_name!).first(),
     ).toBeVisible({ timeout: TIMEOUTS.pageLoad });
     await expect(
       caregiverPage.page.getByText(/Aktivitaetsstatus/i).first(),

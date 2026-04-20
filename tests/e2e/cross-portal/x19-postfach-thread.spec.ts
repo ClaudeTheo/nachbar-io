@@ -112,7 +112,9 @@ async function gotoThreadDetail(
   });
 }
 
-async function fetchThreadMessages(threadId: string): Promise<CivicMessageRecord[]> {
+async function fetchThreadMessages(
+  threadId: string,
+): Promise<CivicMessageRecord[]> {
   const { data, error } = await supabaseAdmin(
     "civic_messages",
     "GET",
@@ -125,7 +127,8 @@ async function fetchThreadMessages(threadId: string): Promise<CivicMessageRecord
 }
 
 function summarizeCivicThread(messages: CivicMessageRecord[]) {
-  const root = messages.find((message) => message.thread_id === message.id) ?? null;
+  const root =
+    messages.find((message) => message.thread_id === message.id) ?? null;
   const replies = messages.filter((message) => !root || message.id !== root.id);
   const hasStaffReply = replies.some(
     (message) => message.direction === "staff_to_citizen",
@@ -134,8 +137,7 @@ function summarizeCivicThread(messages: CivicMessageRecord[]) {
 
   return {
     replyCount: replies.length,
-    awaitingReply:
-      hasStaffReply && lastReply?.direction === "citizen_to_staff",
+    awaitingReply: hasStaffReply && lastReply?.direction === "citizen_to_staff",
   };
 }
 
@@ -152,7 +154,10 @@ async function cleanupExistingE2eThreads() {
   }
 }
 
-async function insertStaffReply(threadId: string, body: string): Promise<string> {
+async function insertStaffReply(
+  threadId: string,
+  body: string,
+): Promise<string> {
   const messages = await fetchThreadMessages(threadId);
   const root = messages.find((message) => message.id === threadId) ?? null;
 
@@ -248,7 +253,9 @@ test.describe("X19: OZG-Civic Postfach — Buerger↔Rathaus Thread", () => {
           );
           if (!response.ok()) return null;
           threadsData = await response.json();
-          const thread = threadsData.find((entry) => entry.subject === TEST_SUBJECT);
+          const thread = threadsData.find(
+            (entry) => entry.subject === TEST_SUBJECT,
+          );
           threadId = thread?.id ?? null;
           return threadId;
         },
@@ -278,7 +285,8 @@ test.describe("X19: OZG-Civic Postfach — Buerger↔Rathaus Thread", () => {
       .poll(
         async () => {
           const messages = await fetchThreadMessages(threadId!);
-          const root = messages.find((message) => message.id === threadId) ?? null;
+          const root =
+            messages.find((message) => message.id === threadId) ?? null;
           return root?.id ?? null;
         },
         { timeout: 20_000, intervals: [500, 1_000, 2_000] },
@@ -344,9 +352,9 @@ test.describe("X19: OZG-Civic Postfach — Buerger↔Rathaus Thread", () => {
 
     await gotoThreadDetail(residentPage.page, threadId!);
 
-    await expect(
-      residentPage.page.getByText(TEST_BODY_STAFF),
-    ).toBeVisible({ timeout: 20_000 });
+    await expect(residentPage.page.getByText(TEST_BODY_STAFF)).toBeVisible({
+      timeout: 20_000,
+    });
 
     await expect
       .poll(
@@ -359,7 +367,9 @@ test.describe("X19: OZG-Civic Postfach — Buerger↔Rathaus Thread", () => {
             id: string;
             unread_count: number;
           }>;
-          return threads.find((entry) => entry.id === threadId)?.unread_count ?? null;
+          return (
+            threads.find((entry) => entry.id === threadId)?.unread_count ?? null
+          );
         },
         { timeout: 20_000, intervals: [500, 1_000, 2_000] },
       )
@@ -377,10 +387,7 @@ test.describe("X19: OZG-Civic Postfach — Buerger↔Rathaus Thread", () => {
 
     await gotoThreadDetail(residentPage.page, threadId!);
 
-    await fillPostfachReply(
-      residentPage.page,
-      TEST_BODY_CITIZEN_REPLY,
-    );
+    await fillPostfachReply(residentPage.page, TEST_BODY_CITIZEN_REPLY);
 
     const replyResponsePromise = residentPage.page.waitForResponse(
       (response) =>
@@ -404,12 +411,13 @@ test.describe("X19: OZG-Civic Postfach — Buerger↔Rathaus Thread", () => {
       residentPage.page.getByTestId("postfach-reply-success"),
     ).toBeVisible({ timeout: 30_000 });
 
-    let residentDetail: {
+    type ResidentThreadDetail = {
       messages: Array<{
         direction: string;
         body: string;
       }>;
-    } | null = null;
+    };
+    let residentDetail: ResidentThreadDetail | null = null;
 
     await expect
       .poll(
@@ -425,8 +433,10 @@ test.describe("X19: OZG-Civic Postfach — Buerger↔Rathaus Thread", () => {
       )
       .toBe(3);
 
-    expect(residentDetail?.messages[2]?.direction).toBe("citizen_to_staff");
-    expect(residentDetail?.messages[2]?.body).toContain("Vielen Dank");
+    // TS-Control-Flow-Analysis trackt die Async-Callback-Zuweisung nicht; "as"-Cast ueberbrueckt.
+    const detail = residentDetail as ResidentThreadDetail | null;
+    expect(detail?.messages[2]?.direction).toBe("citizen_to_staff");
+    expect(detail?.messages[2]?.body).toContain("Vielen Dank");
 
     await expect
       .poll(

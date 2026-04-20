@@ -71,7 +71,10 @@ export async function deliverPush(
       subs.map(async (sub) => {
         try {
           await webpush.sendNotification(
-            { endpoint: sub.endpoint, keys: { p256dh: sub.p256dh, auth: sub.auth } },
+            {
+              endpoint: sub.endpoint,
+              keys: { p256dh: sub.p256dh, auth: sub.auth },
+            },
             jsonPayload,
             { TTL: 3600 },
           );
@@ -130,6 +133,39 @@ export async function notifyOrgStaff(
     );
   } catch (err) {
     console.error("[push-delivery] notifyOrgStaff fehlgeschlagen:", err);
+  }
+}
+
+/**
+ * Sendet Push an alle Staff-Mitglieder einer civic_organization
+ * (civic_members). Genutzt fuer Hausverwaltungs-Modul (type='housing') und
+ * andere civic-Welten (kommune, pflege). Portal ist 'civic' (gleich wie
+ * notifyOrgStaff), weil beide Welten denselben Cockpit-Channel bespielen.
+ *
+ * Unterschied zu notifyOrgStaff: liest aus civic_members statt org_members
+ * und prueft keine verification_status-Spalte (die existiert fuer
+ * civic_organizations nicht). Die Berechtigungs-Logik (z.B. Housing-Master-
+ * Flag) ist Verantwortung des Callers.
+ */
+export async function notifyCivicOrgStaff(
+  civicOrgId: string,
+  payload: PushPayload,
+): Promise<void> {
+  try {
+    const supabase = getServiceClient();
+
+    const { data: members } = await supabase
+      .from("civic_members")
+      .select("user_id")
+      .eq("org_id", civicOrgId);
+
+    if (!members?.length) return;
+
+    await Promise.allSettled(
+      members.map((m) => deliverPush(m.user_id, "civic", payload)),
+    );
+  } catch (err) {
+    console.error("[push-delivery] notifyCivicOrgStaff fehlgeschlagen:", err);
   }
 }
 

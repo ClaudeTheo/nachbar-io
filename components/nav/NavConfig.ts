@@ -163,34 +163,45 @@ export function getNavItems(role: NavRole): NavItemConfig[] {
 
 /**
  * Ermittelt die Nav-Rolle eines Users anhand von:
- * 1. org_members → org_admin
+ * 1. org_members (klassisch) ODER civic_members (civic/housing) → org_admin
  * 2. caregiver_links (aktiv, nicht widerrufen) → caregiver
  * 3. hilfe_helper_profiles (aktiv) → helper
  * 4. Sonst → senior (Default)
  *
  * Priorität: org_admin > caregiver > helper > senior
+ *
+ * civic_members ergaenzt (A4 Hausverwaltungs-Modul): Housing-Staff lebt
+ * in civic_organizations.type='housing', braucht aber die gleiche Cockpit-
+ * Nav wie klassische Org-Admins. Export fuer Tests.
  */
-async function detectNavRole(userId: string): Promise<NavRole> {
+export async function detectNavRole(userId: string): Promise<NavRole> {
   const supabase = createClient();
 
   // Parallele Abfragen
-  const [orgResult, caregiverResult, helperResult] = await Promise.all([
-    supabase.from("org_members").select("id").eq("user_id", userId).limit(1),
-    supabase
-      .from("caregiver_links")
-      .select("id")
-      .eq("caregiver_id", userId)
-      .is("revoked_at", null)
-      .limit(1),
-    supabase
-      .from("hilfe_helper_profiles")
-      .select("id")
-      .eq("user_id", userId)
-      .eq("is_active", true)
-      .limit(1),
-  ]);
+  const [orgResult, civicResult, caregiverResult, helperResult] =
+    await Promise.all([
+      supabase.from("org_members").select("id").eq("user_id", userId).limit(1),
+      supabase
+        .from("civic_members")
+        .select("id")
+        .eq("user_id", userId)
+        .limit(1),
+      supabase
+        .from("caregiver_links")
+        .select("id")
+        .eq("caregiver_id", userId)
+        .is("revoked_at", null)
+        .limit(1),
+      supabase
+        .from("hilfe_helper_profiles")
+        .select("id")
+        .eq("user_id", userId)
+        .eq("is_active", true)
+        .limit(1),
+    ]);
 
   if (orgResult.data && orgResult.data.length > 0) return "org_admin";
+  if (civicResult.data && civicResult.data.length > 0) return "org_admin";
   if (caregiverResult.data && caregiverResult.data.length > 0)
     return "caregiver";
   if (helperResult.data && helperResult.data.length > 0) return "helper";

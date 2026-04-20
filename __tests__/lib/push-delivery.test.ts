@@ -23,7 +23,12 @@ process.env.NEXT_PUBLIC_SUPABASE_URL = "https://test.supabase.co";
 process.env.SUPABASE_SERVICE_ROLE_KEY = "test-service-role-key";
 
 import webpush from "web-push";
-import { deliverPush, notifyOrgStaff, notifyCitizen } from "@/lib/push-delivery";
+import {
+  deliverPush,
+  notifyOrgStaff,
+  notifyCitizen,
+  notifyCivicOrgStaff,
+} from "@/lib/push-delivery";
 
 describe("push-delivery", () => {
   beforeEach(() => {
@@ -33,8 +38,16 @@ describe("push-delivery", () => {
   describe("deliverPush", () => {
     it("sendet Push an alle Subscriptions eines Users fuer ein Portal", async () => {
       const subs = [
-        { endpoint: "https://push.example.com/1", p256dh: "key1", auth: "auth1" },
-        { endpoint: "https://push.example.com/2", p256dh: "key2", auth: "auth2" },
+        {
+          endpoint: "https://push.example.com/1",
+          p256dh: "key1",
+          auth: "auth1",
+        },
+        {
+          endpoint: "https://push.example.com/2",
+          p256dh: "key2",
+          auth: "auth2",
+        },
       ];
       mockFrom.mockReturnValue({
         select: vi.fn().mockReturnValue({
@@ -44,7 +57,9 @@ describe("push-delivery", () => {
         }),
       });
 
-      (webpush.sendNotification as ReturnType<typeof vi.fn>).mockResolvedValue({});
+      (webpush.sendNotification as ReturnType<typeof vi.fn>).mockResolvedValue(
+        {},
+      );
 
       await deliverPush("user-1", "io", {
         title: "Test",
@@ -58,7 +73,11 @@ describe("push-delivery", () => {
 
     it("loescht abgelaufene Subscriptions bei HTTP 410", async () => {
       const subs = [
-        { endpoint: "https://push.example.com/expired", p256dh: "k", auth: "a" },
+        {
+          endpoint: "https://push.example.com/expired",
+          p256dh: "k",
+          auth: "a",
+        },
       ];
 
       const mockDelete = vi.fn().mockReturnValue({
@@ -98,7 +117,10 @@ describe("push-delivery", () => {
       mockFrom.mockReturnValue({
         select: vi.fn().mockReturnValue({
           eq: vi.fn().mockReturnValue({
-            eq: vi.fn().mockResolvedValue({ data: null, error: { message: "DB-Fehler" } }),
+            eq: vi.fn().mockResolvedValue({
+              data: null,
+              error: { message: "DB-Fehler" },
+            }),
           }),
         }),
       });
@@ -122,7 +144,9 @@ describe("push-delivery", () => {
             select: vi.fn().mockReturnValue({
               eq: vi.fn().mockReturnValue({
                 eq: vi.fn().mockReturnValue({
-                  maybeSingle: vi.fn().mockResolvedValue({ data: { id: "org-1" }, error: null }),
+                  maybeSingle: vi
+                    .fn()
+                    .mockResolvedValue({ data: { id: "org-1" }, error: null }),
                 }),
               }),
             }),
@@ -131,7 +155,10 @@ describe("push-delivery", () => {
         if (table === "org_members") {
           return {
             select: vi.fn().mockReturnValue({
-              eq: vi.fn().mockResolvedValue({ data: [{ user_id: "staff-1" }, { user_id: "staff-2" }], error: null }),
+              eq: vi.fn().mockResolvedValue({
+                data: [{ user_id: "staff-1" }, { user_id: "staff-2" }],
+                error: null,
+              }),
             }),
           };
         }
@@ -154,6 +181,75 @@ describe("push-delivery", () => {
 
       // Kein Fehler, auch wenn keine Subscriptions vorhanden
       expect(true).toBe(true);
+    });
+  });
+
+  describe("notifyCivicOrgStaff (A5 civic-aware)", () => {
+    it("sendet Push an alle civic_members der angegebenen civic_organization", async () => {
+      const sendNotification = webpush.sendNotification as ReturnType<
+        typeof vi.fn
+      >;
+      sendNotification.mockResolvedValue({});
+
+      mockFrom.mockImplementation((table: string) => {
+        if (table === "civic_members") {
+          return {
+            select: vi.fn().mockReturnValue({
+              eq: vi.fn().mockResolvedValue({
+                data: [
+                  { user_id: "housing-staff-1" },
+                  { user_id: "housing-staff-2" },
+                ],
+                error: null,
+              }),
+            }),
+          };
+        }
+        // push_subscriptions fuer beide staff
+        return {
+          select: vi.fn().mockReturnValue({
+            eq: vi.fn().mockReturnValue({
+              eq: vi.fn().mockResolvedValue({
+                data: [
+                  {
+                    endpoint: "https://push.example.com/s",
+                    p256dh: "k",
+                    auth: "a",
+                  },
+                ],
+                error: null,
+              }),
+            }),
+          }),
+        };
+      });
+
+      await notifyCivicOrgStaff("housing-org-1", {
+        title: "Neue Maengelmeldung",
+        body: "Heizung im Treppenhaus",
+        url: "/org/housing/reports/1",
+        tag: "housing-report-1",
+      });
+
+      // Zwei staff → zwei Push-Zustellungen (je 1 Subscription gemockt)
+      expect(sendNotification).toHaveBeenCalledTimes(2);
+    });
+
+    it("wirft nicht bei leeren civic_members (keine Staff = kein Push)", async () => {
+      mockFrom.mockImplementation(() => ({
+        select: vi.fn().mockReturnValue({
+          eq: vi.fn().mockResolvedValue({ data: [], error: null }),
+        }),
+      }));
+
+      await expect(
+        notifyCivicOrgStaff("empty-org", {
+          title: "X",
+          body: "Y",
+          url: "/x",
+          tag: "x",
+        }),
+      ).resolves.toBeUndefined();
     });
   });
 

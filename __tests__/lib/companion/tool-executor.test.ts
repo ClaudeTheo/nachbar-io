@@ -215,6 +215,66 @@ describe("executeCompanionTool", () => {
     });
   });
 
+  describe("report_issue (A6 housing-Fix: municipal_reports statt issue_reports)", () => {
+    it("insert geht nach municipal_reports mit category='other' und status='open'", async () => {
+      const mock = buildMockSupabase();
+      vi.mocked(createClient).mockResolvedValue(
+        mock as unknown as Awaited<ReturnType<typeof createClient>>,
+      );
+
+      const result = await executeCompanionTool(
+        "report_issue",
+        {
+          description: "Strassenlaterne defekt",
+          location: "Purkersdorfer Strasse 10",
+        },
+        "user-1",
+      );
+
+      expect(result.success).toBe(true);
+      // NICHT issue_reports (tote Referenz, Tabelle existiert nicht in DB)
+      expect(mock.from).not.toHaveBeenCalledWith("issue_reports");
+      expect(mock.from).toHaveBeenCalledWith("municipal_reports");
+    });
+
+    it("setzt required-Felder: category, status, quarter_id, user_id, description, location_text", async () => {
+      const insertSpy = vi.fn().mockReturnValue({
+        then: (resolve: (v: { error: null }) => unknown) =>
+          resolve({ error: null }),
+      });
+      const mock = buildMockSupabase();
+      // Override municipal_reports → eigenes insert-Tracking
+      const origFrom = mock.from;
+      mock.from = vi.fn((table: string) => {
+        if (table === "municipal_reports") {
+          return { insert: insertSpy } as unknown as ReturnType<
+            typeof origFrom
+          >;
+        }
+        return origFrom(table);
+      });
+
+      vi.mocked(createClient).mockResolvedValue(
+        mock as unknown as Awaited<ReturnType<typeof createClient>>,
+      );
+
+      await executeCompanionTool(
+        "report_issue",
+        { description: "Muell liegt rum", location: "Hof" },
+        "user-1",
+      );
+
+      expect(insertSpy).toHaveBeenCalledTimes(1);
+      const arg = insertSpy.mock.calls[0][0] as Record<string, unknown>;
+      expect(arg.user_id).toBe("user-1");
+      expect(arg.quarter_id).toBe("q-1");
+      expect(arg.description).toBe("Muell liegt rum");
+      expect(arg.location_text).toBe("Hof");
+      expect(arg.category).toBe("other"); // report_category-Enum-konformer Default
+      expect(arg.status).toBe("open");
+    });
+  });
+
   describe("fehlende Quartier-Zuordnung", () => {
     it("gibt Fehler zurueck wenn Nutzer kein Quartier hat", async () => {
       const mock = buildMockSupabase({

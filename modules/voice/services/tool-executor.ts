@@ -206,11 +206,18 @@ export async function executeCompanionTool(
             summary: "Quartier-Zuordnung nicht gefunden.",
           };
 
-        const { error } = await supabase.from("issue_reports").insert({
+        // A6-Fix: Tabelle `issue_reports` existiert nicht — Meldungen
+        // werden in `municipal_reports` (Welle 1, Mig 097) geschrieben.
+        // category='other' als Default, Voice-Tool liefert keine Kategorie;
+        // LLM-Klassifizierung kann spaeter ergaenzt werden.
+        // location aus dem Voice-Tool ist Freitext → location_text.
+        const { error } = await supabase.from("municipal_reports").insert({
           user_id: userId,
           quarter_id: ctx.quarterId,
+          category: "other",
           description: (params.description as string).trim(),
-          location: (params.location as string | undefined)?.trim() ?? null,
+          location_text:
+            (params.location as string | undefined)?.trim() ?? null,
           status: "open",
         });
 

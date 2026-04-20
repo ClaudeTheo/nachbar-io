@@ -58,6 +58,30 @@ vi.mock("@/lib/supabase/server", () => ({
   }),
 }));
 
+// getSosAlert (sos.service.ts) nutzt getAdminSupabase fuer 2 Selects:
+// (1) "id, senior_id" -> Meta fuer Zugriffspruefung, (2) SOS_ALERT_SELECT -> volles Alert
+vi.mock("@/lib/supabase/admin", () => ({
+  getAdminSupabase: vi.fn(() => ({
+    from: vi.fn((table: string) => {
+      if (table === "care_sos_alerts")
+        return {
+          select: vi.fn((columns?: string) => ({
+            eq: vi.fn().mockReturnValue({
+              single: vi.fn().mockResolvedValue({
+                data:
+                  columns === "id, senior_id"
+                    ? { id: mockAlert.id, senior_id: mockAlert.senior_id }
+                    : mockAlert,
+                error: null,
+              }),
+            }),
+          })),
+        };
+      return { select: vi.fn() };
+    }),
+  })),
+}));
+
 vi.mock("@/lib/care/audit", () => ({
   writeAuditLog: vi.fn().mockResolvedValue(undefined),
 }));
@@ -157,12 +181,10 @@ describe("PATCH /api/care/sos/[id]", () => {
           return {
             select: vi.fn().mockReturnValue({
               eq: vi.fn().mockReturnValue({
-                single: vi
-                  .fn()
-                  .mockResolvedValue({
-                    data: { senior_id: "user-1" },
-                    error: null,
-                  }),
+                single: vi.fn().mockResolvedValue({
+                  data: { senior_id: "user-1" },
+                  error: null,
+                }),
               }),
             }),
             update: vi.fn().mockReturnValue({

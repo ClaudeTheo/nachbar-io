@@ -56,11 +56,12 @@ export default function EinladungLandingPage({ params }: Props) {
     };
   }, [token]);
 
+  const acceptPath = token ? `/einladung/${token}/accept` : "";
   const loginHref = token
-    ? `/login?next=${encodeURIComponent(`/einladung/${token}/consume`)}`
+    ? `/login?next=${encodeURIComponent(acceptPath)}`
     : "/login";
   const registerHref = token
-    ? `/register?invite=${encodeURIComponent(token)}`
+    ? `/register?next=${encodeURIComponent(acceptPath)}`
     : "/register";
 
   return (

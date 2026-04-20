@@ -10,6 +10,7 @@ import {
   normalizeCode,
 } from "@/lib/invite-codes";
 import { ServiceError } from "@/lib/services/service-error";
+import { findOrCreateQuarterByPostalCode } from "@/lib/quarters/postal-auto";
 
 // ============================================================
 // Typen
@@ -138,12 +139,15 @@ export async function completeRegistration(
     houseNumber,
     lat,
     lng,
+    postalCode,
+    city,
     verificationMethod,
     inviteCode,
     referrerId,
     quarterId: bodyQuarterId,
   } = input;
   let householdId = input.householdId;
+  let newQuarterId: string | null = null; // fuer quarter_admins-Insert nach Profil-Create
 
   if (!displayName?.trim()) {
     throw new ServiceError("Anzeigename ist erforderlich", 400);
@@ -158,13 +162,19 @@ export async function completeRegistration(
 
   // 0. Haushalt suchen oder erstellen (bei Adress-Registrierung ohne Invite-Code)
   if (!householdId && streetName && houseNumber) {
-    householdId = await findOrCreateHousehold(adminDb, {
+    const hhResult = await findOrCreateHousehold(adminDb, {
       streetName,
       houseNumber,
       lat,
       lng,
+      postalCode,
+      city,
       bodyQuarterId,
     });
+    householdId = hhResult.householdId;
+    if (hhResult.isNewQuarter && hhResult.quarterId) {
+      newQuarterId = hhResult.quarterId;
+    }
   }
 
   // 1. User-Profil erstellen
@@ -175,6 +185,25 @@ export async function completeRegistration(
     uiMode,
     verificationMethod,
   );
+
+  // 1b. A3-Pivot: Erster User in einem frisch gegruendeten PLZ-Quartier
+  //     wird automatisch quarter_admin. Sonst koennte er keine Nachbarn
+  //     einladen / Moderator-Rechte ausueben (RLS-Helper is_quarter_admin_for
+  //     aus Mig 051 prueft quarter_admins-Tabelle).
+  if (newQuarterId) {
+    const { error: adminError } = await adminDb.from("quarter_admins").insert({
+      user_id: userId,
+      quarter_id: newQuarterId,
+    });
+    if (adminError) {
+      // Nicht blockierend — Registrierung darf nicht an diesem Nebenschritt
+      // scheitern. Im Zweifel kann Super-Admin nachsetzen.
+      console.error(
+        "[Register] quarter_admin-Insert fehlgeschlagen:",
+        adminError,
+      );
+    }
+  }
 
   // 2. Haushalt-Zuordnung + Verifizierung + Einladung
   if (householdId) {
@@ -279,6 +308,18 @@ async function createOrReuseAuthUser(
   return newUser.user.id;
 }
 
+/**
+ * Ergebnis von findOrCreateHousehold. quarterId fehlt nur, wenn weder
+ * Pilot-Match noch PLZ-Auto-Quartier zustande kam (Edge-Case: User ohne
+ * postalCode + city). isNewQuarter=true → Caller traegt User als
+ * quarter_admin ein.
+ */
+interface FindOrCreateHouseholdResult {
+  householdId?: string;
+  quarterId?: string;
+  isNewQuarter?: boolean;
+}
+
 /** Haushalt suchen oder erstellen (bei Adress-Registrierung ohne Invite-Code) */
 async function findOrCreateHousehold(
   adminDb: SupabaseClient,
@@ -287,44 +328,53 @@ async function findOrCreateHousehold(
     houseNumber: string;
     lat?: number;
     lng?: number;
+    postalCode?: string;
+    city?: string;
     bodyQuarterId?: string;
   },
-): Promise<string | undefined> {
-  const { streetName, houseNumber, lat, lng, bodyQuarterId } = opts;
+): Promise<FindOrCreateHouseholdResult> {
+  const { streetName, houseNumber, lat, lng, postalCode, city, bodyQuarterId } =
+    opts;
   const trimmedHouseNumber = String(houseNumber).trim();
   const hasCoords = typeof lat === "number" && typeof lng === "number";
 
-  if (!trimmedHouseNumber) return undefined;
+  if (!trimmedHouseNumber) return {};
 
-  // Quartier-ID ermitteln: aus Body, via PostGIS Clustering, oder Fallback
+  // Quartier-ID ermitteln: aus Body, via PostGIS Clustering, oder PLZ-Auto-Quartier
   let quarterId: string | null = bodyQuarterId || null;
+  let isNewQuarter = false;
 
-  if (hasCoords) {
-    if (!quarterId) {
-      // Automatische Quartier-Zuweisung via PostGIS Clustering
-      const { assignUserToQuarter } =
-        await import("@/lib/geo/quarter-clustering");
-      try {
-        quarterId = await assignUserToQuarter(adminDb, lat!, lng!);
-      } catch (err) {
-        console.error("Quartier-Clustering fehlgeschlagen:", err);
-      }
+  if (hasCoords && !quarterId) {
+    // Automatische Quartier-Zuweisung via PostGIS Clustering (Pilot-Quartiere)
+    const { assignUserToQuarter } =
+      await import("@/lib/geo/quarter-clustering");
+    try {
+      quarterId = await assignUserToQuarter(adminDb, lat!, lng!);
+    } catch (err) {
+      console.error("Quartier-Clustering fehlgeschlagen:", err);
     }
-  } else {
-    // Straßenname nicht in STREET_COORDS (andere Straße in Bad Säckingen)
-    // Trotzdem Haushalt erstellen mit Quartier-Fallback-Koordinaten
+  } else if (!hasCoords) {
+    // Strassenname nicht in STREET_COORDS (andere Strasse oder Stadt)
+    // Trotzdem Haushalt erstellen, Quartier per PLZ-Auto-Bildung unten.
     console.warn(
-      `Straße nicht in Pilotgebiet: "${streetName}" — erstelle Haushalt mit Fallback-Koordinaten`,
+      `Strasse nicht in Pilotgebiet: "${streetName}" — Quartier-Bildung via PLZ`,
     );
   }
 
-  if (!quarterId) {
-    const { data: quarter } = await adminDb
-      .from("quarters")
-      .select("id")
-      .limit(1)
-      .single();
-    if (quarter) quarterId = quarter.id;
+  // A3-Pivot: Wenn kein Pilot-Match, PLZ-Auto-Quartier (Mig 178).
+  // Erster User in dieser PLZ wird isNewQuarter=true → Caller setzt quarter_admin.
+  if (!quarterId && postalCode && postalCode.trim()) {
+    try {
+      const auto = await findOrCreateQuarterByPostalCode(
+        adminDb,
+        postalCode,
+        city ?? "",
+      );
+      quarterId = auto.id;
+      isNewQuarter = auto.isNew;
+    } catch (err) {
+      console.error("PLZ-Auto-Quartier fehlgeschlagen:", err);
+    }
   }
 
   // Bestehenden Haushalt suchen
@@ -336,7 +386,11 @@ async function findOrCreateHousehold(
     .maybeSingle();
 
   if (existing) {
-    return existing.id;
+    return {
+      householdId: existing.id,
+      quarterId: quarterId ?? undefined,
+      isNewQuarter,
+    };
   }
 
   // Neuen Haushalt anlegen
@@ -368,7 +422,13 @@ async function findOrCreateHousehold(
         .eq("street_name", streetName)
         .eq("house_number", trimmedHouseNumber)
         .maybeSingle();
-      if (retry) return retry.id;
+      if (retry) {
+        return {
+          householdId: retry.id,
+          quarterId: quarterId ?? undefined,
+          isNewQuarter,
+        };
+      }
     } else {
       console.error("Haushalt-Erstellung fehlgeschlagen:", insertError);
       // Fallback: Trotzdem nach bestehendem Haushalt suchen
@@ -378,13 +438,23 @@ async function findOrCreateHousehold(
         .eq("street_name", streetName)
         .eq("house_number", trimmedHouseNumber)
         .maybeSingle();
-      if (fallback) return fallback.id;
+      if (fallback) {
+        return {
+          householdId: fallback.id,
+          quarterId: quarterId ?? undefined,
+          isNewQuarter,
+        };
+      }
     }
   } else if (newHousehold) {
-    return newHousehold.id;
+    return {
+      householdId: newHousehold.id,
+      quarterId: quarterId ?? undefined,
+      isNewQuarter,
+    };
   }
 
-  return undefined;
+  return { quarterId: quarterId ?? undefined, isNewQuarter };
 }
 
 /** User-Profil erstellen (mit Rollback bei Fehler) */

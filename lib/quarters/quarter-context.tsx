@@ -1,9 +1,26 @@
 "use client";
 
-import { createContext, useContext, useState, useEffect, ReactNode, useCallback } from "react";
+import {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  ReactNode,
+  useCallback,
+} from "react";
 import { createClient } from "@/lib/supabase/client";
 import { getCachedUser } from "@/lib/supabase/cached-auth";
+import { quarterDisplayName } from "@/lib/quarter-shadow";
 import type { Quarter } from "./types";
+
+// Maskiert das Schatten-Quartier (Mig 175) als "Ohne Quartier" fuer die UI.
+// Free-first-Bewohner sehen so nicht den internen Seed-Namen, alle 22 Konsumenten
+// von currentQuarter.name greifen automatisch auf den maskierten Namen zu.
+function maskQuarter(q: Quarter | null): Quarter | null {
+  if (!q) return q;
+  const masked = quarterDisplayName(q.id, q.name);
+  return masked === q.name ? q : { ...q, name: masked };
+}
 
 interface QuarterContextType {
   currentQuarter: Quarter | null;
@@ -24,7 +41,10 @@ export function QuarterProvider({ children }: { children: ReactNode }) {
   const loadQuarter = useCallback(async () => {
     const supabase = createClient();
     const { user } = await getCachedUser(supabase);
-    if (!user) { setLoading(false); return; }
+    if (!user) {
+      setLoading(false);
+      return;
+    }
 
     const { data: profile } = await supabase
       .from("users")
@@ -39,11 +59,13 @@ export function QuarterProvider({ children }: { children: ReactNode }) {
         .select("*")
         .order("name");
       if (quarters) {
+        // allQuarters bleibt unmasked, damit Super-Admin das Schatten-Quartier
+        // in der Liste anhand des echten Namens identifizieren kann.
         setAllQuarters(quarters);
         const { getStorage } = await import("@/lib/platform-storage");
         const savedId = await getStorage("selected_quarter_id");
-        const found = quarters.find(q => q.id === savedId);
-        setCurrentQuarter(found ?? quarters[0] ?? null);
+        const found = quarters.find((q) => q.id === savedId);
+        setCurrentQuarter(maskQuarter(found ?? quarters[0] ?? null));
       }
     } else {
       // Normale Nutzer: Quartier ueber Haushalt ermitteln
@@ -55,28 +77,33 @@ export function QuarterProvider({ children }: { children: ReactNode }) {
         .limit(1)
         .single();
 
-      const quarterId = (membership?.households as unknown as { quarter_id: string } | null)?.quarter_id;
+      const quarterId = (
+        membership?.households as unknown as { quarter_id: string } | null
+      )?.quarter_id;
       if (quarterId) {
         const { data: quarter } = await supabase
           .from("quarters")
           .select("*")
           .eq("id", quarterId)
           .single();
-        if (quarter) setCurrentQuarter(quarter);
+        if (quarter) setCurrentQuarter(maskQuarter(quarter));
       }
     }
     setLoading(false);
   }, []);
 
-  const switchQuarter = useCallback((quarterId: string) => {
-    const found = allQuarters.find(q => q.id === quarterId);
-    if (found) {
-      setCurrentQuarter(found);
-      import("@/lib/platform-storage").then(({ setStorage }) => {
-        setStorage("selected_quarter_id", quarterId);
-      });
-    }
-  }, [allQuarters]);
+  const switchQuarter = useCallback(
+    (quarterId: string) => {
+      const found = allQuarters.find((q) => q.id === quarterId);
+      if (found) {
+        setCurrentQuarter(maskQuarter(found));
+        import("@/lib/platform-storage").then(({ setStorage }) => {
+          setStorage("selected_quarter_id", quarterId);
+        });
+      }
+    },
+    [allQuarters],
+  );
 
   const refreshQuarter = useCallback(async () => {
     setLoading(true);
@@ -88,9 +115,15 @@ export function QuarterProvider({ children }: { children: ReactNode }) {
   }, [loadQuarter]);
 
   return (
-    <QuarterContext.Provider value={{
-      currentQuarter, allQuarters, loading, switchQuarter, refreshQuarter
-    }}>
+    <QuarterContext.Provider
+      value={{
+        currentQuarter,
+        allQuarters,
+        loading,
+        switchQuarter,
+        refreshQuarter,
+      }}
+    >
       {children}
     </QuarterContext.Provider>
   );
@@ -99,6 +132,9 @@ export function QuarterProvider({ children }: { children: ReactNode }) {
 // Hook fuer Zugriff auf den Quartier-Kontext
 export function useQuarter() {
   const ctx = useContext(QuarterContext);
-  if (!ctx) throw new Error("useQuarter muss innerhalb von QuarterProvider verwendet werden");
+  if (!ctx)
+    throw new Error(
+      "useQuarter muss innerhalb von QuarterProvider verwendet werden",
+    );
   return ctx;
 }

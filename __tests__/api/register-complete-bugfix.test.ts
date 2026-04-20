@@ -354,7 +354,7 @@ describe("POST /api/register/complete — Bugfixes", () => {
       );
     });
 
-    it("erstellt Haushalt ohne Koordinaten mit lat/lng 0", async () => {
+    it("erstellt Haushalt ohne Koordinaten mit lat/lng 0 (PLZ-Auto-Quartier nach A3-Pivot)", async () => {
       mockCreateUser.mockResolvedValue({
         data: { user: { id: "user-street-2" } },
         error: null,
@@ -369,7 +369,17 @@ describe("POST /api/register/complete — Bugfixes", () => {
         }),
       });
 
+      // A3-Pivot: kein limit(1)-Fallback mehr, sondern PLZ-Auto-Quartier.
+      // quarters-Lookup via .eq().eq().maybeSingle() (postal_code + auto_created).
       const quarterSelect = vi.fn().mockReturnValue({
+        eq: vi.fn().mockReturnValue({
+          eq: vi.fn().mockReturnValue({
+            maybeSingle: vi.fn().mockResolvedValue({
+              data: { id: "quarter-bs", name: "Quartier 79713 Bad Saeckingen" },
+              error: null,
+            }),
+          }),
+        }),
         limit: vi.fn().mockReturnValue({
           single: vi.fn().mockResolvedValue({
             data: { id: "quarter-bs" },
@@ -419,7 +429,9 @@ describe("POST /api/register/complete — Bugfixes", () => {
           ...baseBody,
           streetName: "Purkersdorfer Straße",
           houseNumber: "10",
-          // Keine lat/lng — Fallback auf 0/0
+          postalCode: "79713",
+          city: "Bad Saeckingen",
+          // Keine lat/lng — Fallback auf 0/0, PLZ-Auto-Quartier greift
         }),
       );
 

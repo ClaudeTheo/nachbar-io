@@ -2,9 +2,10 @@
 // Lazy-Cached-Loader fuer das Senior-App-Wissensdokument.
 //
 // Das Wissensdokument (senior-app-knowledge.md, ~4014 Woerter, C3) wird pro
-// Prozess genau einmal von Disk gelesen. Kombiniert mit system_cached=true
-// (C5a) sorgt das dafuer, dass Claude den System-Prompt nur alle 5 Minuten
-// neu tokenisiert - sonst: 90 Prozent guenstigere Input-Kosten pro Turn.
+// Prozess genau einmal von Disk gelesen. Kombiniert mit
+// cache_control.system=true (C5a / F7 rename 2026-04-20) sorgt das dafuer,
+// dass Claude den System-Prompt nur alle 5 Minuten neu tokenisiert -
+// 90 Prozent guenstigere Input-Kosten pro Turn.
 //
 // Fehler werden NICHT gecached: transiente IO-Fehler sollen beim naechsten
 // Turn nicht dauerhaft bleiben.

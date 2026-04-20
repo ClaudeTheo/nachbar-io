@@ -35,12 +35,20 @@ export interface AIChatInput {
   tools?: AIToolSchema[];
   max_tokens?: number; // Default 1024
   /**
-   * Provider-neutraler Hinweis: System-Prompt gilt als statisch und darf
-   * gecached werden. Claude packt den Prompt dann in einen Content-Block mit
-   * cache_control:ephemeral (5 min TTL, -90% Input-Kosten). Andere Provider
-   * ignorieren das Flag.
+   * Provider-neutraler Opt-in fuer Prompt-Caching. Per-Call-Flags markieren,
+   * welche Teile des Payloads als statisch gelten und gecached werden duerfen.
+   * - `system`: System-Prompt wird bei Claude als Content-Block mit
+   *   cache_control:ephemeral gesendet (5 min TTL, -90 % Input-Kosten).
+   * - `messages`: reserviert fuer Multi-Turn-Caching (noch nicht implementiert).
+   * Andere Provider (Mistral, Mock) ignorieren das Feld.
+   *
+   * Historie: ersetzt das engere `system_cached?: boolean` aus Welle C C5a
+   * (Codex-Review NACHBESSERN F7, 2026-04-20).
    */
-  system_cached?: boolean;
+  cache_control?: {
+    system?: boolean;
+    messages?: boolean;
+  };
 }
 
 export type AIProviderName = "claude" | "mistral" | "off" | "mock";

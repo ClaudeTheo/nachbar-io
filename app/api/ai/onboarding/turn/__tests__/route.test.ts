@@ -9,7 +9,7 @@
 //   - Tool-Call-Flow: save_memory wird aufgerufen, Ergebnis in Response
 //   - Tool-Limit: zu viele Tool-Calls pro Turn -> 500
 //   - System-Prompt enthaelt Wissensdokument + Memory-Block
-//   - Provider-Call nutzt system_cached=true
+//   - Provider-Call nutzt cache_control.system=true
 
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { NextRequest, NextResponse } from "next/server";
@@ -322,7 +322,7 @@ describe("POST /api/ai/onboarding/turn — Happy-Path", () => {
     });
   });
 
-  it("setzt system_cached=true (C5a)", async () => {
+  it("setzt cache_control.system=true (C5a, F7 rename 2026-04-20)", async () => {
     const provider = makeProvider(textResponse("ok"));
     mockGetProvider.mockReturnValue(provider);
 
@@ -331,7 +331,7 @@ describe("POST /api/ai/onboarding/turn — Happy-Path", () => {
 
     const callArgs = (provider.chat as unknown as ReturnType<typeof vi.fn>).mock
       .calls[0][0];
-    expect(callArgs.system_cached).toBe(true);
+    expect(callArgs.cache_control).toEqual({ system: true });
   });
 
   it("uebergibt save_memory Tool an Provider", async () => {

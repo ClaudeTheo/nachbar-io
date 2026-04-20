@@ -36,7 +36,7 @@ import { checkCareConsent } from "@/modules/care/services/consent";
 // unerwartet viele save_memory-Calls in einer Response emittiert.
 const MAX_TOOLS_PER_TURN = 3;
 // Max Token fuer Assistant-Output. Der System-Prompt selbst ist wesentlich
-// groesser, wird aber via system_cached nur alle 5 Minuten neu abgerechnet.
+// groesser, wird aber via cache_control.system nur alle 5 Minuten neu abgerechnet.
 const MAX_TOKENS = 1024;
 
 interface TurnRequest {
@@ -163,7 +163,7 @@ export async function POST(request: NextRequest) {
   try {
     response = await provider.chat({
       system: systemPrompt,
-      system_cached: true, // C5a: 5min-Cache fuer -90% Input-Kosten
+      cache_control: { system: true }, // C5a: 5min-Cache fuer -90% Input-Kosten
       messages: chatMessages,
       tools: [buildMemoryTool()],
       max_tokens: MAX_TOKENS,

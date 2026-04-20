@@ -10,6 +10,17 @@
 
 import type { UserUiMode } from "@/lib/supabase/types";
 
+export function resolveSafeRedirectPath(
+  requestedPath: string | null | undefined,
+  fallbackPath: string,
+): string {
+  if (!requestedPath) return fallbackPath;
+  if (!requestedPath.startsWith("/") || requestedPath.startsWith("//")) {
+    return fallbackPath;
+  }
+  return requestedPath;
+}
+
 export function resolvePostLoginPath(
   uiMode: UserUiMode | null | undefined,
 ): "/kreis-start" | "/dashboard" {

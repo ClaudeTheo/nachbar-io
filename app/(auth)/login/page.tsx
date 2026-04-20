@@ -2,10 +2,11 @@
 // v3: Apple-Logo + Passkey/WebAuthn Support
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Mail, KeyRound, Fingerprint } from "lucide-react";
 import { signInWithApple } from "@/lib/auth/apple";
 import { handlePasskeyLogin as doPasskeyLogin } from "@/lib/auth/passkey-login";
+import { resolveSafeRedirectPath } from "@/lib/auth/post-login-redirect";
 // simplewebauthn/browser Referenzen (werden im useEffect geladen)
 type WebAuthnModule = typeof import("@simplewebauthn/browser");
 let _webauthnModule: WebAuthnModule | null = null;
@@ -52,6 +53,11 @@ export default function LoginPage() {
   const [sendCooldown, setSendCooldown] = useState(0);
   const [supportsPasskey, setSupportsPasskey] = useState(false);
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const postLoginPath = resolveSafeRedirectPath(
+    searchParams.get("next"),
+    "/after-login",
+  );
 
   // Cooldown-Timer nach OTP-Versand (verhindert Supabase Rate Limit)
   useEffect(() => {
@@ -97,8 +103,7 @@ export default function LoginPage() {
       const { error: otpError } = await supabase.auth.signInWithOtp({
         email,
         options: {
-          // Task B-4: /after-login dispatcht auf /kreis-start (Senior) vs. /dashboard
-          emailRedirectTo: `${window.location.origin}/auth/callback?next=/after-login`,
+          emailRedirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(postLoginPath)}`,
         },
       });
 
@@ -147,7 +152,7 @@ export default function LoginPage() {
 
       // Task B-4: Zentrale Dispatch-Seite — entscheidet anhand ui_mode,
       // ob Senior-Start (/kreis-start) oder /dashboard geladen wird.
-      router.push("/after-login");
+      router.push(postLoginPath);
     } catch (err) {
       console.error("Login Netzwerkfehler:", err);
       setError("Verbindungsfehler. Bitte versuchen Sie es erneut.");
@@ -352,7 +357,7 @@ export default function LoginPage() {
           {mode === "magic_link_sent" && (
             <OtpCodeEntry
               email={email}
-              redirectTo="/after-login"
+              redirectTo={postLoginPath}
               onBack={() => {
                 setMode("magic_link");
                 setError(null);
@@ -362,7 +367,7 @@ export default function LoginPage() {
                 supabase.auth.signInWithOtp({
                   email,
                   options: {
-                    emailRedirectTo: `${window.location.origin}/auth/callback?next=/after-login`,
+                    emailRedirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(postLoginPath)}`,
                   },
                 });
               }}

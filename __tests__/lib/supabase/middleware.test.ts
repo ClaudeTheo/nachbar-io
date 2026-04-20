@@ -55,4 +55,28 @@ describe("updateSession (Auth-Middleware)", () => {
       true,
     );
   });
+
+  it("haengt next an geschuetzte Housing-Route an", async () => {
+    mockGetUser.mockResolvedValue({ data: { user: null } });
+    const req = new NextRequest("http://localhost/hausverwaltung/einladen");
+    const res = await updateSession(req);
+
+    expect(res.status).toBe(307);
+    expect(res.headers.get("location")).toBe(
+      "http://localhost/login?next=%2Fhausverwaltung%2Feinladen",
+    );
+  });
+
+  it("behaelt Query-Parameter im next Redirect", async () => {
+    mockGetUser.mockResolvedValue({ data: { user: null } });
+    const req = new NextRequest(
+      "http://localhost/hausverwaltung/einladen?foo=bar",
+    );
+    const res = await updateSession(req);
+
+    expect(res.status).toBe(307);
+    expect(res.headers.get("location")).toBe(
+      "http://localhost/login?next=%2Fhausverwaltung%2Feinladen%3Ffoo%3Dbar",
+    );
+  });
 });

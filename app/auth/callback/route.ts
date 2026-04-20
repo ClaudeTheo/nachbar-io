@@ -3,13 +3,17 @@
 // Supabase leitet hierher mit ?code=xxx weiter.
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { resolveSafeRedirectPath } from "@/lib/auth/post-login-redirect";
 
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url);
   const code = searchParams.get("code");
   // Task B-4: /after-login dispatcht basierend auf ui_mode.
   // Aeltere Magic-Links ohne ?next fallen automatisch auf den Dispatcher.
-  const next = searchParams.get("next") ?? "/after-login";
+  const next = resolveSafeRedirectPath(
+    searchParams.get("next"),
+    "/after-login",
+  );
 
   if (code) {
     const supabase = await createClient();

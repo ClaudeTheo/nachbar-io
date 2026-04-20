@@ -274,3 +274,110 @@ Kein Push in dieser Session (AVV blockiert bis Notar 2026-04-27 + HRB).
 ---
 
 **Modell-Empfehlung:** Opus 4.7 fuer Folge-Session (C8 = Architektur + Cross-File-Reasoning). Sonnet 4.7 nur, wenn nur MEMORY.md-Update + Administrative Tasks anstehen.
+
+---
+
+## C8 Pre-Check (durchgefuehrt 2026-04-20 am Session-Ende)
+
+**Ziel:** Vor der C8-Implementation-Session aufklaeren, was bereits existiert — damit Opus direkt Code schreiben kann statt zu explorieren.
+
+### Befund: DB ist KOMPLETT C8-ready. Keine neue Migration noetig.
+
+`supabase/migrations/122_senior_memory_layer.sql` hat bereits alles vorbereitet:
+
+| Asset | Ort in Mig 122 | Bedeutung fuer C8 |
+|---|---|---|
+| ENUM `memory_source` enthaelt `'caregiver'` | Zeile 13 | `source='caregiver'` direkt setzbar |
+| ENUM `memory_actor_role` enthaelt `'caregiver'` | Zeile 19-21 | Audit-Log akzeptiert `actor_role='caregiver'` |
+| Spalte `source_user_id uuid` auf `user_memory_facts` | Zeile 39 | Referenz auf Caregiver-User-ID |
+| RLS `caregiver_facts_select` | Zeile 109-117 | Caregiver sieht Senior-Facts ueber `caregiver_links` |
+| RLS `caregiver_facts_insert` | Zeile 119-127 | Caregiver darf Facts fuer Senior anlegen |
+| RLS `caregiver_facts_update` | Zeile 129-137 | Caregiver darf editieren (wenn noetig) |
+| RLS `user_own_facts_delete` | Zeile 106-107 | Senior loescht alle seine (auch Caregiver-Eintraege) |
+
+**Konsequenz:** Mig 175 ist NICHT noetig. Alle DB-Seitige Autorisierung ist bereits in Prod (verifiziert durch Existenz von Mig 122 in schema_migrations). C8 ist reiner Application-Code.
+
+### Befund: Type-Layer ist C8-ready
+
+`modules/memory/types.ts:14`:
+```ts
+export type MemoryActorRole = 'senior' | 'caregiver' | 'ai' | 'care_team' | 'system';
+```
+
+`lib/ai/tools/save-memory.ts:78`:
+```ts
+export interface SaveMemoryContext {
+  actor: { userId: string; role: MemoryActorRole };
+  targetUserId: string;
+  supabase: SupabaseClient;
+}
+```
+
+Shape ist bereits "multi-actor". Caregiver-Pfad muss nur erlaubt werden.
+
+### Befund: Application-Layer-Blocks (zu entfernen/erweitern in C8)
+
+**1. Handler-Block** in `lib/ai/tools/save-memory.ts:189-204`:
+```ts
+// Welle C: nur Senior darf ueber sich selbst speichern. Caregiver-Scope
+// (via aktivem caregiver_link) kommt in C8.
+if (ctx.actor.role !== "senior") {
+  return { ok: false, reason: "scope_violation", message: ... };
+}
+if (ctx.targetUserId !== ctx.actor.userId) {
+  return { ok: false, reason: "scope_violation", message: ... };
+}
+```
+
+In C8 ersetzen durch:
+- `senior`: targetUserId muss gleich actor.userId (bestehend)
+- `caregiver`: targetUserId !== actor.userId, aber nur wenn `caregiver_links`-Row existiert (resident_id=targetUserId, caregiver_id=actor.userId, revoked_at IS NULL)
+- Andere Rollen: weiter blockieren (`ai` ist internal, `care_team` + `system` aus Scope raus)
+
+**2. Route `GET /api/memory/facts`** in `app/api/memory/facts/route.ts:21-52`:
+```ts
+const facts = await getFacts(supabase, user.id, category ? { category } : undefined);
+```
+user.id = Senior. In C8: akzeptiere `?subject_user_id=<senior>` Query-Param; wenn Caregiver-Link aktiv, gib Senior-Fakten zurueck. RLS erlaubt es bereits (caregiver_facts_select).
+
+**3. Route `POST /api/memory/facts`** (ungelesen in dieser Pre-Check-Runde, aber analog): `subject_user_id` Body-Field + Caregiver-Link-Check.
+
+**4. UI Neue Page** `app/(app)/caregiver/senior/[id]/gedaechtnis/page.tsx` (nicht existent):
+- Komposition: useMemoryFacts({ subjectUserId }) + MemoryFactList-Variante
+- Liste mit Provenance-Badge auf eigene Eintraege
+- Eingabe-Feld (eigenes Form, kein Wizard — Caregiver tippt direkt was die KI sich merken soll)
+
+**5. UI Senior-Seite Provenance-Badge** in `modules/memory/components/SeniorMemoryFactList.tsx`:
+- Bei `fact.source === 'caregiver'`: Badge "von <display_name des source_user_id>"
+- Lookup: Caregiver-Display-Name via Supabase-Join oder separater Call auf `public.users`
+
+### Befund: Existierende Provenance-Verdrahtung
+
+Kommentar in `modules/voice/hooks/useOnboardingTurn.ts:145-147`:
+```
+// Codex-Review NACHBESSERN F2: explizite Provenance, damit der Fakt
+// im user_memory_facts.source-Feld als KI-vorgeschlagen +
+// user-bestaetigt erkennbar ist (statt unterschiedslos "self").
+```
+
+Also existiert der `source`-Mechanismus bereits semantisch im Onboarding-Flow. `source='ai_learned'` fuer KI-Vorschlaege, `source='self'` fuer Senior-Eingabe. Neu in C8: `source='caregiver'` fuer Caregiver-Eingaben.
+
+### Empfohlene C8-Task-Reihenfolge
+
+1. **Save-Memory-Handler erweitern** (TDD): Caregiver-Pfad + `caregiver_links`-Lookup. 3-4 neue Tests.
+2. **GET `/api/memory/facts` erweitern** (TDD): `subject_user_id`-Param + Caregiver-Link-Guard. 2-3 neue Tests.
+3. **POST `/api/memory/facts` erweitern** (TDD): analog. 2-3 neue Tests.
+4. **Caregiver-UI-Page bauen**: `app/(app)/caregiver/senior/[id]/gedaechtnis/page.tsx`. 4-6 neue Tests.
+5. **Senior-UI Provenance-Badge** auf `SeniorMemoryFactList`. 2-3 neue Tests.
+6. **Integration-Test** E2E-Path: Caregiver tippt -> Senior sieht mit Badge -> Senior loescht.
+
+Erwartung: ~30-40 neue Tests, ~400-500 LOC delta, 3-4 Commits. Alles Application-Code — keine Migration, keine neue Library.
+
+### Blocker fuer C8 (zu klaeren am Opus-Session-Start)
+
+- **Wer sieht die Caregiver-UI?** Layout-Gruppe `(app)` setzt vermutlich Auth + Role-Check voraus. Plus: nur Caregiver mit aktivem Link auf diesen Senior darf die `/caregiver/senior/[id]/gedaechtnis`-Route sehen. Zusatz-Gate noetig.
+- **Name-Lookup fuer Provenance-Badge:** `display_name` aus `public.users` oder aus `caregiver_links.display_name` (falls dort gecached)? Grep fehlt.
+- **Notification an Senior bei Caregiver-Eintrag?** Plan sagt "voll transparent" (2a) — aber nicht, ob es eine Benachrichtigung gibt. Default: nein, nur in Liste sichtbar.
+- **Edit-Recht:** Plan sagt 1b = "Lesen+Schreiben". Schliesst das "Editieren bestehender Eintraege" ein oder nur "Neue Eintraege anlegen"? RLS `caregiver_facts_update` existiert bereits, also technisch moeglich. Founder-Entscheidung am Session-Start erfragen.
+
+---

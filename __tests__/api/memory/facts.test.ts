@@ -201,6 +201,101 @@ describe("Memory Facts API — Caregiver-Cross-Read (C8)", () => {
     );
   });
 
+  it("POST mit targetUserId=Senior + aktivem Link: speichert mit source='caregiver'", async () => {
+    mockedCreateClient.mockImplementationOnce(() =>
+      makeClientMock({ userId: CAREGIVER_ID, caregiverLinkExists: true }),
+    );
+    mockSaveFact.mockResolvedValue({
+      id: "f-cg",
+      category: "profile",
+      key: "lieblingsessen",
+      value: "Apfelstrudel",
+    });
+
+    const { POST } = await import("@/app/api/memory/facts/route");
+    const response = await POST(
+      new Request("http://localhost/api/memory/facts", {
+        method: "POST",
+        body: JSON.stringify({
+          category: "profile",
+          key: "lieblingsessen",
+          value: "Apfelstrudel",
+          targetUserId: SENIOR_ID,
+        }),
+      }) as any,
+    );
+    const body = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(body.success).toBe(true);
+    expect(mockSaveFact).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.objectContaining({
+        source: "caregiver",
+        sourceUserId: CAREGIVER_ID,
+        targetUserId: SENIOR_ID,
+        category: "profile",
+        key: "lieblingsessen",
+      }),
+    );
+  });
+
+  it("POST mit targetUserId=Senior ohne aktiven Link liefert 403 no_caregiver_link", async () => {
+    mockedCreateClient.mockImplementationOnce(() =>
+      makeClientMock({ userId: CAREGIVER_ID, caregiverLinkExists: false }),
+    );
+
+    const { POST } = await import("@/app/api/memory/facts/route");
+    const response = await POST(
+      new Request("http://localhost/api/memory/facts", {
+        method: "POST",
+        body: JSON.stringify({
+          category: "profile",
+          key: "lieblingsessen",
+          value: "Apfelstrudel",
+          targetUserId: SENIOR_ID,
+        }),
+      }) as any,
+    );
+    const body = await response.json();
+
+    expect(response.status).toBe(403);
+    expect(body.error).toBe("no_caregiver_link");
+    expect(mockSaveFact).not.toHaveBeenCalled();
+  });
+
+  it("POST mit targetUserId=self verhaelt sich wie ohne Param (Senior-Pfad)", async () => {
+    mockSaveFact.mockResolvedValue({
+      id: "f-self",
+      category: "routine",
+      key: "kaffee",
+      value: "Kaffee um 8",
+    });
+
+    const { POST } = await import("@/app/api/memory/facts/route");
+    const response = await POST(
+      new Request("http://localhost/api/memory/facts", {
+        method: "POST",
+        body: JSON.stringify({
+          category: "routine",
+          key: "kaffee",
+          value: "Kaffee um 8",
+          targetUserId: "user-1",
+        }),
+      }) as any,
+    );
+
+    expect(response.status).toBe(200);
+    expect(mockSaveFact).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.objectContaining({
+        source: "self",
+        sourceUserId: "user-1",
+        targetUserId: "user-1",
+      }),
+    );
+  });
+
   it("GET mit subject_user_id + category-Filter + aktivem Link weitergegeben", async () => {
     mockedCreateClient.mockImplementationOnce(() =>
       makeClientMock({ userId: CAREGIVER_ID, caregiverLinkExists: true }),

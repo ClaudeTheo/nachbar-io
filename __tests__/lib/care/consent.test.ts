@@ -79,7 +79,8 @@ describe("hasAnyCareConsent", () => {
 });
 
 describe("CONSENT_FEATURE_TO_API_ROUTES", () => {
-  it("mappt alle 5 Features", () => {
-    expect(Object.keys(CONSENT_FEATURE_TO_API_ROUTES)).toHaveLength(5);
+  it("mappt alle 6 Features", () => {
+    // ai_onboarding ergaenzt mit Welle C (KI-Assistent Senior-Onboarding)
+    expect(Object.keys(CONSENT_FEATURE_TO_API_ROUTES)).toHaveLength(6);
   });
 });

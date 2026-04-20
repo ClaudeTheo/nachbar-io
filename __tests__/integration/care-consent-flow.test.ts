@@ -5,12 +5,13 @@ import { CONSENT_FEATURE_TO_API_ROUTES } from '@/lib/care/consent';
 
 describe('Care Consent Flow (Integration)', () => {
   describe('Consent-Konfiguration', () => {
-    it('hat 5 Features in allen Definitionen', () => {
-      expect(CONSENT_FEATURES).toHaveLength(5);
-      expect(CARE_CONSENT_FEATURES).toHaveLength(5);
-      expect(Object.keys(CARE_CONSENT_LABELS)).toHaveLength(5);
-      expect(Object.keys(CARE_CONSENT_DESCRIPTIONS)).toHaveLength(5);
-      expect(Object.keys(CONSENT_FEATURE_TO_API_ROUTES)).toHaveLength(5);
+    it('hat 6 Features in allen Definitionen', () => {
+      // ai_onboarding ergaenzt mit Welle C (KI-Assistent Senior-Onboarding)
+      expect(CONSENT_FEATURES).toHaveLength(6);
+      expect(CARE_CONSENT_FEATURES).toHaveLength(6);
+      expect(Object.keys(CARE_CONSENT_LABELS)).toHaveLength(6);
+      expect(Object.keys(CARE_CONSENT_DESCRIPTIONS)).toHaveLength(6);
+      expect(Object.keys(CONSENT_FEATURE_TO_API_ROUTES)).toHaveLength(6);
     });
 
     it('alle Features sind konsistent', () => {

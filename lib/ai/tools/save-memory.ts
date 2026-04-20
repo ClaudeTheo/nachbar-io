@@ -1,5 +1,5 @@
 // lib/ai/tools/save-memory.ts
-// C4 — save_memory Tool-Adapter fuer die KI-Provider.
+// C4 + C8 — save_memory Tool-Adapter fuer die KI-Provider.
 //
 // Dieser Adapter ist bewusst duenn: alle schwere Logik (4-Stufen-Validation,
 // Medizin-Blocklist, AES-Verschluesselung, Audit-Log) liegt bereits in
@@ -9,7 +9,11 @@
 //
 // Verantwortlichkeiten, die der Adapter NEU hinzufuegt:
 //   1. JSON-Schema-Validation des Tool-Inputs der KI.
-//   2. Scope-Check (Welle C: Senior-only; Caregiver-Scope folgt in C8).
+//   2. Scope-Check:
+//      - Senior: darf nur ueber sich selbst speichern (targetUserId = actor.userId)
+//      - Caregiver (C8): darf fuer einen verlinkten Senior speichern, wenn
+//        ein aktiver caregiver_links-Eintrag existiert (revoked_at IS NULL).
+//      - Andere Rollen (ai, care_team, system): blockiert.
 //   3. Mapping von intern verwendeten Ablehnungsgruenden auf ein
 //      stabiles, KI-verstaendliches Vokabular.
 
@@ -186,20 +190,44 @@ export async function saveMemoryToolHandler(
   const parsed = parseToolInput(toolCall);
   if (!parsed.ok) return parsed;
 
-  // Welle C: nur Senior darf ueber sich selbst speichern. Caregiver-Scope
-  // (via aktivem caregiver_link) kommt in C8.
-  if (ctx.actor.role !== "senior") {
+  // Scope-Check: Senior-Pfad (Default) oder Caregiver-Pfad (C8).
+  if (ctx.actor.role === "senior") {
+    if (ctx.targetUserId !== ctx.actor.userId) {
+      return {
+        ok: false,
+        reason: "scope_violation",
+        message: "Senior kann nur ueber sich selbst speichern",
+      };
+    }
+  } else if (ctx.actor.role === "caregiver") {
+    if (ctx.targetUserId === ctx.actor.userId) {
+      return {
+        ok: false,
+        reason: "scope_violation",
+        message: "Caregiver-Modus setzt unterschiedliche targetUserId voraus",
+      };
+    }
+    // Aktiven caregiver_link pruefen (revoked_at IS NULL).
+    // Pattern konsistent zu POST /api/memory/facts und useCareRole.
+    const { data: link } = await ctx.supabase
+      .from("caregiver_links")
+      .select("id")
+      .eq("caregiver_id", ctx.actor.userId)
+      .eq("resident_id", ctx.targetUserId)
+      .is("revoked_at", null)
+      .maybeSingle();
+    if (!link) {
+      return {
+        ok: false,
+        reason: "scope_violation",
+        message: "Kein aktiver caregiver_link",
+      };
+    }
+  } else {
     return {
       ok: false,
       reason: "scope_violation",
-      message: `actor role '${ctx.actor.role}' nicht erlaubt in Welle C (Senior-only)`,
-    };
-  }
-  if (ctx.targetUserId !== ctx.actor.userId) {
-    return {
-      ok: false,
-      reason: "scope_violation",
-      message: "Senior kann nur ueber sich selbst speichern",
+      message: `actor role '${ctx.actor.role}' nicht erlaubt`,
     };
   }
 
@@ -239,12 +267,16 @@ export async function saveMemoryToolHandler(
   }
 
   try {
+    const isCaregiver = ctx.actor.role === "caregiver";
     const fact = await saveFact(ctx.supabase, {
       category: parsed.proposal.category,
       key: parsed.proposal.key,
       value: parsed.proposal.value,
-      source: "ai_learned",
+      // Caregiver-Eintraege sind Pflege-Provenance, Senior-Eintraege sind
+      // KI-vorgeschlagen und vom Senior akzeptiert (ai_learned).
+      source: isCaregiver ? "caregiver" : "ai_learned",
       sourceUserId: ctx.actor.userId,
+      targetUserId: ctx.targetUserId,
       confidence: parsed.proposal.confidence,
       confirmed: false,
     });

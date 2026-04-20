@@ -40,6 +40,7 @@ const mockHasConsent = hasConsent as unknown as ReturnType<typeof vi.fn>;
 
 const SENIOR_ID = "user-senior-001";
 const OTHER_ID = "user-other-999";
+const CAREGIVER_ID = "user-caregiver-007";
 const mockSupabase = {} as unknown as SupabaseClient;
 
 const defaultCtx = {
@@ -47,6 +48,24 @@ const defaultCtx = {
   targetUserId: SENIOR_ID,
   supabase: mockSupabase,
 };
+
+// Minimal Supabase-Chain-Mock fuer caregiver_links-Lookup
+// (select -> eq -> eq -> is -> maybeSingle). Liefert einen Link wenn
+// activeLink=true, sonst null -> Handler lehnt ab.
+function createSupabaseWithCaregiverLink(
+  opts: { activeLink?: boolean } = {},
+): SupabaseClient {
+  const data = opts.activeLink ? { id: "link-1" } : null;
+  const api: Record<string, unknown> = {};
+  api.select = vi.fn(() => api);
+  api.eq = vi.fn(() => api);
+  api.is = vi.fn(() => api);
+  api.maybeSingle = vi.fn().mockResolvedValue({ data, error: null });
+  api.single = vi.fn().mockResolvedValue({ data, error: null });
+  return {
+    from: vi.fn(() => api),
+  } as unknown as SupabaseClient;
+}
 
 function toolCall(input: Record<string, unknown>): AIToolCall {
   return { name: "save_memory", input };
@@ -167,20 +186,19 @@ describe("saveMemoryToolHandler — Scope-Check", () => {
     needs_confirmation: false,
   };
 
-  it("lehnt Caregiver-Actor in Welle C ab (scope_violation)", async () => {
-    const result = await saveMemoryToolHandler(toolCall(baseInput), {
-      ...defaultCtx,
-      actor: { userId: "caregiver-001", role: "caregiver" },
-    });
-    expect(result.ok).toBe(false);
-    if (!result.ok) expect(result.reason).toBe("scope_violation");
-    expect(mockSaveFact).not.toHaveBeenCalled();
-  });
-
   it("lehnt AI-Actor ab (scope_violation)", async () => {
     const result = await saveMemoryToolHandler(toolCall(baseInput), {
       ...defaultCtx,
       actor: { userId: SENIOR_ID, role: "ai" },
+    });
+    expect(result.ok).toBe(false);
+    if (!result.ok) expect(result.reason).toBe("scope_violation");
+  });
+
+  it("lehnt care_team-Actor ab (scope_violation)", async () => {
+    const result = await saveMemoryToolHandler(toolCall(baseInput), {
+      ...defaultCtx,
+      actor: { userId: SENIOR_ID, role: "care_team" },
     });
     expect(result.ok).toBe(false);
     if (!result.ok) expect(result.reason).toBe("scope_violation");
@@ -193,6 +211,144 @@ describe("saveMemoryToolHandler — Scope-Check", () => {
     });
     expect(result.ok).toBe(false);
     if (!result.ok) expect(result.reason).toBe("scope_violation");
+    expect(mockSaveFact).not.toHaveBeenCalled();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// saveMemoryToolHandler — Caregiver-Scope (Welle C C8)
+// ---------------------------------------------------------------------------
+// Architektur-Entscheidung 1b+2a+3a: Caregiver darf via aktivem
+// caregiver_links-Eintrag Memory fuer den verlinkten Senior schreiben;
+// Provenance wird ueber source='caregiver' + source_user_id=caregiver-id
+// persistiert. Der Senior sieht den Eintrag spaeter in /profil/gedaechtnis
+// mit Provenance-Badge und kann ihn jederzeit loeschen (Art. 17).
+
+describe("saveMemoryToolHandler — Caregiver-Scope (C8)", () => {
+  const basisInput = {
+    category: "profile",
+    key: "lieblingsessen",
+    value: "Apfelstrudel",
+    confidence: 0.9,
+    needs_confirmation: false,
+  };
+
+  it("erlaubt Caregiver mit aktivem caregiver_link und speichert mit source='caregiver'", async () => {
+    mockSaveFact.mockResolvedValue({
+      id: "fact-c8",
+      category: "profile",
+      key: "lieblingsessen",
+      value: "Apfelstrudel",
+    });
+
+    const result = await saveMemoryToolHandler(toolCall(basisInput), {
+      actor: { userId: CAREGIVER_ID, role: "caregiver" },
+      targetUserId: SENIOR_ID,
+      supabase: createSupabaseWithCaregiverLink({ activeLink: true }),
+    });
+
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.mode).toBe("save");
+      expect(result.factId).toBe("fact-c8");
+    }
+    expect(mockSaveFact).toHaveBeenCalledTimes(1);
+    expect(mockSaveFact).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.objectContaining({
+        source: "caregiver",
+        sourceUserId: CAREGIVER_ID,
+        targetUserId: SENIOR_ID,
+        category: "profile",
+        key: "lieblingsessen",
+        value: "Apfelstrudel",
+      }),
+    );
+  });
+
+  it("prueft Consent + Count fuer den Senior (targetUserId), nicht fuer den Caregiver", async () => {
+    mockSaveFact.mockResolvedValue({
+      id: "fact-c8-2",
+      category: "profile",
+      key: "lieblingsessen",
+      value: "Apfelstrudel",
+    });
+
+    await saveMemoryToolHandler(toolCall(basisInput), {
+      actor: { userId: CAREGIVER_ID, role: "caregiver" },
+      targetUserId: SENIOR_ID,
+      supabase: createSupabaseWithCaregiverLink({ activeLink: true }),
+    });
+
+    expect(mockHasConsent).toHaveBeenCalledWith(
+      expect.anything(),
+      SENIOR_ID,
+      "memory_basis",
+    );
+    expect(mockGetFactCount).toHaveBeenCalledWith(
+      expect.anything(),
+      SENIOR_ID,
+      false,
+    );
+  });
+
+  it("lehnt Caregiver ohne aktiven caregiver_link ab (scope_violation)", async () => {
+    const result = await saveMemoryToolHandler(toolCall(basisInput), {
+      actor: { userId: CAREGIVER_ID, role: "caregiver" },
+      targetUserId: SENIOR_ID,
+      supabase: createSupabaseWithCaregiverLink({ activeLink: false }),
+    });
+
+    expect(result.ok).toBe(false);
+    if (!result.ok) expect(result.reason).toBe("scope_violation");
+    expect(mockSaveFact).not.toHaveBeenCalled();
+    expect(mockHasConsent).not.toHaveBeenCalled();
+  });
+
+  it("filtert auf revoked_at IS NULL (widerrufene Links zaehlen nicht)", async () => {
+    // Widerrufene Links -> Query mit .is("revoked_at", null) findet nichts
+    // -> data=null -> scope_violation
+    const supabase = createSupabaseWithCaregiverLink({ activeLink: false });
+
+    const result = await saveMemoryToolHandler(toolCall(basisInput), {
+      actor: { userId: CAREGIVER_ID, role: "caregiver" },
+      targetUserId: SENIOR_ID,
+      supabase,
+    });
+
+    expect(result.ok).toBe(false);
+    if (!result.ok) expect(result.reason).toBe("scope_violation");
+  });
+
+  it("lehnt Caregiver-Modus ab wenn targetUserId = actor.userId (self-target fuer Caregiver unsinnig)", async () => {
+    const result = await saveMemoryToolHandler(toolCall(basisInput), {
+      actor: { userId: CAREGIVER_ID, role: "caregiver" },
+      targetUserId: CAREGIVER_ID,
+      supabase: createSupabaseWithCaregiverLink({ activeLink: true }),
+    });
+
+    expect(result.ok).toBe(false);
+    if (!result.ok) expect(result.reason).toBe("scope_violation");
+    expect(mockSaveFact).not.toHaveBeenCalled();
+  });
+
+  it("respektiert Confirm-Mode auch im Caregiver-Pfad (sensitive Kategorie)", async () => {
+    const sensitiveInput = {
+      category: "care_need",
+      key: "mobilitaet",
+      value: "Benutzt Rollator seit Mai",
+      confidence: 0.95,
+      needs_confirmation: false,
+    };
+
+    const result = await saveMemoryToolHandler(toolCall(sensitiveInput), {
+      actor: { userId: CAREGIVER_ID, role: "caregiver" },
+      targetUserId: SENIOR_ID,
+      supabase: createSupabaseWithCaregiverLink({ activeLink: true }),
+    });
+
+    expect(result.ok).toBe(true);
+    if (result.ok) expect(result.mode).toBe("confirm");
     expect(mockSaveFact).not.toHaveBeenCalled();
   });
 });

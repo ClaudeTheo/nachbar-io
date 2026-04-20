@@ -89,15 +89,41 @@ Dashboard-Haupteinstiege (abh. von Rolle), Hilfe, Alerts, Postfach, Chat, Leistu
 
 ## Erwartete Deliverables
 
-Eine Markdown-Datei `docs/plans/2026-04-20-browser-audit-ergebnis.md` mit:
+**Genau eine Datei**, verpflichtender Pfad:
 
-1. **Zusammenfassung:** Anzahl Seiten, Durchschnittsscores, kritische Befunde.
-2. **Fund-Tabelle:** `Severity (crit/high/med/low) | Seite | Befund | Konkreter Fix`.
-3. **Lighthouse-Roh-Scores** pro Seite in Tabellenform.
-4. **Screenshot-Evidenz** nur wo noetig (mehr als 5-6 Shots pro Seite ist
-   Overkill).
-5. **Priorisierungs-Vorschlag:** Was vor Welle-C-Push fixen, was vor Part B,
-   was geparkt.
+    docs/plans/2026-04-20-browser-audit-ergebnis.md
+
+Pflicht-Struktur (Folge-Session liest diese Datei als ersten Schritt):
+
+```
+# Browser-Audit Ergebnis
+
+## Getestet mit
+  - Git-HEAD, Dev-Server-URL, Datum, Browser/Tool
+
+## Kurzfazit
+  2-4 Saetze
+
+## Findings nach Schwere
+  | Severity (crit/high/med/low) | Route | Befund | Repro-Schritte | Fix-Vorschlag |
+
+## Lighthouse-Scores
+  | Route | Perf | A11y | BP | SEO | Kommentar |
+
+## Nicht pruefbar
+  Nur falls echter Blocker (z.B. keine Testdaten, Auth-Flow unklar).
+
+## Empfohlene naechste 3 Fixes
+  Reihenfolge = Prioritaet.
+
+## Blocker / Rote Zone
+  Was Founder-Go braucht (Mig-Apply, git push).
+```
+
+- Keine Zusatz-Dokumente, kein Code, keine Kommentare in Quellcode.
+- Wenn Datei existiert: ueberschreiben mit aktuellem Stand.
+- Wenn Folge-Agent Codex ist: Ausgabe zusaetzlich in Kurzform an Founder,
+  damit dieser die Ergebnis-Datei an Claude haenden kann.
 
 ## Known-Good State (zum Vergleich)
 

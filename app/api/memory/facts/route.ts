@@ -36,10 +36,34 @@ export async function GET(
 
     const { searchParams } = new URL(request.url);
     const category = searchParams.get("category") as MemoryCategory | null;
+    const subjectUserId = searchParams.get("subject_user_id");
+
+    // C8: Caregiver-Cross-Read. subject_user_id kann auf einen verlinkten
+    // Senior zeigen. Bei !== self muessen wir einen aktiven caregiver_link
+    // verifizieren (RLS-Policy "caregiver_facts_select" wuerde es auch
+    // abfangen, aber eine explizite 403 liefert der UI eine klare Meldung).
+    const effectiveUserId =
+      subjectUserId && subjectUserId !== user.id ? subjectUserId : user.id;
+
+    if (subjectUserId && subjectUserId !== user.id) {
+      const { data: link } = await supabase
+        .from("caregiver_links")
+        .select("id")
+        .eq("caregiver_id", user.id)
+        .eq("resident_id", subjectUserId)
+        .is("revoked_at", null)
+        .maybeSingle();
+      if (!link) {
+        return NextResponse.json(
+          { success: false, data: null, error: "no_caregiver_link" },
+          { status: 403 },
+        );
+      }
+    }
 
     const facts = await getFacts(
       supabase,
-      user.id,
+      effectiveUserId,
       category ? { category } : undefined,
     );
     return NextResponse.json({ success: true, data: facts, error: null });

@@ -57,6 +57,15 @@ const FLAG_DESCRIPTIONS: Record<string, string> = {
   BFARM_DRUGS_ENABLED: "BfArM Medikamenten-Lookup",
   DIGA_REGISTRY_ENABLED: "DiGA-Verzeichnis",
   GKV_CARE_REGISTRY_ENABLED: "GKV-Pflegedienst-Verzeichnis",
+  // Hausverwaltung (Mig 177)
+  HOUSING_MODULE_ENABLED:
+    "Master-Schalter Hausverwaltungs-Modul (muss an sein, damit Teilfunktionen wirken)",
+  HOUSING_REPORTS: "Teilfunktion: Maengelmeldung an Hausverwaltung",
+  HOUSING_ANNOUNCEMENTS: "Teilfunktion: Hausmitteilungen an Bewohner",
+  HOUSING_DOCUMENTS: "Teilfunktion: Dokumenten-Postfach (Briefe der HV)",
+  HOUSING_APPOINTMENTS: "Teilfunktion: Termine (Handwerker, Wartung, etc.)",
+  HOUSING_SHADOW_QUARTER:
+    "Free-first: Registration ohne Quartier-Wahl moeglich (Schatten-Quartier 'Offenes Quartier Deutschland')",
 };
 
 // HEARTBEAT wurde aus "Kern-Module" in "Gesundheit" verschoben (mit den neuen
@@ -77,6 +86,7 @@ const FLAG_GROUPS: Array<{ title: string; pattern: RegExp }> = [
       /^(BOARD|EVENTS|NEWS|MARKETPLACE|BUSINESSES|INVITATIONS|CARE_MODULE|KOMMUNAL_MODULE|LOST_FOUND|PUSH_NOTIFICATIONS)/,
   },
   { title: "Care / Plus", pattern: /^(CAREGIVER|VIDEO_CALL)/ },
+  { title: "Hausverwaltung", pattern: /^HOUSING_/ },
   { title: "Organisation", pattern: /^(ORG_|MODERATION|QUARTER_STATS)/ },
   {
     title: "Externe APIs",

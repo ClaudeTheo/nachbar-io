@@ -12,7 +12,7 @@ function getServiceClient() {
 }
 
 // Device-Token pruefen: Erst kiosk_devices Tabelle, dann ENV-Fallback
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+ 
 async function verifyDevice(
   supabase: any,
   deviceId: string,

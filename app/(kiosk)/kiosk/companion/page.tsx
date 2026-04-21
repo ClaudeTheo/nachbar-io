@@ -38,7 +38,7 @@ const MAX_HISTORY_TO_SEND = 10;
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function createRecognition(): any {
   if (typeof window === "undefined") return null;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   const SpeechRecognition =
     (window as any).SpeechRecognition ||
     (window as any).webkitSpeechRecognition;

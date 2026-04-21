@@ -1,6 +1,6 @@
 "use client";
 // v3: Apple-Logo + Passkey/WebAuthn Support
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Mail, KeyRound, Fingerprint } from "lucide-react";
@@ -44,7 +44,18 @@ const PILOT_HIDE_PASSKEY_LOGIN = true;
 // Apple Sign-In erst sinnvoll mit nativer App — vorlaeufig ausblenden
 const PILOT_HIDE_APPLE_SIGNIN = true;
 
+// Wrapper: wraps LoginPageInner in Suspense-Boundary weil useSearchParams()
+// in Next 16 beim statischen Prerender eine Suspense-Grenze braucht
+// (sonst: "useSearchParams() should be wrapped in a suspense boundary").
 export default function LoginPage() {
+  return (
+    <Suspense fallback={null}>
+      <LoginPageInner />
+    </Suspense>
+  );
+}
+
+function LoginPageInner() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);

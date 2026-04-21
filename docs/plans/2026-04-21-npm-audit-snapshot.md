@@ -1,7 +1,17 @@
 # npm audit Snapshot — 2026-04-21
 
+> **✅ RESOLVED 2026-04-21 (Commit `98460a7`):** `npm audit fix` ohne `--force` hat
+> alle 5 Vulns behoben. Nur `package-lock.json` geaendert (keine
+> package.json-Aenderung, kein Breaking-Change). Post-Fix: **0 Vulnerabilities**,
+> tsc 0 Errors, Vitest 3721 passed / 3 skipped / 0 failed (identisch zum Pre-Fix-Baseline).
+> Next.js bumpte innerhalb `^16.2.0` auf 16.2.4, hono auf 4.12.14, axios/dompurify/follow-redirects patches.
+>
+> Das untenstehende Dokument behalten wir als Audit-Spur des urspruenglichen Befunds.
+
+---
+
 **Projekt:** nachbar-io
-**Gemessen:** 2026-04-21
+**Gemessen:** 2026-04-21 (vor Fix)
 **Ergebnis:** 0 critical / 1 high / 4 moderate / 0 low
 
 ## Vulnerabilities im Detail

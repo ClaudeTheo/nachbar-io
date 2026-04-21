@@ -149,6 +149,14 @@ Solange das Skript mit alten Werten auf Platte liegt, gilt der Service-Role-Key 
 
 1. `.env.cloud.local` mit neuen Werten befuellen (Founder, nicht Claude).
 2. Vercel-Envs auf Production + Preview + Development updaten.
-3. Prod-Smoke-Test (Login, ein-zwei Feature-Trigger).
-4. Diese Checkliste mit Datum abhaken (Datei behalten als Audit-Spur).
-5. Memory-Eintrag: `feedback_secret_hygiene.md` oder aehnlich, damit die Lektion nicht verloren geht.
+3. **Prod-Smoke-Test automatisiert:**
+   ```
+   bash nachbar-io/scripts/smoke-test-prod.sh
+   ```
+   Muss 5/5 gruen liefern. Falls rot: Vercel-Logs pruefen, ggf. Redeploy triggern.
+4. **Manueller Smoke-Test (Rotation-spezifisch):**
+   - Magic-Link-Login auf `nachbar-io.vercel.app` → Email → Klick → landet im Portal? (testet RESEND + SUPABASE_SERVICE_ROLE + ANON)
+   - Stripe-Webhook-Test-Event aus Stripe-Dashboard → `/api/stripe/webhook` muss 200 liefern
+   - Vercel-Cron manuell triggern → testet CRON_SECRET
+5. Diese Checkliste mit Datum abhaken (Datei behalten als Audit-Spur).
+6. Memory-Eintrag: `feedback_secret_hygiene.md` oder aehnlich, damit die Lektion nicht verloren geht.

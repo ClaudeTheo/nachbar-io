@@ -54,6 +54,25 @@ Vercel hat zwei Env-Var-Klassen:
 - Nach jeder Rotation: kurzer Smoke-Test auf Prod (z.B. Login, Ein-Feature-Trigger).
 - Wenn ein Rotate einen User-Flow bricht (z.B. Push-Subscriptions weg), vor der Rotation ankuendigen / dokumentieren.
 
+### Helper-Skript fuer den Vercel-Teil
+
+`nachbar-io/scripts/rotate-secrets.sh` automatisiert den Vercel-Envs-Teil:
+
+```bash
+cd nachbar-io
+bash scripts/rotate-secrets.sh            # Dry-Run (nichts geschrieben, nur Ablauf sehen)
+bash scripts/rotate-secrets.sh --execute  # Real-Modus
+```
+
+Pro Key: Skript zeigt Dashboard-URL → du rotierst im Dashboard → pastest den neuen Wert (Eingabe unsichtbar via `read -s`) → Skript pusht in alle 3 Vercel-Envs (production, preview, development) als `--sensitive`. Auto-generate fuer CRON_SECRET, INTERNAL_API_SECRET, VAPID-Paar.
+
+Sicherheits-Zusicherungen des Skripts:
+- Wert wird via `read -s` eingelesen (Terminal-Echo off).
+- Wert geht als stdin an `vercel env add` (nicht als argv → keine ps-aux-Leak).
+- Bash-Variable wird am Funktions-Ende auf `""` gesetzt + `unset`.
+- Skript schreibt in KEIN lokales File. `.env.cloud.local` synchronisierst du manuell via `vercel env pull` am Ende.
+- Das Skript fragt bei jedem Key ob rotiert werden soll — du kannst einzelne ueberspringen.
+
 ---
 
 ## P1 — Sofort rotieren (hohes Missbrauchs-Potential, keine Nebeneffekte)

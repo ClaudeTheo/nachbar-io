@@ -31,16 +31,29 @@ Die Entscheidung ist **nicht dringend** — `npm run dev:cloud` ist der funktion
 
 **Problem:** Viele der alten Migrationen sind **nicht idempotent** — `CREATE TABLE ...` ohne `IF NOT EXISTS`, `ALTER TABLE ... ADD COLUMN ...` ohne Existenz-Check, `CREATE FUNCTION` ohne `OR REPLACE`. Auf einem Schema, das schon die Baseline enthaelt, werfen diese Statements Errors.
 
-**Aufwand-Schaetzung:**
-- 195 Migrations zu lesen und Idempotenz-Muster zu pruefen: ca. 4-6 Stunden Reviewer-Zeit
-- Nicht-idempotente Migrations entweder a) auf idempotent umbauen (invasiv, Verhalten-Aequivalent aber nicht Identitaet) oder b) konditional ueberspringen (kompliziert, braucht State-Variable)
-- Testlauf-Iteration: pro Fix 2-3 Minuten Stack-Restart, bei 50 nicht-idempotenten Migrations potenziell 2-3 Stunden Test-Loop
+**Idempotenz-Score (gemessen 2026-04-21 ueber alle 195 Migrations):**
+
+| Statement-Typ                     | risky (nicht-idempotent) | safe (idempotent) |
+|:----------------------------------|-------------------------:|------------------:|
+| CREATE TABLE                      |                       73 |               199 |
+| CREATE FUNCTION                   |                        0 |                44 |
+| CREATE INDEX                      |                      153 |               144 |
+| ALTER TABLE ADD COLUMN            |                        7 |                81 |
+| **Summe**                         |                  **233** |           **468** |
+
+→ **33% aller Create/Alter-Statements** muessten umgebaut werden. CREATE FUNCTION ist vorbildlich (100% `OR REPLACE`), CREATE INDEX das groesste Problem (51% risky). Erste betroffene Files: `020_care_profiles.sql` bis mindestens `070_heartbeats.sql` — also fast die komplette Care-Modul-Historie.
+
+**Aufwand-Schaetzung (nach Messung):**
+- 233 Statements umschreiben (mechanisch, aber 195 Files anfassen): ca. 1-2 Tage konzentrierte Arbeit
+- Testlauf-Iteration: pro Fix 2-3 Minuten Stack-Restart — bei 195 Files potenziell 2-3 Stunden Test-Loop
+- Dokumentation + Review: 0,5 Tag
+- **Total: 2-3 Sprint-Tage**
 
 **Vorteil:** Migrations-Historie bleibt exakt wie in Prod. Keine destruktive Aktion. Rueckrollbar.
 
-**Risiko:** Subtle Verhaltens-Unterschiede zwischen idempotent-umformuliert und original. Wenn ein Historical Migration einen Bug oder eine Datenkorrektur enthielt, die durch die Umformulierung verloren geht, kriegen wir's nie mit.
+**Risiko:** Subtle Verhaltens-Unterschiede zwischen idempotent-umformuliert und original. Wenn eine Historical Migration einen Bug oder eine Datenkorrektur enthielt, die durch die Umformulierung verloren geht, kriegen wir's nie mit.
 
-**Empfehlung:** **Nicht primaere Option**. Hoher Wert wenn Prod-Historie religioes erhalten werden soll, aber der Auditwert der 001-172-Historie ist begrenzt — Daten in Prod sind eh manuell drift-korrigiert worden.
+**Empfehlung:** **Nicht primaere Option**. 2-3 Sprint-Tage fuer eine Loesung, die auch nur Lokal-Dev-Parity herstellt, ist teurer als Option 2 (0,5-1 Sprint-Tag). Auditwert der 001-172-Historie ist begrenzt — Prod-Daten sind eh drift-korrigiert.
 
 ## Option 2 — Migrations-Konsolidierung (pg_dump)
 

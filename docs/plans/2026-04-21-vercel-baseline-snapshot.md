@@ -28,7 +28,7 @@ Alle Daten via `vercel` CLI 50.44.0 als `thomasth1977`. Nur Namen + Metadaten, k
 | `nachbar-admin` | nachbar-admin.vercel.app | 15d | ✅ eingefroren |
 | `annette` | annette-theobald.de | 15d | ✅ privates Projekt (Mandantin) |
 
-**Frontend-Projekt:** Name ist auffallend generisch. Kein akuter Drift-Indikator (15d alt, nicht frisch), aber einmal pruefen ob das ein alter Test-Deploy ist, der geloescht werden kann. Fuer die jetzige Rotation nicht blockend.
+**Frontend-Projekt: identifiziert als orphan**. HTTP-Check am 2026-04-21 (`curl https://frontend-topaz-ten-90.vercel.app`) liefert ein statisches HTML mit `<title>Nachbar Kiosk</title>` und Viewport 1280x800 — das ist der alte Pi-Kiosk-Prototype aus der Zeit vor dem Tauri-Pivot (2026-04-19, siehe CLAUDE.md). Das Deploy hat keinen aktiven Konsumenten mehr. **Kann geloescht werden** (als separater Spawn-Task dokumentiert — Founder-Go wegen shared-infra).
 
 ### Domains (3): alle nachvollziehbar
 
@@ -45,11 +45,30 @@ Keine unerwarteten Domains.
 - Alle Namen erwartet (Supabase, Stripe, Resend, Twilio, KV/Upstash, Anthropic, OpenAI, Google-AI, Tavily, Care/Civic-Encryption, VAPID, TURN, CRON, INTERNAL, RESIDENT_HASH, MAPTILER)
 - Keine unerwarteten Zusatz-Vars
 
-### Env-Vars nachbar-arzt (Production, ~18 Stueck)
+### Env-Vars nachbar-arzt (Production, 18 Stueck)
 
 - Aeltestes: 37d (Core-Setup)
 - Neuestes: 12d (`NEXT_PUBLIC_ARZT_LAUNCH_PHASE`, Arzt-Portal-Rollout)
 - Alle erwartet
+
+### Env-Vars nachbar-civic (Production, 8 Stueck)
+
+- Minimalkonfiguration — passt zu "partiell ent-frost" Status
+- Keine unerwarteten Eintraege
+
+### Env-Vars nachbar-pflege (Production, 5 Stueck)
+
+- Minimalkonfiguration — passt zu "eingefroren" Status
+- Keine unerwarteten Eintraege
+
+### Env-Gesamtuebersicht
+
+| Projekt          | Env-Count (Prod) | Status laut Memory   |
+|:-----------------|-----------------:|:---------------------|
+| nachbar-io       |               46 | Haupt-App, LIVE      |
+| nachbar-arzt     |               18 | LIVE                 |
+| nachbar-civic    |                8 | partiell ent-frost   |
+| nachbar-pflege   |                5 | eingefroren          |
 
 ### Deployments nachbar-io (letzte 20 auf Production)
 

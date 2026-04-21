@@ -23,6 +23,15 @@ const eslintConfig = defineConfig([
       }],
     },
   },
+  {
+    // Playwright-Fixtures: der Parameter heisst konventionell `use` und ist
+    // ein Callback, kein React-Hook. react-hooks/rules-of-hooks wirft hier
+    // false positives, weil der Fixture-Body `await use(page)` aufruft.
+    files: ["tests/e2e/**/*.ts", "tests/e2e/**/*.tsx"],
+    rules: {
+      "react-hooks/rules-of-hooks": "off",
+    },
+  },
 ]);
 
 export default eslintConfig;

@@ -2,6 +2,17 @@
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 
+/*
+ * Scan-Ausschluesse fuer Tailwind v4 Source-Detection.
+ * Grund: docs/plans/* enthaelt Markdown mit Windows-Pfaden wie "\memory\feedback_..."
+ * Diese Sequenzen werden von Tailwind als CSS-Unicode-Escapes (\XXXXXX) interpretiert
+ * und triggern RangeError bei Codepoints > 0x10FFFF (z.B. \feedba = 0xFEEDBA).
+ * Nur Source-Code-Dirs brauchen Class-Scanning, docs sind irrelevant.
+ */
+@source not "../docs";
+@source not "../memory";
+@source not "../.claude";
+
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
@@ -13,7 +24,7 @@
 
   /* Nachbar.io Custom Colors — Warm & Persoenlich */
   --color-quartier-green: #2e7d5e;
-  --color-quartier-green-light: #4CAF87;
+  --color-quartier-green-light: #4caf87;
   --color-quartier-green-dark: #245f49;
   --color-anthrazit: #3d3d50;
   --color-anthrazit-light: #56566e;

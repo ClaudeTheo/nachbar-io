@@ -5,6 +5,33 @@
 
 ---
 
+## 🔔 VOR DEM START LESEN — Evaluierte Alternativen
+
+Online-Recherche in der Uebergabe-Session hat ergeben: **Browser-Automation ist nicht der optimale Weg** fuer mehrere Provider. Details in "Alternative B+ (API-basiert)" am Ende dieses Dokuments.
+
+**Kurz-Empfehlung:**
+
+| Provider | Optimaler Weg | Warum |
+|---|---|---|
+| Supabase | **Neue `sb_secret_*`-Keys** (Code-Aenderung) | Rotation ohne Session-Abbruch, JWT-Legacy ist EOL |
+| Anthropic | **Admin API** (`/v1/organizations/api_keys`) | curl + Admin-Key, keine Browser noetig |
+| OpenAI | **Admin API** (`/docs/api-reference/admin-api-keys`) | curl + Admin-Key, keine Browser noetig |
+| Stripe | **Dashboard mit 7-Tage-Grace-Period** | Stripe erlaubt "delayed expiration" — kein Downtime-Risiko |
+| Google AI, Tavily, Resend, Twilio, Metered, Upstash | Browser bleibt optimal | Keine Admin-APIs fuer Rotation |
+
+**Empfohlener Hybrid-Ablauf:**
+1. **One-time Setup (Founder, 10 Min):** Admin-API-Key fuer Anthropic + OpenAI erstellen, Supabase-Personal-Access-Token erstellen, ins `.env.cloud.local` (oder separat nur fuer Rotation) ablegen — NICHT in Vercel-Envs, das sind Meta-Credentials fuer Rotation-Workflow
+2. **Strategische Auswahl:** Supabase-Migration zu `sb_secret_*` in separate Session (Code-Aenderung), heute nur JWT-Rotation wenn Zeitdruck
+3. **Execution:**
+   - Anthropic + OpenAI: API-Calls (curl/Bash), ~30 Sek pro Key
+   - Stripe: Dashboard mit Grace-Period, kein Stress
+   - Rest: Browser-Automation wie unten
+4. **Auto-Gen + Smoke + Redeploy** wie unten
+
+**Falls Founder Admin-Key-Setup ablehnt** (will nicht noch eine Meta-Credential-Gruppe): bleibt der Browser-Pfad unten gueltig. Er ist langsamer, aber funktionert.
+
+---
+
 ## Kontext aus der vorigen Session
 
 - **Dashboard-Launcher-Skript:** `scripts/open-rotation-dashboards.sh` — oeffnet alle URLs als Tabs
@@ -235,3 +262,91 @@ Bei Fehler pro Provider zusaetzlich 5-10 Min.
 - Kein Push erfolgt
 - Rotation-Skript + Smoke-Test + Launcher-Skript vorhanden in `scripts/`
 - Diese Uebergabe-Datei kann nach abgeschlossener Rotation gepruned werden (oder als Audit-Spur behalten)
+
+---
+
+## Alternative B+ — API-basierte Rotation (Details)
+
+**Quellen:** Online-Recherche am 2026-04-21 (WebSearch).
+
+### Anthropic Admin API
+
+- **Docs:** https://platform.claude.com/docs/en/build-with-claude/administration-api
+- **Voraussetzung:** Admin-API-Key erstellen im Claude-Console (Settings → Organization → nur Org-Admins koennen das)
+- **Endpoints (relevant):**
+  - `GET /v1/organizations/api_keys` — Keys listen
+  - `POST /v1/organizations/api_keys` — neuen Key erstellen
+  - `POST /v1/organizations/api_keys/{id}` — Status auf `inactive` setzen (= revoken)
+- **Header:** `x-api-key: <ADMIN_KEY>` + `anthropic-version: 2023-06-01`
+- **Rotation-Workflow:**
+  ```bash
+  # 1. Neuen Key erstellen
+  NEW_KEY=$(curl -s https://api.anthropic.com/v1/organizations/api_keys \
+    -H "x-api-key: $ANTHROPIC_ADMIN_KEY" \
+    -H "anthropic-version: 2023-06-01" \
+    -H "content-type: application/json" \
+    -d '{"name": "nachbar-io-prod-2026-04-21"}' | jq -r .key)
+  # 2. In Vercel setzen
+  printf "%s" "$NEW_KEY" | vercel env add ANTHROPIC_API_KEY production --sensitive --force
+  # 3. Alten Key via ID invalidieren (ID vorher via GET holen)
+  ```
+
+### OpenAI Admin API
+
+- **Docs:** https://platform.openai.com/docs/api-reference/admin-api-keys
+- **Voraussetzung:** Admin-API-Key erstellen (Organization Owner only)
+- **Endpoints (relevant):**
+  - `GET /v1/organization/admin_api_keys` — Keys listen
+  - `POST /v1/organization/admin_api_keys` — Key erstellen (Projekt-scope moeglich)
+  - `DELETE /v1/organization/admin_api_keys/{id}` — Key revoken
+- **Header:** `Authorization: Bearer <ADMIN_KEY>`
+- **Dynamic Secrets:** HashiCorp Vault hat einen offiziellen OpenAI-Secrets-Engine-Plugin, wenn wir das langfristig wollen
+
+### Supabase Management API
+
+- **Option 1 — Legacy JWT Rotation (schnell, aber Session-Abbruch):**
+  - Dashboard: `https://supabase.com/dashboard/project/uylszchlyhbpbmslcnka/settings/jwt` → "Generate new JWT Secret"
+  - Invalidiert ALLE User-JWTs (alle Nutzer ausgeloggt). Bei aktuell 0 echten Nutzern: OK.
+  - Danach neuer `service_role_key` + neuer `anon_key` in Vercel.
+
+- **Option 2 — Migrate auf neue `sb_secret_*` Keys (empfohlen, laengerfristig):**
+  - Supabase hat neue Keys-Struktur: `sb_publishable_*` (= anon) und `sb_secret_*` (= service_role)
+  - **Rotation ohne Session-Abbruch moeglich** (das ist der Key-Vorteil)
+  - Code-Scan noetig:
+    ```bash
+    grep -rE "SUPABASE_SERVICE_ROLE_KEY|NEXT_PUBLIC_SUPABASE_ANON_KEY" nachbar-io/lib nachbar-io/app --include='*.ts'
+    ```
+  - `@supabase/supabase-js` akzeptiert beide Formate transparent — kein Code-Umbau noetig, nur Env-Werte tauschen
+  - Dashboard: `https://supabase.com/dashboard/project/uylszchlyhbpbmslcnka/settings/api-keys` → "Create new secret key" + "Create new publishable key"
+  - In Vercel: Env-Werte tauschen
+  - Alte Legacy-JWT-Keys aktiv lassen (koexistieren) bis Migration verifiziert, dann abschalten
+  - **Empfehlung: separater Sprint, nicht heute**
+
+- **Option 3 — Management API Endpoint (experimentell):**
+  - `POST https://api.supabase.io/v1/projects/{ref}/keys/rotate`
+  - Benoetigt Personal Access Token (Settings → Access Tokens)
+  - Dokumentations-Lage unklar, in Community-Discussions erwaehnt
+  - Nicht fuer Produktion ohne Test
+
+### Stripe Delayed Expiration (wichtig!)
+
+- **Docs:** https://docs.stripe.com/keys-best-practices
+- Stripe erlaubt **bis zu 7 Tage Grace-Period** beim Rollen eines Secret-Keys
+- Workflow:
+  1. Dashboard → Developers → API keys → "Roll key"
+  2. "Expires in" → 7 days auswaehlen → alter Key laeuft 7 Tage parallel
+  3. Vercel-Env update auf neuen Key
+  4. Smoke-Test, monitoring
+  5. Wenn nach ~48h alles gruen: alten Key sofort revoken (statt auf 7d warten)
+- **Vorteil:** kein Downtime-Risiko. Bei Fehl-Rotation einfach auf alten Key zurueck.
+
+### Universal Tooling (langfristige Option)
+
+Wenn Secret-Rotation mehr als 2x/Jahr passiert, lohnt sich Tooling:
+
+- **Doppler** (https://doppler.com) — Universal-Secret-Manager mit Sync in Vercel, automatische Rotation fuer unterstuetzte Provider
+- **HashiCorp Vault** — OSS, dynamic secrets fuer OpenAI/AWS/DB-Credentials — hoher Setup-Aufwand
+- **Infisical** (https://infisical.com) — Doppler-Alternative, OSS
+- **1Password Secrets Automation** — wenn Team eh 1Password nutzt, niedrige Friction
+
+Fuer nachbar.io heute: keine Pflicht. Bei MRR > 2k EUR (= neue Entwickler) sinnvoll einzufuehren.

@@ -6,8 +6,11 @@
 - Cleanup (3 Commits + Backup verschoben)
 - Lokaler Supabase-Stack **strukturell** fertig (4 Commits: `d96532c`, `16f9656`, `854f68e` + Parent `6bd3b5a`), aber **Live-Stack bricht bei Mig 019** (Prod-Drift, Notfallregel gegriffen, abgebrochen)
 - Secret-Hygiene-Review von Codex akzeptiert — `.env.local` + `.env.cloud.local` bereinigt, Rotation-Checkliste fertig
+- **Abend-Zusatz:** Vercel-Security-Incident-Mail eingegangen (unauthorized access zu internen Vercel-Systemen). Unsere Credentials laut Vercel nicht im Kompromittiert-Set, aber Rotation-Empfehlung + Activity-Log-Review + Sensitive-Flag-Feature zusaetzlich angesetzt.
 
 **Blocker fuer morgen:** Mig-019-Drift (Lokal-Stack) + Secret-Rotation in Anbieter-Dashboards (Founder-Aufgabe).
+
+**Zusatz durch Vercel-Incident:** VOR der Rotation Vercel-Activity-Log pruefen. NACH der Rotation Sensitive-Flag setzen.
 
 ---
 
@@ -21,9 +24,21 @@
 
 ## Schritte fuer die naechste Session (Reihenfolge wichtig!)
 
+### Block 0 — Vercel-Activity-Log pruefen (VOR jeder Rotation)
+
+Zusatz wegen Vercel-Security-Incident (Mail 2026-04-20). 5 Minuten.
+
+- [ ] https://vercel.com/dashboard → Account Settings → **Activity**
+- [ ] Team Settings → **Activity** (falls Team)
+- [ ] Worauf achten (letzte 30 Tage): fremde Logins, unerwartete Env-Var-Reads/-Writes, neue Deploy-Hooks / Webhooks / Team-Mitglieder
+- [ ] **Wenn sauber:** weiter zu Block A.
+- [ ] **Wenn auffaellig:** STOP, Vercel-Support kontaktieren (Sprechvorlage: `docs/plans/2026-04-21-vercel-incident-sprechvorlagen.md`). Rotation erst danach — Incident-Response braucht evtl. unveraenderte Evidence.
+
 ### Block A — Founder-Rotation (erfolgt AUSSERHALB Claude-Session)
 
 Founder fuehrt die Rotation in den Provider-Dashboards durch. Claude schaut dabei **nicht** zu und kriegt keine neuen Werte zu sehen.
+
+**Wichtig: Beim Wiedereintragen in Vercel-Envs (Production + Preview + Development) jede der rotierten Variablen als "Sensitive" markieren.** Details in der Rotation-Checkliste, Abschnitt P-0.
 
 **P0 (zuerst — History-exposed):**
 - [ ] Resend API Key rotieren (resend.com)

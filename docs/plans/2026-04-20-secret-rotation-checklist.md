@@ -1,8 +1,48 @@
 # Secret-Rotation — Checkliste (Stand 2026-04-20)
 
-**Anlass:** Session 2026-04-20 (Cleanup + Local-Stack). Die komplette Prod-`.env.local` wurde via `Read` und `head -40` im Claude-Code-Session-Kontext sichtbar. Zusaetzlich zeigt Git-History-Audit, dass drei Werte vorher bereits in committed Plan-/Backup-Dateien standen.
+**Anlass 1:** Session 2026-04-20 (Cleanup + Local-Stack). Die komplette Prod-`.env.local` wurde via `Read` und `head -40` im Claude-Code-Session-Kontext sichtbar. Zusaetzlich zeigt Git-History-Audit, dass drei Werte vorher bereits in committed Plan-/Backup-Dateien standen.
+
+**Anlass 2 (hinzu 2026-04-20 spaet):** Vercel Security-Incident-Benachrichtigung. Unauthorized access zu internen Vercel-Systemen. Laut Mail sind **unsere** Credentials nicht im bestaetigten Kompromittiert-Set, aber Vercel empfiehlt allen Kunden Rotation + Activity-Log-Review + Sensitive-Flag. Quelle: Security Bulletin von Vercel (E-Mail).
 
 Werte in dieser Checkliste sind **nicht ausgeschrieben**. Der Founder kennt die Identifier aus Vercel / den Anbieter-Dashboards.
+
+---
+
+## P-1 — VOR jeder Rotation: Vercel-Activity-Log pruefen
+
+Wenn du hier was Auffaelliges findest, **nicht rotieren** — erst Vercel-Support kontaktieren (Incident-Response braucht Evidence).
+
+- [ ] https://vercel.com/dashboard → Account Settings → **Activity** (persoenliches Log)
+- [ ] Team Settings → **Activity** (Team-Log, falls Team existiert)
+- [ ] **Worauf achten:**
+  - Logins aus unbekannten Laendern / IPs
+  - Env-Var-Reads oder -Writes die nicht du warst
+  - Neue Deploy-Hooks, neue Webhooks, neue Team-Mitglieder
+  - Ungewoehnliche API-Key-Erstellung im Vercel-Account
+- [ ] Zeitraum: mindestens die letzten 30 Tage
+- [ ] Ergebnis-Option:
+  - **Alles sauber:** weiter mit P0/P1 unten.
+  - **Auffaellig:** STOP → Vercel-Support kontaktieren (siehe Sprechvorlage in `2026-04-21-vercel-incident-sprechvorlagen.md`).
+
+## P-0 — NACH jeder Rotation: als "Sensitive" markieren in Vercel
+
+Vercel hat zwei Env-Var-Klassen:
+- **Plain**: nach Setzen im Dashboard lesbar.
+- **Sensitive**: nach Setzen **nicht mehr lesbar**, encrypted-at-rest, nur an Runtime ausgeliefert.
+
+**Beim Wiedereintragen der rotierten Werte** in Vercel-Envs (Production + Preview + Development): die folgenden Variablen als **Sensitive** eintragen:
+
+- [ ] `SUPABASE_SERVICE_ROLE_KEY`
+- [ ] `CARE_ENCRYPTION_KEY`, `CIVIC_ENCRYPTION_KEY`, `RESIDENT_HASH_SECRET`
+- [ ] `ANTHROPIC_API_KEY`, `OPENAI_API_KEY`, `GOOGLE_AI_API_KEY`, `TAVILY_API_KEY`
+- [ ] `TWILIO_AUTH_TOKEN`, `RESEND_API_KEY`
+- [ ] `KV_REST_API_TOKEN`, `KV_URL`, `REDIS_URL`, `KV_REST_API_READ_ONLY_TOKEN`
+- [ ] `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`
+- [ ] `CRON_SECRET`, `INTERNAL_API_SECRET`
+- [ ] `VAPID_PRIVATE_KEY`
+
+**Nicht sensitive** (per Design public, bleiben Plain):
+- Alles mit `NEXT_PUBLIC_*`-Prefix (wird ins Client-Bundle gebaked)
 
 ---
 

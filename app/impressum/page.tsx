@@ -33,6 +33,38 @@ export default function ImpressumPage() {
             </p>
           </section>
 
+          <section className="rounded-lg border border-amber-200 bg-amber-50 p-4">
+            <h2 className="mb-2 text-lg font-semibold text-anthrazit">
+              Hinweis zur Rechtsform — vor Handelsregistereintragung
+            </h2>
+            <p>
+              Die Theobase GmbH befindet sich in Gruendung. Die Beurkundung des
+              Gesellschaftsvertrags erfolgte beim Notariat Stadler, Bad
+              Saeckingen, am 27.04.2026. Die Eintragung beim zustaendigen
+              Handelsregister ist beantragt; bis zur Eintragung firmiert die
+              Gesellschaft als Theobase GmbH i.G.
+            </p>
+            <p className="mt-2">
+              In dieser Uebergangsphase ist verantwortlich im Sinne von § 5 TMG
+              und Art. 4 Nr. 7 DSGVO: Thomas Theobald, Purkersdorfer Strasse 35,
+              79713 Bad Saeckingen, E-Mail: thomasth@gmx.de.
+            </p>
+            <ul className="ml-4 mt-2 list-disc space-y-1">
+              <li>Es findet kein entgeltlicher Vertragsbetrieb statt.</li>
+              <li>Es werden keine Zahlungen entgegengenommen.</li>
+              <li>
+                Der Pilotbetrieb ist eine geschlossene, freiwillige Erprobung
+                mit ausgewaehlten Familien aus Bad Saeckingen.
+              </li>
+            </ul>
+            <p className="mt-2">
+              Sobald die Handelsregistereintragung vorliegt, wird dieses
+              Impressum um Firma, Rechtsform, Sitz, Vertretung,
+              Handelsregisternummer und Umsatzsteuer-Identifikationsnummer
+              aktualisiert.
+            </p>
+          </section>
+
           {/* Kontakt */}
           <section>
             <h2 className="mb-2 text-lg font-semibold text-anthrazit">

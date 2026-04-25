@@ -10,6 +10,7 @@ import {
   normalizeCode,
 } from "@/lib/invite-codes";
 import { ServiceError } from "@/lib/services/service-error";
+import { CURRENT_CONSENT_VERSION } from "@/lib/care/constants";
 
 // ============================================================
 // Typen
@@ -34,6 +35,7 @@ export interface RegistrationInput {
   inviteCode?: string;
   referrerId?: string;
   quarterId?: string;
+  aiConsentChoice?: "yes" | "no" | "later";
 }
 
 export interface RegistrationResult {
@@ -153,6 +155,7 @@ export async function completeRegistration(
     inviteCode,
     referrerId,
     quarterId: bodyQuarterId,
+    aiConsentChoice,
   } = input;
   let householdId = input.householdId;
   const pilotIdentity = normalizePilotIdentity(input);
@@ -186,7 +189,10 @@ export async function completeRegistration(
     pilotIdentity,
     uiMode,
     verificationMethod,
+    aiConsentChoice,
   );
+
+  await persistAiOnboardingConsent(adminDb, userId, aiConsentChoice);
 
   // 2. Haushalt-Zuordnung + Verifizierung + Einladung
   if (householdId) {
@@ -468,6 +474,7 @@ async function createUserProfile(
   pilotIdentity: PilotIdentity,
   uiMode?: string,
   verificationMethod?: string,
+  aiConsentChoice?: "yes" | "no" | "later",
 ): Promise<void> {
   // Trust-Level abhängig von Verifikationsmethode:
   // - Invite-Code: sofort 'verified' (B2B-Track, vertrauenswürdiger Kanal)
@@ -481,6 +488,7 @@ async function createUserProfile(
       ? "verified"
       : "new";
 
+  const aiEnabled = aiConsentChoice === "yes";
   const { error: profileError } = await adminDb.from("users").upsert(
     {
       id: userId,
@@ -491,6 +499,14 @@ async function createUserProfile(
       role: "resident", // Vier-Versionen-Modell: Standard-Rolle für Bewohner
       trust_level: trustLevel,
       settings: {
+        ai_enabled: aiEnabled,
+        ai_audit_log: [
+          {
+            at: new Date().toISOString(),
+            enabled: aiEnabled,
+            source: "registration",
+          },
+        ],
         pilot_identity: {
           first_name: pilotIdentity.firstName,
           last_name: pilotIdentity.lastName,
@@ -520,6 +536,50 @@ async function createUserProfile(
       500,
     );
   }
+}
+
+async function persistAiOnboardingConsent(
+  adminDb: SupabaseClient,
+  userId: string,
+  aiConsentChoice?: "yes" | "no" | "later",
+): Promise<void> {
+  if (aiConsentChoice !== "yes" && aiConsentChoice !== "no") return;
+
+  const now = new Date().toISOString();
+  const granted = aiConsentChoice === "yes";
+  const consentData: Record<string, unknown> = {
+    user_id: userId,
+    feature: "ai_onboarding",
+    granted,
+    consent_version: CURRENT_CONSENT_VERSION,
+    updated_at: now,
+  };
+
+  if (granted) {
+    consentData.granted_at = now;
+    consentData.revoked_at = null;
+  } else {
+    consentData.granted_at = null;
+    consentData.revoked_at = now;
+  }
+
+  const { data, error } = await adminDb
+    .from("care_consents")
+    .upsert(consentData, { onConflict: "user_id,feature" })
+    .select("id")
+    .single();
+
+  if (error) {
+    throw new ServiceError("KI-Einwilligung konnte nicht gespeichert werden.", 500);
+  }
+
+  await adminDb.from("care_consent_history").insert({
+    consent_id: data?.id,
+    user_id: userId,
+    feature: "ai_onboarding",
+    action: granted ? "granted" : "revoked",
+    consent_version: CURRENT_CONSENT_VERSION,
+  });
 }
 
 /** Haushalt-Zuordnung, Verifizierung und Einladungs-Handling */

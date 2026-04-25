@@ -3,8 +3,6 @@ import { useState } from "react";
 import { MapPin, ArrowLeft, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { createClient } from "@/lib/supabase/client";
-import { normalizeCode } from "@/lib/invite-codes";
 import type { StepProps } from "./types";
 
 function buildFullName(firstName: string, lastName: string) {
@@ -56,72 +54,8 @@ export function RegisterStepIdentity({ state, setState, setStep }: StepProps) {
 
     try {
       const displayName = buildFullName(state.firstName, state.lastName);
-
-      // 1. User serverseitig erstellen (Admin-API, kein Passwort noetig)
-      const completeRes = await fetch("/api/register/complete", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          email: state.email,
-          displayName,
-          firstName: state.firstName.trim(),
-          lastName: state.lastName.trim(),
-          dateOfBirth: state.dateOfBirth.trim(),
-          uiMode: "active", // UI-Modus wird spaeter im Onboarding gewaehlt
-          householdId: state.householdId,
-          streetName: state.selectedAddress?.street || undefined,
-          houseNumber: state.houseNumber.trim() || undefined,
-          lat: state.selectedAddress?.lat || undefined,
-          lng: state.selectedAddress?.lng || undefined,
-          postalCode: state.postalCode.trim() || state.selectedAddress?.postalCode || undefined,
-          city: state.city.trim() || state.selectedAddress?.city || undefined,
-          verificationMethod: state.verificationMethod,
-          inviteCode: state.inviteCode ? normalizeCode(state.inviteCode) : undefined,
-          referrerId: state.referrerId,
-          quarterId: state.geoQuarter?.quarter_id || undefined,
-          website: honeypot, // Honeypot-Feld fuer Bot-Erkennung
-        }),
-      });
-
-      const completeData = await completeRes.json();
-      if (!completeRes.ok) {
-        console.error("Registration-Complete Fehler:", completeData);
-        setState({ error: completeData.error || "Registrierung fehlgeschlagen.", loading: false });
-        return;
-      }
-
-      // 2. Magic Link senden via signInWithOtp
-      const supabase = createClient();
-      const { error: otpError } = await supabase.auth.signInWithOtp({
-        email: state.email,
-        options: {
-          emailRedirectTo: `${window.location.origin}/auth/callback?next=/welcome`,
-        },
-      });
-
-      if (otpError) {
-        console.error("Magic Link Fehler:", otpError);
-        // Fallback: User existiert bereits, Magic Link trotzdem senden
-        if (otpError.message?.includes("rate limit")) {
-          setState({ error: "Zu viele Versuche. Bitte warten Sie einen Moment.", loading: false });
-        } else {
-          setState({ error: "Magic Link konnte nicht gesendet werden. Bitte versuchen Sie es erneut.", loading: false });
-        }
-        return;
-      }
-
-      // 3. Bei Nachbar-Einladung: Reputation berechnen (fire-and-forget)
-      if (state.verificationMethod === "neighbor_invite" && state.referrerId) {
-        fetch("/api/reputation/recompute", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ userId: state.referrerId }),
-        }).catch(() => {});
-      }
-
-      // 4. Bestaetigung anzeigen
-      setState({ loading: false });
-      setStep("magic_link_sent");
+      setState({ displayName, website: honeypot, loading: false });
+      setStep("ai_consent");
     } catch (err) {
       console.error("Registrierung Netzwerkfehler:", err);
       setState({ error: "Netzwerkfehler. Bitte prüfen Sie Ihre Internetverbindung.", loading: false });
@@ -240,7 +174,7 @@ export function RegisterStepIdentity({ state, setState, setStep }: StepProps) {
       {state.error && <p className="text-sm text-emergency-red">{state.error}</p>}
 
       <Button type="submit" disabled={state.loading} className="w-full bg-quartier-green hover:bg-quartier-green-dark">
-        {state.loading ? "Wird verarbeitet..." : "Anmelde-Code senden"}
+        {state.loading ? "Wird verarbeitet..." : "Weiter zur KI-Auswahl"}
       </Button>
       <button
         type="button"

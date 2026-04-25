@@ -233,7 +233,51 @@ export default function AGBPage() {
           {/* 6. Verfügbarkeit */}
           <section>
             <h2 className="mb-2 text-lg font-semibold text-anthrazit">
-              6. Verfügbarkeit
+              6. KI-Funktionen
+            </h2>
+            <p>
+              KI-Funktionen innerhalb des Programms, insbesondere
+              Sprachverstaendnis, Vorlesen und KI-gestuetzte Zusammenfassungen,
+              sind optionale Zusatzfunktionen. Das Programm ist ohne sie in
+              vollem Umfang nutzbar.
+            </p>
+            <h3 className="mt-3 font-semibold">6.1 Schrittweise Aktivierung</h3>
+            <p>
+              KI-Funktionen werden in der Pilotphase und in den ersten Monaten
+              nach Markteintritt schrittweise freigeschaltet. Eine Funktion ist
+              nur aktiv, wenn der Anbieter einen AVV/DPA abgeschlossen hat, bei
+              US-Anbietern SCC und Zero-Data-Retention dokumentiert sind, der
+              Pseudonymisierungs-Layer aktiv ist und Sie ausdruecklich
+              zugestimmt haben.
+            </p>
+            <h3 className="mt-3 font-semibold">6.2 Opt-out und Wechsel</h3>
+            <p>
+              Sie koennen die KI-Nutzung jederzeit per Schalter in den
+              Einstellungen ausschalten. Es entstehen dadurch keine Nachteile:
+              die Kernfunktionen bleiben nutzbar.
+            </p>
+            <h3 className="mt-3 font-semibold">6.3 Grenzen</h3>
+            <p>
+              KI-Ausgaben sind keine Beratung, kein medizinischer Rat, keine
+              Rechtsberatung und keine Anlageempfehlung. Wir setzen KI nicht ein
+              fuer Diagnosen, medizinische Empfehlungen, automatisierte
+              Entscheidungen mit rechtlicher Wirkung, Persoenlichkeitsprofile,
+              Bewertungen, Werbe-Profilierung oder Training von KI-Modellen mit
+              Ihren Inhalten.
+            </p>
+            <h3 className="mt-3 font-semibold">6.4 Pilotphase</h3>
+            <p>
+              In der geschlossenen Pilotphase vor Abschluss aller
+              AVV-Vertraege sind KI-Funktionen standardmaessig deaktiviert. Eine
+              Aktivierung erfolgt erst, sobald die Voraussetzungen aus diesem
+              Paragraphen vollstaendig erfuellt sind.
+            </p>
+          </section>
+
+          {/* 7. Verfügbarkeit */}
+          <section>
+            <h2 className="mb-2 text-lg font-semibold text-anthrazit">
+              7. Verfügbarkeit
             </h2>
             <p>
               Der Betreiber bemüht sich um eine möglichst unterbrechungsfreie
@@ -244,10 +288,10 @@ export default function AGBPage() {
             </p>
           </section>
 
-          {/* 7. Inhalte und Moderation */}
+          {/* 8. Inhalte und Moderation */}
           <section>
             <h2 className="mb-2 text-lg font-semibold text-anthrazit">
-              7. Inhalte und Moderation
+              8. Inhalte und Moderation
             </h2>
             <p>
               Nutzer sind für ihre veröffentlichten Inhalte selbst
@@ -263,13 +307,13 @@ export default function AGBPage() {
             </p>
           </section>
 
-          {/* 8. Zahlungen und Kündigung */}
+          {/* 9. Zahlungen und Kündigung */}
           <section>
             <h2 className="mb-2 text-lg font-semibold text-anthrazit">
-              8. Zahlungen und Kündigung
+              9. Zahlungen und Kündigung
             </h2>
 
-            <h3 className="mt-3 font-semibold">8.1 Kostenfreie Nutzung</h3>
+            <h3 className="mt-3 font-semibold">9.1 Kostenfreie Nutzung</h3>
             <p>
               Nachbar Free ist dauerhaft kostenfrei. Der Betreiber behält sich
               vor, Funktionen weiterzuentwickeln, zu ändern oder neu zu
@@ -278,7 +322,7 @@ export default function AGBPage() {
             </p>
 
             <h3 className="mt-3 font-semibold">
-              8.2 Kostenpflichtige Funktionen
+              9.2 Kostenpflichtige Funktionen
             </h3>
             <p>
               Nachbar Plus, Pro Community und Pro Medical sind kostenpflichtige
@@ -287,7 +331,7 @@ export default function AGBPage() {
               transparent angezeigt.
             </p>
 
-            <h3 className="mt-3 font-semibold">8.3 Kündigung</h3>
+            <h3 className="mt-3 font-semibold">9.3 Kündigung</h3>
             <ul className="ml-4 list-disc space-y-1">
               <li>
                 <strong>Durch den Nutzer:</strong> Jederzeit zum Ende des
@@ -313,10 +357,10 @@ export default function AGBPage() {
             </p>
           </section>
 
-          {/* 9. Pilotbetrieb */}
+          {/* 10. Pilotbetrieb */}
           <section>
             <h2 className="mb-2 text-lg font-semibold text-anthrazit">
-              9. Pilotbetrieb
+              10. Pilotbetrieb
             </h2>
             <p>
               QuartierApp befindet sich derzeit im <strong>Pilotbetrieb</strong>
@@ -339,10 +383,10 @@ export default function AGBPage() {
             </ul>
           </section>
 
-          {/* 10. Schlussbestimmungen */}
+          {/* 11. Schlussbestimmungen */}
           <section>
             <h2 className="mb-2 text-lg font-semibold text-anthrazit">
-              10. Schlussbestimmungen
+              11. Schlussbestimmungen
             </h2>
             <ul className="ml-4 list-disc space-y-1">
               <li>Es gilt das Recht der Bundesrepublik Deutschland.</li>

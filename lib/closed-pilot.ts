@@ -7,6 +7,7 @@ const CLOSED_PILOT_PUBLIC_PATHS = new Set([
   "/datenquellen",
   "/datenschutz",
   "/impressum",
+  "/opengraph-image",
 ]);
 
 export function isClosedPilotMode() {

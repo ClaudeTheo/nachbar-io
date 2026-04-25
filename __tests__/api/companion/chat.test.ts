@@ -101,17 +101,36 @@ vi.mock("@anthropic-ai/sdk", () => {
 // Mock-Supabase mit from()-Methode (fuer Memory-Layer Integration)
 function createMockSupabase() {
   return {
-    from: () => ({
-      select: () => ({
-        eq: () => ({
-          single: () => Promise.resolve({ data: null, error: null }),
-          limit: () => ({
-            single: () => Promise.resolve({ data: null, error: null }),
-          }),
-        }),
-        limit: () => Promise.resolve({ data: [], error: null }),
-      }),
-    }),
+    from: (table: string) => {
+      const chain = {
+        select: () => chain,
+        eq: () => chain,
+        limit: () => chain,
+        single: () => {
+          if (table === "users") {
+            return Promise.resolve({
+              data: {
+                settings: { ai_enabled: true },
+                subscription_plan: "free",
+                raw_user_meta_data: {},
+              },
+              error: null,
+            });
+          }
+          if (table === "feature_flags") {
+            return Promise.resolve({ data: { enabled: false }, error: null });
+          }
+          return Promise.resolve({ data: null, error: null });
+        },
+        maybeSingle: () => {
+          if (table === "care_consents") {
+            return Promise.resolve({ data: { granted: true }, error: null });
+          }
+          return Promise.resolve({ data: null, error: null });
+        },
+      };
+      return chain;
+    },
   };
 }
 

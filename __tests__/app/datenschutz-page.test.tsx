@@ -9,7 +9,7 @@ describe("DatenschutzPage", () => {
     render(<DatenschutzPage />);
 
     expect(screen.getByText(/Vorname und Nachname/i)).toBeInTheDocument();
-    expect(screen.getByText(/Geburtsdatum/i)).toBeInTheDocument();
+    expect(screen.getAllByText(/Geburtsdatum/i).length).toBeGreaterThan(0);
     expect(screen.getByText(/Adresse.*Quartier-Zuordnung/i)).toBeInTheDocument();
     expect(screen.queryByText(/kein Klarname erforderlich/i)).not.toBeInTheDocument();
   });

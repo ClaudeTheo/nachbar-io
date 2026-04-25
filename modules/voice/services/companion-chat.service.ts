@@ -32,6 +32,7 @@ import {
   CATEGORY_TO_CONSENT,
 } from "@/modules/memory/types";
 import type { MemorySaveProposal } from "@/modules/memory/types";
+import { buildAiDisabledResponse } from "@/lib/ai/user-settings";
 
 /** Maximale Anzahl an Nachrichten im Session-Gedaechtnis */
 const MAX_MESSAGES = 20;
@@ -108,10 +109,26 @@ export async function handleStreamingResponse(
 ): Promise<Response> {
   const encoder = new TextEncoder();
   const activeTools = tools || companionTools;
+  const disabledResponse = await buildAiDisabledResponse(supabase, userId);
 
   const readableStream = new ReadableStream({
     async start(controller) {
       try {
+        if (disabledResponse) {
+          const message = String(disabledResponse.message);
+          controller.enqueue(
+            encoder.encode(
+              `event: text\ndata: ${JSON.stringify({ delta: message })}\n\n`,
+            ),
+          );
+          controller.enqueue(
+            encoder.encode(
+              `event: done\ndata: ${JSON.stringify({ full_reply: message, aiDisabled: true })}\n\n`,
+            ),
+          );
+          return;
+        }
+
         const anthropic = new Anthropic();
         const stream = anthropic.messages.stream({
           model: "claude-haiku-4-5-20251001",
@@ -243,6 +260,9 @@ export async function handleJsonResponse(
   tools?: typeof companionTools,
   supabase?: SupabaseClient,
 ): Promise<Record<string, unknown>> {
+  const disabledResponse = await buildAiDisabledResponse(supabase, userId);
+  if (disabledResponse) return disabledResponse;
+
   const activeTools = tools || companionTools;
   const anthropic = new Anthropic();
   const response = await anthropic.messages.create({

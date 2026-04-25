@@ -340,6 +340,82 @@ export default function DatenschutzPage() {
             </p>
           </section>
 
+          {/* 5.11 Pilot-Pflichtfelder */}
+          <section>
+            <h3 className="mb-1 font-semibold text-anthrazit">
+              5.11 Pilot-Phase Bad Saeckingen: Pflichtfelder mit Zweckbindung
+            </h3>
+            <p>
+              In der geschlossenen Pilotphase mit 5 bis 10 Familien aus Bad
+              Saeckingen erheben wir bei der Registrierung nur die
+              Pflichtangaben, die fuer Vertrauen, Sicherheit und die
+              Quartier-/Haushaltszuordnung notwendig sind.
+            </p>
+            <div className="mt-3 overflow-x-auto">
+              <table className="w-full border-collapse text-left text-xs">
+                <thead>
+                  <tr className="border-b border-border text-anthrazit">
+                    <th className="py-2 pr-3">Datum</th>
+                    <th className="py-2 pr-3">Zweck</th>
+                    <th className="py-2 pr-3">Rechtsgrundlage</th>
+                  </tr>
+                </thead>
+                <tbody className="align-top">
+                  <tr className="border-b border-border/60">
+                    <td className="py-2 pr-3 font-medium">Vorname</td>
+                    <td className="py-2 pr-3">
+                      Eindeutige Identifikation und Verantwortbarkeit im Pilot
+                    </td>
+                    <td className="py-2 pr-3">Art. 6 Abs. 1 lit. b und f DSGVO</td>
+                  </tr>
+                  <tr className="border-b border-border/60">
+                    <td className="py-2 pr-3 font-medium">Nachname</td>
+                    <td className="py-2 pr-3">Wie Vorname</td>
+                    <td className="py-2 pr-3">Wie Vorname</td>
+                  </tr>
+                  <tr className="border-b border-border/60">
+                    <td className="py-2 pr-3 font-medium">Geburtsdatum</td>
+                    <td className="py-2 pr-3">
+                      Eindeutige Zuordnung bei Namensgleichheit,
+                      Volljaehrigkeitspruefung, keine Profilbildung
+                    </td>
+                    <td className="py-2 pr-3">Art. 6 Abs. 1 lit. f DSGVO</td>
+                  </tr>
+                  <tr className="border-b border-border/60">
+                    <td className="py-2 pr-3 font-medium">E-Mail-Adresse</td>
+                    <td className="py-2 pr-3">Anmeldung und Account-Wiederherstellung</td>
+                    <td className="py-2 pr-3">Art. 6 Abs. 1 lit. b DSGVO</td>
+                  </tr>
+                  <tr>
+                    <td className="py-2 pr-3 font-medium">
+                      Anschrift (Strasse, Hausnummer, PLZ, Ort)
+                    </td>
+                    <td className="py-2 pr-3">
+                      Quartier-/Haushaltszuordnung fuer lokale Inhalte wie
+                      Wetter, Muellabfuhr und amtliche Warnungen
+                    </td>
+                    <td className="py-2 pr-3">Art. 6 Abs. 1 lit. b und f DSGVO</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <p className="mt-3">
+              Technisch speichern wir im Pilot den abgeleiteten Namen in{" "}
+              <code>display_name</code> und, sofern vorhanden,{" "}
+              <code>full_name</code>. Die strukturierte Pilot-Identitaet liegt
+              als JSON in <code>users.settings.pilot_identity</code> mit
+              Vorname, Nachname, Geburtsdatum, Zweck und Zweckversion. Eigene
+              Datenbankspalten fuer diese Pilotdaten werden vor der
+              Pilot-Auswertung bewusst nicht angelegt.
+            </p>
+            <p className="mt-2">
+              Pflegegrad, Hausarzt, Notfallkontakt, Medikamente, Erkrankungen
+              und vergleichbare Gesundheitsmerkmale sind keine Pflichtangaben.
+              Diese Daten bleiben freiwillig, einzeln einwilligbar und einzeln
+              widerrufbar.
+            </p>
+          </section>
+
           {/* 6. Empfänger und Datenweitergabe */}
           <section>
             <h2 className="mb-2 text-lg font-semibold text-anthrazit">
@@ -411,31 +487,36 @@ export default function DatenschutzPage() {
             </p>
 
             <h4 className="mt-2 font-medium">
-              Anthropic (KI-Nachrichtenzusammenfassung)
+              KI-Anbieter nach Zweck und Verarbeitungsort
             </h4>
             <p>
-              Anthropic PBC, USA. Wird für die Zusammenfassung öffentlich
-              zugänglicher Nachrichtentexte der Stadt Bad Säckingen verwendet.
-              Es werden{" "}
-              <strong>ausschließlich öffentliche Nachrichtentexte</strong>
-              verarbeitet — keine personenbezogenen Daten, keine Nutzerdaten.
-              Übermittlung auf Grundlage von SCCs.
+              Personenbezogene KI-Funktionen sind im Pilot deaktiviert und
+              werden erst freigeschaltet, wenn AVV/DPA, SCC, Zero-Data-Retention
+              und Pseudonymisierung dokumentiert sind und Sie im Onboarding oder
+              in den Einstellungen eingewilligt haben.
             </p>
-
-            <h4 className="mt-2 font-medium">
-              Anthropic (KI-gestützte Inhaltsmoderation)
-            </h4>
-            <p>
-              Anthropic PBC, USA. Texte von Beiträgen, Marktplatzanzeigen und
-              Chat-Nachrichten werden zur automatisierten Erkennung von
-              Regelverstoßen (Spam, Belästigung, Betrug) an Anthropic
-              übermittelt. Die Prüfung erfolgt in Echtzeit; Inhalte werden von
-              Anthropic
-              <strong> maximal 30 Tage gespeichert</strong> und nicht zum
-              Training von KI-Modellen verwendet (Auftragsverarbeitung gemäß
-              Art. 28 DSGVO, Zero Data Retention Policy). Rechtsgrundlage: Art.
-              6 Abs. 1 lit. f DSGVO (berechtigtes Interesse an
-              Community-Schutz). Übermittlung auf Grundlage von SCCs.
+            <ul className="ml-4 mt-2 list-disc space-y-1">
+              <li>
+                <strong>Anthropic PBC:</strong> Sprachverstehen und
+                Assistenzfunktionen, USA mit SCC und Zero-Data-Retention-Setting
+                erst nach Freigabe
+              </li>
+              <li>
+                <strong>OpenAI, Inc.:</strong> Vorlesen oeffentlicher Texte
+                (Text-to-Speech), USA mit SCC erst nach Freigabe
+              </li>
+              <li>
+                <strong>Picovoice Inc.:</strong> Wake-Word-Erkennung lokal auf
+                dem Endgeraet, keine Datenuebertragung
+              </li>
+              <li>
+                <strong>Mistral AI SAS:</strong> EU-Fallback fuer
+                Sprachverstehen, Frankreich, geplant
+              </li>
+            </ul>
+            <p className="mt-2">
+              Der Drittlandtransfer findet nicht statt, solange die KI-Funktion
+              fuer den jeweiligen Account ausgeschaltet ist.
             </p>
 
             <h4 className="mt-2 font-medium">Metered Networks (TURN-Server)</h4>

@@ -9,6 +9,10 @@ import {
 } from "@/lib/care/api-helpers";
 import { handleServiceError } from "@/lib/services/service-error";
 import { synthesizeSpeech } from "@/modules/voice/services/tts.service";
+import {
+  AI_HELP_DISABLED_MESSAGE,
+  canUsePersonalAi,
+} from "@/lib/ai/user-settings";
 
 export const dynamic = "force-dynamic";
 
@@ -24,6 +28,14 @@ export async function POST(request: NextRequest) {
       body = await request.json();
     } catch {
       return errorResponse("Ungültiger Request.", 400);
+    }
+
+    const userId = auth.user?.id;
+    if (auth.supabase && userId) {
+      const aiAllowed = await canUsePersonalAi(auth.supabase, userId);
+      if (!aiAllowed) {
+        return errorResponse(AI_HELP_DISABLED_MESSAGE, 403);
+      }
     }
 
     // Service gibt fertigen Response mit Audio-Stream zurueck

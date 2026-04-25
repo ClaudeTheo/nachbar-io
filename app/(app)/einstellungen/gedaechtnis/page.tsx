@@ -5,6 +5,7 @@ import { MemoryFactList } from "@/modules/memory/components/MemoryFactList";
 import { Switch } from "@/components/ui/switch";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { MemoryConsentType } from "@/modules/memory/types";
+import { AiHelpSettingsToggle } from "@/modules/ai/components/AiHelpSettingsToggle";
 
 const CONSENT_LABELS: Record<MemoryConsentType, string> = {
   memory_basis: "Profil, Routinen, Vorlieben, Kontakte",
@@ -54,6 +55,8 @@ export default function GedaechtnisPage() {
           werden.
         </p>
       </div>
+
+      <AiHelpSettingsToggle />
 
       {/* Consent-Toggles */}
       <div className="space-y-2">

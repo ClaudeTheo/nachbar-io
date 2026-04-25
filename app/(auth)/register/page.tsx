@@ -11,6 +11,7 @@ import {
   RegisterStepInvite,
   RegisterStepAddress,
   RegisterStepIdentity,
+  RegisterStepAiConsent,
 } from "./components";
 import type { Step, RegisterFormState } from "./components";
 
@@ -44,6 +45,7 @@ function RegisterForm() {
     loading: false,
     geoLoading: false,
     error: null,
+    aiConsentChoice: "later",
   });
 
   const searchParams = useSearchParams();
@@ -83,11 +85,12 @@ function RegisterForm() {
   );
 
   // === Fortschrittsberechnung ===
-  const totalSteps = 2;
+  const totalSteps = 3;
   const currentStep = (() => {
     if (step === "entry" || step === "invite_code" || step === "address") return 1;
     if (step === "identity") return 2;
-    return 2; // magic_link_sent
+    if (step === "ai_consent") return 3;
+    return 3; // magic_link_sent
   })();
 
   return (
@@ -138,12 +141,17 @@ function RegisterForm() {
           <RegisterStepIdentity state={formState} setState={updateState} setStep={setStep} />
         )}
 
+        {/* Schritt 3: KI-Einwilligung */}
+        {step === "ai_consent" && (
+          <RegisterStepAiConsent state={formState} setState={updateState} setStep={setStep} />
+        )}
+
         {/* Bestaetigung: OTP-Code Eingabe */}
         {step === "magic_link_sent" && (
           <OtpCodeEntry
             email={formState.email}
             redirectTo="/welcome"
-            onBack={() => { setStep("identity"); updateState({ error: null }); }}
+            onBack={() => { setStep("ai_consent"); updateState({ error: null }); }}
             onResend={() => {
               const supabase = createClient();
               supabase.auth.signInWithOtp({

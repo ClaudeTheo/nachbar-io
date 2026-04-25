@@ -12,6 +12,7 @@
 
 import Link from "next/link";
 import { PushToggle } from "./PushToggle";
+import { AiHelpSettingsToggle } from "@/modules/ai/components/AiHelpSettingsToggle";
 
 interface ProfilViewProps {
   displayName: string;
@@ -115,6 +116,9 @@ export function ProfilView({
       {/* DSGVO: KI-Memory-Uebersicht (Welle C C7) */}
       <div className="mt-8">
         <h2 className="text-xl font-bold text-anthrazit">KI-Assistent</h2>
+        <div className="mt-4">
+          <AiHelpSettingsToggle />
+        </div>
         <Link
           href="/profil/gedaechtnis"
           className="mt-4 flex w-full items-center justify-between rounded-2xl border-2 border-anthrazit/10 bg-white p-4"

@@ -1,10 +1,10 @@
-// Nachbar.io — S1: Onboarding (2-Schritt Magic-Link-Flow)
-// Neuer Flow: Entry → [Invite-Code ODER Adresse] → Pilotdaten+Email → Magic Link gesendet
+// Nachbar.io — S1: Onboarding (3-Schritt Magic-Link-Flow)
+// Neuer Flow: Entry → [Invite-Code ODER Adresse] → Pilotdaten+Email → KI-Consent → Magic Link gesendet
 import { test, expect } from "@playwright/test";
 import { RegisterPage, LoginPage } from "../pages";
 import { TEST_AGENTS } from "../helpers/test-config";
 
-test.describe("S1: Onboarding — 2-Schritt Magic-Link-Flow", () => {
+test.describe("S1: Onboarding — 3-Schritt Magic-Link-Flow", () => {
   test("S1.1 — Registrierung via Invite-Code bis Magic-Link-Bestaetigung", async ({
     browser,
   }) => {
@@ -120,7 +120,7 @@ test.describe("S1: Onboarding — 2-Schritt Magic-Link-Flow", () => {
     // Schritt 2: Ohne Vorname absenden
     await registerPage.assertOnStep(2);
     await registerPage.emailInput.fill(TEST_AGENTS.nachbar_a.email);
-    await registerPage.sendMagicLinkButton.click();
+    await registerPage.continueToAiConsentButton.click();
 
     // Soll auf Schritt 2 bleiben (Browser required-Validierung oder JS-Fehler)
     await registerPage.assertOnStep(2);

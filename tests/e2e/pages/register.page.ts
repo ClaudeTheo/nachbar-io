@@ -1,5 +1,5 @@
 // Nachbar.io — Page Object: Registrierungs-Seite (2-Schritt Magic-Link-Flow)
-// Flow: Entry → [Invite-Code ODER Adresse] → Identity (Pilotdaten+Email) → Magic Link gesendet
+// Flow: Entry → [Invite-Code ODER Adresse] → Identity → KI-Consent → Magic Link gesendet
 import { Page, Locator, expect } from "@playwright/test";
 import { TIMEOUTS } from "../helpers/test-config";
 
@@ -24,7 +24,10 @@ export class RegisterPage {
   readonly lastNameInput: Locator;
   readonly dateOfBirthInput: Locator;
   readonly emailInput: Locator;
-  readonly sendMagicLinkButton: Locator;
+  readonly continueToAiConsentButton: Locator;
+
+  // Schritt 3: KI-Consent
+  readonly decideAiLaterButton: Locator;
 
   // Bestaetigung: Magic Link gesendet
   readonly resendLinkButton: Locator;
@@ -59,8 +62,13 @@ export class RegisterPage {
     this.lastNameInput = page.getByLabel("Nachname");
     this.dateOfBirthInput = page.getByLabel("Geburtsdatum");
     this.emailInput = page.getByLabel("E-Mail-Adresse");
-    this.sendMagicLinkButton = page.getByRole("button", {
-      name: "Anmelde-Code senden",
+    this.continueToAiConsentButton = page.getByRole("button", {
+      name: "Weiter zur KI-Auswahl",
+    });
+
+    // KI-Consent
+    this.decideAiLaterButton = page.getByRole("button", {
+      name: /Spaeter entscheiden|Später entscheiden/,
     });
 
     // Bestaetigung (OTP-Code-Eingabe)
@@ -73,7 +81,7 @@ export class RegisterPage {
     this.backButton = page.getByText("Zurück");
     this.errorMessage = page.locator(".text-emergency-red");
     this.loginLink = page.getByRole("link", { name: "Jetzt anmelden" });
-    this.stepIndicator = page.locator("text=/Schritt \\d+ von 2/");
+    this.stepIndicator = page.locator("text=/Schritt \\d+ von 3/");
   }
 
   async goto() {
@@ -100,7 +108,7 @@ export class RegisterPage {
 
   // Pruefen, auf welchem Schritt wir sind (1 oder 2)
   async assertOnStep(step: number) {
-    await expect(this.page.getByText(`Schritt ${step} von 2`)).toBeVisible({
+    await expect(this.page.getByText(`Schritt ${step} von 3`)).toBeVisible({
       timeout: TIMEOUTS.elementVisible,
     });
   }
@@ -150,7 +158,12 @@ export class RegisterPage {
     await this.lastNameInput.fill(lastName);
     await this.dateOfBirthInput.fill(dateOfBirth);
     await this.emailInput.fill(email);
-    await this.sendMagicLinkButton.click();
+    await this.continueToAiConsentButton.click();
+    await this.decideAiLaterButton.waitFor({
+      state: "visible",
+      timeout: TIMEOUTS.elementVisible,
+    });
+    await this.decideAiLaterButton.click();
   }
 
   // Pruefen, dass OTP-Code-Eingabe angezeigt wird (Magic-Link-Bestaetigung)

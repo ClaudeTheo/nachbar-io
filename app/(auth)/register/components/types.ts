@@ -8,6 +8,9 @@ export type Step = "entry" | "invite_code" | "address" | "identity" | "magic_lin
 export interface RegisterFormState {
   email: string;
   displayName: string;
+  firstName: string;
+  lastName: string;
+  dateOfBirth: string;
   inviteCode: string;
   householdId: string | null;
   referrerId: string | null;

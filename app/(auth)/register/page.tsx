@@ -29,6 +29,9 @@ function RegisterForm() {
   const [formState, setFormState] = useState<RegisterFormState>({
     email: "",
     displayName: "",
+    firstName: "",
+    lastName: "",
+    dateOfBirth: "",
     inviteCode: "",
     householdId: null,
     referrerId: null,

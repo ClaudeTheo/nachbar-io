@@ -1,11 +1,25 @@
-// Identitaets-Schritt: Name + E-Mail → Magic Link senden
+// Identitaets-Schritt: Pilot-Pflichtdaten + E-Mail → Magic Link senden
 import { useState } from "react";
-import { MapPin, ArrowLeft } from "lucide-react";
+import { MapPin, ArrowLeft, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { createClient } from "@/lib/supabase/client";
 import { normalizeCode } from "@/lib/invite-codes";
 import type { StepProps } from "./types";
+
+function buildFullName(firstName: string, lastName: string) {
+  return `${firstName.trim()} ${lastName.trim()}`.trim();
+}
+
+function isValidDateOfBirth(value: string) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
+  const parsed = new Date(`${value}T00:00:00.000Z`);
+  if (Number.isNaN(parsed.getTime())) return false;
+  if (parsed.toISOString().slice(0, 10) !== value) return false;
+  const today = new Date();
+  const todayUtc = new Date(Date.UTC(today.getFullYear(), today.getMonth(), today.getDate()));
+  return parsed <= todayUtc;
+}
 
 export function RegisterStepIdentity({ state, setState, setStep }: StepProps) {
   const [honeypot, setHoneypot] = useState("");
@@ -15,8 +29,23 @@ export function RegisterStepIdentity({ state, setState, setStep }: StepProps) {
     e.preventDefault();
     setState({ loading: true, error: null });
 
-    if (!state.displayName.trim()) {
-      setState({ error: "Bitte geben Sie einen Namen ein.", loading: false });
+    if (!state.firstName.trim()) {
+      setState({ error: "Bitte geben Sie Ihren Vornamen ein.", loading: false });
+      return;
+    }
+
+    if (!state.lastName.trim()) {
+      setState({ error: "Bitte geben Sie Ihren Nachnamen ein.", loading: false });
+      return;
+    }
+
+    if (!state.dateOfBirth.trim()) {
+      setState({ error: "Bitte geben Sie Ihr Geburtsdatum ein.", loading: false });
+      return;
+    }
+
+    if (!isValidDateOfBirth(state.dateOfBirth.trim())) {
+      setState({ error: "Bitte geben Sie ein gültiges Geburtsdatum ein.", loading: false });
       return;
     }
 
@@ -26,13 +55,18 @@ export function RegisterStepIdentity({ state, setState, setStep }: StepProps) {
     }
 
     try {
+      const displayName = buildFullName(state.firstName, state.lastName);
+
       // 1. User serverseitig erstellen (Admin-API, kein Passwort noetig)
       const completeRes = await fetch("/api/register/complete", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           email: state.email,
-          displayName: state.displayName.trim(),
+          displayName,
+          firstName: state.firstName.trim(),
+          lastName: state.lastName.trim(),
+          dateOfBirth: state.dateOfBirth.trim(),
           uiMode: "active", // UI-Modus wird spaeter im Onboarding gewaehlt
           householdId: state.householdId,
           streetName: state.selectedAddress?.street || undefined,
@@ -109,9 +143,19 @@ export function RegisterStepIdentity({ state, setState, setStep }: StepProps) {
         data-testid="register-extra"
       />
 
-      <p className="text-sm text-muted-foreground">
-        Noch Ihr Name und Ihre E-Mail — dann senden wir Ihnen einen Anmelde-Code.
-      </p>
+      <div className="rounded-lg border border-quartier-green/25 bg-quartier-green/5 p-3">
+        <div className="flex gap-2">
+          <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-quartier-green" />
+          <div className="space-y-1">
+            <p className="text-sm font-medium text-anthrazit">
+              Pflichtdaten fuer den geschlossenen Pilot
+            </p>
+            <p className="text-sm text-muted-foreground">
+              Wir nutzen Vorname, Nachname und Geburtsdatum fuer Vertrauen, Sicherheit und Pilot-Zuordnung.
+            </p>
+          </div>
+        </div>
+      </div>
 
       {/* Quartier-Info anzeigen */}
       {state.geoQuarter && (
@@ -123,22 +167,55 @@ export function RegisterStepIdentity({ state, setState, setStep }: StepProps) {
         </div>
       )}
 
+      <div className="grid gap-3 sm:grid-cols-2">
+        <div>
+          <label htmlFor="first_name" className="mb-1 block text-sm font-medium">
+            Vorname
+          </label>
+          <Input
+            id="first_name"
+            type="text"
+            value={state.firstName}
+            onChange={(e) => setState({ firstName: e.target.value })}
+            placeholder="z.B. Thomas"
+            required
+            autoComplete="given-name"
+            autoFocus
+            style={{ minHeight: "52px" }}
+          />
+        </div>
+        <div>
+          <label htmlFor="last_name" className="mb-1 block text-sm font-medium">
+            Nachname
+          </label>
+          <Input
+            id="last_name"
+            type="text"
+            value={state.lastName}
+            onChange={(e) => setState({ lastName: e.target.value })}
+            placeholder="z.B. Theobald"
+            required
+            autoComplete="family-name"
+            style={{ minHeight: "52px" }}
+          />
+        </div>
+      </div>
+
       <div>
-        <label htmlFor="name" className="mb-1 block text-sm font-medium">
-          Anzeigename
+        <label htmlFor="date_of_birth" className="mb-1 block text-sm font-medium">
+          Geburtsdatum
         </label>
         <Input
-          id="name"
-          type="text"
-          value={state.displayName}
-          onChange={(e) => setState({ displayName: e.target.value })}
-          placeholder="z.B. Thomas L. oder Ihr Vorname"
+          id="date_of_birth"
+          type="date"
+          value={state.dateOfBirth}
+          onChange={(e) => setState({ dateOfBirth: e.target.value })}
           required
-          autoComplete="name"
-          autoFocus
+          autoComplete="bday"
+          style={{ minHeight: "52px" }}
         />
         <p className="mt-1 text-xs text-muted-foreground">
-          Ihr Klarname ist nicht erforderlich. Ein Vorname oder Kürzel genügt.
+          Das Geburtsdatum hilft bei Verantwortung und eindeutiger Zuordnung im Test.
         </p>
       </div>
 

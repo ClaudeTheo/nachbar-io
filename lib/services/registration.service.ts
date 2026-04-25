@@ -18,7 +18,10 @@ import { ServiceError } from "@/lib/services/service-error";
 export interface RegistrationInput {
   email: string;
   password?: string;
-  displayName: string;
+  displayName?: string;
+  firstName?: string;
+  lastName?: string;
+  dateOfBirth?: string;
   uiMode?: "active" | "senior";
   householdId?: string;
   streetName?: string;
@@ -45,6 +48,13 @@ export interface InviteCheckResult {
   streetName?: string;
   houseNumber?: string;
   referrerId?: string;
+}
+
+interface PilotIdentity {
+  firstName: string;
+  lastName: string;
+  dateOfBirth: string;
+  displayName: string;
 }
 
 // ============================================================
@@ -132,26 +142,26 @@ export async function completeRegistration(
   const {
     email,
     password,
-    displayName,
     uiMode,
     streetName,
     houseNumber,
     lat,
     lng,
+    postalCode,
+    city,
     verificationMethod,
     inviteCode,
     referrerId,
     quarterId: bodyQuarterId,
   } = input;
   let householdId = input.householdId;
-
-  if (!displayName?.trim()) {
-    throw new ServiceError("Anzeigename ist erforderlich", 400);
-  }
+  const pilotIdentity = normalizePilotIdentity(input);
 
   if (!email) {
     throw new ServiceError("E-Mail-Adresse ist erforderlich.", 400);
   }
+
+  requireAddressForRegistration(input);
 
   // User serverseitig per Admin-API erstellen
   const userId = await createOrReuseAuthUser(adminDb, email, password);
@@ -163,6 +173,8 @@ export async function completeRegistration(
       houseNumber,
       lat,
       lng,
+      postalCode,
+      city,
       bodyQuarterId,
     });
   }
@@ -171,7 +183,7 @@ export async function completeRegistration(
   await createUserProfile(
     adminDb,
     userId,
-    displayName,
+    pilotIdentity,
     uiMode,
     verificationMethod,
   );
@@ -184,7 +196,7 @@ export async function completeRegistration(
       verificationMethod,
       inviteCode,
       referrerId,
-      displayName,
+      displayName: pilotIdentity.displayName,
     });
   }
 
@@ -198,6 +210,64 @@ export async function completeRegistration(
 // ============================================================
 // Hilfsfunktionen
 // ============================================================
+
+function normalizeRequiredText(value: unknown) {
+  return typeof value === "string" ? value.trim().replace(/\s+/g, " ") : "";
+}
+
+function isValidIsoDate(value: string) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
+  const parsed = new Date(`${value}T00:00:00.000Z`);
+  if (Number.isNaN(parsed.getTime())) return false;
+  if (parsed.toISOString().slice(0, 10) !== value) return false;
+  const today = new Date();
+  const todayUtc = new Date(Date.UTC(today.getFullYear(), today.getMonth(), today.getDate()));
+  return parsed <= todayUtc;
+}
+
+function normalizePilotIdentity(input: RegistrationInput): PilotIdentity {
+  const firstName = normalizeRequiredText(input.firstName);
+  const lastName = normalizeRequiredText(input.lastName);
+  const dateOfBirth = normalizeRequiredText(input.dateOfBirth);
+
+  if (!firstName) {
+    throw new ServiceError("Vorname ist erforderlich", 400);
+  }
+  if (!lastName) {
+    throw new ServiceError("Nachname ist erforderlich", 400);
+  }
+  if (!dateOfBirth) {
+    throw new ServiceError("Geburtsdatum ist erforderlich", 400);
+  }
+  if (!isValidIsoDate(dateOfBirth)) {
+    throw new ServiceError("Geburtsdatum ist ungueltig", 400);
+  }
+
+  return {
+    firstName,
+    lastName,
+    dateOfBirth,
+    displayName: `${firstName} ${lastName}`,
+  };
+}
+
+function requireAddressForRegistration(input: RegistrationInput): void {
+  if (normalizeRequiredText(input.householdId)) {
+    return;
+  }
+
+  const streetName = normalizeRequiredText(input.streetName);
+  const houseNumber = normalizeRequiredText(input.houseNumber);
+  const postalCode = normalizeRequiredText(input.postalCode);
+  const city = normalizeRequiredText(input.city);
+
+  if (!streetName || !houseNumber || !postalCode || !city) {
+    throw new ServiceError(
+      "Adresse ist erforderlich fuer die Quartier-Zuordnung",
+      400,
+    );
+  }
+}
 
 /** Auth-User erstellen oder verwaisten Auth-User wiederverwenden */
 async function createOrReuseAuthUser(
@@ -287,10 +357,12 @@ async function findOrCreateHousehold(
     houseNumber: string;
     lat?: number;
     lng?: number;
+    postalCode?: string;
+    city?: string;
     bodyQuarterId?: string;
   },
 ): Promise<string | undefined> {
-  const { streetName, houseNumber, lat, lng, bodyQuarterId } = opts;
+  const { streetName, houseNumber, lat, lng, postalCode, city, bodyQuarterId } = opts;
   const trimmedHouseNumber = String(houseNumber).trim();
   const hasCoords = typeof lat === "number" && typeof lng === "number";
 
@@ -350,6 +422,8 @@ async function findOrCreateHousehold(
     verified: false,
     invite_code: newInviteCode,
   };
+  if (postalCode) insertData.postal_code = postalCode;
+  if (city) insertData.city = city;
   // quarter_id setzen damit QuarterProvider den Haushalt findet
   if (quarterId) insertData.quarter_id = quarterId;
 
@@ -391,7 +465,7 @@ async function findOrCreateHousehold(
 async function createUserProfile(
   adminDb: SupabaseClient,
   userId: string,
-  displayName: string,
+  pilotIdentity: PilotIdentity,
   uiMode?: string,
   verificationMethod?: string,
 ): Promise<void> {
@@ -411,10 +485,20 @@ async function createUserProfile(
     {
       id: userId,
       email_hash: "",
-      display_name: displayName.trim(),
+      display_name: pilotIdentity.displayName,
+      full_name: pilotIdentity.displayName,
       ui_mode: uiMode || "active",
       role: "resident", // Vier-Versionen-Modell: Standard-Rolle für Bewohner
       trust_level: trustLevel,
+      settings: {
+        pilot_identity: {
+          first_name: pilotIdentity.firstName,
+          last_name: pilotIdentity.lastName,
+          date_of_birth: pilotIdentity.dateOfBirth,
+          purpose: "Vertrauen, Sicherheit und Pilot-Zuordnung",
+          purpose_version: "pilot-2026-04-25",
+        },
+      },
     },
     { onConflict: "id" },
   );

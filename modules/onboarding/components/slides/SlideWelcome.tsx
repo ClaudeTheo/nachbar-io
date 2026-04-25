@@ -77,8 +77,8 @@ export function SlideWelcome() {
             </span>
           </div>
           <p className="mx-auto max-w-[280px] text-xs leading-relaxed text-muted-foreground">
-            Geschlossener Pilot in Bad Säckingen. Anzeigename genügt, Klarname
-            und Geburtsdatum sind nicht nötig.
+            Geschlossener Pilot in Bad Säckingen. Vor- und Nachname,
+            Geburtsdatum und Adresse sind Pflicht.
           </p>
         </div>
       </div>

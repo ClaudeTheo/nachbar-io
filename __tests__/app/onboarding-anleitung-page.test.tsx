@@ -12,6 +12,9 @@ describe("OnboardingAnleitungPage", () => {
     expect(screen.getByText(/bad s[aä]ckingen/i)).toBeInTheDocument();
     expect(screen.getByText(/daten in einfacher sprache/i)).toBeInTheDocument();
     expect(screen.getByText(/nur das n[oö]tige/i)).toBeInTheDocument();
+    expect(screen.getByText(/vorname, nachname, geburtsdatum/i)).toBeInTheDocument();
+    expect(screen.getByText(/vertrauen, sicherheit und pilot-zuordnung/i)).toBeInTheDocument();
+    expect(screen.queryByText(/klarname ist nicht n[oö]tig/i)).not.toBeInTheDocument();
     expect(screen.getByText(/einmal-code/i)).toBeInTheDocument();
     expect(
       screen.getByRole("heading", { name: /ki-hilfe.*schrittweise/i }),

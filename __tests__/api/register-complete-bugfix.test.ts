@@ -79,7 +79,11 @@ function makeRequest(body: Record<string, unknown>) {
 const baseBody = {
   email: "test@example.com",
   displayName: "Max Mustermann",
+  firstName: "Max",
+  lastName: "Mustermann",
+  dateOfBirth: "1977-04-25",
   uiMode: "active",
+  householdId: "hh-base",
   verificationMethod: "address_manual",
 };
 
@@ -333,8 +337,11 @@ describe("POST /api/register/complete — Bugfixes", () => {
       const res = await POST(
         makeRequest({
           ...baseBody,
+          householdId: undefined,
           streetName: "Wallbacher Straße",
           houseNumber: "5",
+          postalCode: "79713",
+          city: "Bad Säckingen",
           lat: 47.554,
           lng: 7.965,
         }),
@@ -417,8 +424,11 @@ describe("POST /api/register/complete — Bugfixes", () => {
       const res = await POST(
         makeRequest({
           ...baseBody,
+          householdId: undefined,
           streetName: "Purkersdorfer Straße",
           houseNumber: "10",
+          postalCode: "79713",
+          city: "Bad Säckingen",
           // Keine lat/lng — Fallback auf 0/0
         }),
       );
@@ -439,17 +449,106 @@ describe("POST /api/register/complete — Bugfixes", () => {
   });
 
   // =========================================================================
-  // Bug 4: Geo-Detection — Registrierung ohne Adresse funktioniert
+  // Bug 4: Adresse bleibt Pflicht fuer Quartier-Zuordnung
   // =========================================================================
-  describe("Geo-Detection (kein streetName/houseNumber)", () => {
-    it("erstellt Profil ohne Haushalt bei fehlender Adresse", async () => {
+  describe("Adresspflicht", () => {
+    it("lehnt Registrierung ohne Adresse oder bestehenden Haushalt ab", async () => {
+      const { POST } = await import("@/app/api/register/complete/route");
+      const res = await POST(
+        makeRequest({
+          email: "geo@example.com",
+          firstName: "Geo",
+          lastName: "User",
+          dateOfBirth: "1977-04-25",
+          uiMode: "senior",
+          verificationMethod: "address_manual",
+          // Kein streetName, kein houseNumber, kein householdId
+        }),
+      );
+
+      expect(res.status).toBe(400);
+      const body = await res.json();
+      expect(body.error).toContain("Adresse");
+    });
+  });
+
+  // =========================================================================
+  // Basis-Validierung
+  // =========================================================================
+  describe("Basis-Validierung", () => {
+    it("gibt 400 zurueck ohne Vorname", async () => {
+      const { POST } = await import("@/app/api/register/complete/route");
+      const res = await POST(
+        makeRequest({
+          email: "test@example.com",
+          displayName: "Max Mustermann",
+          lastName: "Mustermann",
+          dateOfBirth: "1977-04-25",
+          verificationMethod: "address_manual",
+        }),
+      );
+
+      expect(res.status).toBe(400);
+      const body = await res.json();
+      expect(body.error).toContain("Vorname");
+    });
+
+    it("gibt 400 zurueck ohne E-Mail", async () => {
+      const { POST } = await import("@/app/api/register/complete/route");
+      const res = await POST(
+        makeRequest({
+          firstName: "Max",
+          lastName: "Mustermann",
+          dateOfBirth: "1977-04-25",
+          displayName: "Test User",
+          verificationMethod: "address_manual",
+        }),
+      );
+
+      expect(res.status).toBe(400);
+      const body = await res.json();
+      expect(body.error).toContain("E-Mail");
+    });
+
+    it("gibt 400 zurueck ohne Nachname", async () => {
+      const { POST } = await import("@/app/api/register/complete/route");
+      const res = await POST(
+        makeRequest({
+          email: "test@example.com",
+          firstName: "Max",
+          dateOfBirth: "1977-04-25",
+          verificationMethod: "address_manual",
+        }),
+      );
+
+      expect(res.status).toBe(400);
+      const body = await res.json();
+      expect(body.error).toContain("Nachname");
+    });
+
+    it("gibt 400 zurueck ohne Geburtsdatum", async () => {
+      const { POST } = await import("@/app/api/register/complete/route");
+      const res = await POST(
+        makeRequest({
+          email: "test@example.com",
+          firstName: "Max",
+          lastName: "Mustermann",
+          verificationMethod: "address_manual",
+        }),
+      );
+
+      expect(res.status).toBe(400);
+      const body = await res.json();
+      expect(body.error).toContain("Geburtsdatum");
+    });
+
+    it("erstellt Profil aus Vorname, Nachname und Geburtsdatum", async () => {
       mockCreateUser.mockResolvedValue({
-        data: { user: { id: "user-geo-1" } },
+        data: { user: { id: "pilot-user-1" } },
         error: null,
       });
 
       const profileInsert = vi.fn().mockResolvedValue({ error: null });
-
       mockFrom.mockImplementation((table: string) => {
         if (table === "users") {
           return { upsert: profileInsert };
@@ -460,62 +559,32 @@ describe("POST /api/register/complete — Bugfixes", () => {
       const { POST } = await import("@/app/api/register/complete/route");
       const res = await POST(
         makeRequest({
-          email: "geo@example.com",
-          displayName: "Geo User",
-          uiMode: "senior",
+          email: "pilot@example.com",
+          firstName: "Max",
+          lastName: "Mustermann",
+          dateOfBirth: "1977-04-25",
+          uiMode: "active",
+          householdId: "hh-pilot",
           verificationMethod: "address_manual",
-          // Kein streetName, kein houseNumber, kein householdId
         }),
       );
 
       expect(res.status).toBe(200);
-      const body = await res.json();
-      expect(body.success).toBe(true);
-      expect(body.userId).toBe("user-geo-1");
-
-      // Profil muss erstellt worden sein
       expect(profileInsert).toHaveBeenCalledWith(
         expect.objectContaining({
-          id: "user-geo-1",
-          display_name: "Geo User",
-          ui_mode: "senior",
+          id: "pilot-user-1",
+          display_name: "Max Mustermann",
+          full_name: "Max Mustermann",
+          settings: expect.objectContaining({
+            pilot_identity: expect.objectContaining({
+              first_name: "Max",
+              last_name: "Mustermann",
+              date_of_birth: "1977-04-25",
+            }),
+          }),
         }),
         { onConflict: "id" },
       );
-    });
-  });
-
-  // =========================================================================
-  // Basis-Validierung
-  // =========================================================================
-  describe("Basis-Validierung", () => {
-    it("gibt 400 zurueck ohne displayName", async () => {
-      const { POST } = await import("@/app/api/register/complete/route");
-      const res = await POST(
-        makeRequest({
-          email: "test@example.com",
-          displayName: "",
-          verificationMethod: "address_manual",
-        }),
-      );
-
-      expect(res.status).toBe(400);
-      const body = await res.json();
-      expect(body.error).toContain("Anzeigename");
-    });
-
-    it("gibt 400 zurueck ohne E-Mail", async () => {
-      const { POST } = await import("@/app/api/register/complete/route");
-      const res = await POST(
-        makeRequest({
-          displayName: "Test User",
-          verificationMethod: "address_manual",
-        }),
-      );
-
-      expect(res.status).toBe(400);
-      const body = await res.json();
-      expect(body.error).toContain("E-Mail");
     });
   });
 });

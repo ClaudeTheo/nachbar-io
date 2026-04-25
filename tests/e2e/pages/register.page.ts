@@ -1,5 +1,5 @@
 // Nachbar.io — Page Object: Registrierungs-Seite (2-Schritt Magic-Link-Flow)
-// Flow: Entry → [Invite-Code ODER Adresse] → Identity (Name+Email) → Magic Link gesendet
+// Flow: Entry → [Invite-Code ODER Adresse] → Identity (Pilotdaten+Email) → Magic Link gesendet
 import { Page, Locator, expect } from "@playwright/test";
 import { TIMEOUTS } from "../helpers/test-config";
 
@@ -19,8 +19,10 @@ export class RegisterPage {
   readonly geoDetectButton: Locator;
   readonly addressNextButton: Locator;
 
-  // Schritt 2: Identity (Name + E-Mail)
-  readonly displayNameInput: Locator;
+  // Schritt 2: Identity (Pilotdaten + E-Mail)
+  readonly firstNameInput: Locator;
+  readonly lastNameInput: Locator;
+  readonly dateOfBirthInput: Locator;
   readonly emailInput: Locator;
   readonly sendMagicLinkButton: Locator;
 
@@ -53,7 +55,9 @@ export class RegisterPage {
     this.addressNextButton = page.getByRole("button", { name: "Weiter" });
 
     // Identity
-    this.displayNameInput = page.getByLabel("Anzeigename");
+    this.firstNameInput = page.getByLabel("Vorname");
+    this.lastNameInput = page.getByLabel("Nachname");
+    this.dateOfBirthInput = page.getByLabel("Geburtsdatum");
     this.emailInput = page.getByLabel("E-Mail-Adresse");
     this.sendMagicLinkButton = page.getByRole("button", {
       name: "Anmelde-Code senden",
@@ -125,20 +129,26 @@ export class RegisterPage {
     await this.checkCodeButton.click();
 
     // Auf Step 2 (Identity) ODER Fehlermeldung warten
-    const successOrError = this.displayNameInput.or(this.errorMessage);
+    const successOrError = this.firstNameInput.or(this.errorMessage);
     await successOrError.first().waitFor({
       state: "visible",
       timeout: TIMEOUTS.pageLoad,
     });
   }
 
-  // Identity: Name + E-Mail eingeben und Magic Link senden
-  async fillIdentity(displayName: string, email: string) {
-    await this.displayNameInput.waitFor({
+  // Identity: Vorname + Nachname + Geburtsdatum + E-Mail eingeben
+  async fillIdentity(displayName: string, email: string, dateOfBirth = "1977-04-25") {
+    const parts = displayName.trim().split(/\s+/);
+    const firstName = parts[0] || displayName;
+    const lastName = parts.slice(1).join(" ") || "Test";
+
+    await this.firstNameInput.waitFor({
       state: "visible",
       timeout: TIMEOUTS.elementVisible,
     });
-    await this.displayNameInput.fill(displayName);
+    await this.firstNameInput.fill(firstName);
+    await this.lastNameInput.fill(lastName);
+    await this.dateOfBirthInput.fill(dateOfBirth);
     await this.emailInput.fill(email);
     await this.sendMagicLinkButton.click();
   }

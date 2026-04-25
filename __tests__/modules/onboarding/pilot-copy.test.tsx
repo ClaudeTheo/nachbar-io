@@ -6,12 +6,15 @@ import { SlideWelcome } from "@/modules/onboarding/components/slides/SlideWelcom
 describe("Pilot copy in onboarding slides", () => {
   afterEach(() => cleanup());
 
-  it("ordnet die Welcome-Tour als geschlossenen Pilot mit Anzeigename ein", () => {
+  it("ordnet die Welcome-Tour als geschlossenen Pilot mit Pflichtdaten ein", () => {
     render(<SlideWelcome />);
 
     expect(screen.getByText(/geschlossener pilot/i)).toBeInTheDocument();
     expect(screen.getByText(/bad s[aä]ckingen/i)).toBeInTheDocument();
-    expect(screen.getByText(/anzeigename/i)).toBeInTheDocument();
+    expect(screen.getByText(/vor- und nachname/i)).toBeInTheDocument();
+    expect(screen.getByText(/geburtsdatum/i)).toBeInTheDocument();
+    expect(screen.getByText(/adresse/i)).toBeInTheDocument();
+    expect(screen.queryByText(/anzeigename genügt/i)).not.toBeInTheDocument();
   });
 
   it("stellt klar, dass die App ohne KI weiter funktioniert", () => {

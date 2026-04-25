@@ -58,11 +58,15 @@ export default function OnboardingAnleitungPage() {
         </h2>
         <ul className="list-inside list-disc space-y-2 text-base text-gray-700">
           <li>
-            Wir fragen nur das Nötige ab: Einladungscode, Anzeigename,
-            E-Mail-Adresse und bei Bedarf die Zuordnung zum Quartier.
+            Wir fragen nur das Nötige ab: Einladungscode, Vorname,
+            Nachname, Geburtsdatum, E-Mail-Adresse und Adresse.
           </li>
           <li>
-            Ihr Klarname ist nicht nötig. Ein Vorname oder Kürzel reicht.
+            Diese Daten nutzen wir für Vertrauen, Sicherheit und Pilot-Zuordnung.
+          </li>
+          <li>
+            Die Adresse bleibt Pflicht, damit wir Sie dem richtigen Quartier
+            und Haushalt zuordnen können.
           </li>
           <li>
             Quartiersdaten sehen nur verifizierte Nachbarn im Testgebiet.
@@ -108,7 +112,7 @@ export default function OnboardingAnleitungPage() {
       <Step number={2} icon={<UserPlus className="h-5 w-5" />} title="Konto erstellen">
         <ol className="list-inside list-decimal space-y-3 text-base">
           <li>
-            Geben Sie Ihren <strong>Namen</strong> ein (z.B. nur Vorname reicht)
+            Geben Sie <strong>Vorname, Nachname und Geburtsdatum</strong> ein
           </li>
           <li>
             Geben Sie Ihre <strong>E-Mail-Adresse</strong> ein

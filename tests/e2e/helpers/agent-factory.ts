@@ -249,7 +249,7 @@ export async function loginAgent(agent: TestAgent): Promise<void> {
 
 /**
  * Agent registrieren via UI (2-Schritt Magic-Link-Flow).
- * Flow: Entry → Invite-Code → Identity (Name+Email) → OTP-Bestaetigung
+ * Flow: Entry → Invite-Code → Identity (Pilotdaten+Email) → OTP-Bestaetigung
  * Hinweis: Nur fuer Agenten mit gueltigem Invite-Code.
  * OTP-Verifizierung ist in E2E nicht moeglich (kein Zugriff auf E-Mail).
  * Registrierung stoppt bei OTP-Bestaetigung.
@@ -280,11 +280,17 @@ export async function registerAgent(agent: TestAgent): Promise<void> {
   await page.getByLabel("Einladungscode").fill(credentials.inviteCode);
   await page.getByRole("button", { name: "Code prüfen" }).click();
 
-  // Schritt 2: Identity (Name + E-Mail)
+  // Schritt 2: Identity (Pilotdaten + E-Mail)
+  const nameParts = credentials.displayName.trim().split(/\s+/);
+  const firstName = nameParts[0] || credentials.displayName;
+  const lastName = nameParts.slice(1).join(" ") || "Test";
+
   await page
-    .getByLabel("Anzeigename")
+    .getByLabel("Vorname")
     .waitFor({ state: "visible", timeout: TIMEOUTS.pageLoad });
-  await page.getByLabel("Anzeigename").fill(credentials.displayName);
+  await page.getByLabel("Vorname").fill(firstName);
+  await page.getByLabel("Nachname").fill(lastName);
+  await page.getByLabel("Geburtsdatum").fill("1977-04-25");
   await page.getByLabel("E-Mail-Adresse").fill(credentials.email);
   await page.getByRole("button", { name: "Anmelde-Code senden" }).click();
 

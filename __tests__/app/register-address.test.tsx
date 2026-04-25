@@ -1,6 +1,6 @@
 import { cleanup, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { RegisterStepEntry } from "@/app/(auth)/register/components/RegisterStepEntry";
+import { RegisterStepAddress } from "@/app/(auth)/register/components/RegisterStepAddress";
 import type { RegisterFormState } from "@/app/(auth)/register/components/types";
 
 function buildState(): RegisterFormState {
@@ -13,7 +13,7 @@ function buildState(): RegisterFormState {
     inviteCode: "",
     householdId: null,
     referrerId: null,
-    verificationMethod: "invite_code",
+    verificationMethod: "address_manual",
     selectedAddress: null,
     houseNumber: "",
     postalCode: "",
@@ -25,21 +25,20 @@ function buildState(): RegisterFormState {
   };
 }
 
-describe("RegisterStepEntry", () => {
+describe("RegisterStepAddress", () => {
   afterEach(() => cleanup());
 
-  it("macht den geschlossenen Pilot und den empfohlenen Einladungscode-Pfad klar", () => {
+  it("erklaert die Pflichtadresse und behandelt Standort nur als Quartier-Pruefung", () => {
     render(
-      <RegisterStepEntry
+      <RegisterStepAddress
         state={buildState()}
         setState={vi.fn()}
         setStep={vi.fn()}
       />,
     );
 
-    expect(screen.getByText(/geschlossener test/i)).toBeInTheDocument();
-    expect(screen.getByText(/bad s[aä]ckingen/i)).toBeInTheDocument();
-    expect(screen.getAllByText(/einladungscode/i).length).toBeGreaterThanOrEqual(1);
-    expect(screen.getByText(/nur das n[oö]tige/i)).toBeInTheDocument();
+    expect(screen.getByText(/Adresse ist im Pilot Pflicht/i)).toBeInTheDocument();
+    expect(screen.getByText(/richtigen Quartier und Haushalt/i)).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Standort zur Quartier-Prüfung nutzen/i })).toBeInTheDocument();
   });
 });

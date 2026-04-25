@@ -1,5 +1,5 @@
 // Nachbar.io — S1: Onboarding (2-Schritt Magic-Link-Flow)
-// Neuer Flow: Entry → [Invite-Code ODER Adresse] → Name+Email → Magic Link gesendet
+// Neuer Flow: Entry → [Invite-Code ODER Adresse] → Pilotdaten+Email → Magic Link gesendet
 import { test, expect } from "@playwright/test";
 import { RegisterPage, LoginPage } from "../pages";
 import { TEST_AGENTS } from "../helpers/test-config";
@@ -37,7 +37,7 @@ test.describe("S1: Onboarding — 2-Schritt Magic-Link-Flow", () => {
     // Invite-Code eingeben → weiter zu Identity
     await registerPage.fillInviteCode(TEST_AGENTS.nachbar_a.inviteCode);
 
-    // Schritt 2: Name + E-Mail (einzigartige E-Mail!)
+    // Schritt 2: Pilotdaten + E-Mail (einzigartige E-Mail!)
     await registerPage.assertOnStep(2);
     await registerPage.fillIdentity("E2E Testnutzer", uniqueEmail);
 
@@ -117,7 +117,7 @@ test.describe("S1: Onboarding — 2-Schritt Magic-Link-Flow", () => {
     await registerPage.chooseInviteCodePath();
     await registerPage.fillInviteCode(TEST_AGENTS.nachbar_a.inviteCode);
 
-    // Schritt 2: Ohne Name absenden
+    // Schritt 2: Ohne Vorname absenden
     await registerPage.assertOnStep(2);
     await registerPage.emailInput.fill(TEST_AGENTS.nachbar_a.email);
     await registerPage.sendMagicLinkButton.click();

@@ -110,8 +110,9 @@ export default function DatenschutzPage() {
             <h3 className="mt-3 font-semibold">5.1 Registrierung</h3>
             <ul className="ml-4 list-disc space-y-1">
               <li>E-Mail-Adresse (für Anmeldung via Magic Link)</li>
-              <li>Anzeigename (frei wählbar, kein Klarname erforderlich)</li>
-              <li>Haushaltszuordnung via Einladungscode oder Standortangabe</li>
+              <li>Vorname und Nachname (für Vertrauen und Pilot-Zuordnung)</li>
+              <li>Geburtsdatum (für Verantwortung im geschlossenen Pilot)</li>
+              <li>Adresse zur Quartier-Zuordnung via Einladungscode oder Adresseingabe</li>
             </ul>
 
             <h3 className="mt-3 font-semibold">

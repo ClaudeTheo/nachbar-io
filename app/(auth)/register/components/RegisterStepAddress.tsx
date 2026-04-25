@@ -45,7 +45,6 @@ export function RegisterStepAddress({ state, setState, setStep }: StepProps) {
       if (res.ok) {
         const data = await res.json();
         setState({ geoQuarter: data, verificationMethod: "address_manual", geoLoading: false });
-        setStep("identity");
       } else {
         setState({ error: "Kein Quartier in Ihrer Nähe gefunden. Bitte wählen Sie stattdessen Ihre Straße aus der Liste.", geoLoading: false });
       }
@@ -57,7 +56,10 @@ export function RegisterStepAddress({ state, setState, setStep }: StepProps) {
   return (
     <form onSubmit={handleAddressSelection} className="space-y-4">
       <p className="text-sm text-muted-foreground">
-        Wählen Sie Ihre Straße und Hausnummer oder teilen Sie Ihren Standort.
+        Ihre Adresse ist im Pilot Pflicht. So ordnen wir Sie dem richtigen Quartier und Haushalt zu.
+      </p>
+      <p className="text-xs text-muted-foreground">
+        Die Adresse wird fuer die Quartier-Zuordnung genutzt und nicht im oeffentlichen Profil angezeigt.
       </p>
 
       {/* Standort-Button */}
@@ -70,10 +72,19 @@ export function RegisterStepAddress({ state, setState, setStep }: StepProps) {
         <div className="flex items-center justify-center gap-2">
           <Navigation className="h-4 w-4 text-quartier-green" />
           <span className="text-sm font-medium text-quartier-green">
-            {state.geoLoading ? "Standort wird ermittelt..." : "Standort automatisch erkennen"}
+            {state.geoLoading ? "Standort wird ermittelt..." : "Standort zur Quartier-Prüfung nutzen"}
           </span>
         </div>
       </button>
+
+      {state.geoQuarter && (
+        <div className="flex items-center gap-2 rounded-lg border border-quartier-green/30 bg-quartier-green/5 p-3">
+          <MapPin className="h-4 w-4 shrink-0 text-quartier-green" />
+          <p className="text-sm text-anthrazit">
+            Quartier erkannt: <strong>{state.geoQuarter.quarter_name}</strong>. Bitte tragen Sie trotzdem Ihre Adresse ein.
+          </p>
+        </div>
+      )}
 
       <div className="flex items-center gap-3">
         <div className="h-px flex-1 bg-border" />

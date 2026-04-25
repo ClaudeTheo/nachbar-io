@@ -48,6 +48,7 @@ function makeRequest(pathname: string) {
 describe("Legacy Route Blocking (Phase I, hart)", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.stubEnv("NEXT_PUBLIC_CLOSED_PILOT_MODE", "false");
     mockGetCachedFlagEnabled.mockResolvedValue(false);
   });
 

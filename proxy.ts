@@ -8,12 +8,42 @@ import { buildClientKeys } from "@/lib/security/client-key";
 import { isLegacyRoute } from "@/lib/legacy-routes";
 import { getRequiredFlagForRoute } from "@/lib/health-feature-gate";
 import { getCachedFlagEnabled } from "@/lib/feature-flags-middleware-cache";
+import {
+  buildClosedPilotApiBody,
+  CLOSED_PILOT_ROBOTS_HEADER,
+  isClosedPilotMode,
+  isClosedPilotPublicPath,
+} from "@/lib/closed-pilot";
 
 // Oeffentliche Seiten: Kein Auth-Check noetig, statisch cachebar
 const PUBLIC_PATHS = ["/", "/b2b", "/impressum", "/datenschutz", "/agb"];
 
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
+
+  if (isClosedPilotMode()) {
+    if (isClosedPilotPublicPath(pathname)) {
+      const response = NextResponse.next();
+      response.headers.set("X-Robots-Tag", CLOSED_PILOT_ROBOTS_HEADER);
+      return response;
+    }
+
+    if (pathname.startsWith("/api/")) {
+      return NextResponse.json(buildClosedPilotApiBody(), {
+        status: 503,
+        headers: {
+          "Retry-After": "3600",
+          "X-Robots-Tag": CLOSED_PILOT_ROBOTS_HEADER,
+        },
+      });
+    }
+
+    const url = request.nextUrl.clone();
+    url.pathname = "/";
+    const response = NextResponse.redirect(url);
+    response.headers.set("X-Robots-Tag", CLOSED_PILOT_ROBOTS_HEADER);
+    return response;
+  }
 
   // Oeffentliche Seiten: Kein Supabase-Session-Check, direkt weiterleiten
   if (PUBLIC_PATHS.includes(pathname)) {

@@ -3,6 +3,7 @@ import { Nunito, Nunito_Sans } from "next/font/google";
 import { Toaster } from "@/components/ui/sonner";
 import { ServiceWorkerRegistration } from "@/components/ServiceWorkerRegistration";
 import { CapacitorInit } from "@/components/CapacitorInit";
+import { isClosedPilotMode } from "@/lib/closed-pilot";
 import "./globals.css";
 
 const nunito = Nunito({
@@ -23,11 +24,18 @@ const siteUrl =
   process.env.NEXT_PUBLIC_SITE_URL || "https://nachbar-io.vercel.app";
 
 export const metadata: Metadata = {
-  title: "QuartierApp — Ihr digitaler Dorfplatz",
+  title: "Nachbar.io — Geschlossener Pilot",
   description:
-    "Nachbarschaftshilfe, lokale Informationen und soziale Interaktion für Ihr Quartier.",
+    "Nachbar.io ist noch nicht öffentlich freigeschaltet. Der geschlossene Pilot wird lokal vorbereitet und nimmt aktuell keine Registrierungen an.",
   manifest: "/manifest.json",
   metadataBase: new URL(siteUrl),
+  robots: isClosedPilotMode()
+    ? {
+        index: false,
+        follow: false,
+        nocache: true,
+      }
+    : undefined,
   alternates: {
     canonical: "./",
   },
@@ -36,23 +44,23 @@ export const metadata: Metadata = {
     locale: "de_DE",
     url: siteUrl,
     siteName: "QuartierApp",
-    title: "QuartierApp — Ihr digitaler Dorfplatz",
+    title: "Nachbar.io — Geschlossener Pilot",
     description:
-      "Nachbarschaftshilfe, lokale Informationen und Quartiersleben. Jetzt mitmachen!",
+      "Nachbar.io ist noch nicht öffentlich freigeschaltet.",
     images: [
       {
         url: "/opengraph-image",
         width: 1200,
         height: 630,
-        alt: "QuartierApp — Ihr digitaler Dorfplatz",
+        alt: "Nachbar.io — Geschlossener Pilot",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "QuartierApp — Ihr digitaler Dorfplatz",
+    title: "Nachbar.io — Geschlossener Pilot",
     description:
-      "Nachbarschaftshilfe, lokale Informationen und Quartiersleben.",
+      "Nachbar.io ist noch nicht öffentlich freigeschaltet.",
     images: ["/opengraph-image"],
   },
   appleWebApp: {

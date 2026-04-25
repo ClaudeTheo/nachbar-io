@@ -1,6 +1,16 @@
 import { MetadataRoute } from 'next'
+import { isClosedPilotMode } from '@/lib/closed-pilot'
 
 export default function robots(): MetadataRoute.Robots {
+  if (isClosedPilotMode()) {
+    return {
+      rules: {
+        userAgent: '*',
+        disallow: '/',
+      },
+    }
+  }
+
   return {
     rules: {
       userAgent: '*',

@@ -11,6 +11,7 @@ import {
 } from "@/lib/invite-codes";
 import { ServiceError } from "@/lib/services/service-error";
 import { CURRENT_CONSENT_VERSION } from "@/lib/care/constants";
+import { isClosedPilotMode } from "@/lib/closed-pilot";
 
 // ============================================================
 // Typen
@@ -480,8 +481,12 @@ async function createUserProfile(
   // - Invite-Code: sofort 'verified' (B2B-Track, vertrauenswürdiger Kanal)
   // - Adresse manuell: 'new' (B2C-Track, muss per Vouching verifiziert werden)
   // PILOT_AUTO_VERIFY=true: Alle Nutzer auf 'verified' (Pilot-Modus)
-  const pilotAutoVerify = process.env.PILOT_AUTO_VERIFY === "true";
-  const trustLevel = pilotAutoVerify
+  const requiresPilotApproval = isClosedPilotMode();
+  const pilotAutoVerify =
+    process.env.PILOT_AUTO_VERIFY === "true" && !requiresPilotApproval;
+  const trustLevel = requiresPilotApproval
+    ? "new"
+    : pilotAutoVerify
     ? "verified"
     : verificationMethod === "invite_code" ||
         verificationMethod === "neighbor_invite"
@@ -507,6 +512,7 @@ async function createUserProfile(
             source: "registration",
           },
         ],
+        pilot_approval_status: requiresPilotApproval ? "pending" : "approved",
         pilot_identity: {
           first_name: pilotIdentity.firstName,
           last_name: pilotIdentity.lastName,
@@ -602,17 +608,22 @@ async function assignHouseholdAndVerify(
     referrerId,
     displayName,
   } = opts;
+  const requiresPilotApproval = isClosedPilotMode();
 
   // Pilotphase: Alle Nutzer werden sofort verifiziert (verified_at gesetzt)
   // Damit können sie die App direkt nutzen (RLS: is_verified_member())
+  const membership: Record<string, unknown> = {
+    household_id: householdId,
+    user_id: userId,
+    verification_method: verificationMethod || "address_manual",
+  };
+  if (!requiresPilotApproval) {
+    membership.verified_at = new Date().toISOString();
+  }
+
   const { error: memberError } = await adminDb
     .from("household_members")
-    .insert({
-      household_id: householdId,
-      user_id: userId,
-      verification_method: verificationMethod || "address_manual",
-      verified_at: new Date().toISOString(), // Pilot: sofort verifiziert
-    });
+    .insert(membership);
 
   if (memberError) {
     console.error("Mitglied-Fehler:", memberError);
@@ -627,8 +638,8 @@ async function assignHouseholdAndVerify(
         user_id: userId,
         household_id: householdId,
         method: "address_manual",
-        status: "approved", // Pilot: direkt approved
-        reviewed_at: new Date().toISOString(),
+        status: requiresPilotApproval ? "pending" : "approved",
+        reviewed_at: requiresPilotApproval ? null : new Date().toISOString(),
       });
 
     if (requestError) {

@@ -20,11 +20,11 @@ Vielen Dank, dass Sie Nachbar.io testen! Diese App verbindet Nachbarn in Bad Sä
 
 1. Öffnen Sie **https://nachbar-io.vercel.app** auf Ihrem Smartphone
 2. Tippen Sie auf **"Registrieren"**
-3. **Schritt 1:** E-Mail-Adresse und Passwort eingeben (mind. 8 Zeichen)
+3. **Schritt 1:** Einladungscode eingeben. Ohne Einladung ist der Pilot geschlossen.
 4. **Schritt 2:** Wählen Sie **"Adresse manuell angeben"**
-5. **Schritt 3:** Wählen Sie eine beliebige Straße und Hausnummer aus dem Quartier
-6. **Schritt 4:** Geben Sie einen Anzeigenamen ein (Vorname reicht)
-7. **Schritt 5:** Wählen Sie Ihren UI-Modus (Normal oder Seniorenmodus)
+5. **Schritt 3:** Wählen Sie eine Straße und Hausnummer aus dem Pilotquartier
+6. **Schritt 4:** Geben Sie **Vorname, Nachname und Geburtsdatum** ein
+7. **Schritt 5:** E-Mail-Adresse eingeben, KI-Hilfe mit **Ja / Nein / Später** wählen und den Einmal-Code aus der E-Mail eingeben
 8. Nach der Registrierung: **Thomas wird Ihre Adresse bestätigen** — Sie erhalten dann vollen Zugang
 
 > **Hinweis:** Solange die Adresse nicht bestätigt ist, sehen Sie ein gelbes Banner oben in der App. Das ist normal!
@@ -38,14 +38,14 @@ Bitte gehen Sie die folgenden Aufgaben der Reihe nach durch und haken Sie ab, wa
 ### A. Grundlagen (jeder Tester)
 
 - [ ] **A1** — App im Browser öffnen und Startseite sehen
-- [ ] **A2** — Registrierung abschließen (alle 5 Schritte)
+- [ ] **A2** — Registrierung abschließen (Einladungscode, Adresse, Pflichtdaten, KI-Auswahl, Einmal-Code)
 - [ ] **A3** — Nach Freischaltung: Dashboard sehen mit Begrüßung
 - [ ] **A4** — Untere Navigationsleiste: alle 5 Tabs antippen (Dashboard, Hilfe, Karte, Marktplatz, Profil)
 - [ ] **A5** — App als PWA installieren (Browser zeigt "Zum Startbildschirm hinzufügen")
 
 ### B. Profil & Einstellungen
 
-- [ ] **B1** — Profil öffnen und Anzeigenamen prüfen
+- [ ] **B1** — Profil öffnen und Namen prüfen
 - [ ] **B2** — Profil bearbeiten: Bio-Text hinzufügen
 - [ ] **B3** — Push-Benachrichtigungen aktivieren (Profil → Benachrichtigungen)
 - [ ] **B4** — Urlaubsmodus ein- und ausschalten (Profil → Urlaubsmodus)

@@ -6,9 +6,15 @@ import { NextRequest } from "next/server";
 
 // Mock createServerClient
 const mockGetUser = vi.fn();
+const mockSingle = vi.fn();
 vi.mock("@supabase/ssr", () => ({
   createServerClient: vi.fn(() => ({
     auth: { getUser: mockGetUser },
+    from: vi.fn(() => ({
+      select: vi.fn().mockReturnThis(),
+      eq: vi.fn().mockReturnThis(),
+      single: mockSingle,
+    })),
   })),
 }));
 
@@ -19,6 +25,8 @@ describe("updateSession (Auth-Middleware)", () => {
     vi.clearAllMocks();
     vi.stubEnv("NEXT_PUBLIC_SUPABASE_URL", "https://test.supabase.co");
     vi.stubEnv("NEXT_PUBLIC_SUPABASE_ANON_KEY", "test-anon-key");
+    vi.stubEnv("NEXT_PUBLIC_CLOSED_PILOT_MODE", "false");
+    mockSingle.mockResolvedValue({ data: null, error: null });
   });
 
   it("erlaubt oeffentliche Seiten ohne Auth", async () => {
@@ -54,5 +62,59 @@ describe("updateSession (Auth-Middleware)", () => {
     expect(loc === null || loc.includes("/login") || res.status >= 400).toBe(
       true,
     );
+  });
+
+  it("redirected pending Closed-Pilot-Nutzer zur Freigabe-Seite", async () => {
+    vi.stubEnv("NEXT_PUBLIC_CLOSED_PILOT_MODE", "true");
+    mockGetUser.mockResolvedValue({ data: { user: { id: "user-pending" } } });
+    mockSingle.mockResolvedValue({
+      data: {
+        trust_level: "new",
+        settings: { pilot_approval_status: "pending" },
+      },
+      error: null,
+    });
+
+    const req = new NextRequest("http://localhost/dashboard");
+    const res = await updateSession(req);
+
+    expect(res.status).toBe(307);
+    expect(res.headers.get("location")).toBe(
+      "http://localhost/freigabe-ausstehend",
+    );
+  });
+
+  it("blockiert pending Closed-Pilot-Nutzer bei App-APIs", async () => {
+    vi.stubEnv("NEXT_PUBLIC_CLOSED_PILOT_MODE", "true");
+    mockGetUser.mockResolvedValue({ data: { user: { id: "user-pending" } } });
+    mockSingle.mockResolvedValue({
+      data: {
+        trust_level: "new",
+        settings: { pilot_approval_status: "pending" },
+      },
+      error: null,
+    });
+
+    const req = new NextRequest("http://localhost/api/messages");
+    const res = await updateSession(req);
+    const body = await res.json();
+
+    expect(res.status).toBe(403);
+    expect(body.error).toMatch(/freigabe/i);
+  });
+
+  it("laesst freigegebene Closed-Pilot-Nutzer in die App", async () => {
+    vi.stubEnv("NEXT_PUBLIC_CLOSED_PILOT_MODE", "true");
+    mockGetUser.mockResolvedValue({ data: { user: { id: "user-ok" } } });
+    mockSingle.mockResolvedValue({
+      data: { trust_level: "verified", settings: {} },
+      error: null,
+    });
+
+    const req = new NextRequest("http://localhost/dashboard");
+    const res = await updateSession(req);
+
+    expect(res.status).not.toBe(307);
+    expect(res.status).not.toBe(403);
   });
 });

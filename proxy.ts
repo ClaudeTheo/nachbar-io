@@ -12,6 +12,7 @@ import {
   buildClosedPilotApiBody,
   CLOSED_PILOT_ROBOTS_HEADER,
   isClosedPilotMode,
+  isClosedPilotPublicApiPath,
   isClosedPilotPublicPath,
 } from "@/lib/closed-pilot";
 
@@ -28,7 +29,7 @@ export async function proxy(request: NextRequest) {
       return response;
     }
 
-    if (pathname.startsWith("/api/")) {
+    if (pathname.startsWith("/api/") && !isClosedPilotPublicApiPath(pathname)) {
       return NextResponse.json(buildClosedPilotApiBody(), {
         status: 503,
         headers: {

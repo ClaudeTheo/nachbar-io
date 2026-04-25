@@ -3,11 +3,20 @@ export const CLOSED_PILOT_ROBOTS_HEADER = "noindex, nofollow, noarchive";
 const CLOSED_PILOT_PUBLIC_PATHS = new Set([
   "/",
   "/agb",
+  "/auth/callback",
   "/barrierefreiheit",
   "/datenquellen",
   "/datenschutz",
+  "/freigabe-ausstehend",
   "/impressum",
+  "/login",
   "/opengraph-image",
+  "/register",
+]);
+
+const CLOSED_PILOT_PUBLIC_API_PATHS = new Set([
+  "/api/register/check-invite",
+  "/api/register/complete",
 ]);
 
 export function isClosedPilotMode() {
@@ -16,6 +25,10 @@ export function isClosedPilotMode() {
 
 export function isClosedPilotPublicPath(pathname: string) {
   return CLOSED_PILOT_PUBLIC_PATHS.has(pathname);
+}
+
+export function isClosedPilotPublicApiPath(pathname: string) {
+  return CLOSED_PILOT_PUBLIC_API_PATHS.has(pathname);
 }
 
 export function buildClosedPilotApiBody() {

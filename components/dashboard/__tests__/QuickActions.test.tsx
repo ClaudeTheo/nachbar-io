@@ -38,7 +38,7 @@ describe("QuickActions", () => {
     const { container } = render(<QuickActions />);
     const text = container.textContent;
     expect(text).toContain("Brett");
-    expect(text).toContain("Marktplatz");
+    expect(text).toContain("Quartier-Markt");
     expect(text).toContain("Kalender");
     expect(text).toContain("Melden");
   });

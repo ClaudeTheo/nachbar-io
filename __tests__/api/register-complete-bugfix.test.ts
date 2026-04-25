@@ -586,5 +586,58 @@ describe("POST /api/register/complete — Bugfixes", () => {
         { onConflict: "id" },
       );
     });
+
+    it("setzt neue Registrierungen im Closed-Pilot-Modus auf Freigabe ausstehend", async () => {
+      vi.stubEnv("NEXT_PUBLIC_CLOSED_PILOT_MODE", "true");
+      vi.stubEnv("PILOT_AUTO_VERIFY", "true");
+      mockCreateUser.mockResolvedValue({
+        data: { user: { id: "pilot-pending-1" } },
+        error: null,
+      });
+
+      const profileInsert = vi.fn().mockResolvedValue({ error: null });
+      const memberInsert = vi.fn().mockResolvedValue({ error: null });
+      const verificationInsert = vi.fn().mockResolvedValue({ error: null });
+
+      mockFrom.mockImplementation((table: string) => {
+        if (table === "users") {
+          return { upsert: profileInsert };
+        }
+        if (table === "household_members") {
+          return { insert: memberInsert };
+        }
+        if (table === "verification_requests") {
+          return { insert: verificationInsert };
+        }
+        return chainBuilder();
+      });
+
+      const { POST } = await import("@/app/api/register/complete/route");
+      const res = await POST(
+        makeRequest({
+          ...baseBody,
+          householdId: "hh-pilot",
+          verificationMethod: "address_manual",
+        }),
+      );
+
+      expect(res.status).toBe(200);
+      expect(profileInsert).toHaveBeenCalledWith(
+        expect.objectContaining({
+          id: "pilot-pending-1",
+          trust_level: "new",
+          settings: expect.objectContaining({
+            pilot_approval_status: "pending",
+          }),
+        }),
+        { onConflict: "id" },
+      );
+      expect(memberInsert).toHaveBeenCalledWith(
+        expect.not.objectContaining({ verified_at: expect.any(String) }),
+      );
+      expect(verificationInsert).toHaveBeenCalledWith(
+        expect.objectContaining({ status: "pending", reviewed_at: null }),
+      );
+    });
   });
 });

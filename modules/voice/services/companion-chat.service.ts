@@ -431,6 +431,17 @@ export async function processChat(
 
   // Tool-Bestaetigung ausfuehren (wenn vorhanden)
   if (confirmTool?.tool && confirmTool?.params) {
+    const disabledResponse = await buildAiDisabledResponse(supabase, userId);
+    if (disabledResponse) {
+      return Response.json(
+        {
+          error: disabledResponse.message,
+          aiDisabled: true,
+        },
+        { status: 403 },
+      );
+    }
+
     // save_memory Bestaetigung
     if (confirmTool.tool === "save_memory" && supabase) {
       const proposal = confirmTool.params as unknown as MemorySaveProposal;

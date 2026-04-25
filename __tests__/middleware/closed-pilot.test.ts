@@ -44,8 +44,8 @@ describe("Closed-Pilot-Gate", () => {
     vi.clearAllMocks();
   });
 
-  it.each(["/register", "/login", "/dashboard", "/kreis-start"])(
-    "leitet interaktive Seite %s auf die Closed-Pilot-Startseite",
+  it.each(["/dashboard", "/kreis-start", "/marketplace"])(
+    "leitet geschuetzte App-Seite %s auf die Closed-Pilot-Startseite",
     async (path) => {
       const res = await proxy(makeRequest(path));
 
@@ -55,7 +55,18 @@ describe("Closed-Pilot-Gate", () => {
     },
   );
 
-  it.each(["/api/register/complete", "/api/auth/callback"])(
+  it.each(["/login", "/register", "/auth/callback", "/freigabe-ausstehend"])(
+    "laesst Auth-/Freigabe-Seite %s erreichbar",
+    async (path) => {
+      const res = await proxy(makeRequest(path));
+
+      expect(res.status).not.toBe(307);
+      expect(res.status).not.toBe(503);
+      expect(res.headers.get("X-Robots-Tag")).toContain("noindex");
+    },
+  );
+
+  it.each(["/api/messages", "/api/alerts"])(
     "blockiert personenbezogene API %s im Closed-Pilot-Modus",
     async (path) => {
       const res = await proxy(makeRequest(path, "POST"));
@@ -64,6 +75,15 @@ describe("Closed-Pilot-Gate", () => {
       expect(res.status).toBe(503);
       expect(body.error).toMatch(/geschlossen|pilot/i);
       expect(res.headers.get("X-Robots-Tag")).toContain("noindex");
+    },
+  );
+
+  it.each(["/api/register/check-invite", "/api/register/complete"])(
+    "laesst Registrierungs-API %s fuer Pending-Anmeldung durch",
+    async (path) => {
+      const res = await proxy(makeRequest(path, "POST"));
+
+      expect(res.status).not.toBe(503);
     },
   );
 

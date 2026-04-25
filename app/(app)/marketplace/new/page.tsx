@@ -24,6 +24,17 @@ import {
 } from "@/modules/marketplace";
 import { GuidelinesGate } from "@/components/moderation/GuidelinesAcceptance";
 
+const TYPE_HINTS: Record<string, string> = {
+  sell:
+    "Privatverkauf unter Nachbarn. Nachbar.io ist keine gewerbliche Plattform.",
+  lend: "Rückgabe und Pfand bitte direkt absprechen.",
+  give: "Gut für Dinge, die noch nützlich sind und im Quartier bleiben dürfen.",
+  search:
+    "Beschreiben Sie möglichst konkret, was Sie suchen und wann Sie es brauchen.",
+};
+
+const TYPE_ORDER = ["give", "lend", "search", "sell"];
+
 export default function MarketplaceNewPage() {
   const { user } = useAuth();
   const router = useRouter();
@@ -149,21 +160,27 @@ export default function MarketplaceNewPage() {
         {/* Schritt 1: Typ waehlen */}
         {step === 1 && (
           <div className="space-y-4">
-            <p className="text-muted-foreground">Was möchten Sie tun?</p>
+            <p className="text-muted-foreground">
+              Was möchten Sie im Quartier anbieten oder suchen?
+            </p>
             <div className="grid grid-cols-2 gap-3">
-              {MARKETPLACE_TYPES.map((t) => (
-                <button
-                  key={t.id}
-                  onClick={() => {
-                    setType(t.id);
-                    setStep(2);
-                  }}
-                  className="flex flex-col items-center gap-2 rounded-xl border-2 border-border bg-white p-4 transition-all hover:border-quartier-green hover:shadow-md"
-                >
-                  <span className="text-3xl">{t.icon}</span>
-                  <span className="font-medium text-anthrazit">{t.label}</span>
-                </button>
-              ))}
+              {TYPE_ORDER.map((typeId) =>
+                MARKETPLACE_TYPES.find((t) => t.id === typeId),
+              )
+                .filter((t): t is (typeof MARKETPLACE_TYPES)[number] => Boolean(t))
+                .map((t) => (
+                  <button
+                    key={t.id}
+                    onClick={() => {
+                      setType(t.id);
+                      setStep(2);
+                    }}
+                    className="flex flex-col items-center gap-2 rounded-xl border-2 border-border bg-white p-4 transition-all hover:border-quartier-green hover:shadow-md"
+                  >
+                    <span className="text-3xl">{t.icon}</span>
+                    <span className="font-medium text-anthrazit">{t.label}</span>
+                  </button>
+                ))}
             </div>
           </div>
         )}
@@ -172,6 +189,11 @@ export default function MarketplaceNewPage() {
         {step === 2 && (
           <div className="space-y-4">
             <p className="text-muted-foreground">Kategorie wählen:</p>
+            {type && TYPE_HINTS[type] && (
+              <p className="rounded-lg border border-quartier-green/20 bg-quartier-green/5 px-3 py-2 text-sm text-muted-foreground">
+                {TYPE_HINTS[type]}
+              </p>
+            )}
             <div className="flex flex-wrap gap-2">
               {MARKETPLACE_CATEGORIES.map((c) => (
                 <button
@@ -236,6 +258,13 @@ export default function MarketplaceNewPage() {
                 </Button>
               </div>
             )}
+            <Button
+              variant="outline"
+              onClick={() => setStep(1)}
+              className="w-full"
+            >
+              Zurück
+            </Button>
           </div>
         )}
 

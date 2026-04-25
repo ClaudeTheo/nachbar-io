@@ -99,7 +99,8 @@ vi.mock("@anthropic-ai/sdk", () => {
 });
 
 // Mock-Supabase mit from()-Methode (fuer Memory-Layer Integration)
-function createMockSupabase() {
+function createMockSupabase(options: { aiEnabled?: boolean } = {}) {
+  const aiEnabled = options.aiEnabled ?? true;
   return {
     from: (table: string) => {
       const chain = {
@@ -110,7 +111,7 @@ function createMockSupabase() {
           if (table === "users") {
             return Promise.resolve({
               data: {
-                settings: { ai_enabled: true },
+                settings: { ai_enabled: aiEnabled },
                 subscription_plan: "free",
                 raw_user_meta_data: {},
               },
@@ -417,6 +418,41 @@ describe("POST /api/companion/chat", () => {
     );
 
     // Kein erneuter Claude-Call nach Bestaetigung (Performance-Fix)
+    expect(mockAnthropicCreate).not.toHaveBeenCalled();
+  });
+
+  it("blockiert bestaetigte Write-Tools wenn KI-Hilfe inzwischen ausgeschaltet ist", async () => {
+    mockRequireAuth.mockResolvedValue({
+      supabase: createMockSupabase({ aiEnabled: false }),
+      user: { id: "u1" },
+    });
+
+    const { POST } = await import("@/app/api/companion/chat/route");
+    const req = new NextRequest("http://localhost/api/companion/chat", {
+      method: "POST",
+      body: JSON.stringify({
+        messages: [
+          { role: "user", content: "Erstelle einen Beitrag" },
+          { role: "assistant", content: "Soll ich den Beitrag veroeffentlichen?" },
+          { role: "user", content: "Ja" },
+        ],
+        confirmTool: {
+          tool: "create_bulletin_post",
+          params: {
+            title: "Strassenfest",
+            text: "Am Samstag findet ein Fest statt.",
+          },
+        },
+      }),
+      headers: { "Content-Type": "application/json" },
+    });
+
+    const res = await POST(req);
+    expect(res.status).toBe(403);
+
+    const data = await res.json();
+    expect(data.error).toMatch(/KI-Hilfe ist ausgeschaltet/i);
+    expect(mockExecuteCompanionTool).not.toHaveBeenCalled();
     expect(mockAnthropicCreate).not.toHaveBeenCalled();
   });
 

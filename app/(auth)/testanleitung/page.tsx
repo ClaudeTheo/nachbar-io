@@ -62,16 +62,19 @@ export default function TestanleitungPage() {
             Tippen Sie auf den grünen Knopf <strong>&quot;Registrieren&quot;</strong>
           </li>
           <li>
-            Geben Sie Ihre <strong>E-Mail-Adresse</strong> ein und wählen Sie ein <strong>Passwort</strong> (mindestens 8 Zeichen — z.B. &quot;Nachbar123&quot;)
+            Geben Sie Ihren <strong>Einladungscode</strong> ein. Ohne Einladung ist der Pilot geschlossen.
           </li>
           <li>
             Bei der Adresse: Tippen Sie auf <strong>&quot;Adresse manuell angeben&quot;</strong>, wählen Sie Ihre Straße aus der Liste und geben Sie Ihre Hausnummer ein
           </li>
           <li>
-            Geben Sie einen <strong>Anzeigenamen</strong> ein — das ist der Name, den andere Nachbarn sehen (z.B. Ihr Vorname)
+            Geben Sie <strong>Vorname, Nachname und Geburtsdatum</strong> ein. Diese Pflichtdaten helfen bei Vertrauen, Sicherheit und Pilot-Zuordnung.
           </li>
           <li>
-            Wählen Sie <strong>&quot;Normal&quot;</strong> oder <strong>&quot;Seniorenmodus&quot;</strong> — im Seniorenmodus ist alles größer und leichter zu lesen
+            Geben Sie Ihre <strong>E-Mail-Adresse</strong> ein. Sie bekommen einen <strong>Einmal-Code</strong> per E-Mail.
+          </li>
+          <li>
+            Entscheiden Sie bei <strong>KI-Hilfe</strong>: Ja, Nein oder später. Die App funktioniert auch ohne KI-Hilfe.
           </li>
           <li>
             Fertig! <strong>Thomas wird Ihre Adresse kurz prüfen</strong> und dann freischalten

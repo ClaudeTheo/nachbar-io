@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Plus } from "lucide-react";
+import { Plus, ShieldCheck } from "lucide-react";
 import { PageHeader } from "@/components/ui/page-header";
 import { Badge } from "@/components/ui/badge";
 import { MARKETPLACE_TYPES, MARKETPLACE_CATEGORIES } from "@/modules/marketplace";
@@ -13,6 +13,13 @@ import { formatDistanceToNow } from "date-fns";
 import { de } from "date-fns/locale";
 import { LargeTitle } from "@/components/ui/LargeTitle";
 import { SegmentedControl } from "@/components/ui/SegmentedControl";
+
+const MARKETPLACE_FILTERS = [
+  { label: "Verschenken", type: "give" },
+  { label: "Verleihen", type: "lend" },
+  { label: "Gesucht", type: "search" },
+  { label: "Verkaufen", type: "sell" },
+];
 
 export default function MarketplacePage() {
   const [items, setItems] = useState<MarketplaceItem[]>([]);
@@ -46,7 +53,10 @@ export default function MarketplacePage() {
 
   return (
     <div>
-      <LargeTitle title="Marktplatz" subtitle="Kaufen, verschenken, tauschen" />
+      <LargeTitle
+        title="Quartier-Marktplatz"
+        subtitle="Ausleihen, verschenken, suchen oder verkaufen im Quartier"
+      />
       <PageHeader
         title=""
         backHref="/dashboard"
@@ -62,25 +72,29 @@ export default function MarketplacePage() {
         }
       />
 
+      <div className="mb-4 flex items-start gap-2 rounded-lg border border-quartier-green/20 bg-quartier-green/5 px-3 py-2 text-sm text-muted-foreground">
+        <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-quartier-green" />
+        <p>
+          Nur verifizierte Nachbarn im eigenen Quartier sehen diese Inserate.
+          Telefonnummer und Adresse bleiben privat.
+        </p>
+      </div>
+
       {/* Segmented Filter */}
       <SegmentedControl
-        items={[
-          "Alle",
-          ...MARKETPLACE_TYPES.map((t) => `${t.icon} ${t.label}`),
-        ]}
+        items={["Alles", ...MARKETPLACE_FILTERS.map((t) => t.label)]}
         active={
           filterType
-            ? `${MARKETPLACE_TYPES.find((t) => t.id === filterType)?.icon} ${MARKETPLACE_TYPES.find((t) => t.id === filterType)?.label}`
-            : "Alle"
+            ? (MARKETPLACE_FILTERS.find((t) => t.type === filterType)?.label ??
+              "Alles")
+            : "Alles"
         }
         onChange={(value) => {
-          if (value === "Alle") {
+          if (value === "Alles") {
             setFilterType(null);
           } else {
-            const match = MARKETPLACE_TYPES.find(
-              (t) => `${t.icon} ${t.label}` === value,
-            );
-            setFilterType(match?.id ?? null);
+            const match = MARKETPLACE_FILTERS.find((t) => t.label === value);
+            setFilterType(match?.type ?? null);
           }
         }}
         className="mb-4"
@@ -103,16 +117,20 @@ export default function MarketplacePage() {
           ))}
         </div>
       ) : items.length === 0 ? (
-        <div className="py-12 text-center">
-          <div className="mb-2 text-4xl">🏪</div>
-          <p className="text-muted-foreground">
-            Noch keine Inserate vorhanden.
+        <div className="py-10 text-center">
+          <div className="mb-2 text-4xl">🏘️</div>
+          <h2 className="font-semibold text-anthrazit">
+            Noch keine Inserate im Quartier.
+          </h2>
+          <p className="mx-auto mt-2 max-w-sm text-sm text-muted-foreground">
+            Starten Sie mit etwas Alltäglichem: Bohrmaschine verleihen, Leiter
+            gesucht oder Pflanzen verschenken.
           </p>
           <Link
             href="/marketplace/new"
-            className="mt-2 inline-block text-sm text-quartier-green hover:underline"
+            className="mt-3 inline-block text-sm font-semibold text-quartier-green hover:underline"
           >
-            Erstellen Sie das erste Inserat.
+            Erstes Inserat erstellen
           </Link>
         </div>
       ) : (

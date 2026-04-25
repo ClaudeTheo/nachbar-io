@@ -130,6 +130,13 @@ export default function MarketplaceDetailPage() {
         </div>
       </div>
 
+      {!isOwner && item.status === "active" && (
+        <div className="rounded-lg border border-quartier-green/20 bg-quartier-green/5 px-3 py-2 text-sm text-muted-foreground">
+          Kontakt läuft über Nachbar.io. Telefonnummer und Adresse werden nicht
+          öffentlich angezeigt.
+        </div>
+      )}
+
       {/* Aktionen */}
       {isOwner && item.status === "active" && (
         <div className="flex gap-3">
@@ -193,7 +200,7 @@ export default function MarketplaceDetailPage() {
           }}
         >
           <MessageCircle className="mr-2 h-4 w-4" />
-          Nachbar kontaktieren
+          Interesse per Nachricht zeigen
         </Button>
       )}
     </div>

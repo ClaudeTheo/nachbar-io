@@ -20,11 +20,11 @@ const quickActions = [
   },
   {
     href: "/marketplace",
-    label: "Marktplatz",
+    label: "Quartier-Markt",
     icon: ShoppingBag,
     bgColor: "bg-green-50",
     iconColor: "text-quartier-green",
-    description: "Kaufen & Verkaufen",
+    description: "Leihen & Teilen",
   },
   {
     href: "/waste-calendar",
@@ -62,6 +62,9 @@ export function QuickActions() {
             >
               <Icon className={`h-6 w-6 ${action.iconColor}`} strokeWidth={1.5} />
               <span className="text-xs font-medium text-anthrazit">{action.label}</span>
+              <span className="text-[10px] leading-tight text-muted-foreground">
+                {action.description}
+              </span>
             </Link>
           );
         })}

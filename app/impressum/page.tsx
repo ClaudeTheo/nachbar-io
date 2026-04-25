@@ -39,10 +39,9 @@ export default function ImpressumPage() {
             </h2>
             <p>
               Die Theobase GmbH befindet sich in Gruendung. Die Beurkundung des
-              Gesellschaftsvertrags erfolgte beim Notariat Stadler, Bad
-              Saeckingen, am 27.04.2026. Die Eintragung beim zustaendigen
-              Handelsregister ist beantragt; bis zur Eintragung firmiert die
-              Gesellschaft als Theobase GmbH i.G.
+              Gesellschaftsvertrags beim Notariat Stadler, Bad Saeckingen, ist
+              fuer den 27.04.2026 geplant. Bis zur Eintragung beim zustaendigen
+              Handelsregister firmiert die Gesellschaft als Theobase GmbH i.G.
             </p>
             <p className="mt-2">
               In dieser Uebergangsphase ist verantwortlich im Sinne von § 5 TMG

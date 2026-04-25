@@ -57,6 +57,19 @@ describe("LoginPage", () => {
     expect(screen.queryByLabelText(/passwort/i)).not.toBeInTheDocument();
   });
 
+  it("erklaert den geschlossenen Pilot und verlinkt die einfache Anleitung", async () => {
+    const { default: LoginPage } = await import("@/app/(auth)/login/page");
+
+    render(<LoginPage />);
+
+    expect(screen.getByText(/geschlossener test/i)).toBeInTheDocument();
+    expect(screen.getByText(/bad s[aä]ckingen/i)).toBeInTheDocument();
+    expect(screen.getByText(/nur eingeladene haushalte/i)).toBeInTheDocument();
+    expect(
+      screen.getByRole("link", { name: /was ist quartierapp/i }),
+    ).toHaveAttribute("href", "/onboarding-anleitung");
+  });
+
   it("wechselt nach OTP-Versand in die Code-Eingabe ohne Enumeration-UI", async () => {
     const { default: LoginPage } = await import("@/app/(auth)/login/page");
 

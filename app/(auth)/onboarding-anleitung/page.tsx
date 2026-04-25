@@ -1,6 +1,15 @@
 "use client";
 
-import { Smartphone, KeyRound, UserPlus, Home, CircleHelp, Phone } from "lucide-react";
+import {
+  CircleHelp,
+  Home,
+  KeyRound,
+  LockKeyhole,
+  Phone,
+  ShieldCheck,
+  Smartphone,
+  UserPlus,
+} from "lucide-react";
 
 export default function OnboardingAnleitungPage() {
   return (
@@ -26,6 +35,42 @@ export default function OnboardingAnleitungPage() {
           Hier können Sie Nachbarn kennenlernen, Hilfe anbieten oder suchen,
           und immer wissen, was in der Nachbarschaft los ist.
         </p>
+      </div>
+
+      <div className="mb-6 rounded-xl border bg-white p-5 print:break-inside-avoid">
+        <h2 className="mb-2 flex items-center gap-2 text-lg font-semibold text-anthrazit">
+          <ShieldCheck className="h-5 w-5 text-quartier-green" />
+          Geschlossener Test in Bad Säckingen
+        </h2>
+        <p className="text-base leading-relaxed text-gray-700">
+          QuartierApp wird im Moment nur in einer kleinen Nachbarschaft getestet.
+          Mitmachen können zuerst eingeladene Haushalte aus dem Pilotgebiet.
+          So bleibt der Kreis überschaubar, und wir können gemeinsam prüfen,
+          was wirklich hilft.
+        </p>
+      </div>
+
+      <div className="mb-6 rounded-xl border bg-white p-5 print:break-inside-avoid">
+        <h2 className="mb-3 flex items-center gap-2 text-lg font-semibold text-anthrazit">
+          <LockKeyhole className="h-5 w-5 text-quartier-green" />
+          Daten in einfacher Sprache
+        </h2>
+        <ul className="list-inside list-disc space-y-2 text-base text-gray-700">
+          <li>
+            Wir fragen nur das Nötige ab: Einladungscode, Anzeigename,
+            E-Mail-Adresse und bei Bedarf die Zuordnung zum Quartier.
+          </li>
+          <li>
+            Ihr Klarname ist nicht nötig. Ein Vorname oder Kürzel reicht.
+          </li>
+          <li>
+            Quartiersdaten sehen nur verifizierte Nachbarn im Testgebiet.
+          </li>
+          <li>
+            Es gibt in dieser Phase keine Zahlung und keinen öffentlichen
+            Regelbetrieb.
+          </li>
+        </ul>
       </div>
 
       {/* 3 Schritte */}
@@ -56,7 +101,7 @@ export default function OnboardingAnleitungPage() {
             Geben Sie Ihre <strong>E-Mail-Adresse</strong> ein
           </li>
           <li>
-            Sie erhalten eine E-Mail mit einem <strong>Bestätigungslink</strong> — tippen Sie darauf
+            Sie erhalten eine E-Mail mit einem <strong>Einmal-Code</strong> — geben Sie den Code ein
           </li>
           <li>
             Fertig! Sie sind angemeldet.

@@ -1,6 +1,6 @@
 // Einstiegs-Schritt: Zwei Pfade (Einladungscode oder Quartier finden)
 import Link from "next/link";
-import { Mail, MapPin } from "lucide-react";
+import { Mail, MapPin, ShieldCheck } from "lucide-react";
 import type { StepProps } from "./types";
 
 export function RegisterStepEntry({ state, setState, setStep }: StepProps) {
@@ -9,6 +9,22 @@ export function RegisterStepEntry({ state, setState, setStep }: StepProps) {
       <p className="text-sm text-muted-foreground text-center">
         Wie möchten Sie beitreten?
       </p>
+
+      <div className="rounded-xl border border-quartier-green/25 bg-quartier-green/5 p-3">
+        <div className="flex items-start gap-2">
+          <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-quartier-green" />
+          <div className="space-y-1 text-sm">
+            <p className="font-medium text-anthrazit">
+              Geschlossener Test in Bad Säckingen
+            </p>
+            <p className="text-muted-foreground">
+              Am einfachsten starten Sie mit Einladungscode. Wir fragen nur das
+              Nötige ab, damit Ihr Haushalt dem richtigen Quartier zugeordnet
+              wird.
+            </p>
+          </div>
+        </div>
+      </div>
 
       {/* Pfad 1: Einladungscode */}
       <button
@@ -27,7 +43,8 @@ export function RegisterStepEntry({ state, setState, setStep }: StepProps) {
               Ich habe einen Einladungscode
             </p>
             <p className="mt-1 text-sm text-muted-foreground">
-              Per Brief, Aushang oder von einem Nachbarn erhalten
+              Empfohlen für den Pilot: per Brief, Aushang oder von einem
+              Nachbarn erhalten
             </p>
           </div>
         </div>
@@ -50,7 +67,8 @@ export function RegisterStepEntry({ state, setState, setStep }: StepProps) {
               Ich möchte mein Quartier finden
             </p>
             <p className="mt-1 text-sm text-muted-foreground">
-              Über Adresse oder Standort dem nächsten Quartier beitreten
+              Nur für das Pilotgebiet rund um Purkersdorfer Str., Sanarystr.
+              und Oberer Rebberg
             </p>
           </div>
         </div>

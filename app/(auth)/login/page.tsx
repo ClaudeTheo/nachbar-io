@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Mail, KeyRound, Fingerprint } from "lucide-react";
+import { CircleHelp, Mail, KeyRound, Fingerprint, ShieldCheck } from "lucide-react";
 import { signInWithApple } from "@/lib/auth/apple";
 import { handlePasskeyLogin as doPasskeyLogin } from "@/lib/auth/passkey-login";
 // simplewebauthn/browser Referenzen (werden im useEffect geladen)
@@ -165,11 +165,35 @@ export default function LoginPage() {
           </CardTitle>
           {mode !== "magic_link_sent" && (
             <p className="text-sm text-muted-foreground">
-              Willkommen zurück in Ihrem Quartier
+              Geschlossener Test für Bad Säckingen
             </p>
           )}
         </CardHeader>
         <CardContent>
+          {mode !== "magic_link_sent" && (
+            <div className="mb-5 rounded-xl border border-quartier-green/25 bg-quartier-green/5 p-3 text-sm">
+              <div className="flex items-start gap-2">
+                <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-quartier-green" />
+                <div className="space-y-2 text-muted-foreground">
+                  <p className="font-medium text-anthrazit">
+                    Nur eingeladene Haushalte können am Pilot teilnehmen.
+                  </p>
+                  <p>
+                    Sie erhalten einen Einmal-Code per E-Mail. Quartiersdaten
+                    sehen nur verifizierte Nachbarn im Testgebiet.
+                  </p>
+                  <Link
+                    href="/onboarding-anleitung"
+                    className="inline-flex items-center gap-1 font-medium text-quartier-green underline hover:no-underline"
+                  >
+                    <CircleHelp className="h-3.5 w-3.5" />
+                    Was ist QuartierApp?
+                  </Link>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* === Passkey / Biometrische Anmeldung === */}
           {mode === "magic_link" &&
             supportsPasskey &&
@@ -256,6 +280,7 @@ export default function LoginPage() {
                 type="submit"
                 disabled={loading || sendCooldown > 0}
                 className="w-full bg-quartier-green hover:bg-quartier-green-dark"
+                style={{ minHeight: "48px" }}
               >
                 <Mail className="mr-2 h-4 w-4" />
                 {loading

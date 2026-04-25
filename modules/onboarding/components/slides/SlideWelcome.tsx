@@ -69,11 +69,17 @@ export function SlideWelcome() {
 
       {/* Straßen-Badge */}
       <div className="mt-6 animate-fade-in-up" style={{ animationDelay: "1400ms" }}>
-        <div className="inline-flex items-center gap-2 rounded-full border border-quartier-green/30 bg-quartier-green/5 px-4 py-2">
-          <div className="h-2 w-2 rounded-full bg-quartier-green animate-pulse" />
-          <span className="text-sm text-anthrazit">
-            Purkersdorfer Str. · Sanarystr. · Oberer Rebberg
-          </span>
+        <div className="space-y-3 text-center">
+          <div className="inline-flex items-center gap-2 rounded-full border border-quartier-green/30 bg-quartier-green/5 px-4 py-2">
+            <div className="h-2 w-2 rounded-full bg-quartier-green animate-pulse" />
+            <span className="text-sm text-anthrazit">
+              Purkersdorfer Str. · Sanarystr. · Oberer Rebberg
+            </span>
+          </div>
+          <p className="mx-auto max-w-[280px] text-xs leading-relaxed text-muted-foreground">
+            Geschlossener Pilot in Bad Säckingen. Anzeigename genügt, Klarname
+            und Geburtsdatum sind nicht nötig.
+          </p>
         </div>
       </div>
     </div>

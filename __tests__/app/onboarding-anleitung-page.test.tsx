@@ -13,5 +13,10 @@ describe("OnboardingAnleitungPage", () => {
     expect(screen.getByText(/daten in einfacher sprache/i)).toBeInTheDocument();
     expect(screen.getByText(/nur das n[oö]tige/i)).toBeInTheDocument();
     expect(screen.getByText(/einmal-code/i)).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { name: /ki-hilfe.*schrittweise/i }),
+    ).toBeInTheDocument();
+    expect(screen.getByText(/nur mit ihrer einwilligung/i)).toBeInTheDocument();
+    expect(screen.getByText(/ohne ki/i)).toBeInTheDocument();
   });
 });

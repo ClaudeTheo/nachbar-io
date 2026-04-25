@@ -74,8 +74,8 @@ export default function GedaechtnisPage() {
       <header>
         <h1 className="text-2xl font-bold text-[#2D3142]">Mein Gedaechtnis</h1>
         <p className="mt-3 text-base text-[#2D3142]">
-          Hier sehen Sie, was sich der KI-Assistent ueber Sie merkt. Jeden
-          Eintrag koennen Sie jederzeit loeschen.
+          Das KI-Gedaechtnis ist freiwillig. Die App funktioniert auch ohne
+          KI-Gedaechtnis weiter. Jeden Eintrag koennen Sie jederzeit loeschen.
         </p>
       </header>
 

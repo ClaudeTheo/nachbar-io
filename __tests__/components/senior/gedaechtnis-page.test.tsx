@@ -6,7 +6,7 @@
 // ohne fetch laufen.
 
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { render, screen, cleanup, act } from "@testing-library/react";
+import { render, screen, cleanup } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 
 import GedaechtnisPage from "@/app/(senior)/profil/gedaechtnis/page";
@@ -95,6 +95,13 @@ describe("Senior-Gedaechtnis-Page", () => {
         /sehen.*loeschen|jeden eintrag.*loeschen|recht.*loeschen/i,
       ),
     ).toBeInTheDocument();
+  });
+
+  it("erklaert fuer Senioren, dass KI-Gedaechtnis freiwillig ist", () => {
+    render(<GedaechtnisPage />);
+    expect(screen.getByText(/freiwillig/i)).toBeInTheDocument();
+    expect(screen.getByText(/ohne ki-gedaechtnis/i)).toBeInTheDocument();
+    expect(screen.getByText(/funktioniert.*weiter/i)).toBeInTheDocument();
   });
 
   it("zeigt Loading-Zustand wenn loading=true", () => {

@@ -7,6 +7,7 @@ import {
   LockKeyhole,
   Phone,
   ShieldCheck,
+  Sparkles,
   Smartphone,
   UserPlus,
 } from "lucide-react";
@@ -71,6 +72,18 @@ export default function OnboardingAnleitungPage() {
             Regelbetrieb.
           </li>
         </ul>
+      </div>
+
+      <div className="mb-6 rounded-xl border bg-white p-5 print:break-inside-avoid">
+        <h2 className="mb-3 flex items-center gap-2 text-lg font-semibold text-anthrazit">
+          <Sparkles className="h-5 w-5 text-quartier-green" />
+          KI-Hilfe schrittweise und nur mit Ihrer Einwilligung
+        </h2>
+        <p className="text-base leading-relaxed text-gray-700">
+          QuartierApp kann später beim Vorlesen oder bei Sprachbefehlen helfen.
+          Diese KI-Hilfe wird schrittweise freigeschaltet und nur, wenn Sie
+          ausdrücklich zustimmen. Die App funktioniert auch ohne KI weiter.
+        </p>
       </div>
 
       {/* 3 Schritte */}

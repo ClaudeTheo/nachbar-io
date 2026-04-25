@@ -50,6 +50,11 @@ export function SlideReady({ displayName }: SlideReadyProps) {
           </div>
         ))}
       </div>
+
+      <p className="mt-5 max-w-[300px] text-center text-xs leading-relaxed text-muted-foreground animate-fade-in-up" style={{ animationDelay: "1000ms" }}>
+        KI-Hilfe kommt schrittweise und nur mit Einwilligung. Die App
+        funktioniert auch ohne KI weiter.
+      </p>
     </div>
   );
 }

@@ -1,7 +1,20 @@
 "use client";
 
 import { useState } from "react";
-import { Users, UserCog, ShieldCheck, ShieldOff, Ban, Search, ChevronDown, ChevronUp, UserPlus, Copy, Check } from "lucide-react";
+import {
+  Users,
+  UserCog,
+  ShieldCheck,
+  ShieldOff,
+  Ban,
+  Search,
+  ChevronDown,
+  ChevronUp,
+  UserPlus,
+  Copy,
+  Check,
+  Clock3,
+} from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -157,6 +170,45 @@ export function UserManagement({ users, onRefresh }: UserManagementProps) {
     setUpdating(null);
   }
 
+  async function changePilotApproval(
+    userToUpdate: User,
+    status: "approved" | "blocked" | "pending",
+  ) {
+    setUpdating(userToUpdate.id);
+    const supabase = createClient();
+    const settings = {
+      ...(userToUpdate.settings ?? {}),
+      pilot_approval_status: status,
+    };
+    const updatePayload: {
+      settings: Record<string, unknown>;
+      trust_level?: TrustLevel;
+    } = { settings };
+
+    if (status === "approved" && userToUpdate.trust_level === "new") {
+      updatePayload.trust_level = "verified";
+    }
+
+    const { error } = await supabase
+      .from("users")
+      .update(updatePayload)
+      .eq("id", userToUpdate.id);
+
+    if (error) {
+      toast.error("Pilot-Freigabe konnte nicht geändert werden");
+    } else {
+      const label =
+        status === "approved"
+          ? "freigegeben"
+          : status === "blocked"
+            ? "blockiert"
+            : "auf Prüfung gesetzt";
+      toast.success(`Pilot-Zugang ${label}`);
+      onRefresh();
+    }
+    setUpdating(null);
+  }
+
   // UI-Modus ändern
   async function changeUiMode(userId: string, newMode: "active" | "senior") {
     setUpdating(userId);
@@ -177,6 +229,15 @@ export function UserManagement({ users, onRefresh }: UserManagementProps) {
 
   const trustLevelOrder: TrustLevel[] = ["new", "verified", "trusted", "admin"];
   const bannedCount = users.filter(u => (u.trust_level as string) === "banned").length;
+  const pendingPilotCount = users.filter(
+    (u) => getPilotApprovalStatus(u) === "pending",
+  ).length;
+  const approvedPilotCount = users.filter(
+    (u) => getPilotApprovalStatus(u) === "approved",
+  ).length;
+  const blockedPilotCount = users.filter(
+    (u) => getPilotApprovalStatus(u) === "blocked",
+  ).length;
 
   return (
     <div className="space-y-4">
@@ -288,6 +349,40 @@ export function UserManagement({ users, onRefresh }: UserManagementProps) {
       {/* Verifizierungs-Queue */}
       <VerificationQueue />
 
+      <Card className="border-amber-200 bg-amber-50/60">
+        <CardContent className="p-4">
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <h3 className="text-sm font-semibold text-anthrazit">
+                Pilot-Freigaben
+              </h3>
+              <p className="mt-1 text-xs text-muted-foreground">
+                Neue Registrierungen bleiben gesperrt, bis sie hier freigegeben werden.
+              </p>
+            </div>
+            <Badge className="bg-amber-100 text-amber-800 hover:bg-amber-100">
+              {pendingPilotCount} wartet
+            </Badge>
+          </div>
+          <div className="mt-3 flex flex-wrap gap-2">
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-white px-3 py-1 text-xs font-medium text-amber-800">
+              <Clock3 className="h-3 w-3" />
+              {pendingPilotCount} wartet
+            </span>
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-white px-3 py-1 text-xs font-medium text-green-700">
+              <ShieldCheck className="h-3 w-3" />
+              {approvedPilotCount} freigegeben
+            </span>
+            {blockedPilotCount > 0 && (
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-white px-3 py-1 text-xs font-medium text-red-700">
+                <Ban className="h-3 w-3" />
+                {blockedPilotCount} blockiert
+              </span>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+
       {/* Nutzerliste */}
       <div className="space-y-3">
         <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
@@ -345,6 +440,8 @@ export function UserManagement({ users, onRefresh }: UserManagementProps) {
           {filtered.map((user) => {
             const isExpanded = expandedUser === user.id;
             const isUpdating = updating === user.id;
+            const pilotStatus = getPilotApprovalStatus(user);
+            const pilotBadge = getPilotBadge(pilotStatus);
 
             return (
               <Card key={user.id} className={`overflow-hidden transition-all ${isUpdating ? "opacity-60" : ""}`}>
@@ -367,6 +464,14 @@ export function UserManagement({ users, onRefresh }: UserManagementProps) {
                       {user.ui_mode === "senior" && (
                         <Badge variant="outline" className="text-[10px] h-4 px-1 border-blue-200 text-blue-600">
                           Senior
+                        </Badge>
+                      )}
+                      {pilotBadge && (
+                        <Badge
+                          variant="outline"
+                          className={`text-[10px] h-4 px-1 ${pilotBadge.className}`}
+                        >
+                          {pilotBadge.label}
                         </Badge>
                       )}
                     </div>
@@ -426,6 +531,56 @@ export function UserManagement({ users, onRefresh }: UserManagementProps) {
                       <div className="flex gap-1.5">
                         <Button size="sm" variant={user.ui_mode === "active" ? "default" : "outline"} className="text-xs h-7" disabled={isUpdating || user.ui_mode === "active"} onClick={() => changeUiMode(user.id, "active")}>Normal</Button>
                         <Button size="sm" variant={user.ui_mode === "senior" ? "default" : "outline"} className="text-xs h-7" disabled={isUpdating || user.ui_mode === "senior"} onClick={() => changeUiMode(user.id, "senior")}>Seniorenmodus</Button>
+                      </div>
+                    </div>
+
+                    <div className="space-y-2 pt-1 border-t">
+                      <div className="flex items-center justify-between gap-3">
+                        <div>
+                          <p className="text-xs font-medium text-muted-foreground">
+                            Closed-Pilot-Zugang
+                          </p>
+                          <p className="mt-0.5 text-sm text-anthrazit">
+                            {getPilotStatusDescription(pilotStatus)}
+                          </p>
+                        </div>
+                        {pilotBadge && (
+                          <Badge
+                            variant="outline"
+                            className={pilotBadge.className}
+                          >
+                            {pilotBadge.label}
+                          </Badge>
+                        )}
+                      </div>
+                      <div className="flex flex-wrap gap-1.5">
+                        <Button
+                          size="sm"
+                          variant={pilotStatus === "approved" ? "default" : "outline"}
+                          className="text-xs h-7"
+                          disabled={isUpdating || pilotStatus === "approved"}
+                          onClick={() => changePilotApproval(user, "approved")}
+                        >
+                          Pilot freigeben
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant={pilotStatus === "pending" ? "default" : "outline"}
+                          className="text-xs h-7"
+                          disabled={isUpdating || pilotStatus === "pending"}
+                          onClick={() => changePilotApproval(user, "pending")}
+                        >
+                          Auf Prüfung
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant={pilotStatus === "blocked" ? "destructive" : "outline"}
+                          className="text-xs h-7"
+                          disabled={isUpdating || pilotStatus === "blocked"}
+                          onClick={() => changePilotApproval(user, "blocked")}
+                        >
+                          Pilot blockieren
+                        </Button>
                       </div>
                     </div>
 
@@ -490,4 +645,56 @@ function getInitials(name: string): string {
     .slice(0, 2)
     .join("")
     .toUpperCase();
+}
+
+type PilotApprovalStatus = "pending" | "approved" | "blocked" | "none";
+
+function getPilotApprovalStatus(user: User): PilotApprovalStatus {
+  const status = user.settings?.pilot_approval_status;
+
+  if (status === "pending" || status === "approved" || status === "blocked") {
+    return status;
+  }
+
+  if (
+    user.trust_level === "verified" ||
+    user.trust_level === "trusted" ||
+    user.trust_level === "admin"
+  ) {
+    return "approved";
+  }
+
+  return "none";
+}
+
+function getPilotBadge(status: PilotApprovalStatus) {
+  if (status === "pending") {
+    return {
+      label: "Pilot wartet",
+      className: "border-amber-200 bg-amber-50 text-amber-700",
+    };
+  }
+
+  if (status === "approved") {
+    return {
+      label: "Pilot frei",
+      className: "border-green-200 bg-green-50 text-green-700",
+    };
+  }
+
+  if (status === "blocked") {
+    return {
+      label: "Pilot blockiert",
+      className: "border-red-200 bg-red-50 text-red-700",
+    };
+  }
+
+  return null;
+}
+
+function getPilotStatusDescription(status: PilotApprovalStatus): string {
+  if (status === "pending") return "Wartet auf manuelle Founder-Freigabe.";
+  if (status === "approved") return "Darf den geschlossenen Pilot nutzen.";
+  if (status === "blocked") return "Bleibt vom geschlossenen Pilot ausgeschlossen.";
+  return "Noch kein Pilot-Status gesetzt.";
 }

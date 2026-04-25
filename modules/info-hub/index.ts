@@ -37,9 +37,6 @@ export {
   EFA_BW_DEPARTURE_URL,
 } from "./services/oepnv-stops";
 
-// Apotheken
-export { APOTHEKEN_BAD_SAECKINGEN, NOTDIENST_URL } from "./services/apotheken";
-
 // Events
 export { EVENTS_BAD_SAECKINGEN, EVENTS_CALENDAR_URL } from "./services/events";
 

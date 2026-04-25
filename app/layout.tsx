@@ -6,6 +6,8 @@ import { CapacitorInit } from "@/components/CapacitorInit";
 import { isClosedPilotMode } from "@/lib/closed-pilot";
 import "./globals.css";
 
+export const dynamic = "force-dynamic";
+
 const nunito = Nunito({
   variable: "--font-heading",
   subsets: ["latin"],

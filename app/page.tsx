@@ -1,5 +1,3 @@
-export const dynamic = "force-static";
-
 export default function LandingPage() {
   return (
     <main className="min-h-screen bg-[#f7f5ef] text-[#23262f]">

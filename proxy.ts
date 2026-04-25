@@ -9,10 +9,8 @@ import { isLegacyRoute } from "@/lib/legacy-routes";
 import { getRequiredFlagForRoute } from "@/lib/health-feature-gate";
 import { getCachedFlagEnabled } from "@/lib/feature-flags-middleware-cache";
 import {
-  buildClosedPilotApiBody,
   CLOSED_PILOT_ROBOTS_HEADER,
   isClosedPilotMode,
-  isClosedPilotPublicApiPath,
   isClosedPilotPublicPath,
 } from "@/lib/closed-pilot";
 
@@ -29,20 +27,8 @@ export async function proxy(request: NextRequest) {
       return response;
     }
 
-    if (pathname.startsWith("/api/")) {
-      if (!isClosedPilotPublicApiPath(pathname)) {
-        return NextResponse.json(buildClosedPilotApiBody(), {
-          status: 503,
-          headers: {
-            "Retry-After": "3600",
-            "X-Robots-Tag": CLOSED_PILOT_ROBOTS_HEADER,
-          },
-        });
-      }
-    } else {
-      const url = request.nextUrl.clone();
-      url.pathname = "/";
-      const response = NextResponse.redirect(url);
+    if (!pathname.startsWith("/api/")) {
+      const response = await updateSession(request);
       response.headers.set("X-Robots-Tag", CLOSED_PILOT_ROBOTS_HEADER);
       return response;
     }

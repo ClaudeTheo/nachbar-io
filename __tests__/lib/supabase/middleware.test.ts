@@ -45,6 +45,29 @@ describe("updateSession (Auth-Middleware)", () => {
     expect(loc === null || !loc.includes("/login")).toBe(true);
   });
 
+  it("blockiert geschuetzte Closed-Pilot-APIs ohne Auth", async () => {
+    vi.stubEnv("NEXT_PUBLIC_CLOSED_PILOT_MODE", "true");
+    mockGetUser.mockResolvedValue({ data: { user: null } });
+
+    const req = new NextRequest("http://localhost/api/messages");
+    const res = await updateSession(req);
+    const body = await res.json();
+
+    expect(res.status).toBe(503);
+    expect(body.status).toBe("closed_pilot");
+  });
+
+  it("laesst oeffentliche Closed-Pilot-Registrierungs-APIs ohne Auth durch", async () => {
+    vi.stubEnv("NEXT_PUBLIC_CLOSED_PILOT_MODE", "true");
+    mockGetUser.mockResolvedValue({ data: { user: null } });
+
+    const req = new NextRequest("http://localhost/api/register/complete");
+    const res = await updateSession(req);
+
+    expect(res.status).not.toBe(503);
+    expect(res.status).not.toBe(307);
+  });
+
   it("erlaubt Login-Seite ohne Auth", async () => {
     mockGetUser.mockResolvedValue({ data: { user: null } });
     const req = new NextRequest("http://localhost/login");
@@ -62,6 +85,17 @@ describe("updateSession (Auth-Middleware)", () => {
     expect(loc === null || loc.includes("/login") || res.status >= 400).toBe(
       true,
     );
+  });
+
+  it("redirected geschuetzte Closed-Pilot-Seiten ohne Auth zur Pilot-Startseite", async () => {
+    vi.stubEnv("NEXT_PUBLIC_CLOSED_PILOT_MODE", "true");
+    mockGetUser.mockResolvedValue({ data: { user: null } });
+
+    const req = new NextRequest("http://localhost/dashboard");
+    const res = await updateSession(req);
+
+    expect(res.status).toBe(307);
+    expect(res.headers.get("location")).toBe("http://localhost/");
   });
 
   it("redirected pending Closed-Pilot-Nutzer zur Freigabe-Seite", async () => {
@@ -115,6 +149,21 @@ describe("updateSession (Auth-Middleware)", () => {
     const res = await updateSession(req);
 
     expect(res.status).not.toBe(307);
+    expect(res.status).not.toBe(403);
+  });
+
+  it("laesst freigegebene Closed-Pilot-Nutzer an App-APIs", async () => {
+    vi.stubEnv("NEXT_PUBLIC_CLOSED_PILOT_MODE", "true");
+    mockGetUser.mockResolvedValue({ data: { user: { id: "user-ok" } } });
+    mockSingle.mockResolvedValue({
+      data: { trust_level: "admin", settings: {} },
+      error: null,
+    });
+
+    const req = new NextRequest("http://localhost/api/messages");
+    const res = await updateSession(req);
+
+    expect(res.status).not.toBe(503);
     expect(res.status).not.toBe(403);
   });
 });

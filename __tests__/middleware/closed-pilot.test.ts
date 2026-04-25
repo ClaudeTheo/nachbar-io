@@ -23,6 +23,7 @@ vi.mock("@/lib/feature-flags-middleware-cache", () => ({
 }));
 
 import { proxy } from "@/proxy";
+import { updateSession } from "@/lib/supabase/middleware";
 
 function makeRequest(pathname: string, method = "GET") {
   const url = new URL(`http://localhost${pathname}`);
@@ -45,13 +46,13 @@ describe("Closed-Pilot-Gate", () => {
   });
 
   it.each(["/dashboard", "/kreis-start", "/marketplace"])(
-    "leitet geschuetzte App-Seite %s auf die Closed-Pilot-Startseite",
+    "uebergibt geschuetzte App-Seite %s an die Auth-Middleware",
     async (path) => {
       const res = await proxy(makeRequest(path));
 
-      expect(res.status).toBe(307);
-      expect(res.headers.get("location")).toBe("http://localhost/");
-      expect(res.headers.get("X-Robots-Tag")).toContain("noindex");
+      expect(updateSession).toHaveBeenCalledTimes(1);
+      expect(res.status).not.toBe(307);
+      expect(res.status).not.toBe(503);
     },
   );
 
@@ -67,14 +68,12 @@ describe("Closed-Pilot-Gate", () => {
   );
 
   it.each(["/api/messages", "/api/alerts"])(
-    "blockiert personenbezogene API %s im Closed-Pilot-Modus",
+    "uebergibt personenbezogene API %s im Closed-Pilot-Modus an die Auth-Middleware",
     async (path) => {
       const res = await proxy(makeRequest(path, "POST"));
-      const body = await res.json();
 
-      expect(res.status).toBe(503);
-      expect(body.error).toMatch(/geschlossen|pilot/i);
-      expect(res.headers.get("X-Robots-Tag")).toContain("noindex");
+      expect(updateSession).toHaveBeenCalledTimes(1);
+      expect(res.status).not.toBe(307);
     },
   );
 

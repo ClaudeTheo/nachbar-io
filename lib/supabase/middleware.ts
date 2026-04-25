@@ -1,7 +1,12 @@
 // Nachbar.io — Supabase Middleware für Session-Refresh
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
-import { isClosedPilotMode } from "@/lib/closed-pilot";
+import {
+  buildClosedPilotApiBody,
+  CLOSED_PILOT_ROBOTS_HEADER,
+  isClosedPilotMode,
+  isClosedPilotPublicApiPath,
+} from "@/lib/closed-pilot";
 
 const APPROVED_CLOSED_PILOT_TRUST_LEVELS = new Set([
   "verified",
@@ -86,6 +91,8 @@ export async function updateSession(request: NextRequest) {
     request.nextUrl.pathname.startsWith("/richtlinien");
   const isPendingApprovalPage =
     request.nextUrl.pathname.startsWith("/freigabe-ausstehend");
+  const isClosedPilotPublicApi =
+    isApiRoute && isClosedPilotPublicApiPath(request.nextUrl.pathname);
   // Terminal-Seite authentifiziert sich ueber Token in der URL, nicht ueber Session
   const isTerminalPage = request.nextUrl.pathname.startsWith("/terminal");
   // Jugend-Freigabe: Oeffentliche Elternfreigabe-Seiten (via SMS-Token, kein Login)
@@ -93,6 +100,16 @@ export async function updateSession(request: NextRequest) {
     request.nextUrl.pathname.startsWith("/jugend/freigabe");
   // Kiosk: Eigenes Auth-System (QR-Code, PIN, Gast-Modus) — keine Supabase-Session noetig
   const isKioskPage = request.nextUrl.pathname.startsWith("/kiosk");
+
+  if (!user && isClosedPilotMode() && isApiRoute && !isClosedPilotPublicApi) {
+    return NextResponse.json(buildClosedPilotApiBody(), {
+      status: 503,
+      headers: {
+        "Retry-After": "3600",
+        "X-Robots-Tag": CLOSED_PILOT_ROBOTS_HEADER,
+      },
+    });
+  }
 
   if (
     !user &&
@@ -107,13 +124,18 @@ export async function updateSession(request: NextRequest) {
     !isKioskPage
   ) {
     const url = request.nextUrl.clone();
-    url.pathname = "/login";
-    return NextResponse.redirect(url);
+    url.pathname = isClosedPilotMode() ? "/" : "/login";
+    const response = NextResponse.redirect(url);
+    if (isClosedPilotMode()) {
+      response.headers.set("X-Robots-Tag", CLOSED_PILOT_ROBOTS_HEADER);
+    }
+    return response;
   }
 
   if (
     user &&
     isClosedPilotMode() &&
+    !isClosedPilotPublicApi &&
     !isAuthPage &&
     !isRootPage &&
     !isLegalPage &&

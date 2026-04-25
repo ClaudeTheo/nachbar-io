@@ -29,21 +29,23 @@ export async function proxy(request: NextRequest) {
       return response;
     }
 
-    if (pathname.startsWith("/api/") && !isClosedPilotPublicApiPath(pathname)) {
-      return NextResponse.json(buildClosedPilotApiBody(), {
-        status: 503,
-        headers: {
-          "Retry-After": "3600",
-          "X-Robots-Tag": CLOSED_PILOT_ROBOTS_HEADER,
-        },
-      });
+    if (pathname.startsWith("/api/")) {
+      if (!isClosedPilotPublicApiPath(pathname)) {
+        return NextResponse.json(buildClosedPilotApiBody(), {
+          status: 503,
+          headers: {
+            "Retry-After": "3600",
+            "X-Robots-Tag": CLOSED_PILOT_ROBOTS_HEADER,
+          },
+        });
+      }
+    } else {
+      const url = request.nextUrl.clone();
+      url.pathname = "/";
+      const response = NextResponse.redirect(url);
+      response.headers.set("X-Robots-Tag", CLOSED_PILOT_ROBOTS_HEADER);
+      return response;
     }
-
-    const url = request.nextUrl.clone();
-    url.pathname = "/";
-    const response = NextResponse.redirect(url);
-    response.headers.set("X-Robots-Tag", CLOSED_PILOT_ROBOTS_HEADER);
-    return response;
   }
 
   // Oeffentliche Seiten: Kein Supabase-Session-Check, direkt weiterleiten

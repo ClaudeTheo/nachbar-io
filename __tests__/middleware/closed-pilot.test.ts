@@ -83,7 +83,9 @@ describe("Closed-Pilot-Gate", () => {
     async (path) => {
       const res = await proxy(makeRequest(path, "POST"));
 
+      expect(res.status).not.toBe(307);
       expect(res.status).not.toBe(503);
+      expect(res.headers.get("location")).toBeNull();
     },
   );
 

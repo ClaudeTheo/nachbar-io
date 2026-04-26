@@ -42,6 +42,27 @@ const pendingPilot = {
   },
 };
 
+const aiTestPilot = {
+  ...pendingPilot,
+  id: "user-ai-test",
+  display_name: "AI-Test Erika",
+  settings: {
+    pilot_approval_status: "approved",
+    is_test_user: true,
+    test_user_kind: "ai_pilot",
+    must_delete_before_pilot: true,
+  },
+};
+
+const realPilot = {
+  ...pendingPilot,
+  id: "user-real",
+  display_name: "Paula Echt",
+  settings: {
+    pilot_approval_status: "approved",
+  },
+};
+
 describe("UserManagement Pilot-Freigaben", () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -88,5 +109,33 @@ describe("UserManagement Pilot-Freigaben", () => {
       expect(mockEq).toHaveBeenCalledWith("id", "user-pending");
       expect(onRefresh).toHaveBeenCalled();
     });
+  });
+
+  it("markiert AI-Testnutzer sichtbar in der Nutzerliste", async () => {
+    const { UserManagement } = await import(
+      "@/app/(app)/admin/components/UserManagement"
+    );
+
+    render(<UserManagement users={[aiTestPilot, realPilot]} onRefresh={vi.fn()} />);
+
+    expect(screen.getByText("AI-Test Erika")).toBeInTheDocument();
+    expect(screen.getByText("AI-Test")).toBeInTheDocument();
+    expect(screen.getByText("1 AI-Test")).toBeInTheDocument();
+  });
+
+  it("filtert die Nutzerliste auf AI-Testnutzer", async () => {
+    const { UserManagement } = await import(
+      "@/app/(app)/admin/components/UserManagement"
+    );
+
+    render(<UserManagement users={[aiTestPilot, realPilot]} onRefresh={vi.fn()} />);
+
+    expect(screen.getByText("AI-Test Erika")).toBeInTheDocument();
+    expect(screen.getByText("Paula Echt")).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "AI-Test (1)" }));
+
+    expect(screen.getByText("AI-Test Erika")).toBeInTheDocument();
+    expect(screen.queryByText("Paula Echt")).not.toBeInTheDocument();
   });
 });

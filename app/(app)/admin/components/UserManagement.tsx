@@ -35,6 +35,7 @@ export function UserManagement({ users, onRefresh }: UserManagementProps) {
   const [expandedUser, setExpandedUser] = useState<string | null>(null);
   const [updating, setUpdating] = useState<string | null>(null);
   const [activityFilter, setActivityFilter] = useState<"all" | "active" | "inactive">("all");
+  const [testUserFilter, setTestUserFilter] = useState<"all" | "ai-test">("all");
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [creating, setCreating] = useState(false);
   const [newUserName, setNewUserName] = useState("");
@@ -124,6 +125,10 @@ export function UserManagement({ users, onRefresh }: UserManagementProps) {
       u.trust_level.includes(search.toLowerCase());
 
     if (!matchesSearch) return false;
+
+    if (testUserFilter === "ai-test" && !isAiTestUser(u)) {
+      return false;
+    }
 
     if (activityFilter === "active") {
       return u.last_seen && new Date(u.last_seen) > thirtyDaysAgo;
@@ -238,6 +243,7 @@ export function UserManagement({ users, onRefresh }: UserManagementProps) {
   const blockedPilotCount = users.filter(
     (u) => getPilotApprovalStatus(u) === "blocked",
   ).length;
+  const aiTestUserCount = users.filter(isAiTestUser).length;
 
   return (
     <div className="space-y-4">
@@ -413,6 +419,28 @@ export function UserManagement({ users, onRefresh }: UserManagementProps) {
           </Button>
         </div>
 
+        {/* Testnutzer-Filter */}
+        {aiTestUserCount > 0 && (
+          <div className="flex gap-1.5">
+            <Button
+              size="sm"
+              variant={testUserFilter === "all" ? "default" : "outline"}
+              className="text-xs h-7"
+              onClick={() => setTestUserFilter("all")}
+            >
+              Alle Nutzer
+            </Button>
+            <Button
+              size="sm"
+              variant={testUserFilter === "ai-test" ? "default" : "outline"}
+              className="text-xs h-7"
+              onClick={() => setTestUserFilter("ai-test")}
+            >
+              AI-Test ({aiTestUserCount})
+            </Button>
+          </div>
+        )}
+
         {/* Statistik-Pillen */}
         <div className="flex flex-wrap gap-2">
           <span className="inline-flex items-center gap-1.5 rounded-full bg-anthrazit/5 px-3 py-1 text-xs font-medium text-anthrazit">
@@ -427,6 +455,12 @@ export function UserManagement({ users, onRefresh }: UserManagementProps) {
             <UserCog className="h-3 w-3" />
             {users.filter(u => u.ui_mode === "senior").length} Senioren
           </span>
+          {aiTestUserCount > 0 && (
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-cyan-50 px-3 py-1 text-xs font-medium text-cyan-700">
+              <UserCog className="h-3 w-3" />
+              {aiTestUserCount} AI-Test
+            </span>
+          )}
           {bannedCount > 0 && (
             <span className="inline-flex items-center gap-1.5 rounded-full bg-red-50 px-3 py-1 text-xs font-medium text-red-600">
               <Ban className="h-3 w-3" />
@@ -442,6 +476,7 @@ export function UserManagement({ users, onRefresh }: UserManagementProps) {
             const isUpdating = updating === user.id;
             const pilotStatus = getPilotApprovalStatus(user);
             const pilotBadge = getPilotBadge(pilotStatus);
+            const isTestUser = isAiTestUser(user);
 
             return (
               <Card key={user.id} className={`overflow-hidden transition-all ${isUpdating ? "opacity-60" : ""}`}>
@@ -464,6 +499,11 @@ export function UserManagement({ users, onRefresh }: UserManagementProps) {
                       {user.ui_mode === "senior" && (
                         <Badge variant="outline" className="text-[10px] h-4 px-1 border-blue-200 text-blue-600">
                           Senior
+                        </Badge>
+                      )}
+                      {isTestUser && (
+                        <Badge variant="outline" className="text-[10px] h-4 px-1 border-cyan-200 bg-cyan-50 text-cyan-700">
+                          AI-Test
                         </Badge>
                       )}
                       {pilotBadge && (
@@ -648,6 +688,10 @@ function getInitials(name: string): string {
 }
 
 type PilotApprovalStatus = "pending" | "approved" | "blocked" | "none";
+
+function isAiTestUser(user: User): boolean {
+  return user.settings?.is_test_user === true;
+}
 
 function getPilotApprovalStatus(user: User): PilotApprovalStatus {
   const status = user.settings?.pilot_approval_status;

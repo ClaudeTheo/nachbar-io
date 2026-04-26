@@ -214,6 +214,27 @@ describe("POST /api/companion/chat", () => {
     expect(res.status).toBe(400);
   });
 
+  it("gibt 503 ai_disabled zurueck wenn KI-Hilfe ausgeschaltet ist und laedt keinen Kontext", async () => {
+    mockRequireAuth.mockResolvedValue({
+      supabase: createMockSupabase({ aiEnabled: false }),
+      user: { id: "u1" },
+    });
+
+    const { POST } = await import("@/app/api/companion/chat/route");
+    const req = new NextRequest("http://localhost/api/companion/chat", {
+      method: "POST",
+      body: JSON.stringify({ messages: [{ role: "user", content: "Hallo" }] }),
+      headers: { "Content-Type": "application/json" },
+    });
+    const res = await POST(req);
+    expect(res.status).toBe(503);
+
+    const data = await res.json();
+    expect(data.error).toMatch(/KI-Hilfe ist ausgeschaltet/i);
+    expect(mockLoadQuarterContext).not.toHaveBeenCalled();
+    expect(mockAnthropicCreate).not.toHaveBeenCalled();
+  });
+
   it("gibt Chat-Antwort mit Text zurueck", async () => {
     mockRequireAuth.mockResolvedValue({
       supabase: createMockSupabase(),
@@ -448,7 +469,7 @@ describe("POST /api/companion/chat", () => {
     });
 
     const res = await POST(req);
-    expect(res.status).toBe(403);
+    expect(res.status).toBe(503);
 
     const data = await res.json();
     expect(data.error).toMatch(/KI-Hilfe ist ausgeschaltet/i);

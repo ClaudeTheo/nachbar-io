@@ -9,11 +9,18 @@ vi.mock('@/lib/care/api-helpers', () => ({
   errorResponse: (msg: string, status: number) => new Response(JSON.stringify({ error: msg }), { status }),
 }));
 
+const mockCanUsePersonalAi = vi.fn().mockResolvedValue(true);
+vi.mock('@/lib/ai/user-settings', () => ({
+  AI_HELP_DISABLED_MESSAGE: 'KI-Hilfe ist ausgeschaltet.',
+  canUsePersonalAi: (...args: unknown[]) => mockCanUsePersonalAi(...args),
+}));
+
 // Originales fetch sichern
 const originalFetch = globalThis.fetch;
 
 beforeEach(() => {
   vi.clearAllMocks();
+  mockCanUsePersonalAi.mockResolvedValue(true);
 });
 
 afterEach(() => {
@@ -49,7 +56,7 @@ describe('POST /api/voice/transcribe', () => {
   });
 
   it('gibt 400 zurueck bei fehlendem Audio', async () => {
-    mockRequireAuth.mockResolvedValueOnce({ id: 'user-1' });
+    mockRequireAuth.mockResolvedValueOnce({ user: { id: 'user-1' }, supabase: {} });
     process.env.OPENAI_API_KEY = 'test-key';
 
     const { POST } = await import('@/app/api/voice/transcribe/route');
@@ -60,7 +67,7 @@ describe('POST /api/voice/transcribe', () => {
   });
 
   it('gibt 503 zurueck wenn OPENAI_API_KEY fehlt', async () => {
-    mockRequireAuth.mockResolvedValueOnce({ id: 'user-1' });
+    mockRequireAuth.mockResolvedValueOnce({ user: { id: 'user-1' }, supabase: {} });
     delete process.env.OPENAI_API_KEY;
 
     const { POST } = await import('@/app/api/voice/transcribe/route');
@@ -70,8 +77,22 @@ describe('POST /api/voice/transcribe', () => {
     expect(res.status).toBe(503);
   });
 
+  it('gibt 503 ai_disabled zurueck wenn KI-Hilfe ausgeschaltet ist und liest kein Audio', async () => {
+    mockRequireAuth.mockResolvedValueOnce({ user: { id: 'user-1' }, supabase: {} });
+    mockCanUsePersonalAi.mockResolvedValueOnce(false);
+    const req = createMockRequest(new Blob(['audio'], { type: 'audio/webm' }));
+
+    const { POST } = await import('@/app/api/voice/transcribe/route');
+    const res = await POST(req);
+    expect(res.status).toBe(503);
+
+    const data = await res.json();
+    expect(data.error).toMatch(/KI-Hilfe ist ausgeschaltet/i);
+    expect(req.formData).not.toHaveBeenCalled();
+  });
+
   it('transkribiert Audio erfolgreich via Whisper', async () => {
-    mockRequireAuth.mockResolvedValueOnce({ id: 'user-1' });
+    mockRequireAuth.mockResolvedValueOnce({ user: { id: 'user-1' }, supabase: {} });
     process.env.OPENAI_API_KEY = 'test-whisper-key';
 
     // Fetch-Mock: OpenAI-Aufrufe abfangen

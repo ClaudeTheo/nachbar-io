@@ -10,6 +10,10 @@ import {
 import { handleServiceError } from "@/lib/services/service-error";
 import { formulateMessage } from "@/modules/voice/services/companion-chat.service";
 import type { MutLevel } from "@/modules/voice/services/system-prompt";
+import {
+  AI_HELP_DISABLED_MESSAGE,
+  canUsePersonalAi,
+} from "@/lib/ai/user-settings";
 
 export const dynamic = "force-dynamic";
 
@@ -22,6 +26,11 @@ interface FormulateBody {
 export async function POST(request: NextRequest) {
   const auth = await requireAuth();
   if (!auth) return unauthorizedResponse();
+
+  const aiAllowed = await canUsePersonalAi(auth.supabase, auth.user.id);
+  if (!aiAllowed) {
+    return errorResponse(AI_HELP_DISABLED_MESSAGE, 503);
+  }
 
   let body: FormulateBody;
   try {

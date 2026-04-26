@@ -20,6 +20,12 @@ vi.mock("@/lib/care/api-helpers", () => ({
     ),
 }));
 
+const mockCanUsePersonalAi = vi.fn();
+vi.mock("@/lib/ai/user-settings", () => ({
+  AI_HELP_DISABLED_MESSAGE: "KI-Hilfe ist ausgeschaltet.",
+  canUsePersonalAi: (...args: unknown[]) => mockCanUsePersonalAi(...args),
+}));
+
 // formulateMessage Mock
 const mockFormulateMessage = vi.fn();
 vi.mock("@/modules/voice/services/companion-chat.service", () => ({
@@ -31,6 +37,8 @@ describe("POST /api/voice/formulate", () => {
     vi.resetModules();
     mockRequireAuth.mockReset();
     mockFormulateMessage.mockReset();
+    mockCanUsePersonalAi.mockReset();
+    mockCanUsePersonalAi.mockResolvedValue(true);
 
     // Default: authentifiziert mit Mock-Supabase
     const mockSupabase = {
@@ -77,6 +85,23 @@ describe("POST /api/voice/formulate", () => {
     });
     const res = await POST(req as never);
     expect(res.status).toBe(400);
+  });
+
+  it("gibt 503 ai_disabled zurueck wenn KI-Hilfe ausgeschaltet ist und formuliert nicht", async () => {
+    mockCanUsePersonalAi.mockResolvedValueOnce(false);
+
+    const { POST } = await import("@/app/api/voice/formulate/route");
+    const req = new Request("http://localhost/api/voice/formulate", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ transcript: "Hallo Anna", recipientName: "Anna" }),
+    });
+    const res = await POST(req as never);
+    expect(res.status).toBe(503);
+
+    const body = await res.json();
+    expect(body.error).toMatch(/KI-Hilfe ist ausgeschaltet/i);
+    expect(mockFormulateMessage).not.toHaveBeenCalled();
   });
 
   it("gibt 200 mit formuliertem Text bei gueltigem Request", async () => {

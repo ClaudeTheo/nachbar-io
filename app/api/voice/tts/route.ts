@@ -34,7 +34,7 @@ export async function POST(request: NextRequest) {
     if (auth.supabase && userId) {
       const aiAllowed = await canUsePersonalAi(auth.supabase, userId);
       if (!aiAllowed) {
-        return errorResponse(AI_HELP_DISABLED_MESSAGE, 403);
+        return errorResponse(AI_HELP_DISABLED_MESSAGE, 503);
       }
     }
 

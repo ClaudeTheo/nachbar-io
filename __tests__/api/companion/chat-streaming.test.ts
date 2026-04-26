@@ -38,7 +38,37 @@ vi.mock("@/modules/voice/services/context-loader", () => ({
 }));
 
 vi.mock("@/lib/care/api-helpers", () => ({
-  requireAuth: vi.fn().mockResolvedValue({ user: { id: "test-user" } }),
+  requireAuth: vi.fn().mockResolvedValue({
+    user: { id: "test-user" },
+    supabase: {
+      from: vi.fn((table: string) => {
+        const chain = {
+          select: vi.fn(() => chain),
+          eq: vi.fn(() => chain),
+          maybeSingle: vi.fn(() =>
+            Promise.resolve({ data: { granted: true }, error: null }),
+          ),
+          single: vi.fn(() => {
+            if (table === "users") {
+              return Promise.resolve({
+                data: {
+                  settings: { ai_enabled: true },
+                  subscription_plan: "free",
+                  raw_user_meta_data: {},
+                },
+                error: null,
+              });
+            }
+            if (table === "feature_flags") {
+              return Promise.resolve({ data: { enabled: false }, error: null });
+            }
+            return Promise.resolve({ data: null, error: null });
+          }),
+        };
+        return chain;
+      }),
+    },
+  }),
   unauthorizedResponse: vi
     .fn()
     .mockReturnValue(new Response("Unauthorized", { status: 401 })),
@@ -49,6 +79,12 @@ vi.mock("@/lib/care/api-helpers", () => ({
         headers: { "Content-Type": "application/json" },
       }),
   ),
+}));
+
+vi.mock("@/lib/ai/user-settings", () => ({
+  canUsePersonalAi: vi.fn().mockResolvedValue(true),
+  buildAiDisabledResponse: vi.fn().mockResolvedValue(null),
+  AI_HELP_DISABLED_MESSAGE: "KI-Hilfe ist ausgeschaltet.",
 }));
 
 vi.mock("@/modules/voice/services/system-prompt", () => ({

@@ -2,7 +2,10 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
 // Auth Mock
-const mockRequireAuth = vi.fn().mockResolvedValue({ userId: "test-user" });
+const mockRequireAuth = vi.fn().mockResolvedValue({
+  user: { id: "test-user" },
+  supabase: {},
+});
 vi.mock("@/lib/care/api-helpers", () => ({
   requireAuth: (...args: unknown[]) => mockRequireAuth(...args),
   unauthorizedResponse: vi
@@ -16,6 +19,12 @@ vi.mock("@/lib/care/api-helpers", () => ({
       (msg: string, status: number) =>
         new Response(JSON.stringify({ error: msg }), { status }),
     ),
+}));
+
+const mockCanUsePersonalAi = vi.fn().mockResolvedValue(true);
+vi.mock("@/lib/ai/user-settings", () => ({
+  AI_HELP_DISABLED_MESSAGE: "KI-Hilfe ist ausgeschaltet.",
+  canUsePersonalAi: (...args: unknown[]) => mockCanUsePersonalAi(...args),
 }));
 
 // Supabase Admin Mock (fuer Cache-Upload)
@@ -88,7 +97,12 @@ describe("POST /api/voice/tts", () => {
     mockFetch.mockClear();
     mockStorageUpload.mockReset();
     mockStorageUpload.mockResolvedValue({ data: { path: "ok" }, error: null });
-    mockRequireAuth.mockResolvedValue({ userId: "test-user" });
+    mockRequireAuth.mockResolvedValue({
+      user: { id: "test-user" },
+      supabase: {},
+    });
+    mockCanUsePersonalAi.mockReset();
+    mockCanUsePersonalAi.mockResolvedValue(true);
     process.env.OPENAI_API_KEY = "test-key";
     process.env.NEXT_PUBLIC_SUPABASE_URL = SUPA_URL;
     process.env.SUPABASE_SERVICE_ROLE_KEY = "test-service-key";
@@ -116,6 +130,23 @@ describe("POST /api/voice/tts", () => {
     });
     const res = await POST(req as never);
     expect(res.status).toBe(503);
+  });
+
+  it("gibt 503 ai_disabled zurueck wenn KI-Hilfe ausgeschaltet ist und ruft kein TTS auf", async () => {
+    mockCanUsePersonalAi.mockResolvedValueOnce(false);
+
+    const { POST } = await import("@/app/api/voice/tts/route");
+    const req = new Request("http://localhost/api/voice/tts", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ text: "Hallo" }),
+    });
+    const res = await POST(req as never);
+    expect(res.status).toBe(503);
+
+    const data = await res.json();
+    expect(data.error).toMatch(/KI-Hilfe ist ausgeschaltet/i);
+    expect(mockFetch).not.toHaveBeenCalled();
   });
 
   it("gibt 400 zurueck bei leerem Text", async () => {

@@ -4,6 +4,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAuth, unauthorizedResponse, errorResponse } from '@/lib/care/api-helpers';
 import { classifyTaskFromVoice } from '@/lib/care/voice-classify';
+import { AI_HELP_DISABLED_MESSAGE, canUsePersonalAi } from '@/lib/ai/user-settings';
 
 export const dynamic = 'force-dynamic';
 
@@ -12,6 +13,11 @@ export async function POST(request: NextRequest) {
   // Auth: Nur angemeldete Nutzer dürfen die KI nutzen
   const auth = await requireAuth();
   if (!auth) return unauthorizedResponse();
+
+  const aiAllowed = await canUsePersonalAi(auth.supabase, auth.user.id);
+  if (!aiAllowed) {
+    return errorResponse(AI_HELP_DISABLED_MESSAGE, 503);
+  }
 
   // Body parsen
   let body: { text?: unknown };

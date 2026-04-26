@@ -23,6 +23,10 @@ import {
   type AIMessage,
   type AIToolCall,
 } from "@/lib/ai/provider";
+import {
+  AI_HELP_DISABLED_MESSAGE,
+  getAiHelpState,
+} from "@/lib/ai/user-settings";
 import { loadMemoryContext } from "@/modules/memory/services/memory-loader";
 import { buildMemoryTool } from "@/modules/memory/services/chat-integration";
 import {
@@ -107,7 +111,14 @@ export async function POST(request: NextRequest) {
   }
   const { messages, userInput } = parsed.data;
 
-  // 3. Consent-Check (Codex-Review BLOCKER F6.1):
+  // 3. User-Toggle: Wenn KI-Hilfe ausgeschaltet ist, darf kein Memory-Load
+  //    und kein Provider-Call stattfinden, auch wenn ein alter Consent existiert.
+  const aiHelpState = await getAiHelpState(supabase, user.id);
+  if (!aiHelpState.enabled) {
+    return errorResponse(`${AI_HELP_DISABLED_MESSAGE} (ai_disabled)`, 503);
+  }
+
+  // 4. Consent-Check (Codex-Review BLOCKER F6.1):
   //    DSGVO Art. 6/28 — KI-Datenuebermittlung an Claude/Mistral darf nur
   //    nach expliziter ai_onboarding-Einwilligung passieren. Vor jedem
   //    Memory-Load oder Provider-Call pruefen.
@@ -119,7 +130,7 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  // 4. Memory-Kontext laden (relevant fuer den neuen userInput)
+  // 5. Memory-Kontext laden (relevant fuer den neuen userInput)
   let memoryBlock = "";
   try {
     memoryBlock = await loadMemoryContext(
@@ -136,13 +147,13 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  // 4. System-Prompt bauen (Wissensdokument + Memory-Block)
+  // 6. System-Prompt bauen (Wissensdokument + Memory-Block)
   const knowledge = await loadSeniorAppKnowledge();
   const systemPrompt = memoryBlock
     ? `${knowledge}\n\n${memoryBlock}`
     : knowledge;
 
-  // 5. Provider holen - bei AI_PROVIDER=off wird hier geworfen
+  // 7. Provider holen - bei AI_PROVIDER=off wird hier geworfen
   let provider;
   try {
     provider = getProvider();
@@ -153,7 +164,7 @@ export async function POST(request: NextRequest) {
     throw err;
   }
 
-  // 6. Chat-Call
+  // 8. Chat-Call
   const chatMessages: AIMessage[] = [
     ...messages,
     { role: "user", content: userInput },
@@ -178,7 +189,7 @@ export async function POST(request: NextRequest) {
     throw err;
   }
 
-  // 7. Tool-Calls ausfuehren (wenn vorhanden und innerhalb des Limits)
+  // 9. Tool-Calls ausfuehren (wenn vorhanden und innerhalb des Limits)
   const toolCalls: AIToolCall[] = response.tool_calls ?? [];
   if (toolCalls.length > MAX_TOOLS_PER_TURN) {
     return errorResponse(
@@ -207,7 +218,7 @@ export async function POST(request: NextRequest) {
     toolResults.push(result);
   }
 
-  // 8. Response
+  // 10. Response
   return Response.json({
     assistant_text: response.text,
     tool_results: toolResults,

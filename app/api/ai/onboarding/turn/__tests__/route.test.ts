@@ -26,6 +26,7 @@ const {
   mockSaveMemoryToolHandler,
   mockLoadSeniorAppKnowledge,
   mockCheckCareConsent,
+  mockGetAiHelpState,
 } = vi.hoisted(() => ({
   mockRequireAuth: vi.fn(),
   mockGetProvider: vi.fn(),
@@ -34,6 +35,7 @@ const {
   mockSaveMemoryToolHandler: vi.fn(),
   mockLoadSeniorAppKnowledge: vi.fn(),
   mockCheckCareConsent: vi.fn(),
+  mockGetAiHelpState: vi.fn(),
 }));
 
 vi.mock("@/lib/care/api-helpers", () => ({
@@ -73,6 +75,11 @@ vi.mock("@/lib/ai/system-prompts/loader", () => ({
 
 vi.mock("@/modules/care/services/consent", () => ({
   checkCareConsent: mockCheckCareConsent,
+}));
+
+vi.mock("@/lib/ai/user-settings", () => ({
+  AI_HELP_DISABLED_MESSAGE: "KI-Hilfe ist ausgeschaltet.",
+  getAiHelpState: mockGetAiHelpState,
 }));
 
 function makeProvider(response: AIResponse | AIResponse[]): AIProvider {
@@ -123,6 +130,7 @@ beforeEach(() => {
   mockSaveMemoryToolHandler.mockReset();
   mockLoadSeniorAppKnowledge.mockReset();
   mockCheckCareConsent.mockReset();
+  mockGetAiHelpState.mockReset();
 
   // Defaults, die die meisten Tests brauchen
   mockRequireAuth.mockResolvedValue(authed);
@@ -136,6 +144,7 @@ beforeEach(() => {
   // Default: ai_onboarding-Consent ist granted, damit existierende
   // Happy-Path-Tests nicht jedes Mal mocken muessen.
   mockCheckCareConsent.mockResolvedValue(true);
+  mockGetAiHelpState.mockResolvedValue({ enabled: true });
 });
 
 // ---------------------------------------------------------------------------
@@ -196,6 +205,20 @@ describe("POST /api/ai/onboarding/turn — Auth & Validation", () => {
 // ---------------------------------------------------------------------------
 
 describe("POST /api/ai/onboarding/turn — Consent-Check ai_onboarding", () => {
+  it("gibt 503 ai_disabled zurueck wenn KI-Hilfe in den Nutzereinstellungen ausgeschaltet ist", async () => {
+    mockGetAiHelpState.mockResolvedValue({ enabled: false });
+    mockGetProvider.mockReturnValue(makeProvider(textResponse("soll nicht laufen")));
+
+    const { POST } = await import("../route");
+    const res = await POST(makeReq({ messages: [], userInput: "Hallo" }));
+    expect(res.status).toBe(503);
+
+    const data = await res.json();
+    expect(data.error).toMatch(/ausgeschaltet|ai_disabled|KI/i);
+    expect(mockLoadMemoryContext).not.toHaveBeenCalled();
+    expect(mockGetProvider).not.toHaveBeenCalled();
+  });
+
   it("gibt 403 consent_required zurueck wenn ai_onboarding nicht granted", async () => {
     mockCheckCareConsent.mockResolvedValue(false);
 

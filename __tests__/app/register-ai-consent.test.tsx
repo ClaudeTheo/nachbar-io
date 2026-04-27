@@ -1,7 +1,12 @@
 import { cleanup, render, screen } from "@testing-library/react";
-import { afterEach, describe, expect, it, vi } from "vitest";
+import userEvent from "@testing-library/user-event";
+import { useState } from "react";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { RegisterStepAiConsent } from "@/app/(auth)/register/components/RegisterStepAiConsent";
-import type { RegisterFormState } from "@/app/(auth)/register/components/types";
+import type {
+  RegisterFormState,
+  Step,
+} from "@/app/(auth)/register/components/types";
 
 function buildState(): RegisterFormState {
   return {
@@ -25,22 +30,128 @@ function buildState(): RegisterFormState {
   };
 }
 
-describe("RegisterStepAiConsent", () => {
+function StatefulAiConsent({
+  initialState = buildState(),
+  onStep = vi.fn(),
+}: {
+  initialState?: RegisterFormState;
+  onStep?: (step: Step) => void;
+}) {
+  const [state, setLocalState] = useState(initialState);
+  return (
+    <RegisterStepAiConsent
+      state={state}
+      setState={(updates) =>
+        setLocalState((current) => ({
+          ...current,
+          ...(typeof updates === "function" ? updates(current) : updates),
+        }))
+      }
+      setStep={onStep}
+    />
+  );
+}
+
+describe("RegisterStepAiConsent — Polish 2026-04-27", () => {
   afterEach(() => cleanup());
 
-  it("offers Ja, Nein and Spaeter while keeping KI-Hilfe off by default", () => {
-    render(
-      <RegisterStepAiConsent
-        state={buildState()}
-        setState={vi.fn()}
-        setStep={vi.fn()}
-      />,
-    );
-
-    expect(screen.getByText("KI-Hilfe verwenden?")).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /Ja, aktivieren/i })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /Nein/i })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /Spaeter/i })).toBeInTheDocument();
-    expect(screen.getByText(/standardmaessig ausgeschaltet/i)).toBeInTheDocument();
+  beforeEach(() => {
+    global.fetch = vi.fn(async () =>
+      new Response(JSON.stringify({ ok: true }), { status: 200 }),
+    ) as unknown as typeof fetch;
   });
+
+  it("zeigt Title, Hero-Begruessung der QuartierApp und Kontroll-Botschaft", () => {
+    render(<StatefulAiConsent />);
+    expect(
+      screen.getByText("Möchten Sie Unterstützung durch die KI-Hilfe?"),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(/Hallo, ich bin die KI-Hilfe der QuartierApp/i),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(/Sie entscheiden selbst, ob und wann Sie mich nutzen/i),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(/Standardmäßig aus/i),
+    ).toBeInTheDocument();
+  });
+
+  it("zeigt 4 wahlbare Stufen-Cards plus eine disabled Persoenlich-Card", () => {
+    render(<StatefulAiConsent />);
+    expect(screen.getByRole("button", { name: /^Aus/i })).toBeEnabled();
+    expect(screen.getByRole("button", { name: /^Basis/i })).toBeEnabled();
+    expect(screen.getByRole("button", { name: /^Alltag/i })).toBeEnabled();
+    expect(
+      screen.getByRole("button", { name: /Später entscheiden/i }),
+    ).toBeEnabled();
+    const personal = screen.getByRole("button", { name: /Persönlich/i });
+    expect(personal).toBeDisabled();
+    expect(personal).toHaveAttribute("aria-disabled", "true");
+  });
+
+  it("markiert Auswahl visuell und submitted nicht automatisch", async () => {
+    const user = userEvent.setup();
+    const setStep = vi.fn();
+    render(<StatefulAiConsent onStep={setStep} />);
+    await user.click(screen.getByRole("button", { name: /^Basis/i }));
+
+    expect(
+      screen.getByRole("button", { name: /^Basis/i }),
+    ).toHaveAttribute("aria-pressed", "true");
+    expect(setStep).not.toHaveBeenCalled();
+    expect(global.fetch).not.toHaveBeenCalled();
+  });
+
+  it("Submit-Button ist disabled bis eine Auswahl getroffen wurde", async () => {
+    const user = userEvent.setup();
+    render(<StatefulAiConsent />);
+    const submit = screen.getByRole("button", {
+      name: /Auswahl speichern und Link senden/i,
+    });
+    expect(submit).toBeDisabled();
+    await user.click(screen.getByRole("button", { name: /^Alltag/i }));
+    expect(submit).toBeEnabled();
+  });
+
+  it("Klick auf disabled Persoenlich-Card aendert State nicht", async () => {
+    const user = userEvent.setup();
+    render(<StatefulAiConsent />);
+    const submit = screen.getByRole("button", {
+      name: /Auswahl speichern und Link senden/i,
+    });
+    await user.click(screen.getByRole("button", { name: /Persönlich/i }));
+    expect(submit).toBeDisabled();
+  });
+
+  it.each([
+    ["Aus", "no", "off"],
+    ["Basis", "yes", "basic"],
+    ["Alltag", "yes", "everyday"],
+    ["Später entscheiden", "later", "later"],
+  ] as const)(
+    "Submit mit %s sendet aiConsentChoice=%s und aiAssistanceLevel=%s",
+    async (label, expectedChoice, expectedLevel) => {
+      const user = userEvent.setup();
+      render(<StatefulAiConsent />);
+
+      await user.click(
+        screen.getByRole("button", { name: new RegExp(`^${label}`, "i") }),
+      );
+      await user.click(
+        screen.getByRole("button", {
+          name: /Auswahl speichern und Link senden/i,
+        }),
+      );
+
+      const fetchMock = global.fetch as unknown as ReturnType<typeof vi.fn>;
+      const completeCall = fetchMock.mock.calls.find(([url]) =>
+        String(url).includes("/api/register/complete"),
+      );
+      expect(completeCall).toBeDefined();
+      const body = JSON.parse(String(completeCall![1].body));
+      expect(body.aiConsentChoice).toBe(expectedChoice);
+      expect(body.aiAssistanceLevel).toBe(expectedLevel);
+    },
+  );
 });

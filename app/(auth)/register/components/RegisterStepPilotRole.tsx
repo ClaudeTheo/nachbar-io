@@ -1,4 +1,7 @@
-import { ArrowLeft, HeartHandshake, Handshake, TestTube2, UserRound } from "lucide-react";
+"use client";
+
+import { ArrowLeft, CheckCircle2, HeartHandshake, Handshake, TestTube2, UserRound } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import type { PilotRole, StepProps } from "./types";
 
 const ROLE_OPTIONS: Array<{
@@ -36,6 +39,15 @@ const ROLE_OPTIONS: Array<{
 export function RegisterStepPilotRole({ state, setState, setStep }: StepProps) {
   function chooseRole(pilotRole: PilotRole) {
     setState({ pilotRole, error: null });
+  }
+
+  function continueToAiConsent() {
+    if (!state.pilotRole) {
+      setState({ error: "Bitte wählen Sie aus, wie Sie Nachbar.io im Pilot nutzen." });
+      return;
+    }
+
+    setState({ error: null });
     setStep("ai_consent");
   }
 
@@ -56,25 +68,47 @@ export function RegisterStepPilotRole({ state, setState, setStep }: StepProps) {
             key={role}
             type="button"
             onClick={() => chooseRole(role)}
-            className="w-full rounded-lg border-2 border-border p-4 text-left transition-colors hover:border-quartier-green/50"
+            className={`w-full rounded-lg border-2 p-4 text-left transition-colors ${
+              state.pilotRole === role
+                ? "border-quartier-green bg-quartier-green/5"
+                : "border-border hover:border-quartier-green/50"
+            }`}
             aria-pressed={state.pilotRole === role}
           >
             <div className="flex items-start gap-3">
               <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-quartier-green/10">
                 <Icon className="h-5 w-5 text-quartier-green" />
               </div>
-              <div>
+              <div className="min-w-0 flex-1">
                 <p className="font-semibold text-anthrazit">{label}</p>
                 <p className="mt-1 text-sm text-muted-foreground">
                   {description}
                 </p>
               </div>
+              {state.pilotRole === role && (
+                <CheckCircle2 className="mt-1 h-5 w-5 shrink-0 text-quartier-green" aria-hidden="true" />
+              )}
             </div>
           </button>
         ))}
       </div>
 
+      {state.pilotRole === "test_user" && (
+        <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800">
+          Testkonten werden markiert und vor dem echten Pilot bereinigt.
+        </div>
+      )}
+
       {state.error && <p className="text-sm text-emergency-red">{state.error}</p>}
+
+      <Button
+        type="button"
+        disabled={!state.pilotRole}
+        onClick={continueToAiConsent}
+        className="w-full bg-quartier-green hover:bg-quartier-green-dark"
+      >
+        Weiter zur KI-Auswahl
+      </Button>
 
       <button
         type="button"

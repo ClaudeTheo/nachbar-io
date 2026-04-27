@@ -79,7 +79,7 @@ describe("RegisterStepAiConsent — Polish 2026-04-27", () => {
 
   it("zeigt 4 wahlbare Stufen-Cards plus eine disabled Persoenlich-Card", () => {
     render(<StatefulAiConsent />);
-    expect(screen.getByRole("button", { name: /^Aus/i })).toBeEnabled();
+    expect(screen.getByRole("button", { name: /^Aus\s/i })).toBeEnabled();
     expect(screen.getByRole("button", { name: /^Basis/i })).toBeEnabled();
     expect(screen.getByRole("button", { name: /^Alltag/i })).toBeEnabled();
     expect(
@@ -135,9 +135,9 @@ describe("RegisterStepAiConsent — Polish 2026-04-27", () => {
       const user = userEvent.setup();
       render(<StatefulAiConsent />);
 
-      await user.click(
-        screen.getByRole("button", { name: new RegExp(`^${label}`, "i") }),
-      );
+      const cardPattern =
+        label === "Aus" ? /^Aus\s/i : new RegExp(`^${label}`, "i");
+      await user.click(screen.getByRole("button", { name: cardPattern }));
       await user.click(
         screen.getByRole("button", {
           name: /Auswahl speichern und Link senden/i,

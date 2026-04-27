@@ -1,24 +1,93 @@
+"use client";
+
 import { useState } from "react";
-import { ArrowLeft, ShieldCheck, Sparkles } from "lucide-react";
+import {
+  ArrowLeft,
+  BookOpen,
+  CheckCircle2,
+  Clock,
+  Lock,
+  MessageCircleQuestion,
+  Mic,
+  PowerOff,
+  ShieldCheck,
+  Sparkles,
+  Volume2,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/client";
 import { normalizeCode } from "@/lib/invite-codes";
-import type { StepProps } from "./types";
+import type { AiAssistanceLevel, StepProps } from "./types";
+import { KiHelpPulseDot } from "./KiHelpPulseDot";
 
-type AiConsentChoice = "yes" | "no" | "later";
+type LevelOption = {
+  level: AiAssistanceLevel;
+  label: string;
+  description: string;
+  icon: typeof Sparkles;
+};
+
+const LEVEL_OPTIONS: LevelOption[] = [
+  {
+    level: "off",
+    label: "Aus",
+    description: "Die KI-Hilfe bleibt ausgeschaltet.",
+    icon: PowerOff,
+  },
+  {
+    level: "basic",
+    label: "Basis",
+    description: "Erklären, Vorlesen und einfache Hilfe in der App.",
+    icon: BookOpen,
+  },
+  {
+    level: "everyday",
+    label: "Alltag",
+    description: "Beim Formulieren, Verstehen und kleinen Fragen unterstützen.",
+    icon: Sparkles,
+  },
+  {
+    level: "later",
+    label: "Später entscheiden",
+    description: "Sie entscheiden später in den Einstellungen.",
+    icon: Clock,
+  },
+];
 
 function buildFullName(firstName: string, lastName: string) {
   return `${firstName.trim()} ${lastName.trim()}`.trim();
 }
 
-export function RegisterStepAiConsent({ state, setState, setStep }: StepProps) {
-  const [choice, setChoice] = useState<AiConsentChoice>(
-    state.aiConsentChoice ?? "later",
+function levelToConsentChoice(
+  level: AiAssistanceLevel,
+): "yes" | "no" | "later" {
+  if (level === "basic" || level === "everyday") return "yes";
+  if (level === "off") return "no";
+  return "later";
+}
+
+export function RegisterStepAiConsent({
+  state,
+  setState,
+  setStep,
+}: StepProps) {
+  const [selectedLevel, setSelectedLevel] = useState<AiAssistanceLevel | null>(
+    state.aiAssistanceLevel ?? null,
   );
 
-  async function complete(choiceToSave: AiConsentChoice) {
-    setChoice(choiceToSave);
-    setState({ aiConsentChoice: choiceToSave, loading: true, error: null });
+  function chooseLevel(level: AiAssistanceLevel) {
+    setSelectedLevel(level);
+    setState({
+      aiAssistanceLevel: level,
+      aiConsentChoice: levelToConsentChoice(level),
+      error: null,
+    });
+  }
+
+  async function submit() {
+    if (!selectedLevel) return;
+    const choice = levelToConsentChoice(selectedLevel);
+    setState({ loading: true, error: null });
 
     try {
       const displayName = buildFullName(state.firstName, state.lastName);
@@ -32,7 +101,8 @@ export function RegisterStepAiConsent({ state, setState, setStep }: StepProps) {
           lastName: state.lastName.trim(),
           dateOfBirth: state.dateOfBirth.trim(),
           pilotRole: state.pilotRole,
-          aiConsentChoice: choiceToSave,
+          aiConsentChoice: choice,
+          aiAssistanceLevel: selectedLevel,
           uiMode: "active",
           householdId: state.householdId,
           streetName: state.selectedAddress?.street || undefined,
@@ -43,7 +113,8 @@ export function RegisterStepAiConsent({ state, setState, setStep }: StepProps) {
             state.postalCode.trim() ||
             state.selectedAddress?.postalCode ||
             undefined,
-          city: state.city.trim() || state.selectedAddress?.city || undefined,
+          city:
+            state.city.trim() || state.selectedAddress?.city || undefined,
           verificationMethod: state.verificationMethod,
           inviteCode: state.inviteCode
             ? normalizeCode(state.inviteCode)
@@ -81,7 +152,10 @@ export function RegisterStepAiConsent({ state, setState, setStep }: StepProps) {
         return;
       }
 
-      if (state.verificationMethod === "neighbor_invite" && state.referrerId) {
+      if (
+        state.verificationMethod === "neighbor_invite" &&
+        state.referrerId
+      ) {
         fetch("/api/reputation/recompute", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -94,7 +168,7 @@ export function RegisterStepAiConsent({ state, setState, setStep }: StepProps) {
     } catch (err) {
       console.error("Registrierung Netzwerkfehler:", err);
       setState({
-        error: "Netzwerkfehler. Bitte pruefen Sie Ihre Internetverbindung.",
+        error: "Netzwerkfehler. Bitte prüfen Sie Ihre Internetverbindung.",
         loading: false,
       });
     }
@@ -102,62 +176,122 @@ export function RegisterStepAiConsent({ state, setState, setStep }: StepProps) {
 
   return (
     <div className="space-y-4">
-      <div className="rounded-lg border border-quartier-green/25 bg-quartier-green/5 p-4">
-        <div className="flex gap-3">
-          <Sparkles className="mt-0.5 h-5 w-5 shrink-0 text-quartier-green" />
-          <div className="space-y-2">
-            <h2 className="text-base font-semibold text-anthrazit">
-              KI-Hilfe verwenden?
-            </h2>
-            <p className="text-sm text-muted-foreground">
-              KI-Hilfe ist standardmaessig ausgeschaltet. Sie koennen Vorlesen,
-              Sprachbefehle und den Assistenten jetzt erlauben, ablehnen oder
-              spaeter in den Einstellungen entscheiden.
+      <div className="space-y-1 text-center">
+        <h2 className="text-base font-semibold text-anthrazit">
+          Möchten Sie Unterstützung durch die KI-Hilfe?
+        </h2>
+      </div>
+
+      <div className="rounded-xl border border-rose-100 bg-rose-50/70 p-4">
+        <div className="flex items-start gap-3">
+          <KiHelpPulseDot />
+          <div className="space-y-2 text-sm">
+            <p className="font-medium text-anthrazit">
+              Hallo, ich bin die KI-Hilfe der QuartierApp. Ich kann später
+              beim Vorlesen, Formulieren und Verstehen helfen.
             </p>
+            <ul className="space-y-1.5 text-muted-foreground">
+              <li className="flex items-start gap-2">
+                <Volume2 className="mt-0.5 h-4 w-4 shrink-0 text-quartier-green" />
+                Nachrichten und Hinweise vorlesen lassen
+              </li>
+              <li className="flex items-start gap-2">
+                <Mic className="mt-0.5 h-4 w-4 shrink-0 text-quartier-green" />
+                Antworten sprechen statt tippen
+              </li>
+              <li className="flex items-start gap-2">
+                <MessageCircleQuestion className="mt-0.5 h-4 w-4 shrink-0 text-quartier-green" />
+                Kleine Fragen zur App oder zum Quartier stellen
+              </li>
+            </ul>
           </div>
         </div>
       </div>
 
-      <div className="rounded-lg border border-amber-200 bg-amber-50 p-3">
-        <div className="flex gap-2">
-          <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-amber-700" />
-          <p className="text-sm text-amber-900">
-            Personenbezogene KI-Nutzung startet erst, wenn Anbieterfreigabe,
-            AVV, Pseudonymisierung und Ihre Einwilligung zusammen vorliegen.
+      <div className="rounded-xl border border-quartier-green/25 bg-quartier-green/5 p-3">
+        <div className="flex items-start gap-2">
+          <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-quartier-green" />
+          <p className="text-sm text-anthrazit">
+            Sie entscheiden selbst, ob und wann Sie mich nutzen möchten.
+            Standardmäßig aus.
           </p>
         </div>
       </div>
 
       <div className="grid gap-3">
-        <Button
+        {LEVEL_OPTIONS.map(({ level, label, description, icon: Icon }) => (
+          <button
+            key={level}
+            type="button"
+            disabled={state.loading}
+            onClick={() => chooseLevel(level)}
+            className={`w-full rounded-lg border-2 p-4 text-left transition-colors ${
+              selectedLevel === level
+                ? "border-quartier-green bg-quartier-green/5"
+                : "border-border hover:border-quartier-green/50"
+            }`}
+            aria-pressed={selectedLevel === level}
+          >
+            <div className="flex items-start gap-3">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-quartier-green/10">
+                <Icon className="h-5 w-5 text-quartier-green" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="font-semibold text-anthrazit">{label}</p>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  {description}
+                </p>
+              </div>
+              {selectedLevel === level && (
+                <CheckCircle2
+                  className="mt-1 h-5 w-5 shrink-0 text-quartier-green"
+                  aria-hidden="true"
+                />
+              )}
+            </div>
+          </button>
+        ))}
+
+        <button
           type="button"
-          disabled={state.loading}
-          onClick={() => complete("yes")}
-          className="w-full bg-quartier-green hover:bg-quartier-green-dark"
+          disabled
+          aria-disabled="true"
+          className="w-full cursor-not-allowed rounded-lg border-2 border-dashed border-border/60 bg-muted/30 p-4 text-left opacity-70"
         >
-          Ja, aktivieren
-        </Button>
-        <Button
-          type="button"
-          variant="outline"
-          disabled={state.loading}
-          onClick={() => complete("no")}
-          className="w-full"
-        >
-          Nein
-        </Button>
-        <Button
-          type="button"
-          variant={choice === "later" ? "secondary" : "outline"}
-          disabled={state.loading}
-          onClick={() => complete("later")}
-          className="w-full"
-        >
-          Spaeter entscheiden
-        </Button>
+          <div className="flex items-start gap-3">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-muted">
+              <Lock className="h-5 w-5 text-muted-foreground" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="font-semibold text-anthrazit">
+                Persönlich (später)
+              </p>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Nur mit ausdrücklicher Einwilligung und aktiven
+                Schutzmaßnahmen, kommt mit Phase 2 nach Freigabe.
+              </p>
+            </div>
+          </div>
+        </button>
       </div>
 
-      {state.error && <p className="text-sm text-emergency-red">{state.error}</p>}
+      <p className="text-xs text-muted-foreground">
+        Bei Aktivierung: pseudonymisiert, AVV beim Anbieter, Nutzung
+        jederzeit widerrufbar.
+      </p>
+
+      {state.error && (
+        <p className="text-sm text-emergency-red">{state.error}</p>
+      )}
+
+      <Button
+        type="button"
+        disabled={!selectedLevel || state.loading}
+        onClick={submit}
+        className="w-full bg-quartier-green hover:bg-quartier-green-dark"
+      >
+        Auswahl speichern und Link senden
+      </Button>
 
       <button
         type="button"
@@ -168,7 +302,7 @@ export function RegisterStepAiConsent({ state, setState, setStep }: StepProps) {
         className="flex w-full items-center justify-center gap-1 text-sm text-muted-foreground hover:underline"
       >
         <ArrowLeft className="h-3.5 w-3.5" />
-        Zurueck
+        Zurück
       </button>
     </div>
   );

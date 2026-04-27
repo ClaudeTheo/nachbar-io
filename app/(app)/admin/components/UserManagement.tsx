@@ -14,6 +14,7 @@ import {
   Copy,
   Check,
   Clock3,
+  Handshake,
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -36,6 +37,7 @@ export function UserManagement({ users, onRefresh }: UserManagementProps) {
   const [updating, setUpdating] = useState<string | null>(null);
   const [activityFilter, setActivityFilter] = useState<"all" | "active" | "inactive">("all");
   const [testUserFilter, setTestUserFilter] = useState<"all" | "ai-test">("all");
+  const [pilotRoleFilter, setPilotRoleFilter] = useState<PilotRoleFilter>("all");
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [creating, setCreating] = useState(false);
   const [newUserName, setNewUserName] = useState("");
@@ -127,6 +129,10 @@ export function UserManagement({ users, onRefresh }: UserManagementProps) {
     if (!matchesSearch) return false;
 
     if (testUserFilter === "ai-test" && !isAiTestUser(u)) {
+      return false;
+    }
+
+    if (pilotRoleFilter !== "all" && getPilotRole(u) !== pilotRoleFilter) {
       return false;
     }
 
@@ -244,6 +250,8 @@ export function UserManagement({ users, onRefresh }: UserManagementProps) {
     (u) => getPilotApprovalStatus(u) === "blocked",
   ).length;
   const aiTestUserCount = users.filter(isAiTestUser).length;
+  const pilotRoleCounts = getPilotRoleCounts(users);
+  const hasPilotRoles = pilotRoleCounts.total > 0;
 
   return (
     <div className="space-y-4">
@@ -441,6 +449,37 @@ export function UserManagement({ users, onRefresh }: UserManagementProps) {
           </div>
         )}
 
+        {/* Pilotrollen-Filter */}
+        {hasPilotRoles && (
+          <div className="flex flex-wrap gap-1.5">
+            <Button
+              size="sm"
+              variant={pilotRoleFilter === "all" ? "default" : "outline"}
+              className="text-xs h-7"
+              onClick={() => setPilotRoleFilter("all")}
+            >
+              Alle Rollen
+            </Button>
+            {PILOT_ROLE_ORDER.map((role) => {
+              const config = PILOT_ROLE_CONFIG[role];
+              const count = pilotRoleCounts[role];
+              if (count === 0) return null;
+
+              return (
+                <Button
+                  key={role}
+                  size="sm"
+                  variant={pilotRoleFilter === role ? "default" : "outline"}
+                  className="text-xs h-7"
+                  onClick={() => setPilotRoleFilter(role)}
+                >
+                  {config.filterLabel} ({count})
+                </Button>
+              );
+            })}
+          </div>
+        )}
+
         {/* Statistik-Pillen */}
         <div className="flex flex-wrap gap-2">
           <span className="inline-flex items-center gap-1.5 rounded-full bg-anthrazit/5 px-3 py-1 text-xs font-medium text-anthrazit">
@@ -461,6 +500,12 @@ export function UserManagement({ users, onRefresh }: UserManagementProps) {
               {aiTestUserCount} AI-Test
             </span>
           )}
+          {hasPilotRoles && (
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-3 py-1 text-xs font-medium text-emerald-700">
+              <Handshake className="h-3 w-3" />
+              {pilotRoleCounts.total} mit Pilotrolle
+            </span>
+          )}
           {bannedCount > 0 && (
             <span className="inline-flex items-center gap-1.5 rounded-full bg-red-50 px-3 py-1 text-xs font-medium text-red-600">
               <Ban className="h-3 w-3" />
@@ -477,6 +522,8 @@ export function UserManagement({ users, onRefresh }: UserManagementProps) {
             const pilotStatus = getPilotApprovalStatus(user);
             const pilotBadge = getPilotBadge(pilotStatus);
             const isTestUser = isAiTestUser(user);
+            const pilotRole = getPilotRole(user);
+            const pilotRoleBadge = pilotRole ? PILOT_ROLE_CONFIG[pilotRole] : null;
 
             return (
               <Card key={user.id} className={`overflow-hidden transition-all ${isUpdating ? "opacity-60" : ""}`}>
@@ -504,6 +551,11 @@ export function UserManagement({ users, onRefresh }: UserManagementProps) {
                       {isTestUser && (
                         <Badge variant="outline" className="text-[10px] h-4 px-1 border-cyan-200 bg-cyan-50 text-cyan-700">
                           AI-Test
+                        </Badge>
+                      )}
+                      {pilotRoleBadge && (
+                        <Badge variant="outline" className={`text-[10px] h-4 px-1 ${pilotRoleBadge.className}`}>
+                          {pilotRoleBadge.badgeLabel}
                         </Badge>
                       )}
                       {pilotBadge && (
@@ -688,9 +740,77 @@ function getInitials(name: string): string {
 }
 
 type PilotApprovalStatus = "pending" | "approved" | "blocked" | "none";
+type PilotRoleFilter = "all" | PilotRole;
+type PilotRole = "resident" | "caregiver" | "helper" | "test_user";
+
+const PILOT_ROLE_ORDER: PilotRole[] = [
+  "resident",
+  "caregiver",
+  "helper",
+  "test_user",
+];
+
+const PILOT_ROLE_CONFIG: Record<PilotRole, {
+  badgeLabel: string;
+  filterLabel: string;
+  className: string;
+}> = {
+  resident: {
+    badgeLabel: "Nutzt selbst",
+    filterLabel: "Fuer mich",
+    className: "border-emerald-200 bg-emerald-50 text-emerald-700",
+  },
+  caregiver: {
+    badgeLabel: "Unterstuetzt",
+    filterLabel: "Unterstuetzer",
+    className: "border-blue-200 bg-blue-50 text-blue-700",
+  },
+  helper: {
+    badgeLabel: "Quartierhilfe",
+    filterLabel: "Quartierhilfe",
+    className: "border-purple-200 bg-purple-50 text-purple-700",
+  },
+  test_user: {
+    badgeLabel: "Testnutzer",
+    filterLabel: "Testnutzer",
+    className: "border-cyan-200 bg-cyan-50 text-cyan-700",
+  },
+};
 
 function isAiTestUser(user: User): boolean {
   return user.settings?.is_test_user === true;
+}
+
+function getPilotRole(user: User): PilotRole | null {
+  const role = user.settings?.pilot_role;
+  if (
+    role === "resident" ||
+    role === "caregiver" ||
+    role === "helper" ||
+    role === "test_user"
+  ) {
+    return role;
+  }
+  return null;
+}
+
+function getPilotRoleCounts(users: User[]) {
+  const counts: Record<PilotRole, number> & { total: number } = {
+    resident: 0,
+    caregiver: 0,
+    helper: 0,
+    test_user: 0,
+    total: 0,
+  };
+
+  for (const user of users) {
+    const role = getPilotRole(user);
+    if (!role) continue;
+    counts[role] += 1;
+    counts.total += 1;
+  }
+
+  return counts;
 }
 
 function getPilotApprovalStatus(user: User): PilotApprovalStatus {

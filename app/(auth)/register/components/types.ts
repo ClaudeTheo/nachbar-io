@@ -7,8 +7,11 @@ export type Step =
   | "invite_code"
   | "address"
   | "identity"
+  | "pilot_role"
   | "ai_consent"
   | "magic_link_sent";
+
+export type PilotRole = "resident" | "caregiver" | "helper" | "test_user";
 
 // Gemeinsamer Form-State fuer alle Schritte
 export interface RegisterFormState {
@@ -26,6 +29,7 @@ export interface RegisterFormState {
   postalCode: string;
   city: string;
   geoQuarter: { quarter_id: string; quarter_name: string; action: string } | null;
+  pilotRole?: PilotRole;
   aiConsentChoice?: "yes" | "no" | "later";
   website?: string;
   loading: boolean;

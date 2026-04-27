@@ -31,6 +31,7 @@ export function RegisterStepAiConsent({ state, setState, setStep }: StepProps) {
           firstName: state.firstName.trim(),
           lastName: state.lastName.trim(),
           dateOfBirth: state.dateOfBirth.trim(),
+          pilotRole: state.pilotRole,
           aiConsentChoice: choiceToSave,
           uiMode: "active",
           householdId: state.householdId,

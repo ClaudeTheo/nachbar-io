@@ -36,6 +36,7 @@ export interface RegistrationInput {
   inviteCode?: string;
   referrerId?: string;
   quarterId?: string;
+  pilotRole?: PilotRole;
   aiConsentChoice?: "yes" | "no" | "later";
 }
 
@@ -59,6 +60,8 @@ interface PilotIdentity {
   dateOfBirth: string;
   displayName: string;
 }
+
+type PilotRole = "resident" | "caregiver" | "helper" | "test_user";
 
 // ============================================================
 // Invite-Code Pruefung
@@ -156,6 +159,7 @@ export async function completeRegistration(
     inviteCode,
     referrerId,
     quarterId: bodyQuarterId,
+    pilotRole,
     aiConsentChoice,
   } = input;
   let householdId = input.householdId;
@@ -190,6 +194,7 @@ export async function completeRegistration(
     pilotIdentity,
     uiMode,
     verificationMethod,
+    pilotRole,
     aiConsentChoice,
   );
 
@@ -256,6 +261,18 @@ function normalizePilotIdentity(input: RegistrationInput): PilotIdentity {
     dateOfBirth,
     displayName: `${firstName} ${lastName}`,
   };
+}
+
+function normalizePilotRole(value: unknown): PilotRole {
+  if (
+    value === "resident" ||
+    value === "caregiver" ||
+    value === "helper" ||
+    value === "test_user"
+  ) {
+    return value;
+  }
+  return "resident";
 }
 
 function requireAddressForRegistration(input: RegistrationInput): void {
@@ -475,6 +492,7 @@ async function createUserProfile(
   pilotIdentity: PilotIdentity,
   uiMode?: string,
   verificationMethod?: string,
+  pilotRoleInput?: PilotRole,
   aiConsentChoice?: "yes" | "no" | "later",
 ): Promise<void> {
   // Trust-Level abhängig von Verifikationsmethode:
@@ -494,6 +512,33 @@ async function createUserProfile(
       : "new";
 
   const aiEnabled = aiConsentChoice === "yes";
+  const pilotRole = normalizePilotRole(pilotRoleInput);
+  const settings: Record<string, unknown> = {
+    ai_enabled: aiEnabled,
+    ai_audit_log: [
+      {
+        at: new Date().toISOString(),
+        enabled: aiEnabled,
+        source: "registration",
+      },
+    ],
+    pilot_approval_status: requiresPilotApproval ? "pending" : "approved",
+    pilot_role: pilotRole,
+    pilot_identity: {
+      first_name: pilotIdentity.firstName,
+      last_name: pilotIdentity.lastName,
+      date_of_birth: pilotIdentity.dateOfBirth,
+      purpose: "Vertrauen, Sicherheit und Pilot-Zuordnung",
+      purpose_version: "pilot-2026-04-25",
+    },
+  };
+
+  if (pilotRole === "test_user") {
+    settings.is_test_user = true;
+    settings.test_user_kind = "pilot_onboarding";
+    settings.must_delete_before_pilot = true;
+  }
+
   const { error: profileError } = await adminDb.from("users").upsert(
     {
       id: userId,
@@ -503,24 +548,7 @@ async function createUserProfile(
       ui_mode: uiMode || "active",
       role: "resident", // Vier-Versionen-Modell: Standard-Rolle für Bewohner
       trust_level: trustLevel,
-      settings: {
-        ai_enabled: aiEnabled,
-        ai_audit_log: [
-          {
-            at: new Date().toISOString(),
-            enabled: aiEnabled,
-            source: "registration",
-          },
-        ],
-        pilot_approval_status: requiresPilotApproval ? "pending" : "approved",
-        pilot_identity: {
-          first_name: pilotIdentity.firstName,
-          last_name: pilotIdentity.lastName,
-          date_of_birth: pilotIdentity.dateOfBirth,
-          purpose: "Vertrauen, Sicherheit und Pilot-Zuordnung",
-          purpose_version: "pilot-2026-04-25",
-        },
-      },
+      settings,
     },
     { onConflict: "id" },
   );

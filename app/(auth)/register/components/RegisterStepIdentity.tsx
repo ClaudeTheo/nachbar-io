@@ -55,7 +55,7 @@ export function RegisterStepIdentity({ state, setState, setStep }: StepProps) {
     try {
       const displayName = buildFullName(state.firstName, state.lastName);
       setState({ displayName, website: honeypot, loading: false });
-      setStep("ai_consent");
+      setStep("pilot_role");
     } catch (err) {
       console.error("Registrierung Netzwerkfehler:", err);
       setState({ error: "Netzwerkfehler. Bitte prüfen Sie Ihre Internetverbindung.", loading: false });
@@ -174,7 +174,7 @@ export function RegisterStepIdentity({ state, setState, setStep }: StepProps) {
       {state.error && <p className="text-sm text-emergency-red">{state.error}</p>}
 
       <Button type="submit" disabled={state.loading} className="w-full bg-quartier-green hover:bg-quartier-green-dark">
-        {state.loading ? "Wird verarbeitet..." : "Weiter zur KI-Auswahl"}
+        {state.loading ? "Wird verarbeitet..." : "Weiter zur Pilot-Rolle"}
       </Button>
       <button
         type="button"

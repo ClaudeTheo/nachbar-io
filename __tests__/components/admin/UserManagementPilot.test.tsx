@@ -51,6 +51,7 @@ const aiTestPilot = {
     is_test_user: true,
     test_user_kind: "ai_pilot",
     must_delete_before_pilot: true,
+    pilot_role: "test_user",
   },
 };
 
@@ -60,6 +61,17 @@ const realPilot = {
   display_name: "Paula Echt",
   settings: {
     pilot_approval_status: "approved",
+    pilot_role: "resident",
+  },
+};
+
+const caregiverPilot = {
+  ...pendingPilot,
+  id: "user-caregiver",
+  display_name: "Clara Begleiterin",
+  settings: {
+    pilot_approval_status: "approved",
+    pilot_role: "caregiver",
   },
 };
 
@@ -137,5 +149,36 @@ describe("UserManagement Pilot-Freigaben", () => {
 
     expect(screen.getByText("AI-Test Erika")).toBeInTheDocument();
     expect(screen.queryByText("Paula Echt")).not.toBeInTheDocument();
+  });
+
+  it("zeigt die Pilot-Rolle in der Nutzerliste", async () => {
+    const { UserManagement } = await import(
+      "@/app/(app)/admin/components/UserManagement"
+    );
+
+    render(<UserManagement users={[realPilot, caregiverPilot]} onRefresh={vi.fn()} />);
+
+    expect(screen.getByText("Paula Echt")).toBeInTheDocument();
+    expect(screen.getByText("Nutzt selbst")).toBeInTheDocument();
+    expect(screen.getByText("Clara Begleiterin")).toBeInTheDocument();
+    expect(screen.getByText("Unterstuetzt")).toBeInTheDocument();
+  });
+
+  it("filtert die Nutzerliste nach Pilot-Rolle", async () => {
+    const { UserManagement } = await import(
+      "@/app/(app)/admin/components/UserManagement"
+    );
+
+    render(<UserManagement users={[realPilot, caregiverPilot, aiTestPilot]} onRefresh={vi.fn()} />);
+
+    expect(screen.getByText("Paula Echt")).toBeInTheDocument();
+    expect(screen.getByText("Clara Begleiterin")).toBeInTheDocument();
+    expect(screen.getByText("AI-Test Erika")).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "Unterstuetzer (1)" }));
+
+    expect(screen.queryByText("Paula Echt")).not.toBeInTheDocument();
+    expect(screen.getByText("Clara Begleiterin")).toBeInTheDocument();
+    expect(screen.queryByText("AI-Test Erika")).not.toBeInTheDocument();
   });
 });

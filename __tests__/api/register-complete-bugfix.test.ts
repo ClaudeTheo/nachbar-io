@@ -587,6 +587,46 @@ describe("POST /api/register/complete — Bugfixes", () => {
       );
     });
 
+    it("speichert Pilot-Rolle und markiert reine Testnutzer fuer Cleanup", async () => {
+      mockCreateUser.mockResolvedValue({
+        data: { user: { id: "pilot-test-user-1" } },
+        error: null,
+      });
+
+      const profileInsert = vi.fn().mockResolvedValue({ error: null });
+      mockFrom.mockImplementation((table: string) => {
+        if (table === "users") {
+          return { upsert: profileInsert };
+        }
+        return chainBuilder();
+      });
+
+      const { POST } = await import("@/app/api/register/complete/route");
+      const res = await POST(
+        makeRequest({
+          ...baseBody,
+          email: "ai-test@example.com",
+          firstName: "AI-Test",
+          lastName: "Erika",
+          pilotRole: "test_user",
+        }),
+      );
+
+      expect(res.status).toBe(200);
+      expect(profileInsert).toHaveBeenCalledWith(
+        expect.objectContaining({
+          id: "pilot-test-user-1",
+          settings: expect.objectContaining({
+            pilot_role: "test_user",
+            is_test_user: true,
+            test_user_kind: "pilot_onboarding",
+            must_delete_before_pilot: true,
+          }),
+        }),
+        { onConflict: "id" },
+      );
+    });
+
     it("setzt neue Registrierungen im Closed-Pilot-Modus auf Freigabe ausstehend", async () => {
       vi.stubEnv("NEXT_PUBLIC_CLOSED_PILOT_MODE", "true");
       vi.stubEnv("PILOT_AUTO_VERIFY", "true");

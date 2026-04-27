@@ -10,6 +10,8 @@
 - Ein Prod-DB-Drift (`users.full_name` fehlte) wurde von Codex via Migration **175** gefixt. `apply_migration` auf Prod gelaufen, 1181 Zeilen Backfill aus `display_name`.
 - Vercel-Production-Env wurde fälschlich als „leerer Service-Role-Key" diagnostiziert — Ursache: `--sensitive`-Flag maskiert Werte im `vercel env pull` als `""`. Live-Sanity bestätigte: Prod war die ganze Zeit gesund.
 - **Codex-Cleanup abgeschlossen:** `SUPABASE_SERVICE_ROLE_KEY` in Vercel-Prod kontrolliert auf v2 gesetzt (per `vercel env add ... --sensitive --force --yes`, weil `vercel env update` sensitive ablehnt), Production redeployed (bleibt auf Commit `10a72f0` — die 13 Ahead-Commits sind NICHT live), alter Supabase-Key v1 per Management-API gelöscht. Live-Smoke nach Delete: HTTP 200. Runbook: `docs/plans/2026-04-27-secret-key-cleanup-runbook.md`.
+- **P4 173/174-Drift abgeschlossen:** Mig 173 (care_consents.feature='ai_onboarding' + Tabellen-Comments) und Mig 174 (user_memory_consents RLS: FOR-ALL → FOR-SELECT für Caregiver) sind jetzt auf Prod angewendet und in `schema_migrations` markiert. Verify gegen Prod war grün (Constraint enthält ai_onboarding, alte Policy weg, neue caregiver_consents_select da). Detail: `docs/plans/2026-04-27-p4-migrations-173-174-precheck.md`.
+- **P3 für 175 erledigt:** `schema_migrations` für Version 175 hat jetzt korrekt `name='175_fix_users_full_name_drift'` (Codex-UPDATE im Zuge des P4-Apply-Blocks).
 
 ## Stand am Sessionende
 
@@ -20,7 +22,7 @@
 | Pilot-Test-User in Cloud-DB | `public.users` WHERE `id='6f3e06ce-3df2-44b0-86a6-567e87bb0e2c'`. Settings-Flags exakt wie gefordert. |
 | Mig 175 (full_name + Backfill) | `supabase/migrations/175_fix_users_full_name_drift.sql` + `.down.sql`. Commit `a39b60a`. Spalte in Prod, 1181/1181 mirrored. |
 | Live-Sanity Prod | `POST https://nachbar-io.vercel.app/api/register/check-invite` mit `inviteCode: "3WEA-VPXU"` → HTTP 200, valid:true, householdId 1ee933a2-… |
-| Mig 175 in `schema_migrations` | Eingetragen mit `version='175'`, aber kosmetisch schiefer Name `fix_users_full_name_drift.down` (`.down`-Suffix) — funktional unkritisch. |
+| Mig 175 in `schema_migrations` | Eingetragen mit `version='175' / name='175_fix_users_full_name_drift'` (Codex hat den ursprünglichen `.down`-Suffix per UPDATE korrigiert). |
 
 ### Zusatz-Smoke Codex 2026-04-27 16:19
 
@@ -85,24 +87,25 @@ User `6f3e06ce-3df2-44b0-86a6-567e87bb0e2c` (`AITest Onboarding20260427`) hat `s
 
 **Heute nicht löschen** — der User ist Beweis, dass die Registrierung funktioniert. Erst wenn Echt-Pilot anläuft, als Batch zusammen mit allen anderen `is_test_user=true`-Konten löschen.
 
-#### P3 — Mig-175-Eintragsname kosmetisch korrigieren
+#### P3 — Mig-175-Eintragsname kosmetisch korrigiert — ✅ ERLEDIGT (Codex)
 
-`supabase_migrations.schema_migrations` hat den Eintrag mit `name='fix_users_full_name_drift.down'` (Codex hat versehentlich den Down-Filenamen als Marker genutzt).
+`schema_migrations` für Version 175 heißt jetzt korrekt `175_fix_users_full_name_drift` (UPDATE im Zuge P4-Apply gefahren).
 
-Fix (Rote Zone, Founder-Go):
-```sql
-UPDATE supabase_migrations.schema_migrations
-SET name = '175_fix_users_full_name_drift'
-WHERE version = '175';
-```
+**Restposten:** Mig 173 und 174 haben heute beim Apply den gleichen Codex-Repair-Pattern-Fehler gezeigt — sie stehen aktuell als `memory_consents.down` bzw. `tighten_memory_consents_rls.down` in `schema_migrations`. Funktional unkritisch (der Eintrag selbst beweist „applied", die Mig-Files sind angewendet, das Schema ist konsistent). **Heute bewusst nicht ausgeweitet** — separater Mini-Fix in einer späteren Session per identischem UPDATE-Pattern wie für 175.
 
-Funktional unkritisch, blockt nichts.
+#### P4 — 173/174 Drift im `schema_migrations` — ✅ ERLEDIGT (Codex)
 
-#### P4 — 173/174 Drift im `schema_migrations`
+Beide Migrationen wurden mit Founder-Go auf Prod angewendet (Constraint, Comments, Policy-Tausch FOR-ALL→FOR-SELECT). Verify gegen Prod war grün:
 
-Repo hat `173_memory_consents.sql` und `174_tighten_memory_consents_rls.sql` als Files, Prod-`schema_migrations` hat sie nicht. Höchste Prod-Version vor 175: `172_device_refresh_tokens` (eingespielt 2026-04-19).
+- `care_consents_feature_check` enthält `ai_onboarding`.
+- Tabellen-Comments auf `care_consents` und `user_memory_consents` gesetzt.
+- Alte FOR-ALL-Policy `caregiver_consents` entfernt (count=0).
+- Neue FOR-SELECT-Policy `caregiver_consents_select` aktiv (count=1).
+- `schema_migrations` enthält 173 und 174 (mit `.down`-Suffix-Defekt im Namen — siehe P3-Restposten oben).
 
-Eigene Session, eigener Founder-Go. Erst gegen aktuellen Prod-State prüfen, ob Migrationen idempotent durchlaufen.
+Detail-Doku: `docs/plans/2026-04-27-p4-migrations-173-174-precheck.md`.
+
+**Wichtige Lehre für künftige Apply-Sessions:** Migrations-Files mit innerem `begin;`/`commit;` durchbrechen einen äußeren `BEGIN; … ROLLBACK;`-Wrapper. Beim Codex-Dry-Run waren 173 dadurch versehentlich persistent committed und nur 174 nicht. Live-Read ist daher Pflicht VOR dem geplanten Apply, nicht nur nach dem Pre-Read aus dem Plan-File.
 
 #### P6 — Invite-Code-Verhalten Prod vs. Local (zur Kenntnis, kein Bug)
 
@@ -162,9 +165,9 @@ Auto-Memory-Eintrag dazu: `feedback_vercel_sensitive_pull_empty.md`.
 
 ## Erste Frage an die nächste Session
 
-> Welcher der offenen Punkte (P2 Test-User-Cleanup, P3 Mig-Eintrag-Name, P4 Mig 173/174, P5 `\n`-Escapes) soll als nächstes angefasst werden — oder ein neues Thema?
+> Welcher der offenen Punkte (P2 Test-User-Cleanup, P5 `\n`-Escapes, P3-Restposten 173/174-Suffixe, P6 Code-Versions-Drift Prod vs +13) soll als nächstes angefasst werden — oder ein neues Thema?
 
-Sicherheits- und Drift-Themen sind für heute geschlossen.
+Sicherheits- und Drift-Themen P1, P3 (für 175) und P4 sind heute geschlossen. Restposten klein, alle nicht-blockierend.
 
 ## Memory-Arbeitsteilung
 

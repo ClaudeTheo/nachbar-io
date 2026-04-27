@@ -681,3 +681,51 @@ describe("POST /api/register/complete — Bugfixes", () => {
     });
   });
 });
+
+// =========================================================================
+// aiAssistanceLevel — Whitelist-Validation (Task 6 Polish 2026-04-27)
+// =========================================================================
+describe("aiAssistanceLevel — Whitelist-Validation", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    vi.resetModules();
+    process.env.NEXT_PUBLIC_SUPABASE_URL = "https://test.supabase.co";
+    process.env.SUPABASE_SERVICE_ROLE_KEY = "test-service-key";
+    process.env.PILOT_AUTO_VERIFY = "true";
+  });
+
+  it("akzeptiert basic als gueltigen Stufen-Wert (kein 400)", async () => {
+    mockCreateUser.mockResolvedValue({
+      data: { user: { id: "lv-user-ok" } },
+      error: null,
+    });
+    mockFrom.mockImplementation(() => ({
+      upsert: vi.fn().mockResolvedValue({ error: null }),
+      ...chainBuilder(),
+    }));
+    const { POST } = await import("@/app/api/register/complete/route");
+    const res = await POST(
+      makeRequest({
+        ...baseBody,
+        householdId: "hh-base",
+        aiConsentChoice: "yes",
+        aiAssistanceLevel: "basic",
+      }),
+    );
+    expect(res.status).not.toBe(400);
+  });
+
+  it("lehnt unbekannte aiAssistanceLevel-Werte mit 400 ab", async () => {
+    const { POST } = await import("@/app/api/register/complete/route");
+    const res = await POST(
+      makeRequest({
+        ...baseBody,
+        aiConsentChoice: "yes",
+        aiAssistanceLevel: "personal", // disabled in dieser Phase, nicht erlaubt als Submit-Wert
+      }),
+    );
+    expect(res.status).toBe(400);
+    const body = await res.json();
+    expect(String(body.error)).toMatch(/aiAssistanceLevel|ungueltig|invalid/i);
+  });
+});

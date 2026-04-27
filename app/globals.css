@@ -834,6 +834,18 @@ h4 {
   animation: glow-pulse-ring 2s ease-in-out infinite;
 }
 
+@keyframes ki-help-pulse {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 0.6;
+  }
+  50% {
+    transform: scale(1.18);
+    opacity: 1;
+  }
+}
+
 /* ============================================================
    ACCESSIBILITY
    ============================================================ */

@@ -46,7 +46,7 @@ export function RegisterStepPilotRole({ state, setState, setStep }: StepProps) {
 
   function continueToAiConsent() {
     if (!state.pilotRole) {
-      setState({ error: "Bitte wählen Sie aus, wie Sie Nachbar.io im Pilot nutzen." });
+      setState({ error: "Bitte wählen Sie aus, wie Sie die QuartierApp im Pilot nutzen." });
       return;
     }
 
@@ -58,10 +58,10 @@ export function RegisterStepPilotRole({ state, setState, setStep }: StepProps) {
     <div className="space-y-4">
       <div className="space-y-1 text-center">
         <h2 className="text-base font-semibold text-anthrazit">
-          Wie nutzen Sie Nachbar.io im Pilot?
+          Wie nutzen Sie die QuartierApp im Pilot?
         </h2>
         <p className="text-sm text-muted-foreground">
-          Nachbar.io lebt davon, dass Menschen im Quartier aufeinander achten.
+          Die QuartierApp lebt davon, dass Menschen im Quartier aufeinander achten.
           Ihre Rolle hilft uns, die App menschlicher und passender vorzubereiten.
         </p>
       </div>
@@ -99,7 +99,7 @@ export function RegisterStepPilotRole({ state, setState, setStep }: StepProps) {
           <section>
             <h3 className="font-semibold text-anthrazit">Was bedeuten die Rollen?</h3>
             <p className="mt-1">
-              „Für mich“ ist für Menschen, die Nachbar.io selbst nutzen.
+              „Für mich“ ist für Menschen, die die QuartierApp selbst nutzen.
               „Unterstützer“ ist für Angehörige oder Begleiter. „Quartierhilfe“
               ist für Menschen, die im Pilot helfen oder organisieren.
               „Testnutzer“ ist nur zum Ausprobieren.

@@ -105,7 +105,7 @@ function RegisterForm() {
           <HeartHandshake className="h-7 w-7" />
         </div>
         <p className="text-xs font-semibold uppercase tracking-[0.12em] text-quartier-green">
-          Nachbar.io
+          QuartierApp
         </p>
         <CardTitle className="mt-1 text-2xl leading-tight text-anthrazit">
           {step === "magic_link_sent"

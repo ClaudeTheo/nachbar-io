@@ -23,7 +23,7 @@ export function RegisterStepEntry({ state, setState, setStep }: StepProps) {
               Ein soziales Pilotprojekt für gute Nachbarschaft
             </p>
             <p className="text-muted-foreground">
-              Nachbar.io soll Menschen im Quartier näher zusammenbringen:
+              Die QuartierApp soll Menschen im Quartier näher zusammenbringen:
               Familien, Nachbarn und Helfer, die im Alltag füreinander da sein
               möchten.
             </p>
@@ -60,7 +60,7 @@ export function RegisterStepEntry({ state, setState, setStep }: StepProps) {
       {showInfo && (
         <div className="space-y-3 rounded-xl border border-border bg-white p-4 text-sm text-muted-foreground">
           <section>
-            <h3 className="font-semibold text-anthrazit">Warum gibt es Nachbar.io?</h3>
+            <h3 className="font-semibold text-anthrazit">Warum gibt es die QuartierApp?</h3>
             <p className="mt-1">
               Viele kleine Hilfen entstehen erst, wenn Nachbarn voneinander
               wissen. Der Pilot soll zeigen, wie digitale Technik menschliche

@@ -59,7 +59,7 @@ describe("RegisterStepEntry", () => {
 
     await user.click(screen.getByRole("button", { name: "Was Sie wissen sollten" }));
 
-    expect(screen.getByText("Warum gibt es Nachbar.io?")).toBeInTheDocument();
+    expect(screen.getByText("Warum gibt es die QuartierApp?")).toBeInTheDocument();
     expect(screen.getByText("Was passiert im Pilot?")).toBeInTheDocument();
     expect(screen.getByText("Welche Daten fragen wir ab?")).toBeInTheDocument();
   });

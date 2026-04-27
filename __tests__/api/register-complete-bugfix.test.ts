@@ -729,3 +729,110 @@ describe("aiAssistanceLevel — Whitelist-Validation", () => {
     expect(String(body.error)).toMatch(/aiAssistanceLevel|ungueltig|invalid/i);
   });
 });
+
+// =========================================================================
+// Codex-Review Repair (2026-04-27 evening): consistency + type-guard
+// =========================================================================
+describe("aiAssistanceLevel — Type-Guard", () => {
+  it("lehnt non-string aiAssistanceLevel mit 400 ab (Array)", async () => {
+    const { POST } = await import("@/app/api/register/complete/route");
+    const res = await POST(
+      makeRequest({
+        ...baseBody,
+        aiConsentChoice: "yes",
+        aiAssistanceLevel: ["basic"], // Array, not a string
+      }),
+    );
+    expect(res.status).toBe(400);
+    const body = await res.json();
+    expect(String(body.error)).toMatch(/aiAssistanceLevel/i);
+  });
+
+  it("lehnt non-string aiAssistanceLevel mit 400 ab (number)", async () => {
+    const { POST } = await import("@/app/api/register/complete/route");
+    const res = await POST(
+      makeRequest({
+        ...baseBody,
+        aiConsentChoice: "yes",
+        aiAssistanceLevel: 42,
+      }),
+    );
+    expect(res.status).toBe(400);
+  });
+});
+
+describe("aiConsentChoice + aiAssistanceLevel — Konsistenz-Validation", () => {
+  it.each([
+    ["no", "everyday"],
+    ["no", "basic"],
+    ["no", "later"],
+    ["yes", "off"],
+    ["yes", "later"],
+    ["later", "off"],
+    ["later", "basic"],
+    ["later", "everyday"],
+  ] as const)(
+    "lehnt mismatch choice=%s + level=%s mit 400 ab",
+    async (choice, level) => {
+      const { POST } = await import("@/app/api/register/complete/route");
+      const res = await POST(
+        makeRequest({
+          ...baseBody,
+          aiConsentChoice: choice,
+          aiAssistanceLevel: level,
+        }),
+      );
+      expect(res.status).toBe(400);
+    },
+  );
+
+  it.each([
+    ["yes", "basic"],
+    ["yes", "everyday"],
+    ["no", "off"],
+    ["later", "later"],
+  ] as const)(
+    "akzeptiert konsistentes Paar choice=%s + level=%s (kein 400)",
+    async (choice, level) => {
+      mockCreateUser.mockResolvedValue({
+        data: { user: { id: `consistent-${choice}-${level}` } },
+        error: null,
+      });
+      mockFrom.mockImplementation(() => ({
+        upsert: vi.fn().mockResolvedValue({ error: null }),
+        ...chainBuilder(),
+      }));
+      const { POST } = await import("@/app/api/register/complete/route");
+      const res = await POST(
+        makeRequest({
+          ...baseBody,
+          householdId: "hh-base",
+          aiConsentChoice: choice,
+          aiAssistanceLevel: level,
+        }),
+      );
+      expect(res.status).not.toBe(400);
+    },
+  );
+
+  it("akzeptiert aiAssistanceLevel === undefined unabhaengig von choice (kein 400 durch Mismatch-Check)", async () => {
+    mockCreateUser.mockResolvedValue({
+      data: { user: { id: "no-level-given" } },
+      error: null,
+    });
+    mockFrom.mockImplementation(() => ({
+      upsert: vi.fn().mockResolvedValue({ error: null }),
+      ...chainBuilder(),
+    }));
+    const { POST } = await import("@/app/api/register/complete/route");
+    const res = await POST(
+      makeRequest({
+        ...baseBody,
+        householdId: "hh-base",
+        aiConsentChoice: "yes",
+        // no aiAssistanceLevel
+      }),
+    );
+    expect(res.status).not.toBe(400);
+  });
+});

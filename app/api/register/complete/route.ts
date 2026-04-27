@@ -34,16 +34,26 @@ export async function POST(request: NextRequest) {
     // damit unbekannte Werte keinen Auth-User anlegen und keinen DB-Write triggern.
     const aiAssistanceLevelRaw = (body as { aiAssistanceLevel?: unknown })
       .aiAssistanceLevel;
+
+    // Type-Guard: nur string oder undefined/null erlaubt
     if (
       aiAssistanceLevelRaw !== undefined &&
       aiAssistanceLevelRaw !== null &&
-      !VALID_AI_ASSISTANCE_LEVELS.has(
-        String(aiAssistanceLevelRaw) as
-          | "off"
-          | "basic"
-          | "everyday"
-          | "later",
-      )
+      typeof aiAssistanceLevelRaw !== "string"
+    ) {
+      return NextResponse.json(
+        {
+          error:
+            "aiAssistanceLevel muss ein String sein (off, basic, everyday, later).",
+        },
+        { status: 400 },
+      );
+    }
+
+    // Whitelist: bekannter Stufen-Wert
+    if (
+      typeof aiAssistanceLevelRaw === "string" &&
+      !VALID_AI_ASSISTANCE_LEVELS.has(aiAssistanceLevelRaw as never)
     ) {
       return NextResponse.json(
         {
@@ -52,6 +62,30 @@ export async function POST(request: NextRequest) {
         },
         { status: 400 },
       );
+    }
+
+    // Konsistenz-Check zwischen aiConsentChoice und aiAssistanceLevel
+    // Erlaubte Paare:
+    //   yes  -> basic | everyday
+    //   no   -> off
+    //   later -> later
+    //   undefined level: erlaubt (Service derived dann aus choice)
+    if (typeof aiAssistanceLevelRaw === "string") {
+      const choice = (body as { aiConsentChoice?: unknown }).aiConsentChoice;
+      const level = aiAssistanceLevelRaw;
+      const consistent =
+        (choice === "yes" && (level === "basic" || level === "everyday")) ||
+        (choice === "no" && level === "off") ||
+        (choice === "later" && level === "later");
+      if (!consistent) {
+        return NextResponse.json(
+          {
+            error:
+              "aiConsentChoice und aiAssistanceLevel passen nicht zusammen. Erlaubt: yes->basic|everyday, no->off, later->later.",
+          },
+          { status: 400 },
+        );
+      }
     }
 
     const result = await completeRegistration(getAdminSupabase(), body);

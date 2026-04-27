@@ -154,4 +154,23 @@ describe("RegisterStepAiConsent — Polish 2026-04-27", () => {
       expect(body.aiAssistanceLevel).toBe(expectedLevel);
     },
   );
+
+  it("zeigt sichere Compliance-Footnote ohne AVV-Vorabversprechen", () => {
+    render(<StatefulAiConsent />);
+    // Sichere Variante (Codex-Review 2026-04-27): kein Pseudonymisierungs-/AVV-Versprechen vorab
+    expect(
+      screen.getByText(
+        /Vor Ihrer Einwilligung wird nichts an eine KI gesendet/i,
+      ),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        /Persönliche KI-Funktionen starten erst, wenn die nötigen Schutzmaßnahmen/i,
+      ),
+    ).toBeInTheDocument();
+    // Altes Wording darf nicht mehr da sein
+    expect(
+      screen.queryByText(/pseudonymisiert, AVV beim Anbieter/i),
+    ).not.toBeInTheDocument();
+  });
 });

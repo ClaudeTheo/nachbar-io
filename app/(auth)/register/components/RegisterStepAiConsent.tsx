@@ -276,8 +276,9 @@ export function RegisterStepAiConsent({
       </div>
 
       <p className="text-xs text-muted-foreground">
-        Bei Aktivierung: pseudonymisiert, AVV beim Anbieter, Nutzung
-        jederzeit widerrufbar.
+        Vor Ihrer Einwilligung wird nichts an eine KI gesendet. Persönliche
+        KI-Funktionen starten erst, wenn die nötigen Schutzmaßnahmen aktiv
+        sind. Ihre Eingaben sind nicht öffentlich.
       </p>
 
       {state.error && (

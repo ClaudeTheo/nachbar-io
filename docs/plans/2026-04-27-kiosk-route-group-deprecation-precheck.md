@@ -38,7 +38,15 @@ Der Senior-App-Stufe-1-Wrapper zielt auf `app/(senior)/*`, nicht auf `app/(kiosk
 
 Nicht `/api/kiosk/companion` isoliert entfernen.
 
-Stattdessen eine der drei Spuren waehlen:
+## Founder-Entscheidung
+
+Thomas hat am 2026-04-27 Option 2 gewaehlt:
+
+**Deprecation ohne Entfernung.**
+
+Der alte Web-Kiosk bleibt im Code, wird aber als geparkt behandelt. Es werden keine Kiosk-Routen, APIs, Notfallpfade, Caregiver-Kiosk-Funktionen oder Terminal-Dateien geloescht. Der Fokus geht zurueck auf den Nachbar.io-Pilot.
+
+Die geprueften Alternativen waren:
 
 1. **Behalten fuer spaeter**
    - kein Code-Diff

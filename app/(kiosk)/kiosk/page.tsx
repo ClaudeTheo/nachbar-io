@@ -22,6 +22,13 @@ export default function KioskDashboard() {
     <>
       <KioskHeader />
 
+      <section className="kiosk-parked-banner" aria-label="Kiosk-Bereich geparkt">
+        <strong>Kiosk-Bereich geparkt</strong>
+        <span>
+          Dieser alte Web-Kiosk wird im aktuellen Pilot nicht genutzt. Die normale Nachbar.io-App bleibt der Fokus.
+        </span>
+      </section>
+
       <div className="kiosk-grid">
         {TILES.map((tile) => (
           <KioskTile

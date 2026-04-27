@@ -61,3 +61,4 @@ android/*.jks
 android/*.keystore
 *.keystore
 .env*.local
+.tmp-diag/

@@ -133,6 +133,8 @@ describe("UserManagement Pilot-Freigaben", () => {
     expect(screen.getByText("AI-Test Erika")).toBeInTheDocument();
     expect(screen.getByText("AI-Test")).toBeInTheDocument();
     expect(screen.getByText("1 AI-Test")).toBeInTheDocument();
+    expect(screen.getByText("Vor Pilot löschen")).toBeInTheDocument();
+    expect(screen.getByText("1 vor Pilot löschen")).toBeInTheDocument();
   });
 
   it("filtert die Nutzerliste auf AI-Testnutzer", async () => {

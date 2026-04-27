@@ -250,6 +250,7 @@ export function UserManagement({ users, onRefresh }: UserManagementProps) {
     (u) => getPilotApprovalStatus(u) === "blocked",
   ).length;
   const aiTestUserCount = users.filter(isAiTestUser).length;
+  const cleanupRequiredCount = users.filter(isPilotCleanupRequired).length;
   const pilotRoleCounts = getPilotRoleCounts(users);
   const hasPilotRoles = pilotRoleCounts.total > 0;
 
@@ -500,6 +501,12 @@ export function UserManagement({ users, onRefresh }: UserManagementProps) {
               {aiTestUserCount} AI-Test
             </span>
           )}
+          {cleanupRequiredCount > 0 && (
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-50 px-3 py-1 text-xs font-medium text-amber-700">
+              <Clock3 className="h-3 w-3" />
+              {cleanupRequiredCount} vor Pilot löschen
+            </span>
+          )}
           {hasPilotRoles && (
             <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-3 py-1 text-xs font-medium text-emerald-700">
               <Handshake className="h-3 w-3" />
@@ -522,6 +529,7 @@ export function UserManagement({ users, onRefresh }: UserManagementProps) {
             const pilotStatus = getPilotApprovalStatus(user);
             const pilotBadge = getPilotBadge(pilotStatus);
             const isTestUser = isAiTestUser(user);
+            const mustDeleteBeforePilot = isPilotCleanupRequired(user);
             const pilotRole = getPilotRole(user);
             const pilotRoleBadge = pilotRole ? PILOT_ROLE_CONFIG[pilotRole] : null;
 
@@ -551,6 +559,11 @@ export function UserManagement({ users, onRefresh }: UserManagementProps) {
                       {isTestUser && (
                         <Badge variant="outline" className="text-[10px] h-4 px-1 border-cyan-200 bg-cyan-50 text-cyan-700">
                           AI-Test
+                        </Badge>
+                      )}
+                      {mustDeleteBeforePilot && (
+                        <Badge variant="outline" className="text-[10px] h-4 px-1 border-amber-200 bg-amber-50 text-amber-700">
+                          Vor Pilot löschen
                         </Badge>
                       )}
                       {pilotRoleBadge && (
@@ -779,6 +792,10 @@ const PILOT_ROLE_CONFIG: Record<PilotRole, {
 
 function isAiTestUser(user: User): boolean {
   return user.settings?.is_test_user === true;
+}
+
+function isPilotCleanupRequired(user: User): boolean {
+  return user.settings?.must_delete_before_pilot === true;
 }
 
 function getPilotRole(user: User): PilotRole | null {

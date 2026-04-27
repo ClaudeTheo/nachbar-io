@@ -3,7 +3,7 @@ import userEvent from "@testing-library/user-event";
 import { useState } from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { RegisterStepPilotRole } from "@/app/(auth)/register/components/RegisterStepPilotRole";
-import type { RegisterFormState } from "@/app/(auth)/register/components/types";
+import type { RegisterFormState, Step } from "@/app/(auth)/register/components/types";
 
 function buildState(): RegisterFormState {
   return {
@@ -32,7 +32,7 @@ function StatefulPilotRoleStep({
   onStep = vi.fn(),
 }: {
   initialState?: RegisterFormState;
-  onStep?: (step: Parameters<React.ComponentProps<typeof RegisterStepPilotRole>["setStep"]>[0]) => void;
+  onStep?: (step: Step) => void;
 }) {
   const [state, setLocalState] = useState(initialState);
 
@@ -58,6 +58,8 @@ describe("RegisterStepPilotRole", () => {
     );
 
     expect(screen.getByText("Wie nutzen Sie Nachbar.io im Pilot?")).toBeInTheDocument();
+    expect(screen.getByText(/Menschen im Quartier aufeinander achten/i)).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Rollen und Pilot erklären" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /Ich nutze die App fuer mich/i })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /Ich unterstuetze jemanden/i })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /Ich helfe im Quartier/i })).toBeInTheDocument();
@@ -91,5 +93,18 @@ describe("RegisterStepPilotRole", () => {
     await user.click(screen.getByRole("button", { name: /Ich teste nur/i }));
 
     expect(screen.getByText(/Testkonten werden markiert/i)).toBeInTheDocument();
+  });
+
+  it("zeigt ausfuehrliche Infos zu Rollen, Testkonten und KI", async () => {
+    const user = userEvent.setup();
+
+    render(<StatefulPilotRoleStep />);
+
+    await user.click(screen.getByRole("button", { name: "Rollen und Pilot erklären" }));
+
+    expect(screen.getByText("Warum fragen wir nach Ihrer Rolle?")).toBeInTheDocument();
+    expect(screen.getByText("Was bedeuten die Rollen?")).toBeInTheDocument();
+    expect(screen.getByText("Was passiert mit Testkonten?")).toBeInTheDocument();
+    expect(screen.getByText("Was ist mit KI?")).toBeInTheDocument();
   });
 });

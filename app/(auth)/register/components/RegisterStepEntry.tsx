@@ -1,14 +1,35 @@
 // Einstiegs-Schritt: Zwei Pfade (Einladungscode oder Quartier finden)
+"use client";
+
 import Link from "next/link";
-import { Mail, MapPin, ShieldCheck } from "lucide-react";
+import { useState } from "react";
+import { Heart, Info, Mail, MapPin, ShieldCheck } from "lucide-react";
 import type { StepProps } from "./types";
 
 export function RegisterStepEntry({ state, setState, setStep }: StepProps) {
+  const [showInfo, setShowInfo] = useState(false);
+
   return (
     <div className="space-y-4">
       <p className="text-sm text-muted-foreground text-center">
         Wie möchten Sie beitreten?
       </p>
+
+      <div className="rounded-xl border border-rose-100 bg-rose-50/70 p-3">
+        <div className="flex items-start gap-2">
+          <Heart className="mt-0.5 h-4 w-4 shrink-0 text-rose-500" />
+          <div className="space-y-1 text-sm">
+            <p className="font-medium text-anthrazit">
+              Ein soziales Pilotprojekt für gute Nachbarschaft
+            </p>
+            <p className="text-muted-foreground">
+              Nachbar.io soll Menschen im Quartier näher zusammenbringen:
+              Familien, Nachbarn und Helfer, die im Alltag füreinander da sein
+              möchten.
+            </p>
+          </div>
+        </div>
+      </div>
 
       <div className="rounded-xl border border-quartier-green/25 bg-quartier-green/5 p-3">
         <div className="flex items-start gap-2">
@@ -25,6 +46,45 @@ export function RegisterStepEntry({ state, setState, setStep }: StepProps) {
           </div>
         </div>
       </div>
+
+      <button
+        type="button"
+        onClick={() => setShowInfo((current) => !current)}
+        className="flex w-full items-center justify-center gap-2 rounded-lg border border-border bg-white px-3 py-2 text-sm font-medium text-anthrazit transition-colors hover:border-quartier-green/50"
+        aria-expanded={showInfo}
+      >
+        <Info className="h-4 w-4 text-quartier-green" />
+        Was Sie wissen sollten
+      </button>
+
+      {showInfo && (
+        <div className="space-y-3 rounded-xl border border-border bg-white p-4 text-sm text-muted-foreground">
+          <section>
+            <h3 className="font-semibold text-anthrazit">Warum gibt es Nachbar.io?</h3>
+            <p className="mt-1">
+              Viele kleine Hilfen entstehen erst, wenn Nachbarn voneinander
+              wissen. Der Pilot soll zeigen, wie digitale Technik menschliche
+              Nähe im Quartier unterstützen kann.
+            </p>
+          </section>
+          <section>
+            <h3 className="font-semibold text-anthrazit">Was passiert im Pilot?</h3>
+            <p className="mt-1">
+              Wir testen mit wenigen Menschen, ob Registrierung, Freigabe und
+              erste Quartiersfunktionen verständlich sind. Es ist noch kein
+              öffentlicher Produktstart.
+            </p>
+          </section>
+          <section>
+            <h3 className="font-semibold text-anthrazit">Welche Daten fragen wir ab?</h3>
+            <p className="mt-1">
+              Nur was für Vertrauen und Quartier-Zuordnung nötig ist:
+              Einladung oder Adresse, Name, Geburtsdatum und später Ihre
+              Entscheidung zur KI-Hilfe.
+            </p>
+          </section>
+        </div>
+      )}
 
       {/* Pfad 1: Einladungscode */}
       <button

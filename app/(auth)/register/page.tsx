@@ -2,6 +2,7 @@
 
 import { Suspense, useState, useEffect, useCallback } from "react";
 import { useSearchParams } from "next/navigation";
+import { HeartHandshake } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { createClient } from "@/lib/supabase/client";
 import { normalizeCode } from "@/lib/invite-codes";
@@ -97,12 +98,26 @@ function RegisterForm() {
   })();
 
   return (
-    <Card className="border-0 shadow-lg">
-      <CardHeader className="text-center">
-        <div className="mb-2 text-4xl">🏘️</div>
-        <CardTitle className="text-2xl text-anthrazit">
-          {step === "magic_link_sent" ? "Code eingeben" : "Willkommen bei QuartierApp"}
+    <Card className="overflow-hidden border border-quartier-green/10 bg-white/95 shadow-2xl shadow-anthrazit/10">
+      <CardHeader className="relative text-center">
+        <div className="absolute inset-x-0 top-0 h-1.5 bg-quartier-green" />
+        <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-quartier-green/10 text-quartier-green shadow-sm">
+          <HeartHandshake className="h-7 w-7" />
+        </div>
+        <p className="text-xs font-semibold uppercase tracking-[0.12em] text-quartier-green">
+          Nachbar.io
+        </p>
+        <CardTitle className="mt-1 text-2xl leading-tight text-anthrazit">
+          {step === "magic_link_sent"
+            ? "Code eingeben"
+            : "Gute Nachbarschaft beginnt mit einem kleinen Schritt"}
         </CardTitle>
+        {step !== "magic_link_sent" && (
+          <p className="mx-auto mt-2 max-w-sm text-sm text-muted-foreground">
+            Ein geschlossener Pilot für Bad Säckingen, damit Hilfe, Familie und
+            Quartier leichter zusammenfinden.
+          </p>
+        )}
 
         {/* Fortschrittsbalken (nicht auf Bestaetigungsseite) */}
         {step !== "magic_link_sent" && (

@@ -1,6 +1,7 @@
 "use client";
 
-import { ArrowLeft, CheckCircle2, HeartHandshake, Handshake, TestTube2, UserRound } from "lucide-react";
+import { useState } from "react";
+import { ArrowLeft, CheckCircle2, Heart, HeartHandshake, Handshake, Info, TestTube2, UserRound } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { PilotRole, StepProps } from "./types";
 
@@ -37,6 +38,8 @@ const ROLE_OPTIONS: Array<{
 ];
 
 export function RegisterStepPilotRole({ state, setState, setStep }: StepProps) {
+  const [showInfo, setShowInfo] = useState(false);
+
   function chooseRole(pilotRole: PilotRole) {
     setState({ pilotRole, error: null });
   }
@@ -58,9 +61,67 @@ export function RegisterStepPilotRole({ state, setState, setStep }: StepProps) {
           Wie nutzen Sie Nachbar.io im Pilot?
         </h2>
         <p className="text-sm text-muted-foreground">
-          So koennen wir die App einfacher und passender vorbereiten.
+          Nachbar.io lebt davon, dass Menschen im Quartier aufeinander achten.
+          Ihre Rolle hilft uns, die App menschlicher und passender vorzubereiten.
         </p>
       </div>
+
+      <div className="rounded-xl border border-rose-100 bg-rose-50/70 p-3">
+        <div className="flex items-start gap-2">
+          <Heart className="mt-0.5 h-4 w-4 shrink-0 text-rose-500" />
+          <p className="text-sm text-rose-900">
+            Im Pilot geht es nicht um Technik um der Technik willen. Es geht um
+            Vertrauen, Nähe und kleine Hilfen im Alltag.
+          </p>
+        </div>
+      </div>
+
+      <button
+        type="button"
+        onClick={() => setShowInfo((current) => !current)}
+        className="flex w-full items-center justify-center gap-2 rounded-lg border border-border bg-white px-3 py-2 text-sm font-medium text-anthrazit transition-colors hover:border-quartier-green/50"
+        aria-expanded={showInfo}
+      >
+        <Info className="h-4 w-4 text-quartier-green" />
+        Rollen und Pilot erklären
+      </button>
+
+      {showInfo && (
+        <div className="space-y-3 rounded-xl border border-border bg-white p-4 text-sm text-muted-foreground">
+          <section>
+            <h3 className="font-semibold text-anthrazit">Warum fragen wir nach Ihrer Rolle?</h3>
+            <p className="mt-1">
+              Der Pilot soll zeigen, wer die App wirklich nutzt: Menschen für
+              sich selbst, Angehörige, Nachbarn oder reine Testkonten. So können
+              wir die App einfacher, sicherer und hilfreicher machen.
+            </p>
+          </section>
+          <section>
+            <h3 className="font-semibold text-anthrazit">Was bedeuten die Rollen?</h3>
+            <p className="mt-1">
+              „Für mich“ ist für Menschen, die Nachbar.io selbst nutzen.
+              „Unterstützer“ ist für Angehörige oder Begleiter. „Quartierhilfe“
+              ist für Menschen, die im Pilot helfen oder organisieren.
+              „Testnutzer“ ist nur zum Ausprobieren.
+            </p>
+          </section>
+          <section>
+            <h3 className="font-semibold text-anthrazit">Was passiert mit Testkonten?</h3>
+            <p className="mt-1">
+              Testkonten werden markiert und vor einem echten Pilot mit realen
+              Familien bereinigt. So bleiben Testdaten und echte Pilotdaten
+              getrennt.
+            </p>
+          </section>
+          <section>
+            <h3 className="font-semibold text-anthrazit">Was ist mit KI?</h3>
+            <p className="mt-1">
+              Die KI-Hilfe bleibt standardmäßig aus. Sie entscheiden im nächsten
+              Schritt, ob Sie sie aktivieren, ablehnen oder später entscheiden.
+            </p>
+          </section>
+        </div>
+      )}
 
       <div className="grid gap-3">
         {ROLE_OPTIONS.map(({ role, label, description, icon: Icon }) => (

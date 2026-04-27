@@ -38,6 +38,7 @@ export interface RegistrationInput {
   quarterId?: string;
   pilotRole?: PilotRole;
   aiConsentChoice?: "yes" | "no" | "later";
+  aiAssistanceLevel?: AiAssistanceLevel;
 }
 
 export interface RegistrationResult {
@@ -62,6 +63,25 @@ interface PilotIdentity {
 }
 
 type PilotRole = "resident" | "caregiver" | "helper" | "test_user";
+
+export type AiAssistanceLevel = "off" | "basic" | "everyday" | "later";
+
+const VALID_AI_LEVELS: AiAssistanceLevel[] = [
+  "off",
+  "basic",
+  "everyday",
+  "later",
+];
+
+function deriveAssistanceLevel(
+  input: AiAssistanceLevel | undefined,
+  choice: "yes" | "no" | "later" | undefined,
+): AiAssistanceLevel {
+  if (input && VALID_AI_LEVELS.includes(input)) return input;
+  if (choice === "yes") return "basic";
+  if (choice === "no") return "off";
+  return "later";
+}
 
 // ============================================================
 // Invite-Code Pruefung
@@ -161,6 +181,7 @@ export async function completeRegistration(
     quarterId: bodyQuarterId,
     pilotRole,
     aiConsentChoice,
+    aiAssistanceLevel,
   } = input;
   let householdId = input.householdId;
   const pilotIdentity = normalizePilotIdentity(input);
@@ -188,7 +209,7 @@ export async function completeRegistration(
   }
 
   // 1. User-Profil erstellen
-  await createUserProfile(
+  await persistUserProfile(
     adminDb,
     userId,
     pilotIdentity,
@@ -196,6 +217,7 @@ export async function completeRegistration(
     verificationMethod,
     pilotRole,
     aiConsentChoice,
+    aiAssistanceLevel,
   );
 
   await persistAiOnboardingConsent(adminDb, userId, aiConsentChoice);
@@ -486,7 +508,7 @@ async function findOrCreateHousehold(
 }
 
 /** User-Profil erstellen (mit Rollback bei Fehler) */
-async function createUserProfile(
+export async function persistUserProfile(
   adminDb: SupabaseClient,
   userId: string,
   pilotIdentity: PilotIdentity,
@@ -494,6 +516,7 @@ async function createUserProfile(
   verificationMethod?: string,
   pilotRoleInput?: PilotRole,
   aiConsentChoice?: "yes" | "no" | "later",
+  aiAssistanceLevelInput?: AiAssistanceLevel,
 ): Promise<void> {
   // Trust-Level abhängig von Verifikationsmethode:
   // - Invite-Code: sofort 'verified' (B2B-Track, vertrauenswürdiger Kanal)
@@ -512,13 +535,19 @@ async function createUserProfile(
       : "new";
 
   const aiEnabled = aiConsentChoice === "yes";
+  const assistanceLevel = deriveAssistanceLevel(
+    aiAssistanceLevelInput,
+    aiConsentChoice,
+  );
   const pilotRole = normalizePilotRole(pilotRoleInput);
   const settings: Record<string, unknown> = {
     ai_enabled: aiEnabled,
+    ai_assistance_level: assistanceLevel,
     ai_audit_log: [
       {
         at: new Date().toISOString(),
         enabled: aiEnabled,
+        assistance_level: assistanceLevel,
         source: "registration",
       },
     ],

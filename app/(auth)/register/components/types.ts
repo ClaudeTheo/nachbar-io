@@ -13,6 +13,8 @@ export type Step =
 
 export type PilotRole = "resident" | "caregiver" | "helper" | "test_user";
 
+export type AiAssistanceLevel = "off" | "basic" | "everyday" | "later";
+
 // Gemeinsamer Form-State fuer alle Schritte
 export interface RegisterFormState {
   email: string;
@@ -31,6 +33,7 @@ export interface RegisterFormState {
   geoQuarter: { quarter_id: string; quarter_name: string; action: string } | null;
   pilotRole?: PilotRole;
   aiConsentChoice?: "yes" | "no" | "later";
+  aiAssistanceLevel?: AiAssistanceLevel;
   website?: string;
   loading: boolean;
   geoLoading: boolean;

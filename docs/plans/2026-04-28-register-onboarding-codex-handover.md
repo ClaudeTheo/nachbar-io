@@ -20,6 +20,7 @@ Der Register-Onboarding-Block ist lokal weitergebaut und verifiziert:
 - Der nervige Stale-Service-Worker-Effekt in lokaler Entwicklung ist gefixt.
 - KI-Einwilligung wurde im UI deutlich strenger gemacht: aktive KI-Stufen brauchen nun eine ausdrueckliche Checkbox.
 - Die lokale KI-Consent-Preview ist jetzt hard-blocked: Der Button zeigt nur eine Vorschau-Meldung und sendet keinen Register-/Magic-Link-Request. Das gilt fuer die dedizierte Preview-Route und den alten Query-Preview-Pfad.
+- Browser-Smoke nach dem Review-Fix ist erledigt: Identity, Pilot-Rolle und KI-Consent wirken visuell stabil; FAQ-Sheet oeffnet per echtem Klick/Tap; keine frischen Console-Errors.
 
 ## Wichtige Regeln fuer die naechste Session
 
@@ -169,6 +170,16 @@ Browser-Verifikation:
 - Fuer `/register?previewStep=ai_consent` deckt ein Regressionstest ab, dass kein `/api/register/complete` Request mehr ausgeloest wird.
 - Keine neuen Console-Errors bei der Pruefung.
 
+Browser-Smoke nach Commit `36c0436`:
+
+- `/register/preview/identity`: Layout ruhig, KI-Hinweis sichtbar, Pflichtdaten-Box und Testdaten sichtbar.
+- `/register/preview/pilot-role`: Rollen-Texte klarer, Umlaute sichtbar korrekt, keine alten Preview-Sprungbuttons.
+- `/register/preview/ai-consent`: Datenschutzblock, KI-Hinweis und Consent-Stufen sichtbar.
+- FAQ-Pulse-Dot im KI-Consent-Step oeffnet im echten Klick/Tap das FAQ-Sheet.
+- Preview-Submit-Schutz bestaetigt: Auswahl `Aus` plus `Auswahl speichern und Link senden` zeigt nur die Vorschau-Meldung.
+- Keine frischen Console-Errors waehrend des Smoke.
+- Kleiner UI-Eindruck: Auf der Rollen-Seite sitzt die letzte Karte beim Scrollen nah an der Browser-Unterkante, aber nichts ist kaputt oder blockiert.
+
 ## Aktueller Git-Status
 
 Vor dieser Handover-Datei waren nur alte/unrelated untracked Dateien sichtbar:
@@ -181,7 +192,7 @@ Vor dieser Handover-Datei waren nur alte/unrelated untracked Dateien sichtbar:
 
 Diese Dateien nicht aufraeumen und nicht versehentlich in einen Commit ziehen.
 
-Diese Handover-Datei wurde nach dem Preview-Submit-Block aktualisiert. Nur gezielt adden/committen, keine alten untracked Dateien mitnehmen.
+Diese Handover-Datei wurde nach dem Browser-Smoke aktualisiert. Nur gezielt adden/committen, keine alten untracked Dateien mitnehmen.
 
 ## Offene Punkte
 
@@ -198,4 +209,4 @@ Wenn die naechste Session direkt weitermacht:
 2. `git status --short` pruefen.
 3. Dev-Server auf `http://localhost:3000` weiterverwenden oder neu starten.
 4. Im Browser bei `/register/preview/ai-consent` weitermachen.
-5. Weiter mit UI/DSGVO-Review oder naechstem Register-Feinschliff.
+5. V1-Block als abgeschlossen behandeln; naechster sinnvoller Block ist entweder juristischer DSGVO-Textcheck, Preview-Routen-Flag-Entscheidung oder neue Phase `AiHelpSettingsToggle`.

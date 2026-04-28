@@ -56,8 +56,8 @@ describe("RegisterStepAiConsent — Polish 2026-04-27", () => {
   afterEach(() => cleanup());
 
   beforeEach(() => {
-    global.fetch = vi.fn(async () =>
-      new Response(JSON.stringify({ ok: true }), { status: 200 }),
+    global.fetch = vi.fn(
+      async () => new Response(JSON.stringify({ ok: true }), { status: 200 }),
     ) as unknown as typeof fetch;
   });
 
@@ -72,9 +72,7 @@ describe("RegisterStepAiConsent — Polish 2026-04-27", () => {
     expect(
       screen.getByText(/Sie entscheiden selbst, ob und wann Sie mich nutzen/i),
     ).toBeInTheDocument();
-    expect(
-      screen.getByText(/Standardmäßig aus/i),
-    ).toBeInTheDocument();
+    expect(screen.getByText(/Standardmäßig aus/i)).toBeInTheDocument();
   });
 
   it("zeigt 4 wahlbare Stufen-Cards plus eine disabled Persoenlich-Card", () => {
@@ -96,9 +94,10 @@ describe("RegisterStepAiConsent — Polish 2026-04-27", () => {
     render(<StatefulAiConsent onStep={setStep} />);
     await user.click(screen.getByRole("button", { name: /^Basis/i }));
 
-    expect(
-      screen.getByRole("button", { name: /^Basis/i }),
-    ).toHaveAttribute("aria-pressed", "true");
+    expect(screen.getByRole("button", { name: /^Basis/i })).toHaveAttribute(
+      "aria-pressed",
+      "true",
+    );
     expect(setStep).not.toHaveBeenCalled();
     expect(global.fetch).not.toHaveBeenCalled();
   });
@@ -172,5 +171,24 @@ describe("RegisterStepAiConsent — Polish 2026-04-27", () => {
     expect(
       screen.queryByText(/pseudonymisiert, AVV beim Anbieter/i),
     ).not.toBeInTheDocument();
+  });
+
+  it("rendert den KI-Hilfe-Pulse-Dot als Button mit aria-label (FAQ-Trigger)", () => {
+    render(<StatefulAiConsent />);
+    const trigger = screen.getByRole("button", {
+      name: /Hilfe zur KI-Hilfe öffnen/i,
+    });
+    expect(trigger).toBeInTheDocument();
+  });
+
+  it("Click auf Pulse-Dot oeffnet FAQ-Sheet mit Header", async () => {
+    const user = userEvent.setup();
+    render(<StatefulAiConsent />);
+    await user.click(
+      screen.getByRole("button", { name: /Hilfe zur KI-Hilfe öffnen/i }),
+    );
+    expect(
+      await screen.findByText("Häufige Fragen zur KI-Hilfe"),
+    ).toBeInTheDocument();
   });
 });

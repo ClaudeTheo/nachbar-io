@@ -18,7 +18,7 @@ import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/client";
 import { normalizeCode } from "@/lib/invite-codes";
 import type { AiAssistanceLevel, StepProps } from "./types";
-import { KiHelpPulseDot } from "@/components/ki-help/KiHelpPulseDot";
+import { KiHelpFaqSheet } from "@/components/ki-help/KiHelpFaqSheet";
 
 type LevelOption = {
   level: AiAssistanceLevel;
@@ -176,7 +176,7 @@ export function RegisterStepAiConsent({ state, setState, setStep }: StepProps) {
 
       <div className="rounded-xl border border-rose-100 bg-rose-50/70 p-4">
         <div className="flex items-start gap-3">
-          <KiHelpPulseDot />
+          <KiHelpFaqSheet />
           <div className="space-y-2 text-sm">
             <p className="font-medium text-anthrazit">
               Hallo, ich bin die KI-Hilfe der QuartierApp. Ich kann später beim

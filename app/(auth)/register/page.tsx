@@ -4,6 +4,7 @@ import { Suspense, useState, useEffect, useCallback } from "react";
 import { useSearchParams } from "next/navigation";
 import { HeartHandshake } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { KiHelpOnboardingHint } from "@/components/ki-help/KiHelpOnboardingHint";
 import { createClient } from "@/lib/supabase/client";
 import { normalizeCode } from "@/lib/invite-codes";
 import { OtpCodeEntry } from "@/components/auth/OtpCodeEntry";
@@ -135,6 +136,7 @@ function RegisterForm() {
             <p className="mt-2 text-xs text-muted-foreground">
               Schritt {currentStep} von {totalSteps}
             </p>
+            <KiHelpOnboardingHint step={step} />
           </>
         )}
       </CardHeader>

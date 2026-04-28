@@ -60,6 +60,29 @@ describe("RegisterPage local preview steps", () => {
     expect(screen.getByRole("button", { name: /Auswahl speichern und Link senden/i })).toBeDisabled();
   });
 
+  it("blocks Link senden in the query-param KI-consent preview", async () => {
+    const user = userEvent.setup();
+    searchParamsMock.value = new URLSearchParams("previewStep=ai_consent");
+    global.fetch = vi.fn(
+      async () => new Response(JSON.stringify({ ok: true }), { status: 200 }),
+    ) as unknown as typeof fetch;
+
+    render(<RegisterPage />);
+
+    expect(await screen.findByText("Schritt 4 von 4")).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: /^Aus\s/i }));
+    await user.click(
+      screen.getByRole("button", {
+        name: /Auswahl speichern und Link senden/i,
+      }),
+    );
+
+    expect(global.fetch).not.toHaveBeenCalled();
+    expect(
+      screen.getByText(/Vorschau: Es wird kein Link gesendet/i),
+    ).toBeInTheDocument();
+  });
+
   it("uses the browser URL as fallback when Next search params are stale", async () => {
     searchParamsMock.value = new URLSearchParams();
     window.history.pushState({}, "", "/register?previewStep=identity");

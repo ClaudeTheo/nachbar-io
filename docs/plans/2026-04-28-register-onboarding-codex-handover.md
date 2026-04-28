@@ -19,7 +19,7 @@ Der Register-Onboarding-Block ist lokal weitergebaut und verifiziert:
 - Pilot-Strassen-Suggestions sind lokal verbessert.
 - Der nervige Stale-Service-Worker-Effekt in lokaler Entwicklung ist gefixt.
 - KI-Einwilligung wurde im UI deutlich strenger gemacht: aktive KI-Stufen brauchen nun eine ausdrueckliche Checkbox.
-- Die lokale KI-Consent-Preview ist jetzt hard-blocked: Der Button zeigt nur eine Vorschau-Meldung und sendet keinen Register-/Magic-Link-Request.
+- Die lokale KI-Consent-Preview ist jetzt hard-blocked: Der Button zeigt nur eine Vorschau-Meldung und sendet keinen Register-/Magic-Link-Request. Das gilt fuer die dedizierte Preview-Route und den alten Query-Preview-Pfad.
 
 ## Wichtige Regeln fuer die naechste Session
 
@@ -33,7 +33,8 @@ Der Register-Onboarding-Block ist lokal weitergebaut und verifiziert:
 ## Erledigte Commits
 
 ```text
-HEAD nach Update: fix(register): block submit in local consent preview
+HEAD nach Review-Fix: fix(register): block query preview consent submit
+2516b2e fix(register): block submit in local consent preview
 42ac818 fix(register): require explicit AI consent confirmation
 9a5e81c fix(register): clarify pilot role preview copy
 8af5db6 fix(dev): prevent stale service worker on register
@@ -132,6 +133,7 @@ Wichtige Aussage fuer Founder-Frage "Link senden geht oder nicht":
 Nachtraegliches Sicherheits-Update in dieser Session:
 
 - In der lokalen Preview `/register/preview/ai-consent` ist `Link senden` nun technisch blockiert.
+- Im alten Query-Preview-Pfad `/register?previewStep=ai_consent` ist `Link senden` ebenfalls technisch blockiert.
 - Nach Klick erscheint nur: `Vorschau: Es wird kein Link gesendet und keine Registrierung gespeichert.`
 - Es wird kein `/api/register/complete` Request ausgeloest.
 - Die echte Register-Seite bleibt unveraendert und kann nach Founder-Go weiterhin normal absenden.
@@ -151,7 +153,7 @@ npx tsc --noEmit
 Ergebnisse:
 
 - AI-Consent-Test: 15 passed.
-- Breiter Register/KI-Hilfe-Testblock nach Preview-Submit-Block: 32 passed.
+- Breiter Register/KI-Hilfe/Testblock nach Query-Preview-Review-Fix: 40 passed.
 - ESLint: passed.
 - TypeScript: passed.
 
@@ -164,6 +166,7 @@ Browser-Verifikation:
 - `/register/preview/ai-consent` zeigt Datenschutzblock, Widerrufshinweis, Datenschutz-Link und Checkbox.
 - Button fuer `Alltag` bleibt vor Checkbox disabled.
 - In `/register/preview/ai-consent`: Auswahl `Aus` plus Klick auf `Auswahl speichern und Link senden` zeigt die Vorschau-Block-Meldung und bleibt auf der Preview-Seite.
+- Fuer `/register?previewStep=ai_consent` deckt ein Regressionstest ab, dass kein `/api/register/complete` Request mehr ausgeloest wird.
 - Keine neuen Console-Errors bei der Pruefung.
 
 ## Aktueller Git-Status

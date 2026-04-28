@@ -103,6 +103,7 @@ function RegisterForm() {
   // === State ===
   const [step, setStep] = useState<Step>("entry");
   const [formState, setFormState] = useState<RegisterFormState>(() => buildInitialFormState());
+  const [isLocalPreview, setIsLocalPreview] = useState(false);
 
   const searchParams = useSearchParams();
 
@@ -112,9 +113,12 @@ function RegisterForm() {
     const previewStep = getLocalPreviewStep(searchParams);
     if (previewStep) {
       setFormState(buildLocalPreviewState());
+      setIsLocalPreview(true);
       setStep(previewStep);
       return;
     }
+
+    setIsLocalPreview(false);
 
     const invite = searchParams.get("invite");
     const ref = searchParams.get("ref");
@@ -227,7 +231,12 @@ function RegisterForm() {
 
         {/* Schritt 4: KI-Einwilligung */}
         {step === "ai_consent" && (
-          <RegisterStepAiConsent state={formState} setState={updateState} setStep={setStep} />
+          <RegisterStepAiConsent
+            state={formState}
+            setState={updateState}
+            setStep={setStep}
+            isPreview={isLocalPreview}
+          />
         )}
 
         {/* Bestätigung: OTP-Code Eingabe */}

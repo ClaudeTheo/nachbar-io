@@ -31,17 +31,24 @@ describe("KI_HELP_FAQ", () => {
     ]);
   });
 
-  it("personal-locked-Antwort erwaehnt Schutzmassnahmen + Freischaltung", () => {
+  it("personal-locked-Antwort erwaehnt Schutzmassnahmen + Info-statt-Auto-Freischaltung", () => {
     const item = KI_HELP_FAQ.find((i) => i.id === "personal-locked");
     expect(item).toBeDefined();
     expect(item!.answer).toMatch(/Schutzmaßnahmen/);
-    expect(item!.answer).toMatch(/freischalten|frei|Sobald/);
+    // Codex-Review 2026-04-28 P3: kein implizites Auto-Freischalten,
+    // sondern Info + erneute User-Entscheidung
+    expect(item!.answer).toMatch(/Sobald/);
+    expect(item!.answer).toMatch(/informieren wir Sie/);
+    expect(item!.answer).toMatch(/neu entscheiden/);
+    expect(item!.answer).not.toMatch(/schalten wir die Stufe frei/);
   });
 
   it("data-Antwort verspricht KEINE konkrete Verarbeitung vor Consent", () => {
     const item = KI_HELP_FAQ.find((i) => i.id === "data");
     expect(item).toBeDefined();
-    expect(item!.answer).not.toMatch(/pseudonymisiert|anonymisiert|verschluesselt/i);
+    expect(item!.answer).not.toMatch(
+      /pseudonymisiert|anonymisiert|verschluesselt/i,
+    );
     expect(item!.answer).toMatch(/Vor Ihrer Einwilligung/);
   });
 });

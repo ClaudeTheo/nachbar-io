@@ -48,4 +48,39 @@ describe("KiHelpPulseDot — asButton-Modus", () => {
     render(<KiHelpPulseDot asButton ariaLabel="x" data-testid="dot-btn" />);
     expect(screen.getByTestId("dot-btn").innerHTML).toMatch(/motion-safe/);
   });
+
+  it("asButton-Hitbox erfuellt mind. 44x44 px (WCAG 2.5.5 / Senior-Touch)", () => {
+    render(
+      <KiHelpPulseDot
+        asButton
+        ariaLabel="Hilfe öffnen"
+        data-testid="dot-btn"
+      />,
+    );
+    const btn = screen.getByTestId("dot-btn");
+    expect(btn.className).toMatch(
+      /\bh-11\b|\bh-12\b|min-h-\[44px\]|min-h-\[48px\]/,
+    );
+    expect(btn.className).toMatch(
+      /\bw-11\b|\bw-12\b|min-w-\[44px\]|min-w-\[48px\]/,
+    );
+  });
+
+  it("dekorativer span bleibt visuell klein (h-6 w-6) trotz groesserer Hitbox", () => {
+    render(
+      <KiHelpPulseDot
+        asButton
+        ariaLabel="Hilfe öffnen"
+        data-testid="dot-btn"
+      />,
+    );
+    const btn = screen.getByTestId("dot-btn");
+    // Innerer Pulse-Outer bleibt klein — Button-Wrapper ist die Hitbox
+    const pulseOuter = btn.querySelector("[data-pulse-outer]");
+    expect(pulseOuter).not.toBeNull();
+    // Inner-Dot weiterhin h-2.5 w-2.5
+    const inner = btn.querySelector("[data-pulse-inner]");
+    expect(inner?.className).toMatch(/h-2\.5/);
+    expect(inner?.className).toMatch(/w-2\.5/);
+  });
 });

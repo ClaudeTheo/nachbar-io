@@ -2,7 +2,13 @@
 
 import { useState } from "react";
 import { ChevronDown } from "lucide-react";
-import { Sheet, SheetContent } from "@/components/ui/sheet";
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
 import { KiHelpPulseDot } from "@/components/ki-help/KiHelpPulseDot";
 import { KI_HELP_FAQ } from "@/lib/ki-help/faq-content";
 
@@ -31,20 +37,28 @@ export function KiHelpFaqSheet() {
           side="bottom"
           className="mx-auto max-w-lg rounded-t-2xl p-0"
         >
-          <header className="border-b border-border p-4">
-            <h2 className="text-base font-semibold text-anthrazit">
+          <SheetHeader className="border-b border-border p-4">
+            <SheetTitle className="text-base font-semibold text-anthrazit">
               Häufige Fragen zur KI-Hilfe
-            </h2>
-          </header>
+            </SheetTitle>
+            <SheetDescription className="text-xs text-muted-foreground">
+              Vordefinierte Fragen und Antworten zur optionalen KI-Hilfe — fest
+              geschrieben, kein Live-Modell.
+            </SheetDescription>
+          </SheetHeader>
           <div className="max-h-[70vh] overflow-y-auto p-4">
             <ul className="space-y-2">
               {KI_HELP_FAQ.map(({ id, question, answer }) => {
                 const isOpen = openId === id;
+                const buttonId = `ki-help-faq-button-${id}`;
+                const panelId = `ki-help-faq-panel-${id}`;
                 return (
                   <li key={id} className="rounded-lg border border-border">
                     <button
                       type="button"
+                      id={buttonId}
                       aria-expanded={isOpen}
+                      aria-controls={panelId}
                       onClick={() => setOpenId(isOpen ? null : id)}
                       className="flex w-full items-start justify-between gap-3 p-3 text-left"
                     >
@@ -60,7 +74,12 @@ export function KiHelpFaqSheet() {
                       />
                     </button>
                     {isOpen && (
-                      <p className="border-t border-border p-3 text-sm text-muted-foreground">
+                      <p
+                        id={panelId}
+                        role="region"
+                        aria-labelledby={buttonId}
+                        className="border-t border-border p-3 text-sm text-muted-foreground"
+                      >
                         {answer}
                       </p>
                     )}

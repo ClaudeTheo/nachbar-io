@@ -36,17 +36,22 @@ function PulseInner() {
 export function KiHelpPulseDot(props: Props) {
   if (props.asButton) {
     const { asButton: _asButton, ariaLabel, className, ...rest } = props;
+    // Hitbox: 44x44 px (WCAG 2.5.5 / Senior-Touch). Sichtbarer Pulse bleibt
+    // 24x24 px in einem zentrierten Inner-Container, damit das Hero-Visual
+    // unveraendert bleibt aber Tap/Click die volle Hitbox bekommt.
     return (
       <button
         type="button"
         aria-label={ariaLabel}
         className={
-          "relative inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-quartier-green/50 " +
+          "relative inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-quartier-green/50 " +
           (className ?? "")
         }
         {...rest}
       >
-        <PulseInner />
+        <span className="relative inline-flex h-6 w-6 items-center justify-center">
+          <PulseInner />
+        </span>
       </button>
     );
   }

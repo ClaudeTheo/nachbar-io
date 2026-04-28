@@ -35,6 +35,26 @@ describe("KiHelpFaqSheet", () => {
     ).toBeInTheDocument();
   });
 
+  it("Dialog ist per accessible name (SheetTitle) auffindbar", async () => {
+    render(<KiHelpFaqSheet />);
+    openSheet();
+    const dialog = await screen.findByRole("dialog", {
+      name: /Häufige Fragen zur KI-Hilfe/i,
+    });
+    expect(dialog).toBeInTheDocument();
+  });
+
+  it("Dialog hat eine accessible description", async () => {
+    render(<KiHelpFaqSheet />);
+    openSheet();
+    const dialog = await screen.findByRole("dialog", {
+      name: /Häufige Fragen zur KI-Hilfe/i,
+    });
+    expect(dialog).toHaveAccessibleDescription(
+      /vordefinierte Fragen|fest geschriebene/i,
+    );
+  });
+
   it("rendert alle 7 FAQ-Fragen", async () => {
     render(<KiHelpFaqSheet />);
     openSheet();
@@ -116,5 +136,46 @@ describe("KiHelpFaqSheet", () => {
     expect(questionBtn).toHaveAttribute("aria-expanded", "false");
     fireEvent.click(questionBtn!);
     expect(questionBtn).toHaveAttribute("aria-expanded", "true");
+  });
+
+  it("Accordion-Buttons haben aria-controls auf das jeweilige Panel", async () => {
+    render(<KiHelpFaqSheet />);
+    openSheet();
+    const questionText = await screen.findByText("Was ist die KI-Hilfe?");
+    const questionBtn = questionText.closest("button")!;
+    const panelId = questionBtn.getAttribute("aria-controls");
+    expect(panelId).toBeTruthy();
+    expect(panelId).toMatch(/ki-help-faq-panel-what/);
+  });
+
+  it("expandiertes Panel hat passende id, role=region und aria-labelledby", async () => {
+    render(<KiHelpFaqSheet />);
+    openSheet();
+    const questionText = await screen.findByText("Was ist die KI-Hilfe?");
+    const questionBtn = questionText.closest("button")!;
+    fireEvent.click(questionBtn);
+    const panelId = questionBtn.getAttribute("aria-controls")!;
+    const buttonId = questionBtn.getAttribute("id");
+    expect(buttonId).toBeTruthy();
+    const panel = document.getElementById(panelId);
+    expect(panel).not.toBeNull();
+    expect(panel).toHaveAttribute("role", "region");
+    expect(panel).toHaveAttribute("aria-labelledby", buttonId);
+  });
+
+  it("alle 7 Accordion-Buttons haben unique aria-controls / id-Paare", async () => {
+    render(<KiHelpFaqSheet />);
+    openSheet();
+    await screen.findByText("Was ist die KI-Hilfe?");
+    const buttons = screen
+      .getAllByRole("button")
+      .filter((el) =>
+        el.getAttribute("aria-controls")?.startsWith("ki-help-faq-panel-"),
+      );
+    expect(buttons).toHaveLength(7);
+    const ids = buttons.map((b) => b.getAttribute("id"));
+    const controls = buttons.map((b) => b.getAttribute("aria-controls"));
+    expect(new Set(ids).size).toBe(7);
+    expect(new Set(controls).size).toBe(7);
   });
 });

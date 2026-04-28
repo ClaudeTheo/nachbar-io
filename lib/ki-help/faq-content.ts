@@ -47,6 +47,6 @@ export const KI_HELP_FAQ: ReadonlyArray<KiHelpFaqItem> = [
     id: "personal-locked",
     question: "Warum ist Persönlich noch gesperrt?",
     answer:
-      "Persönliche KI-Hilfe braucht zusätzliche Schutzmaßnahmen, die noch nicht alle abgeschlossen sind. Sobald die stehen, schalten wir die Stufe frei und informieren Sie.",
+      "Persönliche KI-Hilfe braucht zusätzliche Schutzmaßnahmen, die noch nicht alle abgeschlossen sind. Sobald die Schutzmaßnahmen stehen, informieren wir Sie. Dann können Sie neu entscheiden, ob Sie diese Stufe nutzen möchten.",
   },
 ];

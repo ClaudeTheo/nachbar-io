@@ -18,12 +18,7 @@ import {
 } from "./components";
 import type { Step, RegisterFormState } from "./components";
 
-const LOCAL_PREVIEW_OPTIONS: Array<{ step: Step; label: string; href: string }> = [
-  { step: "identity", label: "Vorschau Schritt 2", href: "/register/preview/identity" },
-  { step: "pilot_role", label: "Vorschau Schritt 3", href: "/register/preview/pilot-role" },
-  { step: "ai_consent", label: "Vorschau Schritt 4", href: "/register/preview/ai-consent" },
-];
-const LOCAL_PREVIEW_STEPS = LOCAL_PREVIEW_OPTIONS.map(({ step }) => step);
+const LOCAL_PREVIEW_STEPS: Step[] = ["identity", "pilot_role", "ai_consent"];
 
 function buildInitialFormState(): RegisterFormState {
   return {
@@ -95,7 +90,7 @@ function getLocalPreviewStep(searchParams: Pick<URLSearchParams, "get">): Step |
   return null;
 }
 
-// Wrapper mit Suspense-Boundary fuer useSearchParams
+// Wrapper mit Suspense-Boundary für useSearchParams
 export default function RegisterPage() {
   return (
     <Suspense fallback={<div className="py-12 text-center text-muted-foreground">Laden...</div>}>
@@ -108,19 +103,11 @@ function RegisterForm() {
   // === State ===
   const [step, setStep] = useState<Step>("entry");
   const [formState, setFormState] = useState<RegisterFormState>(() => buildInitialFormState());
-  const [showLocalPreviewLinks, setShowLocalPreviewLinks] = useState(false);
 
   const searchParams = useSearchParams();
 
-  useEffect(() => {
-    if (process.env.NODE_ENV !== "production") {
-      // eslint-disable-next-line react-hooks/set-state-in-effect -- Dev-only Links erst nach Hydration zeigen.
-      setShowLocalPreviewLinks(true);
-    }
-  }, []);
-
   // === URL-Parameter: Invite-Code und Referrer aus QR-Code/Link ===
-  /* eslint-disable react-hooks/set-state-in-effect -- URL-Params einmalig in State uebernehmen */
+  /* eslint-disable react-hooks/set-state-in-effect -- URL-Params einmalig in State übernehmen */
   useEffect(() => {
     const previewStep = getLocalPreviewStep(searchParams);
     if (previewStep) {
@@ -192,7 +179,7 @@ function RegisterForm() {
           </p>
         )}
 
-        {/* Fortschrittsbalken (nicht auf Bestaetigungsseite) */}
+        {/* Fortschrittsbalken (nicht auf Bestätigungsseite) */}
         {step !== "magic_link_sent" && (
           <>
             <div className="mt-4 flex gap-1">
@@ -209,19 +196,6 @@ function RegisterForm() {
               Schritt {currentStep} von {totalSteps}
             </p>
             <KiHelpOnboardingHint step={step} />
-            {showLocalPreviewLinks && (
-              <div className="mt-3 flex flex-wrap justify-center gap-2 rounded-lg border border-dashed border-quartier-green/30 bg-quartier-green/5 p-2">
-                {LOCAL_PREVIEW_OPTIONS.map(({ step: previewStep, label, href }) => (
-                  <a
-                    key={previewStep}
-                    href={href}
-                    className="rounded-md border border-quartier-green/30 bg-white px-2.5 py-1.5 text-xs font-medium text-quartier-green transition-colors hover:bg-quartier-green/10"
-                  >
-                    {label}
-                  </a>
-                ))}
-              </div>
-            )}
           </>
         )}
       </CardHeader>
@@ -256,7 +230,7 @@ function RegisterForm() {
           <RegisterStepAiConsent state={formState} setState={updateState} setStep={setStep} />
         )}
 
-        {/* Bestaetigung: OTP-Code Eingabe */}
+        {/* Bestätigung: OTP-Code Eingabe */}
         {step === "magic_link_sent" && (
           <OtpCodeEntry
             email={formState.email}

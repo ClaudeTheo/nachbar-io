@@ -62,10 +62,11 @@ describe("RegisterStepPilotRole", () => {
     ).toBeInTheDocument();
     expect(screen.getByText(/Menschen im Quartier aufeinander achten/i)).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Rollen und Pilot erklären" })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /Ich nutze die App fuer mich/i })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /Ich unterstuetze jemanden/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Ich nutze die App für mich/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Ich unterstütze jemanden/i })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /Ich helfe im Quartier/i })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /Ich teste nur/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Ich probiere nur testweise/i })).toBeInTheDocument();
+    expect(screen.queryByText(/fuer|unterstuetze|Angehoerige|Zurueck/i)).not.toBeInTheDocument();
   });
 
   it("markiert die gewaehlte Rolle und geht bewusst danach zur KI-Auswahl", async () => {
@@ -74,9 +75,9 @@ describe("RegisterStepPilotRole", () => {
 
     render(<StatefulPilotRoleStep onStep={setStep} />);
 
-    await user.click(screen.getByRole("button", { name: /Ich unterstuetze jemanden/i }));
+    await user.click(screen.getByRole("button", { name: /Ich unterstütze jemanden/i }));
 
-    expect(screen.getByRole("button", { name: /Ich unterstuetze jemanden/i })).toHaveAttribute(
+    expect(screen.getByRole("button", { name: /Ich unterstütze jemanden/i })).toHaveAttribute(
       "aria-pressed",
       "true",
     );
@@ -92,9 +93,10 @@ describe("RegisterStepPilotRole", () => {
 
     render(<StatefulPilotRoleStep />);
 
-    await user.click(screen.getByRole("button", { name: /Ich teste nur/i }));
+    await user.click(screen.getByRole("button", { name: /Ich probiere nur testweise/i }));
 
-    expect(screen.getByText(/Testkonten werden markiert/i)).toBeInTheDocument();
+    expect(screen.getAllByText(/nicht als echte Pilot-Nutzung/i).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/interne Tests und Demos/i).length).toBeGreaterThan(0);
   });
 
   it("zeigt ausfuehrliche Infos zu Rollen, Testkonten und KI", async () => {

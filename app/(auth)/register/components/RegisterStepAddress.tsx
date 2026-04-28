@@ -6,7 +6,7 @@ import { AddressAutocomplete } from "@/components/ui/address-autocomplete";
 import type { StepProps } from "./types";
 
 export function RegisterStepAddress({ state, setState, setStep }: StepProps) {
-  // Adresse bestaetigen
+  // Adresse bestätigen
   async function handleAddressSelection(e: React.FormEvent) {
     e.preventDefault();
     setState({ error: null });
@@ -59,7 +59,7 @@ export function RegisterStepAddress({ state, setState, setStep }: StepProps) {
         Ihre Adresse ist im Pilot Pflicht. So ordnen wir Sie dem richtigen Quartier und Haushalt zu.
       </p>
       <p className="text-xs text-muted-foreground">
-        Die Adresse wird fuer die Quartier-Zuordnung genutzt und nicht im oeffentlichen Profil angezeigt.
+        Die Adresse wird für die Quartier-Zuordnung genutzt und nicht im öffentlichen Profil angezeigt.
       </p>
 
       {/* Standort-Button */}
@@ -100,7 +100,7 @@ export function RegisterStepAddress({ state, setState, setStep }: StepProps) {
         <AddressAutocomplete
           onSelect={(addr) => {
             const updates: Record<string, unknown> = { selectedAddress: addr };
-            // PLZ + Stadt automatisch ausfuellen
+            // PLZ + Stadt automatisch ausfüllen
             if (addr.postalCode) updates.postalCode = addr.postalCode;
             if (addr.city) updates.city = addr.city;
             setState(updates as Partial<typeof state>);

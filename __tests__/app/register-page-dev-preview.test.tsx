@@ -43,7 +43,7 @@ describe("RegisterPage local preview steps", () => {
     render(<RegisterPage />);
 
     expect(await screen.findByText("Schritt 3 von 4")).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /Ich teste nur/i })).toHaveAttribute(
+    expect(screen.getByRole("button", { name: /Ich probiere nur testweise/i })).toHaveAttribute(
       "aria-pressed",
       "true",
     );
@@ -78,40 +78,26 @@ describe("RegisterPage local preview steps", () => {
     expect(screen.getByLabelText("Vorname")).toHaveValue("Test");
   });
 
-  it("keeps local preview links out of the server HTML to avoid hydration drift", () => {
+  it("keeps local preview links out of the server HTML", () => {
     const html = renderToString(<RegisterPage />);
 
     expect(html).not.toContain("Vorschau Schritt");
   });
 
-  it("offers local preview links for the next onboarding steps", async () => {
+  it("does not show internal preview links on the visible register page", () => {
     render(<RegisterPage />);
 
-    expect(await screen.findByRole("link", { name: "Vorschau Schritt 2" })).toHaveAttribute(
-      "href",
-      "/register/preview/identity",
-    );
-    expect(screen.getByRole("link", { name: "Vorschau Schritt 3" })).toHaveAttribute(
-      "href",
-      "/register/preview/pilot-role",
-    );
-    expect(screen.getByRole("link", { name: "Vorschau Schritt 4" })).toHaveAttribute(
-      "href",
-      "/register/preview/ai-consent",
-    );
+    expect(screen.queryByRole("link", { name: /Vorschau Schritt/i })).not.toBeInTheDocument();
   });
 
-  it("renders the preview form directly for dedicated local preview routes", () => {
+  it("renders the preview form directly for dedicated local preview routes without internal links", () => {
     render(<RegisterPreviewForm initialStep="pilot_role" />);
 
     expect(screen.getByText("Schritt 3 von 4")).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /Ich teste nur/i })).toHaveAttribute(
+    expect(screen.getByRole("button", { name: /Ich probiere nur testweise/i })).toHaveAttribute(
       "aria-pressed",
       "true",
     );
-    expect(screen.getByRole("link", { name: "Vorschau Schritt 4" })).toHaveAttribute(
-      "href",
-      "/register/preview/ai-consent",
-    );
+    expect(screen.queryByRole("link", { name: /Vorschau Schritt/i })).not.toBeInTheDocument();
   });
 });

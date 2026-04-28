@@ -10,7 +10,7 @@ export const REGISTER_TOUR_HINTS: Record<Step, string> = {
   identity:
     "Name, Geburtsdatum und E-Mail helfen bei Vertrauen, Sicherheit und der eindeutigen Zuordnung im Pilot.",
   pilot_role:
-    "Ihre Rolle hilft uns zu verstehen, ob Sie die App selbst nutzen, jemanden unterstützen oder nur testen.",
+    "Hier wählen Sie, wie Sie teilnehmen: für sich selbst, als Unterstützung für jemanden, als Hilfe im Quartier oder nur testweise.",
   ai_consent:
     "Hier entscheiden Sie in Ruhe, ob die KI-Hilfe aus bleibt, später helfen darf oder erst später gewählt wird.",
   magic_link_sent:

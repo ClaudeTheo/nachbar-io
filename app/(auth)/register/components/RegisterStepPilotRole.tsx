@@ -13,26 +13,26 @@ const ROLE_OPTIONS: Array<{
 }> = [
   {
     role: "resident",
-    label: "Ich nutze die App fuer mich",
-    description: "Einfache Ansicht und passende Hinweise fuer den Alltag.",
+    label: "Ich nutze die App für mich",
+    description: "Für Menschen, die selbst Hinweise und Hilfe im Alltag bekommen möchten.",
     icon: UserRound,
   },
   {
     role: "caregiver",
-    label: "Ich unterstuetze jemanden",
-    description: "Fuer Angehoerige oder Begleiter, die mithelfen.",
+    label: "Ich unterstütze jemanden",
+    description: "Für Angehörige oder Begleiter, die einer Person im Alltag helfen.",
     icon: HeartHandshake,
   },
   {
     role: "helper",
     label: "Ich helfe im Quartier",
-    description: "Fuer Nachbarn, Projektteam oder Quartiershilfe im Pilot.",
+    description: "Für Nachbarn, Projektteam oder Quartiershilfe im Pilot.",
     icon: Handshake,
   },
   {
     role: "test_user",
-    label: "Ich teste nur",
-    description: "Wird als Testkonto markiert und vor echtem Pilot bereinigt.",
+    label: "Ich probiere nur testweise",
+    description: "Nur für interne Tests und Demos. Das zählt nicht als echte Pilot-Nutzung.",
     icon: TestTube2,
   },
 ];
@@ -102,7 +102,8 @@ export function RegisterStepPilotRole({ state, setState, setStep }: StepProps) {
               „Für mich“ ist für Menschen, die die QuartierApp selbst nutzen.
               „Unterstützer“ ist für Angehörige oder Begleiter. „Quartierhilfe“
               ist für Menschen, die im Pilot helfen oder organisieren.
-              „Testnutzer“ ist nur zum Ausprobieren.
+              „Testweise“ ist nur für interne Tests oder Demos und zählt nicht
+              als echte Nutzung im Pilot.
             </p>
           </section>
           <section>
@@ -156,7 +157,8 @@ export function RegisterStepPilotRole({ state, setState, setStep }: StepProps) {
 
       {state.pilotRole === "test_user" && (
         <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800">
-          Testkonten werden markiert und vor dem echten Pilot bereinigt.
+          Testkonten sind nur für interne Tests und Demos. Sie zählen nicht als
+          echte Pilot-Nutzung und werden vor dem echten Pilot bereinigt.
         </div>
       )}
 
@@ -180,7 +182,7 @@ export function RegisterStepPilotRole({ state, setState, setStep }: StepProps) {
         className="flex w-full items-center justify-center gap-1 text-sm text-muted-foreground hover:underline"
       >
         <ArrowLeft className="h-3.5 w-3.5" />
-        Zurueck
+        Zurück
       </button>
     </div>
   );

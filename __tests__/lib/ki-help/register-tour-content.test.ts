@@ -30,4 +30,10 @@ describe("REGISTER_TOUR_HINTS", () => {
       );
     }
   });
+
+  it("explains the pilot role step without jargon", () => {
+    expect(getRegisterTourHint("pilot_role")).toBe(
+      "Hier wählen Sie, wie Sie teilnehmen: für sich selbst, als Unterstützung für jemanden, als Hilfe im Quartier oder nur testweise.",
+    );
+  });
 });

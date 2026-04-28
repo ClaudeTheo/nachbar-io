@@ -11,12 +11,6 @@ import {
 } from "../components";
 import type { RegisterFormState, Step } from "../components";
 
-const LOCAL_PREVIEW_OPTIONS: Array<{ step: Step; label: string; href: string }> = [
-  { step: "identity", label: "Vorschau Schritt 2", href: "/register/preview/identity" },
-  { step: "pilot_role", label: "Vorschau Schritt 3", href: "/register/preview/pilot-role" },
-  { step: "ai_consent", label: "Vorschau Schritt 4", href: "/register/preview/ai-consent" },
-];
-
 function buildLocalPreviewState(): RegisterFormState {
   return {
     email: "test.person@example.invalid",
@@ -106,17 +100,6 @@ export function RegisterPreviewForm({ initialStep }: { initialStep: Step }) {
           Schritt {currentStep} von {totalSteps}
         </p>
         <KiHelpOnboardingHint step={step} />
-        <div className="mt-3 flex flex-wrap justify-center gap-2 rounded-lg border border-dashed border-quartier-green/30 bg-quartier-green/5 p-2">
-          {LOCAL_PREVIEW_OPTIONS.map(({ step: previewStep, label, href }) => (
-            <a
-              key={previewStep}
-              href={href}
-              className="rounded-md border border-quartier-green/30 bg-white px-2.5 py-1.5 text-xs font-medium text-quartier-green transition-colors hover:bg-quartier-green/10"
-            >
-              {label}
-            </a>
-          ))}
-        </div>
       </CardHeader>
       <CardContent>
         {step === "identity" && (

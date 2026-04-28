@@ -1,4 +1,4 @@
-// Identitaets-Schritt: Pilot-Pflichtdaten + E-Mail → Magic Link senden
+// Identitäts-Schritt: Pilot-Pflichtdaten + E-Mail → Magic Link senden
 import { useState } from "react";
 import { MapPin, ArrowLeft, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -22,7 +22,7 @@ function isValidDateOfBirth(value: string) {
 export function RegisterStepIdentity({ state, setState, setStep }: StepProps) {
   const [honeypot, setHoneypot] = useState("");
 
-  // Registrierung abschliessen: User erstellen + Magic Link senden
+  // Registrierung abschließen: User erstellen + Magic Link senden
   async function handleIdentitySubmit(e: React.FormEvent) {
     e.preventDefault();
     setState({ loading: true, error: null });
@@ -64,7 +64,7 @@ export function RegisterStepIdentity({ state, setState, setStep }: StepProps) {
 
   return (
     <form onSubmit={handleIdentitySubmit} className="space-y-4">
-      {/* Honeypot-Feld fuer Bot-Erkennung (unsichtbar fuer Menschen) */}
+      {/* Honeypot-Feld für Bot-Erkennung (unsichtbar für Menschen) */}
       <input
         name="website"
         type="text"
@@ -82,10 +82,10 @@ export function RegisterStepIdentity({ state, setState, setStep }: StepProps) {
           <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-quartier-green" />
           <div className="space-y-1">
             <p className="text-sm font-medium text-anthrazit">
-              Pflichtdaten fuer den geschlossenen Pilot
+              Pflichtdaten für den geschlossenen Pilot
             </p>
             <p className="text-sm text-muted-foreground">
-              Wir nutzen Vorname, Nachname und Geburtsdatum fuer Vertrauen, Sicherheit und Pilot-Zuordnung.
+              Wir nutzen Vorname, Nachname und Geburtsdatum für Vertrauen, Sicherheit und Pilot-Zuordnung.
             </p>
           </div>
         </div>

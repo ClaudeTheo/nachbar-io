@@ -1,6 +1,6 @@
 import { cleanup, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it } from "vitest";
-import { KiHelpPulseDot } from "@/app/(auth)/register/components/KiHelpPulseDot";
+import { KiHelpPulseDot } from "@/components/ki-help/KiHelpPulseDot";
 
 describe("KiHelpPulseDot", () => {
   afterEach(() => cleanup());

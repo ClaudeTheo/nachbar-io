@@ -18,7 +18,7 @@ import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/client";
 import { normalizeCode } from "@/lib/invite-codes";
 import type { AiAssistanceLevel, StepProps } from "./types";
-import { KiHelpPulseDot } from "./KiHelpPulseDot";
+import { KiHelpPulseDot } from "@/components/ki-help/KiHelpPulseDot";
 
 type LevelOption = {
   level: AiAssistanceLevel;
@@ -66,11 +66,7 @@ function levelToConsentChoice(
   return "later";
 }
 
-export function RegisterStepAiConsent({
-  state,
-  setState,
-  setStep,
-}: StepProps) {
+export function RegisterStepAiConsent({ state, setState, setStep }: StepProps) {
   const [selectedLevel, setSelectedLevel] = useState<AiAssistanceLevel | null>(
     state.aiAssistanceLevel ?? null,
   );
@@ -113,8 +109,7 @@ export function RegisterStepAiConsent({
             state.postalCode.trim() ||
             state.selectedAddress?.postalCode ||
             undefined,
-          city:
-            state.city.trim() || state.selectedAddress?.city || undefined,
+          city: state.city.trim() || state.selectedAddress?.city || undefined,
           verificationMethod: state.verificationMethod,
           inviteCode: state.inviteCode
             ? normalizeCode(state.inviteCode)
@@ -152,10 +147,7 @@ export function RegisterStepAiConsent({
         return;
       }
 
-      if (
-        state.verificationMethod === "neighbor_invite" &&
-        state.referrerId
-      ) {
+      if (state.verificationMethod === "neighbor_invite" && state.referrerId) {
         fetch("/api/reputation/recompute", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -187,8 +179,8 @@ export function RegisterStepAiConsent({
           <KiHelpPulseDot />
           <div className="space-y-2 text-sm">
             <p className="font-medium text-anthrazit">
-              Hallo, ich bin die KI-Hilfe der QuartierApp. Ich kann später
-              beim Vorlesen, Formulieren und Verstehen helfen.
+              Hallo, ich bin die KI-Hilfe der QuartierApp. Ich kann später beim
+              Vorlesen, Formulieren und Verstehen helfen.
             </p>
             <ul className="space-y-1.5 text-muted-foreground">
               <li className="flex items-start gap-2">
@@ -267,8 +259,8 @@ export function RegisterStepAiConsent({
                 Persönlich (später)
               </p>
               <p className="mt-1 text-sm text-muted-foreground">
-                Nur mit ausdrücklicher Einwilligung und aktiven
-                Schutzmaßnahmen, kommt mit Phase 2 nach Freigabe.
+                Nur mit ausdrücklicher Einwilligung und aktiven Schutzmaßnahmen,
+                kommt mit Phase 2 nach Freigabe.
               </p>
             </div>
           </div>
@@ -277,8 +269,8 @@ export function RegisterStepAiConsent({
 
       <p className="text-xs text-muted-foreground">
         Vor Ihrer Einwilligung wird nichts an eine KI gesendet. Persönliche
-        KI-Funktionen starten erst, wenn die nötigen Schutzmaßnahmen aktiv
-        sind. Ihre Eingaben sind nicht öffentlich.
+        KI-Funktionen starten erst, wenn die nötigen Schutzmaßnahmen aktiv sind.
+        Ihre Eingaben sind nicht öffentlich.
       </p>
 
       {state.error && (

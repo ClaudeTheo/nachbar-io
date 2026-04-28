@@ -219,6 +219,7 @@ export function AddressAutocomplete({
           ref={inputRef}
           type="text"
           value={query}
+          onChange={(e) => handleChange(e.target.value)}
           onInput={(e) => handleChange(e.currentTarget.value)}
           onKeyUp={handleKeyUp}
           onKeyDown={handleKeyDown}

@@ -45,6 +45,32 @@ describe('AddressAutocomplete', () => {
     expect(mockSearch).not.toHaveBeenCalled()
   })
 
+  it.each([
+    ['P', 'Purkersdorfer Straße, 79713 Bad Säckingen'],
+    ['S', 'Sanarystraße, 79713 Bad Säckingen'],
+    ['O', 'Oberer Rebberg, 79713 Bad Säckingen'],
+  ])('zeigt die Pilotstrasse fuer den Anfangsbuchstaben %s', async (letter, expectedStreet) => {
+    render(<AddressAutocomplete onSelect={mockOnSelect} />)
+    const input = screen.getByPlaceholderText(/adresse eingeben/i)
+
+    await userEvent.type(input, letter)
+
+    expect(await screen.findByText(expectedStreet)).toBeInTheDocument()
+    expect(mockSearch).not.toHaveBeenCalled()
+  })
+
+  it('zeigt Pilotstrassen auch bei normalem Change-Event an', async () => {
+    render(<AddressAutocomplete onSelect={mockOnSelect} />)
+    const input = screen.getByPlaceholderText(/adresse eingeben/i)
+
+    fireEvent.change(input, { target: { value: 'P' } })
+
+    expect(
+      await screen.findByText('Purkersdorfer Straße, 79713 Bad Säckingen'),
+    ).toBeInTheDocument()
+    expect(mockSearch).not.toHaveBeenCalled()
+  })
+
   it('synchronisiert sichtbare Eingabewerte auch ohne React-Input-Event', async () => {
     render(<AddressAutocomplete onSelect={mockOnSelect} />)
     const input = screen.getByPlaceholderText(/adresse eingeben/i)

@@ -1,4 +1,5 @@
 import { cleanup, render, screen } from "@testing-library/react";
+import { renderToString } from "react-dom/server";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import RegisterPage from "@/app/(auth)/register/page";
 import { RegisterPreviewForm } from "@/app/(auth)/register/preview/RegisterPreviewForm";
@@ -77,10 +78,16 @@ describe("RegisterPage local preview steps", () => {
     expect(screen.getByLabelText("Vorname")).toHaveValue("Test");
   });
 
-  it("offers local preview links for the next onboarding steps", () => {
+  it("keeps local preview links out of the server HTML to avoid hydration drift", () => {
+    const html = renderToString(<RegisterPage />);
+
+    expect(html).not.toContain("Vorschau Schritt");
+  });
+
+  it("offers local preview links for the next onboarding steps", async () => {
     render(<RegisterPage />);
 
-    expect(screen.getByRole("link", { name: "Vorschau Schritt 2" })).toHaveAttribute(
+    expect(await screen.findByRole("link", { name: "Vorschau Schritt 2" })).toHaveAttribute(
       "href",
       "/register/preview/identity",
     );

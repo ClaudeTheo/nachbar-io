@@ -6,12 +6,28 @@ import { UpdateBanner } from "@/components/UpdateBanner";
 const UPDATE_CHECK_INTERVAL_MS = 1 * 60 * 60 * 1000; // 1 Stunde
 const LAST_CHECK_KEY = "pwa-last-update-check";
 
+function isProductionRuntime() {
+  return process.env.NODE_ENV === "production";
+}
+
 export function ServiceWorkerRegistration() {
   const [updateAvailable, setUpdateAvailable] = useState(false);
   const [waitingWorker, setWaitingWorker] = useState<ServiceWorker | null>(null);
 
   useEffect(() => {
     if (!("serviceWorker" in navigator)) return;
+
+    if (!isProductionRuntime()) {
+      navigator.serviceWorker
+        .getRegistrations()
+        .then((registrations) => {
+          return Promise.all(registrations.map((registration) => registration.unregister()));
+        })
+        .catch(() => {
+          // Dev-only cleanup: stale Service Worker darf die lokale Vorschau nicht blockieren.
+        });
+      return;
+    }
 
     navigator.serviceWorker
       .register("/sw.js")

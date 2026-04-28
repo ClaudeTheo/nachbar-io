@@ -20,6 +20,29 @@ const CACHEABLE_API_PATHS = [
 
 const API_CACHE_MAX_ENTRIES = 50;
 const STATIC_CACHE_MAX_ENTRIES = 200;
+const LOCAL_DEVELOPMENT_HOSTS = ["localhost", "127.0.0.1", "::1"];
+
+function isLocalDevelopmentUrl(rawUrl) {
+  try {
+    const url = new URL(rawUrl);
+    return LOCAL_DEVELOPMENT_HOSTS.includes(url.hostname);
+  } catch {
+    return false;
+  }
+}
+
+function shouldHandleFetch(event) {
+  return !isLocalDevelopmentUrl(event.request.url);
+}
+
+async function deleteNachbarCaches() {
+  const cacheNames = await caches.keys();
+  await Promise.all(
+    cacheNames
+      .filter((name) => name.startsWith("nachbar-io"))
+      .map((name) => caches.delete(name))
+  );
+}
 
 // Static Assets: Cache-first (haben Content-Hash im Dateinamen, aendern sich nie)
 // WICHTIG: _next/static/chunks im Dev-Modus (Turbopack HMR) NICHT cachen,
@@ -47,6 +70,11 @@ function isNavigationRequest(request) {
 }
 
 self.addEventListener("install", (event) => {
+  if (isLocalDevelopmentUrl(self.location.href)) {
+    self.skipWaiting();
+    return;
+  }
+
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
       return cache.addAll(PRECACHE_URLS);
@@ -56,6 +84,20 @@ self.addEventListener("install", (event) => {
 });
 
 self.addEventListener("activate", (event) => {
+  if (isLocalDevelopmentUrl(self.location.href)) {
+    event.waitUntil(
+      Promise.all([
+        deleteNachbarCaches(),
+        self.registration.unregister(),
+      ])
+        .then(() => self.clients.matchAll({ type: "window" }))
+        .then((clients) => {
+          return Promise.all(clients.map((client) => client.navigate(client.url)));
+        })
+    );
+    return;
+  }
+
   const VALID_CACHES = [CACHE_NAME, STATIC_CACHE_NAME, API_CACHE_NAME];
   event.waitUntil(
     caches.keys().then((cacheNames) => {
@@ -84,6 +126,7 @@ async function trimCache(cacheName, maxEntries) {
 
 self.addEventListener("fetch", (event) => {
   if (event.request.method !== "GET") return;
+  if (!shouldHandleFetch(event)) return;
 
   const url = event.request.url;
 

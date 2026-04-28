@@ -21,13 +21,18 @@ function createMockRegistration(waiting: ServiceWorker | null = null) {
     installing: null,
     update: vi.fn().mockResolvedValue(undefined),
     addEventListener: vi.fn(),
+    unregister: vi.fn().mockResolvedValue(true),
   };
 }
 
-function setupServiceWorkerMock(registration: ReturnType<typeof createMockRegistration>) {
+function setupServiceWorkerMock(
+  registration: ReturnType<typeof createMockRegistration>,
+  registrations: ReturnType<typeof createMockRegistration>[] = [registration],
+) {
   Object.defineProperty(navigator, 'serviceWorker', {
     value: {
       register: vi.fn().mockResolvedValue(registration),
+      getRegistrations: vi.fn().mockResolvedValue(registrations),
       controller: { state: 'activated' },
       addEventListener: vi.fn(),
       removeEventListener: vi.fn(),
@@ -41,10 +46,26 @@ describe('ServiceWorkerRegistration', () => {
   beforeEach(() => {
     cleanup();
     vi.resetModules();
+    vi.unstubAllEnvs();
     localStorage.clear();
   });
 
+  it('deaktiviert vorhandene Service Worker ausserhalb von Production', async () => {
+    const reg = createMockRegistration();
+    setupServiceWorkerMock(reg);
+
+    const { ServiceWorkerRegistration } = await import('@/components/ServiceWorkerRegistration');
+    await act(async () => {
+      render(<ServiceWorkerRegistration />);
+    });
+
+    expect(navigator.serviceWorker.register).not.toHaveBeenCalled();
+    expect(navigator.serviceWorker.getRegistrations).toHaveBeenCalled();
+    expect(reg.unregister).toHaveBeenCalled();
+  });
+
   it('registriert den Service Worker', async () => {
+    vi.stubEnv('NODE_ENV', 'production');
     const reg = createMockRegistration();
     setupServiceWorkerMock(reg);
 
@@ -56,6 +77,7 @@ describe('ServiceWorkerRegistration', () => {
   });
 
   it('prueft auf Updates wenn letzter Check >24h her ist', async () => {
+    vi.stubEnv('NODE_ENV', 'production');
     const reg = createMockRegistration();
     setupServiceWorkerMock(reg);
     localStorage.setItem(LAST_CHECK_KEY, String(Date.now() - 25 * 60 * 60 * 1000));
@@ -68,6 +90,7 @@ describe('ServiceWorkerRegistration', () => {
   });
 
   it('prueft NICHT auf Updates wenn letzter Check <24h her ist', async () => {
+    vi.stubEnv('NODE_ENV', 'production');
     const reg = createMockRegistration();
     setupServiceWorkerMock(reg);
     localStorage.setItem(LAST_CHECK_KEY, String(Date.now()));
@@ -80,6 +103,7 @@ describe('ServiceWorkerRegistration', () => {
   });
 
   it('zeigt Banner wenn bereits ein wartender SW vorhanden ist', async () => {
+    vi.stubEnv('NODE_ENV', 'production');
     const waitingSw = { postMessage: vi.fn() } as unknown as ServiceWorker;
     const reg = createMockRegistration(waitingSw);
     setupServiceWorkerMock(reg);
@@ -92,6 +116,7 @@ describe('ServiceWorkerRegistration', () => {
   });
 
   it('zeigt kein Banner ohne wartenden SW', async () => {
+    vi.stubEnv('NODE_ENV', 'production');
     const reg = createMockRegistration();
     setupServiceWorkerMock(reg);
     localStorage.setItem(LAST_CHECK_KEY, String(Date.now()));

@@ -108,8 +108,16 @@ function RegisterForm() {
   // === State ===
   const [step, setStep] = useState<Step>("entry");
   const [formState, setFormState] = useState<RegisterFormState>(() => buildInitialFormState());
+  const [showLocalPreviewLinks, setShowLocalPreviewLinks] = useState(false);
 
   const searchParams = useSearchParams();
+
+  useEffect(() => {
+    if (process.env.NODE_ENV !== "production") {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- Dev-only Links erst nach Hydration zeigen.
+      setShowLocalPreviewLinks(true);
+    }
+  }, []);
 
   // === URL-Parameter: Invite-Code und Referrer aus QR-Code/Link ===
   /* eslint-disable react-hooks/set-state-in-effect -- URL-Params einmalig in State uebernehmen */
@@ -201,7 +209,7 @@ function RegisterForm() {
               Schritt {currentStep} von {totalSteps}
             </p>
             <KiHelpOnboardingHint step={step} />
-            {process.env.NODE_ENV !== "production" && (
+            {showLocalPreviewLinks && (
               <div className="mt-3 flex flex-wrap justify-center gap-2 rounded-lg border border-dashed border-quartier-green/30 bg-quartier-green/5 p-2">
                 {LOCAL_PREVIEW_OPTIONS.map(({ step: previewStep, label, href }) => (
                   <a

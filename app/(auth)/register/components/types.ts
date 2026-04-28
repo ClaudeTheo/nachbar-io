@@ -45,4 +45,5 @@ export interface StepProps {
   state: RegisterFormState;
   setState: (updater: Partial<RegisterFormState> | ((prev: RegisterFormState) => Partial<RegisterFormState>)) => void;
   setStep: (step: Step) => void;
+  isPreview?: boolean;
 }

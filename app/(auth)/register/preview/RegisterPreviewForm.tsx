@@ -109,7 +109,12 @@ export function RegisterPreviewForm({ initialStep }: { initialStep: Step }) {
           <RegisterStepPilotRole state={formState} setState={updateState} setStep={setStep} />
         )}
         {step === "ai_consent" && (
-          <RegisterStepAiConsent state={formState} setState={updateState} setStep={setStep} />
+          <RegisterStepAiConsent
+            state={formState}
+            setState={updateState}
+            setStep={setStep}
+            isPreview
+          />
         )}
       </CardContent>
     </Card>

@@ -1,4 +1,5 @@
 import { cleanup, render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { renderToString } from "react-dom/server";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import RegisterPage from "@/app/(auth)/register/page";
@@ -99,5 +100,26 @@ describe("RegisterPage local preview steps", () => {
       "true",
     );
     expect(screen.queryByRole("link", { name: /Vorschau Schritt/i })).not.toBeInTheDocument();
+  });
+
+  it("blocks Link senden in the local KI-consent preview", async () => {
+    const user = userEvent.setup();
+    global.fetch = vi.fn(
+      async () => new Response(JSON.stringify({ ok: true }), { status: 200 }),
+    ) as unknown as typeof fetch;
+
+    render(<RegisterPreviewForm initialStep="ai_consent" />);
+
+    await user.click(screen.getByRole("button", { name: /^Aus\s/i }));
+    await user.click(
+      screen.getByRole("button", {
+        name: /Auswahl speichern und Link senden/i,
+      }),
+    );
+
+    expect(global.fetch).not.toHaveBeenCalled();
+    expect(
+      screen.getByText(/Vorschau: Es wird kein Link gesendet/i),
+    ).toBeInTheDocument();
   });
 });

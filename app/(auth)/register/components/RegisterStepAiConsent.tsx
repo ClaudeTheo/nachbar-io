@@ -66,7 +66,12 @@ function levelToConsentChoice(
   return "later";
 }
 
-export function RegisterStepAiConsent({ state, setState, setStep }: StepProps) {
+export function RegisterStepAiConsent({
+  state,
+  setState,
+  setStep,
+  isPreview = false,
+}: StepProps) {
   const [selectedLevel, setSelectedLevel] = useState<AiAssistanceLevel | null>(
     state.aiAssistanceLevel ?? null,
   );
@@ -100,6 +105,15 @@ export function RegisterStepAiConsent({ state, setState, setStep }: StepProps) {
     }
 
     const choice = levelToConsentChoice(selectedLevel);
+
+    if (isPreview) {
+      setState({
+        error:
+          "Vorschau: Es wird kein Link gesendet und keine Registrierung gespeichert.",
+      });
+      return;
+    }
+
     setState({ loading: true, error: null });
 
     try {

@@ -1,5 +1,4 @@
 import { notFound } from "next/navigation";
-import RegisterPage from "../../page";
 import type { Step } from "../../components";
 import { RegisterPreviewForm } from "../RegisterPreviewForm";
 
@@ -9,14 +8,16 @@ const PREVIEW_STEPS: Record<string, Step> = {
   "ai-consent": "ai_consent",
 };
 
+function isLocalPreviewEnabled() {
+  return process.env.NODE_ENV !== "production";
+}
+
 export default async function RegisterLocalPreviewPage({
   params,
 }: {
   params: Promise<{ step: string }>;
 }) {
-  if (process.env.NODE_ENV === "production") {
-    return <RegisterPage />;
-  }
+  if (!isLocalPreviewEnabled()) notFound();
 
   const { step } = await params;
   const previewStep = PREVIEW_STEPS[step];

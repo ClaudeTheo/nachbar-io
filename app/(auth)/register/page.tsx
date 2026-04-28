@@ -20,6 +20,10 @@ import type { Step, RegisterFormState } from "./components";
 
 const LOCAL_PREVIEW_STEPS: Step[] = ["identity", "pilot_role", "ai_consent"];
 
+function isLocalPreviewEnabled() {
+  return process.env.NODE_ENV !== "production";
+}
+
 function buildInitialFormState(): RegisterFormState {
   return {
     email: "",
@@ -76,7 +80,7 @@ function buildLocalPreviewState(): RegisterFormState {
 }
 
 function getLocalPreviewStep(searchParams: Pick<URLSearchParams, "get">): Step | null {
-  if (process.env.NODE_ENV === "production") return null;
+  if (!isLocalPreviewEnabled()) return null;
 
   const previewStep =
     searchParams.get("previewStep") ??

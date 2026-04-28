@@ -4,13 +4,20 @@ import { renderToString } from "react-dom/server";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import RegisterPage from "@/app/(auth)/register/page";
 import { RegisterPreviewForm } from "@/app/(auth)/register/preview/RegisterPreviewForm";
+import RegisterLocalPreviewPage from "@/app/(auth)/register/preview/[step]/page";
 
-const searchParamsMock = vi.hoisted(() => ({
-  value: new URLSearchParams(),
+const navigationMock = vi.hoisted(() => ({
+  notFound: vi.fn(() => {
+    throw new Error("NEXT_NOT_FOUND");
+  }),
+  searchParams: {
+    value: new URLSearchParams(),
+  },
 }));
 
 vi.mock("next/navigation", () => ({
-  useSearchParams: () => searchParamsMock.value,
+  notFound: navigationMock.notFound,
+  useSearchParams: () => navigationMock.searchParams.value,
 }));
 
 vi.mock("@/lib/supabase/client", () => ({
@@ -23,13 +30,15 @@ vi.mock("@/lib/supabase/client", () => ({
 
 describe("RegisterPage local preview steps", () => {
   afterEach(() => {
-    searchParamsMock.value = new URLSearchParams();
+    navigationMock.searchParams.value = new URLSearchParams();
+    navigationMock.notFound.mockClear();
+    vi.unstubAllEnvs();
     window.history.pushState({}, "", "/");
     cleanup();
   });
 
   it("opens the identity step directly for local preview", async () => {
-    searchParamsMock.value = new URLSearchParams("previewStep=identity");
+    navigationMock.searchParams.value = new URLSearchParams("previewStep=identity");
 
     render(<RegisterPage />);
 
@@ -39,7 +48,7 @@ describe("RegisterPage local preview steps", () => {
   });
 
   it("opens the pilot-role step directly for local preview", async () => {
-    searchParamsMock.value = new URLSearchParams("previewStep=pilot_role");
+    navigationMock.searchParams.value = new URLSearchParams("previewStep=pilot_role");
 
     render(<RegisterPage />);
 
@@ -51,7 +60,7 @@ describe("RegisterPage local preview steps", () => {
   });
 
   it("opens the KI-consent step directly for local preview without sending data", async () => {
-    searchParamsMock.value = new URLSearchParams("previewStep=ai_consent");
+    navigationMock.searchParams.value = new URLSearchParams("previewStep=ai_consent");
 
     render(<RegisterPage />);
 
@@ -62,7 +71,7 @@ describe("RegisterPage local preview steps", () => {
 
   it("blocks Link senden in the query-param KI-consent preview", async () => {
     const user = userEvent.setup();
-    searchParamsMock.value = new URLSearchParams("previewStep=ai_consent");
+    navigationMock.searchParams.value = new URLSearchParams("previewStep=ai_consent");
     global.fetch = vi.fn(
       async () => new Response(JSON.stringify({ ok: true }), { status: 200 }),
     ) as unknown as typeof fetch;
@@ -84,7 +93,7 @@ describe("RegisterPage local preview steps", () => {
   });
 
   it("uses the browser URL as fallback when Next search params are stale", async () => {
-    searchParamsMock.value = new URLSearchParams();
+    navigationMock.searchParams.value = new URLSearchParams();
     window.history.pushState({}, "", "/register?previewStep=identity");
 
     render(<RegisterPage />);
@@ -94,7 +103,7 @@ describe("RegisterPage local preview steps", () => {
   });
 
   it("renders the browser URL preview step on first paint", () => {
-    searchParamsMock.value = new URLSearchParams();
+    navigationMock.searchParams.value = new URLSearchParams();
     window.history.pushState({}, "", "/register?previewStep=identity");
 
     render(<RegisterPage />);
@@ -112,6 +121,28 @@ describe("RegisterPage local preview steps", () => {
     render(<RegisterPage />);
 
     expect(screen.queryByRole("link", { name: /Vorschau Schritt/i })).not.toBeInTheDocument();
+  });
+
+  it("ignores the query-param preview path in production", async () => {
+    vi.stubEnv("NODE_ENV", "production");
+    navigationMock.searchParams.value = new URLSearchParams("previewStep=identity");
+    window.history.pushState({}, "", "/register?previewStep=identity");
+
+    render(<RegisterPage />);
+
+    expect(await screen.findByText("Wie möchten Sie beitreten?")).toBeInTheDocument();
+    expect(screen.queryByLabelText("Vorname")).not.toBeInTheDocument();
+  });
+
+  it("throws 404 for the dedicated preview route in production", async () => {
+    vi.stubEnv("NODE_ENV", "production");
+
+    await expect(
+      RegisterLocalPreviewPage({
+        params: Promise.resolve({ step: "ai-consent" }),
+      }),
+    ).rejects.toThrow("NEXT_NOT_FOUND");
+    expect(navigationMock.notFound).toHaveBeenCalledTimes(1);
   });
 
   it("renders the preview form directly for dedicated local preview routes without internal links", () => {

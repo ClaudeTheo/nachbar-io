@@ -24,6 +24,14 @@ describe('AddressAutocomplete', () => {
     expect(screen.getByPlaceholderText(/adresse eingeben/i)).toBeInTheDocument()
   })
 
+  it('zeigt die drei Pilotstrassen direkt als Auswahl an', () => {
+    render(<AddressAutocomplete onSelect={mockOnSelect} />)
+
+    expect(screen.getByText('Purkersdorfer Straße, 79713 Bad Säckingen')).toBeInTheDocument()
+    expect(screen.getByText('Sanarystraße, 79713 Bad Säckingen')).toBeInTheDocument()
+    expect(screen.getByText('Oberer Rebberg, 79713 Bad Säckingen')).toBeInTheDocument()
+  })
+
   it('sucht nicht bei weniger als 3 Zeichen', async () => {
     render(<AddressAutocomplete onSelect={mockOnSelect} />)
     const input = screen.getByPlaceholderText(/adresse eingeben/i)
@@ -74,15 +82,31 @@ describe('AddressAutocomplete', () => {
   it('synchronisiert sichtbare Eingabewerte auch ohne React-Input-Event', async () => {
     render(<AddressAutocomplete onSelect={mockOnSelect} />)
     const input = screen.getByPlaceholderText(/adresse eingeben/i)
+    const nativeInputValueSetter = Object.getOwnPropertyDescriptor(
+      window.HTMLInputElement.prototype,
+      'value',
+    )?.set
 
     input.focus()
-    Object.defineProperty(input, 'value', {
-      configurable: true,
-      value: 'P',
-    })
+    nativeInputValueSetter?.call(input, 'P')
 
     expect(
       await screen.findByText('Purkersdorfer Straße, 79713 Bad Säckingen'),
+    ).toBeInTheDocument()
+  })
+
+  it('synchronisiert sichtbare Eingabewerte auch ohne gemeldeten Fokus', async () => {
+    render(<AddressAutocomplete onSelect={mockOnSelect} />)
+    const input = screen.getByPlaceholderText(/adresse eingeben/i)
+    const nativeInputValueSetter = Object.getOwnPropertyDescriptor(
+      window.HTMLInputElement.prototype,
+      'value',
+    )?.set
+
+    nativeInputValueSetter?.call(input, 'S')
+
+    expect(
+      await screen.findByText('Sanarystraße, 79713 Bad Säckingen'),
     ).toBeInTheDocument()
   })
 

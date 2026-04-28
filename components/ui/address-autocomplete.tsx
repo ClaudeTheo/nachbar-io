@@ -85,43 +85,27 @@ export function AddressAutocomplete({
 }: AddressAutocompleteProps) {
   const [query, setQuery] = useState("");
   const [suggestions, setSuggestions] = useState<AddressSuggestion[]>([]);
-  const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [selectedIndex, setSelectedIndex] = useState(-1);
   const debounceRef = useRef<ReturnType<typeof setTimeout>>(undefined);
-  const containerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const latestQueryRef = useRef(query);
   const handleChangeRef = useRef<(value: string) => void>(() => undefined);
-  const pilotSuggestionsForQuery = findPilotStreetSuggestions(query);
+  const pilotSuggestionsForQuery = query.trim()
+    ? findPilotStreetSuggestions(query)
+    : PILOT_STREET_SUGGESTIONS;
   const displayedSuggestions = mergeSuggestions(
     pilotSuggestionsForQuery,
     suggestions,
   );
   const hasDisplayedSuggestions = displayedSuggestions.length > 0;
-  const shouldShowSuggestions =
-    (isOpen || pilotSuggestionsForQuery.length > 0) && hasDisplayedSuggestions;
-
-  // Klick ausserhalb schliesst Dropdown
-  useEffect(() => {
-    function handleClickOutside(e: MouseEvent) {
-      if (
-        containerRef.current &&
-        !containerRef.current.contains(e.target as Node)
-      ) {
-        setIsOpen(false);
-      }
-    }
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
+  const shouldShowSuggestions = !disabled && hasDisplayedSuggestions;
 
   const doSearch = useCallback(async (q: string) => {
     const pilotSuggestions = findPilotStreetSuggestions(q);
     if (q.length < 3) {
       setSuggestions(pilotSuggestions);
-      setIsOpen(pilotSuggestions.length > 0);
       return;
     }
 
@@ -132,14 +116,12 @@ export function AddressAutocomplete({
       const results = await searchAddress(q, "de", 5, "DE");
       const merged = mergeSuggestions(pilotSuggestions, results);
       setSuggestions(merged);
-      setIsOpen(merged.length > 0);
       setSelectedIndex(-1);
     } catch {
       setError(
         "Adresssuche vorübergehend nicht verfügbar, bitte versuche es gleich nochmal.",
       );
       setSuggestions([]);
-      setIsOpen(false);
     } finally {
       setIsLoading(false);
     }
@@ -151,7 +133,6 @@ export function AddressAutocomplete({
 
     const pilotSuggestions = findPilotStreetSuggestions(value);
     setSuggestions(pilotSuggestions);
-    setIsOpen(pilotSuggestions.length > 0);
     setSelectedIndex(-1);
     setError(null);
 
@@ -167,10 +148,7 @@ export function AddressAutocomplete({
   useEffect(() => {
     const intervalId = window.setInterval(() => {
       const currentValue = inputRef.current?.value ?? "";
-      if (
-        document.activeElement === inputRef.current &&
-        currentValue !== latestQueryRef.current
-      ) {
+      if (currentValue !== latestQueryRef.current) {
         handleChangeRef.current(currentValue);
       }
     }, 150);
@@ -181,7 +159,6 @@ export function AddressAutocomplete({
   const handleSelect = (suggestion: AddressSuggestion) => {
     setQuery(suggestion.displayText);
     setSuggestions([]);
-    setIsOpen(false);
     setError(null);
     onSelect(suggestion);
   };
@@ -201,7 +178,7 @@ export function AddressAutocomplete({
       e.preventDefault();
       handleSelect(displayedSuggestions[selectedIndex]);
     } else if (e.key === "Escape") {
-      setIsOpen(false);
+      setSelectedIndex(-1);
     }
   };
 
@@ -212,7 +189,7 @@ export function AddressAutocomplete({
   };
 
   return (
-    <div ref={containerRef} className={`relative ${className}`}>
+    <div className={`relative ${className}`}>
       <div className="relative">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
         <input
@@ -223,7 +200,6 @@ export function AddressAutocomplete({
           onInput={(e) => handleChange(e.currentTarget.value)}
           onKeyUp={handleKeyUp}
           onKeyDown={handleKeyDown}
-          onFocus={() => suggestions.length > 0 && setIsOpen(true)}
           placeholder={placeholder}
           disabled={disabled}
           className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg
@@ -249,7 +225,7 @@ export function AddressAutocomplete({
         <ul
           id="address-autocomplete-listbox"
           role="listbox"
-          className="absolute z-50 w-full mt-1 bg-white border border-gray-200
+          className="relative z-10 w-full mt-1 bg-white border border-gray-200
                      rounded-lg shadow-lg max-h-60 overflow-auto"
         >
           {displayedSuggestions.map((s, i) => (

@@ -37,13 +37,13 @@ const LEVEL_OPTIONS: LevelOption[] = [
   {
     level: "basic",
     label: "Basis",
-    description: "Erklären, Vorlesen und einfache Hilfe in der App.",
+    description: "Nach Ihrer Einwilligung: erklären, vorlesen und einfache Hilfe in der App.",
     icon: BookOpen,
   },
   {
     level: "everyday",
     label: "Alltag",
-    description: "Beim Formulieren, Verstehen und kleinen Fragen unterstützen.",
+    description: "Nach Ihrer Einwilligung: beim Formulieren, Verstehen und bei kleinen Fragen helfen.",
     icon: Sparkles,
   },
   {
@@ -70,9 +70,18 @@ export function RegisterStepAiConsent({ state, setState, setStep }: StepProps) {
   const [selectedLevel, setSelectedLevel] = useState<AiAssistanceLevel | null>(
     state.aiAssistanceLevel ?? null,
   );
+  const [aiConsentConfirmed, setAiConsentConfirmed] = useState(false);
+
+  const needsExplicitAiConsent =
+    selectedLevel === "basic" || selectedLevel === "everyday";
+  const canSubmit =
+    Boolean(selectedLevel) &&
+    !state.loading &&
+    (!needsExplicitAiConsent || aiConsentConfirmed);
 
   function chooseLevel(level: AiAssistanceLevel) {
     setSelectedLevel(level);
+    setAiConsentConfirmed(false);
     setState({
       aiAssistanceLevel: level,
       aiConsentChoice: levelToConsentChoice(level),
@@ -82,6 +91,14 @@ export function RegisterStepAiConsent({ state, setState, setStep }: StepProps) {
 
   async function submit() {
     if (!selectedLevel) return;
+    if (needsExplicitAiConsent && !aiConsentConfirmed) {
+      setState({
+        error:
+          "Bitte bestätigen Sie die freiwillige Einwilligung zur KI-Hilfe.",
+      });
+      return;
+    }
+
     const choice = levelToConsentChoice(selectedLevel);
     setState({ loading: true, error: null });
 
@@ -210,6 +227,27 @@ export function RegisterStepAiConsent({ state, setState, setStep }: StepProps) {
         </div>
       </div>
 
+      <div className="rounded-xl border border-border bg-white p-4 text-sm">
+        <p className="font-semibold text-anthrazit">
+          Datenschutz und Einwilligung
+        </p>
+        <p className="mt-1 text-muted-foreground">
+          Die Nutzung der KI-Hilfe ist freiwillig. Wenn Sie „Basis“ oder
+          „Alltag“ wählen, erlauben Sie die Verarbeitung Ihrer Eingaben für die
+          ausgewählte KI-Hilfe, sobald diese Funktion freigegeben ist.
+        </p>
+        <p className="mt-2 text-muted-foreground">
+          Sie können diese Einwilligung jederzeit später widerrufen. Ohne Ihre
+          Einwilligung bleibt die KI-Hilfe ausgeschaltet.
+        </p>
+        <a
+          href="/datenschutz"
+          className="mt-2 inline-flex text-quartier-green underline hover:no-underline"
+        >
+          Datenschutzerklärung ansehen
+        </a>
+      </div>
+
       <div className="grid gap-3">
         {LEVEL_OPTIONS.map(({ level, label, description, icon: Icon }) => (
           <button
@@ -273,13 +311,32 @@ export function RegisterStepAiConsent({ state, setState, setStep }: StepProps) {
         Ihre Eingaben sind nicht öffentlich.
       </p>
 
+      {needsExplicitAiConsent && (
+        <label className="flex gap-3 rounded-xl border border-quartier-green/25 bg-quartier-green/5 p-3 text-sm text-anthrazit">
+          <input
+            type="checkbox"
+            checked={aiConsentConfirmed}
+            onChange={(event) => {
+              setAiConsentConfirmed(event.target.checked);
+              setState({ error: null });
+            }}
+            className="mt-1 h-4 w-4 shrink-0 accent-quartier-green"
+          />
+          <span>
+            Ich willige freiwillig ein, dass die QuartierApp meine Eingaben für
+            die ausgewählte KI-Hilfe verarbeitet. Ich kann diese Einwilligung
+            später widerrufen.
+          </span>
+        </label>
+      )}
+
       {state.error && (
         <p className="text-sm text-emergency-red">{state.error}</p>
       )}
 
       <Button
         type="button"
-        disabled={!selectedLevel || state.loading}
+        disabled={!canSubmit}
         onClick={submit}
         className="w-full bg-quartier-green hover:bg-quartier-green-dark"
       >

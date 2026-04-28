@@ -75,6 +75,18 @@ describe("RegisterStepAiConsent — Polish 2026-04-27", () => {
     expect(screen.getByText(/Standardmäßig aus/i)).toBeInTheDocument();
   });
 
+  it("zeigt eine klare DSGVO-Einwilligungsbox mit Freiwilligkeit und Widerruf", () => {
+    render(<StatefulAiConsent />);
+
+    expect(screen.getByText("Datenschutz und Einwilligung")).toBeInTheDocument();
+    expect(screen.getByText(/freiwillig/i)).toBeInTheDocument();
+    expect(screen.getByText(/jederzeit später widerrufen/i)).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /Datenschutzerklärung/i })).toHaveAttribute(
+      "href",
+      "/datenschutz",
+    );
+  });
+
   it("zeigt 4 wahlbare Stufen-Cards plus eine disabled Persoenlich-Card", () => {
     render(<StatefulAiConsent />);
     expect(screen.getByRole("button", { name: /^Aus\s/i })).toBeEnabled();
@@ -109,7 +121,38 @@ describe("RegisterStepAiConsent — Polish 2026-04-27", () => {
       name: /Auswahl speichern und Link senden/i,
     });
     expect(submit).toBeDisabled();
+    await user.click(screen.getByRole("button", { name: /^Aus\s/i }));
+    expect(submit).toBeEnabled();
+  });
+
+  it("aktive KI-Stufen brauchen eine ausdrueckliche Einwilligung per Checkbox", async () => {
+    const user = userEvent.setup();
+    render(<StatefulAiConsent />);
+
+    const submit = screen.getByRole("button", {
+      name: /Auswahl speichern und Link senden/i,
+    });
     await user.click(screen.getByRole("button", { name: /^Alltag/i }));
+
+    expect(submit).toBeDisabled();
+    await user.click(
+      screen.getByRole("checkbox", {
+        name: /Ich willige freiwillig ein/i,
+      }),
+    );
+    expect(submit).toBeEnabled();
+  });
+
+  it("Aus und Spaeter entscheiden brauchen keine KI-Einwilligungs-Checkbox", async () => {
+    const user = userEvent.setup();
+    render(<StatefulAiConsent />);
+
+    const submit = screen.getByRole("button", {
+      name: /Auswahl speichern und Link senden/i,
+    });
+    await user.click(screen.getByRole("button", { name: /^Aus\s/i }));
+
+    expect(screen.queryByRole("checkbox", { name: /Ich willige freiwillig ein/i })).toBeNull();
     expect(submit).toBeEnabled();
   });
 
@@ -137,6 +180,13 @@ describe("RegisterStepAiConsent — Polish 2026-04-27", () => {
       const cardPattern =
         label === "Aus" ? /^Aus\s/i : new RegExp(`^${label}`, "i");
       await user.click(screen.getByRole("button", { name: cardPattern }));
+      if (expectedChoice === "yes") {
+        await user.click(
+          screen.getByRole("checkbox", {
+            name: /Ich willige freiwillig ein/i,
+          }),
+        );
+      }
       await user.click(
         screen.getByRole("button", {
           name: /Auswahl speichern und Link senden/i,

@@ -18,19 +18,15 @@ import {
 } from "./components";
 import type { Step, RegisterFormState } from "./components";
 
-// Wrapper mit Suspense-Boundary fuer useSearchParams
-export default function RegisterPage() {
-  return (
-    <Suspense fallback={<div className="py-12 text-center text-muted-foreground">Laden...</div>}>
-      <RegisterForm />
-    </Suspense>
-  );
-}
+const LOCAL_PREVIEW_OPTIONS: Array<{ step: Step; label: string; href: string }> = [
+  { step: "identity", label: "Vorschau Schritt 2", href: "/register/preview/identity" },
+  { step: "pilot_role", label: "Vorschau Schritt 3", href: "/register/preview/pilot-role" },
+  { step: "ai_consent", label: "Vorschau Schritt 4", href: "/register/preview/ai-consent" },
+];
+const LOCAL_PREVIEW_STEPS = LOCAL_PREVIEW_OPTIONS.map(({ step }) => step);
 
-function RegisterForm() {
-  // === State ===
-  const [step, setStep] = useState<Step>("entry");
-  const [formState, setFormState] = useState<RegisterFormState>({
+function buildInitialFormState(): RegisterFormState {
+  return {
     email: "",
     displayName: "",
     firstName: "",
@@ -50,13 +46,81 @@ function RegisterForm() {
     geoLoading: false,
     error: null,
     aiConsentChoice: "later",
-  });
+  };
+}
+
+function buildLocalPreviewState(): RegisterFormState {
+  return {
+    ...buildInitialFormState(),
+    email: "test.person@example.invalid",
+    displayName: "Test Person",
+    firstName: "Test",
+    lastName: "Person",
+    dateOfBirth: "1948-01-01",
+    verificationMethod: "address_manual",
+    selectedAddress: {
+      street: "Purkersdorfer Straße",
+      postalCode: "79713",
+      city: "Bad Säckingen",
+      state: "Baden-Württemberg",
+      country: "DE",
+      lat: 47.553,
+      lng: 7.946,
+      displayText: "Purkersdorfer Straße, 79713 Bad Säckingen",
+    },
+    houseNumber: "12",
+    postalCode: "79713",
+    city: "Bad Säckingen",
+    geoQuarter: {
+      quarter_id: "local-preview-bad-saeckingen",
+      quarter_name: "Bad Säckingen",
+      action: "preview",
+    },
+    pilotRole: "test_user",
+  };
+}
+
+function getLocalPreviewStep(searchParams: Pick<URLSearchParams, "get">): Step | null {
+  if (process.env.NODE_ENV === "production") return null;
+
+  const previewStep =
+    searchParams.get("previewStep") ??
+    (typeof window !== "undefined"
+      ? new URLSearchParams(window.location.search).get("previewStep")
+      : null);
+  if (LOCAL_PREVIEW_STEPS.includes(previewStep as Step)) {
+    return previewStep as Step;
+  }
+
+  return null;
+}
+
+// Wrapper mit Suspense-Boundary fuer useSearchParams
+export default function RegisterPage() {
+  return (
+    <Suspense fallback={<div className="py-12 text-center text-muted-foreground">Laden...</div>}>
+      <RegisterForm />
+    </Suspense>
+  );
+}
+
+function RegisterForm() {
+  // === State ===
+  const [step, setStep] = useState<Step>("entry");
+  const [formState, setFormState] = useState<RegisterFormState>(() => buildInitialFormState());
 
   const searchParams = useSearchParams();
 
   // === URL-Parameter: Invite-Code und Referrer aus QR-Code/Link ===
   /* eslint-disable react-hooks/set-state-in-effect -- URL-Params einmalig in State uebernehmen */
   useEffect(() => {
+    const previewStep = getLocalPreviewStep(searchParams);
+    if (previewStep) {
+      setFormState(buildLocalPreviewState());
+      setStep(previewStep);
+      return;
+    }
+
     const invite = searchParams.get("invite");
     const ref = searchParams.get("ref");
     if (invite) {
@@ -137,6 +201,19 @@ function RegisterForm() {
               Schritt {currentStep} von {totalSteps}
             </p>
             <KiHelpOnboardingHint step={step} />
+            {process.env.NODE_ENV !== "production" && (
+              <div className="mt-3 flex flex-wrap justify-center gap-2 rounded-lg border border-dashed border-quartier-green/30 bg-quartier-green/5 p-2">
+                {LOCAL_PREVIEW_OPTIONS.map(({ step: previewStep, label, href }) => (
+                  <a
+                    key={previewStep}
+                    href={href}
+                    className="rounded-md border border-quartier-green/30 bg-white px-2.5 py-1.5 text-xs font-medium text-quartier-green transition-colors hover:bg-quartier-green/10"
+                  >
+                    {label}
+                  </a>
+                ))}
+              </div>
+            )}
           </>
         )}
       </CardHeader>

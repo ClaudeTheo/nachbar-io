@@ -1,5 +1,7 @@
 // Typen fuer den Registrierungs-Flow
 import type { AddressSuggestion } from "@/lib/geo/photon-client";
+import type { AiAssistanceLevel } from "@/lib/ki-help/ai-assistance-levels";
+export type { AiAssistanceLevel } from "@/lib/ki-help/ai-assistance-levels";
 
 // Schritt-Typen fuer den 2-Schritt-Flow
 export type Step =
@@ -12,8 +14,6 @@ export type Step =
   | "magic_link_sent";
 
 export type PilotRole = "resident" | "caregiver" | "helper" | "test_user";
-
-export type AiAssistanceLevel = "off" | "basic" | "everyday" | "later";
 
 // Gemeinsamer Form-State fuer alle Schritte
 export interface RegisterFormState {

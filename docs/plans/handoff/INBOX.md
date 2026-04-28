@@ -20,7 +20,7 @@ Shared task board and mailbox for Codex, Claude, and future coding agents.
 | Status | Owner | Title | Files | Since | Release condition | Last update |
 |---|---|---|---|---|---|---|
 | done | codex | DSGVO-Wording-Pass + Preview-Routen-Flag | `app/(auth)/register/components/RegisterStepAiConsent.tsx` + `app/(auth)/register/page.tsx` + `app/(auth)/register/preview/[step]/page.tsx` | 2026-04-28 | block-1+2 committed in `b142ace` | 2026-04-28 20:04 |
-| pending | claude | Block-3 AI-Stufen-Settings Plan + Implementation | `components/ki-help/*` + `lib/ki-help/*` + `lib/ai/user-settings.ts` + `modules/ai/components/AiHelpSettingsToggle.tsx` + `app/api/settings/ai/route.ts` | 2026-04-28 | may start after reading design doc `a60fc9f` and current INBOX | 2026-04-28 20:04 |
+| in-progress | codex | Block-3 AI-Stufen-Settings Plan + Implementation | `components/ki-help/*` + `lib/ki-help/*` + `lib/ai/user-settings.ts` + `modules/ai/components/AiHelpSettingsToggle.tsx` + `app/api/settings/ai/route.ts` | 2026-04-28 | may start after reading design doc `a60fc9f` and current INBOX | 2026-04-28 20:04 |
 
 ## Notes
 

@@ -3,15 +3,9 @@
 import { useState } from "react";
 import {
   ArrowLeft,
-  BookOpen,
-  CheckCircle2,
-  Clock,
-  Lock,
   MessageCircleQuestion,
   Mic,
-  PowerOff,
   ShieldCheck,
-  Sparkles,
   Volume2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -19,51 +13,11 @@ import { createClient } from "@/lib/supabase/client";
 import { normalizeCode } from "@/lib/invite-codes";
 import type { AiAssistanceLevel, StepProps } from "./types";
 import { KiHelpFaqSheet } from "@/components/ki-help/KiHelpFaqSheet";
-
-type LevelOption = {
-  level: AiAssistanceLevel;
-  label: string;
-  description: string;
-  icon: typeof Sparkles;
-};
-
-const LEVEL_OPTIONS: LevelOption[] = [
-  {
-    level: "off",
-    label: "Aus",
-    description: "Die KI-Hilfe bleibt ausgeschaltet.",
-    icon: PowerOff,
-  },
-  {
-    level: "basic",
-    label: "Basis",
-    description: "Nach Ihrer Einwilligung: erklären, vorlesen und einfache Hilfe in der App.",
-    icon: BookOpen,
-  },
-  {
-    level: "everyday",
-    label: "Alltag",
-    description: "Nach Ihrer Einwilligung: beim Formulieren, Verstehen und bei kleinen Fragen helfen.",
-    icon: Sparkles,
-  },
-  {
-    level: "later",
-    label: "Später entscheiden",
-    description: "Sie entscheiden später in den Einstellungen.",
-    icon: Clock,
-  },
-];
+import { AiAssistanceLevelPicker } from "@/components/ki-help/AiAssistanceLevelPicker";
+import { levelToConsentChoice } from "@/lib/ki-help/ai-assistance-levels";
 
 function buildFullName(firstName: string, lastName: string) {
   return `${firstName.trim()} ${lastName.trim()}`.trim();
-}
-
-function levelToConsentChoice(
-  level: AiAssistanceLevel,
-): "yes" | "no" | "later" {
-  if (level === "basic" || level === "everyday") return "yes";
-  if (level === "off") return "no";
-  return "later";
 }
 
 export function RegisterStepAiConsent({
@@ -262,62 +216,12 @@ export function RegisterStepAiConsent({
         </a>
       </div>
 
-      <div className="grid gap-3">
-        {LEVEL_OPTIONS.map(({ level, label, description, icon: Icon }) => (
-          <button
-            key={level}
-            type="button"
-            disabled={state.loading}
-            onClick={() => chooseLevel(level)}
-            className={`w-full rounded-lg border-2 p-4 text-left transition-colors ${
-              selectedLevel === level
-                ? "border-quartier-green bg-quartier-green/5"
-                : "border-border hover:border-quartier-green/50"
-            }`}
-            aria-pressed={selectedLevel === level}
-          >
-            <div className="flex items-start gap-3">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-quartier-green/10">
-                <Icon className="h-5 w-5 text-quartier-green" />
-              </div>
-              <div className="min-w-0 flex-1">
-                <p className="font-semibold text-anthrazit">{label}</p>
-                <p className="mt-1 text-sm text-muted-foreground">
-                  {description}
-                </p>
-              </div>
-              {selectedLevel === level && (
-                <CheckCircle2
-                  className="mt-1 h-5 w-5 shrink-0 text-quartier-green"
-                  aria-hidden="true"
-                />
-              )}
-            </div>
-          </button>
-        ))}
-
-        <button
-          type="button"
-          disabled
-          aria-disabled="true"
-          className="w-full cursor-not-allowed rounded-lg border-2 border-dashed border-border/60 bg-muted/30 p-4 text-left opacity-70"
-        >
-          <div className="flex items-start gap-3">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-muted">
-              <Lock className="h-5 w-5 text-muted-foreground" />
-            </div>
-            <div className="min-w-0 flex-1">
-              <p className="font-semibold text-anthrazit">
-                Persönlich (später)
-              </p>
-              <p className="mt-1 text-sm text-muted-foreground">
-                Nur mit ausdrücklicher Einwilligung und aktiven Schutzmaßnahmen,
-                kommt mit Phase 2 nach Freigabe.
-              </p>
-            </div>
-          </div>
-        </button>
-      </div>
+      <AiAssistanceLevelPicker
+        mode="onboarding"
+        value={selectedLevel}
+        onChange={chooseLevel}
+        disabled={state.loading}
+      />
 
       <p className="text-xs text-muted-foreground">
         Vor Ihrer Einwilligung wird nichts an eine KI gesendet. Persönliche

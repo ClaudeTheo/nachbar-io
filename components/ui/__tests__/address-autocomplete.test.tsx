@@ -34,6 +34,51 @@ describe('AddressAutocomplete', () => {
     expect(mockSearch).not.toHaveBeenCalled()
   })
 
+  it('zeigt Pilotstrassen schon ab dem ersten Buchstaben lokal an', async () => {
+    render(<AddressAutocomplete onSelect={mockOnSelect} />)
+    const input = screen.getByPlaceholderText(/adresse eingeben/i)
+    await userEvent.type(input, 'P')
+
+    expect(
+      await screen.findByText('Purkersdorfer Straße, 79713 Bad Säckingen'),
+    ).toBeInTheDocument()
+    expect(mockSearch).not.toHaveBeenCalled()
+  })
+
+  it('synchronisiert sichtbare Eingabewerte auch ohne React-Input-Event', async () => {
+    render(<AddressAutocomplete onSelect={mockOnSelect} />)
+    const input = screen.getByPlaceholderText(/adresse eingeben/i)
+
+    input.focus()
+    Object.defineProperty(input, 'value', {
+      configurable: true,
+      value: 'P',
+    })
+
+    expect(
+      await screen.findByText('Purkersdorfer Straße, 79713 Bad Säckingen'),
+    ).toBeInTheDocument()
+  })
+
+  it('uebergibt bei Klick auf eine Pilotstrasse PLZ und Ort zum automatischen Ausfuellen', async () => {
+    render(<AddressAutocomplete onSelect={mockOnSelect} />)
+    const input = screen.getByPlaceholderText(/adresse eingeben/i)
+    await userEvent.type(input, 'P')
+
+    fireEvent.click(
+      await screen.findByText('Purkersdorfer Straße, 79713 Bad Säckingen'),
+    )
+
+    expect(mockOnSelect).toHaveBeenCalledWith(
+      expect.objectContaining({
+        street: 'Purkersdorfer Straße',
+        postalCode: '79713',
+        city: 'Bad Säckingen',
+        country: 'DE',
+      }),
+    )
+  })
+
   it('zeigt Vorschläge nach Eingabe', async () => {
     mockSearch.mockResolvedValueOnce([
       {

@@ -35,6 +35,22 @@ describe("AiHelpSettingsToggle", () => {
     ).toBeNull();
   });
 
+  it("renders the existing KI-Hilfe FAQ pulse trigger in settings and opens the same sheet", async () => {
+    const user = userEvent.setup();
+    render(<AiHelpSettingsToggle />);
+
+    const trigger = await screen.findByRole("button", {
+      name: /Hilfe zur KI-Hilfe öffnen/i,
+    });
+    await user.click(trigger);
+
+    expect(
+      await screen.findByRole("dialog", {
+        name: /Häufige Fragen zur KI-Hilfe/i,
+      }),
+    ).toBeInTheDocument();
+  });
+
   it("posts ai_assistance_level when a settings level changes", async () => {
     const user = userEvent.setup();
     render(<AiHelpSettingsToggle />);

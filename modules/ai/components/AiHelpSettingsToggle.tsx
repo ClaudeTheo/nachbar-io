@@ -3,6 +3,7 @@
 import { useEffect, useState, useTransition } from "react";
 import { Sparkles, X } from "lucide-react";
 import { AiAssistanceLevelPicker } from "@/components/ki-help/AiAssistanceLevelPicker";
+import { KiHelpFaqSheet } from "@/components/ki-help/KiHelpFaqSheet";
 import type { AiAssistanceLevel } from "@/lib/ki-help/ai-assistance-levels";
 
 type ApiState = {
@@ -65,14 +66,19 @@ export function AiHelpSettingsToggle() {
 
   return (
     <div className="rounded-xl border bg-card p-4 shadow-soft">
-      <div className="flex items-start gap-3">
-        <Sparkles className="mt-1 h-5 w-5 shrink-0 text-quartier-green" />
-        <div>
-          <p className="font-semibold text-anthrazit">KI-Hilfe verwenden</p>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Vorlesen, Sprachbefehle und Assistent bleiben standardmaessig aus.
-            Die App funktioniert auch ohne KI-Hilfe.
-          </p>
+      <div className="flex items-start justify-between gap-3">
+        <div className="flex items-start gap-3">
+          <Sparkles className="mt-1 h-5 w-5 shrink-0 text-quartier-green" />
+          <div>
+            <p className="font-semibold text-anthrazit">KI-Hilfe verwenden</p>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Vorlesen, Sprachbefehle und Assistent bleiben standardmaessig
+              aus. Die App funktioniert auch ohne KI-Hilfe.
+            </p>
+          </div>
+        </div>
+        <div className="shrink-0">
+          <KiHelpFaqSheet />
         </div>
       </div>
 

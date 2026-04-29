@@ -15,6 +15,7 @@ import { createMistralProvider } from "./mistral";
 import { createMockProvider } from "./mock";
 import { createOffProvider } from "./off";
 import { AIProviderError, type AIProvider } from "./types";
+import type { AiAssistanceLevel } from "@/lib/ki-help/ai-assistance-levels";
 
 export type {
   AIChatInput,
@@ -33,6 +34,40 @@ export { createClaudeProvider } from "./claude";
 export { createMistralProvider } from "./mistral";
 export { createMockProvider, type MockProvider } from "./mock";
 export { createOffProvider } from "./off";
+
+export interface AiAssistanceBackendPreset {
+  level: "basic" | "everyday";
+  maxTokens: number;
+  loadMemoryContext: boolean;
+  allowMemoryTool: boolean;
+  systemPromptSuffix: string;
+}
+
+const BASIC_AI_ASSISTANCE_PRESET: AiAssistanceBackendPreset = {
+  level: "basic",
+  maxTokens: 512,
+  loadMemoryContext: false,
+  allowMemoryTool: false,
+  systemPromptSuffix:
+    "Stufe Basis: Helfen Sie kurz, einfach und ruhig bei App-Hilfe, Vorlesen und Orientierung. Bleiben Sie bei oberflaechlicher Hilfe, stellen Sie keine tieferen Alltags-Rueckfragen und speichern Sie keine neuen Erinnerungen.",
+};
+
+const EVERYDAY_AI_ASSISTANCE_PRESET: AiAssistanceBackendPreset = {
+  level: "everyday",
+  maxTokens: 1024,
+  loadMemoryContext: true,
+  allowMemoryTool: true,
+  systemPromptSuffix:
+    "Stufe Alltag: Sie duerfen beim Formulieren, Verstehen und bei kleinen Alltagsfragen helfen. Wenn es klar passt, duerfen Sie dafuer auch vorhandenen Memory-Kontext nutzen und neue Erinnerungen ueber das freigegebene Tool speichern.",
+};
+
+export function getAiAssistanceBackendPreset(
+  level: AiAssistanceLevel,
+): AiAssistanceBackendPreset {
+  return level === "everyday"
+    ? EVERYDAY_AI_ASSISTANCE_PRESET
+    : BASIC_AI_ASSISTANCE_PRESET;
+}
 
 export function getProvider(): AIProvider {
   const raw = process.env.AI_PROVIDER?.trim().toLowerCase() ?? "off";

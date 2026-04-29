@@ -11,6 +11,7 @@ import {
   createMistralProvider,
   createMockProvider,
   createOffProvider,
+  getAiAssistanceBackendPreset,
   getProvider,
 } from "@/lib/ai/provider";
 
@@ -81,6 +82,37 @@ describe("getProvider factory", () => {
   it("throws on unknown AI_PROVIDER value (fail loud, no silent fallback)", () => {
     process.env.AI_PROVIDER = "llama";
     expect(() => getProvider()).toThrow(/AI_PROVIDER/);
+  });
+});
+
+describe("getAiAssistanceBackendPreset", () => {
+  it("maps basic to a narrower backend preset", () => {
+    expect(getAiAssistanceBackendPreset("basic")).toEqual({
+      level: "basic",
+      maxTokens: 512,
+      loadMemoryContext: false,
+      allowMemoryTool: false,
+      systemPromptSuffix: expect.stringMatching(/basis/i),
+    });
+  });
+
+  it("maps everyday to a richer backend preset", () => {
+    expect(getAiAssistanceBackendPreset("everyday")).toEqual({
+      level: "everyday",
+      maxTokens: 1024,
+      loadMemoryContext: true,
+      allowMemoryTool: true,
+      systemPromptSuffix: expect.stringMatching(/alltag/i),
+    });
+  });
+
+  it("treats later as the safer basic preset", () => {
+    expect(getAiAssistanceBackendPreset("later")).toMatchObject({
+      level: "basic",
+      maxTokens: 512,
+      loadMemoryContext: false,
+      allowMemoryTool: false,
+    });
   });
 });
 

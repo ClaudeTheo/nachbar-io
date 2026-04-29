@@ -19,6 +19,7 @@ import {
 } from "@/lib/care/api-helpers";
 import {
   getProvider,
+  getAiAssistanceBackendPreset,
   AIProviderError,
   type AIMessage,
   type AIToolCall,
@@ -39,10 +40,6 @@ import { checkCareConsent } from "@/modules/care/services/consent";
 // Max Tool-Calls pro Turn. Schuetzt vor Runaway wenn der Provider
 // unerwartet viele save_memory-Calls in einer Response emittiert.
 const MAX_TOOLS_PER_TURN = 3;
-// Max Token fuer Assistant-Output. Der System-Prompt selbst ist wesentlich
-// groesser, wird aber via cache_control.system nur alle 5 Minuten neu abgerechnet.
-const MAX_TOKENS = 1024;
-
 interface TurnRequest {
   messages: AIMessage[];
   userInput: string;
@@ -117,6 +114,7 @@ export async function POST(request: NextRequest) {
   if (!aiHelpState.enabled) {
     return errorResponse(`${AI_HELP_DISABLED_MESSAGE} (ai_disabled)`, 503);
   }
+  const aiPreset = getAiAssistanceBackendPreset(aiHelpState.assistanceLevel);
 
   // 4. Consent-Check (Codex-Review BLOCKER F6.1):
   //    DSGVO Art. 6/28 — KI-Datenuebermittlung an Claude/Mistral darf nur
@@ -132,26 +130,30 @@ export async function POST(request: NextRequest) {
 
   // 5. Memory-Kontext laden (relevant fuer den neuen userInput)
   let memoryBlock = "";
-  try {
-    memoryBlock = await loadMemoryContext(
-      supabase,
-      user.id,
-      userInput,
-      "plus_chat",
-    );
-  } catch (err) {
-    // Fallback: Chat laeuft auch ohne Memory-Block weiter.
-    console.warn(
-      "[ai/onboarding/turn] loadMemoryContext-Fehler, Fallback ohne Memory:",
-      err,
-    );
+  if (aiPreset.loadMemoryContext) {
+    try {
+      memoryBlock = await loadMemoryContext(
+        supabase,
+        user.id,
+        userInput,
+        "plus_chat",
+      );
+    } catch (err) {
+      // Fallback: Chat laeuft auch ohne Memory-Block weiter.
+      console.warn(
+        "[ai/onboarding/turn] loadMemoryContext-Fehler, Fallback ohne Memory:",
+        err,
+      );
+    }
   }
 
-  // 6. System-Prompt bauen (Wissensdokument + Memory-Block)
+  // 6. System-Prompt bauen (Wissensdokument + Stufen-Preset + optional Memory)
   const knowledge = await loadSeniorAppKnowledge();
-  const systemPrompt = memoryBlock
-    ? `${knowledge}\n\n${memoryBlock}`
-    : knowledge;
+  const systemParts = [knowledge, aiPreset.systemPromptSuffix];
+  if (memoryBlock) {
+    systemParts.push(memoryBlock);
+  }
+  const systemPrompt = systemParts.join("\n\n");
 
   // 7. Provider holen - bei AI_PROVIDER=off wird hier geworfen
   let provider;
@@ -176,8 +178,8 @@ export async function POST(request: NextRequest) {
       system: systemPrompt,
       cache_control: { system: true }, // C5a: 5min-Cache fuer -90% Input-Kosten
       messages: chatMessages,
-      tools: [buildMemoryTool()],
-      max_tokens: MAX_TOKENS,
+      ...(aiPreset.allowMemoryTool ? { tools: [buildMemoryTool()] } : {}),
+      max_tokens: aiPreset.maxTokens,
     });
   } catch (err) {
     if (err instanceof AIProviderError) {

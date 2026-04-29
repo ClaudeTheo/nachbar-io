@@ -144,7 +144,10 @@ beforeEach(() => {
   // Default: ai_onboarding-Consent ist granted, damit existierende
   // Happy-Path-Tests nicht jedes Mal mocken muessen.
   mockCheckCareConsent.mockResolvedValue(true);
-  mockGetAiHelpState.mockResolvedValue({ enabled: true });
+  mockGetAiHelpState.mockResolvedValue({
+    enabled: true,
+    assistanceLevel: "everyday",
+  });
 });
 
 // ---------------------------------------------------------------------------
@@ -402,6 +405,57 @@ describe("POST /api/ai/onboarding/turn — Happy-Path", () => {
       .calls[0][0];
     expect(callArgs.system).toContain("WISSENSDOKUMENT_SENIOR_APP");
     expect(callArgs.system).not.toContain("MEMORY_BLOCK");
+  });
+
+  it("verwendet fuer Basis keinen Memory-Kontext und kein Memory-Tool", async () => {
+    mockGetAiHelpState.mockResolvedValue({
+      enabled: true,
+      assistanceLevel: "basic",
+    });
+    const provider = makeProvider(textResponse("ok"));
+    mockGetProvider.mockReturnValue(provider);
+
+    const { POST } = await import("../route");
+    const res = await POST(makeReq({ messages: [], userInput: "Hallo" }));
+    expect(res.status).toBe(200);
+
+    expect(mockLoadMemoryContext).not.toHaveBeenCalled();
+
+    const callArgs = (provider.chat as unknown as ReturnType<typeof vi.fn>).mock
+      .calls[0][0];
+    expect(callArgs.max_tokens).toBe(512);
+    expect(callArgs.tools).toBeUndefined();
+    expect(callArgs.system).toContain("WISSENSDOKUMENT_SENIOR_APP");
+    expect(callArgs.system).toMatch(/basis/i);
+    expect(callArgs.system).not.toContain("MEMORY_BLOCK");
+  });
+
+  it("verwendet fuer Alltag Memory-Kontext und Memory-Tool mit hoeherem Token-Limit", async () => {
+    mockGetAiHelpState.mockResolvedValue({
+      enabled: true,
+      assistanceLevel: "everyday",
+    });
+    const provider = makeProvider(textResponse("ok"));
+    mockGetProvider.mockReturnValue(provider);
+
+    const { POST } = await import("../route");
+    const res = await POST(makeReq({ messages: [], userInput: "Hallo" }));
+    expect(res.status).toBe(200);
+
+    expect(mockLoadMemoryContext).toHaveBeenCalledWith(
+      mockSupabase,
+      mockUser.id,
+      "Hallo",
+      "plus_chat",
+    );
+
+    const callArgs = (provider.chat as unknown as ReturnType<typeof vi.fn>).mock
+      .calls[0][0];
+    expect(callArgs.max_tokens).toBe(1024);
+    expect(callArgs.tools).toBeDefined();
+    expect(callArgs.tools[0].name).toBe("save_memory");
+    expect(callArgs.system).toContain("MEMORY_BLOCK");
+    expect(callArgs.system).toMatch(/alltag/i);
   });
 });
 

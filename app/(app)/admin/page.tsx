@@ -46,6 +46,7 @@ import { VerificationQueue } from "./components/VerificationQueue";
 import { SuperAdminOverview } from "./components/SuperAdminOverview";
 import { QuarterWizard } from "./components/QuarterWizard";
 import { FeatureFlagManager } from "./components/FeatureFlagManager";
+import { FeatureFlagAuditLog } from "./components/FeatureFlagAuditLog";
 import { BugReports } from "./components/BugReports";
 import { KpiDashboard } from "@/modules/admin/components/KpiDashboard";
 import YouthAdmin from "./components/YouthAdmin";
@@ -436,7 +437,12 @@ export default function AdminPage() {
         {activeTab === "database" && <DatabaseOverview />}
         {activeTab === "api" && <ApiTester />}
         {activeTab === "devops" && <DevOpsPanel />}
-        {activeTab === "flags" && <FeatureFlagManager />}
+        {activeTab === "flags" && (
+          <div className="space-y-4">
+            <FeatureFlagManager />
+            <FeatureFlagAuditLog />
+          </div>
+        )}
         {activeTab === "kpi" && <KpiDashboard />}
         {activeTab === "bugs" && <BugReports />}
         {activeTab === "youth" && <YouthAdmin />}

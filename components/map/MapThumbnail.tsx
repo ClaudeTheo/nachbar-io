@@ -357,6 +357,7 @@ export function MapThumbnail({
           }}
         >
           {layout.tiles.map((tile) => (
+            // eslint-disable-next-line @next/next/no-img-element -- OSM/CARTO-Tile-Mosaik: next/image wuerde Remote-Patterns und Tile-Loader-Config erzwingen.
             <img
               key={tile.key}
               src={`https://basemaps.cartocdn.com/rastertiles/voyager/${viewport.zoom}/${tile.tx}/${tile.ty}@2x.png`}

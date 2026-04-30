@@ -44,6 +44,7 @@ export function ProfilView({
       {/* Name + Avatar */}
       <div className="mt-6 flex items-center gap-4">
         {avatarUrl && (
+          // eslint-disable-next-line @next/next/no-img-element -- Avatare kommen aus Nutzer-/Supabase-URLs; next/image ist ohne Remote-Patterns nicht verlaesslich.
           <img
             src={avatarUrl}
             alt={displayName}

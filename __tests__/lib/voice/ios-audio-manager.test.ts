@@ -123,7 +123,7 @@ describe('IOSAudioManager', () => {
     // Click-Event simulieren
     const clickHandler = registeredListeners['click']?.[0];
     expect(clickHandler).toBeDefined();
-    await (clickHandler as Function)(new Event('click'));
+    await (clickHandler as EventListener)(new Event('click'));
 
     expect(manager.isUnlocked).toBe(true);
   });
@@ -136,7 +136,7 @@ describe('IOSAudioManager', () => {
 
     // Unlock simulieren
     const clickHandler = registeredListeners['click']?.[0];
-    await (clickHandler as Function)(new Event('click'));
+    await (clickHandler as EventListener)(new Event('click'));
 
     expect(manager.canPlay()).toBe(true);
   });
@@ -147,7 +147,7 @@ describe('IOSAudioManager', () => {
 
     // Unlock
     const clickHandler = registeredListeners['click']?.[0];
-    await (clickHandler as Function)(new Event('click'));
+    await (clickHandler as EventListener)(new Event('click'));
     expect(manager.isUnlocked).toBe(true);
 
     manager.cleanup();
@@ -163,7 +163,7 @@ describe('IOSAudioManager', () => {
 
     // Unlock
     const clickHandler = registeredListeners['click']?.[0];
-    await (clickHandler as Function)(new Event('click'));
+    await (clickHandler as EventListener)(new Event('click'));
 
     // Mock: createBufferSource gibt Source mit start() zurueck
     // playBlob ruft decodeAudioData + createBufferSource + start() auf

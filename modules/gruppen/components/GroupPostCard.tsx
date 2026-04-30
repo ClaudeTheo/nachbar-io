@@ -63,6 +63,7 @@ export function GroupPostCard({ post, currentUserId }: GroupPostCardProps) {
           </div>
           <p className="mt-1 whitespace-pre-wrap text-sm text-gray-700">{post.content}</p>
           {post.image_url && (
+            // eslint-disable-next-line @next/next/no-img-element -- Gruppenbilder sind nutzergenerierte Remote-URLs; keine sichere next/image-Remote-Konfiguration vorhanden.
             <img
               src={post.image_url}
               alt="Beitragsbild"

@@ -2,6 +2,7 @@
 // Unit-Tests fuer buildClientKeysNode (Node.js-Runtime API-Route Helper)
 
 import { describe, it, expect, vi, beforeEach } from "vitest";
+import type { NextRequest } from "next/server";
 
 // Crypto-Modul mocken (default-Export beibehalten)
 vi.mock("crypto", async (importOriginal) => {
@@ -27,7 +28,7 @@ function mockRequest(
     realIp?: string | null;
     ip?: string;
   } = {},
-): any {
+): NextRequest {
   return {
     headers: {
       get: (name: string) => {
@@ -37,7 +38,7 @@ function mockRequest(
       },
     },
     ip: overrides.ip,
-  };
+  } as unknown as NextRequest;
 }
 
 describe("buildClientKeysNode", () => {

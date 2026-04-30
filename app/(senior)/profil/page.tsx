@@ -2,6 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import { getCareProfile } from "@/modules/care/services/profile.service";
 import { redirect } from "next/navigation";
 import { ProfilView } from "@/components/senior/ProfilView";
+import type { EmergencyContact } from "@/modules/care/services/types";
 
 export default async function SeniorProfilPage() {
   const supabase = await createClient();
@@ -24,11 +25,13 @@ export default async function SeniorProfilPage() {
     const profile = await getCareProfile(supabase, user.id, user.id);
     if (profile?.emergency_contacts) {
       contacts = profile.emergency_contacts
-        .filter((c: any) => c.name && c.phone)
-        .map((c: any) => ({
-          name: c.name,
-          relationship: c.relationship || "",
-          phone: c.phone,
+        .filter(
+          (contact: EmergencyContact) => contact.name && contact.phone,
+        )
+        .map((contact: EmergencyContact) => ({
+          name: contact.name,
+          relationship: contact.relationship || "",
+          phone: contact.phone,
         }));
     }
   } catch {

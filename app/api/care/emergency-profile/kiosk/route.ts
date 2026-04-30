@@ -3,7 +3,7 @@
 // Auth: Device-Token (x-device-token Header), NICHT Supabase-Session
 // Nur Level-1 (Rettungsdienst-relevante Daten), Level-2/3 werden NICHT ausgeliefert
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@supabase/supabase-js";
+import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { decrypt } from "@/modules/care/services/crypto";
 
 // Service-Client erstellen (umgeht RLS — Kiosk hat keine User-Session)
@@ -14,9 +14,8 @@ function getServiceClient() {
 }
 
 // Device-Token pruefen: Erst kiosk_devices Tabelle, dann ENV-Fallback
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function verifyDevice(
-  supabase: any,
+  supabase: SupabaseClient,
   deviceId: string,
   deviceToken: string,
 ): Promise<{ valid: boolean; userId?: string }> {

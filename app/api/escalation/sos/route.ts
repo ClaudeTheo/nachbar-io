@@ -2,7 +2,7 @@
 // SOS Event-Splitting: sos_opened (nur Audit-Log) vs sos_alerted (Audit + Push an Angehörige)
 // Auth: Device-Token (x-device-token Header), NICHT Supabase-Session
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@supabase/supabase-js";
+import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 
 // Service-Client erstellen (umgeht RLS — Kiosk hat keine User-Session)
 function getServiceClient() {
@@ -12,9 +12,8 @@ function getServiceClient() {
 }
 
 // Device-Token pruefen: Erst kiosk_devices Tabelle, dann ENV-Fallback
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function verifyDevice(
-  supabase: any,
+  supabase: SupabaseClient,
   deviceId: string,
   deviceToken: string,
 ): Promise<{ valid: boolean; userId?: string }> {

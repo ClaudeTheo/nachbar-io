@@ -6,6 +6,7 @@ import type {
   SaveDecision,
   MemoryCategory,
   MemoryActorRole,
+  MemoryConsentLevel,
 } from '../types';
 import {
   SENSITIVE_CATEGORIES,
@@ -19,6 +20,18 @@ interface ValidationContext {
   hasConsent: boolean;
   factCount: number;
   maxFacts: number;
+}
+
+function consentTypeToLevel(category: MemoryCategory): MemoryConsentLevel {
+  const consentType = CATEGORY_TO_CONSENT[category];
+  switch (consentType) {
+    case 'memory_basis':
+      return 'basis';
+    case 'memory_care':
+      return 'care';
+    case 'memory_personal':
+      return 'personal';
+  }
 }
 
 // Reine Validierung (kein DB-Zugriff, testbar)
@@ -185,7 +198,7 @@ export async function saveFact(
     .insert({
       user_id: targetUserId,
       category: input.category,
-      consent_level: CATEGORY_TO_CONSENT[input.category].replace('memory_', '') as any,
+      consent_level: consentTypeToLevel(input.category),
       key: input.key,
       value,
       value_encrypted: isSensitive,

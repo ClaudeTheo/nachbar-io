@@ -3,6 +3,13 @@ import "fake-indexeddb/auto";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { OfflineQueue } from "./offline-queue";
 
+interface OfflineQueueEntry {
+  id?: number;
+  url: string;
+  body: string;
+  createdAt: number;
+}
+
 let queue: OfflineQueue;
 beforeEach(() => {
   indexedDB.deleteDatabase("nachbar_offline");
@@ -77,7 +84,7 @@ describe("OfflineQueue — TTL", () => {
     });
     const tx = db.transaction("queue", "readwrite");
     const store = tx.objectStore("queue");
-    const all = await new Promise<any[]>((res) => {
+    const all = await new Promise<OfflineQueueEntry[]>((res) => {
       const r = store.getAll();
       r.onsuccess = () => res(r.result);
     });
@@ -119,7 +126,9 @@ describe("OfflineQueue — max entries", () => {
     const mockFetch = vi.fn().mockResolvedValue({ ok: true });
     globalThis.fetch = mockFetch as unknown as typeof fetch;
     await queue.flush();
-    const bodies = mockFetch.mock.calls.map((c: any) => c[1].body);
+    const bodies = mockFetch.mock.calls.map(
+      ([, init]) => (init as RequestInit).body,
+    );
     expect(bodies).not.toContain('{"i":0}');
     expect(bodies).toContain('{"i":50}');
   });

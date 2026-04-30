@@ -2,6 +2,7 @@
 // Unit-Tests fuer IDOR-Detection in handleServiceError
 
 import { describe, it, expect, vi, beforeEach } from "vitest";
+import type { NextRequest } from "next/server";
 
 // IDOR-Module mocken
 vi.mock("@/lib/security/traps/trap-utils", () => ({
@@ -21,7 +22,7 @@ import { ServiceError, handleServiceError } from "@/lib/services/service-error";
 import { buildClientKeysNode } from "@/lib/security/traps/trap-utils";
 import { recordIdorAttempt } from "@/lib/security/traps/idor-detector";
 
-function mockNextRequest(): any {
+function mockNextRequest(): NextRequest {
   return {
     headers: {
       get: (name: string) => {
@@ -29,7 +30,7 @@ function mockNextRequest(): any {
         return null;
       },
     },
-  };
+  } as NextRequest;
 }
 
 describe("handleServiceError mit IDOR-Detection", () => {

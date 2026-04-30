@@ -1,13 +1,14 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
+import type { NextRequest } from "next/server";
 
 const mockGetFacts = vi.fn();
 const mockSaveFact = vi.fn();
 const mockDeleteFact = vi.fn();
 
 vi.mock("@/modules/memory/services/facts.service", () => ({
-  getFacts: (...args: any[]) => mockGetFacts(...args),
-  saveFact: (...args: any[]) => mockSaveFact(...args),
-  deleteFact: (...args: any[]) => mockDeleteFact(...args),
+  getFacts: (...args: unknown[]) => mockGetFacts(...args),
+  saveFact: (...args: unknown[]) => mockSaveFact(...args),
+  deleteFact: (...args: unknown[]) => mockDeleteFact(...args),
   getFactCount: vi.fn().mockResolvedValue(5),
   validateMemorySave: vi.fn().mockReturnValue({ allowed: true, mode: "save" }),
 }));
@@ -69,7 +70,7 @@ describe("Memory Facts API", () => {
 
     const { GET } = await import("@/app/api/memory/facts/route");
     const response = await GET(
-      new Request("http://localhost/api/memory/facts") as any,
+      new Request("http://localhost/api/memory/facts") as NextRequest,
     );
     const body = await response.json();
 
@@ -94,7 +95,7 @@ describe("Memory Facts API", () => {
           key: "kaffee",
           value: "Kaffee um 8",
         }),
-      }) as any,
+      }) as NextRequest,
     );
     const body = await response.json();
 
@@ -125,7 +126,7 @@ describe("Memory Facts API — Caregiver-Cross-Read (C8)", () => {
     const response = await GET(
       new Request(
         `http://localhost/api/memory/facts?subject_user_id=${SENIOR_ID}`,
-      ) as any,
+      ) as NextRequest,
     );
     const body = await response.json();
 
@@ -149,7 +150,7 @@ describe("Memory Facts API — Caregiver-Cross-Read (C8)", () => {
     const response = await GET(
       new Request(
         `http://localhost/api/memory/facts?subject_user_id=${SENIOR_ID}`,
-      ) as any,
+      ) as NextRequest,
     );
     const body = await response.json();
 
@@ -166,7 +167,7 @@ describe("Memory Facts API — Caregiver-Cross-Read (C8)", () => {
 
     const { GET } = await import("@/app/api/memory/facts/route");
     const response = await GET(
-      new Request("http://localhost/api/memory/facts") as any,
+      new Request("http://localhost/api/memory/facts") as NextRequest,
     );
     const body = await response.json();
 
@@ -188,7 +189,7 @@ describe("Memory Facts API — Caregiver-Cross-Read (C8)", () => {
     const response = await GET(
       new Request(
         "http://localhost/api/memory/facts?subject_user_id=user-1",
-      ) as any,
+      ) as NextRequest,
     );
 
     expect(response.status).toBe(200);
@@ -222,7 +223,7 @@ describe("Memory Facts API — Caregiver-Cross-Read (C8)", () => {
           value: "Apfelstrudel",
           targetUserId: SENIOR_ID,
         }),
-      }) as any,
+      }) as NextRequest,
     );
     const body = await response.json();
 
@@ -255,7 +256,7 @@ describe("Memory Facts API — Caregiver-Cross-Read (C8)", () => {
           value: "Apfelstrudel",
           targetUserId: SENIOR_ID,
         }),
-      }) as any,
+      }) as NextRequest,
     );
     const body = await response.json();
 
@@ -282,7 +283,7 @@ describe("Memory Facts API — Caregiver-Cross-Read (C8)", () => {
           value: "Kaffee um 8",
           targetUserId: "user-1",
         }),
-      }) as any,
+      }) as NextRequest,
     );
 
     expect(response.status).toBe(200);
@@ -306,7 +307,7 @@ describe("Memory Facts API — Caregiver-Cross-Read (C8)", () => {
     await GET(
       new Request(
         `http://localhost/api/memory/facts?subject_user_id=${SENIOR_ID}&category=care_need`,
-      ) as any,
+      ) as NextRequest,
     );
 
     expect(mockGetFacts).toHaveBeenCalledWith(expect.anything(), SENIOR_ID, {

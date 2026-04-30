@@ -34,14 +34,36 @@ const COOLDOWN_MS = 5_000;
 // Kontext-Fenster für die API
 const MAX_HISTORY_TO_SEND = 10;
 
+interface SpeechRecognitionEventLike {
+  results: { transcript: string; isFinal: boolean }[][];
+}
+
+interface SpeechRecognitionLike {
+  lang: string;
+  continuous: boolean;
+  interimResults: boolean;
+  maxAlternatives: number;
+  onresult: ((event: SpeechRecognitionEventLike) => void) | null;
+  onerror: (() => void) | null;
+  onend: (() => void) | null;
+  start: () => void;
+  stop: () => void;
+}
+
+type SpeechRecognitionConstructor = new () => SpeechRecognitionLike;
+
+type WindowWithSpeechRecognition = Window &
+  typeof globalThis & {
+    SpeechRecognition?: SpeechRecognitionConstructor;
+    webkitSpeechRecognition?: SpeechRecognitionConstructor;
+  };
+
 // Speech Recognition Helper (Browser Web Speech API — kostenlos)
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function createRecognition(): any {
+function createRecognition(): SpeechRecognitionLike | null {
   if (typeof window === "undefined") return null;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const browserWindow = window as WindowWithSpeechRecognition;
   const SpeechRecognition =
-    (window as any).SpeechRecognition ||
-    (window as any).webkitSpeechRecognition;
+    browserWindow.SpeechRecognition || browserWindow.webkitSpeechRecognition;
   if (!SpeechRecognition) return null;
   const recognition = new SpeechRecognition();
   recognition.lang = "de-DE";
@@ -250,9 +272,7 @@ export default function KioskCompanionPage() {
     setListening(true);
 
     // Zwischenergebnisse live anzeigen
-    recognition.onresult = (event: {
-      results: { transcript: string; isFinal: boolean }[][];
-    }) => {
+    recognition.onresult = (event) => {
       const result = event.results[event.results.length - 1];
       const transcript = result[0].transcript;
       setInput(transcript);

@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+import type { SupabaseClient } from '@supabase/supabase-js';
 
 // Mock Supabase
 const mockFrom = vi.fn();
@@ -35,7 +36,7 @@ describe('Memory Consent Service', () => {
         }),
       });
 
-      const result = await hasConsent(mockSupabase as any, 'user-1', 'memory_basis');
+      const result = await hasConsent(mockSupabase as unknown as SupabaseClient, 'user-1', 'memory_basis');
       expect(result).toBe(true);
     });
 
@@ -53,7 +54,7 @@ describe('Memory Consent Service', () => {
         }),
       });
 
-      const result = await hasConsent(mockSupabase as any, 'user-1', 'memory_basis');
+      const result = await hasConsent(mockSupabase as unknown as SupabaseClient, 'user-1', 'memory_basis');
       expect(result).toBe(false);
     });
 
@@ -71,7 +72,7 @@ describe('Memory Consent Service', () => {
         }),
       });
 
-      const result = await hasConsent(mockSupabase as any, 'user-1', 'memory_basis');
+      const result = await hasConsent(mockSupabase as unknown as SupabaseClient, 'user-1', 'memory_basis');
       expect(result).toBe(false);
     });
   });
@@ -98,7 +99,7 @@ describe('Memory Consent Service', () => {
         return {};
       });
 
-      await revokeConsent(mockSupabase as any, {
+      await revokeConsent(mockSupabase as unknown as SupabaseClient, {
         userId: 'user-1',
         consentType: 'memory_care',
         actorUserId: 'user-1',

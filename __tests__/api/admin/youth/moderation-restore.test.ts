@@ -3,6 +3,11 @@
 
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { NextRequest } from "next/server";
+import type { SupabaseClient } from "@supabase/supabase-js";
+import type {
+  MockChainable,
+  SupabaseMockChainMethod,
+} from "@/__tests__/_helpers/mock-types";
 
 // --- Mock-Daten ---
 const mockAdminUser = { id: "admin-1" };
@@ -40,8 +45,8 @@ function buildMockClient(opts: {
 
 // --- Helper: chainable Mock fuer Supabase-Query ---
 function chainable(resolvedValue: unknown) {
-  const obj: Record<string, any> = {};
-  const methods = [
+  const obj: Partial<MockChainable> = {};
+  const methods: SupabaseMockChainMethod[] = [
     "select",
     "eq",
     "neq",
@@ -57,8 +62,9 @@ function chainable(resolvedValue: unknown) {
   for (const m of methods) {
     obj[m] = vi.fn().mockReturnValue(obj);
   }
-  obj.then = vi.fn((resolve: any) => resolve(resolvedValue));
-  return obj;
+  obj.then = (onfulfilled, onrejected) =>
+    Promise.resolve(resolvedValue).then(onfulfilled, onrejected);
+  return obj as MockChainable;
 }
 
 // --- Mocks ---
@@ -93,7 +99,7 @@ describe("POST /api/admin/youth/moderation/restore", () => {
 
   it("401 wenn nicht authentifiziert", async () => {
     vi.mocked(createClient).mockResolvedValue(
-      buildMockClient({ user: null, isAdmin: false }) as any,
+      buildMockClient({ user: null, isAdmin: false }) as unknown as SupabaseClient,
     );
 
     const { POST } =
@@ -107,7 +113,10 @@ describe("POST /api/admin/youth/moderation/restore", () => {
 
   it("400 wenn itemId fehlt", async () => {
     vi.mocked(createClient).mockResolvedValue(
-      buildMockClient({ user: mockAdminUser, isAdmin: true }) as any,
+      buildMockClient({
+        user: mockAdminUser,
+        isAdmin: true,
+      }) as unknown as SupabaseClient,
     );
 
     const { POST } =
@@ -121,7 +130,10 @@ describe("POST /api/admin/youth/moderation/restore", () => {
 
   it("200 bei erfolgreichem Restore (append-only)", async () => {
     vi.mocked(createClient).mockResolvedValue(
-      buildMockClient({ user: mockAdminUser, isAdmin: true }) as any,
+      buildMockClient({
+        user: mockAdminUser,
+        isAdmin: true,
+      }) as unknown as SupabaseClient,
     );
 
     // Admin-Supabase-Mock:
@@ -155,7 +167,9 @@ describe("POST /api/admin/youth/moderation/restore", () => {
         };
       }),
     };
-    vi.mocked(getAdminSupabase).mockReturnValue(mockAdminDb as any);
+    vi.mocked(getAdminSupabase).mockReturnValue(
+      mockAdminDb as unknown as SupabaseClient,
+    );
 
     const { POST } =
       await import("@/app/api/admin/youth/moderation/restore/route");
@@ -168,7 +182,10 @@ describe("POST /api/admin/youth/moderation/restore", () => {
 
   it("400 wenn Eintrag nicht suspended ist", async () => {
     vi.mocked(createClient).mockResolvedValue(
-      buildMockClient({ user: mockAdminUser, isAdmin: true }) as any,
+      buildMockClient({
+        user: mockAdminUser,
+        isAdmin: true,
+      }) as unknown as SupabaseClient,
     );
 
     const mockAdminDb = {
@@ -188,7 +205,9 @@ describe("POST /api/admin/youth/moderation/restore", () => {
         }),
       })),
     };
-    vi.mocked(getAdminSupabase).mockReturnValue(mockAdminDb as any);
+    vi.mocked(getAdminSupabase).mockReturnValue(
+      mockAdminDb as unknown as SupabaseClient,
+    );
 
     const { POST } =
       await import("@/app/api/admin/youth/moderation/restore/route");

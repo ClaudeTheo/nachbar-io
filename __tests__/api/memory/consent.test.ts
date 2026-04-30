@@ -5,9 +5,9 @@ const mockRevokeConsent = vi.fn();
 const mockGetConsentStatus = vi.fn();
 
 vi.mock("@/modules/memory/services/consent.service", () => ({
-  grantConsent: (...args: any[]) => mockGrantConsent(...args),
-  revokeConsent: (...args: any[]) => mockRevokeConsent(...args),
-  getConsentStatus: (...args: any[]) => mockGetConsentStatus(...args),
+  grantConsent: (...args: unknown[]) => mockGrantConsent(...args),
+  revokeConsent: (...args: unknown[]) => mockRevokeConsent(...args),
+  getConsentStatus: (...args: unknown[]) => mockGetConsentStatus(...args),
 }));
 
 vi.mock("@/lib/supabase/server", () => ({

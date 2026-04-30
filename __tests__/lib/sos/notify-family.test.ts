@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
+import type { SupabaseClient } from "@supabase/supabase-js";
 import type { EmergencyContact } from "@/modules/care/services/types";
 
 // --- Mocks ---
@@ -66,7 +67,7 @@ describe("notifyFamily", () => {
     mockSendSms.mockResolvedValue(true);
 
     const supabase = makeFakeSupabase();
-    const result = await notifyFamily(supabase as any, userId);
+    const result = await notifyFamily(supabase as SupabaseClient, userId);
 
     expect(mockGetCareProfile).toHaveBeenCalledWith(supabase, userId, userId);
     expect(mockSendSms).toHaveBeenCalledTimes(2);
@@ -83,7 +84,7 @@ describe("notifyFamily", () => {
     mockGetCareProfile.mockResolvedValue(null);
 
     const supabase = makeFakeSupabase();
-    const result = await notifyFamily(supabase as any, userId);
+    const result = await notifyFamily(supabase as SupabaseClient, userId);
 
     expect(result).toEqual({ notified: 0, failed: 0 });
     expect(mockSendSms).not.toHaveBeenCalled();
@@ -93,7 +94,7 @@ describe("notifyFamily", () => {
     mockGetCareProfile.mockResolvedValue({ emergency_contacts: [] });
 
     const supabase = makeFakeSupabase();
-    const result = await notifyFamily(supabase as any, userId);
+    const result = await notifyFamily(supabase as SupabaseClient, userId);
 
     expect(result).toEqual({ notified: 0, failed: 0 });
     expect(mockSendSms).not.toHaveBeenCalled();
@@ -108,7 +109,7 @@ describe("notifyFamily", () => {
     mockSendSms.mockResolvedValueOnce(true).mockResolvedValueOnce(false);
 
     const supabase = makeFakeSupabase();
-    const result = await notifyFamily(supabase as any, userId);
+    const result = await notifyFamily(supabase as SupabaseClient, userId);
 
     expect(result).toEqual({ notified: 1, failed: 1 });
   });
@@ -122,7 +123,7 @@ describe("notifyFamily", () => {
     mockSendSms.mockResolvedValue(true);
 
     const supabase = makeFakeSupabase();
-    const result = await notifyFamily(supabase as any, userId);
+    const result = await notifyFamily(supabase as SupabaseClient, userId);
 
     expect(mockSendSms).toHaveBeenCalledTimes(1);
     expect(result).toEqual({ notified: 1, failed: 0 });

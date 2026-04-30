@@ -2,6 +2,11 @@
 // Admin Youth-Overview: KPIs, Consents, Moderation
 
 import { describe, it, expect, vi, beforeEach } from "vitest";
+import type { SupabaseClient } from "@supabase/supabase-js";
+import type {
+  MockChainable,
+  SupabaseMockChainMethod,
+} from "@/__tests__/_helpers/mock-types";
 
 // --- Mock-Daten ---
 const mockAdminUser = { id: "admin-1" };
@@ -78,10 +83,10 @@ function buildMockClient(opts: {
 
 // --- Helper: chainable Mock fuer Supabase-Query ---
 function chainable(resolvedValue: unknown) {
-  const obj: Record<string, any> = {};
+  const obj: Partial<MockChainable> = {};
   // Jede Methode gibt dasselbe chainable-Objekt zurueck,
   // am Ende wird es wie ein Promise aufgeloest.
-  const methods = [
+  const methods: SupabaseMockChainMethod[] = [
     "select",
     "eq",
     "neq",
@@ -90,14 +95,15 @@ function chainable(resolvedValue: unknown) {
     "order",
     "limit",
     "single",
-    "maybeSingle",
+      "maybeSingle",
   ];
   for (const m of methods) {
     obj[m] = vi.fn().mockReturnValue(obj);
   }
   // thenable: damit await funktioniert
-  obj.then = vi.fn((resolve: any) => resolve(resolvedValue));
-  return obj;
+  obj.then = (onfulfilled, onrejected) =>
+    Promise.resolve(resolvedValue).then(onfulfilled, onrejected);
+  return obj as MockChainable;
 }
 
 // --- Helper: Admin-Supabase-Mock ---
@@ -175,7 +181,7 @@ describe("GET /api/admin/youth/overview", () => {
 
   it("401 wenn nicht authentifiziert", async () => {
     vi.mocked(createClient).mockResolvedValue(
-      buildMockClient({ user: null, isAdmin: false }) as any,
+      buildMockClient({ user: null, isAdmin: false }) as unknown as SupabaseClient,
     );
 
     const { GET } = await import("@/app/api/admin/youth/overview/route");
@@ -187,7 +193,10 @@ describe("GET /api/admin/youth/overview", () => {
 
   it("403 wenn kein Admin", async () => {
     vi.mocked(createClient).mockResolvedValue(
-      buildMockClient({ user: mockAdminUser, isAdmin: false }) as any,
+      buildMockClient({
+        user: mockAdminUser,
+        isAdmin: false,
+      }) as unknown as SupabaseClient,
     );
 
     const { GET } = await import("@/app/api/admin/youth/overview/route");
@@ -199,9 +208,14 @@ describe("GET /api/admin/youth/overview", () => {
 
   it("200 mit korrekter Struktur fuer Admin", async () => {
     vi.mocked(createClient).mockResolvedValue(
-      buildMockClient({ user: mockAdminUser, isAdmin: true }) as any,
+      buildMockClient({
+        user: mockAdminUser,
+        isAdmin: true,
+      }) as unknown as SupabaseClient,
     );
-    vi.mocked(getAdminSupabase).mockReturnValue(buildAdminMock() as any);
+    vi.mocked(getAdminSupabase).mockReturnValue(
+      buildAdminMock() as unknown as SupabaseClient,
+    );
 
     const { GET } = await import("@/app/api/admin/youth/overview/route");
     const res = await GET();

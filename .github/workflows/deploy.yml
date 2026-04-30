@@ -1,10 +1,7 @@
 name: Deploy to Vercel Production
 
 on:
-  # Automatischer Deploy: maximal alle 3 Stunden (Minute 17 zur Lastverteilung)
-  schedule:
-    - cron: '17 */3 * * *'
-  # Manueller Sofort-Deploy (Notfall, dringende Fixes)
+  # Manueller Trigger — kein Auto-Schedule (Founder-Decision 2026-04-29)
   workflow_dispatch:
 
 # Parallele Runs verhindern
@@ -59,7 +56,6 @@ jobs:
     if: needs.check.outputs.should_deploy == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 10
-    continue-on-error: true
     steps:
       - uses: actions/checkout@v4
 
@@ -72,18 +68,18 @@ jobs:
         run: npm ci
 
       - name: Lint
-        run: npx eslint --max-warnings 200 || echo "::warning::Lint hat Fehler"
+        run: npx eslint --max-warnings 200
 
       - name: Unit Tests (Vitest)
-        run: npm run test || echo "::warning::Tests fehlgeschlagen — Deploy laeuft trotzdem"
+        run: npm run test
 
       - name: Security Audit (npm audit)
         run: npm audit --audit-level=high --omit=dev || echo "::warning::npm audit hat high/critical Vulnerabilities gefunden"
 
-  # Schritt 3: Build & Deploy (nur bei neuen Commits oder manuellem Trigger)
+  # Schritt 3: Build & Deploy (nur nach gruenem Lint + Vitest, manuell ausgeloest)
   deploy:
     name: Build & Deploy
-    needs: check
+    needs: [check, test]
     if: needs.check.outputs.should_deploy == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 10

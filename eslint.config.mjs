@@ -17,6 +17,11 @@ const eslintConfig = defineConfig([
     "coverage/**",
     "playwright-report/**",
     "test-results/**",
+    // E2E-Test-Infrastruktur (Playwright Page-Objects + Fixtures):
+    // Pattern-Konflikte zwischen Playwright-`use()` und React-Hook-Rules
+    // sowie historisch gewachsene `require()`-Imports. Test-Helper sind
+    // kein Production-Code, kein Lint-Gate noetig.
+    "tests/e2e/**",
   ]),
   {
     rules: {

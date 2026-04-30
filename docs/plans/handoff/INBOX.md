@@ -27,7 +27,7 @@ Shared task board and mailbox for Codex, Claude, and future coding agents.
 | done | codex | Lint-Debt Block B: react-hooks | `app/**/*.{ts,tsx}` + `components/**/*.{ts,tsx}` + `lib/hooks/**/*.{ts,tsx}` + `modules/**/*.{ts,tsx}` | 2026-04-30 | block-B done in local commit | 2026-04-30 09:48 |
 | done | codex | Lint-Debt Block C: no-unused-vars | `**/*.{ts,tsx}` | 2026-04-30 | block-C done in local commit | 2026-04-30 10:00 |
 | done | codex | Lint-Debt Block D: unsafe Function + next rules | `**/*.{ts,tsx}` | 2026-04-30 | block-D done in local commit | 2026-04-30 10:07 |
-| in-progress | codex | Lint-Debt Block E: final verification + deploy gate | `.github/workflows/deploy.yml` + `eslint.config.mjs` | 2026-04-30 | block-E done | 2026-04-30 10:08 |
+| done | codex | Lint-Debt Block E: final verification + deploy gate | `.github/workflows/deploy.yml` + `eslint.config.mjs` | 2026-04-30 | block-E done in local commit | 2026-04-30 10:12 |
 
 ## Notes
 

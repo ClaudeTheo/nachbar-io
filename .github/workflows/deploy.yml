@@ -14,7 +14,7 @@ env:
   VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
 
 jobs:
-  # Schritt 1: Pruefen ob neue Commits seit letztem Deploy
+  # Schritt 1: Manueller Trigger ist die Deploy-Freigabe
   check:
     name: Check for changes
     runs-on: ubuntu-latest
@@ -22,32 +22,9 @@ jobs:
     outputs:
       should_deploy: ${{ steps.check.outputs.should_deploy }}
     steps:
-      - uses: actions/checkout@v4
-
-      - name: Compare HEAD with last Vercel deploy
+      - name: Allow manual deployment
         id: check
-        run: |
-          # Bei manuellem Trigger: immer deployen
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-            echo "Manueller Trigger — Deploy wird ausgefuehrt"
-            echo "should_deploy=true" >> $GITHUB_OUTPUT
-            exit 0
-          fi
-
-          # Letzte erfolgreich deployte SHA von Vercel holen
-          LAST_SHA=$(curl -s -H "Authorization: Bearer ${{ secrets.VERCEL_TOKEN }}" \
-            "https://api.vercel.com/v6/deployments?projectId=${{ secrets.VERCEL_PROJECT_ID }}&limit=1&target=production&state=READY" \
-            | jq -r '.deployments[0].meta.githubCommitSha // empty')
-
-          CURRENT_SHA=$(git rev-parse HEAD)
-
-          if [ -n "$LAST_SHA" ] && [ "$LAST_SHA" = "$CURRENT_SHA" ]; then
-            echo "Keine neuen Commits seit letztem Deploy ($CURRENT_SHA)"
-            echo "should_deploy=false" >> $GITHUB_OUTPUT
-          else
-            echo "Neue Commits: ${LAST_SHA:-unbekannt} -> $CURRENT_SHA"
-            echo "should_deploy=true" >> $GITHUB_OUTPUT
-          fi
+        run: echo "should_deploy=true" >> $GITHUB_OUTPUT
 
   # Schritt 2: Tests (parallel zum Deploy, blockiert nicht)
   test:

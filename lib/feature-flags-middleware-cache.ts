@@ -15,12 +15,9 @@ const TTL_SECONDS = 60;
  * zu teuer ist. Andere Server-Komponenten nutzen `isFeatureEnabledServer` aus
  * `lib/feature-flags-server.ts` direkt.
  *
- * PILOT_MODE-Bypass: Wenn NEXT_PUBLIC_PILOT_MODE=true, immer true zurueckgeben
- * (gleiche Semantik wie Client- und Server-Evaluator).
+ * PILOT_MODE wird bewusst nicht fuer Feature-Flag-Logik genutzt.
  */
 export async function getCachedFlagEnabled(flagKey: string): Promise<boolean> {
-  if (process.env.NEXT_PUBLIC_PILOT_MODE === "true") return true;
-
   const cacheKey = `ff:${flagKey}`;
   const redis = getSecurityRedis();
 

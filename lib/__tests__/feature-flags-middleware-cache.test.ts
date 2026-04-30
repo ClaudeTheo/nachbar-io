@@ -73,13 +73,14 @@ describe("getCachedFlagEnabled", () => {
     });
   });
 
-  it("PILOT_MODE-Bypass: liefert true ohne DB und ohne Cache", async () => {
+  it("ignoriert PILOT_MODE und respektiert deaktivierte Cache-Werte", async () => {
     process.env.NEXT_PUBLIC_PILOT_MODE = "true";
+    mockRedisGet.mockResolvedValue("0");
     const { getCachedFlagEnabled } =
       await import("@/lib/feature-flags-middleware-cache");
     const res = await getCachedFlagEnabled("MEDICATIONS_ENABLED");
-    expect(res).toBe(true);
-    expect(mockRedisGet).not.toHaveBeenCalled();
+    expect(res).toBe(false);
+    expect(mockRedisGet).toHaveBeenCalledWith("ff:MEDICATIONS_ENABLED");
     expect(mockSupabaseSingle).not.toHaveBeenCalled();
   });
 

@@ -36,6 +36,7 @@ Shared task board and mailbox for Codex, Claude, and future coding agents.
 | done | codex | Block 1: Pilot-Feature-Gating-Plan einchecken | `docs/plans/2026-04-30-pilot-feature-gating-plan.md` + `docs/plans/handoff/INBOX.md` | 2026-04-30 13:02 +02:00 | plan spec committed for founder review | 2026-04-30 13:04 +02:00 |
 | done | codex | Block 2: Twilio-Rotation als Runbook sichern | `docs/runbooks/twilio-token-rotation.md` + `scripts/rotate-twilio-oneshot.sh` + `docs/plans/handoff/INBOX.md` | 2026-04-30 13:04 +02:00 | redacted runbook committed; untracked one-shot removed locally | 2026-04-30 13:07 +02:00 |
 | done | codex | Block 3: Supabase-Legacy-JWT-One-Shot entfernen | `scripts/disable-supabase-legacy-jwts.sh` + `docs/plans/handoff/INBOX.md` | 2026-04-30 13:08 +02:00 | untracked completed one-shot removed locally | 2026-04-30 13:08 +02:00 |
+| done | codex | C1: PILOT_MODE-Feature-Flag-Bypass entfernen | `lib/feature-flags-server.ts` + `lib/feature-flags.ts` + `lib/feature-flags-middleware-cache.ts` + `__tests__/lib/feature-flags.test.ts` + `lib/leistungen/__tests__/feature-flag.test.ts` + `lib/__tests__/feature-flags-middleware-cache.test.ts` + `docs/plans/handoff/INBOX.md` | 2026-04-30 14:18 +02:00 | C1 verified locally and ready in commit | 2026-04-30 14:24 +02:00 |
 
 ## Notes
 

@@ -141,7 +141,7 @@ describe('Feature-Flag System', () => {
       expect(result).toBe(true);
     });
 
-    it('gibt true zurueck wenn PILOT_MODE aktiv (bypass Rollen/Plan)', async () => {
+    it('ignoriert PILOT_MODE bei Rollen/Plan/Quartier-Einschraenkungen', async () => {
       process.env.NEXT_PUBLIC_PILOT_MODE = 'true';
 
       // Flag mit strengen Einschraenkungen
@@ -154,7 +154,7 @@ describe('Feature-Flag System', () => {
 
       const result = await checkFeatureAccess('TEST_FEATURE', baseUser);
 
-      expect(result).toBe(true);
+      expect(result).toBe(false);
     });
 
     it('gibt true zurueck wenn admin_override fuer Admin-User', async () => {

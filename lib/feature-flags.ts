@@ -87,12 +87,11 @@ export async function getFeatureFlags(): Promise<FeatureFlag[]> {
  * Logik:
  * 1. Flag nicht gefunden → false
  * 2. Flag deaktiviert → false
- * 3. PILOT_MODE aktiv → true (bypass Rollen-/Plan-Pruefung)
- * 4. admin_override + User ist Admin → true
- * 5. required_roles nicht leer + User-Rolle nicht enthalten → false
- * 6. required_plans nicht leer + User-Plan nicht enthalten → false
- * 7. enabled_quarters nicht leer + User-Quartier nicht enthalten → false
- * 8. Sonst → true
+ * 3. admin_override + User ist Admin → true
+ * 4. required_roles nicht leer + User-Rolle nicht enthalten → false
+ * 5. required_plans nicht leer + User-Plan nicht enthalten → false
+ * 6. enabled_quarters nicht leer + User-Quartier nicht enthalten → false
+ * 7. Sonst → true
  */
 export async function checkFeatureAccess(
   flagKey: string,
@@ -107,14 +106,10 @@ export async function checkFeatureAccess(
   // 2. Flag deaktiviert
   if (!flag.enabled) return false;
 
-  // 3. PILOT_MODE Bypass
-  const pilotMode = process.env.NEXT_PUBLIC_PILOT_MODE === "true";
-  if (pilotMode) return true;
-
-  // 4. Admin-Override
+  // 3. Admin-Override
   if (flag.admin_override && user.role === "admin") return true;
 
-  // 5. Rollen-Pruefung
+  // 4. Rollen-Pruefung
   if (
     flag.required_roles.length > 0 &&
     !flag.required_roles.includes(user.role)
@@ -122,7 +117,7 @@ export async function checkFeatureAccess(
     return false;
   }
 
-  // 6. Plan-Pruefung
+  // 5. Plan-Pruefung
   if (
     flag.required_plans.length > 0 &&
     !flag.required_plans.includes(user.plan)
@@ -130,14 +125,14 @@ export async function checkFeatureAccess(
     return false;
   }
 
-  // 7. Quartier-Pruefung
+  // 6. Quartier-Pruefung
   if (flag.enabled_quarters.length > 0) {
     if (!user.quarter_id || !flag.enabled_quarters.includes(user.quarter_id)) {
       return false;
     }
   }
 
-  // 8. Alle Pruefungen bestanden
+  // 7. Alle Pruefungen bestanden
   return true;
 }
 

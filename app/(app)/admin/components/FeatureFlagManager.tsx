@@ -9,6 +9,16 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Card, CardContent } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { toast } from "sonner";
 import { Settings2 } from "lucide-react";
 
@@ -107,6 +117,11 @@ export function FeatureFlagManager() {
   const [loading, setLoading] = useState(true);
   const [updatingKey, setUpdatingKey] = useState<string | null>(null);
   const [changeReason, setChangeReason] = useState("");
+  const [presetPhase, setPresetPhase] = useState<"phase_0" | "phase_1" | null>(
+    null,
+  );
+  const [presetConfirm, setPresetConfirm] = useState("");
+  const [presetLoading, setPresetLoading] = useState(false);
 
   // Flags aus der Datenbank laden
   const loadFlags = useCallback(async () => {
@@ -170,6 +185,44 @@ export function FeatureFlagManager() {
 
     return buckets;
   }, [flags]);
+
+  const presetConfirmWord = presetPhase === "phase_0" ? "PHASE_0" : "PHASE_1";
+  const presetLabel = presetPhase === "phase_0" ? "Phase 0" : "Phase 1";
+
+  const openPresetDialog = (phase: "phase_0" | "phase_1") => {
+    setPresetPhase(phase);
+    setPresetConfirm("");
+  };
+
+  const closePresetDialog = () => {
+    if (presetLoading) return;
+    setPresetPhase(null);
+    setPresetConfirm("");
+  };
+
+  const applyPreset = async () => {
+    if (!presetPhase) return;
+    setPresetLoading(true);
+
+    const response = await fetch("/api/admin/feature-flags/preset", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ phase: presetPhase, confirm: presetConfirm }),
+    });
+
+    if (!response.ok) {
+      toast.error(`${presetLabel} konnte nicht aktiviert werden.`);
+      setPresetLoading(false);
+      return;
+    }
+
+    invalidateFlagCache();
+    await loadFlags();
+    toast.success(`${presetLabel} aktiviert. ~20 Flags geaendert.`);
+    setPresetLoading(false);
+    setPresetPhase(null);
+    setPresetConfirm("");
+  };
 
   // Flag aktivieren/deaktivieren
   const handleToggle = async (flagKey: string, newValue: boolean) => {
@@ -257,6 +310,26 @@ export function FeatureFlagManager() {
           </h2>
         </div>
 
+        <div className="mb-5 flex flex-wrap gap-2">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => openPresetDialog("phase_0")}
+          >
+            Phase 0 (Closed Pilot)
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => openPresetDialog("phase_1")}
+          >
+            Phase 1 (echte Tester)
+          </Button>
+          <Button type="button" variant="outline" disabled>
+            Phase 2 (nach HR + AVV)
+          </Button>
+        </div>
+
         <div className="mb-5 max-w-2xl space-y-2">
           <label
             htmlFor="feature-flag-change-reason"
@@ -271,6 +344,59 @@ export function FeatureFlagManager() {
             rows={2}
           />
         </div>
+
+        <Dialog
+          open={presetPhase !== null}
+          onOpenChange={(open) => {
+            if (!open) closePresetDialog();
+          }}
+        >
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>{presetLabel} aktivieren</DialogTitle>
+              <DialogDescription>
+                Diese Aktion aendert ~20 Flags gleichzeitig und schreibt sich
+                ins Audit-Log.
+              </DialogDescription>
+            </DialogHeader>
+
+            <div className="space-y-2">
+              <p className="text-sm text-muted-foreground">
+                Tippen Sie zur Bestaetigung das Wort `{presetConfirmWord}`.
+              </p>
+              <label
+                htmlFor="phase-preset-confirm"
+                className="text-sm font-medium text-anthrazit"
+              >
+                Bestaetigungswort
+              </label>
+              <Input
+                id="phase-preset-confirm"
+                value={presetConfirm}
+                onChange={(event) => setPresetConfirm(event.target.value)}
+                disabled={presetLoading}
+              />
+            </div>
+
+            <DialogFooter>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={closePresetDialog}
+                disabled={presetLoading}
+              >
+                Abbrechen
+              </Button>
+              <Button
+                type="button"
+                onClick={applyPreset}
+                disabled={presetConfirm !== presetConfirmWord || presetLoading}
+              >
+                Bestaetigen
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
 
         <div className="space-y-6" data-testid="flag-table">
           {groupedFlags.map((group) => (

@@ -18,6 +18,7 @@ const mockSelect = vi.fn();
 const mockOrder = vi.fn();
 const mockUpdate = vi.fn();
 const mockEq = vi.fn();
+const mockFetch = vi.fn();
 
 // Supabase Client mocken
 vi.mock('@/lib/supabase/client', () => ({
@@ -89,9 +90,15 @@ function setupUpdateChain(error: unknown = null) {
 describe('FeatureFlagManager', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockFetch.mockResolvedValue({
+      ok: true,
+      json: vi.fn().mockResolvedValue({ changed: 20 }),
+    });
+    vi.stubGlobal('fetch', mockFetch);
   });
 
   afterEach(() => {
+    vi.unstubAllGlobals();
     cleanup();
   });
 
@@ -133,6 +140,52 @@ describe('FeatureFlagManager', () => {
 
     // Ueberschrift
     expect(screen.getByText('Feature-Flags Verwaltung')).toBeDefined();
+  });
+
+  it('zeigt Phase-Preset-Buttons und bestaetigt Phase 1 per Dialog', async () => {
+    setupSelectChain(MOCK_FLAGS);
+
+    const { FeatureFlagManager } = await import(
+      '@/app/(app)/admin/components/FeatureFlagManager'
+    );
+
+    render(<FeatureFlagManager />);
+
+    await waitFor(() => {
+      expect(screen.getByTestId('flag-table')).toBeDefined();
+    });
+
+    expect(screen.getByRole('button', { name: 'Phase 0 (Closed Pilot)' })).toBeDefined();
+    expect(screen.getByRole('button', { name: 'Phase 1 (echte Tester)' })).toBeDefined();
+    expect(screen.getByRole('button', { name: 'Phase 2 (nach HR + AVV)' })).toBeDisabled();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Phase 1 (echte Tester)' }));
+
+    expect(
+      screen.getByText('Diese Aktion aendert ~20 Flags gleichzeitig und schreibt sich ins Audit-Log.')
+    ).toBeDefined();
+    const confirmButton = screen.getByRole('button', { name: 'Bestaetigen' });
+    expect(confirmButton).toBeDisabled();
+
+    fireEvent.change(screen.getByLabelText('Bestaetigungswort'), {
+      target: { value: 'PHASE_1' },
+    });
+    expect(confirmButton).not.toBeDisabled();
+
+    fireEvent.click(confirmButton);
+
+    await waitFor(() => {
+      expect(mockFetch).toHaveBeenCalledWith(
+        '/api/admin/feature-flags/preset',
+        expect.objectContaining({
+          method: 'POST',
+          body: JSON.stringify({ phase: 'phase_1', confirm: 'PHASE_1' }),
+        }),
+      );
+    });
+    expect(mockToastSuccess).toHaveBeenCalledWith(
+      'Phase 1 aktiviert. ~20 Flags geaendert.',
+    );
   });
 
   it('gruppiert externe API Flags unter "Externe APIs"', async () => {

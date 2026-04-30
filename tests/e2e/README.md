@@ -9,15 +9,22 @@ tests/e2e/
 ├── playwright.config.ts      # Playwright-Konfiguration (Multi-Projekt)
 ├── global-setup.ts            # Testdaten seeden (Haushalte, Nutzer)
 ├── global-teardown.ts         # Testdaten aufraeumen
+├── auth-setup.ts              # StorageState fuer Testrollen erzeugen
+├── cross-portal-teardown.ts   # Manueller Cross-Portal-Cleanup
 ├── helpers/
+│   ├── auth-paths.ts           # StorageState-Pfade
 │   ├── types.ts               # TypeScript-Typen
 │   ├── test-config.ts         # Test-Agenten, Haushalte, Timeouts
 │   ├── agent-factory.ts       # Browser-Kontexte pro Agent erstellen
 │   ├── db-seeder.ts           # Supabase-Seeding (Admin API)
+│   ├── index.ts               # Helper-Barrel
 │   ├── observer.ts            # UI-Beobachter (Toasts, Unread, Errors)
-│   └── scenario-runner.ts     # Multi-Agent Orchestrierung
+│   ├── portal-urls.ts         # Portal-Basis-URLs
+│   ├── scenario-runner.ts     # Multi-Agent Orchestrierung
+│   └── supabase-admin.ts      # Supabase Admin REST Helper
 ├── pages/
 │   ├── index.ts               # Barrel Export
+│   ├── care-sos.page.ts       # Care/SOS Page Object
 │   ├── landing.page.ts        # Landing Page Object
 │   ├── login.page.ts          # Login Page Object
 │   ├── register.page.ts       # Register Page Object (4 Schritte)
@@ -26,14 +33,51 @@ tests/e2e/
 │   ├── messages.page.ts       # Nachrichten/Chat Page Object
 │   ├── admin.page.ts          # Admin Dashboard Page Object
 │   └── senior.page.ts         # Senioren-Terminal Page Objects
-└── scenarios/
-    ├── s1-onboarding.spec.ts  # Registrierung + Verifikation
-    ├── s2-help-request.spec.ts # Hilfe-Anfrage → Zustellung → Annahme
-    ├── s3-chat.spec.ts        # Direktnachricht / Chat
-    ├── s4-moderation.spec.ts  # Admin / Moderation
-    ├── s5-senior-terminal.spec.ts # Senioren-UI Komplett
-    ├── s6-permissions.spec.ts # Zugriffskontrolle / Privacy
-    └── s7-smoke.spec.ts       # Schnelle Regressionstests
+├── scenarios/
+│   ├── auth-board.spec.ts     # Auth-Flow: Schwarzes Brett / Hilfe-Boerse
+│   ├── auth-dashboard.spec.ts # Auth-Flow: Dashboard
+│   ├── auth-map.spec.ts       # Auth-Flow: Quartierskarte
+│   ├── auth-notfall.spec.ts   # Auth-Flow: Notfall-System
+│   ├── auth-profile.spec.ts   # Auth-Flow: Profil & Einstellungen
+│   ├── s1-onboarding.spec.ts  # Registrierung + Verifikation
+│   ├── s2-help-request.spec.ts # Hilfe-Anfrage → Zustellung → Annahme
+│   ├── s3-chat.spec.ts        # Direktnachricht / Chat
+│   ├── s4-moderation.spec.ts  # Admin / Moderation
+│   ├── s5-senior-terminal.spec.ts # Senioren-UI Komplett
+│   ├── s6-permissions.spec.ts # Zugriffskontrolle / Privacy
+│   ├── s7-smoke.spec.ts       # Schnelle Regressionstests
+│   ├── s8-care-sos.spec.ts    # Care SOS Workflow
+│   ├── s9-care-checkin.spec.ts # Care Check-in & Medikamente
+│   ├── s10-accessibility.spec.ts # WCAG 2.1 AA
+│   ├── s11-memory.spec.ts     # Senior Memory Layer
+│   └── s12-neighbor-request-chat.spec.ts # Anfrage -> Annahme -> Chat
+├── pilot-smoke.spec.ts        # 12 Pilot-Kriterien
+├── multi-agent/
+│   ├── phase-a-solo.spec.ts
+│   ├── phase-b-cross-role.spec.ts
+│   ├── phase-c-edge-cases.spec.ts
+│   ├── phase-d-features.spec.ts
+│   ├── phase-e-escalation.spec.ts
+│   └── phase-f-permissions.spec.ts
+└── cross-portal/
+    ├── x01-checkin-heartbeat.spec.ts
+    ├── x02-heartbeat-timeout.spec.ts
+    ├── x03-sos-pflege-alert.spec.ts
+    ├── x04-kiosk-sos-112.spec.ts
+    ├── x05-sos-eskalation-zeitraffer.spec.ts
+    ├── x06-termin-buchung.spec.ts
+    ├── x07-termin-bestaetigung.spec.ts
+    ├── x08-termin-ablehnung.spec.ts
+    ├── x09-termin-stornierung.spec.ts
+    ├── x10-video-konsultation.spec.ts
+    ├── x12-video-ablehnung.spec.ts
+    ├── x13-medikamentenplan.spec.ts
+    ├── x14-rathaus-ankuendigung.spec.ts
+    ├── x16-caregiver-invite.spec.ts
+    ├── x17-dsgvo-widerruf.spec.ts
+    ├── x18-dual-role-permissions.spec.ts
+    ├── x19-postfach-thread.spec.ts
+    └── x20-caregiver-memory.spec.ts
 ```
 
 ## Agenten (simulierte Nutzer)
@@ -167,8 +211,8 @@ In GitHub Settings > Secrets and Variables > Actions:
 
 ## Neues Szenario hinzufuegen
 
-1. Datei erstellen: `tests/e2e/scenarios/s8-mein-szenario.spec.ts`
-2. Pattern: `test.describe("S8: ...", () => { ... })`
+1. Datei erstellen: `tests/e2e/scenarios/s13-mein-szenario.spec.ts`
+2. Pattern: `test.describe("S13: ...", () => { ... })`
 3. Agenten erstellen: `createAgent(browser, "nachbar_a")`
 4. Einloggen: `loginAgent(agent)`
 5. Page Objects nutzen: `new DashboardPage(agent.page)`

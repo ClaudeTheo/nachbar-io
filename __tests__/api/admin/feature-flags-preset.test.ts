@@ -1,5 +1,8 @@
 import { describe, expect, it, vi, beforeEach } from "vitest";
-import { PHASE_1_PRESET } from "@/lib/feature-flags-presets";
+import {
+  PHASE_1_PRESET,
+  PHASE_2A_AFTER_HR_FLAGS,
+} from "@/lib/feature-flags-presets";
 
 const mockGetUser = vi.fn();
 const mockUsersSingle = vi.fn();
@@ -106,6 +109,30 @@ describe("POST /api/admin/feature-flags/preset", () => {
     expect(response.status).toBe(400);
     expect(mockFeatureFlagsUpsert).not.toHaveBeenCalled();
     expect(mockInvalidateFlagCache).not.toHaveBeenCalled();
+  });
+
+  it("akzeptiert Phase-2a als generisches Preset", async () => {
+    const response = await postPreset({
+      phase: "phase_2a",
+      confirm: "PHASE_2A",
+    });
+
+    expect(response.status).toBe(200);
+    expect(await response.json()).toMatchObject({
+      phase: "phase_2a",
+      changed: PHASE_2A_AFTER_HR_FLAGS.length,
+    });
+
+    const [rows] = mockFeatureFlagsUpsert.mock.calls[0];
+    expect(rows).toEqual(
+      expect.arrayContaining([
+        {
+          key: "BILLING_ENABLED",
+          enabled: true,
+          last_change_reason: "phase-preset:phase_2a",
+        },
+      ]),
+    );
   });
 
   it("gibt 403 fuer Nicht-Admins zurueck", async () => {

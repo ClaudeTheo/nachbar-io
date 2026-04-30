@@ -42,6 +42,7 @@ Shared task board and mailbox for Codex, Claude, and future coding agents.
 | done | codex | C4: Phase-Preset-API + Admin-UI-Buttons | `lib/feature-flags-presets.ts` + `lib/feature-flags-cache.ts` + `app/api/admin/feature-flags/preset/route.ts` + `app/(app)/admin/components/FeatureFlagManager.tsx` + `__tests__/api/admin/feature-flags-preset.test.ts` + `docs/plans/handoff/INBOX.md` | 2026-04-30 14:41 +02:00 | C4 verified locally and committed; no push/deploy | 2026-04-30 14:46 +02:00 |
 | done | codex | C5: Phase-1-Default-Migration apply-later | `supabase/migrations/178_pilot_phase_1_defaults.sql` + `supabase/migrations/178_pilot_phase_1_defaults.down.sql` + `docs/plans/handoff/INBOX.md` | 2026-04-30 14:47 +02:00 | C5 migration files committed locally; not applied anywhere | 2026-04-30 14:48 +02:00 |
 | done | codex | D1: Audit-Log-Reader-UI im Admin-Dashboard | `app/(app)/admin/components/FeatureFlagAuditLog.tsx` + `app/(app)/admin/page.tsx` + `__tests__/components/admin/FeatureFlagAuditLog.test.tsx` + `docs/plans/handoff/INBOX.md` | 2026-04-30 16:35 +02:00 | audit-log reader implemented, verified locally, committed | 2026-04-30 16:40 +02:00 |
+| done | codex | E2: Phase-2-Preset-Skizze fuer AVV-Subphasen | `lib/feature-flags-presets.ts` + `app/api/admin/feature-flags/preset/route.ts` + `__tests__/lib/feature-flags-presets.test.ts` + `__tests__/api/admin/feature-flags-preset.test.ts` + `docs/plans/handoff/INBOX.md` | 2026-04-30 16:59 +02:00 | phase-2a-2e preset constants tested, verified, and committed locally | 2026-04-30 17:04 +02:00 |
 
 ## Notes
 

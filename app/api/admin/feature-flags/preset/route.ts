@@ -13,7 +13,10 @@ type PresetRequest = {
 };
 
 function isPresetPhase(value: unknown): value is FeatureFlagPresetPhase {
-  return value === "phase_0" || value === "phase_1" || value === "phase_2";
+  return (
+    typeof value === "string" &&
+    Object.prototype.hasOwnProperty.call(FEATURE_FLAG_PHASE_PRESETS, value)
+  );
 }
 
 export async function POST(request: Request) {

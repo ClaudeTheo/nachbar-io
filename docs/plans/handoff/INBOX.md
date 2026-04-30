@@ -28,6 +28,7 @@ Shared task board and mailbox for Codex, Claude, and future coding agents.
 | done | codex | Lint-Debt Block C: no-unused-vars | `**/*.{ts,tsx}` | 2026-04-30 | block-C done in local commit | 2026-04-30 10:00 |
 | done | codex | Lint-Debt Block D: unsafe Function + next rules | `**/*.{ts,tsx}` | 2026-04-30 | block-D done in local commit | 2026-04-30 10:07 |
 | done | codex | Lint-Debt Block E: final verification + deploy gate | `.github/workflows/deploy.yml` + `eslint.config.mjs` | 2026-04-30 | block-E done in local commit | 2026-04-30 10:12 |
+| in-progress | codex | Block F: it.skip-Tests reaktivieren oder dokumentieren | `__tests__/api/billing-checkout.test.ts` + `__tests__/hilfe/tasks/page.test.tsx` + `docs/plans/2026-04-30-skip-tests-handover.md` | 2026-04-30 12:08 +02:00 | skip cleanup committed and verified locally | 2026-04-30 12:08 +02:00 |
 
 ## Notes
 

@@ -34,6 +34,7 @@ Shared task board and mailbox for Codex, Claude, and future coding agents.
 | done | codex | Block I: .gitignore fuer Codex-Logs und lokale Reste | `.gitignore` + `docs/plans/handoff/INBOX.md` | 2026-04-30 12:25 +02:00 | block-I committed and status verified | 2026-04-30 12:25 +02:00 |
 | done | codex | Untracked-Founder-Hand-Dateien klassifizieren | `docs/plans/2026-04-30-untracked-bestandsaufnahme.md` + `docs/plans/handoff/INBOX.md` | 2026-04-30 12:53 +02:00 | classified for founder decision; no delete, no founder-file staging | 2026-04-30 13:00 +02:00 |
 | done | codex | Block 1: Pilot-Feature-Gating-Plan einchecken | `docs/plans/2026-04-30-pilot-feature-gating-plan.md` + `docs/plans/handoff/INBOX.md` | 2026-04-30 13:02 +02:00 | plan spec committed for founder review | 2026-04-30 13:04 +02:00 |
+| done | codex | Block 2: Twilio-Rotation als Runbook sichern | `docs/runbooks/twilio-token-rotation.md` + `scripts/rotate-twilio-oneshot.sh` + `docs/plans/handoff/INBOX.md` | 2026-04-30 13:04 +02:00 | redacted runbook committed; untracked one-shot removed locally | 2026-04-30 13:07 +02:00 |
 
 ## Notes
 

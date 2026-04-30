@@ -188,6 +188,29 @@ describe("FeatureFlagAuditLog", () => {
     });
   });
 
+  it("zeigt einen neutralen Hinweis, wenn die Audit-Tabelle noch fehlt", async () => {
+    setupAuditSelect(null, {
+      code: "42P01",
+      message: 'relation "feature_flags_audit_log" does not exist',
+    });
+
+    const { FeatureFlagAuditLog } = await import(
+      "@/app/(app)/admin/components/FeatureFlagAuditLog"
+    );
+
+    render(<FeatureFlagAuditLog />);
+
+    await waitFor(() => {
+      expect(screen.getByTestId("feature-flag-audit-log-unavailable"))
+        .toBeDefined();
+    });
+
+    expect(
+      screen.getByText("Audit-Log noch nicht verfuegbar"),
+    ).toBeDefined();
+    expect(mockUserSelect).not.toHaveBeenCalled();
+  });
+
   it("zeigt initial Loading-Skeletons", async () => {
     mockLimit.mockReturnValue(new Promise(() => {}));
     mockOrder.mockReturnValue({ limit: mockLimit });

@@ -28,6 +28,14 @@ interface FeatureFlagAuditEntry {
   changed_by_user: AuditUser | AuditUser[] | null;
 }
 
+type FeatureFlagAuditRow = Omit<FeatureFlagAuditEntry, "changed_by_user">;
+
+type SupabaseErrorLike = {
+  code?: string;
+  message?: string;
+  details?: string;
+};
+
 const ACTION_BADGE_CLASS: Record<AuditAction, string> = {
   insert: "bg-quartier-green/10 text-quartier-green border-quartier-green/20",
   update: "bg-alert-amber/10 text-alert-amber border-alert-amber/20",
@@ -65,9 +73,26 @@ function truncateReason(reason: string | null) {
   return `${reason.slice(0, 60)}...`;
 }
 
+function isMissingAuditTableError(error: SupabaseErrorLike | null) {
+  if (!error) return false;
+
+  const text = [error.code, error.message, error.details]
+    .filter(Boolean)
+    .join(" ")
+    .toLowerCase();
+
+  return (
+    text.includes("42p01")
+    || text.includes("pgrst205")
+    || text.includes("feature_flags_audit_log")
+    || text.includes("could not find the table")
+  );
+}
+
 export function FeatureFlagAuditLog() {
   const [entries, setEntries] = useState<FeatureFlagAuditEntry[]>([]);
   const [loading, setLoading] = useState(true);
+  const [auditUnavailable, setAuditUnavailable] = useState(false);
   const [search, setSearch] = useState("");
 
   useEffect(() => {
@@ -76,7 +101,7 @@ export function FeatureFlagAuditLog() {
     async function loadAuditLog() {
       setLoading(true);
       const supabase = createClient();
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from("feature_flags_audit_log")
         .select(
           "id, flag_key, action, enabled_before, enabled_after, changed_by, reason, created_at",
@@ -84,7 +109,15 @@ export function FeatureFlagAuditLog() {
         .order("created_at", { ascending: false })
         .limit(50);
 
-      const rows = (data ?? []) as FeatureFlagAuditEntry[];
+      if (isMissingAuditTableError(error)) {
+        if (!active) return;
+        setAuditUnavailable(true);
+        setEntries([]);
+        setLoading(false);
+        return;
+      }
+
+      const rows = (data ?? []) as FeatureFlagAuditRow[];
       const changedByIds = [
         ...new Set(rows.map((entry) => entry.changed_by).filter(Boolean)),
       ] as string[];
@@ -102,12 +135,12 @@ export function FeatureFlagAuditLog() {
       }
 
       if (!active) return;
+      setAuditUnavailable(false);
       setEntries(
         rows.map((entry) => ({
           ...entry,
           changed_by_user:
-            entry.changed_by_user
-            ?? (entry.changed_by ? userById.get(entry.changed_by) : null)
+            (entry.changed_by ? userById.get(entry.changed_by) : null)
             ?? null,
         })),
       );
@@ -185,7 +218,14 @@ export function FeatureFlagAuditLog() {
           />
         </div>
 
-        {entries.length === 0 ? (
+        {auditUnavailable ? (
+          <p
+            className="text-sm text-muted-foreground"
+            data-testid="feature-flag-audit-log-unavailable"
+          >
+            Audit-Log noch nicht verfuegbar
+          </p>
+        ) : entries.length === 0 ? (
           <p className="text-sm text-muted-foreground">
             Noch keine Aenderungen aufgezeichnet
           </p>

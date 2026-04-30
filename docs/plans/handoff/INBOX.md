@@ -48,6 +48,7 @@ Shared task board and mailbox for Codex, Claude, and future coding agents.
 | done | codex | G3: Audit-Log-Reader Browser-Smoke-Test | `docs/plans/2026-04-30-audit-log-smoke-test-bericht.md` + `docs/plans/2026-04-30-audit-log-smoke-test-screenshots/*` + `docs/plans/handoff/INBOX.md` | 2026-04-30 18:04 +02:00 | local Supabase replay fixed; browser smoke completed with screenshots; no Prod apply, no push | 2026-04-30 19:00 +02:00 |
 | done | codex | G4: AGENTS.md Vercel-KI-Hand und Pfad-Hinweis | `AGENTS.md` + `docs/plans/handoff/INBOX.md` | 2026-04-30 18:08 +02:00 | cross-agent rules updated in local commit; no push | 2026-04-30 18:12 +02:00 |
 | done | codex | G5: Pre-push hardening ohne Prod-Apply | `app/(app)/admin/components/FeatureFlagAuditLog.tsx` + `__tests__/components/admin/FeatureFlagAuditLog.test.tsx` + `docs/plans/handoff/INBOX.md` | 2026-04-30 19:10 +02:00 | Audit-Reader toleriert fehlende Mig-176-Tabelle; lokale Doku-Port-Drift korrigiert; no push/prod apply | 2026-04-30 19:16 +02:00 |
+| done | codex | H: Phase-1-Pre-Flight-Checkliste | `docs/plans/2026-04-30-phase-1-pre-flight.md` + `docs/plans/handoff/INBOX.md` | 2026-04-30 21:34 +02:00 | reine Doku-Welle; Checkliste geschrieben und lokal committed; no push/deploy/prod apply | 2026-04-30 21:42 +02:00 |
 
 ## Notes
 

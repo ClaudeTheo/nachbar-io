@@ -12,11 +12,13 @@ the cross-agent baseline.
 - Branch model: local work happens directly on `master` unless the Founder
   explicitly asks for a branch or worktree.
 - Current mode: local closed-pilot preparation. Public release, production DB
-  work, billing, provider changes, and deployment remain gated.
+  work, billing, provider changes, and push-to-main remain gated.
 
 ## Coordination
 
 - Read `docs/plans/handoff/INBOX.md` at session start.
+- Shared rule files live in the parent workspace, not inside this repo:
+  from `nachbar-io/`, use `../.claude/rules/{pre-check,testing,db-migrations}.md`.
 - The `Files` column in `INBOX.md` acts as the current soft lock list.
 - Do not edit files listed for another active owner unless the owner has marked
   the task `done`, released the lock, or the Founder explicitly redirects.
@@ -50,13 +52,34 @@ npm run test:e2e:pilot
 Never do these without explicit Founder-Go in the current session:
 
 - `git push`, especially `git push origin master`.
-- Vercel deploy, unpause, or production environment changes.
+- `git push --force` / `git push --force-with-lease`, including feature
+  branches. A remote branch may already be shared, so force-push can rewrite
+  another person's history.
+- Vercel production environment changes, unpause, or config changes.
 - Production DB writes, migrations, or Supabase project changes.
 - Reading, printing, copying, or committing `.env*`, secrets, tokens, or auth
   files.
 - Billing, provider account, domain, or secret rotation changes.
 - Real pilot-user data processing or AI processing of personal data before
   AVV/DPA clearance and Founder-Go.
+- New dependencies or major dependency upgrades in `package.json`; treat them
+  as gated because of license, supply-chain, and possible running-cost impact.
+
+## Green Zone
+
+These are allowed without extra Founder-Go unless the current task says
+otherwise:
+
+- Local branch switching and local branch creation. End the session back on
+  `master`.
+- Local commits after verification.
+- Vercel deploy dispatches are KI-Hand since 2026-04-30: the workflow is
+  dispatch-only, scheduled deploys are removed, closed-pilot mode is active
+  (`NEXT_PUBLIC_PILOT_MODE=true`), and no third-party real-user data is live.
+  Note: without `git push origin master`, a dispatch can only deploy the old
+  remote state, so deploy-without-push is usually not useful.
+- Patch dependency updates when they stay within the existing dependency and do
+  not introduce new services, licenses, or provider costs.
 
 ## Coding Rules
 

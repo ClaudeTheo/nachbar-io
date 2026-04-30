@@ -8,6 +8,7 @@ import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Card, CardContent } from "@/components/ui/card";
+import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { Settings2 } from "lucide-react";
 
@@ -96,6 +97,7 @@ export function FeatureFlagManager() {
   const [flags, setFlags] = useState<FeatureFlag[]>([]);
   const [loading, setLoading] = useState(true);
   const [updatingKey, setUpdatingKey] = useState<string | null>(null);
+  const [changeReason, setChangeReason] = useState("");
 
   // Flags aus der Datenbank laden
   const loadFlags = useCallback(async () => {
@@ -167,7 +169,10 @@ export function FeatureFlagManager() {
 
     const { error } = await supabase
       .from("feature_flags")
-      .update({ enabled: newValue })
+      .update({
+        enabled: newValue,
+        last_change_reason: changeReason.trim() || null,
+      })
       .eq("key", flagKey);
 
     if (error) {
@@ -241,6 +246,21 @@ export function FeatureFlagManager() {
           <h2 className="text-lg font-semibold text-anthrazit">
             Feature-Flags Verwaltung
           </h2>
+        </div>
+
+        <div className="mb-5 max-w-2xl space-y-2">
+          <label
+            htmlFor="feature-flag-change-reason"
+            className="text-sm font-medium text-anthrazit"
+          >
+            Grund (optional)
+          </label>
+          <Textarea
+            id="feature-flag-change-reason"
+            value={changeReason}
+            onChange={(event) => setChangeReason(event.target.value)}
+            rows={2}
+          />
         </div>
 
         <div className="space-y-6" data-testid="flag-table">

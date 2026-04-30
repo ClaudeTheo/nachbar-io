@@ -4256,6 +4256,7 @@ export type Database = {
           enabled_quarters: string[] | null
           id: string
           key: string
+          last_change_reason: string | null
           required_plans: string[] | null
           required_roles: string[] | null
           updated_at: string
@@ -4268,6 +4269,7 @@ export type Database = {
           enabled_quarters?: string[] | null
           id?: string
           key: string
+          last_change_reason?: string | null
           required_plans?: string[] | null
           required_roles?: string[] | null
           updated_at?: string
@@ -4280,11 +4282,56 @@ export type Database = {
           enabled_quarters?: string[] | null
           id?: string
           key?: string
+          last_change_reason?: string | null
           required_plans?: string[] | null
           required_roles?: string[] | null
           updated_at?: string
         }
         Relationships: []
+      }
+      feature_flags_audit_log: {
+        Row: {
+          action: string
+          changed_by: string | null
+          created_at: string
+          enabled_after: boolean | null
+          enabled_before: boolean | null
+          flag_key: string
+          id: number
+          metadata: Json | null
+          reason: string | null
+        }
+        Insert: {
+          action: string
+          changed_by?: string | null
+          created_at?: string
+          enabled_after?: boolean | null
+          enabled_before?: boolean | null
+          flag_key: string
+          id?: number
+          metadata?: Json | null
+          reason?: string | null
+        }
+        Update: {
+          action?: string
+          changed_by?: string | null
+          created_at?: string
+          enabled_after?: boolean | null
+          enabled_before?: boolean | null
+          flag_key?: string
+          id?: number
+          metadata?: Json | null
+          reason?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "feature_flags_audit_log_changed_by_fkey"
+            columns: ["changed_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       federal_state_rules: {
         Row: {

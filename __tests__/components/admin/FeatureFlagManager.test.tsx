@@ -220,7 +220,10 @@ describe('FeatureFlagManager', () => {
 
     await waitFor(() => {
       // Supabase update wurde aufgerufen
-      expect(mockUpdate).toHaveBeenCalledWith({ enabled: true });
+      expect(mockUpdate).toHaveBeenCalledWith({
+        enabled: true,
+        last_change_reason: null,
+      });
       expect(mockEq).toHaveBeenCalledWith('key', 'PILOT_MODE');
     });
 
@@ -229,6 +232,38 @@ describe('FeatureFlagManager', () => {
 
     // Erfolgs-Toast
     expect(mockToastSuccess).toHaveBeenCalled();
+  });
+
+  it('schreibt den optionalen Grund beim Toggle in last_change_reason', async () => {
+    setupSelectChain(MOCK_FLAGS);
+    setupUpdateChain(null);
+
+    const { FeatureFlagManager } = await import(
+      '@/app/(app)/admin/components/FeatureFlagManager'
+    );
+
+    render(<FeatureFlagManager />);
+
+    await waitFor(() => {
+      expect(screen.getByTestId('flag-table')).toBeDefined();
+    });
+
+    const reasonField = screen.getByLabelText('Grund (optional)');
+    fireEvent.change(reasonField, {
+      target: { value: 'Phase-1 Vorbereitung' },
+    });
+
+    const pilotSwitch = screen.getByRole('switch', {
+      name: 'PILOT_MODE aktivieren',
+    });
+    fireEvent.click(pilotSwitch);
+
+    await waitFor(() => {
+      expect(mockUpdate).toHaveBeenCalledWith({
+        enabled: true,
+        last_change_reason: 'Phase-1 Vorbereitung',
+      });
+    });
   });
 
   it('zeigt Fehler-Toast bei Ladefehler', async () => {

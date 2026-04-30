@@ -71,50 +71,107 @@ vi.mock("@/hooks/use-auth", () => ({
   useAuth: () => ({ user: { id: "helper-001" }, loading: false }),
 }));
 
-const mockTasks = [
+const mockHelperProfile = { id: "helper-profile-001" };
+
+const mockMatches = [
+  {
+    id: "match-1",
+    request_id: "h1",
+    confirmed_at: null,
+    created_at: "2026-03-27T10:00:00Z",
+  },
+  {
+    id: "match-2",
+    request_id: "h2",
+    confirmed_at: "2026-03-27T12:00:00Z",
+    created_at: "2026-03-26T10:00:00Z",
+  },
+  {
+    id: "match-3",
+    request_id: "h3",
+    confirmed_at: null,
+    created_at: "2026-03-25T10:00:00Z",
+  },
+];
+
+const mockRequests = [
   {
     id: "h1",
+    user_id: "requester-1",
     title: "Einkaufen",
     description: "Aldi",
     status: "open",
     category: "Einkaufen",
     created_at: "2026-03-27T10:00:00Z",
-    scheduled_date: "2026-03-28",
-    requester: { display_name: "Frau Mueller" },
   },
   {
     id: "h2",
+    user_id: "requester-2",
     title: "Gartenarbeit",
     description: "Rasen",
-    status: "in_progress",
+    status: "matched",
     category: "Garten",
     created_at: "2026-03-26T10:00:00Z",
-    scheduled_date: null,
-    requester: { display_name: "Herr Schmidt" },
   },
   {
     id: "h3",
+    user_id: "requester-3",
     title: "Arztbegleitung",
     description: "",
-    status: "completed",
+    status: "closed",
     category: "Begleitung",
     created_at: "2026-03-25T10:00:00Z",
-    scheduled_date: null,
-    requester: { display_name: "Frau Weber" },
   },
+];
+
+const mockRequesters = [
+  { id: "requester-1", display_name: "Frau Mueller" },
+  { id: "requester-2", display_name: "Herr Schmidt" },
+  { id: "requester-3", display_name: "Frau Weber" },
 ];
 
 vi.mock("@/lib/supabase/client", () => ({
   createClient: () => ({
-    from: () => ({
-      select: () => ({
-        eq: () => ({
-          order: () => ({
-            limit: () => Promise.resolve({ data: mockTasks, error: null }),
+    from: (table: string) => {
+      if (table === "neighborhood_helpers") {
+        return {
+          select: () => ({
+            eq: () => ({
+              maybeSingle: () =>
+                Promise.resolve({ data: mockHelperProfile, error: null }),
+            }),
           }),
-        }),
-      }),
-    }),
+        };
+      }
+
+      if (table === "help_matches") {
+        return {
+          select: () => ({
+            eq: () => ({
+              order: () => Promise.resolve({ data: mockMatches, error: null }),
+            }),
+          }),
+        };
+      }
+
+      if (table === "help_requests") {
+        return {
+          select: () => ({
+            in: () => Promise.resolve({ data: mockRequests, error: null }),
+          }),
+        };
+      }
+
+      if (table === "users") {
+        return {
+          select: () => ({
+            in: () => Promise.resolve({ data: mockRequesters, error: null }),
+          }),
+        };
+      }
+
+      throw new Error(`Unexpected Supabase table in test: ${table}`);
+    },
   }),
 }));
 
@@ -148,12 +205,7 @@ describe("HelferTasksPage", () => {
     });
   });
 
-  // GEPARKT: Mock-Chain deckt aktuelle Supabase-Query in page.tsx nicht ab.
-  // DOM zeigt "Noch keine Einsätze" -> mockTasks kommen nicht durch den Mock durch.
-  // Laut .claude/rules/testing.md Skip-Liste ("maybeSingle Mock") -> separates Ticket.
-  // Die 3 gruenen Tests oben pruefen Smoke (tasks-page, status-overview, task-filter),
-  // die 2 hier pruefen Task-Content — brauchen Mock-Chain-Analyse gegen aktuelle page.tsx.
-  it.skip("filtert Tasks nach Status", async () => {
+  it("filtert Tasks nach Status", async () => {
     render(<HelferTasksPage />);
     await waitFor(() => {
       expect(screen.getByTestId("task-h1")).toBeInTheDocument();
@@ -165,8 +217,7 @@ describe("HelferTasksPage", () => {
     });
   });
 
-  // GEPARKT (siehe oben).
-  it.skip("zeigt Anfragensteller-Name pro Task", async () => {
+  it("zeigt Anfragensteller-Name pro Task", async () => {
     render(<HelferTasksPage />);
     await waitFor(() => {
       expect(screen.getByText(/Frau Mueller/)).toBeInTheDocument();

@@ -81,10 +81,11 @@ describe('POST /api/billing/checkout', () => {
     expect(body.error).toContain('Plan');
   });
 
-  // GEPARKT bis pro_community in VALID_PAID_PLANS live ist.
+  // TODO: blocked by pro_community activation in VALID_PAID_PLANS.
   // Aktuell (Phase 1) nur "plus" in VALID_PAID_PLANS (billing-checkout.service.ts:16),
   // daher feuert der erste Plan-Check ("Ungültiger Plan") bevor die quarterId-Validierung erreicht wird.
-  // Reaktivieren wenn pro_community aktiviert wird (Phase 2+, siehe docs/plans/2026-04-10-quartierapp-neuausrichtung-design.md).
+  // Reaktivieren erst mit bewusstem B2B/Billing-Scope inkl. DB-Constraint- und UI-Pruefung.
+  // Details: docs/plans/2026-04-30-skip-tests-handover.md.
   it.skip('gibt 400 bei pro_community ohne quarterId zurueck', async () => {
     mockGetUser.mockResolvedValue({ data: { user: { id: 'u1', email: 'test@test.de' } } });
 

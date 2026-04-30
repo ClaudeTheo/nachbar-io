@@ -23,6 +23,7 @@ Shared task board and mailbox for Codex, Claude, and future coding agents.
 | done | codex | Block-3 AI-Stufen-Settings Plan + Implementation | `components/ki-help/*` + `lib/ki-help/*` + `lib/ai/user-settings.ts` + `modules/ai/components/AiHelpSettingsToggle.tsx` + `app/api/settings/ai/route.ts` | 2026-04-28 | block-3 implemented and verified locally in `69f8b87` | 2026-04-29 |
 | done | codex | Phase-4 AI-Level Backend-Differenzierung | `lib/ai/user-settings.ts` + `lib/ai/provider.ts` + `app/api/ai/onboarding/turn/route.ts` + `app/api/ai/onboarding/turn/__tests__/route.test.ts` + `lib/ai/__tests__/provider.test.ts` + `__tests__/lib/ai-user-settings.test.ts` | 2026-04-29 | phase-4 committed and verified locally in `12c3191` | 2026-04-29 15:40 |
 | done | codex | Phase-5 Settings-Trigger fuer KI-FAQ-Sheet | `components/ki-help/KiHelpFaqSheet.tsx` + `__tests__/components/ki-help/KiHelpFaqSheet.test.tsx` + `modules/ai/components/AiHelpSettingsToggle.tsx` + `__tests__/components/AiHelpSettingsToggle.test.tsx` | 2026-04-29 | phase-5 committed and verified locally in `0a4b4d1` | 2026-04-29 15:43 |
+| in-progress | codex | Lint-Debt Block A: no-explicit-any | `**/*.{ts,tsx}` + `__tests__/_helpers/*` | 2026-04-30 | block-A done | 2026-04-30 09:24 |
 
 ## Notes
 

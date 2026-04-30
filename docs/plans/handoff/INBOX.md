@@ -31,6 +31,7 @@ Shared task board and mailbox for Codex, Claude, and future coding agents.
 | done | codex | Block F: it.skip-Tests reaktivieren oder dokumentieren | `__tests__/api/billing-checkout.test.ts` + `__tests__/app/hilfe/tasks/page.test.tsx` + `docs/plans/2026-04-30-skip-tests-handover.md` | 2026-04-30 12:08 +02:00 | block-F committed and verified locally | 2026-04-30 12:13 +02:00 |
 | done | codex | Block G: deploy.yml SHA-Vergleichs-Block aufraeumen | `.github/workflows/deploy.yml` + `docs/plans/handoff/INBOX.md` | 2026-04-30 12:13 +02:00 | block-G committed and verified locally | 2026-04-30 12:16 +02:00 |
 | done | codex | Block H: E2E-Playwright Datei-Namen-Drift | `playwright.config.ts` + `tests/e2e/playwright.config.ts` + `tests/e2e/README.md` + `docs/plans/handoff/INBOX.md` | 2026-04-30 12:17 +02:00 | block-H committed and verified locally | 2026-04-30 12:24 +02:00 |
+| done | codex | Block I: .gitignore fuer Codex-Logs und lokale Reste | `.gitignore` + `docs/plans/handoff/INBOX.md` | 2026-04-30 12:25 +02:00 | block-I committed and status verified | 2026-04-30 12:25 +02:00 |
 
 ## Notes
 

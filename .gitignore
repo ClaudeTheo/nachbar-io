@@ -62,3 +62,13 @@ android/*.keystore
 *.keystore
 .env*.local
 .tmp-diag/
+
+# Codex CLI Logs (lokale Background-Tasks)
+.codex-*.log
+.codex-*.err.log
+
+# Playwright CLI Cache
+.playwright-cli/
+
+# Lokales Output-Verzeichnis
+output/

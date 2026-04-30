@@ -7,6 +7,7 @@ import { NextRequest } from "next/server";
 
 // Supabase Auth Mock
 const mockGetUser = vi.fn();
+const mockIsFeatureEnabledServer = vi.fn();
 const _mockSupabaseFrom = vi.fn(() => ({
   select: vi.fn(() => ({
     eq: vi.fn(() => ({
@@ -29,6 +30,11 @@ vi.mock("@/lib/supabase/server", () => ({
       },
     }),
   ),
+}));
+
+vi.mock("@/lib/feature-flags-server", () => ({
+  isFeatureEnabledServer: (...args: unknown[]) =>
+    mockIsFeatureEnabledServer(...args),
 }));
 
 // Supabase Admin-Client Mock (Service Role) — zentraler Import aus lib/supabase/admin
@@ -135,6 +141,7 @@ describe("POST /api/billing/checkout", () => {
     mockCheckoutCreate.mockResolvedValue({
       url: "https://checkout.stripe.com/session-123",
     });
+    mockIsFeatureEnabledServer.mockResolvedValue(true);
 
     // Route dynamisch importieren (nach Mock-Setup)
     const mod = await import("@/app/api/billing/checkout/route");

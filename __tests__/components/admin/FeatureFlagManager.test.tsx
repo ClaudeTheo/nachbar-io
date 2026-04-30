@@ -162,6 +162,61 @@ describe('FeatureFlagManager', () => {
     ).toBeDefined();
   });
 
+  it('gruppiert Billing-, Twilio- und Check-in-Schutzflags separat', async () => {
+    setupSelectChain([
+      {
+        key: 'BILLING_ENABLED',
+        enabled: false,
+        required_roles: [],
+        required_plans: [],
+        enabled_quarters: [],
+        admin_override: false,
+      },
+      {
+        key: 'TWILIO_ENABLED',
+        enabled: false,
+        required_roles: [],
+        required_plans: [],
+        enabled_quarters: [],
+        admin_override: false,
+      },
+      {
+        key: 'CHECKIN_MESSAGES_ENABLED',
+        enabled: false,
+        required_roles: [],
+        required_plans: [],
+        enabled_quarters: [],
+        admin_override: false,
+      },
+    ]);
+
+    const { FeatureFlagManager } = await import(
+      '@/app/(app)/admin/components/FeatureFlagManager'
+    );
+
+    render(<FeatureFlagManager />);
+
+    await waitFor(() => {
+      expect(screen.getByText('Billing & Externe Provider')).toBeDefined();
+    });
+
+    const providerHeading = screen.getByRole('heading', {
+      name: 'Billing & Externe Provider',
+    });
+    const providerSection = providerHeading.closest('section');
+
+    expect(providerSection).not.toBeNull();
+    expect(
+      within(providerSection as HTMLElement).getByText('BILLING_ENABLED')
+    ).toBeDefined();
+    expect(
+      within(providerSection as HTMLElement).getByText('TWILIO_ENABLED')
+    ).toBeDefined();
+    expect(
+      within(providerSection as HTMLElement).getByText('CHECKIN_MESSAGES_ENABLED')
+    ).toBeDefined();
+  });
+
   it('zeigt Rollen-Badges korrekt an', async () => {
     setupSelectChain(MOCK_FLAGS);
 

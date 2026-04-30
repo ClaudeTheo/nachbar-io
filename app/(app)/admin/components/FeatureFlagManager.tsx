@@ -58,6 +58,11 @@ const FLAG_DESCRIPTIONS: Record<string, string> = {
   BFARM_DRUGS_ENABLED: "BfArM Medikamenten-Lookup",
   DIGA_REGISTRY_ENABLED: "DiGA-Verzeichnis",
   GKV_CARE_REGISTRY_ENABLED: "GKV-Pflegedienst-Verzeichnis",
+  // Billing / externe Provider
+  BILLING_ENABLED: "Stripe-Checkout / Billing live",
+  TWILIO_ENABLED: "Twilio SMS / Phone (AVV noetig)",
+  CHECKIN_MESSAGES_ENABLED:
+    "Care-Check-in-Schreib-Endpoints (HR + Care-AVV)",
 };
 
 // HEARTBEAT wurde aus "Kern-Module" in "Gesundheit" verschoben (mit den neuen
@@ -82,6 +87,10 @@ const FLAG_GROUPS: Array<{ title: string; pattern: RegExp }> = [
   {
     title: "Externe APIs",
     pattern: /^(NINA|DWD|UBA|DELFI|LGL_BW|OSM|BKG|BFARM|DIGA|GKV)/,
+  },
+  {
+    title: "Billing & Externe Provider",
+    pattern: /^(BILLING|TWILIO|CHECKIN_MESSAGES)/,
   },
   {
     title: "Admin / Sonstige",

@@ -4,6 +4,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { handleServiceError } from "@/lib/services/service-error";
+import { isFeatureEnabledServer } from "@/lib/feature-flags-server";
 import {
   submitCheckin,
   getCheckinHistory,
@@ -12,6 +13,17 @@ import {
 // POST /api/care/checkin — Check-in abgeben
 export async function POST(request: NextRequest) {
   const supabase = await createClient();
+  const enabled = await isFeatureEnabledServer(
+    supabase,
+    "CHECKIN_MESSAGES_ENABLED",
+  );
+  if (!enabled) {
+    return NextResponse.json(
+      { error: "Feature in Vorbereitung" },
+      { status: 503 },
+    );
+  }
+
   const {
     data: { user },
   } = await supabase.auth.getUser();

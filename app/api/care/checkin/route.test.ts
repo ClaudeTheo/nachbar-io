@@ -10,9 +10,15 @@ import { encryptField } from '@/lib/care/field-encryption';
 // --- Mocks ---
 
 const mockSupabase = createRouteMockSupabase();
+const mockIsFeatureEnabledServer = vi.fn();
 
 vi.mock('@/lib/supabase/server', () => ({
   createClient: vi.fn().mockImplementation(() => Promise.resolve(mockSupabase.supabase)),
+}));
+
+vi.mock('@/lib/feature-flags-server', () => ({
+  isFeatureEnabledServer: (...args: unknown[]) =>
+    mockIsFeatureEnabledServer(...args),
 }));
 
 vi.mock('@/lib/care/audit', () => ({
@@ -73,9 +79,25 @@ describe('POST /api/care/checkin', () => {
     vi.clearAllMocks();
     mockSupabase.reset();
     mockSupabase.setUser(TEST_USER);
+    mockIsFeatureEnabledServer.mockResolvedValue(true);
   });
 
   describe('Authentifizierung', () => {
+    it('gibt 503 zurueck wenn CHECKIN_MESSAGES_ENABLED deaktiviert ist', async () => {
+      mockIsFeatureEnabledServer.mockResolvedValue(false);
+
+      const response = await POST(createPostRequest({ status: 'ok' }));
+
+      expect(response.status).toBe(503);
+      expect(await response.json()).toEqual({
+        error: 'Feature in Vorbereitung',
+      });
+      expect(mockIsFeatureEnabledServer).toHaveBeenCalledWith(
+        mockSupabase.supabase,
+        'CHECKIN_MESSAGES_ENABLED',
+      );
+    });
+
     it('gibt 401 zurück ohne authentifizierten User', async () => {
       mockSupabase.setUser(null);
 
@@ -312,6 +334,7 @@ describe('GET /api/care/checkin', () => {
     vi.clearAllMocks();
     mockSupabase.reset();
     mockSupabase.setUser(TEST_USER);
+    mockIsFeatureEnabledServer.mockResolvedValue(true);
   });
 
   it('gibt 401 zurück ohne authentifizierten User', async () => {

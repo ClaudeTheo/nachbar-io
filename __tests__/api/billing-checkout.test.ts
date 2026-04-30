@@ -4,11 +4,17 @@ import type { NextRequest } from 'next/server';
 
 // Mocks
 const mockGetUser = vi.fn();
+const mockIsFeatureEnabledServer = vi.fn();
 
 vi.mock('@/lib/supabase/server', () => ({
   createClient: vi.fn(async () => ({
     auth: { getUser: mockGetUser },
   })),
+}));
+
+vi.mock('@/lib/feature-flags-server', () => ({
+  isFeatureEnabledServer: (...args: unknown[]) =>
+    mockIsFeatureEnabledServer(...args),
 }));
 
 // Admin Supabase Mock (fuer Early-Adopter-Check)
@@ -51,6 +57,27 @@ describe('POST /api/billing/checkout', () => {
     process.env.NEXT_PUBLIC_SUPABASE_URL = 'https://test.supabase.co';
     process.env.SUPABASE_SERVICE_ROLE_KEY = 'test-service-key';
     process.env.NEXT_PUBLIC_APP_URL = 'http://localhost:3000';
+    mockIsFeatureEnabledServer.mockResolvedValue(true);
+  });
+
+  it('gibt 503 zurueck wenn BILLING_ENABLED deaktiviert ist', async () => {
+    mockIsFeatureEnabledServer.mockResolvedValue(false);
+
+    const { POST } = await import('@/app/api/billing/checkout/route');
+    const req = new Request('http://localhost/api/billing/checkout', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ planType: 'plus' }),
+    });
+    const res = await POST(req as unknown as NextRequest);
+
+    expect(res.status).toBe(503);
+    expect(await res.json()).toEqual({ error: 'Feature in Vorbereitung' });
+    expect(mockGetUser).not.toHaveBeenCalled();
+    expect(mockIsFeatureEnabledServer).toHaveBeenCalledWith(
+      expect.anything(),
+      'BILLING_ENABLED',
+    );
   });
 
   it('gibt 401 ohne Authentifizierung zurueck', async () => {

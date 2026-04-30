@@ -3,9 +3,18 @@
 // Event-Verarbeitung in billing-webhook.service.ts
 import { NextRequest, NextResponse } from "next/server";
 import { stripe } from "@/lib/stripe";
+import { createClient } from "@/lib/supabase/server";
 import { handleStripeEvent } from "@/lib/services/billing-webhook.service";
+import { isFeatureEnabledServer } from "@/lib/feature-flags-server";
 
 export async function POST(request: NextRequest) {
+  const supabase = await createClient();
+  const enabled = await isFeatureEnabledServer(supabase, "BILLING_ENABLED");
+  if (!enabled) {
+    console.info("billing_disabled_webhook_received");
+    return new NextResponse(null, { status: 200 });
+  }
+
   if (!stripe) {
     return NextResponse.json(
       { error: "Stripe nicht konfiguriert" },

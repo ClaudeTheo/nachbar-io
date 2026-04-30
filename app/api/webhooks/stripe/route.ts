@@ -5,8 +5,19 @@ import { getAdminSupabase } from "@/lib/supabase/admin";
 import { getStripe } from "@/modules/hilfe/services/stripe";
 import { handleStripeWebhook } from "@/lib/services/stripe-webhook.service";
 import { handleServiceError } from "@/lib/services/service-error";
+import { isFeatureEnabledServer } from "@/lib/feature-flags-server";
 
 export async function POST(request: NextRequest) {
+  const supabase = getAdminSupabase();
+  const billingEnabled = await isFeatureEnabledServer(
+    supabase,
+    "BILLING_ENABLED",
+  );
+  if (!billingEnabled) {
+    console.info("billing_disabled_webhook_received");
+    return new NextResponse(null, { status: 200 });
+  }
+
   const stripe = getStripe();
   const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
 
@@ -38,7 +49,6 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    const supabase = getAdminSupabase();
     await handleStripeWebhook(supabase, event);
     return NextResponse.json({ received: true });
   } catch (error) {

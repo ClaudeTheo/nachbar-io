@@ -8,9 +8,18 @@ import {
   provisionPlanResources,
 } from "@/lib/services/billing-checkout.service";
 import { handleServiceError } from "@/lib/services/service-error";
+import { isFeatureEnabledServer } from "@/lib/feature-flags-server";
 
 export async function POST(request: NextRequest) {
   const supabase = await createClient();
+  const enabled = await isFeatureEnabledServer(supabase, "BILLING_ENABLED");
+  if (!enabled) {
+    return NextResponse.json(
+      { error: "Feature in Vorbereitung" },
+      { status: 503 },
+    );
+  }
+
   const {
     data: { user },
   } = await supabase.auth.getUser();

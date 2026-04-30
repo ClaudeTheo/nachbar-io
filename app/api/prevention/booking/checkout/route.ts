@@ -3,10 +3,19 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createPreventionCheckout } from "@/modules/praevention/services/payment.service";
+import { isFeatureEnabledServer } from "@/lib/feature-flags-server";
 
 export async function POST(req: NextRequest) {
   try {
     const supabase = await createClient();
+    const enabled = await isFeatureEnabledServer(supabase, "BILLING_ENABLED");
+    if (!enabled) {
+      return NextResponse.json(
+        { error: "Feature in Vorbereitung" },
+        { status: 503 },
+      );
+    }
+
     const {
       data: { user },
     } = await supabase.auth.getUser();

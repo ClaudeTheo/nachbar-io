@@ -20,18 +20,16 @@ export function ReviewWrapper({
   recipientPhone,
 }: ReviewWrapperProps) {
   const router = useRouter();
-  const [transcript, setTranscript] = useState<string | null>(null);
+  const [transcript] = useState<string | null>(() => {
+    if (typeof window === "undefined") return null;
+    return sessionStorage.getItem(`schreiben_transcript_${recipientIndex}`);
+  });
 
   useEffect(() => {
-    const stored = sessionStorage.getItem(
-      `schreiben_transcript_${recipientIndex}`,
-    );
-    if (!stored) {
+    if (!transcript) {
       router.replace(`/schreiben/mic/${recipientIndex}`);
-      return;
     }
-    setTranscript(stored);
-  }, [recipientIndex, router]);
+  }, [recipientIndex, router, transcript]);
 
   if (!transcript) return null;
 

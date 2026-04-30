@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useEffect, useState } from "react";
+import { Suspense, useCallback, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import {
   ArrowLeft,
@@ -58,11 +58,7 @@ function BuchenFuerAndereContent() {
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    loadData();
-  }, []);
-
-  async function loadData() {
+  const loadData = useCallback(async () => {
     try {
       const [coursesRes, linksRes] = await Promise.all([
         fetch("/api/prevention/courses"),
@@ -92,7 +88,11 @@ function BuchenFuerAndereContent() {
     } finally {
       setLoading(false);
     }
-  }
+  }, [courseIdParam]);
+
+  useEffect(() => {
+    loadData();
+  }, [loadData]);
 
   async function handleGiftBooking() {
     if (!selectedCourse) return;

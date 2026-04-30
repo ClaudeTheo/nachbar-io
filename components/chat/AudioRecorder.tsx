@@ -3,7 +3,7 @@
 // Einfacher Audio-Recorder fuer Sprachnachrichten via MediaRecorder API.
 // Max 60 Sekunden (Hard-Stop bei Limit).
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Mic, Square, X } from "lucide-react";
 
 interface AudioRecorderProps {
@@ -25,13 +25,7 @@ export function AudioRecorder({
   const startTsRef = useRef<number>(0);
   const intervalRef = useRef<number | null>(null);
 
-  useEffect(() => {
-    return () => {
-      stopRecorder();
-    };
-  }, []);
-
-  function stopRecorder() {
+  const stopRecorder = useCallback(() => {
     if (recorderRef.current && recorderRef.current.state !== "inactive") {
       recorderRef.current.stop();
     }
@@ -40,7 +34,13 @@ export function AudioRecorder({
       window.clearInterval(intervalRef.current);
       intervalRef.current = null;
     }
-  }
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      stopRecorder();
+    };
+  }, [stopRecorder]);
 
   async function startRecording() {
     setError(null);

@@ -4,7 +4,7 @@
 // Standardmaessig eingeklappt — nur Header + Anzahl sichtbar
 // Per Tap aufklappbar, einzelne Anfragen per Swipe/X ausblendbar
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useRef } from "react";
 import Link from "next/link";
 import { X, ChevronRight, ChevronDown } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -46,21 +46,18 @@ function saveDismissedIds(ids: Set<string>) {
 }
 
 export function HelpRequestsSection({ requests }: { requests: HelpRequest[] }) {
-  const [dismissedIds, setDismissedIds] = useState<Set<string>>(new Set());
+  const [dismissedIds, setDismissedIds] = useState(() => getDismissedIds());
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [isOpen, setIsOpen] = useState(false);
   const [swipingId, setSwipingId] = useState<string | null>(null);
+  const [swipeOffset, setSwipeOffset] = useState(0);
+  const [mountedAt] = useState(() => Date.now());
   const touchStartX = useRef(0);
-  const touchDeltaX = useRef(0);
-
-  useEffect(() => {
-    setDismissedIds(getDismissedIds());
-  }, []);
 
   const visibleRequests = requests.filter((req) => {
     if (dismissedIds.has(req.id)) return false;
     const hoursAgo =
-      (Date.now() - new Date(req.created_at).getTime()) / (1000 * 60 * 60);
+      (mountedAt - new Date(req.created_at).getTime()) / (1000 * 60 * 60);
     return hoursAgo <= MAX_AGE_HOURS;
   });
 
@@ -78,20 +75,20 @@ export function HelpRequestsSection({ requests }: { requests: HelpRequest[] }) {
 
   function handleTouchStart(e: React.TouchEvent, id: string) {
     touchStartX.current = e.touches[0].clientX;
-    touchDeltaX.current = 0;
+    setSwipeOffset(0);
     setSwipingId(id);
   }
 
   function handleTouchMove(e: React.TouchEvent) {
-    touchDeltaX.current = e.touches[0].clientX - touchStartX.current;
+    setSwipeOffset(e.touches[0].clientX - touchStartX.current);
   }
 
   function handleTouchEnd(id: string) {
-    if (Math.abs(touchDeltaX.current) > 80) {
+    if (Math.abs(swipeOffset) > 80) {
       handleDismiss(id);
     }
     setSwipingId(null);
-    touchDeltaX.current = 0;
+    setSwipeOffset(0);
   }
 
   if (visibleRequests.length === 0) return null;
@@ -123,7 +120,7 @@ export function HelpRequestsSection({ requests }: { requests: HelpRequest[] }) {
           <div className="rounded-xl bg-white shadow-soft overflow-hidden divide-y divide-[#ebe5dd]">
             {visibleRequests.map((req) => {
               const hoursAgo = Math.floor(
-                (Date.now() - new Date(req.created_at).getTime()) /
+                (mountedAt - new Date(req.created_at).getTime()) /
                   (1000 * 60 * 60),
               );
               const isSwiping = swipingId === req.id;
@@ -150,7 +147,7 @@ export function HelpRequestsSection({ requests }: { requests: HelpRequest[] }) {
                     aria-expanded={isExpanded}
                     style={{
                       transform: isSwiping
-                        ? `translateX(${touchDeltaX.current}px)`
+                        ? `translateX(${swipeOffset}px)`
                         : undefined,
                     }}
                   >

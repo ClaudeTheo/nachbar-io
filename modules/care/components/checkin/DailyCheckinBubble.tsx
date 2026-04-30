@@ -67,7 +67,10 @@ export function DailyCheckinBubble() {
   }, []);
 
   useEffect(() => {
-    loadStatus();
+    const timer = setTimeout(() => {
+      loadStatus();
+    }, 0);
+    return () => clearTimeout(timer);
   }, [loadStatus]);
 
   // 5-Sekunden-Timer: Sprechblase einblenden

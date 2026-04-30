@@ -6,6 +6,7 @@
 import { formatDistanceToNow, format } from "date-fns";
 import { de } from "date-fns/locale";
 import { Calendar, Clock } from "lucide-react";
+import { useState } from "react";
 
 interface CareVisitCardProps {
   lastVisitDate: string | null;
@@ -25,9 +26,10 @@ export function CareVisitCard({
   lastVisitType,
   nextPlannedVisit,
 }: CareVisitCardProps) {
+  const [mountedAt] = useState(() => Date.now());
   const isRecent =
     lastVisitDate &&
-    Date.now() - new Date(lastVisitDate).getTime() < 24 * 60 * 60 * 1000;
+    mountedAt - new Date(lastVisitDate).getTime() < 24 * 60 * 60 * 1000;
 
   return (
     <div className="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm">

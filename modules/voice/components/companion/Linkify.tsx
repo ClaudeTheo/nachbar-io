@@ -18,10 +18,9 @@ export function Linkify({ text }: LinkifyProps) {
   let match: RegExpExecArray | null;
   let key = 0;
 
-  // Regex zuruecksetzen
-  URL_REGEX.lastIndex = 0;
+  const urlRegex = new RegExp(URL_REGEX);
 
-  while ((match = URL_REGEX.exec(text)) !== null) {
+  while ((match = urlRegex.exec(text)) !== null) {
     // Text vor dem Link
     if (match.index > lastIndex) {
       parts.push(text.slice(lastIndex, match.index));

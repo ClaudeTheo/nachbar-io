@@ -44,7 +44,6 @@ export function useMapEditorState() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [uploadingBg, setUploadingBg] = useState(false);
-  const bgInputRef = useRef<HTMLInputElement>(null);
   const [showUsers, setShowUsers] = useState(false);
   const [householdMap, setHouseholdMap] = useState<Record<string, HouseholdWithMembers>>({});
   const [allUsers, setAllUsers] = useState<User[]>([]);
@@ -224,7 +223,7 @@ export function useMapEditorState() {
     viewBoxStr, backgroundImage, mapW, mapH,
     // State
     houses, selectedId, setSelectedId, isAddMode, setIsAddMode,
-    loading, saving, uploadingBg, bgInputRef,
+    loading, saving, uploadingBg,
     showUsers, setShowUsers, allUsers, loadingUsers,
     dragState, svgRefCallback, newHouse, setNewHouse,
     // Abgeleitet

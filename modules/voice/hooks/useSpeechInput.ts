@@ -40,21 +40,22 @@ export interface UseSpeechInputReturn {
 export function useSpeechInput(
   options: UseSpeechInputOptions,
 ): UseSpeechInputReturn {
-  const engineRef = useRef<SpeechEngine | null>(null);
-  const [isAvailable, setIsAvailable] = useState(false);
+  const [engine] = useState<SpeechEngine | null>(() => createSpeechEngine());
+  const engineRef = useRef<SpeechEngine | null>(engine);
+  const [isAvailable] = useState(() => engine !== null);
   const [recording, setRecording] = useState(false);
   const [speechState, setSpeechState] = useState<SpeechEngineState>("idle");
 
   // Optionen via Ref, damit start() nicht bei jedem Re-Render neu erzeugt wird
   // (sonst loest sich die Stable-Identitaet auf, was bei Aufruf-Throttle stoert).
   const optionsRef = useRef(options);
-  optionsRef.current = options;
+
+  useEffect(() => {
+    optionsRef.current = options;
+  }, [options]);
 
   // Engine einmalig beim Mount initialisieren
   useEffect(() => {
-    const engine = createSpeechEngine();
-    engineRef.current = engine;
-    setIsAvailable(engine !== null);
     return () => {
       engineRef.current?.cleanup();
       engineRef.current = null;

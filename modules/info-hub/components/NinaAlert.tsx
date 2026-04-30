@@ -29,11 +29,9 @@ export function NinaAlert() {
   const { currentQuarter } = useQuarter();
   const quarterId = currentQuarter?.id;
   const [warnings, setWarnings] = useState<NinaWarning[]>([]);
-  const [dismissed, setDismissedState] = useState<Set<string>>(new Set());
-
-  useEffect(() => {
-    setDismissedState(getDismissed());
-  }, []);
+  const [dismissed, setDismissedState] = useState<Set<string>>(() =>
+    getDismissed(),
+  );
 
   useEffect(() => {
     if (!quarterId) return;

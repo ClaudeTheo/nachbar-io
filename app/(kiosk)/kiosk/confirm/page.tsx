@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, Suspense } from "react";
+import { useState, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 
 function KioskConfirmContent() {
@@ -10,16 +10,11 @@ function KioskConfirmContent() {
     "ready" | "confirming" | "success" | "error"
   >("ready");
   const [errorMsg, setErrorMsg] = useState("");
-
-  // Prüfen ob Session gültig ist
-  useEffect(() => {
-    if (!sessionId) {
-      setStatus("error");
-      setErrorMsg(
-        "Kein gültiger QR-Code. Bitte scannen Sie den Code am Kiosk erneut.",
-      );
-    }
-  }, [sessionId]);
+  const effectiveStatus = sessionId ? status : "error";
+  const effectiveErrorMsg =
+    sessionId
+      ? errorMsg
+      : "Kein gültiger QR-Code. Bitte scannen Sie den Code am Kiosk erneut.";
 
   async function handleConfirm() {
     if (!sessionId) return;
@@ -80,7 +75,7 @@ function KioskConfirmContent() {
         color: "#2d3142",
       }}
     >
-      {status === "ready" && (
+      {effectiveStatus === "ready" && (
         <>
           <div style={{ fontSize: "64px" }}>🏘️</div>
           <h1 style={{ fontSize: "24px", fontWeight: 700 }}>Kiosk-Anmeldung</h1>
@@ -112,14 +107,14 @@ function KioskConfirmContent() {
         </>
       )}
 
-      {status === "confirming" && (
+      {effectiveStatus === "confirming" && (
         <>
           <div style={{ fontSize: "48px" }}>⏳</div>
           <p style={{ fontSize: "18px" }}>Wird bestätigt...</p>
         </>
       )}
 
-      {status === "success" && (
+      {effectiveStatus === "success" && (
         <>
           <div style={{ fontSize: "64px" }}>✅</div>
           <h1 style={{ fontSize: "24px", fontWeight: 700, color: "#4caf87" }}>
@@ -132,14 +127,14 @@ function KioskConfirmContent() {
         </>
       )}
 
-      {status === "error" && (
+      {effectiveStatus === "error" && (
         <>
           <div style={{ fontSize: "64px" }}>❌</div>
           <h1 style={{ fontSize: "24px", fontWeight: 700, color: "#ef4444" }}>
             Fehler
           </h1>
           <p style={{ fontSize: "16px", color: "#666", maxWidth: "300px" }}>
-            {errorMsg}
+            {effectiveErrorMsg}
           </p>
           {sessionId && (
             <button

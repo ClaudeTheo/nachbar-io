@@ -68,6 +68,7 @@ export default function SubscriptionManager() {
 
   useEffect(() => {
     void initializePage();
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- Checkout-Query nur beim ersten Seitenaufruf auswerten.
   }, []);
 
   async function initializePage() {

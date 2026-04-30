@@ -36,7 +36,6 @@ export function IllustrationRenderer({
 }: IllustrationRendererProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [svgContent, setSvgContent] = useState<string | null>(null);
-  const [loaded, setLoaded] = useState(false);
 
   // SVG laden
   useEffect(() => {
@@ -60,17 +59,17 @@ export function IllustrationRenderer({
 
   // Zeichnen-Animation anwenden
   useEffect(() => {
-    if (!svgContent || !containerRef.current || !animated) {
-      setLoaded(true);
+    if (!svgContent || !animated) {
       return;
     }
+
+    if (!containerRef.current) return;
 
     // prefers-reduced-motion prüfen
     const prefersReduced = window.matchMedia(
       "(prefers-reduced-motion: reduce)",
     ).matches;
     if (prefersReduced) {
-      setLoaded(true);
       return;
     }
 
@@ -101,7 +100,6 @@ export function IllustrationRenderer({
       animPaths.forEach((el) => {
         (el as SVGGeometryElement).style.strokeDashoffset = "0";
       });
-      setLoaded(true);
     });
   }, [svgContent, animated]);
 
@@ -118,7 +116,7 @@ export function IllustrationRenderer({
   return (
     <div
       ref={containerRef}
-      className={`illustration-renderer ${className} ${loaded ? "opacity-100" : "opacity-0"} transition-opacity duration-500`}
+      className={`illustration-renderer ${className}`}
       style={{ width, height }}
       aria-hidden="true"
       dangerouslySetInnerHTML={{ __html: svgContent }}

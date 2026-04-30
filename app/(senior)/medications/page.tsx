@@ -39,9 +39,11 @@ export default function SeniorMedicationsPage() {
     setLoading(false);
   }, [userId]);
 
-  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => {
-    loadDueMeds();
+    const timer = setTimeout(() => {
+      loadDueMeds();
+    }, 0);
+    return () => clearTimeout(timer);
   }, [loadDueMeds]);
 
   // Auto-refresh alle 5 Min

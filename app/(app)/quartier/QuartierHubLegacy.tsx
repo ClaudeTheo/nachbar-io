@@ -23,20 +23,21 @@ import { useQuarter } from "@/lib/quarters";
 
 export function QuartierHubLegacy() {
   const { currentQuarter, loading: quarterLoading } = useQuarter();
+  const quarterId = currentQuarter?.id;
   const [marketplaceCount, setMarketplaceCount] = useState<number | null>(null);
   const [eventsThisWeek, setEventsThisWeek] = useState<number | null>(null);
   const [groupsCount, setGroupsCount] = useState<number | null>(null);
 
   // Marktplatz-Anzahl laden
   useEffect(() => {
-    if (!currentQuarter?.id) return;
+    if (!quarterId) return;
     const supabase = createClient();
     async function loadMarketplaceCount() {
       try {
         const { count } = await supabase
           .from("marketplace_items")
           .select("*", { count: "exact", head: true })
-          .eq("quarter_id", currentQuarter!.id)
+          .eq("quarter_id", quarterId)
           .eq("status", "active");
         setMarketplaceCount(count ?? 0);
       } catch {
@@ -44,11 +45,11 @@ export function QuartierHubLegacy() {
       }
     }
     loadMarketplaceCount();
-  }, [currentQuarter?.id]);
+  }, [quarterId]);
 
   // Veranstaltungen diese Woche laden
   useEffect(() => {
-    if (!currentQuarter?.id) return;
+    if (!quarterId) return;
     const supabase = createClient();
     async function loadEvents() {
       try {
@@ -58,7 +59,7 @@ export function QuartierHubLegacy() {
         const { count } = await supabase
           .from("events")
           .select("*", { count: "exact", head: true })
-          .eq("quarter_id", currentQuarter!.id)
+          .eq("quarter_id", quarterId)
           .gte("date", now.toISOString())
           .lte("date", endOfWeek.toISOString());
         setEventsThisWeek(count ?? 0);
@@ -67,25 +68,25 @@ export function QuartierHubLegacy() {
       }
     }
     loadEvents();
-  }, [currentQuarter?.id]);
+  }, [quarterId]);
 
   // Gruppen-Anzahl laden
   useEffect(() => {
-    if (!currentQuarter?.id) return;
+    if (!quarterId) return;
     const supabase = createClient();
     async function loadGroups() {
       try {
         const { count } = await supabase
           .from("groups")
           .select("*", { count: "exact", head: true })
-          .eq("quarter_id", currentQuarter!.id);
+          .eq("quarter_id", quarterId);
         setGroupsCount(count ?? 0);
       } catch {
         /* silent */
       }
     }
     loadGroups();
-  }, [currentQuarter?.id]);
+  }, [quarterId]);
 
   if (quarterLoading) {
     return (

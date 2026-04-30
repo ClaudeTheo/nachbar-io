@@ -16,19 +16,22 @@ export function PushBanner() {
   const [feedback, setFeedback] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!isPushSupported()) {
-      setState("hidden");
-      return;
-    }
+    const timer = setTimeout(() => {
+      if (!isPushSupported()) {
+        setState("hidden");
+        return;
+      }
 
-    if (localStorage.getItem(DISMISSED_KEY) === "true") {
-      setState("hidden");
-      return;
-    }
+      if (localStorage.getItem(DISMISSED_KEY) === "true") {
+        setState("hidden");
+        return;
+      }
 
-    isSubscribed().then((subscribed) => {
-      setState(subscribed ? "hidden" : "show");
-    });
+      isSubscribed().then((subscribed) => {
+        setState(subscribed ? "hidden" : "show");
+      });
+    }, 0);
+    return () => clearTimeout(timer);
   }, []);
 
   if (state !== "show") return null;

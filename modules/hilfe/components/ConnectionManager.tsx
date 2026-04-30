@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useCallback, useEffect, useState } from "react";
 import type { HelperConnection } from "@/modules/hilfe/services/types";
 
 interface ConnectionManagerProps {
@@ -12,17 +12,20 @@ export default function ConnectionManager({ role }: ConnectionManagerProps) {
   const [loading, setLoading] = useState(true);
   const [inviteCode, setInviteCode] = useState<string | null>(null);
 
-  useEffect(() => {
-    loadConnections();
-  }, []);
-
-  async function loadConnections() {
+  const loadConnections = useCallback(async () => {
     const res = await fetch("/api/hilfe/connections");
     if (res.ok) {
       setConnections(await res.json());
     }
     setLoading(false);
-  }
+  }, []);
+
+  useEffect(() => {
+    const timeoutId = window.setTimeout(() => {
+      void loadConnections();
+    }, 0);
+    return () => window.clearTimeout(timeoutId);
+  }, [loadConnections]);
 
   async function generateCode() {
     const res = await fetch("/api/hilfe/connections/invite", {
@@ -37,7 +40,7 @@ export default function ConnectionManager({ role }: ConnectionManagerProps) {
   async function confirmConnection(id: string) {
     const res = await fetch(`/api/hilfe/connections/${id}`, { method: "PUT" });
     if (res.ok) {
-      loadConnections();
+      void loadConnections();
     }
   }
 
@@ -52,7 +55,7 @@ export default function ConnectionManager({ role }: ConnectionManagerProps) {
       method: "DELETE",
     });
     if (res.ok) {
-      loadConnections();
+      void loadConnections();
     }
   }
 

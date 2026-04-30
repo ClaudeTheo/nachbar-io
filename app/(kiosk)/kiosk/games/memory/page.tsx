@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback } from "react";
 
 const EMOJIS = ["🌻", "🏠", "☀️", "🐱", "🎵", "🍰", "⭐", "❤️"];
 
@@ -17,16 +17,13 @@ function shuffle<T>(arr: T[]): T[] {
 
 /** Memory-Spiel: 4x4 Karten mit 8 Emoji-Paaren */
 export default function MemoryGamePage() {
-  const [cards, setCards] = useState<string[]>([]);
+  const [cards, setCards] = useState<string[]>(() =>
+    shuffle([...EMOJIS, ...EMOJIS]),
+  );
   const [revealed, setRevealed] = useState<number[]>([]);
   const [matched, setMatched] = useState<Set<number>>(new Set());
   const [moves, setMoves] = useState(0);
   const [locked, setLocked] = useState(false);
-
-  // Karten beim Mount mischen
-  useEffect(() => {
-    setCards(shuffle([...EMOJIS, ...EMOJIS]));
-  }, []);
 
   const won = matched.size === cards.length && cards.length > 0;
 

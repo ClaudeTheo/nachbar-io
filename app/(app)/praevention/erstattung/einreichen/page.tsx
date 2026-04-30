@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useEffect, useState } from "react";
+import { Suspense, useCallback, useEffect, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import {
   ArrowLeft,
@@ -61,11 +61,7 @@ function EinreichenContent() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    loadInsurance();
-  }, []);
-
-  async function loadInsurance() {
+  const loadInsurance = useCallback(async () => {
     try {
       // Enrollment laden um insurance_config_id zu bekommen
       const progressRes = await fetch("/api/prevention/progress");
@@ -95,7 +91,11 @@ function EinreichenContent() {
     } finally {
       setLoading(false);
     }
-  }
+  }, [enrollmentId]);
+
+  useEffect(() => {
+    loadInsurance();
+  }, [loadInsurance]);
 
   async function handleSubmit(method: string) {
     setSubmitting(true);

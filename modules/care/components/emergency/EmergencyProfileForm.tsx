@@ -72,7 +72,6 @@ export function EmergencyProfileForm({
   // Profil laden, falls keine Initialdaten uebergeben
   useEffect(() => {
     if (initialLevel1) {
-      setLoading(false);
       return;
     }
 

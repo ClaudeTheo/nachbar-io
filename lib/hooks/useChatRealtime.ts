@@ -35,7 +35,14 @@ export function useChatRealtime(
   onInsert: (message: RealtimeMessage) => void,
 ) {
   const onInsertRef = useRef(onInsert);
-  onInsertRef.current = onInsert;
+
+  useEffect(() => {
+    onInsertRef.current = onInsert;
+  }, [onInsert]);
+
+  const directConversationId =
+    scope.type === "direct" ? scope.conversationId : null;
+  const groupId = scope.type === "group" ? scope.groupId : null;
 
   useEffect(() => {
     const supabase = createClient();
@@ -43,8 +50,8 @@ export function useChatRealtime(
       scope.type === "direct" ? "direct_messages" : "chat_group_messages";
     const filterColumn =
       scope.type === "direct" ? "conversation_id" : "group_id";
-    const filterValue =
-      scope.type === "direct" ? scope.conversationId : scope.groupId;
+    const filterValue = directConversationId ?? groupId;
+    if (!filterValue) return;
 
     const channelName = `chat:${scope.type}:${filterValue}`;
 
@@ -69,6 +76,7 @@ export function useChatRealtime(
     };
   }, [
     scope.type,
-    scope.type === "direct" ? scope.conversationId : scope.groupId,
+    directConversationId,
+    groupId,
   ]);
 }

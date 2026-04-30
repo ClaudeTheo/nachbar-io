@@ -49,53 +49,107 @@ CASCADE;
 -- 1. HAUSHALTE
 -- ============================================================
 
+INSERT INTO quarters (
+    name,
+    slug,
+    center_lat,
+    center_lng,
+    zoom_level,
+    bounds_sw_lat,
+    bounds_sw_lng,
+    bounds_ne_lat,
+    bounds_ne_lng,
+    city,
+    state,
+    country,
+    invite_prefix,
+    status,
+    map_config
+)
+VALUES (
+    'Bad Saeckingen — Purkersdorfer/Sanary/Rebberg',
+    'bad-saeckingen-pilot',
+    47.5535,
+    7.9640,
+    17,
+    47.5500,
+    7.9580,
+    47.5570,
+    7.9710,
+    'Bad Saeckingen',
+    'Baden-Wuerttemberg',
+    'DE',
+    'PILOT',
+    'active',
+    jsonb_build_object(
+        'type', 'svg',
+        'viewBox', '0 0 1083 766',
+        'backgroundImage', '/map-quartier.jpg'
+    )
+)
+ON CONFLICT (slug) DO UPDATE SET
+    center_lat = EXCLUDED.center_lat,
+    center_lng = EXCLUDED.center_lng,
+    zoom_level = EXCLUDED.zoom_level,
+    bounds_sw_lat = EXCLUDED.bounds_sw_lat,
+    bounds_sw_lng = EXCLUDED.bounds_sw_lng,
+    bounds_ne_lat = EXCLUDED.bounds_ne_lat,
+    bounds_ne_lng = EXCLUDED.bounds_ne_lng,
+    city = EXCLUDED.city,
+    state = EXCLUDED.state,
+    country = EXCLUDED.country,
+    invite_prefix = EXCLUDED.invite_prefix,
+    status = EXCLUDED.status,
+    map_config = EXCLUDED.map_config,
+    updated_at = now();
+
 -- Purkersdorfer Straße (14 Häuser)
 -- Verläuft von West nach Ost, nördlichste Straße im Quartier
-INSERT INTO households (id, street_name, house_number, lat, lng, verified, invite_code) VALUES
-('b0000000-0000-0000-0000-000000000001', 'Purkersdorfer Straße', '1',  47.56280, 7.94520, true,  'PKD001'),
-('b0000000-0000-0000-0000-000000000002', 'Purkersdorfer Straße', '2',  47.56285, 7.94560, true,  'PKD002'),
-('b0000000-0000-0000-0000-000000000003', 'Purkersdorfer Straße', '3',  47.56295, 7.94610, true,  'PKD003'),
-('b0000000-0000-0000-0000-000000000004', 'Purkersdorfer Straße', '4',  47.56300, 7.94660, true,  'PKD004'),
-('b0000000-0000-0000-0000-000000000005', 'Purkersdorfer Straße', '5',  47.56310, 7.94710, true,  'PKD005'),
-('b0000000-0000-0000-0000-000000000006', 'Purkersdorfer Straße', '6',  47.56315, 7.94760, true,  'PKD006'),
-('b0000000-0000-0000-0000-000000000007', 'Purkersdorfer Straße', '7',  47.56325, 7.94810, true,  'PKD007'),
-('b0000000-0000-0000-0000-000000000008', 'Purkersdorfer Straße', '8',  47.56330, 7.94860, true,  'PKD008'),
-('b0000000-0000-0000-0000-000000000009', 'Purkersdorfer Straße', '9',  47.56335, 7.94910, true,  'PKD009'),
-('b0000000-0000-0000-0000-000000000010', 'Purkersdorfer Straße', '10', 47.56338, 7.94960, true,  'PKD010'),
-('b0000000-0000-0000-0000-000000000011', 'Purkersdorfer Straße', '11', 47.56340, 7.95010, true,  'PKD011'),
-('b0000000-0000-0000-0000-000000000012', 'Purkersdorfer Straße', '12', 47.56338, 7.95060, true,  'PKD012'),
-('b0000000-0000-0000-0000-000000000013', 'Purkersdorfer Straße', '13', 47.56335, 7.95110, true,  'PKD013'),
-('b0000000-0000-0000-0000-000000000014', 'Purkersdorfer Straße', '14', 47.56330, 7.95160, true,  'PKD014');
+INSERT INTO households (id, street_name, house_number, lat, lng, verified, invite_code, quarter_id) VALUES
+('b0000000-0000-0000-0000-000000000001', 'Purkersdorfer Straße', '1',  47.56280, 7.94520, true,  'PKD001', (SELECT id FROM quarters WHERE slug = 'bad-saeckingen-pilot')),
+('b0000000-0000-0000-0000-000000000002', 'Purkersdorfer Straße', '2',  47.56285, 7.94560, true,  'PKD002', (SELECT id FROM quarters WHERE slug = 'bad-saeckingen-pilot')),
+('b0000000-0000-0000-0000-000000000003', 'Purkersdorfer Straße', '3',  47.56295, 7.94610, true,  'PKD003', (SELECT id FROM quarters WHERE slug = 'bad-saeckingen-pilot')),
+('b0000000-0000-0000-0000-000000000004', 'Purkersdorfer Straße', '4',  47.56300, 7.94660, true,  'PKD004', (SELECT id FROM quarters WHERE slug = 'bad-saeckingen-pilot')),
+('b0000000-0000-0000-0000-000000000005', 'Purkersdorfer Straße', '5',  47.56310, 7.94710, true,  'PKD005', (SELECT id FROM quarters WHERE slug = 'bad-saeckingen-pilot')),
+('b0000000-0000-0000-0000-000000000006', 'Purkersdorfer Straße', '6',  47.56315, 7.94760, true,  'PKD006', (SELECT id FROM quarters WHERE slug = 'bad-saeckingen-pilot')),
+('b0000000-0000-0000-0000-000000000007', 'Purkersdorfer Straße', '7',  47.56325, 7.94810, true,  'PKD007', (SELECT id FROM quarters WHERE slug = 'bad-saeckingen-pilot')),
+('b0000000-0000-0000-0000-000000000008', 'Purkersdorfer Straße', '8',  47.56330, 7.94860, true,  'PKD008', (SELECT id FROM quarters WHERE slug = 'bad-saeckingen-pilot')),
+('b0000000-0000-0000-0000-000000000009', 'Purkersdorfer Straße', '9',  47.56335, 7.94910, true,  'PKD009', (SELECT id FROM quarters WHERE slug = 'bad-saeckingen-pilot')),
+('b0000000-0000-0000-0000-000000000010', 'Purkersdorfer Straße', '10', 47.56338, 7.94960, true,  'PKD010', (SELECT id FROM quarters WHERE slug = 'bad-saeckingen-pilot')),
+('b0000000-0000-0000-0000-000000000011', 'Purkersdorfer Straße', '11', 47.56340, 7.95010, true,  'PKD011', (SELECT id FROM quarters WHERE slug = 'bad-saeckingen-pilot')),
+('b0000000-0000-0000-0000-000000000012', 'Purkersdorfer Straße', '12', 47.56338, 7.95060, true,  'PKD012', (SELECT id FROM quarters WHERE slug = 'bad-saeckingen-pilot')),
+('b0000000-0000-0000-0000-000000000013', 'Purkersdorfer Straße', '13', 47.56335, 7.95110, true,  'PKD013', (SELECT id FROM quarters WHERE slug = 'bad-saeckingen-pilot')),
+('b0000000-0000-0000-0000-000000000014', 'Purkersdorfer Straße', '14', 47.56330, 7.95160, true,  'PKD014', (SELECT id FROM quarters WHERE slug = 'bad-saeckingen-pilot'));
 
 -- Sanarystraße (12 Häuser)
 -- Mittlere Straße, ~100m südlich der Purkersdorfer
-INSERT INTO households (id, street_name, house_number, lat, lng, verified, invite_code) VALUES
-('b0000000-0000-0000-0000-000000000015', 'Sanarystraße', '1',  47.56170, 7.94550, true,  'SAN001'),
-('b0000000-0000-0000-0000-000000000016', 'Sanarystraße', '2',  47.56175, 7.94600, true,  'SAN002'),
-('b0000000-0000-0000-0000-000000000017', 'Sanarystraße', '3',  47.56182, 7.94660, true,  'SAN003'),
-('b0000000-0000-0000-0000-000000000018', 'Sanarystraße', '4',  47.56188, 7.94720, true,  'SAN004'),
-('b0000000-0000-0000-0000-000000000019', 'Sanarystraße', '5',  47.56192, 7.94780, true,  'SAN005'),
-('b0000000-0000-0000-0000-000000000020', 'Sanarystraße', '6',  47.56195, 7.94840, true,  'SAN006'),
-('b0000000-0000-0000-0000-000000000021', 'Sanarystraße', '7',  47.56198, 7.94900, true,  'SAN007'),
-('b0000000-0000-0000-0000-000000000022', 'Sanarystraße', '8',  47.56200, 7.94960, true,  'SAN008'),
-('b0000000-0000-0000-0000-000000000023', 'Sanarystraße', '9',  47.56198, 7.95020, true,  'SAN009'),
-('b0000000-0000-0000-0000-000000000024', 'Sanarystraße', '10', 47.56195, 7.95080, true,  'SAN010'),
-('b0000000-0000-0000-0000-000000000025', 'Sanarystraße', '11', 47.56190, 7.95140, true,  'SAN011'),
-('b0000000-0000-0000-0000-000000000026', 'Sanarystraße', '12', 47.56185, 7.95200, true,  'SAN012');
+INSERT INTO households (id, street_name, house_number, lat, lng, verified, invite_code, quarter_id) VALUES
+('b0000000-0000-0000-0000-000000000015', 'Sanarystraße', '1',  47.56170, 7.94550, true,  'SAN001', (SELECT id FROM quarters WHERE slug = 'bad-saeckingen-pilot')),
+('b0000000-0000-0000-0000-000000000016', 'Sanarystraße', '2',  47.56175, 7.94600, true,  'SAN002', (SELECT id FROM quarters WHERE slug = 'bad-saeckingen-pilot')),
+('b0000000-0000-0000-0000-000000000017', 'Sanarystraße', '3',  47.56182, 7.94660, true,  'SAN003', (SELECT id FROM quarters WHERE slug = 'bad-saeckingen-pilot')),
+('b0000000-0000-0000-0000-000000000018', 'Sanarystraße', '4',  47.56188, 7.94720, true,  'SAN004', (SELECT id FROM quarters WHERE slug = 'bad-saeckingen-pilot')),
+('b0000000-0000-0000-0000-000000000019', 'Sanarystraße', '5',  47.56192, 7.94780, true,  'SAN005', (SELECT id FROM quarters WHERE slug = 'bad-saeckingen-pilot')),
+('b0000000-0000-0000-0000-000000000020', 'Sanarystraße', '6',  47.56195, 7.94840, true,  'SAN006', (SELECT id FROM quarters WHERE slug = 'bad-saeckingen-pilot')),
+('b0000000-0000-0000-0000-000000000021', 'Sanarystraße', '7',  47.56198, 7.94900, true,  'SAN007', (SELECT id FROM quarters WHERE slug = 'bad-saeckingen-pilot')),
+('b0000000-0000-0000-0000-000000000022', 'Sanarystraße', '8',  47.56200, 7.94960, true,  'SAN008', (SELECT id FROM quarters WHERE slug = 'bad-saeckingen-pilot')),
+('b0000000-0000-0000-0000-000000000023', 'Sanarystraße', '9',  47.56198, 7.95020, true,  'SAN009', (SELECT id FROM quarters WHERE slug = 'bad-saeckingen-pilot')),
+('b0000000-0000-0000-0000-000000000024', 'Sanarystraße', '10', 47.56195, 7.95080, true,  'SAN010', (SELECT id FROM quarters WHERE slug = 'bad-saeckingen-pilot')),
+('b0000000-0000-0000-0000-000000000025', 'Sanarystraße', '11', 47.56190, 7.95140, true,  'SAN011', (SELECT id FROM quarters WHERE slug = 'bad-saeckingen-pilot')),
+('b0000000-0000-0000-0000-000000000026', 'Sanarystraße', '12', 47.56185, 7.95200, true,  'SAN012', (SELECT id FROM quarters WHERE slug = 'bad-saeckingen-pilot'));
 
 -- Oberer Rebberg (10 Häuser)
 -- Südlichste Straße, ~100m südlich der Sanarystraße, leichter Bogen
-INSERT INTO households (id, street_name, house_number, lat, lng, verified, invite_code) VALUES
-('b0000000-0000-0000-0000-000000000027', 'Oberer Rebberg', '1',  47.56050, 7.94620, true,  'ORB001'),
-('b0000000-0000-0000-0000-000000000028', 'Oberer Rebberg', '2',  47.56045, 7.94690, true,  'ORB002'),
-('b0000000-0000-0000-0000-000000000029', 'Oberer Rebberg', '3',  47.56040, 7.94760, true,  'ORB003'),
-('b0000000-0000-0000-0000-000000000030', 'Oberer Rebberg', '4',  47.56035, 7.94830, true,  'ORB004'),
-('b0000000-0000-0000-0000-000000000031', 'Oberer Rebberg', '5',  47.56032, 7.94900, true,  'ORB005'),
-('b0000000-0000-0000-0000-000000000032', 'Oberer Rebberg', '6',  47.56030, 7.94970, true,  'ORB006'),
-('b0000000-0000-0000-0000-000000000033', 'Oberer Rebberg', '7',  47.56032, 7.95040, true,  'ORB007'),
-('b0000000-0000-0000-0000-000000000034', 'Oberer Rebberg', '8',  47.56035, 7.95110, true,  'ORB008'),
-('b0000000-0000-0000-0000-000000000035', 'Oberer Rebberg', '9',  47.56040, 7.95180, true,  'ORB009'),
-('b0000000-0000-0000-0000-000000000036', 'Oberer Rebberg', '10', 47.56048, 7.95250, false, 'ORB010');
+INSERT INTO households (id, street_name, house_number, lat, lng, verified, invite_code, quarter_id) VALUES
+('b0000000-0000-0000-0000-000000000027', 'Oberer Rebberg', '1',  47.56050, 7.94620, true,  'ORB001', (SELECT id FROM quarters WHERE slug = 'bad-saeckingen-pilot')),
+('b0000000-0000-0000-0000-000000000028', 'Oberer Rebberg', '2',  47.56045, 7.94690, true,  'ORB002', (SELECT id FROM quarters WHERE slug = 'bad-saeckingen-pilot')),
+('b0000000-0000-0000-0000-000000000029', 'Oberer Rebberg', '3',  47.56040, 7.94760, true,  'ORB003', (SELECT id FROM quarters WHERE slug = 'bad-saeckingen-pilot')),
+('b0000000-0000-0000-0000-000000000030', 'Oberer Rebberg', '4',  47.56035, 7.94830, true,  'ORB004', (SELECT id FROM quarters WHERE slug = 'bad-saeckingen-pilot')),
+('b0000000-0000-0000-0000-000000000031', 'Oberer Rebberg', '5',  47.56032, 7.94900, true,  'ORB005', (SELECT id FROM quarters WHERE slug = 'bad-saeckingen-pilot')),
+('b0000000-0000-0000-0000-000000000032', 'Oberer Rebberg', '6',  47.56030, 7.94970, true,  'ORB006', (SELECT id FROM quarters WHERE slug = 'bad-saeckingen-pilot')),
+('b0000000-0000-0000-0000-000000000033', 'Oberer Rebberg', '7',  47.56032, 7.95040, true,  'ORB007', (SELECT id FROM quarters WHERE slug = 'bad-saeckingen-pilot')),
+('b0000000-0000-0000-0000-000000000034', 'Oberer Rebberg', '8',  47.56035, 7.95110, true,  'ORB008', (SELECT id FROM quarters WHERE slug = 'bad-saeckingen-pilot')),
+('b0000000-0000-0000-0000-000000000035', 'Oberer Rebberg', '9',  47.56040, 7.95180, true,  'ORB009', (SELECT id FROM quarters WHERE slug = 'bad-saeckingen-pilot')),
+('b0000000-0000-0000-0000-000000000036', 'Oberer Rebberg', '10', 47.56048, 7.95250, false, 'ORB010', (SELECT id FROM quarters WHERE slug = 'bad-saeckingen-pilot'));
 
 -- ============================================================
 -- 2. NUTZER (18 Personen)
@@ -108,30 +162,30 @@ INSERT INTO households (id, street_name, house_number, lat, lng, verified, invit
 --   - Heinrich (014), Ingrid (015), Gertrud (016): Senioren
 --   - Lisa (017), Florian (018): Neue Nutzer (noch nicht verifiziert)
 
-INSERT INTO users (id, email_hash, display_name, avatar_url, ui_mode, trust_level, is_admin, created_at, last_seen, settings) VALUES
+INSERT INTO users (id, email_hash, display_name, avatar_url, ui_mode, trust_level, is_admin, created_at, last_seen, settings, role) VALUES
 -- Verifizierte aktive Nutzer
-('a0000000-0000-0000-0000-000000000001', 'sha256_thomas',   'Thomas',   NULL, 'active', 'admin',    true,  now() - interval '60 days', now() - interval '1 hour',  '{"notifications": true, "radius": 3}'::jsonb),
-('a0000000-0000-0000-0000-000000000002', 'sha256_maria',    'Maria',    NULL, 'active', 'trusted',  false, now() - interval '55 days', now() - interval '3 hours', '{"notifications": true, "radius": 2}'::jsonb),
-('a0000000-0000-0000-0000-000000000003', 'sha256_stefan',   'Stefan',   NULL, 'active', 'trusted',  false, now() - interval '50 days', now() - interval '5 hours', '{"notifications": true, "radius": 2}'::jsonb),
-('a0000000-0000-0000-0000-000000000004', 'sha256_claudia',  'Claudia',  NULL, 'active', 'verified', false, now() - interval '48 days', now() - interval '2 hours', '{"notifications": true, "radius": 1}'::jsonb),
-('a0000000-0000-0000-0000-000000000005', 'sha256_markus',   'Markus',   NULL, 'active', 'verified', false, now() - interval '45 days', now() - interval '8 hours', '{"notifications": true, "radius": 2}'::jsonb),
-('a0000000-0000-0000-0000-000000000006', 'sha256_anna',     'Anna',     NULL, 'active', 'trusted',  false, now() - interval '42 days', now() - interval '1 day',   '{"notifications": true, "radius": 2}'::jsonb),
-('a0000000-0000-0000-0000-000000000007', 'sha256_peter',    'Peter',    NULL, 'active', 'verified', false, now() - interval '40 days', now() - interval '4 hours', '{"notifications": true, "radius": 1}'::jsonb),
-('a0000000-0000-0000-0000-000000000008', 'sha256_sabine',   'Sabine',   NULL, 'active', 'verified', false, now() - interval '38 days', now() - interval '6 hours', '{"notifications": true, "radius": 2}'::jsonb),
-('a0000000-0000-0000-0000-000000000009', 'sha256_michael',  'Michael',  NULL, 'active', 'trusted',  false, now() - interval '35 days', now() - interval '12 hours','{"notifications": true, "radius": 3}'::jsonb),
-('a0000000-0000-0000-0000-000000000010', 'sha256_julia',    'Julia',    NULL, 'active', 'verified', false, now() - interval '30 days', now() - interval '2 days',  '{"notifications": true, "radius": 1}'::jsonb),
-('a0000000-0000-0000-0000-000000000011', 'sha256_andreas',  'Andreas',  NULL, 'active', 'verified', false, now() - interval '28 days', now() - interval '1 day',   '{"notifications": true, "radius": 2}'::jsonb),
-('a0000000-0000-0000-0000-000000000012', 'sha256_kathrin',  'Kathrin',  NULL, 'active', 'verified', false, now() - interval '25 days', now() - interval '3 days',  '{"notifications": true, "radius": 1}'::jsonb),
-('a0000000-0000-0000-0000-000000000013', 'sha256_wolfgang', 'Wolfgang', NULL, 'active', 'verified', false, now() - interval '20 days', now() - interval '5 hours', '{"notifications": true, "radius": 2}'::jsonb),
+('a0000000-0000-0000-0000-000000000001', 'sha256_thomas',   'Thomas',   NULL, 'active', 'admin',    true,  now() - interval '60 days', now() - interval '1 hour',  '{"notifications": true, "radius": 3}'::jsonb, 'admin'),
+('a0000000-0000-0000-0000-000000000002', 'sha256_maria',    'Maria',    NULL, 'active', 'trusted',  false, now() - interval '55 days', now() - interval '3 hours', '{"notifications": true, "radius": 2}'::jsonb, 'resident'),
+('a0000000-0000-0000-0000-000000000003', 'sha256_stefan',   'Stefan',   NULL, 'active', 'trusted',  false, now() - interval '50 days', now() - interval '5 hours', '{"notifications": true, "radius": 2}'::jsonb, 'resident'),
+('a0000000-0000-0000-0000-000000000004', 'sha256_claudia',  'Claudia',  NULL, 'active', 'verified', false, now() - interval '48 days', now() - interval '2 hours', '{"notifications": true, "radius": 1}'::jsonb, 'resident'),
+('a0000000-0000-0000-0000-000000000005', 'sha256_markus',   'Markus',   NULL, 'active', 'verified', false, now() - interval '45 days', now() - interval '8 hours', '{"notifications": true, "radius": 2}'::jsonb, 'resident'),
+('a0000000-0000-0000-0000-000000000006', 'sha256_anna',     'Anna',     NULL, 'active', 'trusted',  false, now() - interval '42 days', now() - interval '1 day',   '{"notifications": true, "radius": 2}'::jsonb, 'resident'),
+('a0000000-0000-0000-0000-000000000007', 'sha256_peter',    'Peter',    NULL, 'active', 'verified', false, now() - interval '40 days', now() - interval '4 hours', '{"notifications": true, "radius": 1}'::jsonb, 'resident'),
+('a0000000-0000-0000-0000-000000000008', 'sha256_sabine',   'Sabine',   NULL, 'active', 'verified', false, now() - interval '38 days', now() - interval '6 hours', '{"notifications": true, "radius": 2}'::jsonb, 'resident'),
+('a0000000-0000-0000-0000-000000000009', 'sha256_michael',  'Michael',  NULL, 'active', 'trusted',  false, now() - interval '35 days', now() - interval '12 hours','{"notifications": true, "radius": 3}'::jsonb, 'resident'),
+('a0000000-0000-0000-0000-000000000010', 'sha256_julia',    'Julia',    NULL, 'active', 'verified', false, now() - interval '30 days', now() - interval '2 days',  '{"notifications": true, "radius": 1}'::jsonb, 'resident'),
+('a0000000-0000-0000-0000-000000000011', 'sha256_andreas',  'Andreas',  NULL, 'active', 'verified', false, now() - interval '28 days', now() - interval '1 day',   '{"notifications": true, "radius": 2}'::jsonb, 'resident'),
+('a0000000-0000-0000-0000-000000000012', 'sha256_kathrin',  'Kathrin',  NULL, 'active', 'verified', false, now() - interval '25 days', now() - interval '3 days',  '{"notifications": true, "radius": 1}'::jsonb, 'resident'),
+('a0000000-0000-0000-0000-000000000013', 'sha256_wolfgang', 'Wolfgang', NULL, 'active', 'verified', false, now() - interval '20 days', now() - interval '5 hours', '{"notifications": true, "radius": 2}'::jsonb, 'resident'),
 
 -- Senioren (ui_mode = 'senior')
-('a0000000-0000-0000-0000-000000000014', 'sha256_heinrich', 'Heinrich', NULL, 'senior', 'trusted',  false, now() - interval '58 days', now() - interval '6 hours', '{"notifications": true, "radius": 1, "font_size": "large"}'::jsonb),
-('a0000000-0000-0000-0000-000000000015', 'sha256_ingrid',   'Ingrid',   NULL, 'senior', 'verified', false, now() - interval '52 days', now() - interval '1 day',   '{"notifications": true, "radius": 1, "font_size": "large"}'::jsonb),
-('a0000000-0000-0000-0000-000000000016', 'sha256_gertrud',  'Gertrud',  NULL, 'senior', 'verified', false, now() - interval '46 days', now() - interval '2 days',  '{"notifications": true, "radius": 1, "font_size": "large"}'::jsonb),
+('a0000000-0000-0000-0000-000000000014', 'sha256_heinrich', 'Heinrich', NULL, 'senior', 'trusted',  false, now() - interval '58 days', now() - interval '6 hours', '{"notifications": true, "radius": 1, "font_size": "large"}'::jsonb, 'senior'),
+('a0000000-0000-0000-0000-000000000015', 'sha256_ingrid',   'Ingrid',   NULL, 'senior', 'verified', false, now() - interval '52 days', now() - interval '1 day',   '{"notifications": true, "radius": 1, "font_size": "large"}'::jsonb, 'senior'),
+('a0000000-0000-0000-0000-000000000016', 'sha256_gertrud',  'Gertrud',  NULL, 'senior', 'verified', false, now() - interval '46 days', now() - interval '2 days',  '{"notifications": true, "radius": 1, "font_size": "large"}'::jsonb, 'senior'),
 
 -- Neue Nutzer (noch nicht vollständig verifiziert)
-('a0000000-0000-0000-0000-000000000017', 'sha256_lisa',     'Lisa',     NULL, 'active', 'new',      false, now() - interval '3 days',  now() - interval '1 day',   '{"notifications": true, "radius": 1}'::jsonb),
-('a0000000-0000-0000-0000-000000000018', 'sha256_florian',  'Florian',  NULL, 'active', 'new',      false, now() - interval '1 day',   now() - interval '2 hours', '{"notifications": true, "radius": 1}'::jsonb);
+('a0000000-0000-0000-0000-000000000017', 'sha256_lisa',     'Lisa',     NULL, 'active', 'new',      false, now() - interval '3 days',  now() - interval '1 day',   '{"notifications": true, "radius": 1}'::jsonb, 'resident'),
+('a0000000-0000-0000-0000-000000000018', 'sha256_florian',  'Florian',  NULL, 'active', 'new',      false, now() - interval '1 day',   now() - interval '2 hours', '{"notifications": true, "radius": 1}'::jsonb, 'resident');
 
 -- ============================================================
 -- 3. HAUSHALT-ZUORDNUNGEN

@@ -3,6 +3,10 @@ import { withSentryConfig } from "@sentry/nextjs";
 
 // Supabase-Projekt-Domain fuer CSP connect-src
 const supabaseDomain = "uylszchlyhbpbmslcnka.supabase.co";
+const localSupabaseConnectSources =
+  process.env.NODE_ENV === "development"
+    ? " http://127.0.0.1:54321 http://localhost:54321 ws://127.0.0.1:54321 ws://localhost:54321"
+    : "";
 
 // Content-Security-Policy: Schutz vor XSS, Clickjacking, Daten-Exfiltration
 // 'unsafe-inline' noetig fuer Next.js Inline-Scripts und Tailwind-Styles
@@ -13,7 +17,7 @@ const cspDirectives = [
   "style-src 'self' 'unsafe-inline'",
   "img-src 'self' data: blob: https://tile.openstreetmap.org https://*.tile.openstreetmap.org https://basemaps.cartocdn.com https://*.basemaps.cartocdn.com https://api.maptiler.com https://cdnjs.cloudflare.com https://*.supabase.co",
   "font-src 'self'",
-  `connect-src 'self' https://${supabaseDomain} wss://${supabaseDomain} https://api.anthropic.com https://api.open-meteo.com https://api.twilio.com https://*.ingest.de.sentry.io https://tile.openstreetmap.org https://*.tile.openstreetmap.org https://basemaps.cartocdn.com https://*.basemaps.cartocdn.com https://api.maptiler.com`,
+  `connect-src 'self' https://${supabaseDomain} wss://${supabaseDomain}${localSupabaseConnectSources} https://api.anthropic.com https://api.open-meteo.com https://api.twilio.com https://*.ingest.de.sentry.io https://tile.openstreetmap.org https://*.tile.openstreetmap.org https://basemaps.cartocdn.com https://*.basemaps.cartocdn.com https://api.maptiler.com`,
   "media-src 'self' blob:",
   "worker-src 'self'",
   "manifest-src 'self'",

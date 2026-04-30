@@ -2,7 +2,7 @@
 
 Datum: 2026-04-30
 Block: G3
-Status: blocked
+Status: erfolgreich
 
 ## Ziel
 
@@ -11,6 +11,7 @@ Browser-Smoke fuer den Admin-Audit-Log-Reader auf `http://localhost:3000/admin`:
 - Empty-State vor dem ersten Toggle pruefen.
 - Zwei bis drei Feature-Flags togglen.
 - Audit-Log-Eintraege fuer Zeit, Flag-Key, Aktion, vorher/nachher, Wer und Reason pruefen.
+- Flag-Key-Filter pruefen.
 - Screenshots unter `docs/plans/2026-04-30-audit-log-smoke-test-screenshots/` ablegen.
 
 ## Pre-Check
@@ -24,42 +25,53 @@ Browser-Smoke fuer den Admin-Audit-Log-Reader auf `http://localhost:3000/admin`:
 
 T0: 2026-04-30 18:04 +02:00
 
-1. `npm run supabase:status` geprueft: Script existiert in `package.json` nicht.
-2. `npx supabase status` geprueft: Docker Desktop war zunaechst nicht aktiv.
-3. Docker Desktop lokal gestartet.
-4. `npx supabase start` versucht.
-5. Erster Startversuch blockierte auf Port `54322`, weil ein anderer lokaler Supabase-Stack `projekt-nahraum-app` lief.
-6. Der laufende Stack wurde lokal inspiziert:
-   - `public.feature_flags_audit_log` fehlte.
-   - `public.feature_flags` fehlte.
-   - `public.users` fehlte.
-   - Ergebnis: falscher/leerer lokaler Stack, fuer G3 nicht nutzbar.
-7. Der lokale Stack `projekt-nahraum-app` wurde gestoppt.
-8. `npx supabase start` fuer dieses Repo erneut versucht.
-9. Start brach bei Migration 019 ab:
+1. Lokalen Supabase-Stack fuer dieses Repo gestartet und Replay-Blocker im lokalen Migrationslauf behoben.
+2. Migrationen bis 178 lokal replayed, Seed erfolgreich ausgefuehrt.
+3. Lokalen Admin-Testnutzer im lokalen Stack vorbereitet.
+4. `npm run dev` gegen den lokalen Supabase-Stack gestartet.
+5. Admin-Dashboard unter `http://localhost:3000/admin` im Browser geoeffnet.
+6. Empty-State des Audit-Log-Readers vor Toggle-Eintraegen geprueft.
+7. Reason-Feld mit `G3 lokaler Audit-Log-Smoke` befuellt.
+8. Drei Feature-Flags im Browser getoggelt:
+   - `CARE_ACCESS_FAMILY`: `FALSE -> TRUE`
+   - `AI_PROVIDER_OFF`: `TRUE -> FALSE`
+   - `BILLING_ENABLED`: `FALSE -> TRUE`
+9. Audit-Log-Reader erneut geprueft.
+10. Flag-Key-Filter mit `BILLING` geprueft.
 
-```text
-ERROR: relation "care_helpers" does not exist (SQLSTATE 42P01)
-At statement: 1
-CREATE OR REPLACE FUNCTION is_care_helper_for(p_senior_id uuid)
-...
-SELECT 1 FROM care_helpers
-```
+## Funktioniert
 
-## Befund
+- Der Trigger aus Migration 176 schreibt pro Toggle einen Audit-Eintrag.
+- Der Reader zeigt die drei neuen Eintraege absteigend nach Zeit an.
+- Spalten sind korrekt befuellt:
+  - Zeitstempel
+  - Flag-Key
+  - Aktion-Badge `update`
+  - vorher/nachher
+  - Wer
+  - Reason
+- Empty-State und Loading-Skeleton sind vorhanden.
+- Der Filter reduziert bei `BILLING` auf `BILLING_ENABLED`.
 
-Der Browser-Smoke konnte nicht seriös gestartet werden, weil der lokale Supabase-Replay vor Migration 176 stoppt. Cloud-Modus wurde bewusst nicht genutzt, weil Migration 176 nicht auf Prod applied ist und Prod-DB-Schreibaktionen rote Zone sind.
+## Gefundene und behobene Bugs
+
+1. Lokaler Supabase-Replay stoppte vor Migration 176 durch mehrere historische Drift-/Replay-Probleme.
+   - Behebung: lokale Migrationen idempotenter gemacht, doppelte Up-Versionen zusammengefuehrt und Rollback-Dateien aus dem Up-Migrationsordner verschoben.
+2. `supabase/seed.sql` war nicht mehr kompatibel mit dem aktuellen Schema.
+   - Behebung: Pilot-Quarter vor Households gesichert, `quarter_id` gesetzt und User-Rollen an `users_role_check` angepasst.
+3. Browser-CSP blockierte lokale Supabase-Requests.
+   - Behebung: `next.config.ts` erlaubt lokale Supabase-HTTP/WS-Ziele nur im Development-Modus.
+4. Audit-Reader verwendete einen PostgREST-FK-Join auf `users`, obwohl Migration 176 `changed_by` auf `auth.users(id)` referenziert.
+   - Behebung: Audit-Log wird ohne FK-Join geladen; die Anzeige fuer `Wer` wird separat ueber `public.users` per `changed_by` IDs angereichert.
 
 ## Screenshots
 
-Keine Screenshots erzeugt, weil kein valider lokaler Admin-Smoke moeglich war.
+- Empty-State: `docs/plans/2026-04-30-audit-log-smoke-test-screenshots/empty-state.png`
+- Drei Eintraege: `docs/plans/2026-04-30-audit-log-smoke-test-screenshots/with-entries.png`
+- Reason + Filter: `docs/plans/2026-04-30-audit-log-smoke-test-screenshots/with-reason.png`
 
 ## Empfehlung
 
-Fix-noetig vor G3-Fortsetzung:
+Rollout-ready fuer den lokal verifizierten Audit-Log-Reader. Migration 176 bleibt weiterhin nur als Datei/lokaler Commit vorhanden und wurde nicht auf Prod appliziert.
 
-1. Lokalen Migrations-Replay-Blocker bei Migration 019 beheben oder eine saubere lokale Test-Baseline bereitstellen.
-2. Danach Migration 176 lokal anwenden und G3 erneut ausfuehren.
-3. Alternativ eine nicht-produktive Supabase-Test-Branch mit Mig 176 nutzen, wenn dafuer ein freigegebener Connector/Workflow bereitsteht.
-
-Keine Prod-Migration, kein Prod-Write und kein Vercel-Deploy wurden ausgefuehrt.
+Keine Prod-Migration, kein Prod-Write, kein Vercel-Deploy und kein `git push` wurden ausgefuehrt.

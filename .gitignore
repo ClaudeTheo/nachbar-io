@@ -72,3 +72,6 @@ android/*.keystore
 
 # Lokales Output-Verzeichnis
 output/
+
+# Lokale Laufzeitreste von Smoke-Tests und Dev-Servern
+tmp/

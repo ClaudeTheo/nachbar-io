@@ -33,6 +33,22 @@ CREATE TABLE IF NOT EXISTS civic_organizations (
 
 ALTER TABLE civic_organizations ENABLE ROW LEVEL SECURITY;
 
+-- ============================================================
+-- 2. civic_members — Mitgliedschaften (User ↔ Organisation)
+-- Muss vor den civic_organizations-Policies existieren.
+-- ============================================================
+CREATE TABLE IF NOT EXISTS civic_members (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  org_id uuid NOT NULL REFERENCES civic_organizations(id) ON DELETE CASCADE,
+  user_id uuid NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  role text NOT NULL DEFAULT 'civic_viewer'
+    CHECK (role IN ('civic_admin', 'civic_editor', 'civic_viewer')),
+  created_at timestamptz NOT NULL DEFAULT now(),
+  UNIQUE (org_id, user_id)
+);
+
+ALTER TABLE civic_members ENABLE ROW LEVEL SECURITY;
+
 -- Mitglieder duerfen ihre eigene Organisation lesen
 CREATE POLICY "civic_org_select" ON civic_organizations
   FOR SELECT USING (
@@ -51,21 +67,6 @@ CREATE POLICY "civic_org_update" ON civic_organizations
 -- Service-Role fuer Registrierung (INSERT ohne RLS)
 CREATE POLICY "civic_org_service_insert" ON civic_organizations
   FOR INSERT WITH CHECK (true);
-
--- ============================================================
--- 2. civic_members — Mitgliedschaften (User ↔ Organisation)
--- ============================================================
-CREATE TABLE IF NOT EXISTS civic_members (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  org_id uuid NOT NULL REFERENCES civic_organizations(id) ON DELETE CASCADE,
-  user_id uuid NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
-  role text NOT NULL DEFAULT 'civic_viewer'
-    CHECK (role IN ('civic_admin', 'civic_editor', 'civic_viewer')),
-  created_at timestamptz NOT NULL DEFAULT now(),
-  UNIQUE (org_id, user_id)
-);
-
-ALTER TABLE civic_members ENABLE ROW LEVEL SECURITY;
 
 -- Nutzer sieht eigene Mitgliedschaft
 CREATE POLICY "civic_members_select_own" ON civic_members

@@ -343,6 +343,18 @@ CREATE TABLE IF NOT EXISTS quarter_admins (
 
 ALTER TABLE quarter_admins ENABLE ROW LEVEL SECURITY;
 
+-- Prueft ob der aktuelle Nutzer Super-Admin ist
+CREATE OR REPLACE FUNCTION is_super_admin()
+RETURNS BOOLEAN AS $$
+BEGIN
+    RETURN EXISTS (
+        SELECT 1 FROM users
+        WHERE id = auth.uid()
+        AND role = 'super_admin'
+    );
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER STABLE;
+
 -- Super-Admins duerfen alles
 DO $$ BEGIN
     IF NOT EXISTS (
@@ -380,18 +392,6 @@ BEGIN
         JOIN households h ON h.id = hm.household_id
         WHERE hm.user_id = auth.uid()
         LIMIT 1
-    );
-END;
-$$ LANGUAGE plpgsql SECURITY DEFINER STABLE;
-
--- Prueft ob der aktuelle Nutzer Super-Admin ist
-CREATE OR REPLACE FUNCTION is_super_admin()
-RETURNS BOOLEAN AS $$
-BEGIN
-    RETURN EXISTS (
-        SELECT 1 FROM users
-        WHERE id = auth.uid()
-        AND role = 'super_admin'
     );
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER STABLE;

@@ -30,8 +30,15 @@ CREATE POLICY "device_heartbeats_select_admin" ON device_heartbeats
   FOR SELECT USING (is_admin());
 
 -- Cleanup-Job: Alte Heartbeats taeglich um 03:00 entfernen
-SELECT cron.schedule(
-  'cleanup-device-heartbeats',
-  '0 3 * * *',
-  $$SELECT cleanup_old_heartbeats()$$
-);
+DO $$
+BEGIN
+  IF to_regnamespace('cron') IS NOT NULL THEN
+    EXECUTE $schedule$
+      SELECT cron.schedule(
+        'cleanup-device-heartbeats',
+        '0 3 * * *',
+        'SELECT cleanup_old_heartbeats()'
+      )
+    $schedule$;
+  END IF;
+END $$;

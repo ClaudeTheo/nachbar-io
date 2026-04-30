@@ -19,6 +19,15 @@ DECLARE
   v_start_date TIMESTAMPTZ := now() + INTERVAL '14 days';
   v_end_date TIMESTAMPTZ := now() + INTERVAL '70 days'; -- 8 Wochen nach Start
 BEGIN
+  IF (
+    SELECT COUNT(*) FROM users
+    WHERE id IN (v_lisa_id, v_helga_id, v_felix_id, v_max_id)
+  ) < 4
+    OR NOT EXISTS (SELECT 1 FROM quarters WHERE id = v_quarter_id) THEN
+    RAISE NOTICE 'Praevention-Testdaten uebersprungen: feste Seed-User oder Quartier fehlen';
+    RETURN;
+  END IF;
+
   -- 1. Kurs erstellen
   INSERT INTO prevention_courses (id, title, description, instructor_id, quarter_id, starts_at, ends_at, max_participants, status)
   VALUES (

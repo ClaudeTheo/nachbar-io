@@ -12,6 +12,8 @@ const mockFrom = vi.fn();
 const mockSelect = vi.fn();
 const mockOrder = vi.fn();
 const mockLimit = vi.fn();
+const mockUserSelect = vi.fn();
+const mockUserIn = vi.fn();
 
 vi.mock("@/lib/supabase/client", () => ({
   createClient: () => ({
@@ -30,7 +32,7 @@ const AUDIT_ROWS = [
     reason: "Initiale Anlage",
     created_at: "2026-04-30T12:23:00.000Z",
     changed_by_user: {
-      email: "admin@example.test",
+      email_hash: "sha256_admin",
       display_name: "Admin Nutzerin",
     },
   },
@@ -45,7 +47,7 @@ const AUDIT_ROWS = [
       "Sehr langer Grund fuer den Toggle, der in der Tabelle nach sechzig Zeichen abgeschnitten wird.",
     created_at: "2026-04-30T11:05:00.000Z",
     changed_by_user: {
-      email: "ops@example.test",
+      email_hash: "sha256_ops",
       display_name: null,
     },
   },
@@ -62,11 +64,36 @@ const AUDIT_ROWS = [
   },
 ];
 
-function setupAuditSelect(data: unknown[] | null, error: unknown = null) {
+const AUDIT_USERS = [
+  {
+    id: "user-1",
+    email_hash: "sha256_admin",
+    display_name: "Admin Nutzerin",
+  },
+  {
+    id: "user-2",
+    email_hash: "sha256_ops",
+    display_name: null,
+  },
+];
+
+function setupAuditSelect(
+  data: unknown[] | null,
+  error: unknown = null,
+  userRows: unknown[] | null = AUDIT_USERS,
+) {
   mockLimit.mockResolvedValue({ data, error });
   mockOrder.mockReturnValue({ limit: mockLimit });
   mockSelect.mockReturnValue({ order: mockOrder });
-  mockFrom.mockReturnValue({ select: mockSelect });
+  mockUserIn.mockResolvedValue({ data: userRows, error: null });
+  mockUserSelect.mockReturnValue({ in: mockUserIn });
+  mockFrom.mockImplementation((table: string) => {
+    if (table === "users") {
+      return { select: mockUserSelect };
+    }
+
+    return { select: mockSelect };
+  });
 }
 
 describe("FeatureFlagAuditLog", () => {
@@ -96,8 +123,26 @@ describe("FeatureFlagAuditLog", () => {
     expect(screen.getByText("TWILIO_ENABLED")).toBeDefined();
     expect(screen.getByText("CHECKIN_MESSAGES_ENABLED")).toBeDefined();
     expect(screen.getByText("Admin Nutzerin")).toBeDefined();
-    expect(screen.getByText("ops@example.test")).toBeDefined();
+    expect(screen.getByText("sha256_ops")).toBeDefined();
     expect(screen.getAllByRole("row")).toHaveLength(4);
+  });
+
+  it("fragt das Audit-Log ohne PostgREST-FK-Join auf auth.users ab", async () => {
+    setupAuditSelect(AUDIT_ROWS);
+
+    const { FeatureFlagAuditLog } = await import(
+      "@/app/(app)/admin/components/FeatureFlagAuditLog"
+    );
+
+    render(<FeatureFlagAuditLog />);
+
+    await waitFor(() => {
+      expect(mockSelect).toHaveBeenCalled();
+    });
+
+    const selectColumns = String(mockSelect.mock.calls[0][0]);
+    expect(selectColumns).toContain("changed_by");
+    expect(selectColumns).not.toContain("changed_by_user:");
   });
 
   it("zeigt Action-Badges fuer insert, update und delete unterschiedlich", async () => {

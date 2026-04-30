@@ -11,7 +11,8 @@ import { createClient } from "@/lib/supabase/client";
 type AuditAction = "insert" | "update" | "delete";
 
 interface AuditUser {
-  email: string | null;
+  id?: string;
+  email_hash: string | null;
   display_name: string | null;
 }
 
@@ -55,7 +56,7 @@ function getUserLabel(entry: FeatureFlagAuditEntry) {
     ? entry.changed_by_user[0]
     : entry.changed_by_user;
 
-  return user?.display_name || user?.email || "System";
+  return user?.display_name || user?.email_hash || "System";
 }
 
 function truncateReason(reason: string | null) {
@@ -78,13 +79,38 @@ export function FeatureFlagAuditLog() {
       const { data } = await supabase
         .from("feature_flags_audit_log")
         .select(
-          "id, flag_key, action, enabled_before, enabled_after, changed_by, reason, created_at, changed_by_user:users!feature_flags_audit_log_changed_by_fkey(email,display_name)",
+          "id, flag_key, action, enabled_before, enabled_after, changed_by, reason, created_at",
         )
         .order("created_at", { ascending: false })
         .limit(50);
 
+      const rows = (data ?? []) as FeatureFlagAuditEntry[];
+      const changedByIds = [
+        ...new Set(rows.map((entry) => entry.changed_by).filter(Boolean)),
+      ] as string[];
+      const userById = new Map<string, AuditUser>();
+
+      if (changedByIds.length > 0) {
+        const { data: userRows } = await supabase
+          .from("users")
+          .select("id,email_hash,display_name")
+          .in("id", changedByIds);
+
+        for (const user of (userRows ?? []) as AuditUser[]) {
+          if (user.id) userById.set(user.id, user);
+        }
+      }
+
       if (!active) return;
-      setEntries((data ?? []) as FeatureFlagAuditEntry[]);
+      setEntries(
+        rows.map((entry) => ({
+          ...entry,
+          changed_by_user:
+            entry.changed_by_user
+            ?? (entry.changed_by ? userById.get(entry.changed_by) : null)
+            ?? null,
+        })),
+      );
       setLoading(false);
     }
 

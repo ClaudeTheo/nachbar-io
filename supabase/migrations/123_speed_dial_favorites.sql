@@ -3,7 +3,7 @@
 
 CREATE TABLE IF NOT EXISTS speed_dial_favorites (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
+  user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
   source_type TEXT NOT NULL CHECK (source_type IN (
     'caregiver_link',
     'emergency_contact',
@@ -11,7 +11,7 @@ CREATE TABLE IF NOT EXISTS speed_dial_favorites (
   )),
   source_id TEXT NOT NULL,
   sort_order INT NOT NULL CHECK (sort_order BETWEEN 1 AND 5),
-  created_by UUID NOT NULL REFERENCES profiles(id),
+  created_by UUID NOT NULL REFERENCES users(id),
   created_at TIMESTAMPTZ DEFAULT now(),
   updated_at TIMESTAMPTZ DEFAULT now(),
   UNIQUE (user_id, sort_order),

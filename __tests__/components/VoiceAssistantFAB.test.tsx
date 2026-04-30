@@ -685,9 +685,7 @@ describe("VoiceAssistantFAB (Push-to-Talk + Companion)", () => {
 
     const { VoiceAssistantFAB } =
       await import("@/modules/voice/components/VoiceAssistantFAB");
-    const { getByTestId, getByText, queryByTestId } = render(
-      <VoiceAssistantFAB />,
-    );
+    const { getByTestId } = render(<VoiceAssistantFAB />);
     fireEvent.click(getByTestId("voice-assistant-fab"));
     fireEvent.mouseDown(getByTestId("push-to-talk-btn"));
 

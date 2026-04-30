@@ -11,9 +11,7 @@ vi.mock('@/lib/supabase/server', () => ({
 
 import {
   hasConsent,
-  grantConsent,
   revokeConsent,
-  getConsentStatus,
 } from '@/modules/memory/services/consent.service';
 
 describe('Memory Consent Service', () => {

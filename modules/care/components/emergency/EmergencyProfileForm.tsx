@@ -14,7 +14,6 @@ import {
   Settings,
   AlertTriangle,
 } from "lucide-react";
-import { createClient } from "@/lib/supabase/client";
 import type { Level1Data, Level2Data, Level3Data } from "./types";
 import {
   EMPTY_LEVEL1,

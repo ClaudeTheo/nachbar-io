@@ -5,7 +5,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, Award, Check, X, Download } from "lucide-react";
+import { ArrowLeft, Award, Check, X } from "lucide-react";
 
 interface Participant {
   enrollmentId: string;

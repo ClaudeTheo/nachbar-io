@@ -1,7 +1,7 @@
 // components/sos/SosConfirmationSheet.test.tsx
 // Nachbar.io — Tests for SOS notify-family integration (J-1 Task 3)
 
-import { describe, it, expect, vi, afterEach, beforeEach } from "vitest";
+import { describe, it, expect, vi, afterEach } from "vitest";
 import {
   render,
   screen,

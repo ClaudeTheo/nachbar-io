@@ -5,13 +5,6 @@ import { NextRequest } from "next/server";
 
 // Mock-Funktionen fuer Supabase Admin-Client
 const mockFrom = vi.fn();
-const mockDelete = vi.fn();
-const mockLt = vi.fn();
-const mockSelect = vi.fn();
-const mockEq = vi.fn();
-const mockSingle = vi.fn();
-const mockUpdate = vi.fn();
-const mockInsert = vi.fn();
 
 vi.mock("@/lib/supabase/admin", () => ({
   getAdminSupabase: vi.fn(() => ({

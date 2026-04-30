@@ -24,7 +24,12 @@ interface GroupPostCommentsProps {
   onCommentAdded?: () => void;
 }
 
-export function GroupPostComments({ postId, groupId, currentUserId, onCommentAdded }: GroupPostCommentsProps) {
+export function GroupPostComments({
+  postId,
+  groupId,
+  currentUserId: _currentUserId,
+  onCommentAdded,
+}: GroupPostCommentsProps) {
   const [comments, setComments] = useState<GroupPostComment[]>([]);
   const [loading, setLoading] = useState(true);
   const [newComment, setNewComment] = useState("");

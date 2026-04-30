@@ -25,7 +25,7 @@ Shared task board and mailbox for Codex, Claude, and future coding agents.
 | done | codex | Phase-5 Settings-Trigger fuer KI-FAQ-Sheet | `components/ki-help/KiHelpFaqSheet.tsx` + `__tests__/components/ki-help/KiHelpFaqSheet.test.tsx` + `modules/ai/components/AiHelpSettingsToggle.tsx` + `__tests__/components/AiHelpSettingsToggle.test.tsx` | 2026-04-29 | phase-5 committed and verified locally in `0a4b4d1` | 2026-04-29 15:43 |
 | done | codex | Lint-Debt Block A: no-explicit-any | `**/*.{ts,tsx}` + `__tests__/_helpers/*` | 2026-04-30 | block-A done in local commit | 2026-04-30 09:33 |
 | done | codex | Lint-Debt Block B: react-hooks | `app/**/*.{ts,tsx}` + `components/**/*.{ts,tsx}` + `lib/hooks/**/*.{ts,tsx}` + `modules/**/*.{ts,tsx}` | 2026-04-30 | block-B done in local commit | 2026-04-30 09:48 |
-| in-progress | codex | Lint-Debt Block C: no-unused-vars | `**/*.{ts,tsx}` | 2026-04-30 | block-C done | 2026-04-30 09:52 |
+| done | codex | Lint-Debt Block C: no-unused-vars | `**/*.{ts,tsx}` | 2026-04-30 | block-C done in local commit | 2026-04-30 10:00 |
 
 ## Notes
 

@@ -80,7 +80,6 @@ export default function KioskCompanionPage() {
   const [cooldown, setCooldown] = useState(false);
   const [ttsEnabled, setTtsEnabled] = useState(true);
   const [sessionExhausted, setSessionExhausted] = useState(false);
-  const [remaining, setRemaining] = useState<number | null>(null);
   const [listening, setListening] = useState(false);
   const recognitionRef = useRef<ReturnType<typeof createRecognition> | null>(
     null,
@@ -223,10 +222,6 @@ export default function KioskCompanionPage() {
         const reply =
           data.reply || "Entschuldigung, da ist etwas schiefgelaufen.";
 
-        // Verbleibendes Budget aktualisieren
-        if (data.usage?.remaining !== undefined) {
-          setRemaining(data.usage.remaining);
-        }
         // Wenn Server sagt: limitiert
         if (data.limited) {
           setSessionExhausted(true);

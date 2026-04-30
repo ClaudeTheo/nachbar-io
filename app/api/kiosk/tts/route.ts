@@ -30,9 +30,7 @@ export async function POST(request: Request) {
     });
 
     const result = await tts.synthesize();
-    // Audio kommt als Blob zurück — in Base64 konvertieren
     const arrayBuffer = await result.audio.arrayBuffer();
-    const audioBase64 = Buffer.from(arrayBuffer).toString("base64");
 
     // Raw Audio als Binary zurückgeben (kein Base64-JSON)
     // → Client kann direkt Blob erstellen, zuverlässigere Wiedergabe

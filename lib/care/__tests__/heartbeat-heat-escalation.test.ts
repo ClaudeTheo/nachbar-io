@@ -86,7 +86,6 @@ describe("heartbeat-heat-escalation integration", () => {
 
   it("keeps null (green zone) even with heat warning — no false alarms under 24h", () => {
     const hoursAgo = 12;
-    const heatWarning = { severity: "extreme", headline: "Extreme Hitze" };
 
     const stage = getHeatAwareEscalationStage(hoursAgo, null);
 

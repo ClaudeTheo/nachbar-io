@@ -128,7 +128,6 @@ export function calculateModuleWeighted(module: ModuleNumber, rawScore: number):
   // Finde den passenden Bereich in der Konversionstabelle
   // Die Tabelle ist aufsteigend sortiert: [maxRawForBand, weightedValue]
   for (let i = table.length - 1; i >= 0; i--) {
-    const [upperBound] = table[i];
     // Sonderfall: Erster Eintrag nach 0 hat spezifische Untergrenzen
     if (i === 0) continue;
 

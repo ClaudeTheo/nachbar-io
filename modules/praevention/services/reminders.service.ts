@@ -4,8 +4,6 @@
 
 import { getAdminSupabase } from "@/lib/supabase/admin";
 
-const PILOT_MODE = process.env.NEXT_PUBLIC_PILOT_MODE === "true";
-
 interface ReminderResult {
   type: string;
   sent: number;

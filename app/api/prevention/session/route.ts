@@ -4,7 +4,6 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import {
   generateSessionResponse,
-  detectEscalation,
 } from "@/modules/praevention/services/ki-session.service";
 import { calculateCurrentWeek } from "@/modules/praevention/services/sessions.service";
 
@@ -74,9 +73,6 @@ export async function POST(request: NextRequest) {
     .eq("course_id", enrollment.course_id)
     .eq("week_number", weekNumber)
     .single();
-
-  // Schnelle Signalwort-Pruefung (vor KI-Call, spart API-Kosten bei Rot)
-  const quickEscalation = detectEscalation(message);
 
   try {
     const response = await generateSessionResponse({

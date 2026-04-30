@@ -28,7 +28,7 @@ export default function StimmungPage() {
       try {
         const res = await fetch("/api/prevention/dashboard");
         if (!res.ok) return;
-        const data = await res.json();
+        await res.json();
 
         // Stimmungsdaten aus Sessions aggregieren
         const res2 = await fetch("/api/prevention/dashboard/participants");

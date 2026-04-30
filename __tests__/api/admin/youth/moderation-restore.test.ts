@@ -4,10 +4,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { NextRequest } from "next/server";
 import type { SupabaseClient } from "@supabase/supabase-js";
-import type {
-  MockChainable,
-  SupabaseMockChainMethod,
-} from "@/__tests__/_helpers/mock-types";
 
 // --- Mock-Daten ---
 const mockAdminUser = { id: "admin-1" };
@@ -41,30 +37,6 @@ function buildMockClient(opts: {
       };
     }),
   };
-}
-
-// --- Helper: chainable Mock fuer Supabase-Query ---
-function chainable(resolvedValue: unknown) {
-  const obj: Partial<MockChainable> = {};
-  const methods: SupabaseMockChainMethod[] = [
-    "select",
-    "eq",
-    "neq",
-    "gt",
-    "lt",
-    "order",
-    "limit",
-    "single",
-    "maybeSingle",
-    "update",
-    "set",
-  ];
-  for (const m of methods) {
-    obj[m] = vi.fn().mockReturnValue(obj);
-  }
-  obj.then = (onfulfilled, onrejected) =>
-    Promise.resolve(resolvedValue).then(onfulfilled, onrejected);
-  return obj as MockChainable;
 }
 
 // --- Mocks ---

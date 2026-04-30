@@ -15,7 +15,6 @@ import {
   Search,
   MessageCircle,
   Wrench,
-  Trash2,
   Building2,
   Paperclip,
   Lightbulb,

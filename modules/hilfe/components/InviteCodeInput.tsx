@@ -5,7 +5,7 @@ import { isValidInviteCode } from "@/modules/hilfe/services/connections";
 
 export default function InviteCodeInput() {
   const [code, setCode] = useState("");
-  const [residentId, setResidentId] = useState("");
+  const [residentId] = useState("");
   const [status, setStatus] = useState<
     "idle" | "loading" | "success" | "error"
   >("idle");

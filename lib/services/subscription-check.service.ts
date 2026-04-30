@@ -3,7 +3,6 @@
 // Trial-Ablauf pruefen, Downgrade auf Free, Warnungen versenden.
 
 import type { SupabaseClient } from '@supabase/supabase-js';
-import { ServiceError } from '@/lib/services/service-error';
 import { checkTrialExpiry, downgradeToFree } from '@/lib/subscription';
 import { sendPush } from '@/lib/care/channels/push';
 import { writeCronHeartbeat } from '@/lib/care/cron-heartbeat';

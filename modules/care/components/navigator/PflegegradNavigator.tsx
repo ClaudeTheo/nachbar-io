@@ -4,7 +4,6 @@
 
 import { useState, useMemo, useCallback } from "react";
 import { ArrowLeft, ArrowRight, ClipboardCheck } from "lucide-react";
-import type { ModuleNumber } from "../../lib/nba-scoring";
 import {
   MODULE_DEFINITIONS,
   getQuestionsForModule,

@@ -10,7 +10,6 @@ import {
   SERVICE_LINK_CATEGORIES,
   WIKI_CATEGORIES,
   ANNOUNCEMENT_CATEGORIES,
-  DISCLAIMERS,
   announcementDisclaimer,
 } from "@/lib/municipal";
 import type {

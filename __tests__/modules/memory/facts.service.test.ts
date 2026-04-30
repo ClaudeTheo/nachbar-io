@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { validateMemorySave } from '@/modules/memory/services/facts.service';
 import { containsMedicalTerms } from '@/modules/memory/services/medical-blocklist';
 

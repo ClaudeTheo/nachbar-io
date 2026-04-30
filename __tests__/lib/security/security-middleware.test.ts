@@ -173,7 +173,7 @@ describe("checkSecurity — cron_probe Trap", () => {
     process.env.CRON_SECRET = "test-cron-secret-123";
 
     const req = createRequest("/api/cron/daily-checkin");
-    const result = await checkSecurity(req);
+    await checkSecurity(req);
 
     // Request wird durchgelassen (cron_probe blockiert nicht direkt),
     // aber 50 Punkte werden aufgezeichnet

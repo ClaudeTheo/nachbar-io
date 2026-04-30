@@ -2,7 +2,6 @@
 // Sammelt alle persoenlichen Daten eines Nutzers als JSON-Export
 
 import type { SupabaseClient } from "@supabase/supabase-js";
-import { ServiceError } from "./service-error";
 
 export interface PrivacyExportResult {
   export_version: "1.0";

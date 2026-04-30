@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import type { MemoryFact, MemoryCategory, MemoryConsent } from "../types";
+import type { MemoryFact, MemoryConsent } from "../types";
 
 interface UseMemoryFactsReturn {
   facts: MemoryFact[];

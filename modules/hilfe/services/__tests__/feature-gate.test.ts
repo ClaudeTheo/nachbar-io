@@ -3,7 +3,6 @@ import {
   canAccessBilling,
   isTrialExpired,
   getSubscriptionLabel,
-  type SubscriptionStatus,
 } from "../feature-gate";
 
 describe("feature-gate", () => {

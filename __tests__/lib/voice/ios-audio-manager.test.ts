@@ -167,18 +167,6 @@ describe('IOSAudioManager', () => {
 
     // Mock: createBufferSource gibt Source mit start() zurueck
     // playBlob ruft decodeAudioData + createBufferSource + start() auf
-    const blob = new Blob(['test'], { type: 'audio/mp3' });
-
-    // Da der Mock keine echte Audio-Wiedergabe macht,
-    // muessen wir onended manuell triggern
-    const mockSource = {
-      buffer: null,
-      connect: vi.fn(),
-      start: vi.fn(),
-      onended: null as (() => void) | null,
-    };
-    const mockCtx = MockAudioContext.prototype;
-
     // Wir koennen playBlob nicht direkt testen ohne echten AudioContext,
     // aber wir koennen pruefen dass canPlay() true ist
     expect(manager.canPlay()).toBe(true);

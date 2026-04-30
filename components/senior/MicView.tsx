@@ -32,7 +32,7 @@ export interface MicViewProps {
 export function MicView({
   recipientName,
   recipientIndex,
-  recipientPhone,
+  recipientPhone: _recipientPhone,
   _testTranscript,
 }: MicViewProps) {
   const router = useRouter();

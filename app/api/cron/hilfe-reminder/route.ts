@@ -62,7 +62,7 @@ export async function GET(request: NextRequest) {
       });
 
       reminded++;
-    } catch (err) {
+    } catch {
       errors.push(helper.id);
     }
   }

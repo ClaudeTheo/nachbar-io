@@ -47,3 +47,4 @@ Shared task board and mailbox for Codex, Claude, and future coding agents.
 - `done` rows are historical and do not hold active locks.
 - `pending`, `in-progress`, and `blocked` rows hold locks for the listed files.
 - When a task is split, create one row per independently owned write scope.
+- Pilot-Feature-Gating C1-C5 done in Commits e687488, 5e88b85, 3843297, d378562, 9034914.

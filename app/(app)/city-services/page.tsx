@@ -11,6 +11,7 @@ import {
   WIKI_CATEGORIES,
   ANNOUNCEMENT_CATEGORIES,
   announcementDisclaimer,
+  normalizeBadSaeckingenLinks,
 } from "@/lib/municipal";
 import type {
   MunicipalAnnouncement,
@@ -136,7 +137,9 @@ export default function CityServicesPage() {
   }, [activeTab, currentQuarter]);
 
   // Service-Links nach Kategorie gruppieren
-  const serviceLinks = (config?.service_links ?? []) as ServiceLink[];
+  const serviceLinks = normalizeBadSaeckingenLinks(
+    (config?.service_links ?? []) as ServiceLink[],
+  );
   const linksByCategory = SERVICE_LINK_CATEGORIES.map((cat) => ({
     ...cat,
     links: serviceLinks.filter((l) => l.category === cat.id),

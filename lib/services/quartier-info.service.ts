@@ -4,6 +4,7 @@
 
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { ServiceError } from "@/lib/services/service-error";
+import { normalizeBadSaeckingenLinks } from "@/lib/municipal";
 import { fetchWeather } from "@/modules/info-hub/services/weather-client";
 import { fetchPollenData } from "@/modules/info-hub/services/pollen-client";
 import { fetchNinaWarnings } from "@/modules/info-hub/services/nina-client";
@@ -39,7 +40,9 @@ export async function getQuartierInfo(
     .single();
 
   // Dynamische Daten aus municipal_config (oder leere Defaults)
-  const rathausLinks: RathausLink[] = (config?.service_links as RathausLink[]) || [];
+  const rathausLinks = normalizeBadSaeckingenLinks(
+    (config?.service_links as RathausLink[]) || [],
+  );
   const apotheken: Apotheke[] = (config?.apotheken as Apotheke[]) || [];
   const events: LocalEvent[] = (config?.events as LocalEvent[]) || [];
   const oepnvStopConfigs: { id: string; name: string }[] =

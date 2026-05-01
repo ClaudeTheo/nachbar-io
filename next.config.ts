@@ -3,8 +3,12 @@ import { withSentryConfig } from "@sentry/nextjs";
 
 // Supabase-Projekt-Domain fuer CSP connect-src
 const supabaseDomain = "uylszchlyhbpbmslcnka.supabase.co";
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL ?? "";
+const isLocalSupabaseUrl =
+  supabaseUrl.startsWith("http://127.0.0.1:54321") ||
+  supabaseUrl.startsWith("http://localhost:54321");
 const localSupabaseConnectSources =
-  process.env.NODE_ENV === "development"
+  process.env.NODE_ENV === "development" || isLocalSupabaseUrl
     ? " http://127.0.0.1:54321 http://localhost:54321 ws://127.0.0.1:54321 ws://localhost:54321"
     : "";
 

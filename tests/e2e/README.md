@@ -126,9 +126,16 @@ gegen `127.0.0.1:54321` deshalb den expliziten lokalen Startpfad nutzen:
 
 ```bash
 npm run supabase:start
-npm run build
+npm run build:local
 npm run start:local
 ```
+
+`54321` ist der lokale Supabase-API-Port aus `supabase/config.toml`. Weil
+`.env.local` ignored ist, muss `NEXT_PUBLIC_SUPABASE_URL` dort lokal ebenfalls
+auf `http://127.0.0.1:54321` zeigen. `npm run build:local` und
+`npm run start:local` laden `.env.local` explizit und normalisieren die
+Supabase-URL auf diesen Config-Port, damit `.env.production.local` aus
+`vercel pull` lokale Smokes nicht auf die Cloud lenkt.
 
 Die Tests dann in einer zweiten Shell gegen Port 3001 starten:
 

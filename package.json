@@ -98,7 +98,7 @@
     "eslint-config-next": "^16.2.1",
     "fake-indexeddb": "^6.2.5",
     "jsdom": "^28.1.0",
-    "supabase": "^2.83.0",
+    "supabase": "^2.92.1",
     "tailwindcss": "^4.2.2",
     "typescript": "^5",
     "vitest": "^4.1.0"

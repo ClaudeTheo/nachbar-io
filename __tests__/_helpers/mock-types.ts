@@ -4,6 +4,7 @@ export type SupabaseMockChainMethod =
   | "neq"
   | "gt"
   | "lt"
+  | "in"
   | "order"
   | "limit"
   | "single"

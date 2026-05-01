@@ -18,6 +18,7 @@ const mockConsentsList = [
     birth_year: 2012,
     age_group: "u16",
     access_level: "freigeschaltet",
+    quarter_id: "quarter-1",
     created_at: "2026-04-01T10:00:00Z",
     users: { display_name: "Lena" },
     quarters: { name: "Rebberg" },
@@ -36,6 +37,7 @@ const mockConsentsList = [
     birth_year: 2013,
     age_group: "u16",
     access_level: "basis",
+    quarter_id: "quarter-2",
     created_at: "2026-04-02T10:00:00Z",
     users: { display_name: "Max" },
     quarters: { name: "Sanarystrasse" },
@@ -49,6 +51,32 @@ const mockConsentsList = [
     ],
   },
 ];
+
+const mockProfilesList = mockConsentsList.map(
+  ({
+    users: _users,
+    quarters: _quarters,
+    youth_guardian_consents: _consents,
+    ...profile
+  }) => profile,
+);
+
+const mockUserRows = [
+  { id: "u-teen-1", display_name: "Lena" },
+  { id: "u-teen-2", display_name: "Max" },
+];
+
+const mockQuarterRows = [
+  { id: "quarter-1", name: "Rebberg" },
+  { id: "quarter-2", name: "Sanarystrasse" },
+];
+
+const mockConsentRows = mockConsentsList.flatMap((profile) =>
+  profile.youth_guardian_consents.map((consent) => ({
+    youth_user_id: profile.user_id,
+    ...consent,
+  })),
+);
 
 // --- Helper: baut einen Mock-Supabase-Client (Auth-Pruefung) ---
 function buildMockClient(opts: {
@@ -92,6 +120,7 @@ function chainable(resolvedValue: unknown) {
     "neq",
     "gt",
     "lt",
+    "in",
     "order",
     "limit",
     "single",
@@ -121,8 +150,9 @@ function buildAdminMock() {
           // Erster Aufruf: head:true Count (KPI totalProfiles)
           return chainable({ count: 2, data: null, error: null });
         }
-        // Zweiter Aufruf: JOIN-Query fuer consents-Liste
-        return chainable({ data: mockConsentsList, error: null });
+        // Zweiter Aufruf: Profil-Liste ohne PostgREST-Embedded-Joins.
+        // In Cloud/Prod existiert keine Relationship youth_profiles -> users.
+        return chainable({ data: mockProfilesList, error: null });
       }
 
       if (table === "youth_guardian_consents") {
@@ -133,7 +163,18 @@ function buildAdminMock() {
         if (callIdx === 2) {
           return chainable({ count: 2, data: null, error: null }); // granted: 2
         }
-        return chainable({ count: 0, data: null, error: null }); // revoked: 0
+        if (callIdx === 3) {
+          return chainable({ count: 0, data: null, error: null }); // revoked: 0
+        }
+        return chainable({ data: mockConsentRows, error: null });
+      }
+
+      if (table === "users") {
+        return chainable({ data: mockUserRows, error: null });
+      }
+
+      if (table === "quarters") {
+        return chainable({ data: mockQuarterRows, error: null });
       }
 
       if (table === "youth_moderation_log") {
@@ -141,19 +182,34 @@ function buildAdminMock() {
           // Flagged count: select("id", { count: "exact", head: true })
           return chainable({ count: 3, data: null, error: null });
         }
-        // Suspended items
-        return chainable({
-          data: [
-            {
-              id: "mod-1",
-              action: "suspended",
-              target_id: "post-1",
-              created_at: "2026-04-05T08:00:00Z",
-              details: null,
-            },
-          ],
-          error: null,
-        });
+        // Suspended items: Prod-Schema hat keine details-Spalte.
+        return {
+          select: vi.fn((columns: string) => {
+            if (columns.includes("details")) {
+              return chainable({
+                data: null,
+                error: {
+                  code: "42703",
+                  message: "column youth_moderation_log.details does not exist",
+                },
+              });
+            }
+
+            return chainable({
+              data: [
+                {
+                  id: "mod-1",
+                  action: "suspended",
+                  target_id: "post-1",
+                  target_type: "post",
+                  created_at: "2026-04-05T08:00:00Z",
+                  reason: null,
+                },
+              ],
+              error: null,
+            });
+          }),
+        };
       }
 
       return chainable({ data: [], error: null });

@@ -15,22 +15,22 @@ SELECT
   '{"reports": true, "waste_calendar": true, "announcements": true, "wiki": true, "service_links": true}'::jsonb,
   '[
     {"label": "Rathaus Bad Säckingen", "url": "https://www.bad-saeckingen.de", "icon": "building", "category": "kontakt"},
-    {"label": "Bürgerbüro", "url": "https://www.bad-saeckingen.de/buergerbuero", "icon": "users", "category": "kontakt"},
-    {"label": "Standesamt", "url": "https://www.bad-saeckingen.de/standesamt", "icon": "file-text", "category": "kontakt"},
-    {"label": "Fundbüro", "url": "https://www.bad-saeckingen.de/fundbuero", "icon": "search", "category": "service"},
+    {"label": "Bürgerbüro", "url": "https://www.bad-saeckingen.de/rathaus-service/buergerservice/was-erledige-ich-wo", "icon": "users", "category": "kontakt"},
+    {"label": "Standesamt", "url": "https://www.bad-saeckingen.de/rathaus-service/verwaltungsaufbau/alle-fachbereiche/personenstandswesen", "icon": "file-text", "category": "kontakt"},
+    {"label": "Fundbüro", "url": "https://www.bad-saeckingen.de/rathaus-service/buergerservice/behoerden-dienstleistungen/6000959/fundsache-abgeben-oder-nachfragen", "icon": "search", "category": "service"},
     {"label": "Abfallwirtschaft Waldshut", "url": "https://www.awb-landkreis-waldshut.de", "icon": "trash", "category": "service"},
-    {"label": "Formulare & Anträge", "url": "https://www.bad-saeckingen.de/formulare", "icon": "clipboard", "category": "formulare"},
+    {"label": "Formulare & Anträge", "url": "https://www.bad-saeckingen.de/rathaus-service/buergerservice/formulare-onlinedienste", "icon": "clipboard", "category": "formulare"},
     {"label": "KFZ-Zulassung (Landratsamt)", "url": "https://www.landkreis-waldshut.de/kfz", "icon": "car", "category": "formulare"},
     {"label": "Polizei Bad Säckingen", "url": "https://www.polizei-bw.de", "icon": "shield", "category": "notfall"},
     {"label": "Stadtwerke Bad Säckingen", "url": "https://www.stadtwerke-bad-saeckingen.de", "icon": "zap", "category": "versorgung"}
   ]'::jsonb,
   '[
-    {"question": "Wo melde ich ein Schlagloch?", "answer": "Beim Bauhof der Stadt Bad Säckingen (Tel. 07761 51-0). In der QuartierApp können Sie es zusätzlich als Community-Meldung erfassen.", "category": "infrastruktur", "links": [{"label": "Rathaus kontaktieren", "url": "https://www.bad-saeckingen.de/kontakt"}]},
+    {"question": "Wo melde ich ein Schlagloch?", "answer": "Beim Bauhof der Stadt Bad Säckingen (Tel. 07761 51-0). In der QuartierApp können Sie es zusätzlich als Community-Meldung erfassen.", "category": "infrastruktur", "links": [{"label": "Rathaus kontaktieren", "url": "https://www.bad-saeckingen.de/rathaus-service/buergerservice/kontakt-oeffnungszeiten"}]},
     {"question": "Wo melde ich eine defekte Straßenlaterne?", "answer": "Bei den Stadtwerken Bad Säckingen.", "category": "infrastruktur", "links": [{"label": "Stadtwerke", "url": "https://www.stadtwerke-bad-saeckingen.de"}]},
     {"question": "Wo melde ich illegale Müllablagerung?", "answer": "Beim Ordnungsamt der Stadt oder bei der Abfallwirtschaft Waldshut.", "category": "entsorgung", "links": [{"label": "AWB Waldshut", "url": "https://www.awb-landkreis-waldshut.de"}]},
     {"question": "Wann wird mein Müll abgeholt?", "answer": "Siehe unseren Müllkalender in der App. Verbindliche Termine finden Sie beim AWB Waldshut.", "category": "entsorgung", "links": [{"label": "AWB Abfuhrkalender", "url": "https://www.awb-landkreis-waldshut.de/abfuhrkalender"}]},
-    {"question": "Wie melde ich meinen Wohnsitz an?", "answer": "Im Bürgerbüro der Stadt mit Personalausweis und Wohnungsgeberbestätigung.", "category": "verwaltung", "links": [{"label": "Bürgerbüro", "url": "https://www.bad-saeckingen.de/buergerbuero"}]},
-    {"question": "Wo bekomme ich einen Bewohnerparkausweis?", "answer": "Im Bürgerbüro. Personalausweis und Fahrzeugschein mitbringen.", "category": "verwaltung", "links": [{"label": "Bürgerbüro", "url": "https://www.bad-saeckingen.de/buergerbuero"}]},
+    {"question": "Wie melde ich meinen Wohnsitz an?", "answer": "Im Bürgerbüro der Stadt mit Personalausweis und Wohnungsgeberbestätigung.", "category": "verwaltung", "links": [{"label": "Bürgerbüro", "url": "https://www.bad-saeckingen.de/rathaus-service/buergerservice/was-erledige-ich-wo"}]},
+    {"question": "Wo bekomme ich einen Bewohnerparkausweis?", "answer": "Im Bürgerbüro. Personalausweis und Fahrzeugschein mitbringen.", "category": "verwaltung", "links": [{"label": "Bürgerbüro", "url": "https://www.bad-saeckingen.de/rathaus-service/buergerservice/was-erledige-ich-wo"}]},
     {"question": "Wo melde ich Ruhestörung?", "answer": "Bei der Polizei (07761 934-0) oder dem Ordnungsamt.", "category": "ordnung", "links": [{"label": "Polizei", "url": "https://www.polizei-bw.de"}]},
     {"question": "Wo finde ich das Amtsblatt?", "answer": "Auf der Website der Stadt unter Bekanntmachungen.", "category": "verwaltung", "links": [{"label": "Stadt Bad Säckingen", "url": "https://www.bad-saeckingen.de"}]}
   ]'::jsonb

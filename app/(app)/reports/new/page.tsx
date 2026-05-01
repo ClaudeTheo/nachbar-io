@@ -304,7 +304,7 @@ function StepSummary({
       <div className="rounded-lg border border-gray-200 bg-gray-50 p-3 text-xs text-muted-foreground">
         {DISCLAIMERS.reportRathaus}{" "}
         <ExternalLink
-          href="https://www.bad-saeckingen.de/kontakt"
+          href="https://www.bad-saeckingen.de/rathaus-service/buergerservice/kontakt-oeffnungszeiten"
           title="Rathaus Kontaktformular"
           className="font-medium text-quartier-green underline"
         >

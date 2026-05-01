@@ -486,7 +486,7 @@ INSERT INTO lost_found (user_id, type, category, title, description, location_hi
 
 INSERT INTO news_items (source_url, original_title, ai_summary, category, relevance_score, published_at, created_at) VALUES
 -- Infrastruktur
-('https://www.bad-saeckingen.de/aktuelles/kanalarbeiten-2026',
+('https://www.bad-saeckingen.de/rathaus-service/aktuelles/neuigkeiten',
  'Kanalarbeiten Sanarystraße ab Montag',
  'Ab Montag wird die Sanarystraße wegen Kanalarbeiten zwischen Hausnummer 4 und 8 halbseitig gesperrt. Die Arbeiten dauern voraussichtlich bis Freitag. Anwohner werden gebeten, ihre Fahrzeuge in dieser Zeit in der Purkersdorfer Straße zu parken.',
  'infrastructure', 9, now() - interval '1 day', now() - interval '1 day'),
@@ -498,13 +498,13 @@ INSERT INTO news_items (source_url, original_title, ai_summary, category, releva
  'waste', 8, now() - interval '2 days', now() - interval '2 days'),
 
 -- Veranstaltungen
-('https://www.bad-saeckingen.de/veranstaltungen/stadtfest-2026',
+('https://www.bad-saeckingen.de/leben-wohnen/veranstaltungen',
  'Stadtfest Bad Säckingen am 20.–22. Juni',
  'Das traditionelle Stadtfest findet vom 20. bis 22. Juni auf dem Münsterplatz und in der Altstadt statt. Am Samstagabend gibt es ein Feuerwerk am Rhein.',
  'events', 6, now() - interval '3 days', now() - interval '3 days'),
 
 -- Verwaltung
-('https://www.bad-saeckingen.de/rathaus/sprechstunden',
+('https://www.bad-saeckingen.de/rathaus-service/buergerservice/kontakt-oeffnungszeiten',
  'Neue Sprechzeiten im Bürgerbüro ab März',
  'Das Bürgerbüro Bad Säckingen hat ab März erweiterte Öffnungszeiten: Montag bis Freitag 8:00–12:00 Uhr und zusätzlich Dienstag und Donnerstag 14:00–17:00 Uhr.',
  'administration', 5, now() - interval '5 days', now() - interval '5 days'),

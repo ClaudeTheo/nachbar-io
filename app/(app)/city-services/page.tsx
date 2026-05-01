@@ -11,7 +11,8 @@ import {
   WIKI_CATEGORIES,
   ANNOUNCEMENT_CATEGORIES,
   announcementDisclaimer,
-  normalizeBadSaeckingenLinks,
+  normalizeBadSaeckingenServiceLinks,
+  normalizeBadSaeckingenWikiEntries,
 } from "@/lib/municipal";
 import type {
   MunicipalAnnouncement,
@@ -137,7 +138,7 @@ export default function CityServicesPage() {
   }, [activeTab, currentQuarter]);
 
   // Service-Links nach Kategorie gruppieren
-  const serviceLinks = normalizeBadSaeckingenLinks(
+  const serviceLinks = normalizeBadSaeckingenServiceLinks(
     (config?.service_links ?? []) as ServiceLink[],
   );
   const linksByCategory = SERVICE_LINK_CATEGORIES.map((cat) => ({
@@ -146,7 +147,9 @@ export default function CityServicesPage() {
   }));
 
   // Wiki-Eintraege mit Suchfilter
-  const wikiEntries = (config?.wiki_entries ?? []) as WikiEntry[];
+  const wikiEntries = normalizeBadSaeckingenWikiEntries(
+    (config?.wiki_entries ?? []) as WikiEntry[],
+  );
   const filteredWiki = searchQuery.trim()
     ? wikiEntries.filter(
         (e) =>

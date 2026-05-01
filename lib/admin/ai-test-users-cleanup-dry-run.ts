@@ -68,7 +68,7 @@ export type AiTestUserCleanupDryRunReport = {
   }>;
 };
 
-const USER_REFERENCE_TABLES = [
+export const AI_TEST_USER_REFERENCE_TABLES = [
   ["household_members", "user_id"],
   ["verification_requests", "user_id"],
   ["invite_codes", "created_by"],
@@ -219,7 +219,7 @@ async function loadReferenceCounts(
 
   const counts = [];
 
-  for (const [table, column] of USER_REFERENCE_TABLES) {
+  for (const [table, column] of AI_TEST_USER_REFERENCE_TABLES) {
     const result = await db.from(table).select("id", { count: "exact", head: true }).in(column, aiUserIds);
     counts.push({
       table,

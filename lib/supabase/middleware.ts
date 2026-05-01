@@ -32,6 +32,16 @@ function hasClosedPilotApproval(profile: {
   return APPROVED_CLOSED_PILOT_TRUST_LEVELS.has(profile.trust_level ?? "");
 }
 
+function isE2eTestLoginRequest(request: NextRequest) {
+  if (request.nextUrl.pathname !== "/api/test/login") return false;
+
+  const testSecret = process.env.SECURITY_E2E_BYPASS ?? process.env.E2E_TEST_SECRET;
+  return (
+    Boolean(testSecret) &&
+    request.headers.get("x-nachbar-test-mode") === testSecret
+  );
+}
+
 export async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request });
 
@@ -93,6 +103,8 @@ export async function updateSession(request: NextRequest) {
     request.nextUrl.pathname.startsWith("/freigabe-ausstehend");
   const isClosedPilotPublicApi =
     isApiRoute && isClosedPilotPublicApiPath(request.nextUrl.pathname);
+  const isClosedPilotE2eTestLoginApi =
+    isApiRoute && isE2eTestLoginRequest(request);
   // Terminal-Seite authentifiziert sich ueber Token in der URL, nicht ueber Session
   const isTerminalPage = request.nextUrl.pathname.startsWith("/terminal");
   // Jugend-Freigabe: Oeffentliche Elternfreigabe-Seiten (via SMS-Token, kein Login)
@@ -101,7 +113,13 @@ export async function updateSession(request: NextRequest) {
   // Kiosk: Eigenes Auth-System (QR-Code, PIN, Gast-Modus) — keine Supabase-Session noetig
   const isKioskPage = request.nextUrl.pathname.startsWith("/kiosk");
 
-  if (!user && isClosedPilotMode() && isApiRoute && !isClosedPilotPublicApi) {
+  if (
+    !user &&
+    isClosedPilotMode() &&
+    isApiRoute &&
+    !isClosedPilotPublicApi &&
+    !isClosedPilotE2eTestLoginApi
+  ) {
     return NextResponse.json(buildClosedPilotApiBody(), {
       status: 503,
       headers: {

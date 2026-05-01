@@ -9,6 +9,28 @@ import { supabaseAdmin } from "./supabase-admin";
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || "";
 const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || "";
 
+type E2eUserRole =
+  | "resident"
+  | "caregiver"
+  | "org_admin"
+  | "doctor"
+  | "senior";
+
+export function getE2eUserRole(creds: AgentCredentials): E2eUserRole {
+  switch (creds.role) {
+    case "betreuer":
+      return "caregiver";
+    case "doctor":
+      return "doctor";
+    case "org_admin":
+      return "org_admin";
+    case "senior":
+      return "senior";
+    default:
+      return "resident";
+  }
+}
+
 /**
  * Supabase Auth Admin API — Nutzer erstellen.
  */
@@ -175,6 +197,7 @@ async function seedAgent(
     display_name: creds.displayName,
     ui_mode: creds.uiMode,
     is_admin: creds.isAdmin || false,
+    role: getE2eUserRole(creds),
     trust_level: creds.role === "unverified" ? "new" : "verified",
     settings: { onboarding_completed: true },
   };
@@ -184,15 +207,30 @@ async function seedAgent(
     profileData,
   );
 
+  const { id: _id, ...profileUpdateData } = profileData;
+  async function ensureProfileCurrent() {
+    const { error: patchError } = await supabaseAdmin(
+      "users",
+      "PATCH",
+      profileUpdateData,
+      `id=eq.${userId}`,
+    );
+    if (patchError) {
+      console.warn(`[SEED] Agent ${agentId} Profil PATCH: ${patchError}`);
+    }
+  }
+
   if (
     profileError &&
     (profileError.includes("duplicate") || profileError.includes("409"))
   ) {
-    // Bestehenden User aktualisieren (ui_mode, trust_level etc.)
-    const { id: _id, ...updateData } = profileData;
-    await supabaseAdmin("users", "PATCH", updateData, `id=eq.${userId}`);
+    // Bestehenden User aktualisieren (ui_mode, role, trust_level etc.)
+    await ensureProfileCurrent();
   } else if (profileError) {
     console.warn(`[SEED] Agent ${agentId} Profil: ${profileError}`);
+  } else {
+    // Auth-Trigger oder Upsert koennen bestehende lokale Profile unveraendert lassen.
+    await ensureProfileCurrent();
   }
 
   // 3. Haushalt-Zuordnung

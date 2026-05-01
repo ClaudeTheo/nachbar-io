@@ -118,6 +118,24 @@ npm run test:e2e:smoke
 npm run test:e2e:multi
 ```
 
+### Lokaler Production-Smoke mit lokalem Supabase
+
+Wenn `.env.production.local` aus `vercel pull` existiert, zeigt ein normales
+`next start` im Production-Modus auf die Cloud-Umgebung. Fuer lokale E2E-Smokes
+gegen `127.0.0.1:54321` deshalb den expliziten lokalen Startpfad nutzen:
+
+```bash
+npm run supabase:start
+npm run build
+npm run start:local
+```
+
+Die Tests dann in einer zweiten Shell gegen Port 3001 starten:
+
+```bash
+E2E_BASE_URL=http://localhost:3001 npm run test:e2e:multi
+```
+
 ### Einzelne Szenarien
 
 ```bash

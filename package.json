@@ -10,6 +10,7 @@
     "supabase:status": "supabase status",
     "build": "next build",
     "start": "next start",
+    "start:local": "node --env-file=.env.local ./node_modules/next/dist/bin/next start -p 3001",
     "lint": "eslint",
     "test": "vitest run",
     "test:watch": "vitest",

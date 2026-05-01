@@ -66,6 +66,24 @@ describe('POST /api/heartbeat', () => {
     expect(response.status).toBe(400);
   });
 
+  it('gibt 400 fuer leeren JSON-Body zurueck', async () => {
+    mockGetUser.mockResolvedValue({ data: { user: { id: 'user-1' } } });
+
+    const { POST } = await import('@/app/api/heartbeat/route');
+    const request = new Request('http://localhost/api/heartbeat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+    });
+
+    const response = await POST(request as unknown as import('next/server').NextRequest);
+
+    expect(response.status).toBe(400);
+    await expect(response.json()).resolves.toEqual({
+      error: "Ungültiges Anfrage-Format",
+    });
+    expect(mockInsert).not.toHaveBeenCalled();
+  });
+
   it('behandelt doppelten Heartbeat innerhalb des Cooldowns als no-op', async () => {
     mockGetUser.mockResolvedValue({ data: { user: { id: 'user-1' } } });
     mockInsert.mockResolvedValue({ error: null });

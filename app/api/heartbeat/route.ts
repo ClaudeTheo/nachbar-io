@@ -14,7 +14,16 @@ export async function POST(request: NextRequest) {
     }
     const { supabase, user } = authResult;
 
-    const body = await request.json();
+    let body;
+    try {
+      body = await request.json();
+    } catch {
+      return NextResponse.json(
+        { error: "Ungültiges Anfrage-Format" },
+        { status: 400 },
+      );
+    }
+
     const result = await recordHeartbeat(supabase, user.id, body);
 
     return NextResponse.json(result, {

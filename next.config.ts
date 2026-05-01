@@ -30,6 +30,11 @@ const cspDirectives = [
 ];
 
 const nextConfig: NextConfig = {
+  // Workspace-Klammer enthaelt weitere Lockfiles; nachbar-io ist der App-Root.
+  turbopack: {
+    root: process.cwd(),
+  },
+
   // Turbopack: Barrel-Exports fuer grosse Icon-Libraries optimieren
   // Verhindert "module factory is not available" Fehler mit lucide-react
   experimental: {

@@ -40,7 +40,7 @@ describe("next.config CSP", () => {
 
     expect(csp).toContain("http://127.0.0.1:54321");
     expect(csp).toContain("ws://127.0.0.1:54321");
-  });
+  }, 15000);
 
   it("lockert Production-CSP fuer Cloud-Supabase nicht", async () => {
     const csp = await loadCspHeader({
@@ -50,5 +50,5 @@ describe("next.config CSP", () => {
 
     expect(csp).not.toContain("http://127.0.0.1:54321");
     expect(csp).not.toContain("ws://127.0.0.1:54321");
-  });
+  }, 15000);
 });

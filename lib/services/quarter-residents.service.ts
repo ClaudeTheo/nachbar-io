@@ -276,6 +276,23 @@ export async function createResidentRequest(
     throw new ServiceError("Anfrage konnte nicht erstellt werden", 500);
   }
 
+  const { error: contactLinkError } = await supabase
+    .from("contact_links")
+    .insert({
+      requester_id: userId,
+      addressee_id: targetMember.user_id,
+      status: "pending",
+      note: message.trim(),
+    });
+
+  if (contactLinkError && contactLinkError.code !== "23505") {
+    console.error(
+      "[quarter-residents.service] Contact-Link-Insert fehlgeschlagen:",
+      contactLinkError,
+    );
+    throw new ServiceError("Kontaktanfrage konnte nicht erstellt werden", 500);
+  }
+
   return {
     connectionId: connection.id,
     targetUserId: targetMember.user_id,

@@ -71,6 +71,13 @@ test.describe("S12: Kontaktanfrage -> Annahme -> Chat", () => {
     }
 
     await supabaseAdmin(
+      "contact_links",
+      "DELETE",
+      undefined,
+      `or=(and(requester_id.eq.${userIdA},addressee_id.eq.${userIdB}),and(requester_id.eq.${userIdB},addressee_id.eq.${userIdA}))`,
+    );
+
+    await supabaseAdmin(
       "neighbor_connections",
       "DELETE",
       undefined,

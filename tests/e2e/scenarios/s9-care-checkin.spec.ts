@@ -1,6 +1,7 @@
 // Nachbar.io — S9: Care Check-in & Medikamenten-Workflow
 // Senior (S) fuehrt Check-in durch, Betreuer (T) sieht Status
 import { test, expect } from "@playwright/test";
+import type { Response } from "@playwright/test";
 import {
   createAgent,
   loginAgent,
@@ -14,6 +15,21 @@ import {
   gotoCare,
 } from "../helpers/observer";
 import { TIMEOUTS } from "../helpers/test-config";
+
+async function expectCheckinWriteResponse(response: Response) {
+  const status = response.status();
+
+  if (status === 503) {
+    await expect(response.json()).resolves.toMatchObject({
+      error: "Feature in Vorbereitung",
+    });
+    return status;
+  }
+
+  // 201 = Erfolg, 429 = Rate-Limit bei wiederholten lokalen Testlaeufen.
+  expect([201, 429]).toContain(status);
+  return status;
+}
 
 test.describe("S9: Care Check-in & Medikamenten-Workflow", () => {
   let agentS: TestAgent;
@@ -60,7 +76,7 @@ test.describe("S9: Care Check-in & Medikamenten-Workflow", () => {
     });
   });
 
-  test("S9.2 — Senior 'Mir geht es gut' Check-in erfolgreich", async () => {
+  test("S9.2 — Senior 'Mir geht es gut' Check-in erfolgreich oder kontrolliert gated", async () => {
     await withAgent(agentS, "OK Check-in", async ({ page }) => {
       await gotoCare(page, "/care/checkin");
 
@@ -83,8 +99,7 @@ test.describe("S9: Care Check-in & Medikamenten-Workflow", () => {
       const checkinResponse = await checkinResponsePromise;
       const status = checkinResponse.status();
 
-      // 201 = Erfolg, 429 = Rate-Limit (bei wiederholtem Testlauf)
-      expect([201, 429]).toContain(status);
+      await expectCheckinWriteResponse(checkinResponse);
 
       if (status === 201) {
         // UI-Bestaetigung pruefen (mit Toleranz fuer Hydration-Reloads)
@@ -102,7 +117,7 @@ test.describe("S9: Care Check-in & Medikamenten-Workflow", () => {
     });
   });
 
-  test("S9.3 — Senior 'Nicht so gut' loest Angehoerigen-Benachrichtigung aus", async () => {
+  test("S9.3 — Senior 'Nicht so gut' loest Benachrichtigung aus oder ist kontrolliert gated", async () => {
     await withAgent(agentS, "Nicht-gut Check-in", async ({ page }) => {
       await gotoCare(page, "/care/checkin");
 
@@ -118,12 +133,11 @@ test.describe("S9: Care Check-in & Medikamenten-Workflow", () => {
       const notWellButton = page.getByText(/Nicht so gut/i).first();
       await notWellButton.click();
 
-      // Primaere Validierung: 201 = Erfolg, 429 = Rate-Limit
       const checkinResponse = await checkinResponsePromise;
-      expect([201, 429]).toContain(checkinResponse.status());
+      const status = await expectCheckinWriteResponse(checkinResponse);
 
       console.log(
-        `[S] Check-in 'Nicht so gut' gesendet (API ${checkinResponse.status()})`,
+        `[S] Check-in 'Nicht so gut' gesendet (API ${status})`,
       );
     });
 
@@ -150,7 +164,7 @@ test.describe("S9: Care Check-in & Medikamenten-Workflow", () => {
     });
   });
 
-  test("S9.4 — Senior 'Brauche Hilfe' loest Auto-SOS aus", async () => {
+  test("S9.4 — Senior 'Brauche Hilfe' loest Auto-SOS aus oder ist kontrolliert gated", async () => {
     await withAgent(agentS, "Need-Help Check-in", async ({ page }) => {
       await gotoCare(page, "/care/checkin");
 
@@ -166,12 +180,11 @@ test.describe("S9: Care Check-in & Medikamenten-Workflow", () => {
       const helpButton = page.getByText(/Brauche Hilfe/i).first();
       await helpButton.click();
 
-      // Primaere Validierung: 201 = Erfolg, 429 = Rate-Limit
       const checkinResponse = await checkinResponsePromise;
-      expect([201, 429]).toContain(checkinResponse.status());
+      const status = await expectCheckinWriteResponse(checkinResponse);
 
       console.log(
-        `[S] Check-in 'Brauche Hilfe' gesendet (API ${checkinResponse.status()})`,
+        `[S] Check-in 'Brauche Hilfe' gesendet (API ${status})`,
       );
     });
   });

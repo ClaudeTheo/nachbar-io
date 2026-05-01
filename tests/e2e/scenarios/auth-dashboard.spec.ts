@@ -28,7 +28,7 @@ test.describe("Auth-Flow: Dashboard", () => {
     await dashboard.assertLoaded();
 
     // Alle BottomNav-Eintraege pruefen
-    const navLabels = ["Home", "Karte", "Hilfe"];
+    const navLabels = ["Start", "Quartier", "Gesundheit", "Ich"];
     for (const label of navLabels) {
       const navItem = dashboard.bottomNav.getByText(label);
       await expect(navItem).toBeVisible();
@@ -37,37 +37,30 @@ test.describe("Auth-Flow: Dashboard", () => {
     console.log("[AUTH] BottomNav vollstaendig ✓");
   });
 
-  test("AF1.3 — Navigation via BottomNav zu Karte", async ({ page }) => {
+  test("AF1.3 — Navigation via BottomNav zu Quartier", async ({ page }) => {
     const dashboard = new DashboardPage(page);
     await dashboard.goto();
     await dashboard.assertLoaded();
 
-    // Zur Karte navigieren
+    // Zum Quartier-Info-Hub navigieren
     await dashboard.navigateVia("map");
-    await expect(page).toHaveURL(/\/map/);
+    await expect(page).toHaveURL(/\/quartier-info/);
     await waitForStableUI(page);
 
-    // Karte sollte sichtbar sein (Leaflet Container)
-    const mapContainer = page
-      .locator(".leaflet-container")
-      .or(page.locator("[data-testid='quarter-map']"));
-    const hasMap = await mapContainer.isVisible().catch(() => false);
-    console.log(
-      `[AUTH] Karte geladen: ${hasMap ? "✓" : "Container nicht gefunden (evtl. anderer Selektor)"}`,
-    );
+    await expect(page.getByTestId("info-weather")).toBeVisible();
+    console.log("[AUTH] Quartier-Info-Hub erreicht ✓");
   });
 
-  test("AF1.4 — Navigation via BottomNav zu Hilfe-Boerse", async ({ page }) => {
+  test("AF1.4 — Navigation via BottomNav zu Gesundheit", async ({ page }) => {
     const dashboard = new DashboardPage(page);
     await dashboard.goto();
     await dashboard.assertLoaded();
 
-    // Zur Hilfe-Boerse navigieren (BottomNav "Hilfe" → /alerts/new)
-    await dashboard.navigateVia("help");
-    await expect(page).toHaveURL(/\/alerts/);
+    await dashboard.navigateVia("care");
+    await expect(page).toHaveURL(/\/care/);
     await waitForStableUI(page);
 
-    console.log("[AUTH] Hilfe-Boerse erreicht ✓");
+    console.log("[AUTH] Gesundheitsbereich erreicht ✓");
   });
 
   test("AF1.5 — Kein 500-Error auf authentifizierten Seiten", async ({

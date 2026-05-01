@@ -233,6 +233,18 @@ export default function MessagesPage() {
       .update({ status: "accepted", responded_at: new Date().toISOString() })
       .eq("id", connectionId);
 
+    const { error: contactError } = await supabase
+      .from("contact_links")
+      .update({ status: "accepted", accepted_at: new Date().toISOString() })
+      .eq("requester_id", requesterId)
+      .eq("addressee_id", user.id);
+
+    if (contactError) {
+      console.error("[messages] Contact-Link-Annahme fehlgeschlagen:", contactError);
+      toast.error("Anfrage konnte nicht angenommen werden.");
+      return;
+    }
+
     // Konversation erstellen/oeffnen
     const p1 = user?.id < requesterId ? user?.id : requesterId;
     const p2 = user?.id < requesterId ? requesterId : user?.id;

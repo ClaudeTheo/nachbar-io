@@ -13,6 +13,7 @@ const eslintConfig = defineConfig([
     "build/**",
     "next-env.d.ts",
     // Local generated artifacts:
+    ".codex-logs/**",
     ".vercel/**",
     "coverage/**",
     "playwright-report/**",

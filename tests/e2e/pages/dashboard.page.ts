@@ -41,12 +41,12 @@ export class DashboardPage {
 
   async navigateVia(section: "home" | "map" | "help" | "care" | "inbox" | "profile") {
     const labels: Record<string, string> = {
-      home: "Home",
-      map: "Karte",
-      help: "Hilfe",
-      care: "Pflege",
+      home: "Start",
+      map: "Quartier",
+      help: "Quartier",
+      care: "Gesundheit",
       inbox: "Inbox",
-      profile: "Profil",
+      profile: "Ich",
     };
     await this.bottomNav.getByText(labels[section]).click();
     await waitForStableUI(this.page);

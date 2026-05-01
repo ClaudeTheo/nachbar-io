@@ -1,4 +1,4 @@
-// Nachbar.io — Page Object: Registrierungs-Seite (2-Schritt Magic-Link-Flow)
+// Nachbar.io — Page Object: Registrierungs-Seite (4-Schritt Magic-Link-Flow)
 // Flow: Entry → [Invite-Code ODER Adresse] → Identity → KI-Consent → Magic Link gesendet
 import { Page, Locator, expect } from "@playwright/test";
 import { TIMEOUTS } from "../helpers/test-config";
@@ -24,10 +24,15 @@ export class RegisterPage {
   readonly lastNameInput: Locator;
   readonly dateOfBirthInput: Locator;
   readonly emailInput: Locator;
+  readonly continueToPilotRoleButton: Locator;
+
+  // Schritt 3: Pilot-Rolle
+  readonly testRoleButton: Locator;
   readonly continueToAiConsentButton: Locator;
 
-  // Schritt 3: KI-Consent
+  // Schritt 4: KI-Consent
   readonly decideAiLaterButton: Locator;
+  readonly submitAiChoiceButton: Locator;
 
   // Bestaetigung: Magic Link gesendet
   readonly resendLinkButton: Locator;
@@ -62,6 +67,14 @@ export class RegisterPage {
     this.lastNameInput = page.getByLabel("Nachname");
     this.dateOfBirthInput = page.getByLabel("Geburtsdatum");
     this.emailInput = page.getByLabel("E-Mail-Adresse");
+    this.continueToPilotRoleButton = page.getByRole("button", {
+      name: "Weiter zur Pilot-Rolle",
+    });
+
+    // Pilot-Rolle
+    this.testRoleButton = page.getByRole("button", {
+      name: /Ich probiere nur testweise/,
+    });
     this.continueToAiConsentButton = page.getByRole("button", {
       name: "Weiter zur KI-Auswahl",
     });
@@ -69,6 +82,9 @@ export class RegisterPage {
     // KI-Consent
     this.decideAiLaterButton = page.getByRole("button", {
       name: /Spaeter entscheiden|Später entscheiden/,
+    });
+    this.submitAiChoiceButton = page.getByRole("button", {
+      name: "Auswahl speichern und Link senden",
     });
 
     // Bestaetigung (OTP-Code-Eingabe)
@@ -81,12 +97,12 @@ export class RegisterPage {
     this.backButton = page.getByText("Zurück");
     this.errorMessage = page.locator(".text-emergency-red");
     this.loginLink = page.getByRole("link", { name: "Jetzt anmelden" });
-    this.stepIndicator = page.locator("text=/Schritt \\d+ von 3/");
+    this.stepIndicator = page.locator("text=/Schritt \\d+ von 4/");
   }
 
   async goto() {
     await this.page.goto("/register");
-    await this.page.getByText("Willkommen bei QuartierApp").waitFor({
+    await this.page.getByText("QuartierApp", { exact: true }).waitFor({
       state: "visible",
       timeout: TIMEOUTS.pageLoad,
     });
@@ -108,7 +124,7 @@ export class RegisterPage {
 
   // Pruefen, auf welchem Schritt wir sind (1 oder 2)
   async assertOnStep(step: number) {
-    await expect(this.page.getByText(`Schritt ${step} von 3`)).toBeVisible({
+    await expect(this.page.getByText(`Schritt ${step} von 4`)).toBeVisible({
       timeout: TIMEOUTS.elementVisible,
     });
   }
@@ -158,12 +174,19 @@ export class RegisterPage {
     await this.lastNameInput.fill(lastName);
     await this.dateOfBirthInput.fill(dateOfBirth);
     await this.emailInput.fill(email);
+    await this.continueToPilotRoleButton.click();
+    await this.testRoleButton.waitFor({
+      state: "visible",
+      timeout: TIMEOUTS.elementVisible,
+    });
+    await this.testRoleButton.click();
     await this.continueToAiConsentButton.click();
     await this.decideAiLaterButton.waitFor({
       state: "visible",
       timeout: TIMEOUTS.elementVisible,
     });
     await this.decideAiLaterButton.click();
+    await this.submitAiChoiceButton.click();
   }
 
   // Pruefen, dass OTP-Code-Eingabe angezeigt wird (Magic-Link-Bestaetigung)

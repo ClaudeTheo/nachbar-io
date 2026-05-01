@@ -44,7 +44,9 @@ test.describe("S7: Smoke / Regression Quick Pack", () => {
     const response = await page.goto("/register");
     expect(response?.status()).toBeLessThan(500);
 
-    await expect(page.getByText("Willkommen bei QuartierApp")).toBeVisible({
+    await expect(
+      page.getByText(/Willkommen bei QuartierApp|Geschlossener Pilot/i).first(),
+    ).toBeVisible({
       timeout: TIMEOUTS.pageLoad,
     });
 
@@ -71,8 +73,15 @@ test.describe("S7: Smoke / Regression Quick Pack", () => {
 
   test("S7.6 — API Health-Check", async ({ request }) => {
     const response = await request.get("/api/admin/health");
-    // 200 OK oder 401 Unauthorized — beides akzeptabel, 500 nicht
-    expect(response.status()).toBeLessThan(500);
+    // 200 OK/401 Unauthorized im offenen Testmodus, 503 closed_pilot im
+    // geschlossenen Pilotbetrieb. Echte 5xx-Serverfehler bleiben rot.
+    if (response.status() === 503) {
+      await expect(response.json()).resolves.toMatchObject({
+        status: "closed_pilot",
+      });
+    } else {
+      expect(response.status()).toBeLessThan(500);
+    }
     console.log(`[SMOKE] /api/admin/health → ${response.status()}`);
   });
 
@@ -95,7 +104,7 @@ test.describe("S7: Smoke / Regression Quick Pack", () => {
     }
   });
 
-  test("S7.8 — Auth-Protected Routes redirecten zu Login", async ({ page }) => {
+  test("S7.8 — Auth-Protected Routes redirecten kontrolliert", async ({ page }) => {
     const protectedPages = [
       "/dashboard",
       "/messages",
@@ -111,10 +120,13 @@ test.describe("S7: Smoke / Regression Quick Pack", () => {
 
     for (const path of protectedPages) {
       await page.goto(path);
-      // Entweder Redirect zu Login ODER Seite laed (wenn Dev-Mode ohne Auth)
+      // Entweder Redirect zu Login, Seite laed (Dev-Mode ohne Auth),
+      // oder Closed-Pilot-Gate leitet kontrolliert auf "/" um.
       const url = page.url();
       const isLoginOrPage =
-        url.includes("/login") || url.includes(path.replace("/", ""));
+        url.includes("/login") ||
+        url.includes(path.replace("/", "")) ||
+        new URL(url).pathname === "/";
       expect(isLoginOrPage).toBeTruthy();
     }
 

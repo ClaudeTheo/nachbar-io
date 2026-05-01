@@ -1,56 +1,70 @@
 // Nachbar.io — S6: Permission / Privacy Grenzen
 // Agent X (nicht verifiziert / nicht eingeloggt) versucht geschuetzte Bereiche zu oeffnen.
 import { test, expect } from "@playwright/test";
+import type { Page } from "@playwright/test";
 import { TIMEOUTS } from "../helpers/test-config";
 import { waitForStableUI } from "../helpers/observer";
+
+async function expectControlledUnauthRedirect(page: Page) {
+  await expect
+    .poll(() => page.url(), { timeout: TIMEOUTS.pageLoad })
+    .toMatch(/\/login|\/$/);
+
+  const url = new URL(page.url());
+  if (url.pathname === "/") {
+    await expect(
+      page.getByText(/Geschlossener Pilot in Vorbereitung/),
+    ).toBeVisible({ timeout: TIMEOUTS.elementVisible });
+  }
+}
 
 test.describe("S6: Permission / Privacy Grenzen", () => {
   test("S6.1 — Unauthentifizierter Zugriff auf Dashboard → Redirect zu Login", async ({ page }) => {
     await page.goto("/dashboard");
-    await expect(page).toHaveURL(/\/login/, { timeout: TIMEOUTS.pageLoad });
-    console.log("[X] /dashboard → Redirect zu /login ✓");
+    await expectControlledUnauthRedirect(page);
+    console.log("[X] /dashboard → Redirect kontrolliert ✓");
   });
 
   test("S6.2 — Unauthentifizierter Zugriff auf Messages → Redirect zu Login", async ({ page }) => {
     await page.goto("/messages");
-    await expect(page).toHaveURL(/\/login/, { timeout: TIMEOUTS.pageLoad });
-    console.log("[X] /messages → Redirect zu /login ✓");
+    await expectControlledUnauthRedirect(page);
+    console.log("[X] /messages → Redirect kontrolliert ✓");
   });
 
   test("S6.3 — Unauthentifizierter Zugriff auf Help → Redirect zu Login", async ({ page }) => {
     await page.goto("/help");
-    await expect(page).toHaveURL(/\/login/, { timeout: TIMEOUTS.pageLoad });
-    console.log("[X] /help → Redirect zu /login ✓");
+    await expectControlledUnauthRedirect(page);
+    console.log("[X] /help → Redirect kontrolliert ✓");
   });
 
   test("S6.4 — Unauthentifizierter Zugriff auf Admin → Redirect zu Login", async ({ page }) => {
     await page.goto("/admin");
-    await expect(page).toHaveURL(/\/login/, { timeout: TIMEOUTS.pageLoad });
-    console.log("[X] /admin → Redirect zu /login ✓");
+    await expectControlledUnauthRedirect(page);
+    console.log("[X] /admin → Redirect kontrolliert ✓");
   });
 
   test("S6.5 — Unauthentifizierter Zugriff auf Senior-Home → Redirect zu Login", async ({ page }) => {
     await page.goto("/senior/home");
-    await expect(page).toHaveURL(/\/login/, { timeout: TIMEOUTS.pageLoad });
-    console.log("[X] /senior/home → Redirect zu /login ✓");
+    await expectControlledUnauthRedirect(page);
+    console.log("[X] /senior/home → Redirect kontrolliert ✓");
   });
 
   test("S6.6 — Unauthentifizierter Zugriff auf Care → Redirect zu Login", async ({ page }) => {
     await page.goto("/care");
-    await expect(page).toHaveURL(/\/login/, { timeout: TIMEOUTS.pageLoad });
-    console.log("[X] /care → Redirect zu /login ✓");
+    await expectControlledUnauthRedirect(page);
+    console.log("[X] /care → Redirect kontrolliert ✓");
   });
 
   test("S6.7 — Unauthentifizierter Zugriff auf Profil → Redirect zu Login", async ({ page }) => {
     await page.goto("/profile");
-    await expect(page).toHaveURL(/\/login/, { timeout: TIMEOUTS.pageLoad });
-    console.log("[X] /profile → Redirect zu /login ✓");
+    await expectControlledUnauthRedirect(page);
+    console.log("[X] /profile → Redirect kontrolliert ✓");
   });
 
   test("S6.8 — Unauthentifizierter Zugriff auf Map → Redirect zu Login", async ({ page }) => {
     await page.goto("/map");
-    await expect(page).toHaveURL(/\/login/, { timeout: TIMEOUTS.pageLoad });
-    console.log("[X] /map → Redirect zu /login ✓");
+    await expectControlledUnauthRedirect(page);
+    console.log("[X] /map → Redirect kontrolliert ✓");
   });
 
   // Oeffentlich zugaengliche Seiten (DSGVO/TMG: muessen immer erreichbar sein)
@@ -84,7 +98,7 @@ test.describe("S6: Permission / Privacy Grenzen", () => {
     await page.goto("/register");
     await waitForStableUI(page);
     await expect(page).toHaveURL(/\/register/);
-    await expect(page.getByText("Willkommen bei QuartierApp")).toBeVisible();
+    await expect(page.getByText("QuartierApp", { exact: true })).toBeVisible();
     console.log("[X] /register → oeffentlich ✓");
   });
 

@@ -5,6 +5,9 @@
   "scripts": {
     "dev": "next dev --webpack",
     "dev:cloud": "node --env-file=.env.cloud-current.local ./node_modules/next/dist/bin/next dev --webpack",
+    "supabase:start": "supabase start",
+    "supabase:stop": "supabase stop",
+    "supabase:status": "supabase status",
     "build": "next build",
     "start": "next start",
     "lint": "eslint",

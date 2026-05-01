@@ -66,6 +66,7 @@ android/*.keystore
 # Codex CLI Logs (lokale Background-Tasks)
 .codex-*.log
 .codex-*.err.log
+.codex-logs/
 
 # Playwright CLI Cache
 .playwright-cli/

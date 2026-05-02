@@ -53,7 +53,7 @@ export function QuarterProvider({ children }: { children: ReactNode }) {
         .eq("user_id", user.id)
         .not("verified_at", "is", null)
         .limit(1)
-        .single();
+        .maybeSingle();
 
       const quarterId = (membership?.households as unknown as { quarter_id: string } | null)?.quarter_id;
       if (quarterId) {

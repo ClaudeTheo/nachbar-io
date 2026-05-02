@@ -107,7 +107,7 @@ export default function ChatPage() {
         .from("users")
         .select("display_name, avatar_url")
         .eq("id", resolvedOtherUserId)
-        .single();
+        .maybeSingle();
 
       if (otherUser) {
         setOtherUserName(
@@ -172,7 +172,7 @@ export default function ChatPage() {
             .from("users")
             .select("display_name, avatar_url")
             .eq("id", newMsg.sender_id)
-            .single();
+            .maybeSingle();
 
           const enrichedMsg: DirectMessage = {
             ...newMsg,

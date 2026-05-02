@@ -7,6 +7,14 @@ const mockPush = vi.fn();
 const mockFrom = vi.fn();
 const mockRemoveChannel = vi.fn();
 const mockFetch = vi.fn();
+const userQueryTerminals: string[] = [];
+let mockConversationRows: Array<{
+  id: string;
+  participant_1: string;
+  participant_2: string;
+  last_message_at: string | null;
+  created_at: string;
+}> = [];
 const mockAuthState: {
   user: { id: string } | null;
   loading: boolean;
@@ -117,9 +125,54 @@ function createSupabaseTableMock(table: string) {
     return {
       select: () => ({
         or: () => ({
-          order: async () => ({ data: [], error: null }),
+          order: async () => ({ data: mockConversationRows, error: null }),
         }),
       }),
+    };
+  }
+
+  if (table === "users") {
+    return {
+      select() {
+        return this;
+      },
+      eq() {
+        return this;
+      },
+      single: vi.fn().mockImplementation(() => {
+        userQueryTerminals.push("single");
+        return Promise.resolve({ data: null, error: null });
+      }),
+      maybeSingle: vi.fn().mockImplementation(() => {
+        userQueryTerminals.push("maybeSingle");
+        return Promise.resolve({ data: null, error: null });
+      }),
+    };
+  }
+
+  if (table === "direct_messages") {
+    return {
+      select() {
+        return this;
+      },
+      eq() {
+        return this;
+      },
+      neq() {
+        return this;
+      },
+      is() {
+        return Promise.resolve({ count: 0, error: null });
+      },
+      order() {
+        return this;
+      },
+      limit() {
+        return this;
+      },
+      maybeSingle: vi
+        .fn()
+        .mockResolvedValue({ data: { content: null }, error: null }),
     };
   }
 
@@ -129,6 +182,8 @@ function createSupabaseTableMock(table: string) {
 describe("MessagesPage", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    userQueryTerminals.length = 0;
+    mockConversationRows = [];
     mockAuthState.user = null;
     mockAuthState.loading = true;
     mockFrom.mockImplementation((table: string) => createSupabaseTableMock(table));
@@ -169,5 +224,51 @@ describe("MessagesPage", () => {
       "/api/contacts?status=pending",
       expect.objectContaining({ cache: "no-store" }),
     );
+  });
+
+  it("nutzt den API-Fallback fuer Profilnamen und vermeidet optionale Profil-single-Reads", async () => {
+    mockAuthState.user = { id: "target-user-1" };
+    mockAuthState.loading = false;
+    mockConversationRows = [
+      {
+        id: "conversation-1",
+        participant_1: "target-user-1",
+        participant_2: "requester-1",
+        last_message_at: "2026-04-16T08:00:00.000Z",
+        created_at: "2026-04-16T08:00:00.000Z",
+      },
+    ];
+    mockFetch.mockImplementation((input: RequestInfo | URL) => {
+      const url = String(input);
+      if (url.includes("/api/conversations")) {
+        return Promise.resolve({
+          ok: true,
+          status: 200,
+          text: async () =>
+            JSON.stringify([
+              {
+                id: "conversation-1",
+                peer_id: "requester-1",
+                peer_display_name: "Bernd M.",
+              },
+            ]),
+        });
+      }
+
+      return Promise.resolve({
+        ok: true,
+        status: 200,
+        text: async () => JSON.stringify([]),
+      });
+    });
+
+    render(<MessagesPage />);
+
+    await waitFor(() => {
+      expect(screen.getByText("Bernd M.")).toBeInTheDocument();
+    });
+
+    expect(userQueryTerminals).toContain("maybeSingle");
+    expect(userQueryTerminals).not.toContain("single");
   });
 });

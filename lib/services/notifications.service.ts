@@ -87,7 +87,21 @@ async function checkUserRelationship(
     return true;
   }
 
-  // 4. Gleiches Quartier (ueber household_members → households)
+  // 4. Akzeptierter Chat-Kontakt (auch quartieruebergreifend)
+  const { data: contactLink } = await supabase
+    .from("contact_links")
+    .select("requester_id")
+    .eq("status", "accepted")
+    .or(
+      `and(requester_id.eq.${senderId},addressee_id.eq.${recipientId}),and(addressee_id.eq.${senderId},requester_id.eq.${recipientId})`,
+    )
+    .limit(1);
+
+  if (contactLink && contactLink.length > 0) {
+    return true;
+  }
+
+  // 5. Gleiches Quartier (ueber household_members → households)
   const { data: senderQuarter } = await supabase
     .from("household_members")
     .select("households(quarter_id)")

@@ -271,6 +271,49 @@ describe("POST /api/notifications/create — H1 Beziehungscheck", () => {
       expect(response.status).toBe(200);
     });
 
+    it("erlaubt Notification bei akzeptiertem Kontakt auch quartieruebergreifend", async () => {
+      // 1. Kein Admin
+      mockSupabase.addResponse("users", {
+        data: { is_admin: false, role: "resident" },
+        error: null,
+      });
+
+      // 2. Kein gemeinsamer Haushalt
+      mockSupabase.addResponse("household_members", {
+        data: [{ household_id: "household-a" }],
+        error: null,
+      });
+      mockSupabase.addResponse("household_members", {
+        data: [],
+        error: null,
+      });
+
+      // 3. Kein Caregiver-Link
+      mockSupabase.addResponse("caregiver_links", {
+        data: [],
+        error: null,
+      });
+
+      // 4. Chat-Kontakt existiert und ist akzeptiert
+      mockSupabase.addResponse("contact_links", {
+        data: [{ requester_id: SENDER.id, addressee_id: RECIPIENT_FOREIGN }],
+        error: null,
+      });
+
+      // 5. Unterschiedliche Quartiere duerfen den akzeptierten Kontakt nicht blockieren
+      mockSupabase.addResponse("household_members", {
+        data: { households: { quarter_id: "quarter-a" } },
+        error: null,
+      });
+      mockSupabase.addResponse("household_members", {
+        data: { households: { quarter_id: "quarter-b" } },
+        error: null,
+      });
+
+      const response = await POST(createPostRequest(validNotificationBody()));
+      expect(response.status).toBe(200);
+    });
+
     it("erlaubt Notification bei gleichem Quartier", async () => {
       // 1. Kein Admin
       mockSupabase.addResponse("users", {

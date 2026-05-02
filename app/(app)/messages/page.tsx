@@ -79,7 +79,7 @@ export default function MessagesPage() {
           .from("users")
           .select("display_name, avatar_url")
           .eq("id", otherUserId)
-          .single();
+          .maybeSingle();
 
         // Letzte Nachricht laden
         const { data: lastMsg } = await supabase

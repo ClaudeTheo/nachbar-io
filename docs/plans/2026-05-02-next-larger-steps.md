@@ -95,8 +95,8 @@ Nicht ausfuehren:
 
 ## Empfohlene Reihenfolge
 
-1. Welle A lokal durchziehen.
-2. Falls lokal gruen: kleine Doku + Commit.
+1. Welle A lokal durchziehen. **Erledigt:** siehe `docs/plans/2026-05-02-local-pilot-smoke-wave-a.md`.
+2. Falls lokal gruen: kleine Doku + Commit. **Erledigt.**
 3. Mit Founder-Go pushen.
 4. CI abwarten.
 5. Welle B read-only gegen Production.

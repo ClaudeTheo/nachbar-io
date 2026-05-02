@@ -64,6 +64,9 @@ export function RegisterStepPilotRole({ state, setState, setStep }: StepProps) {
           Die QuartierApp lebt davon, dass Menschen im Quartier aufeinander achten.
           Ihre Rolle hilft uns, die App menschlicher und passender vorzubereiten.
         </p>
+        <p className="text-xs text-muted-foreground">
+          Sie können diese Auswahl später ändern.
+        </p>
       </div>
 
       <div className="rounded-xl border border-rose-100 bg-rose-50/70 p-3">
@@ -130,7 +133,7 @@ export function RegisterStepPilotRole({ state, setState, setStep }: StepProps) {
             key={role}
             type="button"
             onClick={() => chooseRole(role)}
-            className={`w-full rounded-lg border-2 p-4 text-left transition-colors ${
+            className={`min-h-[80px] w-full rounded-lg border-2 p-4 text-left transition-colors ${
               state.pilotRole === role
                 ? "border-quartier-green bg-quartier-green/5"
                 : "border-border hover:border-quartier-green/50"
@@ -168,7 +171,7 @@ export function RegisterStepPilotRole({ state, setState, setStep }: StepProps) {
         type="button"
         disabled={!state.pilotRole}
         onClick={continueToAiConsent}
-        className="w-full bg-quartier-green hover:bg-quartier-green-dark"
+        className="min-h-14 w-full bg-quartier-green hover:bg-quartier-green-dark"
       >
         Weiter zur KI-Auswahl
       </Button>

@@ -72,7 +72,7 @@ export function RegisterStepIdentity({ state, setState, setStep }: StepProps) {
         onChange={(e) => setHoneypot(e.target.value)}
         tabIndex={-1}
         autoComplete="off"
-        style={{ position: "absolute", left: "-9999px", opacity: 0, height: 0 }}
+        className="absolute -left-[9999px] h-0 opacity-0"
         aria-hidden="true"
         data-testid="register-extra"
       />
@@ -115,7 +115,7 @@ export function RegisterStepIdentity({ state, setState, setStep }: StepProps) {
             required
             autoComplete="given-name"
             autoFocus
-            style={{ minHeight: "52px" }}
+            className="min-h-[52px]"
           />
         </div>
         <div>
@@ -130,7 +130,7 @@ export function RegisterStepIdentity({ state, setState, setStep }: StepProps) {
             placeholder="z.B. Theobald"
             required
             autoComplete="family-name"
-            style={{ minHeight: "52px" }}
+            className="min-h-[52px]"
           />
         </div>
       </div>
@@ -146,7 +146,7 @@ export function RegisterStepIdentity({ state, setState, setStep }: StepProps) {
           onChange={(e) => setState({ dateOfBirth: e.target.value })}
           required
           autoComplete="bday"
-          style={{ minHeight: "52px" }}
+          className="min-h-[52px]"
         />
         <p className="mt-1 text-xs text-muted-foreground">
           Das Geburtsdatum hilft bei Verantwortung und eindeutiger Zuordnung im Test.

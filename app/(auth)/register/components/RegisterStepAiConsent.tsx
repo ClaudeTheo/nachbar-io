@@ -230,7 +230,7 @@ export function RegisterStepAiConsent({
       </p>
 
       {needsExplicitAiConsent && (
-        <label className="flex gap-3 rounded-xl border border-quartier-green/25 bg-quartier-green/5 p-3 text-sm text-anthrazit">
+        <label className="flex min-h-[80px] gap-3 rounded-xl border border-quartier-green/25 bg-quartier-green/5 p-3 text-sm text-anthrazit">
           <input
             type="checkbox"
             checked={aiConsentConfirmed}
@@ -256,7 +256,7 @@ export function RegisterStepAiConsent({
         type="button"
         disabled={!canSubmit}
         onClick={submit}
-        className="w-full bg-quartier-green hover:bg-quartier-green-dark"
+        className="min-h-14 w-full bg-quartier-green hover:bg-quartier-green-dark"
       >
         Auswahl speichern und Link senden
       </Button>
@@ -265,7 +265,7 @@ export function RegisterStepAiConsent({
         type="button"
         onClick={() => {
           setState({ error: null });
-          setStep("identity");
+          setStep("pilot_role");
         }}
         className="flex w-full items-center justify-center gap-1 text-sm text-muted-foreground hover:underline"
       >

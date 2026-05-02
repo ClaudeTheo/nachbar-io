@@ -43,4 +43,19 @@ describe("RegisterStepIdentity", () => {
     expect(screen.getByText(/Vertrauen, Sicherheit und Pilot-Zuordnung/i)).toBeInTheDocument();
     expect(screen.queryByText(/Klarname ist nicht erforderlich/i)).not.toBeInTheDocument();
   });
+
+  it("vermeidet Inline-Styles im Preview-kritischen Formular", () => {
+    render(
+      <RegisterStepIdentity
+        state={buildState()}
+        setState={vi.fn()}
+        setStep={vi.fn()}
+      />,
+    );
+
+    expect(screen.getByTestId("register-extra")).not.toHaveAttribute("style");
+    expect(screen.getByLabelText("Vorname")).toHaveClass("min-h-[52px]");
+    expect(screen.getByLabelText("Nachname")).toHaveClass("min-h-[52px]");
+    expect(screen.getByLabelText("Geburtsdatum")).toHaveClass("min-h-[52px]");
+  });
 });

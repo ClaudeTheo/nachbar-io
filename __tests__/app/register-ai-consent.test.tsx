@@ -143,6 +143,28 @@ describe("RegisterStepAiConsent — Polish 2026-04-27", () => {
     expect(submit).toBeEnabled();
   });
 
+  it("macht die ausdrueckliche KI-Einwilligung als grosses Touch-Ziel bedienbar", async () => {
+    const user = userEvent.setup();
+    render(<StatefulAiConsent />);
+
+    await user.click(screen.getByRole("button", { name: /^Basis/i }));
+
+    const checkbox = screen.getByRole("checkbox", {
+      name: /Ich willige freiwillig ein/i,
+    });
+    expect(checkbox.closest("label")).toHaveClass("min-h-[80px]");
+  });
+
+  it("geht von der KI-Auswahl zurueck zur Pilot-Rolle", async () => {
+    const user = userEvent.setup();
+    const setStep = vi.fn();
+    render(<StatefulAiConsent onStep={setStep} />);
+
+    await user.click(screen.getByRole("button", { name: "Zurück" }));
+
+    expect(setStep).toHaveBeenCalledWith("pilot_role");
+  });
+
   it("Aus und Spaeter entscheiden brauchen keine KI-Einwilligungs-Checkbox", async () => {
     const user = userEvent.setup();
     render(<StatefulAiConsent />);

@@ -61,6 +61,7 @@ describe("RegisterStepPilotRole", () => {
       screen.getByText("Wie nutzen Sie die QuartierApp im Pilot?"),
     ).toBeInTheDocument();
     expect(screen.getByText(/Menschen im Quartier aufeinander achten/i)).toBeInTheDocument();
+    expect(screen.getByText(/Sie können diese Auswahl später ändern/i)).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Rollen und Pilot erklären" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /Ich nutze die App für mich/i })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /Ich unterstütze jemanden/i })).toBeInTheDocument();

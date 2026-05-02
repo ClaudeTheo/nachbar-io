@@ -99,12 +99,13 @@ Nicht ausfuehren:
 2. Falls lokal gruen: kleine Doku + Commit. **Erledigt.**
 3. Mit Founder-Go pushen.
 4. CI abwarten.
-5. Welle B read-only gegen Production.
+5. Welle B read-only gegen Production. **Erledigt:** siehe `docs/plans/2026-05-02-production-readiness-wave-b.md`.
 6. Danach erst Welle C UI/Onboarding.
 
 ## Aktueller Ausgangspunkt
 
 - `master` synchron mit `origin/master`.
 - Production steht auf `37b3bb5`.
-- CI fuer `37b3bb5` ist gruen.
+- Remote-Head steht inzwischen auf reinen Doku-Follow-ups nach `37b3bb5`; kein Runtime-Deploy noetig.
+- CI fuer `37b3bb5`, `0de5eb8` und `ba811ee` ist gruen.
 - Letzter App-Fix: `630fe9e fix(chat): allow contact notification delivery`.

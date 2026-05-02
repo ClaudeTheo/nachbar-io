@@ -1,6 +1,6 @@
 # Session-Handover fuer 2026-05-02
 
-Stand: 2026-05-01 nach Push von lokaler Smoke-Angleichung und Bad-Saeckingen-Link-Fix.
+Stand: 2026-05-02 nach lokaler Stabilisierung der Multi-Agent-E2E-Flows.
 
 ## Harte Linien
 
@@ -16,16 +16,16 @@ Stand: 2026-05-01 nach Push von lokaler Smoke-Angleichung und Bad-Saeckingen-Lin
 - Workspace: `C:\Users\thoma\Claud Code\Handy APP\nachbar-io`
 - Branch: `master`
 - Remote: `origin/master`
-- Working Tree nach Push: clean
-- Lokal/Remote: synchron
+- Working Tree nach lokalem Commit: clean
+- Lokal/Remote: lokal ahead 2, nicht gepusht
 
 Letzte relevante Commits:
 
+- `b0f706b fix(e2e): stabilize local multi-agent flows` (lokal, nicht gepusht)
+- `2d9ed3e docs(handoff): add may 2 session handover` (lokal, nicht gepusht)
 - `526ab8a fix(municipal): normalize bad saeckingen links`
 - `9456511 fix(e2e): align local smoke coverage`
 - `abafca4 fix(info-hub): update Bad Saeckingen service links`
-- `7c0a15f docs(handoff): record production deploy lessons`
-- `41aaf9b fix(e2e): normalize local supabase smoke env`
 
 ## Was heute erledigt wurde
 
@@ -63,6 +63,37 @@ Online gepruefte Ziel-URLs:
 - `https://www.bad-saeckingen.de/rathaus-service/aktuelles/neuigkeiten` -> 200, redirect auf Listenansicht
 - `https://www.bad-saeckingen.de/leben-wohnen/veranstaltungen` -> 200, redirect auf Listenansicht
 
+### Lokale Multi-Agent-E2E-Stabilisierung
+
+Ausgangslage:
+
+- GitHub Actions war nach Push `526ab8a` oeffentlich als rot sichtbar: CodeQL gruen, `E2E Multi-Agent Tests` rot.
+- `gh` war in dieser Shell nicht authentifiziert, daher keine CI-Logs via CLI.
+- Lokaler Repro gegen `npm run start:local` zeigte zunaechst 92 passed, 1 skipped, 1 failed: `S12.1 Kontaktanfrage -> Annahme -> Chat`.
+
+Fixes:
+
+- `app/api/quarter/residents/request/route.ts` nutzt fuer die fremde Haushalt-/Quartier-Aufloesung jetzt `getAdminSupabase()`. Auth bleibt vorher ueber User-Client geprueft; Service erzwingt Quarter-Scope.
+- `app/(app)/messages/page.tsx` nutzt fuer Kontaktanfragen jetzt die bestehende Chat-/Contacts-API (`listContacts`, `updateContactStatus`, `openConversation`) statt direkt `neighbor_connections`/`contact_links` zu mischen.
+- `app/(app)/messages/[id]/page.tsx` nutzt `listConversations()` als RLS-sicheren Fallback fuer Anzeigenamen im Chat-Header.
+- `app/(app)/help/page.tsx` laedt Hilfe-Gesuche ueber die vorhandene API `/api/hilfe/requests` statt direkt per Supabase-Client am Quartier-Kontext haengenzubleiben.
+- `app/(app)/help/new/page.tsx` erstellt Hilfe-Gesuche ueber `/api/hilfe/requests`.
+- `app/api/hilfe/requests/route.ts` leitet fehlende `quarter_id` serverseitig aus der Haushaltsmitgliedschaft ab. Die eigentliche Erstellung laeuft weiterhin ueber den authentifizierten User-Client/RLS.
+- `lib/quarters/helpers.ts` liest die Haushaltsmitgliedschaft ohne `verified_at`-Filter, weil lokale E2E-Seeds Mitgliedschaften teilweise erst nachtraeglich patchen und der Hilfegesuch-Pfad sonst mit `quarter_id ist erforderlich` scheitert.
+- `modules/hilfe/services/hilfe-requests.service.ts` uebernimmt `subcategory` und `expires_at`, damit `/help/new` keine Felder verliert.
+- `tests/e2e/scenarios/s3-chat.spec.ts` zaehlt beim Anti-Duplikat-Check nur echte `[data-testid='chat-message']`, nicht verschachtelte Layout-Container.
+
+Regressionstests:
+
+- `__tests__/api/quarter/residents-request.test.ts`
+- `__tests__/app/messages/page.test.tsx`
+- `__tests__/api/hilfe/requests.test.ts`
+- `__tests__/app/help/page.test.tsx`
+
+Lokaler Commit:
+
+- `b0f706b fix(e2e): stabilize local multi-agent flows`
+
 ## Verifikation heute
 
 Gezielt ausgefuehrt:
@@ -86,6 +117,31 @@ Vorher in derselben Arbeitswelle bereits gruen:
 - E2E-Follow-up-Smoke S8/S9: 7 Tests passed.
 - `build:local`: gruen.
 
+Nach der Multi-Agent-Stabilisierung frisch ausgefuehrt:
+
+```powershell
+npx vitest run __tests__/api/hilfe/requests.test.ts __tests__/app/help/page.test.tsx
+npx vitest run __tests__/api/quarter/residents-request.test.ts __tests__/app/messages/page.test.tsx
+npm run build:local
+npx eslint 'app/(app)/messages/page.tsx' 'app/(app)/messages/[id]/page.tsx' 'app/api/quarter/residents/request/route.ts' 'app/(app)/help/page.tsx' 'app/(app)/help/new/page.tsx' 'app/api/hilfe/requests/route.ts' 'lib/quarters/helpers.ts' 'modules/hilfe/services/hilfe-requests.service.ts' '__tests__/app/messages/page.test.tsx' '__tests__/api/quarter/residents-request.test.ts' '__tests__/app/help/page.test.tsx' '__tests__/api/hilfe/requests.test.ts' 'tests/e2e/scenarios/s3-chat.spec.ts' --no-warn-ignored
+npx tsc --noEmit
+npx playwright test --config=tests/e2e/playwright.config.ts --project=multi-agent --project=senior-terminal --workers=1 --timeout=60000
+```
+
+Ergebnis:
+
+- Vitest Hilfe/API: gruen.
+- Vitest Messages/Resident Request: gruen.
+- `build:local`: gruen.
+- ESLint: gruen.
+- TypeScript: gruen.
+- Breite E2E-Suite: 94 passed.
+
+Bekannte Test-Noise:
+
+- Viele 406-Console-Errors aus Supabase `.single()`/leeren optionalen Reads bleiben sichtbar.
+- Notification-Erstellung meldet in Chat-Flows teils 403 `Keine Berechtigung fuer diesen Empfaenger`; blockiert die getesteten Nutzerfluesse nicht.
+
 ## Wichtige offene Punkte
 
 ### CI/Deploy-Status pruefen
@@ -106,6 +162,12 @@ gh run list --limit 10
 ```
 
 Wenn `gh` weiter nicht authentifiziert ist: GitHub Actions im Browser pruefen.
+
+Aktueller wichtiger Zusatz:
+
+- Die lokalen Commits `2d9ed3e` und `b0f706b` sind noch nicht gepusht.
+- Push auf `master` braucht Founder-Go.
+- CI kann fuer `b0f706b` erst laufen, wenn gepusht wurde.
 
 ### Production-Smoke nach Deploy
 
@@ -133,33 +195,54 @@ Gesucht: keine `SECURITY_E2E_BYPASS`, kein `E2E_TEST_SECRET` in Production/Previ
 
 ## Morgen: sinnvolle Reihenfolge
 
-1. Repo/CI-Stand klaeren:
+1. Repo-Stand klaeren:
    - `git status --short --branch`
-   - GitHub Actions Status fuer Push `526ab8a`
+   - Erwartung aktuell: `master...origin/master [ahead 2]`
+   - `git log --oneline -5`
+
+2. Founder-Entscheidung einholen:
+   - Soll `b0f706b` zusammen mit `2d9ed3e` nach `origin/master` gepusht werden?
+   - Ohne Founder-Go: nicht pushen.
+
+3. Falls Founder-Go fuer Push:
+   - `git push origin master`
+   - Danach GitHub Actions Status fuer `b0f706b` pruefen.
    - Vercel Deployment Status
 
-2. Production-Basis-Smoke:
+4. Production-Basis-Smoke nur nach erfolgreichem Remote-Deploy:
    - Startseite, Login, Register
    - Admin nur als Founder
    - Keine Vercel-Env-Aenderung, keine DB-Aenderung
 
-3. Quartier-Link-Smoke:
+5. Quartier-Link-Smoke:
    - `Rathaus & Infos` / Services
    - Wiki-Links in City Services
    - `/quartier-info` Rathaus-Links
    - Mangelmelder-Hinweislinks
 
-4. Breitere Bereichstests fortsetzen:
+6. Breitere Bereichstests fortsetzen:
    - Auth/Registration/Invite
    - Dashboard/Senior Mode
    - Hilfe/Marktplatz/Meldungen
    - Care/Check-in/SOS nur mit synthetischen Testdaten
    - Admin/Audit/Feature-Flags nur lesend
 
-5. Danach entscheiden:
+7. Danach entscheiden:
    - Wenn CI + Production-Smoke gruen: Stand als deploybar dokumentieren.
    - Wenn Links in Production trotz Code-Fix kaputt bleiben: pruefen, ob die betroffene UI die Normalizer-Schicht umgeht oder ob eine DB-Seite/HTML-Route ausserhalb der App betroffen ist.
    - Prod-Migrationen 176/177 bleiben aus, bis Founder explizit neues Go gibt.
+
+## Naechster Auftrag an Codex
+
+Wenn diese Uebergabe die naechste Session startet, soll Codex:
+
+1. **Nicht deployen und nicht pushen**, bis Thomas explizit Go gibt.
+2. `git status --short --branch` ausfuehren und bestaetigen, dass lokal `ahead 2` erwartet ist.
+3. `gh auth status` pruefen; falls nicht authentifiziert, GitHub Actions im Browser/ueber oeffentliche API pruefen.
+4. Thomas kurz fragen oder auf sein Go warten: "Soll ich die zwei lokalen Commits nach `origin/master` pushen?"
+5. Bei Push-Go: pushen, CI verfolgen, danach nur lesende Production-Smokes ausfuehren.
+6. Wenn CI erneut rot ist: zuerst Logs/Artefakte lesen, keine neuen Fixes ohne Root-Cause.
+7. Falls kein Push-Go kommt: lokal weiter nur an verifizierbaren, gruenen Aufgaben arbeiten.
 
 ## Befehle fuer lokale Wiederaufnahme
 
@@ -178,6 +261,9 @@ E2E in zweiter Shell:
 ```powershell
 cd "C:\Users\thoma\Claud Code\Handy APP\nachbar-io"
 $env:E2E_BASE_URL="http://localhost:3001"
+$env:E2E_LIVE="true"
+$env:E2E_CLEANUP="true"
+$env:E2E_TEST_SECRET="e2e-test-secret-dev"
 npx playwright test --config=tests/e2e/playwright.config.ts --project=multi-agent --workers=1 --timeout=60000
 ```
 

@@ -39,6 +39,7 @@ export function ConsentFeatureCard({
           ? "border-quartier-green bg-quartier-green/5"
           : "border-border bg-white"
       } ${disabled ? "opacity-50 cursor-not-allowed" : ""}`}
+      style={{ minHeight: "80px", touchAction: "manipulation" }}
     >
       <Icon
         className={`h-8 w-8 flex-shrink-0 ${granted ? "text-quartier-green" : "text-muted-foreground"}`}

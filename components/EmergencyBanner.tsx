@@ -89,6 +89,7 @@ export function EmergencyBanner({ onAcknowledge }: EmergencyBannerProps) {
             ref={firstFocusRef}
             href="tel:112"
             className="flex items-center justify-center gap-3 rounded-lg border-2 border-emergency-red p-4 text-lg font-bold text-emergency-red transition-colors hover:bg-red-50"
+            style={{ minHeight: "80px", touchAction: "manipulation" }}
           >
             <Phone className="h-6 w-6" aria-hidden="true" />
             112 — Feuerwehr / Rettungsdienst
@@ -96,6 +97,7 @@ export function EmergencyBanner({ onAcknowledge }: EmergencyBannerProps) {
           <a
             href="tel:110"
             className="flex items-center justify-center gap-3 rounded-lg border-2 border-emergency-red p-4 text-lg font-bold text-emergency-red transition-colors hover:bg-red-50"
+            style={{ minHeight: "80px", touchAction: "manipulation" }}
           >
             <Phone className="h-6 w-6" aria-hidden="true" />
             110 — Polizei
@@ -114,12 +116,14 @@ export function EmergencyBanner({ onAcknowledge }: EmergencyBannerProps) {
           <button
             onClick={() => onAcknowledge(true)}
             className="w-full rounded-lg border-2 border-green-600 bg-green-50 px-4 py-3 text-sm font-semibold text-green-800 transition-colors hover:bg-green-100"
+            style={{ minHeight: "80px", touchAction: "manipulation" }}
           >
             Ich habe 112/110 angerufen — Nachbarn zusätzlich informieren
           </button>
           <button
             onClick={() => onAcknowledge(false)}
             className="w-full rounded-lg border-2 border-gray-300 px-4 py-3 text-sm font-medium text-muted-foreground transition-colors hover:bg-gray-50"
+            style={{ minHeight: "80px", touchAction: "manipulation" }}
           >
             Kein Notruf nötig — nur Nachbarschaftshilfe
           </button>

@@ -91,4 +91,21 @@ describe("EmergencyBanner", () => {
     expect(links[0]).toHaveAttribute("href", "tel:112");
     expect(links[1]).toHaveAttribute("href", "tel:110");
   });
+
+  it("Notfall-Aktionen haben 80px Touch-Ziele", () => {
+    render(<EmergencyBanner onAcknowledge={vi.fn()} />);
+
+    expect(screen.getByText(/112 — Feuerwehr/).closest("a")).toHaveStyle({
+      minHeight: "80px",
+    });
+    expect(screen.getByText(/110 — Polizei/).closest("a")).toHaveStyle({
+      minHeight: "80px",
+    });
+    expect(screen.getByText(/Ich habe 112\/110 angerufen/i)).toHaveStyle({
+      minHeight: "80px",
+    });
+    expect(screen.getByText(/Kein Notruf nötig/i)).toHaveStyle({
+      minHeight: "80px",
+    });
+  });
 });

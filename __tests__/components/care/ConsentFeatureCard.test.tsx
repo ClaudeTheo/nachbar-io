@@ -67,4 +67,21 @@ describe("ConsentFeatureCard", () => {
     fireEvent.click(screen.getByRole("checkbox"));
     expect(onChange).toHaveBeenCalledWith("sos", true);
   });
+
+  it("hat ein 80px Touch-Ziel fuer Senior- und Care-Nutzung", () => {
+    render(
+      <ConsentFeatureCard
+        feature="sos"
+        label="SOS-Hilferufe"
+        description="Test"
+        granted={false}
+        disabled={false}
+        onChange={vi.fn()}
+      />,
+    );
+
+    expect(screen.getByText("SOS-Hilferufe").closest("label")).toHaveStyle({
+      minHeight: "80px",
+    });
+  });
 });

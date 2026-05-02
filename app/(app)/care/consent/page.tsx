@@ -170,8 +170,8 @@ export default function CareConsentPage() {
         <div className="text-sm text-anthrazit/80">
           <p>
             Ihre Gesundheitsdaten (Art. 9 DSGVO) werden nur mit Ihrer
-            ausdrücklichen Einwilligung verarbeitet. Sie können jede
-            Einwilligung jederzeit widerrufen.
+            ausdrücklichen und freiwilligen Einwilligung verarbeitet. Sie
+            können jede Einwilligung jederzeit widerrufen.
           </p>
         </div>
       </div>

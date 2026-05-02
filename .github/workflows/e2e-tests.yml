@@ -9,16 +9,13 @@ on:
   workflow_dispatch:
 
 env:
-  NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
-  NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
-  SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
   E2E_CLEANUP: "true"
 
 jobs:
   e2e-smoke:
     name: Smoke Tests (S7)
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
 
@@ -34,6 +31,26 @@ jobs:
       - name: Install Playwright browsers
         run: npx playwright install --with-deps chromium
 
+      - name: Start local Supabase
+        run: npx supabase start
+
+      - name: Configure local Supabase env
+        shell: bash
+        run: |
+          eval "$(
+            npx supabase status -o env \
+              --override-name api.url=NEXT_PUBLIC_SUPABASE_URL \
+              --override-name auth.anon_key=NEXT_PUBLIC_SUPABASE_ANON_KEY \
+              --override-name auth.service_role_key=SUPABASE_SERVICE_ROLE_KEY \
+              | grep -E '^(NEXT_PUBLIC_SUPABASE_URL|NEXT_PUBLIC_SUPABASE_ANON_KEY|SUPABASE_SERVICE_ROLE_KEY)='
+          )"
+
+          {
+            echo "NEXT_PUBLIC_SUPABASE_URL=$NEXT_PUBLIC_SUPABASE_URL"
+            echo "NEXT_PUBLIC_SUPABASE_ANON_KEY=$NEXT_PUBLIC_SUPABASE_ANON_KEY"
+            echo "SUPABASE_SERVICE_ROLE_KEY=$SUPABASE_SERVICE_ROLE_KEY"
+          } >> "$GITHUB_ENV"
+
       - name: Build application
         run: npm run build
         env:
@@ -44,6 +61,10 @@ jobs:
         run: npx playwright test --config=tests/e2e/playwright.config.ts --project=smoke
         env:
           RESIDENT_HASH_SECRET: ci-test-secret-not-real
+
+      - name: Stop local Supabase
+        if: always()
+        run: npx supabase stop --no-backup
 
       - name: Upload test report
         if: always()
@@ -75,6 +96,26 @@ jobs:
       - name: Install Playwright browsers
         run: npx playwright install --with-deps chromium
 
+      - name: Start local Supabase
+        run: npx supabase start
+
+      - name: Configure local Supabase env
+        shell: bash
+        run: |
+          eval "$(
+            npx supabase status -o env \
+              --override-name api.url=NEXT_PUBLIC_SUPABASE_URL \
+              --override-name auth.anon_key=NEXT_PUBLIC_SUPABASE_ANON_KEY \
+              --override-name auth.service_role_key=SUPABASE_SERVICE_ROLE_KEY \
+              | grep -E '^(NEXT_PUBLIC_SUPABASE_URL|NEXT_PUBLIC_SUPABASE_ANON_KEY|SUPABASE_SERVICE_ROLE_KEY)='
+          )"
+
+          {
+            echo "NEXT_PUBLIC_SUPABASE_URL=$NEXT_PUBLIC_SUPABASE_URL"
+            echo "NEXT_PUBLIC_SUPABASE_ANON_KEY=$NEXT_PUBLIC_SUPABASE_ANON_KEY"
+            echo "SUPABASE_SERVICE_ROLE_KEY=$SUPABASE_SERVICE_ROLE_KEY"
+          } >> "$GITHUB_ENV"
+
       - name: Build application
         run: npm run build
         env:
@@ -88,6 +129,10 @@ jobs:
           RESIDENT_HASH_SECRET: ci-test-secret-not-real
           CARE_ENCRYPTION_KEY: ${{ secrets.CARE_ENCRYPTION_KEY }}
           E2E_TEST_SECRET: e2e-test-secret-dev
+
+      - name: Stop local Supabase
+        if: always()
+        run: npx supabase stop --no-backup
 
       - name: Upload test report
         if: always()

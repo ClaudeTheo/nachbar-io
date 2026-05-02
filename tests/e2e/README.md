@@ -173,15 +173,14 @@ E2E_CLEANUP=true npx playwright test --config=tests/e2e/playwright.config.ts glo
 
 Die Datei `.github/workflows/e2e-tests.yml` definiert zwei Jobs:
 
-1. **e2e-smoke**: Schnelle Regressionstests (immer, ohne Supabase)
-2. **e2e-multi-agent**: Volle Multi-Agent Suite (nur wenn Secrets gesetzt)
+1. **e2e-smoke**: Schnelle Regressionstests gegen lokalen Supabase-Stack
+2. **e2e-multi-agent**: Volle Multi-Agent Suite gegen lokalen Supabase-Stack
 
-### Secrets konfigurieren
+### CI-Umgebung
 
-In GitHub Settings > Secrets and Variables > Actions:
-- `NEXT_PUBLIC_SUPABASE_URL`
-- `NEXT_PUBLIC_SUPABASE_ANON_KEY`
-- `SUPABASE_SERVICE_ROLE_KEY`
+Die E2E-Jobs starten `npx supabase start` und exportieren die lokalen
+Supabase-Variablen via `supabase status -o env`. Die Suite nutzt dadurch keine
+Production- oder Preview-Supabase-Secrets.
 
 ### Artifacts
 

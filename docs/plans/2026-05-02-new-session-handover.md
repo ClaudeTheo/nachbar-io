@@ -16,6 +16,17 @@ Diese Datei ist fuer eine neue Codex-Session gedacht. Erst diese Datei lesen, da
 - Keine AI-Test-User oder andere Daten in Production loeschen.
 - Keine Windows-Prebuild-Production-Deploys fuer iteratives Testen.
 
+## Founder-Go Nachtrag
+
+Thomas hat nach Erstellung dieser Uebergabe explizit ergaenzt:
+
+- Push-Go fuer Welle C liegt vor.
+- `git push origin master` ist OK.
+- Live-Stand bleibt `37b3bb5`, bis Thomas oder Codex in einer spaeteren Runde explizit Deploy-Go geben.
+- CI laufen lassen, abwarten und das gruene Resultat dokumentieren.
+- Welle D, Senior/Care Spot-Check, ist als naechster Block freigegeben.
+- Welle D bleibt im gleichen Polish-Modus: kein Care-Daten-Touch, RED/GREEN-Disziplin halten.
+
 ## Repo-Stand
 
 - Workspace: `C:\Users\thoma\Claud Code\Handy APP\nachbar-io`
@@ -256,7 +267,7 @@ Arbeitsweise:
 - Kleine, lokal verifizierbare Patches.
 - Nach Aenderung: Vitest der betroffenen Tests, ESLint der betroffenen Dateien, `npx tsc --noEmit`, bei UI `build:local` und Browser-Preview.
 - Lokal committen nach gruenem Stand.
-- Push nur mit Founder-Go. Ein frueheres Push-Go lag in dieser Session vor, aber in einer neuen Session im Zweifel kurz bestaetigen lassen.
+- Push fuer diesen Arbeitsstrang ist freigegeben; trotzdem vor Deploy immer gesondert stoppen und Founder-Go einholen.
 
 ## Was nicht als Naechstes tun
 

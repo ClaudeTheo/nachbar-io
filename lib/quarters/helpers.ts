@@ -12,9 +12,8 @@ export async function getUserQuarterId(
     .from("household_members")
     .select("households(quarter_id)")
     .eq("user_id", userId)
-    .not("verified_at", "is", null)
     .limit(1)
-    .single();
+    .maybeSingle();
 
   return (data?.households as unknown as { quarter_id: string } | null)?.quarter_id ?? null;
 }

@@ -8,8 +8,6 @@ import { PageHeader } from "@/components/ui/page-header";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
-import { createClient } from "@/lib/supabase/client";
-import { useQuarter } from "@/lib/quarters";
 import { HELP_CATEGORIES, HELP_SUBCATEGORIES } from "@/lib/constants";
 import type { HelpRequest } from "@/lib/supabase/types";
 import { formatDistanceToNow } from "date-fns";
@@ -21,34 +19,48 @@ export default function HelpPage() {
   const [filterCategory, setFilterCategory] = useState<string | null>(null);
   const [showFilter, setShowFilter] = useState(false);
   const [loading, setLoading] = useState(true);
-  const { currentQuarter } = useQuarter();
 
   useEffect(() => {
-    if (!currentQuarter) return;
+    let cancelled = false;
+
     async function load() {
       try {
-        const supabase = createClient();
-        const { data, error } = await supabase
-          .from("help_requests")
-          .select("*, user:users(display_name, avatar_url)")
-          .eq("quarter_id", currentQuarter!.id)
-          .eq("status", "active")
-          .gte("expires_at", new Date().toISOString())
-          .order("created_at", { ascending: false });
-        if (error) {
+        const response = await fetch("/api/hilfe/requests", {
+          cache: "no-store",
+        });
+
+        if (!response.ok) {
           toast.error("Hilfe-Börse konnte nicht geladen werden.");
           return;
         }
-        if (data) setRequests(data as unknown as HelpRequest[]);
+
+        const text = await response.text();
+        const data = text ? JSON.parse(text) : [];
+        if (!Array.isArray(data)) {
+          toast.error("Hilfe-Börse konnte nicht geladen werden.");
+          return;
+        }
+
+        const now = new Date();
+        const activeRequests = (data as HelpRequest[]).filter((request) => {
+          if (!request.expires_at) return true;
+          return new Date(request.expires_at) >= now;
+        });
+
+        if (!cancelled) setRequests(activeRequests);
       } catch {
         toast.error("Netzwerkfehler beim Laden der Hilfe-Börse.");
       } finally {
-        setLoading(false);
+        if (!cancelled) setLoading(false);
       }
     }
+
     load();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentQuarter?.id]);
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const filteredRequests = filterCategory
     ? requests.filter((r) => r.category === filterCategory)

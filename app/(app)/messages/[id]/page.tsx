@@ -10,6 +10,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { createClient } from "@/lib/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { createNotification } from "@/lib/notifications";
+import { listConversations } from "@/lib/chat/client";
 import type { DirectMessage } from "@/lib/supabase/types";
 import { format, isToday, isYesterday } from "date-fns";
 import { de } from "date-fns/locale";
@@ -94,6 +95,14 @@ export default function ChatPage() {
       if (cancelled) return;
       setOtherUserId(resolvedOtherUserId);
 
+      const conversationSummaries = await listConversations().catch(() => []);
+      const currentSummary = conversationSummaries.find(
+        (summary) => summary.id === (conversationId as string),
+      );
+      if (currentSummary?.peer_display_name) {
+        setOtherUserName(currentSummary.peer_display_name);
+      }
+
       const { data: otherUser } = await supabase
         .from("users")
         .select("display_name, avatar_url")
@@ -101,7 +110,9 @@ export default function ChatPage() {
         .single();
 
       if (otherUser) {
-        setOtherUserName(otherUser.display_name);
+        setOtherUserName(
+          otherUser.display_name ?? currentSummary?.peer_display_name ?? "Nachbar",
+        );
         setOtherUserAvatar(otherUser.avatar_url);
       }
 

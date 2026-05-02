@@ -6,6 +6,7 @@ import MessagesPage from "@/app/(app)/messages/page";
 const mockPush = vi.fn();
 const mockFrom = vi.fn();
 const mockRemoveChannel = vi.fn();
+const mockFetch = vi.fn();
 const mockAuthState: {
   user: { id: string } | null;
   loading: boolean;
@@ -97,26 +98,17 @@ vi.mock("@/lib/supabase/client", () => ({
   }),
 }));
 
-const pendingRequests = [
+const pendingContacts = [
   {
-    id: "connection-1",
     requester_id: "requester-1",
+    addressee_id: "target-user-1",
+    other_user_id: "requester-1",
+    other_display_name: "Bernd M.",
+    direction: "incoming",
+    status: "pending",
     created_at: "2026-04-16T08:00:00.000Z",
-    message: "Hallo aus dem Test",
-    requester: {
-      display_name: "Bernd M.",
-      avatar_url: null,
-    },
-  },
-];
-
-const requesterHouseholds = [
-  {
-    user_id: "requester-1",
-    households: {
-      street_name: "Musterstrasse",
-      house_number: "5",
-    },
+    accepted_at: null,
+    note: "Hallo aus dem Test",
   },
 ];
 
@@ -131,26 +123,6 @@ function createSupabaseTableMock(table: string) {
     };
   }
 
-  if (table === "neighbor_connections") {
-    return {
-      select: () => ({
-        eq: () => ({
-          eq: () => ({
-            order: async () => ({ data: pendingRequests, error: null }),
-          }),
-        }),
-      }),
-    };
-  }
-
-  if (table === "household_members") {
-    return {
-      select: () => ({
-        in: async () => ({ data: requesterHouseholds, error: null }),
-      }),
-    };
-  }
-
   throw new Error(`Unexpected table mock: ${table}`);
 }
 
@@ -160,10 +132,17 @@ describe("MessagesPage", () => {
     mockAuthState.user = null;
     mockAuthState.loading = true;
     mockFrom.mockImplementation((table: string) => createSupabaseTableMock(table));
+    mockFetch.mockResolvedValue({
+      ok: true,
+      status: 200,
+      text: async () => JSON.stringify(pendingContacts),
+    });
+    vi.stubGlobal("fetch", mockFetch);
   });
 
   afterEach(() => {
     cleanup();
+    vi.unstubAllGlobals();
   });
 
   it("zeigt Skeletons solange Auth noch laedt", () => {
@@ -181,12 +160,14 @@ describe("MessagesPage", () => {
     rerender(<MessagesPage />);
 
     await waitFor(() => {
-      expect(screen.getByText("Nachbar-Anfragen")).toBeInTheDocument();
-    });
+    expect(screen.getByText("Nachbar-Anfragen")).toBeInTheDocument();
+  });
 
     expect(screen.getByText("Bernd M.")).toBeInTheDocument();
     expect(screen.getByText(/Hallo aus dem Test/i)).toBeInTheDocument();
-    expect(screen.getByText("Musterstrasse 5")).toBeInTheDocument();
-    expect(mockFrom).toHaveBeenCalledWith("neighbor_connections");
+    expect(mockFetch).toHaveBeenCalledWith(
+      "/api/contacts?status=pending",
+      expect.objectContaining({ cache: "no-store" }),
+    );
   });
 });

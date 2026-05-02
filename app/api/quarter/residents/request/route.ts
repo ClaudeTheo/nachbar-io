@@ -3,6 +3,7 @@
 // Business-Logik in quarter-residents.service.ts
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { getAdminSupabase } from "@/lib/supabase/admin";
 import { createResidentRequest } from "@/lib/services/quarter-residents.service";
 import { handleServiceError } from "@/lib/services/service-error";
 
@@ -30,8 +31,11 @@ export async function POST(request: NextRequest) {
   }
 
   try {
+    // RLS blockiert fremde household_members/households fuer User-Clients.
+    // Auth ist oben geprueft; der Service erzwingt danach Quarter-Scope + Hash-Aufloesung.
+    const adminSupabase = getAdminSupabase();
     const { connectionId, targetUserId } = await createResidentRequest(
-      supabase,
+      adminSupabase,
       user.id,
       {
         hashedId: body.hashedId ?? "",

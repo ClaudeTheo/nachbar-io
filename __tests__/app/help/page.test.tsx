@@ -5,6 +5,20 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, cleanup, waitFor } from '@testing-library/react';
 
 // --- Mocks ---
+const mockFetch = vi.fn();
+let mockQuarter: {
+  id: string;
+  name: string;
+  center_lat: number;
+  center_lng: number;
+  city: string;
+} | null = {
+  id: 'quarter-bs',
+  name: 'Bad Säckingen — Altstadt',
+  center_lat: 47.5535,
+  center_lng: 7.964,
+  city: 'Bad Säckingen',
+};
 
 vi.mock('next/link', () => ({
   default: ({ children, href, ...props }: { children: React.ReactNode; href: string; [key: string]: unknown }) => (
@@ -35,13 +49,7 @@ vi.mock('@/lib/supabase/client', () => ({
 // useQuarter Mock
 vi.mock('@/lib/quarters', () => ({
   useQuarter: () => ({
-    currentQuarter: {
-      id: 'quarter-bs',
-      name: 'Bad Säckingen — Altstadt',
-      center_lat: 47.5535,
-      center_lng: 7.964,
-      city: 'Bad Säckingen',
-    },
+    currentQuarter: mockQuarter,
   }),
 }));
 
@@ -85,10 +93,24 @@ import HelpPage from '@/app/(app)/help/page';
 
 beforeEach(() => {
   vi.clearAllMocks();
+  mockQuarter = {
+    id: 'quarter-bs',
+    name: 'Bad Säckingen — Altstadt',
+    center_lat: 47.5535,
+    center_lng: 7.964,
+    city: 'Bad Säckingen',
+  };
+  mockFetch.mockResolvedValue({
+    ok: true,
+    status: 200,
+    text: async () => JSON.stringify([]),
+  });
+  vi.stubGlobal('fetch', mockFetch);
 });
 
 afterEach(() => {
   cleanup();
+  vi.unstubAllGlobals();
 });
 
 // ============================================================
@@ -119,6 +141,21 @@ describe('HelpPage — Grundlegendes Rendering', () => {
     });
     const btn = screen.getByTestId('create-help-button');
     expect(btn).toHaveAttribute('href', '/help/new');
+  });
+
+  it('beendet den Ladezustand auch ohne Quartier-Kontext und nutzt die Hilfe-API', async () => {
+    mockQuarter = null;
+
+    render(<HelpPage />);
+
+    await waitFor(() => {
+      expect(screen.queryByTestId('skeleton')).not.toBeInTheDocument();
+    });
+    expect(mockFetch).toHaveBeenCalledWith(
+      '/api/hilfe/requests',
+      expect.objectContaining({ cache: 'no-store' }),
+    );
+    expect(screen.getByText('Keine aktuellen Hilfegesuche.')).toBeInTheDocument();
   });
 });
 

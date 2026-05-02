@@ -13,11 +13,21 @@ import {
 import { createClient } from "@/lib/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { createNotification } from "@/lib/notifications";
-import { useQuarter } from "@/lib/quarters";
 import type { Conversation, NeighborConnection } from "@/lib/supabase/types";
+import {
+  listConversations as listChatConversations,
+  listContacts,
+  openConversation,
+  updateContactStatus,
+} from "@/lib/chat/client";
 
 // Erweiterte Anfrage mit Adressinformation
-interface PendingRequestWithAddress extends NeighborConnection {
+interface PendingRequestWithAddress {
+  requester_id: string;
+  addressee_id: string;
+  created_at: string;
+  message: string | null;
+  requester?: NeighborConnection["requester"];
   requesterAddress?: string;
 }
 import { formatDistanceToNow } from "date-fns";
@@ -28,7 +38,6 @@ import { ResidentBrowser } from "@/components/chat/ResidentBrowser";
 export default function MessagesPage() {
   const { user, loading: authLoading } = useAuth();
   const router = useRouter();
-  const { currentQuarter } = useQuarter();
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [pendingRequests, setPendingRequests] = useState<
     PendingRequestWithAddress[]
@@ -51,6 +60,11 @@ export default function MessagesPage() {
     if (error || !data) {
       return;
     }
+
+    const chatSummaries = await listChatConversations().catch(() => []);
+    const peerNames = new Map(
+      chatSummaries.map((summary) => [summary.id, summary.peer_display_name]),
+    );
 
     // Fuer jede Konversation: anderen Teilnehmer, letzte Nachricht und ungelesene Anzahl laden
     const enriched = await Promise.all(
@@ -88,10 +102,16 @@ export default function MessagesPage() {
           ...conv,
           other_user: otherUser
             ? {
-                display_name: otherUser.display_name,
+                display_name:
+                  otherUser.display_name ??
+                  peerNames.get(conv.id) ??
+                  "Nachbar",
                 avatar_url: otherUser.avatar_url,
               }
-            : undefined,
+            : {
+                display_name: peerNames.get(conv.id) ?? "Nachbar",
+                avatar_url: null,
+              },
           last_message: lastMsg?.content ?? undefined,
           unread_count: unreadCount ?? 0,
         } as Conversation;
@@ -102,50 +122,28 @@ export default function MessagesPage() {
   }, []);
 
   // Offene Verbindungsanfragen laden (inkl. Adresse des Anfragenden)
-  const loadPendingRequests = useCallback(async (userId: string) => {
-    const supabase = createClient();
-    const { data } = await supabase
-      .from("neighbor_connections")
-      .select(
-        "*, requester:users!neighbor_connections_requester_id_fkey(display_name, avatar_url)",
-      )
-      .eq("target_id", userId)
-      .eq("status", "pending")
-      .order("created_at", { ascending: false });
-
-    if (data && data.length > 0) {
-      // Adressen der Anfragenden laden
-      const requesterIds = data.map((r) => r.requester_id);
-      const { data: requesterHouseholds } = await supabase
-        .from("household_members")
-        .select("user_id, households(street_name, house_number)")
-        .in("user_id", requesterIds);
-
-      // Adress-Map erstellen: user_id → "Straße Hausnummer"
-      const addressMap = new Map<string, string>();
-      if (requesterHouseholds) {
-        for (const hm of requesterHouseholds) {
-          const household = hm.households as {
-            street_name?: string;
-            house_number?: string;
-          } | null;
-          if (household?.street_name) {
-            addressMap.set(
-              hm.user_id,
-              `${household.street_name} ${household.house_number || ""}`.trim(),
-            );
-          }
-        }
-      }
-
+  const loadPendingRequests = useCallback(async (_userId: string) => {
+    try {
+      const contacts = await listContacts("pending");
       setPendingRequests(
-        data.map((d) => ({
-          ...d,
-          requester: d.requester as unknown as NeighborConnection["requester"],
-          requesterAddress: addressMap.get(d.requester_id),
-        })),
+        contacts
+          .filter((contact) => contact.direction === "incoming")
+          .map((contact) => ({
+            requester_id: contact.requester_id,
+            addressee_id: contact.addressee_id,
+            created_at: contact.created_at,
+            message: contact.note,
+            requester: {
+              display_name: contact.other_display_name ?? "Nachbar",
+              avatar_url: null,
+            },
+          })),
       );
-    } else {
+    } catch (error) {
+      console.error(
+        "[messages] Kontaktanfragen konnten nicht geladen werden:",
+        error,
+      );
       setPendingRequests([]);
     }
   }, []);
@@ -208,7 +206,7 @@ export default function MessagesPage() {
         {
           event: "INSERT",
           schema: "public",
-          table: "neighbor_connections",
+          table: "contact_links",
         },
         () => {
           loadPendingRequests(user!.id);
@@ -223,54 +221,18 @@ export default function MessagesPage() {
   }, [user?.id, loadConversations, loadPendingRequests]);
 
   // Verbindungsanfrage annehmen
-  async function acceptRequest(connectionId: string, requesterId: string) {
+  async function acceptRequest(requesterId: string) {
     if (!user?.id) return;
-    const supabase = createClient();
+    let convId = "";
 
-    // Anfrage annehmen
-    await supabase
-      .from("neighbor_connections")
-      .update({ status: "accepted", responded_at: new Date().toISOString() })
-      .eq("id", connectionId);
-
-    const { error: contactError } = await supabase
-      .from("contact_links")
-      .update({ status: "accepted", accepted_at: new Date().toISOString() })
-      .eq("requester_id", requesterId)
-      .eq("addressee_id", user.id);
-
-    if (contactError) {
-      console.error("[messages] Contact-Link-Annahme fehlgeschlagen:", contactError);
+    try {
+      await updateContactStatus(requesterId, "accepted");
+      const conversation = await openConversation(requesterId);
+      convId = conversation.id;
+    } catch (error) {
+      console.error("[messages] Contact-Link-Annahme fehlgeschlagen:", error);
       toast.error("Anfrage konnte nicht angenommen werden.");
       return;
-    }
-
-    // Konversation erstellen/oeffnen
-    const p1 = user?.id < requesterId ? user?.id : requesterId;
-    const p2 = user?.id < requesterId ? requesterId : user?.id;
-
-    const { data: existing } = await supabase
-      .from("conversations")
-      .select("id")
-      .or(
-        `and(participant_1.eq.${user?.id},participant_2.eq.${requesterId}),and(participant_1.eq.${requesterId},participant_2.eq.${user?.id})`,
-      )
-      .maybeSingle();
-
-    let convId: string;
-    if (existing) {
-      convId = existing.id;
-    } else {
-      const { data: newConv } = await supabase
-        .from("conversations")
-        .insert({
-          participant_1: p1,
-          participant_2: p2,
-          quarter_id: currentQuarter?.id,
-        })
-        .select("id")
-        .single();
-      convId = newConv?.id ?? "";
     }
 
     toast.success("Verbindung angenommen!");
@@ -294,14 +256,10 @@ export default function MessagesPage() {
   }
 
   // Verbindungsanfrage ablehnen
-  async function declineRequest(connectionId: string) {
+  async function declineRequest(requesterId: string) {
     if (!user?.id) return;
-    const supabase = createClient();
 
-    await supabase
-      .from("neighbor_connections")
-      .update({ status: "declined", responded_at: new Date().toISOString() })
-      .eq("id", connectionId);
+    await updateContactStatus(requesterId, "rejected");
 
     toast("Anfrage abgelehnt");
     await loadPendingRequests(user!.id);
@@ -366,7 +324,7 @@ export default function MessagesPage() {
               const initial = (name[0] ?? "N").toUpperCase();
               return (
                 <div
-                  key={req.id}
+                  key={`${req.requester_id}-${req.addressee_id}`}
                   className="rounded-lg border border-quartier-green/30 bg-quartier-green/5 p-3"
                 >
                   <div className="flex items-center gap-3">
@@ -415,7 +373,7 @@ export default function MessagesPage() {
                       <Button
                         size="sm"
                         className="gap-1 bg-quartier-green hover:bg-quartier-green/90"
-                        onClick={() => acceptRequest(req.id, req.requester_id)}
+                        onClick={() => acceptRequest(req.requester_id)}
                       >
                         <Check className="h-3.5 w-3.5" />
                         Annehmen
@@ -424,7 +382,7 @@ export default function MessagesPage() {
                         size="sm"
                         variant="outline"
                         className="gap-1"
-                        onClick={() => declineRequest(req.id)}
+                        onClick={() => declineRequest(req.requester_id)}
                       >
                         <X className="h-3.5 w-3.5" />
                       </Button>

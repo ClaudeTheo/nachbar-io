@@ -8,6 +8,8 @@ import {
   listRequests,
   createRequest,
 } from "@/modules/hilfe/services/hilfe-requests.service";
+import { getUserQuarterId } from "@/lib/quarters/helpers";
+import { getAdminSupabase } from "@/lib/supabase/admin";
 
 // GET /api/hilfe/requests — Offene Hilfe-Gesuche auflisten
 export async function GET(request: NextRequest) {
@@ -47,6 +49,8 @@ export async function POST(request: NextRequest) {
     category?: string;
     title?: string;
     description?: string | null;
+    subcategory?: string | null;
+    expires_at?: string | null;
     type?: "need" | "offer";
   };
 
@@ -60,7 +64,12 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    const helpRequest = await createRequest(supabase, user.id, body);
+    const adminSupabase = getAdminSupabase();
+    const quarterId = body.quarter_id ?? await getUserQuarterId(adminSupabase, user.id);
+    const helpRequest = await createRequest(supabase, user.id, {
+      ...body,
+      quarter_id: quarterId ?? undefined,
+    });
     return NextResponse.json(helpRequest, { status: 201 });
   } catch (error) {
     return handleServiceError(error);

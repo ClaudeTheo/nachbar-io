@@ -111,9 +111,9 @@ test.describe("S3: Direktnachricht / Chat Zustellung", () => {
         console.log("[B] Nachricht empfangen");
 
         // Assert: Keine Duplikate
-        const allMessages = page.locator("[data-testid='chat-message']").or(
-          page.locator(".rounded-lg, .rounded-xl").filter({ hasText: testMessage })
-        );
+        const allMessages = page
+          .locator("[data-testid='chat-message']")
+          .filter({ hasText: testMessage });
         const msgCount = await allMessages.count();
         expect(msgCount).toBeLessThanOrEqual(2); // Max 1 + evtl. eigene
 

@@ -9,7 +9,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { HELP_CATEGORIES, HELP_SUBCATEGORIES, HELP_EXPIRY_DAYS } from "@/lib/constants";
-import { createClient } from "@/lib/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { useQuarter } from "@/lib/quarters";
 
@@ -80,28 +79,30 @@ export default function NewHelpPage() {
         return;
       }
 
-      const supabase = createClient();
-
       // Auto-Expire basierend auf Kategorie-Dringlichkeit
       const expiryDays = HELP_EXPIRY_DAYS[category] ?? 3;
       const expiresAt = new Date(Date.now() + expiryDays * 24 * 60 * 60 * 1000).toISOString();
 
-      const { error: insertError } = await supabase.from("help_requests").insert({
-        user_id: user.id,
-        quarter_id: currentQuarter?.id,
-        type: helpType,
-        category,
-        subcategory: subcategory || null,
-        title: title.trim(),
-        description: description.trim() || null,
-        status: "active",
-        expires_at: expiresAt,
+      const response = await fetch("/api/hilfe/requests", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          quarter_id: currentQuarter?.id,
+          type: helpType,
+          category,
+          subcategory: subcategory || null,
+          title: title.trim(),
+          description: description.trim() || null,
+          expires_at: expiresAt,
+        }),
       });
 
-      if (insertError) {
-        console.error("Hilfe-Eintrag Fehler:", insertError);
-        toast.error(`Fehler: ${insertError.message}`);
-        setError(`Fehler: ${insertError.message}`);
+      if (!response.ok) {
+        const text = await response.text();
+        const errorMessage = text ? JSON.parse(text).error : "Hilfe-Eintrag konnte nicht gespeichert werden.";
+        console.error("Hilfe-Eintrag Fehler:", errorMessage);
+        toast.error(`Fehler: ${errorMessage}`);
+        setError(`Fehler: ${errorMessage}`);
         setLoading(false);
         return;
       }

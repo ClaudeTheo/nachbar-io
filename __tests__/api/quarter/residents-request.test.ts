@@ -9,9 +9,14 @@ import { createRouteMockSupabase } from '@/lib/care/__tests__/mock-supabase';
 // --- Mocks ---
 
 const mockSupabase = createRouteMockSupabase();
+const mockAdminSupabase = createRouteMockSupabase();
 
 vi.mock('@/lib/supabase/server', () => ({
   createClient: vi.fn().mockImplementation(() => Promise.resolve(mockSupabase.supabase)),
+}));
+
+vi.mock('@/lib/supabase/admin', () => ({
+  getAdminSupabase: vi.fn().mockImplementation(() => mockAdminSupabase.supabase),
 }));
 
 // Globaler fetch-Mock fuer Notification (fire-and-forget)
@@ -48,20 +53,20 @@ function setupSuccessPath(opts?: { pendingCount?: number }) {
   const count = opts?.pendingCount ?? 0;
 
   // 1. Spam-Check: neighbor_connections count
-  mockSupabase.addResponse('neighbor_connections', {
+  mockAdminSupabase.addResponse('neighbor_connections', {
     data: null,
     error: null,
     count,
   } as unknown as { data: unknown; error: unknown });
 
   // 2. Quarter-Scope: requester's household_members → household + quarter
-  mockSupabase.addResponse('household_members', {
+  mockAdminSupabase.addResponse('household_members', {
     data: { household_id: REQUESTER_HOUSEHOLD, households: { quarter_id: QUARTER_ID } },
     error: null,
   });
 
   // 3. Alle Haushalte im Quartier
-  mockSupabase.addResponse('households', {
+  mockAdminSupabase.addResponse('households', {
     data: [
       { id: HOUSEHOLD_ID },
       { id: REQUESTER_HOUSEHOLD },
@@ -70,7 +75,7 @@ function setupSuccessPath(opts?: { pendingCount?: number }) {
   });
 
   // 4. Bewohner des Ziel-Haushalts
-  mockSupabase.addResponse('household_members', {
+  mockAdminSupabase.addResponse('household_members', {
     data: [
       { user_id: TARGET_USER },
     ],
@@ -83,6 +88,7 @@ function setupSuccessPath(opts?: { pendingCount?: number }) {
 describe('POST /api/quarter/residents/request', () => {
   beforeEach(() => {
     mockSupabase.reset();
+    mockAdminSupabase.reset();
   });
 
   it('gibt 401 zurueck wenn nicht authentifiziert', async () => {
@@ -120,7 +126,7 @@ describe('POST /api/quarter/residents/request', () => {
     mockSupabase.setUser({ id: USER_ID, email: 'test@test.de' });
 
     // Spam-Check: count >= 3
-    mockSupabase.addResponse('neighbor_connections', {
+    mockAdminSupabase.addResponse('neighbor_connections', {
       data: null,
       error: null,
       count: 3,
@@ -151,20 +157,20 @@ describe('POST /api/quarter/residents/request', () => {
     mockSupabase.setUser({ id: USER_ID, email: 'test@test.de' });
 
     // 1. Spam-Check: 0 pending
-    mockSupabase.addResponse('neighbor_connections', {
+    mockAdminSupabase.addResponse('neighbor_connections', {
       data: null,
       error: null,
       count: 0,
     } as unknown as { data: unknown; error: unknown });
 
     // 2. Requester's quarter
-    mockSupabase.addResponse('household_members', {
+    mockAdminSupabase.addResponse('household_members', {
       data: { household_id: REQUESTER_HOUSEHOLD, households: { quarter_id: QUARTER_ID } },
       error: null,
     });
 
     // 3. Haushalte im Quartier — Ziel-Haushalt ist NICHT darin
-    mockSupabase.addResponse('households', {
+    mockAdminSupabase.addResponse('households', {
       data: [
         { id: REQUESTER_HOUSEHOLD },
         { id: 'household-other-same-quarter' },
@@ -189,7 +195,7 @@ describe('POST /api/quarter/residents/request', () => {
     setupSuccessPath();
 
     // 5. neighbor_connections INSERT: Erfolg
-    mockSupabase.addResponse('neighbor_connections', {
+    mockAdminSupabase.addResponse('neighbor_connections', {
       data: { id: 'connection-new-1' },
       error: null,
     });

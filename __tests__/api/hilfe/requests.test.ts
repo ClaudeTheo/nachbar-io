@@ -6,11 +6,16 @@ import { createRouteMockSupabase } from "@/lib/care/__tests__/mock-supabase";
 import type { NextRequest } from "next/server";
 
 const mockSupabase = createRouteMockSupabase();
+const mockAdminSupabase = createRouteMockSupabase();
 
 vi.mock("@/lib/supabase/server", () => ({
   createClient: vi
     .fn()
     .mockImplementation(() => Promise.resolve(mockSupabase.supabase)),
+}));
+
+vi.mock("@/lib/supabase/admin", () => ({
+  getAdminSupabase: vi.fn().mockImplementation(() => mockAdminSupabase.supabase),
 }));
 
 function makeGetRequest(
@@ -33,6 +38,7 @@ function makePostRequest(body: Record<string, unknown>): NextRequest {
 describe("/api/hilfe/requests", () => {
   beforeEach(() => {
     mockSupabase.reset();
+    mockAdminSupabase.reset();
     vi.clearAllMocks();
   });
 
@@ -135,18 +141,35 @@ describe("/api/hilfe/requests", () => {
       expect(body.error).toContain("Ungueltige Kategorie");
     });
 
-    it("lehnt fehlendes quarter_id ab (400)", async () => {
+    it("leitet fehlende quarter_id aus dem verifizierten Haushalt ab", async () => {
       mockSupabase.setUser({ id: "user-5", email: "noq@test.de" });
+      mockAdminSupabase.addResponse("household_members", {
+        data: { households: { quarter_id: "q-derived" } },
+        error: null,
+      });
+      mockSupabase.addResponse("help_requests", {
+        data: {
+          id: "req-derived-quarter",
+          user_id: "user-5",
+          quarter_id: "q-derived",
+          type: "need",
+          category: "shopping",
+          title: "Einkaufen gesucht",
+          status: "active",
+        },
+        error: null,
+      });
 
       const { POST } = await import("@/app/api/hilfe/requests/route");
       const response = await POST(
         makePostRequest({
           category: "shopping",
+          title: "Einkaufen gesucht",
         }),
       );
-      expect(response.status).toBe(400);
+      expect(response.status).toBe(201);
       const body = await response.json();
-      expect(body.error).toContain("quarter_id");
+      expect(body.quarter_id).toBe("q-derived");
     });
   });
 });

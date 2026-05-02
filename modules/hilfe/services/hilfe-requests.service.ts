@@ -50,10 +50,12 @@ export async function createRequest(
     category?: string;
     title?: string;
     description?: string | null;
+    subcategory?: string | null;
+    expires_at?: string | null;
     type?: HelpRequestType;
   },
 ) {
-  const { quarter_id, category, title, description, type } = input;
+  const { quarter_id, category, title, description, subcategory, expires_at, type } = input;
 
   // Pflichtfeld: quarter_id
   if (!quarter_id) {
@@ -82,9 +84,11 @@ export async function createRequest(
       quarter_id,
       type: requestType,
       category,
+      subcategory: subcategory ?? null,
       title: requestTitle,
       description: description ?? null,
       status: "active",
+      expires_at: expires_at ?? null,
     })
     .select()
     .single();

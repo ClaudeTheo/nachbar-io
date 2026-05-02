@@ -1,6 +1,6 @@
 # Session-Handover fuer 2026-05-02
 
-Stand: 2026-05-02 nach lokaler Stabilisierung der Multi-Agent-E2E-Flows.
+Stand: 2026-05-02 nach lokaler Stabilisierung der Multi-Agent-E2E-Flows und CI-Gruenstellung.
 
 ## Harte Linien
 
@@ -16,16 +16,17 @@ Stand: 2026-05-02 nach lokaler Stabilisierung der Multi-Agent-E2E-Flows.
 - Workspace: `C:\Users\thoma\Claud Code\Handy APP\nachbar-io`
 - Branch: `master`
 - Remote: `origin/master`
-- Working Tree nach lokalem Commit: clean
-- Lokal/Remote: lokal ahead 2, nicht gepusht
+- Working Tree nach Push `389b3ce`: clean
+- Lokal/Remote: synchron mit `origin/master`
 
 Letzte relevante Commits:
 
-- `b0f706b fix(e2e): stabilize local multi-agent flows` (lokal, nicht gepusht)
-- `2d9ed3e docs(handoff): add may 2 session handover` (lokal, nicht gepusht)
+- `389b3ce fix(ci): run e2e against local supabase`
+- `5d85dfe docs(handoff): update may 2 next steps`
+- `b0f706b fix(e2e): stabilize local multi-agent flows`
+- `2d9ed3e docs(handoff): add may 2 session handover`
 - `526ab8a fix(municipal): normalize bad saeckingen links`
 - `9456511 fix(e2e): align local smoke coverage`
-- `abafca4 fix(info-hub): update Bad Saeckingen service links`
 
 ## Was heute erledigt wurde
 
@@ -94,6 +95,35 @@ Lokaler Commit:
 
 - `b0f706b fix(e2e): stabilize local multi-agent flows`
 
+### GitHub Actions E2E-CI-Gruenstellung
+
+Ausgangslage nach Push der lokalen Commits:
+
+- Push von `2d9ed3e`, `b0f706b`, `5d85dfe` auf `origin/master` wurde mit Founder-Go ausgefuehrt.
+- GitHub Actions fuer `5d85dfe`: CodeQL gruen, `E2E Multi-Agent Tests` rot.
+- Root-Cause aus Job-Logs: Test-Login schlug breit mit `401 {"error":"Legacy API keys are disabled"}` fehl.
+- Ursache: E2E-Workflow nutzte GitHub-Actions-Supabase-Secrets; diese waren nicht auf den neuen Supabase-Key-Stand gebracht. Vercel Production war davon nicht betroffen.
+
+Fix:
+
+- `.github/workflows/e2e-tests.yml` nutzt fuer Smoke- und Multi-Agent-Jobs jetzt einen lokalen Supabase-Stack via `npx supabase start`.
+- Die Jobs exportieren `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` und `SUPABASE_SERVICE_ROLE_KEY` aus `supabase status -o env`.
+- GitHub-Actions-E2E nutzt dadurch keine Production-/Preview-Supabase-Secrets mehr.
+- `tests/e2e/README.md` dokumentiert den neuen CI-Pfad.
+
+Commit und Remote-Status:
+
+- `389b3ce fix(ci): run e2e against local supabase` wurde gepusht.
+- `master` ist synchron mit `origin/master`.
+
+Remote-Verifikation:
+
+- GitHub Actions Run `25252303252` fuer `389b3ce`: `E2E Multi-Agent Tests` gruen.
+- Jobs:
+  - `Smoke Tests (S7)`: success.
+  - `Multi-Agent Tests (S1-S6)`: success.
+- CodeQL lief fuer `389b3ce` nicht neu, weil `codeql.yml` nur auf `*.ts`, `*.tsx`, `*.js`-Pfadaenderungen reagiert; `389b3ce` aendert nur Workflow/README.
+
 ## Verifikation heute
 
 Gezielt ausgefuehrt:
@@ -144,30 +174,12 @@ Bekannte Test-Noise:
 
 ## Wichtige offene Punkte
 
-### CI/Deploy-Status pruefen
+### CI/Deploy-Status
 
-Nach dem Push konnte diese Shell `gh run list` nicht nutzen, weil `gh` nicht authentifiziert war:
-
-```text
-To get started with GitHub CLI, please run: gh auth login
-```
-
-Morgen zuerst pruefen:
-
-```powershell
-cd "C:\Users\thoma\Claud Code\Handy APP\nachbar-io"
-git status --short --branch
-gh auth status
-gh run list --limit 10
-```
-
-Wenn `gh` weiter nicht authentifiziert ist: GitHub Actions im Browser pruefen.
-
-Aktueller wichtiger Zusatz:
-
-- Die lokalen Commits `2d9ed3e` und `b0f706b` sind noch nicht gepusht.
-- Push auf `master` braucht Founder-Go.
-- CI kann fuer `b0f706b` erst laufen, wenn gepusht wurde.
+- `gh` ist in dieser Shell weiter nicht authentifiziert; GitHub Actions wurden ueber oeffentliche GitHub-API/GitHub-Connector gelesen.
+- Stand nach Push `389b3ce`: `E2E Multi-Agent Tests` gruen.
+- Kein Vercel-Deploy wurde ausgeloest.
+- Kein Prod-DB-Write, kein Mig-Apply, kein Vercel-Env-/Secret-Touch.
 
 ### Production-Smoke nach Deploy
 
@@ -197,37 +209,33 @@ Gesucht: keine `SECURITY_E2E_BYPASS`, kein `E2E_TEST_SECRET` in Production/Previ
 
 1. Repo-Stand klaeren:
    - `git status --short --branch`
-   - Erwartung aktuell: `master...origin/master [ahead 2]`
+   - Erwartung aktuell: `master...origin/master`
    - `git log --oneline -5`
 
-2. Founder-Entscheidung einholen:
-   - Soll `b0f706b` zusammen mit `2d9ed3e` nach `origin/master` gepusht werden?
-   - Ohne Founder-Go: nicht pushen.
+2. GitHub Actions kurz bestaetigen:
+   - E2E Run `25252303252` fuer `389b3ce` war gruen.
+   - Falls neue Commits vorhanden sind: E2E/CodeQL je nach Trigger pruefen.
+   - Kein Deploy-Workflow ohne neues Founder-Go starten.
 
-3. Falls Founder-Go fuer Push:
-   - `git push origin master`
-   - Danach GitHub Actions Status fuer `b0f706b` pruefen.
-   - Vercel Deployment Status
-
-4. Production-Basis-Smoke nur nach erfolgreichem Remote-Deploy:
+3. Production-Basis-Smoke nur nach erfolgreichem Remote-Deploy:
    - Startseite, Login, Register
    - Admin nur als Founder
    - Keine Vercel-Env-Aenderung, keine DB-Aenderung
 
-5. Quartier-Link-Smoke:
+4. Quartier-Link-Smoke:
    - `Rathaus & Infos` / Services
    - Wiki-Links in City Services
    - `/quartier-info` Rathaus-Links
    - Mangelmelder-Hinweislinks
 
-6. Breitere Bereichstests fortsetzen:
+5. Breitere Bereichstests fortsetzen:
    - Auth/Registration/Invite
    - Dashboard/Senior Mode
    - Hilfe/Marktplatz/Meldungen
    - Care/Check-in/SOS nur mit synthetischen Testdaten
    - Admin/Audit/Feature-Flags nur lesend
 
-7. Danach entscheiden:
+6. Danach entscheiden:
    - Wenn CI + Production-Smoke gruen: Stand als deploybar dokumentieren.
    - Wenn Links in Production trotz Code-Fix kaputt bleiben: pruefen, ob die betroffene UI die Normalizer-Schicht umgeht oder ob eine DB-Seite/HTML-Route ausserhalb der App betroffen ist.
    - Prod-Migrationen 176/177 bleiben aus, bis Founder explizit neues Go gibt.
@@ -236,13 +244,12 @@ Gesucht: keine `SECURITY_E2E_BYPASS`, kein `E2E_TEST_SECRET` in Production/Previ
 
 Wenn diese Uebergabe die naechste Session startet, soll Codex:
 
-1. **Nicht deployen und nicht pushen**, bis Thomas explizit Go gibt.
-2. `git status --short --branch` ausfuehren und bestaetigen, dass lokal `ahead 2` erwartet ist.
+1. **Nicht deployen**, bis Thomas explizit Go gibt.
+2. `git status --short --branch` ausfuehren und bestaetigen, dass lokal `master...origin/master` erwartet ist.
 3. `gh auth status` pruefen; falls nicht authentifiziert, GitHub Actions im Browser/ueber oeffentliche API pruefen.
-4. Thomas kurz fragen oder auf sein Go warten: "Soll ich die zwei lokalen Commits nach `origin/master` pushen?"
-5. Bei Push-Go: pushen, CI verfolgen, danach nur lesende Production-Smokes ausfuehren.
-6. Wenn CI erneut rot ist: zuerst Logs/Artefakte lesen, keine neuen Fixes ohne Root-Cause.
-7. Falls kein Push-Go kommt: lokal weiter nur an verifizierbaren, gruenen Aufgaben arbeiten.
+4. E2E Run `25252303252` fuer `389b3ce` als letzten gruenen CI-Stand beachten.
+5. Wenn CI erneut rot ist: zuerst Logs/Artefakte lesen, keine neuen Fixes ohne Root-Cause.
+6. Lokal weiter nur an verifizierbaren, gruenen Aufgaben arbeiten.
 
 ## Befehle fuer lokale Wiederaufnahme
 

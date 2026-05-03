@@ -176,3 +176,6 @@ Thomas waehlt drei erste Gespraechspartner:
 
 Nach den ersten Rueckmeldungen kann daraus eine konkrete Quartiersimpulse-Skizze
 oder ein UStA-Partnerpilot entstehen.
+
+Interne Anschlussdatei:
+`docs/plans/2026-05-04-care-quartiersimpulse-antragsskizze.md`

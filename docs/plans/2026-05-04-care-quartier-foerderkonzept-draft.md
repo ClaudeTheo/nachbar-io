@@ -406,6 +406,10 @@ Erstelltes Gespraechsdokument:
 
 - `docs/plans/2026-05-04-care-quartier-partner-onepager.md`
 
+Erstellte kommunale Skizze:
+
+- `docs/plans/2026-05-04-care-quartiersimpulse-antragsskizze.md`
+
 ## Arbeitsstand Task 3+4
 
 Ergaenzt am 2026-05-03 abend:
@@ -436,3 +440,10 @@ Ergaenzt am 2026-05-03 spaetabend:
 - Partner-Onepager fuer Kommune/UStA-Traeger/Nachbarschaftshilfe erstellt
 - Fokus: Gespraechsanker, Rollenmodell, Pilotumfang, sichere Formulierungen
 - keine Antrags-, Erstattungs-, DiPA- oder Hausnotrufbehauptung
+
+Ergaenzt am 2026-05-03 spaetabend:
+
+- Quartiersimpulse-Antragsskizze light fuer ein Kommunengespraech erstellt
+- bewusst kein echter Antrag und keine Foerderzusage
+- Fokus: Bad-Saeckingen-Pilot, Buergerbeteiligung, zivilgesellschaftlicher
+  Partner, Datenschutz und Nicht-Ziele

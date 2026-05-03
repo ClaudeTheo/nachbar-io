@@ -149,6 +149,17 @@ Playwright darf vorhandene Server wiederverwenden. Vor lokalen Auth-/Care-E2E
 deshalb immer pruefen, ob `localhost:3000` oder `localhost:3001` bereits von
 einem alten `next dev`/`next start` belegt ist:
 
+Die lokalen `npm run test:e2e*`-Scripts fuehren diesen Guard automatisch aus:
+
+```bash
+npm run e2e:preflight:localhost
+```
+
+Der Guard blockiert eindeutig erkannte Cloud/Prod-Supabase-Server auf
+`localhost:3000`/`localhost:3001`, bevor Playwright mit lokaler `.env.local`
+und `sb-127-auth-token` startet. Fuer direkte `npx playwright ...`-Aufrufe den
+Befehl vorher manuell ausfuehren.
+
 ```powershell
 Get-NetTCPConnection -LocalPort 3000,3001 -State Listen -ErrorAction SilentlyContinue |
   Select-Object LocalAddress,LocalPort,OwningProcess

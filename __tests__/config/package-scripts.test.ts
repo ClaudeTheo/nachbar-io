@@ -25,4 +25,28 @@ describe("package scripts", () => {
     expect(script).toContain("127.0.0.1");
     expect(script).not.toContain("54421");
   });
+
+  it("runs the localhost Supabase preflight before local E2E npm scripts", () => {
+    expect(packageJson.scripts["e2e:preflight:localhost"]).toBe(
+      "node scripts/e2e-localhost-preflight.mjs",
+    );
+    expect(packageJson.scripts["pretest:e2e"]).toBe(
+      "node scripts/e2e-localhost-preflight.mjs",
+    );
+    expect(packageJson.scripts["pretest:e2e:multi"]).toBe(
+      "node scripts/e2e-localhost-preflight.mjs",
+    );
+    expect(packageJson.scripts["pretest:e2e:smoke"]).toBe(
+      "node scripts/e2e-localhost-preflight.mjs",
+    );
+    expect(packageJson.scripts["pretest:e2e:agents"]).toBe(
+      "node scripts/e2e-localhost-preflight.mjs",
+    );
+    expect(packageJson.scripts["pretest:e2e:senior"]).toBe(
+      "node scripts/e2e-localhost-preflight.mjs",
+    );
+    expect(packageJson.scripts["pretest:e2e:pilot"]).toBe(
+      "node scripts/e2e-localhost-preflight.mjs",
+    );
+  });
 });

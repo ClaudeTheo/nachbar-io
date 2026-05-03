@@ -104,9 +104,26 @@ describe("sendCareNotification", () => {
 
       expect(sendSms).toHaveBeenCalledWith({
         phone: "+4915112345678",
-        message: "SOS-Alert: Hilfe benoetigt",
+        message: expect.stringContaining("Nachbar.io"),
       });
       expect(result.sms).toBe(true);
+    });
+
+    it("sendet an Twilio keine Care-Titel oder Freitexte", async () => {
+      const supabase = createMockSupabase();
+      await sendCareNotification(supabase, {
+        ...basePayload,
+        title: "Frau Mueller braucht Hilfe",
+        body: "Schwindel seit 30 Minuten, bitte Wohnung 2 anrufen",
+        channels: ["sms"],
+        phone: "+4915112345678",
+      });
+
+      const message = vi.mocked(sendSms).mock.calls[0]?.[0]?.message ?? "";
+      expect(message).toContain("Nachbar.io");
+      expect(message).not.toContain("Frau Mueller");
+      expect(message).not.toContain("Schwindel");
+      expect(message).not.toContain("Wohnung 2");
     });
 
     it("sendet keine SMS wenn phone fehlt", async () => {
@@ -132,9 +149,27 @@ describe("sendCareNotification", () => {
 
       expect(initiateCall).toHaveBeenCalledWith({
         phone: "+4915112345678",
-        ttsMessage: "SOS-Alert. Hilfe benoetigt",
+        ttsMessage: expect.stringContaining("Nachbar.io"),
       });
       expect(result.voice).toBe(true);
+    });
+
+    it("gibt an Twilio Voice keine Care-Titel oder Freitexte", async () => {
+      const supabase = createMockSupabase();
+      await sendCareNotification(supabase, {
+        ...basePayload,
+        title: "Frau Mueller braucht Hilfe",
+        body: "Schwindel seit 30 Minuten, bitte Wohnung 2 anrufen",
+        channels: ["voice"],
+        phone: "+4915112345678",
+      });
+
+      const ttsMessage =
+        vi.mocked(initiateCall).mock.calls[0]?.[0]?.ttsMessage ?? "";
+      expect(ttsMessage).toContain("Nachbar.io");
+      expect(ttsMessage).not.toContain("Frau Mueller");
+      expect(ttsMessage).not.toContain("Schwindel");
+      expect(ttsMessage).not.toContain("Wohnung 2");
     });
   });
 

@@ -72,12 +72,25 @@ describe("notifyFamily", () => {
     expect(mockGetCareProfile).toHaveBeenCalledWith(supabase, userId, userId);
     expect(mockSendSms).toHaveBeenCalledTimes(2);
 
-    // Verify message contains senior name
+    // Twilio-SMS bleibt bewusst generisch und enthaelt keinen Senior-Namen.
     const firstCall = mockSendSms.mock.calls[0][0];
-    expect(firstCall.message).toContain("Erna Müller");
-    expect(firstCall.message).toContain("Notfall-Knopf");
+    expect(firstCall.message).toContain("Nachbar.io");
+    expect(firstCall.message).not.toContain("Erna Müller");
+    expect(firstCall.message).not.toContain("Notfall-Knopf");
 
     expect(result).toEqual({ notified: 2, failed: 0 });
+  });
+
+  it("laedt keinen Anzeigenamen nur fuer den SMS-Text", async () => {
+    mockGetCareProfile.mockResolvedValue({
+      emergency_contacts: [makeContact({ phone: "+491111111111" })],
+    });
+    mockSendSms.mockResolvedValue(true);
+
+    const supabase = makeFakeSupabase("Erna Müller");
+    await notifyFamily(supabase as SupabaseClient, userId);
+
+    expect((supabase as { from: ReturnType<typeof vi.fn> }).from).not.toHaveBeenCalled();
   });
 
   it("returns { notified: 0, failed: 0 } when no CareProfile exists", async () => {

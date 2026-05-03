@@ -36,6 +36,9 @@ interface CareNotificationPayload {
   enableFallback?: boolean;
 }
 
+const EXTERNAL_CARE_NOTIFICATION_MESSAGE =
+  'Nachbar.io: Es gibt eine neue Care-Benachrichtigung. Bitte oeffnen Sie die App oder melden Sie sich ueber den bekannten direkten Kontakt. Bei akuter Gefahr zuerst 112/110.';
+
 /**
  * Sendet eine Benachrichtigung ueber alle angegebenen Kanaele.
  * Schreibt immer eine In-App-Notification, wenn 'in_app' in channels ist.
@@ -90,7 +93,7 @@ export async function sendCareNotification(
   if (smsRequested && payload.phone) {
     results.sms = await sendSms({
       phone: payload.phone,
-      message: `${payload.title}: ${payload.body}`,
+      message: EXTERNAL_CARE_NOTIFICATION_MESSAGE,
     });
   }
 
@@ -106,7 +109,7 @@ export async function sendCareNotification(
   if (voiceRequested && payload.phone) {
     results.voice = await initiateCall({
       phone: payload.phone,
-      ttsMessage: `${payload.title}. ${payload.body}`,
+      ttsMessage: EXTERNAL_CARE_NOTIFICATION_MESSAGE,
     });
   }
 

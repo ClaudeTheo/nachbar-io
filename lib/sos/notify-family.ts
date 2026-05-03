@@ -9,8 +9,8 @@ export interface NotifyFamilyResult {
 
 /**
  * Benachrichtigt alle Notfallkontakte eines Seniors per SMS.
- * Laedt das CareProfile, holt den Anzeigenamen und sendet SMS
- * an jeden Kontakt mit gueltige Telefonnummer.
+ * Laedt das CareProfile und sendet eine datensparsame SMS
+ * an jeden Kontakt mit gueltiger Telefonnummer.
  */
 export async function notifyFamily(
   supabase: SupabaseClient,
@@ -25,17 +25,9 @@ export async function notifyFamily(
   const contacts = profile.emergency_contacts ?? [];
   if (contacts.length === 0) return empty;
 
-  // 2. Anzeigename des Seniors holen
-  const { data: userData } = await supabase
-    .from("users")
-    .select("display_name")
-    .eq("id", userId)
-    .single();
-
-  const seniorName = userData?.display_name ?? "Ihr Angehöriger";
-
-  // 3. SMS an alle Kontakte mit Telefonnummer senden
-  const message = `${seniorName} hat den Notfall-Knopf gedrückt und braucht Ihre Hilfe. Bitte melden Sie sich umgehend.`;
+  // 2. SMS an alle Kontakte mit Telefonnummer senden
+  const message =
+    "Nachbar.io: Eine Person aus Ihrem hinterlegten Hilfekreis bittet um Rueckmeldung. Bitte oeffnen Sie die App oder melden Sie sich ueber den bekannten direkten Kontakt. Bei akuter Gefahr zuerst 112/110.";
 
   let notified = 0;
   let failed = 0;

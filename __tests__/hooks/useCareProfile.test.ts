@@ -27,22 +27,19 @@ const mockProfile: Partial<CareProfile> = {
   updated_at: '2026-03-20T00:00:00Z',
 };
 
-// Supabase-Chain-Mock
-const mockMaybeSingle = vi.fn().mockResolvedValue({ data: mockProfile, error: null });
-const mockEq = vi.fn().mockReturnValue({ maybeSingle: mockMaybeSingle });
-const mockSelect = vi.fn().mockReturnValue({ eq: mockEq });
-const mockFrom = vi.fn().mockReturnValue({ select: mockSelect });
-
-vi.mock('@/lib/supabase/client', () => ({
-  createClient: vi.fn(() => ({
-    from: mockFrom,
-  })),
-}));
+const mockFetch = vi.fn();
+global.fetch = mockFetch;
 
 import { useCareProfile } from '@/lib/care/hooks/useCareProfile';
 
 describe('useCareProfile', () => {
-  beforeEach(() => { vi.clearAllMocks(); });
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mockFetch.mockResolvedValue({
+      ok: true,
+      json: async () => mockProfile,
+    });
+  });
   afterEach(() => { vi.restoreAllMocks(); });
 
   it('laedt Care-Profil fuer einen User', async () => {
@@ -68,24 +65,21 @@ describe('useCareProfile', () => {
       expect(result.current.loading).toBe(false);
     });
     expect(result.current.profile).toBeNull();
-    expect(mockFrom).not.toHaveBeenCalled();
+    expect(mockFetch).not.toHaveBeenCalled();
   });
 
-  it('fragt care_profiles mit maybeSingle ab', async () => {
+  it('laedt das Profil ueber den serverseitigen API-Servicepfad', async () => {
     renderHook(() => useCareProfile('user-1'));
 
     await waitFor(() => {
-      expect(mockFrom).toHaveBeenCalledWith('care_profiles');
-      expect(mockSelect).toHaveBeenCalledWith('*');
-      expect(mockEq).toHaveBeenCalledWith('user_id', 'user-1');
-      expect(mockMaybeSingle).toHaveBeenCalled();
+      expect(mockFetch).toHaveBeenCalledWith('/api/care/profile?senior_id=user-1');
     });
   });
 
-  it('setzt error bei Supabase-Fehler', async () => {
-    mockMaybeSingle.mockResolvedValueOnce({
-      data: null,
-      error: { message: 'Zugriff verweigert' },
+  it('setzt error bei API-Fehler', async () => {
+    mockFetch.mockResolvedValueOnce({
+      ok: false,
+      json: async () => ({ error: 'Zugriff verweigert' }),
     });
 
     const { result } = renderHook(() => useCareProfile('user-1'));
@@ -99,7 +93,10 @@ describe('useCareProfile', () => {
   });
 
   it('gibt null-Profil wenn keines existiert', async () => {
-    mockMaybeSingle.mockResolvedValueOnce({ data: null, error: null });
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => null,
+    });
 
     const { result } = renderHook(() => useCareProfile('user-neue'));
 

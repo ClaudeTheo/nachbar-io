@@ -2,7 +2,6 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { createClient } from '@/lib/supabase/client';
 import type { CareProfile } from '../services/types';
 
 export function useCareProfile(userId?: string) {
@@ -14,21 +13,27 @@ export function useCareProfile(userId?: string) {
     // eslint-disable-next-line react-hooks/set-state-in-effect -- Daten laden bei Mount
     if (!userId) { setLoading(false); return; }
 
-    const supabase = createClient();
+    const seniorId = userId;
 
     async function load() {
       setLoading(true);
-      const { data, error: err } = await supabase
-        .from('care_profiles')
-        .select('*')
-        .eq('user_id', userId)
-        .maybeSingle();
+      setError(null);
 
-      if (err) {
-        setError(err.message);
-      } else {
-        setProfile(data as CareProfile | null);
+      try {
+        const res = await fetch(`/api/care/profile?senior_id=${encodeURIComponent(seniorId)}`);
+        const data = await res.json();
+
+        if (!res.ok) {
+          setError(data?.error ?? 'Profil konnte nicht geladen werden');
+          setProfile(null);
+        } else {
+          setProfile(data as CareProfile | null);
+        }
+      } catch {
+        setError('Profil konnte nicht geladen werden');
+        setProfile(null);
       }
+
       setLoading(false);
     }
 

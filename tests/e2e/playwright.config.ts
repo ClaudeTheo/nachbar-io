@@ -10,6 +10,7 @@ dotenv.config({ path: path.resolve(__dirname, "../../.env.local") });
 export default defineConfig({
   testDir: path.resolve(__dirname),
   outputDir: path.resolve(__dirname, "../../test-results"),
+  globalSetup: path.resolve(__dirname, "../../scripts/e2e-localhost-preflight.mjs"),
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 1,

@@ -157,8 +157,9 @@ npm run e2e:preflight:localhost
 
 Der Guard blockiert eindeutig erkannte Cloud/Prod-Supabase-Server auf
 `localhost:3000`/`localhost:3001`, bevor Playwright mit lokaler `.env.local`
-und `sb-127-auth-token` startet. Fuer direkte `npx playwright ...`-Aufrufe den
-Befehl vorher manuell ausfuehren.
+und `sb-127-auth-token` startet. Direkte `npx playwright ...`-Aufrufe mit der
+Root-Konfig oder `--config=tests/e2e/playwright.config.ts` laufen ebenfalls
+durch denselben `globalSetup`-Guard.
 
 ```powershell
 Get-NetTCPConnection -LocalPort 3000,3001 -State Listen -ErrorAction SilentlyContinue |

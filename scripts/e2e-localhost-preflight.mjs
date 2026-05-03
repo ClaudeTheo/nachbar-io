@@ -107,6 +107,10 @@ function runCli() {
   console.log("[e2e-preflight] OK: kein Cloud/Prod-Supabase-Server auf localhost 3000/3001 erkannt.");
 }
 
+export default function globalSetup() {
+  runCli();
+}
+
 if (process.argv[1] && fileURLToPath(import.meta.url) === resolve(process.argv[1])) {
   runCli();
 }

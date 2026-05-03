@@ -5,6 +5,10 @@ import { test as setup } from "@playwright/test";
 import * as fs from "fs";
 import { TEST_AGENTS, TEST_MODE_HEADERS, TIMEOUTS } from "./helpers/test-config";
 import { AUTH_DIR, authFile } from "./helpers/auth-paths";
+import {
+  buildSupabaseSessionCookies,
+  getSupabaseStorageKey,
+} from "./helpers/supabase-auth-cookie";
 
 // Re-export fuer Abwaertskompatibilitaet
 export { authFile, AUTH_DIR };
@@ -240,9 +244,7 @@ async function loginAndSave(
     const authData = await authResp.json();
     result.userId = authData.user?.id;
 
-    // Projekt-Referenz aus der URL extrahieren (z.B. "uylszchlyhbpbmslcnka")
-    const projectRef = new URL(supabaseUrl).hostname.split(".")[0];
-    const storageKey = `sb-${projectRef}-auth-token`;
+    const storageKey = getSupabaseStorageKey(supabaseUrl);
 
     // Token in Browser-localStorage injizieren
     await page.evaluate(
@@ -252,41 +254,16 @@ async function loginAndSave(
       { key: storageKey, value: JSON.stringify(authData) },
     );
 
-    // Supabase SSR-Cookies setzen (Middleware liest Cookies, nicht localStorage)
-    // Cookie-Format: JSON-Chunks (max 3500 Bytes pro Chunk)
     const sessionJson = JSON.stringify(authData);
-    const chunkSize = 3500;
-    const chunks = [];
-    for (let i = 0; i < sessionJson.length; i += chunkSize) {
-      chunks.push(sessionJson.slice(i, i + chunkSize));
-    }
-    const baseUrl = new URL(page.url());
-    const cookieBase = {
-      domain: baseUrl.hostname,
-      path: "/",
-      httpOnly: false,
-      secure: baseUrl.protocol === "https:",
-      sameSite: "Lax" as const,
-    };
-    if (chunks.length === 1) {
-      await page.context().addCookies([
-        {
-          ...cookieBase,
-          name: storageKey,
-          value: `base64-${btoa(chunks[0])}`,
-        },
-      ]);
-    } else {
-      const cookies = chunks.map((chunk, i) => ({
-        ...cookieBase,
-        name: `${storageKey}.${i}`,
-        value: `base64-${btoa(chunk)}`,
-      }));
-      await page.context().addCookies(cookies);
-    }
+    const cookies = buildSupabaseSessionCookies({
+      storageKey,
+      sessionJson,
+      currentUrl: page.url(),
+    });
+    await page.context().addCookies(cookies);
 
     console.log(
-      `[AUTH] ${agentId} Supabase-Token injiziert (${storageKey}, ${chunks.length} Cookie-Chunks) → userId=${result.userId}`,
+      `[AUTH] ${agentId} Supabase-Token injiziert (${storageKey}, ${cookies.length} Cookie-Chunks) → userId=${result.userId}`,
     );
 
     // Seite neu laden damit Middleware die Cookies liest
@@ -312,7 +289,10 @@ async function loginAndSave(
   }
 
   // Zur Zielseite navigieren
-  await page.goto("/dashboard");
+  await page.goto("/dashboard", {
+    timeout: TIMEOUTS.pageLoad,
+    waitUntil: "domcontentloaded",
+  });
   await page.waitForURL(expectedUrlPattern, { timeout: TIMEOUTS.pageLoad });
 
   // Falls auf /welcome gelandet, nochmal /dashboard versuchen (Session-Race)

@@ -82,6 +82,20 @@ describe("updateSession (Auth-Middleware)", () => {
     expect(res.status).not.toBe(307);
   });
 
+  it("laesst E2E-Test-Login-Bypass in Vercel Preview nicht durch", async () => {
+    vi.stubEnv("NEXT_PUBLIC_CLOSED_PILOT_MODE", "true");
+    vi.stubEnv("NEXT_PUBLIC_VERCEL_ENV", "preview");
+    vi.stubEnv("E2E_TEST_SECRET", "e2e-test-secret-dev");
+    mockGetUser.mockResolvedValue({ data: { user: null } });
+
+    const req = new NextRequest("http://localhost/api/test/login", {
+      headers: { "x-nachbar-test-mode": "e2e-test-secret-dev" },
+    });
+    const res = await updateSession(req);
+
+    expect(res.status).toBe(503);
+  });
+
   it("erlaubt Login-Seite ohne Auth", async () => {
     mockGetUser.mockResolvedValue({ data: { user: null } });
     const req = new NextRequest("http://localhost/login");

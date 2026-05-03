@@ -35,6 +35,16 @@ function hasClosedPilotApproval(profile: {
 function isE2eTestLoginRequest(request: NextRequest) {
   if (request.nextUrl.pathname !== "/api/test/login") return false;
 
+  const vercelEnv =
+    process.env.NEXT_PUBLIC_VERCEL_ENV ?? process.env.VERCEL_ENV ?? "";
+  if (
+    process.env.NODE_ENV === "production" ||
+    vercelEnv === "production" ||
+    vercelEnv === "preview"
+  ) {
+    return false;
+  }
+
   const testSecret = process.env.SECURITY_E2E_BYPASS ?? process.env.E2E_TEST_SECRET;
   return (
     Boolean(testSecret) &&

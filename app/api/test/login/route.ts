@@ -7,6 +7,21 @@ import { NextRequest, NextResponse } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 import { createClient } from "@/lib/supabase/server";
 
+function isProductionLikeEnvironment(): boolean {
+  const vercelEnv =
+    process.env.NEXT_PUBLIC_VERCEL_ENV ?? process.env.VERCEL_ENV ?? "";
+  return (
+    process.env.NODE_ENV === "production" ||
+    vercelEnv === "production" ||
+    vercelEnv === "preview"
+  );
+}
+
+function blockProductionLikeEnvironment(): NextResponse | null {
+  if (!isProductionLikeEnvironment()) return null;
+  return NextResponse.json({ error: "Not available" }, { status: 404 });
+}
+
 function validateSecret(secret: string): NextResponse | null {
   const testSecret = process.env.E2E_TEST_SECRET;
   if (!testSecret) {
@@ -18,14 +33,22 @@ function validateSecret(secret: string): NextResponse | null {
   return null;
 }
 
+function sanitizeNextPath(next: string): string {
+  if (!next.startsWith("/") || next.startsWith("//")) return "/dashboard";
+  return next;
+}
+
 // GET /api/test/login?email=...&password=...&secret=...&next=/dashboard
 // Setzt Session-Cookies DIREKT auf die Redirect-Response (nicht via cookieStore)
 export async function GET(request: NextRequest) {
+  const environmentErr = blockProductionLikeEnvironment();
+  if (environmentErr) return environmentErr;
+
   const { searchParams } = new URL(request.url);
   const email = searchParams.get("email") || "";
   const password = searchParams.get("password") || "";
   const secret = searchParams.get("secret") || "";
-  const next = searchParams.get("next") || "/dashboard";
+  const next = sanitizeNextPath(searchParams.get("next") || "/dashboard");
 
   const secretErr = validateSecret(secret);
   if (secretErr) return secretErr;
@@ -76,6 +99,9 @@ export async function GET(request: NextRequest) {
 
 // POST /api/test/login — JSON-basiert (bestehende E2E-Tests)
 export async function POST(request: NextRequest) {
+  const environmentErr = blockProductionLikeEnvironment();
+  if (environmentErr) return environmentErr;
+
   const body = await request.json();
   const { email, password, secret } = body;
 

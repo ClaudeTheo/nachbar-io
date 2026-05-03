@@ -268,3 +268,6 @@ Diese Skizze ist erst dann extern reif, wenn Thomas mindestens eine kommunale
 Ansprechperson und einen zivilgesellschaftlichen Partner benennen kann. Danach
 kann daraus eine echte Projektskizze im Format der aktuellen
 Quartiersimpulse-Unterlagen entstehen.
+
+Lokale Partner-Shortlist:
+`docs/plans/2026-05-04-care-quartier-partner-shortlist-bad-saeckingen.md`

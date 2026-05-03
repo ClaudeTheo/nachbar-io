@@ -179,3 +179,6 @@ oder ein UStA-Partnerpilot entstehen.
 
 Interne Anschlussdatei:
 `docs/plans/2026-05-04-care-quartiersimpulse-antragsskizze.md`
+
+Lokale Partner-Shortlist:
+`docs/plans/2026-05-04-care-quartier-partner-shortlist-bad-saeckingen.md`

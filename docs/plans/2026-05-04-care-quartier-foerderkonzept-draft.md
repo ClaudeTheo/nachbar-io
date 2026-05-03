@@ -106,6 +106,74 @@ Offene Partnerfragen:
 - Wer stellt Rechnung, Nachweis und Qualitaetssicherung?
 - Welche Schulung brauchen Helferinnen und Helfer?
 
+#### Arbeitsmodell UStA-Partnerweg
+
+Ziel ist ein Partner-first-Modell. Nachbar.io soll im ersten Schritt nicht
+selbst als anerkannter Anbieter auftreten, sondern die digitale Infrastruktur
+fuer einen vorhandenen anerkannten Traeger oder ein anerkennungsfaehiges
+Projekt liefern.
+
+Moegliche Angebotsformulierung:
+
+"Digital begleitete Alltagsunterstuetzung im Quartier: koordinierte
+Nachbarschaftshilfe, Angehoerigenentlastung, Check-ins und dokumentierte
+Unterstuetzungsleistungen fuer Senioren zuhause."
+
+Rollen:
+
+- UStA-Partner: Anerkennung, Fachaufsicht, Schulung, Qualitaetssicherung,
+  Leistungs-/Abrechnungslogik
+- nachbar.io: Technik, CareCircle, Aufgaben-/Besuchskoordination,
+  Dokumentationsoberflaeche, Export-/Nachweisunterstuetzung
+- Senior/Angehoerige: Einwilligung, CareCircle, Rueckmeldung, ggf.
+  Leistungsbestaetigung
+- Helfer: dokumentierte Hilfeleistung nach Partnerregeln
+
+Bestehende nachbar.io-Bausteine, die fuer diesen Weg wiederverwendbar sind:
+
+- `modules/hilfe/components/SessionDocForm.tsx`: Zeiterfassung,
+  Taetigkeitskategorie, Dauer-/Betragsberechnung, Signaturfelder
+- `modules/hilfe/services/pdf-receipt.ts`: Einzelquittung mit Leistungsnachweis
+  und Rahmenbedingungen
+- `modules/hilfe/services/pdf-monthly-report.ts`: monatliche Sammelabrechnung
+  fuer Einsaetze
+- `modules/hilfe/services/hilfe-core.service.ts`: Budget- und
+  Bundesland-Regel-Pruefung fuer Nachbarschaftshilfe
+- `modules/hilfe/components/HelperRegistrationForm.tsx`: Helferregistrierung,
+  Rahmenbedingungen, Schulungsnachweis je Bundesland
+- CareCircle-Logik aus dem Care-Modul: Verbindung von Senior, Angehoerigen und
+  autorisierten Unterstuetzern
+
+Wichtig fuer die Produktgrenze: Diese Bausteine ersetzen keine UStA-Anerkennung
+und keine rechtliche Abrechnungserlaubnis. Sie koennen aber die Arbeit eines
+anerkannten Partners dokumentierbarer und einfacher machen.
+
+Partnergespraech: Kernfragen fuer den ersten Termin:
+
+1. Welche UStA-Leistungen sind beim Partner bereits anerkannt?
+2. Welche Taetigkeiten duerfen ehrenamtliche oder nachbarschaftliche Helfer
+   erbringen?
+3. Welche Dokumentation verlangt der Partner heute?
+4. Kann die digitale Einsatzdokumentation als Vorstufe oder Anlage genutzt
+   werden?
+5. Wer darf gegenueber Pflegekasse oder Senior abrechnen?
+6. Welche Qualitaetssicherungs- und Schulungsnachweise muessen im System
+   sichtbar sein?
+7. Welche Daten duerfen Angehoerige sehen, und was bleibt beim Traeger?
+8. Soll nachbar.io eine reine Technikpauschale, eine Partnerlizenz oder ein
+   projektbezogenes Setup abrechnen?
+
+Erste pruefbare Pilotvariante:
+
+- ein anerkannter Partner
+- 10 bis 15 Seniorenhaushalte
+- 5 bis 10 Helfer oder Ehrenamtliche
+- Einsatzdokumentation ueber vorhandene Hilfe-Logik
+- CareCircle fuer Angehoerigenkommunikation
+- monatliche Auswertung ohne sensible Freitexte in Aggregaten
+- manuelle Abrechnung bleibt beim Partner, bis rechtlich/fachlich geklaert ist,
+  ob und wie digitale Nachweise uebernommen werden
+
 ### 2. Quartiersimpulse BW: bester Pilotweg
 
 Quartiersimpulse richtet sich an Staedte, Gemeinden, kommunale Verbuende und
@@ -125,6 +193,75 @@ Strategie fuer nachbar.io:
 
 Dieser Weg passt zur QuartierApp-Erzaehlung besonders gut, weil nicht die App
 im Mittelpunkt steht, sondern ein lokales Versorgungs- und Beteiligungsmodell.
+
+#### Arbeitsmodell Quartiersimpulse-Pilot
+
+Projekttitel fuer eine kommunale Skizze:
+"Digital unterstuetztes Senioren- und Nachbarschaftsquartier Bad Saeckingen"
+
+Projektziel:
+
+Senioren zuhause sollen laenger sozial angebunden, besser erreichbar und
+alltagspraktisch unterstuetzt bleiben. Angehoerige, lokale Helfer und kommunale
+Partner erhalten eine einfache Struktur fuer Check-ins, Hilfeanfragen,
+Besuche, Rueckmeldungen und datensparsame Auswertung.
+
+Antragsteller-/Rollenlogik:
+
+- bevorzugter Antragsteller: Stadt/Gemeinde Bad Saeckingen
+- alternativ: Landkreis oder kommunaler Verbund mit lokaler Kommune
+- notwendiger Partner: zivilgesellschaftlicher Traeger, Verein,
+  Nachbarschaftshilfe oder Wohlfahrtstraeger
+- nachbar.io: Technologiepartner, nicht alleiniger Foerdermittelempfaenger
+- Senioren/Angehoerige: Beteiligte und Rueckmeldegruppe
+
+Pilotumfang:
+
+- 20 bis 40 Seniorenhaushalte
+- 3 bis 6 Monate erste Wirkungs- und Nutzungsbeobachtung
+- ein bis zwei Quartiersworkshops vor Start
+- einfache Schulungsformate fuer Senioren, Angehoerige und Helfer
+- optional Geraetezugang fuer Haushalte ohne Smartphone-Routine
+- Datenschutz- und Einwilligungsprozess vor Aktivierung
+
+Moeglicher Ablauf:
+
+1. Vorgespräch Kommune, Sozialpartner, nachbar.io
+2. Auswahl Pilotquartier und Zielgruppe
+3. Beteiligungsworkshop mit Senioren, Angehoerigen, Helfern
+4. Datenschutz-/Einwilligungs- und Rollenmodell finalisieren
+5. Onboarding von 20 bis 40 Haushalten
+6. 6 bis 8 Wochen begleitete Nutzung
+7. Zwischenauswertung und Anpassung
+8. Abschlussbericht mit Lernpunkten, nicht mit medizinischen Wirkversprechen
+
+Datensparsame Evaluationsmetriken:
+
+- Anzahl aktivierter Seniorenhaushalte
+- Anzahl aktiver CareCircles
+- Check-in-Nutzung pro Woche
+- beantwortete und unbeantwortete Hilfeanfragen
+- dokumentierte Besuche oder Unterstuetzungen
+- durchschnittliche Rueckmeldezeit im CareCircle
+- subjektive Entlastung Angehoeriger per kurzer Befragung
+- subjektives Sicherheits- und Kontaktgefuehl der Senioren
+- Anzahl Datenschutz-/Supportvorfaelle
+
+Kommunale Nutzenargumente:
+
+- vorhandene Nachbarschaftshilfe wird sichtbarer und koordinierbarer
+- Angehoerige werden entlastet, ohne dass eine 24/7-Leitstelle behauptet wird
+- Quartiersarbeit erhaelt konkrete Beteiligungs- und Nutzungsdaten
+- Senioren ohne digitale Routine koennen ueber einfache Geraete einbezogen
+  werden
+- das Projekt bleibt lokal, sozial und datensparsam statt rein kommerziell
+
+Nicht in den Antrag schreiben:
+
+- keine Aussage, dass die App selbst durch Pflegekassen erstattet wird
+- keine Hausnotruf- oder Notfallleitstellen-Positionierung
+- keine medizinische Nutzenbehauptung
+- keine DiPA-Behauptung
 
 ### 3. `40 Abs. 4 SGB XI`: nur Hardware-/Einrichtungs-Bundle im Einzelfall
 
@@ -257,3 +394,20 @@ Vor externer Nutzung erneut gegenpruefen. Stand dieser Links: 2026-05-03.
 4. Danach kann Codex einen konkreten Partner-Onepager und eine
    Quartiersimpulse-Skizze aus diesem Entwurf ableiten.
 5. Separat spaeter: Wording-Audit fuer bestehende Hilfe-Seiten und Dokus.
+
+## Arbeitsstand Task 3+4
+
+Ergaenzt am 2026-05-03 abend:
+
+- UStA-Partnerweg mit wiederverwendbaren `modules/hilfe`-Bausteinen
+- Partnergespraechsfragen fuer einen anerkannten Traeger
+- erste pruefbare Pilotvariante fuer 10 bis 15 Haushalte mit Partner
+- Quartiersimpulse-Pilotmodell mit kommunaler Rollenlogik
+- datensparsame Evaluationsmetriken und klare Nicht-Behauptungen
+
+Noch offen:
+
+- konkrete Partnerliste Bad Saeckingen priorisieren
+- Partner-Onepager als separates Gespraechsdokument ableiten
+- Quartiersimpulse-Antragsskizze erst nach kommunalem Interesse vertiefen
+- M4.0/M4.1 bleiben Founder-Hand; kein Pflegekassen-PDF

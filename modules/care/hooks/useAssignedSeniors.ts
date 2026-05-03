@@ -4,7 +4,8 @@
 
 import { useEffect, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
-import type { CareHelperRole } from '../services/types';
+import type { CaregiverRelationshipType, CareHelperRole } from '../services/types';
+import { mapCaregiverRelationshipToRole } from "@/lib/care/permissions";
 import { getCachedUser } from "@/lib/supabase/cached-auth";
 
 export interface SeniorInfo {
@@ -58,20 +59,52 @@ export function useAssignedSeniors(): UseAssignedSeniorsResult {
           return;
         }
 
-        if (!helper || !helper.assigned_seniors?.length) {
-          setHelperRole(helper?.role as CareHelperRole ?? null);
+        let assignedSeniorIds = helper?.assigned_seniors ?? [];
+        let assignedRole = (helper?.role as CareHelperRole | undefined) ?? null;
+
+        if (!assignedSeniorIds.length) {
+          const { data: caregiverLinks, error: linksError } = await supabase
+            .from('caregiver_links')
+            .select('resident_id, relationship_type')
+            .eq('caregiver_id', user.id)
+            .is('revoked_at', null);
+
+          if (linksError) {
+            setError(linksError.message);
+            setLoading(false);
+            return;
+          }
+
+          assignedSeniorIds = Array.from(
+            new Set(
+              (caregiverLinks ?? [])
+                .map((link) => link.resident_id)
+                .filter((id): id is string => typeof id === 'string' && id.length > 0)
+            )
+          );
+
+          const relationshipType = caregiverLinks?.[0]?.relationship_type;
+          if (relationshipType) {
+            assignedRole = mapCaregiverRelationshipToRole(
+              relationshipType as CaregiverRelationshipType
+            );
+          }
+        }
+
+        if (!assignedSeniorIds.length) {
+          setHelperRole(assignedRole);
           setSeniors([]);
           setLoading(false);
           return;
         }
 
-        setHelperRole(helper.role as CareHelperRole);
+        setHelperRole(assignedRole);
 
         // Senior-Profile laden
         const { data: seniorProfiles, error: profileError } = await supabase
           .from('users')
           .select('id, display_name, avatar_url')
-          .in('id', helper.assigned_seniors);
+          .in('id', assignedSeniorIds);
 
         if (profileError) {
           setError(profileError.message);

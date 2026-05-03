@@ -24,7 +24,13 @@ const mockEq2 = vi.fn().mockReturnValue({
   order: mockOrder,
   is: mockIs,
 });
-const mockEq = vi.fn().mockReturnValue({ eq: mockEq2, order: mockOrder, single: mockSingle, in: mockIn });
+const mockEq = vi.fn().mockReturnValue({
+  eq: mockEq2,
+  order: mockOrder,
+  single: mockSingle,
+  in: mockIn,
+  is: mockIs,
+});
 const mockSelect = vi.fn().mockReturnValue({ eq: mockEq, in: mockIn });
 const mockFrom = vi.fn().mockReturnValue({ select: mockSelect });
 
@@ -126,6 +132,26 @@ describe('useAssignedSeniors', () => {
     const { result } = renderHook(() => useAssignedSeniors());
     await waitFor(() => expect(result.current.loading).toBe(false));
     expect(result.current.seniors).toEqual([]);
+  });
+
+  it('laedt aktive CareCircle-Links wenn kein Legacy-Helfer-Record existiert', async () => {
+    mockMaybeSingle.mockResolvedValueOnce({ data: null, error: null });
+    mockIs.mockResolvedValueOnce({
+      data: [
+        { resident_id: 'senior-1', relationship_type: 'child' },
+        { resident_id: 'senior-2', relationship_type: 'volunteer' },
+      ],
+      error: null,
+    });
+
+    const { result } = renderHook(() => useAssignedSeniors());
+    await waitFor(() => expect(result.current.loading).toBe(false));
+
+    expect(mockFrom).toHaveBeenCalledWith('caregiver_links');
+    expect(mockIs).toHaveBeenCalledWith('revoked_at', null);
+    expect(result.current.seniors).toHaveLength(2);
+    expect(result.current.seniors[0].display_name).toBe('Frau Mueller');
+    expect(result.current.helperRole).toBe('relative');
   });
 
   it('gibt leere Liste wenn keine zugewiesenen Senioren', async () => {

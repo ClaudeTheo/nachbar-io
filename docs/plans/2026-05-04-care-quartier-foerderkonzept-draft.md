@@ -294,6 +294,13 @@ Strategie fuer nachbar.io:
 - erst Pilotdaten, DSFA/FMEA, Intended-Use-Grenze und Datenschutzreife sammeln
 - spaeter BfArM-Beratung und Verzeichnisfaehigkeit pruefen
 
+Ausgearbeitet ist dieser spaetere Pfad im separaten Plan:
+`docs/plans/2026-05-04-care-dipa-evidence-plan.md`. Er definiert
+Evidenzfragen, Pilotmetriken, Datenschutzgrenzen und Voraussetzungen fuer einen
+moeglichen spaeteren BfArM-/DiPA-Schritt. Keine konkreten monatlichen
+Leistungsbetraege in Partner- oder Marketingunterlagen nennen, bis die aktuelle
+Rechtslage fuer den Zielzeitpunkt separat geprueft wurde.
+
 ### 5. Innovations- und Startup-Foerderung
 
 Startup- und Innovationsprogramme sind eher Entwicklungskapital oder
@@ -411,3 +418,11 @@ Noch offen:
 - Partner-Onepager als separates Gespraechsdokument ableiten
 - Quartiersimpulse-Antragsskizze erst nach kommunalem Interesse vertiefen
 - M4.0/M4.1 bleiben Founder-Hand; kein Pflegekassen-PDF
+
+Ergaenzt am 2026-05-03 spaetabend:
+
+- DiPA als separater spaeterer Evidenzpfad dokumentiert
+- keine DiPA-Vertriebsbehauptung, keine Erstattungszusage und keine konkreten
+  Betragsclaims
+- bestehende Intended-Use-/DSFA-/FMEA-/Traceability-Dokumente als Vorarbeit
+  verlinkt, nicht als fertigen DiPA-Nachweis behandelt

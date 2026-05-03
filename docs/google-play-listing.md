@@ -70,6 +70,7 @@ Mehr Informationen: quartierapp.de
 | Support-Seite | https://quartierapp.de/support |
 | Community-Richtlinien | https://quartierapp.de/richtlinien |
 | Account-Loeschung | https://quartierapp.de/account-loeschen |
+| Deutscher Alias Account-Loeschung | https://quartierapp.de/konto-loeschen |
 
 ---
 
@@ -91,7 +92,7 @@ Key Points for Review:
   - Location: foreground-only, no background location
   - Check-in is subjective wellbeing status, NOT medical diagnosis
   - Push notifications require opt-in
-  - Account deletion available in-app (/profile/delete) AND via web (quartierapp.de/account-loeschen)
+  - Account deletion available in-app (/profile/delete) AND via web (quartierapp.de/account-loeschen, German alias: quartierapp.de/konto-loeschen)
   - UGC: Community guidelines acceptance required before first post
   - Emergency: 112/110 banner shown for fire/medical/crime — app does NOT replace emergency services
 

@@ -10,5 +10,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: `${baseUrl}/support`, lastModified: new Date(), changeFrequency: 'monthly', priority: 0.3 },
     { url: `${baseUrl}/richtlinien`, lastModified: new Date(), changeFrequency: 'monthly', priority: 0.2 },
     { url: `${baseUrl}/account-loeschen`, lastModified: new Date(), changeFrequency: 'monthly', priority: 0.1 },
+    { url: `${baseUrl}/konto-loeschen`, lastModified: new Date(), changeFrequency: 'monthly', priority: 0.1 },
   ]
 }

@@ -49,6 +49,23 @@ npm run test:e2e
 npm run test:e2e:pilot
 ```
 
+Before local Playwright/E2E runs against `localhost`, verify the server target
+instead of trusting Playwright's `reuseExistingServer`:
+
+```powershell
+Get-NetTCPConnection -LocalPort 3000,3001 -State Listen -ErrorAction SilentlyContinue |
+  Select-Object LocalAddress,LocalPort,OwningProcess
+Get-CimInstance Win32_Process -Filter "ProcessId=<PID>" |
+  Select-Object ProcessId,CommandLine
+```
+
+If a reused `localhost:3000` server was started with Cloud/Prod Supabase
+(`sb-uylszchlyhbpbmslcnka...` cookie key) while the Playwright process loads
+local `.env.local` (`127.0.0.1:54321`, `sb-127-auth-token`), stop or avoid that
+server before testing. For local Supabase E2E, prefer a fresh `npm run dev` on
+3000 or the explicit `build:local`/`start:local` path on 3001. Do not mix Cloud
+server state with local Supabase auth state.
+
 ## Red Zone
 
 Never do these without explicit Founder-Go in the current session:

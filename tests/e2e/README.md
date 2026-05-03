@@ -143,6 +143,26 @@ Die Tests dann in einer zweiten Shell gegen Port 3001 starten:
 E2E_BASE_URL=http://localhost:3001 npm run test:e2e:multi
 ```
 
+### Preflight gegen wiederverwendete localhost-Server
+
+Playwright darf vorhandene Server wiederverwenden. Vor lokalen Auth-/Care-E2E
+deshalb immer pruefen, ob `localhost:3000` oder `localhost:3001` bereits von
+einem alten `next dev`/`next start` belegt ist:
+
+```powershell
+Get-NetTCPConnection -LocalPort 3000,3001 -State Listen -ErrorAction SilentlyContinue |
+  Select-Object LocalAddress,LocalPort,OwningProcess
+Get-CimInstance Win32_Process -Filter "ProcessId=<PID>" |
+  Select-Object ProcessId,CommandLine
+```
+
+Wichtig: Cloud-Server und lokaler Supabase-Stack duerfen nicht gemischt werden.
+Ein Cloud/Prod-Supabase-Server nutzt typischerweise Cookies wie
+`sb-uylszchlyhbpbmslcnka-auth-token`; lokale `.env.local`-E2E-Laeufe gegen
+`127.0.0.1:54321` erwarten `sb-127-auth-token`. Wenn diese Ziele auseinander-
+laufen, den alten Server bewusst stoppen oder auf den expliziten Port-3001-
+Pfad (`build:local`/`start:local`) ausweichen, bevor Playwright startet.
+
 ### Einzelne Szenarien
 
 ```bash

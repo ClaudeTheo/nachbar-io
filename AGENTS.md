@@ -11,8 +11,10 @@ the cross-agent baseline.
   Playwright, ESLint.
 - Branch model: local work happens directly on `master` unless the Founder
   explicitly asks for a branch or worktree.
-- Current mode: local closed-pilot preparation. Public release, production DB
-  work, billing, provider changes, and push-to-main remain gated.
+- Current mode: closed-pilot preparation with Codex push/deploy autonomy since
+  Founder-Update 2026-05-03 abend. Production DB work, billing/provider live
+  switches, Vercel env changes, and real personal-data AI processing remain
+  gated.
 
 ## Coordination
 
@@ -51,19 +53,34 @@ npm run test:e2e:pilot
 
 Never do these without explicit Founder-Go in the current session:
 
-- `git push`, especially `git push origin master`.
-- `git push --force` / `git push --force-with-lease`, including feature
-  branches. A remote branch may already be shared, so force-push can rewrite
-  another person's history.
-- Vercel production environment changes, unpause, or config changes.
-- Production DB writes, migrations, or Supabase project changes.
+- Production DB writes, migrations, `apply_migration`, or
+  `execute_sql INSERT/UPDATE/DELETE`.
+- Supabase project changes beyond read-only verification.
+- Vercel production environment changes, unpause, config changes, or any
+  secret/new/deleted/changed variable.
 - Reading, printing, copying, or committing `.env*`, secrets, tokens, or auth
   files.
 - Billing, provider account, domain, or secret rotation changes.
+- Provider live switches (KI, Stripe, Twilio, etc.) without AVV/DPA clearance.
+- New running costs.
 - Real pilot-user data processing or AI processing of personal data before
   AVV/DPA clearance and Founder-Go.
 - New dependencies or major dependency upgrades in `package.json`; treat them
   as gated because of license, supply-chain, and possible running-cost impact.
+- Deleting local leftovers/logs/Founder-hand files unless explicitly asked.
+
+## Auto-Stop Triggers
+
+Codex stops itself and returns to push-go-per-wave if any of these are true:
+
+- Prod `users` has entries with `is_test_user IS NOT TRUE` > 0, meaning real
+  pilot families have onboarded.
+- The code to push/deploy assumes migrations that are not applied on Prod.
+- A deploy would make new provider calls live without AVV/DPA clearance.
+- `NEXT_PUBLIC_PILOT_MODE` would be `false`.
+
+If an auto-stop trigger fires, explain the risk briefly and propose the safe
+next step.
 
 ## Green Zone
 
@@ -73,13 +90,23 @@ otherwise:
 - Local branch switching and local branch creation. End the session back on
   `master`.
 - Local commits after verification.
-- Vercel deploy dispatches are KI-Hand since 2026-04-30: the workflow is
-  dispatch-only, scheduled deploys are removed, closed-pilot mode is active
-  (`NEXT_PUBLIC_PILOT_MODE=true`), and no third-party real-user data is live.
-  Note: without `git push origin master`, a dispatch can only deploy the old
-  remote state, so deploy-without-push is usually not useful.
+- `git push origin master` after local verification.
+- `git push --force-with-lease` after local verification and only when it will
+  not rewrite another person's work.
+- `gh workflow run deploy.yml` when deploying the pushed state is intended.
+- `vercel deploy --prod` without `--prebuilt` when a Vercel/Linux remote build
+  is the safer path.
+- Production rollback via Vercel UI when a deployment is bad.
 - Patch dependency updates when they stay within the existing dependency and do
   not introduce new services, licenses, or provider costs.
+
+Before push: run the relevant local verification stack (Vitest, ESLint, tsc,
+and build when the change can affect build/runtime). Before deploy: confirm the
+exact commit is intended to go live and add/update the INBOX audit trail.
+
+Do not use Windows `vercel build --prod` + `vercel deploy --prebuilt --prod`
+for Production; use GitHub Actions/Linux or `vercel deploy --prod` without
+`--prebuilt`.
 
 ## Coding Rules
 

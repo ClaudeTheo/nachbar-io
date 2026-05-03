@@ -19,6 +19,7 @@ Shared task board and mailbox for Codex, Claude, and future coding agents.
 
 | Status | Owner | Title | Files | Since | Release condition | Last update |
 |---|---|---|---|---|---|---|
+| done | codex | Founder-Regeln Push/Deploy-Vollautonomie + neue Session-Uebergabe | `AGENTS.md` + `docs/plans/2026-05-03-codex-new-session-handover.md` + `docs/plans/handoff/2026-05-03-claude-an-codex-push-deploy-vollautonomie.md` + `docs/plans/handoff/INBOX.md` | 2026-05-03 abend | Founder-Update in Repo-Regeln und Handover synchronisiert; alte lokale Preview-Uebergabe ersetzt | 2026-05-03 abend |
 | done | codex | DSGVO-Wording-Pass + Preview-Routen-Flag | `app/(auth)/register/components/RegisterStepAiConsent.tsx` + `app/(auth)/register/page.tsx` + `app/(auth)/register/preview/[step]/page.tsx` | 2026-04-28 | block-1+2 committed in `b142ace` | 2026-04-28 20:04 |
 | done | codex | Block-3 AI-Stufen-Settings Plan + Implementation | `components/ki-help/*` + `lib/ki-help/*` + `lib/ai/user-settings.ts` + `modules/ai/components/AiHelpSettingsToggle.tsx` + `app/api/settings/ai/route.ts` | 2026-04-28 | block-3 implemented and verified locally in `69f8b87` | 2026-04-29 |
 | done | codex | Phase-4 AI-Level Backend-Differenzierung | `lib/ai/user-settings.ts` + `lib/ai/provider.ts` + `app/api/ai/onboarding/turn/route.ts` + `app/api/ai/onboarding/turn/__tests__/route.test.ts` + `lib/ai/__tests__/provider.test.ts` + `__tests__/lib/ai-user-settings.test.ts` | 2026-04-29 | phase-4 committed and verified locally in `12c3191` | 2026-04-29 15:40 |

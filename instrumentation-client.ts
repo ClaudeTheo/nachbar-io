@@ -1,5 +1,5 @@
 // Sentry Client-Side Konfiguration
-// Laeuft im Browser — erfasst unbehandelte Fehler, Performance-Daten
+// Laeuft im Browser und nutzt die Next.js instrumentation-client-Konvention.
 import * as Sentry from "@sentry/nextjs";
 
 Sentry.init({
@@ -92,3 +92,5 @@ Sentry.init({
   release: `nachbar-io@${process.env.NEXT_PUBLIC_APP_VERSION || "unknown"}`,
   environment: process.env.NODE_ENV,
 });
+
+export const onRouterTransitionStart = Sentry.captureRouterTransitionStart;

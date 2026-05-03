@@ -19,6 +19,7 @@ Shared task board and mailbox for Codex, Claude, and future coding agents.
 
 | Status | Owner | Title | Files | Since | Release condition | Last update |
 |---|---|---|---|---|---|---|
+| done | codex | Sentry Client-Instrumentation auf Next-Konvention migrieren | `instrumentation-client.ts` + `sentry.client.config.ts` + `__tests__/config/sentry-file-conventions.test.ts` + `docs/plans/2026-05-03-sentry-instrumentation-client.md` + `docs/plans/handoff/INBOX.md` | 2026-05-03 abend | deprecated `sentry.client.config.ts` entfernt, `instrumentation-client.ts` uebernimmt Client-Sentry-Init; Vitest/ESLint/tsc/build/git diff checks gruen | 2026-05-03 abend |
 | done | codex | Lokaler S7-Smoke nach Goal-Setup | `docs/plans/2026-05-03-local-s7-smoke-after-goal.md` + `docs/plans/handoff/INBOX.md` | 2026-05-03 mittag | `npm run test:e2e:smoke` lokal gruen: 12 passed; CI fuer `c85f1d3` inzwischen S7 + S1-S6 gruen; keine Prod-/Env-Aenderung | 2026-05-03 mittag |
 | done | codex | Veraltete New-Session-Uebergabe markieren | `docs/plans/2026-05-03-codex-new-session-handover.md` + `docs/plans/handoff/INBOX.md` | 2026-05-03 mittag | alte `b7a9b62`-Uebergabe verweist klar auf den neueren `c85f1d3`-Startpunkt; keine Code-/Prod-Aenderung | 2026-05-03 mittag |
 | done | codex | Session-Handover nach E2E-Preflight-Guards | `docs/plans/2026-05-03-codex-handover-after-e2e-preflight-guards.md` + `docs/plans/handoff/INBOX.md` | 2026-05-03 mittag | neuer Startpunkt dokumentiert: HEAD `f786637`, CI gruen, PID-Datei unberuehrt, naechster sinnvoller Block benannt | 2026-05-03 mittag |

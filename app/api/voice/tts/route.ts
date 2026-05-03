@@ -23,7 +23,12 @@ export async function POST(request: NextRequest) {
     if (!auth) return unauthorizedResponse();
 
     // Body parsen
-    let body: { text?: unknown; voice?: unknown; speed?: unknown };
+    let body: {
+      text?: unknown;
+      voice?: unknown;
+      speed?: unknown;
+      cache?: unknown;
+    };
     try {
       body = await request.json();
     } catch {
@@ -43,6 +48,7 @@ export async function POST(request: NextRequest) {
       text: typeof body.text === "string" ? body.text : "",
       voice: typeof body.voice === "string" ? body.voice : undefined,
       speed: typeof body.speed === "number" ? body.speed : undefined,
+      cache: body.cache === "public" ? "public" : undefined,
     });
   } catch (error) {
     return handleServiceError(error);

@@ -255,7 +255,7 @@ describe("POST /api/voice/tts", () => {
     const req = new Request("http://localhost/api/voice/tts", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ text: "Guten Morgen" }),
+      body: JSON.stringify({ text: "Guten Morgen", cache: "public" }),
     });
     const res = await POST(req as never);
 
@@ -269,14 +269,14 @@ describe("POST /api/voice/tts", () => {
     expect(mockStorageUpload).not.toHaveBeenCalled();
   });
 
-  it("Cache-Miss: ruft OpenAI auf und triggert Upload in tts-cache", async () => {
+  it("Cache-Miss mit public-cache Opt-in: ruft OpenAI auf und triggert Upload in tts-cache", async () => {
     mockCacheMiss();
 
     const { POST } = await import("@/app/api/voice/tts/route");
     const req = new Request("http://localhost/api/voice/tts", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ text: "Guten Morgen" }),
+      body: JSON.stringify({ text: "Guten Morgen", cache: "public" }),
     });
     const res = await POST(req as never);
     // Body lesen, damit der tee-Stream im Hintergrund durchlaeuft
@@ -291,6 +291,27 @@ describe("POST /api/voice/tts", () => {
     expect(uploadBody).toBeInstanceOf(ArrayBuffer);
   });
 
+  it("Cache-Miss ohne public-cache Opt-in: ruft OpenAI auf, aber nutzt keinen public Cache", async () => {
+    mockCacheMiss();
+
+    const { POST } = await import("@/app/api/voice/tts/route");
+    const req = new Request("http://localhost/api/voice/tts", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ text: "Hallo Thomas, Ihr Termin ist um 10 Uhr." }),
+    });
+    const res = await POST(req as never);
+    await res.arrayBuffer();
+
+    expect(res.status).toBe(200);
+    expect(res.headers.get("X-TTS-Cache")).toBe("disabled");
+    const cacheCalls = mockFetch.mock.calls.filter(
+      (c) => typeof c[0] === "string" && c[0].includes("/tts-cache/"),
+    );
+    expect(cacheCalls).toHaveLength(0);
+    expect(mockStorageUpload).not.toHaveBeenCalled();
+  });
+
   it("Cache-Miss: Upload-Fehler killt die Response NICHT", async () => {
     mockCacheMiss();
     mockStorageUpload.mockRejectedValueOnce(new Error("upload boom"));
@@ -299,7 +320,7 @@ describe("POST /api/voice/tts", () => {
     const req = new Request("http://localhost/api/voice/tts", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ text: "Guten Morgen" }),
+      body: JSON.stringify({ text: "Guten Morgen", cache: "public" }),
     });
     const res = await POST(req as never);
     const buf = await res.arrayBuffer();

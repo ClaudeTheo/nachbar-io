@@ -11,6 +11,7 @@ export interface TtsRequest {
   text: string;
   voice?: string;
   speed?: number;
+  cache?: "public";
 }
 
 interface ValidatedTtsInput {
@@ -18,6 +19,7 @@ interface ValidatedTtsInput {
   voice: string;
   speed: number;
   instructions: string;
+  publicCache: boolean;
 }
 
 export const SENIOR_VOICE_INSTRUCTIONS = `Sprich klares, akzentfreies Hochdeutsch mit viel Emotion und Dynamik.
@@ -48,7 +50,13 @@ function validateTtsInput(params: TtsRequest): ValidatedTtsInput {
       ? params.speed
       : 0.95;
 
-  return { text, voice, speed, instructions: SENIOR_VOICE_INSTRUCTIONS };
+  return {
+    text,
+    voice,
+    speed,
+    instructions: SENIOR_VOICE_INSTRUCTIONS,
+    publicCache: params.cache === "public",
+  };
 }
 
 /**
@@ -107,18 +115,23 @@ export async function synthesizeSpeech(params: TtsRequest): Promise<Response> {
   const apiKey = process.env.OPENAI_API_KEY;
   if (!apiKey) throw new ServiceError("Sprachausgabe nicht verfügbar.", 503);
 
-  const { text, voice, speed, instructions } = validateTtsInput(params);
+  const { text, voice, speed, instructions, publicCache } =
+    validateTtsInput(params);
 
   const t0 = Date.now();
-  const cacheKey = await computeCacheKey({
-    text,
-    voice,
-    speed,
-    instructionsVersion: INSTRUCTIONS_VERSION,
-  });
+  let cacheKey: string | null = null;
 
   // Layer-1: Cache-Hit?
-  const hitUrl = await checkCacheHit(cacheKey);
+  let hitUrl: string | null = null;
+  if (publicCache) {
+    cacheKey = await computeCacheKey({
+      text,
+      voice,
+      speed,
+      instructionsVersion: INSTRUCTIONS_VERSION,
+    });
+    hitUrl = await checkCacheHit(cacheKey);
+  }
   const tCache = Date.now();
 
   if (hitUrl) {
@@ -175,25 +188,32 @@ export async function synthesizeSpeech(params: TtsRequest): Promise<Response> {
       ms_openai_ttfb: tFirstByte - tOpenaiStart,
     });
 
-    // Stream teilen: Client bekommt einen Zweig sofort, Cache-Upload
-    // konsumiert den anderen asynchron.
-    const [clientStream, cacheStream] = res.body.tee();
+    let clientStream = res.body;
+    let cacheHeader = "disabled";
 
-    queueMicrotask(async () => {
-      try {
-        const buf = await new Response(cacheStream).arrayBuffer();
-        await uploadToCache(cacheKey, buf);
-      } catch (err) {
-        console.warn("[voice/tts] cache-upload failed:", err);
-      }
-    });
+    if (publicCache && cacheKey) {
+      // Stream teilen: Client bekommt einen Zweig sofort, Cache-Upload
+      // konsumiert den anderen asynchron.
+      const [responseStream, cacheStream] = res.body.tee();
+      clientStream = responseStream;
+      cacheHeader = "miss";
+
+      queueMicrotask(async () => {
+        try {
+          const buf = await new Response(cacheStream).arrayBuffer();
+          await uploadToCache(cacheKey, buf);
+        } catch (err) {
+          console.warn("[voice/tts] cache-upload failed:", err);
+        }
+      });
+    }
 
     return new Response(clientStream, {
       status: 200,
       headers: {
         "Content-Type": "audio/mpeg",
         "Cache-Control": "no-cache",
-        "X-TTS-Cache": "miss",
+        "X-TTS-Cache": cacheHeader,
       },
     });
   } catch (err) {

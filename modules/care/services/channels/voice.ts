@@ -2,6 +2,8 @@
 // Anruf-Kanal via Twilio Voice — Automatische Sprachanrufe mit TTS
 // Graceful Fallback wenn Twilio-Credentials fehlen
 
+import { isTwilioEnabled } from "./twilio-gate";
+
 interface VoicePayload {
   phone: string;
   ttsMessage: string;
@@ -67,6 +69,14 @@ export async function initiateCall(payload: VoicePayload): Promise<boolean> {
   if (!isTwilioVoiceConfigured()) {
     console.warn(
       `[care/voice] Anruf nicht gestartet — Twilio nicht konfiguriert`,
+      { phone: payload.phone.slice(0, 6) + '...', messageLength: payload.ttsMessage.length }
+    );
+    return false;
+  }
+
+  if (!(await isTwilioEnabled())) {
+    console.warn(
+      `[care/voice] Anruf nicht gestartet — TWILIO_ENABLED ist deaktiviert`,
       { phone: payload.phone.slice(0, 6) + '...', messageLength: payload.ttsMessage.length }
     );
     return false;

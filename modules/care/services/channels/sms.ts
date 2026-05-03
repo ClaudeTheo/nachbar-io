@@ -2,6 +2,8 @@
 // SMS-Kanal via Twilio — Sendet SMS an Telefonnummern
 // Graceful Fallback wenn Twilio-Credentials fehlen
 
+import { isTwilioEnabled } from "./twilio-gate";
+
 interface SmsPayload {
   phone: string;
   message: string;
@@ -41,6 +43,14 @@ export async function sendSms(payload: SmsPayload): Promise<boolean> {
   if (!isTwilioConfigured()) {
     console.warn(
       `[care/sms] SMS nicht gesendet — Twilio nicht konfiguriert`,
+      { phone: '***' + payload.phone.slice(-4), messageLength: payload.message.length }
+    );
+    return false;
+  }
+
+  if (!(await isTwilioEnabled())) {
+    console.warn(
+      `[care/sms] SMS nicht gesendet — TWILIO_ENABLED ist deaktiviert`,
       { phone: '***' + payload.phone.slice(-4), messageLength: payload.message.length }
     );
     return false;

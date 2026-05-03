@@ -67,6 +67,18 @@ describe("Closed-Pilot-Gate", () => {
     },
   );
 
+  it.each(["/senior/preview", "/care/preview", "/care/consent/preview"])(
+    "laesst lokale UI-Preview %s ohne Auth-Middleware erreichbar",
+    async (path) => {
+      const res = await proxy(makeRequest(path));
+
+      expect(updateSession).not.toHaveBeenCalled();
+      expect(res.status).not.toBe(307);
+      expect(res.status).not.toBe(503);
+      expect(res.headers.get("X-Robots-Tag")).toContain("noindex");
+    },
+  );
+
   it.each(["/api/messages", "/api/alerts"])(
     "uebergibt personenbezogene API %s im Closed-Pilot-Modus an die Auth-Middleware",
     async (path) => {

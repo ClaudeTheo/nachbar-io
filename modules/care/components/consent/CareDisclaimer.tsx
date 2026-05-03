@@ -1,24 +1,35 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { usePathname } from 'next/navigation';
 import { TriangleAlert } from 'lucide-react';
 
 const STORAGE_KEY = 'care_disclaimer_accepted';
+const CARE_DISCLAIMER_BYPASS_PATHS = new Set([
+  '/care/preview',
+  '/care/consent/preview',
+]);
+
+export function shouldBypassCareDisclaimer(pathname: string) {
+  return CARE_DISCLAIMER_BYPASS_PATHS.has(pathname);
+}
 
 /**
  * Einmaliger Disclaimer-Dialog beim ersten Zugriff auf Care-Features.
  * Wird in localStorage gespeichert und danach nicht mehr angezeigt.
  */
 export function CareDisclaimer({ children }: { children: React.ReactNode }) {
+  const pathname = usePathname();
   const [accepted, setAccepted] = useState(true); // Default true um Flash zu vermeiden
 
   /* eslint-disable react-hooks/set-state-in-effect -- localStorage prüfen bei Mount */
   useEffect(() => {
+    if (shouldBypassCareDisclaimer(pathname)) return;
     const stored = localStorage.getItem(STORAGE_KEY);
     if (stored !== 'true') {
       setAccepted(false);
     }
-  }, []);
+  }, [pathname]);
   /* eslint-enable react-hooks/set-state-in-effect */
 
   function handleAccept() {
@@ -26,7 +37,7 @@ export function CareDisclaimer({ children }: { children: React.ReactNode }) {
     setAccepted(true);
   }
 
-  if (accepted) {
+  if (accepted || shouldBypassCareDisclaimer(pathname)) {
     return <>{children}</>;
   }
 

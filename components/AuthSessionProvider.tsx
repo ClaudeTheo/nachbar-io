@@ -9,6 +9,27 @@ import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { invalidateUserCache } from "@/lib/supabase/cached-auth";
 
+const AUTH_SESSION_PUBLIC_PATHS = [
+  "/",
+  "/login",
+  "/register",
+  "/auth/callback",
+  "/impressum",
+  "/datenschutz",
+  "/agb",
+  "/barrierefreiheit",
+  "/richtlinien",
+  "/senior/preview",
+  "/care/preview",
+  "/care/consent/preview",
+];
+
+export function isAuthSessionPublicPath(path: string) {
+  return AUTH_SESSION_PUBLIC_PATHS.some(
+    (publicPath) => path === publicPath || path.startsWith("/auth/"),
+  );
+}
+
 export function AuthSessionProvider({
   children,
 }: {
@@ -25,18 +46,7 @@ export function AuthSessionProvider({
       if (!session) {
         // Kein gültige Session — Redirect nur wenn auf geschützter Route
         const path = window.location.pathname;
-        const publicPaths = [
-          "/",
-          "/login",
-          "/register",
-          "/auth/callback",
-          "/impressum",
-          "/datenschutz",
-          "/agb",
-          "/barrierefreiheit",
-          "/richtlinien",
-        ];
-        if (!publicPaths.some((p) => path === p || path.startsWith("/auth/"))) {
+        if (!isAuthSessionPublicPath(path)) {
           router.replace("/login");
         }
       }

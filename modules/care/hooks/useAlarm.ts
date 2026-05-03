@@ -18,6 +18,10 @@ interface UseAlarmReturn {
   snoozeAlarm: (minutes?: number) => void; // Schlummern
 }
 
+interface UseAlarmOptions {
+  disabled?: boolean;
+}
+
 // Schwelle in Minuten: Alarm wird ausgeloest, wenn die Check-in-Zeit
 // hoechstens ALARM_THRESHOLD_MINUTES Minuten in der Vergangenheit liegt
 const ALARM_THRESHOLD_MINUTES = 5;
@@ -30,7 +34,8 @@ function isAlarmDisabledForE2E(): boolean {
   return typeof window !== 'undefined' && localStorage.getItem('e2e_disable_alarm') === 'true';
 }
 
-export function useAlarm(): UseAlarmReturn {
+export function useAlarm(options: UseAlarmOptions = {}): UseAlarmReturn {
+  const disabled = options.disabled ?? false;
   const [alarm, setAlarm] = useState<AlarmState>({
     isRinging: false,
     scheduledAt: null,
@@ -95,6 +100,11 @@ export function useAlarm(): UseAlarmReturn {
 
   // Check-in-Zeiten vom Server laden und Alarm-Logik starten
   useEffect(() => {
+    if (disabled) {
+      setAlarm({ isRinging: false, scheduledAt: null, nextAlarmIn: null });
+      return;
+    }
+
     async function checkAlarm() {
       // E2E-Tests: Alarm deaktiviert → kein Server-Call, kein Alarm
       if (isAlarmDisabledForE2E()) return;
@@ -186,7 +196,7 @@ export function useAlarm(): UseAlarmReturn {
       if (timerRef.current) clearInterval(timerRef.current);
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [alarm.isRinging]);
+  }, [alarm.isRinging, disabled]);
 
   // Alarm abschalten + Check-in senden
   const dismissAlarm = useCallback(async (): Promise<boolean> => {

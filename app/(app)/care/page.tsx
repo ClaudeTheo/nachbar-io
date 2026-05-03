@@ -2,18 +2,9 @@
 // Gesundheit Hub — 6 große Kacheln (2-Spalten-Raster)
 "use client";
 
-import { type ComponentType, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
-import {
-  Heart,
-  CheckCircle2,
-  Pill,
-  Stethoscope,
-  CalendarDays,
-  Video,
-  ShieldCheck,
-  ArrowRight,
-} from "lucide-react";
+import { ArrowRight, Heart } from "lucide-react";
 import { PageHeader } from "@/components/ui/page-header";
 import Link from "next/link";
 import { SosAlertCard } from "@/modules/care/components/sos/SosAlertCard";
@@ -21,8 +12,7 @@ import type { CareSosAlert, CareAppointment } from "@/lib/care/types";
 import { PLAN_FEATURES } from "@/lib/care/constants";
 import type { CareSubscriptionPlan } from "@/lib/care/types";
 import { useAuth } from "@/hooks/use-auth";
-import { isLegacyRoute } from "@/lib/legacy-routes";
-import { computeTileDisabled } from "@/lib/health-feature-gate";
+import { CareHubTileGrid } from "@/modules/care/components/CareHubTileGrid";
 
 interface CheckinStatus {
   completedCount: number;
@@ -35,59 +25,6 @@ interface CheckinStatus {
 interface MedicationDueStatus {
   pendingCount: number;
   completedCount: number;
-}
-
-interface CareTileProps {
-  href: string;
-  label: string;
-  subtitle: string;
-  icon: ComponentType<{ className?: string }>;
-  iconClassName: string;
-}
-
-interface CareTilePropsInternal extends CareTileProps {
-  disabled: boolean;
-}
-
-function CareTile({
-  href,
-  label,
-  subtitle,
-  icon: Icon,
-  iconClassName,
-  disabled,
-}: CareTilePropsInternal) {
-  const content = (
-    <>
-      <div className="flex items-center gap-2">
-        <Icon className={`h-5 w-5 ${iconClassName}`} />
-        <span className="font-semibold text-anthrazit">{label}</span>
-      </div>
-      <p className="text-sm text-muted-foreground mt-2">
-        {disabled ? "Im Pilot noch deaktiviert" : subtitle}
-      </p>
-    </>
-  );
-
-  if (disabled) {
-    return (
-      <div
-        aria-disabled="true"
-        className="rounded-xl border border-dashed bg-muted/35 p-4 min-h-[100px] flex flex-col justify-between"
-      >
-        {content}
-      </div>
-    );
-  }
-
-  return (
-    <Link
-      href={href}
-      className="bg-white rounded-xl border shadow-sm p-4 min-h-[100px] flex flex-col justify-between hover:bg-gray-50 transition-colors active:scale-[0.98]"
-    >
-      {content}
-    </Link>
-  );
 }
 
 export default function GesundheitHubPage() {
@@ -248,24 +185,6 @@ export default function GesundheitHubPage() {
     );
   }
 
-  // Medikamenten-Subtitle berechnen
-  const medSubtitle =
-    medicationStatus && medicationStatus.pendingCount > 0
-      ? `${medicationStatus.pendingCount} ausstehend`
-      : medicationStatus
-        ? "Alle eingenommen"
-        : "Übersicht";
-
-  // Termin-Subtitle berechnen
-  const terminSubtitle = nextAppointment
-    ? new Date(nextAppointment.scheduled_at).toLocaleDateString("de-DE", {
-        day: "2-digit",
-        month: "2-digit",
-        hour: "2-digit",
-        minute: "2-digit",
-      })
-    : "Keine Termine";
-
   return (
     <div className="px-4 py-6 space-y-6">
       {/* Header */}
@@ -304,69 +223,12 @@ export default function GesundheitHubPage() {
       )}
 
       {/* 6 Kacheln im 2-Spalten-Raster */}
-      <div className="grid grid-cols-2 gap-3">
-        <CareTile
-          href="/care/checkin"
-          label="Check-in"
-          subtitle={
-            checkinStatus?.allCompleted
-              ? "Alle erledigt"
-              : checkinStatus
-                ? `${checkinStatus.completedCount}/${checkinStatus.totalCount} erledigt`
-                : "Wie geht es Ihnen?"
-          }
-          icon={CheckCircle2}
-          iconClassName="text-quartier-green"
-          disabled={computeTileDisabled("/care/checkin", healthFlagStates, isLegacyRoute)}
-        />
-
-        <CareTile
-          href="/care/medications"
-          label="Medikamente"
-          subtitle={medSubtitle}
-          icon={Pill}
-          iconClassName="text-blue-500"
-          disabled={computeTileDisabled("/care/medications", healthFlagStates, isLegacyRoute)}
-        />
-
-        <CareTile
-          href="/care/aerzte"
-          label="Ärzte"
-          subtitle="in der Nähe"
-          icon={Stethoscope}
-          iconClassName="text-emerald-600"
-          disabled={computeTileDisabled("/care/aerzte", healthFlagStates, isLegacyRoute)}
-        />
-
-        <CareTile
-          href="/care/termine"
-          label="Termine"
-          subtitle={
-            nextAppointment ? `Nächster: ${terminSubtitle}` : terminSubtitle
-          }
-          icon={CalendarDays}
-          iconClassName="text-violet-500"
-          disabled={computeTileDisabled("/care/termine", healthFlagStates, isLegacyRoute)}
-        />
-
-        <CareTile
-          href="/care/sprechstunde"
-          label="Sprechstunde"
-          subtitle="Video-Termin"
-          icon={Video}
-          iconClassName="text-red-500"
-          disabled={computeTileDisabled("/care/sprechstunde", healthFlagStates, isLegacyRoute)}
-        />
-
-        <CareTile
-          href="/praevention"
-          label="Vorsorge"
-          subtitle="Erinnerungen"
-          icon={ShieldCheck}
-          iconClassName="text-amber-500"
-          disabled={computeTileDisabled("/praevention", healthFlagStates, isLegacyRoute)}
-        />
-      </div>
+      <CareHubTileGrid
+        checkinStatus={checkinStatus}
+        medicationStatus={medicationStatus}
+        nextAppointment={nextAppointment}
+        healthFlagStates={healthFlagStates}
+      />
     </div>
   );
 }

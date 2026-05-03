@@ -3,10 +3,11 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Shield, Info } from "lucide-react";
+import { Shield } from "lucide-react";
 import Link from "next/link";
 import { PageHeader } from "@/components/ui/page-header";
 import { ConsentFeatureCard } from "@/modules/care/components/consent/ConsentFeatureCard";
+import { CareConsentNotice } from "@/modules/care/components/consent/CareConsentNotice";
 import { RevokeDialog } from "@/modules/care/components/caregiver/RevokeDialog";
 import {
   CARE_CONSENT_FEATURES,
@@ -165,16 +166,7 @@ export default function CareConsentPage() {
         backHref={isFirstTime ? "/" : "/care"}
       />
 
-      <div className="rounded-2xl bg-quartier-green/10 border border-quartier-green/20 p-4 flex gap-3">
-        <Info className="h-5 w-5 text-quartier-green flex-shrink-0 mt-0.5" />
-        <div className="text-sm text-anthrazit/80">
-          <p>
-            Ihre Gesundheitsdaten (Art. 9 DSGVO) werden nur mit Ihrer
-            ausdrücklichen und freiwilligen Einwilligung verarbeitet. Sie
-            können jede Einwilligung jederzeit widerrufen.
-          </p>
-        </div>
-      </div>
+      <CareConsentNotice />
 
       <div className="space-y-3">
         {CARE_CONSENT_FEATURES.map((feature) => {

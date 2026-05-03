@@ -12,6 +12,9 @@ const CLOSED_PILOT_PUBLIC_PATHS = new Set([
   "/login",
   "/opengraph-image",
   "/register",
+  "/senior/preview",
+  "/care/preview",
+  "/care/consent/preview",
 ]);
 
 const CLOSED_PILOT_PUBLIC_API_PATHS = new Set([

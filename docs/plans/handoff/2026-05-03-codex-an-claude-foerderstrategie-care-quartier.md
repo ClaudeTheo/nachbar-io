@@ -1,8 +1,8 @@
 # Handover: Foerderstrategie Care-Quartier
 
-Stand: 2026-05-03 abend  
-Repo: `nachbar-io` auf `master`, Start-HEAD fuer diesen Block: `d770668`  
-Owner: Codex  
+Stand: 2026-05-03 abend
+Repo: `nachbar-io` auf `master`, Start-HEAD fuer diesen Block: `d770668`
+Owner: Codex
 Art: Strategie-/Doku-Handover, keine Code-Aenderung
 
 ## Anlass

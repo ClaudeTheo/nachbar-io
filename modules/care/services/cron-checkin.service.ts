@@ -3,7 +3,10 @@
 
 import { SupabaseClient } from "@supabase/supabase-js";
 import { writeAuditLog } from "@/lib/care/audit";
-import { sendCareNotification } from "@/lib/care/notifications";
+import {
+  getCareNotificationRecipients,
+  sendCareNotification,
+} from "@/lib/care/notifications";
 import { CHECKIN_DEFAULTS } from "@/lib/care/constants";
 import { encryptField } from "@/lib/care/field-encryption";
 import { writeCronHeartbeat } from "@/lib/care/cron-heartbeat";
@@ -373,22 +376,15 @@ async function handlePhaseEscalation(
 
   // Angehörige und Pflegedienst-Helfer benachrichtigen
   try {
-    const { data: helpers, error: helpersError } = await supabase
-      .from("care_helpers")
-      .select("user_id, role")
-      .in("role", ["relative", "care_service"])
-      .eq("verification_status", "verified")
-      .contains("assigned_seniors", [userId]);
+    const helpers = await getCareNotificationRecipients(supabase, {
+      seniorId: userId,
+      roles: ["relative", "care_service"],
+    });
 
-    if (helpersError) {
-      console.error(
-        `[care/cron/checkin] Helfer-Abfrage für Senior ${userId} fehlgeschlagen:`,
-        helpersError,
-      );
-    } else if (helpers && helpers.length > 0) {
+    if (helpers.length > 0) {
       const notifyPromises = helpers.map((helper) =>
         sendCareNotification(supabase, {
-          userId: helper.user_id,
+          userId: helper.userId,
           type: "care_checkin_missed",
           title: "Check-in verpasst",
           body: "Ihr Angehöriger hat den Check-in seit über 60 Minuten nicht bestätigt.",

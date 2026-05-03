@@ -402,6 +402,10 @@ Vor externer Nutzung erneut gegenpruefen. Stand dieser Links: 2026-05-03.
    Quartiersimpulse-Skizze aus diesem Entwurf ableiten.
 5. Separat spaeter: Wording-Audit fuer bestehende Hilfe-Seiten und Dokus.
 
+Erstelltes Gespraechsdokument:
+
+- `docs/plans/2026-05-04-care-quartier-partner-onepager.md`
+
 ## Arbeitsstand Task 3+4
 
 Ergaenzt am 2026-05-03 abend:
@@ -426,3 +430,9 @@ Ergaenzt am 2026-05-03 spaetabend:
   Betragsclaims
 - bestehende Intended-Use-/DSFA-/FMEA-/Traceability-Dokumente als Vorarbeit
   verlinkt, nicht als fertigen DiPA-Nachweis behandelt
+
+Ergaenzt am 2026-05-03 spaetabend:
+
+- Partner-Onepager fuer Kommune/UStA-Traeger/Nachbarschaftshilfe erstellt
+- Fokus: Gespraechsanker, Rollenmodell, Pilotumfang, sichere Formulierungen
+- keine Antrags-, Erstattungs-, DiPA- oder Hausnotrufbehauptung

@@ -11,7 +11,15 @@ vi.mock('@/lib/care/constants', () => ({
   },
 }));
 
-import { canUpgrade, isTrialExpired, trialDaysRemaining, getUpgradeFeatures, minimumPlanForFeature, PLAN_HIERARCHY } from '@/lib/care/billing';
+import {
+  canUpgrade,
+  FEATURE_LABELS,
+  getUpgradeFeatures,
+  isTrialExpired,
+  minimumPlanForFeature,
+  PLAN_HIERARCHY,
+  trialDaysRemaining,
+} from '@/lib/care/billing';
 
 describe('canUpgrade', () => {
   it('erlaubt Upgrade von free auf plus', () => {
@@ -103,5 +111,13 @@ describe('minimumPlanForFeature', () => {
 describe('PLAN_HIERARCHY', () => {
   it('hat korrekte Reihenfolge', () => {
     expect(PLAN_HIERARCHY).toEqual(['free', 'plus', 'pro']);
+  });
+});
+
+describe('FEATURE_LABELS', () => {
+  it('vermeidet fuer medical_emergency_sos ein Hausnotruf- oder Medizinprodukt-Versprechen', () => {
+    expect(FEATURE_LABELS.medical_emergency_sos).toBe(
+      'Dringende Hilfe mit 112-Hinweis',
+    );
   });
 });

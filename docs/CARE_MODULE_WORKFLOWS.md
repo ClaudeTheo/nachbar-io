@@ -725,7 +725,7 @@ canAccessFeature(supabase, seniorId, feature)
 
 | Plan | Preis | Beschreibung |
 |---|---|---|
-| Kostenlos | 0 EUR | Grundlegende Sicherheit (Check-in + Notfall-SOS) |
+| Kostenlos | 0 EUR | Grundlegende Sicherheit (Check-in + 112-Hinweis) |
 | Basis | ab 4,99 EUR/Monat | Alltagshilfe |
 | Familie | ab 9,99 EUR/Monat | Fuer Angehoerige (empfohlen) |
 | Professionell | ab 19,99 EUR/Monat | Fuer Pflegedienste |

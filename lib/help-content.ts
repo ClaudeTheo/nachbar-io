@@ -94,7 +94,7 @@ export const HELP_CATEGORIES: HelpCategory[] = [
     items: [
       {
         question: "Was tue ich bei einem Notfall?",
-        answer: "Bei einem echten Notfall (Feuer, medizinischer Notfall, Verbrechen) IMMER zuerst 112 oder 110 anrufen! QuartierApp zeigt Ihnen automatisch die Notrufnummern an, ersetzt aber NICHT den Rettungsdienst.",
+        answer: "Bei einem echten Notfall (Feuer, akute gesundheitliche Gefahr, Verbrechen) IMMER zuerst 112 oder 110 anrufen! QuartierApp zeigt Ihnen automatisch die Notrufnummern an, ersetzt aber NICHT den Rettungsdienst.",
       },
       {
         question: "Was ist ein Nachbarschafts-Alert?",

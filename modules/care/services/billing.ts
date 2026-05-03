@@ -32,7 +32,7 @@ export const FEATURE_LABELS: Record<string, string> = {
   push_notifications: 'Push-Benachrichtigungen',
   senior_mode: 'Senioren-Modus',
   checkin: 'Taegliche Check-ins',
-  medical_emergency_sos: 'Medizinischer Notfall-SOS',
+  medical_emergency_sos: 'Dringende Hilfe mit 112-Hinweis',
   sos_all: 'Alle SOS-Kategorien',
   // Plus
   marketplace: 'Marktplatz',

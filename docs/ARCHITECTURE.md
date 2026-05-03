@@ -639,7 +639,7 @@ Definiert als `CareNotificationType` in `lib/care/types.ts`:
 │             │  /Monat    │  /Monat    │  /Monat       │  /Monat    │
 ├────────────┼────────────┼────────────┼───────────────┼────────────┤
 │ Check-in   │ Check-in   │ Check-in   │ Check-in      │ Check-in   │
-│ Notfall-SOS│ Alle SOS   │ Alle SOS   │ Alle SOS      │ Alle SOS   │
+│ 112-Hinweis│ Alle SOS   │ Alle SOS   │ Alle SOS      │ Alle SOS   │
 │            │ Medikamente│ Medikamente│ Medikamente   │ Medikamente│
 │            │ Termine    │ Termine    │ Termine       │ Termine    │
 │            │            │ Angehoerig.│ Angehoerig.   │ Angehoerig.│
@@ -699,7 +699,7 @@ zur Abo-Seite (`/care/subscription`).
 
 ### 6.3 Sicherheitsregel
 
-**Medizinischer Notfall (`medical_emergency_sos`) ist IMMER verfuegbar** —
+**Dringende Hilfe mit 112-Hinweis (`medical_emergency_sos`) ist IMMER verfuegbar** —
 unabhaengig vom Abo-Plan. Dies ist eine nicht-verhandelbare
 Sicherheitsanforderung, die sowohl in `canAccessFeature()` als auch in
 der SOS-API-Route (`app/api/care/sos/route.ts`) geprueft wird.

@@ -62,7 +62,7 @@ type Tab = "medikamente" | "checkins" | "sos" | "pflege" | "gedaechtnis";
 
 const SOS_CATEGORY_LABELS: Record<string, string> = {
   general_help: "Allgemeine Hilfe",
-  medical_emergency: "Medizinischer Notfall",
+  medical_emergency: "Dringende Hilfe benötigt",
   fall: "Sturz",
   safety_concern: "Sicherheitsbedenken",
   orientation: "Orientierung",

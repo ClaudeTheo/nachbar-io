@@ -197,7 +197,7 @@ export default function TestanleitungPage() {
           <li>Wählen Sie als Kategorie <strong>&quot;Feuer/Brand&quot;</strong></li>
           <li>Es sollte sofort ein <strong>großes rotes Band</strong> erscheinen mit dem Hinweis &quot;Rufen Sie zuerst 112 an!&quot;</li>
           <li>Prüfen Sie: Das rote Band sollte <strong>über allem anderen</strong> stehen — nichts sollte es verdecken</li>
-          <li>Probieren Sie das Gleiche mit &quot;Medizinischer Notfall&quot; und &quot;Kriminalität&quot;</li>
+          <li>Probieren Sie das Gleiche mit &quot;Dringende Hilfe benötigt&quot; und &quot;Kriminalität&quot;</li>
         </ol>
 
         <h3 className="mb-2 mt-5 text-sm font-semibold">Seniorenmodus ausprobieren</h3>

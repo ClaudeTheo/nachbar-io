@@ -133,7 +133,7 @@ Bitte gehen Sie die folgenden Aufgaben der Reihe nach durch und haken Sie ab, wa
 - [ ] **J1** — Neuen Hilfe-Eintrag erstellen und Kategorie "Feuer/Brand" wählen
 - [ ] **J2** — Prüfen: **Rotes Banner erscheint sofort mit "Rufen Sie zuerst 112 an!"**
 - [ ] **J3** — Das Banner muss ÜBER allem anderen stehen — nichts darf es verdecken
-- [ ] **J4** — Gleichen Test mit Kategorie "Medizinischer Notfall" und "Kriminalität/Einbruch"
+- [ ] **J4** — Gleichen Test mit Kategorie "Dringende Hilfe benötigt" und "Kriminalität/Einbruch"
 
 ### K. Seniorenmodus
 

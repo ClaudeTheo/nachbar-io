@@ -87,7 +87,7 @@ export async function canAccessFeature(
   seniorId: string,
   feature: string
 ): Promise<boolean> {
-  // Medizinischer Notfall ist immer verfuegbar (Sicherheitspflicht)
+  // Dringende Hilfe mit 112-Hinweis ist immer verfuegbar.
   if (feature === 'medical_emergency_sos') return true;
 
   const { data: subscription } = await supabase

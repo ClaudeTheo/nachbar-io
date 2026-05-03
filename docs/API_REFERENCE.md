@@ -1320,7 +1320,7 @@ Feature-Gates pruefen ueber `canAccessFeature()` / `requireFeature()`, ob der ak
 
 | Feature-Key | Beschreibung |
 |---|---|
-| `medical_emergency_sos` | Medizinischer Notfall-SOS (in allen Plaenen enthalten) |
+| `medical_emergency_sos` | Dringende Hilfe mit 112-Hinweis (in allen Plaenen enthalten) |
 | `sos_all` | Alle SOS-Kategorien |
 | `medications` | Medikamenten-Verwaltung |
 | `appointments` | Termin-Verwaltung |

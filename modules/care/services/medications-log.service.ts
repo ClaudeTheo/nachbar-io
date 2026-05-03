@@ -4,7 +4,10 @@
 import { SupabaseClient } from "@supabase/supabase-js";
 import { ServiceError } from "@/lib/services/service-error";
 import { writeAuditLog } from "@/lib/care/audit";
-import { sendCareNotification } from "@/lib/care/notifications";
+import {
+  getCareNotificationRecipients,
+  sendCareNotification,
+} from "@/lib/care/notifications";
 import { requireCareAccess } from "@/lib/care/api-helpers";
 import { MEDICATION_DEFAULTS } from "@/lib/care/constants";
 import { decryptField } from "@/lib/care/field-encryption";
@@ -106,14 +109,12 @@ export async function logMedicationIntake(
 
   // Bei "skipped": Angehörige benachrichtigen
   if (status === "skipped") {
-    const { data: relatives } = await supabase
-      .from("care_helpers")
-      .select("user_id")
-      .eq("role", "relative")
-      .eq("verification_status", "verified")
-      .contains("assigned_seniors", [userId]);
+    const relatives = await getCareNotificationRecipients(supabase, {
+      seniorId: userId,
+      roles: ["relative"],
+    });
 
-    if (relatives && relatives.length > 0) {
+    if (relatives.length > 0) {
       const { data: med } = await supabase
         .from("care_medications")
         .select("name")
@@ -125,7 +126,7 @@ export async function logMedicationIntake(
 
       for (const rel of relatives) {
         await sendCareNotification(supabase, {
-          userId: rel.user_id,
+          userId: rel.userId,
           type: "care_medication_missed",
           title: "Medikament übersprungen",
           body: `${medName ?? "Ein Medikament"} wurde übersprungen.`,

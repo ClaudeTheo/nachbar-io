@@ -11,6 +11,7 @@ import { encryptField } from '@/lib/care/field-encryption';
 
 const mockSupabase = createRouteMockSupabase();
 const mockIsFeatureEnabledServer = vi.fn();
+const mockGetCareNotificationRecipients = vi.fn();
 
 vi.mock('@/lib/supabase/server', () => ({
   createClient: vi.fn().mockImplementation(() => Promise.resolve(mockSupabase.supabase)),
@@ -27,6 +28,8 @@ vi.mock('@/lib/care/audit', () => ({
 
 vi.mock('@/lib/care/notifications', () => ({
   sendCareNotification: vi.fn().mockResolvedValue({ anyDelivered: true }),
+  getCareNotificationRecipients: (...args: unknown[]) =>
+    mockGetCareNotificationRecipients(...args),
 }));
 
 vi.mock('@/lib/care/api-helpers', () => ({
@@ -80,6 +83,7 @@ describe('POST /api/care/checkin', () => {
     mockSupabase.reset();
     mockSupabase.setUser(TEST_USER);
     mockIsFeatureEnabledServer.mockResolvedValue(true);
+    mockGetCareNotificationRecipients.mockResolvedValue([]);
   });
 
   describe('Authentifizierung', () => {
@@ -257,6 +261,10 @@ describe('POST /api/care/checkin', () => {
         data: [{ user_id: 'relative-1' }, { user_id: 'relative-2' }],
         error: null,
       });
+      mockGetCareNotificationRecipients.mockResolvedValue([
+        { userId: 'relative-1', role: 'relative', source: 'care_helpers' },
+        { userId: 'relative-2', role: 'relative', source: 'care_helpers' },
+      ]);
 
       await POST(createPostRequest({ status: 'not_well' }));
 
@@ -268,6 +276,31 @@ describe('POST /api/care/checkin', () => {
           type: 'care_checkin_missed',
           channels: ['push', 'in_app'],
         })
+      );
+    });
+
+    it('benachrichtigt CareCircle-Angehoerige aus caregiver_links wenn Status not_well', async () => {
+      mockSupabase.addResponse('care_checkins', {
+        data: { id: 'ci-carecircle', status: 'not_well', note: null, senior_id: TEST_USER.id },
+        error: null,
+      });
+      mockGetCareNotificationRecipients.mockResolvedValue([
+        { userId: 'link-relative-1', role: 'relative', source: 'caregiver_links' },
+      ]);
+
+      await POST(createPostRequest({ status: 'not_well' }));
+
+      expect(mockGetCareNotificationRecipients).toHaveBeenCalledWith(
+        mockSupabase.supabase,
+        { seniorId: TEST_USER.id, roles: ['relative'] },
+      );
+      expect(sendCareNotification).toHaveBeenCalledWith(
+        mockSupabase.supabase,
+        expect.objectContaining({
+          userId: 'link-relative-1',
+          type: 'care_checkin_missed',
+          channels: ['push', 'in_app'],
+        }),
       );
     });
 

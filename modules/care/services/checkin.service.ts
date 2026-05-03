@@ -3,7 +3,10 @@
 
 import { SupabaseClient } from "@supabase/supabase-js";
 import { writeAuditLog } from "@/lib/care/audit";
-import { sendCareNotification } from "@/lib/care/notifications";
+import {
+  getCareNotificationRecipients,
+  sendCareNotification,
+} from "@/lib/care/notifications";
 import { requireCareAccess } from "@/lib/care/api-helpers";
 import {
   encryptField,
@@ -194,20 +197,15 @@ export async function submitCheckin(
   // Bei "not_well": Angehörige benachrichtigen
   if (status === "not_well") {
     try {
-      // Alle verifizierten Angehörigen abrufen, die diesem Senior zugewiesen sind
-      const { data: relatives, error: relativesError } = await supabase
-        .from("care_helpers")
-        .select("user_id")
-        .eq("role", "relative")
-        .eq("verification_status", "verified")
-        .contains("assigned_seniors", [userId]);
+      const relatives = await getCareNotificationRecipients(supabase, {
+        seniorId: userId,
+        roles: ["relative"],
+      });
 
-      if (relativesError) {
-        log.error("relatives_query_failed", relativesError, { userId });
-      } else if (relatives && relatives.length > 0) {
+      if (relatives.length > 0) {
         const notifyPromises = relatives.map((relative) =>
           sendCareNotification(supabase, {
-            userId: relative.user_id,
+            userId: relative.userId,
             type: "care_checkin_missed",
             title: "Check-in: Nicht so gut",
             body: `Ihr Angehöriger hat gemeldet, dass er sich nicht wohl fühlt.${note ? ` Hinweis: ${note}` : ""}`,

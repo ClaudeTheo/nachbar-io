@@ -20,7 +20,7 @@ vi.mock('@/lib/notifications-server', () => ({
   safeInsertNotification: vi.fn().mockResolvedValue({ success: true }),
 }));
 
-import { sendCareNotification } from './notifications';
+import { getCareNotificationRecipients, sendCareNotification } from './notifications';
 import { sendPush } from './channels/push';
 import { sendSms } from './channels/sms';
 import { initiateCall } from './channels/voice';
@@ -33,6 +33,38 @@ function createMockSupabase(admins: Array<{ id: string }> = [{ id: 'admin-1' }])
       select: vi.fn().mockReturnValue({
         eq: vi.fn().mockResolvedValue({ data: admins, error: null }),
       }),
+    }),
+  } as unknown as import('@supabase/supabase-js').SupabaseClient;
+}
+
+function createRecipientSupabase() {
+  const tableData: Record<string, unknown[]> = {
+    care_helpers: [
+      { user_id: 'legacy-relative', role: 'relative' },
+      { user_id: 'duplicate-relative', role: 'relative' },
+    ],
+    caregiver_links: [
+      { caregiver_id: 'link-relative', relationship_type: 'child' },
+      { caregiver_id: 'duplicate-relative', relationship_type: 'friend' },
+      { caregiver_id: 'volunteer-link', relationship_type: 'volunteer' },
+    ],
+  };
+
+  return {
+    from: vi.fn((table: string) => {
+      const chain: Record<string, unknown> = {};
+      chain.select = vi.fn().mockReturnValue(chain);
+      chain.eq = vi.fn().mockReturnValue(chain);
+      chain.in = vi.fn().mockReturnValue(chain);
+      chain.contains = vi.fn().mockResolvedValue({
+        data: tableData[table] ?? [],
+        error: null,
+      });
+      chain.is = vi.fn().mockResolvedValue({
+        data: tableData[table] ?? [],
+        error: null,
+      });
+      return chain;
     }),
   } as unknown as import('@supabase/supabase-js').SupabaseClient;
 }
@@ -294,5 +326,29 @@ describe('sendCareNotification', () => {
 
       expect(result.anyDelivered).toBe(true);
     });
+  });
+});
+
+describe('getCareNotificationRecipients', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('kombiniert Legacy-Helfer und aktive CareCircle-Links dedupliziert nach Rolle', async () => {
+    const supabase = createRecipientSupabase();
+
+    const recipients = await getCareNotificationRecipients(supabase, {
+      seniorId: 'senior-1',
+      roles: ['relative'],
+    });
+
+    expect(recipients.map((recipient) => recipient.userId)).toEqual([
+      'legacy-relative',
+      'duplicate-relative',
+      'link-relative',
+    ]);
+    expect(recipients).not.toContainEqual(
+      expect.objectContaining({ userId: 'volunteer-link' }),
+    );
   });
 });

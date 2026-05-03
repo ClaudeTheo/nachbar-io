@@ -3,11 +3,16 @@
 // Mit Fallback-Kaskade: Push -> SMS -> Voice
 
 import type { SupabaseClient } from '@supabase/supabase-js';
-import type { CareNotificationType } from './types';
+import type {
+  CaregiverRelationshipType,
+  CareHelperRole,
+  CareNotificationType,
+} from './types';
 import { sendPush } from './channels/push';
 import { sendSms } from './channels/sms';
 import { initiateCall } from './channels/voice';
 import { safeInsertNotification } from '@/lib/notifications-server';
+import { mapCaregiverRelationshipToRole } from './permissions';
 
 /** Ergebnis einer Multi-Channel-Benachrichtigung */
 export interface NotificationResult {
@@ -36,8 +41,66 @@ interface CareNotificationPayload {
   enableFallback?: boolean;
 }
 
+export interface CareNotificationRecipient {
+  userId: string;
+  role: CareHelperRole;
+  source: 'care_helpers' | 'caregiver_links';
+}
+
+interface CareNotificationRecipientsInput {
+  seniorId: string;
+  roles: CareHelperRole[];
+}
+
 const EXTERNAL_CARE_NOTIFICATION_MESSAGE =
   'Nachbar.io: Es gibt eine neue Care-Benachrichtigung. Bitte oeffnen Sie die App oder melden Sie sich ueber den bekannten direkten Kontakt. Bei akuter Gefahr zuerst 112/110.';
+
+export async function getCareNotificationRecipients(
+  supabase: SupabaseClient,
+  input: CareNotificationRecipientsInput,
+): Promise<CareNotificationRecipient[]> {
+  const recipients = new Map<string, CareNotificationRecipient>();
+
+  const { data: legacyHelpers } = await supabase
+    .from('care_helpers')
+    .select('user_id, role')
+    .in('role', input.roles)
+    .eq('verification_status', 'verified')
+    .contains('assigned_seniors', [input.seniorId]);
+
+  for (const helper of legacyHelpers ?? []) {
+    if (typeof helper.user_id !== 'string') continue;
+    recipients.set(helper.user_id, {
+      userId: helper.user_id,
+      role: helper.role as CareHelperRole,
+      source: 'care_helpers',
+    });
+  }
+
+  const { data: caregiverLinks } = await supabase
+    .from('caregiver_links')
+    .select('caregiver_id, relationship_type')
+    .eq('resident_id', input.seniorId)
+    .is('revoked_at', null);
+
+  for (const link of caregiverLinks ?? []) {
+    if (typeof link.caregiver_id !== 'string') continue;
+    if (recipients.has(link.caregiver_id)) continue;
+
+    const role = mapCaregiverRelationshipToRole(
+      link.relationship_type as CaregiverRelationshipType,
+    );
+    if (!input.roles.includes(role)) continue;
+
+    recipients.set(link.caregiver_id, {
+      userId: link.caregiver_id,
+      role,
+      source: 'caregiver_links',
+    });
+  }
+
+  return [...recipients.values()];
+}
 
 /**
  * Sendet eine Benachrichtigung ueber alle angegebenen Kanaele.

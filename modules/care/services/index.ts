@@ -162,8 +162,11 @@ export { runCareHealthChecks } from "./health";
 export { createCareLogger } from "./logger";
 
 // Notifications
-export type { NotificationResult } from "./notifications";
-export { sendCareNotification } from "./notifications";
+export type { CareNotificationRecipient, NotificationResult } from "./notifications";
+export {
+  getCareNotificationRecipients,
+  sendCareNotification,
+} from "./notifications";
 
 // Permissions
 export { getCareRole, canAccessFeature } from "./permissions";

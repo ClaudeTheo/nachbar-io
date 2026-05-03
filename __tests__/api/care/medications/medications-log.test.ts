@@ -7,6 +7,8 @@ import { NextRequest, NextResponse } from 'next/server';
 const mockRequireAuth = vi.fn();
 const mockRequireSubscription = vi.fn();
 const mockRequireCareAccess = vi.fn();
+const mockSendCareNotification = vi.fn().mockResolvedValue(undefined);
+const mockGetCareNotificationRecipients = vi.fn();
 
 vi.mock('@/lib/care/api-helpers', () => ({
   requireAuth: (...args: unknown[]) => mockRequireAuth(...args),
@@ -20,7 +22,9 @@ vi.mock('@/lib/care/audit', () => ({
 }));
 
 vi.mock('@/lib/care/notifications', () => ({
-  sendCareNotification: vi.fn().mockResolvedValue(undefined),
+  sendCareNotification: (...args: unknown[]) => mockSendCareNotification(...args),
+  getCareNotificationRecipients: (...args: unknown[]) =>
+    mockGetCareNotificationRecipients(...args),
 }));
 
 vi.mock('@/lib/care/constants', () => ({
@@ -53,6 +57,8 @@ describe('POST /api/care/medications/log', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.resetModules();
+    mockSendCareNotification.mockResolvedValue(undefined);
+    mockGetCareNotificationRecipients.mockResolvedValue([]);
   });
 
   it('gibt 401 ohne Authentifizierung zurueck', async () => {
@@ -136,6 +142,56 @@ describe('POST /api/care/medications/log', () => {
     });
     const res = await POST(req);
     expect(res.status).toBe(400);
+  });
+
+  it('benachrichtigt CareCircle-Angehoerige aus caregiver_links wenn Medikament uebersprungen wird', async () => {
+    const logEntry = { id: 'log-skip', medication_id: 'm1', status: 'skipped' };
+    const existingChain = createChain(null);
+    const insertChain = createChain(logEntry);
+    const medicationChain = createChain({ name: 'Medikament A' });
+
+    let logCallCount = 0;
+    const mockSupabase = {
+      from: vi.fn((table: string) => {
+        if (table === 'care_medication_logs') {
+          logCallCount++;
+          return logCallCount === 1 ? existingChain : insertChain;
+        }
+        if (table === 'care_medications') return medicationChain;
+        return createChain();
+      }),
+    };
+    mockGetCareNotificationRecipients.mockResolvedValue([
+      { userId: 'link-relative-1', role: 'relative', source: 'caregiver_links' },
+    ]);
+    mockRequireAuth.mockResolvedValue({ supabase: mockSupabase, user: { id: 'senior-1' } });
+    mockRequireSubscription.mockResolvedValue(true);
+
+    const { POST } = await import('@/app/api/care/medications/log/route');
+    const req = new NextRequest('http://localhost/api/care/medications/log', {
+      method: 'POST',
+      body: JSON.stringify({
+        medication_id: 'm1',
+        status: 'skipped',
+        scheduled_at: '2026-03-22T08:00:00',
+      }),
+    });
+
+    const res = await POST(req);
+
+    expect(res.status).toBe(201);
+    expect(mockGetCareNotificationRecipients).toHaveBeenCalledWith(
+      mockSupabase,
+      { seniorId: 'senior-1', roles: ['relative'] },
+    );
+    expect(mockSendCareNotification).toHaveBeenCalledWith(
+      mockSupabase,
+      expect.objectContaining({
+        userId: 'link-relative-1',
+        type: 'care_medication_missed',
+        channels: ['push', 'in_app'],
+      }),
+    );
   });
 });
 

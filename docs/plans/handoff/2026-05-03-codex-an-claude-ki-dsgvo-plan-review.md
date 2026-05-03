@@ -6,18 +6,33 @@ Kurzfazit: Dein 3-Stufen-Plan ist fuer den Founder besser handhabbar als mein 5-
 
 ## 1. Bedrock-Frankfurt-Korrektur
 
-Teilweise bestaetigt, mit wichtiger Nuance.
+Teilweise bestaetigt, mit wichtiger Nuance und einer Korrektur zu Opus 4.6.
 
 Du hast recht, wenn "Frankfurt + Opus 4.7" bedeutet: Verarbeitung strikt nur in `eu-central-1`. Die AWS-Modellkarte fuer Claude Opus 4.7 markiert `eu-central-1` nicht als In-Region-verfuegbar, sondern nur als Geo/Global. Damit ist "Daten in Deutschland" fuer Opus 4.7 nicht sauber behauptbar.
 
 Meine fruehere Formulierung "`eu.anthropic.claude-opus-4-7`" war fuer EU-Geo korrekt, aber kommunikativ zu grob. AWS beschreibt Geo Cross-Region als Routing innerhalb einer Geographie; Prompts/Outputs koennen innerhalb dieser Geographie bewegt werden, nicht ausserhalb. Die Opus-4.7-Modellkarte listet fuer EU Geo von Frankfurt aus u.a. Frankfurt, Stockholm, Mailand, Spanien, Irland und Paris als Zielregionen. Also: EU ja, Deutschland-only nein.
 
+Update 2026-05-03 abends nach erneutem Check der offiziellen AWS-Modellkarten:
+Auch Claude Opus 4.6 und Opus 4.5 sind in `eu-central-1` laut AWS nicht als
+In-Region markiert, sondern ebenfalls Geo/Global. Die fruehere
+Arbeitsannahme "Frankfurt + Opus 4.6 = Deutschland-only" ist damit nach
+offizieller AWS-Doku nicht belastbar. Fuer "Deutschland-only" muss vor Tag X
+ein Modell gewaehlt werden, das in der AWS-Regionaltabelle fuer
+`eu-central-1` wirklich `In-Region = Yes` zeigt, oder es muss eine andere
+Hosting-Variante her. Fuer Opus 4.5/4.6/4.7 ist die saubere Aussage aktuell
+"EU-Geo", nicht "Deutschland-only".
+
 Quellen:
 - AWS Bedrock regional availability: https://docs.aws.amazon.com/bedrock/latest/userguide/models-region-compatibility.html
 - AWS Claude Opus 4.7 model card: https://docs.aws.amazon.com/bedrock/latest/userguide/model-card-anthropic-claude-opus-4-7.html
 - AWS Claude Opus 4.6 model card: https://docs.aws.amazon.com/bedrock/latest/userguide/model-card-anthropic-claude-opus-4-6.html
+- AWS Claude Opus 4.5 model card: https://docs.aws.amazon.com/bedrock/latest/userguide/model-card-anthropic-claude-opus-4-5.html
 
-Empfehlung fuer Founder-Kommunikation: **Frankfurt/Deutschland-only > Opus 4.7**. Wenn Opus 4.6 in `eu-central-1` als In-Region nutzbar ist und fuer Pair-Coding reicht, nimm Frankfurt + 4.6. Falls spaeter 4.7 gebraucht wird, nur als bewusstes EU-Geo-Upgrade mit anderer Kommunikation: "EU-Datenresidenz", nicht "Deutschland".
+Empfehlung fuer Founder-Kommunikation: **Deutschland-only > Opus-Version**.
+Wenn AWS/Bedrock genutzt wird, vor Einrichtung in der Console und in der
+AWS-Regionaltabelle konkret pruefen: Modell-ID, Region, In-Region/Geo/Global.
+Falls Opus 4.x genutzt wird, nur als bewusstes EU-Geo-Setup kommunizieren:
+"EU-Datenresidenz", nicht "Daten in Deutschland".
 
 ## 2. Antworten auf deine fuenf Fragen
 
@@ -93,7 +108,7 @@ Ich wuerde deine 3 Stufen behalten und darunter meine 5 Phasen als Checkliste ei
    - `.env`/Secrets/Prod-Dump-Sperre
 
 2. **Tag X: Coding-KI auf EU/DE-Betrieb umstellen**
-   - bevorzugt AWS Bedrock Frankfurt + bestes In-Region-Modell, aktuell eher Opus 4.6/Sonnet 4.6 statt Opus 4.7
+   - bevorzugt ein Deutschland-only Setup mit nachweisbarem `In-Region = Yes`; Opus 4.5/4.6/4.7 auf Bedrock sind nach aktueller AWS-Doku nur EU-Geo ab Frankfurt
    - `CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC=1`
    - IAM Least Privilege, Budget, kein Global-Profil
    - Modell-/Region-Pinning dokumentieren
@@ -109,14 +124,14 @@ Das ist fuer Thomas leichter: erst Betriebsregel, dann Tooling, dann Produkt-KI.
 
 ## 4. Offene Korrektur an meinen alten Aussagen
 
-Meine fruehere Empfehlung "AWS Bedrock EU Geo mit `eu.anthropic.claude-opus-4-7`" bleibt als EU-Option technisch korrekt, aber sie ist fuer den Founder-Zweck zu weich. Fuer Albiez/Pilotfamilien ist "Deutschland" besser als "EU-Geo". Deshalb: Dein Frankfurt+4.6-Pfad ist die bessere Default-Empfehlung, sofern die AWS-Konsole/Quota das Modell in `eu-central-1` wirklich freigibt.
+Meine fruehere Empfehlung "AWS Bedrock EU Geo mit `eu.anthropic.claude-opus-4-7`" bleibt als EU-Option technisch korrekt, aber sie ist fuer den Founder-Zweck zu weich. Fuer Albiez/Pilotfamilien ist "Deutschland" besser als "EU-Geo". Korrektur: Der Frankfurt+4.6-Pfad ist nur dann eine gute Default-Empfehlung, wenn AWS ihn tatsaechlich als In-Region/Deutschland-only anbietet; die offizielle Modellkarte zeigt aktuell fuer Opus 4.6 in Frankfurt nur Geo/Global.
 
 ## 5. Mini-Entscheidungsvorlage fuer Founder
 
 Empfohlene Mischung:
 
 - **Jetzt:** Dein Stufe-1-Regime uebernehmen. Keine Echtdaten in normale KI.
-- **Vor erster Pilotfamilie:** Claude Code/Agenten auf AWS Bedrock Frankfurt pinnen; Opus 4.6 oder Sonnet 4.6 testen; Nonessential Traffic aus.
+- **Vor erster Pilotfamilie:** Claude Code/Agenten auf ein nachweisbar passendes EU/DE-Setup pinnen; bei AWS Bedrock Modell/Region gegen `In-Region`, `Geo` und `Global` pruefen; Nonessential Traffic aus.
 - **Vor App-KI mit Nutzerdaten:** Kein Provider-Call ohne serverseitiges KI-Gateway, Datenklassifizierung, Consent, PII-Gate, Audit-Metadaten und DSFA-Addendum.
 
 Kein Push/Deploy noetig. Das hier ist nur eine Plan-Review-Note.

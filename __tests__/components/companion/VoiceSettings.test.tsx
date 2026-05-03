@@ -9,13 +9,15 @@ describe("VoiceSettings", () => {
     voice: "nova" as const,
     speed: 1.0,
     formality: "formal" as const,
+    patienceMode: false,
   };
 
-  it("zeigt drei Einstellungen", () => {
+  it("zeigt die Voice-Einstellungen inklusive einfache Antworten", () => {
     render(<VoiceSettings settings={defaults} onChange={vi.fn()} />);
     expect(screen.getByText("Stimme")).toBeInTheDocument();
     expect(screen.getByText("Tempo")).toBeInTheDocument();
     expect(screen.getByText("Anrede")).toBeInTheDocument();
+    expect(screen.getByText("Sehr einfache Antworten")).toBeInTheDocument();
   });
 
   it("Stimme: Weiblich/Männlich Toggle", () => {
@@ -43,6 +45,23 @@ describe("VoiceSettings", () => {
     expect(onChange).toHaveBeenCalledWith(
       expect.objectContaining({ formality: "informal" }),
     );
+  });
+
+  it("Geduldsmodus: Sehr einfache Antworten Toggle", () => {
+    const onChange = vi.fn();
+    render(<VoiceSettings settings={defaults} onChange={onChange} />);
+    fireEvent.click(screen.getByText(/Sehr einfache Antworten/i));
+    expect(onChange).toHaveBeenCalledWith(
+      expect.objectContaining({ patienceMode: true }),
+    );
+    expect(onChange).not.toHaveBeenCalledWith(
+      expect.objectContaining({ patienceMode: false }),
+    );
+  });
+
+  it("verwendet kein stigmatisierendes Wording fuer den Geduldsmodus", () => {
+    render(<VoiceSettings settings={defaults} onChange={vi.fn()} />);
+    expect(screen.queryByText(/Demenz|Alzheimer|senil/i)).not.toBeInTheDocument();
   });
 
   it("hat mindestens 80px Touch-Targets", () => {

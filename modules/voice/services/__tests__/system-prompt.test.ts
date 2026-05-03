@@ -37,4 +37,23 @@ describe("buildSystemPrompt — harte Antwort-Laengen-Regel", () => {
     expect(prompt).not.toMatch(/Halte Antworten kurz \(2-3 Saetze\)/);
     expect(prompt).not.toMatch(/max 2-3 Saetze/);
   });
+
+  it("ergaenzt bei patienceMode einfache, ruhige Antwortregeln ohne Medizin-Drift", () => {
+    const prompt = buildSystemPrompt(emptyCtx, {
+      mutLevel: 1,
+      patienceMode: true,
+    });
+
+    expect(prompt).toContain("SEHR EINFACHE ANTWORTEN");
+    expect(prompt).toContain("ein Gedanke pro Satz");
+    expect(prompt).toContain("Wiederhole wichtige Informationen einmal ruhig");
+    expect(prompt).toContain("KEINE Medikamenten-Fragen");
+    expect(prompt).toContain("KEINE Gesundheits-Fragen");
+    expect(prompt).not.toMatch(/Demenzmodus|Alzheimer|senil/i);
+  });
+
+  it("laesst den Geduldsmodus weg, wenn patienceMode nicht aktiv ist", () => {
+    const prompt = buildSystemPrompt(emptyCtx, { mutLevel: 1 });
+    expect(prompt).not.toContain("SEHR EINFACHE ANTWORTEN");
+  });
 });

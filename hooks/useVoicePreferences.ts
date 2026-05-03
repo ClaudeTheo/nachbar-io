@@ -10,6 +10,7 @@ const VOICE_DEFAULTS: VoicePreferences = {
   voice: "nova",
   speed: 1.0,
   formality: "formal",
+  patienceMode: false,
 };
 
 /**
@@ -47,6 +48,7 @@ export function useVoicePreferences() {
             formality: (prefs.formality === "informal"
               ? "informal"
               : "formal") as VoicePreferences["formality"],
+            patienceMode: prefs.patienceMode === true,
           };
           setPreferences(resolved);
           // Sync nach localStorage fuer TTSButton (liest ohne Supabase-Call)

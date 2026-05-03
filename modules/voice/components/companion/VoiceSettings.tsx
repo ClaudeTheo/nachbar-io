@@ -10,6 +10,7 @@ export interface VoicePreferences {
   voice: 'nova' | 'ash'     // nova = weiblich, ash = maennlich (warm, akzentfrei)
   speed: number              // 1.15 = schnell, 1.0 = normal, 0.85 = langsam
   formality: 'formal' | 'informal'
+  patienceMode?: boolean
 }
 
 interface VoiceSettingsProps {
@@ -185,6 +186,23 @@ export function VoiceSettings({ settings, onChange }: VoiceSettingsProps) {
           onChange({ ...settings, formality: value as 'formal' | 'informal' })
         }}
       />
+
+      <button
+        type="button"
+        aria-pressed={settings.patienceMode === true}
+        onClick={() => onChange({ ...settings, patienceMode: settings.patienceMode !== true })}
+        className={`flex min-h-[44px] items-center justify-between rounded-xl px-3 py-2 text-left text-sm font-medium transition-colors ${
+          settings.patienceMode === true
+            ? 'bg-[#4CAF87] text-white'
+            : 'border border-border bg-white text-[#2D3142]/70 hover:bg-gray-50'
+        }`}
+        style={{ touchAction: 'manipulation' }}
+      >
+        <span>Sehr einfache Antworten</span>
+        <span className="text-xs font-semibold">
+          {settings.patienceMode === true ? 'Ein' : 'Aus'}
+        </span>
+      </button>
 
       {/* Vorschau-Button */}
       <button

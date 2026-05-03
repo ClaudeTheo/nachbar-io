@@ -31,6 +31,7 @@ export type MutLevel = 1 | 2 | 3 | 4;
 export interface PromptOptions {
   formality?: "formal" | "informal";
   mutLevel?: MutLevel;
+  patienceMode?: boolean;
 }
 
 /**
@@ -83,6 +84,13 @@ const HARTE_LAENGE = `ANTWORT-LAENGE (nicht verhandelbar):
 - Maximal 30 Woerter. Laengere Antworten werden abgeschnitten.
 - Keine Einleitungen ("Gerne...", "Natuerlich..."). Direkt die Info.
 - Kein Nachklapp ("Kann ich sonst noch helfen?") — nur bei Mut-Stufe 3/4.`;
+
+const PATIENCE_MODE_INSTRUCTIONS = `SEHR EINFACHE ANTWORTEN:
+- Nutze ein Gedanke pro Satz.
+- Verwende sehr einfache Woerter und kurze Hauptsaetze.
+- Wiederhole wichtige Informationen einmal ruhig, wenn es beim Verstehen hilft.
+- Erklaere jeden naechsten Schritt konkret und ohne Druck.
+- Bleibe bei allen Gesundheits- und Medikamentenfragen strikt bei den harten Regeln.`;
 
 /**
  * Baut den System-Prompt fuer den Quartier-Lotsen.
@@ -239,6 +247,10 @@ ${addressRule}
   // Mut-Regler-Stufe (H-5)
   const mutLevel: MutLevel = options?.mutLevel ?? 1;
   sections.push(MUT_LEVEL_INSTRUCTIONS[mutLevel]);
+
+  if (options?.patienceMode === true) {
+    sections.push(PATIENCE_MODE_INSTRUCTIONS);
+  }
 
   // Phase-1 Guardrails (H-7)
   sections.push(PHASE1_GUARDRAILS);

@@ -495,17 +495,24 @@ export async function processChat(
 
   // Mut-Level aus User-Metadata lesen (H-5), Default=1
   let mutLevel: MutLevel = 1;
+  let patienceMode = false;
   if (supabase) {
     try {
       const { data: userData } = await supabase
         .from("users")
-        .select("raw_user_meta_data")
+        .select("raw_user_meta_data, voice_preferences")
         .eq("id", userId)
         .single();
       const rawMut = userData?.raw_user_meta_data?.mut_level;
       if (rawMut === 1 || rawMut === 2 || rawMut === 3 || rawMut === 4) {
         mutLevel = rawMut;
       }
+      const voicePreferences = userData?.voice_preferences;
+      patienceMode =
+        voicePreferences !== null &&
+        typeof voicePreferences === "object" &&
+        !Array.isArray(voicePreferences) &&
+        (voicePreferences as Record<string, unknown>).patienceMode === true;
     } catch {
       // Fehler beim Laden → Default 1 beibehalten
     }
@@ -513,7 +520,10 @@ export async function processChat(
 
   // Context-Promise awaiten und System-Prompt bauen
   const context = await contextPromise;
-  let systemPrompt = buildSystemPrompt(context, { mutLevel });
+  let systemPrompt = buildSystemPrompt(context, {
+    mutLevel,
+    ...(patienceMode ? { patienceMode: true } : {}),
+  });
 
   // Memory-Block an System-Prompt anhaengen (Plus-User)
   if (memoryBlock) {

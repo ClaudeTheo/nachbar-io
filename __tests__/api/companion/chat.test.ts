@@ -99,7 +99,10 @@ vi.mock("@anthropic-ai/sdk", () => {
 });
 
 // Mock-Supabase mit from()-Methode (fuer Memory-Layer Integration)
-function createMockSupabase(options: { aiEnabled?: boolean } = {}) {
+function createMockSupabase(options: {
+  aiEnabled?: boolean;
+  voicePreferences?: Record<string, unknown> | null;
+} = {}) {
   const aiEnabled = options.aiEnabled ?? true;
   return {
     from: (table: string) => {
@@ -114,6 +117,7 @@ function createMockSupabase(options: { aiEnabled?: boolean } = {}) {
                 settings: { ai_enabled: aiEnabled },
                 subscription_plan: "free",
                 raw_user_meta_data: {},
+                voice_preferences: options.voicePreferences ?? null,
               },
               error: null,
             });
@@ -543,6 +547,31 @@ describe("POST /api/companion/chat", () => {
     expect(mockLoadQuarterContext).toHaveBeenCalledWith("user-42");
     expect(mockBuildSystemPrompt).toHaveBeenCalledWith(defaultContext, {
       mutLevel: 1,
+    });
+  });
+
+  it("uebergibt patienceMode aus voice_preferences an den System-Prompt", async () => {
+    mockRequireAuth.mockResolvedValue({
+      supabase: createMockSupabase({
+        voicePreferences: { patienceMode: true },
+      }),
+      user: { id: "user-42" },
+    });
+    mockAnthropicCreate.mockResolvedValue({
+      content: [{ type: "text", text: "OK" }],
+    });
+
+    const { POST } = await import("@/app/api/companion/chat/route");
+    const req = new NextRequest("http://localhost/api/companion/chat", {
+      method: "POST",
+      body: JSON.stringify({ messages: [{ role: "user", content: "Test" }] }),
+      headers: { "Content-Type": "application/json" },
+    });
+    await POST(req);
+
+    expect(mockBuildSystemPrompt).toHaveBeenCalledWith(defaultContext, {
+      mutLevel: 1,
+      patienceMode: true,
     });
   });
 });

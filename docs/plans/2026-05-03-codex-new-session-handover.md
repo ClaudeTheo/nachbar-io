@@ -1,5 +1,17 @@
 # Codex New-Session Handover — aktueller Stand nach KI-DSGVO-Review
 
+> **Status 2026-05-03 mittag: veraltet.**
+>
+> Diese Datei ist nur noch historischer Kontext fuer die KI-DSGVO-/Push-
+> Autonomie-Welle bis `b7a9b62`. Fuer neue Sessions nicht mehr als
+> Startpunkt verwenden.
+>
+> Aktuellerer Startpunkt:
+> `docs/plans/2026-05-03-codex-handover-after-e2e-preflight-guards.md`
+> mit `HEAD = origin/master = c85f1d3` beim letzten Check. Beim Session-Start
+> trotzdem immer `git status`, `git rev-parse HEAD` und den GitHub-Actions-
+> Stand des aktuellen `HEAD` pruefen.
+
 Stand: 2026-05-03 abends, nach Push von `b7a9b62`.
 
 ## Kurzstart fuer neue Session
@@ -147,4 +159,7 @@ Empfohlen: kleiner Produkt-/Verifikationsblock, nicht neue Strategie.
 
 ## Kurzer Prompt fuer neue Session
 
-Bitte in `C:\Users\thoma\Claud Code\Handy APP\nachbar-io` auf `master` starten. Lies `AGENTS.md`, `docs/plans/handoff/INBOX.md`, `docs/plans/handoff/2026-05-03-claude-an-codex-push-deploy-vollautonomie.md`, `docs/plans/handoff/2026-05-03-codex-an-claude-ki-dsgvo-plan-review.md` und `docs/plans/2026-05-03-codex-new-session-handover.md`. Aktueller Stand: `HEAD = origin/master = b7a9b62`, CI fuer `b7a9b62` gruen, kein Deploy nach diesem Doku-Block. `.codex-welle-d-3001.pid` nicht loeschen. Naechster sinnvoller Block: authentifizierter lokaler Spot-Check fuer Senior/Care-Routen mit synthetischer Test-Auth, ohne echte personenbezogene Daten und ohne Prod-DB-Schreibaktionen.
+Nicht mehr verwenden. Fuer neue Sessions stattdessen
+`docs/plans/2026-05-03-codex-handover-after-e2e-preflight-guards.md` lesen
+und danach `git status` plus GitHub-Actions-Stand fuer den aktuellen `HEAD`
+pruefen.

@@ -19,6 +19,7 @@ Shared task board and mailbox for Codex, Claude, and future coding agents.
 
 | Status | Owner | Title | Files | Since | Release condition | Last update |
 |---|---|---|---|---|---|---|
+| done | codex | Neue Session-Uebergabe nach KI-DSGVO-Review | `docs/plans/2026-05-03-codex-new-session-handover.md` + `docs/plans/handoff/INBOX.md` | 2026-05-03 abend | aktueller HEAD/CI/naechster Block fuer neue Session dokumentiert; reine Doku, kein Deploy | 2026-05-03 abend |
 | done | codex | KI-DSGVO-Plan-Review AWS-Nuance | `docs/plans/handoff/2026-05-03-claude-an-codex-ki-dsgvo-plan-review.md` + `docs/plans/handoff/2026-05-03-codex-an-claude-ki-dsgvo-plan-review.md` + `docs/plans/handoff/INBOX.md` | 2026-05-03 abend | Claude-Brief eingecheckt; Codex-Review mit aktueller AWS-Bedrock-In-Region/Geo-Nuance korrigiert; kein Push/Deploy | 2026-05-03 abend |
 | done | codex | Founder-Regeln Push/Deploy-Vollautonomie + neue Session-Uebergabe | `AGENTS.md` + `docs/plans/2026-05-03-codex-new-session-handover.md` + `docs/plans/handoff/2026-05-03-claude-an-codex-push-deploy-vollautonomie.md` + `docs/plans/handoff/INBOX.md` | 2026-05-03 abend | Founder-Update in Repo-Regeln und Handover synchronisiert; alte lokale Preview-Uebergabe ersetzt | 2026-05-03 abend |
 | done | codex | DSGVO-Wording-Pass + Preview-Routen-Flag | `app/(auth)/register/components/RegisterStepAiConsent.tsx` + `app/(auth)/register/page.tsx` + `app/(auth)/register/preview/[step]/page.tsx` | 2026-04-28 | block-1+2 committed in `b142ace` | 2026-04-28 20:04 |

@@ -68,6 +68,7 @@ describe("Speed-Dial + SOS + Emergency-Profile Integration", () => {
     process.env.NEXT_PUBLIC_SUPABASE_URL = "https://test.supabase.co";
     process.env.SUPABASE_SERVICE_ROLE_KEY = "test-service-key";
     process.env.KIOSK_DEVICE_TOKEN = "valid-device-token";
+    delete process.env.KIOSK_DEVICE_USER_ID;
   });
 
   // --- Test 1: Speed-Dial max 5 Constraint ---

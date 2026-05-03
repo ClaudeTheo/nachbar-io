@@ -304,6 +304,26 @@ describe('POST /api/care/checkin', () => {
       );
     });
 
+    it('gibt Check-in-Notizen nicht an Care-Push-Payloads weiter', async () => {
+      mockSupabase.addResponse('care_checkins', {
+        data: { id: 'ci-sensitive-note', status: 'not_well', note: null, senior_id: TEST_USER.id },
+        error: null,
+      });
+      mockGetCareNotificationRecipients.mockResolvedValue([
+        { userId: 'relative-1', role: 'relative', source: 'caregiver_links' },
+      ]);
+
+      await POST(createPostRequest({
+        status: 'not_well',
+        note: 'Schwindel seit 30 Minuten, bitte Wohnung 2 anrufen',
+      }));
+
+      const payload = vi.mocked(sendCareNotification).mock.calls[0]?.[1];
+      expect(payload?.title).not.toContain('Nicht so gut');
+      expect(payload?.body).not.toContain('Schwindel');
+      expect(payload?.body).not.toContain('Wohnung 2');
+    });
+
     it('benachrichtigt NICHT bei Status ok', async () => {
       mockSupabase.addResponse('care_checkins', {
         data: { id: 'ci-ok', status: 'ok', note: null, senior_id: TEST_USER.id },

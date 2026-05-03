@@ -13,7 +13,7 @@ interface PushPayload {
 
 /**
  * Sendet Web Push Benachrichtigung an einen User.
- * Nutzt die bestehende push_subscriptions Tabelle + /api/push/send.
+ * Nutzt die bestehende push_subscriptions Tabelle + /api/push/notify.
  */
 export async function sendPush(
   supabase: SupabaseClient,
@@ -33,7 +33,7 @@ export async function sendPush(
     // Sende an alle registrierten Endpunkte des Users
     // Absoluter URL fuer serverseitige Aufrufe (relative URLs funktionieren nicht in Node.js)
     const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://quartierapp.de';
-    const response = await fetch(`${baseUrl}/api/push/send`, {
+    const response = await fetch(`${baseUrl}/api/push/notify`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

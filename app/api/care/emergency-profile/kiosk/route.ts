@@ -83,8 +83,25 @@ export async function GET(req: NextRequest) {
     );
   }
 
-  // 4. userId aus Query-Param oder Device-Mapping
-  const userId = url.searchParams.get("userId") || deviceUserId;
+  // 4. Bewohnerbindung ausschließlich serverseitig bestimmen.
+  const requestedUserId = url.searchParams.get("userId");
+  const boundUserId = deviceUserId ?? process.env.KIOSK_DEVICE_USER_ID;
+
+  if (requestedUserId && !boundUserId) {
+    return NextResponse.json(
+      { error: "Device ist keinem Bewohner zugeordnet" },
+      { status: 403 },
+    );
+  }
+
+  if (requestedUserId && boundUserId && requestedUserId !== boundUserId) {
+    return NextResponse.json(
+      { error: "Bewohner passt nicht zur Device-Bindung" },
+      { status: 403 },
+    );
+  }
+
+  const userId = boundUserId ?? requestedUserId;
 
   if (!userId) {
     return NextResponse.json(

@@ -42,9 +42,12 @@ describe('GET /api/care/emergency-profile/kiosk', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.resetModules();
+    mockMaybeSingle.mockReset();
+    mockInsert.mockReset();
     process.env.NEXT_PUBLIC_SUPABASE_URL = 'https://test.supabase.co';
     process.env.SUPABASE_SERVICE_ROLE_KEY = 'test-service-key';
     process.env.KIOSK_DEVICE_TOKEN = 'valid-device-token';
+    delete process.env.KIOSK_DEVICE_USER_ID;
   });
 
   it('gibt 401 ohne x-device-token Header', async () => {
@@ -110,6 +113,7 @@ describe('GET /api/care/emergency-profile/kiosk', () => {
 
   it('gibt Level-1 Notfalldaten bei gueltigem Token (ENV-Fallback)', async () => {
     process.env.KIOSK_DEVICE_TOKEN = 'valid-device-token';
+    process.env.KIOSK_DEVICE_USER_ID = 'resident-1';
 
     const { GET } = await import(
       '@/app/api/care/emergency-profile/kiosk/route'
@@ -164,8 +168,71 @@ describe('GET /api/care/emergency-profile/kiosk', () => {
     expect(body.level3).toBeUndefined();
   });
 
+  it('gibt 403 wenn Request-userId die Device-Bewohnerbindung uebersteuern will', async () => {
+    const { GET } = await import(
+      '@/app/api/care/emergency-profile/kiosk/route'
+    );
+
+    mockMaybeSingle
+      .mockResolvedValueOnce({
+        data: { id: 'k1', user_id: 'resident-1', device_token: 'valid-device-token' },
+      })
+      .mockResolvedValueOnce({
+        data: {
+          id: 'profile-other',
+          user_id: 'resident-2',
+          level1_encrypted: MOCK_LEVEL1,
+        },
+      });
+
+    const request = new Request(
+      'http://localhost/api/care/emergency-profile/kiosk?deviceId=device-1&userId=resident-2',
+      {
+        method: 'GET',
+        headers: { 'x-device-token': 'valid-device-token' },
+      }
+    );
+
+    const response = await GET(
+      request as unknown as import('next/server').NextRequest
+    );
+    expect(response.status).toBe(403);
+  });
+
+  it('gibt 403 wenn ENV-Fallback nicht an einen Bewohner gebunden ist', async () => {
+    process.env.KIOSK_DEVICE_TOKEN = 'valid-device-token';
+
+    const { GET } = await import(
+      '@/app/api/care/emergency-profile/kiosk/route'
+    );
+
+    mockMaybeSingle
+      .mockResolvedValueOnce({ data: null })
+      .mockResolvedValueOnce({
+        data: {
+          id: 'profile-1',
+          user_id: 'resident-1',
+          level1_encrypted: MOCK_LEVEL1,
+        },
+      });
+
+    const request = new Request(
+      'http://localhost/api/care/emergency-profile/kiosk?deviceId=device-pilot-001&userId=resident-1',
+      {
+        method: 'GET',
+        headers: { 'x-device-token': 'valid-device-token' },
+      }
+    );
+
+    const response = await GET(
+      request as unknown as import('next/server').NextRequest
+    );
+    expect(response.status).toBe(403);
+  });
+
   it('gibt empty: true wenn kein Notfallprofil existiert', async () => {
     process.env.KIOSK_DEVICE_TOKEN = 'valid-device-token';
+    process.env.KIOSK_DEVICE_USER_ID = 'resident-1';
 
     const { GET } = await import(
       '@/app/api/care/emergency-profile/kiosk/route'

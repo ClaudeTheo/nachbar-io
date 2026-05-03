@@ -104,8 +104,24 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  // User-ID aus Body oder Device-Mapping
-  const userId = bodyUserId || deviceUserId;
+  // Bewohnerbindung ausschließlich serverseitig bestimmen.
+  const boundUserId = deviceUserId ?? process.env.KIOSK_DEVICE_USER_ID;
+
+  if (bodyUserId && !boundUserId) {
+    return NextResponse.json(
+      { error: "Device ist keinem Bewohner zugeordnet" },
+      { status: 403 },
+    );
+  }
+
+  if (bodyUserId && boundUserId && bodyUserId !== boundUserId) {
+    return NextResponse.json(
+      { error: "Bewohner passt nicht zur Device-Bindung" },
+      { status: 403 },
+    );
+  }
+
+  const userId = boundUserId ?? bodyUserId;
 
   // 5. Verarbeitung nach Event-Typ
   if (event_type === "sos_opened") {
@@ -123,6 +139,12 @@ export async function POST(req: NextRequest) {
   }
 
   // --- sos_alerted: Dedup + Eskalation + Push ---
+  if (!userId) {
+    return NextResponse.json(
+      { error: "Kein Bewohner zugeordnet" },
+      { status: 400 },
+    );
+  }
 
   // 6. Deduplizierung: gleicher User + sos_alerted in letzten 10 Minuten?
   const dedupCutoff = new Date(
@@ -132,7 +154,7 @@ export async function POST(req: NextRequest) {
   const { data: existing } = await supabase
     .from("escalation_events")
     .select("id, event_type, created_at")
-    .eq("user_id", userId || "")
+    .eq("user_id", userId)
     .eq("event_type", "sos_alerted")
     .gt("created_at", dedupCutoff)
     .maybeSingle();
@@ -146,7 +168,7 @@ export async function POST(req: NextRequest) {
 
   // 7. Eskalation eintragen
   await supabase.from("escalation_events").insert({
-    user_id: userId || null,
+    user_id: userId,
     event_type: "sos_alerted",
     details: JSON.stringify({
       deviceId,
@@ -157,7 +179,7 @@ export async function POST(req: NextRequest) {
   // 8. Audit-Log
   await supabase.from("org_audit_log").insert({
     action: "sos_alerted",
-    target_user_id: userId || null,
+    target_user_id: userId,
     details: JSON.stringify({
       deviceId,
       timestamp: new Date().toISOString(),
@@ -168,7 +190,7 @@ export async function POST(req: NextRequest) {
   const { data: caregiverLinks } = await supabase
     .from("caregiver_links")
     .select("caregiver_id")
-    .eq("resident_id", userId || "")
+    .eq("resident_id", userId)
     .is("revoked_at", null);
 
   const caregivers = caregiverLinks || [];
@@ -177,7 +199,7 @@ export async function POST(req: NextRequest) {
   if (caregivers.length > 0) {
     await supabase.from("org_audit_log").insert({
       action: "sos_push_intent",
-      target_user_id: userId || null,
+      target_user_id: userId,
       details: JSON.stringify({
         caregiver_ids: caregivers.map(
           (c: { caregiver_id: string }) => c.caregiver_id,

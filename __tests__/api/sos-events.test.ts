@@ -42,6 +42,7 @@ describe('POST /api/escalation/sos', () => {
     process.env.NEXT_PUBLIC_SUPABASE_URL = 'https://test.supabase.co';
     process.env.SUPABASE_SERVICE_ROLE_KEY = 'test-service-key';
     process.env.KIOSK_DEVICE_TOKEN = 'valid-device-token';
+    delete process.env.KIOSK_DEVICE_USER_ID;
   });
 
   // --- Auth-Tests ---
@@ -170,7 +171,38 @@ describe('POST /api/escalation/sos', () => {
     expect(body.caregiver_count).toBe(2);
   });
 
+  it('sos_alerted: gibt 403 wenn Body-userId die Device-Bewohnerbindung uebersteuern will', async () => {
+    const { POST } = await import('@/app/api/escalation/sos/route');
+
+    mockMaybeSingle.mockResolvedValueOnce({
+      data: { id: 'k1', user_id: 'resident-1', device_token: 'valid-device-token' },
+    });
+    mockMaybeSingle.mockResolvedValueOnce({ data: null });
+
+    const req = makeRequest(
+      { deviceId: 'dev-1', event_type: 'sos_alerted', userId: 'resident-2' },
+      { 'x-device-token': 'valid-device-token' }
+    );
+    const res = await POST(req as unknown as import('next/server').NextRequest);
+    expect(res.status).toBe(403);
+  });
+
+  it('sos_alerted: gibt 403 wenn ENV-Fallback nicht an einen Bewohner gebunden ist', async () => {
+    const { POST } = await import('@/app/api/escalation/sos/route');
+
+    mockMaybeSingle.mockResolvedValueOnce({ data: null });
+    mockMaybeSingle.mockResolvedValueOnce({ data: null });
+
+    const req = makeRequest(
+      { deviceId: 'dev-1', event_type: 'sos_alerted', userId: 'resident-1' },
+      { 'x-device-token': 'valid-device-token' }
+    );
+    const res = await POST(req as unknown as import('next/server').NextRequest);
+    expect(res.status).toBe(403);
+  });
+
   it('sos_alerted: gibt caregiver_count 0 wenn keine Angehoerigen', async () => {
+    process.env.KIOSK_DEVICE_USER_ID = 'resident-1';
     const { POST } = await import('@/app/api/escalation/sos/route');
 
     // kiosk_devices: nicht gefunden → ENV-Fallback

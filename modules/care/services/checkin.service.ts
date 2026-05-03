@@ -207,8 +207,8 @@ export async function submitCheckin(
           sendCareNotification(supabase, {
             userId: relative.userId,
             type: "care_checkin_missed",
-            title: "Check-in: Nicht so gut",
-            body: `Ihr Angehöriger hat gemeldet, dass er sich nicht wohl fühlt.${note ? ` Hinweis: ${note}` : ""}`,
+            title: "Neue Care-Benachrichtigung",
+            body: "Ihr Angehöriger hat eine neue Check-in-Rückmeldung gegeben. Bitte öffnen Sie die App.",
             referenceId: checkin!.id as string,
             referenceType: "care_checkins",
             url: `/care/checkin/${checkin!.id}`,

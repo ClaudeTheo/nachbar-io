@@ -40,6 +40,18 @@ describe('sendPush', () => {
     expect(mockFetch).toHaveBeenCalled()
   })
 
+  it('nutzt den gezielten Notify-Endpunkt statt Broadcast', async () => {
+    await sendPush(mockSupabase as never, {
+      userId: 'user-1',
+      title: 'Care-Hinweis',
+      body: 'Bitte App öffnen',
+    })
+
+    const [url] = mockFetch.mock.calls[0] ?? []
+    expect(String(url)).toContain('/api/push/notify')
+    expect(String(url)).not.toContain('/api/push/send')
+  })
+
   it('gibt false zurueck wenn keine Subscriptions vorhanden', async () => {
     mockEqResult.mockResolvedValue({ data: [], error: null })
     const result = await sendPush(mockSupabase as never, {

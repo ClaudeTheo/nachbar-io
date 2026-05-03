@@ -110,6 +110,27 @@ describe("POST /api/device/pair/claim-by-code", () => {
     expect(res.status).toBe(429);
   });
 
+  it("429 nach 5 Fehlversuchen von gleicher IP auch bei wechselnder device_id", async () => {
+    const attemptsByKey = new Map<string, number>();
+    mockRedisIncr.mockImplementation(async (key: string) => {
+      const attempts = (attemptsByKey.get(key) ?? 0) + 1;
+      attemptsByKey.set(key, attempts);
+      return attempts;
+    });
+    mockRedisGet.mockResolvedValue(null);
+
+    const { POST } = await import("@/app/api/device/pair/claim-by-code/route");
+    const statuses: number[] = [];
+    for (let i = 1; i <= 6; i++) {
+      const res = await POST(
+        buildReq({ code: "999999", device_id: `d-${i}` }, "5.6.7.8"),
+      );
+      statuses.push(res.status);
+    }
+
+    expect(statuses).toEqual([401, 401, 401, 401, 401, 429]);
+  });
+
   it("503 wenn Redis nicht verfuegbar", async () => {
     vi.resetModules();
     vi.doMock("@/lib/security/redis", () => ({

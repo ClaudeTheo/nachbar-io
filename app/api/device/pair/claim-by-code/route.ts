@@ -4,7 +4,7 @@
 //
 // Kein Auth (Senior hat noch keine Session).
 // Body: { code (6 Ziffern), device_id }
-// Rate-Limit: 5 Fehlversuche / IP+device_id / Stunde.
+// Rate-Limit: 5 Fehlversuche / IP / Stunde.
 // Effekt:
 //   1. Liest pair-code:<code> aus Redis (Single-Use).
 //   2. Generiert refresh_token, INSERT in device_refresh_tokens.
@@ -27,8 +27,8 @@ import {
 const RATE_LIMIT_MAX = 5;
 const RATE_LIMIT_WINDOW_SECONDS = 3600; // 1h
 
-function rateLimitKey(ip: string, device_id: string): string {
-  return `pair-code-rl:${ip}:${device_id}`;
+function rateLimitKey(ip: string): string {
+  return `pair-code-rl:${ip}`;
 }
 
 export async function POST(request: NextRequest) {
@@ -80,7 +80,7 @@ export async function POST(request: NextRequest) {
   // Rate-Limit pruefen (incr + conditional expire beim 1. Versuch)
   const ip =
     request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "unknown";
-  const rlKey = rateLimitKey(ip, device_id);
+  const rlKey = rateLimitKey(ip);
   const attempts = await redis.incr(rlKey);
   if (attempts === 1) {
     await redis.expire(rlKey, RATE_LIMIT_WINDOW_SECONDS);

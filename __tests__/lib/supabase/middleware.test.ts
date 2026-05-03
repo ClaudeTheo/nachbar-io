@@ -90,6 +90,20 @@ describe("updateSession (Auth-Middleware)", () => {
     expect(loc === null || !loc.includes("/login")).toBe(true);
   });
 
+  it.each(["/account-loeschen", "/konto-loeschen", "/support", "/richtlinien"])(
+    "laesst Store-Pflichtseite %s ohne Auth erreichbar",
+    async (path) => {
+      mockGetUser.mockResolvedValue({ data: { user: null } });
+
+      const req = new NextRequest(`http://localhost${path}`);
+      const res = await updateSession(req);
+
+      expect(res.status).not.toBe(307);
+      expect(res.status).not.toBe(503);
+      expect(res.headers.get("location")).toBeNull();
+    },
+  );
+
   it("redirected geschuetzte Seiten zu /login ohne Auth", async () => {
     mockGetUser.mockResolvedValue({ data: { user: null } });
     const req = new NextRequest("http://localhost/dashboard");

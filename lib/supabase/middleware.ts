@@ -97,6 +97,7 @@ export async function updateSession(request: NextRequest) {
     request.nextUrl.pathname.startsWith("/onboarding-anleitung") ||
     request.nextUrl.pathname.startsWith("/b2b") ||
     request.nextUrl.pathname.startsWith("/account-loeschen") ||
+    request.nextUrl.pathname.startsWith("/konto-loeschen") ||
     request.nextUrl.pathname.startsWith("/support") ||
     request.nextUrl.pathname.startsWith("/richtlinien");
   const isPendingApprovalPage =

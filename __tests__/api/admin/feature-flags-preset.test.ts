@@ -7,6 +7,7 @@ import {
 const mockGetUser = vi.fn();
 const mockUsersSingle = vi.fn();
 const mockFeatureFlagsUpsert = vi.fn();
+const mockAdminAuditInsert = vi.fn();
 const mockFrom = vi.fn();
 const mockInvalidateFlagCache = vi.fn();
 
@@ -44,9 +45,16 @@ function setupTables() {
       };
     }
 
+    if (table === "admin_audit_log") {
+      return {
+        insert: mockAdminAuditInsert,
+      };
+    }
+
     throw new Error(`Unexpected table ${table}`);
   });
   mockFeatureFlagsUpsert.mockResolvedValue({ error: null });
+  mockAdminAuditInsert.mockResolvedValue({ error: null });
 }
 
 async function postPreset(body: Record<string, unknown>) {
@@ -97,6 +105,17 @@ describe("POST /api/admin/feature-flags/preset", () => {
         },
       ]),
     );
+    expect(mockAdminAuditInsert).toHaveBeenCalledWith({
+      admin_id: "admin-1",
+      action: "admin_feature_flags_preset",
+      target_type: "feature_flags",
+      details: {
+        phase: "phase_1",
+        changed: Object.keys(PHASE_1_PRESET).length,
+        reason: "phase-preset:phase_1",
+        keys: expect.arrayContaining(["PILOT_MODE", "BILLING_ENABLED"]),
+      },
+    });
     expect(mockInvalidateFlagCache).toHaveBeenCalledTimes(1);
   });
 
@@ -108,6 +127,7 @@ describe("POST /api/admin/feature-flags/preset", () => {
 
     expect(response.status).toBe(400);
     expect(mockFeatureFlagsUpsert).not.toHaveBeenCalled();
+    expect(mockAdminAuditInsert).not.toHaveBeenCalled();
     expect(mockInvalidateFlagCache).not.toHaveBeenCalled();
   });
 
@@ -145,5 +165,6 @@ describe("POST /api/admin/feature-flags/preset", () => {
 
     expect(response.status).toBe(403);
     expect(mockFeatureFlagsUpsert).not.toHaveBeenCalled();
+    expect(mockAdminAuditInsert).not.toHaveBeenCalled();
   });
 });

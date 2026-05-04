@@ -42,7 +42,7 @@ export async function POST(request: NextRequest) {
       street: body.street,
       urgency: body.urgency,
       baseUrl,
-    });
+    }, user.id);
     return NextResponse.json(result);
   } catch (error) {
     return handleServiceError(error);

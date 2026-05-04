@@ -54,7 +54,7 @@ export async function POST(request: NextRequest) {
       uiMode,
       verified,
       quarter_id,
-    });
+    }, user.id);
     return NextResponse.json(result);
   } catch (error) {
     return handleServiceError(error);

@@ -172,5 +172,18 @@ export async function processVerification(
     }
   }
 
+  await adminSupabase.from("admin_audit_log").insert({
+    admin_id: reviewedBy,
+    action: "admin_verify_address",
+    target_type: "verification_request",
+    target_id: requestId,
+    details: {
+      action,
+      targetUserId: vRequest.user_id,
+      householdId: vRequest.household_id,
+      hasNote: Boolean(note),
+    },
+  });
+
   return { success: true, action, userId: vRequest.user_id };
 }

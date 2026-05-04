@@ -81,6 +81,18 @@ export async function POST(request: Request) {
     }
   }
 
+  await supabase.from("admin_audit_log").insert({
+    admin_id: user.id,
+    action: "admin_feature_flags_preset",
+    target_type: "feature_flags",
+    details: {
+      phase: body.phase,
+      changed: rows.length,
+      reason,
+      keys: rows.map((row) => row.key),
+    },
+  });
+
   invalidateFlagCache();
 
   return NextResponse.json({

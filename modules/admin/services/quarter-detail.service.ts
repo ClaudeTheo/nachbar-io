@@ -129,7 +129,8 @@ export async function updateQuarter(
  */
 export async function archiveQuarter(
   adminDb: SupabaseClient,
-  quarterId: string
+  quarterId: string,
+  actorUserId: string,
 ) {
   const { data: updated, error } = await adminDb
     .from("quarters")
@@ -141,6 +142,17 @@ export async function archiveQuarter(
   if (error) {
     throw new ServiceError("Vorgang fehlgeschlagen", 500);
   }
+
+  await adminDb.from("admin_audit_log").insert({
+    admin_id: actorUserId,
+    action: "admin_quarter_archived",
+    target_type: "quarter",
+    target_id: quarterId,
+    details: {
+      status: "archived",
+      name: updated?.name ?? null,
+    },
+  });
 
   return updated;
 }

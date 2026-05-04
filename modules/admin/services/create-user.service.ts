@@ -27,7 +27,8 @@ export interface CreateUserResult {
 
 export async function createUserByAdmin(
   adminSupabase: SupabaseClient,
-  params: CreateUserParams
+  params: CreateUserParams,
+  actorUserId: string,
 ): Promise<CreateUserResult> {
   const {
     displayName,
@@ -107,6 +108,22 @@ export async function createUserByAdmin(
 
   if (memberError) {
     console.error("Mitglied-Fehler:", memberError);
+    await adminSupabase.from("admin_audit_log").insert({
+      admin_id: actorUserId,
+      action: "admin_create_user",
+      target_type: "user",
+      target_id: authData.user.id,
+      details: {
+        displayName: displayName.trim(),
+        householdId: household.id,
+        household: `${street} ${houseNumber}`,
+        uiMode,
+        verified,
+        quarterId: quarter_id ?? null,
+        emailProvided: Boolean(email),
+        warning: `Haushalt-Zuordnung fehlgeschlagen: ${memberError.message}`,
+      },
+    });
     // Kein Rollback — Konto existiert, Admin wird ueber fehlende Zuordnung informiert
     return {
       success: true,
@@ -118,6 +135,22 @@ export async function createUserByAdmin(
       warning: `Haushalt-Zuordnung fehlgeschlagen: ${memberError.message}`,
     };
   }
+
+  await adminSupabase.from("admin_audit_log").insert({
+    admin_id: actorUserId,
+    action: "admin_create_user",
+    target_type: "user",
+    target_id: authData.user.id,
+    details: {
+      displayName: displayName.trim(),
+      householdId: household.id,
+      household: `${street} ${houseNumber}`,
+      uiMode,
+      verified,
+      quarterId: quarter_id ?? null,
+      emailProvided: Boolean(email),
+    },
+  });
 
   return {
     success: true,

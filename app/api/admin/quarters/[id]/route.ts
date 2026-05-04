@@ -88,7 +88,7 @@ export async function DELETE(
 
   const { id } = await params;
   try {
-    const updated = await archiveQuarter(getAdminDb(), id);
+    const updated = await archiveQuarter(getAdminDb(), id, auth.user.id);
     return NextResponse.json({ message: "Quartier archiviert", quarter: updated });
   } catch (err) {
     return handleServiceError(err);

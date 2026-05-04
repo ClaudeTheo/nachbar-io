@@ -23,7 +23,8 @@ export interface BroadcastHistoryEntry {
 
 export async function sendBroadcast(
   supabase: SupabaseClient,
-  params: SendBroadcastParams
+  params: SendBroadcastParams,
+  actorUserId: string,
 ): Promise<{ sent: number; pushSent: number; timestamp: string }> {
   const { title, body, audience, street, urgency, baseUrl } = params;
 
@@ -108,6 +109,19 @@ export async function sendBroadcast(
       console.error("Push-Versand fehlgeschlagen:", err);
     }
   }
+
+  await supabase.from("admin_audit_log").insert({
+    admin_id: actorUserId,
+    action: "admin_broadcast",
+    target_type: "broadcast",
+    details: {
+      audience,
+      street: street ?? null,
+      urgency: urgency ?? null,
+      recipientCount: recipientIds.length,
+      pushSent,
+    },
+  });
 
   return {
     sent: recipientIds.length,

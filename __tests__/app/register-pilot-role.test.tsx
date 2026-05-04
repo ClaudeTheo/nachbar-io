@@ -62,7 +62,12 @@ describe("RegisterStepPilotRole", () => {
     ).toBeInTheDocument();
     expect(screen.getByText(/Menschen im Quartier aufeinander achten/i)).toBeInTheDocument();
     expect(screen.getByText(/Sie können diese Auswahl später ändern/i)).toBeInTheDocument();
+    expect(screen.getByText("Geschlossener Pilot")).toBeInTheDocument();
+    expect(screen.getByText(/Nur eingeladene Haushalte und Helfer/i)).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Rollen und Pilot erklären" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Rollen und Pilot erklären" })).toHaveClass(
+      "min-h-[56px]",
+    );
     expect(screen.getByRole("button", { name: /Ich nutze die App für mich/i })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /Ich unterstütze jemanden/i })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /Ich helfe im Quartier/i })).toBeInTheDocument();
@@ -87,6 +92,19 @@ describe("RegisterStepPilotRole", () => {
     await user.click(screen.getByRole("button", { name: "Weiter zur KI-Auswahl" }));
 
     expect(setStep).toHaveBeenCalledWith("ai_consent");
+  });
+
+  it("zeigt die gewaehlte Rolle als ruhige Zusammenfassung vor dem Weitergehen", async () => {
+    const user = userEvent.setup();
+
+    render(<StatefulPilotRoleStep />);
+
+    await user.click(screen.getByRole("button", { name: /Ich unterstütze jemanden/i }));
+
+    expect(screen.getByText("Ihre Auswahl: Unterstützer")).toBeInTheDocument();
+    expect(
+      screen.getByText(/Im nächsten Schritt entscheiden Sie in Ruhe zur KI-Hilfe/i),
+    ).toBeInTheDocument();
   });
 
   it("erklaert Testkonten vor dem Weitergehen", async () => {

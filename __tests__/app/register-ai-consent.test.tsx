@@ -73,6 +73,10 @@ describe("RegisterStepAiConsent — Polish 2026-04-27", () => {
       screen.getByText(/Sie entscheiden selbst, ob und wann Sie mich nutzen/i),
     ).toBeInTheDocument();
     expect(screen.getByText(/Standardmäßig aus/i)).toBeInTheDocument();
+    expect(screen.getByText(/Sie müssen sich jetzt nicht entscheiden/i)).toBeInTheDocument();
+    expect(
+      screen.getByText(/Für den Pilot ist „Später entscheiden“ ein guter Start/i),
+    ).toBeInTheDocument();
   });
 
   it("zeigt eine klare DSGVO-Einwilligungsbox mit Freiwilligkeit und Widerruf", () => {
@@ -81,6 +85,9 @@ describe("RegisterStepAiConsent — Polish 2026-04-27", () => {
     expect(screen.getByText("Datenschutz und Einwilligung")).toBeInTheDocument();
     expect(screen.getByText(/freiwillig/i)).toBeInTheDocument();
     expect(screen.getByText(/jederzeit später widerrufen/i)).toBeInTheDocument();
+    expect(
+      screen.getByText(/Keine KI-Hilfe ist auch eine vollständige Auswahl/i),
+    ).toBeInTheDocument();
     expect(screen.getByRole("link", { name: /Datenschutzerklärung/i })).toHaveAttribute(
       "href",
       "/datenschutz",

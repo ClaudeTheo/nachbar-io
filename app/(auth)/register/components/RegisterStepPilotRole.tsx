@@ -1,37 +1,42 @@
 "use client";
 
 import { useState } from "react";
-import { ArrowLeft, CheckCircle2, Heart, HeartHandshake, Handshake, Info, TestTube2, UserRound } from "lucide-react";
+import { ArrowLeft, CheckCircle2, HeartHandshake, Handshake, Info, ShieldCheck, TestTube2, UserRound } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { PilotRole, StepProps } from "./types";
 
 const ROLE_OPTIONS: Array<{
   role: PilotRole;
   label: string;
+  summaryLabel: string;
   description: string;
   icon: typeof UserRound;
 }> = [
   {
     role: "resident",
     label: "Ich nutze die App für mich",
+    summaryLabel: "Für mich",
     description: "Für Menschen, die selbst Hinweise und Hilfe im Alltag bekommen möchten.",
     icon: UserRound,
   },
   {
     role: "caregiver",
     label: "Ich unterstütze jemanden",
+    summaryLabel: "Unterstützer",
     description: "Für Angehörige oder Begleiter, die einer Person im Alltag helfen.",
     icon: HeartHandshake,
   },
   {
     role: "helper",
     label: "Ich helfe im Quartier",
+    summaryLabel: "Quartierhilfe",
     description: "Für Nachbarn, Projektteam oder Quartiershilfe im Pilot.",
     icon: Handshake,
   },
   {
     role: "test_user",
     label: "Ich probiere nur testweise",
+    summaryLabel: "Testkonto",
     description: "Nur für interne Tests und Demos. Das zählt nicht als echte Pilot-Nutzung.",
     icon: TestTube2,
   },
@@ -39,6 +44,7 @@ const ROLE_OPTIONS: Array<{
 
 export function RegisterStepPilotRole({ state, setState, setStep }: StepProps) {
   const [showInfo, setShowInfo] = useState(false);
+  const selectedRole = ROLE_OPTIONS.find((option) => option.role === state.pilotRole);
 
   function chooseRole(pilotRole: PilotRole) {
     setState({ pilotRole, error: null });
@@ -69,20 +75,23 @@ export function RegisterStepPilotRole({ state, setState, setStep }: StepProps) {
         </p>
       </div>
 
-      <div className="rounded-xl border border-rose-100 bg-rose-50/70 p-3">
+      <div className="rounded-xl border border-quartier-green/25 bg-quartier-green/5 p-3">
         <div className="flex items-start gap-2">
-          <Heart className="mt-0.5 h-4 w-4 shrink-0 text-rose-500" />
-          <p className="text-sm text-rose-900">
-            Im Pilot geht es nicht um Technik um der Technik willen. Es geht um
-            Vertrauen, Nähe und kleine Hilfen im Alltag.
-          </p>
+          <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-quartier-green" />
+          <div className="space-y-1 text-sm text-anthrazit">
+            <p className="font-semibold">Geschlossener Pilot</p>
+            <p>
+              Nur eingeladene Haushalte und Helfer sehen Quartiersdaten. Im
+              Pilot geht es um Vertrauen und kleine Hilfen im Alltag.
+            </p>
+          </div>
         </div>
       </div>
 
       <button
         type="button"
         onClick={() => setShowInfo((current) => !current)}
-        className="flex w-full items-center justify-center gap-2 rounded-lg border border-border bg-white px-3 py-2 text-sm font-medium text-anthrazit transition-colors hover:border-quartier-green/50"
+        className="flex min-h-[56px] w-full items-center justify-center gap-2 rounded-lg border border-border bg-white px-3 py-2 text-sm font-medium text-anthrazit transition-colors hover:border-quartier-green/50"
         aria-expanded={showInfo}
       >
         <Info className="h-4 w-4 text-quartier-green" />
@@ -162,6 +171,17 @@ export function RegisterStepPilotRole({ state, setState, setStep }: StepProps) {
         <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800">
           Testkonten sind nur für interne Tests und Demos. Sie zählen nicht als
           echte Pilot-Nutzung und werden vor dem echten Pilot bereinigt.
+        </div>
+      )}
+
+      {selectedRole && (
+        <div className="rounded-lg border border-border bg-white p-3 text-sm">
+          <p className="font-semibold text-anthrazit">
+            Ihre Auswahl: {selectedRole.summaryLabel}
+          </p>
+          <p className="mt-1 text-muted-foreground">
+            Im nächsten Schritt entscheiden Sie in Ruhe zur KI-Hilfe.
+          </p>
         </div>
       )}
 

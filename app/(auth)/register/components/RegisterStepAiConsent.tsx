@@ -157,9 +157,12 @@ export function RegisterStepAiConsent({
         <h2 className="text-base font-semibold text-anthrazit">
           Möchten Sie Unterstützung durch die KI-Hilfe?
         </h2>
+        <p className="text-sm text-muted-foreground">
+          Sie müssen sich jetzt nicht entscheiden.
+        </p>
       </div>
 
-      <div className="rounded-xl border border-rose-100 bg-rose-50/70 p-4">
+      <div className="rounded-xl border border-quartier-green/20 bg-quartier-green/5 p-4">
         <div className="flex items-start gap-3">
           <KiHelpFaqSheet />
           <div className="space-y-2 text-sm">
@@ -188,10 +191,15 @@ export function RegisterStepAiConsent({
       <div className="rounded-xl border border-quartier-green/25 bg-quartier-green/5 p-3">
         <div className="flex items-start gap-2">
           <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-quartier-green" />
-          <p className="text-sm text-anthrazit">
-            Sie entscheiden selbst, ob und wann Sie mich nutzen möchten.
-            Standardmäßig aus.
-          </p>
+          <div className="space-y-1 text-sm text-anthrazit">
+            <p>
+              Sie entscheiden selbst, ob und wann Sie mich nutzen möchten.
+              Standardmäßig aus.
+            </p>
+            <p className="text-muted-foreground">
+              Für den Pilot ist „Später entscheiden“ ein guter Start.
+            </p>
+          </div>
         </div>
       </div>
 
@@ -207,6 +215,9 @@ export function RegisterStepAiConsent({
         <p className="mt-2 text-muted-foreground">
           Sie können diese Einwilligung jederzeit später widerrufen. Ohne Ihre
           Einwilligung bleibt die KI-Hilfe ausgeschaltet.
+        </p>
+        <p className="mt-2 text-muted-foreground">
+          Keine KI-Hilfe ist auch eine vollständige Auswahl.
         </p>
         <a
           href="/datenschutz"

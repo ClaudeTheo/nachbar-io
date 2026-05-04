@@ -56,7 +56,7 @@ export async function GET(req: NextRequest) {
     level1,
     level2,
     level3,
-    pdfToken: profile.pdf_token,
+    pdfToken: null,
     updatedAt: profile.updated_at,
   });
 }

@@ -3760,6 +3760,7 @@ export type Database = {
           level2_encrypted: string | null
           level3_encrypted: string | null
           pdf_token: string | null
+          pdf_token_hash: string | null
           pdf_token_expires_at: string | null
           updated_at: string
           user_id: string
@@ -3772,6 +3773,7 @@ export type Database = {
           level2_encrypted?: string | null
           level3_encrypted?: string | null
           pdf_token?: string | null
+          pdf_token_hash?: string | null
           pdf_token_expires_at?: string | null
           updated_at?: string
           user_id: string
@@ -3784,6 +3786,7 @@ export type Database = {
           level2_encrypted?: string | null
           level3_encrypted?: string | null
           pdf_token?: string | null
+          pdf_token_hash?: string | null
           pdf_token_expires_at?: string | null
           updated_at?: string
           user_id?: string

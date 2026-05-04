@@ -2,6 +2,7 @@
 // Erreichbar via QR-Code auf dem Kuehlschrank-Blatt
 // Zeigt NUR Level 1 (lebenswichtige Daten) fuer Datenschutz
 import { getAdminSupabase } from "@/lib/supabase/admin";
+import { hashEmergencyPdfToken, isMissingPdfTokenHashColumn } from "@/lib/care/pdf-token";
 import { decrypt } from "@/modules/care/services/crypto";
 import { Phone, AlertTriangle, Clock, Heart } from "lucide-react";
 import type { Level1Data } from "@/modules/care/components/emergency/types";
@@ -15,12 +16,23 @@ export default async function NotfallPublicPage({ params }: PageProps) {
 
   // Admin-Client (Service-Role) fuer Zugriff ohne Auth
   const supabase = getAdminSupabase();
+  const tokenHash = hashEmergencyPdfToken(token);
 
-  const { data: profile, error } = await supabase
+  let { data: profile, error } = await supabase
     .from("emergency_profiles")
     .select("level1_encrypted, pdf_token_expires_at, updated_at")
-    .eq("pdf_token", token)
+    .eq("pdf_token_hash", tokenHash)
     .maybeSingle();
+
+  if (error && isMissingPdfTokenHashColumn(error)) {
+    const legacyResult = await supabase
+      .from("emergency_profiles")
+      .select("level1_encrypted, pdf_token_expires_at, updated_at")
+      .eq("pdf_token", token)
+      .maybeSingle();
+    profile = legacyResult.data;
+    error = legacyResult.error;
+  }
 
   // Token nicht gefunden
   if (error || !profile) {

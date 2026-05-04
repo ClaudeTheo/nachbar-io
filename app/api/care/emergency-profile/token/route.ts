@@ -2,7 +2,8 @@
 // Generiert einen temporaeren PDF-Token (72h Gueltigkeit) fuer QR-Code-Zugriff
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import { randomUUID } from "crypto";
+import { randomUUID } from "node:crypto";
+import { hashEmergencyPdfToken, isMissingPdfTokenHashColumn } from "@/lib/care/pdf-token";
 
 export async function POST(req: NextRequest) {
   const supabase = await createClient();
@@ -46,15 +47,27 @@ export async function POST(req: NextRequest) {
 
   // Token generieren (72h Gueltigkeit)
   const token = randomUUID();
+  const tokenHash = hashEmergencyPdfToken(token);
   const expiresAt = new Date(Date.now() + 72 * 60 * 60 * 1000).toISOString();
 
-  const { error } = await supabase
+  const { error: hashError } = await supabase
     .from("emergency_profiles")
     .update({
-      pdf_token: token,
+      pdf_token: null,
+      pdf_token_hash: tokenHash,
       pdf_token_expires_at: expiresAt,
     })
     .eq("user_id", targetUserId);
+
+  const { error } = hashError && isMissingPdfTokenHashColumn(hashError)
+    ? await supabase
+        .from("emergency_profiles")
+        .update({
+          pdf_token: token,
+          pdf_token_expires_at: expiresAt,
+        })
+        .eq("user_id", targetUserId)
+    : { error: hashError };
 
   if (error) {
     console.error("Token-Generierung fehlgeschlagen:", error);

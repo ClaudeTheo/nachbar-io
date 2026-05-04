@@ -94,6 +94,8 @@ Shared task board and mailbox for Codex, Claude, and future coding agents.
 | done | codex | E2E Local Supabase-Port-Drift 54421 -> 54321 | `.env.local` + `package.json` + `scripts/start-local-production.mjs` + `__tests__/config/package-scripts.test.ts` + `tests/e2e/README.md` + `docs/plans/handoff/INBOX.md` | 2026-05-01 nachmittag | `build:local` + `start:local` laden `.env.local` und normalisieren auf Supabase-Config-Port 54321; Care-E2E-Smoke ohne Supabase-URL-Override gruen; `.env.local` lokal korrigiert und ignored | 2026-05-01 nachmittag |
 | done | codex | Prod-Deploy 41aaf9b + E2E-Bypass-Cleanup-Handover | `docs/plans/handoff/2026-05-01-codex-prod-deploy-and-security-handover.md` + `docs/plans/handoff/INBOX.md` + Workspace-Memory `memory/topics/{deployment,e2e-tests}.md` | 2026-05-01 abend | Windows-Prebuild als prod-untauglich dokumentiert; Remote-Build `dpl_Fnfv64SuzKht2FKoByYRZ6RdvvF4` live; E2E-Bypass-ENVs aus Prod/Preview verifiziert weg; no further Prod changes | 2026-05-01 abend |
 
+| done | codex | Security/CI-Fix + Health-Check Production-Deploy | `app/api/test/login/route.ts` + `lib/supabase/middleware.ts` + `lib/closed-pilot.ts` + `__tests__/api/test-login.test.ts` + `__tests__/lib/supabase/middleware.test.ts` + `docs/plans/handoff/INBOX.md` | 2026-05-04 vormittag | `7d0d556` behebt lokalen CI-Production-Test-Login, GitHub CI gruen und deployed als `dpl_DQU5G5xofqfVS838DvqC7dRhrvrz`; Folgefix macht `/api/health` im Closed-Pilot wieder oeffentlich fuer Kiosk/Monitoring, lokal verifiziert und fuer zweiten Deploy vorbereitet | 2026-05-04 vormittag |
+
 ## Notes
 
 - `done` rows are historical and do not hold active locks.

@@ -68,6 +68,17 @@ describe("updateSession (Auth-Middleware)", () => {
     expect(res.status).not.toBe(307);
   });
 
+  it("laesst den Health-Check im Closed-Pilot-Modus ohne Auth durch", async () => {
+    vi.stubEnv("NEXT_PUBLIC_CLOSED_PILOT_MODE", "true");
+    mockGetUser.mockResolvedValue({ data: { user: null } });
+
+    const req = new NextRequest("http://localhost/api/health");
+    const res = await updateSession(req);
+
+    expect(res.status).not.toBe(503);
+    expect(res.status).not.toBe(307);
+  });
+
   it("laesst E2E-Test-Login im Closed-Pilot-Modus nur mit Test-Header durch", async () => {
     vi.stubEnv("NEXT_PUBLIC_CLOSED_PILOT_MODE", "true");
     vi.stubEnv("E2E_TEST_SECRET", "e2e-test-secret-dev");

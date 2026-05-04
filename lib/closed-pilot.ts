@@ -18,6 +18,7 @@ const CLOSED_PILOT_PUBLIC_PATHS = new Set([
 ]);
 
 const CLOSED_PILOT_PUBLIC_API_PATHS = new Set([
+  "/api/health",
   "/api/register/check-invite",
   "/api/register/complete",
 ]);

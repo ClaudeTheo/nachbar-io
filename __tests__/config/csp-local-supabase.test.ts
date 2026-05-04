@@ -51,4 +51,13 @@ describe("next.config CSP", () => {
     expect(csp).not.toContain("http://127.0.0.1:54321");
     expect(csp).not.toContain("ws://127.0.0.1:54321");
   }, 15000);
+
+  it("erlaubt Blob-Worker fuer Next- und Browser-Runtime", async () => {
+    const csp = await loadCspHeader({
+      NODE_ENV: "production",
+      NEXT_PUBLIC_SUPABASE_URL: "https://uylszchlyhbpbmslcnka.supabase.co",
+    });
+
+    expect(csp).toContain("worker-src 'self' blob:");
+  }, 15000);
 });

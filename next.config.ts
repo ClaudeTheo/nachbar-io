@@ -23,7 +23,7 @@ const cspDirectives = [
   "font-src 'self'",
   `connect-src 'self' https://${supabaseDomain} wss://${supabaseDomain}${localSupabaseConnectSources} https://api.anthropic.com https://api.open-meteo.com https://api.twilio.com https://*.ingest.de.sentry.io https://tile.openstreetmap.org https://*.tile.openstreetmap.org https://basemaps.cartocdn.com https://*.basemaps.cartocdn.com https://api.maptiler.com`,
   "media-src 'self' blob:",
-  "worker-src 'self'",
+  "worker-src 'self' blob:",
   "manifest-src 'self'",
   "object-src 'none'",
   // Jitsi Meet (Community/Tests) + sprechstunde.online (aerztliche Videosprechstunde)

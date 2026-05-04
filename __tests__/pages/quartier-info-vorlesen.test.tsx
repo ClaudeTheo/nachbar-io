@@ -239,4 +239,29 @@ describe("QuartierInfoPage Vorlesen-Integration (G-5)", () => {
       /keine veranstaltungen hinterlegt/i,
     );
   });
+
+  it("zeigt API-Fehler nicht als leere Quartierdaten", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue({
+        ok: false,
+        status: 503,
+        json: () =>
+          Promise.resolve({
+            error:
+              "Der Nachbar.io-Pilot ist geschlossen und nimmt aktuell keine Anmeldungen oder personenbezogenen Daten an.",
+            status: "closed_pilot",
+          }),
+      }),
+    );
+
+    render(<QuartierInfoPage />);
+
+    expect(await screen.findByTestId("info-api-error")).toHaveTextContent(
+      /pilot ist geschlossen/i,
+    );
+    expect(screen.queryByTestId("info-apotheken-empty")).not.toBeInTheDocument();
+    expect(screen.queryByTestId("info-events-empty")).not.toBeInTheDocument();
+    expect(screen.queryByTestId("tts-button")).not.toBeInTheDocument();
+  });
 });

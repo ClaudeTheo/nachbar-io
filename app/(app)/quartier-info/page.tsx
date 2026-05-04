@@ -108,6 +108,27 @@ function DynamicIcon({
   return <Icon className={className} />;
 }
 
+type QuartierInfoErrorBody = {
+  error?: string;
+  status?: string;
+};
+
+function getQuartierInfoErrorMessage(
+  responseStatus: number,
+  body: unknown,
+): string {
+  if (
+    body &&
+    typeof body === "object" &&
+    "error" in body &&
+    typeof (body as QuartierInfoErrorBody).error === "string"
+  ) {
+    return (body as QuartierInfoErrorBody).error ?? "";
+  }
+
+  return `Quartierdaten konnten nicht geladen werden (HTTP ${responseStatus}).`;
+}
+
 export default function QuartierInfoPage() {
   const {
     currentQuarter,
@@ -122,6 +143,7 @@ export default function QuartierInfoPage() {
     currentQuarter?.center_lng,
   );
   const [data, setData] = useState<QuartierInfoResponse | null>(null);
+  const [apiError, setApiError] = useState<string | null>(null);
   const [loadingData, setLoadingData] = useState(true);
   const pageShellClass =
     "space-y-6 pb-24 animate-fade-in-up lg:relative lg:left-1/2 lg:w-[min(calc(100vw-4rem),960px)] lg:-translate-x-1/2 lg:space-y-8";
@@ -129,16 +151,24 @@ export default function QuartierInfoPage() {
   const loadData = useCallback(async () => {
     if (!quarterId) {
       setData(null);
+      setApiError(null);
       setLoadingData(false);
       return;
     }
     setLoadingData(true);
+    setApiError(null);
     try {
       const res = await fetch(`/api/quartier-info?quarter_id=${quarterId}`);
       const d = await res.json();
+      if (!res.ok) {
+        setData(null);
+        setApiError(getQuartierInfoErrorMessage(res.status, d));
+        return;
+      }
       setData(d);
     } catch {
-      // Fehler still ignorieren
+      setData(null);
+      setApiError("Quartierdaten konnten gerade nicht geladen werden.");
     } finally {
       setLoadingData(false);
     }
@@ -206,6 +236,44 @@ export default function QuartierInfoPage() {
           >
             Zurueck zum Dashboard
           </Link>
+        </section>
+      </div>
+    );
+  }
+
+  if (!loading && apiError) {
+    return (
+      <div className={pageShellClass}>
+        <div className="flex items-center gap-3">
+          <Link
+            href="/dashboard"
+            aria-label="Zurück zum Dashboard"
+            className="p-2 -ml-2 rounded-full hover:bg-gray-100 min-w-[44px] min-h-[44px] flex items-center justify-center"
+          >
+            <ArrowLeft className="h-5 w-5 text-anthrazit" />
+          </Link>
+          <button
+            onClick={handleRefresh}
+            className="ml-auto p-2 rounded-full hover:bg-gray-100 min-w-[44px] min-h-[44px] flex items-center justify-center"
+            aria-label="Daten aktualisieren"
+          >
+            <RefreshCw className="h-5 w-5 text-muted-foreground" />
+          </button>
+        </div>
+
+        <section
+          className="rounded-2xl bg-white shadow-sm border border-amber-100 p-5"
+          data-testid="info-api-error"
+        >
+          <div className="flex items-start gap-3">
+            <AlertTriangle className="h-5 w-5 text-amber-600 mt-0.5 flex-shrink-0" />
+            <div>
+              <h2 className="text-base font-semibold text-anthrazit mb-2">
+                Quartierdaten nicht geladen
+              </h2>
+              <p className="text-sm text-muted-foreground">{apiError}</p>
+            </div>
+          </div>
         </section>
       </div>
     );

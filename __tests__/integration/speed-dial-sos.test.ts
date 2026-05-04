@@ -105,6 +105,24 @@ describe("Speed-Dial + SOS + Emergency-Profile Integration", () => {
     // Auth-User ist der Caregiver
     mockGetUser.mockResolvedValue({ data: { user: { id: "caregiver-1" } } });
 
+    // Caregiver-Link: caregiver-1 darf bewohner-1 verwalten
+    const mockLinkMaybeSingle = vi.fn().mockReturnValue({
+      data: { id: "link-1" },
+      error: null,
+    });
+    const mockLinkIs = vi.fn().mockReturnValue({
+      maybeSingle: mockLinkMaybeSingle,
+    });
+    const mockLinkResidentEq = vi.fn().mockReturnValue({
+      is: mockLinkIs,
+    });
+    const mockLinkCaregiverEq = vi.fn().mockReturnValue({
+      eq: mockLinkResidentEq,
+    });
+    const mockLinkSelect = vi.fn().mockReturnValue({
+      eq: mockLinkCaregiverEq,
+    });
+
     // Count: 0 bestehende Eintraege
     const mockCountHead = vi.fn().mockReturnValue({ count: 0, error: null });
     const mockCountEq = vi.fn().mockReturnValue(mockCountHead());
@@ -125,10 +143,11 @@ describe("Speed-Dial + SOS + Emergency-Profile Integration", () => {
     const mockInsertSelect = vi.fn().mockReturnValue({ single: mockSingle });
     const mockInsertFn = vi.fn().mockReturnValue({ select: mockInsertSelect });
 
-    let callIdx = 0;
-    mockFromServer.mockImplementation(() => {
-      callIdx++;
-      if (callIdx === 1) return { select: mockCountSelect };
+    let speedDialCallIdx = 0;
+    mockFromServer.mockImplementation((table: string) => {
+      if (table === "caregiver_links") return { select: mockLinkSelect };
+      speedDialCallIdx++;
+      if (speedDialCallIdx === 1) return { select: mockCountSelect };
       return { insert: mockInsertFn };
     });
 

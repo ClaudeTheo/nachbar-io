@@ -29,6 +29,34 @@ type LooseTableClient = {
   };
 };
 
+type SpeedDialSupabase = Awaited<ReturnType<typeof createClient>>;
+
+function forbiddenSpeedDialAccess() {
+  return NextResponse.json(
+    { error: "Keine Berechtigung fuer diese Kurzwahl-Favoriten" },
+    { status: 403 },
+  );
+}
+
+async function canAccessSpeedDialUser(
+  supabase: SpeedDialSupabase,
+  actorUserId: string,
+  targetUserId: string,
+): Promise<boolean> {
+  if (targetUserId === actorUserId) return true;
+
+  const { data, error } = await supabase
+    .from("caregiver_links")
+    .select("id")
+    .eq("caregiver_id", actorUserId)
+    .eq("resident_id", targetUserId)
+    .is("revoked_at", null)
+    .maybeSingle();
+
+  if (error) return false;
+  return Boolean(data);
+}
+
 // GET /api/speed-dial?userId={bewohner_id}
 // Gibt aufgeloeste Favoriten als Array zurueck (Name, Foto, target_user_id)
 export async function GET(req: NextRequest) {
@@ -41,6 +69,8 @@ export async function GET(req: NextRequest) {
 
   const { searchParams } = new URL(req.url);
   const userId = searchParams.get("userId") || user.id;
+  const canAccess = await canAccessSpeedDialUser(supabase, user.id, userId);
+  if (!canAccess) return forbiddenSpeedDialAccess();
 
   // Favoriten laden (RLS prueft Berechtigung)
   const { data: favorites, error } = await supabase
@@ -81,6 +111,11 @@ export async function POST(req: NextRequest) {
 
   const body = await req.json();
   const { user_id, source_type, source_id, sort_order } = body;
+  if (typeof user_id !== "string") {
+    return NextResponse.json({ error: "user_id fehlt" }, { status: 400 });
+  }
+  const canAccess = await canAccessSpeedDialUser(supabase, user.id, user_id);
+  if (!canAccess) return forbiddenSpeedDialAccess();
 
   // Validierung: Anzahl bestehender Eintraege pruefen
   const { count, error: countError } = await supabase

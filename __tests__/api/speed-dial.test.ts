@@ -132,14 +132,36 @@ describe("GET /api/speed-dial", () => {
     expect(body).toEqual([]);
   });
 
-  it("nutzt userId-Parameter fuer fremdes Profil", async () => {
+  it("nutzt userId-Parameter fuer fremdes Profil nur mit aktivem Caregiver-Link", async () => {
     mockGetUser.mockResolvedValue({ data: { user: { id: "caregiver-1" } } });
-    mockFrom.mockReturnValue({
-      select: vi.fn().mockReturnValue({
-        eq: vi.fn().mockReturnValue({
-          order: vi.fn().mockReturnValue({ data: [], error: null }),
-        }),
-      }),
+    const mockLinkMaybeSingle = vi.fn().mockReturnValue({
+      data: { id: "link-1" },
+      error: null,
+    });
+    const mockLinkIs = vi.fn().mockReturnValue({
+      maybeSingle: mockLinkMaybeSingle,
+    });
+    const mockLinkResidentEq = vi.fn().mockReturnValue({
+      is: mockLinkIs,
+    });
+    const mockLinkCaregiverEq = vi.fn().mockReturnValue({
+      eq: mockLinkResidentEq,
+    });
+    const mockLinkSelect = vi.fn().mockReturnValue({
+      eq: mockLinkCaregiverEq,
+    });
+    const mockOrder = vi.fn().mockReturnValue({ data: [], error: null });
+    const mockFavEq = vi.fn().mockReturnValue({ order: mockOrder });
+    const mockFavSelect = vi.fn().mockReturnValue({ eq: mockFavEq });
+
+    mockFrom.mockImplementation((table: string) => {
+      if (table === "caregiver_links") {
+        return { select: mockLinkSelect };
+      }
+      if (table === "speed_dial_favorites") {
+        return { select: mockFavSelect };
+      }
+      return {};
     });
 
     const { GET } = await import("@/app/api/speed-dial/route");
@@ -147,10 +169,61 @@ describe("GET /api/speed-dial", () => {
       makeRequest("http://localhost/api/speed-dial?userId=bewohner-1"),
     );
     expect(res.status).toBe(200);
+    expect(mockFrom).toHaveBeenCalledWith("caregiver_links");
+    expect(mockLinkCaregiverEq).toHaveBeenCalledWith(
+      "caregiver_id",
+      "caregiver-1",
+    );
+    expect(mockLinkResidentEq).toHaveBeenCalledWith(
+      "resident_id",
+      "bewohner-1",
+    );
+    expect(mockLinkIs).toHaveBeenCalledWith("revoked_at", null);
     // Pruefe dass Supabase mit bewohner-1 aufgerufen wurde
-    const selectCall = mockFrom.mock.results[0].value.select;
-    const eqCall = selectCall.mock.results[0].value.eq;
-    expect(eqCall).toHaveBeenCalledWith("user_id", "bewohner-1");
+    expect(mockFavEq).toHaveBeenCalledWith("user_id", "bewohner-1");
+  });
+
+  it("lehnt fremdes Profil ohne aktiven Caregiver-Link ab", async () => {
+    mockGetUser.mockResolvedValue({ data: { user: { id: "caregiver-1" } } });
+    const mockLinkMaybeSingle = vi.fn().mockReturnValue({
+      data: null,
+      error: null,
+    });
+    const mockLinkIs = vi.fn().mockReturnValue({
+      maybeSingle: mockLinkMaybeSingle,
+    });
+    const mockLinkResidentEq = vi.fn().mockReturnValue({
+      is: mockLinkIs,
+    });
+    const mockLinkCaregiverEq = vi.fn().mockReturnValue({
+      eq: mockLinkResidentEq,
+    });
+    const mockLinkSelect = vi.fn().mockReturnValue({
+      eq: mockLinkCaregiverEq,
+    });
+    const mockOrder = vi.fn().mockReturnValue({ data: [], error: null });
+    const mockFavEq = vi.fn().mockReturnValue({ order: mockOrder });
+    const mockFavSelect = vi.fn().mockReturnValue({ eq: mockFavEq });
+
+    mockFrom.mockImplementation((table: string) => {
+      if (table === "caregiver_links") {
+        return { select: mockLinkSelect };
+      }
+      if (table === "speed_dial_favorites") {
+        return { select: mockFavSelect };
+      }
+      return {};
+    });
+
+    const { GET } = await import("@/app/api/speed-dial/route");
+    const res = await GET(
+      makeRequest("http://localhost/api/speed-dial?userId=bewohner-1"),
+    );
+
+    expect(res.status).toBe(403);
+    const body = await res.json();
+    expect(body.error).toMatch(/Berechtigung|Caregiver|Zugriff/i);
+    expect(mockOrder).not.toHaveBeenCalled();
   });
 });
 
@@ -227,6 +300,67 @@ describe("POST /api/speed-dial", () => {
     expect(res.status).toBe(201);
     const body = await res.json();
     expect(body.id).toBe("new-1");
+  });
+
+  it("lehnt Favorit fuer fremden Bewohner ohne aktiven Caregiver-Link ab", async () => {
+    mockGetUser.mockResolvedValue({ data: { user: { id: "caregiver-1" } } });
+    const mockLinkMaybeSingle = vi.fn().mockReturnValue({
+      data: null,
+      error: null,
+    });
+    const mockLinkIs = vi.fn().mockReturnValue({
+      maybeSingle: mockLinkMaybeSingle,
+    });
+    const mockLinkResidentEq = vi.fn().mockReturnValue({
+      is: mockLinkIs,
+    });
+    const mockLinkCaregiverEq = vi.fn().mockReturnValue({
+      eq: mockLinkResidentEq,
+    });
+    const mockLinkSelect = vi.fn().mockReturnValue({
+      eq: mockLinkCaregiverEq,
+    });
+    const mockCountHead = vi.fn().mockReturnValue({ count: 0, error: null });
+    const mockCountEq = vi.fn().mockReturnValue(mockCountHead());
+    const mockCountSelect = vi.fn().mockReturnValue({ eq: mockCountEq });
+    const mockSingle = vi.fn().mockReturnValue({
+      data: { id: "new-1", user_id: "bewohner-1" },
+      error: null,
+    });
+    const mockInsertSelect = vi.fn().mockReturnValue({ single: mockSingle });
+    const mockInsert = vi.fn().mockReturnValue({ select: mockInsertSelect });
+
+    let speedDialCall = 0;
+
+    mockFrom.mockImplementation((table: string) => {
+      if (table === "caregiver_links") {
+        return { select: mockLinkSelect };
+      }
+      if (table === "speed_dial_favorites") {
+        speedDialCall++;
+        return speedDialCall === 1
+          ? { select: mockCountSelect }
+          : { insert: mockInsert };
+      }
+      return {};
+    });
+
+    const { POST } = await import("@/app/api/speed-dial/route");
+    const res = await POST(
+      makeRequest("http://localhost/api/speed-dial", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          user_id: "bewohner-1",
+          source_type: "caregiver_link",
+          source_id: "c1",
+          sort_order: 1,
+        }),
+      }),
+    );
+
+    expect(res.status).toBe(403);
+    expect(mockInsert).not.toHaveBeenCalled();
   });
 
   it("lehnt ab wenn bereits 5 Favoriten existieren", async () => {

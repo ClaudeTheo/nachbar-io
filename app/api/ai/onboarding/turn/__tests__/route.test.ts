@@ -27,6 +27,7 @@ const {
   mockLoadSeniorAppKnowledge,
   mockCheckCareConsent,
   mockGetAiHelpState,
+  mockConsumeAiDailyUserLimit,
 } = vi.hoisted(() => ({
   mockRequireAuth: vi.fn(),
   mockGetProvider: vi.fn(),
@@ -36,6 +37,7 @@ const {
   mockLoadSeniorAppKnowledge: vi.fn(),
   mockCheckCareConsent: vi.fn(),
   mockGetAiHelpState: vi.fn(),
+  mockConsumeAiDailyUserLimit: vi.fn(),
 }));
 
 vi.mock("@/lib/care/api-helpers", () => ({
@@ -80,6 +82,10 @@ vi.mock("@/modules/care/services/consent", () => ({
 vi.mock("@/lib/ai/user-settings", () => ({
   AI_HELP_DISABLED_MESSAGE: "KI-Hilfe ist ausgeschaltet.",
   getAiHelpState: mockGetAiHelpState,
+}));
+
+vi.mock("@/lib/ai/rate-limit", () => ({
+  consumeAiDailyUserLimit: mockConsumeAiDailyUserLimit,
 }));
 
 function makeProvider(response: AIResponse | AIResponse[]): AIProvider {
@@ -131,6 +137,7 @@ beforeEach(() => {
   mockLoadSeniorAppKnowledge.mockReset();
   mockCheckCareConsent.mockReset();
   mockGetAiHelpState.mockReset();
+  mockConsumeAiDailyUserLimit.mockReset();
 
   // Defaults, die die meisten Tests brauchen
   mockRequireAuth.mockResolvedValue(authed);
@@ -147,6 +154,11 @@ beforeEach(() => {
   mockGetAiHelpState.mockResolvedValue({
     enabled: true,
     assistanceLevel: "everyday",
+  });
+  mockConsumeAiDailyUserLimit.mockResolvedValue({
+    allowed: true,
+    limit: 100,
+    remaining: 99,
   });
 });
 
@@ -252,6 +264,26 @@ describe("POST /api/ai/onboarding/turn — Consent-Check ai_onboarding", () => {
     const { POST } = await import("../route");
     await POST(makeReq({ messages: [], userInput: "Hallo" }));
 
+    expect(mockLoadMemoryContext).not.toHaveBeenCalled();
+    expect(mockGetProvider).not.toHaveBeenCalled();
+  });
+
+  it("gibt 429 zurueck wenn das KI-Tageslimit erreicht ist und ruft keinen Provider", async () => {
+    mockConsumeAiDailyUserLimit.mockResolvedValue({
+      allowed: false,
+      limit: 100,
+      remaining: 0,
+    });
+
+    const { POST } = await import("../route");
+    const res = await POST(makeReq({ messages: [], userInput: "Hallo" }));
+
+    expect(res.status).toBe(429);
+    const data = await res.json();
+    expect(data.error).toMatch(/Tageslimit|KI/i);
+    expect(mockConsumeAiDailyUserLimit).toHaveBeenCalledWith({
+      userId: "user-senior-001",
+    });
     expect(mockLoadMemoryContext).not.toHaveBeenCalled();
     expect(mockGetProvider).not.toHaveBeenCalled();
   });

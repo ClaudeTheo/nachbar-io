@@ -28,6 +28,7 @@ import {
   AI_HELP_DISABLED_MESSAGE,
   getAiHelpState,
 } from "@/lib/ai/user-settings";
+import { consumeAiDailyUserLimit } from "@/lib/ai/rate-limit";
 import { loadMemoryContext } from "@/modules/memory/services/memory-loader";
 import { buildMemoryTool } from "@/modules/memory/services/chat-integration";
 import {
@@ -125,6 +126,17 @@ export async function POST(request: NextRequest) {
     return errorResponse(
       "Einwilligung fuer KI-Assistent fehlt (consent_required)",
       403,
+    );
+  }
+
+  const aiRateLimit = await consumeAiDailyUserLimit({ userId: user.id });
+  if (aiRateLimit.unavailable) {
+    return errorResponse("KI-Nutzungsschutz ist gerade nicht verfügbar.", 503);
+  }
+  if (!aiRateLimit.allowed) {
+    return errorResponse(
+      `KI-Tageslimit erreicht (${aiRateLimit.limit} Anfragen pro Tag). Bitte versuchen Sie es morgen erneut.`,
+      429,
     );
   }
 

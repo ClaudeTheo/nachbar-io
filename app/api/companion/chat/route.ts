@@ -14,6 +14,7 @@ import {
   AI_HELP_DISABLED_MESSAGE,
   canUsePersonalAi,
 } from "@/lib/ai/user-settings";
+import { consumeAiDailyUserLimit } from "@/lib/ai/rate-limit";
 
 export const dynamic = "force-dynamic";
 
@@ -32,6 +33,22 @@ export async function POST(request: NextRequest) {
     body = await request.json();
   } catch {
     return errorResponse("Ungültiger Request-Body.", 400);
+  }
+
+  const isToolConfirmation = Boolean(
+    body.confirmTool?.tool && body.confirmTool?.params,
+  );
+  if (!isToolConfirmation) {
+    const aiRateLimit = await consumeAiDailyUserLimit({ userId: auth.user.id });
+    if (aiRateLimit.unavailable) {
+      return errorResponse("KI-Nutzungsschutz ist gerade nicht verfügbar.", 503);
+    }
+    if (!aiRateLimit.allowed) {
+      return errorResponse(
+        `KI-Tageslimit erreicht (${aiRateLimit.limit} Anfragen pro Tag). Bitte versuchen Sie es morgen erneut.`,
+        429,
+      );
+    }
   }
 
   try {

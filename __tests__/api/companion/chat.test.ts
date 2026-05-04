@@ -9,6 +9,7 @@ const mockLoadQuarterContext = vi.fn();
 const mockBuildSystemPrompt = vi.fn();
 const mockExecuteCompanionTool = vi.fn();
 const mockAnthropicCreate = vi.fn();
+const mockConsumeAiDailyUserLimit = vi.fn();
 
 vi.mock("@/lib/care/api-helpers", () => ({
   requireAuth: (...args: unknown[]) => mockRequireAuth(...args),
@@ -64,6 +65,11 @@ vi.mock("@/modules/voice/services/tool-executor", () => ({
     ].includes(name),
   executeCompanionTool: (...args: unknown[]) =>
     mockExecuteCompanionTool(...args),
+}));
+
+vi.mock("@/lib/ai/rate-limit", () => ({
+  consumeAiDailyUserLimit: (...args: unknown[]) =>
+    mockConsumeAiDailyUserLimit(...args),
 }));
 
 // Memory-Modul Mocks (Senior Memory Layer)
@@ -155,6 +161,11 @@ describe("POST /api/companion/chat", () => {
     // Standard-Mocks
     mockLoadQuarterContext.mockResolvedValue(defaultContext);
     mockBuildSystemPrompt.mockReturnValue("Du bist der Quartier-Lotse...");
+    mockConsumeAiDailyUserLimit.mockResolvedValue({
+      allowed: true,
+      limit: 100,
+      remaining: 99,
+    });
   });
 
   it("gibt 401 zurueck wenn nicht authentifiziert", async () => {
@@ -235,6 +246,34 @@ describe("POST /api/companion/chat", () => {
 
     const data = await res.json();
     expect(data.error).toMatch(/KI-Hilfe ist ausgeschaltet/i);
+    expect(mockLoadQuarterContext).not.toHaveBeenCalled();
+    expect(mockAnthropicCreate).not.toHaveBeenCalled();
+  });
+
+  it("gibt 429 zurueck wenn das KI-Tageslimit erreicht ist und ruft keinen Provider", async () => {
+    mockRequireAuth.mockResolvedValue({
+      supabase: createMockSupabase(),
+      user: { id: "u1" },
+    });
+    mockConsumeAiDailyUserLimit.mockResolvedValue({
+      allowed: false,
+      limit: 100,
+      remaining: 0,
+    });
+
+    const { POST } = await import("@/app/api/companion/chat/route");
+    const req = new NextRequest("http://localhost/api/companion/chat", {
+      method: "POST",
+      body: JSON.stringify({ messages: [{ role: "user", content: "Hallo" }] }),
+      headers: { "Content-Type": "application/json" },
+    });
+
+    const res = await POST(req);
+
+    expect(res.status).toBe(429);
+    const data = await res.json();
+    expect(data.error).toMatch(/Tageslimit|KI/i);
+    expect(mockConsumeAiDailyUserLimit).toHaveBeenCalledWith({ userId: "u1" });
     expect(mockLoadQuarterContext).not.toHaveBeenCalled();
     expect(mockAnthropicCreate).not.toHaveBeenCalled();
   });
@@ -443,6 +482,54 @@ describe("POST /api/companion/chat", () => {
     );
 
     // Kein erneuter Claude-Call nach Bestaetigung (Performance-Fix)
+    expect(mockAnthropicCreate).not.toHaveBeenCalled();
+  });
+
+  it("zaehlt bestaetigte Write-Tools nicht gegen das KI-Tageslimit", async () => {
+    mockRequireAuth.mockResolvedValue({
+      supabase: createMockSupabase(),
+      user: { id: "u1" },
+    });
+    mockConsumeAiDailyUserLimit.mockResolvedValue({
+      allowed: false,
+      limit: 100,
+      remaining: 0,
+    });
+    mockExecuteCompanionTool.mockResolvedValue({
+      success: true,
+      summary:
+        'Beitrag "Strassenfest" wurde auf dem Schwarzen Brett veroeffentlicht.',
+    });
+
+    const { POST } = await import("@/app/api/companion/chat/route");
+    const req = new NextRequest("http://localhost/api/companion/chat", {
+      method: "POST",
+      body: JSON.stringify({
+        messages: [
+          { role: "user", content: "Erstelle einen Beitrag" },
+          { role: "assistant", content: "Soll ich den Beitrag veroeffentlichen?" },
+          { role: "user", content: "Ja" },
+        ],
+        confirmTool: {
+          tool: "create_bulletin_post",
+          params: {
+            title: "Strassenfest",
+            text: "Am Samstag findet ein Fest statt.",
+          },
+        },
+      }),
+      headers: { "Content-Type": "application/json" },
+    });
+
+    const res = await POST(req);
+
+    expect(res.status).toBe(200);
+    expect(mockConsumeAiDailyUserLimit).not.toHaveBeenCalled();
+    expect(mockExecuteCompanionTool).toHaveBeenCalledWith(
+      "create_bulletin_post",
+      { title: "Strassenfest", text: "Am Samstag findet ein Fest statt." },
+      "u1",
+    );
     expect(mockAnthropicCreate).not.toHaveBeenCalled();
   });
 

@@ -6,6 +6,7 @@ import { createHmac } from 'crypto';
 import {
   signWebhookPayload,
   verifyWebhookSignature,
+  isValidExternalUrl,
   isValidWebhookUrl,
 } from '../webhooks';
 
@@ -80,5 +81,27 @@ describe('isValidWebhookUrl', () => {
 
   it('lehnt andere Protokolle ab', () => {
     expect(isValidWebhookUrl('ftp://example.com/webhook')).toBe(false);
+  });
+});
+
+describe('isValidExternalUrl', () => {
+  it('akzeptiert externe HTTPS URLs', () => {
+    expect(isValidExternalUrl('https://example.com/calendar.ics')).toBe(true);
+    expect(isValidExternalUrl('https://awb.example.org/feed?id=42')).toBe(true);
+  });
+
+  it('lehnt private und lokale Ziele ab', () => {
+    expect(isValidExternalUrl('https://localhost/calendar.ics')).toBe(false);
+    expect(isValidExternalUrl('https://127.0.0.1/calendar.ics')).toBe(false);
+    expect(isValidExternalUrl('https://10.0.0.5/calendar.ics')).toBe(false);
+    expect(isValidExternalUrl('https://172.16.1.2/calendar.ics')).toBe(false);
+    expect(isValidExternalUrl('https://192.168.1.10/calendar.ics')).toBe(false);
+    expect(isValidExternalUrl('https://169.254.169.254/latest/meta-data')).toBe(false);
+  });
+
+  it('lehnt HTTP, numerische Hosts und ungueltige URLs ab', () => {
+    expect(isValidExternalUrl('http://example.com/calendar.ics')).toBe(false);
+    expect(isValidExternalUrl('https://2130706433/calendar.ics')).toBe(false);
+    expect(isValidExternalUrl('not-a-url')).toBe(false);
   });
 });

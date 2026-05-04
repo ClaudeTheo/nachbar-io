@@ -35,7 +35,7 @@ export function verifyWebhookSignature(
   }
 }
 
-// Private IP-Bereiche die fuer Webhooks blockiert werden (SSRF-Schutz)
+// Private IP-Bereiche die fuer externe Webhook-/Connector-URLs blockiert werden (SSRF-Schutz)
 const BLOCKED_HOSTNAMES = ['localhost', '127.0.0.1', '[::1]', '0.0.0.0'];
 const BLOCKED_IP_PREFIXES = [
   '10.',          // 10.0.0.0/8
@@ -50,9 +50,9 @@ const BLOCKED_IP_PREFIXES = [
 
 /**
  * Validiert ob die URL HTTPS verwendet und keine internen IPs adressiert.
- * Schuetzt gegen SSRF-Angriffe ueber Webhook-URLs.
+ * Schuetzt gegen SSRF-Angriffe ueber externe URLs.
  */
-export function isValidWebhookUrl(url: string): boolean {
+export function isValidExternalUrl(url: string): boolean {
   try {
     const parsed = new URL(url);
     if (parsed.protocol !== 'https:') return false;
@@ -74,6 +74,13 @@ export function isValidWebhookUrl(url: string): boolean {
   } catch {
     return false;
   }
+}
+
+/**
+ * Backwards-compatible Alias fuer bestehende Webhook-Aufrufer.
+ */
+export function isValidWebhookUrl(url: string): boolean {
+  return isValidExternalUrl(url);
 }
 
 /**

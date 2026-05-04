@@ -2,6 +2,7 @@
 // Eigener leichtgewichtiger Parser (kein node-ical — BigInt-Problem mit Turbopack)
 
 import { extractWasteTypeFromSummary } from "./type-mapping";
+import { isValidExternalUrl } from "@/lib/webhooks";
 import type {
   RawWasteDate,
   IcsConnectorConfig,
@@ -133,6 +134,16 @@ export async function fetchIcsWasteDates(
     if (config.file_content) {
       icsText = config.file_content;
     } else if (config.url) {
+      if (!isValidExternalUrl(config.url)) {
+        return {
+          success: false,
+          dates: [],
+          skipped: 0,
+          errors: ["ICS-Quelle ist keine gueltige externe URL"],
+          total_events: 0,
+        };
+      }
+
       const response = await fetch(config.url, {
         signal: AbortSignal.timeout(30000),
       });
@@ -249,6 +260,14 @@ export async function checkIcsHealth(url: string): Promise<{
   error?: string;
 }> {
   const start = Date.now();
+  if (!isValidExternalUrl(url)) {
+    return {
+      ok: false,
+      latency_ms: Date.now() - start,
+      error: "ICS-Quelle ist keine gueltige externe URL",
+    };
+  }
+
   try {
     const response = await fetch(url, {
       method: "HEAD",

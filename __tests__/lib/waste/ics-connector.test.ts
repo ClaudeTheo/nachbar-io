@@ -1,5 +1,5 @@
-import { describe, it, expect } from "vitest";
-import { fetchIcsWasteDates } from "@/lib/waste/ics-connector";
+import { afterEach, describe, it, expect, vi } from "vitest";
+import { checkIcsHealth, fetchIcsWasteDates } from "@/lib/waste/ics-connector";
 
 // Minimales ICS-Format fuer Tests
 const SAMPLE_ICS = `BEGIN:VCALENDAR
@@ -25,6 +25,10 @@ END:VEVENT
 END:VCALENDAR`;
 
 describe("fetchIcsWasteDates", () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
   it("parst ICS-Inhalt korrekt", async () => {
     const result = await fetchIcsWasteDates({ file_content: SAMPLE_ICS });
 
@@ -79,5 +83,63 @@ describe("fetchIcsWasteDates", () => {
     expect(result.success).toBe(true);
     expect(result.dates).toHaveLength(0);
     expect(result.total_events).toBe(0);
+  });
+
+  it("blockt lokale URL-Ziele vor dem Fetch", async () => {
+    const fetchMock = vi.fn();
+    vi.stubGlobal("fetch", fetchMock);
+
+    const result = await fetchIcsWasteDates({
+      url: "https://127.0.0.1/internal.ics",
+    });
+
+    expect(result.success).toBe(false);
+    expect(result.errors[0]).toContain("keine gueltige externe URL");
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it("blockt Link-Local Metadata-URLs vor dem Fetch", async () => {
+    const fetchMock = vi.fn();
+    vi.stubGlobal("fetch", fetchMock);
+
+    const result = await fetchIcsWasteDates({
+      url: "https://169.254.169.254/latest/meta-data",
+    });
+
+    expect(result.success).toBe(false);
+    expect(result.errors[0]).toContain("keine gueltige externe URL");
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it("fetches externe HTTPS-URLs nach Validierung", async () => {
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      text: vi.fn().mockResolvedValue(SAMPLE_ICS),
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    const result = await fetchIcsWasteDates({
+      url: "https://awb.example.org/calendar.ics",
+    });
+
+    expect(result.success).toBe(true);
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe("checkIcsHealth", () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it("blockt interne URL-Ziele vor dem HEAD-Fetch", async () => {
+    const fetchMock = vi.fn();
+    vi.stubGlobal("fetch", fetchMock);
+
+    const result = await checkIcsHealth("https://192.168.0.10/calendar.ics");
+
+    expect(result.ok).toBe(false);
+    expect(result.error).toContain("keine gueltige externe URL");
+    expect(fetchMock).not.toHaveBeenCalled();
   });
 });

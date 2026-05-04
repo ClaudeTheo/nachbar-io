@@ -28,12 +28,12 @@ export default function SeniorLayout({
       <header className="sticky top-0 z-40 border-b-2 border-gray-200 bg-white">
         <div
           className="mx-auto flex max-w-lg items-center justify-between px-4"
-          style={{ minHeight: "64px" }}
+          style={{ minHeight: "88px" }}
         >
           <Link
             href={isHome ? "/kreis-start" : "/senior/home"}
             className="flex items-center gap-2 rounded-xl p-3 text-anthrazit hover:bg-gray-100 active:bg-gray-200"
-            style={{ minHeight: "56px", minWidth: "56px" }}
+            style={{ minHeight: "80px", minWidth: "80px" }}
             aria-label={isHome ? "Zur Startseite" : "Zurück zur Startseite"}
           >
             <ArrowLeft className="h-7 w-7" />
@@ -56,7 +56,7 @@ export default function SeniorLayout({
           <a
             href="tel:112"
             className="flex items-center justify-center gap-3 rounded-xl bg-emergency-red px-6 text-white"
-            style={{ minHeight: "60px", fontSize: "1.25rem", fontWeight: 700 }}
+            style={{ minHeight: "80px", fontSize: "1.25rem", fontWeight: 700 }}
           >
             📞 Notruf 112
           </a>
@@ -64,7 +64,7 @@ export default function SeniorLayout({
       </div>
 
       {/* Platzhalter für die fixierte Notruf-Leiste */}
-      <div style={{ height: "90px" }} />
+      <div style={{ height: "110px" }} />
     </div>
   );
 }

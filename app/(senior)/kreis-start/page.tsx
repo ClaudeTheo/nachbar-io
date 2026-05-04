@@ -91,18 +91,23 @@ export default function KreisStartPage() {
         Tippen Sie auf eine Kachel, um fortzufahren.
       </p>
 
-      <div className="mt-8 flex justify-center gap-6">
+      <div
+        className="mt-8 grid grid-cols-2 gap-4"
+        data-testid="kreis-start-secondary-actions"
+      >
         <Link
           href="/mein-kreis/termine"
-          className="inline-flex items-center gap-2 text-base font-medium text-anthrazit/60 transition-colors hover:text-anthrazit"
+          className="inline-flex items-center justify-center rounded-2xl border-2 border-anthrazit/20 bg-white px-4 text-center text-base font-semibold text-anthrazit transition-colors hover:border-anthrazit/50 hover:bg-gray-50"
           data-testid="kreis-start-termine-link"
+          style={{ minHeight: "80px", minWidth: "80px" }}
         >
           Termine
         </Link>
         <Link
           href="/profil"
-          className="inline-flex items-center gap-2 text-base font-medium text-anthrazit/60 transition-colors hover:text-anthrazit"
+          className="inline-flex items-center justify-center rounded-2xl border-2 border-anthrazit/20 bg-white px-4 text-center text-base font-semibold text-anthrazit transition-colors hover:border-anthrazit/50 hover:bg-gray-50"
           data-testid="kreis-start-profil-link"
+          style={{ minHeight: "80px", minWidth: "80px" }}
         >
           Mein Profil
         </Link>

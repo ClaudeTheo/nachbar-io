@@ -10,11 +10,17 @@ import { createClient } from "@/lib/supabase/server";
 function isProductionLikeEnvironment(): boolean {
   const vercelEnv =
     process.env.NEXT_PUBLIC_VERCEL_ENV ?? process.env.VERCEL_ENV ?? "";
-  return (
-    process.env.NODE_ENV === "production" ||
-    vercelEnv === "production" ||
-    vercelEnv === "preview"
-  );
+  if (vercelEnv === "production" || vercelEnv === "preview") return true;
+
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL ?? "";
+  const isLocalSupabase =
+    supabaseUrl.startsWith("http://127.0.0.1:") ||
+    supabaseUrl.startsWith("http://localhost:");
+
+  // CI startet den gebauten Server via `next start`; das setzt NODE_ENV=production.
+  if (process.env.NODE_ENV === "production" && isLocalSupabase) return false;
+
+  return process.env.NODE_ENV === "production";
 }
 
 function blockProductionLikeEnvironment(): NextResponse | null {

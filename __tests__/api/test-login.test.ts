@@ -56,7 +56,7 @@ describe("/api/test/login", () => {
     });
   });
 
-  it("gibt in NODE_ENV=production immer 404 fuer GET zurueck", async () => {
+  it("gibt in NODE_ENV=production mit Cloud-Supabase 404 fuer GET zurueck", async () => {
     vi.stubEnv("NODE_ENV", "production");
     const { GET } = await import("@/app/api/test/login/route");
 
@@ -64,6 +64,22 @@ describe("/api/test/login", () => {
 
     expect(res.status).toBe(404);
     expect(mockSignInWithPassword).not.toHaveBeenCalled();
+  });
+
+  it("erlaubt POST im lokalen CI-Production-Start gegen lokalen Supabase", async () => {
+    vi.stubEnv("NODE_ENV", "production");
+    vi.stubEnv("NEXT_PUBLIC_SUPABASE_URL", "http://127.0.0.1:54321");
+    const { POST } = await import("@/app/api/test/login/route");
+
+    const res = await POST(buildPostRequest());
+    const body = await res.json();
+
+    expect(res.status).toBe(200);
+    expect(body.ok).toBe(true);
+    expect(mockSignInWithPassword).toHaveBeenCalledWith({
+      email: "senior@example.test",
+      password: "secret-password",
+    });
   });
 
   it("gibt in Vercel Preview immer 404 fuer POST zurueck", async () => {

@@ -37,11 +37,17 @@ function isE2eTestLoginRequest(request: NextRequest) {
 
   const vercelEnv =
     process.env.NEXT_PUBLIC_VERCEL_ENV ?? process.env.VERCEL_ENV ?? "";
-  if (
-    process.env.NODE_ENV === "production" ||
-    vercelEnv === "production" ||
-    vercelEnv === "preview"
-  ) {
+  if (vercelEnv === "production" || vercelEnv === "preview") {
+    return false;
+  }
+
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL ?? "";
+  const isLocalSupabase =
+    supabaseUrl.startsWith("http://127.0.0.1:") ||
+    supabaseUrl.startsWith("http://localhost:");
+
+  // CI nutzt `next start` und damit NODE_ENV=production, aber nur gegen lokalen Supabase.
+  if (process.env.NODE_ENV === "production" && !isLocalSupabase) {
     return false;
   }
 

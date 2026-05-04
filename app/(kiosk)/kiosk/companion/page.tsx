@@ -2,6 +2,10 @@
 
 import { useState, useRef, useEffect, useCallback } from "react";
 import Link from "next/link";
+import {
+  DEVICE_ID_LS_KEY,
+  USER_ID_LS_KEY,
+} from "@/lib/device-pairing/use-refresh-rotation";
 
 interface ChatMessage {
   role: "user" | "assistant";
@@ -31,8 +35,10 @@ const SUGGESTIONS = [
 const MAX_SESSION_MESSAGES = 20;
 // Cooldown zwischen Nachrichten (ms)
 const COOLDOWN_MS = 5_000;
-// Kontext-Fenster für die API
-const MAX_HISTORY_TO_SEND = 10;
+
+const KIOSK_DEVICE_ID_LS_KEY = "kiosk_device_id";
+const KIOSK_DEVICE_TOKEN_LS_KEY = "kiosk_device_token";
+const KIOSK_USER_ID_LS_KEY = "kiosk_user_id";
 
 interface SpeechRecognitionEventLike {
   results: { transcript: string; isFinal: boolean }[][];
@@ -192,28 +198,35 @@ export default function KioskCompanionPage() {
       setTimeout(() => setCooldown(false), COOLDOWN_MS);
 
       try {
-        // Nur die letzten N Nachrichten als History senden
-        const historyToSend = [...messages, userMsg]
-          .filter((m) => m.role === "user" || m.role === "assistant")
-          .slice(-MAX_HISTORY_TO_SEND)
-          .map(({ role, content }) => ({ role, content }));
-
-        // Die aktuelle User-Nachricht nicht doppelt senden
-        // (ist schon in historyToSend enthalten, API bekommt sie als letztes Element)
-        const historyWithoutLast = historyToSend.slice(0, -1);
-
-        // user_id aus localStorage holen (wird beim Kiosk-Login gesetzt)
+        // Device-Bindung aus localStorage holen (wird beim Kiosk-/Senior-Pairing gesetzt)
+        const deviceId =
+          typeof window !== "undefined"
+            ? localStorage.getItem(KIOSK_DEVICE_ID_LS_KEY) ||
+              localStorage.getItem(DEVICE_ID_LS_KEY) ||
+              undefined
+            : undefined;
+        const deviceToken =
+          typeof window !== "undefined"
+            ? localStorage.getItem(KIOSK_DEVICE_TOKEN_LS_KEY) || undefined
+            : undefined;
         const kioskUserId =
           typeof window !== "undefined"
-            ? localStorage.getItem("kiosk_user_id") || undefined
+            ? localStorage.getItem(KIOSK_USER_ID_LS_KEY) ||
+              localStorage.getItem(USER_ID_LS_KEY) ||
+              undefined
             : undefined;
+
+        const headers: Record<string, string> = {
+          "Content-Type": "application/json",
+        };
+        if (deviceToken) headers["x-device-token"] = deviceToken;
 
         const res = await fetch("/api/kiosk/companion", {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers,
           body: JSON.stringify({
             message: trimmed,
-            history: historyWithoutLast,
+            deviceId,
             user_id: kioskUserId,
           }),
         });

@@ -87,6 +87,14 @@ vi.mock("@/lib/ai/user-settings", () => ({
   AI_HELP_DISABLED_MESSAGE: "KI-Hilfe ist ausgeschaltet.",
 }));
 
+vi.mock("@/lib/ai/rate-limit", () => ({
+  consumeAiDailyUserLimit: vi.fn().mockResolvedValue({
+    allowed: true,
+    limit: 100,
+    remaining: 99,
+  }),
+}));
+
 vi.mock("@/modules/voice/services/system-prompt", () => ({
   buildSystemPrompt: vi.fn().mockReturnValue("Du bist der Quartier-Lotse."),
 }));

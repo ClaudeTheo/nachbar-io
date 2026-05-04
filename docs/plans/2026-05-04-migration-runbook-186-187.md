@@ -361,7 +361,7 @@ Stoppen und eskalieren:
 Datei:
 
 ```text
-supabase/migrations/187_emergency_pdf_token_hash.down.sql
+supabase/rollbacks/187_emergency_pdf_token_hash.down.sql
 ```
 
 Nur mit separatem Founder-Go nutzen. Sie entfernt `pdf_token_hash` und den

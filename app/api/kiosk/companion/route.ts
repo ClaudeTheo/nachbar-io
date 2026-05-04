@@ -2,6 +2,10 @@ import { NextResponse } from "next/server";
 import Anthropic from "@anthropic-ai/sdk";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { createClient as createServiceClient } from "@supabase/supabase-js";
+import {
+  AI_DAILY_USER_LIMIT,
+  consumeAiDailyUserLimit,
+} from "@/lib/ai/rate-limit";
 import { loadMemoryContext } from "@/modules/memory/services/memory-loader";
 
 // KI-Provider: "gemini" oder "claude" (über Env-Variable steuerbar)
@@ -11,110 +15,15 @@ const AI_PROVIDER = process.env.KIOSK_AI_PROVIDER || "gemini";
 const GEMINI_MODEL = process.env.GEMINI_MODEL || "gemini-2.5-flash-lite";
 
 // ============================================================
-// Token-Budget & Rate-Limiting (Kostenschutz)
+// Token-Budget
 // ============================================================
 
-// Limits pro Nutzer/Session (per IP oder user_id)
 const LIMITS = {
-  // Max. Nachrichten pro Nutzer pro Tag
-  maxMessagesPerUserPerDay:
-    Number(process.env.KIOSK_AI_MAX_MESSAGES_PER_USER) || 50,
-  // Max. Nachrichten global pro Tag (alle Nutzer zusammen)
-  maxMessagesGlobalPerDay:
-    Number(process.env.KIOSK_AI_MAX_MESSAGES_GLOBAL) || 500,
-  // Cooldown zwischen Nachrichten eines Nutzers (Sekunden)
-  cooldownSeconds: 5,
   // Max. Eingabelänge (Zeichen)
   maxInputLength: 500,
-  // Max. Kontext-Nachrichten an API senden
-  maxHistory: 10,
   // Max. Output-Tokens pro Antwort (weniger = schnellere Antwort)
   maxOutputTokens: 120,
 };
-
-// In-Memory Zähler (Produktion: Redis/Supabase)
-interface UsageEntry {
-  count: number;
-  date: string; // YYYY-MM-DD
-  lastRequest: number; // timestamp ms
-}
-
-const userUsage = new Map<string, UsageEntry>();
-let globalUsage = { count: 0, date: "" };
-
-// Tagesstring für Reset-Logik
-function today(): string {
-  return new Date().toISOString().slice(0, 10);
-}
-
-// Nutzer-ID aus Request ermitteln (IP-basiert, oder user_id wenn vorhanden)
-function getUserKey(request: Request, body: { user_id?: string }): string {
-  if (body.user_id) return `user:${body.user_id}`;
-  // IP aus Headers (Vercel/Cloudflare)
-  const forwarded = request.headers.get("x-forwarded-for");
-  const ip = forwarded?.split(",")[0]?.trim() || "unknown";
-  return `ip:${ip}`;
-}
-
-// Rate-Limit prüfen — gibt Fehlermeldung zurück oder null wenn OK
-function checkRateLimits(userKey: string): string | null {
-  const now = Date.now();
-  const todayStr = today();
-
-  // Globales Tageslimit zurücksetzen bei neuem Tag
-  if (globalUsage.date !== todayStr) {
-    globalUsage = { count: 0, date: todayStr };
-  }
-
-  // Globales Limit prüfen
-  if (globalUsage.count >= LIMITS.maxMessagesGlobalPerDay) {
-    return "Die KI hat heute schon viele Gespräche geführt. Bitte versuchen Sie es morgen wieder — oder nutzen Sie die Gesundheitstipps und den Pflege-Ratgeber.";
-  }
-
-  // Nutzer-Eintrag holen/erstellen
-  let entry = userUsage.get(userKey);
-  if (!entry || entry.date !== todayStr) {
-    entry = { count: 0, date: todayStr, lastRequest: 0 };
-    userUsage.set(userKey, entry);
-  }
-
-  // Cooldown prüfen (zu schnelle Anfragen)
-  if (now - entry.lastRequest < LIMITS.cooldownSeconds * 1000) {
-    return "Einen Moment bitte — ich brauche kurz eine Pause zwischen den Antworten.";
-  }
-
-  // Nutzer-Tageslimit prüfen
-  if (entry.count >= LIMITS.maxMessagesPerUserPerDay) {
-    return `Sie haben heute schon ${LIMITS.maxMessagesPerUserPerDay} Nachrichten geschrieben. Das reicht für heute — kommen Sie morgen gerne wieder!`;
-  }
-
-  return null; // Alles OK
-}
-
-// Nutzung zählen (nach erfolgreicher Antwort)
-function recordUsage(userKey: string) {
-  const todayStr = today();
-
-  // Global
-  if (globalUsage.date !== todayStr) {
-    globalUsage = { count: 0, date: todayStr };
-  }
-  globalUsage.count++;
-
-  // Nutzer
-  const entry = userUsage.get(userKey);
-  if (entry && entry.date === todayStr) {
-    entry.count++;
-    entry.lastRequest = Date.now();
-  }
-
-  // Alte Einträge aufräumen (alle 100 Requests)
-  if (globalUsage.count % 100 === 0) {
-    for (const [key, val] of userUsage) {
-      if (val.date !== todayStr) userUsage.delete(key);
-    }
-  }
-}
 
 // ============================================================
 // System-Prompt
@@ -153,6 +62,36 @@ function getServiceClient() {
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY!,
   );
+}
+
+async function verifyDevice(
+  supabase: ReturnType<typeof getServiceClient>,
+  deviceId: string,
+  deviceToken: string,
+): Promise<{ valid: boolean; userId?: string }> {
+  try {
+    const { data } = (await supabase
+      .from("kiosk_devices")
+      .select("id, user_id, device_token")
+      .eq("device_id", deviceId)
+      .eq("device_token", deviceToken)
+      .maybeSingle()) as {
+      data: { id: string; user_id: string | null; device_token: string } | null;
+    };
+
+    if (data) {
+      return { valid: true, userId: data.user_id ?? undefined };
+    }
+  } catch {
+    // Fallback auf ENV-Token fuer Pilot-/Legacy-Kiosk-Setups.
+  }
+
+  const envToken = process.env.KIOSK_DEVICE_TOKEN;
+  if (envToken && deviceToken === envToken) {
+    return { valid: true };
+  }
+
+  return { valid: false };
 }
 
 async function generateGemini(
@@ -223,55 +162,132 @@ async function generateClaude(
 
 export async function POST(request: Request) {
   try {
-    const body = await request.json();
-    const { message, history, user_id } = body as {
-      message: string;
-      history: Array<{ role: "user" | "assistant"; content: string }>;
-      user_id?: string;
+    const body = (await request.json()) as {
+      message?: unknown;
+      deviceId?: unknown;
+      history?: unknown;
+      user_id?: unknown;
+      userId?: unknown;
     };
 
-    if (!message || typeof message !== "string") {
+    const message = typeof body.message === "string" ? body.message : "";
+    const deviceId = typeof body.deviceId === "string" ? body.deviceId : "";
+    const bodyUserId =
+      typeof body.user_id === "string"
+        ? body.user_id
+        : typeof body.userId === "string"
+          ? body.userId
+          : undefined;
+
+    if (!message) {
       return NextResponse.json(
         { reply: "Entschuldigung, ich habe Ihre Nachricht nicht verstanden." },
         { status: 400 },
       );
     }
 
-    // Rate-Limit & Budget prüfen
-    const userKey = getUserKey(request, { user_id });
-    const limitError = checkRateLimits(userKey);
-    if (limitError) {
+    const deviceToken = request.headers.get("x-device-token");
+    if (!deviceToken) {
       return NextResponse.json(
-        { reply: limitError, limited: true },
-        { status: 200 }, // 200 damit der Client es als normale Antwort zeigt
+        {
+          error: "Device-Token fehlt (x-device-token Header)",
+          reply:
+            "Dieses Gerät ist noch nicht verbunden. Bitte richten Sie den Kiosk neu ein.",
+        },
+        { status: 401 },
       );
     }
 
-    // History begrenzen
-    const trimmedHistory = Array.isArray(history)
-      ? history.slice(-LIMITS.maxHistory)
-      : [];
+    if (!deviceId) {
+      return NextResponse.json(
+        {
+          error: "deviceId fehlt im Body",
+          reply:
+            "Dieses Gerät ist noch nicht verbunden. Bitte richten Sie den Kiosk neu ein.",
+        },
+        { status: 400 },
+      );
+    }
+
+    const supabase = getServiceClient();
+    const device = await verifyDevice(supabase, deviceId, deviceToken);
+    if (!device.valid) {
+      return NextResponse.json(
+        {
+          error: "Ungültiger Device-Token",
+          reply:
+            "Dieses Gerät konnte nicht verifiziert werden. Bitte richten Sie den Kiosk neu ein.",
+        },
+        { status: 403 },
+      );
+    }
+
+    const boundUserId = device.userId ?? process.env.KIOSK_DEVICE_USER_ID;
+    if (!boundUserId) {
+      return NextResponse.json(
+        {
+          error: "Device ist keinem Bewohner zugeordnet",
+          reply:
+            "Dieses Gerät ist noch keinem Bewohner zugeordnet. Bitte schließen Sie die Einrichtung ab.",
+        },
+        { status: 403 },
+      );
+    }
+
+    if (bodyUserId && bodyUserId !== boundUserId) {
+      return NextResponse.json(
+        {
+          error: "Body-user_id passt nicht zur Device-Bindung",
+          reply:
+            "Dieses Gerät ist einem anderen Bewohner zugeordnet. Bitte richten Sie den Kiosk neu ein.",
+        },
+        { status: 403 },
+      );
+    }
+
+    const aiRateLimit = await consumeAiDailyUserLimit({ userId: boundUserId });
+    if (aiRateLimit.unavailable) {
+      return NextResponse.json(
+        {
+          error: "KI-Nutzungsschutz ist gerade nicht verfügbar.",
+          reply:
+            "Die KI ist gerade geschützt pausiert. Bitte versuchen Sie es später noch einmal.",
+          limited: true,
+        },
+        { status: 503 },
+      );
+    }
+    if (!aiRateLimit.allowed) {
+      return NextResponse.json(
+        {
+          reply: `Sie haben heute schon ${aiRateLimit.limit} KI-Nachrichten geschrieben. Das reicht für heute. Kommen Sie morgen gerne wieder.`,
+          limited: true,
+        },
+        { status: 429 },
+      );
+    }
+
+    // Client-History ist nicht vertrauenswürdig; der Provider bekommt nur die aktuelle Nachricht.
+    const trimmedHistory: Array<{ role: "user" | "assistant"; content: string }> =
+      [];
 
     // Memory-Kontext fuer eingeloggte Plus-Nutzer laden
     let systemPrompt = SYSTEM_PROMPT;
-    if (user_id) {
-      try {
-        const supabase = getServiceClient();
-        const memoryBlock = await loadMemoryContext(
-          supabase,
-          user_id,
-          message,
-          "kiosk_plus",
-        );
-        if (memoryBlock) {
-          systemPrompt = `${SYSTEM_PROMPT}\n\n${memoryBlock}`;
-        }
-      } catch (memErr) {
-        console.warn(
-          "[KI-Begleiter] Memory-Kontext konnte nicht geladen werden:",
-          memErr,
-        );
+    try {
+      const memoryBlock = await loadMemoryContext(
+        supabase,
+        boundUserId,
+        message,
+        "kiosk_plus",
+      );
+      if (memoryBlock) {
+        systemPrompt = `${SYSTEM_PROMPT}\n\n${memoryBlock}`;
       }
+    } catch (memErr) {
+      console.warn(
+        "[KI-Begleiter] Memory-Kontext konnte nicht geladen werden:",
+        memErr,
+      );
     }
 
     let reply: string;
@@ -293,20 +309,12 @@ export async function POST(request: Request) {
       reply = await generateClaude(message, trimmedHistory, systemPrompt);
     }
 
-    // Nutzung zählen
-    recordUsage(userKey);
-
-    // Verbleibende Nachrichten für diesen Nutzer
-    const entry = userUsage.get(userKey);
-    const remaining = LIMITS.maxMessagesPerUserPerDay - (entry?.count || 0);
-
     return NextResponse.json({
       reply,
       provider,
       usage: {
-        remaining,
-        limit: LIMITS.maxMessagesPerUserPerDay,
-        globalRemaining: LIMITS.maxMessagesGlobalPerDay - globalUsage.count,
+        remaining: aiRateLimit.remaining,
+        limit: aiRateLimit.limit,
       },
     });
   } catch (error) {
@@ -323,25 +331,12 @@ export async function POST(request: Request) {
 
 // GET: Aktuelle Nutzungsstatistiken abrufen (für Admin-Dashboard)
 export async function GET() {
-  const todayStr = today();
-  const activeUsers = [...userUsage.values()].filter(
-    (e) => e.date === todayStr,
-  ).length;
-  const totalMessages = globalUsage.date === todayStr ? globalUsage.count : 0;
-
   return NextResponse.json({
-    date: todayStr,
     provider: AI_PROVIDER,
     model: GEMINI_MODEL,
     limits: {
-      perUser: LIMITS.maxMessagesPerUserPerDay,
-      global: LIMITS.maxMessagesGlobalPerDay,
-      cooldownSeconds: LIMITS.cooldownSeconds,
-    },
-    today: {
-      activeUsers,
-      totalMessages,
-      globalRemaining: LIMITS.maxMessagesGlobalPerDay - totalMessages,
+      perUser: AI_DAILY_USER_LIMIT,
+      source: "security_redis",
     },
   });
 }

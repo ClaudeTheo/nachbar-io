@@ -21,6 +21,7 @@ const CLOSED_PILOT_PUBLIC_API_PATHS = new Set([
   "/api/health",
   "/api/register/check-invite",
   "/api/register/complete",
+  "/api/cron/ai-test-cleanup-dry-run",
 ]);
 
 export function isClosedPilotMode() {

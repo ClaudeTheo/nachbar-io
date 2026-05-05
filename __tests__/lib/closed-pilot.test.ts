@@ -21,4 +21,10 @@ describe("closed pilot public paths", () => {
     expect(isClosedPilotPublicApiPath("/api/register/complete")).toBe(true);
     expect(isClosedPilotPublicApiPath("/api/messages")).toBe(false);
   });
+
+  it("keeps the AI-test cleanup dry-run cron endpoint reachable in closed pilot", () => {
+    expect(
+      isClosedPilotPublicApiPath("/api/cron/ai-test-cleanup-dry-run"),
+    ).toBe(true);
+  });
 });

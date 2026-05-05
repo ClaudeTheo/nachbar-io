@@ -172,6 +172,54 @@ describe("OSM pharmacy sync", () => {
           syncedAt: "2026-05-04T20:00:00.000Z",
         }),
       ],
+      sync_meta: {
+        events: { status: "ok" },
+        apotheken: {
+          status: "ok",
+          source: "osm-overpass",
+          last_synced_at: "2026-05-04T20:00:00.000Z",
+          found_count: 1,
+          written_count: 1,
+          manual_preserved_count: 1,
+          error: null,
+        },
+      },
+    });
+  });
+
+  it("schreibt Fehlerstatus in sync_meta.apotheken bei Quartier-Fehlern", async () => {
+    const updatePayloads: unknown[] = [];
+    const supabase = createSupabaseMock(updatePayloads);
+    const fetcher = vi.fn().mockResolvedValue({
+      ok: false,
+      status: 429,
+      json: async () => ({}),
+    });
+
+    const result = await runOsmPoiSync(supabase as never, {
+      fetcher,
+      now: () => new Date("2026-05-04T21:00:00.000Z"),
+    });
+
+    expect(result).toMatchObject({
+      quarters: 1,
+      updated: 0,
+      pharmacies: 0,
+      errors: 1,
+    });
+    expect(updatePayloads[0]).toMatchObject({
+      sync_meta: {
+        events: { status: "ok" },
+        apotheken: {
+          status: "error",
+          source: "osm-overpass",
+          last_synced_at: "2026-05-04T21:00:00.000Z",
+          found_count: 0,
+          written_count: 0,
+          manual_preserved_count: 1,
+          error: "Overpass API Fehler: 429",
+        },
+      },
     });
   });
 });
@@ -213,6 +261,7 @@ function createSupabaseMock(updatePayloads: unknown[]) {
                       openingHours: "",
                     },
                   ],
+                  sync_meta: { events: { status: "ok" } },
                 },
                 error: null,
               }),

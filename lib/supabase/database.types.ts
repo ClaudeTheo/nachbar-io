@@ -6122,6 +6122,7 @@ export type Database = {
           rathaus_url: string | null
           service_links: Json | null
           state: string
+          sync_meta: Json
           updated_at: string | null
           wiki_entries: Json | null
         }
@@ -6142,6 +6143,7 @@ export type Database = {
           rathaus_url?: string | null
           service_links?: Json | null
           state?: string
+          sync_meta?: Json
           updated_at?: string | null
           wiki_entries?: Json | null
         }
@@ -6162,6 +6164,7 @@ export type Database = {
           rathaus_url?: string | null
           service_links?: Json | null
           state?: string
+          sync_meta?: Json
           updated_at?: string | null
           wiki_entries?: Json | null
         }

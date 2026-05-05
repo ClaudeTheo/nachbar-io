@@ -53,6 +53,26 @@ export interface OsmPoiSyncResult {
   errors: number;
 }
 
+interface MunicipalConfigSyncMeta {
+  apotheken?: PharmacySyncMeta;
+  [key: string]: unknown;
+}
+
+interface PharmacySyncMeta {
+  status: "ok" | "error";
+  source: "osm-overpass";
+  last_synced_at: string;
+  found_count: number;
+  written_count: number;
+  manual_preserved_count: number;
+  error: string | null;
+}
+
+interface MunicipalConfigRow {
+  apotheken?: unknown;
+  sync_meta?: unknown;
+}
+
 export function buildOverpassPharmacyQuery(bounds: QuarterBounds): string {
   const bbox = `${bounds.swLat},${bounds.swLng},${bounds.neLat},${bounds.neLng}`;
   return [
@@ -150,53 +170,78 @@ export async function runOsmPoiSync(
   result.quarters = quarters.length;
 
   for (const quarter of quarters) {
-    try {
-      const bounds = getBounds(quarter);
-      if (!bounds) {
-        result.errors++;
-        continue;
-      }
+    let config: MunicipalConfigRow | null = null;
 
-      const synced = await fetchPharmaciesForBounds(bounds, fetcher);
-      const { data: config, error: configError } = await supabase
+    try {
+      const { data: configData, error: configError } = await supabase
         .from("municipal_config")
-        .select("apotheken")
+        .select("apotheken, sync_meta")
         .eq("quarter_id", quarter.id)
         .single();
 
-      if (configError || !config) {
+      if (configError || !configData) {
         result.errors++;
         continue;
       }
 
+      config = configData as MunicipalConfigRow;
+      const syncedAt = now().toISOString();
+      const existingPharmacies = parseExistingPharmacies(config.apotheken);
+      const manualPreservedCount = countManualPharmacies(existingPharmacies);
+      const bounds = getBounds(quarter);
+      if (!bounds) {
+        throw new Error("Quartier ohne Geo-Bounds");
+      }
+
+      const synced = await fetchPharmaciesForBounds(bounds, fetcher);
       const apotheken = mergePharmacies(
-        ((config.apotheken as Array<Apotheke & Record<string, unknown>>) ??
-          []),
+        existingPharmacies,
         synced,
-        now().toISOString(),
+        syncedAt,
       );
+      const sync_meta = buildSyncMeta(config.sync_meta, {
+        status: "ok",
+        source: "osm-overpass",
+        last_synced_at: syncedAt,
+        found_count: synced.length,
+        written_count: countAutoSyncedPharmacies(apotheken),
+        manual_preserved_count: manualPreservedCount,
+        error: null,
+      });
 
       const { error: updateError } = await supabase
         .from("municipal_config")
-        .update({ apotheken, updated_at: now().toISOString() })
+        .update({ apotheken, sync_meta, updated_at: syncedAt })
         .eq("quarter_id", quarter.id);
 
       if (updateError) {
-        result.errors++;
-        continue;
+        throw new Error(updateError.message ?? String(updateError));
       }
 
       result.updated++;
       result.pharmacies += synced.length;
     } catch (error) {
+      const syncedAt = now().toISOString();
+      const errorMessage = toErrorMessage(error);
       console.error(
         JSON.stringify({
           requestId,
           event: "osm_poi_sync_error",
           quarter_id: quarter.id,
-          error: String(error),
+          error: errorMessage,
         }),
       );
+
+      if (config) {
+        await writePharmacySyncError(
+          supabase,
+          quarter.id,
+          config,
+          syncedAt,
+          errorMessage,
+        );
+      }
+
       result.errors++;
     }
   }
@@ -235,6 +280,76 @@ function normalize(value: string): string {
 
 function isAutoSynced(pharmacy: Record<string, unknown>): boolean {
   return pharmacy.source === "osm-overpass" || typeof pharmacy.osmId === "string";
+}
+
+function parseExistingPharmacies(
+  value: unknown,
+): Array<Apotheke & Record<string, unknown>> {
+  return Array.isArray(value)
+    ? (value as Array<Apotheke & Record<string, unknown>>)
+    : [];
+}
+
+function countManualPharmacies(
+  pharmacies: Array<Apotheke & Record<string, unknown>>,
+): number {
+  return pharmacies.filter((pharmacy) => !isAutoSynced(pharmacy)).length;
+}
+
+function countAutoSyncedPharmacies(
+  pharmacies: Array<Apotheke & Record<string, unknown>>,
+): number {
+  return pharmacies.filter(isAutoSynced).length;
+}
+
+function buildSyncMeta(
+  value: unknown,
+  apotheken: PharmacySyncMeta,
+): MunicipalConfigSyncMeta {
+  const base =
+    value && typeof value === "object" && !Array.isArray(value)
+      ? (value as Record<string, unknown>)
+      : {};
+
+  return { ...base, apotheken };
+}
+
+async function writePharmacySyncError(
+  supabase: SupabaseClient,
+  quarterId: string,
+  config: MunicipalConfigRow,
+  syncedAt: string,
+  error: string,
+): Promise<void> {
+  const existingPharmacies = parseExistingPharmacies(config.apotheken);
+  const sync_meta = buildSyncMeta(config.sync_meta, {
+    status: "error",
+    source: "osm-overpass",
+    last_synced_at: syncedAt,
+    found_count: 0,
+    written_count: 0,
+    manual_preserved_count: countManualPharmacies(existingPharmacies),
+    error,
+  });
+
+  const { error: updateError } = await supabase
+    .from("municipal_config")
+    .update({ sync_meta, updated_at: syncedAt })
+    .eq("quarter_id", quarterId);
+
+  if (updateError) {
+    console.error(
+      JSON.stringify({
+        event: "osm_poi_sync_meta_error",
+        quarter_id: quarterId,
+        error: updateError.message ?? String(updateError),
+      }),
+    );
+  }
+}
+
+function toErrorMessage(error: unknown): string {
+  return error instanceof Error ? error.message : String(error);
 }
 
 function getBounds(quarter: {

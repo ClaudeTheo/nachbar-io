@@ -29,20 +29,34 @@ jobs:
       - name: Install Dependencies
         run: npm ci
 
-      - name: Pull Vercel production env (incl. sensitive)
+      - name: Resolve secrets via Vercel REST (decrypt=true)
+        id: vercel-env
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
           VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
           VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
         run: |
-          npx vercel pull --yes --environment=production --token="$VERCEL_TOKEN"
-          npx vercel env pull --environment=production .env.production.local --token="$VERCEL_TOKEN"
+          set -e
+          response=$(curl -sf \
+            -H "Authorization: Bearer $VERCEL_TOKEN" \
+            "https://api.vercel.com/v9/projects/$VERCEL_PROJECT_ID/env?decrypt=true&teamId=$VERCEL_ORG_ID")
+          url=$(echo "$response" | jq -r '.envs[] | select(.key=="NEXT_PUBLIC_SUPABASE_URL" and (.target | index("production"))) | .value' | head -1)
+          key=$(echo "$response" | jq -r '.envs[] | select(.key=="SUPABASE_SERVICE_ROLE_KEY" and (.target | index("production"))) | .value' | head -1)
+          if [ -z "$url" ] || [ -z "$key" ]; then
+            echo "Missing url or service-role-key from Vercel env" >&2
+            exit 1
+          fi
+          echo "::add-mask::$key"
+          echo "url=$url" >> "$GITHUB_OUTPUT"
+          echo "key=$key" >> "$GITHUB_OUTPUT"
 
       - name: Run dry-run audit
         env:
           AI_TEST_CLEANUP_MODE: dry-run
           AI_TEST_CLEANUP_OUTPUT: file
-        run: npx dotenv-cli -e .env.production.local -- npx tsx scripts/ai-test-users-cleanup-dry-run.ts
+          NEXT_PUBLIC_SUPABASE_URL: ${{ steps.vercel-env.outputs.url }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ steps.vercel-env.outputs.key }}
+        run: npx tsx scripts/ai-test-users-cleanup-dry-run.ts
 
       - name: Upload report artifact
         uses: actions/upload-artifact@v4

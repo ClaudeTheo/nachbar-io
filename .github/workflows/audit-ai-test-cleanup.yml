@@ -1,0 +1,46 @@
+name: Audit AI-Test-User Cleanup (Dry-Run)
+
+# Manueller Trigger only. Liest Service-Role-Key aus GitHub-Secrets,
+# fuehrt scripts/ai-test-users-cleanup-dry-run.ts gegen Prod-DB aus,
+# laedt JSON-Bericht als Artifact hoch. Schreibt nichts in der DB.
+
+on:
+  workflow_dispatch:
+
+concurrency:
+  group: audit-ai-test-cleanup
+  cancel-in-progress: false
+
+jobs:
+  audit:
+    name: Run Dry-Run Audit
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Run dry-run audit
+        env:
+          AI_TEST_CLEANUP_MODE: dry-run
+          AI_TEST_CLEANUP_OUTPUT: file
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: npx tsx scripts/ai-test-users-cleanup-dry-run.ts
+
+      - name: Upload report artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ai-test-cleanup-dry-run-report
+          path: output/ai-test-cleanup-dry-run-*.json
+          if-no-files-found: error
+          retention-days: 14

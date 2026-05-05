@@ -29,40 +29,12 @@ jobs:
       - name: Install Dependencies
         run: npm ci
 
-      - name: Resolve secrets via Vercel REST (decrypt=true)
-        id: vercel-env
-        env:
-          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
-          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
-          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
-        run: |
-          set -e
-          status=$(curl -s -o response.json -w "%{http_code}" \
-            -H "Authorization: Bearer $VERCEL_TOKEN" \
-            "https://api.vercel.com/v9/projects/$VERCEL_PROJECT_ID/env?decrypt=true&teamId=$VERCEL_ORG_ID")
-          echo "HTTP $status, response size: $(wc -c < response.json) bytes"
-          echo "Top-level keys in response:"
-          jq -r 'keys[]?' response.json || echo "not JSON"
-          echo "Number of envs entries:"
-          jq -r '.envs | length' response.json || echo "no .envs"
-          echo "Production env keys (sample):"
-          jq -r '.envs[] | select(.target | tostring | contains("production")) | .key' response.json 2>/dev/null | head -20
-          url=$(jq -r '.envs[] | select(.key=="NEXT_PUBLIC_SUPABASE_URL" and (.target | tostring | contains("production"))) | .value' response.json | head -1)
-          key=$(jq -r '.envs[] | select(.key=="SUPABASE_SERVICE_ROLE_KEY" and (.target | tostring | contains("production"))) | .value' response.json | head -1)
-          if [ -z "$url" ] || [ "$url" = "null" ] || [ -z "$key" ] || [ "$key" = "null" ]; then
-            echo "Missing url or service-role-key from Vercel env (url=${url:0:30}..., key length=${#key})" >&2
-            exit 1
-          fi
-          echo "::add-mask::$key"
-          echo "url=$url" >> "$GITHUB_OUTPUT"
-          echo "key=$key" >> "$GITHUB_OUTPUT"
-
       - name: Run dry-run audit
         env:
           AI_TEST_CLEANUP_MODE: dry-run
           AI_TEST_CLEANUP_OUTPUT: file
-          NEXT_PUBLIC_SUPABASE_URL: ${{ steps.vercel-env.outputs.url }}
-          SUPABASE_SERVICE_ROLE_KEY: ${{ steps.vercel-env.outputs.key }}
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
         run: npx tsx scripts/ai-test-users-cleanup-dry-run.ts
 
       - name: Upload report artifact

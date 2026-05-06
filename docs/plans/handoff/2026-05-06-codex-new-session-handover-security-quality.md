@@ -5,15 +5,16 @@ Owner: Codex
 
 ## Kurzfassung
 
-Aktueller Stand in `nachbar-io`: `master` ist lokal **5 Commits ahead** von `origin/master`.
+Aktueller Stand in `nachbar-io`: `master` ist lokal mehrere Commits ahead von `origin/master`. `git status -sb` ist autoritativ; durch diesen Handover-Refresh kann die konkrete Zahl hoeher sein als die unten gelisteten fachlichen Commits.
 
-Noch nicht gepusht:
+Noch nicht gepushte fachliche Commits:
 
 - `c7f0fa7 docs(handoff): claim ssrf syntax hardening`
 - `fde0b8a fix(security): harden external url validation`
 - `3e32b5f docs(handoff): new session security quality status`
 - `905a98a docs(handoff): claim quartier info auth gate`
 - `5343085 fix(security): require auth for quartier info api`
+- plus spaetere Handover-Refresh-Doku-Commits, falls diese Datei nachtraeglich aktualisiert wurde.
 
 Bereits gepusht:
 
@@ -95,10 +96,10 @@ Verifikation:
 
 ## Git-Stand
 
-Neue Session sollte sehen:
+Neue Session sollte `master...origin/master [ahead N]` sehen. Die genaue Zahl kann durch Handover-Refresh-Commits steigen; relevant sind die ungepushten fachlichen Commits oben.
 
 ```text
-## master...origin/master [ahead 5]
+git status -sb
 ```
 
 Untracked Altdateien weiterhin unberuehrt:
@@ -139,7 +140,7 @@ Aus `docs/plans/handoff/2026-05-06-claude-an-codex-security-audit-high-fixes.md`
 
 Empfehlung fuer neue Session:
 
-1. Erst entscheiden, ob die 5 lokalen Commits gepusht werden sollen.
+1. Erst entscheiden, ob die lokalen Commits gepusht werden sollen.
 2. Danach kleinen LOW-Schritt Medical-Blocklist Normalisierung TDD-first bearbeiten.
 3. Deploy nur bewusst nach Push/CI/Smoke.
 

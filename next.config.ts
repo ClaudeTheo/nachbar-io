@@ -1,38 +1,6 @@
 import type { NextConfig } from "next";
 import { withSentryConfig } from "@sentry/nextjs";
 
-// Supabase-Projekt-Domain fuer CSP connect-src
-const supabaseDomain = "uylszchlyhbpbmslcnka.supabase.co";
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL ?? "";
-const isLocalSupabaseUrl =
-  supabaseUrl.startsWith("http://127.0.0.1:54321") ||
-  supabaseUrl.startsWith("http://localhost:54321");
-const localSupabaseConnectSources =
-  process.env.NODE_ENV === "development" || isLocalSupabaseUrl
-    ? " http://127.0.0.1:54321 http://localhost:54321 ws://127.0.0.1:54321 ws://localhost:54321"
-    : "";
-
-// Content-Security-Policy: Schutz vor XSS, Clickjacking, Daten-Exfiltration
-// 'unsafe-inline' noetig fuer Next.js Inline-Scripts und Tailwind-Styles
-// 'unsafe-eval' nur im Development (Webpack HMR)
-const cspDirectives = [
-  "default-src 'self'",
-  `script-src 'self' 'unsafe-inline'${process.env.NODE_ENV === "development" ? " 'unsafe-eval'" : ""}`,
-  "style-src 'self' 'unsafe-inline'",
-  "img-src 'self' data: blob: https://tile.openstreetmap.org https://*.tile.openstreetmap.org https://basemaps.cartocdn.com https://*.basemaps.cartocdn.com https://api.maptiler.com https://cdnjs.cloudflare.com https://*.supabase.co",
-  "font-src 'self'",
-  `connect-src 'self' https://${supabaseDomain} wss://${supabaseDomain}${localSupabaseConnectSources} https://api.anthropic.com https://api.open-meteo.com https://api.twilio.com https://*.ingest.de.sentry.io https://tile.openstreetmap.org https://*.tile.openstreetmap.org https://basemaps.cartocdn.com https://*.basemaps.cartocdn.com https://api.maptiler.com`,
-  "media-src 'self' blob:",
-  "worker-src 'self' blob:",
-  "manifest-src 'self'",
-  "object-src 'none'",
-  // Jitsi Meet (Community/Tests) + sprechstunde.online (aerztliche Videosprechstunde)
-  `frame-src 'self' https://meet.jit.si https://app.sprechstunde.online ${process.env.JITSI_BASE_URL ? process.env.JITSI_BASE_URL : ""}`.trim(),
-  "frame-ancestors 'none'",
-  "base-uri 'self'",
-  "form-action 'self'",
-];
-
 const nextConfig: NextConfig = {
   // Workspace-Klammer enthaelt weitere Lockfiles; nachbar-io ist der App-Root.
   turbopack: {
@@ -72,10 +40,6 @@ const nextConfig: NextConfig = {
       {
         source: "/(.*)",
         headers: [
-          {
-            key: "Content-Security-Policy",
-            value: cspDirectives.join("; "),
-          },
           {
             key: "X-Frame-Options",
             value: "DENY",

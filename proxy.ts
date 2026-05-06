@@ -13,30 +13,39 @@ import {
   isClosedPilotMode,
   isClosedPilotPublicPath,
 } from "@/lib/closed-pilot";
+import {
+  applyContentSecurityPolicy,
+  createContentSecurityPolicyContext,
+} from "@/lib/security/csp";
 
 // Oeffentliche Seiten: Kein Auth-Check noetig, statisch cachebar
 const PUBLIC_PATHS = ["/", "/b2b", "/impressum", "/datenschutz", "/agb"];
 
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
+  const csp = createContentSecurityPolicyContext(request.headers);
+  const nextWithCsp = () =>
+    NextResponse.next({ request: { headers: csp.requestHeaders } });
+  const secure = <T extends Response>(response: T) =>
+    applyContentSecurityPolicy(response, csp.policy);
 
   if (isClosedPilotMode()) {
     if (isClosedPilotPublicPath(pathname)) {
-      const response = NextResponse.next();
+      const response = nextWithCsp();
       response.headers.set("X-Robots-Tag", CLOSED_PILOT_ROBOTS_HEADER);
-      return response;
+      return secure(response);
     }
 
     if (!pathname.startsWith("/api/")) {
-      const response = await updateSession(request);
+      const response = await updateSession(request, csp.requestHeaders);
       response.headers.set("X-Robots-Tag", CLOSED_PILOT_ROBOTS_HEADER);
-      return response;
+      return secure(response);
     }
   }
 
   // Oeffentliche Seiten: Kein Supabase-Session-Check, direkt weiterleiten
   if (PUBLIC_PATHS.includes(pathname)) {
-    return NextResponse.next();
+    return secure(nextWithCsp());
   }
 
   // Phase I: Gesundheits-Routes flag-gated. Wenn Flag OFF -> Redirect.
@@ -46,7 +55,7 @@ export async function proxy(request: NextRequest) {
     if (!enabled) {
       const url = request.nextUrl.clone();
       url.pathname = "/kreis-start";
-      return NextResponse.redirect(url);
+      return secure(NextResponse.redirect(url));
     }
     // Flag aktiv: normal weiter (Auth, Rate-Limit etc. laufen durch).
   }
@@ -55,7 +64,7 @@ export async function proxy(request: NextRequest) {
   if (isLegacyRoute(pathname)) {
     const url = request.nextUrl.clone();
     url.pathname = "/kreis-start";
-    return NextResponse.redirect(url);
+    return secure(NextResponse.redirect(url));
   }
 
   // Security-Check (Redis-basiert, fail-open)
@@ -63,7 +72,7 @@ export async function proxy(request: NextRequest) {
 
   // Blockiert? Sofort zurueckgeben (Honeypot-404 oder 403)
   if (!security.allowed && security.response) {
-    return security.response;
+    return secure(security.response);
   }
 
   // Rate Limiting fuer API-Endpunkte (adaptiv bei Stufe 2+)
@@ -90,27 +99,29 @@ export async function proxy(request: NextRequest) {
 
       const retryAfterSeconds = Math.ceil(result.resetMs / 1000);
 
-      return NextResponse.json(
-        {
-          error: "Zu viele Anfragen. Bitte warten Sie einen Moment.",
-          retryAfter: retryAfterSeconds,
-        },
-        {
-          status: 429,
-          headers: {
-            "Retry-After": String(retryAfterSeconds),
-            "X-RateLimit-Limit": String(result.limit),
-            "X-RateLimit-Remaining": "0",
-            "X-RateLimit-Reset": String(
-              Math.ceil((Date.now() + result.resetMs) / 1000),
-            ),
+      return secure(
+        NextResponse.json(
+          {
+            error: "Zu viele Anfragen. Bitte warten Sie einen Moment.",
+            retryAfter: retryAfterSeconds,
           },
-        },
+          {
+            status: 429,
+            headers: {
+              "Retry-After": String(retryAfterSeconds),
+              "X-RateLimit-Limit": String(result.limit),
+              "X-RateLimit-Remaining": "0",
+              "X-RateLimit-Reset": String(
+                Math.ceil((Date.now() + result.resetMs) / 1000),
+              ),
+            },
+          },
+        ),
       );
     }
 
     // Erlaubt: Weiterleiten an Route-Handler mit Rate-Limit-Headers
-    const response = await updateSession(request);
+    const response = await updateSession(request, csp.requestHeaders);
 
     // API-Version Header (A02)
     response.headers.set("X-API-Version", "1");
@@ -124,11 +135,11 @@ export async function proxy(request: NextRequest) {
       );
     }
 
-    return response;
+    return secure(response);
   }
 
   // Nicht-API-Routen: Nur Supabase-Session aktualisieren
-  return await updateSession(request);
+  return secure(await updateSession(request, csp.requestHeaders));
 }
 
 export const config = {

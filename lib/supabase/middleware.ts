@@ -1,5 +1,6 @@
 // Nachbar.io — Supabase Middleware für Session-Refresh
 import { createServerClient } from "@supabase/ssr";
+import { createHash, timingSafeEqual } from "crypto";
 import { NextResponse, type NextRequest } from "next/server";
 import {
   buildClosedPilotApiBody,
@@ -35,27 +36,38 @@ function hasClosedPilotApproval(profile: {
 function isE2eTestLoginRequest(request: NextRequest) {
   if (request.nextUrl.pathname !== "/api/test/login") return false;
 
-  const vercelEnv =
-    process.env.NEXT_PUBLIC_VERCEL_ENV ?? process.env.VERCEL_ENV ?? "";
-  if (vercelEnv === "production" || vercelEnv === "preview") {
+  if (!isE2eBypassAllowedEnvironment()) {
     return false;
   }
 
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL ?? "";
-  const isLocalSupabase =
-    supabaseUrl.startsWith("http://127.0.0.1:") ||
-    supabaseUrl.startsWith("http://localhost:");
-
-  // CI nutzt `next start` und damit NODE_ENV=production, aber nur gegen lokalen Supabase.
-  if (process.env.NODE_ENV === "production" && !isLocalSupabase) {
-    return false;
-  }
-
-  const testSecret = process.env.SECURITY_E2E_BYPASS ?? process.env.E2E_TEST_SECRET;
-  return (
-    Boolean(testSecret) &&
-    request.headers.get("x-nachbar-test-mode") === testSecret
+  return verifyE2eTestHeader(
+    request.headers.get("x-nachbar-test-mode"),
+    process.env.SECURITY_E2E_BYPASS ?? process.env.E2E_TEST_SECRET,
   );
+}
+
+function isE2eBypassAllowedEnvironment() {
+  if (process.env.NODE_ENV === "production") return false;
+
+  const vercelEnvs = [
+    process.env.NEXT_PUBLIC_VERCEL_ENV,
+    process.env.VERCEL_ENV,
+  ];
+  return !vercelEnvs.some((env) => env === "production" || env === "preview");
+}
+
+function verifyE2eTestHeader(value: string | null, expectedSecret?: string) {
+  if (!value || !expectedSecret) return false;
+
+  try {
+    return timingSafeEqual(hashSecret(value), hashSecret(expectedSecret));
+  } catch {
+    return false;
+  }
+}
+
+function hashSecret(value: string) {
+  return createHash("sha256").update(value, "utf8").digest();
 }
 
 export async function updateSession(request: NextRequest) {

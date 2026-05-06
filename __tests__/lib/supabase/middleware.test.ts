@@ -3,6 +3,7 @@
 
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { NextRequest } from "next/server";
+import { readFileSync } from "fs";
 
 // Mock createServerClient
 const mockGetUser = vi.fn();
@@ -22,6 +23,7 @@ import { updateSession } from "@/lib/supabase/middleware";
 
 describe("updateSession (Auth-Middleware)", () => {
   beforeEach(() => {
+    vi.unstubAllEnvs();
     vi.clearAllMocks();
     vi.stubEnv("NEXT_PUBLIC_SUPABASE_URL", "https://test.supabase.co");
     vi.stubEnv("NEXT_PUBLIC_SUPABASE_ANON_KEY", "test-anon-key");
@@ -93,7 +95,7 @@ describe("updateSession (Auth-Middleware)", () => {
     expect(res.status).not.toBe(307);
   });
 
-  it("laesst E2E-Test-Login im lokalen CI-Production-Start durch", async () => {
+  it("blockiert E2E-Test-Login auch im lokalen CI-Production-Start", async () => {
     vi.stubEnv("NODE_ENV", "production");
     vi.stubEnv("NEXT_PUBLIC_CLOSED_PILOT_MODE", "true");
     vi.stubEnv("NEXT_PUBLIC_SUPABASE_URL", "http://127.0.0.1:54321");
@@ -105,8 +107,16 @@ describe("updateSession (Auth-Middleware)", () => {
     });
     const res = await updateSession(req);
 
-    expect(res.status).not.toBe(503);
-    expect(res.status).not.toBe(307);
+    expect(res.status).toBe(503);
+  });
+
+  it("vergleicht den E2E-Test-Header timing-safe statt per direktem Secret-Vergleich", () => {
+    const source = readFileSync("lib/supabase/middleware.ts", "utf8");
+
+    expect(source).toContain("timingSafeEqual");
+    expect(source).not.toMatch(
+      /headers\.get\(["']x-nachbar-test-mode["']\)\s*===\s*testSecret/,
+    );
   });
 
   it("laesst E2E-Test-Login-Bypass in Vercel Preview nicht durch", async () => {

@@ -187,7 +187,10 @@ describe("admin audit log", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     delete process.env.INTERNAL_API_SECRET;
-    vi.stubGlobal("fetch", vi.fn().mockResolvedValue({ ok: true }));
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue({
+      ok: true,
+      json: vi.fn().mockResolvedValue({ sent: 0 }),
+    }));
   });
 
   it("protokolliert Admin-Create-User nach erfolgreicher Kontoanlage", async () => {
@@ -273,6 +276,31 @@ describe("admin audit log", () => {
         pushSent: 0,
       },
     });
+  });
+
+  it("reicht Admin-Broadcast-Empfaenger an den internen Push-Versand weiter", async () => {
+    process.env.INTERNAL_API_SECRET = "internal-secret";
+    const { client } = makeBroadcastClient();
+
+    await sendBroadcast(
+      client as never,
+      {
+        title: "Hinweis",
+        body: "Bitte beachten Sie die neue Info.",
+        audience: "all",
+        urgency: "normal",
+        baseUrl: "https://nachbar.test",
+      },
+      "admin-1",
+    );
+
+    const fetchMock = vi.mocked(fetch);
+    expect(fetchMock).toHaveBeenCalledWith(
+      "https://nachbar.test/api/push/send",
+      expect.objectContaining({
+        body: expect.stringContaining('"userIds":["resident-1","resident-2"]'),
+      }),
+    );
   });
 
   it("protokolliert Quartier-Archivierung durch Super-Admin", async () => {

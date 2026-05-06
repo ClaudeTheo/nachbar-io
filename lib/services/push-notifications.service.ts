@@ -157,6 +157,7 @@ export interface BroadcastPushParams {
   tag?: string;
   urgent?: boolean;
   excludeUserId?: string;
+  targetUserIds?: string[];
 }
 
 /**
@@ -167,22 +168,33 @@ export async function broadcastPush(
   supabase: SupabaseClient,
   params: BroadcastPushParams,
 ): Promise<{ sent: number; failed: number; cleaned: number }> {
-  const { title, body, url, tag, urgent, excludeUserId } = params;
+  const { title, body, url, tag, urgent, excludeUserId, targetUserIds } = params;
 
   if (!title) {
     throw new ServiceError("Titel erforderlich", 400);
+  }
+
+  const filteredTargetUserIds = targetUserIds
+    ? Array.from(new Set(targetUserIds.filter((id) => typeof id === "string" && id.length > 0)))
+    : undefined;
+
+  if (targetUserIds && filteredTargetUserIds?.length === 0) {
+    return { sent: 0, failed: 0, cleaned: 0 };
   }
 
   const safeUrl = sanitizeUrl(url, "/dashboard");
   ensureVapid();
 
   // Alle Push-Subscriptions laden (ausser Absender, max 5000)
-  const query = supabase
+  let query = supabase
     .from("push_subscriptions")
     .select("id, user_id, endpoint, p256dh, auth")
     .limit(5000);
   if (excludeUserId) {
-    query.neq("user_id", excludeUserId);
+    query = query.neq("user_id", excludeUserId);
+  }
+  if (filteredTargetUserIds) {
+    query = query.in("user_id", filteredTargetUserIds);
   }
   const { data: subscriptions, error: fetchError } = await query;
 

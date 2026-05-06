@@ -38,6 +38,9 @@ export async function POST(request: NextRequest) {
       tag: body.tag,
       urgent: body.urgent,
       excludeUserId: body.excludeUserId,
+      targetUserIds: Array.isArray(body.userIds)
+        ? body.userIds.filter((id: unknown): id is string => typeof id === "string" && id.length > 0)
+        : undefined,
     });
 
     // Kompatibilitaet: Wenn keine Empfaenger, Nachricht zurueckgeben

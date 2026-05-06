@@ -84,8 +84,9 @@ export async function sendBroadcast(
   let pushSent = 0;
   const internalSecret = process.env.INTERNAL_API_SECRET;
 
-  if (internalSecret) {
+  if (internalSecret && recipientIds.length > 0) {
     try {
+      const broadcastTag = `broadcast-${Date.now()}`;
       const pushRes = await fetch(`${baseUrl}/api/push/send`, {
         method: "POST",
         headers: {
@@ -96,8 +97,9 @@ export async function sendBroadcast(
           title: pushTitle,
           body: body,
           url: "/dashboard",
-          tag: `broadcast-${Date.now()}`,
+          tag: broadcastTag,
           urgent: urgency === "urgent",
+          userIds: recipientIds,
         }),
       });
 

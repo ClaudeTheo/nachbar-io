@@ -4,6 +4,20 @@
 
 import { createHmac, timingSafeEqual } from 'crypto';
 import { isIP } from 'net';
+import { lookup as lookupDns } from 'dns/promises';
+
+export type ExternalLookupAddress = {
+  address: string;
+  family: 4 | 6;
+};
+
+export type ExternalHostnameResolver = (
+  hostname: string
+) => Promise<ExternalLookupAddress[]>;
+
+export type ExternalFetchGuardOptions = {
+  resolveHostname?: ExternalHostnameResolver;
+};
 
 /**
  * Erstellt eine HMAC-SHA256 Signatur fuer den Webhook-Payload.
@@ -53,6 +67,41 @@ export function isValidExternalUrl(url: string): boolean {
     if (isBlockedHostname(hostname)) return false;
 
     return true;
+  } catch {
+    return false;
+  }
+}
+
+async function defaultResolveHostname(
+  hostname: string
+): Promise<ExternalLookupAddress[]> {
+  const addresses = await lookupDns(hostname, { all: true, verbatim: true });
+  return addresses.map(({ address, family }) => ({
+    address,
+    family: family === 6 ? 6 : 4,
+  }));
+}
+
+/**
+ * Prueft externe Fetch-Ziele kurz vor dem Netzwerkaufruf erneut per DNS.
+ * Das ergaenzt die Syntax-Pruefung gegen DNS-Rebinding auf private Ziele.
+ */
+export async function isSafeExternalFetchUrl(
+  url: string,
+  resolveHostname: ExternalHostnameResolver = defaultResolveHostname
+): Promise<boolean> {
+  if (!isValidExternalUrl(url)) return false;
+
+  try {
+    const parsed = new URL(url);
+    const hostname = parsed.hostname.toLowerCase().replace(/^\[(.*)\]$/, '$1');
+
+    if (isIP(hostname)) return !isBlockedHostname(hostname);
+
+    const addresses = await resolveHostname(hostname);
+    if (addresses.length === 0) return false;
+
+    return addresses.every(({ address }) => !isBlockedHostname(address));
   } catch {
     return false;
   }
@@ -154,11 +203,11 @@ export async function sendWebhook(
   url: string,
   event: string,
   data: unknown,
-  secret: string
+  secret: string,
+  options: ExternalFetchGuardOptions = {}
 ): Promise<boolean> {
-  // URL-Validierung: nur HTTPS erlaubt
-  if (!isValidWebhookUrl(url)) {
-    console.error('[webhooks] URL muss HTTPS verwenden:', url);
+  if (!(await isSafeExternalFetchUrl(url, options.resolveHostname))) {
+    console.error('[webhooks] URL ist kein gueltiges externes HTTPS-Ziel:', url);
     return false;
   }
 

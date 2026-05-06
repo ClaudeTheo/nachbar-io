@@ -118,12 +118,27 @@ describe("fetchIcsWasteDates", () => {
     });
     vi.stubGlobal("fetch", fetchMock);
 
-    const result = await fetchIcsWasteDates({
-      url: "https://awb.example.org/calendar.ics",
-    });
+    const result = await fetchIcsWasteDates(
+      { url: "https://awb.example.org/calendar.ics" },
+      { resolveHostname: async () => [{ address: "93.184.216.34", family: 4 as const }] },
+    );
 
     expect(result.success).toBe(true);
     expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
+  it("blockt externe URL wenn DNS kurz vor Fetch intern aufloest", async () => {
+    const fetchMock = vi.fn();
+    vi.stubGlobal("fetch", fetchMock);
+
+    const result = await fetchIcsWasteDates(
+      { url: "https://awb.example.org/calendar.ics" },
+      { resolveHostname: async () => [{ address: "10.0.0.5", family: 4 as const }] },
+    );
+
+    expect(result.success).toBe(false);
+    expect(result.errors[0]).toContain("keine gueltige externe URL");
+    expect(fetchMock).not.toHaveBeenCalled();
   });
 });
 
@@ -137,6 +152,20 @@ describe("checkIcsHealth", () => {
     vi.stubGlobal("fetch", fetchMock);
 
     const result = await checkIcsHealth("https://192.168.0.10/calendar.ics");
+
+    expect(result.ok).toBe(false);
+    expect(result.error).toContain("keine gueltige externe URL");
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it("blockt externe Health-URL wenn DNS kurz vor Fetch intern aufloest", async () => {
+    const fetchMock = vi.fn();
+    vi.stubGlobal("fetch", fetchMock);
+
+    const result = await checkIcsHealth(
+      "https://awb.example.org/calendar.ics",
+      { resolveHostname: async () => [{ address: "172.16.0.10", family: 4 as const }] },
+    );
 
     expect(result.ok).toBe(false);
     expect(result.error).toContain("keine gueltige externe URL");

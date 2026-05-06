@@ -2,7 +2,10 @@
 // Eigener leichtgewichtiger Parser (kein node-ical — BigInt-Problem mit Turbopack)
 
 import { extractWasteTypeFromSummary } from "./type-mapping";
-import { isValidExternalUrl } from "@/lib/webhooks";
+import {
+  isSafeExternalFetchUrl,
+  type ExternalFetchGuardOptions,
+} from "@/lib/webhooks";
 import type {
   RawWasteDate,
   IcsConnectorConfig,
@@ -122,6 +125,7 @@ function dtstartToDate(raw: string, _isDate: boolean): string | null {
  */
 export async function fetchIcsWasteDates(
   config: IcsConnectorConfig,
+  options: ExternalFetchGuardOptions = {},
 ): Promise<IcsFetchResult> {
   const errors: string[] = [];
   const dates: RawWasteDate[] = [];
@@ -134,7 +138,7 @@ export async function fetchIcsWasteDates(
     if (config.file_content) {
       icsText = config.file_content;
     } else if (config.url) {
-      if (!isValidExternalUrl(config.url)) {
+      if (!(await isSafeExternalFetchUrl(config.url, options.resolveHostname))) {
         return {
           success: false,
           dates: [],
@@ -254,13 +258,16 @@ function extractTimeHint(text: string): string | null {
 /**
  * Health-Check: Prueft ob eine ICS-URL erreichbar ist.
  */
-export async function checkIcsHealth(url: string): Promise<{
+export async function checkIcsHealth(
+  url: string,
+  options: ExternalFetchGuardOptions = {},
+): Promise<{
   ok: boolean;
   latency_ms: number;
   error?: string;
 }> {
   const start = Date.now();
-  if (!isValidExternalUrl(url)) {
+  if (!(await isSafeExternalFetchUrl(url, options.resolveHostname))) {
     return {
       ok: false,
       latency_ms: Date.now() - start,

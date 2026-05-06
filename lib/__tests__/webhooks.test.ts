@@ -1,14 +1,24 @@
 // lib/__tests__/webhooks.test.ts
 // Unit-Tests fuer Webhook-Utilities (HMAC-SHA256 Signaturen)
 
-import { describe, it, expect } from 'vitest';
+import { afterEach, describe, it, expect, vi } from 'vitest';
 import { createHmac } from 'crypto';
 import {
   signWebhookPayload,
   verifyWebhookSignature,
   isValidExternalUrl,
   isValidWebhookUrl,
+  isSafeExternalFetchUrl,
+  sendWebhook,
 } from '../webhooks';
+
+const publicLookup = async () => [{ address: '93.184.216.34', family: 4 as const }];
+const privateLookup = async () => [{ address: '127.0.0.1', family: 4 as const }];
+const mappedLoopbackLookup = async () => [{ address: '::ffff:127.0.0.1', family: 6 as const }];
+
+afterEach(() => {
+  vi.unstubAllGlobals();
+});
 
 describe('signWebhookPayload', () => {
   it('erstellt eine gueltige HMAC-SHA256 Signatur', () => {
@@ -114,5 +124,43 @@ describe('isValidExternalUrl', () => {
     expect(isValidExternalUrl('https://127.1/calendar.ics')).toBe(false);
     expect(isValidExternalUrl('https://192.168.1/calendar.ics')).toBe(false);
     expect(isValidExternalUrl('https://0x0a000001/calendar.ics')).toBe(false);
+  });
+});
+
+describe('isSafeExternalFetchUrl', () => {
+  it('akzeptiert externe HTTPS-URLs wenn DNS oeffentlich aufloest', async () => {
+    await expect(
+      isSafeExternalFetchUrl('https://calendar.example.org/feed.ics', publicLookup)
+    ).resolves.toBe(true);
+  });
+
+  it('blockt externe Hostnamen wenn DNS kurz vor Fetch lokal aufloest', async () => {
+    await expect(
+      isSafeExternalFetchUrl('https://calendar.example.org/feed.ics', privateLookup)
+    ).resolves.toBe(false);
+  });
+
+  it('blockt IPv6-mapped Loopback aus DNS-Antworten', async () => {
+    await expect(
+      isSafeExternalFetchUrl('https://calendar.example.org/feed.ics', mappedLoopbackLookup)
+    ).resolves.toBe(false);
+  });
+});
+
+describe('sendWebhook', () => {
+  it('fetches nicht wenn der Zielhost beim DNS-Recheck intern aufloest', async () => {
+    const fetchMock = vi.fn();
+    vi.stubGlobal('fetch', fetchMock);
+
+    const result = await sendWebhook(
+      'https://hooks.example.org/webhook',
+      'org.updated',
+      { id: 'org-1' },
+      'secret',
+      { resolveHostname: privateLookup }
+    );
+
+    expect(result).toBe(false);
+    expect(fetchMock).not.toHaveBeenCalled();
   });
 });

@@ -5,6 +5,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { requireAuth, unauthorizedResponse, errorResponse } from '@/lib/care/api-helpers';
 import { classifyTaskFromVoice } from '@/lib/care/voice-classify';
 import { AI_HELP_DISABLED_MESSAGE, canUsePersonalAi } from '@/lib/ai/user-settings';
+import { consumeAiDailyUserLimit } from '@/lib/ai/rate-limit';
 
 export const dynamic = 'force-dynamic';
 
@@ -17,6 +18,19 @@ export async function POST(request: NextRequest) {
   const aiAllowed = await canUsePersonalAi(auth.supabase, auth.user.id);
   if (!aiAllowed) {
     return errorResponse(AI_HELP_DISABLED_MESSAGE, 503);
+  }
+
+  // F-2-Haertung: KI-Daily-User-Limit (DoW-Schutz). Gleiches Pattern wie
+  // companion/chat und ai/onboarding/turn.
+  const aiRateLimit = await consumeAiDailyUserLimit({ userId: auth.user.id });
+  if (aiRateLimit.unavailable) {
+    return errorResponse('KI-Nutzungsschutz ist gerade nicht verfügbar.', 503);
+  }
+  if (!aiRateLimit.allowed) {
+    return errorResponse(
+      `KI-Tageslimit erreicht (${aiRateLimit.limit} Anfragen pro Tag). Bitte versuchen Sie es morgen erneut.`,
+      429,
+    );
   }
 
   // Body parsen

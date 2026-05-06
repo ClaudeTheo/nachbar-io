@@ -38,4 +38,9 @@ describe("Medical Blocklist", () => {
     expect(containsMedicalTerms("hat DIABETES")).toBe(true);
     expect(containsMedicalTerms("nimmt ASPIRIN")).toBe(true);
   });
+
+  it("blockiert medizinische Begriffe mit Unicode-Diakritika", () => {
+    expect(containsMedicalTerms("Hat Diabe\u0301tes Typ 2")).toBe(true);
+    expect(containsMedicalTerms("Nimmt Me\u0301tformin 500mg")).toBe(true);
+  });
 });

@@ -40,14 +40,28 @@ const MEDICAL_REGEX = new RegExp(
   'i'
 );
 
-export function containsMedicalTerms(text: string): boolean {
-  // Umlaute normalisieren fuer Matching
-  const normalized = text
+function normalizeGermanUmlauts(text: string): string {
+  return text
     .toLowerCase()
     .replace(/ä/g, 'ae')
     .replace(/ö/g, 'oe')
     .replace(/ü/g, 'ue')
     .replace(/ß/g, 'ss');
+}
 
-  return MEDICAL_REGEX.test(normalized) || MEDICAL_REGEX.test(text.toLowerCase());
+function stripDiacritics(text: string): string {
+  return text.normalize('NFKD').replace(/[\u0300-\u036f]/g, '');
+}
+
+export function containsMedicalTerms(text: string): boolean {
+  // Umlaute und absichtlich gesetzte Diakritika normalisieren fuer Matching.
+  const lower = text.toLowerCase();
+  const normalized = normalizeGermanUmlauts(text);
+  const withoutDiacritics = stripDiacritics(lower);
+
+  return (
+    MEDICAL_REGEX.test(normalized)
+    || MEDICAL_REGEX.test(withoutDiacritics)
+    || MEDICAL_REGEX.test(lower)
+  );
 }

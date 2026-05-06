@@ -1,26 +1,28 @@
 # Codex New-Session-Handover - Security/Code-Quality
 
-Datum: 2026-05-06 20:35 +02:00
+Datum: 2026-05-06 21:05 +02:00
 Owner: Codex
 
 ## Kurzfassung
 
-Aktueller Code-Stand in `nachbar-io`: `master` ist vor dem Handover-Doku-Commit lokal **2 Commits ahead** von `origin/master`. Nach dem Commit dieser Datei ist `master` voraussichtlich **3 Commits ahead**.
+Aktueller Stand in `nachbar-io`: `master` ist lokal **5 Commits ahead** von `origin/master`.
 
-Nicht gepusht:
+Noch nicht gepusht:
 
 - `c7f0fa7 docs(handoff): claim ssrf syntax hardening`
 - `fde0b8a fix(security): harden external url validation`
-- dieser Handover-Doku-Commit
+- `3e32b5f docs(handoff): new session security quality status`
+- `905a98a docs(handoff): claim quartier info auth gate`
+- `5343085 fix(security): require auth for quartier info api`
 
 Bereits gepusht:
 
 - `1ef1306 docs(handoff): claim e2e bypass hardening`
 - `936e5d3 fix(security): harden e2e bypass middleware`
 
-Kein Deploy nach den letzten lokalen SSRF-Commits. Production lief vorher auf dem Deploy aus der Security-Audit-Welle 2026-05-06 (`f8d2149` laut INBOX-Eintrag, Deploy `dpl_A2AfKsn3qbe8NCdPiCVX4NpHdNSf`).
+Nicht gepusht, nicht deployed. Production steht laut INBOX weiter auf der Security-Audit-Welle 2026-05-06 (`f8d2149`, Deploy `dpl_A2AfKsn3qbe8NCdPiCVX4NpHdNSf`).
 
-## Was diese Session erledigt hat
+## Erledigt
 
 ### 1. SECURITY_E2E_BYPASS gehaertet
 
@@ -32,7 +34,7 @@ Dateien:
 
 Ergebnis:
 
-- `/api/test/login`-Middleware-Bypass ist in `NODE_ENV=production` jetzt fail-closed, auch bei lokaler Supabase-URL.
+- `/api/test/login`-Middleware-Bypass ist in `NODE_ENV=production` fail-closed, auch bei lokaler Supabase-URL.
 - Vercel `production` und `preview` bleiben hart blockiert.
 - Header-Secret-Vergleich nutzt `timingSafeEqual` ueber SHA-256-Hash statt direktem `===`.
 - Tests resetten Env-Stubs mit `vi.unstubAllEnvs()`.
@@ -41,10 +43,7 @@ Verifikation:
 
 - RED: Middleware-Test fiel erwartbar bei lokalem `NODE_ENV=production` und fehlendem `timingSafeEqual`.
 - GREEN: `npx vitest run __tests__/api/test-login.test.ts __tests__/lib/supabase/middleware.test.ts` -> 24/24 gruen.
-- `npx eslint lib/supabase/middleware.ts __tests__/lib/supabase/middleware.test.ts --no-warn-ignored` -> gruen.
-- `npx tsc --noEmit` -> gruen.
-- `git diff --check` -> gruen.
-- `npm run build` -> gruen.
+- Gezieltes ESLint, `npx tsc --noEmit`, `git diff --check`, `npm run build` -> gruen.
 
 ### 2. `isValidExternalUrl` gegen IP-Notation-Bypaesse gehaertet
 
@@ -56,7 +55,7 @@ Dateien:
 
 Ergebnis:
 
-- Zentrale URL-Validierung blockiert jetzt zusaetzlich:
+- Zentrale URL-Validierung blockiert jetzt auch:
   - IPv6 loopback: `[::1]`
   - IPv6-mapped IPv4: `[::ffff:127.0.0.1]`
   - alternative IPv4-Notation fuer lokale/private Ziele: Hex, Octal, kurze IPv4-Formen, `0`
@@ -69,20 +68,38 @@ Verifikation:
 
 - RED: `lib/__tests__/webhooks.test.ts` fiel erwartbar bei `https://[::ffff:127.0.0.1]/calendar.ics`.
 - GREEN: `npx vitest run lib/__tests__/webhooks.test.ts __tests__/lib/waste/ics-connector.test.ts` -> 26/26 gruen.
-- `npx eslint lib/webhooks.ts lib/__tests__/webhooks.test.ts --no-warn-ignored` -> gruen.
-- `npx tsc --noEmit` -> gruen.
-- `git diff --check` -> gruen.
-- `npm run build` -> gruen.
+- Gezieltes ESLint, `npx tsc --noEmit`, `git diff --check`, `npm run build` -> gruen.
+
+Wichtig: DNS-Re-Resolve gegen DNS-Rebinding ist noch nicht umgesetzt. Dieser Schritt blockiert Syntax-/Parser-Bypaesse vor dem Fetch.
+
+### 3. `/api/quartier-info` serverseitig authentifiziert
+
+Dateien:
+
+- `app/api/quartier-info/route.ts`
+- `__tests__/api/quartier-info-route.test.ts`
+- `docs/plans/handoff/INBOX.md`
+
+Ergebnis:
+
+- `GET /api/quartier-info` ruft jetzt zuerst `requireAuth()` auf.
+- Unauthentifizierte Requests bekommen 401.
+- Der Service-Role-Client wird bei unauthentifizierten Requests nicht mehr erstellt.
+- Das folgt der Projektregel: Nur Nutzer mit gueltigem Invite-Code sehen Quartiersdaten.
+
+Verifikation:
+
+- RED: unauthentifizierter Request bekam vorher 200 statt 401.
+- GREEN: `npx vitest run __tests__/api/quartier-info-route.test.ts __tests__/pages/quartier-info-vorlesen.test.tsx __tests__/lib/closed-pilot.test.ts` -> 16/16 gruen.
+- Gezieltes ESLint, `npx tsc --noEmit`, `git diff --check`, `npm run build` -> gruen.
 
 ## Git-Stand
 
-Vor dem Handover-Doku-Commit:
+Neue Session sollte sehen:
 
 ```text
-## master...origin/master [ahead 2]
+## master...origin/master [ahead 5]
 ```
-
-Nach dem Handover-Doku-Commit sollte die neue Session `ahead 3` sehen.
 
 Untracked Altdateien weiterhin unberuehrt:
 
@@ -110,28 +127,27 @@ Nur mit klarem Founder-Go:
 - Vercel-Env-/Secret-Aenderungen
 - neue laufende Kosten
 
-Wichtig: Die letzten zwei SSRF-Commits sind lokal, nicht gepusht. Fuer Push reicht ein klares `GO PUSH`. Fuer Deploy danach separat `GO DEPLOY` oder `GO PUSH DEPLOY`.
+Fuer Push reicht ein klares `GO PUSH`. Fuer Deploy danach separat `GO DEPLOY` oder zusammen `GO PUSH DEPLOY`.
 
 ## Naechste sinnvolle kleine Schritte
 
-Aus `docs/plans/handoff/2026-05-06-claude-an-codex-security-audit-high-fixes.md` sind nach den erledigten Punkten noch offen:
+Aus `docs/plans/handoff/2026-05-06-claude-an-codex-security-audit-high-fixes.md` bleiben nach dieser Session:
 
-- LOW: `app/api/quartier-info/route.ts` Service-Role ohne Auth-Check pruefen: entweder `requireAuth` ergaenzen oder explizit als public deklarieren.
-- LOW: Encryption-Format-Versionierung in `modules/care/services/crypto.ts` vorbereiten. Achtung: kann migrations-/kompatibilitaetsnah werden, daher klein planen.
+- LOW: Encryption-Format-Versionierung in `modules/care/services/crypto.ts` vorbereiten. Achtung: migrations-/kompatibilitaetsnah, daher klein planen.
 - LOW: Medical-Blocklist NFKD/Diacritic-Strip in `modules/memory/services/medical-blocklist.ts`.
-- MEDIUM-Rest: DNS-Re-Resolve gegen DNS-Rebinding fuer echte Fetch-Call-Sites ist **noch nicht umgesetzt**. Der aktuelle SSRF-Schritt blockiert Syntax-/Parser-Bypaesse, aber macht keine DNS-Aufloesung vor `fetch`. Dafuer muesste die API vermutlich async werden oder ein separater Fetch-Guard entstehen.
+- MEDIUM-Rest: DNS-Re-Resolve gegen DNS-Rebinding fuer echte Fetch-Call-Sites. Dafuer wahrscheinlich async Fetch-Guard oder separater Netzwerk-Guard statt synchroner `isValidExternalUrl`.
 
-Empfehlung fuer naechste Session:
+Empfehlung fuer neue Session:
 
-1. Erst entscheiden, ob die lokalen zwei SSRF-Commits gepusht werden sollen.
-2. Danach kleinen LOW-Schritt `quartier-info` Auth/Public-Deklaration TDD-first bearbeiten.
+1. Erst entscheiden, ob die 5 lokalen Commits gepusht werden sollen.
+2. Danach kleinen LOW-Schritt Medical-Blocklist Normalisierung TDD-first bearbeiten.
 3. Deploy nur bewusst nach Push/CI/Smoke.
 
-## Startbefehle fuer neue Session
+## Startbefehle
 
 ```bash
 cd "C:\Users\thoma\Claud Code\Handy APP\nachbar-io"
 git status -sb
-git log --oneline -6
+git log --oneline origin/master..HEAD
 Get-Content docs\plans\handoff\INBOX.md -TotalCount 35
 ```

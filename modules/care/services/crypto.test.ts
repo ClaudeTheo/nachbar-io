@@ -1,6 +1,24 @@
 // lib/care/crypto.test.ts
+import { createCipheriv, randomBytes } from 'node:crypto';
 import { describe, it, expect } from 'vitest';
 import { encrypt, decrypt } from './crypto';
+
+function encryptLegacyFormat(text: string): string {
+  const keyHex = process.env.CARE_ENCRYPTION_KEY?.trim();
+  if (!keyHex) throw new Error('CARE_ENCRYPTION_KEY fehlt im Test');
+
+  const key = Buffer.from(keyHex, 'hex');
+  const iv = randomBytes(16);
+  const cipher = createCipheriv('aes-256-gcm', key, iv, {
+    authTagLength: 16,
+  });
+
+  let encrypted = cipher.update(text, 'utf8', 'base64');
+  encrypted += cipher.final('base64');
+  const authTag = cipher.getAuthTag();
+
+  return `aes256gcm:${iv.toString('base64')}:${authTag.toString('base64')}:${encrypted}`;
+}
 
 describe('care/crypto', () => {
   it('verschluesselt und entschluesselt Text korrekt', () => {
@@ -13,6 +31,19 @@ describe('care/crypto', () => {
 
     const decrypted = decrypt(encrypted);
     expect(decrypted).toBe(original);
+  });
+
+  it('versioniert neue Ciphertexte explizit mit v1', () => {
+    const encrypted = encrypt('Sensible Pflege-Notiz');
+
+    expect(encrypted).toMatch(/^aes256gcm:v1:/);
+  });
+
+  it('entschluesselt bestehende unversionierte Ciphertexte weiterhin', () => {
+    const original = 'Bestehender verschluesselter Datenbankwert';
+    const legacyEncrypted = encryptLegacyFormat(original);
+
+    expect(decrypt(legacyEncrypted)).toBe(original);
   });
 
   it('erzeugt unterschiedliche Ciphertexte fuer gleichen Input (IV)', () => {

@@ -8,6 +8,7 @@ const ALGORITHM = "aes-256-gcm";
 const IV_LENGTH = 16;
 const AUTH_TAG_LENGTH = 16;
 const PREFIX = "aes256gcm:";
+const FORMAT_VERSION = "v1";
 
 function getKey(): Buffer {
   const keyHex = process.env.CARE_ENCRYPTION_KEY?.trim();
@@ -21,7 +22,7 @@ function getKey(): Buffer {
 
 /**
  * Verschluesselt einen Klartext-String mit AES-256-GCM.
- * Rueckgabe: "aes256gcm:<iv>:<authTag>:<ciphertext>" (alles Base64)
+ * Rueckgabe: "aes256gcm:v1:<iv>:<authTag>:<ciphertext>" (alles Base64)
  */
 export function encrypt(text: string): string {
   if (!text) return "";
@@ -36,7 +37,7 @@ export function encrypt(text: string): string {
   encrypted += cipher.final("base64");
   const authTag = cipher.getAuthTag();
 
-  return `${PREFIX}${iv.toString("base64")}:${authTag.toString("base64")}:${encrypted}`;
+  return `${PREFIX}${FORMAT_VERSION}:${iv.toString("base64")}:${authTag.toString("base64")}:${encrypted}`;
 }
 
 /**
@@ -49,10 +50,16 @@ export function decrypt(encryptedText: string): string {
     throw new Error("Ungueltiges Verschluesselungsformat: Praefix fehlt");
   }
 
-  const parts = encryptedText.slice(PREFIX.length).split(":");
-  if (parts.length !== 3) {
+  const rawParts = encryptedText.slice(PREFIX.length).split(":");
+  const parts = rawParts[0] === FORMAT_VERSION ? rawParts.slice(1) : rawParts;
+  if (rawParts[0] !== FORMAT_VERSION && rawParts.length !== 3) {
     throw new Error(
-      "Ungueltiges Verschluesselungsformat: Erwarte iv:authTag:ciphertext",
+      "Ungueltiges Verschluesselungsformat: Erwarte v1:iv:authTag:ciphertext oder iv:authTag:ciphertext",
+    );
+  }
+  if (rawParts[0] === FORMAT_VERSION && parts.length !== 3) {
+    throw new Error(
+      "Ungueltiges Verschluesselungsformat: Erwarte v1:iv:authTag:ciphertext",
     );
   }
 

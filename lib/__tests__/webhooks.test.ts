@@ -93,6 +93,8 @@ describe('isValidExternalUrl', () => {
   it('lehnt private und lokale Ziele ab', () => {
     expect(isValidExternalUrl('https://localhost/calendar.ics')).toBe(false);
     expect(isValidExternalUrl('https://127.0.0.1/calendar.ics')).toBe(false);
+    expect(isValidExternalUrl('https://[::1]/calendar.ics')).toBe(false);
+    expect(isValidExternalUrl('https://[::ffff:127.0.0.1]/calendar.ics')).toBe(false);
     expect(isValidExternalUrl('https://10.0.0.5/calendar.ics')).toBe(false);
     expect(isValidExternalUrl('https://172.16.1.2/calendar.ics')).toBe(false);
     expect(isValidExternalUrl('https://192.168.1.10/calendar.ics')).toBe(false);
@@ -102,6 +104,15 @@ describe('isValidExternalUrl', () => {
   it('lehnt HTTP, numerische Hosts und ungueltige URLs ab', () => {
     expect(isValidExternalUrl('http://example.com/calendar.ics')).toBe(false);
     expect(isValidExternalUrl('https://2130706433/calendar.ics')).toBe(false);
+    expect(isValidExternalUrl('https://0/calendar.ics')).toBe(false);
     expect(isValidExternalUrl('not-a-url')).toBe(false);
+  });
+
+  it('lehnt alternative IPv4-Notation fuer lokale und private Ziele ab', () => {
+    expect(isValidExternalUrl('https://0x7f000001/calendar.ics')).toBe(false);
+    expect(isValidExternalUrl('https://017700000001/calendar.ics')).toBe(false);
+    expect(isValidExternalUrl('https://127.1/calendar.ics')).toBe(false);
+    expect(isValidExternalUrl('https://192.168.1/calendar.ics')).toBe(false);
+    expect(isValidExternalUrl('https://0x0a000001/calendar.ics')).toBe(false);
   });
 });

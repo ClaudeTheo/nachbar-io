@@ -3,6 +3,7 @@
 // HMAC-SHA256 Signaturen und Webhook-Versand
 
 import { createHmac, timingSafeEqual } from 'crypto';
+import { isIP } from 'net';
 
 /**
  * Erstellt eine HMAC-SHA256 Signatur fuer den Webhook-Payload.
@@ -36,17 +37,7 @@ export function verifyWebhookSignature(
 }
 
 // Private IP-Bereiche die fuer externe Webhook-/Connector-URLs blockiert werden (SSRF-Schutz)
-const BLOCKED_HOSTNAMES = ['localhost', '127.0.0.1', '[::1]', '0.0.0.0'];
-const BLOCKED_IP_PREFIXES = [
-  '10.',          // 10.0.0.0/8
-  '172.16.', '172.17.', '172.18.', '172.19.', '172.20.', '172.21.',
-  '172.22.', '172.23.', '172.24.', '172.25.', '172.26.', '172.27.',
-  '172.28.', '172.29.', '172.30.', '172.31.',  // 172.16.0.0/12
-  '192.168.',     // 192.168.0.0/16
-  '169.254.',     // 169.254.0.0/16 (Link-Local, AWS Metadata)
-  'fd',           // fc00::/7 IPv6 ULA
-  'fe80:',        // Link-Local IPv6
-];
+const BLOCKED_HOSTNAMES = ['localhost'];
 
 /**
  * Validiert ob die URL HTTPS verwendet und keine internen IPs adressiert.
@@ -59,21 +50,91 @@ export function isValidExternalUrl(url: string): boolean {
 
     const hostname = parsed.hostname.toLowerCase();
 
-    // Blockierte Hostnamen (localhost, loopback)
-    if (BLOCKED_HOSTNAMES.includes(hostname)) return false;
-
-    // Blockierte IP-Bereiche (Private, Link-Local, Metadata)
-    for (const prefix of BLOCKED_IP_PREFIXES) {
-      if (hostname.startsWith(prefix)) return false;
-    }
-
-    // Numerische IPv4 blockieren (z.B. 2130706433 = 127.0.0.1)
-    if (/^\d+$/.test(hostname)) return false;
+    if (isBlockedHostname(hostname)) return false;
 
     return true;
   } catch {
     return false;
   }
+}
+
+function isBlockedHostname(hostname: string): boolean {
+  const normalized = hostname.toLowerCase();
+  const unbracketed = normalized.replace(/^\[(.*)\]$/, '$1');
+
+  if (BLOCKED_HOSTNAMES.includes(unbracketed)) return true;
+
+  if (isIP(unbracketed) === 4) {
+    return isBlockedIpv4(unbracketed);
+  }
+
+  if (isIP(unbracketed) === 6) {
+    return isBlockedIpv6(unbracketed);
+  }
+
+  // Numerische Hosts werden von URL bereits normalisiert; bleibt als Fail-Closed-Guard.
+  return /^\d+$/.test(unbracketed);
+}
+
+function isBlockedIpv4(hostname: string): boolean {
+  const octets = hostname.split('.').map((part) => Number(part));
+  if (
+    octets.length !== 4 ||
+    octets.some((part) => !Number.isInteger(part) || part < 0 || part > 255)
+  ) {
+    return true;
+  }
+
+  const [first, second] = octets;
+
+  return (
+    first === 0 ||
+    first === 10 ||
+    first === 127 ||
+    first === 169 && second === 254 ||
+    first === 172 && second >= 16 && second <= 31 ||
+    first === 192 && second === 168 ||
+    first === 100 && second >= 64 && second <= 127
+  );
+}
+
+function isBlockedIpv6(hostname: string): boolean {
+  if (hostname === '::' || hostname === '::1') return true;
+  if (hostname.startsWith('fc') || hostname.startsWith('fd')) return true;
+  if (hostname.startsWith('fe80:')) return true;
+
+  const mappedIpv4 = ipv4FromMappedIpv6(hostname);
+  return mappedIpv4 ? isBlockedIpv4(mappedIpv4) : false;
+}
+
+function ipv4FromMappedIpv6(hostname: string): string | null {
+  if (!hostname.startsWith('::ffff:')) return null;
+
+  const tail = hostname.slice('::ffff:'.length);
+  if (tail.includes('.')) return tail;
+
+  const parts = tail.split(':');
+  if (parts.length !== 2) return null;
+
+  const high = Number.parseInt(parts[0], 16);
+  const low = Number.parseInt(parts[1], 16);
+  if (
+    !Number.isInteger(high) ||
+    !Number.isInteger(low) ||
+    high < 0 ||
+    high > 0xffff ||
+    low < 0 ||
+    low > 0xffff
+  ) {
+    return null;
+  }
+
+  return [
+    (high >> 8) & 0xff,
+    high & 0xff,
+    (low >> 8) & 0xff,
+    low & 0xff,
+  ].join('.');
 }
 
 /**

@@ -5,6 +5,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getAdminSupabase } from "@/lib/supabase/admin";
 import { handleServiceError } from "@/lib/services/service-error";
 import { runHeartbeatEscalation } from "@/modules/care/services/heartbeat-escalation.service";
+import { verifyCronSecret } from "@/lib/security/cron-secret";
 
 // Re-Export für bestehende Tests
 export { getEscalationStage } from "@/modules/care/services/heartbeat-escalation.service";
@@ -21,7 +22,7 @@ export async function GET(request: NextRequest) {
     );
   }
   const authHeader = request.headers.get("authorization");
-  if (authHeader !== `Bearer ${cronSecret}`) {
+  if (!verifyCronSecret(authHeader, cronSecret)) {
     return NextResponse.json({ error: "Nicht autorisiert" }, { status: 401 });
   }
 

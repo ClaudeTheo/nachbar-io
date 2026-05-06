@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { runNewsAggregation } from "@/lib/services/news-aggregate.service";
 import { handleServiceError } from "@/lib/services/service-error";
+import { verifyCronSecret } from "@/lib/security/cron-secret";
 
 /**
  * POST /api/news/aggregate
@@ -16,7 +17,7 @@ export async function POST(request: NextRequest) {
   // Auth: Per CRON_SECRET oder Admin-Session
   const authHeader = request.headers.get("authorization");
   const cronSecret = process.env.CRON_SECRET;
-  const isCron = cronSecret && authHeader === `Bearer ${cronSecret}`;
+  const isCron = cronSecret && verifyCronSecret(authHeader, cronSecret);
 
   const supabase = await createClient();
 

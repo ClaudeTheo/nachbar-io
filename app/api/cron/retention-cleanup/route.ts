@@ -6,6 +6,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getAdminSupabase } from "@/lib/supabase/admin";
 import { runRetentionCleanup } from "@/lib/services/cron-retention-cleanup.service";
 import { handleServiceError } from "@/lib/services/service-error";
+import { verifyCronSecret } from "@/lib/security/cron-secret";
 
 export async function GET(request: NextRequest) {
   const cronSecret = process.env.CRON_SECRET;
@@ -17,7 +18,7 @@ export async function GET(request: NextRequest) {
     );
   }
   const authHeader = request.headers.get("authorization");
-  if (authHeader !== `Bearer ${cronSecret}`) {
+  if (!verifyCronSecret(authHeader, cronSecret)) {
     return NextResponse.json({ error: "Nicht autorisiert" }, { status: 401 });
   }
 

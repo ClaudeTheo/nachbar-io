@@ -4,6 +4,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { cleanupExpiredForensics } from "@/lib/security/forensic-storage";
+import { verifyCronSecret } from "@/lib/security/cron-secret";
 
 // GET /api/cron/forensic-cleanup — Abgelaufene Forensik-Records loeschen
 export async function GET(request: NextRequest) {
@@ -19,7 +20,7 @@ export async function GET(request: NextRequest) {
     );
   }
   const authHeader = request.headers.get("authorization");
-  if (authHeader !== `Bearer ${cronSecret}`) {
+  if (!verifyCronSecret(authHeader, cronSecret)) {
     return NextResponse.json({ error: "Nicht autorisiert" }, { status: 401 });
   }
 

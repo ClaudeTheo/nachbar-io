@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { scrapeNews } from "@/lib/services/news-scraper.service";
 import { handleServiceError } from "@/lib/services/service-error";
+import { verifyCronSecret } from "@/lib/security/cron-secret";
 
 export async function GET(request: Request) {
   // Auth-Check: Nur via Cron-Secret oder Admin
@@ -16,7 +17,7 @@ export async function GET(request: Request) {
     );
   }
 
-  if (authHeader !== `Bearer ${cronSecret}`) {
+  if (!verifyCronSecret(authHeader, cronSecret)) {
     const supabase = await createClient();
     const {
       data: { user },

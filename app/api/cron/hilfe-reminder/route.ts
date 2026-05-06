@@ -5,6 +5,7 @@ import { getAdminSupabase } from "@/lib/supabase/admin";
 import { sendPush } from "@/lib/care/channels/push";
 import { safeInsertNotification } from "@/lib/notifications-server";
 import { writeCronHeartbeat } from "@/lib/care/cron-heartbeat";
+import { verifyCronSecret } from "@/lib/security/cron-secret";
 
 export async function GET(request: NextRequest) {
   const cronSecret = process.env.CRON_SECRET;
@@ -14,7 +15,7 @@ export async function GET(request: NextRequest) {
       { status: 500 },
     );
   }
-  if (request.headers.get("authorization") !== `Bearer ${cronSecret}`) {
+  if (!verifyCronSecret(request.headers.get("authorization"), cronSecret)) {
     return NextResponse.json({ error: "Nicht autorisiert" }, { status: 401 });
   }
 

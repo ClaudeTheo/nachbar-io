@@ -6,6 +6,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getAdminSupabase } from "@/lib/supabase/admin";
 import { runHeartbeatCleanup } from "@/lib/services/cron-heartbeat-cleanup.service";
 import { handleServiceError } from "@/lib/services/service-error";
+import { verifyCronSecret } from "@/lib/security/cron-secret";
 
 // GET /api/cron/heartbeat-cleanup — Alte Heartbeats löschen (90-Tage-Retention)
 export async function GET(request: NextRequest) {
@@ -21,7 +22,7 @@ export async function GET(request: NextRequest) {
     );
   }
   const authHeader = request.headers.get("authorization");
-  if (authHeader !== `Bearer ${cronSecret}`) {
+  if (!verifyCronSecret(authHeader, cronSecret)) {
     return NextResponse.json({ error: "Nicht autorisiert" }, { status: 401 });
   }
 

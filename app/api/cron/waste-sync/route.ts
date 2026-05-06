@@ -4,6 +4,7 @@
 
 import { NextResponse } from "next/server";
 import { runWasteSync } from "@/modules/waste";
+import { verifyCronSecret } from "@/lib/security/cron-secret";
 
 export const runtime = "nodejs";
 export const maxDuration = 60; // Max 60 Sekunden
@@ -21,7 +22,7 @@ export async function GET(request: Request) {
     );
   }
 
-  if (authHeader !== `Bearer ${cronSecret}`) {
+  if (!verifyCronSecret(authHeader, cronSecret)) {
     return NextResponse.json({ error: "Nicht autorisiert" }, { status: 401 });
   }
 

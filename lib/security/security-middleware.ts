@@ -13,6 +13,7 @@ import {
 } from "./risk-scorer";
 import { logSecurityEvent } from "./security-logger";
 import { logForensicData } from "./forensic-logger";
+import { verifyCronSecret } from "./cron-secret";
 import {
   classifyRoute,
   STAGE_THRESHOLDS,
@@ -121,7 +122,7 @@ export async function checkSecurity(
   if (pathname.startsWith("/api/cron/")) {
     const authHeader = request.headers.get("authorization");
     const cronSecret = process.env.CRON_SECRET;
-    if (!cronSecret || authHeader !== `Bearer ${cronSecret}`) {
+    if (!cronSecret || !verifyCronSecret(authHeader, cronSecret)) {
       await recordEvent(keys, "cron_probe", 50, ["ip", "session"]);
       logSecurityEvent({
         keys,

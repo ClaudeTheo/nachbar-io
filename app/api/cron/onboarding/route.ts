@@ -6,10 +6,11 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getAdminSupabase } from '@/lib/supabase/admin';
 import { handleServiceError } from '@/lib/services/service-error';
 import { runOnboardingCron } from '@/modules/onboarding/services/onboarding-cron.service';
+import { verifyCronSecret } from "@/lib/security/cron-secret";
 
 export async function GET(request: NextRequest) {
   const cronSecret = process.env.CRON_SECRET;
-  if (!cronSecret || request.headers.get('authorization') !== `Bearer ${cronSecret}`) {
+  if (!cronSecret || !verifyCronSecret(request.headers.get("authorization"), cronSecret)) {
     return NextResponse.json({ error: 'Nicht autorisiert' }, { status: 401 });
   }
   try {

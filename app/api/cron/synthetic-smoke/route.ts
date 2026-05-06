@@ -12,6 +12,7 @@ import { runEscalationCron } from "@/modules/care/services/cron-escalation.servi
 import { runWasteSync } from "@/modules/waste";
 import { cleanupExpiredForensics } from "@/lib/security/forensic-storage";
 import * as Sentry from "@sentry/nextjs";
+import { verifyCronSecret } from "@/lib/security/cron-secret";
 
 const SYNTHETIC_USER_EMAIL = "max.rhein@nachbar-test.de";
 
@@ -48,7 +49,7 @@ export async function GET(request: NextRequest) {
     );
   }
   const authHeader = request.headers.get("authorization");
-  if (authHeader !== `Bearer ${cronSecret}`) {
+  if (!verifyCronSecret(authHeader, cronSecret)) {
     return NextResponse.json({ error: "Nicht autorisiert" }, { status: 401 });
   }
 

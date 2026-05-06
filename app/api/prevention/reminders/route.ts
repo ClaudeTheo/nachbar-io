@@ -2,6 +2,7 @@
 // Cron-Endpunkt fuer Praevention-Erinnerungen
 // WICHTIG: getAdminSupabase(), NICHT createClient() (Cron-Route ohne User-Kontext)
 import { NextRequest, NextResponse } from "next/server";
+import { verifyCronSecret } from "@/lib/security/cron-secret";
 import {
   sendDailyReminder,
   sendWeeklyReminder,
@@ -14,7 +15,7 @@ export async function POST(req: NextRequest) {
   const authHeader = req.headers.get("authorization");
   const cronSecret = process.env.CRON_SECRET;
 
-  if (!cronSecret || authHeader !== `Bearer ${cronSecret}`) {
+  if (!cronSecret || !verifyCronSecret(authHeader, cronSecret)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 

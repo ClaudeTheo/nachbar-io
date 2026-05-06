@@ -5,6 +5,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { writeForensicRecord } from "@/lib/security/forensic-storage";
 import type { TrapType } from "@/lib/security/config";
+import { verifyCronSecretValue } from "@/lib/security/cron-secret";
 
 // Node.js Runtime erzwingen (Crypto braucht Node.js)
 export const runtime = "nodejs";
@@ -22,7 +23,7 @@ const VALID_TRAP_TYPES = new Set([
 export async function POST(request: NextRequest) {
   // Auth: Nur mit internem Secret
   const secret = request.headers.get("x-forensic-secret");
-  if (!secret || secret !== process.env.CRON_SECRET) {
+  if (!verifyCronSecretValue(secret)) {
     return new NextResponse(null, { status: 404 });
   }
 

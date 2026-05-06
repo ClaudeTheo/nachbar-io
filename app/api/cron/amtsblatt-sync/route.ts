@@ -6,6 +6,7 @@ import { NextResponse } from "next/server";
 import { getAdminSupabase } from "@/lib/supabase/admin";
 import { runAmtsblattSync } from "@/lib/services/amtsblatt-sync.service";
 import { handleServiceError } from "@/lib/services/service-error";
+import { verifyCronSecret } from "@/lib/security/cron-secret";
 
 export const runtime = "nodejs";
 export const maxDuration = 120; // PDF-Download + KI braucht Zeit
@@ -22,7 +23,7 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: "Server-Konfigurationsfehler" }, { status: 500 });
   }
 
-  if (authHeader !== `Bearer ${cronSecret}`) {
+  if (!verifyCronSecret(authHeader, cronSecret)) {
     return NextResponse.json({ error: "Nicht autorisiert" }, { status: 401 });
   }
 

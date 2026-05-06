@@ -5,6 +5,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getAdminSupabase } from "@/lib/supabase/admin";
 import { handleServiceError } from "@/lib/services/service-error";
 import { runMedicationsCron } from "@/modules/care/services/cron-medications.service";
+import { verifyCronSecret } from "@/lib/security/cron-secret";
 
 // GET /api/care/cron/medications — Medikamenten-Erinnerungs-Scheduler (Vercel Cron: alle 5 Minuten)
 export async function GET(request: NextRequest) {
@@ -18,7 +19,7 @@ export async function GET(request: NextRequest) {
     );
   }
   const authHeader = request.headers.get("authorization");
-  if (authHeader !== `Bearer ${cronSecret}`) {
+  if (!verifyCronSecret(authHeader, cronSecret)) {
     return NextResponse.json({ error: "Nicht autorisiert" }, { status: 401 });
   }
 

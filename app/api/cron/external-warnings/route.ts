@@ -20,6 +20,7 @@ import {
 import type { UbaStation } from "@/lib/integrations/uba/types";
 import { isSimulationId } from "@/lib/integrations/__shared__/simulation-id";
 import type { Database } from "@/lib/supabase/database.types";
+import { verifyCronSecret } from "@/lib/security/cron-secret";
 
 type AdminClient = ReturnType<typeof getAdminSupabase>;
 type QuarterRow = Pick<
@@ -53,7 +54,7 @@ export async function GET(request: NextRequest) {
   }
 
   const authHeader = request.headers.get("authorization");
-  if (authHeader !== `Bearer ${cronSecret}`) {
+  if (!verifyCronSecret(authHeader, cronSecret)) {
     return NextResponse.json({ error: "Nicht autorisiert" }, { status: 401 });
   }
 

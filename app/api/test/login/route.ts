@@ -6,6 +6,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 import { createClient } from "@/lib/supabase/server";
+import { sanitizeNextPath } from "@/lib/auth/sanitize-next-path";
 
 function isProductionLikeEnvironment(): boolean {
   const vercelEnv =
@@ -37,11 +38,6 @@ function validateSecret(secret: string): NextResponse | null {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
   return null;
-}
-
-function sanitizeNextPath(next: string): string {
-  if (!next.startsWith("/") || next.startsWith("//")) return "/dashboard";
-  return next;
 }
 
 // GET /api/test/login?email=...&password=...&secret=...&next=/dashboard

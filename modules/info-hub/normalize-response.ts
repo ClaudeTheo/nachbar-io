@@ -96,6 +96,28 @@ function normalizeWasteNext(value: unknown): WasteNext[] {
   });
 }
 
+function normalizeRathausLinks(value: unknown): RathausLink[] {
+  return toArray<Record<string, unknown>>(value).flatMap((link) => {
+    if (
+      typeof link.label !== "string" ||
+      typeof link.description !== "string" ||
+      typeof link.url !== "string" ||
+      typeof link.icon !== "string"
+    ) {
+      return [];
+    }
+
+    return [
+      {
+        label: link.label,
+        description: link.description,
+        url: link.url,
+        icon: link.icon,
+      },
+    ];
+  });
+}
+
 function normalizeOepnvStops(value: unknown): OepnvStop[] {
   return toArray<Record<string, unknown>>(value)
     .filter(
@@ -147,7 +169,7 @@ export function normalizeQuartierInfoResponse(
     nina: normalizeNinaWarnings(record.nina),
     pollen: normalizePollen(record.pollen),
     waste_next: normalizeWasteNext(record.waste_next),
-    rathaus: toArray<RathausLink>(record.rathaus),
+    rathaus: normalizeRathausLinks(record.rathaus),
     oepnv: normalizeOepnvStops(record.oepnv),
     apotheken: toArray<Apotheke>(record.apotheken),
     events: toArray<LocalEvent>(record.events),

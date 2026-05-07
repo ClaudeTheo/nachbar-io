@@ -102,4 +102,39 @@ describe("GET /api/quartier-info", () => {
       events_calendar_url: "",
     });
   });
+
+  it("filtert kaputte Rathaus-Link-Eintraege auf Route-Ebene", async () => {
+    mockGetQuartierInfo.mockResolvedValueOnce({
+      weather: null,
+      nina: [],
+      rathaus: [
+        {
+          label: "Kaputter Link",
+          description: "Ohne URL",
+          icon: "landmark",
+        },
+        {
+          label: "Rathaus",
+          description: "Kontakt und Oeffnungszeiten",
+          url: "https://www.bad-saeckingen.de/rathaus-service/buergerservice/kontakt-oeffnungszeiten",
+          icon: "landmark",
+        },
+      ],
+    });
+
+    const { GET } = await import("@/app/api/quartier-info/route");
+    const res = await GET(makeRequest());
+
+    expect(res.status).toBe(200);
+    await expect(res.json()).resolves.toMatchObject({
+      rathaus: [
+        {
+          label: "Rathaus",
+          description: "Kontakt und Oeffnungszeiten",
+          url: "https://www.bad-saeckingen.de/rathaus-service/buergerservice/kontakt-oeffnungszeiten",
+          icon: "landmark",
+        },
+      ],
+    });
+  });
 });

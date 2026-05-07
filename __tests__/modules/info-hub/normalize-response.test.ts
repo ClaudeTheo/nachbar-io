@@ -122,6 +122,44 @@ describe("normalizeQuartierInfoResponse", () => {
     ]);
   });
 
+  it("filtert falsch geformte Rathaus-Link-Eintraege", () => {
+    const normalized = normalizeQuartierInfoResponse({
+      rathaus: [
+        {
+          label: "Ohne Beschreibung",
+          url: "https://www.bad-saeckingen.de",
+          icon: "landmark",
+        },
+        {
+          label: "Ohne URL",
+          description: "Kaputter Link",
+          icon: "landmark",
+        },
+        {
+          label: "Falsches Icon",
+          description: "Kaputter Link",
+          url: "https://www.bad-saeckingen.de",
+          icon: null,
+        },
+        {
+          label: "Rathaus",
+          description: "Kontakt und Oeffnungszeiten",
+          url: "https://www.bad-saeckingen.de/rathaus-service/buergerservice/kontakt-oeffnungszeiten",
+          icon: "landmark",
+        },
+      ],
+    });
+
+    expect(normalized.rathaus).toEqual([
+      {
+        label: "Rathaus",
+        description: "Kontakt und Oeffnungszeiten",
+        url: "https://www.bad-saeckingen.de/rathaus-service/buergerservice/kontakt-oeffnungszeiten",
+        icon: "landmark",
+      },
+    ]);
+  });
+
   it("setzt skalare URL-Felder bei falschem Typ auf leer", () => {
     const normalized = normalizeQuartierInfoResponse({
       notdienst_url: { href: "https://example.invalid" },

@@ -9,6 +9,7 @@ import { fetchWeather } from "@/modules/info-hub/services/weather-client";
 import { fetchPollenData } from "@/modules/info-hub/services/pollen-client";
 import { fetchNinaWarnings } from "@/modules/info-hub/services/nina-client";
 import { fetchDepartures } from "@/modules/info-hub/services/oepnv-client";
+import { RATHAUS_LINKS } from "@/modules/info-hub/services/rathaus-links";
 import type {
   QuartierInfoResponse,
   WasteNext,
@@ -17,6 +18,30 @@ import type {
   Apotheke,
   LocalEvent,
 } from "@/modules/info-hub/types";
+
+function isBadSaeckingenCity(cityName: unknown): boolean {
+  if (typeof cityName !== "string") return false;
+
+  const normalized = cityName
+    .normalize("NFD")
+    .replace(/\p{Diacritic}/gu, "")
+    .toLowerCase();
+
+  return (
+    normalized.includes("bad sackingen") ||
+    normalized.includes("bad saeckingen")
+  );
+}
+
+function getRathausLinksFromConfig(config: Record<string, unknown> | null) {
+  const configuredLinks = (config?.service_links as RathausLink[]) || [];
+  const links =
+    configuredLinks.length > 0 || !isBadSaeckingenCity(config?.city_name)
+      ? configuredLinks
+      : RATHAUS_LINKS;
+
+  return normalizeBadSaeckingenLinks(links);
+}
 
 // ============================================================
 // getQuartierInfo — Alle Quartier-Informationen sammeln
@@ -34,15 +59,13 @@ export async function getQuartierInfo(
   const { data: config } = await supabase
     .from("municipal_config")
     .select(
-      "service_links, apotheken, events, oepnv_stops, notdienst_url, events_calendar_url",
+      "city_name, service_links, apotheken, events, oepnv_stops, notdienst_url, events_calendar_url",
     )
     .eq("quarter_id", quarterId)
     .single();
 
   // Dynamische Daten aus municipal_config (oder leere Defaults)
-  const rathausLinks = normalizeBadSaeckingenLinks(
-    (config?.service_links as RathausLink[]) || [],
-  );
+  const rathausLinks = getRathausLinksFromConfig(config ?? null);
   const apotheken: Apotheke[] = (config?.apotheken as Apotheke[]) || [];
   const events: LocalEvent[] = (config?.events as LocalEvent[]) || [];
   const oepnvStopConfigs: { id: string; name: string }[] =

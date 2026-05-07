@@ -26,10 +26,14 @@ function toString(value: unknown): string {
 }
 
 function normalizeOepnvStops(value: unknown): OepnvStop[] {
-  return toArray<Record<string, unknown>>(value).map((stop) => ({
-    ...(stop as Omit<OepnvStop, "departures">),
-    departures: toArray<OepnvDeparture>(stop.departures),
-  }));
+  return toArray<Record<string, unknown>>(value)
+    .filter(
+      (stop) => typeof stop.id === "string" && typeof stop.name === "string",
+    )
+    .map((stop) => ({
+      ...(stop as Omit<OepnvStop, "departures">),
+      departures: toArray<OepnvDeparture>(stop.departures),
+    }));
 }
 
 function normalizeWeather(value: unknown): QuartierWeather | null {

@@ -40,6 +40,29 @@ describe("normalizeQuartierInfoResponse", () => {
     ]);
   });
 
+  it("filtert falsch geformte OePNV-Haltestellen", () => {
+    const normalized = normalizeQuartierInfoResponse({
+      oepnv: [
+        { name: "Ohne ID", departures: [] },
+        { id: "stop-ohne-name", departures: [] },
+        { id: 123, name: "Falsche ID", departures: [] },
+        {
+          id: "stop-1",
+          name: "Bahnhof",
+          departures: [],
+        },
+      ],
+    });
+
+    expect(normalized.oepnv).toEqual([
+      {
+        id: "stop-1",
+        name: "Bahnhof",
+        departures: [],
+      },
+    ]);
+  });
+
   it("setzt skalare URL-Felder bei falschem Typ auf leer", () => {
     const normalized = normalizeQuartierInfoResponse({
       notdienst_url: { href: "https://example.invalid" },

@@ -95,7 +95,7 @@ describe("GET /api/quartier-info", () => {
       pollen: null,
       waste_next: [],
       rathaus: [],
-      oepnv: [{ name: "Bus", departures: [] }],
+      oepnv: [],
       apotheken: [],
       events: [],
       notdienst_url: "",

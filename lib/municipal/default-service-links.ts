@@ -25,6 +25,10 @@ export function normalizeMunicipalWebsiteUrl(
   }
 }
 
+export function toServiceLinkArray(value: unknown): ServiceLink[] {
+  return Array.isArray(value) ? (value as ServiceLink[]) : [];
+}
+
 export function buildMunicipalServiceLinks({
   cityName,
   rathausUrl,

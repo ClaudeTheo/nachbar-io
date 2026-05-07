@@ -7,6 +7,7 @@ import { ServiceError } from "@/lib/services/service-error";
 import {
   buildMunicipalServiceLinks,
   normalizeBadSaeckingenLinks,
+  toServiceLinkArray,
   type ServiceLink,
 } from "@/lib/municipal";
 import { fetchWeather } from "@/modules/info-hub/services/weather-client";
@@ -65,7 +66,7 @@ function toRathausLinks(
 
 function getRathausLinksFromConfig(config: Record<string, unknown> | null) {
   const configuredLinks = toRathausLinks(
-    (config?.service_links as Array<RathausLink | ServiceLink>) || [],
+    toServiceLinkArray(config?.service_links),
   );
   let links = configuredLinks;
 

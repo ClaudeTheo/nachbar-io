@@ -370,6 +370,24 @@ describe("CityServicesPage — Services-Tab", () => {
       expect(screen.getByText("Abfallwirtschaft")).toBeDefined();
     });
   });
+
+  it("behandelt nicht-array service_links wie leer", async () => {
+    setupSupabaseChain([], {
+      ...DEFAULT_CONFIG,
+      city_name: "Laufenburg (Baden)",
+      rathaus_url: "https://www.laufenburg.de/",
+      service_links: { 0: { label: "Kaputt" }, length: 1 },
+      wiki_entries: [],
+    });
+
+    render(<CityServicesPage />);
+
+    await waitFor(() => {
+      expect(screen.getAllByText("Rathaus Laufenburg (Baden)").length).toBe(2);
+      expect(screen.getByText("Bürgerbüro")).toBeDefined();
+      expect(screen.getByText("Abfallwirtschaft")).toBeDefined();
+    });
+  });
 });
 
 // ============================================================

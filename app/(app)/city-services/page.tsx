@@ -14,11 +14,11 @@ import {
   buildMunicipalServiceLinks,
   normalizeBadSaeckingenServiceLinks,
   normalizeBadSaeckingenWikiEntries,
+  toServiceLinkArray,
 } from "@/lib/municipal";
 import type {
   MunicipalAnnouncement,
   MunicipalConfig,
-  ServiceLink,
   WikiEntry,
   AnnouncementCategory,
 } from "@/lib/municipal";
@@ -139,7 +139,7 @@ export default function CityServicesPage() {
   }, [activeTab, currentQuarter]);
 
   // Service-Links nach Kategorie gruppieren
-  const configuredServiceLinks = (config?.service_links ?? []) as ServiceLink[];
+  const configuredServiceLinks = toServiceLinkArray(config?.service_links);
   const serviceLinks = normalizeBadSaeckingenServiceLinks(
     configuredServiceLinks.length > 0
       ? configuredServiceLinks

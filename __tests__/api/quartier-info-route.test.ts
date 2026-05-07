@@ -66,6 +66,40 @@ describe("GET /api/quartier-info", () => {
       "test-service-role",
     );
     expect(mockGetQuartierInfo).toHaveBeenCalledWith(expect.anything(), "q-1");
-    await expect(res.json()).resolves.toEqual({ weather: null, nina: [] });
+    await expect(res.json()).resolves.toMatchObject({
+      weather: null,
+      nina: [],
+    });
+  });
+
+  it("normalisiert Listenfelder auf Route-Ebene zu Arrays", async () => {
+    mockGetQuartierInfo.mockResolvedValueOnce({
+      weather: null,
+      nina: { title: "Kaputte Warnung" },
+      waste_next: { label: "Kaputter Muellwert" },
+      rathaus: { title: "Kaputter Rathauswert" },
+      oepnv: [{ name: "Bus", departures: { line: "7310" } }],
+      apotheken: { name: "Kaputter Apothekenwert" },
+      events: { title: "Kaputter Terminwert" },
+      notdienst_url: { href: "https://example.invalid" },
+      events_calendar_url: ["https://example.invalid"],
+    });
+
+    const { GET } = await import("@/app/api/quartier-info/route");
+    const res = await GET(makeRequest());
+
+    expect(res.status).toBe(200);
+    await expect(res.json()).resolves.toEqual({
+      weather: null,
+      nina: [],
+      pollen: null,
+      waste_next: [],
+      rathaus: [],
+      oepnv: [{ name: "Bus", departures: [] }],
+      apotheken: [],
+      events: [],
+      notdienst_url: "",
+      events_calendar_url: "",
+    });
   });
 });

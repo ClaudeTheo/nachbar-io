@@ -6,6 +6,7 @@ import { createClient } from "@supabase/supabase-js";
 import { getQuartierInfo } from "@/lib/services/quartier-info.service";
 import { handleServiceError } from "@/lib/services/service-error";
 import { requireAuth, unauthorizedResponse } from "@/lib/care/api-helpers";
+import { normalizeQuartierInfoResponse } from "@/modules/info-hub/normalize-response";
 
 export async function GET(request: Request) {
   const auth = await requireAuth();
@@ -27,7 +28,7 @@ export async function GET(request: Request) {
 
   try {
     const result = await getQuartierInfo(supabase, quarterId ?? "");
-    return NextResponse.json(result);
+    return NextResponse.json(normalizeQuartierInfoResponse(result));
   } catch (error) {
     return handleServiceError(error);
   }

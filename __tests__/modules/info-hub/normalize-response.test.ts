@@ -63,6 +63,41 @@ describe("normalizeQuartierInfoResponse", () => {
     ]);
   });
 
+  it("filtert falsch geformte NINA-Warnungen", () => {
+    const normalized = normalizeQuartierInfoResponse({
+      nina: [
+        { id: "warnung-ohne-severity", headline: "Ohne Warnstufe" },
+        { id: "warnung-ohne-headline", severity: "Severe" },
+        {
+          id: "warnung-falsche-severity",
+          severity: "Critical",
+          headline: "Kaputt",
+        },
+        {
+          id: "warnung-1",
+          warning_id: "warning-1",
+          severity: "Severe",
+          headline: "Gewitter im Anmarsch",
+          description: null,
+          sent_at: "2026-05-07T16:00:00Z",
+          expires_at: null,
+        },
+      ],
+    });
+
+    expect(normalized.nina).toEqual([
+      {
+        id: "warnung-1",
+        warning_id: "warning-1",
+        severity: "Severe",
+        headline: "Gewitter im Anmarsch",
+        description: null,
+        sent_at: "2026-05-07T16:00:00Z",
+        expires_at: null,
+      },
+    ]);
+  });
+
   it("setzt skalare URL-Felder bei falschem Typ auf leer", () => {
     const normalized = normalizeQuartierInfoResponse({
       notdienst_url: { href: "https://example.invalid" },

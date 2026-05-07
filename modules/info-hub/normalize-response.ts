@@ -25,6 +25,46 @@ function toString(value: unknown): string {
   return typeof value === "string" ? value : "";
 }
 
+function isNinaSeverity(value: unknown): value is NinaWarning["severity"] {
+  return (
+    value === "Extreme" ||
+    value === "Severe" ||
+    value === "Moderate" ||
+    value === "Minor"
+  );
+}
+
+function normalizeNinaWarnings(value: unknown): NinaWarning[] {
+  return toArray<Record<string, unknown>>(value).flatMap((warning) => {
+    if (
+      typeof warning.id !== "string" ||
+      typeof warning.warning_id !== "string" ||
+      !isNinaSeverity(warning.severity) ||
+      typeof warning.headline !== "string" ||
+      !(
+        typeof warning.description === "string" ||
+        warning.description === null
+      ) ||
+      typeof warning.sent_at !== "string" ||
+      !(typeof warning.expires_at === "string" || warning.expires_at === null)
+    ) {
+      return [];
+    }
+
+    return [
+      {
+        id: warning.id,
+        warning_id: warning.warning_id,
+        severity: warning.severity,
+        headline: warning.headline,
+        description: warning.description,
+        sent_at: warning.sent_at,
+        expires_at: warning.expires_at,
+      },
+    ];
+  });
+}
+
 function normalizeOepnvStops(value: unknown): OepnvStop[] {
   return toArray<Record<string, unknown>>(value)
     .filter(
@@ -73,7 +113,7 @@ export function normalizeQuartierInfoResponse(
 
   return {
     weather: normalizeWeather(record.weather),
-    nina: toArray<NinaWarning>(record.nina),
+    nina: normalizeNinaWarnings(record.nina),
     pollen: normalizePollen(record.pollen),
     waste_next: toArray<WasteNext>(record.waste_next),
     rathaus: toArray<RathausLink>(record.rathaus),

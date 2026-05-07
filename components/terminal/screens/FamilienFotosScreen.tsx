@@ -12,6 +12,44 @@ interface KioskPhoto {
   createdAt: string;
 }
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return value !== null && typeof value === "object" && !Array.isArray(value);
+}
+
+function isNonEmptyString(value: unknown): value is string {
+  return typeof value === "string" && value.trim().length > 0;
+}
+
+function isValidDateString(value: unknown): value is string {
+  return typeof value === "string" && !Number.isNaN(new Date(value).getTime());
+}
+
+function normalizePhotos(value: unknown): KioskPhoto[] {
+  return Array.isArray(value)
+    ? value.flatMap((photo) => {
+        if (
+          !isRecord(photo) ||
+          !isNonEmptyString(photo.id) ||
+          !isNonEmptyString(photo.url) ||
+          !(typeof photo.caption === "string" || photo.caption === null) ||
+          !isValidDateString(photo.createdAt)
+        ) {
+          return [];
+        }
+
+        return [
+          {
+            id: photo.id,
+            url: photo.url,
+            caption: photo.caption,
+            pinned: typeof photo.pinned === "boolean" ? photo.pinned : false,
+            createdAt: photo.createdAt,
+          },
+        ];
+      })
+    : [];
+}
+
 export default function FamilienFotosScreen() {
   const { setActiveScreen, token } = useTerminal();
   const [photos, setPhotos] = useState<KioskPhoto[]>([]);
@@ -26,7 +64,7 @@ export default function FamilienFotosScreen() {
         );
         if (!res.ok) throw new Error("Fehler beim Laden");
         const data = await res.json();
-        setPhotos(Array.isArray(data.photos) ? data.photos : []);
+        setPhotos(normalizePhotos(data.photos));
       } catch (err) {
         console.error("[FamilienFotos] Fehler:", err);
       } finally {

@@ -61,6 +61,58 @@ interface StickyForScreensaver {
   title: string;
 }
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return value !== null && typeof value === "object" && !Array.isArray(value);
+}
+
+function isNonEmptyString(value: unknown): value is string {
+  return typeof value === "string" && value.trim().length > 0;
+}
+
+function normalizeScreensaverPhotos(value: unknown): ScreensaverPhoto[] {
+  return Array.isArray(value)
+    ? value.flatMap((photo) => {
+        if (
+          !isRecord(photo) ||
+          !isNonEmptyString(photo.id) ||
+          !isNonEmptyString(photo.url) ||
+          !(typeof photo.caption === "string" || photo.caption === null)
+        ) {
+          return [];
+        }
+
+        return [
+          {
+            id: photo.id,
+            url: photo.url,
+            caption: photo.caption,
+          },
+        ];
+      })
+    : [];
+}
+
+function normalizeScreensaverStickies(value: unknown): StickyForScreensaver[] {
+  return Array.isArray(value)
+    ? value.flatMap((sticky) => {
+        if (
+          !isRecord(sticky) ||
+          !isNonEmptyString(sticky.id) ||
+          !isNonEmptyString(sticky.title)
+        ) {
+          return [];
+        }
+
+        return [
+          {
+            id: sticky.id,
+            title: sticky.title,
+          },
+        ];
+      })
+    : [];
+}
+
 // Screensaver-Overlay: Foto-Diashow (oder Gradient-Fallback) nach 5 Min. Inaktivität
 export default function ScreensaverOverlay() {
   const { isIdle, wake } = useIdleTimer();
@@ -84,13 +136,11 @@ export default function ScreensaverOverlay() {
         ]);
         if (photosRes.ok) {
           const pData = await photosRes.json();
-          setPhotos(Array.isArray(pData.photos) ? pData.photos : []);
+          setPhotos(normalizeScreensaverPhotos(pData.photos));
         }
         if (remindersRes.ok) {
           const rData = await remindersRes.json();
-          const nextStickies = Array.isArray(rData.stickies)
-            ? rData.stickies
-            : [];
+          const nextStickies = normalizeScreensaverStickies(rData.stickies);
           setStickies(nextStickies.slice(0, 2));
         }
       } catch {

@@ -17,6 +17,69 @@ interface AppointmentItem {
   expires_at: string | null;
 }
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return value !== null && typeof value === "object" && !Array.isArray(value);
+}
+
+function isNonEmptyString(value: unknown): value is string {
+  return typeof value === "string" && value.trim().length > 0;
+}
+
+function isValidDateString(value: unknown): value is string {
+  return typeof value === "string" && !Number.isNaN(new Date(value).getTime());
+}
+
+function normalizeStickies(value: unknown): StickyItem[] {
+  return Array.isArray(value)
+    ? value.flatMap((sticky) => {
+        if (
+          !isRecord(sticky) ||
+          !isNonEmptyString(sticky.id) ||
+          !isNonEmptyString(sticky.title) ||
+          !isValidDateString(sticky.created_at)
+        ) {
+          return [];
+        }
+
+        return [
+          {
+            id: sticky.id,
+            title: sticky.title,
+            created_at: sticky.created_at,
+          },
+        ];
+      })
+    : [];
+}
+
+function normalizeAppointments(value: unknown): AppointmentItem[] {
+  return Array.isArray(value)
+    ? value.flatMap((appointment) => {
+        if (
+          !isRecord(appointment) ||
+          !isNonEmptyString(appointment.id) ||
+          !isNonEmptyString(appointment.title) ||
+          !isValidDateString(appointment.scheduled_at) ||
+          !(
+            appointment.expires_at === null ||
+            isValidDateString(appointment.expires_at)
+          )
+        ) {
+          return [];
+        }
+
+        return [
+          {
+            id: appointment.id,
+            title: appointment.title,
+            scheduled_at: appointment.scheduled_at,
+            expires_at: appointment.expires_at,
+          },
+        ];
+      })
+    : [];
+}
+
 export default function ErinnerungenScreen() {
   const { setActiveScreen, token } = useTerminal();
   const [stickies, setStickies] = useState<StickyItem[]>([]);
@@ -28,8 +91,8 @@ export default function ErinnerungenScreen() {
       const res = await fetch(`/api/device/reminders?token=${encodeURIComponent(token)}`);
       if (!res.ok) throw new Error("Fehler beim Laden");
       const data = await res.json();
-      setStickies(Array.isArray(data.stickies) ? data.stickies : []);
-      setAppointments(Array.isArray(data.appointments) ? data.appointments : []);
+      setStickies(normalizeStickies(data.stickies));
+      setAppointments(normalizeAppointments(data.appointments));
     } catch (err) {
       console.error("[Erinnerungen] Fehler:", err);
     } finally {

@@ -16,6 +16,51 @@ interface CaregiverContact {
   is_online: boolean;
 }
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return value !== null && typeof value === 'object' && !Array.isArray(value);
+}
+
+function isNonEmptyString(value: unknown): value is string {
+  return typeof value === 'string' && value.trim().length > 0;
+}
+
+function normalizeContacts(value: unknown): CaregiverContact[] {
+  return Array.isArray(value)
+    ? value.flatMap((contact) => {
+        if (
+          !isRecord(contact) ||
+          !isNonEmptyString(contact.id) ||
+          !isNonEmptyString(contact.caregiver_id) ||
+          !isNonEmptyString(contact.caregiver_name) ||
+          !(typeof contact.caregiver_avatar === 'string' || contact.caregiver_avatar === null)
+        ) {
+          return [];
+        }
+
+        return [
+          {
+            id: contact.id,
+            caregiver_id: contact.caregiver_id,
+            caregiver_name: contact.caregiver_name,
+            caregiver_avatar: contact.caregiver_avatar,
+            auto_answer_allowed:
+              typeof contact.auto_answer_allowed === 'boolean'
+                ? contact.auto_answer_allowed
+                : false,
+            auto_answer_start: isNonEmptyString(contact.auto_answer_start)
+              ? contact.auto_answer_start
+              : '',
+            auto_answer_end: isNonEmptyString(contact.auto_answer_end)
+              ? contact.auto_answer_end
+              : '',
+            is_online:
+              typeof contact.is_online === 'boolean' ? contact.is_online : false,
+          },
+        ];
+      })
+    : [];
+}
+
 export default function VideochatScreen() {
   const { setActiveScreen } = useTerminal();
   const [contacts, setContacts] = useState<CaregiverContact[]>([]);
@@ -27,7 +72,7 @@ export default function VideochatScreen() {
         const res = await fetch('/api/device/contacts');
         if (res.ok) {
           const json = await res.json();
-          setContacts(Array.isArray(json.contacts) ? json.contacts : []);
+          setContacts(normalizeContacts(json.contacts));
         }
       } catch {
         // Fehler still ignorieren, leere Liste anzeigen

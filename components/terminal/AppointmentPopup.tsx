@@ -13,6 +13,35 @@ interface UpcomingAppointment {
   scheduled_at: string;
 }
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return value !== null && typeof value === "object" && !Array.isArray(value);
+}
+
+function isNonEmptyString(value: unknown): value is string {
+  return typeof value === "string" && value.trim().length > 0;
+}
+
+function isValidDateString(value: unknown): value is string {
+  return typeof value === "string" && !Number.isNaN(new Date(value).getTime());
+}
+
+function normalizeUpcomingAppointment(value: unknown): UpcomingAppointment | null {
+  if (
+    !isRecord(value) ||
+    !isNonEmptyString(value.id) ||
+    !isNonEmptyString(value.title) ||
+    !isValidDateString(value.scheduled_at)
+  ) {
+    return null;
+  }
+
+  return {
+    id: value.id,
+    title: value.title,
+    scheduled_at: value.scheduled_at,
+  };
+}
+
 export default function AppointmentPopup() {
   const { token } = useTerminal();
   const [popup, setPopup] = useState<UpcomingAppointment | null>(null);
@@ -24,8 +53,9 @@ export default function AppointmentPopup() {
       const res = await fetch(`/api/device/reminders?token=${encodeURIComponent(token)}`);
       if (!res.ok) return;
       const data = await res.json();
-      if (data.upcomingPopup && !dismissed.has(data.upcomingPopup.id)) {
-        setPopup(data.upcomingPopup);
+      const nextPopup = normalizeUpcomingAppointment(data.upcomingPopup);
+      if (nextPopup && !dismissed.has(nextPopup.id)) {
+        setPopup(nextPopup);
       }
     } catch {
       // Stille Fehler — Popup ist nicht kritisch

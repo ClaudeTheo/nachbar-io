@@ -2,3 +2,4 @@
 export * from "./types";
 export * from "./constants";
 export * from "./bad-saeckingen-links";
+export * from "./default-service-links";

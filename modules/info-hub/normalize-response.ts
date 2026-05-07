@@ -164,6 +164,34 @@ function normalizeEvents(value: unknown): LocalEvent[] {
   });
 }
 
+function normalizeOepnvDepartures(value: unknown): OepnvDeparture[] {
+  return toArray<Record<string, unknown>>(value).flatMap((departure) => {
+    if (
+      typeof departure.line !== "string" ||
+      typeof departure.destination !== "string" ||
+      typeof departure.time !== "string" ||
+      typeof departure.platform !== "string" ||
+      typeof departure.countdown !== "number"
+    ) {
+      return [];
+    }
+
+    const normalized: OepnvDeparture = {
+      line: departure.line,
+      destination: departure.destination,
+      time: departure.time,
+      platform: departure.platform,
+      countdown: departure.countdown,
+    };
+
+    if (typeof departure.hint === "string") {
+      normalized.hint = departure.hint;
+    }
+
+    return [normalized];
+  });
+}
+
 function normalizeOepnvStops(value: unknown): OepnvStop[] {
   return toArray<Record<string, unknown>>(value)
     .filter(
@@ -171,7 +199,7 @@ function normalizeOepnvStops(value: unknown): OepnvStop[] {
     )
     .map((stop) => ({
       ...(stop as Omit<OepnvStop, "departures">),
-      departures: toArray<OepnvDeparture>(stop.departures),
+      departures: normalizeOepnvDepartures(stop.departures),
     }));
 }
 

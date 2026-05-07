@@ -210,4 +210,55 @@ describe("GET /api/quartier-info", () => {
       ],
     });
   });
+
+  it("filtert kaputte OePNV-Abfahrten auf Route-Ebene", async () => {
+    mockGetQuartierInfo.mockResolvedValueOnce({
+      weather: null,
+      nina: [],
+      oepnv: [
+        {
+          id: "stop-1",
+          name: "Bahnhof",
+          departures: [
+            {
+              line: "7310",
+              destination: "Waldshut Busbahnhof",
+              time: "12:28",
+              platform: "14",
+              countdown: "5",
+            },
+            {
+              line: "7300",
+              destination: "Waldshut Busbahnhof",
+              time: "12:30",
+              platform: "14",
+              countdown: 7,
+            },
+          ],
+        },
+      ],
+    });
+
+    const { GET } = await import("@/app/api/quartier-info/route");
+    const res = await GET(makeRequest());
+
+    expect(res.status).toBe(200);
+    await expect(res.json()).resolves.toMatchObject({
+      oepnv: [
+        {
+          id: "stop-1",
+          name: "Bahnhof",
+          departures: [
+            {
+              line: "7300",
+              destination: "Waldshut Busbahnhof",
+              time: "12:30",
+              platform: "14",
+              countdown: 7,
+            },
+          ],
+        },
+      ],
+    });
+  });
 });

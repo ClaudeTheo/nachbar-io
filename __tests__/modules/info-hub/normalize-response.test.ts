@@ -63,6 +63,76 @@ describe("normalizeQuartierInfoResponse", () => {
     ]);
   });
 
+  it("filtert falsch geformte OePNV-Abfahrten pro Haltestelle", () => {
+    const normalized = normalizeQuartierInfoResponse({
+      oepnv: [
+        {
+          id: "stop-1",
+          name: "Bahnhof",
+          departures: [
+            {
+              destination: "Waldshut Busbahnhof",
+              time: "12:28",
+              platform: "14",
+              countdown: 5,
+            },
+            {
+              line: "7310",
+              time: "12:30",
+              platform: "2",
+              countdown: 7,
+            },
+            {
+              line: "7311",
+              destination: "Rheinfelden",
+              platform: "3",
+              countdown: 8,
+            },
+            {
+              line: "7312",
+              destination: "Laufenburg",
+              time: "12:40",
+              platform: 4,
+              countdown: 12,
+            },
+            {
+              line: "7313",
+              destination: "Wehr",
+              time: "12:45",
+              platform: "5",
+              countdown: "17",
+            },
+            {
+              line: "7300",
+              destination: "Waldshut Busbahnhof",
+              time: "12:28",
+              platform: "14",
+              countdown: 5,
+              hint: "Ersatzverkehr",
+            },
+          ],
+        },
+      ],
+    });
+
+    expect(normalized.oepnv).toEqual([
+      {
+        id: "stop-1",
+        name: "Bahnhof",
+        departures: [
+          {
+            line: "7300",
+            destination: "Waldshut Busbahnhof",
+            time: "12:28",
+            platform: "14",
+            countdown: 5,
+            hint: "Ersatzverkehr",
+          },
+        ],
+      },
+    ]);
+  });
+
   it("filtert falsch geformte NINA-Warnungen", () => {
     const normalized = normalizeQuartierInfoResponse({
       nina: [

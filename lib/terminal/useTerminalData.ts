@@ -72,16 +72,105 @@ function asArray<T>(value: unknown): T[] {
   return Array.isArray(value) ? (value as T[]) : [];
 }
 
-function asFiniteNumber(value: unknown): number {
-  return typeof value === "number" && Number.isFinite(value) ? value : 0;
+function asNonNegativeFiniteNumber(value: unknown): number {
+  return typeof value === "number" && Number.isFinite(value) && value >= 0
+    ? value
+    : 0;
 }
 
-function asNullableString(value: unknown): string | null {
-  return typeof value === "string" ? value : null;
+function isValidDateString(value: unknown): value is string {
+  return typeof value === "string" && !Number.isNaN(new Date(value).getTime());
+}
+
+function asNullableDateString(value: unknown): string | null {
+  return isValidDateString(value) ? value : null;
 }
 
 function asString(value: unknown, fallback = ""): string {
   return typeof value === "string" ? value : fallback;
+}
+
+function isNonEmptyString(value: unknown): value is string {
+  return typeof value === "string" && value.trim().length > 0;
+}
+
+function normalizeWeatherForecast(value: unknown): WeatherDay[] {
+  return asArray<unknown>(value).flatMap((valueDay) => {
+    const day = isRecord(valueDay) ? valueDay : {};
+    if (
+      !isNonEmptyString(day.day) ||
+      typeof day.tempMax !== "number" ||
+      !Number.isFinite(day.tempMax) ||
+      !isNonEmptyString(day.icon)
+    ) {
+      return [];
+    }
+
+    return [
+      {
+        day: day.day,
+        tempMax: day.tempMax,
+        icon: day.icon,
+      },
+    ];
+  });
+}
+
+function normalizeAlerts(value: unknown): AlertInfo[] {
+  return asArray<unknown>(value).flatMap((valueAlert) => {
+    const alert = isRecord(valueAlert) ? valueAlert : {};
+    if (
+      !isNonEmptyString(alert.id) ||
+      !isNonEmptyString(alert.category) ||
+      !isNonEmptyString(alert.title) ||
+      typeof alert.body !== "string" ||
+      typeof alert.isEmergency !== "boolean" ||
+      !isValidDateString(alert.createdAt)
+    ) {
+      return [];
+    }
+
+    return [
+      {
+        id: alert.id,
+        category: alert.category,
+        title: alert.title,
+        body: alert.body,
+        isEmergency: alert.isEmergency,
+        createdAt: alert.createdAt,
+      },
+    ];
+  });
+}
+
+function normalizeNews(value: unknown): NewsItem[] {
+  return asArray<unknown>(value).flatMap((valueItem) => {
+    const item = isRecord(valueItem) ? valueItem : {};
+    if (
+      !isNonEmptyString(item.id) ||
+      !isNonEmptyString(item.title) ||
+      !(typeof item.summary === "string" || item.summary === null) ||
+      !isNonEmptyString(item.category) ||
+      !isNonEmptyString(item.categoryLabel) ||
+      typeof item.relevance !== "number" ||
+      !Number.isFinite(item.relevance) ||
+      !isValidDateString(item.publishedAt)
+    ) {
+      return [];
+    }
+
+    return [
+      {
+        id: item.id,
+        title: item.title,
+        summary: item.summary,
+        category: item.category,
+        categoryLabel: item.categoryLabel,
+        relevance: item.relevance,
+        publishedAt: item.publishedAt,
+      },
+    ];
+  });
 }
 
 function normalizeWeather(value: unknown): WeatherInfo {
@@ -91,7 +180,7 @@ function normalizeWeather(value: unknown): WeatherInfo {
   return {
     temp: typeof temp === "number" && Number.isFinite(temp) ? temp : null,
     icon: asString(record.icon, "cloud"),
-    forecast: asArray<WeatherDay>(record.forecast),
+    forecast: normalizeWeatherForecast(record.forecast),
   };
 }
 
@@ -100,18 +189,18 @@ function normalizeTerminalStatusData(value: unknown): TerminalStatusData {
 
   return {
     weather: normalizeWeather(record.weather),
-    alerts: asArray<AlertInfo>(record.alerts),
-    lastCheckin: asNullableString(record.lastCheckin),
-    nextAppointment: asNullableString(record.nextAppointment),
-    unreadCount: asFiniteNumber(record.unreadCount),
-    news: asArray<NewsItem>(record.news),
-    newsCount: asFiniteNumber(record.newsCount),
+    alerts: normalizeAlerts(record.alerts),
+    lastCheckin: asNullableDateString(record.lastCheckin),
+    nextAppointment: asNullableDateString(record.nextAppointment),
+    unreadCount: asNonNegativeFiniteNumber(record.unreadCount),
+    news: normalizeNews(record.news),
+    newsCount: asNonNegativeFiniteNumber(record.newsCount),
     userName: asString(record.userName),
     greeting: asString(record.greeting),
-    photosCount: asFiniteNumber(record.photosCount),
-    remindersCount: asFiniteNumber(record.remindersCount),
-    stickiesCount: asFiniteNumber(record.stickiesCount),
-    appointmentsToday: asFiniteNumber(record.appointmentsToday),
+    photosCount: asNonNegativeFiniteNumber(record.photosCount),
+    remindersCount: asNonNegativeFiniteNumber(record.remindersCount),
+    stickiesCount: asNonNegativeFiniteNumber(record.stickiesCount),
+    appointmentsToday: asNonNegativeFiniteNumber(record.appointmentsToday),
   };
 }
 

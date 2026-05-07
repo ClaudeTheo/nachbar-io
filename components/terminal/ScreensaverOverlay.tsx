@@ -84,11 +84,14 @@ export default function ScreensaverOverlay() {
         ]);
         if (photosRes.ok) {
           const pData = await photosRes.json();
-          setPhotos(pData.photos ?? []);
+          setPhotos(Array.isArray(pData.photos) ? pData.photos : []);
         }
         if (remindersRes.ok) {
           const rData = await remindersRes.json();
-          setStickies((rData.stickies ?? []).slice(0, 2));
+          const nextStickies = Array.isArray(rData.stickies)
+            ? rData.stickies
+            : [];
+          setStickies(nextStickies.slice(0, 2));
         }
       } catch {
         // Fehler im Screensaver sind nicht kritisch

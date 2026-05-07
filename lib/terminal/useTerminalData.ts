@@ -64,6 +64,57 @@ interface UseTerminalDataReturn {
 // Polling-Intervall: 2 Minuten
 const POLL_INTERVAL_MS = 2 * 60 * 1000;
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return value !== null && typeof value === "object" && !Array.isArray(value);
+}
+
+function asArray<T>(value: unknown): T[] {
+  return Array.isArray(value) ? (value as T[]) : [];
+}
+
+function asFiniteNumber(value: unknown): number {
+  return typeof value === "number" && Number.isFinite(value) ? value : 0;
+}
+
+function asNullableString(value: unknown): string | null {
+  return typeof value === "string" ? value : null;
+}
+
+function asString(value: unknown, fallback = ""): string {
+  return typeof value === "string" ? value : fallback;
+}
+
+function normalizeWeather(value: unknown): WeatherInfo {
+  const record = isRecord(value) ? value : {};
+  const temp = record.temp;
+
+  return {
+    temp: typeof temp === "number" && Number.isFinite(temp) ? temp : null,
+    icon: asString(record.icon, "cloud"),
+    forecast: asArray<WeatherDay>(record.forecast),
+  };
+}
+
+function normalizeTerminalStatusData(value: unknown): TerminalStatusData {
+  const record = isRecord(value) ? value : {};
+
+  return {
+    weather: normalizeWeather(record.weather),
+    alerts: asArray<AlertInfo>(record.alerts),
+    lastCheckin: asNullableString(record.lastCheckin),
+    nextAppointment: asNullableString(record.nextAppointment),
+    unreadCount: asFiniteNumber(record.unreadCount),
+    news: asArray<NewsItem>(record.news),
+    newsCount: asFiniteNumber(record.newsCount),
+    userName: asString(record.userName),
+    greeting: asString(record.greeting),
+    photosCount: asFiniteNumber(record.photosCount),
+    remindersCount: asFiniteNumber(record.remindersCount),
+    stickiesCount: asFiniteNumber(record.stickiesCount),
+    appointmentsToday: asFiniteNumber(record.appointmentsToday),
+  };
+}
+
 /**
  * Custom Hook: Laedt Terminal-Daten von der Device-API und pollt alle 2 Minuten.
  * Bietet Funktionen fuer Check-in und Alert-Bestaetigung.
@@ -82,8 +133,8 @@ export function useTerminalData(token: string): UseTerminalDataReturn {
         const errBody = await res.json().catch(() => ({}));
         throw new Error(errBody.error || `HTTP ${res.status}`);
       }
-      const json: TerminalStatusData = await res.json();
-      setData(json);
+      const json = await res.json();
+      setData(normalizeTerminalStatusData(json));
       setError(null);
     } catch (err) {
       const message = err instanceof Error ? err.message : "Verbindungsfehler";

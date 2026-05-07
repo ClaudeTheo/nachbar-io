@@ -27,7 +27,7 @@ export default function VideochatScreen() {
         const res = await fetch('/api/device/contacts');
         if (res.ok) {
           const json = await res.json();
-          setContacts(json.contacts ?? []);
+          setContacts(Array.isArray(json.contacts) ? json.contacts : []);
         }
       } catch {
         // Fehler still ignorieren, leere Liste anzeigen

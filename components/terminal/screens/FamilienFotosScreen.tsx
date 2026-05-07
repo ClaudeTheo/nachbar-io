@@ -26,7 +26,7 @@ export default function FamilienFotosScreen() {
         );
         if (!res.ok) throw new Error("Fehler beim Laden");
         const data = await res.json();
-        setPhotos(data.photos ?? []);
+        setPhotos(Array.isArray(data.photos) ? data.photos : []);
       } catch (err) {
         console.error("[FamilienFotos] Fehler:", err);
       } finally {

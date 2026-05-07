@@ -78,6 +78,8 @@ Never do these without explicit Founder-Go in the current session:
 - Reading, printing, copying, or committing `.env*`, secrets, tokens, or auth
   files.
 - Billing, provider account, domain, or secret rotation changes.
+- Stripe/Billing live setup waits until the GmbH is registered; keep payments
+  locally disabled until the Founder explicitly reopens this.
 - Provider live switches (KI, Stripe, Twilio, etc.) without AVV/DPA clearance.
 - New running costs.
 - Real pilot-user data processing or AI processing of personal data before

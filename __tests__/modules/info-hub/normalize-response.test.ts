@@ -331,6 +331,30 @@ describe("normalizeQuartierInfoResponse", () => {
     expect(normalized.pollen).toBeNull();
   });
 
+  it("filtert falsch geformte Wetter-Forecast-Eintraege", () => {
+    const normalized = normalizeQuartierInfoResponse({
+      weather: {
+        temp: 18,
+        description: "sonnig",
+        icon: "sun",
+        forecast: [
+          { tempMax: 20, icon: "sun" },
+          { day: "Mi", icon: "cloud" },
+          { day: "Do", tempMax: 12, icon: null },
+          { day: "Fr", tempMax: "16", icon: "rain" },
+          { day: "Sa", tempMax: 19, icon: "sun" },
+        ],
+      },
+    });
+
+    expect(normalized.weather).toEqual({
+      temp: 18,
+      description: "sonnig",
+      icon: "sun",
+      forecast: [{ day: "Sa", tempMax: 19, icon: "sun" }],
+    });
+  });
+
   it("erhaelt gueltige Wetter- und Pollendaten", () => {
     const normalized = normalizeQuartierInfoResponse({
       weather: {

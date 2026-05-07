@@ -261,4 +261,32 @@ describe("GET /api/quartier-info", () => {
       ],
     });
   });
+
+  it("filtert kaputte Wetter-Forecast-Eintraege auf Route-Ebene", async () => {
+    mockGetQuartierInfo.mockResolvedValueOnce({
+      weather: {
+        temp: 18,
+        description: "sonnig",
+        icon: "sun",
+        forecast: [
+          { day: "Mi", tempMax: "16", icon: "cloud" },
+          { day: "Do", tempMax: 12, icon: "rain" },
+        ],
+      },
+      nina: [],
+    });
+
+    const { GET } = await import("@/app/api/quartier-info/route");
+    const res = await GET(makeRequest());
+
+    expect(res.status).toBe(200);
+    await expect(res.json()).resolves.toMatchObject({
+      weather: {
+        temp: 18,
+        description: "sonnig",
+        icon: "sun",
+        forecast: [{ day: "Do", tempMax: 12, icon: "rain" }],
+      },
+    });
+  });
 });

@@ -203,6 +203,26 @@ function normalizeOepnvStops(value: unknown): OepnvStop[] {
     }));
 }
 
+function normalizeWeatherForecast(value: unknown): QuartierWeather["forecast"] {
+  return toArray<Record<string, unknown>>(value).flatMap((day) => {
+    if (
+      typeof day.day !== "string" ||
+      typeof day.tempMax !== "number" ||
+      typeof day.icon !== "string"
+    ) {
+      return [];
+    }
+
+    return [
+      {
+        day: day.day,
+        tempMax: day.tempMax,
+        icon: day.icon,
+      },
+    ];
+  });
+}
+
 function normalizeWeather(value: unknown): QuartierWeather | null {
   const record = toRecord(value);
   if (
@@ -214,7 +234,12 @@ function normalizeWeather(value: unknown): QuartierWeather | null {
   ) {
     return null;
   }
-  return value as QuartierWeather;
+  return {
+    temp: record.temp,
+    description: record.description,
+    icon: record.icon,
+    forecast: normalizeWeatherForecast(record.forecast),
+  };
 }
 
 function normalizePollen(value: unknown): PollenData | null {

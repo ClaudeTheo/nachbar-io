@@ -28,8 +28,8 @@ export default function ErinnerungenScreen() {
       const res = await fetch(`/api/device/reminders?token=${encodeURIComponent(token)}`);
       if (!res.ok) throw new Error("Fehler beim Laden");
       const data = await res.json();
-      setStickies(data.stickies ?? []);
-      setAppointments(data.appointments ?? []);
+      setStickies(Array.isArray(data.stickies) ? data.stickies : []);
+      setAppointments(Array.isArray(data.appointments) ? data.appointments : []);
     } catch (err) {
       console.error("[Erinnerungen] Fehler:", err);
     } finally {

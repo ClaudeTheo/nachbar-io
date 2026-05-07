@@ -172,4 +172,42 @@ describe("GET /api/quartier-info", () => {
       ],
     });
   });
+
+  it("filtert kaputte Event-Eintraege auf Route-Ebene", async () => {
+    mockGetQuartierInfo.mockResolvedValueOnce({
+      weather: null,
+      nina: [],
+      events: [
+        {
+          title: "Kaputter Termin",
+          description: "Ohne Ort",
+          schedule: "Sa 10:00 Uhr",
+          icon: "calendar",
+        },
+        {
+          title: "Wochenmarkt",
+          description: "Frische Lebensmittel aus der Region",
+          schedule: "Sa 08:00-12:00 Uhr",
+          location: "Marktplatz",
+          icon: "calendar",
+        },
+      ],
+    });
+
+    const { GET } = await import("@/app/api/quartier-info/route");
+    const res = await GET(makeRequest());
+
+    expect(res.status).toBe(200);
+    await expect(res.json()).resolves.toMatchObject({
+      events: [
+        {
+          title: "Wochenmarkt",
+          description: "Frische Lebensmittel aus der Region",
+          schedule: "Sa 08:00-12:00 Uhr",
+          location: "Marktplatz",
+          icon: "calendar",
+        },
+      ],
+    });
+  });
 });

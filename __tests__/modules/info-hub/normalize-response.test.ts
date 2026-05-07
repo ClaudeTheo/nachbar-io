@@ -198,6 +198,49 @@ describe("normalizeQuartierInfoResponse", () => {
     ]);
   });
 
+  it("filtert falsch geformte Event-Eintraege", () => {
+    const normalized = normalizeQuartierInfoResponse({
+      events: [
+        {
+          description: "Ohne Titel",
+          schedule: "Sa 10:00 Uhr",
+          location: "Marktplatz",
+          icon: "calendar",
+        },
+        {
+          title: "Event ohne Ort",
+          description: "Kaputter Termin",
+          schedule: "Sa 10:00 Uhr",
+          icon: "calendar",
+        },
+        {
+          title: "Event mit kaputtem Icon",
+          description: "Kaputter Termin",
+          schedule: "Sa 10:00 Uhr",
+          location: "Marktplatz",
+          icon: 123,
+        },
+        {
+          title: "Wochenmarkt",
+          description: "Frische Lebensmittel aus der Region",
+          schedule: "Sa 08:00-12:00 Uhr",
+          location: "Marktplatz",
+          icon: "calendar",
+        },
+      ],
+    });
+
+    expect(normalized.events).toEqual([
+      {
+        title: "Wochenmarkt",
+        description: "Frische Lebensmittel aus der Region",
+        schedule: "Sa 08:00-12:00 Uhr",
+        location: "Marktplatz",
+        icon: "calendar",
+      },
+    ]);
+  });
+
   it("setzt skalare URL-Felder bei falschem Typ auf leer", () => {
     const normalized = normalizeQuartierInfoResponse({
       notdienst_url: { href: "https://example.invalid" },

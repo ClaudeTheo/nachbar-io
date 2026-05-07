@@ -140,6 +140,30 @@ function normalizeApotheken(value: unknown): Apotheke[] {
   });
 }
 
+function normalizeEvents(value: unknown): LocalEvent[] {
+  return toArray<Record<string, unknown>>(value).flatMap((event) => {
+    if (
+      typeof event.title !== "string" ||
+      typeof event.description !== "string" ||
+      typeof event.schedule !== "string" ||
+      typeof event.location !== "string" ||
+      typeof event.icon !== "string"
+    ) {
+      return [];
+    }
+
+    return [
+      {
+        title: event.title,
+        description: event.description,
+        schedule: event.schedule,
+        location: event.location,
+        icon: event.icon,
+      },
+    ];
+  });
+}
+
 function normalizeOepnvStops(value: unknown): OepnvStop[] {
   return toArray<Record<string, unknown>>(value)
     .filter(
@@ -194,7 +218,7 @@ export function normalizeQuartierInfoResponse(
     rathaus: normalizeRathausLinks(record.rathaus),
     oepnv: normalizeOepnvStops(record.oepnv),
     apotheken: normalizeApotheken(record.apotheken),
-    events: toArray<LocalEvent>(record.events),
+    events: normalizeEvents(record.events),
     notdienst_url: toString(record.notdienst_url),
     events_calendar_url: toString(record.events_calendar_url),
   };

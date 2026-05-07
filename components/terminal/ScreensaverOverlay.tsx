@@ -134,6 +134,9 @@ export default function ScreensaverOverlay() {
   const weatherIcon = data?.weather?.icon ?? "cloud";
   const WeatherIcon = WEATHER_ICONS[weatherIcon] ?? Cloud;
   const temp = data?.weather?.temp;
+  const forecast = Array.isArray(data?.weather?.forecast)
+    ? data.weather.forecast
+    : [];
   const hasPhotos = photos.length > 0 && photos[currentPhotoIndex]?.url;
   const currentPhoto = photos[currentPhotoIndex];
 
@@ -173,7 +176,7 @@ export default function ScreensaverOverlay() {
             <span className="text-[28px] font-semibold text-white">
               {temp !== null && temp !== undefined ? `${temp}°C` : "--°C"}
             </span>
-            {data?.weather?.forecast?.map((day) => (
+            {forecast.map((day) => (
               <span key={day.day} className="text-[20px] text-white/60 ml-2">
                 {day.day} {day.tempMax}°
               </span>

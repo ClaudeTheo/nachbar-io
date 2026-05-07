@@ -45,7 +45,9 @@ export default function TerminalHeader() {
   const weatherIcon = data?.weather?.icon ?? "cloud";
   const WeatherIcon = WEATHER_ICONS[weatherIcon] ?? Cloud;
   const temp = data?.weather?.temp;
-  const forecast = data?.weather?.forecast ?? [];
+  const forecast = Array.isArray(data?.weather?.forecast)
+    ? data.weather.forecast
+    : [];
 
   return (
     <header className="flex items-center justify-between px-6 py-3 bg-anthrazit text-white">

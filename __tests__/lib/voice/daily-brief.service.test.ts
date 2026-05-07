@@ -129,6 +129,22 @@ describe("buildDailyBrief", () => {
       expect(brief).toContain("Zum Wetter habe ich gerade keine Daten");
     });
 
+    it("behandelt falsch geformte Wetter- und Pollendaten wie fehlende Quellen", () => {
+      const malformedPayload = {
+        ...fullPayload,
+        weather: { description: "kaputt" },
+        pollen: { pollen: ["Birke"] },
+      } as unknown as Partial<QuartierInfoResponse>;
+
+      const brief = buildDailyBrief(malformedPayload);
+
+      expect(brief).toContain("Zum Wetter habe ich gerade keine Daten");
+      expect(brief).toContain("Zum Pollenflug habe ich gerade keine Daten");
+      expect(brief).not.toContain("undefined Grad");
+      expect(brief).not.toContain("kaputt bei");
+      expect(brief).not.toContain("kaum Pollenflug");
+    });
+
     it("sagt 'keine Warnungen' bei leerem NINA-Array", () => {
       const brief = buildDailyBrief({ ...fullPayload, nina: [] });
       expect(brief).toContain("Es liegen gerade keine Warnungen vor");

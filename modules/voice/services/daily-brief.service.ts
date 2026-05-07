@@ -59,6 +59,15 @@ function weatherSentence(weather: QuartierWeather | null): string {
   return `Heute ist es ${weather.description} bei ${weather.temp} Grad.`;
 }
 
+function isQuartierWeather(value: unknown): value is QuartierWeather {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return false;
+  const weather = value as Partial<QuartierWeather>;
+  return (
+    (typeof weather.temp === "number" || weather.temp === null) &&
+    typeof weather.description === "string"
+  );
+}
+
 /**
  * Baut den Pollenflug-Satz aus den DWD-Daten.
  *
@@ -96,6 +105,21 @@ function pollenSentence(pollen: PollenData | null | undefined): string {
   }
   const level = maxIntensity >= 2.5 ? "hoch" : "mittel";
   return `Beim Pollenflug ist ${maxName} heute auf Stufe ${level}.`;
+}
+
+function isPollenData(value: unknown): value is PollenData {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return false;
+  const pollen = (value as Partial<PollenData>).pollen;
+  if (!pollen || typeof pollen !== "object" || Array.isArray(pollen)) {
+    return false;
+  }
+  return Object.values(pollen).every(
+    (entry) =>
+      entry &&
+      typeof entry === "object" &&
+      !Array.isArray(entry) &&
+      typeof (entry as { today?: unknown }).today === "number",
+  );
 }
 
 function warningSentence(nina: NinaWarning[] | null | undefined): string {
@@ -141,13 +165,15 @@ function eventSentence(events: LocalEvent[] | null | undefined): string {
  *          bei komplett leeren Daten werden fuenf Fallback-Saetze geliefert.
  */
 export function buildDailyBrief(data: Partial<QuartierInfoResponse>): string {
+  const weather = isQuartierWeather(data.weather) ? data.weather : null;
+  const pollen = isPollenData(data.pollen) ? data.pollen : null;
   const nina = Array.isArray(data.nina) ? data.nina : [];
   const wasteNext = Array.isArray(data.waste_next) ? data.waste_next : [];
   const events = Array.isArray(data.events) ? data.events : [];
 
   const parts = [
-    weatherSentence(data.weather ?? null),
-    pollenSentence(data.pollen),
+    weatherSentence(weather),
+    pollenSentence(pollen),
     warningSentence(nina),
     wasteSentence(wasteNext),
     eventSentence(events),

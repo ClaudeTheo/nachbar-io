@@ -97,6 +97,54 @@ describe("getQuartierInfo", () => {
     });
   });
 
+  it("baut Rathauslinks aus rathaus_url, wenn keine Service-Links gepflegt sind", async () => {
+    const supabase = createSupabaseMock({
+      city_name: "Laufenburg (Baden)",
+      rathaus_url: "https://www.laufenburg.de/",
+      service_links: [],
+      apotheken: [],
+      events: [],
+      oepnv_stops: [],
+      notdienst_url: "",
+      events_calendar_url: "",
+    });
+
+    await expect(getQuartierInfo(supabase, "q-lf")).resolves.toMatchObject({
+      rathaus: [
+        {
+          label: "Rathaus Laufenburg (Baden)",
+          url: "https://www.laufenburg.de",
+          icon: "building",
+          category: "kontakt",
+        },
+        {
+          label: "Bürgerbüro",
+          url: "https://www.laufenburg.de/buergerbuero",
+          icon: "users",
+          category: "kontakt",
+        },
+        {
+          label: "Formulare & Anträge",
+          url: "https://www.laufenburg.de/formulare",
+          icon: "clipboard",
+          category: "formulare",
+        },
+        {
+          label: "Veranstaltungskalender",
+          url: "https://www.laufenburg.de/veranstaltungen",
+          icon: "calendar",
+          category: "service",
+        },
+        {
+          label: "Abfallwirtschaft",
+          url: "https://www.laufenburg.de/abfall",
+          icon: "trash",
+          category: "service",
+        },
+      ],
+    });
+  });
+
   it("ueberschreibt vorhandene Rathauslinks aus municipal_config nicht", async () => {
     const configuredLink = {
       label: "Kontakt",

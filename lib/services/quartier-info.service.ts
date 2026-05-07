@@ -4,7 +4,11 @@
 
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { ServiceError } from "@/lib/services/service-error";
-import { normalizeBadSaeckingenLinks } from "@/lib/municipal";
+import {
+  buildMunicipalServiceLinks,
+  normalizeBadSaeckingenLinks,
+  type ServiceLink,
+} from "@/lib/municipal";
 import { fetchWeather } from "@/modules/info-hub/services/weather-client";
 import { fetchPollenData } from "@/modules/info-hub/services/pollen-client";
 import { fetchNinaWarnings } from "@/modules/info-hub/services/nina-client";
@@ -33,12 +37,51 @@ function isBadSaeckingenCity(cityName: unknown): boolean {
   );
 }
 
+function describeRathausLink(label: string): string {
+  const normalized = label.toLowerCase();
+
+  if (normalized.includes("rathaus")) return "Informationen der Kommune";
+  if (normalized.includes("bürgerbüro") || normalized.includes("buergerbuero")) {
+    return "Anlaufstelle für Anliegen im Bürgerbüro";
+  }
+  if (normalized.includes("formular")) return "Formulare und Anträge";
+  if (normalized.includes("veranstaltung")) return "Veranstaltungen der Kommune";
+  if (normalized.includes("abfall")) return "Informationen zur Abfallwirtschaft";
+
+  return "Kommunaler Service";
+}
+
+function toRathausLinks(
+  links: Array<ServiceLink | RathausLink | (ServiceLink & { description?: string })>,
+): RathausLink[] {
+  return links.map((link) => ({
+    ...link,
+    description:
+      "description" in link && typeof link.description === "string"
+        ? link.description
+        : describeRathausLink(link.label),
+  }));
+}
+
 function getRathausLinksFromConfig(config: Record<string, unknown> | null) {
-  const configuredLinks = (config?.service_links as RathausLink[]) || [];
-  const links =
-    configuredLinks.length > 0 || !isBadSaeckingenCity(config?.city_name)
-      ? configuredLinks
-      : RATHAUS_LINKS;
+  const configuredLinks = toRathausLinks(
+    (config?.service_links as Array<RathausLink | ServiceLink>) || [],
+  );
+  let links = configuredLinks;
+
+  if (links.length === 0 && isBadSaeckingenCity(config?.city_name)) {
+    links = RATHAUS_LINKS;
+  }
+
+  if (links.length === 0) {
+    links = toRathausLinks(
+      buildMunicipalServiceLinks({
+        cityName: typeof config?.city_name === "string" ? config.city_name : "",
+        rathausUrl:
+          typeof config?.rathaus_url === "string" ? config.rathaus_url : null,
+      }),
+    );
+  }
 
   return normalizeBadSaeckingenLinks(links);
 }
@@ -59,7 +102,7 @@ export async function getQuartierInfo(
   const { data: config } = await supabase
     .from("municipal_config")
     .select(
-      "city_name, service_links, apotheken, events, oepnv_stops, notdienst_url, events_calendar_url",
+      "city_name, rathaus_url, service_links, apotheken, events, oepnv_stops, notdienst_url, events_calendar_url",
     )
     .eq("quarter_id", quarterId)
     .single();

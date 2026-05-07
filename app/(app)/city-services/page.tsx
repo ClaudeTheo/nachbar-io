@@ -11,6 +11,7 @@ import {
   WIKI_CATEGORIES,
   ANNOUNCEMENT_CATEGORIES,
   announcementDisclaimer,
+  buildMunicipalServiceLinks,
   normalizeBadSaeckingenServiceLinks,
   normalizeBadSaeckingenWikiEntries,
 } from "@/lib/municipal";
@@ -138,8 +139,14 @@ export default function CityServicesPage() {
   }, [activeTab, currentQuarter]);
 
   // Service-Links nach Kategorie gruppieren
+  const configuredServiceLinks = (config?.service_links ?? []) as ServiceLink[];
   const serviceLinks = normalizeBadSaeckingenServiceLinks(
-    (config?.service_links ?? []) as ServiceLink[],
+    configuredServiceLinks.length > 0
+      ? configuredServiceLinks
+      : buildMunicipalServiceLinks({
+          cityName: config?.city_name ?? currentQuarter?.city ?? "",
+          rathausUrl: config?.rathaus_url ?? null,
+        }),
   );
   const linksByCategory = SERVICE_LINK_CATEGORIES.map((cat) => ({
     ...cat,

@@ -351,6 +351,25 @@ describe("CityServicesPage — Services-Tab", () => {
       expect(screen.getByText("Polizei Bad Säckingen")).toBeDefined();
     });
   });
+
+  it("nutzt Rathaus-URL-Defaults, wenn keine Service-Links gepflegt sind", async () => {
+    setupSupabaseChain([], {
+      ...DEFAULT_CONFIG,
+      city_name: "Laufenburg (Baden)",
+      rathaus_url: "https://www.laufenburg.de/",
+      service_links: [],
+      wiki_entries: [],
+    });
+
+    render(<CityServicesPage />);
+
+    await waitFor(() => {
+      expect(screen.getAllByText("Rathaus Laufenburg (Baden)").length).toBe(2);
+      expect(screen.getByText("Bürgerbüro")).toBeDefined();
+      expect(screen.getAllByText("Formulare & Anträge").length).toBeGreaterThanOrEqual(2);
+      expect(screen.getByText("Abfallwirtschaft")).toBeDefined();
+    });
+  });
 });
 
 // ============================================================

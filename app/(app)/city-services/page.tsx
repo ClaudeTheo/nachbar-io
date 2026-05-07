@@ -155,7 +155,9 @@ export default function CityServicesPage() {
 
   // Wiki-Eintraege mit Suchfilter
   const wikiEntries = normalizeBadSaeckingenWikiEntries(
-    (config?.wiki_entries ?? []) as WikiEntry[],
+    Array.isArray(config?.wiki_entries)
+      ? (config.wiki_entries as WikiEntry[])
+      : [],
   );
   const filteredWiki = searchQuery.trim()
     ? wikiEntries.filter(

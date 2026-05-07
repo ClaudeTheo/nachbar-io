@@ -490,6 +490,19 @@ describe("CityServicesPage — Wiki-Tab", () => {
     fireEvent.change(input, { target: { value: "Müll" } });
     expect(input.value).toBe("Müll");
   });
+
+  it("behandelt nicht-array wiki_entries wie leer", async () => {
+    setupSupabaseChain([], {
+      ...DEFAULT_CONFIG,
+      wiki_entries: { question: "Kaputter JSONB-Wert" },
+    });
+
+    renderWikiTab();
+
+    await waitFor(() => {
+      expect(screen.getByText("Noch keine Wiki-Einträge vorhanden.")).toBeDefined();
+    });
+  });
 });
 
 // ============================================================

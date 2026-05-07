@@ -33,12 +33,32 @@ function normalizeOepnvStops(value: unknown): OepnvStop[] {
 }
 
 function normalizeWeather(value: unknown): QuartierWeather | null {
-  return toRecord(value) ? (value as QuartierWeather) : null;
+  const record = toRecord(value);
+  if (
+    !record ||
+    !(typeof record.temp === "number" || record.temp === null) ||
+    typeof record.description !== "string" ||
+    typeof record.icon !== "string" ||
+    !Array.isArray(record.forecast)
+  ) {
+    return null;
+  }
+  return value as QuartierWeather;
 }
 
 function normalizePollen(value: unknown): PollenData | null {
   const record = toRecord(value);
-  if (!record || !toRecord(record.pollen)) return null;
+  const pollen = toRecord(record?.pollen);
+  if (!record || !pollen || typeof record.region !== "string") return null;
+  const hasOnlyPollenEntries = Object.values(pollen).every((entry) => {
+    const pollenEntry = toRecord(entry);
+    return (
+      pollenEntry &&
+      typeof pollenEntry.today === "number" &&
+      typeof pollenEntry.tomorrow === "number"
+    );
+  });
+  if (!hasOnlyPollenEntries) return null;
   return value as PollenData;
 }
 

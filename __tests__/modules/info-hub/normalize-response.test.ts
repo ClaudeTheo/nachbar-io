@@ -49,4 +49,44 @@ describe("normalizeQuartierInfoResponse", () => {
     expect(normalized.notdienst_url).toBe("");
     expect(normalized.events_calendar_url).toBe("");
   });
+
+  it("setzt falsch geformte Wetter- und Pollendaten auf null", () => {
+    const normalized = normalizeQuartierInfoResponse({
+      weather: { description: "kaputt" },
+      pollen: { pollen: ["Birke"] },
+    });
+
+    expect(normalized.weather).toBeNull();
+    expect(normalized.pollen).toBeNull();
+  });
+
+  it("erhaelt gueltige Wetter- und Pollendaten", () => {
+    const normalized = normalizeQuartierInfoResponse({
+      weather: {
+        temp: 18,
+        description: "sonnig",
+        icon: "sun",
+        forecast: [],
+      },
+      pollen: {
+        region: "Oberrhein",
+        pollen: {
+          Birke: { today: 2.5, tomorrow: 2 },
+        },
+      },
+    });
+
+    expect(normalized.weather).toEqual({
+      temp: 18,
+      description: "sonnig",
+      icon: "sun",
+      forecast: [],
+    });
+    expect(normalized.pollen).toEqual({
+      region: "Oberrhein",
+      pollen: {
+        Birke: { today: 2.5, tomorrow: 2 },
+      },
+    });
+  });
 });

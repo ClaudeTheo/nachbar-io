@@ -141,12 +141,16 @@ function eventSentence(events: LocalEvent[] | null | undefined): string {
  *          bei komplett leeren Daten werden fuenf Fallback-Saetze geliefert.
  */
 export function buildDailyBrief(data: Partial<QuartierInfoResponse>): string {
+  const nina = Array.isArray(data.nina) ? data.nina : [];
+  const wasteNext = Array.isArray(data.waste_next) ? data.waste_next : [];
+  const events = Array.isArray(data.events) ? data.events : [];
+
   const parts = [
     weatherSentence(data.weather ?? null),
     pollenSentence(data.pollen),
-    warningSentence(data.nina),
-    wasteSentence(data.waste_next),
-    eventSentence(data.events),
+    warningSentence(nina),
+    wasteSentence(wasteNext),
+    eventSentence(events),
   ];
   return parts.join("\n\n");
 }

@@ -161,6 +161,24 @@ describe("buildDailyBrief", () => {
       expect(brief).toContain("Zu Veranstaltungen habe ich gerade keine Daten");
     });
 
+    it("behandelt Nicht-Array-Werte fuer Warnungen, Muell und Events wie fehlende Quellen", () => {
+      const malformedPayload = {
+        ...fullPayload,
+        nina: { headline: "Kaputte Warnliste" },
+        waste_next: { label: "Kaputter Muellwert" },
+        events: { title: "Kaputter Terminwert" },
+      } as unknown as Partial<QuartierInfoResponse>;
+
+      const brief = buildDailyBrief(malformedPayload);
+
+      expect(brief).toContain("Es liegen gerade keine Warnungen vor");
+      expect(brief).toContain("Zur Muellabfuhr habe ich gerade keine Daten");
+      expect(brief).toContain("Zu Veranstaltungen habe ich gerade keine Daten");
+      expect(brief).not.toContain("Kaputte Warnliste");
+      expect(brief).not.toContain("Kaputter Muellwert");
+      expect(brief).not.toContain("Kaputter Terminwert");
+    });
+
     it("sagt explizit, dass Pollendaten fehlen, wenn pollen=null", () => {
       const brief = buildDailyBrief({ ...fullPayload, pollen: null });
       expect(brief).toContain("Zum Pollenflug habe ich gerade keine Daten");

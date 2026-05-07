@@ -160,6 +160,44 @@ describe("normalizeQuartierInfoResponse", () => {
     ]);
   });
 
+  it("filtert falsch geformte Apotheken-Eintraege", () => {
+    const normalized = normalizeQuartierInfoResponse({
+      apotheken: [
+        {
+          address: "Hauptstrasse 1",
+          phone: "07761 1234",
+          openingHours: "Mo-Fr 08:00-18:00",
+        },
+        {
+          name: "Apotheke ohne Telefon",
+          address: "Hauptstrasse 2",
+          openingHours: "Mo-Fr 08:00-18:00",
+        },
+        {
+          name: "Apotheke mit kaputter Oeffnungszeit",
+          address: "Hauptstrasse 3",
+          phone: "07761 9876",
+          openingHours: null,
+        },
+        {
+          name: "Stadt-Apotheke",
+          address: "Hauptstrasse 4",
+          phone: "07761 5555",
+          openingHours: "Mo-Fr 08:00-18:00",
+        },
+      ],
+    });
+
+    expect(normalized.apotheken).toEqual([
+      {
+        name: "Stadt-Apotheke",
+        address: "Hauptstrasse 4",
+        phone: "07761 5555",
+        openingHours: "Mo-Fr 08:00-18:00",
+      },
+    ]);
+  });
+
   it("setzt skalare URL-Felder bei falschem Typ auf leer", () => {
     const normalized = normalizeQuartierInfoResponse({
       notdienst_url: { href: "https://example.invalid" },

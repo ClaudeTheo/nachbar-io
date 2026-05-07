@@ -137,4 +137,39 @@ describe("GET /api/quartier-info", () => {
       ],
     });
   });
+
+  it("filtert kaputte Apotheken-Eintraege auf Route-Ebene", async () => {
+    mockGetQuartierInfo.mockResolvedValueOnce({
+      weather: null,
+      nina: [],
+      apotheken: [
+        {
+          name: "Kaputte Apotheke",
+          address: "Hauptstrasse 1",
+          openingHours: "Mo-Fr 08:00-18:00",
+        },
+        {
+          name: "Stadt-Apotheke",
+          address: "Hauptstrasse 4",
+          phone: "07761 5555",
+          openingHours: "Mo-Fr 08:00-18:00",
+        },
+      ],
+    });
+
+    const { GET } = await import("@/app/api/quartier-info/route");
+    const res = await GET(makeRequest());
+
+    expect(res.status).toBe(200);
+    await expect(res.json()).resolves.toMatchObject({
+      apotheken: [
+        {
+          name: "Stadt-Apotheke",
+          address: "Hauptstrasse 4",
+          phone: "07761 5555",
+          openingHours: "Mo-Fr 08:00-18:00",
+        },
+      ],
+    });
+  });
 });

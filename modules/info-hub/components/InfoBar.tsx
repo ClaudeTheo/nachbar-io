@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useQuarter } from "@/lib/quarters";
+import { normalizeQuartierInfoResponse } from "../normalize-response";
 import type { QuartierInfoResponse } from "../types";
 
 // Wetter-Icon Mapping
@@ -79,7 +80,7 @@ export function InfoBar() {
 
     fetch(`/api/quartier-info?quarter_id=${quarterId}`)
       .then((res) => res.json())
-      .then((d) => setData(d))
+      .then((d) => setData(normalizeQuartierInfoResponse(d)))
       .catch(() => {})
       .finally(() => setLoading(false));
   }, [quarterId]);

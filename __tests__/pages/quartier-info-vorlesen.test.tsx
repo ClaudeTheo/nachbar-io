@@ -240,6 +240,40 @@ describe("QuartierInfoPage Vorlesen-Integration (G-5)", () => {
     );
   });
 
+  it("normalisiert kaputte API-Listen vor UI und Vorlesen", async () => {
+    const malformedListData = {
+      ...MOCK_DATA,
+      nina: { headline: "Kaputte Warnliste" },
+      waste_next: { label: "Kaputter Muellwert" },
+      rathaus: { label: "Kaputter Rathauswert" },
+      oepnv: { id: "Kaputter Haltestellenwert" },
+      apotheken: { name: "Kaputter Apothekenwert" },
+      events: { title: "Kaputter Veranstaltungswert" },
+    };
+
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue({
+        json: () => Promise.resolve(malformedListData),
+        ok: true,
+      }),
+    );
+
+    render(<QuartierInfoPage />);
+
+    expect(await screen.findByTestId("info-apotheken-empty")).toHaveTextContent(
+      /keine apothekeninformationen hinterlegt/i,
+    );
+    expect(screen.getByTestId("info-events-empty")).toHaveTextContent(
+      /keine veranstaltungen hinterlegt/i,
+    );
+
+    const ttsText =
+      screen.getByTestId("tts-button").getAttribute("data-tts-text") ?? "";
+    expect(ttsText).toContain("Zur Muellabfuhr habe ich gerade keine Daten.");
+    expect(ttsText).toContain("Zu Veranstaltungen habe ich gerade keine Daten.");
+  });
+
   it("zeigt API-Fehler nicht als leere Quartierdaten", async () => {
     vi.stubGlobal(
       "fetch",

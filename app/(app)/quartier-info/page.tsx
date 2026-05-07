@@ -28,6 +28,7 @@ import { ExternalWarningBanner } from "@/components/warnings/external-warning-ba
 import { useQuarter } from "@/lib/quarters";
 import { TTSButton } from "@/modules/voice/components/companion/TTSButton";
 import { buildDailyBrief } from "@/modules/voice/services/daily-brief.service";
+import { normalizeQuartierInfoResponse } from "@/modules/info-hub/normalize-response";
 import type {
   QuartierInfoResponse,
   RathausLink,
@@ -165,7 +166,7 @@ export default function QuartierInfoPage() {
         setApiError(getQuartierInfoErrorMessage(res.status, d));
         return;
       }
-      setData(d);
+      setData(normalizeQuartierInfoResponse(d));
     } catch {
       setData(null);
       setApiError("Quartierdaten konnten gerade nicht geladen werden.");

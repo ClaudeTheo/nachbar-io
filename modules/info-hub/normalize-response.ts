@@ -25,6 +25,17 @@ function toString(value: unknown): string {
   return typeof value === "string" ? value : "";
 }
 
+function isIsoDate(value: unknown): value is string {
+  if (typeof value !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(value)) {
+    return false;
+  }
+
+  const date = new Date(`${value}T00:00:00Z`);
+  return (
+    !Number.isNaN(date.getTime()) && date.toISOString().slice(0, 10) === value
+  );
+}
+
 function isNinaSeverity(value: unknown): value is NinaWarning["severity"] {
   return (
     value === "Extreme" ||
@@ -60,6 +71,26 @@ function normalizeNinaWarnings(value: unknown): NinaWarning[] {
         description: warning.description,
         sent_at: warning.sent_at,
         expires_at: warning.expires_at,
+      },
+    ];
+  });
+}
+
+function normalizeWasteNext(value: unknown): WasteNext[] {
+  return toArray<Record<string, unknown>>(value).flatMap((waste) => {
+    if (
+      !isIsoDate(waste.date) ||
+      typeof waste.type !== "string" ||
+      typeof waste.label !== "string"
+    ) {
+      return [];
+    }
+
+    return [
+      {
+        date: waste.date,
+        type: waste.type,
+        label: waste.label,
       },
     ];
   });
@@ -115,7 +146,7 @@ export function normalizeQuartierInfoResponse(
     weather: normalizeWeather(record.weather),
     nina: normalizeNinaWarnings(record.nina),
     pollen: normalizePollen(record.pollen),
-    waste_next: toArray<WasteNext>(record.waste_next),
+    waste_next: normalizeWasteNext(record.waste_next),
     rathaus: toArray<RathausLink>(record.rathaus),
     oepnv: normalizeOepnvStops(record.oepnv),
     apotheken: toArray<Apotheke>(record.apotheken),

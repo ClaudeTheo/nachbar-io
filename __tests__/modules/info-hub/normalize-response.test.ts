@@ -98,6 +98,30 @@ describe("normalizeQuartierInfoResponse", () => {
     ]);
   });
 
+  it("filtert falsch geformte Muellabfuhr-Eintraege", () => {
+    const normalized = normalizeQuartierInfoResponse({
+      waste_next: [
+        { type: "restmuell", label: "Ohne Datum" },
+        { date: "2026-05-08", label: "Ohne Typ" },
+        { date: "morgen", type: "bio", label: "Falsches Datum" },
+        { date: "2026-05-09", type: 123, label: "Falscher Typ" },
+        {
+          date: "2026-05-10",
+          type: "papier",
+          label: "Papier",
+        },
+      ],
+    });
+
+    expect(normalized.waste_next).toEqual([
+      {
+        date: "2026-05-10",
+        type: "papier",
+        label: "Papier",
+      },
+    ]);
+  });
+
   it("setzt skalare URL-Felder bei falschem Typ auf leer", () => {
     const normalized = normalizeQuartierInfoResponse({
       notdienst_url: { href: "https://example.invalid" },

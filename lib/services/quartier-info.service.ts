@@ -6,6 +6,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { ServiceError } from "@/lib/services/service-error";
 import {
   buildMunicipalServiceLinks,
+  toMunicipalConfigArray,
   normalizeBadSaeckingenLinks,
   toServiceLinkArray,
   type ServiceLink,
@@ -110,10 +111,10 @@ export async function getQuartierInfo(
 
   // Dynamische Daten aus municipal_config (oder leere Defaults)
   const rathausLinks = getRathausLinksFromConfig(config ?? null);
-  const apotheken: Apotheke[] = (config?.apotheken as Apotheke[]) || [];
-  const events: LocalEvent[] = (config?.events as LocalEvent[]) || [];
+  const apotheken = toMunicipalConfigArray<Apotheke>(config?.apotheken);
+  const events = toMunicipalConfigArray<LocalEvent>(config?.events);
   const oepnvStopConfigs: { id: string; name: string }[] =
-    (config?.oepnv_stops as { id: string; name: string }[]) || [];
+    toMunicipalConfigArray<{ id: string; name: string }>(config?.oepnv_stops);
   const notdienstUrl: string = (config?.notdienst_url as string) || "";
   const eventsCalendarUrl: string = (config?.events_calendar_url as string) || "";
 

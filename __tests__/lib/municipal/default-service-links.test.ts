@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   buildMunicipalServiceLinks,
   normalizeMunicipalWebsiteUrl,
+  toMunicipalConfigArray,
 } from "@/lib/municipal";
 
 describe("Rathaus-Service-Link-Defaults", () => {
@@ -81,5 +82,15 @@ describe("Rathaus-Service-Link-Defaults", () => {
         rathausUrl: "",
       }),
     ).toEqual([]);
+  });
+
+  it("behandelt nicht-array municipal_config Werte als leere Liste", () => {
+    expect(toMunicipalConfigArray<{ label: string }>({ label: "Kaputt" })).toEqual(
+      [],
+    );
+    expect(toMunicipalConfigArray<{ label: string }>(null)).toEqual([]);
+    expect(toMunicipalConfigArray<{ label: string }>([{ label: "OK" }])).toEqual(
+      [{ label: "OK" }],
+    );
   });
 });

@@ -25,8 +25,12 @@ export function normalizeMunicipalWebsiteUrl(
   }
 }
 
+export function toMunicipalConfigArray<T>(value: unknown): T[] {
+  return Array.isArray(value) ? (value as T[]) : [];
+}
+
 export function toServiceLinkArray(value: unknown): ServiceLink[] {
-  return Array.isArray(value) ? (value as ServiceLink[]) : [];
+  return toMunicipalConfigArray<ServiceLink>(value);
 }
 
 export function buildMunicipalServiceLinks({

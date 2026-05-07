@@ -166,6 +166,25 @@ describe("getQuartierInfo", () => {
     expect(info.rathaus).toHaveLength(5);
   });
 
+  it("gibt municipal_config Listen auch bei nicht-array JSONB als Arrays zurueck", async () => {
+    const supabase = createSupabaseMock({
+      city_name: "Laufenburg (Baden)",
+      rathaus_url: "https://www.laufenburg.de/",
+      service_links: [],
+      apotheken: { name: "Kaputter Apotheken-Wert" },
+      events: { title: "Kaputter Event-Wert" },
+      oepnv_stops: { id: "stop-1", name: "Kaputter Haltestellen-Wert" },
+      notdienst_url: "",
+      events_calendar_url: "",
+    });
+
+    const info = await getQuartierInfo(supabase, "q-lf");
+
+    expect(info.apotheken).toEqual([]);
+    expect(info.events).toEqual([]);
+    expect(info.oepnv).toEqual([]);
+  });
+
   it("ueberschreibt vorhandene Rathauslinks aus municipal_config nicht", async () => {
     const configuredLink = {
       label: "Kontakt",

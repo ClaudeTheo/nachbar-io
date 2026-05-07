@@ -242,20 +242,44 @@ function normalizeWeather(value: unknown): QuartierWeather | null {
   };
 }
 
+function isPollenIntensity(
+  value: unknown,
+): value is PollenData["pollen"][string]["today"] {
+  return (
+    value === 0 ||
+    value === 0.5 ||
+    value === 1 ||
+    value === 1.5 ||
+    value === 2 ||
+    value === 2.5 ||
+    value === 3
+  );
+}
+
 function normalizePollen(value: unknown): PollenData | null {
   const record = toRecord(value);
   const pollen = toRecord(record?.pollen);
   if (!record || !pollen || typeof record.region !== "string") return null;
-  const hasOnlyPollenEntries = Object.values(pollen).every((entry) => {
+
+  const normalizedPollen: PollenData["pollen"] = {};
+  for (const [name, entry] of Object.entries(pollen)) {
     const pollenEntry = toRecord(entry);
-    return (
+    if (
       pollenEntry &&
-      typeof pollenEntry.today === "number" &&
-      typeof pollenEntry.tomorrow === "number"
-    );
-  });
-  if (!hasOnlyPollenEntries) return null;
-  return value as PollenData;
+      isPollenIntensity(pollenEntry.today) &&
+      isPollenIntensity(pollenEntry.tomorrow)
+    ) {
+      normalizedPollen[name] = {
+        today: pollenEntry.today,
+        tomorrow: pollenEntry.tomorrow,
+      };
+    }
+  }
+
+  return {
+    region: record.region,
+    pollen: normalizedPollen,
+  };
 }
 
 export function normalizeQuartierInfoResponse(

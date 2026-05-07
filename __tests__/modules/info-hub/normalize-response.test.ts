@@ -355,6 +355,29 @@ describe("normalizeQuartierInfoResponse", () => {
     });
   });
 
+  it("filtert Polleneintraege mit ungueltigen Intensitaeten", () => {
+    const normalized = normalizeQuartierInfoResponse({
+      pollen: {
+        region: "Oberrhein",
+        pollen: {
+          Hasel: { today: 0.5, tomorrow: 1 },
+          Birke: { today: 4, tomorrow: 1 },
+          Esche: { today: 1.25, tomorrow: 1.5 },
+          Graeser: { today: 2, tomorrow: -0.5 },
+          Ambrosia: { today: 3, tomorrow: 2.5 },
+        },
+      },
+    });
+
+    expect(normalized.pollen).toEqual({
+      region: "Oberrhein",
+      pollen: {
+        Hasel: { today: 0.5, tomorrow: 1 },
+        Ambrosia: { today: 3, tomorrow: 2.5 },
+      },
+    });
+  });
+
   it("erhaelt gueltige Wetter- und Pollendaten", () => {
     const normalized = normalizeQuartierInfoResponse({
       weather: {

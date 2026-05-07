@@ -289,4 +289,34 @@ describe("GET /api/quartier-info", () => {
       },
     });
   });
+
+  it("filtert Polleneintraege mit ungueltigen Intensitaeten auf Route-Ebene", async () => {
+    mockGetQuartierInfo.mockResolvedValueOnce({
+      weather: null,
+      nina: [],
+      pollen: {
+        region: "Oberrhein",
+        pollen: {
+          Hasel: { today: 0.5, tomorrow: 1 },
+          Birke: { today: 4, tomorrow: 1 },
+          Esche: { today: 1.25, tomorrow: 1.5 },
+          Graeser: { today: 2, tomorrow: -0.5 },
+          Ambrosia: { today: 3, tomorrow: 2.5 },
+        },
+      },
+    });
+
+    const { GET } = await import("@/app/api/quartier-info/route");
+    const res = await GET(makeRequest());
+
+    expect(res.status).toBe(200);
+    const json = await res.json();
+    expect(json.pollen).toEqual({
+      region: "Oberrhein",
+      pollen: {
+        Hasel: { today: 0.5, tomorrow: 1 },
+        Ambrosia: { today: 3, tomorrow: 2.5 },
+      },
+    });
+  });
 });

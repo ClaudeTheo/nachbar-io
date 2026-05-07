@@ -186,15 +186,17 @@ function normalizeWeather(value: unknown): WeatherInfo {
 
 function normalizeTerminalStatusData(value: unknown): TerminalStatusData {
   const record = isRecord(value) ? value : {};
+  const alerts = normalizeAlerts(record.alerts);
+  const news = normalizeNews(record.news);
 
   return {
     weather: normalizeWeather(record.weather),
-    alerts: normalizeAlerts(record.alerts),
+    alerts,
     lastCheckin: asNullableDateString(record.lastCheckin),
     nextAppointment: asNullableDateString(record.nextAppointment),
-    unreadCount: asNonNegativeFiniteNumber(record.unreadCount),
-    news: normalizeNews(record.news),
-    newsCount: asNonNegativeFiniteNumber(record.newsCount),
+    unreadCount: alerts.length,
+    news,
+    newsCount: news.length,
     userName: asString(record.userName),
     greeting: asString(record.greeting),
     photosCount: asNonNegativeFiniteNumber(record.photosCount),

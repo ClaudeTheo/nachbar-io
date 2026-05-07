@@ -38,7 +38,8 @@ describe("useTerminalData", () => {
     expect(result.current.data?.weather.forecast).toEqual([]);
     expect(result.current.data?.alerts).toEqual([]);
     expect(result.current.data?.news).toEqual([]);
-    expect(result.current.data?.newsCount).toBe(3);
+    expect(result.current.data?.unreadCount).toBe(0);
+    expect(result.current.data?.newsCount).toBe(0);
 
     unmount();
   });
@@ -165,9 +166,9 @@ describe("useTerminalData", () => {
         publishedAt: "2026-05-07T09:00:00.000Z",
       },
     ]);
-    expect(result.current.data?.newsCount).toBe(0);
+    expect(result.current.data?.newsCount).toBe(1);
     expect(result.current.data?.lastCheckin).toBeNull();
-    expect(result.current.data?.unreadCount).toBe(0);
+    expect(result.current.data?.unreadCount).toBe(1);
 
     unmount();
   });

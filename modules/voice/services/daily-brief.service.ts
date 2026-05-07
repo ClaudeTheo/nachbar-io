@@ -118,7 +118,20 @@ function isPollenData(value: unknown): value is PollenData {
       entry &&
       typeof entry === "object" &&
       !Array.isArray(entry) &&
-      typeof (entry as { today?: unknown }).today === "number",
+      isPollenIntensity((entry as { today?: unknown }).today) &&
+      isPollenIntensity((entry as { tomorrow?: unknown }).tomorrow),
+  );
+}
+
+function isPollenIntensity(value: unknown): boolean {
+  return (
+    value === 0 ||
+    value === 0.5 ||
+    value === 1 ||
+    value === 1.5 ||
+    value === 2 ||
+    value === 2.5 ||
+    value === 3
   );
 }
 

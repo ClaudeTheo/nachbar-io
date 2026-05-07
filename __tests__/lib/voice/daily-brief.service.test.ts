@@ -201,6 +201,25 @@ describe("buildDailyBrief", () => {
       expect(brief).not.toContain("Birke");
     });
 
+    it("behandelt Pollendaten mit ungueltigen Intensitaeten wie fehlende Quellen", () => {
+      const malformedPayload = {
+        ...fullPayload,
+        pollen: {
+          region: "Oberrhein",
+          pollen: {
+            Birke: { today: 4, tomorrow: 1 },
+            Graeser: { today: 1.25, tomorrow: 1.5 },
+          },
+        },
+      } as unknown as Partial<QuartierInfoResponse>;
+
+      const brief = buildDailyBrief(malformedPayload);
+
+      expect(brief).toContain("Zum Pollenflug habe ich gerade keine Daten");
+      expect(brief).not.toContain("Birke");
+      expect(brief).not.toContain("hoch");
+    });
+
     it("meldet 'kaum Pollenflug' wenn alle Intensitaeten 0 sind", () => {
       const zeroPollen: PollenData = {
         region: "Oberrhein",

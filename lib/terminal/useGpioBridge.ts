@@ -40,6 +40,10 @@ const WS_URL = "ws://localhost:8765";
 const MAX_RECONNECT_DELAY = 30000;
 const INITIAL_RECONNECT_DELAY = 1000;
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return value !== null && typeof value === "object" && !Array.isArray(value);
+}
+
 export function useGpioBridge(): UseGpioBridgeReturn {
   const [state, setState] = useState<GpioBridgeState>({
     connected: false,
@@ -87,8 +91,9 @@ export function useGpioBridge(): UseGpioBridgeReturn {
         try {
           const data = JSON.parse(event.data);
           // GPIO-Verfuegbarkeit aus Status-Antwort
-          if (data.gpio !== undefined) {
-            setState((prev) => ({ ...prev, gpioAvailable: data.gpio }));
+          if (isRecord(data) && typeof data.gpio === "boolean") {
+            const gpioAvailable = data.gpio;
+            setState((prev) => ({ ...prev, gpioAvailable }));
           }
         } catch {
           console.warn("[GPIO-Bridge] Ungueltige Nachricht:", event.data);

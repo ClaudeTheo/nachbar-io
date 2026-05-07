@@ -95,7 +95,23 @@ describe("updateSession (Auth-Middleware)", () => {
     expect(res.status).not.toBe(307);
   });
 
-  it("blockiert E2E-Test-Login auch im lokalen CI-Production-Start", async () => {
+  it("blockiert E2E-Test-Login im Production-Start gegen Cloud-Supabase", async () => {
+    vi.stubEnv("NODE_ENV", "production");
+    vi.stubEnv("NEXT_PUBLIC_CLOSED_PILOT_MODE", "true");
+    vi.stubEnv("NEXT_PUBLIC_SUPABASE_URL", "https://test.supabase.co");
+    vi.stubEnv("E2E_TEST_SECRET", "e2e-test-secret-dev");
+    mockGetUser.mockResolvedValue({ data: { user: null } });
+
+    const req = new NextRequest("http://localhost/api/test/login", {
+      headers: { "x-nachbar-test-mode": "e2e-test-secret-dev" },
+    });
+    const res = await updateSession(req);
+
+    expect(res.status).toBe(503);
+  });
+
+  it("laesst E2E-Test-Login im Production-Start gegen lokale Supabase durch", async () => {
+    vi.stubEnv("CI", "true");
     vi.stubEnv("NODE_ENV", "production");
     vi.stubEnv("NEXT_PUBLIC_CLOSED_PILOT_MODE", "true");
     vi.stubEnv("NEXT_PUBLIC_SUPABASE_URL", "http://127.0.0.1:54321");
@@ -107,7 +123,23 @@ describe("updateSession (Auth-Middleware)", () => {
     });
     const res = await updateSession(req);
 
-    expect(res.status).toBe(503);
+    expect(res.status).not.toBe(503);
+    expect(res.status).not.toBe(307);
+  });
+
+  it("laesst lokalen E2E-Test-Login bis zur Route durch, wenn das Secret nur dort verfuegbar ist", async () => {
+    vi.stubEnv("NODE_ENV", "production");
+    vi.stubEnv("NEXT_PUBLIC_CLOSED_PILOT_MODE", "true");
+    vi.stubEnv("NEXT_PUBLIC_SUPABASE_URL", "http://127.0.0.1:54321");
+    mockGetUser.mockResolvedValue({ data: { user: null } });
+
+    const req = new NextRequest("http://localhost/api/test/login", {
+      headers: { "x-nachbar-test-mode": "e2e-test-secret-dev" },
+    });
+    const res = await updateSession(req);
+
+    expect(res.status).not.toBe(503);
+    expect(res.status).not.toBe(307);
   });
 
   it("vergleicht den E2E-Test-Header timing-safe statt per direktem Secret-Vergleich", () => {

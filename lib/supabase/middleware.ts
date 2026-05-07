@@ -40,20 +40,33 @@ function isE2eTestLoginRequest(request: NextRequest) {
     return false;
   }
 
+  const expectedSecret =
+    process.env.SECURITY_E2E_BYPASS ?? process.env.E2E_TEST_SECRET;
+  if (!expectedSecret) return true;
+
   return verifyE2eTestHeader(
     request.headers.get("x-nachbar-test-mode"),
-    process.env.SECURITY_E2E_BYPASS ?? process.env.E2E_TEST_SECRET,
+    expectedSecret,
   );
 }
 
 function isE2eBypassAllowedEnvironment() {
-  if (process.env.NODE_ENV === "production") return false;
-
   const vercelEnvs = [
     process.env.NEXT_PUBLIC_VERCEL_ENV,
     process.env.VERCEL_ENV,
   ];
-  return !vercelEnvs.some((env) => env === "production" || env === "preview");
+  if (vercelEnvs.some((env) => env === "production" || env === "preview")) {
+    return false;
+  }
+
+  if (process.env.NODE_ENV !== "production") return true;
+
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL ?? "";
+  const isLocalSupabase =
+    supabaseUrl.startsWith("http://127.0.0.1:") ||
+    supabaseUrl.startsWith("http://localhost:");
+
+  return isLocalSupabase;
 }
 
 function verifyE2eTestHeader(value: string | null, expectedSecret?: string) {

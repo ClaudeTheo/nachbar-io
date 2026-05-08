@@ -61,6 +61,11 @@ interface StickyForScreensaver {
   title: string;
 }
 
+interface ScreensaverForecastDay {
+  day: string;
+  tempMax: number;
+}
+
 function isRecord(value: unknown): value is Record<string, unknown> {
   return value !== null && typeof value === "object" && !Array.isArray(value);
 }
@@ -117,6 +122,23 @@ function formatTemperature(value: unknown): string {
   return typeof value === "number" && Number.isFinite(value)
     ? `${value}°C`
     : "--°C";
+}
+
+function normalizeForecast(value: unknown): ScreensaverForecastDay[] {
+  return Array.isArray(value)
+    ? value.flatMap((day) => {
+        if (
+          !isRecord(day) ||
+          !isNonEmptyString(day.day) ||
+          typeof day.tempMax !== "number" ||
+          !Number.isFinite(day.tempMax)
+        ) {
+          return [];
+        }
+
+        return [{ day: day.day.trim(), tempMax: day.tempMax }];
+      })
+    : [];
 }
 
 // Screensaver-Overlay: Foto-Diashow (oder Gradient-Fallback) nach 5 Min. Inaktivität
@@ -193,9 +215,7 @@ export default function ScreensaverOverlay() {
   const weatherIcon = data?.weather?.icon ?? "cloud";
   const WeatherIcon = WEATHER_ICONS[weatherIcon] ?? Cloud;
   const temperatureLabel = formatTemperature(data?.weather?.temp);
-  const forecast = Array.isArray(data?.weather?.forecast)
-    ? data.weather.forecast
-    : [];
+  const forecast = normalizeForecast(data?.weather?.forecast);
   const hasPhotos = photos.length > 0 && photos[currentPhotoIndex]?.url;
   const currentPhoto = photos[currentPhotoIndex];
 

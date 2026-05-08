@@ -93,4 +93,36 @@ describe("Terminal-Wetter-Forecast-Guards", () => {
     expect(screen.getAllByText("--°C").length).toBeGreaterThan(0);
     expect(screen.queryByText("Infinity°C")).not.toBeInTheDocument();
   });
+
+  it("filtert kaputte Forecast-Eintraege im TerminalHeader", () => {
+    terminalData = makeTerminalData([
+      { day: "Mo", tempMax: 20, icon: "sun" },
+      { day: { label: "Di" }, tempMax: 21, icon: "cloud" },
+      { day: "Mi", tempMax: Number.POSITIVE_INFINITY, icon: "rain" },
+    ]);
+
+    render(<TerminalHeader />);
+
+    expect(screen.getByText("Mo20°")).toBeInTheDocument();
+    expect(screen.queryByText("[object Object]21°")).not.toBeInTheDocument();
+    expect(screen.queryByText("MiInfinity°")).not.toBeInTheDocument();
+  });
+
+  it("filtert kaputte Forecast-Eintraege im ScreensaverOverlay", () => {
+    vi.spyOn(global, "fetch").mockResolvedValue({
+      ok: false,
+      json: async () => ({}),
+    } as Response);
+    terminalData = makeTerminalData([
+      { day: "Mo", tempMax: 20, icon: "sun" },
+      { day: "Di", tempMax: "warm", icon: "cloud" },
+      { day: { label: "Mi" }, tempMax: 22, icon: "rain" },
+    ]);
+
+    render(<ScreensaverOverlay />);
+
+    expect(screen.getByText("Mo 20°")).toBeInTheDocument();
+    expect(screen.queryByText("Di warm°")).not.toBeInTheDocument();
+    expect(screen.queryByText("[object Object] 22°")).not.toBeInTheDocument();
+  });
 });

@@ -12,6 +12,11 @@ const WEATHER_ICONS: Record<string, React.ComponentType<{ className?: string }>>
   snow: CloudSnow, storm: CloudLightning, fog: CloudFog,
 };
 
+interface HeaderForecastDay {
+  day: string;
+  tempMax: number;
+}
+
 // Begrüßung abhängig von Tageszeit
 function getGreeting(hour: number): string {
   if (hour >= 5 && hour < 10) return "Guten Morgen";
@@ -25,6 +30,28 @@ function formatTemperature(value: unknown): string {
   return typeof value === "number" && Number.isFinite(value)
     ? `${value}°C`
     : "--°C";
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return value !== null && typeof value === "object" && !Array.isArray(value);
+}
+
+function normalizeForecast(value: unknown): HeaderForecastDay[] {
+  return Array.isArray(value)
+    ? value.flatMap((day) => {
+        if (
+          !isRecord(day) ||
+          typeof day.day !== "string" ||
+          day.day.trim().length === 0 ||
+          typeof day.tempMax !== "number" ||
+          !Number.isFinite(day.tempMax)
+        ) {
+          return [];
+        }
+
+        return [{ day: day.day.trim(), tempMax: day.tempMax }];
+      })
+    : [];
 }
 
 /**
@@ -51,9 +78,7 @@ export default function TerminalHeader() {
   const weatherIcon = data?.weather?.icon ?? "cloud";
   const WeatherIcon = WEATHER_ICONS[weatherIcon] ?? Cloud;
   const temperatureLabel = formatTemperature(data?.weather?.temp);
-  const forecast = Array.isArray(data?.weather?.forecast)
-    ? data.weather.forecast
-    : [];
+  const forecast = normalizeForecast(data?.weather?.forecast);
 
   return (
     <header className="flex items-center justify-between px-6 py-3 bg-anthrazit text-white">

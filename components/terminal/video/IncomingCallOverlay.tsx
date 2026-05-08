@@ -1,6 +1,9 @@
 'use client';
 
-import { useTerminal } from '@/lib/terminal/TerminalContext';
+import {
+  normalizeIncomingCallData,
+  useTerminal,
+} from '@/lib/terminal/TerminalContext';
 import KioskIncomingCall from './KioskIncomingCall';
 
 /**
@@ -9,21 +12,22 @@ import KioskIncomingCall from './KioskIncomingCall';
  */
 export default function IncomingCallOverlay() {
   const { incomingCall, setIncomingCall, setActiveCall, setActiveScreen } = useTerminal();
+  const safeIncomingCall = normalizeIncomingCallData(incomingCall);
 
-  if (!incomingCall) return null;
+  if (!safeIncomingCall) return null;
 
   return (
     <KioskIncomingCall
-      callerName={incomingCall.callerName}
-      callerAvatar={incomingCall.callerAvatar}
-      autoAnswer={incomingCall.autoAnswer}
+      callerName={safeIncomingCall.callerName}
+      callerAvatar={safeIncomingCall.callerAvatar}
+      autoAnswer={safeIncomingCall.autoAnswer}
       onAccept={() => {
         setActiveCall({
-          callId: incomingCall.callId,
-          remoteUserId: incomingCall.callerId,
-          remoteName: incomingCall.callerName,
+          callId: safeIncomingCall.callId,
+          remoteUserId: safeIncomingCall.callerId,
+          remoteName: safeIncomingCall.callerName,
           isInitiator: false,
-          offer: incomingCall.offer,
+          offer: safeIncomingCall.offer,
           mediaMode: 'video',
         });
         setIncomingCall(null);

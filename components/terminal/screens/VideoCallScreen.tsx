@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { Video, ArrowLeft, Calendar, Phone, PhoneOff } from "lucide-react";
 import { useTerminal } from "@/lib/terminal/TerminalContext";
 import { useConsultations } from "@/lib/care/hooks/useConsultations";
@@ -10,20 +10,92 @@ import { SeniorSosButton } from "@/modules/care/components/senior/SeniorSosButto
 import type { ConsultationSlot } from "@/lib/care/types";
 
 type Phase = "idle" | "consent" | "techcheck" | "video";
+type CallableSlotStatus = "scheduled" | "waiting" | "active";
+type VideoCallSlot = Pick<
+  ConsultationSlot,
+  "id" | "provider_type" | "host_name" | "title" | "scheduled_at" | "status" | "join_url"
+> & {
+  status: CallableSlotStatus;
+};
+
+const CALLABLE_SLOT_STATUSES = new Set<CallableSlotStatus>([
+  "scheduled",
+  "waiting",
+  "active",
+]);
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return value !== null && typeof value === "object" && !Array.isArray(value);
+}
+
+function isNonEmptyString(value: unknown): value is string {
+  return typeof value === "string" && value.trim().length > 0;
+}
+
+function isValidDateString(value: unknown): value is string {
+  return typeof value === "string" && !Number.isNaN(new Date(value).getTime());
+}
+
+function normalizeText(value: unknown, fallback: string): string {
+  return isNonEmptyString(value) ? value.trim() : fallback;
+}
+
+function normalizeProviderType(value: unknown): VideoCallSlot["provider_type"] {
+  return value === "medical" ? "medical" : "community";
+}
+
+function normalizeJoinUrl(value: unknown): string | null {
+  if (!isNonEmptyString(value)) return null;
+
+  try {
+    const url = new URL(value);
+    return url.protocol === "https:" || url.protocol === "http:"
+      ? value.trim()
+      : null;
+  } catch {
+    return null;
+  }
+}
+
+function normalizeVideoCallSlots(value: unknown): VideoCallSlot[] {
+  return Array.isArray(value)
+    ? value.flatMap((slot) => {
+        if (
+          !isRecord(slot) ||
+          !isNonEmptyString(slot.id) ||
+          !CALLABLE_SLOT_STATUSES.has(slot.status as CallableSlotStatus) ||
+          !isValidDateString(slot.scheduled_at)
+        ) {
+          return [];
+        }
+
+        return [
+          {
+            id: slot.id,
+            provider_type: normalizeProviderType(slot.provider_type),
+            host_name: normalizeText(slot.host_name, "Praxis"),
+            title: normalizeText(slot.title, "Videosprechstunde"),
+            scheduled_at: slot.scheduled_at,
+            status: slot.status as CallableSlotStatus,
+            join_url: normalizeJoinUrl(slot.join_url),
+          },
+        ];
+      })
+    : [];
+}
 
 export default function VideoCallScreen() {
   const { setActiveScreen } = useTerminal();
   const { slots, loading } = useConsultations(undefined, true);
   const [phase, setPhase] = useState<Phase>("idle");
-  const [activeSlot, setActiveSlot] = useState<ConsultationSlot | null>(null);
+  const [activeSlot, setActiveSlot] = useState<VideoCallSlot | null>(null);
+  const normalizedSlots = useMemo(
+    () => normalizeVideoCallSlots(slots as unknown),
+    [slots],
+  );
 
   // Nächsten relevanten Termin finden
-  const nextSlot = slots.find(
-    (s) =>
-      s.status === "scheduled" ||
-      s.status === "waiting" ||
-      s.status === "active",
-  );
+  const nextSlot = normalizedSlots[0];
 
   // Wenn Termin aktiv wird, automatisch Consent-Flow starten
   useEffect(() => {

@@ -181,6 +181,8 @@ function normalizeWarning(value: unknown): ExternalWarningItem | null {
   const headline = typeof record.headline === "string" ? record.headline : null;
   const attributionText =
     typeof record.attribution_text === "string" ? record.attribution_text : null;
+  const sentAt =
+    typeof record.sent_at === "string" ? record.sent_at.trim() : null;
 
   if (!provider || !severity || !id || !headline || !attributionText) {
     return null;
@@ -193,7 +195,7 @@ function normalizeWarning(value: unknown): ExternalWarningItem | null {
     description: typeof record.description === "string" ? record.description : null,
     instruction: typeof record.instruction === "string" ? record.instruction : null,
     severity,
-    sentAt: typeof record.sent_at === "string" ? record.sent_at : null,
+    sentAt: sentAt && sentAt.length > 0 ? sentAt : null,
     attributionText,
   };
 }

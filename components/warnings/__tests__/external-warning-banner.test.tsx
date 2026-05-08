@@ -63,6 +63,37 @@ describe("ExternalWarningBanner", () => {
     );
   });
 
+  it("formatiert Warnungs-Zeitstempel mit Rand-Leerzeichen", async () => {
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce(
+        new Response(
+          JSON.stringify([
+            {
+              id: "nina-1",
+              provider: "nina",
+              headline: "Amtliche Warnung",
+              description: null,
+              instruction: null,
+              severity: "moderate",
+              sent_at: "  2026-04-16T18:00:00.000Z  ",
+              attribution_text: "Quelle: BBK",
+            },
+          ]),
+          { status: 200 },
+        ),
+      )
+      .mockResolvedValueOnce(new Response(JSON.stringify([]), { status: 200 }))
+      .mockResolvedValueOnce(new Response(JSON.stringify([]), { status: 200 }));
+    vi.stubGlobal("fetch", fetchMock);
+
+    render(<ExternalWarningBanner />);
+
+    expect(await screen.findByText("Amtliche Warnung")).toBeInTheDocument();
+    expect(screen.getByText("Aktualisiert: 16.04., 20:00")).toBeInTheDocument();
+    expect(screen.queryByText(/2026-04-16T18:00:00\.000Z/)).not.toBeInTheDocument();
+  });
+
   it("sorts severe warnings before moderate ones", async () => {
     const fetchMock = vi
       .fn()

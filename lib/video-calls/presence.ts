@@ -17,6 +17,6 @@ export function getPresenceChannelName(type: PresenceType, id: string): string {
  */
 export function isUserOnline(lastSeen: string | null, now: number = Date.now()): boolean {
   if (!lastSeen) return false;
-  const lastSeenMs = new Date(lastSeen).getTime();
+  const lastSeenMs = new Date(lastSeen.trim()).getTime();
   return (now - lastSeenMs) < PRESENCE_TIMEOUT_MS;
 }

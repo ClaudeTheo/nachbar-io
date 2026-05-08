@@ -18,6 +18,12 @@ describe('isUserOnline', () => {
     expect(isUserOnline(recent, now)).toBe(true);
   });
 
+  it('gibt true zurück wenn lastSeen innerhalb Timeout Rand-Leerzeichen hat', () => {
+    const now = Date.now();
+    const recent = `  ${new Date(now - 30_000).toISOString()}  `;
+    expect(isUserOnline(recent, now)).toBe(true);
+  });
+
   it('gibt false zurück wenn lastSeen älter als Timeout', () => {
     const now = Date.now();
     const old = new Date(now - PRESENCE_TIMEOUT_MS - 1000).toISOString();

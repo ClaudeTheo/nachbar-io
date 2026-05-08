@@ -117,6 +117,26 @@ describe("Terminal VideoCallScreen Guards", () => {
     expect(screen.queryByText(/Invalid Date/i)).not.toBeInTheDocument();
   });
 
+  it("trimmt Slot-Status vor der Wartezimmer-Entscheidung", async () => {
+    useConsultationsMock.mockReturnValue({
+      slots: [
+        createSlot({
+          id: "spaced-status",
+          status: "  waiting  ",
+          title: "  Videosprechstunde  ",
+          host_name: "  Praxis am Rhein  ",
+          join_url: "  https://meet.example.com/room-1  ",
+        }),
+      ],
+      loading: false,
+    });
+
+    render(<VideoCallScreen />);
+
+    expect(await screen.findByText("Datenschutz")).toBeInTheDocument();
+    expect(screen.getByText("Einwilligung: community")).toBeInTheDocument();
+  });
+
   it("startet kein iFrame mit kaputter Join-URL", async () => {
     useConsultationsMock.mockReturnValue({
       slots: [

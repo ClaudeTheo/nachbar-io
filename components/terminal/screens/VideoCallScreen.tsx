@@ -46,11 +46,12 @@ function normalizeProviderType(value: unknown): VideoCallSlot["provider_type"] {
 
 function normalizeJoinUrl(value: unknown): string | null {
   if (!isNonEmptyString(value)) return null;
+  const trimmed = value.trim();
 
   try {
-    const url = new URL(value);
+    const url = new URL(trimmed);
     return url.protocol === "https:" || url.protocol === "http:"
-      ? value.trim()
+      ? trimmed
       : null;
   } catch {
     return null;
@@ -60,10 +61,14 @@ function normalizeJoinUrl(value: unknown): string | null {
 function normalizeVideoCallSlots(value: unknown): VideoCallSlot[] {
   return Array.isArray(value)
     ? value.flatMap((slot) => {
+        if (!isRecord(slot)) {
+          return [];
+        }
+
+        const status = isNonEmptyString(slot.status) ? slot.status.trim() : "";
         if (
-          !isRecord(slot) ||
           !isNonEmptyString(slot.id) ||
-          !CALLABLE_SLOT_STATUSES.has(slot.status as CallableSlotStatus) ||
+          !CALLABLE_SLOT_STATUSES.has(status as CallableSlotStatus) ||
           !isValidDateString(slot.scheduled_at)
         ) {
           return [];
@@ -71,12 +76,12 @@ function normalizeVideoCallSlots(value: unknown): VideoCallSlot[] {
 
         return [
           {
-            id: slot.id,
+            id: slot.id.trim(),
             provider_type: normalizeProviderType(slot.provider_type),
             host_name: normalizeText(slot.host_name, "Praxis"),
             title: normalizeText(slot.title, "Videosprechstunde"),
-            scheduled_at: slot.scheduled_at,
-            status: slot.status as CallableSlotStatus,
+            scheduled_at: slot.scheduled_at.trim(),
+            status: status as CallableSlotStatus,
             join_url: normalizeJoinUrl(slot.join_url),
           },
         ];

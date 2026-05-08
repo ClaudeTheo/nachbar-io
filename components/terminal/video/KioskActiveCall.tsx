@@ -14,6 +14,14 @@ interface KioskActiveCallProps {
   onAudioOnly: () => void;
 }
 
+const UNKNOWN_CONTACT_NAME = "Unbekannter Kontakt";
+
+function resolveCallerName(value: unknown): string {
+  if (typeof value !== "string") return UNKNOWN_CONTACT_NAME;
+  const trimmed = value.trim();
+  return trimmed.length > 0 ? trimmed : UNKNOWN_CONTACT_NAME;
+}
+
 export default function KioskActiveCall({
   callId,
   remoteUserId,
@@ -23,6 +31,7 @@ export default function KioskActiveCall({
   onHangup,
   onAudioOnly,
 }: KioskActiveCallProps) {
+  const displayName = resolveCallerName(callerName);
   const remoteVideoRef = useRef<HTMLVideoElement>(null);
   const localVideoRef = useRef<HTMLVideoElement>(null);
   const managerRef = useRef<PeerConnectionManager | null>(null);
@@ -108,7 +117,7 @@ export default function KioskActiveCall({
   return (
     <div
       role="dialog"
-      aria-label={`Videoanruf mit ${callerName}`}
+      aria-label={`Videoanruf mit ${displayName}`}
       className="fixed inset-0 z-50 bg-black"
     >
       {/* Remote-Video (Fullscreen) */}
@@ -132,7 +141,7 @@ export default function KioskActiveCall({
       <div className="absolute left-0 right-0 top-0 bg-gradient-to-b from-black/60 to-transparent p-4">
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-lg font-semibold text-white">{callerName}</p>
+            <p className="text-lg font-semibold text-white">{displayName}</p>
             <p className="text-sm text-white/80">{connectionStatus}</p>
           </div>
           <p className="font-mono text-lg text-white">{formatDuration(callDuration)}</p>

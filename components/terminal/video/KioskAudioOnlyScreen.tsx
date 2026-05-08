@@ -9,29 +9,46 @@ interface KioskAudioOnlyScreenProps {
   onRetryVideo: () => void;
 }
 
+const UNKNOWN_CONTACT_NAME = "Unbekannter Kontakt";
+
+function resolveCallerName(value: unknown): string {
+  if (typeof value !== "string") return UNKNOWN_CONTACT_NAME;
+  const trimmed = value.trim();
+  return trimmed.length > 0 ? trimmed : UNKNOWN_CONTACT_NAME;
+}
+
+function resolveCallerAvatar(value: unknown): string | null {
+  if (typeof value !== "string") return null;
+  const trimmed = value.trim();
+  return trimmed.length > 0 ? trimmed : null;
+}
+
 export default function KioskAudioOnlyScreen({
   callerName,
   callerAvatar,
   onHangup,
   onRetryVideo,
 }: KioskAudioOnlyScreenProps) {
+  const displayName = resolveCallerName(callerName);
+  const displayAvatar = resolveCallerAvatar(callerAvatar);
+
   return (
     <div
       role="dialog"
-      aria-label={`Audioanruf mit ${callerName}`}
+      aria-label={`Audioanruf mit ${displayName}`}
       className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-[#2D3142]"
     >
       {/* Avatar */}
       <div className="mb-6 flex h-48 w-48 items-center justify-center rounded-full bg-white/20 text-7xl font-bold text-white">
-        {callerAvatar ? (
+        {displayAvatar ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
-            src={callerAvatar}
-            alt={callerName}
+            src={displayAvatar}
+            alt={displayName}
             className="h-full w-full rounded-full object-cover"
           />
         ) : (
-          callerName.charAt(0).toUpperCase()
+          displayName.charAt(0).toUpperCase()
         )}
       </div>
 
@@ -51,7 +68,7 @@ export default function KioskAudioOnlyScreen({
       </div>
 
       {/* Name + Status */}
-      <h2 className="mb-1 text-3xl font-bold text-white">{callerName}</h2>
+      <h2 className="mb-1 text-3xl font-bold text-white">{displayName}</h2>
       <p className="mb-10 text-lg text-white/60">
         Nur Ton — Verbindung reicht nicht für Video
       </p>

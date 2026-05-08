@@ -13,6 +13,19 @@ interface KioskIncomingCallProps {
 }
 
 const COUNTDOWN_SECONDS = 30;
+const UNKNOWN_CONTACT_NAME = "Unbekannter Kontakt";
+
+function resolveCallerName(value: unknown): string {
+  if (typeof value !== "string") return UNKNOWN_CONTACT_NAME;
+  const trimmed = value.trim();
+  return trimmed.length > 0 ? trimmed : UNKNOWN_CONTACT_NAME;
+}
+
+function resolveCallerAvatar(value: unknown): string | null {
+  if (typeof value !== "string") return null;
+  const trimmed = value.trim();
+  return trimmed.length > 0 ? trimmed : null;
+}
 
 export default function KioskIncomingCall({
   callerName,
@@ -24,6 +37,8 @@ export default function KioskIncomingCall({
 }: KioskIncomingCallProps) {
   const [countdown, setCountdown] = useState(COUNTDOWN_SECONDS);
   const resolvedRef = useRef(false);
+  const displayName = resolveCallerName(callerName);
+  const displayAvatar = resolveCallerAvatar(callerAvatar);
 
   // Countdown-Timer
   useEffect(() => {
@@ -94,28 +109,28 @@ export default function KioskIncomingCall({
   return (
     <div
       role="alertdialog"
-      aria-label={`Eingehender Anruf von ${callerName}`}
+      aria-label={`Eingehender Anruf von ${displayName}`}
       className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-[#2D3142]/95"
     >
       {/* Avatar mit Puls-Animation */}
       <div className="relative mb-8">
         <div className="absolute inset-0 animate-ping rounded-full bg-[#4CAF87]/30" />
         <div className="relative flex h-32 w-32 items-center justify-center rounded-full bg-white/20 text-5xl font-bold text-white">
-          {callerAvatar ? (
+          {displayAvatar ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img
-              src={callerAvatar}
-              alt={callerName}
+              src={displayAvatar}
+              alt={displayName}
               className="h-full w-full rounded-full object-cover"
             />
           ) : (
-            callerName.charAt(0).toUpperCase()
+            displayName.charAt(0).toUpperCase()
           )}
         </div>
       </div>
 
       {/* Name + Status */}
-      <h2 className="mb-2 text-3xl font-bold text-white">{callerName}</h2>
+      <h2 className="mb-2 text-3xl font-bold text-white">{displayName}</h2>
       {autoAnswer ? (
         <p className="mb-8 text-xl text-white/80">
           Wird in {countdown} Sekunden durchgestellt

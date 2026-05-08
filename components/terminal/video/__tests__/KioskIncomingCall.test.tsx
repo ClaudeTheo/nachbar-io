@@ -28,6 +28,21 @@ describe('KioskIncomingCall', () => {
     expect(screen.getByText(/ruft an/i)).toBeInTheDocument();
   });
 
+  it('zeigt Fallback statt leerem Anrufernamen und kaputtem Avatar', () => {
+    render(
+      <KioskIncomingCall
+        {...defaultProps}
+        callerName="   "
+        callerAvatar={{ url: 'https://example.test/avatar.png' } as unknown as string}
+      />,
+    );
+
+    expect(screen.getByRole('alertdialog', { name: /eingehender anruf von unbekannter kontakt/i })).toBeInTheDocument();
+    expect(screen.getByText('Unbekannter Kontakt')).toBeInTheDocument();
+    expect(screen.getByText('U')).toBeInTheDocument();
+    expect(screen.queryByRole('img')).not.toBeInTheDocument();
+  });
+
   it('zeigt Annehmen- und Ablehnen-Buttons (80px)', () => {
     render(<KioskIncomingCall {...defaultProps} />);
     const accept = screen.getByRole('button', { name: /annehmen/i });

@@ -24,6 +24,21 @@ describe('KioskAudioOnlyScreen', () => {
     expect(screen.getByText('Lisa')).toBeInTheDocument();
   });
 
+  it('zeigt Fallback statt leerem Anrufernamen und kaputtem Avatar', () => {
+    render(
+      <KioskAudioOnlyScreen
+        {...defaultProps}
+        callerName="   "
+        callerAvatar={{ url: 'https://example.test/avatar.png' } as unknown as string}
+      />,
+    );
+
+    expect(screen.getByRole('dialog', { name: /audioanruf mit unbekannter kontakt/i })).toBeInTheDocument();
+    expect(screen.getByText('Unbekannter Kontakt')).toBeInTheDocument();
+    expect(screen.getByText('U')).toBeInTheDocument();
+    expect(screen.queryByRole('img')).not.toBeInTheDocument();
+  });
+
   it('zeigt Auflegen-Button und Video-Retry-Button', () => {
     render(<KioskAudioOnlyScreen {...defaultProps} />);
     expect(screen.getByRole('button', { name: /auflegen/i })).toBeInTheDocument();

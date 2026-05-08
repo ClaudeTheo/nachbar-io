@@ -48,6 +48,13 @@ describe('KioskActiveCall', () => {
     expect(screen.getByText(/wird aufgebaut/i)).toBeInTheDocument();
   });
 
+  it('zeigt Fallback statt leerem Anrufernamen', () => {
+    render(<KioskActiveCall {...defaultProps} callerName="   " />);
+
+    expect(screen.getByRole('dialog', { name: /videoanruf mit unbekannter kontakt/i })).toBeInTheDocument();
+    expect(screen.getByText('Unbekannter Kontakt')).toBeInTheDocument();
+  });
+
   it('zeigt Auflegen-Button (100px, rot)', () => {
     render(<KioskActiveCall {...defaultProps} />);
     const hangup = screen.getByRole('button', { name: /auflegen/i });

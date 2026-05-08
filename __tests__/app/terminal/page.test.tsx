@@ -122,6 +122,20 @@ describe("TerminalPage Dashboard", () => {
     ).toBeInTheDocument();
   });
 
+  it("normalisiert Dashboard-Datumsstrings mit Rand-Leerzeichen", () => {
+    terminalState.data = makeTerminalData({
+      lastCheckin: "  2026-05-07T08:15:00  ",
+    });
+
+    render(<TerminalPage />);
+
+    const checkinButton = screen.getByRole("button", { name: /wie geht's mir/i });
+
+    expect(within(checkinButton).getByText("Letztes: 08:15 Uhr")).toBeInTheDocument();
+    expect(within(checkinButton).queryByText("Heute noch nicht geteilt")).not.toBeInTheDocument();
+    expect(screen.queryByText(/Invalid Date|NaN/i)).not.toBeInTheDocument();
+  });
+
   it("normalisiert aktive Call-Werte vor dem Wechsel zu Nur-Ton", () => {
     terminalState.activeScreen = "active-call";
     terminalState.activeCall = {

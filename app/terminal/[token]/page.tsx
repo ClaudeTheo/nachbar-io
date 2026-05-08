@@ -94,7 +94,9 @@ function asDashboardCount(value: unknown): number {
 
 function asDashboardDate(value: unknown): Date | null {
   if (typeof value !== "string") return null;
-  const date = new Date(value);
+  const trimmedValue = value.trim();
+  if (trimmedValue.length === 0) return null;
+  const date = new Date(trimmedValue);
   return Number.isNaN(date.getTime()) ? null : date;
 }
 

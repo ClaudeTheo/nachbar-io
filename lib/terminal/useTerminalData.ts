@@ -94,6 +94,12 @@ function isNonEmptyString(value: unknown): value is string {
   return typeof value === "string" && value.trim().length > 0;
 }
 
+function normalizeOptionalText(value: string | null): string | null {
+  if (value === null) return null;
+  const trimmed = value.trim();
+  return trimmed.length > 0 ? trimmed : null;
+}
+
 function normalizeWeatherForecast(value: unknown): WeatherDay[] {
   return asArray<unknown>(value).flatMap((valueDay) => {
     const day = isRecord(valueDay) ? valueDay : {};
@@ -108,9 +114,9 @@ function normalizeWeatherForecast(value: unknown): WeatherDay[] {
 
     return [
       {
-        day: day.day,
+        day: day.day.trim(),
         tempMax: day.tempMax,
-        icon: day.icon,
+        icon: day.icon.trim(),
       },
     ];
   });
@@ -133,9 +139,9 @@ function normalizeAlerts(value: unknown): AlertInfo[] {
     return [
       {
         id: alert.id,
-        category: alert.category,
+        category: alert.category.trim(),
         title: alert.title.trim(),
-        body: alert.body,
+        body: alert.body.trim(),
         isEmergency: alert.isEmergency,
         createdAt: alert.createdAt,
       },
@@ -163,9 +169,9 @@ export function normalizeNews(value: unknown): NewsItem[] {
       {
         id: item.id,
         title: item.title.trim(),
-        summary: item.summary,
-        category: item.category,
-        categoryLabel: item.categoryLabel,
+        summary: normalizeOptionalText(item.summary),
+        category: item.category.trim(),
+        categoryLabel: item.categoryLabel.trim(),
         relevance: item.relevance,
         publishedAt: item.publishedAt,
       },

@@ -39,6 +39,7 @@ export default function KioskIncomingCall({
   const resolvedRef = useRef(false);
   const displayName = resolveCallerName(callerName);
   const displayAvatar = resolveCallerAvatar(callerAvatar);
+  const autoAnswerEnabled = autoAnswer === true;
 
   // Countdown-Timer
   useEffect(() => {
@@ -48,7 +49,7 @@ export default function KioskIncomingCall({
           if (!resolvedRef.current) {
             resolvedRef.current = true;
             // Countdown abgelaufen
-            if (autoAnswer) {
+            if (autoAnswerEnabled) {
               onAccept();
             } else {
               onDecline();
@@ -62,11 +63,11 @@ export default function KioskIncomingCall({
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [autoAnswer, onAccept, onDecline]);
+  }, [autoAnswerEnabled, onAccept, onDecline]);
 
   // Ringtone (Web Audio API) — nur bei normalem Klingeln
   useEffect(() => {
-    if (autoAnswer) return;
+    if (autoAnswerEnabled) return;
 
     try {
       const ctx = new AudioContext();
@@ -97,7 +98,7 @@ export default function KioskIncomingCall({
     } catch {
       // Audio nicht verfügbar — still ignorieren
     }
-  }, [autoAnswer]);
+  }, [autoAnswerEnabled]);
 
   const handleNotNow = useCallback(() => {
     if (resolvedRef.current) return;
@@ -131,7 +132,7 @@ export default function KioskIncomingCall({
 
       {/* Name + Status */}
       <h2 className="mb-2 text-3xl font-bold text-white">{displayName}</h2>
-      {autoAnswer ? (
+      {autoAnswerEnabled ? (
         <p className="mb-8 text-xl text-white/80">
           Wird in {countdown} Sekunden durchgestellt
         </p>
@@ -141,7 +142,7 @@ export default function KioskIncomingCall({
 
       {/* Buttons */}
       <div className="flex gap-6">
-        {autoAnswer ? (
+        {autoAnswerEnabled ? (
           <>
             <button
               onClick={onAccept}

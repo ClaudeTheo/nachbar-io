@@ -79,4 +79,16 @@ describe('KioskIncomingCall', () => {
     render(<KioskIncomingCall {...defaultProps} autoAnswer={true} />);
     expect(screen.getByRole('button', { name: /nicht jetzt/i })).toBeInTheDocument();
   });
+
+  it('behandelt kaputtes autoAnswer-Prop wie normales Klingeln', () => {
+    render(<KioskIncomingCall {...defaultProps} autoAnswer={'yes' as unknown as boolean} />);
+
+    expect(screen.getByText(/ruft an/i)).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /ablehnen/i })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /nicht jetzt/i })).not.toBeInTheDocument();
+
+    act(() => { vi.advanceTimersByTime(30_000); });
+    expect(defaultProps.onDecline).toHaveBeenCalledTimes(1);
+    expect(defaultProps.onAccept).not.toHaveBeenCalled();
+  });
 });

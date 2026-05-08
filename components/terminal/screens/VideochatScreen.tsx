@@ -24,6 +24,12 @@ function isNonEmptyString(value: unknown): value is string {
   return typeof value === 'string' && value.trim().length > 0;
 }
 
+function normalizeTimeWindowLabel(value: unknown): string {
+  if (!isNonEmptyString(value)) return '';
+  const trimmed = value.trim();
+  return /^([01]\d|2[0-3]):[0-5]\d$/.test(trimmed) ? trimmed : '';
+}
+
 function normalizeContacts(value: unknown): CaregiverContact[] {
   return Array.isArray(value)
     ? value.flatMap((contact) => {
@@ -48,10 +54,10 @@ function normalizeContacts(value: unknown): CaregiverContact[] {
                 ? contact.auto_answer_allowed
                 : false,
             auto_answer_start: isNonEmptyString(contact.auto_answer_start)
-              ? contact.auto_answer_start
+              ? normalizeTimeWindowLabel(contact.auto_answer_start)
               : '',
             auto_answer_end: isNonEmptyString(contact.auto_answer_end)
-              ? contact.auto_answer_end
+              ? normalizeTimeWindowLabel(contact.auto_answer_end)
               : '',
             is_online:
               typeof contact.is_online === 'boolean' ? contact.is_online : false,
@@ -90,6 +96,7 @@ export default function VideochatScreen() {
 
   function formatAutoAnswerInfo(contact: CaregiverContact): string | null {
     if (!contact.auto_answer_allowed) return null;
+    if (!contact.auto_answer_start || !contact.auto_answer_end) return null;
     return `Wird automatisch angenommen ${contact.auto_answer_start}\u2013${contact.auto_answer_end}`;
   }
 

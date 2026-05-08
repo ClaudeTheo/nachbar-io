@@ -76,4 +76,42 @@ describe('VideochatScreen (Kiosk)', () => {
     render(<VideochatScreen />);
     expect(screen.getByRole('button', { name: /zurück/i })).toBeInTheDocument();
   });
+
+  it('zeigt Auto-Answer-Hinweis nur bei validem Zeitfenster', async () => {
+    vi.mocked(global.fetch).mockResolvedValueOnce({
+      ok: true,
+      json: () => Promise.resolve({
+        contacts: [
+          {
+            id: 'link-valid',
+            caregiver_id: 'user-valid',
+            caregiver_name: 'Valide Zeit',
+            caregiver_avatar: null,
+            auto_answer_allowed: true,
+            auto_answer_start: '08:00',
+            auto_answer_end: '20:00',
+            is_online: true,
+          },
+          {
+            id: 'link-invalid',
+            caregiver_id: 'user-invalid',
+            caregiver_name: 'Kaputte Zeit',
+            caregiver_avatar: null,
+            auto_answer_allowed: true,
+            auto_answer_start: 'gleich',
+            auto_answer_end: '',
+            is_online: true,
+          },
+        ],
+      }),
+    } as Response);
+
+    render(<VideochatScreen />);
+
+    expect(await screen.findByText('Valide Zeit')).toBeInTheDocument();
+    expect(screen.getByText('Kaputte Zeit')).toBeInTheDocument();
+    expect(screen.getByText('Wird automatisch angenommen 08:00–20:00')).toBeInTheDocument();
+    expect(screen.queryByText(/gleich/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/Wird automatisch angenommen.*Kaputte Zeit/)).not.toBeInTheDocument();
+  });
 });

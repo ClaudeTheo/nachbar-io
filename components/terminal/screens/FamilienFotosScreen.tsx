@@ -24,6 +24,12 @@ function isValidDateString(value: unknown): value is string {
   return typeof value === "string" && !Number.isNaN(new Date(value).getTime());
 }
 
+function normalizeCaption(value: string | null): string | null {
+  if (value === null) return null;
+  const caption = value.trim();
+  return caption.length > 0 ? caption : null;
+}
+
 function normalizePhotos(value: unknown): KioskPhoto[] {
   return Array.isArray(value)
     ? value.flatMap((photo) => {
@@ -41,7 +47,7 @@ function normalizePhotos(value: unknown): KioskPhoto[] {
           {
             id: photo.id,
             url: photo.url,
-            caption: photo.caption,
+            caption: normalizeCaption(photo.caption),
             pinned: typeof photo.pinned === "boolean" ? photo.pinned : false,
             createdAt: photo.createdAt,
           },

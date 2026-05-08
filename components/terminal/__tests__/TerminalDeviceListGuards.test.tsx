@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { cleanup, render, screen } from "@testing-library/react";
+import { cleanup, render, screen, waitFor } from "@testing-library/react";
 import FamilienFotosScreen from "../screens/FamilienFotosScreen";
 import ScreensaverOverlay from "../ScreensaverOverlay";
 import VideochatScreen from "../screens/VideochatScreen";
@@ -105,6 +105,29 @@ describe("Terminal Device-Listen-Guards", () => {
     expect(screen.getByText("1 / 1")).toBeInTheDocument();
     expect(screen.queryByText("Kaputte URL")).not.toBeInTheDocument();
     expect(screen.queryByText("Kaputtes Datum")).not.toBeInTheDocument();
+  });
+
+  it("behandelt leere Foto-Captions in Familienfotos wie fehlende Captions", async () => {
+    vi.spyOn(global, "fetch").mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        photos: [
+          {
+            id: "photo-1",
+            url: "/familie.jpg",
+            caption: "   ",
+            pinned: false,
+            createdAt: "2026-05-07T08:00:00.000Z",
+          },
+        ],
+      }),
+    } as Response);
+
+    render(<FamilienFotosScreen />);
+
+    const photo = await screen.findByRole("img", { name: "Familienfoto" });
+    expect(photo).toHaveAttribute("src", "/familie.jpg");
+    expect(screen.queryByText("   ")).not.toBeInTheDocument();
   });
 
   it("rendert Videochat mit kaputtem contacts-Wert wie ohne Kontakte", async () => {
@@ -226,5 +249,34 @@ describe("Terminal Device-Listen-Guards", () => {
     expect(await screen.findByText("Sommerfest im Screensaver")).toBeInTheDocument();
     expect(screen.getByText("📌 Medikamente stehen bereit")).toBeInTheDocument();
     expect(screen.queryByText("Kaputtes Screensaver-Bild")).not.toBeInTheDocument();
+  });
+
+  it("behandelt leere Foto-Captions im Screensaver wie fehlende Captions", async () => {
+    terminalData = makeTerminalData();
+    vi.spyOn(global, "fetch")
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          photos: [
+            {
+              id: "photo-1",
+              url: "/familie.jpg",
+              caption: "   ",
+            },
+          ],
+        }),
+      } as Response)
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          stickies: [],
+        }),
+      } as Response);
+
+    const { container } = render(<ScreensaverOverlay />);
+
+    await waitFor(() => expect(container.querySelector("img")).not.toBeNull());
+    expect(container.querySelector("img")).toHaveAttribute("alt", "");
+    expect(container.querySelector(".absolute.top-6")).toBeNull();
   });
 });

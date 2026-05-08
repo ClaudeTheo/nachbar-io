@@ -74,6 +74,12 @@ function isNonEmptyString(value: unknown): value is string {
   return typeof value === "string" && value.trim().length > 0;
 }
 
+function normalizeCaption(value: string | null): string | null {
+  if (value === null) return null;
+  const caption = value.trim();
+  return caption.length > 0 ? caption : null;
+}
+
 function normalizeScreensaverPhotos(value: unknown): ScreensaverPhoto[] {
   return Array.isArray(value)
     ? value.flatMap((photo) => {
@@ -90,7 +96,7 @@ function normalizeScreensaverPhotos(value: unknown): ScreensaverPhoto[] {
           {
             id: photo.id,
             url: photo.url,
-            caption: photo.caption,
+            caption: normalizeCaption(photo.caption),
           },
         ];
       })

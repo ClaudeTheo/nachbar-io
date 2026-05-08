@@ -81,6 +81,18 @@ interface DashboardTile {
   bgColor: string;
 }
 
+function asDashboardCount(value: unknown): number {
+  return typeof value === "number" && Number.isFinite(value) && value > 0
+    ? value
+    : 0;
+}
+
+function asDashboardDate(value: unknown): Date | null {
+  if (typeof value !== "string") return null;
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? null : date;
+}
+
 function DashboardGrid() {
   const { data, loading, error, setActiveScreen } = useTerminal();
 
@@ -105,38 +117,45 @@ function DashboardGrid() {
     );
   }
 
+  const lastCheckinDate = asDashboardDate(data?.lastCheckin);
+  const alertsCount = Array.isArray(data?.alerts) ? data.alerts.length : 0;
+  const newsCount = asDashboardCount(data?.newsCount);
+  const stickiesCount = asDashboardCount(data?.stickiesCount);
+  const appointmentsToday = asDashboardCount(data?.appointmentsToday);
+  const photosCount = asDashboardCount(data?.photosCount);
+
   // Check-in Subtitle
-  const checkinSubtitle = data?.lastCheckin
-    ? `Letztes: ${new Date(data.lastCheckin).toLocaleTimeString("de-DE", {
+  const checkinSubtitle = lastCheckinDate
+    ? `Letztes: ${lastCheckinDate.toLocaleTimeString("de-DE", {
         hour: "2-digit",
         minute: "2-digit",
       })} Uhr`
     : "Heute noch nicht geteilt";
 
   // Schwarzes Brett Subtitle
-  const boardSubtitle = data && data.alerts.length > 0
-    ? `${data.alerts.length} neue ${data.alerts.length === 1 ? "Nachricht" : "Nachrichten"}`
+  const boardSubtitle = alertsCount > 0
+    ? `${alertsCount} neue ${alertsCount === 1 ? "Nachricht" : "Nachrichten"}`
     : "Keine neuen";
 
   // News Subtitle
-  const newsSubtitle = data && data.newsCount > 0
-    ? `${data.newsCount} ${data.newsCount === 1 ? "Artikel" : "Artikel"}`
+  const newsSubtitle = newsCount > 0
+    ? `${newsCount} ${newsCount === 1 ? "Artikel" : "Artikel"}`
     : "Keine neuen";
 
   // Erinnerungen Subtitle
   const remindersSubtitle = data
-    ? data.stickiesCount > 0 || data.appointmentsToday > 0
+    ? stickiesCount > 0 || appointmentsToday > 0
       ? [
-          data.stickiesCount > 0 ? `${data.stickiesCount} Notiz${data.stickiesCount !== 1 ? "en" : ""}` : "",
-          data.appointmentsToday > 0 ? `${data.appointmentsToday} Termin${data.appointmentsToday !== 1 ? "e" : ""}` : "",
+          stickiesCount > 0 ? `${stickiesCount} Notiz${stickiesCount !== 1 ? "en" : ""}` : "",
+          appointmentsToday > 0 ? `${appointmentsToday} Termin${appointmentsToday !== 1 ? "e" : ""}` : "",
         ].filter(Boolean).join(" + ")
       : "Keine neuen"
     : "Laden...";
 
   // Fotos Subtitle
   const photosSubtitle = data
-    ? data.photosCount > 0
-      ? `${data.photosCount} ${data.photosCount === 1 ? "Foto" : "Fotos"}`
+    ? photosCount > 0
+      ? `${photosCount} ${photosCount === 1 ? "Foto" : "Fotos"}`
       : "Noch keine Fotos"
     : "Laden...";
 

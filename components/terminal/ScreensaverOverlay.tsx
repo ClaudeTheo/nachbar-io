@@ -113,6 +113,12 @@ function normalizeScreensaverStickies(value: unknown): StickyForScreensaver[] {
     : [];
 }
 
+function formatTemperature(value: unknown): string {
+  return typeof value === "number" && Number.isFinite(value)
+    ? `${value}°C`
+    : "--°C";
+}
+
 // Screensaver-Overlay: Foto-Diashow (oder Gradient-Fallback) nach 5 Min. Inaktivität
 export default function ScreensaverOverlay() {
   const { isIdle, wake } = useIdleTimer();
@@ -186,7 +192,7 @@ export default function ScreensaverOverlay() {
   const dateStr = `${WEEKDAYS[time.getDay()]}, ${time.getDate()}. ${MONTHS[time.getMonth()]} ${time.getFullYear()}`;
   const weatherIcon = data?.weather?.icon ?? "cloud";
   const WeatherIcon = WEATHER_ICONS[weatherIcon] ?? Cloud;
-  const temp = data?.weather?.temp;
+  const temperatureLabel = formatTemperature(data?.weather?.temp);
   const forecast = Array.isArray(data?.weather?.forecast)
     ? data.weather.forecast
     : [];
@@ -227,7 +233,7 @@ export default function ScreensaverOverlay() {
           <div className="flex items-center gap-4 bg-white/10 rounded-2xl px-8 py-4">
             <WeatherIcon className="h-10 w-10 text-white/90" />
             <span className="text-[28px] font-semibold text-white">
-              {temp !== null && temp !== undefined ? `${temp}°C` : "--°C"}
+              {temperatureLabel}
             </span>
             {forecast.map((day) => (
               <span key={day.day} className="text-[20px] text-white/60 ml-2">
@@ -261,7 +267,7 @@ export default function ScreensaverOverlay() {
           <div className="flex items-center gap-3">
             <WeatherIcon className="h-8 w-8 text-white/80" />
             <span className="text-[22px] text-white font-medium">
-              {temp !== null && temp !== undefined ? `${temp}°C` : "--°C"}
+              {temperatureLabel}
             </span>
           </div>
           <span className="text-[22px] text-white/70">{dateStr}</span>

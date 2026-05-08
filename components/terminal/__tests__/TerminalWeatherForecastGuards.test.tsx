@@ -22,10 +22,11 @@ vi.mock("@/lib/terminal/useIdleTimer", () => ({
 
 function makeTerminalData(
   forecast: unknown,
+  temp: unknown = 18,
 ): TerminalStatusData {
   return {
     weather: {
-      temp: 18,
+      temp,
       icon: "sun",
       forecast,
     },
@@ -69,5 +70,27 @@ describe("Terminal-Wetter-Forecast-Guards", () => {
     expect(() => render(<ScreensaverOverlay />)).not.toThrow();
     expect(screen.getAllByText("18°C").length).toBeGreaterThan(0);
     expect(screen.queryByText("Mo 20°")).not.toBeInTheDocument();
+  });
+
+  it("rendert TerminalHeader mit kaputter Temperatur wie ohne Temperatur", () => {
+    terminalData = makeTerminalData([], { value: 18 });
+
+    render(<TerminalHeader />);
+
+    expect(screen.getByText("--°C")).toBeInTheDocument();
+    expect(screen.queryByText("[object Object]°C")).not.toBeInTheDocument();
+  });
+
+  it("rendert ScreensaverOverlay mit kaputter Temperatur wie ohne Temperatur", () => {
+    vi.spyOn(global, "fetch").mockResolvedValue({
+      ok: false,
+      json: async () => ({}),
+    } as Response);
+    terminalData = makeTerminalData([], Number.POSITIVE_INFINITY);
+
+    render(<ScreensaverOverlay />);
+
+    expect(screen.getAllByText("--°C").length).toBeGreaterThan(0);
+    expect(screen.queryByText("Infinity°C")).not.toBeInTheDocument();
   });
 });

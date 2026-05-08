@@ -21,6 +21,12 @@ function getGreeting(hour: number): string {
   return "Gute Nacht";
 }
 
+function formatTemperature(value: unknown): string {
+  return typeof value === "number" && Number.isFinite(value)
+    ? `${value}°C`
+    : "--°C";
+}
+
 /**
  * Terminal-Header: Wetter + 3-Tage-Forecast + Begrüßung links,
  * Uhrzeit + Datum rechts. Anthrazit-Hintergrund.
@@ -44,7 +50,7 @@ export default function TerminalHeader() {
   const userName = data?.userName ?? "";
   const weatherIcon = data?.weather?.icon ?? "cloud";
   const WeatherIcon = WEATHER_ICONS[weatherIcon] ?? Cloud;
-  const temp = data?.weather?.temp;
+  const temperatureLabel = formatTemperature(data?.weather?.temp);
   const forecast = Array.isArray(data?.weather?.forecast)
     ? data.weather.forecast
     : [];
@@ -56,7 +62,7 @@ export default function TerminalHeader() {
         <div className="flex items-center gap-2">
           <WeatherIcon className="h-10 w-10 text-alert-amber" />
           <span className="text-[28px] font-bold">
-            {temp !== null && temp !== undefined ? `${temp}°C` : "--°C"}
+            {temperatureLabel}
           </span>
         </div>
 

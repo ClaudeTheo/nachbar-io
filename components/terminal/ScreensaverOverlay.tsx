@@ -99,7 +99,7 @@ function normalizeScreensaverPhotos(value: unknown): ScreensaverPhoto[] {
         return [
           {
             id: photo.id,
-            url: photo.url,
+            url: photo.url.trim(),
             caption: normalizeCaption(photo.caption),
           },
         ];

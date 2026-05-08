@@ -130,6 +130,28 @@ describe("Terminal Device-Listen-Guards", () => {
     expect(screen.queryByText("   ")).not.toBeInTheDocument();
   });
 
+  it("trimmt Foto-URLs in Familienfotos vor der Bildanzeige", async () => {
+    vi.spyOn(global, "fetch").mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        photos: [
+          {
+            id: "photo-spaced-url",
+            url: "  /familie.jpg  ",
+            caption: null,
+            pinned: false,
+            createdAt: "2026-05-07T08:00:00.000Z",
+          },
+        ],
+      }),
+    } as Response);
+
+    render(<FamilienFotosScreen />);
+
+    const photo = await screen.findByRole("img", { name: "Familienfoto" });
+    expect(photo).toHaveAttribute("src", "/familie.jpg");
+  });
+
   it("rendert Videochat mit kaputtem contacts-Wert wie ohne Kontakte", async () => {
     vi.spyOn(global, "fetch").mockResolvedValue({
       ok: true,
@@ -306,5 +328,33 @@ describe("Terminal Device-Listen-Guards", () => {
     await waitFor(() => expect(container.querySelector("img")).not.toBeNull());
     expect(container.querySelector("img")).toHaveAttribute("alt", "");
     expect(container.querySelector(".absolute.top-6")).toBeNull();
+  });
+
+  it("trimmt Foto-URLs im Screensaver vor der Bildanzeige", async () => {
+    terminalData = makeTerminalData();
+    vi.spyOn(global, "fetch")
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          photos: [
+            {
+              id: "photo-spaced-url",
+              url: "  /familie.jpg  ",
+              caption: null,
+            },
+          ],
+        }),
+      } as Response)
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          stickies: [],
+        }),
+      } as Response);
+
+    const { container } = render(<ScreensaverOverlay />);
+
+    await waitFor(() => expect(container.querySelector("img")).not.toBeNull());
+    expect(container.querySelector("img")).toHaveAttribute("src", "/familie.jpg");
   });
 });

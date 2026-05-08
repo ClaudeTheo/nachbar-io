@@ -46,7 +46,7 @@ function normalizePhotos(value: unknown): KioskPhoto[] {
         return [
           {
             id: photo.id,
-            url: photo.url,
+            url: photo.url.trim(),
             caption: normalizeCaption(photo.caption),
             pinned: typeof photo.pinned === "boolean" ? photo.pinned : false,
             createdAt: photo.createdAt,

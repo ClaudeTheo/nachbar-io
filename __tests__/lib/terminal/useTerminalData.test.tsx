@@ -172,4 +172,85 @@ describe("useTerminalData", () => {
 
     unmount();
   });
+
+  it("trimmt Alert-Titel aus der Device-Status-API", async () => {
+    vi.spyOn(global, "fetch").mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        weather: {
+          temp: 18,
+          icon: "sun",
+          forecast: [],
+        },
+        alerts: [
+          {
+            id: "alert-1",
+            category: "community",
+            title: "  Hausflur wird gereinigt  ",
+            body: "Bitte Schuhe wegstellen.",
+            isEmergency: false,
+            createdAt: "2026-05-07T08:00:00.000Z",
+          },
+        ],
+        news: [],
+        lastCheckin: null,
+        nextAppointment: null,
+        userName: "Frau Mueller",
+        greeting: "Guten Tag",
+        photosCount: 0,
+        remindersCount: 0,
+        stickiesCount: 0,
+        appointmentsToday: 0,
+      }),
+    } as Response);
+
+    const { result, unmount } = renderHook(() => useTerminalData("device-token"));
+
+    await waitFor(() => expect(result.current.loading).toBe(false));
+
+    expect(result.current.data?.alerts[0]?.title).toBe("Hausflur wird gereinigt");
+
+    unmount();
+  });
+
+  it("trimmt News-Titel aus der Device-Status-API", async () => {
+    vi.spyOn(global, "fetch").mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        weather: {
+          temp: 18,
+          icon: "sun",
+          forecast: [],
+        },
+        alerts: [],
+        news: [
+          {
+            id: "news-1",
+            title: "  Wochenmarkt am Samstag  ",
+            summary: null,
+            category: "community",
+            categoryLabel: "Quartier",
+            relevance: 3,
+            publishedAt: "2026-05-07T09:00:00.000Z",
+          },
+        ],
+        lastCheckin: null,
+        nextAppointment: null,
+        userName: "Frau Mueller",
+        greeting: "Guten Tag",
+        photosCount: 0,
+        remindersCount: 0,
+        stickiesCount: 0,
+        appointmentsToday: 0,
+      }),
+    } as Response);
+
+    const { result, unmount } = renderHook(() => useTerminalData("device-token"));
+
+    await waitFor(() => expect(result.current.loading).toBe(false));
+
+    expect(result.current.data?.news[0]?.title).toBe("Wochenmarkt am Samstag");
+
+    unmount();
+  });
 });

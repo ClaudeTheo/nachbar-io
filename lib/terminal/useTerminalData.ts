@@ -134,7 +134,7 @@ function normalizeAlerts(value: unknown): AlertInfo[] {
       {
         id: alert.id,
         category: alert.category,
-        title: alert.title,
+        title: alert.title.trim(),
         body: alert.body,
         isEmergency: alert.isEmergency,
         createdAt: alert.createdAt,
@@ -162,7 +162,7 @@ export function normalizeNews(value: unknown): NewsItem[] {
     return [
       {
         id: item.id,
-        title: item.title,
+        title: item.title.trim(),
         summary: item.summary,
         category: item.category,
         categoryLabel: item.categoryLabel,

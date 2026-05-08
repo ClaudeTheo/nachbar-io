@@ -21,7 +21,7 @@ function isNonEmptyString(value: unknown): value is string {
 }
 
 function isValidDateString(value: unknown): value is string {
-  return typeof value === "string" && !Number.isNaN(new Date(value).getTime());
+  return typeof value === "string" && !Number.isNaN(new Date(value.trim()).getTime());
 }
 
 function normalizeCaption(value: string | null): string | null {
@@ -45,11 +45,11 @@ function normalizePhotos(value: unknown): KioskPhoto[] {
 
         return [
           {
-            id: photo.id,
+            id: photo.id.trim(),
             url: photo.url.trim(),
             caption: normalizeCaption(photo.caption),
             pinned: typeof photo.pinned === "boolean" ? photo.pinned : false,
-            createdAt: photo.createdAt,
+            createdAt: photo.createdAt.trim(),
           },
         ];
       })

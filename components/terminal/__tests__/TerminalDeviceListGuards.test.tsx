@@ -152,6 +152,29 @@ describe("Terminal Device-Listen-Guards", () => {
     expect(photo).toHaveAttribute("src", "/familie.jpg");
   });
 
+  it("trimmt Foto-Datumsstrings in Familienfotos vor der Bildanzeige", async () => {
+    vi.spyOn(global, "fetch").mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        photos: [
+          {
+            id: "photo-spaced-date",
+            url: "/familie.jpg",
+            caption: null,
+            pinned: false,
+            createdAt: "  2026-05-07T08:00:00.000Z  ",
+          },
+        ],
+      }),
+    } as Response);
+
+    render(<FamilienFotosScreen />);
+
+    const photo = await screen.findByRole("img", { name: "Familienfoto" });
+    expect(photo).toHaveAttribute("src", "/familie.jpg");
+    expect(screen.queryByText("Noch keine Fotos vorhanden")).not.toBeInTheDocument();
+  });
+
   it("rendert Videochat mit kaputtem contacts-Wert wie ohne Kontakte", async () => {
     vi.spyOn(global, "fetch").mockResolvedValue({
       ok: true,

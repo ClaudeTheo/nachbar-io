@@ -41,6 +41,70 @@ export interface ActiveCallData {
   mediaMode: 'video' | 'audio-only';
 }
 
+const UNKNOWN_CONTACT_NAME = "Unbekannter Kontakt";
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null;
+}
+
+function normalizeRequiredString(value: unknown): string | null {
+  if (typeof value !== "string") return null;
+  const trimmed = value.trim();
+  return trimmed.length > 0 ? trimmed : null;
+}
+
+function normalizeDisplayName(value: unknown): string {
+  return normalizeRequiredString(value) ?? UNKNOWN_CONTACT_NAME;
+}
+
+function normalizeNullableString(value: unknown): string | null {
+  return normalizeRequiredString(value);
+}
+
+function normalizeOffer(value: unknown): RTCSessionDescriptionInit | null {
+  if (!isRecord(value)) return null;
+  if (value.type !== "offer") return null;
+  const sdp = normalizeRequiredString(value.sdp);
+  if (!sdp) return null;
+  return { type: "offer", sdp };
+}
+
+export function normalizeIncomingCallData(call: IncomingCallData | null): IncomingCallData | null {
+  if (!isRecord(call)) return null;
+  const callId = normalizeRequiredString(call.callId);
+  const callerId = normalizeRequiredString(call.callerId);
+  const offer = normalizeOffer(call.offer);
+  if (!callId || !callerId || !offer) return null;
+
+  return {
+    callId,
+    callerId,
+    callerName: normalizeDisplayName(call.callerName),
+    callerAvatar: normalizeNullableString(call.callerAvatar),
+    autoAnswer: typeof call.autoAnswer === "boolean" ? call.autoAnswer : false,
+    offer,
+  };
+}
+
+export function normalizeActiveCallData(call: ActiveCallData | null): ActiveCallData | null {
+  if (!isRecord(call)) return null;
+  const callId = normalizeRequiredString(call.callId);
+  const remoteUserId = normalizeRequiredString(call.remoteUserId);
+  if (!callId || !remoteUserId) return null;
+
+  const offer = normalizeOffer(call.offer);
+  const mediaMode = call.mediaMode === "audio-only" ? "audio-only" : "video";
+
+  return {
+    callId,
+    remoteUserId,
+    remoteName: normalizeDisplayName(call.remoteName),
+    isInitiator: typeof call.isInitiator === "boolean" ? call.isInitiator : false,
+    ...(offer ? { offer } : {}),
+    mediaMode,
+  };
+}
+
 interface TerminalContextValue {
   // Device-Token (fuer direkte API-Aufrufe aus Child-Komponenten)
   token: string;
@@ -87,8 +151,8 @@ export function TerminalProvider({ token, children }: TerminalProviderProps) {
   const [activeScreen, setActiveScreenState] = useState<TerminalScreen>("home");
   const [isNightTime_, setIsNightTime] = useState(isNightTime());
   const [nightModeOverrideUntil, setNightModeOverrideUntil] = useState<Date | null>(null);
-  const [incomingCall, setIncomingCall] = useState<IncomingCallData | null>(null);
-  const [activeCall, setActiveCall] = useState<ActiveCallData | null>(null);
+  const [incomingCall, setIncomingCallState] = useState<IncomingCallData | null>(null);
+  const [activeCall, setActiveCallState] = useState<ActiveCallData | null>(null);
 
   // Jede Minute pruefen ob Nachtmodus aktiv ist
   useEffect(() => {
@@ -111,6 +175,14 @@ export function TerminalProvider({ token, children }: TerminalProviderProps) {
 
   const setActiveScreen = useCallback((screen: TerminalScreen) => {
     setActiveScreenState(screen);
+  }, []);
+
+  const setIncomingCall = useCallback((call: IncomingCallData | null) => {
+    setIncomingCallState(normalizeIncomingCallData(call));
+  }, []);
+
+  const setActiveCall = useCallback((call: ActiveCallData | null) => {
+    setActiveCallState(normalizeActiveCallData(call));
   }, []);
 
   const value: TerminalContextValue = {

@@ -1,5 +1,11 @@
 import { describe, it, expect } from 'vitest';
-import type { TerminalScreen, IncomingCallData, ActiveCallData } from '@/lib/terminal/TerminalContext';
+import {
+  normalizeActiveCallData,
+  normalizeIncomingCallData,
+  type TerminalScreen,
+  type IncomingCallData,
+  type ActiveCallData,
+} from '@/lib/terminal/TerminalContext';
 
 describe('Terminal Call Integration (Types)', () => {
   it('TerminalScreen enthält "active-call"', () => {
@@ -52,5 +58,48 @@ describe('Terminal Call Integration (Types)', () => {
     const screens: TerminalScreen[] = ['videochat', 'active-call'];
     expect(screens).toContain('videochat');
     expect(screens).toContain('active-call');
+  });
+
+  it('normalisiert eingehende Calls bevor sie in den Terminal-State kommen', () => {
+    const call = normalizeIncomingCallData({
+      callId: 'call-1',
+      callerId: 'user-1',
+      callerName: '   ',
+      callerAvatar: { url: 'https://example.test/avatar.png' } as unknown as string,
+      autoAnswer: 'yes' as unknown as boolean,
+      offer: { type: 'offer', sdp: 'valid-sdp' },
+    } as IncomingCallData);
+
+    expect(call?.callerName).toBe('Unbekannter Kontakt');
+    expect(call?.callerAvatar).toBeNull();
+    expect(call?.autoAnswer).toBe(false);
+  });
+
+  it('verwirft eingehende Calls mit kaputtem Offer', () => {
+    const call = normalizeIncomingCallData({
+      callId: 'call-2',
+      callerId: 'user-2',
+      callerName: 'Lisa',
+      callerAvatar: null,
+      autoAnswer: false,
+      offer: { type: 'answer', sdp: 'wrong-kind' } as RTCSessionDescriptionInit,
+    });
+
+    expect(call).toBeNull();
+  });
+
+  it('normalisiert aktive Calls bevor sie in den Terminal-State kommen', () => {
+    const call = normalizeActiveCallData({
+      callId: 'call-3',
+      remoteUserId: 'user-3',
+      remoteName: '',
+      isInitiator: false,
+      mediaMode: 'screenshare' as ActiveCallData['mediaMode'],
+      offer: { type: 'answer', sdp: 'wrong-kind' } as RTCSessionDescriptionInit,
+    });
+
+    expect(call?.remoteName).toBe('Unbekannter Kontakt');
+    expect(call?.mediaMode).toBe('video');
+    expect(call?.offer).toBeUndefined();
   });
 });

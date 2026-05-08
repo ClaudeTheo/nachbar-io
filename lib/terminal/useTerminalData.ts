@@ -87,7 +87,9 @@ function asNullableDateString(value: unknown): string | null {
 }
 
 function asString(value: unknown, fallback = ""): string {
-  return typeof value === "string" ? value : fallback;
+  if (typeof value !== "string") return fallback;
+  const trimmed = value.trim();
+  return trimmed.length > 0 ? trimmed : fallback;
 }
 
 function isNonEmptyString(value: unknown): value is string {

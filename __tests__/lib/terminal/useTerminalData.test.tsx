@@ -362,4 +362,37 @@ describe("useTerminalData", () => {
 
     unmount();
   });
+
+  it("trimmt Top-Level-Strings und nutzt Fallbacks fuer leere Werte", async () => {
+    vi.spyOn(global, "fetch").mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        weather: {
+          temp: 18,
+          icon: "   ",
+          forecast: [],
+        },
+        alerts: [],
+        news: [],
+        lastCheckin: null,
+        nextAppointment: null,
+        userName: "  Frau Mueller  ",
+        greeting: "   ",
+        photosCount: 0,
+        remindersCount: 0,
+        stickiesCount: 0,
+        appointmentsToday: 0,
+      }),
+    } as Response);
+
+    const { result, unmount } = renderHook(() => useTerminalData("device-token"));
+
+    await waitFor(() => expect(result.current.loading).toBe(false));
+
+    expect(result.current.data?.weather.icon).toBe("cloud");
+    expect(result.current.data?.userName).toBe("Frau Mueller");
+    expect(result.current.data?.greeting).toBe("");
+
+    unmount();
+  });
 });

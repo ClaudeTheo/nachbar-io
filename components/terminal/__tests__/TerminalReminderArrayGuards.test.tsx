@@ -132,6 +132,35 @@ describe("Terminal Reminder-Array-Guards", () => {
     });
   });
 
+  it("akzeptiert Reminder-Datumsstrings mit Rand-Leerzeichen", async () => {
+    vi.spyOn(global, "fetch").mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        stickies: [
+          {
+            id: "sticky-1",
+            title: "Trinken nicht vergessen",
+            created_at: "  2026-05-07T08:00:00.000Z  ",
+          },
+        ],
+        appointments: [
+          {
+            id: "appointment-1",
+            title: "Hausarzt",
+            scheduled_at: "  2026-05-07T10:00:00.000Z  ",
+            expires_at: "  2026-05-07T11:00:00.000Z  ",
+          },
+        ],
+      }),
+    } as Response);
+
+    render(<ErinnerungenScreen />);
+
+    expect(await screen.findByText("Trinken nicht vergessen")).toBeInTheDocument();
+    expect(screen.getByText("Hausarzt")).toBeInTheDocument();
+    expect(screen.getByText("12:00")).toBeInTheDocument();
+  });
+
   it("ignoriert kaputte Upcoming-Popups", async () => {
     vi.spyOn(global, "fetch").mockResolvedValue({
       ok: true,
@@ -168,5 +197,23 @@ describe("Terminal Reminder-Array-Guards", () => {
     expect((await screen.findByText("Medikamente einnehmen")).textContent).toBe(
       "Medikamente einnehmen",
     );
+  });
+
+  it("akzeptiert Upcoming-Popup-Datumsstrings mit Rand-Leerzeichen", async () => {
+    vi.spyOn(global, "fetch").mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        upcomingPopup: {
+          id: "popup-1",
+          title: "Medikamente einnehmen",
+          scheduled_at: "  2026-05-07T10:00:00.000Z  ",
+        },
+      }),
+    } as Response);
+
+    render(<AppointmentPopup />);
+
+    expect(await screen.findByText("Medikamente einnehmen")).toBeInTheDocument();
+    expect(screen.getByText("um 12:00 Uhr")).toBeInTheDocument();
   });
 });

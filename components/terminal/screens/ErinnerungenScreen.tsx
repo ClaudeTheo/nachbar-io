@@ -26,7 +26,7 @@ function isNonEmptyString(value: unknown): value is string {
 }
 
 function isValidDateString(value: unknown): value is string {
-  return typeof value === "string" && !Number.isNaN(new Date(value).getTime());
+  return typeof value === "string" && !Number.isNaN(new Date(value.trim()).getTime());
 }
 
 function normalizeText(value: string): string {
@@ -49,7 +49,7 @@ function normalizeStickies(value: unknown): StickyItem[] {
           {
             id: sticky.id.trim(),
             title: normalizeText(sticky.title),
-            created_at: sticky.created_at,
+            created_at: sticky.created_at.trim(),
           },
         ];
       })
@@ -76,8 +76,8 @@ function normalizeAppointments(value: unknown): AppointmentItem[] {
           {
             id: appointment.id,
             title: normalizeText(appointment.title),
-            scheduled_at: appointment.scheduled_at,
-            expires_at: appointment.expires_at,
+            scheduled_at: appointment.scheduled_at.trim(),
+            expires_at: appointment.expires_at === null ? null : appointment.expires_at.trim(),
           },
         ];
       })

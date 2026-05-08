@@ -22,7 +22,7 @@ function isNonEmptyString(value: unknown): value is string {
 }
 
 function isValidDateString(value: unknown): value is string {
-  return typeof value === "string" && !Number.isNaN(new Date(value).getTime());
+  return typeof value === "string" && !Number.isNaN(new Date(value.trim()).getTime());
 }
 
 function normalizeText(value: string): string {
@@ -42,7 +42,7 @@ function normalizeUpcomingAppointment(value: unknown): UpcomingAppointment | nul
   return {
     id: value.id,
     title: normalizeText(value.title),
-    scheduled_at: value.scheduled_at,
+    scheduled_at: value.scheduled_at.trim(),
   };
 }
 

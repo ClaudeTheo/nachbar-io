@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { cleanup, render, screen, within } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, within } from "@testing-library/react";
 import TerminalPage from "@/app/terminal/[token]/page";
 import type { TerminalStatusData } from "@/lib/terminal/useTerminalData";
 
@@ -34,6 +34,22 @@ vi.mock("@/lib/terminal/TerminalContext", async () => {
     }),
   };
 });
+
+vi.mock("@/components/terminal/video/KioskActiveCall", () => ({
+  default: ({ onAudioOnly }: { onAudioOnly: () => void }) => (
+    <button type="button" onClick={onAudioOnly}>
+      Nur Ton
+    </button>
+  ),
+}));
+
+vi.mock("@/components/terminal/video/KioskAudioOnlyScreen", () => ({
+  default: ({ onRetryVideo }: { onRetryVideo: () => void }) => (
+    <button type="button" onClick={onRetryVideo}>
+      Video erneut versuchen
+    </button>
+  ),
+}));
 
 function makeTerminalData(overrides: Partial<TerminalStatusData> = {}): TerminalStatusData {
   return {
@@ -104,5 +120,53 @@ describe("TerminalPage Dashboard", () => {
         "Noch keine Fotos",
       ),
     ).toBeInTheDocument();
+  });
+
+  it("normalisiert aktive Call-Werte vor dem Wechsel zu Nur-Ton", () => {
+    terminalState.activeScreen = "active-call";
+    terminalState.activeCall = {
+      callId: " call-42 ",
+      remoteUserId: " user-42 ",
+      remoteName: "   ",
+      isInitiator: "yes",
+      mediaMode: "screenshare",
+      offer: { type: "answer", sdp: "wrong-kind" },
+    };
+
+    render(<TerminalPage />);
+
+    fireEvent.click(screen.getByRole("button", { name: "Nur Ton" }));
+
+    expect(setActiveCall).toHaveBeenCalledWith({
+      callId: "call-42",
+      remoteUserId: "user-42",
+      remoteName: "Unbekannter Kontakt",
+      isInitiator: false,
+      mediaMode: "audio-only",
+    });
+  });
+
+  it("normalisiert aktive Call-Werte vor dem erneuten Video-Versuch", () => {
+    terminalState.activeScreen = "active-call";
+    terminalState.activeCall = {
+      callId: " call-43 ",
+      remoteUserId: " user-43 ",
+      remoteName: "",
+      isInitiator: "yes",
+      mediaMode: "audio-only",
+      offer: { type: "answer", sdp: "wrong-kind" },
+    };
+
+    render(<TerminalPage />);
+
+    fireEvent.click(screen.getByRole("button", { name: "Video erneut versuchen" }));
+
+    expect(setActiveCall).toHaveBeenCalledWith({
+      callId: "call-43",
+      remoteUserId: "user-43",
+      remoteName: "Unbekannter Kontakt",
+      isInitiator: false,
+      mediaMode: "video",
+    });
   });
 });

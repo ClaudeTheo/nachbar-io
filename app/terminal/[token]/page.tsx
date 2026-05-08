@@ -10,7 +10,11 @@ import {
   Loader2,
   TriangleAlert,
 } from "lucide-react";
-import { useTerminal, type TerminalScreen } from "@/lib/terminal/TerminalContext";
+import {
+  normalizeActiveCallData,
+  useTerminal,
+  type TerminalScreen,
+} from "@/lib/terminal/TerminalContext";
 import CheckinScreen from "@/components/terminal/screens/CheckinScreen";
 import NewsScreen from "@/components/terminal/screens/NewsScreen";
 import WichtigeNummernScreen from "@/components/terminal/screens/WichtigeNummernScreen";
@@ -42,26 +46,27 @@ export default function TerminalPage() {
     case "emergency-numbers":
       return <WichtigeNummernScreen />;
     case "active-call":
-      if (!activeCall) return <DashboardGrid />;
-      if (activeCall.mediaMode === 'audio-only') {
+      const normalizedActiveCall = normalizeActiveCallData(activeCall);
+      if (!normalizedActiveCall) return <DashboardGrid />;
+      if (normalizedActiveCall.mediaMode === 'audio-only') {
         return (
           <KioskAudioOnlyScreen
-            callerName={activeCall.remoteName}
+            callerName={normalizedActiveCall.remoteName}
             callerAvatar={null}
             onHangup={() => { setActiveCall(null); setActiveScreen('home'); }}
-            onRetryVideo={() => setActiveCall({ ...activeCall, mediaMode: 'video' })}
+            onRetryVideo={() => setActiveCall({ ...normalizedActiveCall, mediaMode: 'video' })}
           />
         );
       }
       return (
         <KioskActiveCall
-          callId={activeCall.callId}
-          remoteUserId={activeCall.remoteUserId}
-          callerName={activeCall.remoteName}
-          isInitiator={activeCall.isInitiator}
-          incomingOffer={activeCall.offer}
+          callId={normalizedActiveCall.callId}
+          remoteUserId={normalizedActiveCall.remoteUserId}
+          callerName={normalizedActiveCall.remoteName}
+          isInitiator={normalizedActiveCall.isInitiator}
+          incomingOffer={normalizedActiveCall.offer}
           onHangup={() => { setActiveCall(null); setActiveScreen('home'); }}
-          onAudioOnly={() => setActiveCall({ ...activeCall, mediaMode: 'audio-only' })}
+          onAudioOnly={() => setActiveCall({ ...normalizedActiveCall, mediaMode: 'audio-only' })}
         />
       );
     case "home":

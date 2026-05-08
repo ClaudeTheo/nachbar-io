@@ -91,4 +91,23 @@ describe("Terminal NewsScreen-Guards", () => {
     expect(screen.queryByText("Kaputtes Datum")).not.toBeInTheDocument();
     expect(screen.queryByText(/Invalid Date|NaN/i)).not.toBeInTheDocument();
   });
+
+  it("trimmt News-Datumsstrings vor der Anzeige", () => {
+    terminalData = makeTerminalData([
+      {
+        id: "news-spaced-date",
+        title: "Quartierstreff am Freitag",
+        summary: "Kaffee und Austausch im Gemeinschaftsraum.",
+        category: "community",
+        categoryLabel: "Quartier",
+        relevance: 2,
+        publishedAt: "  2026-05-07T09:00:00.000Z  ",
+      },
+    ]);
+
+    render(<NewsScreen />);
+
+    expect(screen.getByText("Quartierstreff am Freitag")).toBeInTheDocument();
+    expect(screen.queryByText(/Invalid Date|NaN/i)).not.toBeInTheDocument();
+  });
 });

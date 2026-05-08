@@ -79,11 +79,11 @@ function asNonNegativeFiniteNumber(value: unknown): number {
 }
 
 function isValidDateString(value: unknown): value is string {
-  return typeof value === "string" && !Number.isNaN(new Date(value).getTime());
+  return typeof value === "string" && !Number.isNaN(new Date(value.trim()).getTime());
 }
 
 function asNullableDateString(value: unknown): string | null {
-  return isValidDateString(value) ? value : null;
+  return isValidDateString(value) ? value.trim() : null;
 }
 
 function asString(value: unknown, fallback = ""): string {
@@ -140,12 +140,12 @@ function normalizeAlerts(value: unknown): AlertInfo[] {
 
     return [
       {
-        id: alert.id,
+        id: alert.id.trim(),
         category: alert.category.trim(),
         title: alert.title.trim(),
         body: alert.body.trim(),
         isEmergency: alert.isEmergency,
-        createdAt: alert.createdAt,
+        createdAt: alert.createdAt.trim(),
       },
     ];
   });
@@ -169,13 +169,13 @@ export function normalizeNews(value: unknown): NewsItem[] {
 
     return [
       {
-        id: item.id,
+        id: item.id.trim(),
         title: item.title.trim(),
         summary: normalizeOptionalText(item.summary),
         category: item.category.trim(),
         categoryLabel: item.categoryLabel.trim(),
         relevance: item.relevance,
-        publishedAt: item.publishedAt,
+        publishedAt: item.publishedAt.trim(),
       },
     ];
   });

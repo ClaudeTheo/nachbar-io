@@ -47,7 +47,7 @@ function normalizeStickies(value: unknown): StickyItem[] {
 
         return [
           {
-            id: sticky.id,
+            id: sticky.id.trim(),
             title: normalizeText(sticky.title),
             created_at: sticky.created_at,
           },

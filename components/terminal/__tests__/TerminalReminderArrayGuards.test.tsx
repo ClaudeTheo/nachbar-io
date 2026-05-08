@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { cleanup, render, screen } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import ErinnerungenScreen from "../screens/ErinnerungenScreen";
 import AppointmentPopup from "../AppointmentPopup";
 
@@ -98,6 +98,38 @@ describe("Terminal Reminder-Array-Guards", () => {
       (await screen.findByText("Trinken nicht vergessen")).textContent,
     ).toBe("Trinken nicht vergessen");
     expect(screen.getByText("Hausarzt").textContent).toBe("Hausarzt");
+  });
+
+  it("sendet getrimmte Sticky-ID beim Abhaken", async () => {
+    const fetchMock = vi.spyOn(global, "fetch")
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          stickies: [
+            {
+              id: "  sticky-spaced  ",
+              title: "Trinken nicht vergessen",
+              created_at: "2026-05-07T08:00:00.000Z",
+            },
+          ],
+          appointments: [],
+        }),
+      } as Response)
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({}),
+      } as Response);
+
+    render(<ErinnerungenScreen />);
+
+    expect(await screen.findByText("Trinken nicht vergessen")).toBeInTheDocument();
+    fireEvent.click(screen.getAllByRole("button")[1]);
+
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(2));
+    expect(JSON.parse(String(fetchMock.mock.calls[1][1]?.body))).toMatchObject({
+      reminderId: "sticky-spaced",
+      token: "device-token",
+    });
   });
 
   it("ignoriert kaputte Upcoming-Popups", async () => {

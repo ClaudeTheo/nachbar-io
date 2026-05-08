@@ -143,7 +143,7 @@ function normalizeAlerts(value: unknown): AlertInfo[] {
   });
 }
 
-function normalizeNews(value: unknown): NewsItem[] {
+export function normalizeNews(value: unknown): NewsItem[] {
   return asArray<unknown>(value).flatMap((valueItem) => {
     const item = isRecord(valueItem) ? valueItem : {};
     if (

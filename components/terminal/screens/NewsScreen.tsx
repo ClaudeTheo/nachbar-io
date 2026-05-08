@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { ArrowLeft, Newspaper, ChevronDown, ChevronUp } from "lucide-react";
 import { useTerminal } from "@/lib/terminal/TerminalContext";
-import type { NewsItem } from "@/lib/terminal/useTerminalData";
+import { normalizeNews, type NewsItem } from "@/lib/terminal/useTerminalData";
 
 /**
  * NewsScreen: Zeigt Quartiersnachrichten als scrollbare Karten-Liste.
@@ -55,7 +55,7 @@ export default function NewsScreen() {
   const { data, setActiveScreen } = useTerminal();
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
-  const news = data?.news ?? [];
+  const news = normalizeNews(data?.news);
 
   // Karte auf-/zuklappen (Toggle)
   const toggleExpand = (id: string) => {

@@ -32,6 +32,12 @@ function formatTemperature(value: unknown): string {
     : "--°C";
 }
 
+function asNonEmptyString(value: unknown): string {
+  return typeof value === "string" && value.trim().length > 0
+    ? value.trim()
+    : "";
+}
+
 function isRecord(value: unknown): value is Record<string, unknown> {
   return value !== null && typeof value === "object" && !Array.isArray(value);
 }
@@ -74,7 +80,7 @@ export default function TerminalHeader() {
   });
 
   const greeting = getGreeting(hour);
-  const userName = data?.userName ?? "";
+  const userName = asNonEmptyString(data?.userName);
   const weatherIcon = data?.weather?.icon ?? "cloud";
   const WeatherIcon = WEATHER_ICONS[weatherIcon] ?? Cloud;
   const temperatureLabel = formatTemperature(data?.weather?.temp);

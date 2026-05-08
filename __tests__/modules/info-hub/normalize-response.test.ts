@@ -168,6 +168,34 @@ describe("normalizeQuartierInfoResponse", () => {
     ]);
   });
 
+  it("trimmt valide NINA-Warnungs-Datumsstrings mit Rand-Leerzeichen", () => {
+    const normalized = normalizeQuartierInfoResponse({
+      nina: [
+        {
+          id: "warnung-1",
+          warning_id: "warning-1",
+          severity: "Severe",
+          headline: "Gewitter im Anmarsch",
+          description: null,
+          sent_at: "  2026-05-07T16:00:00Z  ",
+          expires_at: null,
+        },
+      ],
+    });
+
+    expect(normalized.nina).toEqual([
+      {
+        id: "warnung-1",
+        warning_id: "warning-1",
+        severity: "Severe",
+        headline: "Gewitter im Anmarsch",
+        description: null,
+        sent_at: "2026-05-07T16:00:00Z",
+        expires_at: null,
+      },
+    ]);
+  });
+
   it("filtert falsch geformte Muellabfuhr-Eintraege", () => {
     const normalized = normalizeQuartierInfoResponse({
       waste_next: [

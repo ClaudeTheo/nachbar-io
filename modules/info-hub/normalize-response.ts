@@ -69,7 +69,7 @@ function normalizeNinaWarnings(value: unknown): NinaWarning[] {
         severity: warning.severity,
         headline: warning.headline,
         description: warning.description,
-        sent_at: warning.sent_at,
+        sent_at: warning.sent_at.trim(),
         expires_at: warning.expires_at,
       },
     ];

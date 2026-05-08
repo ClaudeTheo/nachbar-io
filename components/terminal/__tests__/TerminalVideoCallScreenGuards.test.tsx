@@ -137,6 +137,25 @@ describe("Terminal VideoCallScreen Guards", () => {
     expect(screen.getByText("Einwilligung: community")).toBeInTheDocument();
   });
 
+  it("trimmt Slot-Datumsstrings vor der Termin-Anzeige", () => {
+    useConsultationsMock.mockReturnValue({
+      slots: [
+        createSlot({
+          id: "spaced-date",
+          scheduled_at: "  2026-05-08T11:30:00.000Z  ",
+          status: "scheduled",
+        }),
+      ],
+      loading: false,
+    });
+
+    render(<VideoCallScreen />);
+
+    expect(screen.getByText("Videosprechstunde")).toBeInTheDocument();
+    expect(screen.queryByText("Kein Termin geplant")).not.toBeInTheDocument();
+    expect(screen.queryByText(/Invalid Date|NaN/i)).not.toBeInTheDocument();
+  });
+
   it("startet kein iFrame mit kaputter Join-URL", async () => {
     useConsultationsMock.mockReturnValue({
       slots: [

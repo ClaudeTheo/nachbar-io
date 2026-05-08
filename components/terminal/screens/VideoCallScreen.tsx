@@ -33,7 +33,7 @@ function isNonEmptyString(value: unknown): value is string {
 }
 
 function isValidDateString(value: unknown): value is string {
-  return typeof value === "string" && !Number.isNaN(new Date(value).getTime());
+  return typeof value === "string" && !Number.isNaN(new Date(value.trim()).getTime());
 }
 
 function normalizeText(value: unknown, fallback: string): string {

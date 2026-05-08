@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { render, screen, cleanup } from '@testing-library/react';
+import { fireEvent, render, screen, cleanup } from '@testing-library/react';
 import VideochatScreen from '../../screens/VideochatScreen';
 
 // Mock useTerminal
@@ -113,5 +113,32 @@ describe('VideochatScreen (Kiosk)', () => {
     expect(screen.getByText('Wird automatisch angenommen 08:00–20:00')).toBeInTheDocument();
     expect(screen.queryByText(/gleich/)).not.toBeInTheDocument();
     expect(screen.queryByText(/Wird automatisch angenommen.*Kaputte Zeit/)).not.toBeInTheDocument();
+  });
+
+  it('trimmt Kontakt-ID und Namen vor dem Anruf', async () => {
+    const logSpy = vi.spyOn(console, 'log').mockImplementation(() => undefined);
+    vi.mocked(global.fetch).mockResolvedValueOnce({
+      ok: true,
+      json: () => Promise.resolve({
+        contacts: [
+          {
+            id: '  link-spaced  ',
+            caregiver_id: '  user-spaced  ',
+            caregiver_name: '  Anna Schmidt  ',
+            caregiver_avatar: null,
+            auto_answer_allowed: false,
+            auto_answer_start: '',
+            auto_answer_end: '',
+            is_online: true,
+          },
+        ],
+      }),
+    } as Response);
+
+    render(<VideochatScreen />);
+
+    fireEvent.click(await screen.findByRole('button', { name: 'Anna Schmidt anrufen' }));
+
+    expect(logSpy).toHaveBeenCalledWith('Anruf an:', 'user-spaced');
   });
 });

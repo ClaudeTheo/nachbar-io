@@ -45,9 +45,9 @@ function normalizeContacts(value: unknown): CaregiverContact[] {
 
         return [
           {
-            id: contact.id,
-            caregiver_id: contact.caregiver_id,
-            caregiver_name: contact.caregiver_name,
+            id: contact.id.trim(),
+            caregiver_id: contact.caregiver_id.trim(),
+            caregiver_name: contact.caregiver_name.trim(),
             caregiver_avatar: contact.caregiver_avatar,
             auto_answer_allowed:
               typeof contact.auto_answer_allowed === 'boolean'

@@ -25,6 +25,10 @@ function isValidDateString(value: unknown): value is string {
   return typeof value === "string" && !Number.isNaN(new Date(value).getTime());
 }
 
+function normalizeText(value: string): string {
+  return value.trim();
+}
+
 function normalizeUpcomingAppointment(value: unknown): UpcomingAppointment | null {
   if (
     !isRecord(value) ||
@@ -37,7 +41,7 @@ function normalizeUpcomingAppointment(value: unknown): UpcomingAppointment | nul
 
   return {
     id: value.id,
-    title: value.title,
+    title: normalizeText(value.title),
     scheduled_at: value.scheduled_at,
   };
 }

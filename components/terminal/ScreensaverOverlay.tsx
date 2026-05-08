@@ -80,6 +80,10 @@ function normalizeCaption(value: string | null): string | null {
   return caption.length > 0 ? caption : null;
 }
 
+function normalizeText(value: string): string {
+  return value.trim();
+}
+
 function normalizeScreensaverPhotos(value: unknown): ScreensaverPhoto[] {
   return Array.isArray(value)
     ? value.flatMap((photo) => {
@@ -117,7 +121,7 @@ function normalizeScreensaverStickies(value: unknown): StickyForScreensaver[] {
         return [
           {
             id: sticky.id,
-            title: sticky.title,
+            title: normalizeText(sticky.title),
           },
         ];
       })

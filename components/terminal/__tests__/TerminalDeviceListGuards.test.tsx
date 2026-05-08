@@ -251,6 +251,34 @@ describe("Terminal Device-Listen-Guards", () => {
     expect(screen.queryByText("Kaputtes Screensaver-Bild")).not.toBeInTheDocument();
   });
 
+  it("trimmt Screensaver-Sticky-Titel vor der Anzeige", async () => {
+    terminalData = makeTerminalData();
+    vi.spyOn(global, "fetch")
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          photos: [],
+        }),
+      } as Response)
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          stickies: [
+            {
+              id: "sticky-1",
+              title: "  Medikamente stehen bereit  ",
+            },
+          ],
+        }),
+      } as Response);
+
+    render(<ScreensaverOverlay />);
+
+    expect(
+      (await screen.findByText("📌 Medikamente stehen bereit")).textContent,
+    ).toBe("📌 Medikamente stehen bereit");
+  });
+
   it("behandelt leere Foto-Captions im Screensaver wie fehlende Captions", async () => {
     terminalData = makeTerminalData();
     vi.spyOn(global, "fetch")

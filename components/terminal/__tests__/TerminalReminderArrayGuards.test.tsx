@@ -70,6 +70,36 @@ describe("Terminal Reminder-Array-Guards", () => {
     expect(screen.queryByText("Kaputter Termin")).not.toBeInTheDocument();
   });
 
+  it("trimmt Sticky- und Termin-Titel vor der Anzeige", async () => {
+    vi.spyOn(global, "fetch").mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        stickies: [
+          {
+            id: "sticky-1",
+            title: "  Trinken nicht vergessen  ",
+            created_at: "2026-05-07T08:00:00.000Z",
+          },
+        ],
+        appointments: [
+          {
+            id: "appointment-1",
+            title: "  Hausarzt  ",
+            scheduled_at: "2026-05-07T10:00:00.000Z",
+            expires_at: null,
+          },
+        ],
+      }),
+    } as Response);
+
+    render(<ErinnerungenScreen />);
+
+    expect(
+      (await screen.findByText("Trinken nicht vergessen")).textContent,
+    ).toBe("Trinken nicht vergessen");
+    expect(screen.getByText("Hausarzt").textContent).toBe("Hausarzt");
+  });
+
   it("ignoriert kaputte Upcoming-Popups", async () => {
     vi.spyOn(global, "fetch").mockResolvedValue({
       ok: true,
@@ -87,5 +117,24 @@ describe("Terminal Reminder-Array-Guards", () => {
     await vi.waitFor(() => expect(global.fetch).toHaveBeenCalled());
 
     expect(screen.queryByText("Kaputtes Popup")).not.toBeInTheDocument();
+  });
+
+  it("trimmt Upcoming-Popup-Titel vor der Anzeige", async () => {
+    vi.spyOn(global, "fetch").mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        upcomingPopup: {
+          id: "popup-1",
+          title: "  Medikamente einnehmen  ",
+          scheduled_at: "2026-05-07T10:00:00.000Z",
+        },
+      }),
+    } as Response);
+
+    render(<AppointmentPopup />);
+
+    expect((await screen.findByText("Medikamente einnehmen")).textContent).toBe(
+      "Medikamente einnehmen",
+    );
   });
 });

@@ -29,6 +29,10 @@ function isValidDateString(value: unknown): value is string {
   return typeof value === "string" && !Number.isNaN(new Date(value).getTime());
 }
 
+function normalizeText(value: string): string {
+  return value.trim();
+}
+
 function normalizeStickies(value: unknown): StickyItem[] {
   return Array.isArray(value)
     ? value.flatMap((sticky) => {
@@ -44,7 +48,7 @@ function normalizeStickies(value: unknown): StickyItem[] {
         return [
           {
             id: sticky.id,
-            title: sticky.title,
+            title: normalizeText(sticky.title),
             created_at: sticky.created_at,
           },
         ];
@@ -71,7 +75,7 @@ function normalizeAppointments(value: unknown): AppointmentItem[] {
         return [
           {
             id: appointment.id,
-            title: appointment.title,
+            title: normalizeText(appointment.title),
             scheduled_at: appointment.scheduled_at,
             expires_at: appointment.expires_at,
           },

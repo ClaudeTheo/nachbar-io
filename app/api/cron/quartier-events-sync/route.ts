@@ -8,7 +8,7 @@ import { runQuartierEventsSync } from "@/modules/info-hub/services/quartier-even
  * GET /api/cron/quartier-events-sync
  *
  * Projiziert vorhandene Quartier-Events in municipal_config.events.
- * Noch nicht in vercel.json geplant; Aktivierung bleibt separates Founder-Go.
+ * Vercel-Cron: taeglich 06:00 UTC.
  */
 export async function GET(request: Request) {
   const authHeader = request.headers.get("authorization");

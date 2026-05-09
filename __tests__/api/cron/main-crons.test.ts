@@ -3,6 +3,7 @@
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { NextRequest } from 'next/server';
+import vercelConfig from '../../../vercel.json';
 
 // Env-Vars setzen
 vi.stubEnv('CRON_SECRET', 'test-cron-secret-123');
@@ -110,6 +111,8 @@ const cronRoutes = [
   { name: 'expire-invitations', path: '@/app/api/cron/expire-invitations/route' },
   { name: 'heartbeat-cleanup', path: '@/app/api/cron/heartbeat-cleanup/route' },
   { name: 'onboarding', path: '@/app/api/cron/onboarding/route' },
+  { name: 'osm-poi-sync', path: '@/app/api/cron/osm-poi-sync/route' },
+  { name: 'quartier-events-sync', path: '@/app/api/cron/quartier-events-sync/route' },
   { name: 'recurring-events', path: '@/app/api/cron/recurring-events/route' },
   { name: 'subscription-check', path: '@/app/api/cron/subscription-check/route' },
   { name: 'waste-reminder', path: '@/app/api/cron/waste-reminder/route' },
@@ -117,6 +120,25 @@ const cronRoutes = [
   // amtsblatt-sync: braucht PDF-Fetch + Anthropic Mock
   { name: 'welcome', path: '@/app/api/cron/welcome/route' },
 ];
+
+describe('Main-Cron Auth-Matrix-Abdeckung', () => {
+  it('deckt die geplanten Quartier-Info-Crons in der zentralen Auth-Matrix ab', () => {
+    const routeNames = new Set(cronRoutes.map((route) => route.name));
+
+    const missing = vercelConfig.crons
+      .map((cron) => cron.path)
+      .filter((path) =>
+        [
+          '/api/cron/osm-poi-sync',
+          '/api/cron/quartier-events-sync',
+        ].includes(path),
+      )
+      .map((path) => path.replace('/api/cron/', ''))
+      .filter((name) => !routeNames.has(name));
+
+    expect(missing).toEqual([]);
+  });
+});
 
 describe.each(cronRoutes)('Main-Cron: $name', ({ name, path }) => {
   beforeEach(() => vi.clearAllMocks());

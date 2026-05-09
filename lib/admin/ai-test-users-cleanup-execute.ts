@@ -56,6 +56,7 @@ export async function executeAiTestUsersCleanup(
   const now = options.now ?? new Date();
   const dryRun = await buildAiTestUsersCleanupDryRunReport(
     db as unknown as DryRunDb,
+    {},
     now,
   );
 

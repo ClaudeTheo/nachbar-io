@@ -29,15 +29,39 @@ export type DryRunDb = {
 type RawUser = {
   id: string;
   display_name: string | null;
+  email?: string | null;
   trust_level: string | null;
   is_admin: boolean | null;
   settings: JsonRecord | null;
   created_at: string | null;
 };
 
+// Founder-Mail wird NIE als Loeschkandidat eingestuft. Weitere Allowlist-IDs
+// laufen ueber DryRunOptions.allowlistUserIds (typisch: Pilot-Onboarding-Test-User).
+export const FOUNDER_ALLOWLIST_EMAILS = ["thomasth@gmx.de"] as const;
+
+// KI-Synthetik-Namen folgen dem Muster "Vorname X." (z.B. "Petra K.").
+const KI_SYNTHETIC_NAME_PATTERN = /^[A-Za-zÄÖÜäöüß]+\s[A-Z]\.$/;
+
+export type DryRunOptions = {
+  // Strict-Modus: nur die historischen Selektoren (is_test_user, test_user_kind=ai_pilot, AI-Test%).
+  // Default false — zusaetzliche Synthetik-Patterns werden in unmarkedSyntheticCandidates gemeldet.
+  strict?: boolean;
+  // ISO 8601 oder YYYY-MM-DD. Nur User mit created_at < before kommen in den Synthetik-Bucket.
+  before?: string;
+  // Zusaetzliche Email-Allowlist (z.B. weitere Founder).
+  allowlistEmails?: readonly string[];
+  // Allowlist nach User-ID (z.B. Pilot-Onboarding-Test-Konten Codex/Claude).
+  allowlistUserIds?: readonly string[];
+};
+
 export type AiTestUserCleanupDryRunReport = {
   mode: "dry-run";
   generatedAt: string;
+  options: {
+    strict: boolean;
+    before: string | null;
+  };
   aiTestUsers: Array<{
     id: string;
     displayName: string;
@@ -47,6 +71,19 @@ export type AiTestUserCleanupDryRunReport = {
     testUserKind: string | null;
     mustDeleteBeforePilot: boolean;
     createdAt: string | null;
+  }>;
+  unmarkedSyntheticCandidates: Array<{
+    id: string;
+    displayName: string;
+    email: string | null;
+    reason: string;
+    createdAt: string | null;
+  }>;
+  allowlistSkips: Array<{
+    id: string;
+    displayName: string;
+    email: string | null;
+    reason: "founder-email" | "explicit-user-id";
   }>;
   unsafeNameOnlyMatches: Array<{
     id: string;
@@ -99,9 +136,20 @@ export function assertAiTestCleanupDryRunMode(env: NodeJS.ProcessEnv | JsonRecor
 
 export async function buildAiTestUsersCleanupDryRunReport(
   db: DryRunDb,
+  options: DryRunOptions = {},
   now: Date = new Date(),
 ): Promise<AiTestUserCleanupDryRunReport> {
-  const rawUsers = await loadAiTestCandidates(db);
+  const strict = options.strict === true;
+  const before = options.before ?? null;
+  const beforeTime = before ? Date.parse(before) : null;
+  const allowlistEmails = new Set<string>(
+    [...FOUNDER_ALLOWLIST_EMAILS, ...(options.allowlistEmails ?? [])].map((e) =>
+      e.toLowerCase(),
+    ),
+  );
+  const allowlistUserIds = new Set<string>(options.allowlistUserIds ?? []);
+
+  const rawUsers = await loadAiTestCandidates(db, { strict });
   const adminBlocked = rawUsers.filter((user) => isBlockedAdminCandidate(user));
 
   if (adminBlocked.length > 0) {
@@ -110,14 +158,69 @@ export async function buildAiTestUsersCleanupDryRunReport(
     );
   }
 
-  const aiUsers = rawUsers.filter((user) => user.settings?.is_test_user === true);
+  const allowlistSkips: AiTestUserCleanupDryRunReport["allowlistSkips"] = [];
+  const remainingUsers: RawUser[] = [];
+  for (const user of rawUsers) {
+    const email = typeof user.email === "string" ? user.email : null;
+    const emailLower = email?.toLowerCase() ?? null;
+    if (emailLower && allowlistEmails.has(emailLower)) {
+      allowlistSkips.push({
+        id: user.id,
+        displayName: user.display_name ?? "",
+        email,
+        reason: "founder-email",
+      });
+      continue;
+    }
+    if (allowlistUserIds.has(user.id)) {
+      allowlistSkips.push({
+        id: user.id,
+        displayName: user.display_name ?? "",
+        email,
+        reason: "explicit-user-id",
+      });
+      continue;
+    }
+    remainingUsers.push(user);
+  }
+
+  const aiUsers = remainingUsers.filter(
+    (user) => user.settings?.is_test_user === true,
+  );
   const aiUserIds = aiUsers.map((user) => user.id);
+
+  const unmarkedSyntheticCandidates: AiTestUserCleanupDryRunReport["unmarkedSyntheticCandidates"] =
+    strict
+      ? []
+      : remainingUsers
+          .filter((user) => user.settings?.is_test_user !== true)
+          .map((user) => {
+            const reason = classifySyntheticReason(user.display_name);
+            if (!reason) return null;
+            if (beforeTime !== null && user.created_at) {
+              const created = Date.parse(user.created_at);
+              if (Number.isFinite(created) && created >= beforeTime) {
+                return null;
+              }
+            }
+            return {
+              id: user.id,
+              displayName: user.display_name ?? "",
+              email: typeof user.email === "string" ? user.email : null,
+              reason,
+              createdAt: user.created_at ?? null,
+            };
+          })
+          .filter((entry): entry is NonNullable<typeof entry> => entry !== null);
 
   return {
     mode: "dry-run",
     generatedAt: now.toISOString(),
+    options: { strict, before },
     aiTestUsers: aiUsers.map(toAiTestUserReport),
-    unsafeNameOnlyMatches: rawUsers
+    unmarkedSyntheticCandidates,
+    allowlistSkips,
+    unsafeNameOnlyMatches: remainingUsers
       .filter((user) => isNameOnlyMatch(user))
       .map((user) => ({
         id: user.id,
@@ -129,13 +232,48 @@ export async function buildAiTestUsersCleanupDryRunReport(
   };
 }
 
-async function loadAiTestCandidates(db: DryRunDb): Promise<RawUser[]> {
+function classifySyntheticReason(displayName: string | null): string | null {
+  if (!displayName) return null;
+  const trimmed = displayName.trim();
+  if (trimmed.length === 0) return null;
+
+  if (trimmed === "E2E Testnutzer" || trimmed.startsWith("E2E Testnutzer ")) {
+    return "Name 'E2E Testnutzer' (synthetisch, ohne is_test_user Flag)";
+  }
+  const lower = trimmed.toLowerCase();
+  if (lower.startsWith("ai-test") || lower.startsWith("test-")) {
+    return "Praefix 'ai-test'/'test-' (synthetisch, ohne is_test_user Flag)";
+  }
+  if (KI_SYNTHETIC_NAME_PATTERN.test(trimmed)) {
+    return "KI-Synthetik-Pattern 'Vorname X.' (z.B. Petra K., Xaver U.)";
+  }
+  return null;
+}
+
+async function loadAiTestCandidates(
+  db: DryRunDb,
+  config: { strict: boolean },
+): Promise<RawUser[]> {
+  const baseFilters = [
+    "settings->>is_test_user.eq.true",
+    "settings->>test_user_kind.eq.ai_pilot",
+    "display_name.ilike.AI-Test%",
+  ];
+  const extendedFilters = config.strict
+    ? baseFilters
+    : [
+        ...baseFilters,
+        "display_name.ilike.E2E Testnutzer%",
+        "display_name.ilike.ai-test%",
+        "display_name.ilike.test-%",
+        // Postgres LIKE: matched alles mit "% X." am Ende (Petra K., Klara S., ...)
+        "display_name.like.% _.",
+      ];
+
   const result = await db
     .from("users")
-    .select("id, display_name, trust_level, is_admin, settings, created_at")
-    .or(
-      "settings->>is_test_user.eq.true,settings->>test_user_kind.eq.ai_pilot,display_name.ilike.AI-Test%",
-    )
+    .select("id, display_name, email, trust_level, is_admin, settings, created_at")
+    .or(extendedFilters.join(","))
     .order("created_at", { ascending: true });
 
   if (!result || result.error) {

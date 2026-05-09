@@ -3,6 +3,7 @@
 // Ausfuehrung: npx playwright test scenarios/s11-memory --workers=1
 
 import { test, expect } from "@playwright/test";
+import { createTestAuthUser } from "../helpers/test-user-factory";
 
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || "";
 const SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || "";
@@ -45,45 +46,22 @@ async function supabaseAdmin(
   }
 }
 
-// Auth-User via Admin API anlegen oder bestehenden finden
+// Auth-User via zentralem Helper anlegen — Welle G erzwingt is_test_user=true.
 async function getOrCreateTestUser(): Promise<string | null> {
   const email = "s11-memory-test@nachbar-e2e.local";
   const password = "S11-Test-Pass-2026!";
 
-  // Versuche User anzulegen
-  const res = await fetch(`${SUPABASE_URL}/auth/v1/admin/users`, {
-    method: "POST",
-    headers: {
-      apikey: SERVICE_KEY,
-      Authorization: `Bearer ${SERVICE_KEY}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ email, password, email_confirm: true }),
-  });
-
-  if (res.ok) {
-    const data = await res.json();
-    return data.id;
+  try {
+    const result = await createTestAuthUser({
+      email,
+      password,
+      testKind: "s11_memory",
+    });
+    return result.userId;
+  } catch (err) {
+    console.warn(`[S11] createTestAuthUser fehlgeschlagen: ${err}`);
+    return null;
   }
-
-  // User existiert bereits — via Admin API suchen
-  const text = await res.text();
-  if (text.includes("already") || text.includes("exists")) {
-    const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || SERVICE_KEY;
-    const signInRes = await fetch(
-      `${SUPABASE_URL}/auth/v1/token?grant_type=password`,
-      {
-        method: "POST",
-        headers: { apikey: anonKey, "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
-      },
-    );
-    if (signInRes.ok) {
-      const signInData = await signInRes.json();
-      return signInData.user?.id ?? null;
-    }
-  }
-  return null;
 }
 
 test.describe("S11: Senior Memory Layer", () => {

@@ -8,6 +8,11 @@ import { createClient } from "@supabase/supabase-js";
 import * as dotenv from "dotenv";
 import { resolve } from "path";
 
+import {
+  createTestAuthUser,
+  upsertTestUserProfile,
+} from "../tests/e2e/helpers/test-user-factory";
+
 // .env.local laden
 dotenv.config({ path: resolve(process.cwd(), ".env.local") });
 
@@ -42,12 +47,13 @@ const TEST_USERS = [
 ];
 
 // SICHERHEIT: Passwort aus Umgebungsvariable laden (nicht hardcoden!)
-const PASSWORD = process.env.TEST_USER_PASSWORD;
-if (!PASSWORD) {
+const PASSWORD_RAW = process.env.TEST_USER_PASSWORD;
+if (!PASSWORD_RAW) {
   console.error("\n❌ TEST_USER_PASSWORD nicht gesetzt!");
   console.error("   Ausfuehrung: TEST_USER_PASSWORD=MeinPasswort npx tsx scripts/create-test-users.ts\n");
   process.exit(1);
 }
+const PASSWORD: string = PASSWORD_RAW;
 
 async function main() {
   console.log("\n🏘️  Nachbar.io — Test-Accounts erstellen\n");
@@ -81,38 +87,39 @@ async function main() {
       continue;
     }
 
-    // 1. Supabase Auth User erstellen
-    const { data: authData, error: authError } = await supabase.auth.admin.createUser({
-      email,
-      password: PASSWORD,
-      email_confirm: true, // Sofort bestaetigt, keine E-Mail noetig
-    });
-
-    if (authError) {
-      if (authError.message.includes("already been registered")) {
+    // 1. Supabase Auth User via zentralem Helper (Welle G — is_test_user=true).
+    let userId: string;
+    try {
+      const result = await createTestAuthUser({
+        email,
+        password: PASSWORD,
+        testKind: "pilot_test_account",
+      });
+      userId = result.userId;
+      if (result.reused) {
         console.log(`⏭️  ${user.name} (${email}) — existiert bereits`);
         skipped++;
         continue;
       }
-      console.error(`❌ ${user.name}: ${authError.message}`);
+    } catch (err) {
+      console.error(`❌ ${user.name}: ${String(err)}`);
       continue;
     }
 
-    const userId = authData.user.id;
-
-    // 2. Profil in users-Tabelle anlegen
-    const { error: profileError } = await supabase.from("users").upsert({
-      id: userId,
-      email_hash: "",
-      display_name: user.name,
-      avatar_url: null,
-      ui_mode: "active",
-      trust_level: "verified",
-      is_admin: false,
-    });
-
-    if (profileError) {
-      console.error(`❌ Profil ${user.name}: ${profileError.message}`);
+    // 2. Profil in users-Tabelle via zentralem Helper (settings.is_test_user=true).
+    try {
+      await upsertTestUserProfile({
+        userId,
+        displayName: user.name,
+        email,
+        uiMode: "active",
+        trustLevel: "verified",
+        isAdmin: false,
+        role: "resident",
+        testKind: "pilot_test_account",
+      });
+    } catch (err) {
+      console.error(`❌ Profil ${user.name}: ${String(err)}`);
       continue;
     }
 

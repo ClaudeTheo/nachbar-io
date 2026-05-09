@@ -51,20 +51,41 @@ async function ensureTestUser(cfg) {
     // Sicherstellen dass Profil + Haushalt existieren
     const { data: profile } = await adminDb.from('users').select('id').eq('id', existing.id).maybeSingle();
     if (!profile) {
-      await adminDb.from('users').insert({ id: existing.id, email_hash: '', display_name: cfg.name, ui_mode: 'active', is_tester: true });
+      // Welle G — settings.is_test_user=true Pflicht.
+      await adminDb.from('users').insert({
+        id: existing.id,
+        email_hash: '',
+        display_name: cfg.name,
+        ui_mode: 'active',
+        is_tester: true,
+        settings: { is_test_user: true, test_user_kind: 'ai_pilot' },
+      });
     }
     await ensureHousehold(existing.id, cfg);
     return existing.id;
   }
 
   log(`📝 Erstelle ${cfg.name}...`);
+  // Welle G — Pflicht: is_test_user=true in app_metadata UND user_metadata.
   const { data: newUser, error } = await adminDb.auth.admin.createUser({
-    email: cfg.email, password: cfg.password, email_confirm: true,
+    email: cfg.email,
+    password: cfg.password,
+    email_confirm: true,
+    app_metadata: { is_test_user: true, test_user_kind: 'ai_pilot' },
+    user_metadata: { is_test_user: true, test_user_kind: 'ai_pilot' },
   });
   if (error) { console.error(`❌ ${cfg.name} erstellen fehlgeschlagen:`, error.message); process.exit(1); }
 
   const userId = newUser.user.id;
-  await adminDb.from('users').insert({ id: userId, email_hash: '', display_name: cfg.name, ui_mode: 'active', is_tester: true });
+  // Welle G — settings.is_test_user=true ergaenzt is_tester (Backwards-Compat).
+  await adminDb.from('users').insert({
+    id: userId,
+    email_hash: '',
+    display_name: cfg.name,
+    ui_mode: 'active',
+    is_tester: true,
+    settings: { is_test_user: true, test_user_kind: 'ai_pilot' },
+  });
   await ensureHousehold(userId, cfg);
   log(`✅ ${cfg.name} erstellt:`, userId);
   return userId;

@@ -5,6 +5,10 @@
 import { TEST_HOUSEHOLDS, TEST_AGENTS } from "./test-config";
 import type { AgentCredentials, TestHousehold } from "./types";
 import { supabaseAdmin } from "./supabase-admin";
+import {
+  createTestAuthUser,
+  upsertTestUserProfile,
+} from "./test-user-factory";
 
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || "";
 const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || "";
@@ -32,7 +36,9 @@ export function getE2eUserRole(creds: AgentCredentials): E2eUserRole {
 }
 
 /**
- * Supabase Auth Admin API — Nutzer erstellen.
+ * Supabase Auth Admin API — Test-Nutzer erstellen.
+ * Pflicht ueber den zentralen Helper: setzt is_test_user=true in
+ * app_metadata UND user_metadata. Kein direkter fetch hier — siehe Welle G.
  */
 async function createAuthUser(
   email: string,
@@ -41,58 +47,16 @@ async function createAuthUser(
   if (!SUPABASE_URL || !SUPABASE_SERVICE_KEY) {
     return { userId: null, error: "no_credentials" };
   }
-
-  const res = await fetch(`${SUPABASE_URL}/auth/v1/admin/users`, {
-    method: "POST",
-    headers: {
-      apikey: SUPABASE_SERVICE_KEY,
-      Authorization: `Bearer ${SUPABASE_SERVICE_KEY}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
+  try {
+    const result = await createTestAuthUser({
       email,
       password,
-      email_confirm: true, // Email-Verifikation ueberspringen
-    }),
-  });
-
-  if (!res.ok) {
-    const text = await res.text();
-    // Nutzer existiert bereits → ID via signInWithPassword holen
-    if (
-      text.includes("already been registered") ||
-      text.includes("already exists") ||
-      text.includes("email_exists")
-    ) {
-      const anonKey =
-        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || SUPABASE_SERVICE_KEY;
-      const signInRes = await fetch(
-        `${SUPABASE_URL}/auth/v1/token?grant_type=password`,
-        {
-          method: "POST",
-          headers: {
-            apikey: anonKey,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ email, password }),
-        },
-      );
-      if (signInRes.ok) {
-        const signInData = await signInRes.json();
-        if (signInData.user?.id) {
-          return { userId: signInData.user.id, error: null };
-        }
-      }
-      return {
-        userId: null,
-        error: `User exists but sign-in failed: ${text}`,
-      };
-    }
-    return { userId: null, error: `${res.status}: ${text}` };
+      testKind: "e2e_seed",
+    });
+    return { userId: result.userId, error: null };
+  } catch (err) {
+    return { userId: null, error: String(err) };
   }
-
-  const data = await res.json();
-  return { userId: data.id, error: null };
 }
 
 /**
@@ -190,29 +154,47 @@ async function seedAgent(
     return null;
   }
 
-  // 2. Profil anlegen (upsert — bei Duplikat aktualisieren)
-  const profileData = {
-    id: userId,
-    email_hash: "",
-    display_name: creds.displayName,
-    ui_mode: creds.uiMode,
-    is_admin: creds.isAdmin || false,
+  // 2. Profil anlegen via zentralem Helper (Welle G — erzwingt is_test_user=true).
+  const profileSettings = { onboarding_completed: true };
+  const profileFields = {
+    displayName: creds.displayName,
+    uiMode: creds.uiMode,
+    isAdmin: creds.isAdmin || false,
     role: getE2eUserRole(creds),
-    trust_level: creds.role === "unverified" ? "new" : "verified",
-    settings: { onboarding_completed: true },
+    trustLevel: creds.role === "unverified" ? "new" : "verified",
+    testKind: "e2e_seed",
+    extraSettings: profileSettings,
   };
-  const { error: profileError } = await supabaseAdmin(
-    "users",
-    "POST",
-    profileData,
-  );
+  let profileError: string | null = null;
+  try {
+    await upsertTestUserProfile({
+      userId,
+      ...profileFields,
+    });
+  } catch (err) {
+    profileError = String(err);
+  }
 
-  const { id: _id, ...profileUpdateData } = profileData;
   async function ensureProfileCurrent() {
+    // PATCH-Fallback fuer den Fall, dass merge-duplicates Felder nicht voll
+    // aktualisiert hat (z.B. wenn Auth-Trigger schon eine Zeile angelegt hat).
+    const patchPayload = {
+      email_hash: "",
+      display_name: profileFields.displayName,
+      ui_mode: profileFields.uiMode,
+      is_admin: profileFields.isAdmin,
+      role: profileFields.role,
+      trust_level: profileFields.trustLevel,
+      settings: {
+        ...profileSettings,
+        is_test_user: true,
+        test_user_kind: profileFields.testKind,
+      },
+    };
     const { error: patchError } = await supabaseAdmin(
       "users",
       "PATCH",
-      profileUpdateData,
+      patchPayload,
       `id=eq.${userId}`,
     );
     if (patchError) {
@@ -220,16 +202,14 @@ async function seedAgent(
     }
   }
 
-  if (
-    profileError &&
-    (profileError.includes("duplicate") || profileError.includes("409"))
-  ) {
-    // Bestehenden User aktualisieren (ui_mode, role, trust_level etc.)
-    await ensureProfileCurrent();
-  } else if (profileError) {
+  if (profileError) {
     console.warn(`[SEED] Agent ${agentId} Profil: ${profileError}`);
+    // Bei jedem Fehler trotzdem ein PATCH versuchen (Best-Effort fuer
+    // Duplikat- oder Trigger-bedingte Faelle).
+    await ensureProfileCurrent();
   } else {
-    // Auth-Trigger oder Upsert koennen bestehende lokale Profile unveraendert lassen.
+    // Auch bei erfolgreichem Upsert ensureProfileCurrent ausfuehren — der
+    // Auth-Trigger kann ein Profil mit defaults angelegt haben.
     await ensureProfileCurrent();
   }
 

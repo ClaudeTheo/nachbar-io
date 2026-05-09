@@ -10,6 +10,11 @@
 
 import { createClient } from '@supabase/supabase-js';
 
+import {
+  createTestAuthUser,
+  upsertTestUserProfile,
+} from '../tests/e2e/helpers/test-user-factory';
+
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
@@ -84,21 +89,33 @@ async function seedDemo() {
     demoUserId = existingUser.id;
     console.log(`Demo-Account existiert bereits: ${demoUserId}`);
   } else {
-    // Neuen Demo-User via Auth erstellen
-    const { data: authUser, error: authErr } = await supabase.auth.admin.createUser({
-      email: DEMO_EMAIL,
-      password: DEMO_PASSWORD,
-      email_confirm: true,
-    });
-
-    if (authErr || !authUser.user) {
-      console.error('Demo-Account konnte nicht erstellt werden:', authErr?.message);
+    // Neuen Demo-User via zentralem Helper (Welle G — is_test_user=true).
+    try {
+      const authResult = await createTestAuthUser({
+        email: DEMO_EMAIL,
+        password: DEMO_PASSWORD,
+        testKind: 'app_store_demo',
+      });
+      demoUserId = authResult.userId;
+    } catch (err) {
+      console.error('Demo-Account konnte nicht erstellt werden:', String(err));
       process.exit(1);
     }
 
-    demoUserId = authUser.user.id;
+    // Profil via Helper (settings.is_test_user=true) plus Demo-spezifische Felder.
+    try {
+      await upsertTestUserProfile({
+        userId: demoUserId,
+        displayName: 'App Store Reviewer',
+        email: DEMO_EMAIL,
+        role: 'resident',
+        testKind: 'app_store_demo',
+      });
+    } catch (err) {
+      console.warn('Profil-Erstellung (Helper):', String(err));
+    }
 
-    // Profil in users-Tabelle
+    // Zusatzfelder, die der Helper nicht abdeckt (Vor-/Nachname, Quartier, verified).
     const { error: profileErr } = await supabase.from('users').upsert({
       id: demoUserId,
       email: DEMO_EMAIL,
@@ -108,9 +125,8 @@ async function seedDemo() {
       role: 'resident',
       verified: true,
     });
-
     if (profileErr) {
-      console.warn('Profil-Erstellung:', profileErr.message);
+      console.warn('Profil-Erstellung (Zusatz):', profileErr.message);
     }
 
     console.log(`Demo-Account erstellt: ${DEMO_EMAIL} / ${DEMO_PASSWORD}`);

@@ -327,9 +327,11 @@ describe("CityServicesPage — Services-Tab", () => {
   it("zeigt Website-Link wenn rathaus_url vorhanden", async () => {
     render(<CityServicesPage />);
     await waitFor(() => {
-      // ExternalLink rendert <button> statt <a> (In-App-Browser)
       const websiteLink = screen.getByText("Website");
-      expect(websiteLink).toBeDefined();
+      expect(websiteLink.closest("a")).toHaveAttribute(
+        "href",
+        "https://www.bad-saeckingen.de",
+      );
     });
   });
 
@@ -641,17 +643,18 @@ describe("CityServicesPage — Bekanntmachungen mit Daten", () => {
   it("zeigt Quell-Link wenn vorhanden", async () => {
     renderAnnouncementsWithData();
     await waitFor(() => {
-      // ExternalLink rendert <button> statt <a> (In-App-Browser)
       const link = screen.getByText("Quelle");
       expect(link).toBeDefined();
     });
   });
 
-  it("Quell-Link ist als Button gerendert (In-App-Browser)", async () => {
+  it("Quell-Link bleibt als echter href-Link gerendert", async () => {
     renderAnnouncementsWithData();
     await waitFor(() => {
-      const link = screen.getByText("Quelle");
-      expect(link.tagName).toBe("BUTTON");
+      const link = screen.getByText("Quelle").closest("a");
+      expect(link).toHaveAttribute("href", "https://bad-saeckingen.de/sperrung");
+      expect(link).toHaveAttribute("target", "_blank");
+      expect(link).toHaveAttribute("rel", "noopener noreferrer");
     });
   });
 
@@ -929,7 +932,7 @@ describe("CityServicesPage — Barrierefreiheit", () => {
     expect(input.getAttribute("type")).toBe("text");
   });
 
-  it("Externe Links werden als In-App-Browser Buttons gerendert", async () => {
+  it("Externe Links bleiben href-Links fuer Browser und Fallbacks", async () => {
     const announcements = [
       {
         id: "ann-link",
@@ -952,9 +955,10 @@ describe("CityServicesPage — Barrierefreiheit", () => {
     fireEvent.click(screen.getByText("Bekanntmachungen"));
 
     await waitFor(() => {
-      // ExternalLink rendert <button> (In-App-Browser) statt <a target="_blank">
-      const link = screen.getByText("Quelle");
-      expect(link.tagName).toBe("BUTTON");
+      const link = screen.getByText("Quelle").closest("a");
+      expect(link).toHaveAttribute("href", "https://example.com");
+      expect(link).toHaveAttribute("target", "_blank");
+      expect(link).toHaveAttribute("rel", "noopener noreferrer");
     });
   });
 

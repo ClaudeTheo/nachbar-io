@@ -24,12 +24,17 @@ export function ExternalLink({ href, title, children, className }: ExternalLinkP
   }
 
   return (
-    <button
-      onClick={() => openExternal(href, title)}
+    <a
+      href={href}
+      target="_blank"
+      rel="noopener noreferrer"
+      onClick={(event) => {
+        event.preventDefault();
+        openExternal(href, title);
+      }}
       className={className}
-      type="button"
     >
       {children}
-    </button>
+    </a>
   );
 }

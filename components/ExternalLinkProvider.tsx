@@ -14,7 +14,9 @@ interface ExternalLinkState {
 }
 
 const ExternalLinkContext = createContext<ExternalLinkState>({
-  openExternal: () => {},
+  openExternal: (url) => {
+    window.open(url, "_blank", "noopener,noreferrer");
+  },
 });
 
 export function useExternalLink() {

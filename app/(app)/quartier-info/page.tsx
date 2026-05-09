@@ -572,17 +572,16 @@ export default function QuartierInfoPage() {
             </p>
           )}
         </div>
-        {hasNotdienstUrl ? (
-          <a
-            href={data?.notdienst_url}
-            target="_blank"
-            rel="noopener noreferrer"
+        {hasNotdienstUrl && data?.notdienst_url ? (
+          <SafeExternalLink
+            href={data.notdienst_url}
+            title="Apotheken-Notdienst"
             className="mt-4 flex items-center justify-center gap-2 w-full py-3 rounded-xl bg-amber-50 border border-amber-200 text-amber-900 font-medium text-sm hover:bg-amber-100 transition-colors min-h-[48px]"
           >
             <AlertTriangle className="h-4 w-4 text-amber-600" />
             Notdienst jetzt prüfen
             <ExternalLink className="h-3 w-3 text-amber-600" />
-          </a>
+          </SafeExternalLink>
         ) : (
           <p
             className="mt-4 text-xs text-muted-foreground"
@@ -640,16 +639,15 @@ export default function QuartierInfoPage() {
             </p>
           )}
         </div>
-        {hasEventsCalendarUrl ? (
-          <a
-            href={data?.events_calendar_url}
-            target="_blank"
-            rel="noopener noreferrer"
+        {hasEventsCalendarUrl && data?.events_calendar_url ? (
+          <SafeExternalLink
+            href={data.events_calendar_url}
+            title="Veranstaltungskalender"
             className="mt-3 text-xs text-quartier-green hover:underline inline-flex items-center gap-1"
           >
             Alle Veranstaltungen anzeigen
             <ExternalLink className="h-3 w-3" />
-          </a>
+          </SafeExternalLink>
         ) : (
           <p
             className="mt-3 text-xs text-muted-foreground"
@@ -678,11 +676,10 @@ export default function QuartierInfoPage() {
         ) : (
           <div className="grid grid-cols-2 gap-3">
             {data?.rathaus?.map((link: RathausLink) => (
-              <a
+              <SafeExternalLink
                 key={link.label}
                 href={link.url}
-                target="_blank"
-                rel="noopener noreferrer"
+                title={link.label}
                 className="flex flex-col gap-2 rounded-xl border border-gray-100 p-4 hover:bg-gray-50 transition-colors min-h-[80px]"
               >
                 <div className="flex items-center gap-2">
@@ -698,7 +695,7 @@ export default function QuartierInfoPage() {
                   {link.description}
                 </p>
                 <ExternalLink className="h-3 w-3 text-muted-foreground mt-auto self-end" />
-              </a>
+              </SafeExternalLink>
             ))}
           </div>
         )}

@@ -128,6 +128,46 @@ SELECT
 |---|---|
 | Pilot-Reset-Helper im Code | ✅ committed `a8ee62e`, nicht gepusht |
 | Doku | ✅ diese Datei |
-| INBOX-Update | offen → setzt `done` |
-| Auto-Memory `project_db_test_users_cleanup_gap.md` | offen → setzt `geloest` |
+| INBOX-Update | ✅ done |
+| Auto-Memory `project_db_test_users_cleanup_gap.md` | ✅ geloest |
 | Push origin master | wartet auf Founder-Push-Go |
+
+## Nachtrag — UGC-Cleanup (gleiche Session)
+
+Founder-Statement im Anschluss: "ebenso alle einträge von ausleihen tauschen treffen usw sind alles nur testst es hatte nie echte nutzer merke dir das daher alles kein problem alle user generierten inhate könne mund müssen gelösccht werden".
+
+**Memory-Regel durable abgelegt:** `~/.claude/.../memory/project_nachbar_io_zero_real_users.md` — bis Pilotstart hatte nachbar-io 0 echte Nutzer, UGC ist immer loeschbar; Quartier-Konfig (`quarters`, `municipal_config`, `households` als Adress-Stamm, `feature_flags`, externe Sync-Caches, `news_items`, `cron_*`) bleibt.
+
+**Schritt 4 — UGC-TRUNCATE (MCP-SQL):**
+
+`care_audit_log` Trigger erneut temporaer disabled, dann ein TRUNCATE TABLE ... CASCADE auf eine kuratierte Liste von ~140 UGC-/Activity-Tabellen (alle Boards/Posts/Marktplatz/Ausleihen/Tausch/Treffen/Events/Polls/Tips/Chats/Civic/Care/Medical/Helper/Reports/Audit/Tokens/Sessions/Notifications/Heartbeats/SecurityEvents/Analytics/Bugs/PointsLog/Reputation/Badges/Organizations etc.). Trigger re-enabled.
+
+Konfig-Tabellen explizit ausgeschlossen: `quarters`, `municipal_config`, `households`, `map_houses`, `feature_flags`, `federal_state_rules`, `news_items`, `external_warning_sync_log`, `external_warning_cache`, `nina_warnings`, `waste_collection_areas/dates/schedules`, `waste_sync_log`, `cron_job_runs`, `cron_heartbeats`, `amtsblatt_issues`, `youth_badges` (Definitionen), `moderation_config`, `retention_policies`, `crisis_templates`, `insurance_configs`, `consent_versions`, `spatial_ref_sys`.
+
+**Post-Verifikation:**
+
+| Tabelle | Vor UGC-TRUNCATE | Nach |
+|---|---|---|
+| `notifications` | 1093 | 0 |
+| `heartbeats` | 839 | 0 |
+| `security_events` | 725 | 0 |
+| `test_results` | 210 | 0 |
+| `analytics_snapshots` | 133 | 0 |
+| `municipal_announcements` | 80 | 0 |
+| `bug_reports` | 69 | 0 |
+| `care_checkins` | 61 | 0 |
+| `care_audit_log` | 60 | 0 |
+| `alerts` | 14 | 0 |
+| `civic_audit_log` | 11 | 0 |
+| `points_log` | 12 | 0 |
+| `organizations` | 4 | 0 |
+| `invite_codes` | 3 | 0 |
+| `household_members` | 1 | 0 |
+| **Konfig erhalten:** `quarters` | 5 | 5 ✅ |
+| `municipal_config` | 5 | 5 ✅ |
+| `households` (Adress-Stamm) | 56 | 56 ✅ |
+| `feature_flags` | 50 | 50 ✅ |
+| `users` | 1 | 1 ✅ |
+| `auth.users` | 1 | 1 ✅ |
+
+Status nach UGC-Cleanup: Prod-DB ist clean — nur Founder + Quartier-/System-Konfig.

@@ -40,6 +40,7 @@ import type {
 } from "@/modules/info-hub/types";
 import { MapThumbnail } from "@/components/map/MapThumbnail";
 import { useMapStatuses } from "@/lib/hooks/useMapStatuses";
+import { ExternalLink as SafeExternalLink } from "@/components/ExternalLink";
 
 // Pollen-Balken (farbig)
 function PollenBar({ intensity, label }: { intensity: number; label: string }) {
@@ -76,6 +77,12 @@ function PollenBar({ intensity, label }: { intensity: number; label: string }) {
       </span>
     </div>
   );
+}
+
+function buildApothekeMapUrl(apo: Apotheke): string {
+  const query = [apo.name, apo.address].filter(Boolean).join(" ");
+
+  return `https://www.openstreetmap.org/search?query=${encodeURIComponent(query)}`;
 }
 
 // Datum formatieren (deutsch)
@@ -536,13 +543,23 @@ export default function QuartierInfoPage() {
                     </span>
                   </div>
                 </div>
-                <a
-                  href={`tel:${apo.phone.replace(/\s/g, "")}`}
-                  className="flex items-center justify-center w-10 h-10 rounded-full bg-green-50 hover:bg-green-100 transition-colors flex-shrink-0"
-                  aria-label={`${apo.name} anrufen`}
-                >
-                  <Phone className="h-4 w-4 text-green-700" />
-                </a>
+                <div className="flex flex-col gap-2 flex-shrink-0">
+                  <SafeExternalLink
+                    href={buildApothekeMapUrl(apo)}
+                    title={`${apo.name} auf Karte anzeigen`}
+                    className="flex items-center justify-center w-12 h-12 rounded-full bg-gray-50 hover:bg-gray-100 transition-colors"
+                    aria-label={`${apo.name} auf Karte anzeigen`}
+                  >
+                    <MapPin className="h-4 w-4 text-muted-foreground" />
+                  </SafeExternalLink>
+                  <a
+                    href={`tel:${apo.phone.replace(/\s/g, "")}`}
+                    className="flex items-center justify-center w-12 h-12 rounded-full bg-green-50 hover:bg-green-100 transition-colors"
+                    aria-label={`${apo.name} anrufen`}
+                  >
+                    <Phone className="h-4 w-4 text-green-700" />
+                  </a>
+                </div>
               </div>
             ))
           ) : (

@@ -240,6 +240,41 @@ describe("QuartierInfoPage Vorlesen-Integration (G-5)", () => {
     );
   });
 
+  it("rendert fuer Apotheken echte Telefon- und Kartenlinks", async () => {
+    const pharmacyData = {
+      ...MOCK_DATA,
+      apotheken: [
+        {
+          name: "Stadt-Apotheke",
+          address: "Muensterplatz 1, 79713 Bad Saeckingen",
+          phone: "+49 7761 12345",
+          openingHours: "Mo-Fr 8-18 Uhr",
+        },
+      ],
+    };
+
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue({
+        json: () => Promise.resolve(pharmacyData),
+        ok: true,
+      }),
+    );
+
+    render(<QuartierInfoPage />);
+
+    expect(
+      await screen.findByRole("link", { name: "Stadt-Apotheke anrufen" }),
+    ).toHaveAttribute("href", "tel:+49776112345");
+
+    expect(
+      screen.getByRole("link", { name: "Stadt-Apotheke auf Karte anzeigen" }),
+    ).toHaveAttribute(
+      "href",
+      "https://www.openstreetmap.org/search?query=Stadt-Apotheke%20Muensterplatz%201%2C%2079713%20Bad%20Saeckingen",
+    );
+  });
+
   it("normalisiert kaputte API-Listen vor UI und Vorlesen", async () => {
     const malformedListData = {
       ...MOCK_DATA,

@@ -14,6 +14,17 @@ export default function LandingPage() {
           und nehmen hier aktuell keine Registrierungen oder echten
           personenbezogenen Daten an.
         </p>
+        <div className="mt-8 flex flex-wrap items-center gap-3">
+          <a
+            className="inline-flex min-h-12 items-center justify-center bg-[#2f684e] px-5 py-3 text-sm font-semibold text-white shadow-sm hover:bg-[#265640]"
+            href="/login"
+          >
+            Anmelden
+          </a>
+          <span className="text-sm leading-6 text-[#4b5563]">
+            Nur fuer eingeladene Testhaushalte.
+          </span>
+        </div>
         <div className="mt-8 grid gap-4 text-sm text-[#374151] sm:grid-cols-3">
           <div className="border-l-4 border-[#3b6f58] bg-white p-4 shadow-sm">
             <h2 className="font-bold">Nur Vorbereitung</h2>

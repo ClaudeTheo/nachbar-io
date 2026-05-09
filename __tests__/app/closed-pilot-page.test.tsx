@@ -16,7 +16,10 @@ describe("Closed-Pilot-Startseite", () => {
       screen.getByText(/nicht öffentlich freigeschaltet/i),
     ).toBeInTheDocument();
     expect(screen.queryByRole("link", { name: /registrieren/i })).toBeNull();
-    expect(screen.queryByRole("link", { name: /anmelden/i })).toBeNull();
+    expect(screen.getByRole("link", { name: /anmelden/i })).toHaveAttribute(
+      "href",
+      "/login",
+    );
     expect(
       container.querySelector('script[type="application/ld+json"]'),
     ).toBeNull();

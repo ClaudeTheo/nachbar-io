@@ -132,6 +132,33 @@ SELECT
 | Auto-Memory `project_db_test_users_cleanup_gap.md` | ✅ geloest |
 | Push origin master | wartet auf Founder-Push-Go |
 
+## Nachtrag 2 — Quartiere/Households-Bereinigung (gleiche Session)
+
+Founder-Statement: "alles ohne Purkersdorferstrasse 35 da wohne ich das kann bleiben alles andere waren nur tests".
+
+Bidirektionaler FK-Cycle households↔map_houses aufgeloest, dann sequentiell:
+
+1. `households.map_house_id` NULLed fuer Non-Founder-Zeilen.
+2. `map_houses.household_id` NULLed fuer Non-Founder-Zeilen.
+3. `map_houses` mit Quartier-ID != Pilot oder Quartier-ID NULL geloescht (16 Zeilen).
+4. `news_items` mit Quartier-ID != Pilot geloescht (0 Zeilen — alle gehoerten Pilot).
+5. `households` ausser Founder-Adresse `62ab2b52-...` geloescht (55 Zeilen).
+6. `quarters` ausser `bad-saeckingen-pilot` geloescht (4 Zeilen) — CASCADE auf `municipal_config`, `waste_schedules`, `kpi_targets`, `quarter_admins`, `quartier_info_cache`, `external_warning_*` etc.
+
+Endstand:
+
+| Tabelle | Wert |
+|---|---|
+| `quarters` | 1 (`bad-saeckingen-pilot`) |
+| `municipal_config` | 1 (Bad Saeckingen) |
+| `households` | 1 (`Purkersdorfer Straße 35`, `62ab2b52-...`) |
+| `map_houses` | 98 (Pilot-Quartier-Karten-Adressen) |
+| `news_items` | 13 (Pilot-Quartier-Auto-Sync) |
+| `feature_flags` | 50 (App-Konfig erhalten) |
+| `users` / `auth.users` | 1 (Founder) |
+
+Founder-Adresse durable in Auto-Memory `user_identity.md` festgehalten.
+
 ## Nachtrag — UGC-Cleanup (gleiche Session)
 
 Founder-Statement im Anschluss: "ebenso alle einträge von ausleihen tauschen treffen usw sind alles nur testst es hatte nie echte nutzer merke dir das daher alles kein problem alle user generierten inhate könne mund müssen gelösccht werden".

@@ -28,10 +28,11 @@ export async function runQuartierInfoSync(
   const requestId = randomUUID();
 
   // Alle aktiven Quartiere holen
+  // Schema: quarters hat center_lat/center_lng (NICHT lat/lon) + status (NICHT active).
   const { data: quarters, error: qError } = await supabase
     .from("quarters")
-    .select("id, lat, lon")
-    .eq("active", true);
+    .select("id, center_lat, center_lng")
+    .eq("status", "active");
 
   if (qError || !quarters?.length) {
     console.error(
@@ -47,8 +48,8 @@ export async function runQuartierInfoSync(
   const results = { weather: 0, pollen: 0, oepnv: 0, errors: 0 };
 
   for (const quarter of quarters) {
-    const lat = quarter.lat || 47.5535;
-    const lon = quarter.lon || 7.964;
+    const lat = quarter.center_lat || 47.5535;
+    const lon = quarter.center_lng || 7.964;
 
     // Wetter holen und cachen
     try {

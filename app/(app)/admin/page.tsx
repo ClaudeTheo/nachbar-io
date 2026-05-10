@@ -7,7 +7,7 @@ import {
   TrendingUp, KeyRound, FileText, Activity, Megaphone,
   Newspaper, Calendar, BarChart3, ArrowUpRight, ArrowDownRight, Minus,
   TriangleAlert, Eye, MapPin, Globe, ExternalLink, Database, Terminal, Wrench,
-  Settings2,
+  Settings2, Bus,
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -24,6 +24,7 @@ import type { Alert, User, Household } from "@/lib/supabase/types";
 const SYSTEM_TAB_VALUES = [
   "push", "codes", "map", "quarters", "system",
   "external", "database", "api", "devops", "flags", "kpi",
+  "oepnv",
 ] as const;
 
 // Admin-Komponenten
@@ -38,6 +39,7 @@ import { EventManagement } from "./components/EventManagement";
 import { SystemHealth } from "./components/SystemHealth";
 import { MapEditor } from "./components/MapEditor";
 import { QuarterManagement } from "./components/QuarterManagement";
+import { OepnvStopsManager } from "./components/OepnvStopsManager";
 import { ExternalLinks } from "./components/ExternalLinks";
 import { DatabaseOverview } from "./components/DatabaseOverview";
 import { ApiTester } from "./components/ApiTester";
@@ -330,6 +332,7 @@ export default function AdminPage() {
               <SelectItem value="devops"><Wrench className="h-3.5 w-3.5 text-muted-foreground" />DevOps</SelectItem>
               <SelectItem value="flags"><Settings2 className="h-3.5 w-3.5 text-muted-foreground" />Feature Flags</SelectItem>
               <SelectItem value="kpi"><BarChart3 className="h-3.5 w-3.5 text-muted-foreground" />KPI-Dashboard</SelectItem>
+              <SelectItem value="oepnv"><Bus className="h-3.5 w-3.5 text-muted-foreground" />OEPNV-Stops</SelectItem>
             </SelectGroup>
           </SelectContent>
         </Select>
@@ -444,6 +447,7 @@ export default function AdminPage() {
           </div>
         )}
         {activeTab === "kpi" && <KpiDashboard />}
+        {activeTab === "oepnv" && <OepnvStopsManager />}
         {activeTab === "bugs" && <BugReports />}
         {activeTab === "youth" && <YouthAdmin />}
       </div>

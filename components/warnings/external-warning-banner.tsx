@@ -261,7 +261,11 @@ function formatSentAt(value: string) {
     return value;
   }
 
+  // Explizite Zeitzone Europe/Berlin (App-Markt DE+CH) — sonst rendert der
+  // Vercel-Server in fra1 zwar gleich wie lokal, CI-Linux aber in UTC und
+  // External-Warning-Banner-Tests werden Timezone-flaky.
   return date.toLocaleString("de-DE", {
+    timeZone: "Europe/Berlin",
     day: "2-digit",
     month: "2-digit",
     hour: "2-digit",

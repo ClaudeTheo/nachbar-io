@@ -5,9 +5,11 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { buildClientKeys } from "./client-key";
+import { isFounderRequest } from "./founder-bypass";
 import {
   getScores,
   recordEvent,
+  resetScore,
   checkFingerprintStability,
   checkSessionDeviceDrift,
 } from "./risk-scorer";
@@ -62,6 +64,16 @@ export async function checkSecurity(
   // SECURITY_E2E_BYPASS wird nur in Test-Umgebungen gesetzt, nicht in Produktion
   const e2eBypass = process.env.SECURITY_E2E_BYPASS;
   if (e2eBypass && request.headers.get("x-nachbar-test-mode") === e2eBypass) {
+    return { allowed: true, stage: 0, effectiveScore: 0, rateLimitDivisor: 1 };
+  }
+
+  // Founder-Bypass: Eingeloggte Founder (Auth-Cookie mit user_id in FOUNDER_USER_IDS)
+  // umgehen Risk-Scorer + Trap-Mittel. Auth-Verifikation laeuft weiterhin in den
+  // Routes. Plus: Score wird zurueckgesetzt damit ein vorheriger Trap-Stand
+  // (Diagnose-Tests, Self-Lockout) keinen 4h-Block hinterlaesst.
+  if (isFounderRequest(request)) {
+    const keys = await buildClientKeys(request);
+    void resetScore(keys).catch(() => {});
     return { allowed: true, stage: 0, effectiveScore: 0, rateLimitDivisor: 1 };
   }
 

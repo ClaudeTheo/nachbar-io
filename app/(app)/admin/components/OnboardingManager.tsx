@@ -70,6 +70,7 @@ export function OnboardingManager() {
   const [running, setRunning] = useState(false);
   const [result, setResult] = useState<OnboardingResult | null>(null);
   const [applyingStops, setApplyingStops] = useState(false);
+  const [applyingEvents, setApplyingEvents] = useState(false);
 
   const loadQuarters = useCallback(async () => {
     setLoadingQuarters(true);
@@ -115,6 +116,32 @@ export function OnboardingManager() {
       toast.error("Netzwerkfehler beim Onboarding.");
     } finally {
       setRunning(false);
+    }
+  }
+
+  async function handleApplyEvents() {
+    if (!selectedId || !result) return;
+    setApplyingEvents(true);
+    try {
+      const res = await fetch(
+        `/api/admin/quarters/${selectedId}/events/apply`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ events: result.events }),
+        },
+      );
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        toast.error(`Fehler: ${err?.error ?? "Events-Apply fehlgeschlagen"}`);
+        return;
+      }
+      const data = (await res.json()) as { savedCount: number; syncedAt: string };
+      toast.success(`${data.savedCount} Event(s) als Quartier-Events gespeichert.`);
+    } catch {
+      toast.error("Netzwerkfehler beim Speichern der Events.");
+    } finally {
+      setApplyingEvents(false);
     }
   }
 
@@ -365,11 +392,28 @@ export function OnboardingManager() {
           {/* Events */}
           <Card>
             <CardContent className="p-4 space-y-3">
-              <div className="flex items-center gap-2">
-                <Calendar className="h-4 w-4 text-quartier-green" />
-                <span className="text-sm font-medium text-anthrazit">
-                  {result.events.length} Event(s) initial gecrawlt
-                </span>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Calendar className="h-4 w-4 text-quartier-green" />
+                  <span className="text-sm font-medium text-anthrazit">
+                    {result.events.length} Event(s) initial gecrawlt
+                  </span>
+                </div>
+                {result.events.length > 0 ? (
+                  <Button
+                    variant="default"
+                    size="sm"
+                    onClick={handleApplyEvents}
+                    disabled={applyingEvents}
+                  >
+                    {applyingEvents ? (
+                      <Loader2 className="h-3.5 w-3.5 mr-1 animate-spin" />
+                    ) : (
+                      <Save className="h-3.5 w-3.5 mr-1" />
+                    )}
+                    Events uebernehmen
+                  </Button>
+                ) : null}
               </div>
               {result.events.length > 0 ? (
                 <ul className="space-y-1">

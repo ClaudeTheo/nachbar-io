@@ -216,6 +216,40 @@ describe("OnboardingManager", () => {
     });
   });
 
+  it("Events-Apply-Button ruft Apply-Endpoint mit den gecrawlten Events", async () => {
+    let capturedApplyBody: unknown = null;
+    mockFetchSequence([
+      () => jsonResponse(QUARTERS),
+      () => jsonResponse(HAPPY_PATH),
+      (url, init) => {
+        expect(url).toContain("/api/admin/quarters/q-bs/events/apply");
+        expect(init?.method).toBe("POST");
+        capturedApplyBody = JSON.parse(init?.body as string);
+        return jsonResponse({
+          savedCount: 1,
+          syncedAt: "2026-05-10T10:00:00Z",
+        });
+      },
+    ]);
+
+    render(<OnboardingManager />);
+    await waitFor(() => screen.getByText("Bad Saeckingen Pilot"));
+    fireEvent.click(screen.getByText("Bad Saeckingen Pilot"));
+    fireEvent.change(screen.getByLabelText(/Stadt-Domain/i), {
+      target: { value: "https://stadt.test" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: /Onboarding starten/i }));
+    await waitFor(() => screen.getByText("Wochenmarkt"));
+
+    fireEvent.click(screen.getByRole("button", { name: /Events uebernehmen/i }));
+
+    await waitFor(() => {
+      expect(mockToastSuccess).toHaveBeenCalled();
+    });
+    const body = capturedApplyBody as { events: unknown[] };
+    expect(body.events).toHaveLength(1);
+  });
+
   it("zeigt errors[] aus Response prominent", async () => {
     mockFetchSequence([
       () => jsonResponse(QUARTERS),

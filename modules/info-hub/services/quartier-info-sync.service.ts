@@ -21,6 +21,19 @@ export interface QuartierInfoSyncResult {
   errors: number;
 }
 
+function assertCacheWriteSucceeded(
+  source: string,
+  error: { message?: string } | null | undefined,
+) {
+  if (error) {
+    throw new Error(
+      `quartier_info_cache ${source} upsert failed: ${
+        error.message || "Unbekannter Supabase-Fehler"
+      }`,
+    );
+  }
+}
+
 /**
  * Holt Wetter-, Pollen- und OEPNV-Daten fuer alle aktiven Quartiere
  * und speichert sie im quartier_info_cache.
@@ -57,16 +70,21 @@ export async function runQuartierInfoSync(
     // Wetter holen und cachen
     try {
       const weather = await fetchWeather(lat, lon);
-      await supabase.from("quartier_info_cache").upsert(
-        {
-          quarter_id: quarter.id,
-          source: "weather",
-          data: weather,
-          fetched_at: new Date().toISOString(),
-          expires_at: new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString(), // 2h
-        },
-        { onConflict: "quarter_id,source" },
-      );
+      const { error: weatherWriteError } = await supabase
+        .from("quartier_info_cache")
+        .upsert(
+          {
+            quarter_id: quarter.id,
+            source: "weather",
+            data: weather,
+            fetched_at: new Date().toISOString(),
+            expires_at: new Date(
+              Date.now() + 2 * 60 * 60 * 1000,
+            ).toISOString(), // 2h
+          },
+          { onConflict: "quarter_id,source" },
+        );
+      assertCacheWriteSucceeded("weather", weatherWriteError);
       results.weather++;
     } catch (err) {
       console.error(
@@ -98,18 +116,21 @@ export async function runQuartierInfoSync(
       if (lastFetch !== today || hasLegacyDefaultRegion) {
         const pollen = await fetchPollenData();
         if (pollen) {
-          await supabase.from("quartier_info_cache").upsert(
-            {
-              quarter_id: quarter.id,
-              source: "pollen",
-              data: pollen,
-              fetched_at: new Date().toISOString(),
-              expires_at: new Date(
-                Date.now() + 24 * 60 * 60 * 1000,
-              ).toISOString(), // 24h
-            },
-            { onConflict: "quarter_id,source" },
-          );
+          const { error: pollenWriteError } = await supabase
+            .from("quartier_info_cache")
+            .upsert(
+              {
+                quarter_id: quarter.id,
+                source: "pollen",
+                data: pollen,
+                fetched_at: new Date().toISOString(),
+                expires_at: new Date(
+                  Date.now() + 24 * 60 * 60 * 1000,
+                ).toISOString(), // 24h
+              },
+              { onConflict: "quarter_id,source" },
+            );
+          assertCacheWriteSucceeded("pollen", pollenWriteError);
           results.pollen++;
         }
       }
@@ -139,16 +160,21 @@ export async function runQuartierInfoSync(
         const stops = await Promise.all(
           stopConfigs.map((stop) => fetchDepartures(stop.id, stop.name)),
         );
-        await supabase.from("quartier_info_cache").upsert(
-          {
-            quarter_id: quarter.id,
-            source: "oepnv",
-            data: stops,
-            fetched_at: new Date().toISOString(),
-            expires_at: new Date(Date.now() + 60 * 60 * 1000).toISOString(), // 1h
-          },
-          { onConflict: "quarter_id,source" },
-        );
+        const { error: oepnvWriteError } = await supabase
+          .from("quartier_info_cache")
+          .upsert(
+            {
+              quarter_id: quarter.id,
+              source: "oepnv",
+              data: stops,
+              fetched_at: new Date().toISOString(),
+              expires_at: new Date(
+                Date.now() + 60 * 60 * 1000,
+              ).toISOString(), // 1h
+            },
+            { onConflict: "quarter_id,source" },
+          );
+        assertCacheWriteSucceeded("oepnv", oepnvWriteError);
         results.oepnv++;
       }
     } catch (err) {

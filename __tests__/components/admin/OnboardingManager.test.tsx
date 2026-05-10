@@ -33,6 +33,7 @@ const QUARTERS = [
 const HAPPY_PATH = {
   quarterId: "q-bs",
   domain: "https://stadt.test",
+  domainAutoDiscovered: false,
   feeds: { rss: "https://stadt.test/events.rss", ical: "https://stadt.test/events.ics" },
   stops: [
     { id: "s1", name: "Bahnhof", lat: 47.5, lng: 7.96, type: "stop", distanceMeters: 120 },
@@ -139,6 +140,7 @@ describe("OnboardingManager", () => {
         jsonResponse({
           quarterId: "q-bs",
           domain: "https://stadt.test",
+          domainAutoDiscovered: false,
           feeds: { rss: null, ical: null },
           stops: [],
           events: [],
@@ -248,6 +250,28 @@ describe("OnboardingManager", () => {
     });
     const body = capturedApplyBody as { events: unknown[] };
     expect(body.events).toHaveLength(1);
+  });
+
+  it("zeigt Auto-Discovery-Hinweis wenn domainAutoDiscovered=true", async () => {
+    mockFetchSequence([
+      () => jsonResponse(QUARTERS),
+      () =>
+        jsonResponse({
+          ...HAPPY_PATH,
+          domain: "https://www.badsaeckingen.de",
+          domainAutoDiscovered: true,
+        }),
+    ]);
+
+    render(<OnboardingManager />);
+    await waitFor(() => screen.getByText("Bad Saeckingen Pilot"));
+    fireEvent.click(screen.getByText("Bad Saeckingen Pilot"));
+    fireEvent.click(screen.getByRole("button", { name: /Onboarding starten/i }));
+
+    await waitFor(() => {
+      expect(screen.getByText(/badsaeckingen\.de/)).toBeTruthy();
+    });
+    expect(screen.getByText(/Automatisch.*city.*ermittelt/i)).toBeTruthy();
   });
 
   it("zeigt errors[] aus Response prominent", async () => {

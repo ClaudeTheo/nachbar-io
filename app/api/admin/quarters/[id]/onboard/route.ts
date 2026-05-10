@@ -2,9 +2,13 @@
 //
 // Orchestriert den initialen Quartier-Onboarding-Lauf nach dem `createQuarter`-
 // Schritt. Verbindet:
-// - Welle J: probeFeedUrls(domain)        — RSS/iCal-Discovery auf Stadt-Domain
-// - Welle H: discoverOepnvStopsForQuarter — EFA-BW-Stop-Vorschlaege
-// - Welle W10: crawlEventFeeds            — initialer Event-Pull
+// - Welle: resolveCityDomain(quartier.city)  — auto-Discovery der Stadt-Domain
+// - Welle J: probeFeedUrls(domain)           — RSS/iCal-Discovery auf Domain
+// - Welle H: discoverOepnvStopsForQuarter    — EFA-BW-Stop-Vorschlaege
+// - Welle W10: crawlEventFeeds               — initialer Event-Pull
+//
+// Skalierungs-Hinweis: domain im Body ueberschreibt die Auto-Discovery —
+// fuer Test-Zwecke. Im Pilot ist die Auto-Discovery der Default-Pfad.
 //
 // Schreibt NICHTS in die DB — der Caller (Admin-UI / spaeter Wizard) bekommt
 // einen Onboarding-Report zurueck und entscheidet selbst ueber Apply (Welle I)
@@ -14,6 +18,7 @@ import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createClient as createServiceClient } from "@supabase/supabase-js";
 
+import { resolveCityDomain } from "@/lib/cities/domain-resolver";
 import { probeFeedUrls } from "@/lib/events/feed-url-prober";
 import { discoverOepnvStopsForQuarter } from "@/modules/info-hub/services/oepnv-stops-discovery.service";
 import { crawlEventFeeds } from "@/modules/events/services/event-feed-crawler.service";
@@ -64,14 +69,49 @@ export async function POST(
     // Body optional
   }
 
-  const domain =
+  const overrideDomain =
     typeof body.domain === "string" && body.domain.trim().length > 0
       ? body.domain.trim()
       : null;
 
   const errors: string[] = [];
+  const adminDb = getAdminDb();
 
-  // Schritt 1: Welle-J Feed-Probe (nur wenn domain gegeben)
+  // Schritt 0: Wenn keine Override-Domain gegeben, City aus DB lesen und
+  // ueber Heuristik die Stadt-Domain ableiten (skalierbar fuer beliebige Staedte).
+  let domain: string | null = overrideDomain;
+  let domainAutoDiscovered = false;
+  if (!domain) {
+    try {
+      const { data: quarter } = await adminDb
+        .from("quarters")
+        .select("city")
+        .eq("id", id)
+        .single();
+      const city = (quarter as { city?: string | null })?.city ?? null;
+      if (city) {
+        const resolved = await resolveCityDomain(city);
+        if (resolved.domain) {
+          domain = resolved.domain;
+          domainAutoDiscovered = true;
+        } else {
+          errors.push(
+            `Auto-Domain-Discovery fuer "${city}" ergebnislos (${resolved.candidatesTried.length} Kandidaten).`,
+          );
+        }
+      } else {
+        errors.push(
+          "Quartier hat kein city-Feld — Auto-Domain-Discovery uebersprungen.",
+        );
+      }
+    } catch (err) {
+      errors.push(
+        `City-Lookup-Fehler: ${err instanceof Error ? err.message : String(err)}`,
+      );
+    }
+  }
+
+  // Schritt 1: Welle-J Feed-Probe (nur wenn domain bekannt)
   let feeds: { rss: string | null; ical: string | null } = {
     rss: null,
     ical: null,
@@ -96,7 +136,7 @@ export async function POST(
   // Schritt 2: Welle-H OEPNV-Discover
   let stops: unknown[] = [];
   try {
-    const discovery = await discoverOepnvStopsForQuarter(getAdminDb(), id);
+    const discovery = await discoverOepnvStopsForQuarter(adminDb, id);
     stops = discovery.stops;
     if (discovery.errors.length > 0) {
       errors.push(...discovery.errors);
@@ -133,6 +173,7 @@ export async function POST(
   return NextResponse.json({
     quarterId: id,
     domain,
+    domainAutoDiscovered,
     feeds,
     stops,
     events,

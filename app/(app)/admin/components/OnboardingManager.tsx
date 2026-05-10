@@ -54,6 +54,7 @@ interface CrawledEvent {
 interface OnboardingResult {
   quarterId: string;
   domain: string | null;
+  domainAutoDiscovered: boolean;
   feeds: { rss: string | null; ical: string | null };
   stops: DiscoveredStop[];
   events: CrawledEvent[];
@@ -250,7 +251,7 @@ export function OnboardingManager() {
       <Card>
         <CardContent className="p-4 space-y-3">
           <span className="text-sm font-medium text-anthrazit">
-            2. Stadt-Domain (optional) + Onboarding starten
+            2. Onboarding starten
           </span>
 
           <div className="space-y-2">
@@ -258,15 +259,16 @@ export function OnboardingManager() {
               htmlFor="onboard-domain"
               className="text-xs text-muted-foreground"
             >
-              Stadt-Domain (z.B. https://www.badsaeckingen.de) — leer lassen
-              wenn nur OEPNV-Stops geprueft werden sollen.
+              Stadt-Domain (optional, nur Test-Override). Standard: wird aus
+              dem city-Feld des Quartiers automatisch ermittelt
+              (z.B. &quot;Bad Säckingen&quot; → www.badsaeckingen.de).
             </label>
             <input
               id="onboard-domain"
               type="text"
               value={domain}
               onChange={(e) => setDomain(e.target.value)}
-              placeholder="https://www.example-stadt.de"
+              placeholder="leer lassen = Auto-Discovery"
               className="w-full rounded-lg border border-input bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-quartier-green"
             />
           </div>
@@ -301,6 +303,26 @@ export function OnboardingManager() {
       {/* Ergebnis-Sektionen */}
       {result ? (
         <>
+          {/* Domain-Hinweis */}
+          {result.domain ? (
+            <Card>
+              <CardContent className="p-4 space-y-1">
+                <div className="flex items-center gap-2">
+                  <Wand2 className="h-4 w-4 text-quartier-green" />
+                  <span className="text-sm font-medium text-anthrazit">
+                    Domain:{" "}
+                    <code className="rounded bg-muted px-1">{result.domain}</code>
+                  </span>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  {result.domainAutoDiscovered
+                    ? "Automatisch aus city ermittelt."
+                    : "Test-Override aus Eingabe verwendet."}
+                </p>
+              </CardContent>
+            </Card>
+          ) : null}
+
           {/* Feeds */}
           <Card>
             <CardContent className="p-4 space-y-2">

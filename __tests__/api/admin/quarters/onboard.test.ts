@@ -16,8 +16,15 @@ vi.mock("@/lib/supabase/server", () => ({
   createClient: async () => supabaseMock,
 }));
 
+// Admin-DB Mock — fuer das Quartier.city-Lookup im Auto-Domain-Discovery-Pfad
+const adminFromMock = vi.fn();
 vi.mock("@supabase/supabase-js", () => ({
-  createClient: () => ({ /* admin client placeholder */ }),
+  createClient: () => ({ from: adminFromMock }),
+}));
+
+const resolveCityDomainMock = vi.fn();
+vi.mock("@/lib/cities/domain-resolver", () => ({
+  resolveCityDomain: (...args: unknown[]) => resolveCityDomainMock(...args),
 }));
 
 const probeMock = vi.fn();
@@ -39,6 +46,8 @@ vi.mock("@/modules/events/services/event-feed-crawler.service", () => ({
 beforeEach(() => {
   getUserMock.mockReset();
   fromMock.mockReset();
+  adminFromMock.mockReset();
+  resolveCityDomainMock.mockReset();
   probeMock.mockReset();
   discoverStopsMock.mockReset();
   crawlMock.mockReset();
@@ -54,6 +63,25 @@ beforeEach(() => {
         single: async () => ({ data: { role: "super_admin" }, error: null }),
       }),
     }),
+  });
+
+  // Default: Admin-DB liefert Quartier mit city
+  adminFromMock.mockReturnValue({
+    select: () => ({
+      eq: () => ({
+        single: async () => ({
+          data: { city: "Bad Säckingen" },
+          error: null,
+        }),
+      }),
+    }),
+  });
+
+  // Default: resolveCityDomain liefert nichts (Tests ohne Auto-Discovery)
+  resolveCityDomainMock.mockResolvedValue({
+    domain: null,
+    candidatesTried: [],
+    errors: [],
   });
 });
 
@@ -169,7 +197,8 @@ describe("POST /api/admin/quarters/[id]/onboard", () => {
     expect(crawlMock).not.toHaveBeenCalled();
   });
 
-  it("ueberspringt Probe + Crawl wenn keine domain gegeben (nur Stops)", async () => {
+  it("ohne body.domain: City-Lookup + resolveCityDomain wird gerufen", async () => {
+    // Auto-Discovery findet KEINE Domain (Default-Mock) -> kein Probe
     discoverStopsMock.mockResolvedValueOnce({
       quarterId: "q-1",
       quarterName: "Test",
@@ -183,12 +212,69 @@ describe("POST /api/admin/quarters/[id]/onboard", () => {
     const res = await callPost({});
     expect(res.status).toBe(200);
     const json = await res.json();
+    expect(resolveCityDomainMock).toHaveBeenCalledWith("Bad Säckingen");
+    expect(json.domainAutoDiscovered).toBe(false); // Default-Mock liefert null
     expect(json.feeds).toEqual({ rss: null, ical: null });
     expect(json.events).toEqual([]);
 
     expect(probeMock).not.toHaveBeenCalled();
     expect(crawlMock).not.toHaveBeenCalled();
     expect(discoverStopsMock).toHaveBeenCalledTimes(1);
+  });
+
+  it("Auto-Discovery findet Domain -> Probe wird mit dieser Domain gerufen", async () => {
+    resolveCityDomainMock.mockResolvedValueOnce({
+      domain: "https://www.badsaeckingen.de",
+      candidatesTried: ["https://www.badsaeckingen.de"],
+      errors: [],
+    });
+    probeMock.mockResolvedValueOnce({
+      rss: "https://www.badsaeckingen.de/events.rss",
+      ical: null,
+      errors: [],
+    });
+    discoverStopsMock.mockResolvedValueOnce({
+      quarterId: "q-1",
+      quarterName: "Test",
+      centerLat: 47.5,
+      centerLng: 7.96,
+      stops: [],
+      fetchedAt: "2026-05-10T10:00:00Z",
+      errors: [],
+    });
+    crawlMock.mockResolvedValueOnce({
+      events: [],
+      errors: [],
+      fetchedFromRss: 0,
+      fetchedFromIcal: 0,
+    });
+
+    const res = await callPost({});
+    expect(res.status).toBe(200);
+    const json = await res.json();
+    expect(json.domain).toBe("https://www.badsaeckingen.de");
+    expect(json.domainAutoDiscovered).toBe(true);
+    expect(probeMock).toHaveBeenCalledWith("https://www.badsaeckingen.de");
+  });
+
+  it("body.domain ueberschreibt Auto-Discovery (Test-Override)", async () => {
+    probeMock.mockResolvedValueOnce({ rss: null, ical: null, errors: [] });
+    discoverStopsMock.mockResolvedValueOnce({
+      quarterId: "q-1",
+      quarterName: "Test",
+      centerLat: 47.5,
+      centerLng: 7.96,
+      stops: [],
+      fetchedAt: "2026-05-10T10:00:00Z",
+      errors: [],
+    });
+
+    const res = await callPost({ domain: "https://override.test" });
+    expect(res.status).toBe(200);
+    const json = await res.json();
+    expect(json.domain).toBe("https://override.test");
+    expect(json.domainAutoDiscovered).toBe(false);
+    expect(resolveCityDomainMock).not.toHaveBeenCalled();
   });
 
   it("sammelt Errors aus jedem Schritt ohne zu werfen", async () => {

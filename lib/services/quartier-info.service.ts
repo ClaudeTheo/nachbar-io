@@ -12,7 +12,10 @@ import {
   type ServiceLink,
 } from "@/lib/municipal";
 import { fetchWeather } from "@/modules/info-hub/services/weather-client";
-import { fetchPollenData } from "@/modules/info-hub/services/pollen-client";
+import {
+  fetchPollenData,
+  isLegacyDefaultPollenRegion,
+} from "@/modules/info-hub/services/pollen-client";
 import { fetchNinaWarnings } from "@/modules/info-hub/services/nina-client";
 import { fetchDepartures } from "@/modules/info-hub/services/oepnv-client";
 import { RATHAUS_LINKS } from "@/modules/info-hub/services/rathaus-links";
@@ -151,6 +154,9 @@ export async function getQuartierInfo(
   let pollen = cacheMap.get("pollen") as
     | QuartierInfoResponse["pollen"]
     | undefined;
+  if (isLegacyDefaultPollenRegion(pollen)) {
+    pollen = undefined;
+  }
   if (!pollen) {
     try {
       pollen = await Promise.race([

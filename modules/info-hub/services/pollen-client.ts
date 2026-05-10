@@ -36,6 +36,16 @@ function parseIntensity(value: unknown): PollenIntensity {
   return 0;
 }
 
+export function isLegacyDefaultPollenRegion(value: unknown): boolean {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return false;
+
+  const region = (value as { region?: unknown }).region;
+  return (
+    typeof region === "string" &&
+    region.toLowerCase().includes("hohenlohe")
+  );
+}
+
 /**
  * Holt Pollenflug-Daten vom DWD.
  *

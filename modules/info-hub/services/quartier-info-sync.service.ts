@@ -6,7 +6,10 @@ import { SupabaseClient } from "@supabase/supabase-js";
 import { randomUUID } from "crypto";
 import { ServiceError } from "@/lib/services/service-error";
 import { fetchWeather } from "@/modules/info-hub/services/weather-client";
-import { fetchPollenData } from "@/modules/info-hub/services/pollen-client";
+import {
+  fetchPollenData,
+  isLegacyDefaultPollenRegion,
+} from "@/modules/info-hub/services/pollen-client";
 import { fetchDepartures } from "@/modules/info-hub/services/oepnv-client";
 
 export interface QuartierInfoSyncResult {
@@ -81,15 +84,18 @@ export async function runQuartierInfoSync(
     try {
       const { data: existing } = await supabase
         .from("quartier_info_cache")
-        .select("fetched_at")
+        .select("fetched_at, data")
         .eq("quarter_id", quarter.id)
         .eq("source", "pollen")
         .single();
 
       const today = new Date().toISOString().slice(0, 10);
       const lastFetch = existing?.fetched_at?.slice(0, 10);
+      const hasLegacyDefaultRegion = isLegacyDefaultPollenRegion(
+        existing?.data,
+      );
 
-      if (lastFetch !== today) {
+      if (lastFetch !== today || hasLegacyDefaultRegion) {
         const pollen = await fetchPollenData();
         if (pollen) {
           await supabase.from("quartier_info_cache").upsert(

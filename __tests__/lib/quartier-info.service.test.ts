@@ -1,7 +1,8 @@
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { getQuartierInfo } from "@/lib/services/quartier-info.service";
 import { RATHAUS_LINKS } from "@/modules/info-hub/services/rathaus-links";
+import { fetchPollenData } from "@/modules/info-hub/services/pollen-client";
 
 vi.mock("@/modules/info-hub/services/weather-client", () => ({
   fetchWeather: vi.fn().mockResolvedValue(null),
@@ -9,6 +10,14 @@ vi.mock("@/modules/info-hub/services/weather-client", () => ({
 
 vi.mock("@/modules/info-hub/services/pollen-client", () => ({
   fetchPollenData: vi.fn().mockResolvedValue(null),
+  isLegacyDefaultPollenRegion: (value: unknown) =>
+    Boolean(
+      value &&
+        typeof value === "object" &&
+        !Array.isArray(value) &&
+        typeof (value as { region?: unknown }).region === "string" &&
+        (value as { region: string }).region.toLowerCase().includes("hohenlohe"),
+    ),
 }));
 
 vi.mock("@/modules/info-hub/services/nina-client", () => ({
@@ -23,7 +32,10 @@ vi.mock("@/modules/info-hub/services/oepnv-client", () => ({
   }),
 }));
 
-function createSupabaseMock(municipalConfig: Record<string, unknown> | null) {
+function createSupabaseMock(
+  municipalConfig: Record<string, unknown> | null,
+  cacheRows: Array<{ source: string; data: unknown }> = [],
+) {
   return {
     from: vi.fn((table: string) => {
       if (table === "municipal_config") {
@@ -38,7 +50,7 @@ function createSupabaseMock(municipalConfig: Record<string, unknown> | null) {
         return {
           select: vi.fn().mockReturnThis(),
           eq: vi.fn().mockReturnThis(),
-          gt: vi.fn().mockResolvedValue({ data: [] }),
+          gt: vi.fn().mockResolvedValue({ data: cacheRows }),
         };
       }
 
@@ -65,6 +77,11 @@ function createSupabaseMock(municipalConfig: Record<string, unknown> | null) {
 }
 
 describe("getQuartierInfo", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    vi.mocked(fetchPollenData).mockResolvedValue(null);
+  });
+
   it("nutzt kuratierte Bad-Saeckingen-Rathauslinks, wenn municipal_config leer ist", async () => {
     const supabase = createSupabaseMock({
       city_name: "Bad Säckingen",
@@ -210,5 +227,44 @@ describe("getQuartierInfo", () => {
         },
       ],
     });
+  });
+
+  it("ignoriert alte Hohenlohe-Pollen-Cacheeintraege nach der Bad-Saeckingen-Regionkorrektur", async () => {
+    vi.mocked(fetchPollenData).mockResolvedValue({
+      region: "Mittelgebirge Baden-Wuerttemberg",
+      pollen: {
+        Graeser: { today: 1, tomorrow: 0 },
+      },
+    });
+
+    const supabase = createSupabaseMock(
+      {
+        city_name: "Bad Säckingen",
+        service_links: [],
+        apotheken: [],
+        events: [],
+        oepnv_stops: [],
+        notdienst_url: "",
+        events_calendar_url: "",
+      },
+      [
+        {
+          source: "pollen",
+          data: {
+            region: "Hohenlohe/mittlerer Neckar/Oberschwaben",
+            pollen: {
+              Graeser: { today: 3, tomorrow: 2 },
+            },
+          },
+        },
+      ],
+    );
+
+    await expect(getQuartierInfo(supabase, "q-bs")).resolves.toMatchObject({
+      pollen: {
+        region: "Mittelgebirge Baden-Wuerttemberg",
+      },
+    });
+    expect(fetchPollenData).toHaveBeenCalledOnce();
   });
 });

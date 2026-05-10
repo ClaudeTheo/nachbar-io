@@ -100,6 +100,7 @@ export async function sendWeeklyReminder(
     if (!enrollments) continue;
 
     const schedDate = new Date(call.scheduled_at).toLocaleString("de-DE", {
+      timeZone: "Europe/Berlin",
       dateStyle: "long",
       timeStyle: "short",
     });

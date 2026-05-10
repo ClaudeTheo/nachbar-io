@@ -180,6 +180,7 @@ export default function FamilyDashboard({
           {data?.lastCheckin && (
             <p className="mt-3 text-sm text-anthrazit/50">
               {new Date(data.lastCheckin).toLocaleString("de-DE", {
+                timeZone: "Europe/Berlin",
                 weekday: "long",
                 day: "numeric",
                 month: "long",

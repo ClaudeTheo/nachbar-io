@@ -393,6 +393,7 @@ export default function SeniorDetailPage() {
               <p className="text-xs text-red-700">
                 Seit{" "}
                 {new Date(activeSosAlert.created_at).toLocaleString("de-DE", {
+                  timeZone: "Europe/Berlin",
                   day: "2-digit",
                   month: "2-digit",
                   year: "numeric",

@@ -131,6 +131,7 @@ export function OrgAuditLog({ orgId }: OrgAuditLogProps) {
   function formatTimestamp(iso: string): string {
     const date = new Date(iso);
     return date.toLocaleString("de-DE", {
+      timeZone: "Europe/Berlin",
       day: "2-digit",
       month: "2-digit",
       year: "numeric",

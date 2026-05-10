@@ -1,10 +1,14 @@
 // Cron-Route: Nightly Waste Sync
 // Vercel Cron: täglich um 02:00 UTC
 // Holt Termine aus allen konfigurierten Quellen und aktualisiert waste_collection_dates
+// Hinweis: Nutzt KEINEN withCronHeartbeat-Wrapper, weil das Test-Vertrag custom error-shape (success/error/timestamp)
+// erwartet. Heartbeat manuell am Ende.
 
 import { NextResponse } from "next/server";
 import { runWasteSync } from "@/modules/waste";
 import { verifyCronSecret } from "@/lib/security/cron-secret";
+import { writeCronHeartbeat } from "@/lib/care/cron-heartbeat";
+import { getAdminSupabase } from "@/lib/supabase/admin";
 
 export const runtime = "nodejs";
 export const maxDuration = 60; // Max 60 Sekunden
@@ -42,6 +46,16 @@ export async function GET(request: Request) {
         })),
       ),
     );
+
+    // Heartbeat schreiben (FMEA Monitoring-Vollabdeckung) — nicht-blockierend
+    try {
+      await writeCronHeartbeat(getAdminSupabase(), "waste_sync", {
+        synced: result.synced,
+        errors: result.errors.length,
+      });
+    } catch (hbErr) {
+      console.warn("[waste-sync] Heartbeat-Write fehlgeschlagen:", hbErr);
+    }
 
     return NextResponse.json({
       success: true,

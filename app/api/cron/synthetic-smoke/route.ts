@@ -13,6 +13,7 @@ import { runWasteSync } from "@/modules/waste";
 import { cleanupExpiredForensics } from "@/lib/security/forensic-storage";
 import * as Sentry from "@sentry/nextjs";
 import { verifyCronSecret } from "@/lib/security/cron-secret";
+import { writeCronHeartbeat } from "@/lib/care/cron-heartbeat";
 
 const SYNTHETIC_USER_EMAIL = "max.rhein@nachbar-test.de";
 
@@ -147,6 +148,16 @@ export async function GET(request: NextRequest) {
       category: "synthetic",
       message: `All ${checks.length} checks passed`,
       level: "info",
+    });
+  }
+
+  // Heartbeat schreiben (FMEA Monitoring-Vollabdeckung) — auch bei degraded/warned, NICHT bei failed
+  if (failed === 0) {
+    await writeCronHeartbeat(supabase, "synthetic_smoke", {
+      passed,
+      warned,
+      failed,
+      total: checks.length,
     });
   }
 

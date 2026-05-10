@@ -68,7 +68,7 @@ export async function GET(request: NextRequest) {
     }
   }
 
-  await writeCronHeartbeat(supabase, "hilfe_reminder" as never, {
+  await writeCronHeartbeat(supabase, "hilfe_reminder", {
     reminded,
     errors: errors.length,
   });

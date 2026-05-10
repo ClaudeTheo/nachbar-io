@@ -1,29 +1,10 @@
-import { NextResponse } from "next/server";
-import { getAdminSupabase } from "@/lib/supabase/admin";
+// app/api/cron/quartier-info-sync/route.ts
+// Nachbar.io — Holt Wetter- und Pollendaten fuer alle aktiven Quartiere.
+// Vercel Cron: stuendlich (Pollen wird nur 1x/Tag aktualisiert).
+
+import { withCronHeartbeat } from "@/lib/care/with-cron-heartbeat";
 import { runQuartierInfoSync } from "@/modules/info-hub/services/quartier-info-sync.service";
-import { handleServiceError } from "@/lib/services/service-error";
-import { verifyCronSecret } from "@/lib/security/cron-secret";
 
-/**
- * GET /api/cron/quartier-info-sync
- *
- * Holt Wetter- und Pollendaten fuer alle aktiven Quartiere.
- * Vercel Cron: Stuendlich (0 * * * *)
- * Pollen wird nur 1x/Tag aktualisiert.
- */
-export async function GET(request: Request) {
-  // Cron-Secret pruefen (PFLICHT — blockiert wenn Secret fehlt)
-  const authHeader = request.headers.get("authorization");
-  const cronSecret = process.env.CRON_SECRET;
-  if (!cronSecret || !verifyCronSecret(authHeader, cronSecret)) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
-  try {
-    const supabase = getAdminSupabase();
-    const result = await runQuartierInfoSync(supabase);
-    return NextResponse.json(result);
-  } catch (error) {
-    return handleServiceError(error);
-  }
-}
+export const GET = withCronHeartbeat("quartier_info_sync", async (supabase) => {
+  return await runQuartierInfoSync(supabase);
+});

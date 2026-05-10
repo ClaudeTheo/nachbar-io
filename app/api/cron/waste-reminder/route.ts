@@ -2,29 +2,11 @@
 // Nachbar.io — Cron: Müllabfuhr Push-Erinnerungen
 // Vercel Cron: Täglich um 18:00 Uhr (Vorabend der Abholung)
 
-import { NextRequest, NextResponse } from 'next/server';
-import { getAdminSupabase } from '@/lib/supabase/admin';
-import { handleServiceError } from '@/lib/services/service-error';
-import { runWasteReminder } from '@/modules/waste/services/waste-reminder.service';
-import { verifyCronSecret } from "@/lib/security/cron-secret";
+import { withCronHeartbeat } from "@/lib/care/with-cron-heartbeat";
+import { runWasteReminder } from "@/modules/waste/services/waste-reminder.service";
 
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
-export async function GET(request: NextRequest) {
-  // Cron-Secret prüfen
-  const cronSecret = process.env.CRON_SECRET;
-  if (!cronSecret) {
-    return NextResponse.json({ error: 'Server-Konfigurationsfehler' }, { status: 500 });
-  }
-  if (!verifyCronSecret(request.headers.get("authorization"), cronSecret)) {
-    return NextResponse.json({ error: 'Nicht autorisiert' }, { status: 401 });
-  }
-
-  try {
-    const supabase = getAdminSupabase();
-    const result = await runWasteReminder(supabase);
-    return NextResponse.json(result);
-  } catch (err) {
-    return handleServiceError(err);
-  }
-}
+export const GET = withCronHeartbeat("waste_reminder", async (supabase) => {
+  return await runWasteReminder(supabase);
+});

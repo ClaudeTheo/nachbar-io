@@ -1,8 +1,10 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { getAdminSupabase } from "@/lib/supabase/admin";
 import { aggregateRssFeeds } from "@/lib/services/news-rss.service";
 import { handleServiceError } from "@/lib/services/service-error";
 import { verifyCronSecret } from "@/lib/security/cron-secret";
+import { writeCronHeartbeat } from "@/lib/care/cron-heartbeat";
 
 export async function GET(request: Request) {
   try {
@@ -42,6 +44,10 @@ export async function GET(request: Request) {
 
     const supabase = await createClient();
     const result = await aggregateRssFeeds(supabase);
+    // Heartbeat schreiben (FMEA Monitoring-Vollabdeckung) — egal ob Cron oder Admin
+    await writeCronHeartbeat(getAdminSupabase(), "news_rss", {
+      result: typeof result === "object" ? result : { value: result },
+    });
     return NextResponse.json(result);
   } catch (error) {
     return handleServiceError(error);

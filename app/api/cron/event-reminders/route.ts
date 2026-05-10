@@ -3,36 +3,20 @@
 // Vercel Cron: Alle 15 Minuten
 // Sendet Erinnerungen an RSVP-Teilnehmer (24h + 1h vor Event)
 
-import { NextRequest, NextResponse } from 'next/server';
-import { getAdminSupabase } from '@/lib/supabase/admin';
-import { processEventReminders } from '@/lib/event-reminders';
-import { verifyCronSecret } from "@/lib/security/cron-secret";
+import { withCronHeartbeat } from "@/lib/care/with-cron-heartbeat";
+import { processEventReminders } from "@/lib/event-reminders";
 
-export async function GET(request: NextRequest) {
-  const cronSecret = process.env.CRON_SECRET;
-  if (!cronSecret) {
-    return NextResponse.json({ error: 'Server-Konfigurationsfehler' }, { status: 500 });
-  }
-  if (!verifyCronSecret(request.headers.get("authorization"), cronSecret)) {
-    return NextResponse.json({ error: 'Nicht autorisiert' }, { status: 401 });
-  }
+export const GET = withCronHeartbeat("event_reminders", async (supabase) => {
+  const result = await processEventReminders(supabase);
 
-  try {
-    const supabase = getAdminSupabase();
-    const result = await processEventReminders(supabase);
+  console.log(
+    `[event-reminders] ${result.sent} Erinnerungen gesendet, ` +
+      `${result.skipped} übersprungen, ${result.events} Events geprüft`,
+  );
 
-    console.log(
-      `[event-reminders] ${result.sent} Erinnerungen gesendet, ` +
-      `${result.skipped} übersprungen, ${result.events} Events geprüft`
-    );
-
-    return NextResponse.json({
-      success: true,
-      ...result,
-      timestamp: new Date().toISOString(),
-    });
-  } catch (err) {
-    console.error('[event-reminders] Cron-Fehler:', err);
-    return NextResponse.json({ error: 'Interner Serverfehler' }, { status: 500 });
-  }
-}
+  return {
+    success: true,
+    ...result,
+    timestamp: new Date().toISOString(),
+  };
+});

@@ -81,7 +81,7 @@ export async function runSubscriptionCheck(
   }
 
   // Cron-Heartbeat schreiben
-  await writeCronHeartbeat(supabase, 'subscription_check' as never, {
+  await writeCronHeartbeat(supabase, 'subscription_check', {
     downgraded,
     warnings,
     errors: errors.length,

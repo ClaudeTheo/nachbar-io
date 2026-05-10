@@ -28,8 +28,30 @@ function createMockSupabase(heartbeats: Array<{ job_id: string; last_run_at: str
 }
 
 describe('CRON_JOBS Konfiguration', () => {
-  it('definiert alle 7 Cron-Jobs', () => {
-    const jobIds: CronJobId[] = ['escalation', 'checkin', 'medications', 'appointments', 'onboarding', 'dormancy', 'digest'];
+  it('definiert alle vercel.json-Cron-Jobs (29)', () => {
+    // Quelle: nachbar-io/vercel.json crons[].
+    // Bei Aenderung dort: hier ergaenzen / entfernen.
+    const jobIds: CronJobId[] = [
+      // Care
+      'escalation', 'checkin', 'medications', 'appointments', 'heartbeat_escalation',
+      'shopping_match', 'task_cleanup',
+      // Lifecycle / Engagement
+      'onboarding', 'dormancy', 'digest', 'welcome',
+      'event_reminders', 'recurring_events',
+      // Billing
+      'subscription_check', 'expire_invitations', 'hilfe_reminder',
+      // System / Cleanup
+      'heartbeat_cleanup', 'forensic_cleanup', 'analytics',
+      // Quartier / Info-Hub
+      'waste_reminder', 'waste_sync', 'amtsblatt_sync',
+      'quartier_info_sync', 'osm_poi_sync', 'quartier_events_sync', 'nina_sync',
+      // News
+      'news_scrape', 'news_rss',
+      // Monitoring
+      'synthetic_smoke',
+    ];
+    expect(jobIds).toHaveLength(29);
+    expect(Object.keys(CRON_JOBS)).toHaveLength(29);
     for (const id of jobIds) {
       expect(CRON_JOBS[id]).toBeDefined();
       expect(CRON_JOBS[id].name).toBeTruthy();
@@ -90,7 +112,7 @@ describe('checkCronHealth', () => {
 
     const results = await checkCronHealth(supabase);
 
-    expect(results).toHaveLength(8); // Alle 8 Jobs (inkl. heartbeat_escalation)
+    expect(results).toHaveLength(29); // Alle vercel.json-Crons
     for (const result of results) {
       expect(result.status).toBe('error');
       expect(result.lastRunAt).toBeNull();

@@ -7,7 +7,7 @@ import {
   TrendingUp, KeyRound, FileText, Activity, Megaphone,
   Newspaper, Calendar, BarChart3, ArrowUpRight, ArrowDownRight, Minus,
   TriangleAlert, Eye, MapPin, Globe, ExternalLink, Database, Terminal, Wrench,
-  Settings2, Bus, Wand2,
+  Settings2, Bus, Wand2, FileSpreadsheet,
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -41,6 +41,7 @@ import { MapEditor } from "./components/MapEditor";
 import { QuarterManagement } from "./components/QuarterManagement";
 import { OepnvStopsManager } from "./components/OepnvStopsManager";
 import { OnboardingManager } from "./components/OnboardingManager";
+import { AmtsblattReprocess } from "./components/AmtsblattReprocess";
 import { ExternalLinks } from "./components/ExternalLinks";
 import { DatabaseOverview } from "./components/DatabaseOverview";
 import { ApiTester } from "./components/ApiTester";
@@ -363,6 +364,19 @@ export default function AdminPage() {
           <Wand2 className="h-3.5 w-3.5" />
           Onboarding-Pipeline
         </button>
+
+        {/* Amtsblatt-Pipeline als eigener Button (Welle K2) */}
+        <button
+          onClick={() => setActiveTab("amtsblatt")}
+          className={`flex w-full items-center gap-2 rounded-lg border px-3 py-1.5 text-xs transition-colors ${
+            activeTab === "amtsblatt"
+              ? "border-quartier-green bg-quartier-green/10 text-quartier-green font-medium"
+              : "border-input bg-transparent text-muted-foreground hover:bg-muted/50"
+          }`}
+        >
+          <FileSpreadsheet className="h-3.5 w-3.5" />
+          Amtsblatt-Pipeline
+        </button>
       </div>
 
       {/* QuarterWizard Dialog (fuer Super-Admins) */}
@@ -463,6 +477,7 @@ export default function AdminPage() {
         {activeTab === "kpi" && <KpiDashboard />}
         {activeTab === "oepnv" && <OepnvStopsManager />}
         {activeTab === "onboarding" && <OnboardingManager />}
+        {activeTab === "amtsblatt" && <AmtsblattReprocess />}
         {activeTab === "bugs" && <BugReports />}
         {activeTab === "youth" && <YouthAdmin />}
       </div>

@@ -116,8 +116,61 @@ export function buildExtractionPrompt(rawText: string): string {
 }
 
 /**
+ * Recovery fuer truncated KI-Antworten (max_tokens-Limit erreicht):
+ * Scannt den jsonStr nach top-level {...}-Objekten und parsed jedes
+ * einzeln. Items vor dem Truncation-Punkt werden gerettet, das
+ * angeschnittene Item am Ende wird verworfen. Idempotent.
+ */
+function recoverItemsFromTruncated(jsonStr: string): unknown[] {
+  if (!jsonStr.startsWith("[")) return [];
+  const items: unknown[] = [];
+  let depth = 0;
+  let start = -1;
+  let inString = false;
+  let escaping = false;
+
+  for (let i = 1; i < jsonStr.length; i++) {
+    const c = jsonStr[i];
+    if (escaping) {
+      escaping = false;
+      continue;
+    }
+    if (c === "\\") {
+      escaping = true;
+      continue;
+    }
+    if (c === '"') {
+      inString = !inString;
+      continue;
+    }
+    if (inString) continue;
+
+    if (c === "{") {
+      if (depth === 0) start = i;
+      depth++;
+    } else if (c === "}") {
+      depth--;
+      if (depth === 0 && start >= 0) {
+        const objStr = jsonStr.slice(start, i + 1);
+        try {
+          items.push(JSON.parse(objStr));
+        } catch {
+          // einzelnes Objekt kaputt — skip
+        }
+        start = -1;
+      }
+    }
+  }
+  return items;
+}
+
+/**
  * Parst die KI-Antwort und validiert die extrahierten Meldungen.
  * Gibt nur gueltige Meldungen zurueck.
+ *
+ * Bei truncated KI-Antworten (z.B. max_tokens-Limit erreicht) versucht der
+ * Parser, einzelne komplette Items aus dem Array zu retten — alles vor dem
+ * angeschnittenen Item wird uebernommen.
  */
 export function parseExtractionResponse(
   responseText: string
@@ -132,7 +185,14 @@ export function parseExtractionResponse(
   try {
     parsed = JSON.parse(jsonStr);
   } catch {
-    throw new Error(`KI-Antwort ist kein gültiges JSON: ${jsonStr.slice(0, 200)}`);
+    // Recovery-Pfad: versuche einzelne komplette Items zu retten.
+    const recovered = recoverItemsFromTruncated(jsonStr);
+    if (recovered.length === 0) {
+      throw new Error(
+        `KI-Antwort ist kein gültiges JSON: ${jsonStr.slice(0, 200)}`,
+      );
+    }
+    parsed = recovered;
   }
 
   if (!Array.isArray(parsed)) {

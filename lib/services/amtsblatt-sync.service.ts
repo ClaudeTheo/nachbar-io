@@ -22,6 +22,171 @@ export interface AmtsblattSyncResult {
   announcements_imported: number;
 }
 
+export interface AmtsblattReprocessResult {
+  message: string;
+  issue_id: string;
+  announcements_imported: number;
+  status: "done" | "error";
+  error_message: string | null;
+}
+
+/**
+ * Re-prozessiert ein einzelnes Amtsblatt-Issue:
+ * loescht existing announcements, laedt PDF erneut, ruft KI, inserted neu.
+ *
+ * Nutzungsfall:
+ * - Issue ist `error` durch alten KI-Truncate-Bug (vor robust-parse-Fix)
+ * - Issue ist `done` aber 0 announcements (z.B. nach Pilot-Reset)
+ * - Manueller Re-Run aus dem Admin-UI
+ */
+export async function reprocessAmtsblattIssue(
+  supabase: SupabaseClient,
+  issueId: string,
+): Promise<AmtsblattReprocessResult> {
+  const anthropicKey = process.env.ANTHROPIC_API_KEY;
+  if (!anthropicKey) {
+    throw new ServiceError(
+      "ANTHROPIC_API_KEY nicht gesetzt",
+      500,
+      "MISSING_API_KEY",
+    );
+  }
+
+  // 1. Issue laden
+  const { data: issue, error: issueErr } = await supabase
+    .from("amtsblatt_issues")
+    .select("id, quarter_id, pdf_url, issue_number")
+    .eq("id", issueId)
+    .single();
+
+  if (issueErr || !issue) {
+    throw new ServiceError(
+      `Issue ${issueId} nicht gefunden`,
+      404,
+      "ISSUE_NOT_FOUND",
+    );
+  }
+
+  console.log(
+    `${LOG_PREFIX} Reprocess Issue ${issue.issue_number} (${issueId})`,
+  );
+
+  // 2. Existing announcements loeschen
+  await supabase
+    .from("municipal_announcements")
+    .delete()
+    .eq("amtsblatt_issue_id", issueId);
+
+  // 3. Issue: status -> processing
+  await supabase
+    .from("amtsblatt_issues")
+    .update({
+      status: "processing",
+      error_message: null,
+      extracted_count: 0,
+    })
+    .eq("id", issueId);
+
+  try {
+    // 4. PDF download
+    const pdfResponse = await fetch(issue.pdf_url);
+    if (!pdfResponse.ok) {
+      throw new Error(`PDF nicht ladbar: ${pdfResponse.status}`);
+    }
+    const pdfBuffer = Buffer.from(await pdfResponse.arrayBuffer());
+
+    // 5. Text-Extract
+    const { text: rawText, pages } = await extractTextFromPdf(pdfBuffer);
+    if (rawText.length < 100) {
+      throw new Error("Zu wenig Text extrahiert — moeglicherweise Scan-PDF");
+    }
+
+    // 6. KI-Call (mit erhoehtem max_tokens)
+    const aiResponse = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "x-api-key": anthropicKey,
+        "anthropic-version": "2023-06-01",
+      },
+      body: JSON.stringify({
+        model: "claude-haiku-4-5-20251001",
+        max_tokens: 32000,
+        system: EXTRACTION_SYSTEM_PROMPT,
+        messages: [{ role: "user", content: buildExtractionPrompt(rawText) }],
+      }),
+    });
+
+    if (!aiResponse.ok) {
+      const errBody = await aiResponse.text();
+      throw new Error(
+        `Claude API Fehler ${aiResponse.status}: ${errBody.slice(0, 200)}`,
+      );
+    }
+
+    const aiData = await aiResponse.json();
+    const aiText = aiData?.content?.[0]?.text ?? "";
+    const items = parseExtractionResponse(aiText);
+
+    // 7. Announcements inserten
+    if (items.length > 0) {
+      const announcements = items.map((item) => ({
+        quarter_id: issue.quarter_id,
+        author_id: null,
+        title: item.title,
+        body: item.body,
+        category: item.category,
+        source_url: issue.pdf_url,
+        amtsblatt_issue_id: issue.id,
+        pinned: false,
+        published_at: new Date().toISOString(),
+        event_date: item.event_date || null,
+      }));
+
+      const { error: insertError } = await supabase
+        .from("municipal_announcements")
+        .insert(announcements);
+
+      if (insertError) {
+        throw new Error(
+          `Announcements-Insert Fehler: ${insertError.message}`,
+        );
+      }
+    }
+
+    // 8. Issue: status -> done
+    await supabase
+      .from("amtsblatt_issues")
+      .update({
+        status: "done",
+        pages,
+        extracted_count: items.length,
+      })
+      .eq("id", issueId);
+
+    return {
+      message: `Issue ${issue.issue_number} re-prozessiert`,
+      issue_id: issueId,
+      announcements_imported: items.length,
+      status: "done",
+      error_message: null,
+    };
+  } catch (err) {
+    const errorMsg = err instanceof Error ? err.message : String(err);
+    await supabase
+      .from("amtsblatt_issues")
+      .update({ status: "error", error_message: errorMsg })
+      .eq("id", issueId);
+    return {
+      message: `Issue ${issue.issue_number} Reprocess fehlgeschlagen`,
+      issue_id: issueId,
+      announcements_imported: 0,
+      status: "error",
+      error_message: errorMsg,
+    };
+  }
+}
+
 export async function runAmtsblattSync(
   supabase: SupabaseClient,
 ): Promise<AmtsblattSyncResult> {
@@ -188,7 +353,9 @@ export async function runAmtsblattSync(
         },
         body: JSON.stringify({
           model: "claude-haiku-4-5-20251001",
-          max_tokens: 16000,
+          // Erhoeht von 16000 auf 32000 — bei 80+-Items-Ausgaben truncated
+          // 16K. Robust-parse fangt Resttruncations als Fallback ab.
+          max_tokens: 32000,
           system: EXTRACTION_SYSTEM_PROMPT,
           messages: [{ role: "user", content: buildExtractionPrompt(rawText) }],
         }),

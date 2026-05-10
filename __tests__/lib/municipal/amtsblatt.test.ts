@@ -223,6 +223,37 @@ describe("Amtsblatt — parseExtractionResponse", () => {
     expect(items).toHaveLength(1);
   });
 
+  it("recovered komplette Items aus truncated JSON-Array (Bug 0017+0013)", () => {
+    // Real-World Pattern: KI-Output truncated bei max_tokens — Array-closing fehlt,
+    // letztes Item ist mitten im body-String abgeschnitten. Items davor sind komplett.
+    const truncated =
+      '[\n' +
+      '  {"title":"Promenadenkonzerte","body":"Start am 3. Mai im Schlosspark.","category":"veranstaltung","event_date":"2026-05-03"},\n' +
+      '  {"title":"Wochenmarkt","body":"Jeden Samstag 8-12 Uhr.","category":"veranstaltung","event_date":null},\n' +
+      '  {"title":"Schloss-Fuehrung","body":"Am Sonntag, 16:00 Uhr Eintritt i'; // Truncated
+    const items = parseExtractionResponse(truncated);
+    expect(items.length).toBe(2); // 2 komplette, das angeschnittene wird verworfen
+    expect(items[0].title).toBe("Promenadenkonzerte");
+    expect(items[1].title).toBe("Wochenmarkt");
+  });
+
+  it("recovered bei Markdown-Wrapper + truncated array", () => {
+    // kein closing — auch kein closing-```
+    const truncated =
+      '```json\n' +
+      '[\n' +
+      '  {"title":"A","body":"BodyA","category":"sonstiges"},\n' +
+      '  {"title":"B","body":"BodyB","category';
+    const items = parseExtractionResponse(truncated);
+    expect(items.length).toBe(1);
+    expect(items[0].title).toBe("A");
+  });
+
+  it("liefert leeres Array wenn truncated VOR erstem kompletten Item", () => {
+    const truncated = '[\n  {"title":"Nur halb';
+    expect(() => parseExtractionResponse(truncated)).toThrow("kein gültiges JSON");
+  });
+
   it("akzeptiert alle 9 Kategorien", () => {
     const categories = [
       "verkehr", "baustelle", "veranstaltung", "verwaltung",

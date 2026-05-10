@@ -7,6 +7,37 @@ import { ServiceError } from "./service-error";
 const NEWS_URL =
   "https://www.bad-saeckingen.de/rathaus-service/aktuelles/neuigkeiten";
 
+// Title-Blacklist: HTML-Navigation und Boilerplate, die der Scraper faelschlich
+// als Artikel-Titel auffassen kann. Lower-case Match.
+const TITLE_BLACKLIST: ReadonlyArray<string> = [
+  "seitenbereiche",
+  "hauptmenue",
+  "hauptmenü",
+  "navigation",
+  "suche",
+  "startseite",
+  "impressum",
+  "kontakt",
+  "datenschutz",
+  "barrierefreiheit",
+  "rathaus & service",
+  "buergerservice",
+  "bürgerservice",
+  "neuigkeiten",
+  "aktuelles",
+  "zur startseite",
+  "menue",
+  "menü",
+];
+
+function isLikelyBoilerplate(title: string): boolean {
+  const t = title.trim().toLowerCase();
+  if (TITLE_BLACKLIST.includes(t)) return true;
+  // Single-word title unter 20 Zeichen ist verdaechtig
+  if (!t.includes(" ") && t.length < 20) return true;
+  return false;
+}
+
 // Kategorie-Mapping: Stichwort -> DB-Kategorie
 const CATEGORY_KEYWORDS: Record<string, string[]> = {
   infrastructure: [
@@ -126,7 +157,8 @@ function parseNewsArticles(html: string): Array<{
     if (!titleMatch) continue;
 
     const title = titleMatch[1].replace(/<[^>]+>/g, "").trim();
-    if (!title || title.length < 5) continue;
+    if (!title || title.length < 15) continue;
+    if (isLikelyBoilerplate(title)) continue;
 
     // Datum
     const dateMatch = section.match(/(\d{2}\.\d{2}\.\d{4})/);
@@ -315,8 +347,12 @@ Format: {"summary": "...", "relevance_score": 0, "category": "infrastructure|eve
       }
     }
 
-    // Nur relevante Artikel eintragen (Relevanz >= 4)
+    // Nur relevante Artikel eintragen
     if (relevance < 4) continue;
+    // category="other" akzeptieren wir nur wenn klar relevant (>=7) UND Description nicht leer
+    if (category === "other" && (relevance < 7 || !article.description)) continue;
+    // Ohne Description ist Artikel oft Boilerplate
+    if (!article.description || article.description.length < 30) continue;
 
     const { data: insertedItem, error } = await supabase
       .from("news_items")

@@ -21,8 +21,19 @@ const CLOSED_PILOT_PUBLIC_API_PATHS = new Set([
   "/api/health",
   "/api/register/check-invite",
   "/api/register/complete",
-  "/api/cron/ai-test-cleanup-dry-run",
+  "/api/news/scrape",
+  "/api/news/rss",
 ]);
+
+// Vercel-Cron-Routen muessen im Closed-Pilot-Mode erreichbar bleiben (sonst stoppen
+// alle Heartbeat/Sync/Reminder-Jobs). Sie sind durch verifyCronSecret() geschuetzt
+// — Whitelist hier blockt nur den 503-closed_pilot-Filter, nicht die Cron-Auth.
+// Aktiver Bestand: nachbar-io/vercel.json crons[].
+function isClosedPilotPublicCronPath(pathname: string) {
+  return (
+    pathname.startsWith("/api/cron/") || pathname.startsWith("/api/care/cron/")
+  );
+}
 
 export function isClosedPilotMode() {
   return process.env.NEXT_PUBLIC_CLOSED_PILOT_MODE !== "false";
@@ -33,7 +44,8 @@ export function isClosedPilotPublicPath(pathname: string) {
 }
 
 export function isClosedPilotPublicApiPath(pathname: string) {
-  return CLOSED_PILOT_PUBLIC_API_PATHS.has(pathname);
+  if (CLOSED_PILOT_PUBLIC_API_PATHS.has(pathname)) return true;
+  return isClosedPilotPublicCronPath(pathname);
 }
 
 export function buildClosedPilotApiBody() {

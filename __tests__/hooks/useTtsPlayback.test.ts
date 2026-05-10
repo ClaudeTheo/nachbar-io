@@ -80,15 +80,23 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
+// CI-Drift (Node 20): `new Response(new Blob(...))` wirft in Node-20 jsdom
+// "TypeError: object.stream is not a function", weil jsdoms Blob.stream() nicht
+// mit undici-Response kompatibel ist. String- oder Uint8Array-Body umgeht das —
+// Response konvertiert intern selbst zum Blob, wenn .blob() gerufen wird.
+function audioResponse(status = 200): Response {
+  return new Response("audio-data", {
+    status,
+    headers: { "Content-Type": "audio/mpeg" },
+  });
+}
+
 function mockTtsFetch() {
   // mockImplementation statt mockResolvedValue, damit jeder Call eine neue
   // Response liefert (sonst ist der Body nach dem ersten .blob() konsumiert).
-  return vi.spyOn(globalThis, "fetch").mockImplementation(
-    async () =>
-      new Response(new Blob(["audio"], { type: "audio/mpeg" }), {
-        status: 200,
-      }) as unknown as Response,
-  );
+  return vi
+    .spyOn(globalThis, "fetch")
+    .mockImplementation(async () => audioResponse());
 }
 
 describe("useTtsPlayback", () => {
@@ -149,9 +157,7 @@ describe("useTtsPlayback", () => {
     });
 
     await act(async () => {
-      resolveFetch!(
-        new Response(new Blob(["a"], { type: "audio/mpeg" }), { status: 200 }),
-      );
+      resolveFetch!(audioResponse());
       await playPromise;
     });
 
@@ -287,11 +293,7 @@ describe("useTtsPlayback", () => {
           return firstFetch;
         }
         // Zweiter Call: liefert sofort
-        return Promise.resolve(
-          new Response(new Blob(["b"], { type: "audio/mpeg" }), {
-            status: 200,
-          }) as unknown as Response,
-        );
+        return Promise.resolve(audioResponse());
       },
     );
 

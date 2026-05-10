@@ -7,7 +7,7 @@ import {
   TrendingUp, KeyRound, FileText, Activity, Megaphone,
   Newspaper, Calendar, BarChart3, ArrowUpRight, ArrowDownRight, Minus,
   TriangleAlert, Eye, MapPin, Globe, ExternalLink, Database, Terminal, Wrench,
-  Settings2, Bus,
+  Settings2, Bus, Wand2,
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -40,6 +40,7 @@ import { SystemHealth } from "./components/SystemHealth";
 import { MapEditor } from "./components/MapEditor";
 import { QuarterManagement } from "./components/QuarterManagement";
 import { OepnvStopsManager } from "./components/OepnvStopsManager";
+import { OnboardingManager } from "./components/OnboardingManager";
 import { ExternalLinks } from "./components/ExternalLinks";
 import { DatabaseOverview } from "./components/DatabaseOverview";
 import { ApiTester } from "./components/ApiTester";
@@ -349,6 +350,19 @@ export default function AdminPage() {
           <TriangleAlert className="h-3.5 w-3.5" />
           Bug-Reports
         </button>
+
+        {/* Onboarding-Pipeline als eigener Button (Welle W4-FULL) */}
+        <button
+          onClick={() => setActiveTab("onboarding")}
+          className={`flex w-full items-center gap-2 rounded-lg border px-3 py-1.5 text-xs transition-colors ${
+            activeTab === "onboarding"
+              ? "border-quartier-green bg-quartier-green/10 text-quartier-green font-medium"
+              : "border-input bg-transparent text-muted-foreground hover:bg-muted/50"
+          }`}
+        >
+          <Wand2 className="h-3.5 w-3.5" />
+          Onboarding-Pipeline
+        </button>
       </div>
 
       {/* QuarterWizard Dialog (fuer Super-Admins) */}
@@ -448,6 +462,7 @@ export default function AdminPage() {
         )}
         {activeTab === "kpi" && <KpiDashboard />}
         {activeTab === "oepnv" && <OepnvStopsManager />}
+        {activeTab === "onboarding" && <OnboardingManager />}
         {activeTab === "bugs" && <BugReports />}
         {activeTab === "youth" && <YouthAdmin />}
       </div>

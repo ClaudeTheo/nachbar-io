@@ -37,13 +37,21 @@ function parseIntensity(value: unknown): PollenIntensity {
 }
 
 /**
- * Holt Pollenflug-Daten vom DWD
- * Bad Saeckingen liegt in Region 112 (Oberrhein und unteres Neckartal)
- * Fallback: Region 120 (Mittelgebirge suedlich)
- * @param regionId DWD Region-ID (Default: 112)
+ * Holt Pollenflug-Daten vom DWD.
+ *
+ * DWD Baden-Wuerttemberg hat 3 partregion_ids:
+ *   111 = Oberrhein und unteres Neckartal (Karlsruhe, Stuttgart)
+ *   112 = Hohenlohe / mittlerer Neckar / Oberschwaben
+ *   113 = Mittelgebirge Baden-Wuerttemberg (Schwarzwald, inkl. Hochrhein)
+ *
+ * Bad Saeckingen liegt am Hochrhein im suedlichen Schwarzwald → Region 113.
+ *
+ * Frueherer Default 112 (Welle pre-2026-05) war falsch (Hohenlohe-Region).
+ *
+ * @param regionId DWD Region-ID (Default: 113)
  */
 export async function fetchPollenData(
-  regionId: number = 112,
+  regionId: number = 113,
 ): Promise<PollenData | null> {
   try {
     const url =
@@ -74,12 +82,12 @@ export async function fetchPollenData(
     );
 
     if (!region) {
+      // Fallback: gesamtes Baden-Wuerttemberg (region_id 110)
       console.warn(
-        `[pollen] Region ${regionId} nicht gefunden, versuche Fallback 120`,
+        `[pollen] Region ${regionId} nicht gefunden, Fallback auf BW-Gesamtregion 110`,
       );
       const fallback = regions.find(
-        (r: Record<string, unknown>) =>
-          r.partregion_id === 120 || r.region_id === 120,
+        (r: Record<string, unknown>) => r.region_id === 110,
       );
       if (!fallback) return null;
       return parseRegion(fallback);

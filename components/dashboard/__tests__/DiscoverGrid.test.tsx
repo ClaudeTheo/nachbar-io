@@ -40,13 +40,14 @@ beforeEach(() => {
 describe("DiscoverGrid", () => {
   // === Sichtbarkeit & Gesamtzaehlung ===
 
-  it("zeigt initial 15 Tiles (3 Kategorien * 5 Tiles, Mehr-Kategorie versteckt)", () => {
-    // Plan 2026-05-11 Task 3: Nachbarschaft + Hilfe & Pflege + Quartier-Info
-    // sind immer sichtbar; "Mehr Funktionen" erst nach Klick auf "Mehr entdecken".
+  it("zeigt initial 13 Tiles (Nachbarschaft 5 + Hilfe&Pflege 4 + Quartier-Info 4)", () => {
+    // Plan 2026-05-11 Task 3 + Founder-Korrektur 2026-05-11: Sprechstunde und
+    // Praevention leben nur im Gesundheit-Tab (CareHubTileGrid), nicht hier —
+    // daher Hilfe&Pflege und Quartier-Info je 4 statt 5 Tiles.
     const { container } = render(<DiscoverGrid />);
     const grid = container.querySelector('[data-testid="discover-grid"]')!;
     const links = grid.querySelectorAll("a");
-    expect(links.length).toBe(15);
+    expect(links.length).toBe(13);
   });
 
   it("zeigt 'Mehr entdecken' Button", () => {
@@ -55,7 +56,7 @@ describe("DiscoverGrid", () => {
     expect(btn).toBeInTheDocument();
   });
 
-  it("zeigt alle 24 Tiles nach Klick auf 'Mehr entdecken'", () => {
+  it("zeigt alle 22 Tiles nach Klick auf 'Mehr entdecken'", () => {
     const { container } = render(<DiscoverGrid />);
     const btn = container.querySelector(
       '[data-testid="discover-expand"]',
@@ -63,22 +64,22 @@ describe("DiscoverGrid", () => {
     fireEvent.click(btn);
     const grid = container.querySelector('[data-testid="discover-grid"]')!;
     const links = grid.querySelectorAll("a");
-    // 5 Nachbarschaft + 5 Hilfe&Pflege + 5 Quartier-Info + 9 Mehr = 24
-    expect(links.length).toBe(24);
+    // 5 Nachbarschaft + 4 Hilfe&Pflege + 4 Quartier-Info + 9 Mehr = 22
+    expect(links.length).toBe(22);
     // Button verschwindet
     expect(
       container.querySelector('[data-testid="discover-expand"]'),
     ).not.toBeInTheDocument();
   });
 
-  it("hat Lucide-Icons statt Emojis (15 Tile-SVGs initial)", () => {
+  it("hat Lucide-Icons statt Emojis (13 Tile-SVGs initial)", () => {
     // Tile-SVGs sind nur in den 3 sichtbaren Kategorie-Sektionen, nicht
     // im ChevronDown des Mehr-entdecken-Buttons.
     const { container } = render(<DiscoverGrid />);
     const tileSvgs = container.querySelectorAll(
       '[data-testid^="category-"] svg',
     );
-    expect(tileSvgs.length).toBe(15);
+    expect(tileSvgs.length).toBe(13);
   });
 
   // === Kategorie-Sektionen ===
@@ -108,7 +109,7 @@ describe("DiscoverGrid", () => {
     ]);
   });
 
-  it("Hilfe & Pflege-Sektion enthaelt Mein Tag, Aufgabentafel, Einkaufshilfe, Pflegegrad, Sprechstunde", () => {
+  it("Hilfe & Pflege-Sektion enthaelt Mein Tag, Aufgabentafel, Einkaufshilfe, Pflegegrad (Sprechstunde lebt im Gesundheit-Tab)", () => {
     const { container } = render(<DiscoverGrid />);
     const section = container.querySelector(
       '[data-testid="category-hilfe_pflege"]',
@@ -122,11 +123,11 @@ describe("DiscoverGrid", () => {
       "/care/tasks",
       "/care/shopping",
       "/pflegegrad-navigator",
-      "/sprechstunde",
     ]);
+    expect(hrefs).not.toContain("/sprechstunde");
   });
 
-  it("Quartier-Info-Sektion enthaelt Karte, Muellkalender, Rathaus, Maengel, Praevention", () => {
+  it("Quartier-Info-Sektion enthaelt Karte, Muellkalender, Rathaus, Maengel (Praevention lebt im Gesundheit-Tab)", () => {
     const { container } = render(<DiscoverGrid />);
     const section = container.querySelector(
       '[data-testid="category-quartier_info"]',
@@ -140,8 +141,8 @@ describe("DiscoverGrid", () => {
       "/waste-calendar",
       "/city-services",
       "/reports",
-      "/praevention",
     ]);
+    expect(hrefs).not.toContain("/praevention");
   });
 
   it("Mehr-Sektion ist initial nicht im DOM, erscheint nach Klick", () => {
@@ -253,7 +254,7 @@ describe("DiscoverGrid", () => {
       expect(hrefs).not.toContain("/events");
     });
 
-    // Nachbarschaft-Sektion hat dann nur noch 4 Tiles
+    // Nachbarschaft-Sektion hat dann nur noch 4 Tiles (vorher 5 inkl. Events)
     const nachbarschaft = container.querySelector(
       '[data-testid="category-nachbarschaft"]',
     )!;

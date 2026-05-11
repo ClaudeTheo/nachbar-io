@@ -20,8 +20,6 @@ import {
   Lightbulb,
   ShoppingCart,
   ClipboardList,
-  Stethoscope,
-  Heart,
   Repeat,
   UtensilsCrossed,
   Sun,
@@ -157,17 +155,10 @@ export const allItems: DiscoverItem[] = [
     flagKey: "DISCOVER_TILE_PFLEGEGRAD_NAVIGATOR",
     category: "hilfe_pflege",
   },
-  {
-    href: "/sprechstunde",
-    label: "Sprechstunde",
-    icon: Stethoscope,
-    bgColor: "bg-blue-50",
-    iconColor: "text-blue-600",
-    flagKey: "DISCOVER_TILE_SPRECHSTUNDE",
-    category: "hilfe_pflege",
-  },
+  // Sprechstunde lebt nur im Gesundheit-Tab (CareHubTileGrid), nicht hier —
+  // Founder-Entscheidung 2026-05-11.
 
-  // === Quartier-Info (5 Tiles, immer sichtbar) ===
+  // === Quartier-Info (4 Tiles, immer sichtbar) ===
   {
     href: "/map",
     label: "Karte",
@@ -204,15 +195,8 @@ export const allItems: DiscoverItem[] = [
     flagKey: "DISCOVER_TILE_REPORTS",
     category: "quartier_info",
   },
-  {
-    href: "/praevention",
-    label: "Prävention",
-    icon: Heart,
-    bgColor: "bg-emerald-100",
-    iconColor: "text-emerald-700",
-    flagKey: "DISCOVER_TILE_PRAEVENTION",
-    category: "quartier_info",
-  },
+  // Praevention/Vorsorge lebt nur im Gesundheit-Tab (CareHubTileGrid), nicht
+  // hier — Founder-Entscheidung 2026-05-11.
 
   // === Mehr Funktionen (9 Tiles, hinter "Mehr entdecken") ===
   {

@@ -79,7 +79,7 @@ export default function ErstattungFertigPage() {
           Zur Kursübersicht
         </Link>
         <Link
-          href="/"
+          href="/dashboard"
           className="flex w-full items-center justify-center rounded-xl border border-gray-200 px-6 py-3 text-base font-medium text-gray-700 hover:bg-gray-50"
           style={{ minHeight: "48px" }}
         >

@@ -107,7 +107,8 @@ export default function PraeventionPage() {
       {/* Header */}
       <div className="mb-6 flex items-center gap-3">
         <Link
-          href="/"
+          href="/dashboard"
+          aria-label="Zurueck zum Start"
           className="flex h-10 w-10 items-center justify-center rounded-xl bg-gray-100 text-gray-600"
         >
           <ArrowLeft className="h-5 w-5" />

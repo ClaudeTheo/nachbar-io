@@ -145,16 +145,20 @@ export default function AerzteListePage() {
         </div>
       )}
 
-      {/* Leerer Zustand */}
+      {/* Leerer Zustand: ehrliche Pilot-Botschaft.
+          Eine Auto-Discovery beim Quartier-Onboarding (analog zu Stadt-Domain,
+          Amtsblatt, OEPNV-Stops) ist als Welle geplant —
+          siehe docs/plans/2026-05-11-doctor-discovery-welle-plan.md */}
       {!loading && doctors.length === 0 && (
         <div className="rounded-xl bg-gray-50 p-8 text-center">
           <Stethoscope className="mx-auto h-12 w-12 text-muted-foreground/30" />
           <p className="mt-3 text-lg font-medium text-[#2D3142]">
-            Keine Aerzte gefunden
+            Aerzte werden noch eingebunden
           </p>
           <p className="text-sm text-muted-foreground mt-1">
-            In Ihrer Naehe sind aktuell keine Aerzte mit diesem Fachgebiet
-            verfuegbar.
+            Aerzte fuer Ihr Quartier sind in der Pilot-Phase noch nicht
+            automatisch eingebunden. Wir arbeiten an einer automatischen
+            Aerzte-Suche fuer neue Quartiere{activeFilter ? "" : " (Allgemeinmedizin, Augenheilkunde, Orthopaedie u.a.)"}.
           </p>
         </div>
       )}

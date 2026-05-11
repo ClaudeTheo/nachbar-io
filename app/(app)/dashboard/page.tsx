@@ -7,10 +7,9 @@ import {
   CheckCircle2,
   MessageCircle,
   Newspaper,
-  Bot,
+  Megaphone,
 } from "lucide-react";
 import { useSos } from "@/components/sos/SosContext";
-import { FeatureGate } from "@/components/FeatureGate";
 import { DiscoverGrid } from "@/components/dashboard/DiscoverGrid";
 import { CategoryIcon } from "@/components/CategoryIcon";
 import { GREETING_ICON_MAP } from "@/lib/category-icons";
@@ -296,25 +295,26 @@ export default function DashboardPage() {
               </p>
             </Link>
 
-            {/* 4. KI-Assistent — nur sichtbar wenn DASHBOARD_AI_QUICK_ACCESS=true.
-                Default off bis §5 AVV durch (sonst fuehrt der Klick zu 503
-                AI_HELP_DISABLED_MESSAGE). Siehe Mig 193 + memory/project_voice_test_blocked_by_avv.md */}
-            <FeatureGate feature="DASHBOARD_AI_QUICK_ACCESS">
-              <Link
-                href="/companion"
-                className="bg-white rounded-xl border shadow-sm p-4 min-h-[80px] flex flex-col justify-center hover:bg-gray-50 transition-colors active:scale-[0.98]"
-              >
-                <div className="flex items-center gap-2">
-                  <Bot className="h-5 w-5 text-emerald-600" />
-                  <span className="font-semibold text-anthrazit">
-                    KI-Assistent
-                  </span>
-                </div>
-                <p className="text-xs text-muted-foreground mt-1">
-                  Fragen & Hilfe
-                </p>
-              </Link>
-            </FeatureGate>
+            {/* 4. Bekanntmachungen — Founder-Wunsch 2026-05-11: die 130+
+                Pilot-Eintraege sollen Schnellzugriff sein. Verlinkt direkt
+                auf /city-services, das ab demselben Datum als Default-Tab
+                "Bekanntmachungen" oeffnet. KI-Assistent wandert spaeter
+                an einen anderen Platz (Hero/FAB) zurueck, sobald §5 AVV
+                durch ist. */}
+            <Link
+              href="/city-services"
+              className="bg-white rounded-xl border shadow-sm p-4 min-h-[80px] flex flex-col justify-center hover:bg-gray-50 transition-colors active:scale-[0.98]"
+            >
+              <div className="flex items-center gap-2">
+                <Megaphone className="h-5 w-5 text-amber-600" />
+                <span className="font-semibold text-anthrazit">
+                  Bekanntmachungen
+                </span>
+              </div>
+              <p className="text-xs text-muted-foreground mt-1">
+                Aus dem Rathaus
+              </p>
+            </Link>
           </div>
 
           {/* Entdecken — DiscoverGrid mit 25 Tiles (12 Primary + 13 Secondary).

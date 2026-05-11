@@ -113,7 +113,7 @@ const primaryItems: DiscoverItem[] = [
   },
   {
     href: "/events",
-    label: "Events",
+    label: "Veranstaltungen",
     icon: PartyPopper,
     bgColor: "bg-pink-50",
     iconColor: "text-pink-500",

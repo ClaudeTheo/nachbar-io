@@ -68,6 +68,19 @@ describe("DiscoverGrid", () => {
     expect(hrefs).toContain("/mitessen");
   });
 
+  it("/events-Tile traegt deutsches Label 'Veranstaltungen' (nicht 'Events')", () => {
+    // Hintergrund: Founder hat Tile nicht gefunden, weil er nach "Veranstaltungen"
+    // suchte. UI-Texte muessen deutsch sein (siehe CLAUDE.md Sprachregel).
+    const { container } = render(<DiscoverGrid />);
+    const grid = container.querySelector('[data-testid="discover-grid"]')!;
+    const eventsTile = Array.from(grid.querySelectorAll("a")).find(
+      (a) => a.getAttribute("href") === "/events",
+    );
+    expect(eventsTile).toBeTruthy();
+    expect(eventsTile!.textContent).toContain("Veranstaltungen");
+    expect(eventsTile!.textContent).not.toContain("Events");
+  });
+
   it("secondary enthaelt Mein Tag + Pakete + Pflegegrad-Navigator (vorher versteckt)", () => {
     const { container } = render(<DiscoverGrid />);
     const btn = container.querySelector(

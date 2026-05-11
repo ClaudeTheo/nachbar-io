@@ -8,6 +8,7 @@ import { NightModeGate } from "@/components/terminal/NightModeGate";
 import ScreensaverOverlay from "@/components/terminal/ScreensaverOverlay";
 import AppointmentPopup from "@/components/terminal/AppointmentPopup";
 import IncomingCallOverlay from "@/components/terminal/video/IncomingCallOverlay";
+import { BugReportButton } from "@/components/BugReportButton";
 
 /**
  * Terminal-Layout: Vollbild fuer 10" Kiosk-Display (1280x800).
@@ -47,6 +48,9 @@ export default function TerminalLayout({
 
       {/* Termin-Popup 15 Min. vor Termin (z-45) */}
       <AppointmentPopup />
+
+      {/* Bug-Report-FAB (z-40, anonym da Terminal Pin-basiert ohne Auth-User) */}
+      <BugReportButton anonymous />
 
       {/* Nachtmodus-Overlay (22:00–07:00), ueberlagert alles (z-50) */}
       <NightModeGate />

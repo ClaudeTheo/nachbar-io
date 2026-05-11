@@ -196,7 +196,7 @@ async function seedDemo() {
       event_date: eventDate.toISOString(),
       location: event.location,
       quarter_id: quarter.id,
-      created_by: postUserId,
+      user_id: postUserId,
     });
     if (error) {
       console.warn(`  ⚠️  ${event.title}: ${error.message}`);

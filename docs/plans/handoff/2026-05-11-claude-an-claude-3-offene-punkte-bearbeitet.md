@@ -32,7 +32,27 @@ tldr: 3-Punkte-Handoff abgearbeitet. Pkt 1 Code-Verkabelung verifiziert (Hoer-Te
 - `select * from feature_flags where name = 'AI_PROVIDER_OFF'` (sollte off sein)
 - `select * from care_consents where user_id = 'dbd5e23e-...' and consent_type = 'ai_onboarding'`
 
-**Bleibt Founder-Hand:** Tatsaechlicher Mikrofon-Test im Browser (siehe Quell-Handoff Pkt 1).
+### Diagnose-Nachtrag 2026-05-11 mittag (Read-only via Supabase MCP)
+
+Direkte Pruefung der drei Bedingungen fuer Founder-User `dbd5e23e-...`:
+
+| Check | Wert | Befund |
+|---|---|---|
+| `users.settings.ai_enabled` | `"true"` | ✅ User-Setting an |
+| `users.settings.ai_assistance_level` | `"everyday"` | ✅ Level gesetzt |
+| `feature_flags.AI_PROVIDER_OFF.enabled` | `true` | ❌ Global-Kill-Switch AN |
+| `care_consents.ai_onboarding.granted` | `null` (kein Row) | ❌ Care-Consent fehlt |
+
+**Ergebnis:** Hoer-Test ergibt jetzt garantiert 503. Das ist **kein Bug**, sondern der korrekte Sperr-Zustand bis Provider-AVV (§5 in MEMORY) durch ist.
+
+**Hintergrund:** `AI_PROVIDER_OFF=true` ist Founders Kill-Switch fuer KI-Provider bis Anthropic + Mistral AVV nach HR-Eintragung unterschrieben sind. `care_consents.ai_onboarding` fehlt weil `setAiAssistanceLevel` `updateConsents` nur ruft, wenn sich `enabled` aendert (Zeile 105-107 in `lib/ai/user-settings.ts`) — beim Aktivieren mit existierendem Level ist das uebersprungen worden.
+
+**Mapping Pkt 1 → AVV-Pfad:** Hoer-Test verschiebt sich auf nach HR-Eintragung AG Freiburg (~2-3 Wochen) und AVV-Abschluss. **Pkt 1 ist also kein offener Pilot-Task**, sondern wartet auf §5.
+
+**Wenn doch jetzt testen** (nur als Diagnose, nicht produktiv, Rote Zone weil Provider-Live):
+1. `UPDATE feature_flags SET enabled = false WHERE key = 'AI_PROVIDER_OFF';`
+2. App-Profil → KI-Einstellungen Toggle aus + wieder an (triggert `updateConsents(..., ai_onboarding: true)`).
+Token: `VOICE-TEST-PROVIDER-LIVE-GO`.
 
 ## Pkt 2 — BugReportButton auf Senior-Layouts
 

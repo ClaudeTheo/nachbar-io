@@ -43,6 +43,11 @@ export async function listWarnings(provider: Provider) {
   }
 
   const nowIso = new Date().toISOString();
+  // Founder-Regel 2026-05-11: Nur Warnungen mit gueltigem Ablaufdatum in der
+  // Zukunft. NULL-Fallthrough (`expires_at IS NULL` wurde frueher gezeigt) ist
+  // entfernt — ohne expires_at koennen wir nicht zusichern, dass die Warnung
+  // noch aktiv ist, also lieber nicht zeigen (Defense in Depth, falls Cron mal
+  // ohne expires_at schreibt).
   const { data, error } = await supabase
     .from("external_warning_cache")
     .select(
@@ -51,7 +56,8 @@ export async function listWarnings(provider: Provider) {
     .eq("provider", provider)
     .eq("status", "active")
     .eq("quarter_id", quarterId)
-    .or(`expires_at.is.null,expires_at.gte.${nowIso}`);
+    .not("expires_at", "is", null)
+    .gte("expires_at", nowIso);
 
   if (error) {
     console.error(`[warnings/${provider}]`, error);

@@ -26,6 +26,7 @@ interface ExternalWarningItem {
   instruction: string | null;
   severity: Severity;
   sentAt: string | null;
+  expiresAt: string | null;
   attributionText: string;
 }
 
@@ -105,7 +106,11 @@ export function ExternalWarningBanner({
                 <span className="rounded-full bg-amber-200/70 px-2 py-1 text-[11px] font-medium text-amber-950">
                   {formatSeverity(warning.severity)}
                 </span>
-                {warning.sentAt ? (
+                {warning.expiresAt ? (
+                  <span className="text-xs text-amber-900/80">
+                    Gilt bis: {formatSentAt(warning.expiresAt)}
+                  </span>
+                ) : warning.sentAt ? (
                   <span className="text-xs text-amber-900/80">
                     Aktualisiert: {formatSentAt(warning.sentAt)}
                   </span>
@@ -183,6 +188,8 @@ function normalizeWarning(value: unknown): ExternalWarningItem | null {
     typeof record.attribution_text === "string" ? record.attribution_text : null;
   const sentAt =
     typeof record.sent_at === "string" ? record.sent_at.trim() : null;
+  const expiresAt =
+    typeof record.expires_at === "string" ? record.expires_at.trim() : null;
 
   if (!provider || !severity || !id || !headline || !attributionText) {
     return null;
@@ -196,6 +203,7 @@ function normalizeWarning(value: unknown): ExternalWarningItem | null {
     instruction: typeof record.instruction === "string" ? record.instruction : null,
     severity,
     sentAt: sentAt && sentAt.length > 0 ? sentAt : null,
+    expiresAt: expiresAt && expiresAt.length > 0 ? expiresAt : null,
     attributionText,
   };
 }

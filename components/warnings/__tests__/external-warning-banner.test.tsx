@@ -77,6 +77,7 @@ describe("ExternalWarningBanner", () => {
               instruction: null,
               severity: "moderate",
               sent_at: "  2026-04-16T18:00:00.000Z  ",
+              expires_at: "2026-04-17T20:30:00.000Z",
               attribution_text: "Quelle: BBK",
             },
           ]),
@@ -90,8 +91,11 @@ describe("ExternalWarningBanner", () => {
     render(<ExternalWarningBanner />);
 
     expect(await screen.findByText("Amtliche Warnung")).toBeInTheDocument();
-    expect(screen.getByText("Aktualisiert: 16.04., 20:00")).toBeInTheDocument();
+    // Founder-Regel 2026-05-11: Bevorzugte Anzeige ist "Gilt bis: ..." (klar
+    // dass die Warnung aktiv ist), statt "Aktualisiert: ..." (kann alt wirken).
+    expect(screen.getByText("Gilt bis: 17.04., 22:30")).toBeInTheDocument();
     expect(screen.queryByText(/2026-04-16T18:00:00\.000Z/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/Aktualisiert/)).not.toBeInTheDocument();
   });
 
   it("sorts severe warnings before moderate ones", async () => {

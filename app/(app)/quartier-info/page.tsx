@@ -21,6 +21,7 @@ import {
   ShoppingBag,
   Clock,
   MapPin,
+  Plus,
 } from "lucide-react";
 import { WeatherWidget } from "@/components/weather/WeatherWidget";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -657,6 +658,26 @@ export default function QuartierInfoPage() {
             nicht verlinkt.
           </p>
         )}
+
+        {/* Quartier-eigene Veranstaltungen — Pfad zum Anlegen & Anschauen */}
+        <div className="mt-4 flex flex-wrap items-center gap-2 border-t border-gray-100 pt-4">
+          <Link
+            href="/events/new"
+            className="inline-flex items-center gap-2 rounded-xl bg-quartier-green px-4 py-3 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-quartier-green-dark"
+            data-testid="info-events-create"
+          >
+            <Plus className="h-4 w-4" />
+            Eigene Veranstaltung anlegen
+          </Link>
+          <Link
+            href="/events"
+            className="inline-flex items-center gap-2 rounded-xl border border-quartier-green/30 bg-white px-4 py-3 text-sm font-medium text-quartier-green transition-colors hover:bg-quartier-green/5"
+            data-testid="info-events-list"
+          >
+            <Calendar className="h-4 w-4" />
+            Alle Quartier-Veranstaltungen
+          </Link>
+        </div>
       </section>
 
       {/* 8. Rathaus & Services */}

@@ -409,7 +409,10 @@ describe("ProfilePage — Error-Handling Bugfixes", () => {
     });
   });
 
-  it("zeigt legacy-gesperrte Profilziele deaktiviert statt als Links", async () => {
+  it("zeigt hardcoded disabled Profilziele deaktiviert (Umfragen, Paketannahme)", async () => {
+    // 2026-05-11: Phase-I-Gate aufgeloest, /companion ist jetzt aktiver Link.
+    // Umfragen und Paketannahme bleiben in profile/page.tsx hardcoded disabled
+    // (separat von der ehemaligen LEGACY_ROUTE_PREFIXES-Liste).
     mockUserSelect.mockResolvedValue({
       data: makeProfile(),
       error: null,
@@ -422,10 +425,11 @@ describe("ProfilePage — Error-Handling Bugfixes", () => {
       expect(screen.getByText("Max Mustermann")).toBeDefined();
     });
 
+    // /companion ist jetzt aktiver Link (BottomNav-Konsistenz)
     const companion = screen.getByText("KI-Assistent");
-    expect(companion.closest("a")).toBeNull();
-    expect(companion.closest('[aria-disabled="true"]')).not.toBeNull();
+    expect(companion.closest("a")?.getAttribute("href")).toBe("/companion");
 
+    // Umfragen + Paketannahme bleiben in profile/page.tsx hardcoded disabled
     const polls = screen.getByText("Umfragen");
     expect(polls.closest("a")).toBeNull();
     expect(polls.closest('[aria-disabled="true"]')).not.toBeNull();
@@ -440,6 +444,8 @@ describe("ProfilePage — Error-Handling Bugfixes", () => {
     expect(screen.getByText("Karte").closest("a")?.getAttribute("href")).toBe(
       "/map",
     );
-    expect(screen.getAllByText("Im Pilot noch deaktiviert").length).toBe(3);
+    // Seit 2026-05-11 nur noch 2 disabled-Items: Umfragen + Paketannahme.
+    // /companion ist jetzt aktiv (Phase-I-Gate aufgeloest).
+    expect(screen.getAllByText("Im Pilot noch deaktiviert").length).toBe(2);
   });
 });

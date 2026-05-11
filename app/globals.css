@@ -36,6 +36,12 @@
   --color-success-green: #22c55e;
   --color-info-blue: #3b82f6;
 
+  /* Visual-Polish v7 Akzent-Tokens — Tageszeit-Tint, Logo-Akzente, Featured-Tile */
+  --color-rhine-blue: #7aa0b8;
+  --color-terracotta: #c26b43;
+  --color-cream-pink: #e8d5c4;
+  --color-lifted-cream: #fffcf9;
+
   /* Icon Circle Backgrounds */
   --color-icon-bg-blue: #dbeafe;
   --color-icon-bg-green: #dcfce7;
@@ -116,6 +122,9 @@
   --sidebar-accent-foreground: #3d3d50;
   --sidebar-border: #ebe5dd;
   --sidebar-ring: #2e7d5e;
+
+  /* Visual-Polish v7 — Tageszeit-Tint Default (overridden via [data-phase="..."] auf <html>) */
+  --phase-tint-bg: transparent;
 }
 
 @layer base {
@@ -128,6 +137,66 @@
   html {
     @apply font-sans;
   }
+}
+
+/* ============================================================
+   VISUAL-POLISH v7 — 5-Phasen-Tageszeit-Tint
+   Aktivierung: PhaseDetector setzt data-phase auf <html>.
+   Default (ohne data-phase) = transparent (siehe :root --phase-tint-bg).
+   Overlay: body::before, position fixed, pointer-events: none.
+   Transition: 1500ms ease — bleibt aktiv auch bei prefers-reduced-motion
+   (siehe Handover-File: Phase-Fade D ist die einzige Bewegung die bleiben darf,
+    weil sie 1x/Stunde feuert und nicht stoert).
+   ============================================================ */
+
+[data-phase="morgen"] {
+  --phase-tint-bg: linear-gradient(
+    135deg,
+    rgba(245, 158, 11, 0.05) 0%,
+    rgba(232, 213, 196, 0.07) 60%,
+    transparent 100%
+  );
+}
+
+[data-phase="mittag"] {
+  --phase-tint-bg: transparent;
+}
+
+[data-phase="nachmittag"] {
+  --phase-tint-bg: linear-gradient(
+    180deg,
+    rgba(245, 158, 11, 0.06) 0%,
+    rgba(245, 158, 11, 0.02) 50%,
+    transparent 100%
+  );
+}
+
+[data-phase="abend"] {
+  --phase-tint-bg: linear-gradient(
+    0deg,
+    rgba(122, 160, 184, 0.10) 0%,
+    rgba(122, 160, 184, 0.04) 40%,
+    transparent 100%
+  );
+}
+
+[data-phase="nacht"] {
+  --phase-tint-bg: radial-gradient(
+    circle at 50% 0%,
+    rgba(245, 158, 11, 0.04) 0%,
+    rgba(245, 158, 11, 0.02) 30%,
+    transparent 60%
+  );
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: var(--phase-tint-bg);
+  pointer-events: none;
+  z-index: 1;
+  transition: background 1500ms ease;
 }
 
 /* ============================================================
@@ -177,6 +246,101 @@ h4 {
   -webkit-backdrop-filter: blur(20px);
   border-top: 1px solid rgba(235, 229, 221, 0.5);
   box-shadow: 0 -1px 8px rgba(61, 61, 80, 0.06);
+}
+
+/* ============================================================
+   VISUAL-POLISH v7 — Glas-Tiles (Mastercard-Hybrid)
+   Specs aus Handover 2026-05-11 (Iteration 7):
+   - Cream-Tile: rgba(255, 252, 249, 0.40), Blur 12 px desktop / 6 px mobile
+   - Green-Tile: rgba(46, 125, 94, 0.65), Blur 12 px desktop / 6 px mobile
+   - Top-Edge-Highlight: 1.5px gradient rgba(255,255,255,0.7) -> transparent
+   - Inner-Bottom-Shadow: inset 0 -1px 2px rgba(0,0,0,0.04)
+   - @supports backdrop-filter Wrapper + Solid-Fallback fuer aeltere Browser
+   - prefers-reduced-motion: graceful degrade auf solid (s. ACCESSIBILITY-Block unten)
+   ============================================================ */
+
+/* Solid-Fallback fuer Browser ohne backdrop-filter */
+.glass-tile {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 1rem;
+  position: relative;
+  transition:
+    background-color 150ms ease-out,
+    border-color 150ms ease-out;
+}
+
+.glass-tile-green {
+  background: var(--primary);
+  color: var(--primary-foreground);
+  border: 1px solid rgba(46, 125, 94, 0.4);
+  border-radius: 1rem;
+  position: relative;
+  transition:
+    background-color 150ms ease-out,
+    border-color 150ms ease-out;
+}
+
+/* Glas-Effekt nur wenn Browser backdrop-filter unterstuetzt */
+@supports (backdrop-filter: blur(12px)) or (-webkit-backdrop-filter: blur(12px)) {
+  .glass-tile {
+    background: rgba(255, 252, 249, 0.40);
+    backdrop-filter: blur(12px) saturate(120%);
+    -webkit-backdrop-filter: blur(12px) saturate(120%);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    box-shadow: inset 0 -1px 2px rgba(0, 0, 0, 0.04);
+  }
+
+  .glass-tile::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1.5px;
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      rgba(255, 255, 255, 0.7) 50%,
+      transparent 100%
+    );
+    border-radius: 1rem 1rem 0 0;
+    pointer-events: none;
+  }
+
+  .glass-tile-green {
+    background: rgba(46, 125, 94, 0.65);
+    backdrop-filter: blur(12px) saturate(120%);
+    -webkit-backdrop-filter: blur(12px) saturate(120%);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    box-shadow: inset 0 -1px 2px rgba(0, 0, 0, 0.06);
+  }
+
+  .glass-tile-green::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1.5px;
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      rgba(255, 255, 255, 0.5) 50%,
+      transparent 100%
+    );
+    border-radius: 1rem 1rem 0 0;
+    pointer-events: none;
+  }
+
+  /* Mobile: reduzierter Blur fuer Performance auf Low-End-Geraeten */
+  @media (max-width: 640px) {
+    .glass-tile,
+    .glass-tile-green {
+      backdrop-filter: blur(6px) saturate(110%);
+      -webkit-backdrop-filter: blur(6px) saturate(110%);
+    }
+  }
 }
 
 /* Content-Card Basis — borderlos mit warmem Schatten */
@@ -901,6 +1065,27 @@ h4 {
     backdrop-filter: none;
     -webkit-backdrop-filter: none;
     background: rgba(253, 248, 243, 0.95);
+  }
+
+  /* Glas-Tiles (v7) Fallback: solid statt blur, hoehere Opacity */
+  .glass-tile {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    background: var(--card);
+    border-color: var(--border);
+  }
+  .glass-tile::before {
+    display: none;
+  }
+
+  .glass-tile-green {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    background: var(--primary);
+    border-color: rgba(46, 125, 94, 0.4);
+  }
+  .glass-tile-green::before {
+    display: none;
   }
 }
 

@@ -3,6 +3,7 @@ import { Nunito, Nunito_Sans } from "next/font/google";
 import { Toaster } from "@/components/ui/sonner";
 import { ServiceWorkerRegistration } from "@/components/ServiceWorkerRegistration";
 import { CapacitorInit } from "@/components/CapacitorInit";
+import { PhaseDetector } from "@/components/PhaseDetector";
 import { isClosedPilotMode } from "@/lib/closed-pilot";
 import "./globals.css";
 
@@ -92,6 +93,7 @@ export default function RootLayout({
         <Toaster position="top-center" />
         <ServiceWorkerRegistration />
         <CapacitorInit />
+        <PhaseDetector />
       </body>
     </html>
   );

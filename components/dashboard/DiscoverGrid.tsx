@@ -71,7 +71,8 @@ const VISIBLE_CATEGORIES: TileCategory[] = [
 
 // Alle Tiles in einer flachen Liste, gruppiert ueber das `category`-Feld.
 // Reihenfolge im Array bestimmt Render-Reihenfolge innerhalb jeder Kategorie.
-const allItems: DiscoverItem[] = [
+// Exportiert, damit Tests die Liste konsistent referenzieren koennen.
+export const allItems: DiscoverItem[] = [
   // === Nachbarschaft (5 Tiles, immer sichtbar) ===
   {
     href: "/board",
@@ -317,10 +318,15 @@ function DiscoverTile({ item }: { item: DiscoverItem }) {
     <Link
       href={item.href}
       onClick={() => haptic("light")}
-      className={`flex flex-col items-center gap-1.5 rounded-xl ${item.bgColor} p-3 transition-all duration-200 animate-card-lift hover:shadow-soft`}
+      // min-h-[80px] erfuellt die CLAUDE.md Senior-Regel (Pflicht-Touch-Target).
+      // break-words verhindert Truncation bei langen Labels (Veranstaltungen,
+      // Pflegegrad, Einkaufshilfe, Muellkalender) auf 360px-Viewport.
+      className={`flex min-h-[80px] flex-col items-center justify-center gap-1.5 rounded-xl ${item.bgColor} p-3 transition-all duration-200 animate-card-lift hover:shadow-soft`}
     >
       <Icon className={`h-6 w-6 ${item.iconColor}`} strokeWidth={1.5} />
-      <span className="text-xs font-medium text-anthrazit">{item.label}</span>
+      <span className="text-center text-xs font-medium leading-tight text-anthrazit break-words">
+        {item.label}
+      </span>
     </Link>
   );
 }

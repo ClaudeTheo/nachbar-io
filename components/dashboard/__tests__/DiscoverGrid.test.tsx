@@ -261,16 +261,13 @@ describe("DiscoverGrid", () => {
   });
 
   it("Section verschwindet komplett wenn alle Tiles abgeschaltet sind", async () => {
-    const allTileKeys = [
-      "BOARD", "MARKETPLACE", "LEIHBOERSE", "MITESSEN", "MAP", "HILFE",
-      "GRUPPEN", "PRAEVENTION", "WASTE_CALENDAR", "REPORTS", "EVENTS", "EXPERTS",
-      "MY_DAY", "PACKAGES", "PFLEGEGRAD_NAVIGATOR", "WHOHAS", "MESSAGES", "NOISE",
-      "HANDWERKER", "LOST_FOUND", "TIPS", "CITY_SERVICES", "CARE_SHOPPING",
-      "CARE_TASKS", "SPRECHSTUNDE",
-    ];
+    // Wir benutzen die echte Tile-Liste der Komponente, damit der Test bei
+    // einem hinzugefuegten Tile nicht stillschweigend weiterlaeuft (Reviewer-
+    // Befund 2026-05-11: hardcoded list driftet von allItems weg).
+    const { allItems } = await import("../DiscoverGrid");
     mockGetFeatureFlags.mockResolvedValueOnce(
-      allTileKeys.map((suffix) => ({
-        key: `DISCOVER_TILE_${suffix}`,
+      allItems.map((item) => ({
+        key: item.flagKey,
         enabled: false,
         required_roles: [],
         required_plans: [],

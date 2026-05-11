@@ -22,7 +22,6 @@ import { ReputationBadge } from "@/components/ReputationBadge";
 import { FloatingHelpButton } from "@/components/FloatingHelpButton";
 import { InfoBar } from "@/modules/info-hub/components/InfoBar";
 import { HeroCard } from "@/components/HeroCard";
-import { ExternalWarningBanner } from "@/components/warnings/external-warning-banner";
 // Moved to Quartier hub
 // import { InviteNeighborModal } from "@/components/InviteNeighborModal";
 import { DailyCheckinBubble } from "@/modules/care/components/checkin/DailyCheckinBubble";
@@ -106,7 +105,9 @@ export default function DashboardPage() {
     <>
       <PullToRefresh onRefresh={loadDashboard}>
         <div className="space-y-6 animate-fade-in-up">
-          <ExternalWarningBanner maxItems={3} />
+          {/* Amtliche Warnungen wurden 2026-05-11 vom Dashboard auf
+              /quartier-info (Section 3 "Warnungen") verschoben — Founder-Entscheidung:
+              Startseite frei von externen Stoerern, Warnungen gehoeren zur Quartier-Info. */}
 
           {/* Hero-Bereich: Begruessung + Wetter */}
           {isUxRedesignEnabled("UX_REDESIGN_DASHBOARD") ? (

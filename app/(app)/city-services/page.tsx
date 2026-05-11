@@ -43,7 +43,10 @@ function getCategoryConfig(catId: AnnouncementCategory) {
 }
 
 export default function CityServicesPage() {
-  const [activeTab, setActiveTab] = useState<TabId>("services");
+  // Default-Tab "announcements": Founder-Entscheidung 2026-05-11 — die
+  // Bekanntmachungen (130+ pro Pilot-Quartier) sind die wichtigste Inhalt
+  // unter "Rathaus & Infos" und sollen sofort sichtbar sein.
+  const [activeTab, setActiveTab] = useState<TabId>("announcements");
   const [searchQuery, setSearchQuery] = useState("");
   const { currentQuarter } = useQuarter();
 
@@ -171,10 +174,11 @@ export default function CityServicesPage() {
     entries: filteredWiki.filter((e) => e.category === cat.id),
   })).filter((cat) => cat.entries.length > 0);
 
+  // Bekanntmachungen zuerst (links) — Founder-Entscheidung 2026-05-11.
   const tabs: { id: TabId; label: string }[] = [
+    { id: "announcements", label: "Bekanntmachungen" },
     { id: "services", label: "Services" },
     { id: "wiki", label: "Hilfe / Wiki" },
-    { id: "announcements", label: "Bekanntmachungen" },
   ];
 
   return (

@@ -45,14 +45,17 @@ function makeRequest(pathname: string) {
   } as never;
 }
 
-describe("Legacy Route Blocking (Phase I, hart)", () => {
+describe("Legacy Route Gate (2026-05-11 aufgeloest)", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.stubEnv("NEXT_PUBLIC_CLOSED_PILOT_MODE", "false");
     mockGetCachedFlagEnabled.mockResolvedValue(false);
   });
 
-  const legacyRoutes = [
+  // Diese Routes wurden bis 2026-05-10 im Proxy auf /kreis-start umgeleitet
+  // (LEGACY_ROUTE_PREFIXES). Founder-Entscheidung 2026-05-11: Phase-I-Gate
+  // aufgeloest, Features sollen wieder direkt erreichbar sein.
+  const previouslyLegacyRoutes = [
     "/board",
     "/marketplace",
     "/gruppen",
@@ -63,18 +66,18 @@ describe("Legacy Route Blocking (Phase I, hart)", () => {
     "/mitessen",
   ];
 
-  for (const route of legacyRoutes) {
-    it(`blockiert ${route} und leitet auf /kreis-start um`, async () => {
+  for (const route of previouslyLegacyRoutes) {
+    it(`erlaubt ${route} (frueher Legacy, jetzt aktiv)`, async () => {
       const res = await proxy(makeRequest(route));
-      expect(res.status).toBe(307);
-      expect(res.headers.get("location")).toContain("/kreis-start");
+      const location = res?.headers?.get("location") ?? "";
+      expect(location).not.toContain("/kreis-start");
     });
   }
 
-  it("blockiert auch Sub-Routen wie /marketplace/123", async () => {
+  it("erlaubt auch Sub-Routen wie /marketplace/123", async () => {
     const res = await proxy(makeRequest("/marketplace/123"));
-    expect(res.status).toBe(307);
-    expect(res.headers.get("location")).toContain("/kreis-start");
+    const location = res?.headers?.get("location") ?? "";
+    expect(location).not.toContain("/kreis-start");
   });
 
   const allowedRoutes = [

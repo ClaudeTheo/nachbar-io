@@ -179,13 +179,14 @@ test.describe("Pilot-Smoke — 12 Pilot-Kriterien (Bad Saeckingen 2026-04)", () 
     }
   });
 
-  // ── Kriterium 11: Legacy-Routen verriegelt (/board /marketplace /handwerker) ──
-  test("pilot-criterion-11-legacy-routes-verriegelt", async ({ page }) => {
-    // Nach Migration 160 (Flag-Shutoff) sollten diese Routen 404 liefern
-    // ODER auf /kreis-start redirecten ODER FeatureGate-Block zeigen.
-    // WICHTIG: /board und /marketplace haben KEINEN FeatureGate auf Page-Ebene
-    // (verifiziert in Migration 160 Header) — dieser Test deckt die Luecke auf,
-    // damit Task I-1 (Middleware Route-Flag-Map) im Readiness-Report greifbar wird.
+  // ── Kriterium 11: Feature-Gates effektiv (/board /marketplace /handwerker) ──
+  test("pilot-criterion-11-feature-gates-effective", async ({ page }) => {
+    // 2026-05-11: Phase-I-Gate (lib/legacy-routes.ts) wurde aufgeloest. Alle
+    // Features sind grundsaetzlich erreichbar. Page-Level-FeatureGates wie
+    // /handwerker bleiben aktiv und muessen weiterhin verriegelt sein.
+    // /board und /marketplace haben keinen FeatureGate auf Page-Ebene mehr —
+    // sie sind erwartungsgemaess erreichbar (Soft-Annotation als Info-Eintrag
+    // im Readiness-Report, kein Hard-Fail).
     const routes = ["/board", "/marketplace", "/handwerker"];
     const results: Array<{
       route: string;
@@ -211,13 +212,15 @@ test.describe("Pilot-Smoke — 12 Pilot-Kriterien (Bad Saeckingen 2026-04)", () 
         fgVisible;
       results.push({ route, status, url: currentUrl, locked });
     }
-    // Soft-Assert: Luecken werden als Annotation gemeldet, nicht als Hard-Fail,
-    // damit der Readiness-Report die Luecken sauber einsammeln kann.
+    // Info-Annotation: Routes ohne Page-Level-FeatureGate sind erwartungsgemaess
+    // erreichbar (seit 2026-05-11 Phase-I-Gate-Aufloesung). Falls eine dieser
+    // Routes wieder verriegelt werden soll, gehoert ein Page-Level-FeatureGate
+    // in die jeweilige Page (analog /handwerker).
     const unlocked = results.filter((r) => !r.locked);
     if (unlocked.length > 0) {
       test.info().annotations.push({
-        type: "gap",
-        description: `Legacy-Routen nicht verriegelt: ${unlocked.map((u) => `${u.route} → ${u.status}@${u.url}`).join(", ")} — Task I-1 (Middleware Route-Flag-Map)`,
+        type: "info",
+        description: `Routes ohne Page-FeatureGate (erwartet, kein Bug): ${unlocked.map((u) => `${u.route} → ${u.status}@${u.url}`).join(", ")}`,
       });
     }
     // /handwerker hat FeatureGate → muss in jedem Fall verriegelt sein

@@ -1,45 +1,22 @@
 // Gemeinsame Legacy-Route-Gates fuer Middleware und UI.
-// Diese Ziele sind in Phase I bewusst noch nicht aktiv und werden serverseitig
-// auf /kreis-start umgeleitet.
+//
+// Historisch: Diese Liste verriegelte in "Phase I" 25 Routen serverseitig auf
+// /kreis-start (siehe proxy.ts und tests/e2e/pilot-smoke.spec.ts Kriterium 11).
+//
+// 2026-05-11 Founder-Entscheidung: Phase-I-Gate aufgeloest. Alle Features sollen
+// in der App erreichbar sein. Wenn einzelne Pages tatsaechlich nicht reif sind,
+// werden sie ueber eigene Page-Level-FeatureGates geschuetzt (vgl. /handwerker)
+// oder ueber gezielte Feature-Flags in den jeweiligen Routes.
+//
+// Gesundheits-Routes laufen separat ueber health-feature-gate (proxy.ts), das
+// bleibt unveraendert.
 
-export const LEGACY_ROUTE_PREFIXES = [
-  // Gesundheits-Routes (aerzte, appointments, consultations, sprechstunde,
-  // medications, arzt) sind NICHT mehr hier: sie werden in proxy.ts via
-  // health-feature-gate Flag-abhaengig geroutet. Siehe
-  // docs/plans/2026-04-19-gesundheits-flags-stufe-3.md.
-  "/care/shopping",
-  "/care/tasks",
-  "/care/reports",
-  "/care/audit",
-  "/care/kiosk",
-  "/anamnese",
-  "/board",
-  "/marketplace",
-  "/leihboerse",
-  "/experts",
-  "/handwerker",
-  "/ki-fragebogen",
-  "/pflegegrad-navigator",
-  "/pflege-einstellungen",
-  "/praevention",
-  "/whohas",
-  "/mitessen",
-  "/lost-found",
-  "/gruppen",
-  "/polls",
-  "/noise",
-  "/reports",
-  "/packages",
-  "/vouching",
-  "/companion",
-  // /jugend ist wieder aktiv (2026-04-19). Gate ueber YOUTH_MODULE-Flag
-  // greift in den einzelnen Jugend-API-Routes (/api/youth/*), die
-  // End-User-Seite /jugend und das Admin-Tab /admin > Jugend sind
-  // ueber is_admin + Plan-Checks geschuetzt.
-] as const;
+export const LEGACY_ROUTE_PREFIXES = [] as const;
 
 export function isLegacyRoute(pathname: string): boolean {
+  // Liste leer seit 2026-05-11. Funktion bleibt erhalten als Hook, falls
+  // einzelne Routes wieder gezielt verriegelt werden muessen.
   return LEGACY_ROUTE_PREFIXES.some(
-    (prefix) => pathname === prefix || pathname.startsWith(prefix + "/"),
+    (prefix: string) => pathname === prefix || pathname.startsWith(prefix + "/"),
   );
 }

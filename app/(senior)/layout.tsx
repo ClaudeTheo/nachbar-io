@@ -2,6 +2,7 @@
 import type { ReactNode } from "react";
 import { PushBanner } from "@/components/senior/PushBanner";
 import { RefreshRotationMounter } from "@/components/senior/RefreshRotationMounter";
+import { BugReportButton } from "@/components/BugReportButton";
 
 export const metadata = {
   title: "QuartierApp — Senioren-Gerät",
@@ -30,6 +31,7 @@ export default function SeniorDeviceLayout({
         <PushBanner />
         {children}
       </main>
+      <BugReportButton />
     </div>
   );
 }

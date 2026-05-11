@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
+import { BugReportButton } from "@/components/BugReportButton";
 
 /**
  * Seniorenmodus Layout
@@ -65,6 +66,8 @@ export default function SeniorLayout({
 
       {/* Platzhalter für die fixierte Notruf-Leiste */}
       <div style={{ height: "110px" }} />
+
+      <BugReportButton />
     </div>
   );
 }

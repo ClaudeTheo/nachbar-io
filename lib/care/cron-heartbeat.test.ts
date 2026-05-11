@@ -28,7 +28,7 @@ function createMockSupabase(heartbeats: Array<{ job_id: string; last_run_at: str
 }
 
 describe('CRON_JOBS Konfiguration', () => {
-  it('definiert alle vercel.json-Cron-Jobs (29)', () => {
+  it('definiert alle vercel.json-Cron-Jobs (30)', () => {
     const jobIds: CronJobId[] = [
       'escalation', 'checkin', 'medications', 'appointments', 'heartbeat_escalation',
       'shopping_match', 'task_cleanup',
@@ -40,9 +40,10 @@ describe('CRON_JOBS Konfiguration', () => {
       'quartier_info_sync', 'osm_poi_sync', 'quartier_events_sync', 'nina_sync',
       'news_scrape', 'news_rss',
       'synthetic_smoke',
+      'doctors_refresh',
     ];
-    expect(jobIds).toHaveLength(29);
-    expect(Object.keys(CRON_JOBS)).toHaveLength(29);
+    expect(jobIds).toHaveLength(30);
+    expect(Object.keys(CRON_JOBS)).toHaveLength(30);
     for (const id of jobIds) {
       expect(CRON_JOBS[id]).toBeDefined();
       expect(CRON_JOBS[id].name).toBeTruthy();
@@ -103,7 +104,7 @@ describe('checkCronHealth', () => {
 
     const results = await checkCronHealth(supabase);
 
-    expect(results).toHaveLength(29); // Alle vercel.json-Crons
+    expect(results).toHaveLength(30); // Alle vercel.json-Crons
     for (const result of results) {
       expect(result.status).toBe('error');
       expect(result.lastRunAt).toBeNull();

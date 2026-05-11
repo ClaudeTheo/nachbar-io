@@ -43,6 +43,11 @@ vi.mock("@/modules/events/services/event-feed-crawler.service", () => ({
   crawlEventFeeds: (...args: unknown[]) => crawlMock(...args),
 }));
 
+const discoverDoctorsMock = vi.fn();
+vi.mock("@/modules/doctors/services/doctor-discovery.service", () => ({
+  discoverDoctorsForQuarter: (...args: unknown[]) => discoverDoctorsMock(...args),
+}));
+
 beforeEach(() => {
   getUserMock.mockReset();
   fromMock.mockReset();
@@ -51,6 +56,7 @@ beforeEach(() => {
   probeMock.mockReset();
   discoverStopsMock.mockReset();
   crawlMock.mockReset();
+  discoverDoctorsMock.mockReset();
 
   // Default: super_admin
   getUserMock.mockResolvedValue({
@@ -65,16 +71,32 @@ beforeEach(() => {
     }),
   });
 
-  // Default: Admin-DB liefert Quartier mit city
-  adminFromMock.mockReturnValue({
-    select: () => ({
+  // Default: Admin-DB-Mock liefert Quartier-Daten je nach Select-Feld.
+  // Welle Doctor-Discovery liest center_lat/center_lng zusaetzlich zum city-Lookup.
+  adminFromMock.mockImplementation(() => ({
+    select: (cols: string) => ({
       eq: () => ({
-        single: async () => ({
-          data: { city: "Bad Säckingen" },
-          error: null,
-        }),
+        single: async () => {
+          if (cols.includes("center_lat")) {
+            return {
+              data: { center_lat: 47.5535, center_lng: 7.964 },
+              error: null,
+            };
+          }
+          return { data: { city: "Bad Säckingen" }, error: null };
+        },
       }),
     }),
+  }));
+
+  // Default: Doctor-Discovery laeuft sauber durch ohne neue Eintraege.
+  discoverDoctorsMock.mockResolvedValue({
+    quarterId: "q-1",
+    inserted: 0,
+    updated: 0,
+    hidden: 0,
+    total: 0,
+    errors: [],
   });
 
   // Default: resolveCityDomain liefert nichts (Tests ohne Auto-Discovery)

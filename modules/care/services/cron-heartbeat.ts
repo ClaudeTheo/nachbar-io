@@ -53,6 +53,10 @@ export const CRON_JOBS = {
 
   // Monitoring
   synthetic_smoke: { name: 'Synthetic Smoke', expectedIntervalMinutes: 30, criticalAfterMinutes: 60 },
+
+  // Welle Doctor-Discovery (Plan 2026-05-11) — monatlicher Refresh,
+  // erwartet alle 30 Tage, kritisch nach 35 Tagen.
+  doctors_refresh: { name: 'Aerzte-Verzeichnis-Refresh', expectedIntervalMinutes: 43200, criticalAfterMinutes: 50400 },
 } as const;
 
 export type CronJobId = keyof typeof CRON_JOBS;

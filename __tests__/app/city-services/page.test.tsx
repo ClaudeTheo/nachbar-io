@@ -273,22 +273,35 @@ describe("CityServicesPage — Grundlegendes Rendering", () => {
     expect(screen.getByText("Bekanntmachungen")).toBeDefined();
   });
 
-  it("zeigt Services-Tab als Standard aktiv", () => {
+  it("zeigt Bekanntmachungen-Tab als Standard aktiv (Founder 2026-05-11)", () => {
     render(<CityServicesPage />);
-    // Services-Tab ist der erste Button mit "Services"-Text
-    const serviceElements = screen.getAllByText("Services");
-    const servicesTab = serviceElements.find((el) => el.tagName === "BUTTON");
-    expect(servicesTab?.className).toContain("bg-white");
+    // Bekanntmachungen ist Default-Tab seit dem Promote-Commit.
+    const tab = screen
+      .getAllByText("Bekanntmachungen")
+      .find((el) => el.tagName === "BUTTON");
+    expect(tab?.className).toContain("bg-white");
   });
 });
 
 // ============================================================
-// 2. SERVICES-TAB (Standard)
+// 2. SERVICES-TAB
+// Hinweis: Standard-Tab ist seit Founder-Entscheidung 2026-05-11 die
+// Bekanntmachungen. Jeder Services-Tab-Test klickt deshalb zuerst den
+// Services-Tab aktiv, bevor er die spezifischen Inhalte prueft.
 // ============================================================
+
+function activateServicesTab() {
+  const serviceTabButton = screen
+    .getAllByText("Services")
+    .find((el) => el.tagName === "BUTTON");
+  if (!serviceTabButton) throw new Error("Services-Tab nicht gefunden");
+  fireEvent.click(serviceTabButton);
+}
 
 describe("CityServicesPage — Services-Tab", () => {
   it("zeigt Rathaus-Ueberschrift mit Stadtname aus DB", async () => {
     render(<CityServicesPage />);
+    activateServicesTab();
     await waitFor(() => {
       // Heading ist "Rathaus {cityName}" — kann gesplittet gerendert werden
       const heading = screen.getByRole("heading", { level: 2 });
@@ -299,6 +312,7 @@ describe("CityServicesPage — Services-Tab", () => {
 
   it("zeigt Telefonnummer als klickbaren Link", async () => {
     render(<CityServicesPage />);
+    activateServicesTab();
     await waitFor(() => {
       const phoneLink = screen.getByText("07761 51-0");
       expect(phoneLink.closest("a")?.getAttribute("href")).toBe(
@@ -309,6 +323,7 @@ describe("CityServicesPage — Services-Tab", () => {
 
   it("zeigt E-Mail-Adresse als klickbaren Link", async () => {
     render(<CityServicesPage />);
+    activateServicesTab();
     await waitFor(() => {
       const emailLink = screen.getByText("info@bad-saeckingen.de");
       expect(emailLink.closest("a")?.getAttribute("href")).toBe(
@@ -319,6 +334,7 @@ describe("CityServicesPage — Services-Tab", () => {
 
   it("zeigt Oeffnungszeiten aus DB-Config", async () => {
     render(<CityServicesPage />);
+    activateServicesTab();
     await waitFor(() => {
       expect(screen.getByText(/8:00–12:00, 14:00–16:00/)).toBeDefined();
     });
@@ -326,6 +342,7 @@ describe("CityServicesPage — Services-Tab", () => {
 
   it("zeigt Website-Link wenn rathaus_url vorhanden", async () => {
     render(<CityServicesPage />);
+    activateServicesTab();
     await waitFor(() => {
       const websiteLink = screen.getByText("Website");
       expect(websiteLink.closest("a")).toHaveAttribute(
@@ -337,6 +354,7 @@ describe("CityServicesPage — Services-Tab", () => {
 
   it("zeigt alle Service-Link-Kategorien", async () => {
     render(<CityServicesPage />);
+    activateServicesTab();
     await waitFor(() => {
       for (const cat of SERVICE_LINK_CATEGORIES) {
         const elements = screen.getAllByText(cat.label);
@@ -347,6 +365,7 @@ describe("CityServicesPage — Services-Tab", () => {
 
   it("zeigt Service-Links aus DB", async () => {
     render(<CityServicesPage />);
+    activateServicesTab();
     await waitFor(() => {
       expect(screen.getByText("Bürgerbüro")).toBeDefined();
       expect(screen.getByText("Fundbüro")).toBeDefined();
@@ -364,6 +383,7 @@ describe("CityServicesPage — Services-Tab", () => {
     });
 
     render(<CityServicesPage />);
+    activateServicesTab();
 
     await waitFor(() => {
       expect(screen.getAllByText("Rathaus Laufenburg (Baden)").length).toBe(2);
@@ -383,6 +403,7 @@ describe("CityServicesPage — Services-Tab", () => {
     });
 
     render(<CityServicesPage />);
+    activateServicesTab();
 
     await waitFor(() => {
       expect(screen.getAllByText("Rathaus Laufenburg (Baden)").length).toBe(2);

@@ -185,12 +185,12 @@ Refresh aller Quartiere woechentlich. `last_seen_at` aktualisieren, alte als `vi
 
 ---
 
-## Open Questions
+## Founder-Entscheidungen 2026-05-11
 
-1. **Fachgebiet-Normalisierung:** OSM tagged sehr unterschiedlich. KBV-Liste ist autoritativ — bauen wir eine Mapping-Tabelle oder akzeptieren wir freien Text?
-2. **Termin-Buchung externer Aerzte:** Externe Aerzte koennen nicht direkt Termine empfangen — `/care/termine/buchen/[doctorId]` braucht entweder ein Fallback-Link auf Praxis-Website ODER der Termin-Button wird ausgeblendet fuer externe Aerzte.
-3. **Sichtbarkeit fuer Senioren:** Externe Aerzte sollten klar als "Verzeichnis-Eintrag" markiert sein, damit Senioren wissen, dass die Praxis nicht direkt mit der App arbeitet.
-4. **Auto-Refresh-Intervall:** Woechentlich genug, oder taeglich? OSM aendert sich relativ langsam.
+1. **Fachgebiet-Normalisierung: Whitelist (1a).** Mapping der 8 KBV-Begriffe auf bekannte OSM-Tags. Aerzte ohne erkennbares Fachgebiet werden zu "Allgemein" gemappt (Default-Bucket, sichtbar). Spaeter Admin-UI fuer manuelle Zuordnung.
+2. **Termin-Buchung externer Aerzte: Telefon + Website (2b+c).** Senior sieht auf externen Karten `📞 Anrufen` (tel:-Link) und `🌐 Website`-Buttons. Termin-Buchung-Pfad nur fuer registrierte Aerzte sichtbar.
+3. **Refresh-Intervall: beim Onboarding + monatlich (3a+c).** Sofortiger Pull bei Quartier-Erstellung, dann Cron 1x pro Monat. Vermeidet OSM-API-Stress, deckt Aenderungen ab.
+4. **Sichtbarkeit: Badge oben rechts (4b).** "Verzeichnis"-Badge auf der Karte. Klein, klar, kein Senior-Stress.
 
 ---
 

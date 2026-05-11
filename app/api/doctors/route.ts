@@ -105,8 +105,9 @@ export async function GET(request: NextRequest) {
     }
   }
 
-  // Distanz berechnen, filtern und sortieren
-  const results = doctorProfiles
+  // Distanz berechnen, filtern und sortieren — registrierte Aerzte mit
+  // is_external=false markieren (Frontend zeigt Termin-Button) (Founder 2b+c).
+  const registered = doctorProfiles
     .map((doc) => {
       const distance_km = calculateDistance(
         CENTER_LAT,
@@ -118,11 +119,61 @@ export async function GET(request: NextRequest) {
         ...doc,
         distance_km,
         users: userMap.get(doc.user_id) ?? null,
+        is_external: false as const,
       };
     })
     .filter((doc) => doc.distance_km <= MAX_RADIUS_KM)
     .sort((a, b) => a.distance_km - b.distance_km);
 
+  // Verzeichnis-Eintraege aus external_doctors zusaetzlich laden (Welle Doctors).
+  // Founder 4b: Badge "Verzeichnis", Termin-Button ausgeblendet.
+  let externalQuery = supabase
+    .from("external_doctors")
+    .select(
+      "id, source, source_ref, name, specialization, address, phone, website, email, latitude, longitude, distance_km",
+    )
+    .eq("visible", true);
+  if (specialization) {
+    externalQuery = externalQuery.contains("specialization", [specialization]);
+  }
+  const { data: externalData, error: externalError } = await externalQuery;
+  if (externalError) {
+    console.warn(
+      "[doctors] Externe Eintraege konnten nicht geladen werden:",
+      externalError,
+    );
+  }
+
+  type ExternalRow = {
+    id: string;
+    source: "osm" | "kbv" | "manual";
+    source_ref: string;
+    name: string;
+    specialization: string[];
+    address: string | null;
+    phone: string | null;
+    website: string | null;
+    email: string | null;
+    latitude: number;
+    longitude: number;
+    distance_km: number | null;
+  };
+
+  const external = ((externalData ?? []) as ExternalRow[])
+    .map((row) => ({
+      ...row,
+      distance_km:
+        row.distance_km ??
+        calculateDistance(CENTER_LAT, CENTER_LNG, row.latitude, row.longitude),
+      is_external: true as const,
+    }))
+    .filter((row) => row.distance_km <= MAX_RADIUS_KM);
+
+  // Kombinieren — registrierte Aerzte zuerst, externe danach, jeweils nach Distanz sortiert
+  const combined = [...registered, ...external].sort(
+    (a, b) => a.distance_km - b.distance_km,
+  );
+
   // Array zurueckgeben (NICHT als Wrapper-Objekt — Konvention)
-  return NextResponse.json(results);
+  return NextResponse.json(combined);
 }

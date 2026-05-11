@@ -56,6 +56,10 @@
       "schedule": "0 6 * * *"
     },
     {
+      "path": "/api/cron/doctors-refresh",
+      "schedule": "0 3 1 * *"
+    },
+    {
       "path": "/api/cron/heartbeat-cleanup",
       "schedule": "0 3 * * 0"
     },

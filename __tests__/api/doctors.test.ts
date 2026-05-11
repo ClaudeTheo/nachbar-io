@@ -41,13 +41,21 @@ vi.mock("next/headers", () => ({
 }));
 
 let mockQueryResult: { data: unknown; error: unknown };
+// external_doctors-Mock: separat, default leer. Welle Doctor-Discovery
+// (Plan 2026-05-11): /api/doctors kombiniert registrierte + externe Aerzte.
+let mockExternalDoctorsResult: { data: unknown; error: unknown } = {
+  data: [],
+  error: null,
+};
 
 vi.mock("@/lib/supabase/server", () => ({
   createClient: vi.fn().mockImplementation(() =>
     Promise.resolve({
-      from: vi.fn(() => {
+      from: vi.fn((table: string) => {
         const chain: Record<string, unknown> = {};
-        const terminalResult = Promise.resolve(mockQueryResult);
+        const result =
+          table === "external_doctors" ? mockExternalDoctorsResult : mockQueryResult;
+        const terminalResult = Promise.resolve(result);
 
         chain.select = vi.fn().mockReturnValue(chain);
         chain.eq = vi.fn().mockReturnValue(chain);
@@ -71,6 +79,7 @@ function makeNextRequest(url: string) {
 beforeEach(() => {
   vi.clearAllMocks();
   mockQueryResult = { data: [], error: null };
+  mockExternalDoctorsResult = { data: [], error: null };
 });
 
 describe("GET /api/doctors", () => {

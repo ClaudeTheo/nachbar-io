@@ -22,6 +22,7 @@ import { resolveCityDomain } from "@/lib/cities/domain-resolver";
 import { probeFeedUrls } from "@/lib/events/feed-url-prober";
 import { discoverOepnvStopsForQuarter } from "@/modules/info-hub/services/oepnv-stops-discovery.service";
 import { crawlEventFeeds } from "@/modules/events/services/event-feed-crawler.service";
+import { discoverDoctorsForQuarter } from "@/modules/doctors/services/doctor-discovery.service";
 
 async function requireSuperAdmin() {
   const supabase = await createClient();
@@ -170,6 +171,51 @@ export async function POST(
     }
   }
 
+  // Schritt 4: Welle Doctor-Discovery — OSM-Aerzte rund um Quartier-Zentrum.
+  // Schreibt direkt in external_doctors (eigene Tabelle, kein Konflikt mit
+  // doctor_profiles). Founder-Entscheidung 3a: initialer Pull beim Onboarding.
+  let doctors: {
+    inserted: number;
+    updated: number;
+    hidden: number;
+    total: number;
+  } | null = null;
+  try {
+    const { data: quarterCoords, error: coordsErr } = await adminDb
+      .from("quarters")
+      .select("center_lat, center_lng")
+      .eq("id", id)
+      .single();
+    if (coordsErr) {
+      errors.push(`Doctor-Discovery Coords-Lookup: ${coordsErr.message}`);
+    } else if (
+      quarterCoords?.center_lat != null &&
+      quarterCoords?.center_lng != null
+    ) {
+      const report = await discoverDoctorsForQuarter(
+        adminDb,
+        id,
+        quarterCoords.center_lat,
+        quarterCoords.center_lng,
+      );
+      doctors = {
+        inserted: report.inserted,
+        updated: report.updated,
+        hidden: report.hidden,
+        total: report.total,
+      };
+      if (report.errors.length > 0) {
+        errors.push(...report.errors.map((e) => `Doctors: ${e}`));
+      }
+    } else {
+      errors.push("Doctor-Discovery uebersprungen: Quartier ohne Center-Koordinaten.");
+    }
+  } catch (err) {
+    errors.push(
+      `Doctor-Discovery-Fehler: ${err instanceof Error ? err.message : String(err)}`,
+    );
+  }
+
   return NextResponse.json({
     quarterId: id,
     domain,
@@ -179,6 +225,7 @@ export async function POST(
     events,
     fetchedFromRss,
     fetchedFromIcal,
+    doctors,
     errors,
   });
 }

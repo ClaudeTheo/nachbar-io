@@ -38,11 +38,15 @@ beforeEach(() => {
 });
 
 describe("DiscoverGrid", () => {
-  it("zeigt initial 12 primaere Kategorien", () => {
+  // === Sichtbarkeit & Gesamtzaehlung ===
+
+  it("zeigt initial 15 Tiles (3 Kategorien * 5 Tiles, Mehr-Kategorie versteckt)", () => {
+    // Plan 2026-05-11 Task 3: Nachbarschaft + Hilfe & Pflege + Quartier-Info
+    // sind immer sichtbar; "Mehr Funktionen" erst nach Klick auf "Mehr entdecken".
     const { container } = render(<DiscoverGrid />);
     const grid = container.querySelector('[data-testid="discover-grid"]')!;
     const links = grid.querySelectorAll("a");
-    expect(links.length).toBe(12);
+    expect(links.length).toBe(15);
   });
 
   it("zeigt 'Mehr entdecken' Button", () => {
@@ -51,7 +55,7 @@ describe("DiscoverGrid", () => {
     expect(btn).toBeInTheDocument();
   });
 
-  it("zeigt alle Kategorien nach Klick auf 'Mehr entdecken'", () => {
+  it("zeigt alle 24 Tiles nach Klick auf 'Mehr entdecken'", () => {
     const { container } = render(<DiscoverGrid />);
     const btn = container.querySelector(
       '[data-testid="discover-expand"]',
@@ -59,34 +63,119 @@ describe("DiscoverGrid", () => {
     fireEvent.click(btn);
     const grid = container.querySelector('[data-testid="discover-grid"]')!;
     const links = grid.querySelectorAll("a");
-    // 12 primaer + 13 sekundaer = 25
-    expect(links.length).toBe(25);
+    // 5 Nachbarschaft + 5 Hilfe&Pflege + 5 Quartier-Info + 9 Mehr = 24
+    expect(links.length).toBe(24);
     // Button verschwindet
     expect(
       container.querySelector('[data-testid="discover-expand"]'),
     ).not.toBeInTheDocument();
   });
 
-  it("hat Lucide-Icons statt Emojis", () => {
+  it("hat Lucide-Icons statt Emojis (15 Tile-SVGs initial)", () => {
+    // Tile-SVGs sind nur in den 3 sichtbaren Kategorie-Sektionen, nicht
+    // im ChevronDown des Mehr-entdecken-Buttons.
     const { container } = render(<DiscoverGrid />);
-    const grid = container.querySelector('[data-testid="discover-grid"]')!;
-    const svgs = grid.querySelectorAll("svg");
-    expect(svgs.length).toBe(12);
+    const tileSvgs = container.querySelectorAll(
+      '[data-testid^="category-"] svg',
+    );
+    expect(tileSvgs.length).toBe(15);
   });
 
-  it("primary enthaelt Leihboerse + Mitessen (vorher versteckt)", () => {
+  // === Kategorie-Sektionen ===
+
+  it("rendert die drei Kategorie-Headlines (Nachbarschaft, Hilfe & Pflege, Quartier-Info)", () => {
     const { container } = render(<DiscoverGrid />);
-    const grid = container.querySelector('[data-testid="discover-grid"]')!;
-    const hrefs = Array.from(grid.querySelectorAll("a")).map((a) =>
+    expect(container.textContent).toContain("Nachbarschaft");
+    expect(container.textContent).toContain("Hilfe & Pflege");
+    expect(container.textContent).toContain("Quartier-Info");
+  });
+
+  it("Nachbarschaft-Sektion enthaelt Brett, Hilfe, Marktplatz, Gruppen, Veranstaltungen", () => {
+    const { container } = render(<DiscoverGrid />);
+    const section = container.querySelector(
+      '[data-testid="category-nachbarschaft"]',
+    )!;
+    expect(section).toBeInTheDocument();
+    const hrefs = Array.from(section.querySelectorAll("a")).map((a) =>
       a.getAttribute("href"),
     );
-    expect(hrefs).toContain("/leihboerse");
-    expect(hrefs).toContain("/mitessen");
+    expect(hrefs).toEqual([
+      "/board",
+      "/hilfe",
+      "/marketplace",
+      "/gruppen",
+      "/events",
+    ]);
   });
 
+  it("Hilfe & Pflege-Sektion enthaelt Mein Tag, Aufgabentafel, Einkaufshilfe, Pflegegrad, Sprechstunde", () => {
+    const { container } = render(<DiscoverGrid />);
+    const section = container.querySelector(
+      '[data-testid="category-hilfe_pflege"]',
+    )!;
+    expect(section).toBeInTheDocument();
+    const hrefs = Array.from(section.querySelectorAll("a")).map((a) =>
+      a.getAttribute("href"),
+    );
+    expect(hrefs).toEqual([
+      "/my-day",
+      "/care/tasks",
+      "/care/shopping",
+      "/pflegegrad-navigator",
+      "/sprechstunde",
+    ]);
+  });
+
+  it("Quartier-Info-Sektion enthaelt Karte, Muellkalender, Rathaus, Maengel, Praevention", () => {
+    const { container } = render(<DiscoverGrid />);
+    const section = container.querySelector(
+      '[data-testid="category-quartier_info"]',
+    )!;
+    expect(section).toBeInTheDocument();
+    const hrefs = Array.from(section.querySelectorAll("a")).map((a) =>
+      a.getAttribute("href"),
+    );
+    expect(hrefs).toEqual([
+      "/map",
+      "/waste-calendar",
+      "/city-services",
+      "/reports",
+      "/praevention",
+    ]);
+  });
+
+  it("Mehr-Sektion ist initial nicht im DOM, erscheint nach Klick", () => {
+    const { container } = render(<DiscoverGrid />);
+    expect(
+      container.querySelector('[data-testid="category-mehr"]'),
+    ).not.toBeInTheDocument();
+    const btn = container.querySelector(
+      '[data-testid="discover-expand"]',
+    ) as HTMLElement;
+    fireEvent.click(btn);
+    const mehrSection = container.querySelector(
+      '[data-testid="category-mehr"]',
+    )!;
+    expect(mehrSection).toBeInTheDocument();
+    const hrefs = Array.from(mehrSection.querySelectorAll("a")).map((a) =>
+      a.getAttribute("href"),
+    );
+    expect(hrefs).toEqual([
+      "/experts",
+      "/handwerker",
+      "/leihboerse",
+      "/mitessen",
+      "/whohas",
+      "/packages",
+      "/lost-found",
+      "/noise",
+      "/tips",
+    ]);
+  });
+
+  // === Label-Pflicht (deutsche Sprache + Eindeutigkeit) ===
+
   it("/events-Tile traegt deutsches Label 'Veranstaltungen' (nicht 'Events')", () => {
-    // Hintergrund: Founder hat Tile nicht gefunden, weil er nach "Veranstaltungen"
-    // suchte. UI-Texte muessen deutsch sein (siehe CLAUDE.md Sprachregel).
     const { container } = render(<DiscoverGrid />);
     const grid = container.querySelector('[data-testid="discover-grid"]')!;
     const eventsTile = Array.from(grid.querySelectorAll("a")).find(
@@ -96,6 +185,36 @@ describe("DiscoverGrid", () => {
     expect(eventsTile!.textContent).toContain("Veranstaltungen");
     expect(eventsTile!.textContent).not.toContain("Events");
   });
+
+  it("/waste-calendar-Tile traegt eindeutiges Label 'Muellkalender'", () => {
+    // Plan 2026-05-11 Task 4: "Kalender" liest sich wie Veranstaltungskalender,
+    // ist aber der Muellabfuhr-Kalender — Senior-Erwartungsbruch beseitigen.
+    const { container } = render(<DiscoverGrid />);
+    const grid = container.querySelector('[data-testid="discover-grid"]')!;
+    const tile = Array.from(grid.querySelectorAll("a")).find(
+      (a) => a.getAttribute("href") === "/waste-calendar",
+    );
+    expect(tile).toBeTruthy();
+    expect(tile!.textContent).toContain("Muellkalender");
+    expect(tile!.textContent).not.toMatch(/^Kalender$/);
+  });
+
+  it("Chat-Tile ist nicht im DiscoverGrid (Duplikat zu Nachrichten-Schnellzugriff)", () => {
+    // Plan 2026-05-11 Task 2: Schnellzugriff "Nachrichten" auf Dashboard ist
+    // primaerer Pfad; "Chat"-Tile waere ein Duplikat.
+    const { container } = render(<DiscoverGrid />);
+    const btn = container.querySelector(
+      '[data-testid="discover-expand"]',
+    ) as HTMLElement;
+    fireEvent.click(btn);
+    const grid = container.querySelector('[data-testid="discover-grid"]')!;
+    const hrefs = Array.from(grid.querySelectorAll("a")).map((a) =>
+      a.getAttribute("href"),
+    );
+    expect(hrefs).not.toContain("/messages");
+  });
+
+  // === Feature-Flag-Filter (Admin-Toggle) ===
 
   it("filterTilesByFlags blendet Tiles mit disabled-Flag aus", () => {
     const items = [
@@ -112,7 +231,7 @@ describe("DiscoverGrid", () => {
     ]);
   });
 
-  it("blendet Tile aus wenn Admin-Flag enabled=false setzt", async () => {
+  it("blendet Tile aus wenn Admin-Flag enabled=false setzt (z.B. Veranstaltungen)", async () => {
     mockGetFeatureFlags.mockResolvedValueOnce([
       {
         key: "DISCOVER_TILE_EVENTS",
@@ -134,14 +253,14 @@ describe("DiscoverGrid", () => {
       expect(hrefs).not.toContain("/events");
     });
 
-    // Andere Primary-Tiles bleiben sichtbar
-    const grid = container.querySelector('[data-testid="discover-grid"]')!;
-    const remaining = grid.querySelectorAll("a");
-    expect(remaining.length).toBe(11); // 12 - 1 (Events ausgeblendet)
+    // Nachbarschaft-Sektion hat dann nur noch 4 Tiles
+    const nachbarschaft = container.querySelector(
+      '[data-testid="category-nachbarschaft"]',
+    )!;
+    expect(nachbarschaft.querySelectorAll("a").length).toBe(4);
   });
 
   it("Section verschwindet komplett wenn alle Tiles abgeschaltet sind", async () => {
-    // Alle 25 Tile-Keys auf disabled
     const allTileKeys = [
       "BOARD", "MARKETPLACE", "LEIHBOERSE", "MITESSEN", "MAP", "HILFE",
       "GRUPPEN", "PRAEVENTION", "WASTE_CALENDAR", "REPORTS", "EVENTS", "EXPERTS",
@@ -169,18 +288,35 @@ describe("DiscoverGrid", () => {
     });
   });
 
-  it("secondary enthaelt Mein Tag + Pakete + Pflegegrad-Navigator (vorher versteckt)", () => {
-    const { container } = render(<DiscoverGrid />);
-    const btn = container.querySelector(
-      '[data-testid="discover-expand"]',
-    ) as HTMLElement;
-    fireEvent.click(btn);
-    const grid = container.querySelector('[data-testid="discover-grid"]')!;
-    const hrefs = Array.from(grid.querySelectorAll("a")).map((a) =>
-      a.getAttribute("href"),
+  it("Kategorie-Sektion verschwindet wenn alle Tiles dieser Kategorie ab sind", async () => {
+    // Alle Quartier-Info-Tiles abschalten — Sektion sollte komplett verschwinden
+    mockGetFeatureFlags.mockResolvedValueOnce(
+      ["MAP", "WASTE_CALENDAR", "CITY_SERVICES", "REPORTS", "PRAEVENTION"].map(
+        (suffix) => ({
+          key: `DISCOVER_TILE_${suffix}`,
+          enabled: false,
+          required_roles: [],
+          required_plans: [],
+          enabled_quarters: [],
+          admin_override: false,
+        }),
+      ),
     );
-    expect(hrefs).toContain("/my-day");
-    expect(hrefs).toContain("/packages");
-    expect(hrefs).toContain("/pflegegrad-navigator");
+
+    const { container } = render(<DiscoverGrid />);
+
+    await waitFor(() => {
+      expect(
+        container.querySelector('[data-testid="category-quartier_info"]'),
+      ).not.toBeInTheDocument();
+    });
+
+    // Andere Kategorien bleiben
+    expect(
+      container.querySelector('[data-testid="category-nachbarschaft"]'),
+    ).toBeInTheDocument();
+    expect(
+      container.querySelector('[data-testid="category-hilfe_pflege"]'),
+    ).toBeInTheDocument();
   });
 });

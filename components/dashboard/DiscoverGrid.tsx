@@ -14,7 +14,6 @@ import {
   PartyPopper,
   Star,
   Search,
-  MessageCircle,
   Wrench,
   Building2,
   Paperclip,
@@ -32,6 +31,12 @@ import {
 } from "lucide-react";
 import { haptic } from "@/lib/haptics";
 
+type TileCategory =
+  | "nachbarschaft"
+  | "hilfe_pflege"
+  | "quartier_info"
+  | "mehr";
+
 interface DiscoverItem {
   href: string;
   label: string;
@@ -43,10 +48,31 @@ interface DiscoverItem {
    * Default-Verhalten wenn Flag in DB fehlt: Tile sichtbar.
    */
   flagKey: string;
+  /**
+   * Semantische Kategorie fuer Dashboard-Gruppierung (Plan 2026-05-11 Task 3).
+   * Tiles in `mehr` sind nur sichtbar nach Klick auf "Mehr entdecken".
+   */
+  category: TileCategory;
 }
 
-// Primäre Kategorien (immer sichtbar, 12 = 3 Reihen á 4)
-const primaryItems: DiscoverItem[] = [
+const CATEGORY_LABELS: Record<TileCategory, string> = {
+  nachbarschaft: "Nachbarschaft",
+  hilfe_pflege: "Hilfe & Pflege",
+  quartier_info: "Quartier-Info",
+  mehr: "Mehr Funktionen",
+};
+
+// Reihenfolge der initial sichtbaren Kategorien (mehr ist hinter Mehr-Button).
+const VISIBLE_CATEGORIES: TileCategory[] = [
+  "nachbarschaft",
+  "hilfe_pflege",
+  "quartier_info",
+];
+
+// Alle Tiles in einer flachen Liste, gruppiert ueber das `category`-Feld.
+// Reihenfolge im Array bestimmt Render-Reihenfolge innerhalb jeder Kategorie.
+const allItems: DiscoverItem[] = [
+  // === Nachbarschaft (5 Tiles, immer sichtbar) ===
   {
     href: "/board",
     label: "Brett",
@@ -54,38 +80,7 @@ const primaryItems: DiscoverItem[] = [
     bgColor: "bg-blue-50",
     iconColor: "text-blue-500",
     flagKey: "DISCOVER_TILE_BOARD",
-  },
-  {
-    href: "/marketplace",
-    label: "Marktplatz",
-    icon: ShoppingBag,
-    bgColor: "bg-green-50",
-    iconColor: "text-quartier-green",
-    flagKey: "DISCOVER_TILE_MARKETPLACE",
-  },
-  {
-    href: "/leihboerse",
-    label: "Leihbörse",
-    icon: Repeat,
-    bgColor: "bg-green-50",
-    iconColor: "text-quartier-green",
-    flagKey: "DISCOVER_TILE_LEIHBOERSE",
-  },
-  {
-    href: "/mitessen",
-    label: "Mitessen",
-    icon: UtensilsCrossed,
-    bgColor: "bg-rose-50",
-    iconColor: "text-rose-500",
-    flagKey: "DISCOVER_TILE_MITESSEN",
-  },
-  {
-    href: "/map",
-    label: "Karte",
-    icon: MapPin,
-    bgColor: "bg-emerald-50",
-    iconColor: "text-emerald-500",
-    flagKey: "DISCOVER_TILE_MAP",
+    category: "nachbarschaft",
   },
   {
     href: "/hilfe",
@@ -94,6 +89,16 @@ const primaryItems: DiscoverItem[] = [
     bgColor: "bg-amber-50",
     iconColor: "text-alert-amber",
     flagKey: "DISCOVER_TILE_HILFE",
+    category: "nachbarschaft",
+  },
+  {
+    href: "/marketplace",
+    label: "Marktplatz",
+    icon: ShoppingBag,
+    bgColor: "bg-green-50",
+    iconColor: "text-quartier-green",
+    flagKey: "DISCOVER_TILE_MARKETPLACE",
+    category: "nachbarschaft",
   },
   {
     href: "/gruppen",
@@ -102,30 +107,7 @@ const primaryItems: DiscoverItem[] = [
     bgColor: "bg-emerald-50",
     iconColor: "text-emerald-600",
     flagKey: "DISCOVER_TILE_GRUPPEN",
-  },
-  {
-    href: "/praevention",
-    label: "Prävention",
-    icon: Heart,
-    bgColor: "bg-emerald-100",
-    iconColor: "text-emerald-700",
-    flagKey: "DISCOVER_TILE_PRAEVENTION",
-  },
-  {
-    href: "/waste-calendar",
-    label: "Kalender",
-    icon: CalendarDays,
-    bgColor: "bg-orange-50",
-    iconColor: "text-orange-500",
-    flagKey: "DISCOVER_TILE_WASTE_CALENDAR",
-  },
-  {
-    href: "/reports",
-    label: "Mängel",
-    icon: AlertTriangle,
-    bgColor: "bg-violet-50",
-    iconColor: "text-violet-500",
-    flagKey: "DISCOVER_TILE_REPORTS",
+    category: "nachbarschaft",
   },
   {
     href: "/events",
@@ -134,19 +116,10 @@ const primaryItems: DiscoverItem[] = [
     bgColor: "bg-pink-50",
     iconColor: "text-pink-500",
     flagKey: "DISCOVER_TILE_EVENTS",
+    category: "nachbarschaft",
   },
-  {
-    href: "/experts",
-    label: "Experten",
-    icon: Star,
-    bgColor: "bg-yellow-50",
-    iconColor: "text-yellow-600",
-    flagKey: "DISCOVER_TILE_EXPERTS",
-  },
-];
 
-// Weitere Kategorien (hinter "Mehr entdecken")
-const secondaryItems: DiscoverItem[] = [
+  // === Hilfe & Pflege (5 Tiles, immer sichtbar) ===
   {
     href: "/my-day",
     label: "Mein Tag",
@@ -154,86 +127,7 @@ const secondaryItems: DiscoverItem[] = [
     bgColor: "bg-yellow-50",
     iconColor: "text-yellow-500",
     flagKey: "DISCOVER_TILE_MY_DAY",
-  },
-  {
-    href: "/packages",
-    label: "Pakete",
-    icon: PackageOpen,
-    bgColor: "bg-amber-50",
-    iconColor: "text-amber-600",
-    flagKey: "DISCOVER_TILE_PACKAGES",
-  },
-  {
-    href: "/pflegegrad-navigator",
-    label: "Pflegegrad",
-    icon: ClipboardCheck,
-    bgColor: "bg-emerald-50",
-    iconColor: "text-emerald-600",
-    flagKey: "DISCOVER_TILE_PFLEGEGRAD_NAVIGATOR",
-  },
-  {
-    href: "/whohas",
-    label: "Wer hat?",
-    icon: Search,
-    bgColor: "bg-slate-50",
-    iconColor: "text-slate-500",
-    flagKey: "DISCOVER_TILE_WHOHAS",
-  },
-  {
-    href: "/messages",
-    label: "Chat",
-    icon: MessageCircle,
-    bgColor: "bg-sky-50",
-    iconColor: "text-sky-500",
-    flagKey: "DISCOVER_TILE_MESSAGES",
-  },
-  {
-    href: "/noise",
-    label: "Lärm",
-    icon: AlertTriangle,
-    bgColor: "bg-red-50",
-    iconColor: "text-red-400",
-    flagKey: "DISCOVER_TILE_NOISE",
-  },
-  {
-    href: "/handwerker",
-    label: "Handwerker",
-    icon: Wrench,
-    bgColor: "bg-stone-50",
-    iconColor: "text-stone-500",
-    flagKey: "DISCOVER_TILE_HANDWERKER",
-  },
-  {
-    href: "/lost-found",
-    label: "Fundbüro",
-    icon: Paperclip,
-    bgColor: "bg-teal-50",
-    iconColor: "text-teal-500",
-    flagKey: "DISCOVER_TILE_LOST_FOUND",
-  },
-  {
-    href: "/tips",
-    label: "Tipps",
-    icon: Lightbulb,
-    bgColor: "bg-lime-50",
-    iconColor: "text-lime-600",
-    flagKey: "DISCOVER_TILE_TIPS",
-  },
-  {
-    href: "/city-services",
-    label: "Rathaus",
-    icon: Building2,
-    bgColor: "bg-indigo-50",
-    iconColor: "text-indigo-500",
-    flagKey: "DISCOVER_TILE_CITY_SERVICES",
-  },
-  {
-    href: "/care/shopping",
-    label: "Einkaufshilfe",
-    icon: ShoppingCart,
-    bgColor: "bg-cyan-50",
-    iconColor: "text-cyan-500",
-    flagKey: "DISCOVER_TILE_CARE_SHOPPING",
+    category: "hilfe_pflege",
   },
   {
     href: "/care/tasks",
@@ -242,6 +136,25 @@ const secondaryItems: DiscoverItem[] = [
     bgColor: "bg-purple-50",
     iconColor: "text-purple-500",
     flagKey: "DISCOVER_TILE_CARE_TASKS",
+    category: "hilfe_pflege",
+  },
+  {
+    href: "/care/shopping",
+    label: "Einkaufshilfe",
+    icon: ShoppingCart,
+    bgColor: "bg-cyan-50",
+    iconColor: "text-cyan-500",
+    flagKey: "DISCOVER_TILE_CARE_SHOPPING",
+    category: "hilfe_pflege",
+  },
+  {
+    href: "/pflegegrad-navigator",
+    label: "Pflegegrad",
+    icon: ClipboardCheck,
+    bgColor: "bg-emerald-50",
+    iconColor: "text-emerald-600",
+    flagKey: "DISCOVER_TILE_PFLEGEGRAD_NAVIGATOR",
+    category: "hilfe_pflege",
   },
   {
     href: "/sprechstunde",
@@ -250,6 +163,137 @@ const secondaryItems: DiscoverItem[] = [
     bgColor: "bg-blue-50",
     iconColor: "text-blue-600",
     flagKey: "DISCOVER_TILE_SPRECHSTUNDE",
+    category: "hilfe_pflege",
+  },
+
+  // === Quartier-Info (5 Tiles, immer sichtbar) ===
+  {
+    href: "/map",
+    label: "Karte",
+    icon: MapPin,
+    bgColor: "bg-emerald-50",
+    iconColor: "text-emerald-500",
+    flagKey: "DISCOVER_TILE_MAP",
+    category: "quartier_info",
+  },
+  {
+    href: "/waste-calendar",
+    label: "Muellkalender",
+    icon: CalendarDays,
+    bgColor: "bg-orange-50",
+    iconColor: "text-orange-500",
+    flagKey: "DISCOVER_TILE_WASTE_CALENDAR",
+    category: "quartier_info",
+  },
+  {
+    href: "/city-services",
+    label: "Rathaus",
+    icon: Building2,
+    bgColor: "bg-indigo-50",
+    iconColor: "text-indigo-500",
+    flagKey: "DISCOVER_TILE_CITY_SERVICES",
+    category: "quartier_info",
+  },
+  {
+    href: "/reports",
+    label: "Mängel",
+    icon: AlertTriangle,
+    bgColor: "bg-violet-50",
+    iconColor: "text-violet-500",
+    flagKey: "DISCOVER_TILE_REPORTS",
+    category: "quartier_info",
+  },
+  {
+    href: "/praevention",
+    label: "Prävention",
+    icon: Heart,
+    bgColor: "bg-emerald-100",
+    iconColor: "text-emerald-700",
+    flagKey: "DISCOVER_TILE_PRAEVENTION",
+    category: "quartier_info",
+  },
+
+  // === Mehr Funktionen (9 Tiles, hinter "Mehr entdecken") ===
+  {
+    href: "/experts",
+    label: "Experten",
+    icon: Star,
+    bgColor: "bg-yellow-50",
+    iconColor: "text-yellow-600",
+    flagKey: "DISCOVER_TILE_EXPERTS",
+    category: "mehr",
+  },
+  {
+    href: "/handwerker",
+    label: "Handwerker",
+    icon: Wrench,
+    bgColor: "bg-stone-50",
+    iconColor: "text-stone-500",
+    flagKey: "DISCOVER_TILE_HANDWERKER",
+    category: "mehr",
+  },
+  {
+    href: "/leihboerse",
+    label: "Leihbörse",
+    icon: Repeat,
+    bgColor: "bg-green-50",
+    iconColor: "text-quartier-green",
+    flagKey: "DISCOVER_TILE_LEIHBOERSE",
+    category: "mehr",
+  },
+  {
+    href: "/mitessen",
+    label: "Mitessen",
+    icon: UtensilsCrossed,
+    bgColor: "bg-rose-50",
+    iconColor: "text-rose-500",
+    flagKey: "DISCOVER_TILE_MITESSEN",
+    category: "mehr",
+  },
+  {
+    href: "/whohas",
+    label: "Wer hat?",
+    icon: Search,
+    bgColor: "bg-slate-50",
+    iconColor: "text-slate-500",
+    flagKey: "DISCOVER_TILE_WHOHAS",
+    category: "mehr",
+  },
+  {
+    href: "/packages",
+    label: "Pakete",
+    icon: PackageOpen,
+    bgColor: "bg-amber-50",
+    iconColor: "text-amber-600",
+    flagKey: "DISCOVER_TILE_PACKAGES",
+    category: "mehr",
+  },
+  {
+    href: "/lost-found",
+    label: "Fundbüro",
+    icon: Paperclip,
+    bgColor: "bg-teal-50",
+    iconColor: "text-teal-500",
+    flagKey: "DISCOVER_TILE_LOST_FOUND",
+    category: "mehr",
+  },
+  {
+    href: "/noise",
+    label: "Lärm",
+    icon: AlertTriangle,
+    bgColor: "bg-red-50",
+    iconColor: "text-red-400",
+    flagKey: "DISCOVER_TILE_NOISE",
+    category: "mehr",
+  },
+  {
+    href: "/tips",
+    label: "Tipps",
+    icon: Lightbulb,
+    bgColor: "bg-lime-50",
+    iconColor: "text-lime-600",
+    flagKey: "DISCOVER_TILE_TIPS",
+    category: "mehr",
   },
 ];
 
@@ -281,6 +325,28 @@ function DiscoverTile({ item }: { item: DiscoverItem }) {
   );
 }
 
+function CategorySection({
+  category,
+  tiles,
+}: {
+  category: TileCategory;
+  tiles: DiscoverItem[];
+}) {
+  if (tiles.length === 0) return null;
+  return (
+    <div className="mt-4 first:mt-0" data-testid={`category-${category}`}>
+      <h3 className="mb-2 text-sm font-medium text-muted-foreground">
+        {CATEGORY_LABELS[category]}
+      </h3>
+      <div className="grid grid-cols-4 gap-2">
+        {tiles.map((item) => (
+          <DiscoverTile key={item.href} item={item} />
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export function DiscoverGrid() {
   const [expanded, setExpanded] = useState(false);
   const [disabledKeys, setDisabledKeys] = useState<Set<string>>(new Set());
@@ -305,27 +371,31 @@ export function DiscoverGrid() {
     };
   }, []);
 
-  const visiblePrimary = filterTilesByFlags(primaryItems, disabledKeys);
-  const visibleSecondary = filterTilesByFlags(secondaryItems, disabledKeys);
+  const visibleTiles = filterTilesByFlags(allItems, disabledKeys);
+  const tilesByCategory = (cat: TileCategory) =>
+    visibleTiles.filter((t) => t.category === cat);
+
+  const visibleCount = visibleTiles.length;
+  const mehrTiles = tilesByCategory("mehr");
 
   // Wenn nichts sichtbar bleibt (Admin hat alles abgeschaltet), Section wegfallen
-  if (visiblePrimary.length === 0 && visibleSecondary.length === 0) {
+  if (visibleCount === 0) {
     return null;
   }
 
   return (
-    <section>
+    <section data-testid="discover-grid">
       <h2 className="mb-2 font-semibold text-anthrazit">Entdecken</h2>
-      <div className="grid grid-cols-4 gap-2" data-testid="discover-grid">
-        {visiblePrimary.map((item) => (
-          <DiscoverTile key={item.href} item={item} />
-        ))}
-        {expanded &&
-          visibleSecondary.map((item) => (
-            <DiscoverTile key={item.href} item={item} />
-          ))}
-      </div>
-      {!expanded && visibleSecondary.length > 0 && (
+
+      {VISIBLE_CATEGORIES.map((cat) => (
+        <CategorySection key={cat} category={cat} tiles={tilesByCategory(cat)} />
+      ))}
+
+      {expanded && mehrTiles.length > 0 && (
+        <CategorySection category="mehr" tiles={mehrTiles} />
+      )}
+
+      {!expanded && mehrTiles.length > 0 && (
         <button
           onClick={() => {
             setExpanded(true);

@@ -22,6 +22,11 @@ import {
   ClipboardList,
   Stethoscope,
   Heart,
+  Repeat,
+  UtensilsCrossed,
+  Sun,
+  PackageOpen,
+  ClipboardCheck,
   ChevronDown,
 } from "lucide-react";
 import { haptic } from "@/lib/haptics";
@@ -34,7 +39,7 @@ interface DiscoverItem {
   iconColor: string;
 }
 
-// Primäre 8 Kategorien (immer sichtbar)
+// Primäre Kategorien (immer sichtbar, 12 = 3 Reihen á 4)
 const primaryItems: DiscoverItem[] = [
   {
     href: "/board",
@@ -49,6 +54,20 @@ const primaryItems: DiscoverItem[] = [
     icon: ShoppingBag,
     bgColor: "bg-green-50",
     iconColor: "text-quartier-green",
+  },
+  {
+    href: "/leihboerse",
+    label: "Leihbörse",
+    icon: Repeat,
+    bgColor: "bg-green-50",
+    iconColor: "text-quartier-green",
+  },
+  {
+    href: "/mitessen",
+    label: "Mitessen",
+    icon: UtensilsCrossed,
+    bgColor: "bg-rose-50",
+    iconColor: "text-rose-500",
   },
   {
     href: "/map",
@@ -110,6 +129,27 @@ const primaryItems: DiscoverItem[] = [
 
 // Weitere Kategorien (hinter "Mehr entdecken")
 const secondaryItems: DiscoverItem[] = [
+  {
+    href: "/my-day",
+    label: "Mein Tag",
+    icon: Sun,
+    bgColor: "bg-yellow-50",
+    iconColor: "text-yellow-500",
+  },
+  {
+    href: "/packages",
+    label: "Pakete",
+    icon: PackageOpen,
+    bgColor: "bg-amber-50",
+    iconColor: "text-amber-600",
+  },
+  {
+    href: "/pflegegrad-navigator",
+    label: "Pflegegrad",
+    icon: ClipboardCheck,
+    bgColor: "bg-emerald-50",
+    iconColor: "text-emerald-600",
+  },
   {
     href: "/whohas",
     label: "Wer hat?",

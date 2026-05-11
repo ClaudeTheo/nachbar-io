@@ -10,6 +10,7 @@ import {
   Bot,
 } from "lucide-react";
 import { useSos } from "@/components/sos/SosContext";
+import { DiscoverGrid } from "@/components/dashboard/DiscoverGrid";
 import { CategoryIcon } from "@/components/CategoryIcon";
 import { GREETING_ICON_MAP } from "@/lib/category-icons";
 import { isUxRedesignEnabled } from "@/lib/ux-flags";
@@ -309,6 +310,11 @@ export default function DashboardPage() {
               </p>
             </Link>
           </div>
+
+          {/* Entdecken — DiscoverGrid mit 25 Tiles (12 Primary + 13 Secondary).
+              Jeder Tile per DISCOVER_TILE_*-Feature-Flag im Admin-Dashboard
+              einzeln deaktivierbar (Migration 192). Default: alle sichtbar. */}
+          <DiscoverGrid />
 
           {/* Moved to Quartier/Gesundheit hub:
               - DashboardServices (Kommunal, Hilfe-Boerse, Marktplatz, News, Caregiver)

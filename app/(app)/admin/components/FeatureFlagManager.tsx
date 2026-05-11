@@ -73,6 +73,32 @@ const FLAG_DESCRIPTIONS: Record<string, string> = {
   TWILIO_ENABLED: "Twilio SMS / Phone (AVV noetig)",
   CHECKIN_MESSAGES_ENABLED:
     "Care-Check-in-Schreib-Endpoints (HR + Care-AVV)",
+  // DiscoverGrid-Tiles (Mig 192) — pro Tile einzeln togglebar
+  DISCOVER_TILE_BOARD: "Discover-Tile: Brett (Nachrichtenbrett)",
+  DISCOVER_TILE_MARKETPLACE: "Discover-Tile: Marktplatz",
+  DISCOVER_TILE_LEIHBOERSE: "Discover-Tile: Leihboerse",
+  DISCOVER_TILE_MITESSEN: "Discover-Tile: Mitessen",
+  DISCOVER_TILE_MAP: "Discover-Tile: Karte",
+  DISCOVER_TILE_HILFE: "Discover-Tile: Hilfe",
+  DISCOVER_TILE_GRUPPEN: "Discover-Tile: Gruppen",
+  DISCOVER_TILE_PRAEVENTION: "Discover-Tile: Praevention",
+  DISCOVER_TILE_WASTE_CALENDAR: "Discover-Tile: Muellkalender",
+  DISCOVER_TILE_REPORTS: "Discover-Tile: Maengelmeldungen",
+  DISCOVER_TILE_EVENTS: "Discover-Tile: Veranstaltungen",
+  DISCOVER_TILE_EXPERTS: "Discover-Tile: Experten",
+  DISCOVER_TILE_MY_DAY: "Discover-Tile: Mein Tag",
+  DISCOVER_TILE_PACKAGES: "Discover-Tile: Pakete",
+  DISCOVER_TILE_PFLEGEGRAD_NAVIGATOR: "Discover-Tile: Pflegegrad-Navigator",
+  DISCOVER_TILE_WHOHAS: "Discover-Tile: Wer hat?",
+  DISCOVER_TILE_MESSAGES: "Discover-Tile: Chat",
+  DISCOVER_TILE_NOISE: "Discover-Tile: Laerm-Meldung",
+  DISCOVER_TILE_HANDWERKER: "Discover-Tile: Handwerker",
+  DISCOVER_TILE_LOST_FOUND: "Discover-Tile: Fundbuero",
+  DISCOVER_TILE_TIPS: "Discover-Tile: Tipps",
+  DISCOVER_TILE_CITY_SERVICES: "Discover-Tile: Rathaus",
+  DISCOVER_TILE_CARE_SHOPPING: "Discover-Tile: Einkaufshilfe",
+  DISCOVER_TILE_CARE_TASKS: "Discover-Tile: Aufgabentafel",
+  DISCOVER_TILE_SPRECHSTUNDE: "Discover-Tile: Sprechstunde",
 };
 
 // HEARTBEAT wurde aus "Kern-Module" in "Gesundheit" verschoben (mit den neuen
@@ -101,6 +127,10 @@ const FLAG_GROUPS: Array<{ title: string; pattern: RegExp }> = [
   {
     title: "Billing & Externe Provider",
     pattern: /^(BILLING|TWILIO|CHECKIN_MESSAGES)/,
+  },
+  {
+    title: "Dashboard-Tiles (DiscoverGrid)",
+    pattern: /^DISCOVER_TILE_/,
   },
   {
     title: "Admin / Sonstige",

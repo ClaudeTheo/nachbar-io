@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
+import { getFeatureFlags } from "@/lib/feature-flags";
 import {
   Clipboard,
   ShoppingBag,
@@ -37,6 +38,11 @@ interface DiscoverItem {
   icon: React.ComponentType<{ className?: string; strokeWidth?: number }>;
   bgColor: string;
   iconColor: string;
+  /**
+   * Feature-Flag-Key fuer Admin-Toggle (Migration 192).
+   * Default-Verhalten wenn Flag in DB fehlt: Tile sichtbar.
+   */
+  flagKey: string;
 }
 
 // Primäre Kategorien (immer sichtbar, 12 = 3 Reihen á 4)
@@ -47,6 +53,7 @@ const primaryItems: DiscoverItem[] = [
     icon: Clipboard,
     bgColor: "bg-blue-50",
     iconColor: "text-blue-500",
+    flagKey: "DISCOVER_TILE_BOARD",
   },
   {
     href: "/marketplace",
@@ -54,6 +61,7 @@ const primaryItems: DiscoverItem[] = [
     icon: ShoppingBag,
     bgColor: "bg-green-50",
     iconColor: "text-quartier-green",
+    flagKey: "DISCOVER_TILE_MARKETPLACE",
   },
   {
     href: "/leihboerse",
@@ -61,6 +69,7 @@ const primaryItems: DiscoverItem[] = [
     icon: Repeat,
     bgColor: "bg-green-50",
     iconColor: "text-quartier-green",
+    flagKey: "DISCOVER_TILE_LEIHBOERSE",
   },
   {
     href: "/mitessen",
@@ -68,6 +77,7 @@ const primaryItems: DiscoverItem[] = [
     icon: UtensilsCrossed,
     bgColor: "bg-rose-50",
     iconColor: "text-rose-500",
+    flagKey: "DISCOVER_TILE_MITESSEN",
   },
   {
     href: "/map",
@@ -75,6 +85,7 @@ const primaryItems: DiscoverItem[] = [
     icon: MapPin,
     bgColor: "bg-emerald-50",
     iconColor: "text-emerald-500",
+    flagKey: "DISCOVER_TILE_MAP",
   },
   {
     href: "/hilfe",
@@ -82,6 +93,7 @@ const primaryItems: DiscoverItem[] = [
     icon: HandHeart,
     bgColor: "bg-amber-50",
     iconColor: "text-alert-amber",
+    flagKey: "DISCOVER_TILE_HILFE",
   },
   {
     href: "/gruppen",
@@ -89,6 +101,7 @@ const primaryItems: DiscoverItem[] = [
     icon: Users,
     bgColor: "bg-emerald-50",
     iconColor: "text-emerald-600",
+    flagKey: "DISCOVER_TILE_GRUPPEN",
   },
   {
     href: "/praevention",
@@ -96,6 +109,7 @@ const primaryItems: DiscoverItem[] = [
     icon: Heart,
     bgColor: "bg-emerald-100",
     iconColor: "text-emerald-700",
+    flagKey: "DISCOVER_TILE_PRAEVENTION",
   },
   {
     href: "/waste-calendar",
@@ -103,6 +117,7 @@ const primaryItems: DiscoverItem[] = [
     icon: CalendarDays,
     bgColor: "bg-orange-50",
     iconColor: "text-orange-500",
+    flagKey: "DISCOVER_TILE_WASTE_CALENDAR",
   },
   {
     href: "/reports",
@@ -110,6 +125,7 @@ const primaryItems: DiscoverItem[] = [
     icon: AlertTriangle,
     bgColor: "bg-violet-50",
     iconColor: "text-violet-500",
+    flagKey: "DISCOVER_TILE_REPORTS",
   },
   {
     href: "/events",
@@ -117,6 +133,7 @@ const primaryItems: DiscoverItem[] = [
     icon: PartyPopper,
     bgColor: "bg-pink-50",
     iconColor: "text-pink-500",
+    flagKey: "DISCOVER_TILE_EVENTS",
   },
   {
     href: "/experts",
@@ -124,6 +141,7 @@ const primaryItems: DiscoverItem[] = [
     icon: Star,
     bgColor: "bg-yellow-50",
     iconColor: "text-yellow-600",
+    flagKey: "DISCOVER_TILE_EXPERTS",
   },
 ];
 
@@ -135,6 +153,7 @@ const secondaryItems: DiscoverItem[] = [
     icon: Sun,
     bgColor: "bg-yellow-50",
     iconColor: "text-yellow-500",
+    flagKey: "DISCOVER_TILE_MY_DAY",
   },
   {
     href: "/packages",
@@ -142,6 +161,7 @@ const secondaryItems: DiscoverItem[] = [
     icon: PackageOpen,
     bgColor: "bg-amber-50",
     iconColor: "text-amber-600",
+    flagKey: "DISCOVER_TILE_PACKAGES",
   },
   {
     href: "/pflegegrad-navigator",
@@ -149,6 +169,7 @@ const secondaryItems: DiscoverItem[] = [
     icon: ClipboardCheck,
     bgColor: "bg-emerald-50",
     iconColor: "text-emerald-600",
+    flagKey: "DISCOVER_TILE_PFLEGEGRAD_NAVIGATOR",
   },
   {
     href: "/whohas",
@@ -156,6 +177,7 @@ const secondaryItems: DiscoverItem[] = [
     icon: Search,
     bgColor: "bg-slate-50",
     iconColor: "text-slate-500",
+    flagKey: "DISCOVER_TILE_WHOHAS",
   },
   {
     href: "/messages",
@@ -163,6 +185,7 @@ const secondaryItems: DiscoverItem[] = [
     icon: MessageCircle,
     bgColor: "bg-sky-50",
     iconColor: "text-sky-500",
+    flagKey: "DISCOVER_TILE_MESSAGES",
   },
   {
     href: "/noise",
@@ -170,6 +193,7 @@ const secondaryItems: DiscoverItem[] = [
     icon: AlertTriangle,
     bgColor: "bg-red-50",
     iconColor: "text-red-400",
+    flagKey: "DISCOVER_TILE_NOISE",
   },
   {
     href: "/handwerker",
@@ -177,6 +201,7 @@ const secondaryItems: DiscoverItem[] = [
     icon: Wrench,
     bgColor: "bg-stone-50",
     iconColor: "text-stone-500",
+    flagKey: "DISCOVER_TILE_HANDWERKER",
   },
   {
     href: "/lost-found",
@@ -184,6 +209,7 @@ const secondaryItems: DiscoverItem[] = [
     icon: Paperclip,
     bgColor: "bg-teal-50",
     iconColor: "text-teal-500",
+    flagKey: "DISCOVER_TILE_LOST_FOUND",
   },
   {
     href: "/tips",
@@ -191,6 +217,7 @@ const secondaryItems: DiscoverItem[] = [
     icon: Lightbulb,
     bgColor: "bg-lime-50",
     iconColor: "text-lime-600",
+    flagKey: "DISCOVER_TILE_TIPS",
   },
   {
     href: "/city-services",
@@ -198,6 +225,7 @@ const secondaryItems: DiscoverItem[] = [
     icon: Building2,
     bgColor: "bg-indigo-50",
     iconColor: "text-indigo-500",
+    flagKey: "DISCOVER_TILE_CITY_SERVICES",
   },
   {
     href: "/care/shopping",
@@ -205,6 +233,7 @@ const secondaryItems: DiscoverItem[] = [
     icon: ShoppingCart,
     bgColor: "bg-cyan-50",
     iconColor: "text-cyan-500",
+    flagKey: "DISCOVER_TILE_CARE_SHOPPING",
   },
   {
     href: "/care/tasks",
@@ -212,6 +241,7 @@ const secondaryItems: DiscoverItem[] = [
     icon: ClipboardList,
     bgColor: "bg-purple-50",
     iconColor: "text-purple-500",
+    flagKey: "DISCOVER_TILE_CARE_TASKS",
   },
   {
     href: "/sprechstunde",
@@ -219,8 +249,23 @@ const secondaryItems: DiscoverItem[] = [
     icon: Stethoscope,
     bgColor: "bg-blue-50",
     iconColor: "text-blue-600",
+    flagKey: "DISCOVER_TILE_SPRECHSTUNDE",
   },
 ];
+
+/**
+ * Filtert Tile-Liste basierend auf DB-Feature-Flags.
+ * - Flag in DB enabled=true OR Flag fehlt in DB komplett: sichtbar
+ * - Flag in DB enabled=false: versteckt
+ *
+ * Exportiert fuer Tests + Wiederverwendung.
+ */
+export function filterTilesByFlags<T extends { flagKey: string }>(
+  items: T[],
+  disabledKeys: Set<string>,
+): T[] {
+  return items.filter((item) => !disabledKeys.has(item.flagKey));
+}
 
 function DiscoverTile({ item }: { item: DiscoverItem }) {
   const Icon = item.icon;
@@ -238,20 +283,49 @@ function DiscoverTile({ item }: { item: DiscoverItem }) {
 
 export function DiscoverGrid() {
   const [expanded, setExpanded] = useState(false);
+  const [disabledKeys, setDisabledKeys] = useState<Set<string>>(new Set());
+
+  // Pro Mount einmal die Flags laden + welche Tiles abgeschaltet wurden ableiten.
+  // Default-Verhalten: Wenn ein DISCOVER_TILE_*-Flag in der DB fehlt, gilt der
+  // Tile als sichtbar (sonst waere das Dashboard leer bis Mig 192 angewendet ist).
+  useEffect(() => {
+    let cancelled = false;
+    void getFeatureFlags().then((flags) => {
+      if (cancelled) return;
+      const off = new Set<string>();
+      for (const flag of flags) {
+        if (flag.key.startsWith("DISCOVER_TILE_") && !flag.enabled) {
+          off.add(flag.key);
+        }
+      }
+      setDisabledKeys(off);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const visiblePrimary = filterTilesByFlags(primaryItems, disabledKeys);
+  const visibleSecondary = filterTilesByFlags(secondaryItems, disabledKeys);
+
+  // Wenn nichts sichtbar bleibt (Admin hat alles abgeschaltet), Section wegfallen
+  if (visiblePrimary.length === 0 && visibleSecondary.length === 0) {
+    return null;
+  }
 
   return (
     <section>
       <h2 className="mb-2 font-semibold text-anthrazit">Entdecken</h2>
       <div className="grid grid-cols-4 gap-2" data-testid="discover-grid">
-        {primaryItems.map((item) => (
+        {visiblePrimary.map((item) => (
           <DiscoverTile key={item.href} item={item} />
         ))}
         {expanded &&
-          secondaryItems.map((item) => (
+          visibleSecondary.map((item) => (
             <DiscoverTile key={item.href} item={item} />
           ))}
       </div>
-      {!expanded && (
+      {!expanded && visibleSecondary.length > 0 && (
         <button
           onClick={() => {
             setExpanded(true);

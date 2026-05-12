@@ -13,7 +13,7 @@ import { PullToRefresh } from "@/components/PullToRefresh";
 import { ReputationBadge } from "@/components/ReputationBadge";
 import { FloatingHelpButton } from "@/components/FloatingHelpButton";
 import { DailyCheckinBubble } from "@/modules/care/components/checkin/DailyCheckinBubble";
-import { QuartierAppLogo } from "@/components/brand/QuartierAppLogo";
+import { BrandFooter } from "@/components/brand/BrandFooter";
 import { Skeleton } from "@/components/ui/skeleton";
 
 import { useDashboardData, getGreeting } from "./hooks/useDashboardData";
@@ -291,12 +291,14 @@ export default function DashboardPage() {
           {/* Entdecken — DiscoverGrid bleibt in C-1 unveraendert
               (Mastercard-Umbau auf 4 Kategorien + Ghost-Watermarks kommt in C-3). */}
           <DiscoverGrid />
-
-          {/* Footer-Signatur — Visual-Polish v7 (Logo am Seitenende, ruhig). */}
-          <footer className="flex justify-center pt-12 pb-4 opacity-70">
-            <QuartierAppLogo variant="full" size={48} />
-          </footer>
         </div>
+
+        {/* Brand-Footer-Dark (Visual-Polish v7 Welle 3) — Magazin-Abschluss
+            mit Eyebrow + Magazin-Sig + voller Logo-Lockup + Meta-Zeile.
+            Ausserhalb des Page-Padding-Containers, damit der dunkle
+            BG die volle Breite einnimmt (negative-margin Trick im
+            BrandFooter selbst). */}
+        <BrandFooter />
       </PullToRefresh>
 
       {/* FAB Schnell-Hilfe */}

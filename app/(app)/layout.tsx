@@ -1,4 +1,5 @@
 import { AppAquarellBackground } from "@/components/brand/AppAquarellBackground";
+import { NavPill } from "@/components/brand/NavPill";
 import { BottomNav } from "@/components/BottomNav";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { HeartbeatProvider } from "@/components/HeartbeatProvider";
@@ -29,6 +30,9 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           (Schwarzwald-Tanne + Haeuser + Sonne) fuer alle eingeloggten
           Seiten. Decorative, aria-hidden, im hintersten z-Index. */}
       <AppAquarellBackground />
+      {/* Visual-Polish v7 Bundle 1 / Welle 2 — Floating Nav-Pill mit
+          Brand-Anker (Symbol + Wordmark) und Avatar-Satellite. */}
+      <NavPill />
       {/* Skip-Navigation fuer Tastaturnutzer */}
       <a
         href="#main-content"
@@ -36,8 +40,9 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       >
         Zum Inhalt springen
       </a>
-      {/* Verifikations-Banner fuer pending Nutzer */}
-      <div className="mx-auto max-w-lg pt-2">
+      {/* Verifikations-Banner fuer pending Nutzer — pt-20 schiebt unter
+          die Nav-Pill (top-3 + 56 px Pill-Hoehe). */}
+      <div className="mx-auto max-w-lg pt-20">
         <PendingVerificationBanner />
       </div>
       {/* Quartier-Kontext + Hauptinhalt */}

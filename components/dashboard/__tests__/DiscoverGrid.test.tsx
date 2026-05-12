@@ -72,16 +72,16 @@ describe("DiscoverGrid", () => {
     ).not.toBeInTheDocument();
   });
 
-  it("hat Lucide-Icons statt Emojis (16 SVGs: 13 Tile-Icons + 3 Featured-Arrows)", () => {
+  it("hat Lucide-Icons statt Emojis (13 Tile-SVGs initial)", () => {
     // Tile-SVGs sind nur in den 3 sichtbaren Kategorie-Sektionen, nicht
-    // im ChevronDown des Mehr-entdecken-Buttons. Visual-Polish v7 Welle 5:
-    // Featured-Tiles haben zusaetzlich einen Arrow-Chevron als Satellite-CTA
-    // (1 pro Kategorie = 3 zusaetzliche SVGs).
+    // im ChevronDown des Mehr-entdecken-Buttons. Featured-Tiles wurden
+    // 2026-05-12 zurueckgebaut (Founder: "gruen und gross gefaellt nicht")
+    // -> alle Tiles haben wieder 1 SVG.
     const { container } = render(<DiscoverGrid />);
     const tileSvgs = container.querySelectorAll(
       '[data-testid^="category-"] svg',
     );
-    expect(tileSvgs.length).toBe(16);
+    expect(tileSvgs.length).toBe(13);
   });
 
   it("rendert KEINE Ghost-Watermarks im Hintergrund (Founder 2026-05-12: 'komisch')", () => {
@@ -103,19 +103,17 @@ describe("DiscoverGrid", () => {
     ).toBeNull();
   });
 
-  it("rendert Featured-Tile (glass-tile-green) pro Default-Kategorie", () => {
-    // Visual-Polish v7 Welle 5: /board, /my-day, /map sind die Featured-
-    // Tiles pro Kategorie (Founder-Defaults 2026-05-12).
+  it("rendert KEINE Featured-Tiles (Founder 2026-05-12: 'gruen und gross gefaellt nicht')", () => {
     const { container } = render(<DiscoverGrid />);
     expect(
       container.querySelector('[data-testid="featured--board"]'),
-    ).toBeInTheDocument();
+    ).toBeNull();
     expect(
       container.querySelector('[data-testid="featured--my-day"]'),
-    ).toBeInTheDocument();
+    ).toBeNull();
     expect(
       container.querySelector('[data-testid="featured--map"]'),
-    ).toBeInTheDocument();
+    ).toBeNull();
   });
 
   // === Kategorie-Sektionen ===

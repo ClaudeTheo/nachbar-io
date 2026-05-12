@@ -60,16 +60,6 @@ const CATEGORY_LABELS: Record<TileCategory, string> = {
   mehr: "Mehr Funktionen",
 };
 
-// Visual-Polish v7 Welle 5 — Featured-Tile pro Kategorie (asymmetrisch).
-// Mapping href -> Featured-Status. Mehr-Kategorie hat bewusst kein Featured
-// (das sind alles secondary Tiles). Founder-Defaults 2026-05-12:
-// Brett / Mein Tag / Karte als Magazin-Aufmacher.
-const CATEGORY_FEATURED_HREF: Partial<Record<TileCategory, string>> = {
-  nachbarschaft: "/board",
-  hilfe_pflege: "/my-day",
-  quartier_info: "/map",
-};
-
 // Reihenfolge der initial sichtbaren Kategorien (mehr ist hinter Mehr-Button).
 const VISIBLE_CATEGORIES: TileCategory[] = [
   "nachbarschaft",
@@ -327,40 +317,6 @@ function DiscoverTile({ item }: { item: DiscoverItem }) {
   );
 }
 
-// Visual-Polish v7 Welle 5 — Featured-Tile (asymmetrische Hervorhebung).
-// Volle Breite, glass-tile-green (Petrol-Glas mit Tageszeit-Tint-Bleed),
-// groessere Typo + Arrow-Satellite als CTA-Pattern.
-function FeaturedTile({ item }: { item: DiscoverItem }) {
-  const Icon = item.icon;
-  return (
-    <Link
-      href={item.href}
-      onClick={() => haptic("medium")}
-      data-testid={`featured-${item.href.replace(/\//g, "-")}`}
-      className="glass-tile-green relative col-span-4 flex min-h-[120px] items-center gap-4 p-5 text-warmwhite"
-    >
-      <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-warmwhite/15">
-        <Icon className="h-6 w-6 text-warmwhite" strokeWidth={1.5} />
-      </div>
-      <div className="min-w-0 flex-1">
-        <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-warmwhite/80">
-          Heute im Quartier
-        </p>
-        <h3 className="mt-1 text-lg font-semibold leading-tight tracking-[-0.01em]">
-          {item.label}
-        </h3>
-      </div>
-      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-warmwhite/20 text-warmwhite">
-        <ChevronDown
-          className="h-4 w-4 -rotate-90"
-          aria-hidden="true"
-          strokeWidth={2}
-        />
-      </div>
-    </Link>
-  );
-}
-
 function CategorySection({
   category,
   tiles,
@@ -376,9 +332,10 @@ function CategorySection({
     >
       {/* Visual-Polish v7 C-3: Eyebrow + accent dot + hairline-divider
           (Magazin-Section-Trenner statt H3-Header in mute-foreground).
-          Ghost-Watermarks 2026-05-12 entfernt — Founder-Feedback: "komisch
-          schrift im hintergrund in beige". Featured-Tile bleibt als Magazin-
-          Aufmacher pro Kategorie. */}
+          Founder-Feedback 2026-05-12: Ghost-Watermarks raus ("komisch
+          beige schrift") UND Featured-Tiles raus ("Brett/Mein Tag/Karte
+          gruen und gross gefaellt nicht"). Alle Tiles haben jetzt
+          wieder gleiche Groesse im 4-Spalten-Grid. */}
       <header className="mb-4 space-y-1">
         <p className="flex items-center gap-2 text-xs font-medium uppercase tracking-[0.08em] text-anthrazit-light">
           <span
@@ -390,13 +347,9 @@ function CategorySection({
         <div className="h-px bg-anthrazit-light/20" aria-hidden />
       </header>
       <div className="grid grid-cols-4 gap-2">
-        {tiles.map((item) =>
-          item.href === CATEGORY_FEATURED_HREF[category] ? (
-            <FeaturedTile key={item.href} item={item} />
-          ) : (
-            <DiscoverTile key={item.href} item={item} />
-          ),
-        )}
+        {tiles.map((item) => (
+          <DiscoverTile key={item.href} item={item} />
+        ))}
       </div>
     </section>
   );

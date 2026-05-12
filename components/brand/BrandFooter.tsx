@@ -43,7 +43,7 @@ export function BrandFooter() {
           Ein digitales Quartier für Bad Säckingen.
         </h2>
         <div className="pt-2">
-          <QuartierAppLogo variant="full" size={76} />
+          <QuartierAppLogo variant="symbol" size={76} />
         </div>
         <p className="text-xs text-warmwhite/60">
           <span>v{versionShort}</span>

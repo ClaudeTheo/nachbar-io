@@ -72,7 +72,7 @@ export default function LandingPage() {
       <section className="relative z-10 mx-auto flex min-h-screen w-full max-w-4xl flex-col justify-center px-6 py-16">
         {/* Hero-Logo: das volle Aquarell mit Wordmark als Magazin-Anker. */}
         <div className="mb-10 flex justify-start sm:mb-12">
-          <QuartierAppLogo variant="full" size={120} priority />
+          <QuartierAppLogo variant="symbol" size={120} priority />
         </div>
 
         {/* Eyebrow im Magazin-Stil (accent dot + uppercase tracking). */}

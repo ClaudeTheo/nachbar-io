@@ -25,15 +25,16 @@ describe("Closed-Pilot-Startseite", () => {
     ).toBeNull();
   });
 
-  it("rendert das QuartierApp-Aquarell-Logo im Hero (Tanne + Haeuser + Sonne)", () => {
+  it("rendert das QuartierApp-Aquarell-Symbol im Hero (Tanne + Haeuser + Sonne)", () => {
     render(<LandingPage />);
 
-    const logo = screen.getByRole("img", {
-      name: /QuartierApp.*digitales Quartier/i,
-    });
+    // Founder 2026-05-12: Logo ohne Wordmark — Symbol-only Aquarell.
+    const logo = screen.getByRole("img", { name: /QuartierApp$/i });
     expect(logo).toBeInTheDocument();
-    // Full-Variant zeigt das volle Aquarell-Motiv inkl. Wordmark.
-    expect(logo).toHaveAttribute("src", expect.stringContaining("quartierapp-logo"));
+    expect(logo).toHaveAttribute(
+      "src",
+      expect.stringContaining("quartierapp-symbol"),
+    );
   });
 
   it("nutzt Brand-Tokens (bg-warmwhite + text-anthrazit) statt hartcodierter Hex", () => {

@@ -31,12 +31,9 @@ export function NavPill() {
       <Link
         href="/dashboard"
         aria-label="Zum Dashboard"
-        className="flex items-center gap-2 rounded-full transition-opacity hover:opacity-80"
+        className="flex items-center rounded-full transition-opacity hover:opacity-80"
       >
         <QuartierAppLogo variant="symbol" size={32} priority />
-        <span className="hidden font-serif text-base font-semibold tracking-tight text-anthrazit sm:inline-block">
-          QuartierApp
-        </span>
       </Link>
       <Link
         href="/profile"

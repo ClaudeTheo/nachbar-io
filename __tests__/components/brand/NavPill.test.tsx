@@ -29,12 +29,10 @@ describe("NavPill", () => {
     expect(symbol?.getAttribute("src")).toMatch(/quartierapp-symbol/);
   });
 
-  it("rendert den Wordmark 'QuartierApp' (auf sm:+ sichtbar)", () => {
+  it("rendert KEINEN Wordmark-Text (Founder 2026-05-12: keine QuartierApp-Beschriftung)", () => {
     render(<NavPill />);
-    const wordmark = screen.getByText("QuartierApp");
-    expect(wordmark).toBeInTheDocument();
-    // Auf Mobile per sm:hidden ausgeblendet — visuell trotzdem im DOM.
-    expect(wordmark.className).toMatch(/hidden|sr-only|sm:inline|sm:block/);
+    // Symbol alleine ist Brand-Anker, kein zusaetzlicher Text-Wordmark daneben.
+    expect(screen.queryByText("QuartierApp")).toBeNull();
   });
 
   it("hat einen Avatar-Link rechts (Profil-Route, 44px Touch-Target)", () => {

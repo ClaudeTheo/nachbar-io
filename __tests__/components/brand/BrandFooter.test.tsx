@@ -16,9 +16,9 @@ describe("BrandFooter", () => {
     ).toBeInTheDocument();
   });
 
-  it("zeigt das volle Logo-Lockup (Symbol + Wordmark + Subtitle)", () => {
+  it("zeigt das Aquarell-Symbol (Founder 2026-05-12: kein Wordmark)", () => {
     const { container } = render(<BrandFooter />);
-    const logo = container.querySelector('img[src*="quartierapp-logo"]');
+    const logo = container.querySelector('img[src*="quartierapp-symbol"]');
     expect(logo).not.toBeNull();
   });
 

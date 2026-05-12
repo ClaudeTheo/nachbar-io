@@ -493,7 +493,7 @@ export default function CityServicesPage() {
 
       {/* Footer-Signatur — Visual-Polish v7 Konsistenz mit Dashboard. */}
       <footer className="flex justify-center pt-8 pb-2 opacity-70">
-        <QuartierAppLogo variant="full" size={40} />
+        <QuartierAppLogo variant="symbol" size={40} />
       </footer>
     </div>
   );

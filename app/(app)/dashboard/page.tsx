@@ -3,59 +3,47 @@
 import Link from "next/link";
 import {
   Bell,
-  ShieldAlert,
   CheckCircle2,
   MessageCircle,
   Newspaper,
   Megaphone,
 } from "lucide-react";
-import { useSos } from "@/components/sos/SosContext";
 import { DiscoverGrid } from "@/components/dashboard/DiscoverGrid";
-import { CategoryIcon } from "@/components/CategoryIcon";
-import { GREETING_ICON_MAP } from "@/lib/category-icons";
-import { isUxRedesignEnabled } from "@/lib/ux-flags";
-import { DashboardHero } from "@/components/dashboard/DashboardHero";
 import { PullToRefresh } from "@/components/PullToRefresh";
 import { ReputationBadge } from "@/components/ReputationBadge";
-// Moved to Quartier/Gesundheit hub
-// import { ProfileCompletionBanner } from "@/components/ProfileCompletionBanner";
 import { FloatingHelpButton } from "@/components/FloatingHelpButton";
-import { InfoBar } from "@/modules/info-hub/components/InfoBar";
-import { HeroCard } from "@/components/HeroCard";
-// Moved to Quartier hub
-// import { InviteNeighborModal } from "@/components/InviteNeighborModal";
 import { DailyCheckinBubble } from "@/modules/care/components/checkin/DailyCheckinBubble";
+import { QuartierAppLogo } from "@/components/brand/QuartierAppLogo";
 import { Skeleton } from "@/components/ui/skeleton";
 
 import { useDashboardData, getGreeting } from "./hooks/useDashboardData";
-// Moved to Quartier/Gesundheit hub
-// import { AlertBanners } from "./components/AlertBanners";
-// import { DashboardServices } from "./components/DashboardServices";
-// import { EmptyState } from "./components/EmptyState";
+
+// Eyebrow-Datum fuer Hero ("SAMSTAG · 11. MAI") — Visual-Polish v7.
+function formatEyebrowDate(d: Date): string {
+  const wochentag = d
+    .toLocaleDateString("de-DE", { weekday: "long" })
+    .toUpperCase();
+  const tag = d.getDate();
+  const monat = d
+    .toLocaleDateString("de-DE", { month: "long" })
+    .toUpperCase();
+  return `${wochentag} · ${tag}. ${monat}`;
+}
 
 export default function DashboardPage() {
-  const { openSos } = useSos();
   const {
-    // Moved to Quartier/Gesundheit hub — kept in hook for compatibility
-    // alerts,
-    // news,
-    // helpRequests,
-    // marketplaceItems,
     userName,
     reputationLevel,
     loading,
-    profileData,
     weatherData,
     caregivers,
     unreadCount,
     currentQuarter,
     quarterLoading,
-    // showInviteModal,
-    // setShowInviteModal,
     loadDashboard,
   } = useDashboardData();
 
-  // Loading-Skeleton
+  // Loading-Skeleton (unveraendert ggue. C-0).
   if (loading && (quarterLoading || currentQuarter)) {
     return (
       <div className="space-y-8 animate-fade-in-up">
@@ -74,7 +62,7 @@ export default function DashboardPage() {
     );
   }
 
-  // Kein Quartier zugeordnet — hilfreiche Meldung statt endlosem Skeleton
+  // Kein Quartier zugeordnet — hilfreiche Meldung (unveraendert).
   if (!quarterLoading && !currentQuarter) {
     return (
       <div className="flex flex-col items-center justify-center py-16 text-center animate-fade-in-up">
@@ -99,107 +87,86 @@ export default function DashboardPage() {
   }
 
   const greeting = getGreeting();
-  const greetingIcon = GREETING_ICON_MAP[greeting.timeKey];
+  const eyebrowDate = formatEyebrowDate(new Date());
+  const quartierName = (currentQuarter?.name ?? "Ihr Quartier").toUpperCase();
 
   return (
     <>
       <PullToRefresh onRefresh={loadDashboard}>
-        <div className="space-y-6 animate-fade-in-up">
-          {/* Amtliche Warnungen wurden 2026-05-11 vom Dashboard auf
-              /quartier-info (Section 3 "Warnungen") verschoben — Founder-Entscheidung:
-              Startseite frei von externen Stoerern, Warnungen gehoeren zur Quartier-Info. */}
+        <div className="space-y-12 animate-fade-in-up py-12 md:py-16">
+          {/* ============================================================
+              HERO — Visual-Polish v7 (kein Card, kein Avatar, typo-getrieben).
+              SOS-Pill bewusst entfernt (Founder-Entscheidung 2026-05-11):
+              SOS gehoert nur in Senior-Layout (app/senior/*), nicht ins
+              Standard-Dashboard. Notruf-112-Erstplatzierung bleibt durch
+              Senior-Notruf-Leiste in app/senior/layout.tsx erhalten.
+              ============================================================ */}
+          <section className="flex items-start justify-between gap-6">
+            <div className="min-w-0 flex-1">
+              {/* Eyebrow (accent dot + Datum + Quartier) */}
+              <p className="flex items-center gap-2 text-xs font-medium uppercase tracking-[0.08em] text-anthrazit-light">
+                <span
+                  className="inline-block h-1.5 w-1.5 rounded-full bg-quartier-green"
+                  aria-hidden
+                />
+                {eyebrowDate} · {quartierName}
+              </p>
 
-          {/* Hero-Bereich: Begruessung + Wetter */}
-          {isUxRedesignEnabled("UX_REDESIGN_DASHBOARD") ? (
-            <DashboardHero
-              userName={userName}
-              avatarUrl={profileData?.avatarUrl ?? null}
-              reputationLevel={reputationLevel}
-              greeting={greeting}
-              greetingIcon={greetingIcon}
-              quarterName={currentQuarter?.name}
-              weatherIcon={weatherData?.icon}
-              weatherTemp={weatherData?.temp}
-              weatherDescription={weatherData?.description}
-            />
-          ) : (
-            <HeroCard>
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  {profileData?.avatarUrl ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      src={profileData.avatarUrl}
-                      alt="Profilbild"
-                      className="h-16 w-16 rounded-full object-cover border-2 border-quartier-green/20 flex-shrink-0"
-                      data-testid="dashboard-avatar"
-                    />
-                  ) : (
-                    <div
-                      className="h-16 w-16 rounded-full bg-anthrazit text-white font-bold text-xl flex items-center justify-center flex-shrink-0"
-                      data-testid="dashboard-avatar"
-                    >
-                      {userName ? userName.charAt(0).toUpperCase() : "?"}
+              {/* Hero-Greeting H1 (36 px / 1.15 / 600 / -0.02em) */}
+              <h1
+                className="mt-3 text-[36px] font-semibold leading-[1.15] tracking-[-0.02em] text-anthrazit"
+                data-testid="dashboard-greeting"
+              >
+                {userName
+                  ? `${greeting.text}, ${userName}.`
+                  : "QuartierApp"}
+                {reputationLevel >= 2 && (
+                  <span className="ml-2 align-middle">
+                    <ReputationBadge level={reputationLevel} size="sm" />
+                  </span>
+                )}
+              </h1>
+            </div>
+
+            {/* Notification-Bell + Wetter rechts */}
+            <div className="flex shrink-0 flex-col items-end gap-3">
+              <Link
+                href="/notifications"
+                className="relative rounded-full p-2 transition-colors hover:bg-anthrazit-tint"
+                aria-label="Benachrichtigungen"
+                data-testid="notification-bell"
+              >
+                <Bell className="h-5 w-5 text-anthrazit" aria-hidden="true" />
+                {unreadCount > 0 && (
+                  <span
+                    className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-emergency-red text-xs font-bold text-white"
+                    data-testid="unread-badge"
+                  >
+                    {unreadCount > 9 ? "9+" : unreadCount}
+                  </span>
+                )}
+              </Link>
+
+              {weatherData?.temp != null && (
+                <div className="text-right">
+                  <div className="text-[32px] font-semibold leading-none tabular-nums text-anthrazit">
+                    {Math.round(weatherData.temp)}°
+                  </div>
+                  {weatherData.description && (
+                    <div className="mt-1 text-sm text-anthrazit-light">
+                      {weatherData.description}
                     </div>
                   )}
-                  <div>
-                    <h1
-                      className="flex items-center gap-2 text-2xl font-extrabold text-anthrazit"
-                      data-testid="dashboard-greeting"
-                    >
-                      {userName ? (
-                        <>
-                          <CategoryIcon
-                            icon={greetingIcon.icon}
-                            bgColor={greetingIcon.bgColor}
-                            iconColor={greetingIcon.iconColor}
-                            size="lg"
-                          />
-                          {greeting.text}, {userName}
-                        </>
-                      ) : (
-                        "QuartierApp"
-                      )}
-                      {reputationLevel >= 2 && (
-                        <span className="ml-1.5 align-middle">
-                          <ReputationBadge level={reputationLevel} size="sm" />
-                        </span>
-                      )}
-                    </h1>
-                    <p className="text-sm text-muted-foreground mt-1">
-                      {currentQuarter?.name ?? "Ihr Quartier"} auf einen Blick
-                    </p>
-                  </div>
                 </div>
-                <Link
-                  href="/notifications"
-                  className="relative rounded-full p-2 transition-colors hover:bg-white/50"
-                  aria-label="Benachrichtigungen"
-                  data-testid="notification-bell"
-                >
-                  <Bell className="h-6 w-6 text-anthrazit" aria-hidden="true" />
-                  {unreadCount > 0 && (
-                    <span
-                      className="animate-badge-pop absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-emergency-red text-xs font-bold text-white"
-                      data-testid="unread-badge"
-                    >
-                      {unreadCount > 9 ? "9+" : unreadCount}
-                    </span>
-                  )}
-                </Link>
-              </div>
-              {/* Quartier-Info-Bar (Wetter, Pollen, Muellabfuhr) — kompakt in der HeroCard */}
-              <div className="mt-3 -mx-1">
-                <InfoBar />
-              </div>
-            </HeroCard>
-          )}
+              )}
+            </div>
+          </section>
 
-          {/* Angehoerige-Schnellzugriff */}
+          {/* Angehoerige-Schnellzugriff (unveraendert ggue. C-0) */}
           {caregivers.length > 0 && (
             <div
               data-testid="dashboard-caregivers"
-              className="flex items-center gap-3 px-1 mb-4"
+              className="flex items-center gap-3 px-1"
             >
               <span className="text-xs text-muted-foreground">Angehörige:</span>
               <div className="flex -space-x-2">
@@ -207,7 +174,7 @@ export default function DashboardPage() {
                   <Link
                     key={cg.caregiver_id}
                     href={`/messages/${cg.caregiver_id}`}
-                    className="flex h-9 w-9 items-center justify-center rounded-full bg-quartier-green/10 border-2 border-white text-xs font-semibold text-quartier-green hover:ring-2 hover:ring-quartier-green/30 transition-all"
+                    className="flex h-9 w-9 items-center justify-center rounded-full border-2 border-white bg-quartier-green/10 text-xs font-semibold text-quartier-green transition-all hover:ring-2 hover:ring-quartier-green/30"
                     title={cg.display_name || "Angehöriger"}
                   >
                     {cg.avatar_url ? (
@@ -226,118 +193,109 @@ export default function DashboardPage() {
             </div>
           )}
 
-          {/* SOS-Kachel — oeffnet SOS-Bestaetigungsblatt (Triple-Safety) */}
-          <button
-            onClick={openSos}
-            className="w-full flex items-center gap-4 rounded-xl border-2 border-[#EF4444] bg-white p-4 min-h-[80px] transition-colors active:bg-red-50"
-            data-testid="dashboard-sos-tile"
-            style={{ touchAction: "manipulation" }}
-          >
-            <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-[#EF4444]">
-              <ShieldAlert className="h-6 w-6 text-white" />
+          {/* ============================================================
+              "Heute in Ihrem Quartier." — Anker statt SOS-Pill.
+              Visual-Polish v7 Re-Flow: H2 + Eyebrow als Magazin-Section-Trenner.
+              Schnellzugriffe bleiben in C-1 in alter Bauart — Glas-Tile-Umstellung
+              kommt in C-2.
+              ============================================================ */}
+          <section className="space-y-6">
+            <header className="space-y-1">
+              <p className="flex items-center gap-2 text-xs font-medium uppercase tracking-[0.08em] text-anthrazit-light">
+                <span
+                  className="inline-block h-1.5 w-1.5 rounded-full bg-quartier-green"
+                  aria-hidden
+                />
+                Heute · {quartierName}
+              </p>
+              <h2 className="text-[22px] font-semibold leading-[1.3] tracking-[-0.01em] text-anthrazit">
+                Heute in Ihrem Quartier.
+              </h2>
+            </header>
+
+            <div className="grid grid-cols-2 gap-3">
+              {/* 1. Check-in */}
+              <Link
+                href="/care/checkin"
+                className="flex min-h-[80px] flex-col justify-center rounded-xl border bg-white p-4 shadow-sm transition-colors hover:bg-gray-50 active:scale-[0.98]"
+              >
+                <div className="flex items-center gap-2">
+                  <CheckCircle2 className="h-5 w-5 text-quartier-green" />
+                  <span className="font-semibold text-anthrazit">Check-in</span>
+                </div>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  Wie geht es Ihnen?
+                </p>
+              </Link>
+
+              {/* 2. Nachrichten */}
+              <Link
+                href="/notifications"
+                className="relative flex min-h-[80px] flex-col justify-center rounded-xl border bg-white p-4 shadow-sm transition-colors hover:bg-gray-50 active:scale-[0.98]"
+              >
+                <div className="flex items-center gap-2">
+                  <MessageCircle className="h-5 w-5 text-blue-500" />
+                  <span className="font-semibold text-anthrazit">
+                    Nachrichten
+                  </span>
+                </div>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  Benachrichtigungen
+                </p>
+                {unreadCount > 0 && (
+                  <span className="absolute right-2 top-2 flex h-5 w-5 items-center justify-center rounded-full bg-emergency-red text-[10px] font-bold text-white">
+                    {unreadCount > 9 ? "9+" : unreadCount}
+                  </span>
+                )}
+              </Link>
+
+              {/* 3. Neuigkeiten */}
+              <Link
+                href="/news"
+                className="flex min-h-[80px] flex-col justify-center rounded-xl border bg-white p-4 shadow-sm transition-colors hover:bg-gray-50 active:scale-[0.98]"
+              >
+                <div className="flex items-center gap-2">
+                  <Newspaper className="h-5 w-5 text-violet-500" />
+                  <span className="font-semibold text-anthrazit">
+                    Neuigkeiten
+                  </span>
+                </div>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  Quartiers-News
+                </p>
+              </Link>
+
+              {/* 4. Bekanntmachungen */}
+              <Link
+                href="/city-services"
+                className="flex min-h-[80px] flex-col justify-center rounded-xl border bg-white p-4 shadow-sm transition-colors hover:bg-gray-50 active:scale-[0.98]"
+              >
+                <div className="flex items-center gap-2">
+                  <Megaphone className="h-5 w-5 text-amber-600" />
+                  <span className="font-semibold text-anthrazit">
+                    Bekanntmachungen
+                  </span>
+                </div>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  Aus dem Rathaus
+                </p>
+              </Link>
             </div>
-            <div className="text-left">
-              <p className="font-bold text-[#EF4444] text-lg">Notfall / SOS</p>
-              <p className="text-sm text-gray-500">112 anrufen · Hilfe holen</p>
-            </div>
-          </button>
+          </section>
 
-          {/* 4 Schnellzugriff-Kacheln */}
-          <div className="grid grid-cols-2 gap-3">
-            {/* 1. Check-in */}
-            <Link
-              href="/care/checkin"
-              className="bg-white rounded-xl border shadow-sm p-4 min-h-[80px] flex flex-col justify-center hover:bg-gray-50 transition-colors active:scale-[0.98]"
-            >
-              <div className="flex items-center gap-2">
-                <CheckCircle2 className="h-5 w-5 text-quartier-green" />
-                <span className="font-semibold text-anthrazit">Check-in</span>
-              </div>
-              <p className="text-xs text-muted-foreground mt-1">
-                Wie geht es Ihnen?
-              </p>
-            </Link>
-
-            {/* 2. Nachrichten */}
-            <Link
-              href="/notifications"
-              className="bg-white rounded-xl border shadow-sm p-4 min-h-[80px] flex flex-col justify-center hover:bg-gray-50 transition-colors active:scale-[0.98] relative"
-            >
-              <div className="flex items-center gap-2">
-                <MessageCircle className="h-5 w-5 text-blue-500" />
-                <span className="font-semibold text-anthrazit">
-                  Nachrichten
-                </span>
-              </div>
-              <p className="text-xs text-muted-foreground mt-1">
-                Benachrichtigungen
-              </p>
-              {unreadCount > 0 && (
-                <span className="absolute top-2 right-2 flex h-5 w-5 items-center justify-center rounded-full bg-emergency-red text-[10px] font-bold text-white">
-                  {unreadCount > 9 ? "9+" : unreadCount}
-                </span>
-              )}
-            </Link>
-
-            {/* 3. Neuigkeiten */}
-            <Link
-              href="/news"
-              className="bg-white rounded-xl border shadow-sm p-4 min-h-[80px] flex flex-col justify-center hover:bg-gray-50 transition-colors active:scale-[0.98]"
-            >
-              <div className="flex items-center gap-2">
-                <Newspaper className="h-5 w-5 text-violet-500" />
-                <span className="font-semibold text-anthrazit">
-                  Neuigkeiten
-                </span>
-              </div>
-              <p className="text-xs text-muted-foreground mt-1">
-                Quartiers-News
-              </p>
-            </Link>
-
-            {/* 4. Bekanntmachungen — Founder-Wunsch 2026-05-11: die 130+
-                Pilot-Eintraege sollen Schnellzugriff sein. Verlinkt direkt
-                auf /city-services, das ab demselben Datum als Default-Tab
-                "Bekanntmachungen" oeffnet. KI-Assistent wandert spaeter
-                an einen anderen Platz (Hero/FAB) zurueck, sobald §5 AVV
-                durch ist. */}
-            <Link
-              href="/city-services"
-              className="bg-white rounded-xl border shadow-sm p-4 min-h-[80px] flex flex-col justify-center hover:bg-gray-50 transition-colors active:scale-[0.98]"
-            >
-              <div className="flex items-center gap-2">
-                <Megaphone className="h-5 w-5 text-amber-600" />
-                <span className="font-semibold text-anthrazit">
-                  Bekanntmachungen
-                </span>
-              </div>
-              <p className="text-xs text-muted-foreground mt-1">
-                Aus dem Rathaus
-              </p>
-            </Link>
-          </div>
-
-          {/* Entdecken — DiscoverGrid mit 25 Tiles (12 Primary + 13 Secondary).
-              Jeder Tile per DISCOVER_TILE_*-Feature-Flag im Admin-Dashboard
-              einzeln deaktivierbar (Migration 192). Default: alle sichtbar. */}
+          {/* Entdecken — DiscoverGrid bleibt in C-1 unveraendert
+              (Mastercard-Umbau auf 4 Kategorien + Ghost-Watermarks kommt in C-3). */}
           <DiscoverGrid />
 
-          {/* Moved to Quartier/Gesundheit hub:
-              - DashboardServices (Kommunal, Hilfe-Boerse, Marktplatz, News, Caregiver)
-              - RedeemCodeBanner
-              - ProfileCompletionBanner
-              - AlertBanners
-              - EmptyState
-          */}
+          {/* Footer-Signatur — Visual-Polish v7 (Logo am Seitenende, ruhig). */}
+          <footer className="flex justify-center pt-12 pb-4 opacity-70">
+            <QuartierAppLogo variant="full" size={48} />
+          </footer>
         </div>
       </PullToRefresh>
 
       {/* FAB Schnell-Hilfe */}
       <FloatingHelpButton />
-
-      {/* Moved to Quartier hub:
-          - InviteNeighborModal
-      */}
 
       {/* Check-in Sprechblase — erscheint nach 5 Sek, Nutzer muss antworten */}
       <DailyCheckinBubble />

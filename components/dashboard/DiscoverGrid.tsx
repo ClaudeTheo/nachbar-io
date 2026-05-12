@@ -60,6 +60,25 @@ const CATEGORY_LABELS: Record<TileCategory, string> = {
   mehr: "Mehr Funktionen",
 };
 
+// Visual-Polish v7 Welle 4 — Ghost-Watermark pro Kategorie (Magazin-Effekt).
+// Cream-on-Cream Riesen-Wort hinter der Section. Mapping aus claude.design v7.
+const CATEGORY_WATERMARKS: Record<TileCategory, string> = {
+  nachbarschaft: "GEMEINSCHAFT",
+  hilfe_pflege: "PFLEGE",
+  quartier_info: "STADTTEIL",
+  mehr: "ENTDECKEN",
+};
+
+// Visual-Polish v7 Welle 5 — Featured-Tile pro Kategorie (asymmetrisch).
+// Mapping href -> Featured-Status. Mehr-Kategorie hat bewusst kein Featured
+// (das sind alles secondary Tiles). Founder-Defaults 2026-05-12:
+// Brett / Mein Tag / Karte als Magazin-Aufmacher.
+const CATEGORY_FEATURED_HREF: Partial<Record<TileCategory, string>> = {
+  nachbarschaft: "/board",
+  hilfe_pflege: "/my-day",
+  quartier_info: "/map",
+};
+
 // Reihenfolge der initial sichtbaren Kategorien (mehr ist hinter Mehr-Button).
 const VISIBLE_CATEGORIES: TileCategory[] = [
   "nachbarschaft",
@@ -317,6 +336,40 @@ function DiscoverTile({ item }: { item: DiscoverItem }) {
   );
 }
 
+// Visual-Polish v7 Welle 5 — Featured-Tile (asymmetrische Hervorhebung).
+// Volle Breite, glass-tile-green (Petrol-Glas mit Tageszeit-Tint-Bleed),
+// groessere Typo + Arrow-Satellite als CTA-Pattern.
+function FeaturedTile({ item }: { item: DiscoverItem }) {
+  const Icon = item.icon;
+  return (
+    <Link
+      href={item.href}
+      onClick={() => haptic("medium")}
+      data-testid={`featured-${item.href.replace(/\//g, "-")}`}
+      className="glass-tile-green relative col-span-4 flex min-h-[120px] items-center gap-4 p-5 text-warmwhite"
+    >
+      <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-warmwhite/15">
+        <Icon className="h-6 w-6 text-warmwhite" strokeWidth={1.5} />
+      </div>
+      <div className="min-w-0 flex-1">
+        <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-warmwhite/80">
+          Heute im Quartier
+        </p>
+        <h3 className="mt-1 text-lg font-semibold leading-tight tracking-[-0.01em]">
+          {item.label}
+        </h3>
+      </div>
+      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-warmwhite/20 text-warmwhite">
+        <ChevronDown
+          className="h-4 w-4 -rotate-90"
+          aria-hidden="true"
+          strokeWidth={2}
+        />
+      </div>
+    </Link>
+  );
+}
+
 function CategorySection({
   category,
   tiles,
@@ -327,12 +380,22 @@ function CategorySection({
   if (tiles.length === 0) return null;
   return (
     <section
-      className="mt-8 first:mt-0"
+      className="relative mt-12 overflow-hidden first:mt-0"
       data-testid={`category-${category}`}
     >
+      {/* Visual-Polish v7 Welle 4 — Ghost-Watermark (Magazin-Effekt).
+          Cream-on-Cream Riesen-Wort hinter der Section, dekorativ,
+          pointer-events-none. z-0 unter dem Content (z-10). */}
+      <span
+        aria-hidden="true"
+        data-testid={`category-${category}-watermark`}
+        className="pointer-events-none absolute -top-3 left-0 right-0 z-0 select-none whitespace-nowrap font-heading text-[72px] font-extrabold leading-none tracking-[-0.04em] text-[#f4ecdf] sm:text-[120px]"
+      >
+        {CATEGORY_WATERMARKS[category]}
+      </span>
       {/* Visual-Polish v7 C-3: Eyebrow + accent dot + hairline-divider
           (Magazin-Section-Trenner statt H3-Header in mute-foreground). */}
-      <header className="mb-4 space-y-1">
+      <header className="relative z-10 mb-4 space-y-1">
         <p className="flex items-center gap-2 text-xs font-medium uppercase tracking-[0.08em] text-anthrazit-light">
           <span
             className="inline-block h-1.5 w-1.5 rounded-full bg-quartier-green"
@@ -342,10 +405,14 @@ function CategorySection({
         </p>
         <div className="h-px bg-anthrazit-light/20" aria-hidden />
       </header>
-      <div className="grid grid-cols-4 gap-2">
-        {tiles.map((item) => (
-          <DiscoverTile key={item.href} item={item} />
-        ))}
+      <div className="relative z-10 grid grid-cols-4 gap-2">
+        {tiles.map((item) =>
+          item.href === CATEGORY_FEATURED_HREF[category] ? (
+            <FeaturedTile key={item.href} item={item} />
+          ) : (
+            <DiscoverTile key={item.href} item={item} />
+          ),
+        )}
       </div>
     </section>
   );

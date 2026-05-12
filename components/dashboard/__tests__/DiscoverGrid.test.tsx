@@ -72,14 +72,52 @@ describe("DiscoverGrid", () => {
     ).not.toBeInTheDocument();
   });
 
-  it("hat Lucide-Icons statt Emojis (13 Tile-SVGs initial)", () => {
+  it("hat Lucide-Icons statt Emojis (16 SVGs: 13 Tile-Icons + 3 Featured-Arrows)", () => {
     // Tile-SVGs sind nur in den 3 sichtbaren Kategorie-Sektionen, nicht
-    // im ChevronDown des Mehr-entdecken-Buttons.
+    // im ChevronDown des Mehr-entdecken-Buttons. Visual-Polish v7 Welle 5:
+    // Featured-Tiles haben zusaetzlich einen Arrow-Chevron als Satellite-CTA
+    // (1 pro Kategorie = 3 zusaetzliche SVGs).
     const { container } = render(<DiscoverGrid />);
     const tileSvgs = container.querySelectorAll(
       '[data-testid^="category-"] svg',
     );
-    expect(tileSvgs.length).toBe(13);
+    expect(tileSvgs.length).toBe(16);
+  });
+
+  it("rendert Ghost-Watermarks pro Kategorie (GEMEINSCHAFT/PFLEGE/STADTTEIL)", () => {
+    // Visual-Polish v7 Welle 4: jede Kategorie hat ein Cream-on-Cream
+    // Riesen-Wort als dekorative Hintergrund-Schicht.
+    const { container } = render(<DiscoverGrid />);
+    expect(
+      container.querySelector(
+        '[data-testid="category-nachbarschaft-watermark"]',
+      )?.textContent,
+    ).toBe("GEMEINSCHAFT");
+    expect(
+      container.querySelector(
+        '[data-testid="category-hilfe_pflege-watermark"]',
+      )?.textContent,
+    ).toBe("PFLEGE");
+    expect(
+      container.querySelector(
+        '[data-testid="category-quartier_info-watermark"]',
+      )?.textContent,
+    ).toBe("STADTTEIL");
+  });
+
+  it("rendert Featured-Tile (glass-tile-green) pro Default-Kategorie", () => {
+    // Visual-Polish v7 Welle 5: /board, /my-day, /map sind die Featured-
+    // Tiles pro Kategorie (Founder-Defaults 2026-05-12).
+    const { container } = render(<DiscoverGrid />);
+    expect(
+      container.querySelector('[data-testid="featured--board"]'),
+    ).toBeInTheDocument();
+    expect(
+      container.querySelector('[data-testid="featured--my-day"]'),
+    ).toBeInTheDocument();
+    expect(
+      container.querySelector('[data-testid="featured--map"]'),
+    ).toBeInTheDocument();
   });
 
   // === Kategorie-Sektionen ===

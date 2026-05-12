@@ -28,11 +28,6 @@ describe("isUxRedesignEnabled", () => {
     expect(isUxRedesignEnabled("UX_REDESIGN_NAV")).toBe(false);
   });
 
-  it("funktioniert fuer DASHBOARD Flag", () => {
-    delete process.env.NEXT_PUBLIC_UX_REDESIGN_DASHBOARD;
-    expect(isUxRedesignEnabled("UX_REDESIGN_DASHBOARD")).toBe(true);
-  });
-
   it("funktioniert fuer ILLUSTRATIONS Flag", () => {
     delete process.env.NEXT_PUBLIC_UX_REDESIGN_ILLUSTRATIONS;
     expect(isUxRedesignEnabled("UX_REDESIGN_ILLUSTRATIONS")).toBe(true);

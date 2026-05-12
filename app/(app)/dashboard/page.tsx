@@ -1,5 +1,6 @@
 "use client";
 
+import { useMemo } from "react";
 import Link from "next/link";
 import {
   Bell,
@@ -14,6 +15,8 @@ import { ReputationBadge } from "@/components/ReputationBadge";
 import { FloatingHelpButton } from "@/components/FloatingHelpButton";
 import { DailyCheckinBubble } from "@/modules/care/components/checkin/DailyCheckinBubble";
 import { BrandFooter } from "@/components/brand/BrandFooter";
+import { MapThumbnail } from "@/components/map/MapThumbnail";
+import { useMapStatuses } from "@/lib/hooks/useMapStatuses";
 import { Skeleton } from "@/components/ui/skeleton";
 
 import { useDashboardData, getGreeting } from "./hooks/useDashboardData";
@@ -42,6 +45,23 @@ export default function DashboardPage() {
     quarterLoading,
     loadDashboard,
   } = useDashboardData();
+
+  // Founder-Wunsch 2026-05-12: Karte auf der App-Startseite zwischen Hero
+  // und "Heute"-Section. Zeigt alle Haushalte mit registrierten Bewohnern
+  // als Punkte (gleicher Mechanismus wie /quartier-info).
+  const { geoHouses, residentCounts } = useMapStatuses(
+    currentQuarter?.id,
+    currentQuarter?.map_config,
+    currentQuarter?.center_lat,
+    currentQuarter?.center_lng,
+  );
+  const previewPoints = useMemo(
+    () =>
+      geoHouses
+        .filter((house) => residentCounts[house.id] > 0)
+        .map((house) => ({ lat: house.lat, lng: house.lng })),
+    [geoHouses, residentCounts],
+  );
 
   // Loading-Skeleton (unveraendert ggue. C-0).
   if (loading && (quarterLoading || currentQuarter)) {
@@ -199,6 +219,29 @@ export default function DashboardPage() {
               </div>
             </div>
           )}
+
+          {/* ============================================================
+              Nachbar-Karte (Founder 2026-05-12) — Karte des Quartiers mit
+              registrierten Haushalten als Punkte. Klick fuehrt zur Vollkarte.
+              Status-Pins ("Hilfe braucht") folgen in einer Folge-Welle nach
+              Definition der Status-Quelle (SOS / offene Hilfe / Care).
+              ============================================================ */}
+          {currentQuarter?.center_lat != null &&
+            currentQuarter?.center_lng != null && (
+              <Link
+                href="/map"
+                data-testid="dashboard-map"
+                className="block overflow-hidden rounded-2xl transition-opacity hover:opacity-90"
+              >
+                <MapThumbnail
+                  lat={currentQuarter.center_lat}
+                  lng={currentQuarter.center_lng}
+                  zoom={currentQuarter.zoom_level ?? 16}
+                  label={`${currentQuarter.city ?? currentQuarter.name ?? "Quartier"} — Karte`}
+                  points={previewPoints}
+                />
+              </Link>
+            )}
 
           {/* ============================================================
               "Heute in Ihrem Quartier." — Anker statt SOS-Pill.

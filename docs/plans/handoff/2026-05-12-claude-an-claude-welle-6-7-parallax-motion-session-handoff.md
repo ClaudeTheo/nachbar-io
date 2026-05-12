@@ -5,11 +5,13 @@
 
 ## Aktueller Stand (LIVE)
 
-- master == origin == Live == `818e753 feat(dashboard-map): Care-Check-in-Status fuer Caregiver (Founder-C / Variante X)`.
-- Letzter erfolgreicher Deploy: `25752868239`.
-- Vitest gesamt: **4576/4577 passed** (1 skipped, 0 fails — gelegentlich 1-2 Flaky in `__tests__/app/mitessen/page.test.tsx` durch React-DOM-Hydration `window is not defined`, Re-Run gruen).
+- master == origin == Live == `2002cb1 fix(visual-polish): Featured-Tiles raus (Founder 2026-05-12)`.
+- Letzte Deploys: `25752868239` (Caregiver-Pending) + `25753593573` (Featured-Tiles raus).
+- Vitest gesamt: **~4575/4576 passed** (1 skipped, 0 fails — gelegentlich 1-2 Flaky in `__tests__/app/mitessen/page.test.tsx` durch React-DOM-Hydration `window is not defined`, Re-Run gruen).
 - Build: success.
 - tsc / lint: Exit 0.
+
+**Stand-Update 2026-05-12 nach Founder-Smoke:** Featured-Tiles (Welle 5) wurden nach Live-Smoke entfernt. Founder-Befund: "mir gefaellt das mit dem Gruen und so gross Brett, Mein Tag und Karte das design gefaellt mir nicht". Commit `2002cb1`: CATEGORY_FEATURED_HREF + FeaturedTile-Component entfernt, alle Tiles wieder gleich gross im 4-Spalten-Grid.
 
 ## Was in der heutigen Session erledigt wurde (Visual-Polish v7 Dashboard polish)
 
@@ -24,10 +26,10 @@ Quelle: claude.design v7 Handover (gefetcht via `https://api.anthropic.com/v1/de
 
 Founder: "es sollte keine schrift haben Keine QuartierApp-Beschriftung". `variant="full"` -> `variant="symbol"` auf 5 Pages + NavPill-Wordmark-Text entfernt. Magazin-Sig "Ein digitales Quartier..." im BrandFooter bewusst erhalten (nicht der Logo-Wordmark, sondern editorial copy).
 
-### Bundle 2 — `23f120c` (gefolgt von `f84d95a` Watermarks-Rueckbau)
+### Bundle 2 — `23f120c` (gefolgt von zwei Rueckbauten)
 
-- **Welle 4 — Ghost-Watermarks**: GEMEINSCHAFT/PFLEGE/STADTTEIL/ENTDECKEN als Cream-on-Cream Riesen-Worte pro Kategorie. Founder: "komisch schrift im hintergrund in beige" → in `f84d95a` wieder entfernt. CATEGORY_FEATURED_HREF-Mapping bleibt aber drin.
-- **Welle 5 — Featured-Tiles** (BLEIBT): Pro Kategorie ein grosses gruenes Featured-Tile (col-span-4, min-h-120px, glass-tile-green). Founder-Defaults: `/board` (Nachbarschaft "Brett"), `/my-day` (Hilfe&Pflege "Mein Tag"), `/map` (Quartier-Info "Karte"). Inhalt: 48px Icon-Well + Eyebrow "Heute im Quartier" + Title + Arrow-Chevron rechts.
+- **Welle 4 — Ghost-Watermarks**: GEMEINSCHAFT/PFLEGE/STADTTEIL/ENTDECKEN als Cream-on-Cream Riesen-Worte pro Kategorie. Founder: "komisch schrift im hintergrund in beige" → in `f84d95a` wieder entfernt.
+- **Welle 5 — Featured-Tiles**: Pro Kategorie ein grosses gruenes Featured-Tile (col-span-4, min-h-120px, glass-tile-green) eingebaut → in `2002cb1` wieder entfernt. Founder: "mir gefaellt das mit dem Gruen und so gross Brett, Mein Tag und Karte das design gefaellt mir nicht". Alle Tiles im DiscoverGrid wieder gleich gross im 4-Spalten-Grid.
 
 ### Hotfix Kontrast + Eyebrow — `4f38cc3`
 
@@ -188,10 +190,25 @@ Founder generiert diese 4 Assets in claude.ai/design, schickt mir die Dateien (P
 - Adresse: Purkersdorfer Strasse 35, 79713 Bad Säckingen
 - Pilot-Quartier: `ee6cfcab-f615-47cd-afe7-808a27cb584b` slug `bad-saeckingen-pilot`
 
+## Commit-Liste der heutigen Session (master == 2002cb1)
+
+```
+2002cb1 fix(visual-polish): Featured-Tiles raus (Founder 2026-05-12)
+64b5814 docs(handoff): Welle 6+7 Parallax + Motion Session-Handover
+818e753 feat(dashboard-map): Care-Check-in-Status fuer Caregiver (Founder-C / Variante X)
+7678a73 feat(dashboard-map): Status-Pins auf der Nachbar-Karte (Founder 2026-05-12 "alle drei")
+23352b1 feat(dashboard): Nachbar-Karte auf Startseite (Founder 2026-05-12)
+f84d95a fix(visual-polish): Ghost-Watermarks raus (Founder 2026-05-12: "komisch")
+4f38cc3 fix(visual-polish): Dashboard-Kontrast (Opacity + Eyebrow city)
+23f120c feat(visual-polish): Bundle 2 — Ghost-Watermarks + Featured-Tiles in DiscoverGrid
+20c2511 fix(brand): Logo ohne Wordmark — Symbol-only ueberall (Founder 2026-05-12)
+ed8e7c2 feat(visual-polish): Bundle 1 — NavPill + BrandFooter-Dark (Dashboard polish v7)
+```
+
 ## Vorgaenger-Briefe dieser Tagessession
 
 1. `2026-05-12-claude-an-claude-aquarell-position-stadt-baeume.md`
 2. `2026-05-12-claude-an-claude-aquarell-foto-live-folgewelle.md`
 3. `2026-05-12-claude-an-claude-foto-landing-variante-c.md`
 4. `2026-05-12-claude-an-claude-welle-a1-a2-a3-app-polish.md`
-5. **dieser Brief** — Welle 6+7 Parallax + Motion Session-Handover
+5. **dieser Brief** — Welle 6+7 Parallax + Motion Session-Handover (aktualisiert nach Featured-Tile-Rueckbau)

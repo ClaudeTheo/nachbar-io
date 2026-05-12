@@ -47,9 +47,16 @@ export default function DashboardPage() {
   } = useDashboardData();
 
   // Founder-Wunsch 2026-05-12: Karte auf der App-Startseite zwischen Hero
-  // und "Heute"-Section. Zeigt alle Haushalte mit registrierten Bewohnern
-  // als Punkte (gleicher Mechanismus wie /quartier-info).
-  const { geoHouses, residentCounts } = useMapStatuses(
+  // und "Heute"-Section mit Status-Pins. Punkt-Farbe je Haushalt:
+  // - green = okay (Default)
+  // - red = SOS / kritischer Alert (Founder-A)
+  // - yellow = aktive Hilfe-Anfrage oder gelber Alert (Founder-B)
+  // - orange = Paket-Annahme heute aktiv
+  // - blue = Urlaubsmodus
+  // Quellen via useMapStatuses (alerts + help_requests + paketannahme +
+  // vacation_modes — alle bereits im Hook angebunden). Care-Check-in-Status
+  // (Founder-C) folgt in einer Folgewelle (eigener DB-Query noetig).
+  const { geoHouses, residentCounts, statuses } = useMapStatuses(
     currentQuarter?.id,
     currentQuarter?.map_config,
     currentQuarter?.center_lat,
@@ -59,8 +66,12 @@ export default function DashboardPage() {
     () =>
       geoHouses
         .filter((house) => residentCounts[house.id] > 0)
-        .map((house) => ({ lat: house.lat, lng: house.lng })),
-    [geoHouses, residentCounts],
+        .map((house) => ({
+          lat: house.lat,
+          lng: house.lng,
+          color: statuses[house.id] ?? ("green" as const),
+        })),
+    [geoHouses, residentCounts, statuses],
   );
 
   // Loading-Skeleton (unveraendert ggue. C-0).
@@ -228,11 +239,7 @@ export default function DashboardPage() {
               ============================================================ */}
           {currentQuarter?.center_lat != null &&
             currentQuarter?.center_lng != null && (
-              <Link
-                href="/map"
-                data-testid="dashboard-map"
-                className="block overflow-hidden rounded-2xl transition-opacity hover:opacity-90"
-              >
+              <section data-testid="dashboard-map" className="space-y-2">
                 <MapThumbnail
                   lat={currentQuarter.center_lat}
                   lng={currentQuarter.center_lng}
@@ -240,7 +247,34 @@ export default function DashboardPage() {
                   label={`${currentQuarter.city ?? currentQuarter.name ?? "Quartier"} — Karte`}
                   points={previewPoints}
                 />
-              </Link>
+                {/* Mini-Legende fuer Status-Pins (Founder 2026-05-12). */}
+                <ul
+                  aria-label="Bedeutung der Karten-Punkte"
+                  className="flex flex-wrap gap-x-4 gap-y-1 px-1 text-[11px] text-anthrazit-light"
+                >
+                  <li className="flex items-center gap-1.5">
+                    <span
+                      className="inline-block h-2 w-2 rounded-full bg-quartier-green"
+                      aria-hidden="true"
+                    />
+                    Okay
+                  </li>
+                  <li className="flex items-center gap-1.5">
+                    <span
+                      className="inline-block h-2 w-2 rounded-full bg-alert-amber"
+                      aria-hidden="true"
+                    />
+                    Hilfe gesucht
+                  </li>
+                  <li className="flex items-center gap-1.5">
+                    <span
+                      className="inline-block h-2 w-2 rounded-full bg-emergency-red"
+                      aria-hidden="true"
+                    />
+                    Notfall
+                  </li>
+                </ul>
+              </section>
             )}
 
           {/* ============================================================

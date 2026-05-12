@@ -4,6 +4,8 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { MapPin } from "lucide-react";
 
+import type { LampColor } from "@/lib/map-houses";
+
 interface MapThumbnailProps {
   lat: number;
   lng: number;
@@ -11,6 +13,16 @@ interface MapThumbnailProps {
   label?: string;
   points?: ThumbnailPoint[];
 }
+
+// Visual-Polish v7 Welle Dashboard-Karte Step 2 — Status-Pin-Farben
+// pro Marker. Mapping zu Tailwind-Klassen mit Brand-Tokens.
+const MARKER_COLOR_CLASS: Record<LampColor, string> = {
+  green: "bg-quartier-green shadow-[0_0_0_3px_rgba(46,125,94,0.3)]",
+  red: "bg-emergency-red shadow-[0_0_0_3px_rgba(239,68,68,0.35)]",
+  yellow: "bg-alert-amber shadow-[0_0_0_3px_rgba(245,158,11,0.3)]",
+  orange: "bg-orange-500 shadow-[0_0_0_3px_rgba(249,115,22,0.3)]",
+  blue: "bg-info-blue shadow-[0_0_0_3px_rgba(59,130,246,0.3)]",
+};
 
 const TILE_SIZE = 256;
 const GRID_RADIUS = 1;
@@ -39,6 +51,11 @@ interface ThumbnailLayout {
 export interface ThumbnailPoint {
   lat: number;
   lng: number;
+  /**
+   * Optional: Status-Pin-Farbe pro Punkt (LampColor). Default "green".
+   * Visual-Polish v7 Welle Dashboard-Karte 2026-05-12.
+   */
+  color?: LampColor;
 }
 
 interface ThumbnailViewport {
@@ -51,6 +68,7 @@ interface ThumbnailMarkerPosition {
   key: string;
   x: number;
   y: number;
+  color: LampColor;
 }
 
 const DISPLAY_REPLACEMENTS: ReadonlyArray<readonly [RegExp, string]> = [
@@ -200,6 +218,7 @@ export function createMapThumbnailMarkerPositions({
         key: `${point.lat}-${point.lng}-${index}`,
         x: world.x - center.x + width / 2,
         y: world.y - center.y + height / 2,
+        color: point.color ?? ("green" as LampColor),
       };
     })
     .filter(
@@ -381,7 +400,8 @@ export function MapThumbnail({
             {markerPositions.map((marker) => (
               <span
                 key={marker.key}
-                className="absolute h-3 w-3 -translate-x-1/2 -translate-y-1/2 rounded-full border border-white/90 bg-quartier-green shadow-[0_0_0_3px_rgba(34,197,94,0.3)]"
+                data-color={marker.color}
+                className={`absolute h-3 w-3 -translate-x-1/2 -translate-y-1/2 rounded-full border border-white/90 ${MARKER_COLOR_CLASS[marker.color]}`}
                 style={{
                   left: marker.x,
                   top: marker.y,

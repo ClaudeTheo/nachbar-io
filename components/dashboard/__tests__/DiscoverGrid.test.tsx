@@ -84,25 +84,23 @@ describe("DiscoverGrid", () => {
     expect(tileSvgs.length).toBe(16);
   });
 
-  it("rendert Ghost-Watermarks pro Kategorie (GEMEINSCHAFT/PFLEGE/STADTTEIL)", () => {
-    // Visual-Polish v7 Welle 4: jede Kategorie hat ein Cream-on-Cream
-    // Riesen-Wort als dekorative Hintergrund-Schicht.
+  it("rendert KEINE Ghost-Watermarks im Hintergrund (Founder 2026-05-12: 'komisch')", () => {
     const { container } = render(<DiscoverGrid />);
     expect(
       container.querySelector(
         '[data-testid="category-nachbarschaft-watermark"]',
-      )?.textContent,
-    ).toBe("GEMEINSCHAFT");
+      ),
+    ).toBeNull();
     expect(
       container.querySelector(
         '[data-testid="category-hilfe_pflege-watermark"]',
-      )?.textContent,
-    ).toBe("PFLEGE");
+      ),
+    ).toBeNull();
     expect(
       container.querySelector(
         '[data-testid="category-quartier_info-watermark"]',
-      )?.textContent,
-    ).toBe("STADTTEIL");
+      ),
+    ).toBeNull();
   });
 
   it("rendert Featured-Tile (glass-tile-green) pro Default-Kategorie", () => {

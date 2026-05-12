@@ -60,15 +60,6 @@ const CATEGORY_LABELS: Record<TileCategory, string> = {
   mehr: "Mehr Funktionen",
 };
 
-// Visual-Polish v7 Welle 4 — Ghost-Watermark pro Kategorie (Magazin-Effekt).
-// Cream-on-Cream Riesen-Wort hinter der Section. Mapping aus claude.design v7.
-const CATEGORY_WATERMARKS: Record<TileCategory, string> = {
-  nachbarschaft: "GEMEINSCHAFT",
-  hilfe_pflege: "PFLEGE",
-  quartier_info: "STADTTEIL",
-  mehr: "ENTDECKEN",
-};
-
 // Visual-Polish v7 Welle 5 — Featured-Tile pro Kategorie (asymmetrisch).
 // Mapping href -> Featured-Status. Mehr-Kategorie hat bewusst kein Featured
 // (das sind alles secondary Tiles). Founder-Defaults 2026-05-12:
@@ -380,22 +371,15 @@ function CategorySection({
   if (tiles.length === 0) return null;
   return (
     <section
-      className="relative mt-12 overflow-hidden first:mt-0"
+      className="mt-12 first:mt-0"
       data-testid={`category-${category}`}
     >
-      {/* Visual-Polish v7 Welle 4 — Ghost-Watermark (Magazin-Effekt).
-          Cream-on-Cream Riesen-Wort hinter der Section, dekorativ,
-          pointer-events-none. z-0 unter dem Content (z-10). */}
-      <span
-        aria-hidden="true"
-        data-testid={`category-${category}-watermark`}
-        className="pointer-events-none absolute -top-3 left-0 right-0 z-0 select-none whitespace-nowrap font-heading text-[72px] font-extrabold leading-none tracking-[-0.04em] text-[#f4ecdf] sm:text-[120px]"
-      >
-        {CATEGORY_WATERMARKS[category]}
-      </span>
       {/* Visual-Polish v7 C-3: Eyebrow + accent dot + hairline-divider
-          (Magazin-Section-Trenner statt H3-Header in mute-foreground). */}
-      <header className="relative z-10 mb-4 space-y-1">
+          (Magazin-Section-Trenner statt H3-Header in mute-foreground).
+          Ghost-Watermarks 2026-05-12 entfernt — Founder-Feedback: "komisch
+          schrift im hintergrund in beige". Featured-Tile bleibt als Magazin-
+          Aufmacher pro Kategorie. */}
+      <header className="mb-4 space-y-1">
         <p className="flex items-center gap-2 text-xs font-medium uppercase tracking-[0.08em] text-anthrazit-light">
           <span
             className="inline-block h-1.5 w-1.5 rounded-full bg-quartier-green"
@@ -405,7 +389,7 @@ function CategorySection({
         </p>
         <div className="h-px bg-anthrazit-light/20" aria-hidden />
       </header>
-      <div className="relative z-10 grid grid-cols-4 gap-2">
+      <div className="grid grid-cols-4 gap-2">
         {tiles.map((item) =>
           item.href === CATEGORY_FEATURED_HREF[category] ? (
             <FeaturedTile key={item.href} item={item} />

@@ -1,5 +1,5 @@
 // Visual-Polish v7 Iteration 2 — Photo/Pattern-Schicht fuer App-Shell.
-// Tests fuer den dezenten Aquarell-Hintergrund auf allen eingeloggten Seiten.
+// Tests fuer den dezenten Quartier-Hintergrund auf allen eingeloggten Seiten.
 
 import { cleanup, render } from "@testing-library/react";
 import { afterEach, describe, expect, it } from "vitest";
@@ -17,11 +17,11 @@ describe("AppAquarellBackground", () => {
     expect(wrapper?.className).toMatch(/pointer-events-none/);
   });
 
-  it("lädt das Aquarell-Symbol (Tanne + Häuser + Sonne)", () => {
+  it("lädt das Quartier-Hero-Foto (Stadt + Bäume + Nachbarinnen)", () => {
     const { container } = render(<AppAquarellBackground />);
     const img = container.querySelector('[data-testid="app-bg-aquarell"] img');
     expect(img).not.toBeNull();
-    expect(img?.getAttribute("src")).toMatch(/quartierapp-symbol/);
+    expect(img?.getAttribute("src")).toMatch(/hero-quartier/);
   });
 
   it("liegt im hintersten z-Index (-z-10 / fixed full-screen)", () => {
@@ -33,12 +33,24 @@ describe("AppAquarellBackground", () => {
     expect(className).toMatch(/-z-10/);
   });
 
-  it("nutzt dezente Opacity damit Lesbarkeit erhalten bleibt", () => {
+  it("positioniert das Foto oben (object-top) statt rechts/zentriert", () => {
     const { container } = render(<AppAquarellBackground />);
     const img = container.querySelector('[data-testid="app-bg-aquarell"] img');
     const cls = img?.className ?? "";
-    // Default-Opacity ist 0.15 (dezent, aber sichtbar gegen Warmwhite-BG).
-    expect(cls).toMatch(/opacity-\[0\.15\]/);
+    // Founder-Wunsch 2026-05-12: Hintergrund "ganz oben" — Stadt-Silhouette
+    // soll sichtbar bleiben, nicht unten/seitlich abgeschnitten werden.
+    expect(cls).toMatch(/object-top/);
+    // object-cover fuellt die Flaeche aus (statt object-contain mit Cream-Rand).
+    expect(cls).toMatch(/object-cover/);
+  });
+
+  it("nutzt sehr dezente Opacity damit Lesbarkeit erhalten bleibt", () => {
+    const { container } = render(<AppAquarellBackground />);
+    const img = container.querySelector('[data-testid="app-bg-aquarell"] img');
+    const cls = img?.className ?? "";
+    // Default-Opacity ist 0.10 (Foto ist intensiver als Logo-Aquarell, deshalb
+    // staerker zurueckgenommen als die alte Symbol-Variante mit 0.15).
+    expect(cls).toMatch(/opacity-\[0\.1\]/);
   });
 
   it("erlaubt explizite Opacity-Anpassung via prop", () => {

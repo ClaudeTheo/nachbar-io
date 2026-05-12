@@ -11,11 +11,13 @@ export default function LandingPage() {
   return (
     <main className="relative min-h-screen overflow-hidden bg-warmwhite text-anthrazit">
       {/* Dezenter Aquarell-Hintergrund (Brand-Bibel: Tanne + Haeuser + Sonne).
-          Absolut positioniert, opacity-15, decorative. */}
+          Absolut positioniert, opacity-15, decorative. Founder 2026-05-12:
+          Symbol "ganz oben" statt rechts-oben, damit es ueber dem Hero-Logo
+          atmosphaerisch sichtbar bleibt. */}
       <div
         aria-hidden="true"
         data-testid="landing-bg-aquarell"
-        className="pointer-events-none absolute -right-32 -top-24 z-0 hidden h-[120%] w-[110%] opacity-[0.18] sm:block"
+        className="pointer-events-none absolute inset-x-0 -top-24 z-0 hidden h-[120%] w-full opacity-[0.18] sm:block"
       >
         <Image
           src="/brand/quartierapp-symbol.png"
@@ -23,7 +25,7 @@ export default function LandingPage() {
           fill
           priority={false}
           sizes="(min-width: 640px) 100vw, 0"
-          className="select-none object-contain object-right-top"
+          className="select-none object-contain object-top"
           aria-hidden="true"
           draggable={false}
         />

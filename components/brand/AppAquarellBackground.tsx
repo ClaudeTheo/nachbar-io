@@ -3,30 +3,33 @@ import { cn } from "@/lib/utils";
 
 interface AppAquarellBackgroundProps {
   /**
-   * Sichtbarkeit des Aquarell-Hintergrunds. Default 0.15 (dezent
-   * sichtbar gegen den Warmwhite-Page-BG). Werte zwischen 0 und 0.25
-   * empfohlen; darueber wird der Content schwerer lesbar.
+   * Sichtbarkeit des Quartier-Hintergrunds. Default 0.10 (sehr dezent —
+   * Foto ist intensiver als das Aquarell-Logo, deshalb staerker
+   * zurueckgenommen). Werte zwischen 0 und 0.18 empfohlen.
    */
   opacity?: number;
   className?: string;
 }
 
 /**
- * Visual-Polish v7 Iteration 2 — Photo/Pattern-Schicht.
+ * Visual-Polish v7 Iteration 2 — Photo/Pattern-Schicht (Folgewelle 2026-05-12).
  *
- * Dezenter Schwarzwald-Aquarell-Hintergrund (Tanne + Haeuser + Sonne)
- * fuer die App-Shell. Liegt im hintersten z-Index (-z-10), ist decorative
- * (aria-hidden) und blockiert keine Klicks (pointer-events-none).
+ * Dezenter Quartier-Hintergrund (Stadt + Bäume + Nachbarinnen) fuer die
+ * App-Shell. Founder-Wunsch: "ganz oben" → object-top, damit die
+ * Stadt-Silhouette und der Baumkronen-Bereich sichtbar bleiben und nicht
+ * unten oder seitlich abgeschnitten werden.
  *
- * Wird zentral im (app)/layout.tsx eingesetzt — bringt das Brand-Motiv
- * auf alle eingeloggten Seiten (Dashboard, Care, Quartier-Info,
- * Praevention, Org) ohne Mehraufwand pro Page.
+ * Liegt im hintersten z-Index (-z-10), ist decorative (aria-hidden) und
+ * blockiert keine Klicks (pointer-events-none). Wird zentral im
+ * (app)/layout.tsx eingesetzt — bringt das Quartier-Motiv auf alle
+ * eingeloggten Seiten ohne Mehraufwand pro Page.
  *
- * Brand-Asset: public/brand/quartierapp-symbol.png (Cream-BG matched
- * Warmwhite-Token, verschmilzt visuell mit Page-Background).
+ * Asset: public/images/hero-quartier.webp (komprimierte Marketing-Hero-
+ * Aufnahme aus Pre-Closed-Pilot-Welle; jetzt als atmosphaerischer
+ * BG-Layer wiederverwendet).
  */
 export function AppAquarellBackground({
-  opacity = 0.15,
+  opacity = 0.1,
   className,
 }: AppAquarellBackgroundProps) {
   // Inline-Style fuer beliebige Opacity (Tailwind-Klasse bleibt zusaetzlich
@@ -42,14 +45,14 @@ export function AppAquarellBackground({
       )}
     >
       <Image
-        src="/brand/quartierapp-symbol.png"
+        src="/images/hero-quartier.webp"
         alt=""
         fill
         sizes="100vw"
         priority={false}
         draggable={false}
         className={cn(
-          "select-none object-contain object-right-bottom sm:object-center",
+          "select-none object-cover object-top",
           opacityClass,
         )}
       />

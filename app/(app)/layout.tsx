@@ -1,3 +1,4 @@
+import { AppAquarellBackground } from "@/components/brand/AppAquarellBackground";
 import { BottomNav } from "@/components/BottomNav";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { HeartbeatProvider } from "@/components/HeartbeatProvider";
@@ -19,7 +20,11 @@ import { SosHeaderIcon } from "@/components/sos/SosHeaderIcon";
 // Layout fuer den aktiven Modus — mit Bottom-Navigation + Bug-Report
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="min-h-screen bg-warmwhite pb-20">
+    <div className="relative min-h-screen bg-warmwhite pb-20">
+      {/* Visual-Polish v7 Iteration 2 — dezenter Aquarell-Hintergrund
+          (Schwarzwald-Tanne + Haeuser + Sonne) fuer alle eingeloggten
+          Seiten. Decorative, aria-hidden, im hintersten z-Index. */}
+      <AppAquarellBackground />
       {/* Skip-Navigation fuer Tastaturnutzer */}
       <a
         href="#main-content"

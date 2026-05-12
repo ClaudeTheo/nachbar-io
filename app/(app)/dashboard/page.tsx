@@ -213,11 +213,16 @@ export default function DashboardPage() {
               </h2>
             </header>
 
+            {/* Schnellzugriffe als .glass-tile (Visual-Polish v7 C-2):
+                cream-Glas Alpha 0.40 + blur 12 px desktop / 6 px mobile
+                via @supports backdrop-filter, Solid-Fallback fuer aeltere Browser.
+                Hover: green-line Border + leicht erhoehte Opacity.
+                Active: green-tint Background (keine Transform-Animation). */}
             <div className="grid grid-cols-2 gap-3">
               {/* 1. Check-in */}
               <Link
                 href="/care/checkin"
-                className="flex min-h-[80px] flex-col justify-center rounded-xl border bg-white p-4 shadow-sm transition-colors hover:bg-gray-50 active:scale-[0.98]"
+                className="glass-tile flex min-h-[80px] flex-col justify-center p-4"
               >
                 <div className="flex items-center gap-2">
                   <CheckCircle2 className="h-5 w-5 text-quartier-green" />
@@ -231,7 +236,7 @@ export default function DashboardPage() {
               {/* 2. Nachrichten */}
               <Link
                 href="/notifications"
-                className="relative flex min-h-[80px] flex-col justify-center rounded-xl border bg-white p-4 shadow-sm transition-colors hover:bg-gray-50 active:scale-[0.98]"
+                className="glass-tile flex min-h-[80px] flex-col justify-center p-4"
               >
                 <div className="flex items-center gap-2">
                   <MessageCircle className="h-5 w-5 text-blue-500" />
@@ -252,7 +257,7 @@ export default function DashboardPage() {
               {/* 3. Neuigkeiten */}
               <Link
                 href="/news"
-                className="flex min-h-[80px] flex-col justify-center rounded-xl border bg-white p-4 shadow-sm transition-colors hover:bg-gray-50 active:scale-[0.98]"
+                className="glass-tile flex min-h-[80px] flex-col justify-center p-4"
               >
                 <div className="flex items-center gap-2">
                   <Newspaper className="h-5 w-5 text-violet-500" />
@@ -268,7 +273,7 @@ export default function DashboardPage() {
               {/* 4. Bekanntmachungen */}
               <Link
                 href="/city-services"
-                className="flex min-h-[80px] flex-col justify-center rounded-xl border bg-white p-4 shadow-sm transition-colors hover:bg-gray-50 active:scale-[0.98]"
+                className="glass-tile flex min-h-[80px] flex-col justify-center p-4"
               >
                 <div className="flex items-center gap-2">
                   <Megaphone className="h-5 w-5 text-amber-600" />

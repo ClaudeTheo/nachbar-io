@@ -1,5 +1,5 @@
-// Visual-Polish v7 Iteration 2 — Photo/Pattern-Schicht fuer App-Shell.
-// Tests fuer den dezenten Quartier-Hintergrund auf allen eingeloggten Seiten.
+// Visual-Polish v7 Iteration 2 — Aquarell-Symbol-Schicht fuer App-Shell.
+// Tests fuer den dezenten Aquarell-Hintergrund auf allen eingeloggten Seiten.
 
 import { cleanup, render } from "@testing-library/react";
 import { afterEach, describe, expect, it } from "vitest";
@@ -17,11 +17,11 @@ describe("AppAquarellBackground", () => {
     expect(wrapper?.className).toMatch(/pointer-events-none/);
   });
 
-  it("lädt das Quartier-Hero-Foto (Stadt + Bäume + Nachbarinnen)", () => {
+  it("lädt das Aquarell-Symbol (Tanne + Häuser + Sonne)", () => {
     const { container } = render(<AppAquarellBackground />);
     const img = container.querySelector('[data-testid="app-bg-aquarell"] img');
     expect(img).not.toBeNull();
-    expect(img?.getAttribute("src")).toMatch(/hero-quartier/);
+    expect(img?.getAttribute("src")).toMatch(/quartierapp-symbol/);
   });
 
   it("liegt im hintersten z-Index (-z-10 / fixed full-screen)", () => {
@@ -33,24 +33,25 @@ describe("AppAquarellBackground", () => {
     expect(className).toMatch(/-z-10/);
   });
 
-  it("positioniert das Foto oben (object-top) statt rechts/zentriert", () => {
+  it("positioniert das Symbol oben (object-top) und nutzt object-contain", () => {
     const { container } = render(<AppAquarellBackground />);
     const img = container.querySelector('[data-testid="app-bg-aquarell"] img');
     const cls = img?.className ?? "";
-    // Founder-Wunsch 2026-05-12: Hintergrund "ganz oben" — Stadt-Silhouette
-    // soll sichtbar bleiben, nicht unten/seitlich abgeschnitten werden.
+    // Founder-Wunsch 2026-05-12: Hintergrund "ganz oben".
     expect(cls).toMatch(/object-top/);
-    // object-cover fuellt die Flaeche aus (statt object-contain mit Cream-Rand).
-    expect(cls).toMatch(/object-cover/);
+    // Symbol braucht object-contain (Aquarell-Logo soll vollstaendig sichtbar
+    // bleiben, nicht beschnitten wie ein Foto). object-cover wird absichtlich
+    // NICHT genutzt — Foto-Hintergrund war ein Irrweg, ist nur fuer Landing.
+    expect(cls).toMatch(/object-contain/);
   });
 
-  it("nutzt sehr dezente Opacity damit Lesbarkeit erhalten bleibt", () => {
+  it("nutzt dezente Opacity damit Lesbarkeit erhalten bleibt", () => {
     const { container } = render(<AppAquarellBackground />);
     const img = container.querySelector('[data-testid="app-bg-aquarell"] img');
     const cls = img?.className ?? "";
-    // Default-Opacity ist 0.10 (Foto ist intensiver als Logo-Aquarell, deshalb
-    // staerker zurueckgenommen als die alte Symbol-Variante mit 0.15).
-    expect(cls).toMatch(/opacity-\[0\.1\]/);
+    // Default-Opacity ist 0.15 (Symbol vertraegt mehr als Foto, weil
+    // grossflaechiger Cream-Anteil).
+    expect(cls).toMatch(/opacity-\[0\.15\]/);
   });
 
   it("erlaubt explizite Opacity-Anpassung via prop", () => {

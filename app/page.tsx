@@ -10,10 +10,32 @@ import { QuartierAppLogo } from "@/components/brand/QuartierAppLogo";
 export default function LandingPage() {
   return (
     <main className="relative min-h-screen overflow-hidden bg-warmwhite text-anthrazit">
+      {/* Variante C (Founder 2026-05-12): Quartier-Hero-Foto als unterste
+          Atmosphaere-Schicht (Stadt-Silhouette + Strassen-Baeume +
+          Nachbarinnen). Liegt im DOM VOR dem Aquarell-Symbol-Layer, damit
+          das Symbol darueber rendert. Foto ist Landing-only — App-Shell
+          nutzt weiterhin das Aquarell-Symbol. */}
+      <div
+        aria-hidden="true"
+        data-testid="landing-bg-foto"
+        className="pointer-events-none absolute inset-0 z-0 opacity-[0.12]"
+      >
+        <Image
+          src="/images/hero-quartier.webp"
+          alt=""
+          fill
+          priority={false}
+          sizes="100vw"
+          className="select-none object-cover object-top"
+          draggable={false}
+        />
+      </div>
+
       {/* Dezenter Aquarell-Hintergrund (Brand-Bibel: Tanne + Haeuser + Sonne).
-          Absolut positioniert, opacity-15, decorative. Founder 2026-05-12:
+          Absolut positioniert, opacity-18, decorative. Founder 2026-05-12:
           Symbol "ganz oben" statt rechts-oben, damit es ueber dem Hero-Logo
-          atmosphaerisch sichtbar bleibt. */}
+          atmosphaerisch sichtbar bleibt. Liegt im DOM NACH dem Foto-Layer,
+          damit das Symbol als Brand-Anker darueber rendert. */}
       <div
         aria-hidden="true"
         data-testid="landing-bg-aquarell"

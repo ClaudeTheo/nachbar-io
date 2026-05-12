@@ -57,4 +57,29 @@ describe("Closed-Pilot-Startseite", () => {
     expect(bgImg).not.toBeNull();
     expect(bgImg?.getAttribute("src")).toMatch(/quartierapp-symbol|quartierapp-master/);
   });
+
+  it("zeigt das Quartier-Hero-Foto als zusaetzliche Atmosphaere-Schicht", () => {
+    // Founder 2026-05-12: Foto hero-quartier.webp gehoert auf die Landing
+    // (nicht in die App-Shell). Variante C: Foto + Aquarell-Symbol zusammen
+    // als gestaffelter Hintergrund — Foto liefert Stadt-Baeume-Atmosphaere,
+    // Symbol bleibt Brand-Anker dargestellt darueber.
+    const { container } = render(<LandingPage />);
+    const fotoLayer = container.querySelector(
+      '[data-testid="landing-bg-foto"]',
+    );
+    expect(fotoLayer).not.toBeNull();
+    expect(fotoLayer?.getAttribute("aria-hidden")).toBe("true");
+    const fotoImg = fotoLayer?.querySelector("img");
+    expect(fotoImg).not.toBeNull();
+    expect(fotoImg?.getAttribute("src")).toMatch(/hero-quartier/);
+    // Foto liegt hinter dem Symbol-Layer im DOM (Symbol rendert darueber).
+    const symbolLayer = container.querySelector(
+      '[data-testid="landing-bg-aquarell"]',
+    );
+    const order = container.querySelectorAll(
+      '[data-testid="landing-bg-foto"], [data-testid="landing-bg-aquarell"]',
+    );
+    expect(order[0]).toBe(fotoLayer);
+    expect(order[1]).toBe(symbolLayer);
+  });
 });

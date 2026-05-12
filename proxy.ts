@@ -144,7 +144,10 @@ export async function proxy(request: NextRequest) {
 
 export const config = {
   matcher: [
-    // Alle Routen ausser statische Assets und _next
-    "/((?!_next/static|_next/image|favicon.ico|icons/|manifest.json|sw.js|promo/|robots.txt|sitemap.xml|monitoring).*)",
+    // Alle Routen ausser statische Assets und _next. Statische Brand-Assets
+    // (Aquarell-Logo + Symbol + Favicons) muessen oeffentlich erreichbar
+    // sein, damit die Closed-Pilot-Landing die Aquarell-Hintergrund-Layer
+    // laden kann (Next-Image-Loader holt das Bild ueber /brand/...).
+    "/((?!_next/static|_next/image|favicon.ico|icons/|brand/|manifest.json|sw.js|promo/|robots.txt|sitemap.xml|monitoring).*)",
   ],
 };

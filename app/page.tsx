@@ -1,56 +1,132 @@
+import Image from "next/image";
+import Link from "next/link";
+
+import { QuartierAppLogo } from "@/components/brand/QuartierAppLogo";
+
+// Closed-Pilot Landing — Visual-Polish v7 Iteration 2 (Landing).
+// Aquarell-Hintergrund (Schwarzwald-Tanne + Haeuser + Sonne) dezent als
+// Atmosphaere-Layer; Brand-Tokens statt hartcodierte Hex; Magazin-Hero
+// mit Eyebrow + accent dot + grosser Logo-Anker + Hairline-Trenner.
 export default function LandingPage() {
   return (
-    <main className="min-h-screen bg-[#f7f5ef] text-[#23262f]">
-      <section className="mx-auto flex min-h-screen w-full max-w-4xl flex-col justify-center px-6 py-12">
-        <p className="text-sm font-semibold uppercase tracking-wide text-[#3b6f58]">
+    <main className="relative min-h-screen overflow-hidden bg-warmwhite text-anthrazit">
+      {/* Dezenter Aquarell-Hintergrund (Brand-Bibel: Tanne + Haeuser + Sonne).
+          Absolut positioniert, opacity-15, decorative. */}
+      <div
+        aria-hidden="true"
+        data-testid="landing-bg-aquarell"
+        className="pointer-events-none absolute -right-32 -top-24 z-0 hidden h-[120%] w-[110%] opacity-[0.18] sm:block"
+      >
+        <Image
+          src="/brand/quartierapp-symbol.png"
+          alt=""
+          fill
+          priority={false}
+          sizes="(min-width: 640px) 100vw, 0"
+          className="select-none object-contain object-right-top"
+          aria-hidden="true"
+          draggable={false}
+        />
+      </div>
+
+      {/* Mobile-Variante: zentriertes blasses Aquarell hinter dem Hero. */}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-x-0 top-8 z-0 flex justify-center opacity-[0.22] sm:hidden"
+      >
+        <Image
+          src="/brand/quartierapp-symbol.png"
+          alt=""
+          width={520}
+          height={368}
+          priority={false}
+          className="select-none object-contain"
+          draggable={false}
+        />
+      </div>
+
+      <section className="relative z-10 mx-auto flex min-h-screen w-full max-w-4xl flex-col justify-center px-6 py-16">
+        {/* Hero-Logo: das volle Aquarell mit Wordmark als Magazin-Anker. */}
+        <div className="mb-10 flex justify-start sm:mb-12">
+          <QuartierAppLogo variant="full" size={120} priority />
+        </div>
+
+        {/* Eyebrow im Magazin-Stil (accent dot + uppercase tracking). */}
+        <p className="flex items-center gap-2 text-xs font-medium uppercase tracking-[0.12em] text-quartier-green">
+          <span
+            className="inline-block h-1.5 w-1.5 rounded-full bg-quartier-green"
+            aria-hidden="true"
+          />
           Nachbar.io · Bad Säckingen
         </p>
-        <h1 className="mt-4 max-w-2xl text-4xl font-extrabold leading-tight sm:text-5xl">
+
+        <h1 className="mt-3 max-w-2xl text-4xl font-extrabold leading-[1.1] tracking-[-0.02em] text-anthrazit sm:text-5xl">
           Geschlossener Pilot in Vorbereitung
         </h1>
-        <p className="mt-6 max-w-2xl text-lg leading-8 text-[#4b5563]">
+
+        <div
+          className="mt-5 h-px w-16 bg-anthrazit-light/30"
+          aria-hidden="true"
+        />
+
+        <p className="mt-5 max-w-2xl text-lg leading-[1.65] text-anthrazit-light">
           Diese Testversion ist noch nicht öffentlich freigeschaltet. Wir
-          bereiten den Familienkreis für einen kleinen, kontrollierten Pilot vor
-          und nehmen hier aktuell keine Registrierungen oder echten
+          bereiten den Familienkreis für einen kleinen, kontrollierten Pilot
+          vor und nehmen hier aktuell keine Registrierungen oder echten
           personenbezogenen Daten an.
         </p>
-        <div className="mt-8 flex flex-wrap items-center gap-3">
-          <a
-            className="inline-flex min-h-12 items-center justify-center bg-[#2f684e] px-5 py-3 text-sm font-semibold text-white shadow-sm hover:bg-[#265640]"
+
+        <div className="mt-8 flex flex-wrap items-center gap-4">
+          <Link
+            className="inline-flex min-h-12 items-center justify-center rounded-md bg-quartier-green px-6 py-3 text-sm font-semibold text-warmwhite shadow-sm transition hover:bg-quartier-green-dark"
             href="/login"
           >
             Anmelden
-          </a>
-          <span className="text-sm leading-6 text-[#4b5563]">
-            Nur fuer eingeladene Testhaushalte.
+          </Link>
+          <span className="text-sm leading-6 text-anthrazit-light">
+            Nur für eingeladene Testhaushalte.
           </span>
         </div>
-        <div className="mt-8 grid gap-4 text-sm text-[#374151] sm:grid-cols-3">
-          <div className="border-l-4 border-[#3b6f58] bg-white p-4 shadow-sm">
-            <h2 className="font-bold">Nur Vorbereitung</h2>
-            <p className="mt-2">Kein öffentlicher Start und keine Werbung.</p>
-          </div>
-          <div className="border-l-4 border-[#3b6f58] bg-white p-4 shadow-sm">
-            <h2 className="font-bold">Keine echten Daten</h2>
-            <p className="mt-2">Tests laufen nur intern und mit Testdaten.</p>
-          </div>
-          <div className="border-l-4 border-[#3b6f58] bg-white p-4 shadow-sm">
-            <h2 className="font-bold">Freigabe folgt</h2>
-            <p className="mt-2">
-              Der Pilot startet erst nach rechtlicher und technischer Freigabe.
+
+        {/* Drei Info-Karten — Hairline-Border + Lifted-Cream-BG (Magazin-Style). */}
+        <div className="mt-12 grid gap-4 text-sm text-anthrazit sm:grid-cols-3">
+          <article className="border-l-2 border-quartier-green bg-lifted-cream p-5">
+            <h2 className="text-base font-semibold text-anthrazit">
+              Nur Vorbereitung
+            </h2>
+            <p className="mt-2 leading-[1.55] text-anthrazit-light">
+              Kein öffentlicher Start und keine Werbung.
             </p>
-          </div>
+          </article>
+          <article className="border-l-2 border-quartier-green bg-lifted-cream p-5">
+            <h2 className="text-base font-semibold text-anthrazit">
+              Keine echten Daten
+            </h2>
+            <p className="mt-2 leading-[1.55] text-anthrazit-light">
+              Tests laufen nur intern und mit Testdaten.
+            </p>
+          </article>
+          <article className="border-l-2 border-quartier-green bg-lifted-cream p-5">
+            <h2 className="text-base font-semibold text-anthrazit">
+              Freigabe folgt
+            </h2>
+            <p className="mt-2 leading-[1.55] text-anthrazit-light">
+              Der Pilot startet erst nach rechtlicher und technischer
+              Freigabe.
+            </p>
+          </article>
         </div>
-        <nav className="mt-10 flex flex-wrap gap-4 text-sm font-semibold">
-          <a className="text-[#2f684e] underline" href="/datenschutz">
+
+        <nav className="mt-12 flex flex-wrap gap-5 text-sm font-medium text-quartier-green">
+          <Link className="underline-offset-4 hover:underline" href="/datenschutz">
             Datenschutz
-          </a>
-          <a className="text-[#2f684e] underline" href="/impressum">
+          </Link>
+          <Link className="underline-offset-4 hover:underline" href="/impressum">
             Impressum
-          </a>
-          <a className="text-[#2f684e] underline" href="/agb">
+          </Link>
+          <Link className="underline-offset-4 hover:underline" href="/agb">
             AGB
-          </a>
+          </Link>
         </nav>
       </section>
     </main>

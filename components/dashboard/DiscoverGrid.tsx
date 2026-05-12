@@ -305,7 +305,9 @@ function DiscoverTile({ item }: { item: DiscoverItem }) {
       // min-h-[80px] erfuellt die CLAUDE.md Senior-Regel (Pflicht-Touch-Target).
       // break-words verhindert Truncation bei langen Labels (Veranstaltungen,
       // Pflegegrad, Einkaufshilfe, Muellkalender) auf 360px-Viewport.
-      className={`flex min-h-[80px] flex-col items-center justify-center gap-1.5 rounded-xl ${item.bgColor} p-3 transition-all duration-200 animate-card-lift hover:shadow-soft`}
+      // Visual-Polish v7 C-3: glass-tile statt farbiger Bubble, Icon-Farbe als
+      // einzige Kategorie-Differenzierung. Keine Transform-Animation mehr.
+      className="glass-tile flex min-h-[80px] flex-col items-center justify-center gap-1.5 p-3"
     >
       <Icon className={`h-6 w-6 ${item.iconColor}`} strokeWidth={1.5} />
       <span className="text-center text-xs font-medium leading-tight text-anthrazit break-words">
@@ -324,16 +326,28 @@ function CategorySection({
 }) {
   if (tiles.length === 0) return null;
   return (
-    <div className="mt-4 first:mt-0" data-testid={`category-${category}`}>
-      <h3 className="mb-2 text-sm font-medium text-muted-foreground">
-        {CATEGORY_LABELS[category]}
-      </h3>
+    <section
+      className="mt-8 first:mt-0"
+      data-testid={`category-${category}`}
+    >
+      {/* Visual-Polish v7 C-3: Eyebrow + accent dot + hairline-divider
+          (Magazin-Section-Trenner statt H3-Header in mute-foreground). */}
+      <header className="mb-4 space-y-1">
+        <p className="flex items-center gap-2 text-xs font-medium uppercase tracking-[0.08em] text-anthrazit-light">
+          <span
+            className="inline-block h-1.5 w-1.5 rounded-full bg-quartier-green"
+            aria-hidden
+          />
+          {CATEGORY_LABELS[category]}
+        </p>
+        <div className="h-px bg-anthrazit-light/20" aria-hidden />
+      </header>
       <div className="grid grid-cols-4 gap-2">
         {tiles.map((item) => (
           <DiscoverTile key={item.href} item={item} />
         ))}
       </div>
-    </div>
+    </section>
   );
 }
 
@@ -375,7 +389,20 @@ export function DiscoverGrid() {
 
   return (
     <section data-testid="discover-grid">
-      <h2 className="mb-2 font-semibold text-anthrazit">Entdecken</h2>
+      {/* Visual-Polish v7 C-3: Section-Header im Magazin-Stil
+          (Eyebrow + accent dot + H2 36px-Skala-Anker). */}
+      <header className="mb-6 space-y-1">
+        <p className="flex items-center gap-2 text-xs font-medium uppercase tracking-[0.08em] text-anthrazit-light">
+          <span
+            className="inline-block h-1.5 w-1.5 rounded-full bg-quartier-green"
+            aria-hidden
+          />
+          Entdecken
+        </p>
+        <h2 className="text-[22px] font-semibold leading-[1.3] tracking-[-0.01em] text-anthrazit">
+          Alle Funktionen Ihres Quartiers.
+        </h2>
+      </header>
 
       {VISIBLE_CATEGORIES.map((cat) => (
         <CategorySection key={cat} category={cat} tiles={tilesByCategory(cat)} />
@@ -391,7 +418,7 @@ export function DiscoverGrid() {
             setExpanded(true);
             haptic("light");
           }}
-          className="mt-3 flex w-full items-center justify-center gap-1 rounded-xl border border-dashed border-muted-foreground/20 py-2.5 text-sm font-medium text-muted-foreground transition-colors hover:border-quartier-green hover:text-quartier-green"
+          className="mt-6 flex w-full items-center justify-center gap-1 rounded-xl border border-dashed border-muted-foreground/20 py-2.5 text-sm font-medium text-muted-foreground transition-colors hover:border-quartier-green hover:text-quartier-green"
           data-testid="discover-expand"
         >
           Mehr entdecken

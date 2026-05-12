@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import {
   Bell,
@@ -17,6 +17,9 @@ import { DailyCheckinBubble } from "@/modules/care/components/checkin/DailyCheck
 import { BrandFooter } from "@/components/brand/BrandFooter";
 import { MapThumbnail } from "@/components/map/MapThumbnail";
 import { useMapStatuses } from "@/lib/hooks/useMapStatuses";
+import { useAuth } from "@/hooks/use-auth";
+import { createClient } from "@/lib/supabase/client";
+import { loadCaregiverPendingCheckinHouseholds } from "@/lib/care/caregiver-pending-checkins";
 import { Skeleton } from "@/components/ui/skeleton";
 
 import { useDashboardData, getGreeting } from "./hooks/useDashboardData";
@@ -62,16 +65,45 @@ export default function DashboardPage() {
     currentQuarter?.center_lat,
     currentQuarter?.center_lng,
   );
+
+  // Founder-C 2026-05-12 (Variante X — DSGVO-konform):
+  // Caregiver-only Care-Checkin-Status. Sieht NUR der angemeldete Nutzer
+  // fuer SEINE per caregiver_links zugewiesenen Senioren — andere
+  // Nachbarn bekommen via RLS ein leeres Result.
+  const { user } = useAuth();
+  const [caregiverPendingHouseholds, setCaregiverPendingHouseholds] =
+    useState<Set<string>>(new Set());
+  useEffect(() => {
+    if (!user?.id) return;
+    let cancelled = false;
+    const supabase = createClient();
+    void loadCaregiverPendingCheckinHouseholds(supabase, user.id).then(
+      (households) => {
+        if (!cancelled) setCaregiverPendingHouseholds(households);
+      },
+    );
+    return () => {
+      cancelled = true;
+    };
+  }, [user?.id]);
+
   const previewPoints = useMemo(
     () =>
       geoHouses
         .filter((house) => residentCounts[house.id] > 0)
-        .map((house) => ({
-          lat: house.lat,
-          lng: house.lng,
-          color: statuses[house.id] ?? ("green" as const),
-        })),
-    [geoHouses, residentCounts, statuses],
+        .map((house) => {
+          const baseStatus = statuses[house.id] ?? "green";
+          // Caregiver-Pending nur sichtbar wenn baseStatus noch "green" ist
+          // (rote/gelbe Eskalationen aus Hook haben Priori­taet — mergeMapStatus-
+          // Logik). Damit "ueberlagert" der Caregiver-Pin sanft, ohne SOS-Pins
+          // zu uebermalen.
+          const color =
+            baseStatus === "green" && caregiverPendingHouseholds.has(house.id)
+              ? ("yellow" as const)
+              : baseStatus;
+          return { lat: house.lat, lng: house.lng, color };
+        }),
+    [geoHouses, residentCounts, statuses, caregiverPendingHouseholds],
   );
 
   // Loading-Skeleton (unveraendert ggue. C-0).

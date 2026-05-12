@@ -9,7 +9,6 @@ import {
   Trash2,
   ExternalLink,
   RefreshCw,
-  ArrowLeft,
   FileText,
   Landmark,
   Calendar,
@@ -23,6 +22,8 @@ import {
   MapPin,
   Plus,
 } from "lucide-react";
+import { MagazineHeader } from "@/components/brand/MagazineHeader";
+import { QuartierAppLogo } from "@/components/brand/QuartierAppLogo";
 import { WeatherWidget } from "@/components/weather/WeatherWidget";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ExternalWarningBanner } from "@/components/warnings/external-warning-banner";
@@ -67,7 +68,7 @@ function PollenBar({ intensity, label }: { intensity: number; label: string }) {
   return (
     <div className="flex items-center gap-3">
       <span className="w-20 text-sm text-anthrazit truncate">{label}</span>
-      <div className="flex-1 h-3 bg-gray-100 rounded-full overflow-hidden">
+      <div className="flex-1 h-3 bg-anthrazit-tint rounded-full overflow-hidden">
         <div
           className={`h-full rounded-full ${color} transition-all`}
           style={{ width: `${Math.max(pct, 4)}%` }}
@@ -208,28 +209,35 @@ export default function QuartierInfoPage() {
     [geoHouses, residentCounts],
   );
 
+  // Visual-Polish v7: Magazin-Hero plus Refresh-Action (3x rendered je nach
+  // Branch). Local helper damit derselbe Header in No-Quarter, Error und
+  // Main-Branch DRY bleibt.
+  const quartierName = (currentQuarter?.name ?? currentQuarter?.city ?? "Ihr Quartier").toUpperCase();
+  const refreshAction = (
+    <button
+      onClick={handleRefresh}
+      className="rounded-full p-2 transition-colors hover:bg-anthrazit-tint min-w-[44px] min-h-[44px] flex items-center justify-center"
+      aria-label="Daten aktualisieren"
+    >
+      <RefreshCw
+        className={`h-5 w-5 text-anthrazit-light ${loading ? "animate-spin" : ""}`}
+      />
+    </button>
+  );
+
   if (!quarterLoading && !currentQuarter) {
     return (
       <div className={pageShellClass}>
-        <div className="flex items-center gap-3">
-          <Link
-            href="/dashboard"
-            aria-label="Zurück zum Dashboard"
-            className="p-2 -ml-2 rounded-full hover:bg-gray-100 min-w-[44px] min-h-[44px] flex items-center justify-center"
-          >
-            <ArrowLeft className="h-5 w-5 text-anthrazit" />
-          </Link>
-          <button
-            onClick={handleRefresh}
-            className="ml-auto p-2 rounded-full hover:bg-gray-100 min-w-[44px] min-h-[44px] flex items-center justify-center"
-            aria-label="Quartier erneut laden"
-          >
-            <RefreshCw className="h-5 w-5 text-muted-foreground" />
-          </button>
-        </div>
+        <MagazineHeader
+          eyebrow="QUARTIER · KEINE ZUORDNUNG"
+          title="Quartier-Info"
+          backHref="/dashboard"
+          backLabel="Zurück zum Dashboard"
+          actions={refreshAction}
+        />
 
         <section
-          className="rounded-2xl bg-white shadow-sm border border-gray-100 p-5"
+          className="rounded-2xl border border-anthrazit-tint bg-lifted-cream p-5"
           data-testid="info-no-quarter"
         >
           <h2 className="text-base font-semibold text-anthrazit mb-2">
@@ -253,25 +261,16 @@ export default function QuartierInfoPage() {
   if (!loading && apiError) {
     return (
       <div className={pageShellClass}>
-        <div className="flex items-center gap-3">
-          <Link
-            href="/dashboard"
-            aria-label="Zurück zum Dashboard"
-            className="p-2 -ml-2 rounded-full hover:bg-gray-100 min-w-[44px] min-h-[44px] flex items-center justify-center"
-          >
-            <ArrowLeft className="h-5 w-5 text-anthrazit" />
-          </Link>
-          <button
-            onClick={handleRefresh}
-            className="ml-auto p-2 rounded-full hover:bg-gray-100 min-w-[44px] min-h-[44px] flex items-center justify-center"
-            aria-label="Daten aktualisieren"
-          >
-            <RefreshCw className="h-5 w-5 text-muted-foreground" />
-          </button>
-        </div>
+        <MagazineHeader
+          eyebrow={`QUARTIER · ${quartierName}`}
+          title="Quartier-Info"
+          backHref="/dashboard"
+          backLabel="Zurück zum Dashboard"
+          actions={refreshAction}
+        />
 
         <section
-          className="rounded-2xl bg-white shadow-sm border border-amber-100 p-5"
+          className="rounded-2xl border border-amber-200 bg-amber-50/40 p-5"
           data-testid="info-api-error"
         >
           <div className="flex items-start gap-3">
@@ -290,25 +289,14 @@ export default function QuartierInfoPage() {
 
   return (
     <div className={pageShellClass}>
-      {/* Header */}
-      <div className="flex items-center gap-3">
-        <Link
-          href="/dashboard"
-          aria-label="Zurück zum Dashboard"
-          className="p-2 -ml-2 rounded-full hover:bg-gray-100 min-w-[44px] min-h-[44px] flex items-center justify-center"
-        >
-          <ArrowLeft className="h-5 w-5 text-anthrazit" />
-        </Link>
-        <button
-          onClick={handleRefresh}
-          className="ml-auto p-2 rounded-full hover:bg-gray-100 min-w-[44px] min-h-[44px] flex items-center justify-center"
-          aria-label="Daten aktualisieren"
-        >
-          <RefreshCw
-            className={`h-5 w-5 text-muted-foreground ${loading ? "animate-spin" : ""}`}
-          />
-        </button>
-      </div>
+      <MagazineHeader
+        eyebrow={`QUARTIER · ${quartierName}`}
+        title="Quartier-Info"
+        subtitle="Wetter, Pollen, Notdienste, Apotheken, ÖPNV, Aktuelles."
+        backHref="/dashboard"
+        backLabel="Zurück zum Dashboard"
+        actions={refreshAction}
+      />
 
       {/* Vorlesen-Button (G-5) */}
       {!loading && data && (
@@ -320,7 +308,7 @@ export default function QuartierInfoPage() {
       {/* 1. Wetter */}
       <section data-testid="info-weather">
         {loading ? (
-          <div className="rounded-2xl bg-white shadow-sm border border-gray-100 p-5 space-y-3">
+          <div className="rounded-2xl border border-anthrazit-tint bg-lifted-cream p-5 space-y-3">
             <Skeleton className="h-5 w-20" />
             <Skeleton className="h-12 w-full" />
             <Skeleton className="h-8 w-full" />
@@ -334,7 +322,7 @@ export default function QuartierInfoPage() {
             forecast={data.weather.forecast}
           />
         ) : (
-          <div className="rounded-2xl bg-white shadow-sm border border-gray-100 p-5">
+          <div className="rounded-2xl border border-anthrazit-tint bg-lifted-cream p-5">
             <h2 className="text-base font-semibold text-anthrazit mb-3">
               Wetter
             </h2>
@@ -347,7 +335,7 @@ export default function QuartierInfoPage() {
 
       {/* 2. Pollenflug */}
       <section
-        className="rounded-2xl bg-white shadow-sm border border-gray-100 p-5"
+        className="rounded-2xl border border-anthrazit-tint bg-lifted-cream p-5"
         data-testid="info-pollen"
       >
         <h2 className="text-base font-semibold text-anthrazit mb-3">
@@ -377,7 +365,7 @@ export default function QuartierInfoPage() {
 
       {/* 3. Warnungen */}
       <section
-        className="rounded-2xl bg-white shadow-sm border border-gray-100 p-5"
+        className="rounded-2xl border border-anthrazit-tint bg-lifted-cream p-5"
         id="warnungen"
         data-testid="info-warnungen"
       >
@@ -401,7 +389,7 @@ export default function QuartierInfoPage() {
 
       {/* 4. Naechste Abfuhr */}
       <section
-        className="rounded-2xl bg-white shadow-sm border border-gray-100 p-5"
+        className="rounded-2xl border border-anthrazit-tint bg-lifted-cream p-5"
         data-testid="info-waste"
       >
         <h2 className="text-base font-semibold text-anthrazit mb-3">
@@ -443,7 +431,7 @@ export default function QuartierInfoPage() {
 
       {/* 5. ÖPNV-Abfahrten */}
       <section
-        className="rounded-2xl bg-white shadow-sm border border-gray-100 p-5"
+        className="rounded-2xl border border-anthrazit-tint bg-lifted-cream p-5"
         data-testid="info-oepnv"
       >
         <div className="flex items-center gap-2 mb-3">
@@ -516,7 +504,7 @@ export default function QuartierInfoPage() {
 
       {/* 6. Apotheken */}
       <section
-        className="rounded-2xl bg-white shadow-sm border border-gray-100 p-5"
+        className="rounded-2xl border border-anthrazit-tint bg-lifted-cream p-5"
         data-testid="info-apotheken"
       >
         <div className="flex items-center gap-2 mb-3">
@@ -548,7 +536,7 @@ export default function QuartierInfoPage() {
                   <SafeExternalLink
                     href={buildApothekeMapUrl(apo)}
                     title={`${apo.name} auf Karte anzeigen`}
-                    className="flex items-center justify-center w-12 h-12 rounded-full bg-gray-50 hover:bg-gray-100 transition-colors"
+                    className="flex items-center justify-center w-12 h-12 rounded-full bg-warmwhite hover:bg-anthrazit-tint transition-colors"
                     aria-label={`${apo.name} auf Karte anzeigen`}
                   >
                     <MapPin className="h-4 w-4 text-muted-foreground" />
@@ -596,7 +584,7 @@ export default function QuartierInfoPage() {
 
       {/* 7. Veranstaltungen */}
       <section
-        className="rounded-2xl bg-white shadow-sm border border-gray-100 p-5"
+        className="rounded-2xl border border-anthrazit-tint bg-lifted-cream p-5"
         data-testid="info-events"
       >
         <div className="flex items-center gap-2 mb-3">
@@ -610,7 +598,7 @@ export default function QuartierInfoPage() {
             (data?.events || []).map((evt: LocalEvent, i: number) => (
               <div
                 key={i}
-                className="flex items-start gap-3 rounded-xl border border-gray-100 p-4"
+                className="flex items-start gap-3 rounded-xl border border-anthrazit-tint p-4"
               >
                 <DynamicIcon
                   name={evt.icon}
@@ -660,7 +648,7 @@ export default function QuartierInfoPage() {
         )}
 
         {/* Quartier-eigene Veranstaltungen — Pfad zum Anlegen & Anschauen */}
-        <div className="mt-4 flex flex-wrap items-center gap-2 border-t border-gray-100 pt-4">
+        <div className="mt-4 flex flex-wrap items-center gap-2 border-t border-anthrazit-tint pt-4">
           <Link
             href="/events/new"
             className="inline-flex items-center gap-2 rounded-xl bg-quartier-green px-4 py-3 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-quartier-green-dark"
@@ -671,7 +659,7 @@ export default function QuartierInfoPage() {
           </Link>
           <Link
             href="/events"
-            className="inline-flex items-center gap-2 rounded-xl border border-quartier-green/30 bg-white px-4 py-3 text-sm font-medium text-quartier-green transition-colors hover:bg-quartier-green/5"
+            className="inline-flex items-center gap-2 rounded-xl border border-quartier-green/30 bg-warmwhite px-4 py-3 text-sm font-medium text-quartier-green transition-colors hover:bg-quartier-green/5"
             data-testid="info-events-list"
           >
             <Calendar className="h-4 w-4" />
@@ -682,7 +670,7 @@ export default function QuartierInfoPage() {
 
       {/* 8. Rathaus & Services */}
       <section
-        className="rounded-2xl bg-white shadow-sm border border-gray-100 p-5"
+        className="rounded-2xl border border-anthrazit-tint bg-lifted-cream p-5"
         data-testid="info-rathaus"
       >
         <h2 className="text-base font-semibold text-anthrazit mb-3">
@@ -701,7 +689,7 @@ export default function QuartierInfoPage() {
                 key={link.label}
                 href={link.url}
                 title={link.label}
-                className="flex flex-col gap-2 rounded-xl border border-gray-100 p-4 hover:bg-gray-50 transition-colors min-h-[80px]"
+                className="flex flex-col gap-2 rounded-xl border border-anthrazit-tint bg-lifted-cream p-4 hover:bg-warmwhite transition-colors min-h-[80px]"
               >
                 <div className="flex items-center gap-2">
                   <DynamicIcon
@@ -721,6 +709,11 @@ export default function QuartierInfoPage() {
           </div>
         )}
       </section>
+
+      {/* Footer-Signatur — Visual-Polish v7 Konsistenz mit Dashboard. */}
+      <footer className="flex justify-center pt-8 pb-2 opacity-70">
+        <QuartierAppLogo variant="full" size={40} />
+      </footer>
     </div>
   );
 }

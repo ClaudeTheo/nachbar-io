@@ -276,10 +276,11 @@ describe("CityServicesPage — Grundlegendes Rendering", () => {
   it("zeigt Bekanntmachungen-Tab als Standard aktiv (Founder 2026-05-11)", () => {
     render(<CityServicesPage />);
     // Bekanntmachungen ist Default-Tab seit dem Promote-Commit.
+    // Active-Tab-Style: bg-warmwhite (Brand-Token, ersetzt bg-white in Welle A2).
     const tab = screen
       .getAllByText("Bekanntmachungen")
       .find((el) => el.tagName === "BUTTON");
-    expect(tab?.className).toContain("bg-white");
+    expect(tab?.className).toContain("bg-warmwhite");
   });
 });
 
@@ -455,12 +456,11 @@ describe("CityServicesPage — Tab-Wechsel", () => {
   it("aktualisiert aktiven Tab-Stil bei Wechsel", () => {
     render(<CityServicesPage />);
     const wikiTab = screen.getByText("Hilfe / Wiki");
-    // Vorher: Wiki nicht aktiv
-    expect(wikiTab.className).not.toContain("bg-white");
+    // Active-Tab-Style: bg-warmwhite (Brand-Token, ersetzt bg-white in Welle A2).
+    expect(wikiTab.className).not.toContain("bg-warmwhite");
     // Klick auf Wiki
     fireEvent.click(wikiTab);
-    // Nachher: Wiki aktiv
-    expect(wikiTab.className).toContain("bg-white");
+    expect(wikiTab.className).toContain("bg-warmwhite");
   });
 });
 

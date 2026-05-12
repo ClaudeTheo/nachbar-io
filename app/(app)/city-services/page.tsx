@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from "react";
 import { Search, Pin, ExternalLink as ExternalLinkIcon } from "lucide-react";
-import { PageHeader } from "@/components/ui/page-header";
+import { MagazineHeader } from "@/components/brand/MagazineHeader";
+import { QuartierAppLogo } from "@/components/brand/QuartierAppLogo";
 import { ExternalLink } from "@/components/ExternalLink";
 import { createClient } from "@/lib/supabase/client";
 import { useQuarter } from "@/lib/quarters";
@@ -181,21 +182,29 @@ export default function CityServicesPage() {
     { id: "wiki", label: "Hilfe / Wiki" },
   ];
 
-  return (
-    <div className="space-y-4 animate-fade-in-up">
-      {/* Header */}
-      <PageHeader title="Rathaus & Infos" backHref="/dashboard" />
+  const quartierName = (currentQuarter?.name ?? currentQuarter?.city ?? "Ihr Quartier").toUpperCase();
 
-      {/* Tabs */}
-      <div className="flex rounded-lg bg-gray-100 p-1">
+  return (
+    <div className="space-y-8 animate-fade-in-up py-8 pb-24 md:py-12">
+      {/* Magazin-Hero (Visual-Polish v7 Welle A2). */}
+      <MagazineHeader
+        eyebrow={`RATHAUS · ${quartierName}`}
+        title="Rathaus & Infos"
+        subtitle="Bekanntmachungen, Services, Bürger-Wiki."
+        backHref="/dashboard"
+        backLabel="Zurück zum Dashboard"
+      />
+
+      {/* Tab-Bar — Brand-Tokens statt bg-gray-100. */}
+      <div className="flex rounded-lg bg-lifted-cream p-1">
         {tabs.map((tab) => (
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
             className={`flex-1 rounded-md px-3 py-2 text-xs font-medium transition-all ${
               activeTab === tab.id
-                ? "bg-white text-anthrazit shadow-soft"
-                : "text-muted-foreground hover:text-anthrazit"
+                ? "bg-warmwhite text-anthrazit shadow-soft"
+                : "text-anthrazit-light hover:text-anthrazit"
             }`}
           >
             {tab.label}
@@ -206,13 +215,13 @@ export default function CityServicesPage() {
       {/* Tab: Services */}
       {activeTab === "services" && (
         <div className="space-y-4">
-          {/* Rathaus-Info-Karte */}
-          <div className="rounded-xl bg-gradient-to-r from-blue-50 to-transparent p-4">
+          {/* Rathaus-Info-Karte — Lifted-Cream + Hairline statt blau-Gradient. */}
+          <div className="rounded-xl border border-anthrazit-tint bg-lifted-cream p-4">
             <h2 className="font-semibold text-anthrazit">
               Rathaus {config?.city_name ?? currentQuarter?.city ?? "Ihre Kommune"}
             </h2>
             {config?.rathaus_phone && (
-              <p className="mt-1 text-sm text-muted-foreground">
+              <p className="mt-1 text-sm text-anthrazit-light">
                 Tel.{" "}
                 <a
                   href={`tel:${config.rathaus_phone.replace(/\s/g, "")}`}
@@ -223,7 +232,7 @@ export default function CityServicesPage() {
               </p>
             )}
             {config?.rathaus_email && (
-              <p className="text-sm text-muted-foreground">
+              <p className="text-sm text-anthrazit-light">
                 <a
                   href={`mailto:${config.rathaus_email}`}
                   className="text-quartier-green hover:underline"
@@ -234,7 +243,7 @@ export default function CityServicesPage() {
             )}
             {config?.opening_hours &&
             Object.keys(config.opening_hours).length > 0 ? (
-              <div className="mt-2 text-xs text-muted-foreground">
+              <div className="mt-2 text-xs text-anthrazit-light">
                 {Object.entries(config.opening_hours).map(([day, hours]) => (
                   <p key={day}>
                     <span className="font-medium capitalize">{day}:</span>{" "}
@@ -243,7 +252,7 @@ export default function CityServicesPage() {
                 ))}
               </div>
             ) : (
-              <div className="mt-2 text-xs text-muted-foreground">
+              <div className="mt-2 text-xs text-anthrazit-light">
                 <p>Mo: 8–12, 14–16 Uhr</p>
                 <p>Di–Mi, Fr: 8–12 Uhr</p>
                 <p>Do: 8–12, 14–18 Uhr</p>
@@ -255,7 +264,7 @@ export default function CityServicesPage() {
                 title="Rathaus Website"
                 className="mt-2 inline-flex items-center gap-1 text-xs text-quartier-green hover:underline"
               >
-                <ExternalLinkIcon className="h-3 w-3" /> Website
+                <ExternalLinkIcon className="h-3 w-3" aria-hidden="true" /> Website
               </ExternalLink>
             )}
           </div>
@@ -263,7 +272,7 @@ export default function CityServicesPage() {
           {/* Quicklinks nach Kategorie */}
           {configLoading ? (
             <div className="flex min-h-[100px] items-center justify-center">
-              <div className="h-6 w-6 animate-spin rounded-full border-3 border-[#4CAF87] border-t-transparent" />
+              <div className="h-6 w-6 animate-spin rounded-full border-3 border-quartier-green border-t-transparent" />
             </div>
           ) : (
             <div className="space-y-3">
@@ -279,9 +288,12 @@ export default function CityServicesPage() {
                           key={`${cat.id}-${i}`}
                           href={link.url}
                           title={link.label}
-                          className="flex items-center gap-3 rounded-lg bg-white px-3 py-2.5 shadow-soft transition-colors hover:bg-gray-50"
+                          className="flex items-center gap-3 rounded-lg border border-anthrazit-tint bg-lifted-cream px-3 py-2.5 transition-colors hover:bg-warmwhite"
                         >
-                          <ExternalLinkIcon className="h-4 w-4 shrink-0 text-quartier-green" />
+                          <ExternalLinkIcon
+                            className="h-4 w-4 shrink-0 text-quartier-green"
+                            aria-hidden="true"
+                          />
                           <span className="text-sm text-anthrazit">
                             {link.label}
                           </span>
@@ -289,8 +301,8 @@ export default function CityServicesPage() {
                       ))}
                     </div>
                   ) : (
-                    <div className="flex flex-col items-center rounded-lg bg-white py-4 shadow-soft">
-                      <p className="text-xs text-muted-foreground">
+                    <div className="flex flex-col items-center rounded-lg border border-anthrazit-tint bg-lifted-cream py-4">
+                      <p className="text-xs text-anthrazit-light">
                         Keine Links in dieser Kategorie.
                       </p>
                     </div>
@@ -313,14 +325,14 @@ export default function CityServicesPage() {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Suche: z.B. Schlagloch, Müll, Parkausweis..."
-              className="w-full rounded-lg border bg-white py-2.5 pl-9 pr-3 text-sm text-anthrazit placeholder:text-muted-foreground focus:border-quartier-green focus:outline-none focus:ring-1 focus:ring-quartier-green"
+              className="w-full rounded-lg border border-anthrazit-tint bg-lifted-cream py-2.5 pl-9 pr-3 text-sm text-anthrazit placeholder:text-anthrazit-light focus:border-quartier-green focus:outline-none focus:ring-1 focus:ring-quartier-green"
             />
           </div>
 
           {/* Wiki-Eintraege nach Kategorie */}
           {configLoading ? (
             <div className="flex min-h-[100px] items-center justify-center">
-              <div className="h-6 w-6 animate-spin rounded-full border-3 border-[#4CAF87] border-t-transparent" />
+              <div className="h-6 w-6 animate-spin rounded-full border-3 border-quartier-green border-t-transparent" />
             </div>
           ) : wikiByCategory.length > 0 ? (
             wikiByCategory.map((cat) => (
@@ -331,9 +343,9 @@ export default function CityServicesPage() {
                 {cat.entries.map((entry, i) => (
                   <details
                     key={`${cat.id}-${i}`}
-                    className="group rounded-lg bg-white shadow-soft"
+                    className="group rounded-lg border border-anthrazit-tint bg-lifted-cream"
                   >
-                    <summary className="cursor-pointer px-3 py-2.5 text-sm font-medium text-anthrazit hover:bg-gray-50 rounded-lg list-none flex items-center justify-between">
+                    <summary className="cursor-pointer px-3 py-2.5 text-sm font-medium text-anthrazit hover:bg-warmwhite rounded-lg list-none flex items-center justify-between">
                       <span>{entry.question}</span>
                       <span className="text-muted-foreground transition-transform group-open:rotate-180">
                         ▾
@@ -384,7 +396,7 @@ export default function CityServicesPage() {
           {/* Ladezustand */}
           {announcementsLoading && (
             <div className="flex min-h-[100px] items-center justify-center">
-              <div className="h-6 w-6 animate-spin rounded-full border-3 border-[#4CAF87] border-t-transparent" />
+              <div className="h-6 w-6 animate-spin rounded-full border-3 border-quartier-green border-t-transparent" />
             </div>
           )}
 
@@ -396,16 +408,16 @@ export default function CityServicesPage() {
                 return (
                   <div
                     key={a.id}
-                    className="rounded-xl bg-white p-4 shadow-soft animate-fade-in-up"
+                    className="rounded-xl border border-anthrazit-tint bg-lifted-cream p-4 animate-fade-in-up"
                   >
                     {/* Badges */}
                     <div className="mb-1.5 flex flex-wrap items-center gap-1.5">
                       {a.pinned && (
                         <span className="inline-flex items-center gap-0.5 rounded-full bg-amber-50 px-2 py-0.5 text-[10px] font-medium text-amber-700">
-                          <Pin className="h-3 w-3" /> Angepinnt
+                          <Pin className="h-3 w-3" aria-hidden="true" /> Angepinnt
                         </span>
                       )}
-                      <span className="inline-flex items-center gap-0.5 rounded-full bg-gray-100 px-2 py-0.5 text-[10px] font-medium text-anthrazit">
+                      <span className="inline-flex items-center gap-0.5 rounded-full bg-warmwhite px-2 py-0.5 text-[10px] font-medium text-anthrazit">
                         {cat.icon} {cat.label}
                       </span>
                       {a.amtsblatt_issue_id && (
@@ -463,7 +475,7 @@ export default function CityServicesPage() {
 
           {/* Disclaimer + Amtsblatt-Link (dynamisch per Stadt) */}
           <div className="space-y-1 text-center">
-            <p className="text-[10px] text-muted-foreground">
+            <p className="text-[10px] text-anthrazit-light">
               {announcementDisclaimer(config?.city_name)}
             </p>
             {config?.rathaus_url && (
@@ -472,12 +484,17 @@ export default function CityServicesPage() {
                 title="Rathaus-Website"
                 className="inline-flex items-center gap-1 text-[10px] text-quartier-green hover:underline"
               >
-                <ExternalLinkIcon className="h-3 w-3" /> Rathaus {config.city_name}
+                <ExternalLinkIcon className="h-3 w-3" aria-hidden="true" /> Rathaus {config.city_name}
               </ExternalLink>
             )}
           </div>
         </div>
       )}
+
+      {/* Footer-Signatur — Visual-Polish v7 Konsistenz mit Dashboard. */}
+      <footer className="flex justify-center pt-8 pb-2 opacity-70">
+        <QuartierAppLogo variant="full" size={40} />
+      </footer>
     </div>
   );
 }

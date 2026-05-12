@@ -33,12 +33,12 @@ describe("AppAquarellBackground", () => {
     expect(className).toMatch(/-z-10/);
   });
 
-  it("nutzt sehr niedrige Opacity damit Lesbarkeit erhalten bleibt", () => {
+  it("nutzt dezente Opacity damit Lesbarkeit erhalten bleibt", () => {
     const { container } = render(<AppAquarellBackground />);
     const img = container.querySelector('[data-testid="app-bg-aquarell"] img');
     const cls = img?.className ?? "";
-    // Opacity-Klasse muss unter 0.15 sein (sonst stoert es den Content).
-    expect(cls).toMatch(/opacity-\[0\.0[0-9]+\]|opacity-(5|10)\b/);
+    // Default-Opacity ist 0.15 (dezent, aber sichtbar gegen Warmwhite-BG).
+    expect(cls).toMatch(/opacity-\[0\.15\]/);
   });
 
   it("erlaubt explizite Opacity-Anpassung via prop", () => {

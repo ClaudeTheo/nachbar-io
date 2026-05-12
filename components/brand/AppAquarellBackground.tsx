@@ -3,9 +3,9 @@ import { cn } from "@/lib/utils";
 
 interface AppAquarellBackgroundProps {
   /**
-   * Sichtbarkeit des Aquarell-Hintergrunds. Default 0.08 (sehr dezent,
-   * damit Lesbarkeit erhalten bleibt). Werte zwischen 0 und 0.15 empfohlen;
-   * darueber wird der Content schwerer lesbar.
+   * Sichtbarkeit des Aquarell-Hintergrunds. Default 0.15 (dezent
+   * sichtbar gegen den Warmwhite-Page-BG). Werte zwischen 0 und 0.25
+   * empfohlen; darueber wird der Content schwerer lesbar.
    */
   opacity?: number;
   className?: string;
@@ -26,7 +26,7 @@ interface AppAquarellBackgroundProps {
  * Warmwhite-Token, verschmilzt visuell mit Page-Background).
  */
 export function AppAquarellBackground({
-  opacity = 0.08,
+  opacity = 0.15,
   className,
 }: AppAquarellBackgroundProps) {
   // Inline-Style fuer beliebige Opacity (Tailwind-Klasse bleibt zusaetzlich

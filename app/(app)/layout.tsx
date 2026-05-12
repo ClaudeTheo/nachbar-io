@@ -20,7 +20,11 @@ import { SosHeaderIcon } from "@/components/sos/SosHeaderIcon";
 // Layout fuer den aktiven Modus — mit Bottom-Navigation + Bug-Report
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="relative min-h-screen bg-warmwhite pb-20">
+    // KEIN bg-warmwhite auf dem Wrapper: body-BG (via globals.css
+    // --background = #fdf8f3) reicht. Sonst ueberdeckt der Wrapper-BG
+    // den -z-10 Aquarell-Layer (CSS-Stacking: negative-z child wird
+    // hinter parent's BG-Painting gerendert).
+    <div className="relative min-h-screen pb-20">
       {/* Visual-Polish v7 Iteration 2 — dezenter Aquarell-Hintergrund
           (Schwarzwald-Tanne + Haeuser + Sonne) fuer alle eingeloggten
           Seiten. Decorative, aria-hidden, im hintersten z-Index. */}

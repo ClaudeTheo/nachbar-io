@@ -182,7 +182,11 @@ export default function CityServicesPage() {
     { id: "wiki", label: "Hilfe / Wiki" },
   ];
 
-  const quartierName = (currentQuarter?.name ?? currentQuarter?.city ?? "Ihr Quartier").toUpperCase();
+  const quartierName = (
+    currentQuarter?.city ??
+    currentQuarter?.name ??
+    "Ihr Quartier"
+  ).toUpperCase();
 
   return (
     <div className="space-y-8 animate-fade-in-up py-8 pb-24 md:py-12">

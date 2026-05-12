@@ -73,7 +73,11 @@ export default function AerzteListePage() {
   const [loading, setLoading] = useState(true);
   const [activeFilter, setActiveFilter] = useState("");
   const { currentQuarter } = useQuarter();
-  const quartierName = (currentQuarter?.name ?? "Ihr Quartier").toUpperCase();
+  const quartierName = (
+    currentQuarter?.city ??
+    currentQuarter?.name ??
+    "Ihr Quartier"
+  ).toUpperCase();
 
   useEffect(() => {
     async function load() {

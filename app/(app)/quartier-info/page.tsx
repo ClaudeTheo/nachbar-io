@@ -212,7 +212,11 @@ export default function QuartierInfoPage() {
   // Visual-Polish v7: Magazin-Hero plus Refresh-Action (3x rendered je nach
   // Branch). Local helper damit derselbe Header in No-Quarter, Error und
   // Main-Branch DRY bleibt.
-  const quartierName = (currentQuarter?.name ?? currentQuarter?.city ?? "Ihr Quartier").toUpperCase();
+  const quartierName = (
+    currentQuarter?.city ??
+    currentQuarter?.name ??
+    "Ihr Quartier"
+  ).toUpperCase();
   const refreshAction = (
     <button
       onClick={handleRefresh}

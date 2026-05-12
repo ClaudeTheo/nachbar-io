@@ -88,7 +88,14 @@ export default function DashboardPage() {
 
   const greeting = getGreeting();
   const eyebrowDate = formatEyebrowDate(new Date());
-  const quartierName = (currentQuarter?.name ?? "Ihr Quartier").toUpperCase();
+  // Founder 2026-05-12: Eyebrow zeigt die Stadt (z.B. "BAD SÄCKINGEN"), nicht
+  // den Quartier-Namen ("Purkersdorfer/Sanary/Rebberg") — sonst wird der
+  // Eyebrow zu lang und der Kontrast zu Headline leidet.
+  const quartierName = (
+    currentQuarter?.city ??
+    currentQuarter?.name ??
+    "Ihr Quartier"
+  ).toUpperCase();
 
   return (
     <>

@@ -3,9 +3,10 @@ import { cn } from "@/lib/utils";
 
 interface AppAquarellBackgroundProps {
   /**
-   * Sichtbarkeit des Aquarell-Hintergrunds. Default 0.15 (dezent
-   * sichtbar gegen den Warmwhite-Page-BG). Werte zwischen 0 und 0.25
-   * empfohlen; darueber wird der Content schwerer lesbar.
+   * Sichtbarkeit des Aquarell-Hintergrunds. Default 0.06 (sehr leise —
+   * Founder-Feedback 2026-05-12: 0.15 war zu praesent, Headline-Schrift
+   * stand im Kontrast-Konflikt mit Tanne + Sonne. 0.06 laesst das Symbol
+   * als Atmosphaere durchschimmern, ohne die Schrift zu stoeren).
    */
   opacity?: number;
   className?: string;
@@ -29,7 +30,7 @@ interface AppAquarellBackgroundProps {
  * Landing-Page-only (Founder-Entscheidung 2026-05-12).
  */
 export function AppAquarellBackground({
-  opacity = 0.15,
+  opacity = 0.06,
   className,
 }: AppAquarellBackgroundProps) {
   // Inline-Style fuer beliebige Opacity (Tailwind-Klasse bleibt zusaetzlich

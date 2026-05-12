@@ -45,13 +45,13 @@ describe("AppAquarellBackground", () => {
     expect(cls).toMatch(/object-contain/);
   });
 
-  it("nutzt dezente Opacity damit Lesbarkeit erhalten bleibt", () => {
+  it("nutzt sehr dezente Opacity damit Lesbarkeit erhalten bleibt", () => {
     const { container } = render(<AppAquarellBackground />);
     const img = container.querySelector('[data-testid="app-bg-aquarell"] img');
     const cls = img?.className ?? "";
-    // Default-Opacity ist 0.15 (Symbol vertraegt mehr als Foto, weil
-    // grossflaechiger Cream-Anteil).
-    expect(cls).toMatch(/opacity-\[0\.15\]/);
+    // Default-Opacity ist 0.06 — Founder-Feedback 2026-05-12: 0.15 war zu
+    // praesent, Headline-Schrift hatte Kontrast-Konflikt mit Tanne/Sonne.
+    expect(cls).toMatch(/opacity-\[0\.06\]/);
   });
 
   it("erlaubt explizite Opacity-Anpassung via prop", () => {

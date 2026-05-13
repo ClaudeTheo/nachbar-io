@@ -90,7 +90,7 @@ export function QuartierSpaziergang({ className }: QuartierSpaziergangProps) {
 
       <div
         data-layer="l3"
-        className="qs-l3 absolute left-0 top-[78vh] w-full opacity-[0.20] mix-blend-multiply"
+        className="qs-l3 absolute left-0 top-[60vh] w-full opacity-[0.20] mix-blend-multiply"
       >
         <Image
           src={`${PARALLAX_BASE}/l3-skyline.png`}

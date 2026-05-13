@@ -112,7 +112,7 @@ Founder: "Das braucht es nicht." `NavPill` aus `app/(app)/layout.tsx` entfernt (
 - **Deploy:** `gh workflow run "Deploy to Vercel Production" --ref master`
 - **Repo:** `C:\Users\thoma\Claud Code\Handy APP\nachbar-io` (eigenes Git, origin `ClaudeTheo/nachbar-io`)
 - **Founder:** Thomas Theobald, `thomasth@gmx.de`
-- **Push-Zugriff:** Nur Claude (ClaudeTheo) kann pushen — Codex-Account ThomasTh1977 hat READ-only
+- **Push-Zugriff:** ThomasTh1977 hat Collaborator-Einladung mit Write-Rechten erhalten (2026-05-13 11:21 UTC). Nach Annahme der Einladung kann Codex direkt pushen. Einladungs-URL: https://github.com/ClaudeTheo/nachbar-io/invitations
 
 ## Kontext-Files
 

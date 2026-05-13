@@ -201,6 +201,28 @@ Diese Punkte sind bewusst noch nicht final technisch festgelegt:
   Trigger-seitig abgesichert werden?
 - Welche Moderations-/Meldeprozesse braucht der Jugendbereich vor Live-Schaltung?
 
+## Spaetere OpenAI-Option
+
+Thomas hat bestaetigt, dass der OpenAI Developers Skill als spaetere Option fuer
+die App vorgemerkt werden soll. Noch nicht in die Youth UI einbauen.
+
+Sinnvolle spaetere Einsatzfelder:
+
+- serverseitige Klassifikation von Map-/Activity-Pins aus Ereignissen
+- Moderationshilfe fuer Jugend-Tauschen, Verschenken und Gruppen
+- Erkennung riskanter Inhalte wie Adressen, Telefonnummern, Geldforderungen
+  oder unsichere Treffpunkte
+- Admin-Unterstuetzung beim Sortieren und Formulieren von Meldungen
+- einfache/barrierearme Textvarianten fuer Comfort/Senior ohne medizinische
+  Beratung
+- Eval-/Schutztests gegen Datenschutzlecks, Jugendverkauf und medizinische
+  Aussagen
+
+Wichtig: OpenAI-API/Provider/Kosten/API-Key nur mit ausdruecklichem Founder-Go.
+Keine personenbezogenen Adressen oder sensiblen Inhalte ungeprueft an eine KI
+senden. Erste sinnvolle technische Stufe waere ein serverseitiger
+Pin-/Moderations-Assistent mit klarer Datenminimierung.
+
 ## Naechste sichere Schritte
 
 1. Founder-Review der lokalen Youth-Preview.

@@ -43,3 +43,5 @@ export { PointsDisplay } from "./components/PointsDisplay";
 export { TaskBoard } from "./components/TaskBoard";
 export { TaskCard } from "./components/TaskCard";
 export { YouthGuard } from "./components/YouthGuard";
+export { YouthDashboardClient } from "./components/YouthDashboardClient";
+export { YouthHomeSurface } from "./components/YouthHomeSurface";

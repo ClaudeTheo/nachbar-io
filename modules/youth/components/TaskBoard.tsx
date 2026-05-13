@@ -57,7 +57,7 @@ export function TaskBoard({ quarterId }: { quarterId?: string }) {
 
   if (loading) {
     return <div className="space-y-3 animate-pulse">
-      {[1, 2, 3].map(i => <div key={i} className="h-24 bg-gray-200 rounded-xl" />)}
+      {[1, 2, 3].map(i => <div key={i} className="h-24 rounded-[20px] bg-white/10" />)}
     </div>;
   }
 
@@ -69,10 +69,11 @@ export function TaskBoard({ quarterId }: { quarterId?: string }) {
           <button
             key={cat.key}
             onClick={() => setFilter(cat.key)}
-            className={`px-3 py-1.5 rounded-full text-sm font-medium whitespace-nowrap transition-colors ${
+            aria-pressed={filter === cat.key}
+            className={`min-h-10 whitespace-nowrap rounded-full px-3.5 py-2 text-sm font-bold transition ${
               filter === cat.key
-                ? 'bg-green-600 text-white'
-                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                ? 'bg-lime-300 text-slate-950 shadow-[0_0_24px_rgba(190,242,100,0.28)]'
+                : 'border border-white/12 bg-white/[0.07] text-cyan-50/72 hover:border-cyan-100/36 hover:text-white'
             }`}
             type="button"
           >
@@ -83,7 +84,9 @@ export function TaskBoard({ quarterId }: { quarterId?: string }) {
 
       {/* Aufgaben-Liste */}
       {filtered.length === 0 ? (
-        <p className="text-center text-gray-500 py-8">Keine Aufgaben gefunden.</p>
+        <p className="rounded-[20px] border border-white/12 bg-white/[0.06] px-4 py-8 text-center text-sm font-medium text-cyan-50/64">
+          Keine Aufgaben gefunden.
+        </p>
       ) : (
         <div className="space-y-3">
           {filtered.map(task => (

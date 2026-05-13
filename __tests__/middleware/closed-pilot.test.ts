@@ -72,6 +72,7 @@ describe("Closed-Pilot-Gate", () => {
     "/care/preview",
     "/care/consent/preview",
     "/map-activity-pins-preview",
+    "/jugend-ui-preview",
   ])(
     "laesst lokale UI-Preview %s ohne Auth-Middleware erreichbar",
     async (path) => {

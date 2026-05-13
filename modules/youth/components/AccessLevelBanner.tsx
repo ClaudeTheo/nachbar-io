@@ -25,10 +25,46 @@ const LEVEL_CONFIG: Record<AccessLevel, { label: string; color: string; descript
 interface AccessLevelBannerProps {
   level: AccessLevel;
   showUpgradeHint?: boolean;
+  variant?: "default" | "youth";
 }
 
-export function AccessLevelBanner({ level, showUpgradeHint = false }: AccessLevelBannerProps) {
+export function AccessLevelBanner({
+  level,
+  showUpgradeHint = false,
+  variant = "default",
+}: AccessLevelBannerProps) {
   const config = LEVEL_CONFIG[level];
+
+  if (variant === "youth") {
+    return (
+      <div className="rounded-[22px] border border-cyan-100/18 bg-white/[0.07] p-4 text-white shadow-[0_18px_50px_rgba(0,0,0,0.22)]">
+        <div className="flex items-center justify-between gap-4">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.14em] text-cyan-50/58">
+              Deine Stufe
+            </p>
+            <p className="mt-1 text-xl font-black">{config.label}</p>
+          </div>
+          {level === "freigeschaltet" && (
+            <span
+              className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-lime-300 text-slate-950"
+              aria-hidden="true"
+            >
+              ✓
+            </span>
+          )}
+        </div>
+        <p className="mt-2 text-sm leading-6 text-cyan-50/70">
+          {config.description}
+        </p>
+        {showUpgradeHint && level !== "freigeschaltet" && (
+          <p className="mt-3 text-sm font-bold text-lime-100">
+            Mit Elternfreigabe schaltest du alle Funktionen frei.
+          </p>
+        )}
+      </div>
+    );
+  }
 
   return (
     <div className={`p-4 rounded-xl border-2 ${config.color}`}>

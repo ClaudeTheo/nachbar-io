@@ -9,6 +9,8 @@ import {
   Heart,
   HeartPulse,
   HandHeart,
+  Map,
+  Medal,
   User,
   ClipboardList,
   Building2,
@@ -20,7 +22,7 @@ import { createClient } from "@/lib/supabase/client";
 
 // --- Typen ---
 
-export type NavRole = "senior" | "helper" | "caregiver" | "org_admin";
+export type NavRole = "senior" | "helper" | "caregiver" | "org_admin" | "youth";
 
 export interface NavItemConfig {
   href: string;
@@ -144,9 +146,38 @@ const orgAdminNav: NavItemConfig[] = [
   },
 ];
 
+const youthNav: NavItemConfig[] = [
+  {
+    href: "/jugend",
+    label: "Start",
+    icon: Home,
+    activeColor: "text-lime-600",
+  },
+  {
+    href: "/map",
+    label: "Karte",
+    icon: Map,
+    activeColor: "text-cyan-600",
+  },
+  {
+    href: "/jugend/aufgaben",
+    label: "Jobs",
+    icon: ClipboardList,
+    activeColor: "text-amber-600",
+  },
+  {
+    href: "/jugend/badges",
+    label: "Badges",
+    icon: Medal,
+    activeColor: "text-rose-600",
+  },
+];
+
 /** Gibt die Nav-Konfiguration für eine Rolle zurück. */
 export function getNavItems(role: NavRole): NavItemConfig[] {
   switch (role) {
+    case "youth":
+      return youthNav;
     case "helper":
       return helperNav;
     case "caregiver":
@@ -174,7 +205,8 @@ async function detectNavRole(userId: string): Promise<NavRole> {
   const supabase = createClient();
 
   // Parallele Abfragen
-  const [orgResult, caregiverResult, helperResult] = await Promise.all([
+  const [profileResult, orgResult, caregiverResult, helperResult] = await Promise.all([
+    supabase.from("users").select("ui_mode").eq("id", userId).maybeSingle(),
     supabase.from("org_members").select("id").eq("user_id", userId).limit(1),
     supabase
       .from("caregiver_links")
@@ -190,6 +222,7 @@ async function detectNavRole(userId: string): Promise<NavRole> {
       .limit(1),
   ]);
 
+  if (profileResult.data?.ui_mode === "youth") return "youth";
   if (orgResult.data && orgResult.data.length > 0) return "org_admin";
   if (caregiverResult.data && caregiverResult.data.length > 0)
     return "caregiver";

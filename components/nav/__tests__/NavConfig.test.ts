@@ -45,8 +45,23 @@ describe("getNavItems", () => {
     expect(items[3].href).toBe("/profile");
   });
 
+  it("gibt 4 Items fuer Jugendmodus zurueck", () => {
+    const items = getNavItems("youth");
+    expect(items).toHaveLength(4);
+    expect(items[0].href).toBe("/jugend");
+    expect(items[1].href).toBe("/map");
+    expect(items[2].href).toBe("/jugend/aufgaben");
+    expect(items[3].href).toBe("/jugend/badges");
+  });
+
   it("keine Rolle hat Notfall-Item in der Navigation", () => {
-    const roles: NavRole[] = ["senior", "helper", "caregiver", "org_admin"];
+    const roles: NavRole[] = [
+      "senior",
+      "helper",
+      "caregiver",
+      "org_admin",
+      "youth",
+    ];
     for (const role of roles) {
       const items = getNavItems(role);
       const hasEmergency = items.some((item) => item.href === "/alerts/new");

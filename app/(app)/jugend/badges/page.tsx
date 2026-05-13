@@ -3,10 +3,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
+import { ArrowLeft, Medal } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { BadgeCard } from "@/modules/youth";
-import { PageHeader } from "@/components/ui/page-header";
 
 interface Badge {
   id: string;
@@ -58,21 +59,35 @@ export default function JugendBadges() {
 
   if (loading) {
     return (
-      <div className="p-6 animate-pulse">
-        <div className="h-48 bg-gray-200 rounded" />
+      <div className="-mx-4 -mt-2 min-h-[calc(100vh-5rem)] bg-[#071923] px-4 py-6">
+        <div className="h-48 animate-pulse rounded-[24px] bg-white/10" />
       </div>
     );
   }
 
   return (
-    <div className="p-6 space-y-4">
-      <PageHeader
-        title="Meine Badges"
-        subtitle="Sammle Badges durch Aufgaben und Engagement."
-        backHref="/jugend"
-      />
+    <div className="-mx-4 -mt-2 min-h-[calc(100vh-5rem)] bg-[#071923] px-4 py-5 text-white">
+      <Link
+        href="/jugend"
+        className="inline-flex min-h-10 items-center gap-2 rounded-full border border-white/14 px-3 py-2 text-sm font-bold text-cyan-50/78"
+      >
+        <ArrowLeft className="h-4 w-4" aria-hidden="true" />
+        Zurück
+      </Link>
 
-      <div className="space-y-3">
+      <header className="mt-5">
+        <div className="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-amber-300/14 text-amber-100 ring-1 ring-amber-100/25">
+          <Medal className="h-6 w-6" aria-hidden="true" />
+        </div>
+        <h1 className="mt-4 text-3xl font-black leading-tight">
+          Meine Badges
+        </h1>
+        <p className="mt-2 text-sm leading-6 text-cyan-50/70">
+          Sichtbare Erfolge für Aufgaben und Engagement im Quartier.
+        </p>
+      </header>
+
+      <div className="mt-6 space-y-3">
         {badges.map((badge) => (
           <BadgeCard
             key={badge.id}

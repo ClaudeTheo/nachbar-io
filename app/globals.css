@@ -1192,3 +1192,114 @@ textarea,
   background: rgba(255, 255, 255, 0.88);
   padding: 0.2rem 0.45rem;
 }
+
+/* Quartier-Spaziergang: leise Aquarell-Schichten hinter der App-Shell.
+   Nur transform/opacity, damit die Animationen compositor-freundlich bleiben. */
+@keyframes qs-wind {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0);
+  }
+  50% {
+    transform: translate3d(4px, 0, 0);
+  }
+}
+
+.qs-l1 {
+  will-change: transform;
+  animation: qs-wind 18s ease-in-out infinite;
+}
+
+@keyframes qs-bridge-drift {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0);
+  }
+  50% {
+    transform: translate3d(5px, 0, 0);
+  }
+}
+
+.qs-l3 {
+  will-change: transform;
+  animation: qs-bridge-drift 28s ease-in-out infinite;
+}
+
+@keyframes qs-bird-fly {
+  0% {
+    transform: translate3d(-90px, 0, 0);
+    opacity: 0;
+  }
+  2% {
+    opacity: 1;
+  }
+  8% {
+    transform: translate3d(108vw, 0, 0);
+    opacity: 1;
+  }
+  9%,
+  100% {
+    transform: translate3d(108vw, 0, 0);
+    opacity: 0;
+  }
+}
+
+.qs-bird-fly {
+  will-change: transform, opacity;
+  animation: qs-bird-fly 110s linear infinite;
+}
+
+@keyframes qs-breathe {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.97;
+  }
+}
+
+.quartier-spaziergang {
+  animation: qs-breathe 14s ease-in-out infinite;
+}
+
+@media (max-width: 640px) {
+  .qs-l1 {
+    animation-name: qs-wind-mobile;
+  }
+  .qs-l3 {
+    animation-name: qs-bridge-drift-mobile;
+  }
+  .qs-bird-fly {
+    animation: none;
+  }
+}
+
+@keyframes qs-wind-mobile {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0);
+  }
+  50% {
+    transform: translate3d(2px, 0, 0);
+  }
+}
+
+@keyframes qs-bridge-drift-mobile {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0);
+  }
+  50% {
+    transform: translate3d(3px, 0, 0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .qs-l1,
+  .qs-l3,
+  .qs-bird-fly,
+  .quartier-spaziergang {
+    animation: none !important;
+  }
+}

@@ -1,5 +1,6 @@
 import { AppAquarellBackground } from "@/components/brand/AppAquarellBackground";
 import { NavPill } from "@/components/brand/NavPill";
+import { QuartierSpaziergang } from "@/components/brand/QuartierSpaziergang";
 import { BottomNav } from "@/components/BottomNav";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { HeartbeatProvider } from "@/components/HeartbeatProvider";
@@ -29,6 +30,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       {/* Visual-Polish v7 Iteration 2 — dezenter Aquarell-Hintergrund
           (Schwarzwald-Tanne + Haeuser + Sonne) fuer alle eingeloggten
           Seiten. Decorative, aria-hidden, im hintersten z-Index. */}
+      <QuartierSpaziergang />
       <AppAquarellBackground />
       {/* Visual-Polish v7 Bundle 1 / Welle 2 — Floating Nav-Pill mit
           Brand-Anker (Symbol + Wordmark) und Avatar-Satellite. */}

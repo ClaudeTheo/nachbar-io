@@ -36,6 +36,15 @@ export {
   canAccessFeature,
 } from "./services/profile";
 
+// Tauschboerse
+export type { YouthExchangeType } from "./services/exchange-rules";
+export {
+  YOUTH_EXCHANGE_TYPES,
+  YOUTH_EXCHANGE_SAFETY_RULES,
+  isYouthExchangeType,
+  youthExchangeAllowsMoney,
+} from "./services/exchange-rules";
+
 // Komponenten
 export { AccessLevelBanner } from "./components/AccessLevelBanner";
 export { BadgeCard } from "./components/BadgeCard";
@@ -44,4 +53,6 @@ export { TaskBoard } from "./components/TaskBoard";
 export { TaskCard } from "./components/TaskCard";
 export { YouthGuard } from "./components/YouthGuard";
 export { YouthDashboardClient } from "./components/YouthDashboardClient";
+export { YouthExchangeSurface } from "./components/YouthExchangeSurface";
+export { YouthGroupsSurface } from "./components/YouthGroupsSurface";
 export { YouthHomeSurface } from "./components/YouthHomeSurface";

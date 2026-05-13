@@ -39,6 +39,14 @@ describe("YouthHomeSurface", () => {
       "href",
       "/map",
     );
+    expect(screen.getByRole("link", { name: /Tauschen/i })).toHaveAttribute(
+      "href",
+      "/jugend/tauschen",
+    );
+    expect(screen.getByRole("link", { name: /Gruppen/i })).toHaveAttribute(
+      "href",
+      "/jugend/gruppen",
+    );
     expect(screen.getByTestId("task-slot")).toBeInTheDocument();
   });
 

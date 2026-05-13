@@ -7,9 +7,10 @@ import {
   BookOpen,
   CalendarDays,
   ClipboardList,
+  Gift,
   Map,
   Medal,
-  MessageCircle,
+  Repeat2,
   ShieldCheck,
   Sparkles,
   Trophy,
@@ -57,10 +58,17 @@ const youthActions: YouthAction[] = [
     accent: "text-amber-200 bg-amber-300/14 ring-amber-200/30",
   },
   {
-    href: "/board",
-    label: "Brett",
-    description: "Neu im Quartier",
-    icon: MessageCircle,
+    href: "/jugend/tauschen",
+    label: "Tauschen",
+    description: "Nur tauschen & schenken",
+    icon: Repeat2,
+    accent: "text-violet-100 bg-violet-300/14 ring-violet-100/25",
+  },
+  {
+    href: "/jugend/gruppen",
+    label: "Gruppen",
+    description: "Einladung statt offen",
+    icon: UsersRound,
     accent: "text-rose-100 bg-rose-300/14 ring-rose-100/25",
   },
 ];
@@ -68,6 +76,7 @@ const youthActions: YouthAction[] = [
 const youthMoments = [
   { label: "Lernen", icon: BookOpen },
   { label: "Treffen", icon: UsersRound },
+  { label: "Schenken", icon: Gift },
   { label: "Sport", icon: Trophy },
   { label: "Events", icon: CalendarDays },
 ] as const;

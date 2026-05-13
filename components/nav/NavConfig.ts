@@ -10,11 +10,12 @@ import {
   HeartPulse,
   HandHeart,
   Map,
-  Medal,
+  Repeat2,
   User,
   ClipboardList,
   Building2,
   Shield,
+  UsersRound,
   type LucideIcon,
 } from "lucide-react";
 import { useAuth } from "@/components/providers/auth-provider";
@@ -160,15 +161,15 @@ const youthNav: NavItemConfig[] = [
     activeColor: "text-cyan-600",
   },
   {
-    href: "/jugend/aufgaben",
-    label: "Jobs",
-    icon: ClipboardList,
+    href: "/jugend/tauschen",
+    label: "Tauschen",
+    icon: Repeat2,
     activeColor: "text-amber-600",
   },
   {
-    href: "/jugend/badges",
-    label: "Badges",
-    icon: Medal,
+    href: "/jugend/gruppen",
+    label: "Gruppen",
+    icon: UsersRound,
     activeColor: "text-rose-600",
   },
 ];

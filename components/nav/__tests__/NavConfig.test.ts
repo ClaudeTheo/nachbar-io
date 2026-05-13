@@ -50,8 +50,8 @@ describe("getNavItems", () => {
     expect(items).toHaveLength(4);
     expect(items[0].href).toBe("/jugend");
     expect(items[1].href).toBe("/map");
-    expect(items[2].href).toBe("/jugend/aufgaben");
-    expect(items[3].href).toBe("/jugend/badges");
+    expect(items[2].href).toBe("/jugend/tauschen");
+    expect(items[3].href).toBe("/jugend/gruppen");
   });
 
   it("keine Rolle hat Notfall-Item in der Navigation", () => {

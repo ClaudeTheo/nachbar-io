@@ -1,4 +1,4 @@
-# Nachbar.io Generationen-Modi — Produkt- und Umsetzungsplan
+# Nachbar.io Generationen-Modi - Produkt- und Umsetzungsplan
 
 Datum: 2026-05-13
 Status: Plan, noch keine Code-Aenderung
@@ -157,7 +157,7 @@ Vor einer Migration muss geprueft werden, ob `users.ui_mode` in Supabase per CHE
 
 ## Umsetzungswellen
 
-### Welle G1 — Mode-Registry und Tests
+### Welle G1 - Mode-Registry und Tests
 
 - `lib/user-modes.ts` oder `lib/auth/user-modes.ts`
 - Labels, Beschreibung, erlaubte Werte, Post-Login-Pfade
@@ -166,14 +166,14 @@ Vor einer Migration muss geprueft werden, ob `users.ui_mode` in Supabase per CHE
 
 Keine UI-Aenderung noetig.
 
-### Welle G2 — Datenmodell vorbereiten
+### Welle G2 - Datenmodell vorbereiten
 
 - `UserUiMode` in `lib/supabase/types.ts` erweitern
 - Admin-Service/Create-User-Flow auf Registry umstellen
 - Migrations-Precheck fuer `users.ui_mode`
 - Falls DB-Constraint existiert: Migration fuer `youth` und `comfort` vorbereiten, nicht automatisch Prod-applyen
 
-### Welle G3 — Onboarding-Modusauswahl
+### Welle G3 - Onboarding-Modusauswahl
 
 Neue fruehe Onboarding-Slide:
 
@@ -181,21 +181,21 @@ Neue fruehe Onboarding-Slide:
 
 Karten:
 
-- Junges Quartier — "Mithelfen, Punkte sammeln, Events entdecken"
-- Aktiv — "Nachbarschaft, Alltag und lokale Infos"
-- Komfort — "Ruhige Uebersicht mit mehr Klarheit"
-- Einfach — "Grosse Buttons und einfache Wege"
+- Junges Quartier - "Mithelfen, Punkte sammeln, Events entdecken"
+- Aktiv - "Nachbarschaft, Alltag und lokale Infos"
+- Komfort - "Ruhige Uebersicht mit mehr Klarheit"
+- Einfach - "Grosse Buttons und einfache Wege"
 
 Hinweis: "Sie koennen das spaeter in Ihrem Profil aendern."
 
-### Welle G4 — Admin- und Profil-Umschalter
+### Welle G4 - Admin- und Profil-Umschalter
 
 - Admin: vier Modi statt Normal/Senior
 - Profil: Modus selbst aenderbar, aber Jugendmodus mit Schutzlogik
 - Bei Wechsel auf `senior`: Hinweis, dass die einfache Oberflaeche geladen wird
 - Bei Wechsel auf `youth`: ggf. Youth-Profile/Consent pruefen
 
-### Welle G5 — Komfort-Dashboard
+### Welle G5 - Komfort-Dashboard
 
 Kein neues Komplett-Dashboard. Erst `dashboardDensity = "calm"`:
 
@@ -204,7 +204,7 @@ Kein neues Komplett-Dashboard. Erst `dashboardDensity = "calm"`:
 - Rathaus, Karte, Gesundheit, Sicherheit sichtbarer
 - Marktplatz/Gruppen unter "Mehr entdecken"
 
-### Welle G6 — Jugend-Start
+### Welle G6 - Jugend-Start
 
 Bestehendes Jugendmodul als Startpunkt fuer `youth`:
 
@@ -213,7 +213,7 @@ Bestehendes Jugendmodul als Startpunkt fuer `youth`:
 - Quartier-Hilfen als altersgerechte Aufgaben anzeigen
 - Moderation und Guardian-Consent nicht umgehen
 
-### Welle G7 — Cross-Generation-Hilfe
+### Welle G7 - Cross-Generation-Hilfe
 
 Ein gemeinsamer "Hilfe gebraucht"-Feed, aber mit rollenabhaengiger Detailtiefe:
 

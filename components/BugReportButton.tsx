@@ -19,7 +19,6 @@ import {
 import { createClient } from "@/lib/supabase/client";
 import { getCachedUser } from "@/lib/supabase/cached-auth";
 import { QuarterContext } from "@/lib/quarters";
-import { resolveFabVisibility } from "@/lib/ui/fabVisibility";
 import { toast } from "sonner";
 
 // Konsolen-Fehler global erfassen
@@ -34,7 +33,8 @@ interface BugReportButtonProps {
 }
 
 export function BugReportButton({ anonymous = false }: BugReportButtonProps) {
-  const [fabVisible, setFabVisible] = useState(true);
+  // Bug-Report-Button ist immer sichtbar — kein Scroll-Hide (Founder 2026-05-13).
+  const fabVisible = true;
   // Sicherer Quartier-Zugriff: useContext gibt null zurück wenn kein Provider
   // (im Gegensatz zu useQuarter() das wirft). Fuer Login-/Onboarding-Seiten.
   const quarterCtx = useContext(QuarterContext);
@@ -49,30 +49,11 @@ export function BugReportButton({ anonymous = false }: BugReportButtonProps) {
   const lastScrollYRef = useRef(0);
 
   useEffect(() => {
-    const handleScroll = () => {
-      const currentY = window.scrollY;
-      setFabVisible((currentVisible) =>
-        resolveFabVisibility({
-          currentY,
-          previousY: lastScrollYRef.current,
-          innerWidth: window.innerWidth,
-          currentVisible,
-        }),
-      );
-
-      lastScrollYRef.current = currentY;
-    };
-
+    // Scroll-Listener nur noch fuer lastScrollYRef (Console-Error-Tracking).
+    // FAB-Sichtbarkeit ist nicht mehr scroll-abhaengig.
     lastScrollYRef.current = window.scrollY;
-    handleScroll();
 
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    window.addEventListener("resize", handleScroll);
-
-    return () => {
-      window.removeEventListener("scroll", handleScroll);
-      window.removeEventListener("resize", handleScroll);
-    };
+    // Kein addEventListener noetig, da fabVisible nicht mehr berechnet wird.
   }, []);
 
   // Console.error wrappen um Fehler zu erfassen

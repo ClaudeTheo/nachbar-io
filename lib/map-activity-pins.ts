@@ -247,20 +247,14 @@ export function getMapActivityPinColorDefinition(
   }
 
   const definition = getMapActivityPinDefinition(fallbackType);
-  const fallbackState =
-    definition.category === "warning"
-      ? "red"
-      : definition.category === "active"
-        ? "yellow"
-        : definition.category === "info"
-          ? "blue"
-          : "green";
+  const fallbackState = definition.category === "warning" ? "red" : "green";
+  const fallbackColorDefinition = MAP_ACTIVITY_PIN_COLOR_STATES[fallbackState];
 
   return {
     state: fallbackState,
     label: definition.label,
-    color: definition.color,
-    glowColor: definition.glowColor,
+    color: fallbackColorDefinition.color,
+    glowColor: fallbackColorDefinition.glowColor,
   };
 }
 

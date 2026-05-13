@@ -58,4 +58,31 @@ describe("map activity preview data", () => {
       ),
     ).toBe(true);
   });
+
+  it("nutzt auch in der Vorschau die automatische Farb- und Ortlogik", () => {
+    const byId = new Map(
+      LOCAL_ACTIVITY_PIN_PREVIEW_PINS.map((pin) => [pin.id, pin]),
+    );
+
+    expect(byId.get("preview-sport")).toMatchObject({
+      colorState: "green",
+      locationScope: "meeting_point",
+      urgency: "normal",
+    });
+    expect(byId.get("preview-shopping")).toMatchObject({
+      colorState: "yellow",
+      locationScope: "home",
+      urgency: "urgent",
+    });
+    expect(byId.get("preview-warning")).toMatchObject({
+      colorState: "red",
+      locationScope: "quarter_area",
+      urgency: "emergency",
+    });
+    expect(
+      LOCAL_ACTIVITY_PIN_PREVIEW_PINS.filter(
+        (pin) => pin.colorState === "red",
+      ).map((pin) => pin.id),
+    ).toEqual(["preview-warning"]);
+  });
 });

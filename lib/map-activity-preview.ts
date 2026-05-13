@@ -1,3 +1,4 @@
+import { resolveMapActivityPinRule } from "@/lib/map-activity-rules";
 import type { MapActivityPin } from "@/lib/map-activity-pins";
 
 export const LOCAL_ACTIVITY_PIN_PREVIEW_CENTER = [
@@ -27,85 +28,108 @@ export const LOCAL_ACTIVITY_PIN_PREVIEW_HOUSE_ANCHORS = [
   lng: number;
 }>;
 
+function createPreviewPin(
+  index: number,
+  pin: Pick<MapActivityPin, "id" | "type" | "title" | "description"> & {
+    category: string;
+    urgency?: string;
+    isEmergency?: boolean;
+  },
+): MapActivityPin {
+  const rule = resolveMapActivityPinRule({
+    category: pin.category,
+    fallbackType: pin.type,
+    isEmergency: pin.isEmergency,
+    title: pin.title,
+    urgency: pin.urgency,
+  });
+  const anchor = LOCAL_ACTIVITY_PIN_PREVIEW_HOUSE_ANCHORS[index];
+
+  return {
+    id: pin.id,
+    type: rule.type,
+    lat: anchor.lat,
+    lng: anchor.lng,
+    title: pin.title,
+    description: pin.description,
+    colorState: rule.colorState,
+    locationScope: rule.locationScope,
+    urgency: rule.urgency,
+    locationPrecision: rule.locationScope === "home" ? "exact" : "approx_50m",
+  };
+}
+
 export const LOCAL_ACTIVITY_PIN_PREVIEW_PINS: MapActivityPin[] = [
-  {
+  createPreviewPin(0, {
+    category: "learning",
     id: "preview-learning",
     type: "learning",
-    lat: LOCAL_ACTIVITY_PIN_PREVIEW_HOUSE_ANCHORS[0].lat,
-    lng: LOCAL_ACTIVITY_PIN_PREVIEW_HOUSE_ANCHORS[0].lng,
     title: "Lerntreff am Rhein",
     description: "Gemeinsam lernen, Hausaufgaben, ruhiger Treffpunkt",
-  },
-  {
+  }),
+  createPreviewPin(1, {
+    category: "meeting",
     id: "preview-meeting",
     type: "meeting",
-    lat: LOCAL_ACTIVITY_PIN_PREVIEW_HOUSE_ANCHORS[1].lat,
-    lng: LOCAL_ACTIVITY_PIN_PREVIEW_HOUSE_ANCHORS[1].lng,
     title: "Offener Jugendtreff",
     description: "Kurz treffen, reden, neue Leute aus dem Quartier",
-  },
-  {
+  }),
+  createPreviewPin(2, {
+    category: "sport",
     id: "preview-sport",
     type: "sport",
-    lat: LOCAL_ACTIVITY_PIN_PREVIEW_HOUSE_ANCHORS[2].lat,
-    lng: LOCAL_ACTIVITY_PIN_PREVIEW_HOUSE_ANCHORS[2].lng,
     title: "Sport & Spiel",
     description: "Kicken, Bewegung, kleine Challenge",
-  },
-  {
+  }),
+  createPreviewPin(3, {
+    category: "garden",
     id: "preview-mowing",
     type: "mowing",
-    lat: LOCAL_ACTIVITY_PIN_PREVIEW_HOUSE_ANCHORS[3].lat,
-    lng: LOCAL_ACTIVITY_PIN_PREVIEW_HOUSE_ANCHORS[3].lng,
     title: "Rasenhilfe gesucht",
     description: "Kleine Aufgabe im Quartier, freiwillige Hilfe",
-  },
-  {
+  }),
+  createPreviewPin(4, {
+    category: "shopping",
     id: "preview-shopping",
     type: "shopping",
-    lat: LOCAL_ACTIVITY_PIN_PREVIEW_HOUSE_ANCHORS[4].lat,
-    lng: LOCAL_ACTIVITY_PIN_PREVIEW_HOUSE_ANCHORS[4].lng,
+    urgency: "urgent",
     title: "Einkauf mitbringen",
     description: "Besorgung unterwegs erledigen",
-  },
-  {
+  }),
+  createPreviewPin(5, {
+    category: "tech",
     id: "preview-tech",
     type: "tech",
-    lat: LOCAL_ACTIVITY_PIN_PREVIEW_HOUSE_ANCHORS[5].lat,
-    lng: LOCAL_ACTIVITY_PIN_PREVIEW_HOUSE_ANCHORS[5].lng,
     title: "Handyhilfe",
     description: "App, WLAN, Nachricht oder Foto erklären",
-  },
-  {
+  }),
+  createPreviewPin(6, {
+    category: "gardening",
     id: "preview-gardening",
     type: "gardening",
-    lat: LOCAL_ACTIVITY_PIN_PREVIEW_HOUSE_ANCHORS[6].lat,
-    lng: LOCAL_ACTIVITY_PIN_PREVIEW_HOUSE_ANCHORS[6].lng,
     title: "Pflanzaktion",
     description: "Gemeinsam etwas Gruen ins Quartier bringen",
-  },
-  {
+  }),
+  createPreviewPin(7, {
+    category: "event",
     id: "preview-event",
     type: "event",
-    lat: LOCAL_ACTIVITY_PIN_PREVIEW_HOUSE_ANCHORS[7].lat,
-    lng: LOCAL_ACTIVITY_PIN_PREVIEW_HOUSE_ANCHORS[7].lng,
     title: "Quartierabend",
     description: "Kleiner Termin, offen fuer alle im Pilotgebiet",
-  },
-  {
+  }),
+  createPreviewPin(8, {
+    category: "companion",
     id: "preview-companion",
     type: "companion",
-    lat: LOCAL_ACTIVITY_PIN_PREVIEW_HOUSE_ANCHORS[8].lat,
-    lng: LOCAL_ACTIVITY_PIN_PREVIEW_HOUSE_ANCHORS[8].lng,
     title: "Gemeinsam gehen",
     description: "Sicherer Weg, Begleitung oder Abholen",
-  },
-  {
+  }),
+  createPreviewPin(9, {
+    category: "warning",
     id: "preview-warning",
     type: "warning",
-    lat: LOCAL_ACTIVITY_PIN_PREVIEW_HOUSE_ANCHORS[9].lat,
-    lng: LOCAL_ACTIVITY_PIN_PREVIEW_HOUSE_ANCHORS[9].lng,
+    isEmergency: true,
     title: "Hinweis im Quartier",
     description: "Beispiel fuer sichtbare, nicht-medizinische Warnlage",
-  },
+  }),
 ];

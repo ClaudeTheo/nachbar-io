@@ -71,6 +71,7 @@ Umgesetzt:
 - `lib/map-activity-preview.ts`: zehn statische, anonymisierte Haus-Anker fuer die lokale Preview.
 - `app/api/map/activities/route.ts`: authentifizierte Read-only Feed-API.
 - `lib/map-activity-feed.ts`: serverseitige Modus-/Sichtbarkeitsfilter und erster Alerts-Loader.
+- `lib/map-activity-rules.ts`: zentrale Fachlogik fuer automatische Ableitung von Symbol, Dringlichkeit, Farbe und Ortstyp.
 - `lib/hooks/useMapActivityPins.ts`: defensiver Client-Hook fuer `/api/map/activities`.
 - `LeafletKarte.tsx`: laedt den Feed und reicht erlaubte Pins an Leaflet weiter.
 - `MapFilterBar.tsx`: eigener Aktivitaetsfilter zum Ein-/Ausblenden der Activity-Pins.
@@ -91,6 +92,7 @@ Wichtig: Nutzer waehlen nicht selbst Farbe oder Symbol. Die App leitet Pin-Typ, 
 - Dringlichkeit bestimmt die Grundfarbe.
 - Ortstyp bestimmt die Koordinate: Haus/Haushaltsbereich, Treffpunkt, Quartiersbereich oder bewusst externer Treffpunkt.
 - Berechtigung bestimmt, ob der Pin ueberhaupt ausgeliefert wird und ob er exakt oder ungefaehr erscheint.
+- Die technische Quelle dieser Logik ist `lib/map-activity-rules.ts`; neue Loader duerfen keine eigene Farblogik duplizieren.
 
 Form:
 
@@ -370,6 +372,7 @@ Keine DB-Aenderung noetig, solange nur die bestehende API gelesen wird.
 - `help_requests`: erst anbinden, wenn `map_house_id`, Treffpunkt oder bewusst ungefaehrer Bereich verfuegbar ist; Farbe entsteht aus Dringlichkeit, nicht aus Nutzerauswahl.
 - `youth_tasks`: nur jugendgeeignet/moderiert und nur mit sicherer Standortpraezision.
 - Status-Pins wie Urlaub/Abwesenheit bleiben blau und duerfen nicht mit Notfallrot vermischt werden.
+- Neue Quellen muessen `resolveMapActivityPinRule(...)` nutzen: keine zweite Farbtabelle und kein clientseitiges Uminterpretieren.
 - Keine Fake-Genauigkeit.
 
 Wenn neue Standortfelder oder `map_activities` noetig werden, gilt rote Zone.
@@ -406,7 +409,8 @@ M4/M5 vorbereiten, aber ohne rote Zone:
 
 1. Keine weitere Datenquelle anbinden, solange keine belastbaren Koordinaten vorhanden sind.
 2. Fuer `events`, `help_requests`, `youth_tasks` zuerst Datenmodell/Location-Felder file-first planen.
-3. Modus-spezifische Darstellung lokal vorbereiten: Jugend frisch, Aktiv normal, Komfort ruhig, Einfach reduziert.
-4. Dashboard-/Jugend-Start erst anbinden, wenn die Hauptkarte stabil geprueft ist.
+3. Weitere Loader erst nach Location-Freigabe an die zentrale Regellogik anschliessen.
+4. Modus-spezifische Darstellung lokal vorbereiten: Jugend frisch, Aktiv normal, Komfort ruhig, Einfach reduziert.
+5. Dashboard-/Jugend-Start erst anbinden, wenn die Hauptkarte stabil geprueft ist.
 
 Kein Push/Deploy und keine Prod-DB-Aktion ohne Founder-Go.

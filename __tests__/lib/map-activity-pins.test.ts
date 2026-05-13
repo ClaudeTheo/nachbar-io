@@ -101,6 +101,13 @@ describe("map activity pins", () => {
     expect(markup).not.toContain('fill="#83B54F"');
   });
 
+  it("faellt ohne expliziten Zustand fuer normale Pins auf gruen zurueck", () => {
+    const markup = createMapActivityPinSvgMarkup("sport");
+
+    expect(markup).toContain('data-activity-pin-color-state="green"');
+    expect(markup).toContain('fill="#8AC65A"');
+  });
+
   it("escaped nutzergesteuerte Titel im SVG-Markup", () => {
     const markup = createMapActivityPinSvgMarkup("meeting", {
       title: `Treff <script>alert("x")</script>`,

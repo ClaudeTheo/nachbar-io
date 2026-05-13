@@ -6,10 +6,10 @@ import type {
   MapActivityPinLocationPrecision,
   MapActivityPinLocationScope,
   MapActivityPinSource,
-  MapActivityPinType,
   MapActivityPinUrgency,
   MapActivityPinVisibility,
 } from "@/lib/map-activity-pins";
+import { resolveMapActivityPinRule } from "@/lib/map-activity-rules";
 import { isUserUiMode, type UserUiMode } from "@/lib/user-modes";
 
 export type MapActivityLocationPrecision = MapActivityPinLocationPrecision;
@@ -54,12 +54,6 @@ export interface AlertActivityRow {
 }
 
 const ACTIVE_ALERT_STATUSES = new Set(["open", "help_coming"]);
-const CRITICAL_ALERT_CATEGORIES = new Set([
-  "fire",
-  "health_concern",
-  "medical",
-  "crime",
-]);
 const CAREGIVER_ROLES = new Set([
   "caregiver",
   "org_admin",
@@ -164,17 +158,6 @@ export function filterMapActivityFeedForContext(
     .filter((pin): pin is MapActivityFeedItem => pin !== null);
 }
 
-function mapAlertCategoryToPinType(_category: string | null): MapActivityPinType {
-  return "warning";
-}
-
-function isEmergencyAlert(row: AlertActivityRow): boolean {
-  return (
-    Boolean(row.is_emergency) ||
-    CRITICAL_ALERT_CATEGORIES.has(row.category ?? "")
-  );
-}
-
 export function mapAlertRowsToActivityCandidates(
   rows: AlertActivityRow[],
 ): MapActivityFeedCandidate[] {
@@ -187,21 +170,27 @@ export function mapAlertRowsToActivityCandidates(
       return [];
     }
 
-    const isEmergency = isEmergencyAlert(row);
+    const rule = resolveMapActivityPinRule({
+      category: row.category,
+      fallbackType: "warning",
+      isEmergency: row.is_emergency,
+      locationScope: "quarter_area",
+      urgency: row.is_emergency ? "emergency" : "urgent",
+    });
 
     return [
       {
         id: `alert-${row.id}`,
-        type: mapAlertCategoryToPinType(row.category),
+        type: rule.type,
         lat: row.location_lat,
         lng: row.location_lng,
         title: row.title?.trim() || "Hinweis im Quartier",
         description: row.description?.trim() || undefined,
         approximate: true,
         locationPrecision: "approx_50m",
-        urgency: isEmergency ? "emergency" : "urgent",
-        colorState: isEmergency ? "red" : "yellow",
-        locationScope: "quarter_area",
+        urgency: rule.urgency,
+        colorState: rule.colorState,
+        locationScope: rule.locationScope,
         visibility: "public",
         source: "alerts",
         startsAt: row.created_at ?? undefined,

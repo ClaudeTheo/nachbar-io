@@ -17,25 +17,25 @@
     </linearGradient>
   </defs>
 
-  <path d="M137.5 187.5C169.7 128.7 232.2 89 304 89C356.7 89 404.4 110.5 438.8 145.2" stroke="url(#greenArc)" stroke-width="34" stroke-linecap="round"/>
-  <path d="M453.6 164.8C470.9 191.5 481 223.4 481 257.7C481 291.1 471.6 322.2 455.3 348.6" stroke="#F59E0B" stroke-width="34" stroke-linecap="round"/>
-  <path d="M73.8 223.2C64.7 233.7 59.2 247.3 59.2 262.3C59.2 282.5 69.1 300.4 84.5 311.2" stroke="#2D3142" stroke-width="34" stroke-linecap="round"/>
-  <circle cx="89" cy="184" r="25" fill="#2D3142"/>
-  <circle cx="376" cy="89" r="26" fill="#4CAF87"/>
-  <circle cx="462" cy="159" r="25" fill="#F59E0B"/>
+  <path d="M129 168C158 122 210 91 269 91C316 91 358 111 388 143" stroke="url(#greenArc)" stroke-width="38" stroke-linecap="round"/>
+  <path d="M427 169C450 200 463 238 463 279C463 310 455 339 442 365" stroke="#F59E0B" stroke-width="38" stroke-linecap="round"/>
+  <path d="M86 198C66 219 54 247 54 278C54 306 64 332 80 352" stroke="#2D3142" stroke-width="38" stroke-linecap="round"/>
+  <circle cx="96" cy="178" r="27" fill="#2D3142"/>
+  <circle cx="373" cy="91" r="28" fill="#4CAF87"/>
+  <circle cx="431" cy="169" r="28" fill="#F59E0B"/>
 
-  <path d="M77 363C126.5 343.8 168 350.9 207.3 369.4C251.1 390 289.9 397.5 338.4 380.1C365.7 370.3 394.7 355.2 438 356" stroke="url(#riverWave)" stroke-width="24" stroke-linecap="round"/>
-  <path d="M85 390C135.8 370.5 180.1 379.4 221.3 397.7C263 416.2 304.5 421.7 353.8 401.4C379.1 391 406.1 377.2 446 380.9" stroke="#2386C8" stroke-width="10" stroke-linecap="round" opacity="0.92"/>
+  <path d="M81 365C125 350 165 355 201 374C246 397 294 400 343 381C369 371 397 360 434 365" stroke="url(#riverWave)" stroke-width="26" stroke-linecap="round"/>
+  <path d="M90 394C140 376 181 385 220 402C265 422 311 419 356 398C380 387 405 380 441 388" stroke="#2386C8" stroke-width="11" stroke-linecap="round" opacity="0.95"/>
 
-  <path d="M134 290L256 188L378 290" stroke="#2D3142" stroke-width="27" stroke-linecap="round" stroke-linejoin="round"/>
-  <path d="M170 278L256 207L342 278V349H170V278Z" fill="#2D3142"/>
-  <path d="M196 293L256 243L316 293V349H196V293Z" fill="#F7FAF8"/>
-  <path d="M188 278L256 221L324 278" stroke="#2D3142" stroke-width="18" stroke-linecap="round" stroke-linejoin="round"/>
-  <path d="M225 297H287V349H225V297Z" fill="#4CAF87"/>
-  <path d="M300 301H334V335H300V301Z" fill="#2D3142"/>
-  <path d="M317 301V335" stroke="#F7FAF8" stroke-width="5" stroke-linecap="round"/>
-  <path d="M300 318H334" stroke="#F7FAF8" stroke-width="5" stroke-linecap="round"/>
+  <path d="M120 280L255 176L392 281" stroke="#2D3142" stroke-width="28" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M162 298L255 224L348 298" stroke="#2D3142" stroke-width="23" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M176 285V355" stroke="#2D3142" stroke-width="26" stroke-linecap="round"/>
+  <path d="M339 286V353" stroke="#2D3142" stroke-width="26" stroke-linecap="round"/>
+  <path d="M226 301H287V356H226V301Z" fill="#4CAF87"/>
+  <path d="M304 301H341V338H304V301Z" fill="#2D3142"/>
+  <path d="M322.5 301V338" stroke="#F7FAF8" stroke-width="5" stroke-linecap="round"/>
+  <path d="M304 319.5H341" stroke="#F7FAF8" stroke-width="5" stroke-linecap="round"/>
 
-  <path d="M256 333C256 333 214 289.3 214 253.5C214 226.7 232.8 207 256 207C279.2 207 298 226.7 298 253.5C298 289.3 256 333 256 333Z" fill="url(#pinGreen)" stroke="#F7FAF8" stroke-width="12" stroke-linejoin="round"/>
-  <circle cx="256" cy="253" r="17" fill="#F7FAF8"/>
+  <path d="M256 346C256 346 210 299 210 260.5C210 232.5 230.5 211 256 211C281.5 211 302 232.5 302 260.5C302 299 256 346 256 346Z" fill="url(#pinGreen)" stroke="#F7FAF8" stroke-width="12" stroke-linejoin="round"/>
+  <circle cx="256" cy="260" r="18" fill="#F7FAF8"/>
 </svg>

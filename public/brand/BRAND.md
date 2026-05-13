@@ -103,6 +103,31 @@ Diese Palette wird auch in der DESIGN.md als erweiterte Akzent-Palette dokumenti
 
 ---
 
+## Generation-Mode Assets
+
+### Jugend-App Hero
+
+**Founder-Richtung 2026-05-13:** Jugendmodus zeigt eine soziale Quartier-Szene: Lernen, Treffen, Spielen/Sport, Nachbarschaftshilfe, kleine Aufgaben und sichere Marker. Kein Pflege-/Medizinbild, keine exakten Adressen.
+
+| File | Use | Resolution |
+|---|---|---|
+| `generation-modes/youth-social-neighborhood-hero.png` | Master der ausgewaehlten sozialen Jugend-Hero-Richtung | 1774×887 |
+| `generation-modes/youth-social-neighborhood-hero.webp` | Master als WebP | 1774×887 |
+| `generation-modes/youth-social-neighborhood-hero-wide.png` | Breiter Website-/Preview-Crop | 1536×768 |
+| `generation-modes/youth-social-neighborhood-hero-wide.webp` | Breiter Crop als WebP | 1536×768 |
+| `generation-modes/youth-social-neighborhood-hero-app-header.png` | App-Header-Crop fuer `/jugend` | 1200×640 |
+| `generation-modes/youth-social-neighborhood-hero-app-header.webp` | App-Header-Crop als WebP | 1200×640 |
+| `generation-modes/youth-social-neighborhood-hero-mobile-header.png` | Mobile Header-Crop | 768×512 |
+| `generation-modes/youth-social-neighborhood-hero-mobile-header.webp` | Mobile Header-Crop als WebP | 768×512 |
+
+Design-Spezifikation:
+
+```text
+docs/plans/2026-05-13-jugend-app-visual-direction-design.md
+```
+
+---
+
 ## Open Questions
 
 - **Echtes Transparent-PNG**: Banana Pro 2 hat es nicht generiert (alle Files Alpha=255). Falls Logo auf nicht-Warmwhite-BG noetig (z.B. SOS-Pill, Hero-Photo): neu generieren mit explizitem "transparent background" Prompt ODER Chroma-Key-Conversion via Sharp.

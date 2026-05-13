@@ -22,6 +22,7 @@ vi.mock("@/lib/email", () => ({
 
 function makeCreateUserClient() {
   const auditInsert = vi.fn().mockResolvedValue({ error: null });
+  const userInsert = vi.fn().mockResolvedValue({ error: null });
   const client = {
     auth: {
       admin: {
@@ -46,7 +47,7 @@ function makeCreateUserClient() {
       }
 
       if (table === "users") {
-        return { insert: vi.fn().mockResolvedValue({ error: null }) };
+        return { insert: userInsert };
       }
 
       if (table === "household_members") {
@@ -61,7 +62,7 @@ function makeCreateUserClient() {
     }),
   };
 
-  return { client, auditInsert };
+  return { client, auditInsert, userInsert };
 }
 
 function makeVerificationClient() {
@@ -222,6 +223,58 @@ describe("admin audit log", () => {
         emailProvided: true,
       },
     });
+  });
+
+  it("erstellt Admin-Nutzer mit Komfort-Modus aus der zentralen Registry", async () => {
+    const { client, auditInsert, userInsert } = makeCreateUserClient();
+
+    await createUserByAdmin(
+      client as never,
+      {
+        displayName: "Ada Lovelace",
+        street: "Rheinstrasse",
+        houseNumber: "1",
+        email: "ada@example.test",
+        uiMode: "comfort",
+      },
+      "admin-1",
+    );
+
+    expect(userInsert).toHaveBeenCalledWith(
+      expect.objectContaining({
+        ui_mode: "comfort",
+      }),
+    );
+    expect(auditInsert).toHaveBeenCalledWith(
+      expect.objectContaining({
+        details: expect.objectContaining({
+          uiMode: "comfort",
+        }),
+      }),
+    );
+  });
+
+  it("lehnt unbekannte UI-Modi vor der Auth-Kontoanlage ab", async () => {
+    const { client } = makeCreateUserClient();
+
+    await expect(
+      createUserByAdmin(
+        client as never,
+        {
+          displayName: "Ada Lovelace",
+          street: "Rheinstrasse",
+          houseNumber: "1",
+          email: "ada@example.test",
+          uiMode: "normal",
+        },
+        "admin-1",
+      ),
+    ).rejects.toMatchObject({
+      status: 400,
+      message: "Ungueltiger UI-Modus",
+    });
+
+    expect(client.auth.admin.createUser).not.toHaveBeenCalled();
   });
 
   it("protokolliert Admin-Adressverifizierung nach Approve", async () => {

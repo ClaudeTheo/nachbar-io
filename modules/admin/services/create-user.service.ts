@@ -4,6 +4,7 @@
 import { SupabaseClient } from "@supabase/supabase-js";
 import { ServiceError } from "@/lib/services/service-error";
 import { generateTempPassword } from "@/lib/invite-codes";
+import { isUserUiMode, type UserUiMode } from "@/lib/user-modes";
 
 export interface CreateUserParams {
   displayName: string;
@@ -35,10 +36,16 @@ export async function createUserByAdmin(
     street,
     houseNumber,
     email,
-    uiMode = "senior",
+    uiMode: requestedUiMode = "senior",
     verified = true,
     quarter_id,
   } = params;
+
+  if (!isUserUiMode(requestedUiMode)) {
+    throw new ServiceError("Ungueltiger UI-Modus", 400);
+  }
+
+  const uiMode: UserUiMode = requestedUiMode;
 
   // Haushalt pruefen (optional mit quarter_id filtern)
   let householdQuery = adminSupabase

@@ -109,6 +109,7 @@ Diese Palette wird auch in der DESIGN.md als erweiterte Akzent-Palette dokumenti
 - **SVG-Version v2**: Die Founder-Auswahl aus `quartierapp-logo-v2/` wird bewusst 1:1 als Raster-Master gefuehrt:
   - `quartierapp-logo-v2-symbol.png` — transparenter Master der ausgewaehlten runden Vorlage.
   - `quartierapp-logo-v2-symbol.svg` — SVG-Wrapper mit exakt eingebettetem PNG-Master, keine freie Vektorinterpretation.
+  - `quartierapp-logo-v2-symbol-on-dark.png` / `.svg` — Dark-Background-Variante: Haus- und Personenformen weiss, damit sie auf Schwarz/Anthrazit sichtbar bleiben.
   - `quartierapp-logo-v2-symbol-mono.svg` — Kompatibilitaetsdatei, ebenfalls exakt eingebetteter PNG-Master statt abweichender Mono-Interpretation.
   - `quartierapp-logo-v2-app-icon.svg` — SVG-Wrapper mit exakt eingebettetem App-Icon-PNG.
   Ein echter Pfad-Vektor kann spaeter separat erstellt werden, darf aber nur anhand dieser 1:1 Vorlage freigegeben werden.

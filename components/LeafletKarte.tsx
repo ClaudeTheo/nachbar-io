@@ -11,6 +11,7 @@ import { HouseInfoPanel } from "@/components/HouseInfoPanel";
 import type { GeoMapHouseData } from "@/lib/map-houses";
 import { MAP_STATUS_META } from "@/lib/map-statuses";
 import type { UserContext } from "@/lib/feature-flags";
+import type { MapActivityPin } from "@/lib/map-activity-pins";
 
 // Leaflet muss client-side geladen werden (kein SSR)
 const LeafletMapInner = dynamic(() => import("./LeafletMapInner"), {
@@ -19,9 +20,13 @@ const LeafletMapInner = dynamic(() => import("./LeafletMapInner"), {
 
 interface LeafletKarteProps {
   quarterId?: string;
+  activityPins?: MapActivityPin[];
 }
 
-export function LeafletKarte({ quarterId: quarterIdProp }: LeafletKarteProps) {
+export function LeafletKarte({
+  quarterId: quarterIdProp,
+  activityPins = [],
+}: LeafletKarteProps) {
   const { currentQuarter } = useQuarter();
   const { role } = useUserRole();
   const { subscription } = useSubscription();
@@ -163,6 +168,7 @@ export function LeafletKarte({ quarterId: quarterIdProp }: LeafletKarteProps) {
           residentCounts={residentCounts}
           userCtx={userCtx}
           onHouseClick={handleHouseClick}
+          activityPins={activityPins}
         />
       </div>
 

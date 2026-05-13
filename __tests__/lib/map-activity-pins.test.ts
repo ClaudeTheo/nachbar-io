@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import {
   MAP_ACTIVITY_PIN_DEFINITIONS,
   MAP_ACTIVITY_PIN_TYPES,
+  createMapActivityPinSvgMarkup,
   getMapActivityPinDefinition,
   isMapActivityPinType,
 } from "@/lib/map-activity-pins";
@@ -47,5 +48,32 @@ describe("map activity pins", () => {
     expect(getMapActivityPinDefinition("does-not-exist").type).toBe(
       "learning",
     );
+  });
+
+  it("erzeugt Leaflet-taugliches SVG-Markup ohne Emoji-Fallback", () => {
+    const markup = createMapActivityPinSvgMarkup("mowing", {
+      size: 52,
+      title: "Rasenhilfe am Rebberg",
+    });
+
+    expect(markup).toContain("<svg");
+    expect(markup).toContain('data-activity-pin-type="mowing"');
+    expect(markup).toContain('aria-label="Rasenhilfe am Rebberg"');
+    expect(markup).toContain('width="52"');
+    expect(markup).toContain('height="69"');
+    expect(markup).toContain("drop-shadow");
+    expect(markup).not.toContain("🌱");
+    expect(markup).not.toContain("⚽");
+  });
+
+  it("escaped nutzergesteuerte Titel im SVG-Markup", () => {
+    const markup = createMapActivityPinSvgMarkup("meeting", {
+      title: `Treff <script>alert("x")</script>`,
+    });
+
+    expect(markup).toContain(
+      "Treff &lt;script&gt;alert(&quot;x&quot;)&lt;/script&gt;",
+    );
+    expect(markup).not.toContain("<script>");
   });
 });

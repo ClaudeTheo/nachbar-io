@@ -1,10 +1,11 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import {
   MapContainer,
   TileLayer,
   CircleMarker,
+  Marker,
   Popup,
   useMap,
 } from "react-leaflet";
@@ -17,6 +18,11 @@ import {
 } from "@/lib/map-houses";
 import { MAP_STATUS_META } from "@/lib/map-statuses";
 import type { UserContext } from "@/lib/feature-flags";
+import {
+  createMapActivityPinSvgMarkup,
+  getMapActivityPinDefinition,
+  type MapActivityPin,
+} from "@/lib/map-activity-pins";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 
@@ -29,6 +35,7 @@ interface LeafletMapInnerProps {
   residentCounts: Record<string, number>;
   userCtx: UserContext;
   onHouseClick: (house: GeoMapHouseData) => void;
+  activityPins?: MapActivityPin[];
 }
 
 // Stellt sicher dass die Karte korrekt initialisiert ist und alle Marker sichtbar sind.
@@ -36,10 +43,12 @@ interface LeafletMapInnerProps {
 // das Container-Layout fertig ist → latLngToLayerPoint gibt (0,0) zurueck).
 function MapUpdater({
   houses,
+  activityPins,
   center,
   zoom,
 }: {
   houses: GeoMapHouseData[];
+  activityPins: MapActivityPin[];
   center: [number, number];
   zoom: number;
 }) {
@@ -51,9 +60,14 @@ function MapUpdater({
     const timer = setTimeout(() => {
       map.invalidateSize();
 
-      if (houses.length > 0) {
+      const boundsPoints = [
+        ...houses.map((h) => [h.lat, h.lng] as L.LatLngTuple),
+        ...activityPins.map((pin) => [pin.lat, pin.lng] as L.LatLngTuple),
+      ];
+
+      if (boundsPoints.length > 0) {
         const bounds = L.latLngBounds(
-          houses.map((h) => [h.lat, h.lng] as L.LatLngTuple),
+          boundsPoints,
         );
         // Padding damit Marker nicht am Rand kleben
         map.fitBounds(bounds, { padding: [40, 40], maxZoom: 17 });
@@ -63,9 +77,51 @@ function MapUpdater({
     }, 100);
 
     return () => clearTimeout(timer);
-  }, [map, houses, center, zoom]);
+  }, [map, houses, activityPins, center, zoom]);
 
   return null;
+}
+
+const ACTIVITY_PIN_ICON_SIZE = 52;
+const ACTIVITY_PIN_ICON_HEIGHT = Math.round((ACTIVITY_PIN_ICON_SIZE * 4) / 3);
+
+function ActivityPinMarker({ pin }: { pin: MapActivityPin }) {
+  const definition = getMapActivityPinDefinition(pin.type);
+  const icon = useMemo(
+    () =>
+      L.divIcon({
+        className: "quartier-activity-pin-leaflet-marker",
+        html: createMapActivityPinSvgMarkup(pin.type, {
+          size: ACTIVITY_PIN_ICON_SIZE,
+          title: pin.title,
+        }),
+        iconSize: [ACTIVITY_PIN_ICON_SIZE, ACTIVITY_PIN_ICON_HEIGHT],
+        iconAnchor: [ACTIVITY_PIN_ICON_SIZE / 2, ACTIVITY_PIN_ICON_HEIGHT - 3],
+        popupAnchor: [0, -ACTIVITY_PIN_ICON_HEIGHT + 16],
+      }),
+    [pin.title, pin.type],
+  );
+
+  return (
+    <Marker icon={icon} position={[pin.lat, pin.lng]}>
+      <Popup>
+        <div className="min-w-40 text-sm">
+          <p className="font-semibold text-slate-900">{pin.title}</p>
+          <p className="mt-1 text-xs font-medium text-slate-600">
+            {definition.label}
+          </p>
+          {pin.description && (
+            <p className="mt-1 text-xs text-slate-500">{pin.description}</p>
+          )}
+          {pin.approximate && (
+            <p className="mt-2 inline-flex rounded-full bg-slate-100 px-2 py-1 text-[11px] font-medium text-slate-600">
+              Ungefährer Bereich
+            </p>
+          )}
+        </div>
+      </Popup>
+    </Marker>
+  );
 }
 
 export default function LeafletMapInner({
@@ -77,6 +133,7 @@ export default function LeafletMapInner({
   residentCounts,
   userCtx,
   onHouseClick,
+  activityPins = [],
 }: LeafletMapInnerProps) {
   return (
     <MapContainer
@@ -94,7 +151,12 @@ export default function LeafletMapInner({
       />
       <LglBwOutlinesLayer userCtx={userCtx} />
 
-      <MapUpdater houses={houses} center={center} zoom={zoom} />
+      <MapUpdater
+        activityPins={activityPins}
+        houses={houses}
+        center={center}
+        zoom={zoom}
+      />
 
       {houses.map((house) => {
         const color = statuses[house.id] ?? "green";
@@ -136,6 +198,10 @@ export default function LeafletMapInner({
           </CircleMarker>
         );
       })}
+
+      {activityPins.map((pin) => (
+        <ActivityPinMarker key={pin.id} pin={pin} />
+      ))}
     </MapContainer>
   );
 }

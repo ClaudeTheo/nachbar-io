@@ -1,8 +1,9 @@
 // Nachbar.io — Datenbank-Typen (manuell, bis supabase gen types verfügbar)
 
 import type { UserRole } from "@/lib/quarters/types";
+import type { UserUiMode } from "@/lib/user-modes";
+export type { UserUiMode } from "@/lib/user-modes";
 
-export type UserUiMode = "active" | "senior";
 export type TrustLevel = "new" | "verified" | "trusted" | "admin";
 
 export type AlertCategory =

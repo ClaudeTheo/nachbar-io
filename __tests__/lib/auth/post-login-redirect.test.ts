@@ -15,6 +15,14 @@ describe("resolvePostLoginPath (B-4)", () => {
     expect(resolvePostLoginPath("active")).toBe("/dashboard");
   });
 
+  it("sendet junge Nutzer in das bestehende Jugendmodul", () => {
+    expect(resolvePostLoginPath("youth")).toBe("/jugend");
+  });
+
+  it("sendet Komfort-Nutzer auf das normale Dashboard", () => {
+    expect(resolvePostLoginPath("comfort")).toBe("/dashboard");
+  });
+
   it("faellt bei fehlendem ui_mode auf /dashboard zurueck", () => {
     expect(resolvePostLoginPath(null)).toBe("/dashboard");
     expect(resolvePostLoginPath(undefined)).toBe("/dashboard");

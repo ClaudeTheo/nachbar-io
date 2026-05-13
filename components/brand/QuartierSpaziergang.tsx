@@ -17,28 +17,28 @@ const L4_VIGNETTES: ReadonlyArray<{
     width: 200,
     height: 198,
     classes:
-      "qs-bird-fly top-[13vh] right-[7%] w-[54px] opacity-[0.24]",
+      "qs-bird-fly top-[13vh] right-[7%] w-[54px] opacity-[0.38]",
   },
   {
     key: "l4-bench",
     src: `${PARALLAX_BASE}/l4-bench.png`,
     width: 322,
     height: 184,
-    classes: "top-[44vh] left-[3%] w-[82px] opacity-[0.24]",
+    classes: "top-[44vh] left-[3%] w-[82px] opacity-[0.38]",
   },
   {
     key: "l4-windowbox",
     src: `${PARALLAX_BASE}/l4-windowbox.png`,
     width: 273,
     height: 206,
-    classes: "top-[59vh] right-[5%] w-[64px] opacity-[0.26]",
+    classes: "top-[59vh] right-[5%] w-[64px] opacity-[0.40]",
   },
   {
     key: "l4-signpost",
     src: `${PARALLAX_BASE}/l4-signpost.png`,
     width: 197,
     height: 224,
-    classes: "top-[73vh] left-[7%] w-[58px] opacity-[0.22]",
+    classes: "top-[73vh] left-[7%] w-[58px] opacity-[0.35]",
   },
 ];
 
@@ -58,7 +58,7 @@ export function QuartierSpaziergang({ className }: QuartierSpaziergangProps) {
     >
       <div
         data-layer="l1"
-        className="qs-l1 absolute left-0 top-0 w-full opacity-[0.10] mix-blend-multiply"
+        className="qs-l1 absolute left-0 top-0 w-full opacity-[0.18] mix-blend-multiply"
       >
         <Image
           src={`${PARALLAX_BASE}/l1-schwarzwald.png`}
@@ -74,7 +74,7 @@ export function QuartierSpaziergang({ className }: QuartierSpaziergangProps) {
 
       <div
         data-layer="l2"
-        className="qs-l2 absolute left-0 top-[34vh] w-full opacity-[0.08] mix-blend-multiply"
+        className="qs-l2 absolute left-0 top-[34vh] w-full opacity-[0.14] mix-blend-multiply"
       >
         <Image
           src={`${PARALLAX_BASE}/l2-hochrhein.png`}
@@ -90,7 +90,7 @@ export function QuartierSpaziergang({ className }: QuartierSpaziergangProps) {
 
       <div
         data-layer="l3"
-        className="qs-l3 absolute left-0 top-[78vh] w-full opacity-[0.11] mix-blend-multiply"
+        className="qs-l3 absolute left-0 top-[78vh] w-full opacity-[0.20] mix-blend-multiply"
       >
         <Image
           src={`${PARALLAX_BASE}/l3-skyline.png`}

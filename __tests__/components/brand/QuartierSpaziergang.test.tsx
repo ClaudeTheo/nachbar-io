@@ -48,17 +48,17 @@ describe("QuartierSpaziergang", () => {
     ).toMatch(/l3-skyline/);
   });
 
-  it("setzt alle grossen Schichten bewusst leise und mit Multiply-Blending", () => {
+  it("setzt alle grossen Schichten dezent sichtbar und mit Multiply-Blending", () => {
     const { container } = render(<QuartierSpaziergang />);
 
     expect(container.querySelector('[data-layer="l1"]')?.className).toMatch(
-      /opacity-\[0\.10\].*mix-blend-multiply|mix-blend-multiply.*opacity-\[0\.10\]/,
+      /opacity-\[0\.18\].*mix-blend-multiply|mix-blend-multiply.*opacity-\[0\.18\]/,
     );
     expect(container.querySelector('[data-layer="l2"]')?.className).toMatch(
-      /opacity-\[0\.08\].*mix-blend-multiply|mix-blend-multiply.*opacity-\[0\.08\]/,
+      /opacity-\[0\.14\].*mix-blend-multiply|mix-blend-multiply.*opacity-\[0\.14\]/,
     );
     expect(container.querySelector('[data-layer="l3"]')?.className).toMatch(
-      /opacity-\[0\.11\].*mix-blend-multiply|mix-blend-multiply.*opacity-\[0\.11\]/,
+      /opacity-\[0\.20\].*mix-blend-multiply|mix-blend-multiply.*opacity-\[0\.20\]/,
     );
   });
 

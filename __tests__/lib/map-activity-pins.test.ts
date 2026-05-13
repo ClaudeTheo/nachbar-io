@@ -66,6 +66,29 @@ describe("map activity pins", () => {
     expect(markup).not.toContain("⚽");
   });
 
+  it("enthaelt fuer jeden Pin-Typ erkennbare Detail-Elemente", () => {
+    const expectedDetails: Record<(typeof MAP_ACTIVITY_PIN_TYPES)[number], string[]> = {
+      learning: ["book-spine", "pencil"],
+      meeting: ["third-person", "chat-line"],
+      sport: ["ball-panel", "motion-kick"],
+      mowing: ["mower-handle", "grass-cut"],
+      shopping: ["bag-handle", "box-item"],
+      tech: ["phone-screen", "wifi-signal"],
+      gardening: ["soil-line", "leaf-pair"],
+      event: ["calendar-grid", "star"],
+      companion: ["path-line", "help-hand"],
+      warning: ["warning-rays", "exclamation"],
+    };
+
+    for (const type of MAP_ACTIVITY_PIN_TYPES) {
+      const markup = createMapActivityPinSvgMarkup(type);
+
+      for (const detail of expectedDetails[type]) {
+        expect(markup).toContain(`data-detail="${detail}"`);
+      }
+    }
+  });
+
   it("ueberschreibt die Farbe aus dem fachlichen Zustand statt aus dem Symbol", () => {
     const markup = createMapActivityPinSvgMarkup("mowing", {
       colorState: "yellow",

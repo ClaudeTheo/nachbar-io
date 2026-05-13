@@ -98,6 +98,7 @@ Form:
 - Kreis oben, Spitze unten.
 - Weisser Rand.
 - Weisses Piktogramm innen.
+- Piktogramme muessen trotz `28x37` Kartenmarker eindeutig lesbar sein, z.B. Buch+Stift fuer Lernen, Gruppe+Sprechlinie fuer Treffen, Mäher+Gras fuer Rasenmaehen, Handy+WLAN fuer Technik.
 - Glow in Kategorie-Farbe.
 - Auf der echten Karte kompakt: Leaflet-Marker `28x37`, damit Haeuser und Strassen nicht verdeckt werden.
 - Kleine Label-Chips optional nur bei Hover/Popup, nicht dauerhaft auf voller Karte.
@@ -391,7 +392,7 @@ Wenn neue Standortfelder oder `map_activities` noetig werden, gilt rote Zone.
 - OpenStreetMap bleibt Grundkarte.
 - QuartierApp-Pins erscheinen als eigener Layer in Leaflet.
 - Die Pin-Familie entspricht dem Favoritenbild, aber auf der Karte kompakt.
-- Die ersten 10 Pin-Typen sind konsistent und getestet.
+- Die ersten 10 Pin-Typen sind konsistent, detailreicher als reine Standardsymbole und getestet.
 - Nutzer waehlen Farbe/Symbol nicht manuell; Pin-Typ und Farbe entstehen automatisch aus Kategorie, Dringlichkeit, Ortstyp und Berechtigung.
 - Gruen = normal, Gelb = dringend, Rot = nur Unfall/Notfall, Blau = Sonderstatus wie Urlaub/Abwesenheit.
 - Alle vier Modi nutzen dieselbe Datenbasis, aber andere Detailtiefe/Darstellung.

@@ -97,7 +97,7 @@ function ActivityPinSymbol({ type }: { type: MapActivityPinType }) {
     <g
       data-activity-pin-symbol={type}
       stroke="white"
-      strokeWidth="5"
+      strokeWidth="4.4"
       strokeLinecap="round"
       strokeLinejoin="round"
       fill="none"
@@ -113,89 +113,113 @@ function renderSymbol(type: MapActivityPinType) {
     case "learning":
       return (
         <>
-          <path d="M-22 -17C-13 -22 -6 -20 0 -14C6 -20 14 -22 22 -17V18C14 13 7 13 0 20C-7 13 -14 13 -22 18V-17Z" />
-          <path d="M0 -14V20" />
+          <path data-detail="book-left" d="M-27 -20C-17 -25 -8 -21 0 -14V22C-8 15 -18 13 -27 18V-20Z" />
+          <path data-detail="book-right" d="M0 -14C8 -21 17 -25 27 -20V18C18 13 8 15 0 22V-14Z" />
+          <path data-detail="book-spine" d="M0 -14V22" />
+          <path data-detail="page-line" d="M-20 -7C-13 -10 -7 -9 -3 -5" />
+          <path data-detail="pencil" d="M11 7L28 24" />
+          <path data-detail="pencil-tip" d="M28 24L31 16" />
         </>
       );
     case "meeting":
       return (
         <>
-          <circle cx="-12" cy="-12" r="8" />
-          <circle cx="13" cy="-12" r="8" />
-          <path d="M-27 18C-24 4 -1 4 2 18" />
-          <path d="M2 18C5 4 28 4 31 18" />
+          <circle data-detail="left-person" cx="-17" cy="-12" r="7" />
+          <circle data-detail="third-person" cx="0" cy="-19" r="6" />
+          <circle data-detail="right-person" cx="17" cy="-12" r="7" />
+          <path data-detail="left-body" d="M-30 19C-26 4 -10 4 -6 19" />
+          <path data-detail="center-body" d="M-13 18C-10 5 10 5 13 18" />
+          <path data-detail="right-body" d="M6 19C10 4 26 4 30 19" />
+          <path data-detail="chat-line" d="M-19 27H12L21 34" />
         </>
       );
     case "sport":
       return (
         <>
-          <circle cx="0" cy="0" r="24" />
-          <path d="M-18 -9C-5 -2 5 -2 18 -9" />
-          <path d="M-12 18C-5 8 5 8 12 18" />
-          <path d="M0 -24V24" />
+          <circle data-detail="ball" cx="-1" cy="0" r="21" />
+          <path data-detail="ball-panel" d="M-1 -21V21" />
+          <path data-detail="ball-panel" d="M-18 -8C-8 -2 6 -2 16 -8" />
+          <path data-detail="ball-panel" d="M-15 15C-8 8 6 8 13 15" />
+          <path data-detail="motion-kick" d="M-30 23C-19 15 -9 14 0 21" />
+          <path data-detail="motion-kick" d="M19 -20L30 -28" />
         </>
       );
     case "mowing":
       return (
         <>
-          <path d="M-24 10H12L23 0" />
-          <circle cx="-13" cy="17" r="6" />
-          <circle cx="14" cy="17" r="6" />
-          <path d="M-18 10L-5 -12H12" />
-          <path d="M12 -12L27 -28" />
+          <path data-detail="mower-deck" d="M-27 9H12L25 -2" />
+          <path data-detail="blade" d="M-21 2H1" />
+          <circle data-detail="wheel" cx="-15" cy="18" r="6" />
+          <circle data-detail="wheel" cx="13" cy="18" r="6" />
+          <path data-detail="mower-handle" d="M-19 9L-6 -14H13L29 -30" />
+          <path data-detail="grass-cut" d="M-31 27H-22" />
+          <path data-detail="grass-cut" d="M-3 27H8" />
+          <path data-detail="grass-cut" d="M21 27H31" />
         </>
       );
     case "shopping":
       return (
         <>
-          <path d="M-20 -3H20L16 25H-16L-20 -3Z" />
-          <path d="M-10 -3C-10 -20 10 -20 10 -3" />
+          <path data-detail="shopping-bag" d="M-22 -3H22L18 27H-18L-22 -3Z" />
+          <path data-detail="bag-handle" d="M-11 -3C-11 -21 11 -21 11 -3" />
+          <path data-detail="box-item" d="M-10 7H10" />
+          <path data-detail="box-item" d="M-7 17H7" />
+          <path data-detail="receipt" d="M17 -12L27 -20" />
         </>
       );
     case "tech":
       return (
         <>
-          <rect x="-15" y="-28" width="30" height="56" rx="8" />
-          <path d="M-4 18H4" />
-          <path d="M-22 -22L-31 -31" />
-          <path d="M22 -22L31 -31" />
+          <rect data-detail="phone" x="-15" y="-25" width="30" height="52" rx="8" />
+          <path data-detail="phone-screen" d="M-6 -14H6" />
+          <path data-detail="phone-screen" d="M-7 -2H7" />
+          <path data-detail="home-line" d="M-4 18H4" />
+          <path data-detail="wifi-signal" d="M-30 -20C-21 -30 -8 -34 5 -30" />
+          <path data-detail="wifi-signal" d="M-25 -9C-18 -17 -8 -20 2 -16" />
         </>
       );
     case "gardening":
       return (
         <>
-          <path d="M-2 24C-1 3 8 -19 29 -27C31 -4 16 11 -2 24Z" />
-          <path d="M-4 23C-8 2 -18 -14 -31 -20C-31 0 -19 12 -4 23Z" />
-          <path d="M-2 24V-12" />
+          <path data-detail="leaf-pair" d="M-2 19C0 0 10 -19 30 -27C30 -5 16 9 -2 19Z" />
+          <path data-detail="leaf-pair" d="M-4 20C-8 1 -18 -12 -31 -18C-30 1 -18 12 -4 20Z" />
+          <path data-detail="stem" d="M-3 24V-13" />
+          <path data-detail="soil-line" d="M-26 27C-13 22 12 22 26 27" />
+          <path data-detail="sprout" d="M-3 4C6 1 12 -2 17 -9" />
         </>
       );
     case "event":
       return (
         <>
-          <rect x="-24" y="-22" width="48" height="44" rx="7" />
-          <path d="M-24 -8H24" />
-          <path d="M-12 -30V-17" />
-          <path d="M12 -30V-17" />
-          <path d="M-12 6H-4" />
-          <path d="M8 6H16" />
+          <rect data-detail="calendar" x="-25" y="-22" width="50" height="44" rx="7" />
+          <path data-detail="calendar-top" d="M-25 -8H25" />
+          <path data-detail="calendar-ring" d="M-13 -30V-17" />
+          <path data-detail="calendar-ring" d="M13 -30V-17" />
+          <path data-detail="calendar-grid" d="M-13 5H-5" />
+          <path data-detail="calendar-grid" d="M6 5H14" />
+          <path data-detail="star" d="M0 11L3 17L10 18L5 23L6 30L0 26L-6 30L-5 23L-10 18L-3 17L0 11Z" />
         </>
       );
     case "companion":
       return (
         <>
-          <circle cx="-12" cy="-16" r="8" />
-          <circle cx="14" cy="-16" r="8" />
-          <path d="M-27 24C-22 5 -2 5 2 24" />
-          <path d="M2 24C6 5 27 5 31 24" />
-          <path d="M-1 4C4 0 9 0 14 4" />
+          <circle data-detail="person-a" cx="-14" cy="-17" r="7" />
+          <circle data-detail="person-b" cx="15" cy="-15" r="7" />
+          <path data-detail="body-a" d="M-29 20C-25 4 -5 4 -1 20" />
+          <path data-detail="body-b" d="M1 22C5 5 26 5 30 22" />
+          <path data-detail="help-hand" d="M-3 3C3 8 10 8 16 2" />
+          <path data-detail="path-line" d="M-30 31C-14 25 7 25 30 31" />
         </>
       );
     case "warning":
       return (
         <>
-          <path d="M0 -30L30 24H-30L0 -30Z" />
-          <path d="M0 -12V6" />
-          <path d="M0 17H0.5" />
+          <path data-detail="warning-triangle" d="M0 -31L31 24H-31L0 -31Z" />
+          <path data-detail="exclamation" d="M0 -13V6" />
+          <path data-detail="exclamation" d="M0 17H0.5" />
+          <path data-detail="warning-rays" d="M-25 -25L-32 -32" />
+          <path data-detail="warning-rays" d="M25 -25L32 -32" />
+          <path data-detail="warning-rays" d="M0 -39V-31" />
         </>
       );
   }

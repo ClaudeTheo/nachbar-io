@@ -12,7 +12,6 @@ import { toast } from "sonner";
 import { createSpeechEngine } from "../engines/create-speech-engine";
 import { getIOSAudioManager } from "../services/ios-audio-manager";
 import { useStreamingChat } from "@/hooks/useStreamingChat";
-import { resolveFabVisibility } from "@/lib/ui/fabVisibility";
 import type {
   SpeechEngine,
   SpeechEngineCallbacks,
@@ -39,34 +38,12 @@ export function VoiceAssistantFAB() {
     getIOSAudioManager().init();
   }, []);
 
-  // Scroll-Hide: FAB verschwindet bei Scroll-Down, erscheint bei Scroll-Up
-  const [fabVisible, setFabVisible] = useState(true);
+  // Voice-FAB ist immer sichtbar — kein Scroll-Hide (Founder 2026-05-13).
+  const fabVisible = true;
   const lastScrollYRef = useRef(0);
 
   useEffect(() => {
-    const handleScroll = () => {
-      const currentY = window.scrollY;
-      setFabVisible((currentVisible) =>
-        resolveFabVisibility({
-          currentY,
-          previousY: lastScrollYRef.current,
-          innerWidth: window.innerWidth,
-          currentVisible,
-        }),
-      );
-      lastScrollYRef.current = currentY;
-    };
-
     lastScrollYRef.current = window.scrollY;
-    handleScroll();
-
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    window.addEventListener("resize", handleScroll);
-
-    return () => {
-      window.removeEventListener("scroll", handleScroll);
-      window.removeEventListener("resize", handleScroll);
-    };
   }, []);
 
   // Engine lazy initialisieren (nur im Browser)

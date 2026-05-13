@@ -20,7 +20,7 @@ export function SosHeaderIcon() {
   return (
     <button
       onClick={openSos}
-      className="fixed right-4 top-3 z-40 flex h-11 w-11 items-center justify-center rounded-full bg-white shadow-md border border-[#EF4444]/30 transition-all hover:shadow-lg active:scale-95"
+      className="fixed right-4 top-4 z-40 flex h-12 w-12 items-center justify-center rounded-full bg-white shadow-md border border-[#EF4444]/60 transition-all hover:shadow-lg active:scale-95"
       aria-label="SOS — Notfall-Hilfe"
       data-testid="sos-header-icon"
       style={{ touchAction: "manipulation" }}

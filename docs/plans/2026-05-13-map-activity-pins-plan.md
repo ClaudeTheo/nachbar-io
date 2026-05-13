@@ -1,7 +1,7 @@
 # Map Activity Pins - Produkt- und Umsetzungsplan
 
 **Datum:** 2026-05-13  
-**Status:** Plan gesichert, noch keine Code-Aenderung  
+**Status:** Lokal teilweise umgesetzt: Pin-Familie, Leaflet-Layer, lokale Preview und sichere Feed-API sind committed; echte Kartenanbindung ist der naechste Schritt
 **Scope:** Interaktive QuartierApp-Pins auf der bestehenden OpenStreetMap/Leaflet-Karte fuer alle vier UI-Modi
 
 ## Founder-Entscheidung
@@ -49,6 +49,35 @@ Aktuell gibt es bereits:
 - Dashboard-Map-Thumbnail.
 - AlertMapLayer mit exakter oder ungefaehrer Location.
 
+## Aktueller lokaler Implementierungsstand
+
+Lokale Commits bis Stand 2026-05-13:
+
+```text
+08bafe5 feat(map): add activity pin icon family
+11f954f feat(map): render activity pins on leaflet
+e9dcf2a feat(map): preview activity pins on house anchors
+3515e13 feat(map): add secure activity feed api
+```
+
+Umgesetzt:
+
+- `lib/map-activity-pins.ts`: Registry fuer die ersten 10 Pin-Typen und sichere SVG-Markup-Erzeugung.
+- `components/map/ActivityPinIcon.tsx`: wiederverwendbare React-SVG-Komponente.
+- `components/LeafletMapInner.tsx`: optionaler `activityPins`-Layer als Leaflet `divIcon` Marker.
+- `components/LeafletKarte.tsx` und `components/NachbarKarte.tsx`: `activityPins` werden durchgereicht.
+- `app/map-activity-pins-preview/*`: lokale Sichtprobe mit echter Leaflet/OpenStreetMap-Karte.
+- `lib/map-activity-preview.ts`: zehn statische, anonymisierte Haus-Anker fuer die lokale Preview.
+- `app/api/map/activities/route.ts`: authentifizierte Read-only Feed-API.
+- `lib/map-activity-feed.ts`: serverseitige Modus-/Sichtbarkeitsfilter und erster Alerts-Loader.
+
+Noch nicht umgesetzt:
+
+- Die echte App-Karte laedt `/api/map/activities` noch nicht automatisch.
+- `events`, `help_requests` und `youth_tasks` liefern noch keine belastbaren Activity-Koordinaten, weil in den vorhandenen Tabellen keine passenden Standortspalten fuer diese Use-Cases existieren.
+- Dashboard-Thumbnail und Jugend-Start sind noch nicht an den Activity-Feed angeschlossen.
+- Keine Prod-DB-Migration, kein Prod-Write, kein Push/Deploy in dieser Welle.
+
 ## Pin-Designsystem
 
 Production-Pins sollen keine Emojis sein. Sie sollen als eigene SVG/Icon-Komponenten gebaut werden.
@@ -60,6 +89,7 @@ Form:
 - Weisser Rand.
 - Weisses Piktogramm innen.
 - Glow in Kategorie-Farbe.
+- Auf der echten Karte kompakt: Leaflet-Marker `28x37`, damit Haeuser und Strassen nicht verdeckt werden.
 - Kleine Label-Chips optional nur bei Hover/Popup, nicht dauerhaft auf voller Karte.
 
 Farben:
@@ -164,15 +194,16 @@ Der Endpoint liefert nur erlaubte Pins:
 ```ts
 type MapActivityPin = {
   id: string;
-  kind: "learn" | "meet" | "sport" | "mow" | "shopping" | "digital" | "garden" | "event" | "escort" | "warning";
+  type: "learning" | "meeting" | "sport" | "mowing" | "shopping" | "tech" | "gardening" | "event" | "companion" | "warning";
   title: string;
-  subtitle?: string;
+  description?: string;
   lat: number;
   lng: number;
+  approximate?: boolean;
   locationPrecision: "exact" | "approx_50m" | "approx_quarter";
   visibility: "public" | "youth_safe" | "adult" | "caregiver" | "own";
+  source: "alerts" | "events" | "help_requests" | "youth_tasks";
   startsAt?: string;
-  points?: number;
   href?: string;
 };
 ```
@@ -180,6 +211,9 @@ type MapActivityPin = {
 Bei Jugend und sensiblen Hilfen:
 
 - `locationPrecision` bevorzugt `approx_50m` oder `approx_quarter`.
+- Jugend-Profile bleiben immer im Jugendfeed, auch wenn ein anderer Modus angefragt wird.
+- Erwachsene koennen nicht per Query in den Jugendfeed wechseln.
+- Nicht-exakte Koordinaten werden vor Auslieferung gerundet.
 - Keine Namen/Telefonnummern/Adressen im Feed.
 - Detailseite prueft Berechtigung erneut.
 
@@ -189,10 +223,11 @@ Bei Jugend und sensiblen Hilfen:
 
 Leaflet:
 
-- `LeafletMapInner.tsx` erweitert um `activityPins`.
+- `LeafletMapInner.tsx` ist erweitert um `activityPins`.
 - Status-Hausmarker bleiben bestehen.
-- Activity-Pins werden mit `L.divIcon` oder React-Leaflet `Marker` + custom HTML/SVG gerendert.
+- Activity-Pins werden mit `L.divIcon` und React-Leaflet `Marker` + custom SVG gerendert.
 - Popup zeigt nur erlaubte Details.
+- Preview kann externe LGL-BW-Gebaeudeumrisse abschalten, damit lokale Tests nicht von externen Layern abhaengen.
 
 SVG-Fallback:
 
@@ -221,6 +256,14 @@ Wichtig: Vor Implementation pro Tabelle per Code/Types/Migration pruefen, ob Loc
 - erst ungefaehr auf Quartier-Zentrum oder Treffpunkt setzen
 - fuer echte Activity-Locations spaeter file-first Migration planen
 
+Aktueller Datenstand:
+
+- `alerts` haben `location_lat`/`location_lng` und sind als erster Read-only-Loader angebunden.
+- `events` haben aktuell `location` als Freitext, aber keine belastbaren Koordinaten.
+- `help_requests` haben aktuell keine direkte Standortspalte.
+- `youth_tasks` haben aktuell keine Standortspalte.
+- Fuer Hausbezug ist der vorhandene Weg `households`/`map_houses` mit `position_verified`, `map_house_id` und LGL-BW-WFS massgeblich.
+
 Wenn neue Tabelle noetig wird:
 
 ```text
@@ -234,7 +277,7 @@ dann gilt rote Zone:
 
 ## Umsetzungswellen
 
-### M1 - Pin-Registry und Design-Komponente
+### M1 - Pin-Registry und Design-Komponente - done
 
 - `lib/map-activity-pins.ts`
 - `components/map/ActivityPinIcon.tsx`
@@ -243,29 +286,62 @@ dann gilt rote Zone:
 
 Keine DB-Aenderung.
 
-### M2 - Map Activity Feed als sichere API
+### M1b - Leaflet-Layer - done
+
+- `LeafletMapInner.tsx` nimmt `activityPins`.
+- `LeafletKarte.tsx` und `NachbarKarte.tsx` reichen `activityPins` weiter.
+- Marker sind `28x37` mit proportionalem Glow.
+- Popup zeigt Titel, Label, Beschreibung und optional "Ungefaehrer Bereich".
+
+Keine DB-Aenderung.
+
+### M1c - Lokale Sichtprobe - done
+
+- `/map-activity-pins-preview` zeigt 10 Pins auf echter Leaflet/OpenStreetMap-Karte.
+- Nur lokal/Test sichtbar; Production blockiert die Route.
+- Pins liegen auf anonymisierten Haus-Ankern, ohne Strassennamen, Hausnummern oder Nutzer.
+
+Keine DB-Aenderung, keine echten Eventdaten.
+
+### M2 - Map Activity Feed als sichere API - done
 
 - `app/api/map/activities/route.ts`
 - user/session lesen
 - `ui_mode` und Rolle bestimmen
 - Pins nur serverseitig gefiltert zurueckgeben
-- zunaechst aus bestehenden Quellen, ohne Migration wenn moeglich
+- erster Loader: aktive `alerts` mit Standort als `warning`-Pins
+- Jugend-Gate und Erwachsenen-Gate getestet
+- nicht-exakte Koordinaten werden gerundet
 
-### M3 - Leaflet Integration
+Keine DB-Aenderung.
 
-- `LeafletMapInner.tsx` nimmt `activityPins`.
-- `LeafletKarte.tsx` laedt Feed.
+### M3 - Feed in echte Leaflet-Karte einbinden - next
+
+- `LeafletKarte.tsx` oder ein kleiner Hook laedt `/api/map/activities?mode=...`.
+- Geladene Pins werden als `activityPins` an `LeafletMapInner` gegeben.
+- Bei leerem Feed oder Fehler bleibt die Karte ohne Activity-Pins nutzbar.
 - `MapFilterBar` bekommt Aktivitaetsfilter.
 - Klick-Popup mit erlaubten Details.
 
-### M4 - Modus-spezifische Darstellung
+Keine DB-Aenderung noetig, solange nur die bestehende API gelesen wird.
+
+### M4 - Weitere Quellen nur mit belastbarer Location
+
+- `events`: erst anbinden, wenn Koordinaten/Treffpunkte sauber vorliegen.
+- `help_requests`: erst anbinden, wenn `map_house_id`, Treffpunkt oder bewusst ungefaehrer Bereich verfuegbar ist.
+- `youth_tasks`: nur jugendgeeignet/moderiert und nur mit sicherer Standortpraezision.
+- Keine Fake-Genauigkeit.
+
+Wenn neue Standortfelder oder `map_activities` noetig werden, gilt rote Zone.
+
+### M5 - Modus-spezifische Darstellung
 
 - Jugend: frische Pin-Optik, Lernen/Treffen/Sport/Hilfe.
 - Aktiv: normale Aktivitaetsfilter.
-- Komfort: groessere Pins, weniger Filter.
+- Komfort: ruhiger, weniger Kategorien vorausgewaehlt.
 - Einfach: reduzierte wichtige Pins.
 
-### M5 - Dashboard/Jugend-Start
+### M6 - Dashboard/Jugend-Start
 
 - `/jugend` zeigt oben Hero/Map mit Activity-Pins.
 - Dashboard-Map-Thumbnail bekommt kleine Aktivitaetspunkte.
@@ -274,10 +350,22 @@ Keine DB-Aenderung.
 ## Akzeptanzkriterien
 
 - OpenStreetMap bleibt Grundkarte.
-- QuartierApp-Pins erscheinen als eigener Layer.
-- Die Pin-Familie entspricht dem Favoritenbild.
-- Die ersten 10 Pin-Typen sind konsistent.
+- QuartierApp-Pins erscheinen als eigener Layer in Leaflet.
+- Die Pin-Familie entspricht dem Favoritenbild, aber auf der Karte kompakt.
+- Die ersten 10 Pin-Typen sind konsistent und getestet.
 - Alle vier Modi nutzen dieselbe Datenbasis, aber andere Detailtiefe/Darstellung.
-- Jugendliche erhalten keine sensiblen Senior-/Care-Daten.
+- Jugendliche erhalten keine sensiblen Senior-/Care-Daten aus dem Activity-Feed.
 - Nicht erlaubte Pins werden serverseitig gar nicht ausgeliefert.
 - Keine Prod-DB-Migration ohne Founder-Go.
+
+## Naechster sicherer Schritt
+
+M3 lokal umsetzen:
+
+1. Kleinen Client-Hook fuer `/api/map/activities` bauen.
+2. Hook in `LeafletKarte.tsx` verdrahten.
+3. Fehler-/Leerzustand defensiv halten.
+4. Bestehende lokale Preview unveraendert lassen.
+5. Tests fuer API-Fetch, Fallback und Weitergabe an `LeafletMapInner`.
+
+Kein Push/Deploy und keine Prod-DB-Aktion ohne Founder-Go.

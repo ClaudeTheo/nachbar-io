@@ -27,4 +27,13 @@ describe("YouthGroupsSurface", () => {
       "/chat-groups/neu",
     );
   });
+
+  it("zeigt die Jugend-Gruppenregeln vor dem Gruenden", () => {
+    render(<YouthGroupsSurface />);
+
+    expect(screen.getByText("Vor dem Gründen")).toBeInTheDocument();
+    expect(screen.getByText(/maximal 10 Mitglieder/i)).toBeInTheDocument();
+    expect(screen.getByText(/Einladung weitergeben/i)).toBeInTheDocument();
+    expect(screen.getByText(/Melden oder verlassen/i)).toBeInTheDocument();
+  });
 });

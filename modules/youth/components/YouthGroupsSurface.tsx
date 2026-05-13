@@ -78,6 +78,24 @@ export function YouthGroupsSurface() {
         </div>
       </header>
 
+      <section
+        className="mt-5 rounded-[22px] border border-cyan-100/18 bg-white/[0.07] p-4 shadow-[0_18px_52px_rgba(0,0,0,0.24)]"
+        aria-labelledby="group-before-title"
+      >
+        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-cyan-100/62">
+          Check
+        </p>
+        <h2 id="group-before-title" className="mt-1 text-xl font-black">
+          Vor dem Gründen
+        </h2>
+        <ul className="mt-3 space-y-2 text-sm leading-6 text-cyan-50/72">
+          <li>Maximal 10 Mitglieder einplanen.</li>
+          <li>Einladung weitergeben, statt Gruppen öffentlich zu teilen.</li>
+          <li>Nur Menschen aufnehmen, die wirklich dazugehören.</li>
+          <li>Melden oder verlassen bleibt jederzeit möglich.</li>
+        </ul>
+      </section>
+
       <section className="mt-5 grid gap-3" aria-label="Gruppenideen">
         {groupIdeas.map((idea) => {
           const Icon = idea.icon;

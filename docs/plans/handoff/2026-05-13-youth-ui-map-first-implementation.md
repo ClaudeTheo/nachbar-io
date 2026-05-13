@@ -35,11 +35,20 @@ Vorgaben "Tauschen und Verschenken" sowie "geschützte Gruppen" ergänzt.
   - `app/(app)/jugend/tauschen/page.tsx`
   - bewusst nur Tauschen + Verschenken, kein Verkauf, keine Zahlung, keine
     Adresslogik
+  - sicherer lokaler Entwurfsflow:
+    - Modus Tauschen/Verschenken
+    - Gegenstand + optionale Tauschsuche + Kurzbeschreibung
+    - Pflicht-Check "keine Adresse und kein Geld"
+    - Vorschaukarte, aber noch kein Persistieren/Live-Schalten
 - Geschützte Jugend-Gruppen:
   - `modules/youth/components/YouthGroupsSurface.tsx`
   - `app/(app)/jugend/gruppen/page.tsx`
   - Einstieg in vorhandene `chat-groups`-Infrastruktur, mit Einladung/Admin-
     Logik als Produktregel
+  - Checkliste vor dem Gründen:
+    - maximal 10 Mitglieder
+    - Einladung weitergeben statt öffentlich teilen
+    - Melden/verlassen jederzeit möglich
 - Lokale Sichtprobe:
   - `/jugend-ui-preview`
   - `/jugend-tauschen-preview`
@@ -52,7 +61,7 @@ Vorgaben "Tauschen und Verschenken" sowie "geschützte Gruppen" ergänzt.
 - `npx vitest run __tests__/components/youth-home-surface.test.tsx __tests__/components/youth-dashboard-client.test.tsx __tests__/components/youth-points-display.test.tsx components/nav/__tests__/NavConfig.test.ts __tests__/middleware/closed-pilot.test.ts __tests__/app/youth-ui-preview.test.tsx`
   - 6 Test Files, 34 Tests grün
 - `npx vitest run __tests__/components/youth-home-surface.test.tsx __tests__/components/youth-exchange-surface.test.tsx __tests__/components/youth-groups-surface.test.tsx __tests__/lib/youth-exchange-rules.test.ts __tests__/app/youth-exchange-preview.test.tsx __tests__/app/youth-ui-preview.test.tsx __tests__/middleware/closed-pilot.test.ts components/nav/__tests__/NavConfig.test.ts`
-  - 8 Test Files, 43 Tests grün
+  - 8 Test Files, 46 Tests grün
 - Gezieltes ESLint auf alle geänderten Youth-/Nav-/Preview-Dateien: grün
 - `npx tsc --noEmit`: grün
 - `npm run build`: grün
@@ -67,6 +76,8 @@ Vorgaben "Tauschen und Verschenken" sowie "geschützte Gruppen" ergänzt.
     - `C:\Users\thoma\AppData\Local\Temp\nachbar-youth-ui-desktop.png`
     - `C:\Users\thoma\AppData\Local\Temp\nachbar-youth-tauschen-preview-2.png`
     - `C:\Users\thoma\AppData\Local\Temp\nachbar-youth-gruppen-preview-2.png`
+    - `C:\Users\thoma\AppData\Local\Temp\nachbar-youth-tauschen-flow-2.png`
+    - `C:\Users\thoma\AppData\Local\Temp\nachbar-youth-gruppen-flow-2.png`
 
 ## Grenzen
 

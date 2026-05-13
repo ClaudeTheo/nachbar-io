@@ -46,7 +46,7 @@ import { getCachedReputation, getReputationLevel } from "@/lib/reputation";
 import {
   getProfile,
   getHouseholdForUser,
-  toggleUiMode as toggleUiModeService,
+  setUiMode,
 } from "@/lib/services";
 import { CollapsibleVoiceSettings } from "@/modules/voice/components/companion/VoiceSettings";
 import { useVoicePreferences } from "@/hooks/useVoicePreferences";
@@ -56,6 +56,13 @@ import { BadgeGallery } from "@/components/gamification/BadgeGallery";
 import { formatCode, generateSecureCode } from "@/lib/invite-codes";
 import { toast } from "sonner";
 import type { User, Household, ReputationStats } from "@/lib/supabase/types";
+import {
+  getUserModeConfig,
+  isUserUiMode,
+  USER_MODE_CONFIG,
+  USER_UI_MODES,
+  type UserUiMode,
+} from "@/lib/user-modes";
 
 interface DisabledProfileNavItemProps {
   description?: string;
@@ -255,18 +262,11 @@ export default function ProfilePage() {
     router.push("/");
   }
 
-  async function handleToggleUiMode() {
+  async function handleSetUiMode(mode: UserUiMode) {
     if (!user) return;
-    const currentMode = user.ui_mode || "active";
-    const newMode = await toggleUiModeService(user.id, currentMode);
+    const newMode = await setUiMode(user.id, mode);
     setUser({ ...user, ui_mode: newMode });
-
-    // Zur passenden Startseite wechseln
-    if (newMode === "senior") {
-      router.push("/senior/home");
-    } else {
-      router.push("/dashboard");
-    }
+    router.push(getUserModeConfig(newMode).postLoginPath);
   }
 
   async function copyInviteCode() {
@@ -322,6 +322,8 @@ export default function ProfilePage() {
       <div className="py-12 text-center text-muted-foreground">Laden...</div>
     );
   }
+
+  const currentUiMode = isUserUiMode(user.ui_mode) ? user.ui_mode : "active";
 
   return (
     <div className="space-y-4">
@@ -652,20 +654,31 @@ export default function ProfilePage() {
 
           <Separator />
 
-          <button
-            onClick={handleToggleUiMode}
-            className="flex w-full items-center justify-between p-4 hover:bg-muted/50"
-          >
-            <div className="flex items-center gap-3">
-              <Settings className="h-5 w-5 text-muted-foreground" />
-              <span>
-                {(user.ui_mode || "active") === "active"
-                  ? "Zum einfachen Modus wechseln"
-                  : "Zum aktiven Modus wechseln"}
-              </span>
+          <div className="p-4">
+            <div className="flex items-start gap-3">
+              <Settings className="mt-0.5 h-5 w-5 text-muted-foreground" />
+              <div className="min-w-0 flex-1">
+                <p className="font-medium text-anthrazit">Oberfläche</p>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  Aktueller Modus: {USER_MODE_CONFIG[currentUiMode].label}
+                </p>
+                <div className="mt-3 grid grid-cols-2 gap-2">
+                  {USER_UI_MODES.map((mode) => (
+                    <Button
+                      key={mode}
+                      type="button"
+                      size="sm"
+                      variant={currentUiMode === mode ? "default" : "outline"}
+                      disabled={currentUiMode === mode}
+                      onClick={() => handleSetUiMode(mode)}
+                    >
+                      {USER_MODE_CONFIG[mode].label}
+                    </Button>
+                  ))}
+                </div>
+              </div>
             </div>
-            <ChevronRight className="h-4 w-4 text-muted-foreground" />
-          </button>
+          </div>
 
           <Separator />
 

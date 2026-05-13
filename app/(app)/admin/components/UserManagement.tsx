@@ -23,6 +23,11 @@ import { Input } from "@/components/ui/input";
 import { createClient } from "@/lib/supabase/client";
 import { TRUST_LEVELS } from "@/lib/constants";
 import type { User, TrustLevel } from "@/lib/supabase/types";
+import {
+  USER_MODE_CONFIG,
+  USER_UI_MODES,
+  type UserUiMode,
+} from "@/lib/user-modes";
 import { toast } from "sonner";
 import { VerificationQueue } from "./VerificationQueue";
 
@@ -44,7 +49,7 @@ export function UserManagement({ users, onRefresh }: UserManagementProps) {
   const [newUserStreet, setNewUserStreet] = useState("");
   const [newUserHouseNumber, setNewUserHouseNumber] = useState("");
   const [newUserEmail, setNewUserEmail] = useState("");
-  const [newUserMode, setNewUserMode] = useState<"active" | "senior">("senior");
+  const [newUserMode, setNewUserMode] = useState<UserUiMode>("senior");
   const [createdCredentials, setCreatedCredentials] = useState<{ email: string; password: string } | null>(null);
   const [copiedPassword, setCopiedPassword] = useState(false);
 
@@ -221,7 +226,7 @@ export function UserManagement({ users, onRefresh }: UserManagementProps) {
   }
 
   // UI-Modus ändern
-  async function changeUiMode(userId: string, newMode: "active" | "senior") {
+  async function changeUiMode(userId: string, newMode: UserUiMode) {
     setUpdating(userId);
     const supabase = createClient();
     const { error } = await supabase
@@ -232,7 +237,7 @@ export function UserManagement({ users, onRefresh }: UserManagementProps) {
     if (error) {
       toast.error("Fehler beim Ändern des Modus");
     } else {
-      toast.success(`Modus auf "${newMode === "senior" ? "Seniorenmodus" : "Normal"}" geändert`);
+      toast.success(`Modus auf "${USER_MODE_CONFIG[newMode].label}" geändert`);
       onRefresh();
     }
     setUpdating(null);
@@ -302,23 +307,18 @@ export function UserManagement({ users, onRefresh }: UserManagementProps) {
                 value={newUserEmail}
                 onChange={(e) => setNewUserEmail(e.target.value)}
               />
-              <div className="flex gap-2">
-                <Button
-                  size="sm"
-                  variant={newUserMode === "senior" ? "default" : "outline"}
-                  className="flex-1 text-xs h-8"
-                  onClick={() => setNewUserMode("senior")}
-                >
-                  Seniorenmodus
-                </Button>
-                <Button
-                  size="sm"
-                  variant={newUserMode === "active" ? "default" : "outline"}
-                  className="flex-1 text-xs h-8"
-                  onClick={() => setNewUserMode("active")}
-                >
-                  Normal
-                </Button>
+              <div className="grid grid-cols-2 gap-2">
+                {USER_UI_MODES.map((mode) => (
+                  <Button
+                    key={mode}
+                    size="sm"
+                    variant={newUserMode === mode ? "default" : "outline"}
+                    className="text-xs h-8"
+                    onClick={() => setNewUserMode(mode)}
+                  >
+                    {USER_MODE_CONFIG[mode].label}
+                  </Button>
+                ))}
               </div>
               <Button
                 className="w-full bg-quartier-green hover:bg-quartier-green-dark"
@@ -553,7 +553,7 @@ export function UserManagement({ users, onRefresh }: UserManagementProps) {
                       )}
                       {user.ui_mode === "senior" && (
                         <Badge variant="outline" className="text-[10px] h-4 px-1 border-blue-200 text-blue-600">
-                          Senior
+                          Einfach
                         </Badge>
                       )}
                       {isTestUser && (
@@ -633,9 +633,19 @@ export function UserManagement({ users, onRefresh }: UserManagementProps) {
 
                     <div>
                       <p className="text-xs font-medium text-muted-foreground mb-1.5">UI-Modus</p>
-                      <div className="flex gap-1.5">
-                        <Button size="sm" variant={user.ui_mode === "active" ? "default" : "outline"} className="text-xs h-7" disabled={isUpdating || user.ui_mode === "active"} onClick={() => changeUiMode(user.id, "active")}>Normal</Button>
-                        <Button size="sm" variant={user.ui_mode === "senior" ? "default" : "outline"} className="text-xs h-7" disabled={isUpdating || user.ui_mode === "senior"} onClick={() => changeUiMode(user.id, "senior")}>Seniorenmodus</Button>
+                      <div className="flex flex-wrap gap-1.5">
+                        {USER_UI_MODES.map((mode) => (
+                          <Button
+                            key={mode}
+                            size="sm"
+                            variant={user.ui_mode === mode ? "default" : "outline"}
+                            className="text-xs h-7"
+                            disabled={isUpdating || user.ui_mode === mode}
+                            onClick={() => changeUiMode(user.id, mode)}
+                          >
+                            {USER_MODE_CONFIG[mode].label}
+                          </Button>
+                        ))}
                       </div>
                     </div>
 

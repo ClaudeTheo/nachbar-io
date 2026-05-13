@@ -4,6 +4,7 @@
 
 export {
   getProfile,
+  setUiMode,
   updateProfile,
   toggleUiMode,
   updateUserSettings,

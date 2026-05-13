@@ -1,5 +1,10 @@
 import { createClient } from "@/lib/supabase/client";
 import { getCachedUser } from "@/lib/supabase/cached-auth";
+import { isUserUiMode, type UserUiMode } from "@/lib/user-modes";
+
+interface CompleteOnboardingOptions {
+  uiMode?: UserUiMode;
+}
 
 // Onboarding-Status pruefen
 export async function isOnboardingCompleted(): Promise<boolean> {
@@ -18,7 +23,9 @@ export async function isOnboardingCompleted(): Promise<boolean> {
 }
 
 // Onboarding als abgeschlossen markieren
-export async function completeOnboarding(): Promise<void> {
+export async function completeOnboarding(
+  options: CompleteOnboardingOptions = {},
+): Promise<void> {
   const supabase = createClient();
   const { user } = await getCachedUser(supabase);
   if (!user) return;
@@ -31,11 +38,19 @@ export async function completeOnboarding(): Promise<void> {
     .single();
 
   const currentSettings = (profile?.settings as Record<string, unknown>) ?? {};
+  const updatePayload: {
+    settings: Record<string, unknown>;
+    ui_mode?: UserUiMode;
+  } = {
+    settings: { ...currentSettings, onboarding_completed: true },
+  };
+
+  if (options.uiMode && isUserUiMode(options.uiMode)) {
+    updatePayload.ui_mode = options.uiMode;
+  }
 
   await supabase
     .from("users")
-    .update({
-      settings: { ...currentSettings, onboarding_completed: true },
-    })
+    .update(updatePayload)
     .eq("id", user.id);
 }

@@ -9,6 +9,12 @@ import { completeOnboarding } from "../services/onboarding";
 import { Button } from "@/components/ui/button";
 import { ProgressDots } from "./ProgressDots";
 import { ConfettiEffect } from "./ConfettiEffect";
+import {
+  getUserModeConfig,
+  USER_MODE_CONFIG,
+  USER_UI_MODES,
+  type UserUiMode,
+} from "@/lib/user-modes";
 
 // Reduzierte Slides: 4 kontextuelle Funktionen inkl. Video
 import { SlideWelcome } from "./slides/SlideWelcome";
@@ -17,11 +23,12 @@ import SlideVideo from "./slides/SlideVideo";
 import { SlideReady } from "./slides/SlideReady";
 import { SlideSkills } from "./SlideSkills";
 
-const TOTAL_SLIDES = 5;
+const TOTAL_SLIDES = 6;
 const SWIPE_THRESHOLD = 50;
 
 const BUTTON_LABELS = [
   "Weiter",           // Willkommen
+  "Weiter",           // Modusauswahl
   "Verstanden",       // Notfall-System
   "Weiter",           // Hilfsangebote
   "Weiter",           // Video
@@ -48,6 +55,7 @@ export function OnboardingFlow() {
   const [isAnimating, setIsAnimating] = useState(false);
   const [slideKey, setSlideKey] = useState(0);
   const [selectedSkills, setSelectedSkills] = useState<string[]>([]);
+  const [selectedMode, setSelectedMode] = useState<UserUiMode>("active");
 
   function toggleSkill(skillId: string) {
     setSelectedSkills(prev =>
@@ -101,14 +109,14 @@ export function OnboardingFlow() {
 
   // Onboarding abschließen
   async function handleComplete() {
-    await completeOnboarding();
-    router.push("/dashboard");
+    await completeOnboarding({ uiMode: selectedMode });
+    router.push(getUserModeConfig(selectedMode).postLoginPath);
   }
 
   // Weiter-Button Handler
   async function handleNext() {
     // Skills speichern beim Verlassen der Hilfsangebote-Slide
-    if (currentSlide === 2 && selectedSkills.length > 0) {
+    if (currentSlide === 3 && selectedSkills.length > 0) {
       try {
         const supabase = createClient();
         const { user } = await getCachedUser(supabase);
@@ -141,8 +149,8 @@ export function OnboardingFlow() {
 
   // Überspringen
   async function handleSkip() {
-    await completeOnboarding();
-    router.push("/dashboard");
+    await completeOnboarding({ uiMode: selectedMode });
+    router.push(getUserModeConfig(selectedMode).postLoginPath);
   }
 
   // Touch-Handler für Swipe
@@ -188,10 +196,52 @@ export function OnboardingFlow() {
   function renderSlide() {
     switch (currentSlide) {
       case 0: return <SlideWelcome />;
-      case 1: return <SlideEmergency />;
-      case 2: return <SlideSkills selectedSkills={selectedSkills} onToggle={toggleSkill} />;
-      case 3: return <SlideVideo variant="welcome" />;
-      case 4: return <SlideReady displayName={displayName} />;
+      case 1: return (
+        <div className="flex h-full flex-col justify-center px-6">
+          <div className="mx-auto w-full max-w-md space-y-5">
+            <div>
+              <p className="text-sm font-medium text-quartier-green">
+                Ihr Modus
+              </p>
+              <h1 className="mt-2 text-2xl font-bold text-anthrazit">
+                Wie möchten Sie Nachbar.io nutzen?
+              </h1>
+              <p className="mt-2 text-sm text-muted-foreground">
+                Sie können das später in Ihrem Profil ändern.
+              </p>
+            </div>
+            <div className="grid gap-3">
+              {USER_UI_MODES.map((mode) => {
+                const config = USER_MODE_CONFIG[mode];
+                const active = selectedMode === mode;
+                return (
+                  <button
+                    key={mode}
+                    type="button"
+                    onClick={() => setSelectedMode(mode)}
+                    className={`rounded-xl border p-4 text-left transition-colors ${
+                      active
+                        ? "border-quartier-green bg-quartier-green/10"
+                        : "border-[#ebe5dd] bg-white"
+                    }`}
+                  >
+                    <span className="font-semibold text-anthrazit">
+                      {config.label}
+                    </span>
+                    <span className="mt-1 block text-sm text-muted-foreground">
+                      {config.description}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      );
+      case 2: return <SlideEmergency />;
+      case 3: return <SlideSkills selectedSkills={selectedSkills} onToggle={toggleSkill} />;
+      case 4: return <SlideVideo variant="welcome" />;
+      case 5: return <SlideReady displayName={displayName} />;
       default: return null;
     }
   }
@@ -254,7 +304,7 @@ export function OnboardingFlow() {
           }`}
           style={{ minHeight: "56px" }}
         >
-          {currentSlide === 2 && selectedSkills.length === 0
+          {currentSlide === 3 && selectedSkills.length === 0
             ? "Überspringen"
             : BUTTON_LABELS[currentSlide]}
         </Button>

@@ -183,4 +183,19 @@ describe("UserManagement Pilot-Freigaben", () => {
     expect(screen.getByText("Clara Begleiterin")).toBeInTheDocument();
     expect(screen.queryByText("AI-Test Erika")).not.toBeInTheDocument();
   });
+
+  it("bietet alle Generationen-Modi im Admin-Umschalter an", async () => {
+    const { UserManagement } = await import(
+      "@/app/(app)/admin/components/UserManagement"
+    );
+
+    render(<UserManagement users={[realPilot]} onRefresh={vi.fn()} />);
+
+    fireEvent.click(screen.getByText("Paula Echt").closest("button")!);
+
+    expect(screen.getByRole("button", { name: "Junges Quartier" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Aktiv" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Komfort" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Einfach" })).toBeInTheDocument();
+  });
 });

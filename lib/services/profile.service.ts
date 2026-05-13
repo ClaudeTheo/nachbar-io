@@ -5,6 +5,7 @@
 import { createClient } from "@/lib/supabase/client";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { User, UserUiMode } from "@/lib/supabase/types";
+import { isUserUiMode } from "@/lib/user-modes";
 
 // ============================================================
 // Client-seitige Funktionen (fuer "use client" Komponenten)
@@ -38,11 +39,19 @@ export async function updateProfile(
   return data as User;
 }
 
-/** UI-Modus wechseln (active ↔ senior). */
+/** UI-Modus gezielt setzen. */
+export async function setUiMode(userId: string, mode: UserUiMode): Promise<UserUiMode> {
+  if (!isUserUiMode(mode)) {
+    throw new Error("Ungueltiger UI-Modus");
+  }
+  await updateProfile(userId, { ui_mode: mode });
+  return mode;
+}
+
+/** Legacy-Umschalter (active ↔ senior). */
 export async function toggleUiMode(userId: string, currentMode: UserUiMode): Promise<UserUiMode> {
   const newMode: UserUiMode = currentMode === "active" ? "senior" : "active";
-  await updateProfile(userId, { ui_mode: newMode });
-  return newMode;
+  return setUiMode(userId, newMode);
 }
 
 /** Nutzer-Einstellungen aktualisieren (merge in settings-JSONB). */

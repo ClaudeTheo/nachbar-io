@@ -379,7 +379,7 @@ describe("ProfilePage — Error-Handling Bugfixes", () => {
   // =========================================================================
   // 6. Null ui_mode → "active" Default
   // =========================================================================
-  it('behandelt null ui_mode als "active" und zeigt Senior-Modus-Wechsel', async () => {
+  it('behandelt null ui_mode als "active" und zeigt alle Modus-Optionen', async () => {
     mockUserSelect.mockResolvedValue({
       data: makeProfile({ ui_mode: null }),
       error: null,
@@ -388,14 +388,15 @@ describe("ProfilePage — Error-Handling Bugfixes", () => {
 
     render(<ProfilePage />);
 
-    // Der Toggle-Button muss "Zum einfachen Modus wechseln" zeigen
-    // (weil ui_mode || "active" === "active")
     await waitFor(() => {
-      expect(screen.getByText("Zum einfachen Modus wechseln")).toBeDefined();
+      expect(screen.getByText("Aktiv")).toBeDefined();
+      expect(screen.getByText("Komfort")).toBeDefined();
+      expect(screen.getByText("Einfach")).toBeDefined();
+      expect(screen.getByText("Junges Quartier")).toBeDefined();
     });
   });
 
-  it('zeigt "Zum aktiven Modus wechseln" im Senior-Modus', async () => {
+  it("zeigt den aktuellen Modus im Senior-Modus", async () => {
     mockUserSelect.mockResolvedValue({
       data: makeProfile({ ui_mode: "senior" }),
       error: null,
@@ -405,7 +406,7 @@ describe("ProfilePage — Error-Handling Bugfixes", () => {
     render(<ProfilePage />);
 
     await waitFor(() => {
-      expect(screen.getByText("Zum aktiven Modus wechseln")).toBeDefined();
+      expect(screen.getByText("Aktueller Modus: Einfach")).toBeDefined();
     });
   });
 

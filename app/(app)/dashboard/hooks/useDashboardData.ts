@@ -8,6 +8,12 @@ import { useQuarter } from "@/lib/quarters";
 import { getCachedReputation } from "@/lib/reputation";
 import { useUnreadCount } from "@/lib/useUnreadCount";
 import { toast } from "sonner";
+import {
+  getUserModeConfig,
+  isUserUiMode,
+  type DashboardDensity,
+  type UserUiMode,
+} from "@/lib/user-modes";
 import type {
   Alert,
   NewsItem,
@@ -46,6 +52,8 @@ export interface DashboardData {
   helpRequests: HelpRequest[];
   marketplaceItems: MarketplaceItem[];
   userName: string;
+  uiMode: UserUiMode;
+  dashboardDensity: DashboardDensity;
   reputationLevel: number;
   loading: boolean;
   profileData: ProfileData | null;
@@ -83,6 +91,9 @@ export function useDashboardData(): DashboardData {
     [],
   );
   const [userName, setUserName] = useState("");
+  const [uiMode, setUiMode] = useState<UserUiMode>("active");
+  const [dashboardDensity, setDashboardDensity] =
+    useState<DashboardDensity>("standard");
   const [reputationLevel, setReputationLevel] = useState(0);
   const [loading, setLoading] = useState(true);
   const [showInviteModal, setShowInviteModal] = useState(false);
@@ -106,12 +117,17 @@ export function useDashboardData(): DashboardData {
       const { data: profile } = await supabase
         .from("users")
         .select(
-          "id, display_name, avatar_url, bio, phone, settings, created_at",
+          "id, display_name, avatar_url, bio, phone, settings, created_at, ui_mode",
         )
         .eq("id", user.id)
         .single();
       if (profile) {
         setUserName(profile.display_name);
+        const resolvedUiMode = isUserUiMode(profile.ui_mode)
+          ? profile.ui_mode
+          : "active";
+        setUiMode(resolvedUiMode);
+        setDashboardDensity(getUserModeConfig(resolvedUiMode).dashboardDensity);
 
         const cached = getCachedReputation(
           profile.settings as Record<string, unknown> | null,
@@ -269,6 +285,8 @@ export function useDashboardData(): DashboardData {
     helpRequests,
     marketplaceItems,
     userName,
+    uiMode,
+    dashboardDensity,
     reputationLevel,
     loading,
     profileData,

@@ -16,7 +16,7 @@ vi.mock("@/lib/supabase/client", () => ({
   }),
 }));
 
-import { getProfile, updateProfile, toggleUiMode, updateUserSettings } from "../profile.service";
+import { getProfile, setUiMode, updateProfile, toggleUiMode, updateUserSettings } from "../profile.service";
 
 const MOCK_USER = {
   id: "user-1",
@@ -123,6 +123,25 @@ describe("toggleUiMode", () => {
 
     const result = await toggleUiMode("user-1", "senior");
     expect(result).toBe("active");
+  });
+});
+
+describe("setUiMode", () => {
+  beforeEach(() => vi.clearAllMocks());
+
+  it("setzt einen konkreten Generationen-Modus", async () => {
+    const chain = {
+      update: vi.fn().mockReturnThis(),
+      eq: vi.fn().mockReturnThis(),
+      select: vi.fn().mockReturnThis(),
+      single: vi.fn().mockResolvedValue({ data: { ...MOCK_USER, ui_mode: "comfort" }, error: null }),
+    };
+    mockFrom.mockReturnValue(chain as unknown as ReturnType<typeof mockFrom>);
+
+    const result = await setUiMode("user-1", "comfort");
+
+    expect(chain.update).toHaveBeenCalledWith({ ui_mode: "comfort" });
+    expect(result).toBe("comfort");
   });
 });
 

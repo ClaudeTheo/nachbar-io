@@ -39,6 +39,7 @@ function formatEyebrowDate(d: Date): string {
 export default function DashboardPage() {
   const {
     userName,
+    dashboardDensity,
     reputationLevel,
     loading,
     weatherData,
@@ -150,6 +151,7 @@ export default function DashboardPage() {
   }
 
   const greeting = getGreeting();
+  const isComfortDashboard = dashboardDensity === "calm";
   const eyebrowDate = formatEyebrowDate(new Date());
   // Founder 2026-05-12: Eyebrow zeigt die Stadt (z.B. "BAD SÄCKINGEN"), nicht
   // den Quartier-Namen ("Purkersdorfer/Sanary/Rebberg") — sonst wird der
@@ -163,7 +165,12 @@ export default function DashboardPage() {
   return (
     <>
       <PullToRefresh onRefresh={loadDashboard}>
-        <div className="space-y-12 animate-fade-in-up py-12 md:py-16">
+        <div
+          className={`animate-fade-in-up py-12 md:py-16 ${
+            isComfortDashboard ? "space-y-14" : "space-y-12"
+          }`}
+          data-dashboard-density={dashboardDensity}
+        >
           {/* ============================================================
               HERO — Visual-Polish v7 (kein Card, kein Avatar, typo-getrieben).
               SOS-Pill bewusst entfernt (Founder-Entscheidung 2026-05-11):
@@ -334,11 +341,13 @@ export default function DashboardPage() {
                 via @supports backdrop-filter, Solid-Fallback fuer aeltere Browser.
                 Hover: green-line Border + leicht erhoehte Opacity.
                 Active: green-tint Background (keine Transform-Animation). */}
-            <div className="grid grid-cols-2 gap-3">
+            <div className={`grid grid-cols-2 ${isComfortDashboard ? "gap-4" : "gap-3"}`}>
               {/* 1. Check-in */}
               <Link
                 href="/care/checkin"
-                className="glass-tile flex min-h-[80px] flex-col justify-center p-4"
+                className={`glass-tile flex flex-col justify-center p-4 ${
+                  isComfortDashboard ? "min-h-[92px]" : "min-h-[80px]"
+                }`}
               >
                 <div className="flex items-center gap-2">
                   <CheckCircle2 className="h-5 w-5 text-quartier-green" />
@@ -352,7 +361,9 @@ export default function DashboardPage() {
               {/* 2. Nachrichten */}
               <Link
                 href="/notifications"
-                className="glass-tile flex min-h-[80px] flex-col justify-center p-4"
+                className={`glass-tile flex flex-col justify-center p-4 ${
+                  isComfortDashboard ? "min-h-[92px]" : "min-h-[80px]"
+                }`}
               >
                 <div className="flex items-center gap-2">
                   <MessageCircle className="h-5 w-5 text-blue-500" />
@@ -373,7 +384,9 @@ export default function DashboardPage() {
               {/* 3. Neuigkeiten */}
               <Link
                 href="/news"
-                className="glass-tile flex min-h-[80px] flex-col justify-center p-4"
+                className={`glass-tile flex flex-col justify-center p-4 ${
+                  isComfortDashboard ? "min-h-[92px]" : "min-h-[80px]"
+                }`}
               >
                 <div className="flex items-center gap-2">
                   <Newspaper className="h-5 w-5 text-violet-500" />
@@ -389,7 +402,9 @@ export default function DashboardPage() {
               {/* 4. Bekanntmachungen */}
               <Link
                 href="/city-services"
-                className="glass-tile flex min-h-[80px] flex-col justify-center p-4"
+                className={`glass-tile flex flex-col justify-center p-4 ${
+                  isComfortDashboard ? "min-h-[92px]" : "min-h-[80px]"
+                }`}
               >
                 <div className="flex items-center gap-2">
                   <Megaphone className="h-5 w-5 text-amber-600" />

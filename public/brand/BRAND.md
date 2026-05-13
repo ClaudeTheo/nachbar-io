@@ -106,9 +106,10 @@ Diese Palette wird auch in der DESIGN.md als erweiterte Akzent-Palette dokumenti
 ## Open Questions
 
 - **Echtes Transparent-PNG**: Banana Pro 2 hat es nicht generiert (alle Files Alpha=255). Falls Logo auf nicht-Warmwhite-BG noetig (z.B. SOS-Pill, Hero-Photo): neu generieren mit explizitem "transparent background" Prompt ODER Chroma-Key-Conversion via Sharp.
-- **SVG-Version**: Erste v2-Vektorinterpretation liegt unter `quartierapp-logo-v2/`:
-  - `quartierapp-logo-v2-symbol.svg` — farbiges transparentes Symbol.
-  - `quartierapp-logo-v2-symbol-mono.svg` — monochrome `currentColor`-Variante.
-  - `quartierapp-logo-v2-app-icon.svg` — App-Icon-Variante mit warmem Hintergrund.
-  Diese Assets sind noch nicht live verdrahtet und koennen nach Founder-Review als finale Markenrichtung uebernommen oder weiter verfeinert werden.
+- **SVG-Version v2**: Die Founder-Auswahl aus `quartierapp-logo-v2/` wird bewusst 1:1 als Raster-Master gefuehrt:
+  - `quartierapp-logo-v2-symbol.png` — transparenter Master der ausgewaehlten runden Vorlage.
+  - `quartierapp-logo-v2-symbol.svg` — SVG-Wrapper mit exakt eingebettetem PNG-Master, keine freie Vektorinterpretation.
+  - `quartierapp-logo-v2-symbol-mono.svg` — Kompatibilitaetsdatei, ebenfalls exakt eingebetteter PNG-Master statt abweichender Mono-Interpretation.
+  - `quartierapp-logo-v2-app-icon.svg` — SVG-Wrapper mit exakt eingebettetem App-Icon-PNG.
+  Ein echter Pfad-Vektor kann spaeter separat erstellt werden, darf aber nur anhand dieser 1:1 Vorlage freigegeben werden.
 - **Mono Line-Art**: Im Master-File enthalten, aber Crop war fehlerhaft (zeigt nur Label). TBD: genauere Crop-Koordinaten extrahieren ODER neu via Banana Pro 2 mit "line art only" Prompt.

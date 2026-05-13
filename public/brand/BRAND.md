@@ -106,5 +106,9 @@ Diese Palette wird auch in der DESIGN.md als erweiterte Akzent-Palette dokumenti
 ## Open Questions
 
 - **Echtes Transparent-PNG**: Banana Pro 2 hat es nicht generiert (alle Files Alpha=255). Falls Logo auf nicht-Warmwhite-BG noetig (z.B. SOS-Pill, Hero-Photo): neu generieren mit explizitem "transparent background" Prompt ODER Chroma-Key-Conversion via Sharp.
-- **SVG-Version**: PNG funktioniert, aber Vector waere sauberer fuer beliebige Groessen + bessere Dark-Mode-Vorbereitung. Optionen: Vectorizer.AI, Adobe Image Trace, oder claude.design SVG-Generierung mit Master-PNG als Referenz.
+- **SVG-Version**: Erste v2-Vektorinterpretation liegt unter `quartierapp-logo-v2/`:
+  - `quartierapp-logo-v2-symbol.svg` — farbiges transparentes Symbol.
+  - `quartierapp-logo-v2-symbol-mono.svg` — monochrome `currentColor`-Variante.
+  - `quartierapp-logo-v2-app-icon.svg` — App-Icon-Variante mit warmem Hintergrund.
+  Diese Assets sind noch nicht live verdrahtet und koennen nach Founder-Review als finale Markenrichtung uebernommen oder weiter verfeinert werden.
 - **Mono Line-Art**: Im Master-File enthalten, aber Crop war fehlerhaft (zeigt nur Label). TBD: genauere Crop-Koordinaten extrahieren ODER neu via Banana Pro 2 mit "line art only" Prompt.

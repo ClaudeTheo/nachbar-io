@@ -1,0 +1,22 @@
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
+  <title id="title">QuartierApp Symbol v2 Mono</title>
+  <desc id="desc">Monochrome Vektorvariante des QuartierApp-Symbols.</desc>
+  <path d="M137.5 187.5C169.7 128.7 232.2 89 304 89C356.7 89 404.4 110.5 438.8 145.2" stroke="currentColor" stroke-width="34" stroke-linecap="round"/>
+  <path d="M453.6 164.8C470.9 191.5 481 223.4 481 257.7C481 291.1 471.6 322.2 455.3 348.6" stroke="currentColor" stroke-width="34" stroke-linecap="round"/>
+  <path d="M73.8 223.2C64.7 233.7 59.2 247.3 59.2 262.3C59.2 282.5 69.1 300.4 84.5 311.2" stroke="currentColor" stroke-width="34" stroke-linecap="round"/>
+  <circle cx="89" cy="184" r="25" fill="currentColor"/>
+  <circle cx="376" cy="89" r="26" fill="currentColor"/>
+  <circle cx="462" cy="159" r="25" fill="currentColor"/>
+  <path d="M77 363C126.5 343.8 168 350.9 207.3 369.4C251.1 390 289.9 397.5 338.4 380.1C365.7 370.3 394.7 355.2 438 356" stroke="currentColor" stroke-width="24" stroke-linecap="round"/>
+  <path d="M85 390C135.8 370.5 180.1 379.4 221.3 397.7C263 416.2 304.5 421.7 353.8 401.4C379.1 391 406.1 377.2 446 380.9" stroke="currentColor" stroke-width="10" stroke-linecap="round" opacity="0.55"/>
+  <path d="M134 290L256 188L378 290" stroke="currentColor" stroke-width="27" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M170 278L256 207L342 278V349H170V278Z" fill="currentColor"/>
+  <path d="M196 293L256 243L316 293V349H196V293Z" fill="white"/>
+  <path d="M188 278L256 221L324 278" stroke="currentColor" stroke-width="18" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M225 297H287V349H225V297Z" fill="currentColor"/>
+  <path d="M300 301H334V335H300V301Z" fill="currentColor"/>
+  <path d="M317 301V335" stroke="white" stroke-width="5" stroke-linecap="round"/>
+  <path d="M300 318H334" stroke="white" stroke-width="5" stroke-linecap="round"/>
+  <path d="M256 333C256 333 214 289.3 214 253.5C214 226.7 232.8 207 256 207C279.2 207 298 226.7 298 253.5C298 289.3 256 333 256 333Z" fill="currentColor" stroke="white" stroke-width="12" stroke-linejoin="round"/>
+  <circle cx="256" cy="253" r="17" fill="white"/>
+</svg>

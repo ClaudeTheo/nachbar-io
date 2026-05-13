@@ -1,6 +1,5 @@
 import { AppAquarellBackground } from "@/components/brand/AppAquarellBackground";
 import { NavPill } from "@/components/brand/NavPill";
-import { QuartierSpaziergang } from "@/components/brand/QuartierSpaziergang";
 import { BottomNav } from "@/components/BottomNav";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { HeartbeatProvider } from "@/components/HeartbeatProvider";
@@ -27,11 +26,6 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     // den -z-10 Aquarell-Layer (CSS-Stacking: negative-z child wird
     // hinter parent's BG-Painting gerendert).
     <div className="relative min-h-screen pb-20">
-      {/* Visual-Polish v7 Iteration 2 — Welle 6 Quartier-Spaziergang.
-          4-Schichten-Atmosphaere (Tannen, Hochrhein, Skyline mit
-          Holzbruecke + Fridolinsmuenster, 4 Foreground-Vignetten).
-          Liegt auf -z-20, also HINTER dem Symbol-Aquarell. Decorative. */}
-      <QuartierSpaziergang />
       {/* Visual-Polish v7 Iteration 2 — dezenter Aquarell-Hintergrund
           (Schwarzwald-Tanne + Haeuser + Sonne) fuer alle eingeloggten
           Seiten. Decorative, aria-hidden, im hintersten z-Index. */}

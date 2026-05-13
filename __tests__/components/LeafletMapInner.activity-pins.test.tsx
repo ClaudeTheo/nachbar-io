@@ -101,6 +101,12 @@ describe("LeafletMapInner activity pins", () => {
     expect(marker.getAttribute("data-icon-html")).toContain(
       'data-activity-pin-type="learning"',
     );
+    expect(leafletMocks.divIcon).toHaveBeenCalledWith(
+      expect.objectContaining({
+        iconAnchor: [14, 34],
+        iconSize: [28, 37],
+      }),
+    );
     expect(screen.getByText("Lerntreff am Rhein")).toBeTruthy();
     expect(screen.getByText("Heute 17 Uhr")).toBeTruthy();
     expect(screen.getByText("Lernen")).toBeTruthy();
@@ -136,5 +142,24 @@ describe("LeafletMapInner activity pins", () => {
       "data-position",
       "[47.554,7.965]",
     );
+  });
+
+  it("kann externe Gebaeude-Umrisse fuer lokale Previews abschalten", () => {
+    render(
+      <LeafletMapInner
+        activityPins={[]}
+        center={[47.5535, 7.964]}
+        houses={[]}
+        onHouseClick={vi.fn()}
+        residentCounts={{}}
+        showBuildingOutlines={false}
+        statuses={{}}
+        tileUrl="https://tiles.example/{z}/{x}/{y}.png"
+        userCtx={{ role: "resident", plan: "free" }}
+        zoom={16}
+      />,
+    );
+
+    expect(screen.queryByTestId("lgl-layer")).toBeNull();
   });
 });

@@ -16,6 +16,10 @@ describe("closed pilot public paths", () => {
     },
   );
 
+  it("keeps the local map activity pin preview public in closed pilot", () => {
+    expect(isClosedPilotPublicPath("/map-activity-pins-preview")).toBe(true);
+  });
+
   it("keeps registration APIs public for pending onboarding", () => {
     expect(isClosedPilotPublicApiPath("/api/register/check-invite")).toBe(true);
     expect(isClosedPilotPublicApiPath("/api/register/complete")).toBe(true);

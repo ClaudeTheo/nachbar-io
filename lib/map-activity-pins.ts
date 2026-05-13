@@ -235,13 +235,15 @@ export function createMapActivityPinSvgMarkup(
   const definition = getMapActivityPinDefinition(type);
   const size = Math.max(24, Math.round(options.size ?? 52));
   const height = Math.round((size * 4) / 3);
+  const innerGlow = Math.max(2, Math.round(size * 0.09));
+  const outerGlow = Math.max(5, Math.round(size * 0.22));
   const label = escapeHtml(
     options.title ?? `${definition.label} auf der Quartierskarte`,
   );
   const symbol = MAP_ACTIVITY_PIN_SYMBOL_MARKUP[definition.type];
 
   return [
-    `<svg role="img" aria-label="${label}" data-activity-pin-type="${definition.type}" width="${size}" height="${height}" viewBox="0 0 96 128" fill="none" xmlns="http://www.w3.org/2000/svg" style="display:block;overflow:visible;filter:drop-shadow(0 0 6px ${definition.color}) drop-shadow(0 0 16px ${definition.color});">`,
+    `<svg role="img" aria-label="${label}" data-activity-pin-type="${definition.type}" width="${size}" height="${height}" viewBox="0 0 96 128" fill="none" xmlns="http://www.w3.org/2000/svg" style="display:block;overflow:visible;filter:drop-shadow(0 0 ${innerGlow}px ${definition.color}) drop-shadow(0 0 ${outerGlow}px ${definition.color});">`,
     `<title>${label}</title>`,
     `<path d="M48 4C73 4 92 23 92 48C92 79 65 98 48 124C31 98 4 79 4 48C4 23 23 4 48 4Z" fill="${definition.color}" stroke="white" stroke-width="5.5" stroke-linejoin="round"/>`,
     '<circle cx="48" cy="47" r="30" fill="white" opacity="0.1"/>',

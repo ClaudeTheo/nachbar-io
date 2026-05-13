@@ -67,7 +67,12 @@ describe("Closed-Pilot-Gate", () => {
     },
   );
 
-  it.each(["/senior/preview", "/care/preview", "/care/consent/preview"])(
+  it.each([
+    "/senior/preview",
+    "/care/preview",
+    "/care/consent/preview",
+    "/map-activity-pins-preview",
+  ])(
     "laesst lokale UI-Preview %s ohne Auth-Middleware erreichbar",
     async (path) => {
       const res = await proxy(makeRequest(path));

@@ -36,6 +36,7 @@ interface LeafletMapInnerProps {
   userCtx: UserContext;
   onHouseClick: (house: GeoMapHouseData) => void;
   activityPins?: MapActivityPin[];
+  showBuildingOutlines?: boolean;
 }
 
 // Stellt sicher dass die Karte korrekt initialisiert ist und alle Marker sichtbar sind.
@@ -82,7 +83,7 @@ function MapUpdater({
   return null;
 }
 
-const ACTIVITY_PIN_ICON_SIZE = 52;
+const ACTIVITY_PIN_ICON_SIZE = 28;
 const ACTIVITY_PIN_ICON_HEIGHT = Math.round((ACTIVITY_PIN_ICON_SIZE * 4) / 3);
 
 function ActivityPinMarker({ pin }: { pin: MapActivityPin }) {
@@ -134,6 +135,7 @@ export default function LeafletMapInner({
   userCtx,
   onHouseClick,
   activityPins = [],
+  showBuildingOutlines = true,
 }: LeafletMapInnerProps) {
   return (
     <MapContainer
@@ -149,7 +151,7 @@ export default function LeafletMapInner({
         url={tileUrl}
         crossOrigin="anonymous"
       />
-      <LglBwOutlinesLayer userCtx={userCtx} />
+      {showBuildingOutlines && <LglBwOutlinesLayer userCtx={userCtx} />}
 
       <MapUpdater
         activityPins={activityPins}

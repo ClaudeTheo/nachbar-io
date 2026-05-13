@@ -15,6 +15,7 @@ const CLOSED_PILOT_PUBLIC_PATHS = new Set([
   "/senior/preview",
   "/care/preview",
   "/care/consent/preview",
+  "/map-activity-pins-preview",
 ]);
 
 const CLOSED_PILOT_PUBLIC_API_PATHS = new Set([

@@ -14,6 +14,9 @@ const baseCandidate: MapActivityFeedCandidate = {
   lng: 7.945317,
   title: "Quartier-Treff",
   locationPrecision: "approx_50m",
+  urgency: "normal",
+  colorState: "green",
+  locationScope: "meeting_point",
   visibility: "public",
   source: "events",
 };
@@ -69,6 +72,9 @@ describe("map activity feed", () => {
 
     expect(pin.locationPrecision).toBe("approx_50m");
     expect(pin.approximate).toBe(true);
+    expect(pin.urgency).toBe("normal");
+    expect(pin.colorState).toBe("green");
+    expect(pin.locationScope).toBe("meeting_point");
     expect(pin.lat).toBe(47.562);
     expect(pin.lng).toBe(7.945);
   });
@@ -121,6 +127,17 @@ describe("map activity feed", () => {
         location_lng: null,
         created_at: "2026-05-13T16:05:00Z",
       },
+      {
+        id: "alert-emergency",
+        category: "medical",
+        title: "Unfall",
+        description: "Akute Lage",
+        status: "open",
+        is_emergency: true,
+        location_lat: 47.562948,
+        location_lng: 7.946117,
+        created_at: "2026-05-13T16:10:00Z",
+      },
     ]);
 
     expect(candidates).toEqual([
@@ -130,8 +147,18 @@ describe("map activity feed", () => {
         title: "Hinweis am Weg",
         description: "Laterne ausgefallen",
         locationPrecision: "approx_50m",
+        urgency: "urgent",
+        colorState: "yellow",
+        locationScope: "quarter_area",
         visibility: "public",
         source: "alerts",
+      }),
+      expect.objectContaining({
+        id: "alert-alert-emergency",
+        type: "warning",
+        urgency: "emergency",
+        colorState: "red",
+        locationScope: "quarter_area",
       }),
     ]);
   });

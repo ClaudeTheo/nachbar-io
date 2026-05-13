@@ -27,10 +27,33 @@ interface MapFilterBarProps {
   onFilterChange: (filter: string) => void;
   onReset: () => void;
   quarterName: string;
+  activityCount?: number;
+  activityError?: boolean;
+  activityFilterActive?: boolean;
+  activityLoading?: boolean;
+  onToggleActivityFilter?: () => void;
 }
 
 // Gemeinsame Steuerleiste für SVG- und Leaflet-Karten
-export function MapFilterBar({ counts, filter, onFilterChange, onReset, quarterName }: MapFilterBarProps) {
+export function MapFilterBar({
+  counts,
+  filter,
+  onFilterChange,
+  onReset,
+  quarterName,
+  activityCount = 0,
+  activityError = false,
+  activityFilterActive = true,
+  activityLoading = false,
+  onToggleActivityFilter,
+}: MapFilterBarProps) {
+  const showActivityFilter = activityLoading || activityError || activityCount > 0;
+  const activityLabel = activityError
+    ? "Aktivitäten offline"
+    : activityLoading
+      ? "Aktivitäten laden"
+      : `${activityCount} Aktivitäten`;
+
   return (
     <div className="w-full rounded-xl bg-[#111827] px-3 py-3 sm:px-4">
       <div className="flex items-start justify-between gap-3">
@@ -77,6 +100,33 @@ export function MapFilterBar({ counts, filter, onFilterChange, onReset, quarterN
             </button>
           );
         })}
+        {showActivityFilter && (
+          <button
+            type="button"
+            onClick={onToggleActivityFilter}
+            aria-pressed={activityFilterActive}
+            aria-label={
+              activityError
+                ? "Aktivitäten aktuell nicht verfügbar"
+                : `Aktivitäten filtern, ${activityCount} Pins`
+            }
+            disabled={activityError || activityLoading || !onToggleActivityFilter}
+            className="flex shrink-0 cursor-pointer items-center gap-1.5 whitespace-nowrap rounded-full px-3 py-1.5 text-xs font-semibold transition-colors disabled:cursor-default disabled:opacity-70"
+            style={{
+              background: activityFilterActive ? "#082f49" : "#1e293b",
+              border: `1.5px solid ${
+                activityFilterActive ? "#38bdf8" : "#334155"
+              }`,
+              color: activityFilterActive ? "#7dd3fc" : "#94a3b8",
+            }}
+          >
+            <span
+              className="inline-block h-2.5 w-2.5 rounded-full"
+              style={{ background: activityError ? "#64748b" : "#38bdf8" }}
+            />
+            {activityLabel}
+          </button>
+        )}
         <button
           type="button"
           onClick={onReset}

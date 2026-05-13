@@ -5,6 +5,7 @@ import dynamic from "next/dynamic";
 import { useQuarter } from "@/lib/quarters";
 import { useUserRole } from "@/lib/quarters/hooks";
 import { useMapStatuses } from "@/lib/hooks/useMapStatuses";
+import { useMapActivityPins } from "@/lib/hooks/useMapActivityPins";
 import { useSubscription } from "@/lib/care/hooks/useSubscription";
 import { MapFilterBar } from "@/components/MapFilterBar";
 import { HouseInfoPanel } from "@/components/HouseInfoPanel";
@@ -12,6 +13,7 @@ import type { GeoMapHouseData } from "@/lib/map-houses";
 import { MAP_STATUS_META } from "@/lib/map-statuses";
 import type { UserContext } from "@/lib/feature-flags";
 import type { MapActivityPin } from "@/lib/map-activity-pins";
+import type { UserUiMode } from "@/lib/user-modes";
 
 // Leaflet muss client-side geladen werden (kein SSR)
 const LeafletMapInner = dynamic(() => import("./LeafletMapInner"), {
@@ -21,11 +23,15 @@ const LeafletMapInner = dynamic(() => import("./LeafletMapInner"), {
 interface LeafletKarteProps {
   quarterId?: string;
   activityPins?: MapActivityPin[];
+  activityMode?: UserUiMode;
+  loadActivityPins?: boolean;
 }
 
 export function LeafletKarte({
   quarterId: quarterIdProp,
   activityPins = [],
+  activityMode,
+  loadActivityPins = true,
 }: LeafletKarteProps) {
   const { currentQuarter } = useQuarter();
   const { role } = useUserRole();
@@ -41,9 +47,22 @@ export function LeafletKarte({
   );
 
   const [filter, setFilter] = useState<string>("all");
+  const [showActivities, setShowActivities] = useState(true);
   const [selectedHouse, setSelectedHouse] = useState<GeoMapHouseData | null>(
     null,
   );
+  const shouldLoadActivityPins = loadActivityPins && activityPins.length === 0;
+  const {
+    pins: fetchedActivityPins,
+    loading: activityLoading,
+    error: activityError,
+  } = useMapActivityPins({
+    enabled: shouldLoadActivityPins,
+    mode: activityMode,
+  });
+  const allActivityPins =
+    activityPins.length > 0 ? activityPins : fetchedActivityPins;
+  const visibleActivityPins = showActivities ? allActivityPins : [];
   const userCtx: UserContext = useMemo(
     () => ({
       role,
@@ -81,7 +100,10 @@ export function LeafletKarte({
     [statuses, occupiedIds],
   );
 
-  const handleReset = useCallback(() => setFilter("all"), []);
+  const handleReset = useCallback(() => {
+    setFilter("all");
+    setShowActivities(true);
+  }, []);
   const handleHouseClick = useCallback(
     (house: GeoMapHouseData) => setSelectedHouse(house),
     [],
@@ -101,10 +123,13 @@ export function LeafletKarte({
         counts.orange > 0
           ? `${counts.orange} ${MAP_STATUS_META.orange.chipLabel}`
           : null,
+        allActivityPins.length > 0
+          ? `${allActivityPins.length} Aktivitäten`
+          : null,
       ]
         .filter(Boolean)
         .join(" · "),
-    [counts, occupiedIds],
+    [allActivityPins.length, counts, occupiedIds],
   );
 
   // Sichtbare Häuser filtern
@@ -139,9 +164,14 @@ export function LeafletKarte({
     <div className="flex flex-col gap-3 lg:gap-4">
       <MapFilterBar
         counts={counts}
+        activityCount={allActivityPins.length}
+        activityError={Boolean(activityError)}
+        activityFilterActive={showActivities}
+        activityLoading={activityLoading}
         filter={filter}
         onFilterChange={setFilter}
         onReset={handleReset}
+        onToggleActivityFilter={() => setShowActivities((current) => !current)}
         quarterName={currentQuarter?.name ?? "Quartier"}
       />
 
@@ -168,7 +198,7 @@ export function LeafletKarte({
           residentCounts={residentCounts}
           userCtx={userCtx}
           onHouseClick={handleHouseClick}
-          activityPins={activityPins}
+          activityPins={visibleActivityPins}
         />
       </div>
 

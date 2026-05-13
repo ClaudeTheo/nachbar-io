@@ -1,28 +1,26 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 
-import type { MapActivityPin, MapActivityPinType } from "@/lib/map-activity-pins";
+import type {
+  MapActivityPin,
+  MapActivityPinColorState,
+  MapActivityPinLocationPrecision,
+  MapActivityPinLocationScope,
+  MapActivityPinSource,
+  MapActivityPinType,
+  MapActivityPinUrgency,
+  MapActivityPinVisibility,
+} from "@/lib/map-activity-pins";
 import { isUserUiMode, type UserUiMode } from "@/lib/user-modes";
 
-export type MapActivityLocationPrecision =
-  | "exact"
-  | "approx_50m"
-  | "approx_quarter";
-
-export type MapActivityVisibility =
-  | "public"
-  | "youth_safe"
-  | "adult"
-  | "caregiver"
-  | "own";
-
-export type MapActivitySource =
-  | "alerts"
-  | "events"
-  | "help_requests"
-  | "youth_tasks";
+export type MapActivityLocationPrecision = MapActivityPinLocationPrecision;
+export type MapActivityVisibility = MapActivityPinVisibility;
+export type MapActivitySource = MapActivityPinSource;
 
 export interface MapActivityFeedCandidate extends MapActivityPin {
   locationPrecision: MapActivityLocationPrecision;
+  urgency: MapActivityPinUrgency;
+  colorState: MapActivityPinColorState;
+  locationScope: MapActivityPinLocationScope;
   visibility: MapActivityVisibility;
   source: MapActivitySource;
   startsAt?: string;
@@ -56,6 +54,12 @@ export interface AlertActivityRow {
 }
 
 const ACTIVE_ALERT_STATUSES = new Set(["open", "help_coming"]);
+const CRITICAL_ALERT_CATEGORIES = new Set([
+  "fire",
+  "health_concern",
+  "medical",
+  "crime",
+]);
 const CAREGIVER_ROLES = new Set([
   "caregiver",
   "org_admin",
@@ -141,6 +145,9 @@ function sanitizePinForContext(
     description: pin.description,
     approximate: pin.approximate ?? !canUseExactLocation,
     locationPrecision,
+    urgency: pin.urgency,
+    colorState: pin.colorState,
+    locationScope: pin.locationScope,
     visibility: pin.visibility,
     source: pin.source,
     startsAt: pin.startsAt,
@@ -161,6 +168,13 @@ function mapAlertCategoryToPinType(_category: string | null): MapActivityPinType
   return "warning";
 }
 
+function isEmergencyAlert(row: AlertActivityRow): boolean {
+  return (
+    Boolean(row.is_emergency) ||
+    CRITICAL_ALERT_CATEGORIES.has(row.category ?? "")
+  );
+}
+
 export function mapAlertRowsToActivityCandidates(
   rows: AlertActivityRow[],
 ): MapActivityFeedCandidate[] {
@@ -173,6 +187,8 @@ export function mapAlertRowsToActivityCandidates(
       return [];
     }
 
+    const isEmergency = isEmergencyAlert(row);
+
     return [
       {
         id: `alert-${row.id}`,
@@ -183,6 +199,9 @@ export function mapAlertRowsToActivityCandidates(
         description: row.description?.trim() || undefined,
         approximate: true,
         locationPrecision: "approx_50m",
+        urgency: isEmergency ? "emergency" : "urgent",
+        colorState: isEmergency ? "red" : "yellow",
+        locationScope: "quarter_area",
         visibility: "public",
         source: "alerts",
         startsAt: row.created_at ?? undefined,

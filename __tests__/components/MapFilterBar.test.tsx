@@ -1,9 +1,13 @@
-import { describe, it, expect, vi } from "vitest";
-import { render, fireEvent } from "@testing-library/react";
+import { afterEach, describe, it, expect, vi } from "vitest";
+import { cleanup, render, fireEvent } from "@testing-library/react";
 import { MapFilterBar } from "@/components/MapFilterBar";
 
 describe("MapFilterBar", () => {
   const defaultCounts = { green: 3, red: 1, yellow: 2, blue: 0, orange: 0 };
+
+  afterEach(() => {
+    cleanup();
+  });
 
   it("zeigt Quartier-Name an", () => {
     const { container } = render(
@@ -53,5 +57,29 @@ describe("MapFilterBar", () => {
     expect(resetButton).toBeDefined();
     fireEvent.click(resetButton!);
     expect(resetHandler).toHaveBeenCalled();
+  });
+
+  it("zeigt einen eigenen Aktivitaetsfilter fuer Activity-Pins", () => {
+    const activityHandler = vi.fn();
+    const { getByRole } = render(
+      <MapFilterBar
+        activityCount={4}
+        activityFilterActive={true}
+        counts={defaultCounts}
+        filter="all"
+        onFilterChange={vi.fn()}
+        onReset={vi.fn()}
+        onToggleActivityFilter={activityHandler}
+        quarterName="Test"
+      />
+    );
+
+    const button = getByRole("button", {
+      name: "Aktivitäten filtern, 4 Pins",
+    });
+
+    fireEvent.click(button);
+
+    expect(activityHandler).toHaveBeenCalled();
   });
 });

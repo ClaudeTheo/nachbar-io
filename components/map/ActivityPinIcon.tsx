@@ -3,7 +3,9 @@
 import { useId, type SVGProps } from "react";
 
 import {
+  getMapActivityPinColorDefinition,
   getMapActivityPinDefinition,
+  type MapActivityPinColorState,
   type MapActivityPinType,
 } from "@/lib/map-activity-pins";
 
@@ -12,16 +14,22 @@ interface ActivityPinIconProps
   type: MapActivityPinType;
   size?: number;
   title?: string;
+  colorState?: MapActivityPinColorState;
 }
 
 export function ActivityPinIcon({
   type,
   size = 64,
   title,
+  colorState,
   className,
   ...svgProps
 }: ActivityPinIconProps) {
   const definition = getMapActivityPinDefinition(type);
+  const colorDefinition = getMapActivityPinColorDefinition(
+    colorState,
+    definition.type,
+  );
   const rawId = useId().replace(/:/g, "");
   const glowId = `activity-pin-glow-${rawId}`;
   const label = title ?? `${definition.label} auf der Quartierskarte`;
@@ -34,6 +42,7 @@ export function ActivityPinIcon({
       aria-label={label}
       className={className}
       data-activity-pin-type={definition.type}
+      data-activity-pin-color-state={colorDefinition.state}
       data-category={definition.category}
       width={size}
       height={height}
@@ -55,14 +64,14 @@ export function ActivityPinIcon({
             dx="0"
             dy="0"
             stdDeviation="6"
-            floodColor={definition.color}
+            floodColor={colorDefinition.color}
             floodOpacity="0.95"
           />
           <feDropShadow
             dx="0"
             dy="0"
             stdDeviation="16"
-            floodColor={definition.color}
+            floodColor={colorDefinition.color}
             floodOpacity="0.5"
           />
         </filter>
@@ -71,7 +80,7 @@ export function ActivityPinIcon({
       <g filter={`url(#${glowId})`}>
         <path
           d="M48 4C73 4 92 23 92 48C92 79 65 98 48 124C31 98 4 79 4 48C4 23 23 4 48 4Z"
-          fill={definition.color}
+          fill={colorDefinition.color}
           stroke="white"
           strokeWidth="5.5"
           strokeLinejoin="round"

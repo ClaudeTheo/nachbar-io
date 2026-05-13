@@ -93,6 +93,7 @@ function ActivityPinMarker({ pin }: { pin: MapActivityPin }) {
       L.divIcon({
         className: "quartier-activity-pin-leaflet-marker",
         html: createMapActivityPinSvgMarkup(pin.type, {
+          colorState: pin.colorState,
           size: ACTIVITY_PIN_ICON_SIZE,
           title: pin.title,
         }),
@@ -100,7 +101,7 @@ function ActivityPinMarker({ pin }: { pin: MapActivityPin }) {
         iconAnchor: [ACTIVITY_PIN_ICON_SIZE / 2, ACTIVITY_PIN_ICON_HEIGHT - 3],
         popupAnchor: [0, -ACTIVITY_PIN_ICON_HEIGHT + 16],
       }),
-    [pin.title, pin.type],
+    [pin.colorState, pin.title, pin.type],
   );
 
   return (
@@ -118,6 +119,14 @@ function ActivityPinMarker({ pin }: { pin: MapActivityPin }) {
             <p className="mt-2 inline-flex rounded-full bg-slate-100 px-2 py-1 text-[11px] font-medium text-slate-600">
               Ungefährer Bereich
             </p>
+          )}
+          {pin.href && (
+            <a
+              className="mt-2 inline-flex text-xs font-semibold text-blue-600 underline"
+              href={pin.href}
+            >
+              Details öffnen
+            </a>
           )}
         </div>
       </Popup>

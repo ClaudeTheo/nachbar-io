@@ -1,7 +1,7 @@
 # Map Activity Pins - Produkt- und Umsetzungsplan
 
 **Datum:** 2026-05-13  
-**Status:** Lokal teilweise umgesetzt: Pin-Familie, Leaflet-Layer, lokale Preview und sichere Feed-API sind committed; echte Kartenanbindung ist der naechste Schritt
+**Status:** Lokal umgesetzt: Pin-Familie, Leaflet-Layer, lokale Preview, sichere Feed-API und echte Leaflet-Kartenanbindung; weitere Quellen bleiben bis belastbare Koordinaten vorhanden sind gesperrt
 **Scope:** Interaktive QuartierApp-Pins auf der bestehenden OpenStreetMap/Leaflet-Karte fuer alle vier UI-Modi
 
 ## Founder-Entscheidung
@@ -58,6 +58,7 @@ Lokale Commits bis Stand 2026-05-13:
 11f954f feat(map): render activity pins on leaflet
 e9dcf2a feat(map): preview activity pins on house anchors
 3515e13 feat(map): add secure activity feed api
+Arbeitsstand 2026-05-13: Feed-Anbindung an Leaflet lokal umgesetzt und in dieser Welle verifiziert.
 ```
 
 Umgesetzt:
@@ -70,10 +71,12 @@ Umgesetzt:
 - `lib/map-activity-preview.ts`: zehn statische, anonymisierte Haus-Anker fuer die lokale Preview.
 - `app/api/map/activities/route.ts`: authentifizierte Read-only Feed-API.
 - `lib/map-activity-feed.ts`: serverseitige Modus-/Sichtbarkeitsfilter und erster Alerts-Loader.
+- `lib/hooks/useMapActivityPins.ts`: defensiver Client-Hook fuer `/api/map/activities`.
+- `LeafletKarte.tsx`: laedt den Feed und reicht erlaubte Pins an Leaflet weiter.
+- `MapFilterBar.tsx`: eigener Aktivitaetsfilter zum Ein-/Ausblenden der Activity-Pins.
 
 Noch nicht umgesetzt:
 
-- Die echte App-Karte laedt `/api/map/activities` noch nicht automatisch.
 - `events`, `help_requests` und `youth_tasks` liefern noch keine belastbaren Activity-Koordinaten, weil in den vorhandenen Tabellen keine passenden Standortspalten fuer diese Use-Cases existieren.
 - Dashboard-Thumbnail und Jugend-Start sind noch nicht an den Activity-Feed angeschlossen.
 - Keine Prod-DB-Migration, kein Prod-Write, kein Push/Deploy in dieser Welle.
@@ -350,7 +353,7 @@ Keine DB-Aenderung, keine echten Eventdaten.
 
 Keine DB-Aenderung.
 
-### M3 - Feed in echte Leaflet-Karte einbinden - next
+### M3 - Feed in echte Leaflet-Karte einbinden - done
 
 - `LeafletKarte.tsx` oder ein kleiner Hook laedt `/api/map/activities?mode=...`.
 - Geladene Pins werden als `activityPins` an `LeafletMapInner` gegeben.
@@ -398,12 +401,11 @@ Wenn neue Standortfelder oder `map_activities` noetig werden, gilt rote Zone.
 
 ## Naechster sicherer Schritt
 
-M3 lokal umsetzen:
+M4/M5 vorbereiten, aber ohne rote Zone:
 
-1. Kleinen Client-Hook fuer `/api/map/activities` bauen.
-2. Hook in `LeafletKarte.tsx` verdrahten.
-3. Fehler-/Leerzustand defensiv halten.
-4. Bestehende lokale Preview unveraendert lassen.
-5. Tests fuer API-Fetch, Fallback und Weitergabe an `LeafletMapInner`.
+1. Keine weitere Datenquelle anbinden, solange keine belastbaren Koordinaten vorhanden sind.
+2. Fuer `events`, `help_requests`, `youth_tasks` zuerst Datenmodell/Location-Felder file-first planen.
+3. Modus-spezifische Darstellung lokal vorbereiten: Jugend frisch, Aktiv normal, Komfort ruhig, Einfach reduziert.
+4. Dashboard-/Jugend-Start erst anbinden, wenn die Hauptkarte stabil geprueft ist.
 
 Kein Push/Deploy und keine Prod-DB-Aktion ohne Founder-Go.

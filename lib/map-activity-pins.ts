@@ -19,12 +19,51 @@ export type MapActivityPinCategory =
   | "info"
   | "warning";
 
+export type MapActivityPinUrgency =
+  | "normal"
+  | "urgent"
+  | "emergency"
+  | "status";
+
+export type MapActivityPinColorState = "green" | "yellow" | "red" | "blue";
+
+export type MapActivityPinLocationScope =
+  | "home"
+  | "meeting_point"
+  | "quarter_area"
+  | "external_place";
+
+export type MapActivityPinLocationPrecision =
+  | "exact"
+  | "approx_50m"
+  | "approx_quarter";
+
+export type MapActivityPinVisibility =
+  | "public"
+  | "youth_safe"
+  | "adult"
+  | "caregiver"
+  | "own";
+
+export type MapActivityPinSource =
+  | "alerts"
+  | "events"
+  | "help_requests"
+  | "youth_tasks";
+
 export interface MapActivityPinDefinition {
   type: MapActivityPinType;
   label: string;
   shortLabel: string;
   description: string;
   category: MapActivityPinCategory;
+  color: `#${string}`;
+  glowColor: string;
+}
+
+export interface MapActivityPinColorDefinition {
+  state: MapActivityPinColorState;
+  label: string;
   color: `#${string}`;
   glowColor: string;
 }
@@ -37,6 +76,14 @@ export interface MapActivityPin {
   title: string;
   description?: string;
   approximate?: boolean;
+  locationPrecision?: MapActivityPinLocationPrecision;
+  urgency?: MapActivityPinUrgency;
+  colorState?: MapActivityPinColorState;
+  locationScope?: MapActivityPinLocationScope;
+  visibility?: MapActivityPinVisibility;
+  source?: MapActivityPinSource;
+  startsAt?: string;
+  href?: string;
 }
 
 export const MAP_ACTIVITY_PIN_DEFINITIONS: Record<
@@ -135,6 +182,36 @@ export const MAP_ACTIVITY_PIN_DEFINITIONS: Record<
   },
 };
 
+export const MAP_ACTIVITY_PIN_COLOR_STATES: Record<
+  MapActivityPinColorState,
+  MapActivityPinColorDefinition
+> = {
+  green: {
+    state: "green",
+    label: "Normal",
+    color: "#8AC65A",
+    glowColor: "rgba(138, 198, 90, 0.72)",
+  },
+  yellow: {
+    state: "yellow",
+    label: "Dringend",
+    color: "#F0B21B",
+    glowColor: "rgba(240, 178, 27, 0.76)",
+  },
+  red: {
+    state: "red",
+    label: "Notfall",
+    color: "#EF4444",
+    glowColor: "rgba(239, 68, 68, 0.78)",
+  },
+  blue: {
+    state: "blue",
+    label: "Sonderstatus",
+    color: "#43B7E7",
+    glowColor: "rgba(67, 183, 231, 0.74)",
+  },
+};
+
 export function isMapActivityPinType(
   value: unknown,
 ): value is MapActivityPinType {
@@ -144,12 +221,47 @@ export function isMapActivityPinType(
   );
 }
 
+export function isMapActivityPinColorState(
+  value: unknown,
+): value is MapActivityPinColorState {
+  return (
+    typeof value === "string" &&
+    Object.hasOwn(MAP_ACTIVITY_PIN_COLOR_STATES, value)
+  );
+}
+
 export function getMapActivityPinDefinition(
   value: unknown,
 ): MapActivityPinDefinition {
   return isMapActivityPinType(value)
     ? MAP_ACTIVITY_PIN_DEFINITIONS[value]
     : MAP_ACTIVITY_PIN_DEFINITIONS.learning;
+}
+
+export function getMapActivityPinColorDefinition(
+  value: unknown,
+  fallbackType: MapActivityPinType,
+): MapActivityPinColorDefinition {
+  if (isMapActivityPinColorState(value)) {
+    return MAP_ACTIVITY_PIN_COLOR_STATES[value];
+  }
+
+  const definition = getMapActivityPinDefinition(fallbackType);
+  const fallbackState =
+    definition.category === "warning"
+      ? "red"
+      : definition.category === "active"
+        ? "yellow"
+        : definition.category === "info"
+          ? "blue"
+          : "green";
+
+  return {
+    state: fallbackState,
+    label: definition.label,
+    color: definition.color,
+    glowColor: definition.glowColor,
+  };
 }
 
 const MAP_ACTIVITY_PIN_SYMBOL_MARKUP: Record<MapActivityPinType, string> = {
@@ -230,9 +342,14 @@ export function createMapActivityPinSvgMarkup(
   options: {
     size?: number;
     title?: string;
+    colorState?: MapActivityPinColorState;
   } = {},
 ): string {
   const definition = getMapActivityPinDefinition(type);
+  const colorDefinition = getMapActivityPinColorDefinition(
+    options.colorState,
+    definition.type,
+  );
   const size = Math.max(24, Math.round(options.size ?? 52));
   const height = Math.round((size * 4) / 3);
   const innerGlow = Math.max(2, Math.round(size * 0.09));
@@ -243,9 +360,9 @@ export function createMapActivityPinSvgMarkup(
   const symbol = MAP_ACTIVITY_PIN_SYMBOL_MARKUP[definition.type];
 
   return [
-    `<svg role="img" aria-label="${label}" data-activity-pin-type="${definition.type}" width="${size}" height="${height}" viewBox="0 0 96 128" fill="none" xmlns="http://www.w3.org/2000/svg" style="display:block;overflow:visible;filter:drop-shadow(0 0 ${innerGlow}px ${definition.color}) drop-shadow(0 0 ${outerGlow}px ${definition.color});">`,
+    `<svg role="img" aria-label="${label}" data-activity-pin-type="${definition.type}" data-activity-pin-color-state="${colorDefinition.state}" width="${size}" height="${height}" viewBox="0 0 96 128" fill="none" xmlns="http://www.w3.org/2000/svg" style="display:block;overflow:visible;filter:drop-shadow(0 0 ${innerGlow}px ${colorDefinition.color}) drop-shadow(0 0 ${outerGlow}px ${colorDefinition.color});">`,
     `<title>${label}</title>`,
-    `<path d="M48 4C73 4 92 23 92 48C92 79 65 98 48 124C31 98 4 79 4 48C4 23 23 4 48 4Z" fill="${definition.color}" stroke="white" stroke-width="5.5" stroke-linejoin="round"/>`,
+    `<path d="M48 4C73 4 92 23 92 48C92 79 65 98 48 124C31 98 4 79 4 48C4 23 23 4 48 4Z" fill="${colorDefinition.color}" stroke="white" stroke-width="5.5" stroke-linejoin="round"/>`,
     '<circle cx="48" cy="47" r="30" fill="white" opacity="0.1"/>',
     `<g data-activity-pin-symbol="${definition.type}" stroke="white" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" fill="none" transform="translate(48 45)">`,
     symbol,

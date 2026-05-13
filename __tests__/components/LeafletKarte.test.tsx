@@ -1,4 +1,22 @@
-import { describe, it, expect, vi } from "vitest";
+import { cleanup, render, screen } from "@testing-library/react";
+import { afterEach, describe, it, expect, vi } from "vitest";
+
+const hookMocks = vi.hoisted(() => ({
+  useMapActivityPins: vi.fn(() => ({
+    pins: [
+      {
+        id: "pin-1",
+        type: "meeting",
+        lat: 47.5668,
+        lng: 8.0632,
+        title: "Quartier-Treff",
+        colorState: "green",
+      },
+    ],
+    loading: false,
+    error: null,
+  })),
+}));
 
 // Mock react-leaflet (SSR-problematisch)
 vi.mock("react-leaflet", () => ({
@@ -21,6 +39,14 @@ vi.mock("@/lib/quarters", () => ({
   }),
 }));
 
+vi.mock("@/lib/quarters/hooks", () => ({
+  useUserRole: () => ({ role: "resident" }),
+}));
+
+vi.mock("@/lib/care/hooks/useSubscription", () => ({
+  useSubscription: () => ({ subscription: { plan: "free" } }),
+}));
+
 vi.mock("@/lib/hooks/useMapStatuses", () => ({
   useMapStatuses: () => ({
     houses: [],
@@ -33,16 +59,43 @@ vi.mock("@/lib/hooks/useMapStatuses", () => ({
   }),
 }));
 
+vi.mock("@/lib/hooks/useMapActivityPins", () => ({
+  useMapActivityPins: hookMocks.useMapActivityPins,
+}));
+
 vi.mock("next/dynamic", () => ({
   default: () => {
-    const Component = () => <div data-testid="leaflet-inner">Map</div>;
+    const Component = ({ activityPins = [] }: { activityPins?: unknown[] }) => (
+      <div data-testid="leaflet-inner" data-pin-count={activityPins.length}>
+        Map
+      </div>
+    );
     return Component;
   },
 }));
 
 describe("LeafletKarte", () => {
+  afterEach(() => {
+    cleanup();
+    hookMocks.useMapActivityPins.mockClear();
+  });
+
   it("exportiert die Komponente", async () => {
     const mod = await import("@/components/LeafletKarte");
     expect(mod.LeafletKarte).toBeDefined();
+  });
+
+  it("reicht geladene Activity-Pins an die Leaflet-Karte weiter", async () => {
+    const { LeafletKarte } = await import("@/components/LeafletKarte");
+
+    render(<LeafletKarte />);
+
+    expect(screen.getByTestId("leaflet-inner")).toHaveAttribute(
+      "data-pin-count",
+      "1",
+    );
+    expect(hookMocks.useMapActivityPins).toHaveBeenCalledWith(
+      expect.objectContaining({ enabled: true }),
+    );
   });
 });

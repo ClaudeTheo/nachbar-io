@@ -66,6 +66,18 @@ describe("map activity pins", () => {
     expect(markup).not.toContain("⚽");
   });
 
+  it("ueberschreibt die Farbe aus dem fachlichen Zustand statt aus dem Symbol", () => {
+    const markup = createMapActivityPinSvgMarkup("mowing", {
+      colorState: "yellow",
+      title: "Rasenhilfe dringend",
+    });
+
+    expect(markup).toContain('data-activity-pin-type="mowing"');
+    expect(markup).toContain('data-activity-pin-color-state="yellow"');
+    expect(markup).toContain('fill="#F0B21B"');
+    expect(markup).not.toContain('fill="#83B54F"');
+  });
+
   it("escaped nutzergesteuerte Titel im SVG-Markup", () => {
     const markup = createMapActivityPinSvgMarkup("meeting", {
       title: `Treff <script>alert("x")</script>`,

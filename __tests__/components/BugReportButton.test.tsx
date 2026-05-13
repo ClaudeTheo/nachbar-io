@@ -156,24 +156,21 @@ describe('BugReportButton', () => {
     expect(fab.className).toContain('fab-visible');
   });
 
-  it('versteckt den FAB auf kleinen Viewports im ersten Screen und zeigt ihn beim Zurückscrollen aus tieferen Bereichen', () => {
+  it('ist auf allen Viewports und Scroll-Positionen immer sichtbar (kein Scroll-Hide, Founder 2026-05-13)', () => {
+    // Bug-Report-Button soll immer erreichbar sein — kein verstecken beim Scrollen.
     setViewportWidth(390);
     render(<BugReportButton />);
 
     const fab = screen.getByTestId('bug-report-fab');
-    expect(fab.className).toContain('fab-hidden');
+    expect(fab.className).toContain('fab-visible');
 
     setScrollY(420);
-    fireEvent.scroll(window);
-    expect(fab.className).toContain('fab-hidden');
-
-    setScrollY(360);
     fireEvent.scroll(window);
     expect(fab.className).toContain('fab-visible');
 
     setScrollY(100);
     fireEvent.scroll(window);
-    expect(fab.className).toContain('fab-hidden');
+    expect(fab.className).toContain('fab-visible');
   });
 
   it('oeffnet Sheet bei Klick auf FAB', () => {

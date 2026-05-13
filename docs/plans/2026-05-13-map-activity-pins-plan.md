@@ -82,6 +82,13 @@ Noch nicht umgesetzt:
 
 Production-Pins sollen keine Emojis sein. Sie sollen als eigene SVG/Icon-Komponenten gebaut werden.
 
+Wichtig: Nutzer waehlen nicht selbst Farbe oder Symbol. Die App leitet Pin-Typ, Farbe, Glow und Sichtbarkeit automatisch aus der Fachlogik ab:
+
+- Kategorie bestimmt das Symbol, z.B. Rasenmaehen, Einkauf, Lernen, Sport, Treffen, Warnung.
+- Dringlichkeit bestimmt die Grundfarbe.
+- Ortstyp bestimmt die Koordinate: Haus/Haushaltsbereich, Treffpunkt, Quartiersbereich oder bewusst externer Treffpunkt.
+- Berechtigung bestimmt, ob der Pin ueberhaupt ausgeliefert wird und ob er exakt oder ungefaehr erscheint.
+
 Form:
 
 - Tropfen-Pin wie im Hero-Bild.
@@ -92,15 +99,25 @@ Form:
 - Auf der echten Karte kompakt: Leaflet-Marker `28x37`, damit Haeuser und Strassen nicht verdeckt werden.
 - Kleine Label-Chips optional nur bei Hover/Popup, nicht dauerhaft auf voller Karte.
 
-Farben:
+Farben und Zustandslogik:
 
-| Kategoriegruppe | Farbe | Verwendung |
+| Zustand | Farbe | Verwendung |
 |---|---|---|
-| Community / Hilfe / Garten | Gruen | sichere Hilfe, Garten, Treffen |
-| Aktiv / Event / Aufgabe | Amber | Sport, Event, Einkauf, Aktion |
-| Info / Begleitung / Digital | Blau | Technik, Begleitung, Info |
-| Warnung / kritisch | Rot | Warnungen, Notfallhinweise |
+| Normal | Gruen | normale Hilfe, normales Ereignis, Treff, Lernen, Sport, Rasenmaehen ohne Eile |
+| Dringend | Gelb / Amber | zeitnah wichtig, z.B. Hilfe wird bald gebraucht oder Termin laeuft bald |
+| Unfall / Notfall | Rot | ausschliesslich Unfall, akuter Notfall, echte Gefahr |
+| Sonderstatus | Blau | Urlaub/Abwesenheit, Info/Begleitung/Digitalstatus, wenn kein Notfall |
 | Spezial / Bonus spaeter | Violett optional | Badges, Challenges, Mentoring |
+
+Rot ist streng reserviert. Eine dringende Einkaufshilfe oder ein eiliger Rasenmaeh-Wunsch wird gelb, nicht rot.
+
+Beispiele:
+
+- Rasenmaehen normal: Symbol Rasenmaeher, Farbe gruen, Haus-/Haushaltsbereich.
+- Rasenmaehen dringend: Symbol Rasenmaeher, Farbe gelb, Haus-/Haushaltsbereich.
+- Unfall: Symbol Warnung/Notfall, Farbe rot, Notfallregeln und 112/110-Banner zuerst.
+- Urlaub/Abwesenheit: Sonderstatus blau, wie bestehende Hausstatus-Logik.
+- Outdoor-Treff: Symbol Treffen/Sport/Lernen, Farbe gruen oder gelb nach Dringlichkeit, Treffpunkt-Koordinate.
 
 ## Erste 10 Pins zur Stil-Freigabe
 
@@ -201,6 +218,9 @@ type MapActivityPin = {
   lng: number;
   approximate?: boolean;
   locationPrecision: "exact" | "approx_50m" | "approx_quarter";
+  urgency: "normal" | "urgent" | "emergency" | "status";
+  colorState: "green" | "yellow" | "red" | "blue";
+  locationScope: "home" | "meeting_point" | "quarter_area" | "external_place";
   visibility: "public" | "youth_safe" | "adult" | "caregiver" | "own";
   source: "alerts" | "events" | "help_requests" | "youth_tasks";
   startsAt?: string;
@@ -216,6 +236,13 @@ Bei Jugend und sensiblen Hilfen:
 - Nicht-exakte Koordinaten werden vor Auslieferung gerundet.
 - Keine Namen/Telefonnummern/Adressen im Feed.
 - Detailseite prueft Berechtigung erneut.
+
+Standortregeln:
+
+- `home`: Ereignis gehoert zu einem Haushalt/Haus, z.B. Rasenmaehen, Einkaufshilfe, Paket, Urlaub. Standard ist Haus/Haushaltsbereich aus `households`/`map_houses`, nicht Freitext.
+- `meeting_point`: bewusst gewaehlter Treffpunkt, z.B. Lernen, Sport, Jugendtreff, Quartierabend.
+- `quarter_area`: bewusst ungefaehr, wenn genaue Koordinate nicht freigegeben oder fachlich nicht sinnvoll ist.
+- `external_place`: erlaubter Treffpunkt ausserhalb des Pilotquartiers, z.B. Sportplatz, Rhein, Holzbruecke, Muensterplatz. Nur fuer Events/Treffpunkte, nicht fuer private Haushaltsdaten.
 
 ## Technischer Ansatz
 
@@ -263,6 +290,14 @@ Aktueller Datenstand:
 - `help_requests` haben aktuell keine direkte Standortspalte.
 - `youth_tasks` haben aktuell keine Standortspalte.
 - Fuer Hausbezug ist der vorhandene Weg `households`/`map_houses` mit `position_verified`, `map_house_id` und LGL-BW-WFS massgeblich.
+
+Ziel-Regellogik fuer spaetere Quellen:
+
+- `help_requests.category = garden` und normale Dringlichkeit -> `type=mowing` oder `gardening`, `colorState=green`, `locationScope=home`.
+- Gleiche Hilfe mit dringender Dringlichkeit -> `colorState=yellow`.
+- Unfall/echter Notfall -> `type=warning`, `colorState=red`, separate Notfallregeln.
+- Urlaub/Abwesenheit -> `colorState=blue`, kein Activity-Hilfe-Pin, sondern Status/Info-Pin.
+- Event mit Treffpunkt -> `locationScope=meeting_point` oder `external_place`, wenn bewusst ausserhalb des Quartiers.
 
 Wenn neue Tabelle noetig wird:
 
@@ -327,9 +362,10 @@ Keine DB-Aenderung noetig, solange nur die bestehende API gelesen wird.
 
 ### M4 - Weitere Quellen nur mit belastbarer Location
 
-- `events`: erst anbinden, wenn Koordinaten/Treffpunkte sauber vorliegen.
-- `help_requests`: erst anbinden, wenn `map_house_id`, Treffpunkt oder bewusst ungefaehrer Bereich verfuegbar ist.
+- `events`: erst anbinden, wenn Koordinaten/Treffpunkte sauber vorliegen; externe Treffpunkte sind erlaubt, wenn bewusst als Event-/Treffpunkt gesetzt.
+- `help_requests`: erst anbinden, wenn `map_house_id`, Treffpunkt oder bewusst ungefaehrer Bereich verfuegbar ist; Farbe entsteht aus Dringlichkeit, nicht aus Nutzerauswahl.
 - `youth_tasks`: nur jugendgeeignet/moderiert und nur mit sicherer Standortpraezision.
+- Status-Pins wie Urlaub/Abwesenheit bleiben blau und duerfen nicht mit Notfallrot vermischt werden.
 - Keine Fake-Genauigkeit.
 
 Wenn neue Standortfelder oder `map_activities` noetig werden, gilt rote Zone.
@@ -353,6 +389,8 @@ Wenn neue Standortfelder oder `map_activities` noetig werden, gilt rote Zone.
 - QuartierApp-Pins erscheinen als eigener Layer in Leaflet.
 - Die Pin-Familie entspricht dem Favoritenbild, aber auf der Karte kompakt.
 - Die ersten 10 Pin-Typen sind konsistent und getestet.
+- Nutzer waehlen Farbe/Symbol nicht manuell; Pin-Typ und Farbe entstehen automatisch aus Kategorie, Dringlichkeit, Ortstyp und Berechtigung.
+- Gruen = normal, Gelb = dringend, Rot = nur Unfall/Notfall, Blau = Sonderstatus wie Urlaub/Abwesenheit.
 - Alle vier Modi nutzen dieselbe Datenbasis, aber andere Detailtiefe/Darstellung.
 - Jugendliche erhalten keine sensiblen Senior-/Care-Daten aus dem Activity-Feed.
 - Nicht erlaubte Pins werden serverseitig gar nicht ausgeliefert.

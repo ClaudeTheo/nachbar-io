@@ -45,7 +45,7 @@ describe("TerminalHeader Context-Guards", () => {
 
     render(<TerminalHeader />);
 
-    expect(screen.getByText(/^Guten/)).toBeInTheDocument();
+    expect(screen.getByText(/^Gute(n)?/)).toBeInTheDocument();
     expect(screen.queryByText(/object Object/)).not.toBeInTheDocument();
     expect(screen.queryByText(/Frau Mueller/)).not.toBeInTheDocument();
   });

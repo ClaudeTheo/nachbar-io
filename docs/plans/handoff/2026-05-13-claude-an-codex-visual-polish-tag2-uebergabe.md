@@ -114,6 +114,21 @@ Founder: "Das braucht es nicht." `NavPill` aus `app/(app)/layout.tsx` entfernt (
 - **Founder:** Thomas Theobald, `thomasth@gmx.de`
 - **Push-Zugriff:** ThomasTh1977 hat **Write-Zugriff auf ClaudeTheo/nachbar-io** — Einladung angenommen 2026-05-13. Codex kann direkt pushen und deployen ohne Umweg über Claude.
 
+## Bash-Fix (2026-05-13 Abend)
+
+Codex meldete: *"Auf diesem Windows-System ist kein bash im Pfad"*
+
+**Fix:** `~/.claude/settings.json` wurde um `"env"` erweitert:
+
+```json
+"env": {
+  "PATH": "C:\\Program Files\\Git\\usr\\bin;C:\\Program Files\\Git\\bin;%PATH%"
+}
+```
+
+`bash.exe` liegt unter `C:\Program Files\Git\usr\bin\bash.exe` (Git for Windows).  
+**Codex muss Claude Code einmal neu starten** (Fenster schließen + neu öffnen), damit die PATH-Änderung wirkt.
+
 ## Kontext-Files
 
 1. Diese Datei — Tag-2-Stand

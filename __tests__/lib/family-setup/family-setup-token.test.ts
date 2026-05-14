@@ -2,7 +2,9 @@ import { describe, expect, it } from "vitest";
 
 import {
   canClaimInvitation,
+  createShortCode,
   createSetupToken,
+  hashShortCode,
   hashSetupToken,
   normalizeShortCode,
   setupExpiresAt,
@@ -32,6 +34,15 @@ describe("family setup token primitives", () => {
   it("normalizes short codes for manual entry", () => {
     expect(normalizeShortCode(" ab-cd 12 ")).toBe("ABCD12");
     expect(normalizeShortCode("qr 9x z")).toBe("QR9XZ");
+  });
+
+  it("creates and hashes manual short codes without ambiguous characters", () => {
+    const code = createShortCode();
+
+    expect(code).toMatch(/^[A-HJ-NP-Z2-9]{8}$/);
+    expect(hashShortCode(` ${code.slice(0, 4)}-${code.slice(4)} `)).toBe(
+      hashShortCode(code),
+    );
   });
 
   it("calculates expiration timestamps from a reference date", () => {

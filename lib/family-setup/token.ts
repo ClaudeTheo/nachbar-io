@@ -3,6 +3,8 @@ import { createHash, randomBytes, timingSafeEqual } from "crypto";
 import type { ClaimableInvitation } from "./types";
 
 export const SETUP_TOKEN_BYTES = 32;
+const SHORT_CODE_CHARS = "ABCDEFGHJKMNPQRSTUVWXYZ23456789";
+const SHORT_CODE_LENGTH = 8;
 
 export function createSetupToken(): string {
   return randomBytes(SETUP_TOKEN_BYTES).toString("base64url");
@@ -26,6 +28,19 @@ export function verifySetupTokenHash(rawToken: string, expectedHash: string): bo
 
 export function normalizeShortCode(code: string): string {
   return code.toUpperCase().replace(/[^A-Z0-9]/g, "");
+}
+
+export function createShortCode(): string {
+  let code = "";
+  const bytes = randomBytes(SHORT_CODE_LENGTH);
+  for (const byte of bytes) {
+    code += SHORT_CODE_CHARS[byte % SHORT_CODE_CHARS.length];
+  }
+  return code;
+}
+
+export function hashShortCode(code: string): string {
+  return hashSetupToken(normalizeShortCode(code));
 }
 
 export function setupExpiresAt(hours: number, reference = new Date()): Date {

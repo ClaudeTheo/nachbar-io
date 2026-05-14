@@ -31,7 +31,7 @@ describe("YouthHomeSurface", () => {
     expect(within(mapSection).getByTestId("map-slot")).toBeInTheDocument();
     expect(within(mapSection).getByText("Was läuft gerade?")).toBeInTheDocument();
 
-    expect(screen.getByRole("link", { name: /Aufgaben/i })).toHaveAttribute(
+    expect(screen.getByRole("link", { name: /Missionen/i })).toHaveAttribute(
       "href",
       "/jugend/aufgaben",
     );

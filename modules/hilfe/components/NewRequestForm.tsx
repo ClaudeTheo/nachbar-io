@@ -6,6 +6,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import { HelpCategory, HELP_CATEGORY_LABELS, PRIMARY_HELP_CATEGORIES } from '@/modules/hilfe/services/types';
 import { useQuarter } from '@/lib/quarters/quarter-context';
+import { CompensationSelector } from '@/modules/hilfe/components/CompensationSelector';
 
 /** Emoji-Icons je Kategorie */
 const CATEGORY_ICONS: Partial<Record<HelpCategory, string>> = {
@@ -34,6 +35,10 @@ export function NewRequestForm({ onSuccess }: NewRequestFormProps) {
   const [category, setCategory] = useState<HelpCategory | null>(null);
   const [description, setDescription] = useState('');
   const [preferredTime, setPreferredTime] = useState('');
+  const [recognition, setRecognition] = useState({
+    recognition_type: 'free' as const,
+    suggested_recognition_cents: null as number | null,
+  });
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -58,6 +63,8 @@ export function NewRequestForm({ onSuccess }: NewRequestFormProps) {
           category,
           title: `${HELP_CATEGORY_LABELS[category]} gesucht`,
           description: fullDescription,
+          recognition_type: recognition.recognition_type,
+          suggested_recognition_cents: recognition.suggested_recognition_cents,
           type: 'need',
         }),
       });
@@ -134,6 +141,8 @@ export function NewRequestForm({ onSuccess }: NewRequestFormProps) {
           className="min-h-[48px] text-base"
         />
       </div>
+
+      <CompensationSelector value={recognition} onChange={setRecognition} />
 
       {/* Fehlermeldung */}
       {error && (

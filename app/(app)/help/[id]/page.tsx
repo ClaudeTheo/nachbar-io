@@ -13,6 +13,11 @@ import { useAuth } from "@/hooks/use-auth";
 import { createNotification } from "@/lib/notifications";
 import { HELP_CATEGORIES, HELP_SUBCATEGORIES } from "@/lib/constants";
 import type { HelpRequest } from "@/lib/supabase/types";
+import {
+  RECOGNITION_NOTICE,
+  RECOGNITION_TAX_NOTICE,
+  formatRecognition,
+} from "@/modules/hilfe/services/compensation";
 import { formatDistanceToNow } from "date-fns";
 import { de } from "date-fns/locale";
 
@@ -261,6 +266,22 @@ export default function HelpDetailPage() {
                 <User className="h-3.5 w-3.5" />
                 {request.user?.display_name ?? "Nachbar"}
               </span>
+            </div>
+
+            <div className="mt-4 rounded-lg bg-muted px-3 py-2">
+              <p className="text-sm font-semibold text-anthrazit">
+                {formatRecognition({
+                  recognition_type: request.recognition_type ?? "free",
+                  suggested_recognition_cents: request.suggested_recognition_cents ?? null,
+                  recognition_handling: request.recognition_handling ?? "outside_app_only",
+                })}
+              </p>
+              <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+                {RECOGNITION_NOTICE}
+              </p>
+              <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
+                {RECOGNITION_TAX_NOTICE}
+              </p>
             </div>
           </div>
         </div>

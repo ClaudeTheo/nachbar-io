@@ -5,6 +5,7 @@ import {
   fireEvent,
   cleanup,
   waitFor,
+  within,
 } from "@testing-library/react";
 import { NewRequestForm } from "@/modules/hilfe/components/NewRequestForm";
 
@@ -36,7 +37,10 @@ describe("NewRequestForm", () => {
   it("zeigt alle 7 Kategorie-Kacheln an", () => {
     render(<NewRequestForm />);
 
-    const tiles = screen.getAllByRole("radio");
+    const categoryGroup = screen.getByRole("group", {
+      name: /Wobei brauchen Sie Hilfe/i,
+    });
+    const tiles = within(categoryGroup).getAllByRole("radio");
     expect(tiles).toHaveLength(7);
 
     // Prüfe einige Labels
@@ -69,6 +73,8 @@ describe("NewRequestForm", () => {
           category: "shopping",
           title: "Einkaufen gesucht",
           description: "Wocheneinkauf bitte",
+          recognition_type: "free",
+          suggested_recognition_cents: null,
           type: "need",
         }),
       });
@@ -85,5 +91,12 @@ describe("NewRequestForm", () => {
     const textarea = screen.getByLabelText("Beschreibung");
     expect(textarea).toBeInTheDocument();
     expect(textarea.tagName.toLowerCase()).toBe("textarea");
+  });
+
+  it("zeigt freiwillige Anerkennung mit Pflicht-Hinweis", () => {
+    render(<NewRequestForm />);
+
+    expect(screen.getByText("Freiwillige Anerkennung")).toBeInTheDocument();
+    expect(screen.getByText(/nimmt keine Zahlungen entgegen/i)).toBeInTheDocument();
   });
 });

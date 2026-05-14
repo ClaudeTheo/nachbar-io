@@ -10,6 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
 import { HELP_CATEGORIES, HELP_SUBCATEGORIES } from "@/lib/constants";
 import type { HelpRequest } from "@/lib/supabase/types";
+import { formatRecognition } from "@/modules/hilfe/services/compensation";
 import { formatDistanceToNow } from "date-fns";
 import { de } from "date-fns/locale";
 import { toast } from "sonner";
@@ -253,6 +254,13 @@ function HelpCard({ request }: { request: HelpRequest }) {
               {request.description}
             </p>
           )}
+          <p className="mt-2 text-xs font-medium text-muted-foreground">
+            {formatRecognition({
+              recognition_type: request.recognition_type ?? "free",
+              suggested_recognition_cents: request.suggested_recognition_cents ?? null,
+              recognition_handling: request.recognition_handling ?? "outside_app_only",
+            })}
+          </p>
           <p className="mt-2 text-xs text-muted-foreground">
             {request.user?.display_name ?? "Nachbar"} · {timeAgo}
           </p>

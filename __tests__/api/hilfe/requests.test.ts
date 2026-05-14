@@ -171,5 +171,71 @@ describe("/api/hilfe/requests", () => {
       const body = await response.json();
       expect(body.quarter_id).toBe("q-derived");
     });
+
+    it("speichert freiwillige Anerkennung ausserhalb der App", async () => {
+      mockSupabase.setUser({ id: "user-rec", email: "rec@test.de" });
+      mockSupabase.addResponse("help_requests", {
+        data: {
+          id: "req-rec",
+          user_id: "user-rec",
+          quarter_id: "q-1",
+          type: "need",
+          category: "shopping",
+          title: "Einkaufen gesucht",
+          status: "active",
+          recognition_type: "suggested_amount",
+          suggested_recognition_cents: 1000,
+          recognition_handling: "outside_app_only",
+        },
+        error: null,
+      });
+
+      const { POST } = await import("@/app/api/hilfe/requests/route");
+      const response = await POST(
+        makePostRequest({
+          quarter_id: "q-1",
+          category: "shopping",
+          title: "Einkaufen gesucht",
+          recognition_type: "suggested_amount",
+          suggested_recognition_cents: 1000,
+          recognition_handling: "paid_in_app",
+        }),
+      );
+
+      expect(response.status).toBe(201);
+      const body = await response.json();
+      expect(body.recognition_handling).toBe("outside_app_only");
+
+      const helpRequestCall = mockSupabase.fromCalls.find(
+        (call) => call.table === "help_requests",
+      );
+      expect(helpRequestCall?.args).toContainEqual([
+        "insert",
+        expect.objectContaining({
+          recognition_type: "suggested_amount",
+          suggested_recognition_cents: 1000,
+          recognition_handling: "outside_app_only",
+        }),
+      ]);
+    });
+
+    it("lehnt Zahlungsstatus-Felder rekursiv ab", async () => {
+      mockSupabase.setUser({ id: "user-pay-field", email: "pay@test.de" });
+
+      const { POST } = await import("@/app/api/hilfe/requests/route");
+      const response = await POST(
+        makePostRequest({
+          quarter_id: "q-1",
+          category: "shopping",
+          title: "Einkaufen gesucht",
+          recognition_type: "free",
+          meta: { payment_status: "paid" },
+        }),
+      );
+
+      expect(response.status).toBe(400);
+      const body = await response.json();
+      expect(body.error).toContain("Zahlungsfelder sind nicht erlaubt");
+    });
   });
 });

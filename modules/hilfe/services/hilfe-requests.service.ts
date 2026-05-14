@@ -5,10 +5,12 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { ServiceError } from "@/lib/services/service-error";
 import type {
   HelpCategory,
+  HelpRecognitionType,
   HelpRequestType,
 } from "@/modules/hilfe/services/types";
 import { HELP_CATEGORY_LABELS } from "@/modules/hilfe/services/types";
 import { awardPoints } from "@/modules/gamification";
+import { normalizeRecognitionInput } from "@/modules/hilfe/services/compensation";
 
 const VALID_CATEGORIES = Object.keys(HELP_CATEGORY_LABELS) as HelpCategory[];
 
@@ -53,6 +55,10 @@ export async function createRequest(
     subcategory?: string | null;
     expires_at?: string | null;
     type?: HelpRequestType;
+    recognition_type?: HelpRecognitionType;
+    suggested_recognition_cents?: number | null;
+    suggested_recognition_euros?: string | null;
+    recognition_handling?: unknown;
   },
 ) {
   const { quarter_id, category, title, description, subcategory, expires_at, type } = input;
@@ -76,6 +82,7 @@ export async function createRequest(
   // Titel: uebergeben oder aus Kategorie ableiten
   const requestTitle =
     title || HELP_CATEGORY_LABELS[category as HelpCategory] || category;
+  const recognition = normalizeRecognitionInput(input);
 
   const { data: helpRequest, error: insertError } = await supabase
     .from("help_requests")
@@ -87,6 +94,9 @@ export async function createRequest(
       subcategory: subcategory ?? null,
       title: requestTitle,
       description: description ?? null,
+      recognition_type: recognition.recognition_type,
+      suggested_recognition_cents: recognition.suggested_recognition_cents,
+      recognition_handling: recognition.recognition_handling,
       status: "active",
       expires_at: expires_at ?? null,
     })

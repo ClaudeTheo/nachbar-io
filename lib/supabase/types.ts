@@ -2,7 +2,12 @@
 
 import type { UserRole } from "@/lib/quarters/types";
 import type { UserUiMode } from "@/lib/user-modes";
+import type {
+  HelpRecognitionHandling,
+  HelpRecognitionType,
+} from "@/modules/hilfe/services/compensation";
 export type { UserUiMode } from "@/lib/user-modes";
+export type { HelpRecognitionHandling, HelpRecognitionType };
 
 export type TrustLevel = "new" | "verified" | "trusted" | "admin";
 
@@ -157,6 +162,9 @@ export interface HelpRequest {
   subcategory: string | null;
   title: string;
   description: string | null;
+  recognition_type: HelpRecognitionType;
+  suggested_recognition_cents: number | null;
+  recognition_handling: HelpRecognitionHandling;
   status: HelpRequestStatus;
   expires_at: string | null;
   created_at: string;

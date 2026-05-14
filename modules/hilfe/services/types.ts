@@ -1,4 +1,10 @@
 // Nachbar Hilfe — TypeScript-Typen
+import type {
+  HelpRecognitionHandling,
+  HelpRecognitionType,
+} from "@/modules/hilfe/services/compensation";
+
+export type { HelpRecognitionHandling, HelpRecognitionType };
 
 // DB-Kategorien (englisch, CHECK-Constraint in help_requests)
 export type HelpCategory =
@@ -128,6 +134,9 @@ export interface HelpRequest {
   quarter_id: string | null;
   image_url: string | null;
   status: HelpRequestStatus;
+  recognition_type: HelpRecognitionType;
+  suggested_recognition_cents: number | null;
+  recognition_handling: HelpRecognitionHandling;
   expires_at: string | null;
   created_at: string;
 }

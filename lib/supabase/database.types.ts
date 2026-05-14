@@ -4811,8 +4811,11 @@ export type Database = {
           id: string
           image_url: string | null
           quarter_id: string | null
+          recognition_handling: string
+          recognition_type: string
           status: string
           subcategory: string | null
+          suggested_recognition_cents: number | null
           title: string
           type: string
           user_id: string
@@ -4825,8 +4828,11 @@ export type Database = {
           id?: string
           image_url?: string | null
           quarter_id?: string | null
+          recognition_handling?: string
+          recognition_type?: string
           status?: string
           subcategory?: string | null
+          suggested_recognition_cents?: number | null
           title: string
           type: string
           user_id: string
@@ -4839,8 +4845,11 @@ export type Database = {
           id?: string
           image_url?: string | null
           quarter_id?: string | null
+          recognition_handling?: string
+          recognition_type?: string
           status?: string
           subcategory?: string | null
+          suggested_recognition_cents?: number | null
           title?: string
           type?: string
           user_id?: string

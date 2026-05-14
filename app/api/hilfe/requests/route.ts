@@ -10,6 +10,7 @@ import {
 } from "@/modules/hilfe/services/hilfe-requests.service";
 import { getUserQuarterId } from "@/lib/quarters/helpers";
 import { getAdminSupabase } from "@/lib/supabase/admin";
+import { validateNoPaymentFields } from "@/modules/hilfe/services/compensation";
 
 // GET /api/hilfe/requests — Offene Hilfe-Gesuche auflisten
 export async function GET(request: NextRequest) {
@@ -52,6 +53,10 @@ export async function POST(request: NextRequest) {
     subcategory?: string | null;
     expires_at?: string | null;
     type?: "need" | "offer";
+    recognition_type?: "free" | "thank_you" | "suggested_amount" | "by_agreement";
+    suggested_recognition_cents?: number | null;
+    suggested_recognition_euros?: string | null;
+    recognition_handling?: unknown;
   };
 
   try {
@@ -65,6 +70,7 @@ export async function POST(request: NextRequest) {
 
   try {
     const adminSupabase = getAdminSupabase();
+    validateNoPaymentFields(body);
     const quarterId = body.quarter_id ?? await getUserQuarterId(adminSupabase, user.id);
     const helpRequest = await createRequest(supabase, user.id, {
       ...body,

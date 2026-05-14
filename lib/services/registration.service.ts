@@ -3,6 +3,7 @@
 // Extrahiert aus app/api/register/complete/route.ts (461 LOC → Service).
 
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { createHash } from "crypto";
 import { safeInsertNotification } from "@/lib/notifications-server";
 import {
   generateSecureCode,
@@ -53,6 +54,7 @@ export interface InviteCheckResult {
   householdId?: string;
   streetName?: string;
   houseNumber?: string;
+  quarterId?: string;
   referrerId?: string;
 }
 
@@ -61,6 +63,9 @@ interface PilotIdentity {
   lastName: string;
   dateOfBirth: string;
   displayName: string;
+  birthYear: number;
+  age: number;
+  isYouth: boolean;
 }
 
 type PilotRole = "resident" | "caregiver" | "helper" | "test_user";
@@ -75,6 +80,7 @@ const VALID_AI_LEVELS: AiAssistanceLevel[] = [
 ];
 
 export const MAX_DIRECT_CHILD_ACCOUNTS_PER_GUARDIAN = 5;
+const MIN_YOUTH_SELF_REGISTRATION_AGE = 14;
 
 function deriveAssistanceLevel(
   input: AiAssistanceLevel | undefined,
@@ -111,7 +117,7 @@ export async function checkInviteCode(
   // 1. Zuerst in households.invite_code suchen (B2B-Codes)
   const { data: household } = await adminDb
     .from("households")
-    .select("id, street_name, house_number")
+    .select("id, street_name, house_number, quarter_id")
     .eq("invite_code", normalized)
     .single();
 
@@ -121,6 +127,7 @@ export async function checkInviteCode(
       householdId: household.id,
       streetName: household.street_name,
       houseNumber: household.house_number,
+      quarterId: household.quarter_id,
     };
   }
 
@@ -128,7 +135,7 @@ export async function checkInviteCode(
   const { data: invitation } = await adminDb
     .from("neighbor_invitations")
     .select(
-      "id, household_id, inviter_id, households(street_name, house_number)",
+      "id, household_id, quarter_id, inviter_id, households(street_name, house_number)",
     )
     .eq("invite_code", normalized)
     .eq("status", "sent")
@@ -144,6 +151,7 @@ export async function checkInviteCode(
       householdId: invitation.household_id,
       streetName: hh?.street_name ?? "",
       houseNumber: hh?.house_number ?? "",
+      quarterId: invitation.quarter_id,
       referrerId: invitation.inviter_id,
     };
   }
@@ -188,12 +196,14 @@ export async function completeRegistration(
   } = input;
   let householdId = input.householdId;
   const pilotIdentity = normalizePilotIdentity(input);
+  const effectiveUiMode: UserUiMode = pilotIdentity.isYouth ? "youth" : (uiMode || "active");
 
   if (!email) {
     throw new ServiceError("E-Mail-Adresse ist erforderlich.", 400);
   }
 
   requireAddressForRegistration(input);
+  requireTrustedYouthRegistration(pilotIdentity, verificationMethod, householdId);
 
   // User serverseitig per Admin-API erstellen
   const userId = await createOrReuseAuthUser(adminDb, email, password);
@@ -216,12 +226,21 @@ export async function completeRegistration(
     adminDb,
     userId,
     pilotIdentity,
-    uiMode,
+    effectiveUiMode,
     verificationMethod,
     pilotRole,
     aiConsentChoice,
     aiAssistanceLevel,
   );
+
+  if (pilotIdentity.isYouth) {
+    await persistYouthRegistrationProfile(adminDb, {
+      userId,
+      pilotIdentity,
+      quarterId: bodyQuarterId,
+      householdId,
+    });
+  }
 
   await persistAiOnboardingConsent(adminDb, userId, aiConsentChoice);
 
@@ -290,9 +309,10 @@ function normalizePilotIdentity(input: RegistrationInput): PilotIdentity {
   if (!isValidIsoDate(dateOfBirth)) {
     throw new ServiceError("Geburtsdatum ist ungueltig", 400);
   }
-  if (calculateAge(dateOfBirth) < 18) {
+  const age = calculateAge(dateOfBirth);
+  if (age < MIN_YOUTH_SELF_REGISTRATION_AGE) {
     throw new ServiceError(
-      "Kinder und Jugendliche koennen die normale Registrierung nicht selbst abschliessen. Ein Elternteil muss den Kinderaccount anlegen oder eine Kinder-Einladung freigeben; bis zu 5 Kinder sind direkt moeglich, weitere Kinder muessen beantragt werden.",
+      "Der Jugendmodus ist im Pilot ab 14 Jahren moeglich. Kinder unter 14 brauchen weiterhin einen Eltern- oder Betreuerzugang.",
       403,
     );
   }
@@ -302,7 +322,25 @@ function normalizePilotIdentity(input: RegistrationInput): PilotIdentity {
     lastName,
     dateOfBirth,
     displayName: `${firstName} ${lastName}`,
+    birthYear: Number(dateOfBirth.slice(0, 4)),
+    age,
+    isYouth: age < 18,
   };
+}
+
+function requireTrustedYouthRegistration(
+  pilotIdentity: PilotIdentity,
+  verificationMethod?: string,
+  householdId?: string,
+): void {
+  if (!pilotIdentity.isYouth) return;
+
+  if (verificationMethod !== "invite_code" || !householdId) {
+    throw new ServiceError(
+      "Jugendliche koennen im Pilot mit dem Hausnummer-Code aus dem Brief eingeschraenkt starten. Eine manuelle Adressregistrierung ist fuer Jugendliche nicht freigegeben.",
+      403,
+    );
+  }
 }
 
 function normalizePilotRole(value: unknown): PilotRole {
@@ -593,6 +631,17 @@ export async function persistUserProfile(
     },
   };
 
+  if (pilotIdentity.isYouth) {
+    settings.youth_registration_status = "basis_without_guardian";
+    settings.youth_guardian_confirmation = "not_required_for_basis";
+    settings.youth_restrictions = [
+      "basis_access_only",
+      "no_payments",
+      "no_sensitive_care_data",
+      "no_exact_private_addresses",
+    ];
+  }
+
   if (pilotRole === "test_user") {
     settings.is_test_user = true;
     settings.test_user_kind = "pilot_onboarding";
@@ -630,6 +679,54 @@ export async function persistUserProfile(
       500,
     );
   }
+}
+
+async function persistYouthRegistrationProfile(
+  adminDb: SupabaseClient,
+  opts: {
+    userId: string;
+    pilotIdentity: PilotIdentity;
+    quarterId?: string;
+    householdId?: string;
+  },
+): Promise<void> {
+  const quarterId =
+    opts.quarterId ?? (await resolveHouseholdQuarterId(adminDb, opts.householdId));
+  const ageGroup = opts.pilotIdentity.age < 16 ? "u16" : "16_17";
+  const phoneHash = createHash("sha256")
+    .update(`registration:${opts.userId}`, "utf8")
+    .digest("hex");
+
+  const { error } = await adminDb.from("youth_profiles").upsert(
+    {
+      user_id: opts.userId,
+      birth_year: opts.pilotIdentity.birthYear,
+      age_group: ageGroup,
+      access_level: "basis",
+      phone_hash: phoneHash,
+      quarter_id: quarterId,
+    },
+    { onConflict: "user_id" },
+  );
+
+  if (error) {
+    throw new ServiceError("Jugendprofil konnte nicht gespeichert werden.", 500);
+  }
+}
+
+async function resolveHouseholdQuarterId(
+  adminDb: SupabaseClient,
+  householdId?: string,
+): Promise<string | null> {
+  if (!householdId) return null;
+
+  const { data } = await adminDb
+    .from("households")
+    .select("quarter_id")
+    .eq("id", householdId)
+    .maybeSingle();
+
+  return data?.quarter_id ?? null;
 }
 
 async function persistAiOnboardingConsent(

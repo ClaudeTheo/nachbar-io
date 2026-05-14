@@ -152,7 +152,7 @@ export function RegisterStepIdentity({ state, setState, setStep }: StepProps) {
           Das Geburtsdatum hilft bei Verantwortung und eindeutiger Zuordnung im Test.
         </p>
         <p className="mt-1 text-xs text-muted-foreground">
-          Unter 18? Dann muss ein Elternteil den Kinderaccount anlegen oder eine Kinder-Einladung freigeben.
+          Jugendliche ab 14 können mit Hausnummer-Code eingeschränkt im Jugendmodus starten. Unter 14 braucht es einen Eltern- oder Betreuerzugang.
         </p>
       </div>
 

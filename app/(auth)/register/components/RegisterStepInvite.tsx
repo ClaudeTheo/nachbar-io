@@ -29,6 +29,13 @@ export function RegisterStepInvite({ state, setState, setStep }: StepProps) {
         householdId: result.householdId,
         loading: false,
       };
+      if (result.quarterId) {
+        updates.geoQuarter = {
+          quarter_id: result.quarterId,
+          quarter_name: "Pilotquartier",
+          action: "invite_code",
+        };
+      }
       // referrerId kann aus URL (?ref=) oder aus API-Antwort kommen
       if (result.referrerId && !state.referrerId) {
         updates.referrerId = result.referrerId;
@@ -45,7 +52,7 @@ export function RegisterStepInvite({ state, setState, setStep }: StepProps) {
   return (
     <form onSubmit={handleInviteCode} className="space-y-4">
       <p className="text-sm text-muted-foreground">
-        Den Einladungscode haben Sie per Brief oder von einem Nachbarn erhalten.
+        Ihr Hausnummer-Code steht auf dem Brief. Bitte teilen Sie ihn nicht öffentlich.
       </p>
       <div>
         <label htmlFor="invite" className="mb-1 block text-sm font-medium">

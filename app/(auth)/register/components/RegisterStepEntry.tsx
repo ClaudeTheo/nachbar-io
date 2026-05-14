@@ -103,8 +103,8 @@ export function RegisterStepEntry({ state, setState, setStep }: StepProps) {
               Ich habe einen Einladungscode
             </p>
             <p className="mt-1 text-sm text-muted-foreground">
-              Empfohlen für den Pilot: per Brief, Aushang oder von einem
-              Nachbarn erhalten
+              Empfohlen für den Pilot: Hausnummer-Code aus Ihrem Brief oder
+              persönliche Einladung eines Nachbarn.
             </p>
           </div>
         </div>

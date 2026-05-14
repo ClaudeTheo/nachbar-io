@@ -43,6 +43,8 @@ describe("RegisterStepEntry", () => {
     expect(screen.getByText(/soziales pilotprojekt/i)).toBeInTheDocument();
     expect(screen.getByText(/füreinander da sein/i)).toBeInTheDocument();
     expect(screen.getAllByText(/einladungscode/i).length).toBeGreaterThanOrEqual(1);
+    expect(screen.getByText(/hausnummer-code aus ihrem brief/i)).toBeInTheDocument();
+    expect(screen.queryByText(/aushang/i)).not.toBeInTheDocument();
     expect(screen.getByText(/nur das n[oö]tige/i)).toBeInTheDocument();
   });
 

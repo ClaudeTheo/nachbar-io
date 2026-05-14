@@ -19,6 +19,9 @@ const baseIdentity = {
   lastName: "Mustermann",
   dateOfBirth: "1977-04-25",
   displayName: "Max Mustermann",
+  birthYear: 1977,
+  age: 49,
+  isYouth: false,
 };
 
 describe("persistUserProfile — ai_assistance_level", () => {

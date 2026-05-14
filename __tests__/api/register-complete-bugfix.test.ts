@@ -87,6 +87,11 @@ const baseBody = {
   verificationMethod: "address_manual",
 };
 
+function dateForAge(age: number) {
+  const now = new Date();
+  return `${now.getFullYear() - age}-01-01`;
+}
+
 describe("POST /api/register/complete — Bugfixes", () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -101,19 +106,93 @@ describe("POST /api/register/complete — Bugfixes", () => {
   // Bug 1: Orphan-Cleanup — Auth-User loeschen bei Profil-Fehler
   // =========================================================================
   describe("Orphan-Cleanup (Auth-User Bereinigung bei Profil-Fehler)", () => {
-    it("blockiert Minderjaehrige vor Auth-User-Erstellung", async () => {
+    it("legt Jugendliche mit Hausnummer-Code im eingeschraenkten Jugendmodus an", async () => {
+      mockCreateUser.mockResolvedValue({
+        data: { user: { id: "youth-user-1" } },
+        error: null,
+      });
+      const profileInsert = vi.fn().mockResolvedValue({ error: null });
+      const youthProfileUpsert = vi.fn().mockResolvedValue({ error: null });
+      const memberInsert = vi.fn().mockResolvedValue({ error: null });
+
+      mockFrom.mockImplementation((table: string) => {
+        if (table === "users") {
+          return { upsert: profileInsert };
+        }
+        if (table === "youth_profiles") {
+          return { upsert: youthProfileUpsert };
+        }
+        if (table === "household_members") {
+          return { insert: memberInsert };
+        }
+        return chainBuilder();
+      });
+
       const { POST } = await import("@/app/api/register/complete/route");
       const res = await POST(
         makeRequest({
           ...baseBody,
-          dateOfBirth: "2010-01-01",
+          email: "jugend@example.com",
+          dateOfBirth: dateForAge(16),
+          householdId: "hh-letter",
+          verificationMethod: "invite_code",
+          inviteCode: "PILOT-ABCD-EF23",
+          quarterId: "quarter-1",
+        }),
+      );
+
+      expect(res.status).toBe(200);
+      expect(profileInsert).toHaveBeenCalledWith(
+        expect.objectContaining({
+          id: "youth-user-1",
+          ui_mode: "youth",
+          role: "resident",
+          trust_level: "verified",
+          settings: expect.objectContaining({
+            pilot_approval_status: "approved",
+            youth_registration_status: "basis_without_guardian",
+            youth_guardian_confirmation: "not_required_for_basis",
+            youth_restrictions: expect.arrayContaining([
+              "basis_access_only",
+              "no_payments",
+              "no_sensitive_care_data",
+              "no_exact_private_addresses",
+            ]),
+          }),
+        }),
+        { onConflict: "id" },
+      );
+      expect(youthProfileUpsert).toHaveBeenCalledWith(
+        expect.objectContaining({
+          user_id: "youth-user-1",
+          birth_year: Number(dateForAge(16).slice(0, 4)),
+          age_group: "16_17",
+          access_level: "basis",
+          quarter_id: "quarter-1",
+          phone_hash: expect.stringMatching(/^[a-f0-9]{64}$/),
+        }),
+        { onConflict: "user_id" },
+      );
+      expect(memberInsert).toHaveBeenCalledWith(
+        expect.objectContaining({ verified_at: expect.any(String) }),
+      );
+    });
+
+    it("blockiert Kinder unter 14 weiter vor Auth-User-Erstellung", async () => {
+      const { POST } = await import("@/app/api/register/complete/route");
+      const res = await POST(
+        makeRequest({
+          ...baseBody,
+          dateOfBirth: dateForAge(10),
+          householdId: "hh-letter",
+          verificationMethod: "invite_code",
         }),
       );
 
       expect(res.status).toBe(403);
       const body = await res.json();
-      expect(body.error).toContain("normale Registrierung nicht selbst");
-      expect(body.error).toContain("5 Kinder");
+      expect(body.error).toContain("Jugendmodus");
+      expect(body.error).toContain("14");
       expect(mockCreateUser).not.toHaveBeenCalled();
     });
 

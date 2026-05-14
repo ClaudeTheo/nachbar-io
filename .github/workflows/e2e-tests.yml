@@ -32,9 +32,10 @@ jobs:
             echo "npm ci attempt ${attempt}/3"
             if npm ci; then
               exit 0
+            else
+              status=$?
             fi
 
-            status=$?
             if [ "$attempt" = "3" ]; then
               exit "$status"
             fi
@@ -113,9 +114,10 @@ jobs:
             echo "npm ci attempt ${attempt}/3"
             if npm ci; then
               exit 0
+            else
+              status=$?
             fi
 
-            status=$?
             if [ "$attempt" = "3" ]; then
               exit "$status"
             fi

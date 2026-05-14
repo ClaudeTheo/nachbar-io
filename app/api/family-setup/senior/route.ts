@@ -2,7 +2,10 @@ import { NextResponse, type NextRequest } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { getAdminSupabase } from "@/lib/supabase/admin";
 import { handleServiceError } from "@/lib/services/service-error";
-import { createSeniorSetupInvitation } from "@/lib/family-setup/senior-setup.service";
+import {
+  createSeniorSetupInvitation,
+  type FamilySetupDb as SeniorSetupDb,
+} from "@/lib/family-setup/senior-setup.service";
 import type { SeniorRelationshipType } from "@/lib/family-setup/types";
 
 const RELATIONSHIPS: SeniorRelationshipType[] = [
@@ -33,7 +36,8 @@ export async function POST(request: NextRequest) {
       : "other";
     const targetUiMode = body.targetUiMode === "comfort" ? "comfort" : "senior";
 
-    const result = await createSeniorSetupInvitation(getAdminSupabase(), {
+    const adminDb = getAdminSupabase() as unknown as SeniorSetupDb;
+    const result = await createSeniorSetupInvitation(adminDb, {
       caregiverUserId: user.id,
       seniorDisplayName: String(body.seniorDisplayName ?? ""),
       relationshipType,

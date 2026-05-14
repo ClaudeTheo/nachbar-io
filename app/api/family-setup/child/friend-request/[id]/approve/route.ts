@@ -2,7 +2,10 @@ import { NextResponse, type NextRequest } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { getAdminSupabase } from "@/lib/supabase/admin";
 import { handleServiceError } from "@/lib/services/service-error";
-import { approveYouthFriendInviteRequest } from "@/lib/family-setup/youth-friend-invites.service";
+import {
+  approveYouthFriendInviteRequest,
+  type FamilySetupDb,
+} from "@/lib/family-setup/youth-friend-invites.service";
 
 interface RouteContext {
   params: Promise<{ id: string }>;
@@ -21,7 +24,8 @@ export async function POST(request: NextRequest, context: RouteContext) {
   const { id } = await context.params;
 
   try {
-    const result = await approveYouthFriendInviteRequest(getAdminSupabase(), {
+    const adminDb = getAdminSupabase() as unknown as FamilySetupDb;
+    const result = await approveYouthFriendInviteRequest(adminDb, {
       guardianUserId: user.id,
       requestId: id,
       appUrl: new URL(request.url).origin,

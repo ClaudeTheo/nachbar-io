@@ -1,7 +1,13 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { getAdminSupabase } from "@/lib/supabase/admin";
-import { claimChildSetupInvitation } from "@/lib/family-setup/child-setup.service";
-import { claimSeniorSetupInvitation } from "@/lib/family-setup/senior-setup.service";
+import {
+  claimChildSetupInvitation,
+  type FamilySetupDb as ChildSetupDb,
+} from "@/lib/family-setup/child-setup.service";
+import {
+  claimSeniorSetupInvitation,
+  type FamilySetupDb as SeniorSetupDb,
+} from "@/lib/family-setup/senior-setup.service";
 import { canClaimInvitation, hashSetupToken } from "@/lib/family-setup/token";
 import { handleServiceError } from "@/lib/services/service-error";
 import type { FamilySetupFlowType, FamilySetupStatus, FamilySetupUiMode } from "@/lib/family-setup/types";
@@ -58,10 +64,11 @@ export async function POST(request: NextRequest, context: RouteContext) {
   };
 
   try {
+    const serviceDb = db as unknown;
     const result =
       preview.flow_type === "senior_setup"
-        ? await claimSeniorSetupInvitation(db, input)
-        : await claimChildSetupInvitation(db, input);
+        ? await claimSeniorSetupInvitation(serviceDb as SeniorSetupDb, input)
+        : await claimChildSetupInvitation(serviceDb as ChildSetupDb, input);
 
     return NextResponse.json(result, { status: 200 });
   } catch (error) {

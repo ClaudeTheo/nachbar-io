@@ -9,21 +9,25 @@ import {
 
 export const YOUTH_FRIEND_SETUP_TTL_HOURS = 12;
 
-type QueryResult<T> = Promise<{ data: T | null; error: { message?: string; code?: string } | null }>;
+type QueryResult<T> = PromiseLike<{ data: T | null; error: { message?: string; code?: string } | null }>;
 
-interface QueryBuilder {
-  select: (columns?: string) => QueryBuilder;
-  insert: (payload: unknown) => QueryBuilder;
-  update: (payload: unknown) => QueryBuilder;
-  eq: (column: string, value: unknown) => QueryBuilder;
-  is: (column: string, value: unknown) => QueryBuilder;
+interface TableQueryBuilder {
+  select: (columns?: string) => QueryFilterBuilder;
+  insert: (payload: unknown) => QueryFilterBuilder;
+  update: (payload: unknown) => QueryFilterBuilder;
+}
+
+interface QueryFilterBuilder {
+  select: (columns?: string) => QueryFilterBuilder;
+  eq: (column: string, value: unknown) => QueryFilterBuilder;
+  is: (column: string, value: unknown) => QueryFilterBuilder;
   single: <T = unknown>() => QueryResult<T>;
   maybeSingle: <T = unknown>() => QueryResult<T>;
 }
 
-interface FamilySetupDb {
+export interface FamilySetupDb {
   // Supabase gibt je nach Query-Schritt unterschiedliche Builder-Typen zurueck.
-  from: (table: string) => any;
+  from: (table: string) => TableQueryBuilder;
 }
 
 interface GuardianLinkRow {
@@ -103,7 +107,7 @@ export async function createYouthFriendInviteRequest(
       },
     })
     .select("id")
-    .single();
+    .single<{ id: string }>();
 
   if (error || !data) {
     throw new ServiceError("Freundeinladung konnte nicht vorbereitet werden.", 500);
@@ -124,7 +128,7 @@ export async function approveYouthFriendInviteRequest(
     .from("family_setup_invitations")
     .select("*")
     .eq("id", input.requestId)
-    .single();
+    .single<FriendInviteRow>();
 
   if (requestError || !request || request.status !== "pending_parent_approval") {
     throw new ServiceError("Freundeinladung ist nicht mehr freigabefaehig.", 409);
@@ -165,7 +169,7 @@ export async function approveYouthFriendInviteRequest(
     .eq("id", request.id)
     .eq("status", "pending_parent_approval")
     .select("id, expires_at")
-    .single();
+    .single<{ id: string; expires_at: string }>();
 
   if (error || !data) {
     throw new ServiceError("Freundeinladung konnte nicht freigegeben werden.", 500);
@@ -179,7 +183,7 @@ export async function approveYouthFriendInviteRequest(
       child_user_id: request.created_by,
       confidentiality_notice_confirmed: true,
     },
-  }).select("id").single();
+  }).select("id").single<{ id: string }>();
 
   return {
     requestId: data.id,
@@ -201,7 +205,7 @@ async function loadGuardianLinkForChild(
     .eq("child_user_id", childUserId)
     .eq("status", "active")
     .is("revoked_at", null)
-    .maybeSingle();
+    .maybeSingle<GuardianLinkRow>();
   return data ?? null;
 }
 
@@ -217,6 +221,6 @@ async function loadActiveGuardianLink(
     .eq("child_user_id", childUserId)
     .eq("status", "active")
     .is("revoked_at", null)
-    .maybeSingle();
+    .maybeSingle<{ id: string }>();
   return data ?? null;
 }

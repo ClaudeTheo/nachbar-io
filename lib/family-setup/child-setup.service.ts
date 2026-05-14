@@ -13,23 +13,34 @@ export const MAX_DIRECT_CHILD_ACCOUNTS = 5;
 export const CHILD_SETUP_TTL_HOURS = 24;
 export const FAMILY_SETUP_CONSENT_VERSION = "family-setup-v1.0-2026-05-14";
 
-type QueryResult<T> = Promise<{ data: T | null; error: { message?: string; code?: string } | null }>;
+type QueryResult<T> = PromiseLike<{ data: T | null; error: { message?: string; code?: string } | null }>;
+type QueryCount = "exact" | "planned" | "estimated";
 
-interface QueryBuilder {
-  select: (columns?: string) => QueryBuilder;
-  insert: (payload: unknown) => QueryBuilder;
-  update: (payload: unknown) => QueryBuilder;
-  upsert: (payload: unknown, options?: unknown) => QueryBuilder;
-  eq: (column: string, value: unknown) => QueryBuilder;
-  is: (column: string, value: unknown) => QueryBuilder;
-  gt: (column: string, value: unknown) => QueryBuilder;
+interface UpsertOptions {
+  onConflict?: string;
+  ignoreDuplicates?: boolean;
+  count?: QueryCount;
+}
+
+interface TableQueryBuilder {
+  select: (columns?: string) => QueryFilterBuilder;
+  insert: (payload: unknown) => QueryFilterBuilder;
+  update: (payload: unknown) => QueryFilterBuilder;
+  upsert: (payload: unknown, options?: UpsertOptions) => QueryFilterBuilder;
+}
+
+interface QueryFilterBuilder {
+  select: (columns?: string) => QueryFilterBuilder;
+  eq: (column: string, value: unknown) => QueryFilterBuilder;
+  is: (column: string, value: unknown) => QueryFilterBuilder;
+  gt: (column: string, value: unknown) => QueryFilterBuilder;
   single: <T = unknown>() => QueryResult<T>;
   maybeSingle: <T = unknown>() => QueryResult<T>;
 }
 
-interface FamilySetupDb {
+export interface FamilySetupDb {
   // Supabase gibt je nach Query-Schritt unterschiedliche Builder-Typen zurueck.
-  from: (table: string) => any;
+  from: (table: string) => TableQueryBuilder;
   auth?: {
     admin?: {
       createUser: (input: {
@@ -148,7 +159,7 @@ export async function claimChildSetupInvitation(
     .from("family_setup_invitations")
     .select("*")
     .eq("token_hash", tokenHash)
-    .single();
+    .single<FamilySetupInvitationRow>();
 
   if (invitationError || !invitation || !canClaimInvitation(invitation, now)) {
     throw new ServiceError("Setup-Code ist ungueltig oder abgelaufen.", 410);
@@ -163,7 +174,7 @@ export async function claimChildSetupInvitation(
     .is("used_at", null)
     .gt("expires_at", claimedAt)
     .select("id")
-    .single();
+    .single<{ id: string }>();
 
   if (claimError || !claimLock) {
     throw new ServiceError("Setup-Code wurde bereits verwendet.", 409);
@@ -241,7 +252,7 @@ async function loadGuardianMembership(
     .from("household_members")
     .select("household_id, households(quarter_id)")
     .eq("user_id", guardianUserId)
-    .maybeSingle();
+    .maybeSingle<GuardianMembership>();
 
   return data ?? null;
 }
@@ -284,7 +295,7 @@ async function insertChildSetupInvitation(
       },
     })
     .select("id, expires_at")
-    .single();
+    .single<{ id: string; expires_at: string }>();
 
   if (error || !data) {
     throw new ServiceError("Kinderzugang konnte nicht vorbereitet werden.", 500);

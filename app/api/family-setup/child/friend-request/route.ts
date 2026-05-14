@@ -2,7 +2,10 @@ import { NextResponse, type NextRequest } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { getAdminSupabase } from "@/lib/supabase/admin";
 import { handleServiceError } from "@/lib/services/service-error";
-import { createYouthFriendInviteRequest } from "@/lib/family-setup/youth-friend-invites.service";
+import {
+  createYouthFriendInviteRequest,
+  type FamilySetupDb,
+} from "@/lib/family-setup/youth-friend-invites.service";
 
 export async function POST(request: NextRequest) {
   const supabase = await createClient();
@@ -16,7 +19,8 @@ export async function POST(request: NextRequest) {
 
   try {
     const body = (await request.json()) as Record<string, unknown>;
-    const result = await createYouthFriendInviteRequest(getAdminSupabase(), {
+    const adminDb = getAdminSupabase() as unknown as FamilySetupDb;
+    const result = await createYouthFriendInviteRequest(adminDb, {
       childUserId: user.id,
       friendDisplayName: String(body.friendDisplayName ?? ""),
     });

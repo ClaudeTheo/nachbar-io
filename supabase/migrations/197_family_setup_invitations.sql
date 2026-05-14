@@ -6,6 +6,8 @@ CREATE TABLE IF NOT EXISTS family_child_links (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   guardian_user_id uuid NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
   child_user_id uuid NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  household_id uuid REFERENCES households(id) ON DELETE SET NULL,
+  quarter_id uuid REFERENCES quarters(id) ON DELETE SET NULL,
   relationship_type text NOT NULL CHECK (relationship_type IN ('parent', 'guardian', 'other')),
   status text NOT NULL DEFAULT 'active' CHECK (status IN ('active', 'revoked')),
   consent_version text NOT NULL,

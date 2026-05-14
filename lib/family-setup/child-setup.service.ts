@@ -357,6 +357,8 @@ async function persistYouthUser(
     db.from("family_child_links").insert({
       guardian_user_id: options.invitation.guardian_user_id,
       child_user_id: options.userId,
+      household_id: options.invitation.household_id,
+      quarter_id: options.invitation.quarter_id,
       relationship_type: normalizeChildRelationship(options.invitation.relationship_type),
       status: "active",
       consent_version: FAMILY_SETUP_CONSENT_VERSION,

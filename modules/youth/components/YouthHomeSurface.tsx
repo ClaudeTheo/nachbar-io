@@ -25,6 +25,7 @@ interface YouthHomeSurfaceProps {
   mapSlot?: ReactNode;
   taskSlot?: ReactNode;
   preview?: boolean;
+  guardianLinked?: boolean;
 }
 
 interface YouthAction {
@@ -198,6 +199,7 @@ export function YouthHomeSurface({
   mapSlot,
   taskSlot,
   preview = false,
+  guardianLinked = false,
 }: YouthHomeSurfaceProps) {
   return (
     <div className="-mx-4 -mt-2 min-h-[calc(100vh-5rem)] overflow-hidden bg-[#071923] pb-10 text-white">
@@ -282,6 +284,17 @@ export function YouthHomeSurface({
             {youthActions.map((action) => (
               <YouthActionTile key={action.href} action={action} />
             ))}
+            {guardianLinked && (
+              <YouthActionTile
+                action={{
+                  href: "/jugend/freunde/einladen",
+                  label: "Freund einladen",
+                  description: "Eltern geben frei",
+                  icon: UsersRound,
+                  accent: "text-cyan-100 bg-cyan-300/14 ring-cyan-100/25",
+                }}
+              />
+            )}
           </section>
 
           <section className="space-y-3" aria-labelledby="youth-tasks-title">

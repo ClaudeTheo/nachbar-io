@@ -73,6 +73,8 @@ const VALID_AI_LEVELS: AiAssistanceLevel[] = [
   "later",
 ];
 
+export const MAX_DIRECT_CHILD_ACCOUNTS_PER_GUARDIAN = 5;
+
 function deriveAssistanceLevel(
   input: AiAssistanceLevel | undefined,
   choice: "yes" | "no" | "later" | undefined,
@@ -259,6 +261,17 @@ function isValidIsoDate(value: string) {
   return parsed <= todayUtc;
 }
 
+function calculateAge(dateOfBirth: string, now = new Date()) {
+  const birthDate = new Date(`${dateOfBirth}T00:00:00.000Z`);
+  let age = now.getUTCFullYear() - birthDate.getUTCFullYear();
+  const monthDelta = now.getUTCMonth() - birthDate.getUTCMonth();
+  const birthdayPassedThisYear =
+    monthDelta > 0 ||
+    (monthDelta === 0 && now.getUTCDate() >= birthDate.getUTCDate());
+  if (!birthdayPassedThisYear) age -= 1;
+  return age;
+}
+
 function normalizePilotIdentity(input: RegistrationInput): PilotIdentity {
   const firstName = normalizeRequiredText(input.firstName);
   const lastName = normalizeRequiredText(input.lastName);
@@ -275,6 +288,12 @@ function normalizePilotIdentity(input: RegistrationInput): PilotIdentity {
   }
   if (!isValidIsoDate(dateOfBirth)) {
     throw new ServiceError("Geburtsdatum ist ungueltig", 400);
+  }
+  if (calculateAge(dateOfBirth) < 18) {
+    throw new ServiceError(
+      "Kinder und Jugendliche koennen die normale Registrierung nicht selbst abschliessen. Ein Elternteil muss den Kinderaccount anlegen oder eine Kinder-Einladung freigeben; bis zu 5 Kinder sind direkt moeglich, weitere Kinder muessen beantragt werden.",
+      403,
+    );
   }
 
   return {

@@ -101,6 +101,22 @@ describe("POST /api/register/complete — Bugfixes", () => {
   // Bug 1: Orphan-Cleanup — Auth-User loeschen bei Profil-Fehler
   // =========================================================================
   describe("Orphan-Cleanup (Auth-User Bereinigung bei Profil-Fehler)", () => {
+    it("blockiert Minderjaehrige vor Auth-User-Erstellung", async () => {
+      const { POST } = await import("@/app/api/register/complete/route");
+      const res = await POST(
+        makeRequest({
+          ...baseBody,
+          dateOfBirth: "2010-01-01",
+        }),
+      );
+
+      expect(res.status).toBe(403);
+      const body = await res.json();
+      expect(body.error).toContain("normale Registrierung nicht selbst");
+      expect(body.error).toContain("5 Kinder");
+      expect(mockCreateUser).not.toHaveBeenCalled();
+    });
+
     it("loescht Auth-User wenn Profil-Erstellung fehlschlaegt", async () => {
       // Auth-User erfolgreich erstellt
       mockCreateUser.mockResolvedValue({

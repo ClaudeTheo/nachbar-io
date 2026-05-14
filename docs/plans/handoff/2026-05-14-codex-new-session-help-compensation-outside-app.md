@@ -46,6 +46,18 @@ Umsetzungsplan:
 docs/superpowers/plans/2026-05-14-help-compensation-outside-app.md
 ```
 
+Wichtig: Am 2026-05-14 wurde ein Founder-/Compliance-Review-Amendment in diese Plan-Datei eingetragen. Dieses Amendment ist bindend und ersetzt widersprechende Details in den urspruenglichen Tasks.
+
+Neue Leitlinie:
+
+- Sichtbares UI primaer "Freiwillige Anerkennung", nicht "Aufwandsentschaedigung".
+- Schema/Code bevorzugt `recognition_type`, `suggested_recognition_cents`, `recognition_handling`.
+- Migration-Constraint muss `suggested_recognition_cents IS NOT NULL` bei `recognition_type = 'suggested_amount'` enthalten.
+- U13: keine Aufgabenannahme.
+- U18: nur mit Elternfreigabe, nur kostenlose, niedrig-riskante Aufgaben.
+- Youth-Boards muessen echte `recognition_type`-/Risk-Daten pruefen und duerfen nicht pauschal `free` annehmen.
+- Kein Job-Marktplatz: keine Stundenloehne, keine Gebote, kein Ranking/Sortieren nach Betrag, keine Payment-Links, keine IBAN.
+
 Dieser Plan ist bewusst sehr konkret und task-basiert. Er enthaelt:
 
 - Product Copy: "Was ist Nachbarschaftshilfe?"
@@ -258,4 +270,3 @@ Gewuenscht:
 - Arbeitsbaum sauber.
 - Push-ready.
 - Push nur mit aktueller, expliziter Founder-Freigabe.
-

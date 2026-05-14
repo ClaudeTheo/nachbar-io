@@ -10,6 +10,165 @@
 
 ---
 
+## Founder-/Compliance-Review Amendment 2026-05-14
+
+Dieses Amendment ist fuer die Umsetzung bindend und ersetzt widersprechende Details in den Tasks unten.
+
+### Freigabe-Status
+
+- Task 1 und Task 2 duerfen umgesetzt werden, aber mit den hier verschaerften Regeln.
+- Task 3 Migration darf erst umgesetzt werden, nachdem die Naming-/Constraint-Korrekturen aus diesem Amendment eingearbeitet sind.
+- Prod-Migration-Apply, Prod-Write, Deploy und Push bleiben separate Founder-Gates.
+
+### Produkt-Wording
+
+Im sichtbaren UI primaer **"Freiwillige Anerkennung"** verwenden, nicht als Hauptbegriff "Aufwandsentschaedigung". "Aufwandsentschaedigung" darf nur erlaeuternd als moegliche Anerkennung ausserhalb der App vorkommen.
+
+UI-Labels:
+
+- `free` -> "Kostenlos / freiwillig"
+- `thank_you` -> "Kleines Dankeschoen"
+- `suggested_amount` -> "Unverbindlicher Wunschbetrag"
+- `by_agreement` -> "Privat klaeren"
+
+Sichtbare UI-Texte verwenden echte deutsche Umlaute: "Freiwillige Anerkennung", "Dankeschön", "außerhalb", "Aufwandsentschädigung". ASCII bleibt nur fuer Code, Dateinamen und technische Bezeichner.
+
+### Naming im Code und Schema
+
+Bevorzugtes neues Naming:
+
+- `recognition_type`
+- `suggested_recognition_cents`
+- `recognition_handling = 'outside_app_only'`
+
+Nicht mehr bevorzugt:
+
+- `compensation_type`
+- `suggested_amount_cents`
+- `compensation_handling`
+
+Grund: "recognition" wirkt produktsprachlich weniger wie Verguetung, Job oder Plattformzahlung.
+
+### Migration-Constraint Korrektur
+
+Der Constraint muss `IS NOT NULL` fuer den Betrag bei `suggested_amount` enthalten, weil PostgreSQL-CHECKs mit `NULL` sonst als `UNKNOWN` durchlaufen koennen.
+
+Verbindliche Constraint-Logik:
+
+```sql
+CHECK (
+  (
+    recognition_type = 'suggested_amount'
+    AND suggested_recognition_cents IS NOT NULL
+    AND suggested_recognition_cents BETWEEN 100 AND 5000
+  )
+  OR
+  (
+    recognition_type <> 'suggested_amount'
+    AND suggested_recognition_cents IS NULL
+  )
+)
+```
+
+Pilot-Empfehlung: Betrag produktseitig eher auf 25 oder 30 Euro begrenzen. 50 Euro ist nur technische Obergrenze, keine rechtliche Freigrenze.
+
+### Non-Negotiable Product Rules
+
+- Kein Job-Marktplatz.
+- Keine Stundenloehne.
+- Keine Gebote.
+- Kein Ranking nach Betrag.
+- Kein Sortieren nach Betrag.
+- Keine Provision.
+- Keine App-vermittelte Zahlung.
+- Keine Payment-Links.
+- Keine IBAN-Erfassung.
+- Kein Wallet, keine Credits mit Geldwert, kein Guthaben, kein Escrow, keine Auszahlung.
+- Kein Status "bezahlt", "unbezahlt", "abgerechnet" oder "Zahlung abgeschlossen".
+- Wunschbetrag ist optional, unverbindlich und ausschliesslich ausserhalb der App zu klaeren.
+- Jugend-Oberflaechen zeigen nur kostenlose, niedrig-riskante Aufgaben.
+
+### Jugend-Regeln verschaerfen
+
+Unter 13:
+
+- Keine Aufgabenannahme. Punkt.
+- Auch kostenlose niedrig-riskante Aufgaben nicht als vermittelbare Hilfeaufgabe anbieten.
+
+13 bis 17:
+
+- Nur mit Elternfreigabe.
+- Nur `risk = low`.
+- Nur `recognition_type = 'free'`.
+- Maximal kurze, leichte Aufgaben, z. B. produktseitig `estimatedDurationMinutes <= 120`.
+- Kein Geldhandling, keine Medikamente, keine Pflege, kein Transport, keine Leiter, keine Elektroarbeiten, keine schweren koerperlichen Arbeiten, keine gefaehrlichen Werkzeuge.
+
+Youth-Boards muessen serverseitig nur freie niedrig-riskante Aufgaben liefern. Nicht im Youth-Code pauschal `recognitionType: "free"` setzen, wenn die echte Hilfeanfrage einen Wunschbetrag hat; stattdessen echte Daten pruefen und nicht geeignete Aufgaben ausblenden/blockieren.
+
+### Risk-Matrix verschaerfen
+
+Immer blockieren oder nur als Erwachsenen-/Fachhilfe behandeln:
+
+- `handwork:electrical`
+- `handwork:plumbing`
+- `handwork:carpentry`
+- `garden:hedge_trimming`
+- `garden:chainsaw`
+- `garden:ladder`
+- `transport:*`
+- `medication:*`
+- `care:*`
+- `childcare:*`
+- `money_handling:*`
+- `legal:*`
+- `tax:*`
+- `medical:*`
+
+Fuer Erwachsene moeglich, aber mit Warnhinweis:
+
+- `garden:mowing`
+- `pet_care:dog_walking`
+- `handwork:assembly`
+- `moving:light`
+
+Fuer Jugendliche nur niedrig-riskant:
+
+- kleine Botengaenge ohne Geldhandling
+- `tech:phone_help`
+- `company:walk`
+- `garden:watering`
+- `tutoring:basic`
+- Paketannahme nur nach genauer Produktentscheidung und nicht fuer wertvolle/alterssensible Sendungen
+
+Rasenmaehen ist fuer Minderjaehrige zu blockieren, sobald motorisierte Geraete moeglich sind.
+
+### Zusaetzliche Pflicht-Copy
+
+Steuer-/Minijob-Hinweis fuer Detail-/Infoflaeche:
+
+```text
+Nachbarschaftshilfe soll gelegentlich, freiwillig und nicht auf nachhaltigen Gewinn ausgerichtet sein. Wenn regelmäßig gegen Entgelt gearbeitet wird oder wirtschaftlicher Verdienst im Vordergrund steht, können steuerliche, sozialversicherungsrechtliche oder Meldepflichten entstehen, zum Beispiel als Minijob im Privathaushalt. Die Beteiligten sind selbst verantwortlich, ihre Pflichten zu prüfen.
+```
+
+Freiwillige Anerkennung:
+
+```text
+Die Quartier-App nimmt keine Zahlungen entgegen, verwaltet kein Guthaben und zahlt keine Beträge aus. Eine mögliche Anerkennung klären die Beteiligten privat außerhalb der App. Es besteht kein Anspruch auf Zahlung, kein Zahlungsversprechen und keine Abwicklung durch die Quartier-App.
+```
+
+Jugend:
+
+```text
+Jugendliche sehen nur leichte, altersgerechte Aufgaben. Aufgaben mit Geld, Medikamenten, Pflege, Transport, Leitern, Elektroarbeiten, gefährlichen Werkzeugen, schweren körperlichen Arbeiten oder besonderer Verantwortung sind ausgeschlossen. Punkte in der Jugend-App sind Anerkennung ohne Geldwert und können nicht ausgezahlt, verkauft oder verrechnet werden.
+```
+
+### Technische Haertung
+
+- Betragsparser muss `Number.isFinite` und Integer-Cent-Werte pruefen.
+- Verbotene Payment-Felder rekursiv pruefen, nicht nur Top-Level.
+- `recognition_handling` niemals vom Client akzeptieren; serverseitig immer auf `"outside_app_only"` setzen.
+- `HelpRecognitionType` nur an einer Stelle definieren und in anderen Typdateien re-exportieren.
+
 ## Safety Gates
 
 - Keine Production-Writes.
@@ -1368,4 +1527,3 @@ Recommended sequence:
 4. Execute API/UI/test tasks locally.
 5. Review in browser and screenshots.
 6. Push/deploy only after explicit Founder-Go.
-

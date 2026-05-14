@@ -118,6 +118,7 @@ export function RegisterStepAiConsent({
       const { error: otpError } = await supabase.auth.signInWithOtp({
         email: state.email,
         options: {
+          shouldCreateUser: false,
           emailRedirectTo: `${window.location.origin}/auth/callback?next=/welcome`,
         },
       });

@@ -151,6 +151,9 @@ export function RegisterStepIdentity({ state, setState, setStep }: StepProps) {
         <p className="mt-1 text-xs text-muted-foreground">
           Das Geburtsdatum hilft bei Verantwortung und eindeutiger Zuordnung im Test.
         </p>
+        <p className="mt-1 text-xs text-muted-foreground">
+          Unter 18? Dann muss ein Elternteil den Kinderaccount anlegen oder eine Kinder-Einladung freigeben.
+        </p>
       </div>
 
       <div>

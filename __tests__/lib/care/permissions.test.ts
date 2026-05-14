@@ -180,6 +180,32 @@ describe("getCareRole", () => {
   });
 });
 
+describe("canEditLinkedSeniorProfile", () => {
+  it("erlaubt Profilpflege nur bei aktivem caregiver_link mit profile_edit_allowed", async () => {
+    const { canEditLinkedSeniorProfile } = await import("@/lib/care/permissions");
+    const supabase = {
+      from: vi.fn(() => ({
+        select: vi.fn().mockReturnValue({
+          eq: vi.fn().mockReturnValue({
+            eq: vi.fn().mockReturnValue({
+              is: vi.fn().mockReturnValue({
+                maybeSingle: vi.fn().mockResolvedValue({
+                  data: { profile_edit_allowed: true },
+                  error: null,
+                }),
+              }),
+            }),
+          }),
+        }),
+      })),
+    };
+
+    await expect(
+      canEditLinkedSeniorProfile(supabase as never, "caregiver-1", "senior-1"),
+    ).resolves.toBe(true);
+  });
+});
+
 describe("canAccessFeature", () => {
   beforeEach(() => vi.clearAllMocks());
 

@@ -29,6 +29,7 @@ vi.mock("@/lib/feature-flags-middleware-cache", () => ({
 }));
 
 import { proxy } from "@/proxy";
+import { updateSession } from "@/lib/supabase/middleware";
 
 function makeRequest(pathname: string) {
   const url = new URL(`http://localhost${pathname}`);
@@ -101,6 +102,13 @@ describe("Legacy Route Gate (2026-05-11 aufgeloest)", () => {
       expect(location).not.toContain("/kreis-start");
     });
   }
+
+  it("laesst Setup-Code-Seiten ohne Auth-Middleware erreichbar", async () => {
+    const res = await proxy(makeRequest("/setup/example-token"));
+
+    expect(updateSession).not.toHaveBeenCalled();
+    expect(res.status).not.toBe(307);
+  });
 });
 
 describe("Gesundheits-Routes (flag-gated)", () => {

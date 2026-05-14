@@ -50,6 +50,15 @@ describe("YouthHomeSurface", () => {
     expect(screen.getByTestId("task-slot")).toBeInTheDocument();
   });
 
+  it("zeigt Freund-Einladung nur wenn ein Guardian-Link vorhanden ist", () => {
+    render(<YouthHomeSurface profile={profile} guardianLinked />);
+
+    expect(screen.getByRole("link", { name: /Freund einladen/i })).toHaveAttribute(
+      "href",
+      "/jugend/freunde/einladen",
+    );
+  });
+
   it("zeigt ohne Jugendprofil den sicheren Zugangseinstieg", () => {
     render(<YouthHomeSurface profile={null} />);
 

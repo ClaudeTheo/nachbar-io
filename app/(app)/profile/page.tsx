@@ -53,6 +53,7 @@ import { useVoicePreferences } from "@/hooks/useVoicePreferences";
 import { LargeTitle } from "@/components/ui/LargeTitle";
 import { PointsWidget } from "@/components/gamification/PointsWidget";
 import { BadgeGallery } from "@/components/gamification/BadgeGallery";
+import { FamilySetupPanel } from "@/modules/family-setup/components/FamilySetupPanel";
 import { formatCode, generateSecureCode } from "@/lib/invite-codes";
 import { toast } from "sonner";
 import type { User, Household, ReputationStats } from "@/lib/supabase/types";
@@ -435,6 +436,8 @@ export default function ProfilePage() {
           )}
         </div>
       )}
+
+      <FamilySetupPanel />
 
       {/* Menü */}
       <Card>

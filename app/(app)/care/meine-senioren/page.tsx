@@ -3,7 +3,7 @@
 // Route bleibt /care/meine-senioren, UI-Label ist "Mein Kreis" (Design-Doc 4.1).
 "use client";
 
-import { ArrowRight, Users, UserPlus } from "lucide-react";
+import { ArrowRight, ShieldCheck, UserCog, Users, UserPlus } from "lucide-react";
 import Link from "next/link";
 import { PageHeader } from "@/components/ui/page-header";
 import { useAssignedSeniors } from "@/lib/care/hooks/useAssignedSeniors";
@@ -78,40 +78,70 @@ export default function MeinKreisPage() {
       {seniors.length > 0 && (
         <div className="grid gap-3">
           {seniors.map((senior) => (
-            <Link
+            <div
               key={senior.id}
-              href={`/care/meine-senioren/${senior.id}`}
-              className="rounded-xl border bg-card p-4 hover:bg-gray-50 transition-colors flex items-center gap-4"
+              className="rounded-xl border bg-card p-4 transition-colors"
             >
-              {/* Avatar */}
-              <div className="flex-shrink-0">
-                {senior.avatar_url ? (
-                  /* eslint-disable-next-line @next/next/no-img-element */
-                  <img
-                    src={senior.avatar_url}
-                    alt={senior.display_name}
-                    className="h-12 w-12 rounded-full object-cover"
-                  />
-                ) : (
-                  <div className="h-12 w-12 rounded-full bg-quartier-green/20 flex items-center justify-center text-quartier-green font-semibold text-lg">
-                    {senior.display_name.charAt(0).toUpperCase()}
+              <Link
+                href={`/care/meine-senioren/${senior.id}`}
+                className="flex items-center gap-4"
+              >
+                {/* Avatar */}
+                <div className="flex-shrink-0">
+                  {senior.avatar_url ? (
+                    /* eslint-disable-next-line @next/next/no-img-element */
+                    <img
+                      src={senior.avatar_url}
+                      alt={senior.display_name}
+                      className="h-12 w-12 rounded-full object-cover"
+                    />
+                  ) : (
+                    <div className="h-12 w-12 rounded-full bg-quartier-green/20 flex items-center justify-center text-quartier-green font-semibold text-lg">
+                      {senior.display_name.charAt(0).toUpperCase()}
+                    </div>
+                  )}
+                </div>
+
+                {/* Name + Rolle */}
+                <div className="flex-1 min-w-0">
+                  <p className="text-lg font-semibold text-anthrazit truncate">
+                    {senior.display_name}
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    Nachricht schreiben, anrufen oder Status sehen
+                  </p>
+                </div>
+
+                {/* Pfeil */}
+                <ArrowRight className="h-5 w-5 text-muted-foreground flex-shrink-0" />
+              </Link>
+
+              {(senior.setup_origin || senior.consent_status) && (
+                <div className="mt-4 space-y-2 rounded-lg bg-[#f5f0eb] p-3">
+                  <div className="flex items-center gap-2 text-sm font-medium text-anthrazit">
+                    <ShieldCheck className="h-4 w-4 text-quartier-green" />
+                    {senior.setup_origin === "family_qr"
+                      ? "Einrichtung per QR"
+                      : "Verknüpfung aktiv"}
                   </div>
-                )}
-              </div>
-
-              {/* Name + Rolle */}
-              <div className="flex-1 min-w-0">
-                <p className="text-lg font-semibold text-anthrazit truncate">
-                  {senior.display_name}
-                </p>
-                <p className="text-sm text-muted-foreground">
-                  Nachricht schreiben, anrufen oder Status sehen
-                </p>
-              </div>
-
-              {/* Pfeil */}
-              <ArrowRight className="h-5 w-5 text-muted-foreground flex-shrink-0" />
-            </Link>
+                  {senior.consent_status === "pending_senior_confirm" && (
+                    <p className="text-xs leading-5 text-muted-foreground">
+                      Senior muss sensible Daten noch freigeben. Profil-Basisdaten
+                      können vorbereitet werden.
+                    </p>
+                  )}
+                  {senior.profile_edit_allowed && (
+                    <Link
+                      href={`/care/meine-senioren/${senior.id}/edit`}
+                      className="inline-flex min-h-9 items-center gap-2 rounded-lg border border-[#ebe5dd] bg-white px-3 py-2 text-xs font-medium text-anthrazit"
+                    >
+                      <UserCog className="h-4 w-4" />
+                      Daten pflegen
+                    </Link>
+                  )}
+                </div>
+              )}
+            </div>
           ))}
         </div>
       )}

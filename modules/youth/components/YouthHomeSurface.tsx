@@ -25,6 +25,7 @@ interface YouthHomeSurfaceProps {
   mapSlot?: ReactNode;
   taskSlot?: ReactNode;
   preview?: boolean;
+  guardianLinked?: boolean;
 }
 
 interface YouthAction {
@@ -198,6 +199,7 @@ export function YouthHomeSurface({
   mapSlot,
   taskSlot,
   preview = false,
+  guardianLinked = false,
 }: YouthHomeSurfaceProps) {
   return (
     <div className="-mx-4 -mt-2 min-h-[calc(100vh-5rem)] overflow-hidden bg-[#071923] pb-10 text-white">
@@ -206,7 +208,8 @@ export function YouthHomeSurface({
           className="absolute inset-0 -z-20 bg-cover bg-center opacity-95"
           style={{
             backgroundImage:
-              "url('/brand/generation-modes/youth-social-neighborhood-hero-app-header.webp')",
+              "url('/brand/generation-modes/youth-social-neighborhood-hero-mobile-header.webp')",
+            backgroundPosition: "35% center",
           }}
         />
         <div className="absolute inset-0 -z-10 bg-[linear-gradient(90deg,rgba(4,15,23,0.94)_0%,rgba(4,15,23,0.72)_44%,rgba(4,15,23,0.2)_100%)]" />
@@ -281,6 +284,17 @@ export function YouthHomeSurface({
             {youthActions.map((action) => (
               <YouthActionTile key={action.href} action={action} />
             ))}
+            {guardianLinked && (
+              <YouthActionTile
+                action={{
+                  href: "/jugend/freunde/einladen",
+                  label: "Freund einladen",
+                  description: "Eltern geben frei",
+                  icon: UsersRound,
+                  accent: "text-cyan-100 bg-cyan-300/14 ring-cyan-100/25",
+                }}
+              />
+            )}
           </section>
 
           <section className="space-y-3" aria-labelledby="youth-tasks-title">

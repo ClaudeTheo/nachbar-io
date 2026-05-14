@@ -12,6 +12,7 @@ import {
 import { ServiceError } from "@/lib/services/service-error";
 import { CURRENT_CONSENT_VERSION } from "@/lib/care/constants";
 import { isClosedPilotMode } from "@/lib/closed-pilot";
+import type { UserUiMode } from "@/lib/user-modes";
 
 // ============================================================
 // Typen
@@ -24,7 +25,7 @@ export interface RegistrationInput {
   firstName?: string;
   lastName?: string;
   dateOfBirth?: string;
-  uiMode?: "active" | "senior";
+  uiMode?: UserUiMode;
   householdId?: string;
   streetName?: string;
   houseNumber?: string;
@@ -72,6 +73,8 @@ const VALID_AI_LEVELS: AiAssistanceLevel[] = [
   "everyday",
   "later",
 ];
+
+export const MAX_DIRECT_CHILD_ACCOUNTS_PER_GUARDIAN = 5;
 
 function deriveAssistanceLevel(
   input: AiAssistanceLevel | undefined,
@@ -259,6 +262,17 @@ function isValidIsoDate(value: string) {
   return parsed <= todayUtc;
 }
 
+function calculateAge(dateOfBirth: string, now = new Date()) {
+  const birthDate = new Date(`${dateOfBirth}T00:00:00.000Z`);
+  let age = now.getUTCFullYear() - birthDate.getUTCFullYear();
+  const monthDelta = now.getUTCMonth() - birthDate.getUTCMonth();
+  const birthdayPassedThisYear =
+    monthDelta > 0 ||
+    (monthDelta === 0 && now.getUTCDate() >= birthDate.getUTCDate());
+  if (!birthdayPassedThisYear) age -= 1;
+  return age;
+}
+
 function normalizePilotIdentity(input: RegistrationInput): PilotIdentity {
   const firstName = normalizeRequiredText(input.firstName);
   const lastName = normalizeRequiredText(input.lastName);
@@ -275,6 +289,12 @@ function normalizePilotIdentity(input: RegistrationInput): PilotIdentity {
   }
   if (!isValidIsoDate(dateOfBirth)) {
     throw new ServiceError("Geburtsdatum ist ungueltig", 400);
+  }
+  if (calculateAge(dateOfBirth) < 18) {
+    throw new ServiceError(
+      "Kinder und Jugendliche koennen die normale Registrierung nicht selbst abschliessen. Ein Elternteil muss den Kinderaccount anlegen oder eine Kinder-Einladung freigeben; bis zu 5 Kinder sind direkt moeglich, weitere Kinder muessen beantragt werden.",
+      403,
+    );
   }
 
   return {
@@ -295,6 +315,13 @@ function normalizePilotRole(value: unknown): PilotRole {
     return value;
   }
   return "resident";
+}
+
+function isTrustedInviteRegistration(verificationMethod?: string): boolean {
+  return (
+    verificationMethod === "invite_code" ||
+    verificationMethod === "neighbor_invite"
+  );
 }
 
 function requireAddressForRegistration(input: RegistrationInput): void {
@@ -523,16 +550,17 @@ export async function persistUserProfile(
   // - Adresse manuell: 'new' (B2C-Track, muss per Vouching verifiziert werden)
   // PILOT_AUTO_VERIFY=true: Alle Nutzer auf 'verified' (Pilot-Modus)
   const requiresPilotApproval = isClosedPilotMode();
+  const trustedInviteRegistration =
+    isTrustedInviteRegistration(verificationMethod);
   const pilotAutoVerify =
     process.env.PILOT_AUTO_VERIFY === "true" && !requiresPilotApproval;
-  const trustLevel = requiresPilotApproval
-    ? "new"
-    : pilotAutoVerify
+  const trustLevel = trustedInviteRegistration
     ? "verified"
-    : verificationMethod === "invite_code" ||
-        verificationMethod === "neighbor_invite"
-      ? "verified"
-      : "new";
+    : requiresPilotApproval
+      ? "new"
+      : pilotAutoVerify
+        ? "verified"
+        : "new";
 
   const aiEnabled = aiConsentChoice === "yes";
   const assistanceLevel = deriveAssistanceLevel(
@@ -551,7 +579,10 @@ export async function persistUserProfile(
         source: "registration",
       },
     ],
-    pilot_approval_status: requiresPilotApproval ? "pending" : "approved",
+    pilot_approval_status:
+      requiresPilotApproval && !trustedInviteRegistration
+        ? "pending"
+        : "approved",
     pilot_role: pilotRole,
     pilot_identity: {
       first_name: pilotIdentity.firstName,
@@ -666,15 +697,17 @@ async function assignHouseholdAndVerify(
     displayName,
   } = opts;
   const requiresPilotApproval = isClosedPilotMode();
+  const trustedInviteRegistration =
+    isTrustedInviteRegistration(verificationMethod);
 
-  // Pilotphase: Alle Nutzer werden sofort verifiziert (verified_at gesetzt)
-  // Damit können sie die App direkt nutzen (RLS: is_verified_member())
+  // Brief- und Nachbarcodes verifizieren den Haushalt direkt. Manuelle Adressen
+  // bleiben im geschlossenen Pilot bis zur Freigabe unverifiziert.
   const membership: Record<string, unknown> = {
     household_id: householdId,
     user_id: userId,
     verification_method: verificationMethod || "address_manual",
   };
-  if (!requiresPilotApproval) {
+  if (!requiresPilotApproval || trustedInviteRegistration) {
     membership.verified_at = new Date().toISOString();
   }
 

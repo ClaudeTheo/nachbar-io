@@ -22,6 +22,8 @@ const CLOSED_PILOT_PUBLIC_PATHS = new Set([
   "/jugend-gruppen-preview",
 ]);
 
+const CLOSED_PILOT_PUBLIC_PREFIXES = ["/setup/"];
+
 const CLOSED_PILOT_PUBLIC_API_PATHS = new Set([
   "/api/health",
   "/api/register/check-invite",
@@ -29,6 +31,16 @@ const CLOSED_PILOT_PUBLIC_API_PATHS = new Set([
   "/api/news/scrape",
   "/api/news/rss",
 ]);
+
+function isClosedPilotPublicFamilySetupApiPath(pathname: string) {
+  const prefix = "/api/family-setup/";
+  if (!pathname.startsWith(prefix)) return false;
+
+  const token = pathname.slice(prefix.length);
+  if (token === "child" || token === "senior") return false;
+
+  return token.length > 0 && !token.includes("/");
+}
 
 // Vercel-Cron-Routen muessen im Closed-Pilot-Mode erreichbar bleiben (sonst stoppen
 // alle Heartbeat/Sync/Reminder-Jobs). Sie sind durch verifyCronSecret() geschuetzt
@@ -45,11 +57,15 @@ export function isClosedPilotMode() {
 }
 
 export function isClosedPilotPublicPath(pathname: string) {
-  return CLOSED_PILOT_PUBLIC_PATHS.has(pathname);
+  return (
+    CLOSED_PILOT_PUBLIC_PATHS.has(pathname) ||
+    CLOSED_PILOT_PUBLIC_PREFIXES.some((prefix) => pathname.startsWith(prefix))
+  );
 }
 
 export function isClosedPilotPublicApiPath(pathname: string) {
   if (CLOSED_PILOT_PUBLIC_API_PATHS.has(pathname)) return true;
+  if (isClosedPilotPublicFamilySetupApiPath(pathname)) return true;
   return isClosedPilotPublicCronPath(pathname);
 }
 

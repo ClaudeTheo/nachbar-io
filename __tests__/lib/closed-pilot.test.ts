@@ -20,10 +20,25 @@ describe("closed pilot public paths", () => {
     expect(isClosedPilotPublicPath("/map-activity-pins-preview")).toBe(true);
   });
 
+  it("keeps setup-code claim pages public in closed pilot", () => {
+    expect(isClosedPilotPublicPath("/setup/example-token")).toBe(true);
+  });
+
   it("keeps registration APIs public for pending onboarding", () => {
     expect(isClosedPilotPublicApiPath("/api/register/check-invite")).toBe(true);
     expect(isClosedPilotPublicApiPath("/api/register/complete")).toBe(true);
     expect(isClosedPilotPublicApiPath("/api/messages")).toBe(false);
+  });
+
+  it("keeps setup-code claim API public but not protected setup creation APIs", () => {
+    expect(isClosedPilotPublicApiPath("/api/family-setup/example-token")).toBe(
+      true,
+    );
+    expect(isClosedPilotPublicApiPath("/api/family-setup/child")).toBe(false);
+    expect(isClosedPilotPublicApiPath("/api/family-setup/senior")).toBe(false);
+    expect(
+      isClosedPilotPublicApiPath("/api/family-setup/child/friend-request"),
+    ).toBe(false);
   });
 
   it("keeps the AI-test cleanup dry-run cron endpoint reachable in closed pilot", () => {

@@ -91,6 +91,7 @@ describe("POST /api/register/complete — Bugfixes", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.resetModules();
+    vi.unstubAllEnvs();
     process.env.NEXT_PUBLIC_SUPABASE_URL = "https://test.supabase.co";
     process.env.SUPABASE_SERVICE_ROLE_KEY = "test-service-key";
     process.env.PILOT_AUTO_VERIFY = "true";
@@ -100,6 +101,22 @@ describe("POST /api/register/complete — Bugfixes", () => {
   // Bug 1: Orphan-Cleanup — Auth-User loeschen bei Profil-Fehler
   // =========================================================================
   describe("Orphan-Cleanup (Auth-User Bereinigung bei Profil-Fehler)", () => {
+    it("blockiert Minderjaehrige vor Auth-User-Erstellung", async () => {
+      const { POST } = await import("@/app/api/register/complete/route");
+      const res = await POST(
+        makeRequest({
+          ...baseBody,
+          dateOfBirth: "2010-01-01",
+        }),
+      );
+
+      expect(res.status).toBe(403);
+      const body = await res.json();
+      expect(body.error).toContain("normale Registrierung nicht selbst");
+      expect(body.error).toContain("5 Kinder");
+      expect(mockCreateUser).not.toHaveBeenCalled();
+    });
+
     it("loescht Auth-User wenn Profil-Erstellung fehlschlaegt", async () => {
       // Auth-User erfolgreich erstellt
       mockCreateUser.mockResolvedValue({
@@ -679,6 +696,53 @@ describe("POST /api/register/complete — Bugfixes", () => {
         expect.objectContaining({ status: "pending", reviewed_at: null }),
       );
     });
+
+    it("schaltet Briefcode-Registrierungen im Closed-Pilot-Modus direkt frei", async () => {
+      vi.stubEnv("NEXT_PUBLIC_CLOSED_PILOT_MODE", "true");
+      vi.stubEnv("PILOT_AUTO_VERIFY", "false");
+      mockCreateUser.mockResolvedValue({
+        data: { user: { id: "pilot-letter-1" } },
+        error: null,
+      });
+
+      const profileInsert = vi.fn().mockResolvedValue({ error: null });
+      const memberInsert = vi.fn().mockResolvedValue({ error: null });
+
+      mockFrom.mockImplementation((table: string) => {
+        if (table === "users") {
+          return { upsert: profileInsert };
+        }
+        if (table === "household_members") {
+          return { insert: memberInsert };
+        }
+        return chainBuilder();
+      });
+
+      const { POST } = await import("@/app/api/register/complete/route");
+      const res = await POST(
+        makeRequest({
+          ...baseBody,
+          email: "briefcode@example.com",
+          householdId: "hh-letter",
+          verificationMethod: "invite_code",
+        }),
+      );
+
+      expect(res.status).toBe(200);
+      expect(profileInsert).toHaveBeenCalledWith(
+        expect.objectContaining({
+          id: "pilot-letter-1",
+          trust_level: "verified",
+          settings: expect.objectContaining({
+            pilot_approval_status: "approved",
+          }),
+        }),
+        { onConflict: "id" },
+      );
+      expect(memberInsert).toHaveBeenCalledWith(
+        expect.objectContaining({ verified_at: expect.any(String) }),
+      );
+    });
   });
 });
 
@@ -689,6 +753,7 @@ describe("aiAssistanceLevel — Whitelist-Validation", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.resetModules();
+    vi.unstubAllEnvs();
     process.env.NEXT_PUBLIC_SUPABASE_URL = "https://test.supabase.co";
     process.env.SUPABASE_SERVICE_ROLE_KEY = "test-service-key";
     process.env.PILOT_AUTO_VERIFY = "true";

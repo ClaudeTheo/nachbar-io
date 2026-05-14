@@ -41,6 +41,7 @@ describe("LoginPage", () => {
   afterEach(() => {
     cleanup();
     vi.useRealTimers();
+    window.history.pushState({}, "", "/");
   });
 
   it("versteckt Passwort-Login im Pilotbetrieb", async () => {
@@ -85,11 +86,31 @@ describe("LoginPage", () => {
     await waitFor(() => {
       expect(mockSignInWithOtp).toHaveBeenCalledTimes(1);
     });
+    expect(mockSignInWithOtp).toHaveBeenCalledWith({
+      email: "ghost@example.com",
+      options: expect.objectContaining({
+        shouldCreateUser: false,
+        emailRedirectTo: expect.stringContaining(
+          "/auth/callback?next=/after-login",
+        ),
+      }),
+    });
 
     expect(await screen.findByText(/code eingeben/i)).toBeInTheDocument();
     expect(screen.getByText("ghost@example.com")).toBeInTheDocument();
     expect(
       screen.queryByText(/nicht registriert|unbekannt|existiert nicht/i),
     ).not.toBeInTheDocument();
+  });
+
+  it("zeigt einen klaren Hinweis, wenn der Auth-Callback fehlschlaegt", async () => {
+    window.history.pushState({}, "", "/login?error=auth_callback_failed");
+    const { default: LoginPage } = await import("@/app/(auth)/login/page");
+
+    render(<LoginPage />);
+
+    expect(
+      await screen.findByText(/anmeldelink ist abgelaufen/i),
+    ).toBeInTheDocument();
   });
 });

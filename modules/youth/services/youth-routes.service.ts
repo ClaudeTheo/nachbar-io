@@ -19,6 +19,7 @@ import {
 } from "@/modules/youth/services/consent";
 import { sendSms } from "@/lib/care/channels/sms";
 import { encryptField } from "@/lib/care/field-encryption";
+import { getMinorHelpDecision } from "@/modules/hilfe/services/help-task-risk";
 
 // --- Konstanten ---
 
@@ -114,6 +115,7 @@ export async function listYouthTasks(
     .from("youth_tasks")
     .select("*")
     .eq("status", taskStatus)
+    .eq("risk_level", "niedrig")
     .order("created_at", { ascending: false })
     .limit(50);
 
@@ -177,6 +179,18 @@ export async function createYouthTask(
   }
   if (!quarter_id) {
     throw new ServiceError("Quartier erforderlich", 400);
+  }
+  if ((risk_level ?? "niedrig") !== "niedrig") {
+    throw new ServiceError(
+      "Jugendliche sehen nur leichte, niedrig-riskante Aufgaben.",
+      403,
+    );
+  }
+  if ((estimated_minutes ?? 0) > 120) {
+    throw new ServiceError(
+      "Jugendliche sehen nur kurze, altersgerechte Aufgaben.",
+      403,
+    );
   }
 
   const requiresOrg = category === "begleitung";
@@ -267,21 +281,31 @@ export async function acceptYouthTask(
   // Prüfe Youth-Profil und Zugangs-Stufe
   const { data: profile } = await supabase
     .from("youth_profiles")
-    .select("access_level")
+    .select("access_level, birth_year")
     .eq("user_id", userId)
     .single();
 
-  if (!profile || profile.access_level === "basis") {
-    throw new ServiceError(
-      'Du benötigst mindestens die Stufe "Erweitert", um Aufgaben anzunehmen.',
-      403,
-    );
+  if (!profile) {
+    throw new ServiceError("Jugendprofil nicht gefunden.", 403);
+  }
+
+  const approximateAge = new Date().getFullYear() - Number(profile.birth_year);
+  const earlyDecision = getMinorHelpDecision({
+    age: approximateAge,
+    hasGuardianConsent: profile.access_level === "freigeschaltet",
+    category: "tech",
+    subcategory: "phone_help",
+    recognitionType: "free",
+  });
+
+  if (!earlyDecision.allowed && (approximateAge < 13 || profile.access_level !== "freigeschaltet")) {
+    throw new ServiceError(earlyDecision.reason, 403);
   }
 
   // Prüfe ob Aufgabe verfügbar
   const { data: task } = await supabase
     .from("youth_tasks")
-    .select("id, status, created_by")
+    .select("id, status, created_by, category, risk_level, estimated_minutes")
     .eq("id", taskId)
     .single();
 
@@ -296,6 +320,26 @@ export async function acceptYouthTask(
       "Du kannst deine eigene Aufgabe nicht annehmen",
       400,
     );
+  }
+
+  if (task.risk_level !== "niedrig") {
+    throw new ServiceError(
+      "Diese Aufgabe ist für Jugendliche nicht geeignet.",
+      403,
+    );
+  }
+
+  const taskDecision = getMinorHelpDecision({
+    age: approximateAge,
+    hasGuardianConsent: profile.access_level === "freigeschaltet",
+    category: mapYouthCategoryToHelpCategory(task.category),
+    subcategory: mapYouthCategoryToHelpSubcategory(task.category),
+    recognitionType: "free",
+    estimatedDurationMinutes: task.estimated_minutes ?? null,
+  });
+
+  if (!taskDecision.allowed) {
+    throw new ServiceError(taskDecision.reason, 403);
   }
 
   // Aufgabe annehmen
@@ -316,6 +360,34 @@ export async function acceptYouthTask(
   }
 
   return { task: updated };
+}
+
+function mapYouthCategoryToHelpCategory(category: string): string {
+  switch (category) {
+    case "technik":
+    case "digital":
+      return "tech";
+    case "garten":
+      return "garden";
+    case "begleitung":
+      return "company";
+    default:
+      return "tutoring";
+  }
+}
+
+function mapYouthCategoryToHelpSubcategory(category: string): string {
+  switch (category) {
+    case "technik":
+    case "digital":
+      return "phone_help";
+    case "garten":
+      return "watering";
+    case "begleitung":
+      return "walk";
+    default:
+      return "basic";
+  }
 }
 
 /**

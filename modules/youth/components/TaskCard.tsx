@@ -76,6 +76,9 @@ export function TaskCard({ title, category, points, estimatedMinutes, status, on
         </div>
         <div className="text-right shrink-0">
           <p className="font-black text-lime-200">{points} Punkte</p>
+          <p className="text-[11px] font-semibold leading-tight text-cyan-50/58">
+            ohne Geldwert
+          </p>
           {status === 'completed' && (
             <span className="text-xs font-semibold text-lime-100">Erledigt</span>
           )}

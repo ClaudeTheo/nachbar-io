@@ -38,6 +38,7 @@ export function TaskBoard({ quarterId }: { quarterId?: string }) {
         .from('youth_tasks')
         .select('id, title, category, points_reward, estimated_minutes, status')
         .eq('status', 'open')
+        .eq('risk_level', 'niedrig')
         .order('created_at', { ascending: false })
         .limit(50);
 
@@ -63,6 +64,10 @@ export function TaskBoard({ quarterId }: { quarterId?: string }) {
 
   return (
     <div className="space-y-4">
+      <p className="rounded-[20px] border border-white/12 bg-white/[0.06] px-4 py-3 text-xs font-semibold leading-relaxed text-cyan-50/70">
+        Punkte sind Anerkennung ohne Geldwert. Sie können nicht ausgezahlt, verkauft oder verrechnet werden.
+      </p>
+
       {/* Kategorie-Filter */}
       <div className="flex gap-2 overflow-x-auto pb-2">
         {CATEGORIES.map(cat => (

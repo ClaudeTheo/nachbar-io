@@ -20,6 +20,10 @@ describe("closed pilot public paths", () => {
     expect(isClosedPilotPublicPath("/map-activity-pins-preview")).toBe(true);
   });
 
+  it("keeps setup-code claim pages public in closed pilot", () => {
+    expect(isClosedPilotPublicPath("/setup/example-token")).toBe(true);
+  });
+
   it("keeps registration APIs public for pending onboarding", () => {
     expect(isClosedPilotPublicApiPath("/api/register/check-invite")).toBe(true);
     expect(isClosedPilotPublicApiPath("/api/register/complete")).toBe(true);

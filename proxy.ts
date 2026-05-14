@@ -20,6 +20,14 @@ import {
 
 // Oeffentliche Seiten: Kein Auth-Check noetig, statisch cachebar
 const PUBLIC_PATHS = ["/", "/b2b", "/impressum", "/datenschutz", "/agb"];
+const PUBLIC_PATH_PREFIXES = ["/setup/"];
+
+function isPublicPath(pathname: string) {
+  return (
+    PUBLIC_PATHS.includes(pathname) ||
+    PUBLIC_PATH_PREFIXES.some((prefix) => pathname.startsWith(prefix))
+  );
+}
 
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
@@ -44,7 +52,7 @@ export async function proxy(request: NextRequest) {
   }
 
   // Oeffentliche Seiten: Kein Supabase-Session-Check, direkt weiterleiten
-  if (PUBLIC_PATHS.includes(pathname)) {
+  if (isPublicPath(pathname)) {
     return secure(nextWithCsp());
   }
 

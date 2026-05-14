@@ -75,6 +75,7 @@ describe("Closed-Pilot-Gate", () => {
     "/jugend-ui-preview",
     "/jugend-tauschen-preview",
     "/jugend-gruppen-preview",
+    "/setup/example-token",
   ])(
     "laesst lokale UI-Preview %s ohne Auth-Middleware erreichbar",
     async (path) => {

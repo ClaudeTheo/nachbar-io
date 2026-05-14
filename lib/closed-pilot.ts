@@ -22,6 +22,8 @@ const CLOSED_PILOT_PUBLIC_PATHS = new Set([
   "/jugend-gruppen-preview",
 ]);
 
+const CLOSED_PILOT_PUBLIC_PREFIXES = ["/setup/"];
+
 const CLOSED_PILOT_PUBLIC_API_PATHS = new Set([
   "/api/health",
   "/api/register/check-invite",
@@ -45,7 +47,10 @@ export function isClosedPilotMode() {
 }
 
 export function isClosedPilotPublicPath(pathname: string) {
-  return CLOSED_PILOT_PUBLIC_PATHS.has(pathname);
+  return (
+    CLOSED_PILOT_PUBLIC_PATHS.has(pathname) ||
+    CLOSED_PILOT_PUBLIC_PREFIXES.some((prefix) => pathname.startsWith(prefix))
+  );
 }
 
 export function isClosedPilotPublicApiPath(pathname: string) {

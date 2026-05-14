@@ -3,8 +3,9 @@
   "version": "2.5.0",
   "private": true,
   "scripts": {
-    "dev": "next dev --webpack",
-    "dev:cloud": "node --env-file=.env.cloud-current.local ./node_modules/next/dist/bin/next dev --webpack",
+    "dev": "npm run dev:local",
+    "dev:local": "node scripts/dev-server.mjs local",
+    "dev:cloud": "node scripts/dev-server.mjs cloud",
     "supabase:start": "supabase start",
     "supabase:stop": "supabase stop",
     "supabase:status": "supabase status",
@@ -33,6 +34,7 @@
     "test:e2e:senior": "playwright test --config=tests/e2e/playwright.config.ts --project=senior-terminal",
     "pretest:e2e:pilot": "node scripts/e2e-localhost-preflight.mjs",
     "test:e2e:pilot": "playwright test --config=tests/e2e/playwright.config.ts --project=pilot-smoke",
+    "test:admin-login": "playwright test --config=tests/e2e/admin-login.playwright.config.ts",
     "seed:quarter": "npx tsx scripts/seed-quarter.ts",
     "db:types": "supabase gen types typescript --project-id uylszchlyhbpbmslcnka > lib/supabase/database.types.ts"
   },

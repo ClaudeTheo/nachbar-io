@@ -175,6 +175,54 @@ Ein Cloud/Prod-Supabase-Server nutzt typischerweise Cookies wie
 laufen, den alten Server bewusst stoppen oder auf den expliziten Port-3001-
 Pfad (`build:local`/`start:local`) ausweichen, bevor Playwright startet.
 
+### Admin-Login lokal gegen Cloud-Supabase
+
+Fuer echte Admin-Login-Pruefungen gibt es einen separaten, bewussten Pfad. Er
+startet keinen parallelen Next-Dev-Server automatisch und nutzt keine Migrationen
+oder Deploys.
+
+1. Einmalig lokale Test-Env anlegen:
+
+```ini
+# .env.cloud.test — ignored, nie committen
+NEXT_PUBLIC_SUPABASE_URL=https://<project-ref>.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=<anon-key>
+ADMIN_LOGIN_EMAIL=<admin-mailadresse>
+ADMIN_LOGIN_BASE_URL=http://localhost:3005
+```
+
+2. Falls ein anderer `next dev` im Projekt laeuft, bewusst stoppen. Next erlaubt
+   in demselben Projekt nur einen Dev-Server.
+
+3. Cloud-Testserver starten:
+
+```bash
+npm run dev:cloud -- --port 3005
+```
+
+Das Script laedt zuerst `.env.cloud.test`, sonst `.env.cloud-current.local`.
+Es blockiert, wenn im selben Projekt bereits ein Next-Dev-Server laeuft, statt
+per Windows/PowerShell-Hack einen zweiten Server zu erzwingen.
+
+4. In einer zweiten Shell den Admin-Login-Test starten:
+
+```bash
+npm run test:admin-login
+```
+
+Der Helper `loginWithOtp()` gibt die E-Mail stabil per
+`click()` + `pressSequentially()` ein und prueft danach mit
+`expect(...).toHaveValue(...)`, bevor der Code angefordert wird. Wenn kein
+`ADMIN_LOGIN_OTP` gesetzt ist, fragt der Test im interaktiven Terminal nach dem
+6-stelligen E-Mail-Code. Der Code wird nicht gespeichert und nicht committed.
+
+Optional fuer nicht-interaktive Laeufe `ADMIN_LOGIN_OTP` kurz in
+`.env.cloud.test` setzen und nach dem Lauf wieder entfernen:
+
+```ini
+ADMIN_LOGIN_OTP=123456
+```
+
 ### Einzelne Szenarien
 
 ```bash

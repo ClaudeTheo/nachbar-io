@@ -91,7 +91,12 @@ export class LoginPage {
 
   // Magic Link senden (Standard-Login)
   async sendMagicLink(email: string) {
-    await this.emailInput.fill(email);
+    await this.emailInput.click();
+    await this.emailInput.press(
+      process.platform === "darwin" ? "Meta+A" : "Control+A",
+    );
+    await this.emailInput.pressSequentially(email, { delay: 10 });
+    await expect(this.emailInput).toHaveValue(email);
     await this.sendMagicLinkButton.click();
   }
 

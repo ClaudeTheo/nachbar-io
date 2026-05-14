@@ -38,6 +38,25 @@ export const USER_MODE_CONFIG = {
   },
 } satisfies Record<UserUiMode, UserModeConfig>;
 
+export const USER_MODE_ONBOARDING_INTROS = {
+  youth: [
+    "Missionen, Treffen und Lernen im Quartier",
+    "Sichtbar nur mit Freigabe und passenden Schutzregeln",
+  ],
+  active: [
+    "Nachrichten, Karte und kleine Alltagshilfen schnell erreichen",
+    "Gut fuer Menschen, die die App selbststaendig nutzen",
+  ],
+  comfort: [
+    "Weniger Ablenkung, ruhigere Uebersichten und klare Wege",
+    "Gut fuer Angehoerige oder alle, die Struktur bevorzugen",
+  ],
+  senior: [
+    "Grosse Schaltflaechen, einfache Sprache und kurze Wege",
+    "Gut fuer Begleitung, Alltag und die Senior-Ansicht",
+  ],
+} satisfies Record<UserUiMode, string[]>;
+
 export function isUserUiMode(value: unknown): value is UserUiMode {
   return typeof value === "string" && USER_UI_MODES.includes(value as UserUiMode);
 }

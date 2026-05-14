@@ -206,7 +206,8 @@ export function YouthHomeSurface({
           className="absolute inset-0 -z-20 bg-cover bg-center opacity-95"
           style={{
             backgroundImage:
-              "url('/brand/generation-modes/youth-social-neighborhood-hero-app-header.webp')",
+              "url('/brand/generation-modes/youth-social-neighborhood-hero-mobile-header.webp')",
+            backgroundPosition: "35% center",
           }}
         />
         <div className="absolute inset-0 -z-10 bg-[linear-gradient(90deg,rgba(4,15,23,0.94)_0%,rgba(4,15,23,0.72)_44%,rgba(4,15,23,0.2)_100%)]" />

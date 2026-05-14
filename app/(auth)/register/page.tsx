@@ -253,7 +253,10 @@ function RegisterForm() {
               const supabase = createClient();
               supabase.auth.signInWithOtp({
                 email: formState.email,
-                options: { emailRedirectTo: `${window.location.origin}/auth/callback?next=/welcome` },
+                options: {
+                  shouldCreateUser: false,
+                  emailRedirectTo: `${window.location.origin}/auth/callback?next=/welcome`,
+                },
               });
             }}
           />

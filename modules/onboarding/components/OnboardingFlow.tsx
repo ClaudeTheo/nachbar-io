@@ -12,6 +12,7 @@ import { ConfettiEffect } from "./ConfettiEffect";
 import {
   getUserModeConfig,
   USER_MODE_CONFIG,
+  USER_MODE_ONBOARDING_INTROS,
   USER_UI_MODES,
   type UserUiMode,
 } from "@/lib/user-modes";
@@ -230,6 +231,13 @@ export function OnboardingFlow() {
                     </span>
                     <span className="mt-1 block text-sm text-muted-foreground">
                       {config.description}
+                    </span>
+                    <span className="mt-3 block space-y-1 text-xs leading-5 text-muted-foreground">
+                      {USER_MODE_ONBOARDING_INTROS[mode].map((intro) => (
+                        <span key={intro} className="block">
+                          {intro}
+                        </span>
+                      ))}
                     </span>
                   </button>
                 );

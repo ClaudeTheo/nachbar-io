@@ -297,6 +297,13 @@ function normalizePilotRole(value: unknown): PilotRole {
   return "resident";
 }
 
+function isTrustedInviteRegistration(verificationMethod?: string): boolean {
+  return (
+    verificationMethod === "invite_code" ||
+    verificationMethod === "neighbor_invite"
+  );
+}
+
 function requireAddressForRegistration(input: RegistrationInput): void {
   if (normalizeRequiredText(input.householdId)) {
     return;
@@ -523,16 +530,17 @@ export async function persistUserProfile(
   // - Adresse manuell: 'new' (B2C-Track, muss per Vouching verifiziert werden)
   // PILOT_AUTO_VERIFY=true: Alle Nutzer auf 'verified' (Pilot-Modus)
   const requiresPilotApproval = isClosedPilotMode();
+  const trustedInviteRegistration =
+    isTrustedInviteRegistration(verificationMethod);
   const pilotAutoVerify =
     process.env.PILOT_AUTO_VERIFY === "true" && !requiresPilotApproval;
-  const trustLevel = requiresPilotApproval
-    ? "new"
-    : pilotAutoVerify
+  const trustLevel = trustedInviteRegistration
     ? "verified"
-    : verificationMethod === "invite_code" ||
-        verificationMethod === "neighbor_invite"
-      ? "verified"
-      : "new";
+    : requiresPilotApproval
+      ? "new"
+      : pilotAutoVerify
+        ? "verified"
+        : "new";
 
   const aiEnabled = aiConsentChoice === "yes";
   const assistanceLevel = deriveAssistanceLevel(
@@ -551,7 +559,10 @@ export async function persistUserProfile(
         source: "registration",
       },
     ],
-    pilot_approval_status: requiresPilotApproval ? "pending" : "approved",
+    pilot_approval_status:
+      requiresPilotApproval && !trustedInviteRegistration
+        ? "pending"
+        : "approved",
     pilot_role: pilotRole,
     pilot_identity: {
       first_name: pilotIdentity.firstName,
@@ -666,15 +677,17 @@ async function assignHouseholdAndVerify(
     displayName,
   } = opts;
   const requiresPilotApproval = isClosedPilotMode();
+  const trustedInviteRegistration =
+    isTrustedInviteRegistration(verificationMethod);
 
-  // Pilotphase: Alle Nutzer werden sofort verifiziert (verified_at gesetzt)
-  // Damit können sie die App direkt nutzen (RLS: is_verified_member())
+  // Brief- und Nachbarcodes verifizieren den Haushalt direkt. Manuelle Adressen
+  // bleiben im geschlossenen Pilot bis zur Freigabe unverifiziert.
   const membership: Record<string, unknown> = {
     household_id: householdId,
     user_id: userId,
     verification_method: verificationMethod || "address_manual",
   };
-  if (!requiresPilotApproval) {
+  if (!requiresPilotApproval || trustedInviteRegistration) {
     membership.verified_at = new Date().toISOString();
   }
 

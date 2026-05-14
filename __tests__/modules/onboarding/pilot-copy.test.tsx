@@ -2,6 +2,10 @@ import { cleanup, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it } from "vitest";
 import { SlideReady } from "@/modules/onboarding/components/slides/SlideReady";
 import { SlideWelcome } from "@/modules/onboarding/components/slides/SlideWelcome";
+import {
+  USER_MODE_ONBOARDING_INTROS,
+  USER_UI_MODES,
+} from "@/lib/user-modes";
 
 describe("Pilot copy in onboarding slides", () => {
   afterEach(() => cleanup());
@@ -23,5 +27,14 @@ describe("Pilot copy in onboarding slides", () => {
     expect(screen.getByText(/ki.*schrittweise/i)).toBeInTheDocument();
     expect(screen.getByText(/einwilligung/i)).toBeInTheDocument();
     expect(screen.getByText(/ohne ki/i)).toBeInTheDocument();
+  });
+
+  it("hat fuer alle vier Modi eine eigene kurze Einfuehrung", () => {
+    expect(USER_UI_MODES).toEqual(["youth", "active", "comfort", "senior"]);
+    for (const mode of USER_UI_MODES) {
+      expect(USER_MODE_ONBOARDING_INTROS[mode]).toHaveLength(2);
+    }
+    expect(USER_MODE_ONBOARDING_INTROS.youth.join(" ")).toMatch(/freigabe/i);
+    expect(USER_MODE_ONBOARDING_INTROS.senior.join(" ")).toMatch(/grosse/i);
   });
 });

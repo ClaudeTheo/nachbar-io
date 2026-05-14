@@ -53,6 +53,16 @@ export default function LoginPage() {
   const [supportsPasskey, setSupportsPasskey] = useState(false);
   const router = useRouter();
 
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const callbackError = params.get("error");
+    if (callbackError === "auth_callback_failed") {
+      setError(
+        "Der Anmeldelink ist abgelaufen oder wurde schon benutzt. Bitte fordern Sie einen neuen Code an.",
+      );
+    }
+  }, []);
+
   // Cooldown-Timer nach OTP-Versand (verhindert Supabase Rate Limit)
   useEffect(() => {
     if (sendCooldown <= 0) return;
@@ -97,6 +107,7 @@ export default function LoginPage() {
       const { error: otpError } = await supabase.auth.signInWithOtp({
         email,
         options: {
+          shouldCreateUser: false,
           // Task B-4: /after-login dispatcht auf /kreis-start (Senior) vs. /dashboard
           emailRedirectTo: `${window.location.origin}/auth/callback?next=/after-login`,
         },
@@ -387,6 +398,7 @@ export default function LoginPage() {
                 supabase.auth.signInWithOtp({
                   email,
                   options: {
+                    shouldCreateUser: false,
                     emailRedirectTo: `${window.location.origin}/auth/callback?next=/after-login`,
                   },
                 });

@@ -104,3 +104,19 @@ export async function canAccessFeature(
 
   return hasFeature(plan, feature);
 }
+
+export async function canEditLinkedSeniorProfile(
+  supabase: SupabaseClient,
+  caregiverId: string,
+  seniorId: string,
+): Promise<boolean> {
+  const { data: link } = await supabase
+    .from('caregiver_links')
+    .select('profile_edit_allowed')
+    .eq('caregiver_id', caregiverId)
+    .eq('resident_id', seniorId)
+    .is('revoked_at', null)
+    .maybeSingle();
+
+  return link?.profile_edit_allowed === true;
+}

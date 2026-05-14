@@ -12,6 +12,11 @@ export interface SeniorInfo {
   id: string;
   display_name: string;
   avatar_url: string | null;
+  relationship_type?: string | null;
+  setup_origin?: string | null;
+  consent_status?: string | null;
+  profile_edit_allowed?: boolean;
+  sensitive_data_allowed?: boolean;
 }
 
 interface UseAssignedSeniorsResult {
@@ -61,11 +66,12 @@ export function useAssignedSeniors(): UseAssignedSeniorsResult {
 
         let assignedSeniorIds = helper?.assigned_seniors ?? [];
         let assignedRole = (helper?.role as CareHelperRole | undefined) ?? null;
+        const linkMeta = new Map<string, Partial<SeniorInfo>>();
 
         if (!assignedSeniorIds.length) {
           const { data: caregiverLinks, error: linksError } = await supabase
             .from('caregiver_links')
-            .select('resident_id, relationship_type')
+            .select('resident_id, relationship_type, setup_origin, consent_status, profile_edit_allowed, sensitive_data_allowed')
             .eq('caregiver_id', user.id)
             .is('revoked_at', null);
 
@@ -82,6 +88,17 @@ export function useAssignedSeniors(): UseAssignedSeniorsResult {
                 .filter((id): id is string => typeof id === 'string' && id.length > 0)
             )
           );
+
+          for (const link of caregiverLinks ?? []) {
+            if (typeof link.resident_id !== 'string') continue;
+            linkMeta.set(link.resident_id, {
+              relationship_type: link.relationship_type ?? null,
+              setup_origin: link.setup_origin ?? null,
+              consent_status: link.consent_status ?? null,
+              profile_edit_allowed: link.profile_edit_allowed === true,
+              sensitive_data_allowed: link.sensitive_data_allowed === true,
+            });
+          }
 
           const relationshipType = caregiverLinks?.[0]?.relationship_type;
           if (relationshipType) {
@@ -117,6 +134,7 @@ export function useAssignedSeniors(): UseAssignedSeniorsResult {
             id: u.id,
             display_name: u.display_name ?? 'Unbekannt',
             avatar_url: u.avatar_url ?? null,
+            ...linkMeta.get(u.id),
           }))
         );
       } catch (err) {

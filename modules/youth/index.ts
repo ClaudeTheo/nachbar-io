@@ -56,3 +56,4 @@ export { YouthDashboardClient } from "./components/YouthDashboardClient";
 export { YouthExchangeSurface } from "./components/YouthExchangeSurface";
 export { YouthGroupsSurface } from "./components/YouthGroupsSurface";
 export { YouthHomeSurface } from "./components/YouthHomeSurface";
+export { YouthMissionsSurface } from "./components/YouthMissionsSurface";

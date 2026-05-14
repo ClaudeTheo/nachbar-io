@@ -17,6 +17,7 @@ const CLOSED_PILOT_PUBLIC_PATHS = new Set([
   "/care/consent/preview",
   "/map-activity-pins-preview",
   "/jugend-ui-preview",
+  "/jugend-missionen-preview",
   "/jugend-tauschen-preview",
   "/jugend-gruppen-preview",
 ]);

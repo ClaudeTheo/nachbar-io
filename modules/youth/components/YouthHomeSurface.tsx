@@ -38,8 +38,8 @@ interface YouthAction {
 const youthActions: YouthAction[] = [
   {
     href: "/jugend/aufgaben",
-    label: "Aufgaben",
-    description: "Helfen, sammeln, abhaken",
+    label: "Missionen",
+    description: "Lernen, helfen, treffen",
     icon: ClipboardList,
     accent: "text-lime-200 bg-lime-300/14 ring-lime-200/30",
   },
@@ -290,7 +290,7 @@ export function YouthHomeSurface({
                   Heute möglich
                 </p>
                 <h2 id="youth-tasks-title" className="text-xl font-black">
-                  Aufgaben & Treffen
+                  Missionen & Treffen
                 </h2>
               </div>
               <Link

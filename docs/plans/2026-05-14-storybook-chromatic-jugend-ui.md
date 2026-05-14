@@ -34,6 +34,7 @@ Diese Schritte bleiben Founder-Go-pflichtig:
 ## Erste Storys
 
 - `Jugend/Start`
+- `Jugend/Missionen`
 - `Jugend/Tauschen und Verschenken`
 - `Jugend/Gruppen`
 - `Karte/Activity Pins`

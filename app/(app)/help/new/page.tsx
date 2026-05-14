@@ -11,7 +11,10 @@ import { Textarea } from "@/components/ui/textarea";
 import { HELP_CATEGORIES, HELP_SUBCATEGORIES, HELP_EXPIRY_DAYS } from "@/lib/constants";
 import { useAuth } from "@/hooks/use-auth";
 import { useQuarter } from "@/lib/quarters";
-import { CompensationSelector } from "@/modules/hilfe/components/CompensationSelector";
+import {
+  CompensationSelector,
+  type CompensationSelectorValue,
+} from "@/modules/hilfe/components/CompensationSelector";
 
 type Step = "type" | "category" | "subcategory" | "details" | "done";
 
@@ -22,9 +25,9 @@ export default function NewHelpPage() {
   const [subcategory, setSubcategory] = useState<string | null>(null);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [recognition, setRecognition] = useState({
-    recognition_type: "free" as const,
-    suggested_recognition_cents: null as number | null,
+  const [recognition, setRecognition] = useState<CompensationSelectorValue>({
+    recognition_type: "free",
+    suggested_recognition_cents: null,
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);

@@ -44,8 +44,7 @@ describe("CompensationSelector", () => {
     });
   });
 
-  it("meldet Cent-Werte bei Eingabe", async () => {
-    const user = userEvent.setup();
+  it("meldet Cent-Werte bei Eingabe", () => {
     const onChange = vi.fn();
     render(
       <CompensationSelector

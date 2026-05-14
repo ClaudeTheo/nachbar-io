@@ -7,7 +7,7 @@ import {
   type HelpRecognitionType,
 } from "@/modules/hilfe/services/compensation";
 
-interface CompensationSelectorValue {
+export interface CompensationSelectorValue {
   recognition_type: HelpRecognitionType;
   suggested_recognition_cents: number | null;
 }

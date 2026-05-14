@@ -18,6 +18,9 @@ const baseRequest: HelpRequest = {
   quarter_id: "q-1",
   image_url: null,
   status: "active",
+  recognition_type: "free",
+  suggested_recognition_cents: null,
+  recognition_handling: "outside_app_only",
   expires_at: null,
   created_at: "2026-03-27T10:00:00Z",
 };

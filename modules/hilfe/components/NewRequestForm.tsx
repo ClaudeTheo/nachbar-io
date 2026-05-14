@@ -6,7 +6,10 @@ import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import { HelpCategory, HELP_CATEGORY_LABELS, PRIMARY_HELP_CATEGORIES } from '@/modules/hilfe/services/types';
 import { useQuarter } from '@/lib/quarters/quarter-context';
-import { CompensationSelector } from '@/modules/hilfe/components/CompensationSelector';
+import {
+  CompensationSelector,
+  type CompensationSelectorValue,
+} from '@/modules/hilfe/components/CompensationSelector';
 
 /** Emoji-Icons je Kategorie */
 const CATEGORY_ICONS: Partial<Record<HelpCategory, string>> = {
@@ -35,9 +38,9 @@ export function NewRequestForm({ onSuccess }: NewRequestFormProps) {
   const [category, setCategory] = useState<HelpCategory | null>(null);
   const [description, setDescription] = useState('');
   const [preferredTime, setPreferredTime] = useState('');
-  const [recognition, setRecognition] = useState({
-    recognition_type: 'free' as const,
-    suggested_recognition_cents: null as number | null,
+  const [recognition, setRecognition] = useState<CompensationSelectorValue>({
+    recognition_type: 'free',
+    suggested_recognition_cents: null,
   });
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);

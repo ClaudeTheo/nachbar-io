@@ -32,6 +32,16 @@ const CLOSED_PILOT_PUBLIC_API_PATHS = new Set([
   "/api/news/rss",
 ]);
 
+function isClosedPilotPublicFamilySetupApiPath(pathname: string) {
+  const prefix = "/api/family-setup/";
+  if (!pathname.startsWith(prefix)) return false;
+
+  const token = pathname.slice(prefix.length);
+  if (token === "child" || token === "senior") return false;
+
+  return token.length > 0 && !token.includes("/");
+}
+
 // Vercel-Cron-Routen muessen im Closed-Pilot-Mode erreichbar bleiben (sonst stoppen
 // alle Heartbeat/Sync/Reminder-Jobs). Sie sind durch verifyCronSecret() geschuetzt
 // — Whitelist hier blockt nur den 503-closed_pilot-Filter, nicht die Cron-Auth.
@@ -55,6 +65,7 @@ export function isClosedPilotPublicPath(pathname: string) {
 
 export function isClosedPilotPublicApiPath(pathname: string) {
   if (CLOSED_PILOT_PUBLIC_API_PATHS.has(pathname)) return true;
+  if (isClosedPilotPublicFamilySetupApiPath(pathname)) return true;
   return isClosedPilotPublicCronPath(pathname);
 }
 

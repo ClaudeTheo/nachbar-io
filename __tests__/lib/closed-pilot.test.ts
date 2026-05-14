@@ -30,6 +30,17 @@ describe("closed pilot public paths", () => {
     expect(isClosedPilotPublicApiPath("/api/messages")).toBe(false);
   });
 
+  it("keeps setup-code claim API public but not protected setup creation APIs", () => {
+    expect(isClosedPilotPublicApiPath("/api/family-setup/example-token")).toBe(
+      true,
+    );
+    expect(isClosedPilotPublicApiPath("/api/family-setup/child")).toBe(false);
+    expect(isClosedPilotPublicApiPath("/api/family-setup/senior")).toBe(false);
+    expect(
+      isClosedPilotPublicApiPath("/api/family-setup/child/friend-request"),
+    ).toBe(false);
+  });
+
   it("keeps the AI-test cleanup dry-run cron endpoint reachable in closed pilot", () => {
     expect(
       isClosedPilotPublicApiPath("/api/cron/ai-test-cleanup-dry-run"),

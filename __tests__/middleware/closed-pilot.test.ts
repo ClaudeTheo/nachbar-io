@@ -98,7 +98,11 @@ describe("Closed-Pilot-Gate", () => {
     },
   );
 
-  it.each(["/api/register/check-invite", "/api/register/complete"])(
+  it.each([
+    "/api/register/check-invite",
+    "/api/register/complete",
+    "/api/family-setup/example-token",
+  ])(
     "laesst Registrierungs-API %s fuer Pending-Anmeldung durch",
     async (path) => {
       const res = await proxy(makeRequest(path, "POST"));

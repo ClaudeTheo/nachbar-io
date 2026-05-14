@@ -75,7 +75,10 @@ test.describe("S1: Onboarding — 4-Schritt Magic-Link-Flow", () => {
     await registerPage.assertEntryVisible();
 
     // Beschreibungstexte pruefen
-    await expect(page.getByText(/per Brief, Aushang/i)).toBeVisible();
+    await expect(
+      page.getByText(/Hausnummer-Code aus Ihrem Brief/i),
+    ).toBeVisible();
+    await expect(page.getByText(/Aushang/i)).toHaveCount(0);
     await expect(
       page.getByText(
         "Nur für das Pilotgebiet rund um Purkersdorfer Str., Sanarystr. und Oberer Rebberg",

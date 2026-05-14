@@ -53,6 +53,10 @@ export class HelpNewPage {
   readonly descriptionInput: Locator;
   readonly submitButton: Locator;
   readonly categoryButtons: Locator;
+  readonly recognitionSection: Locator;
+  readonly freeRecognition: Locator;
+  readonly suggestedRecognition: Locator;
+  readonly suggestedRecognitionInput: Locator;
 
   constructor(page: Page) {
     this.page = page;
@@ -62,6 +66,10 @@ export class HelpNewPage {
     this.descriptionInput = page.getByLabel(/Beschreibung/i);
     this.submitButton = page.getByRole("button", { name: /veröffentlichen|absenden|erstellen/i });
     this.categoryButtons = page.locator("button").filter({ hasText: /Garten|Einkaufen|Fahrdienst|IT|Kinderbetreuung|Handwerk|Tierbetreuung|Nachhilfe|Gesellschaft|Paketannahme|Sonstiges/i });
+    this.recognitionSection = page.getByText("Freiwillige Anerkennung");
+    this.freeRecognition = page.getByRole("radio", { name: /Kostenlos \/ freiwillig/i });
+    this.suggestedRecognition = page.getByRole("radio", { name: /Unverbindlicher Wunschbetrag/i });
+    this.suggestedRecognitionInput = page.getByLabel(/Wunschbetrag in Euro/i);
   }
 
   async goto() {
@@ -74,6 +82,7 @@ export class HelpNewPage {
     category: string;
     title?: string;
     description?: string;
+    suggestedRecognitionEuros?: string;
   }) {
     // Typ waehlen
     if (options.type === "need") {
@@ -108,8 +117,17 @@ export class HelpNewPage {
       }
     }
 
+    if (options.suggestedRecognitionEuros) {
+      await this.chooseSuggestedRecognition(options.suggestedRecognitionEuros);
+    }
+
     // Absenden
     await this.submitButton.click();
     await waitForStableUI(this.page);
+  }
+
+  async chooseSuggestedRecognition(amount: string) {
+    await this.suggestedRecognition.click();
+    await this.suggestedRecognitionInput.fill(amount);
   }
 }

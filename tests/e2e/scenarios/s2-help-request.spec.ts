@@ -65,6 +65,11 @@ test.describe("S2: Hilfe-Anfrage → Zustellung → Annahme", () => {
         await descInput.fill("Ich brauche Hilfe beim Einkaufen. Circa 30 Minuten.");
       }
 
+      await expect(page.getByText("Freiwillige Anerkennung")).toBeVisible();
+      await page.getByRole("radio", { name: /Unverbindlicher Wunschbetrag/i }).click();
+      await page.getByLabel(/Wunschbetrag in Euro/i).fill("10");
+      await expect(page.getByText(/nimmt keine Zahlungen entgegen/i)).toBeVisible();
+
       // Absenden
       const submitBtn = page.getByRole("button", { name: /veröffentlichen|absenden|erstellen/i });
       await submitBtn.click();
@@ -93,6 +98,7 @@ test.describe("S2: Hilfe-Anfrage → Zustellung → Annahme", () => {
         page.locator("article, [role='article'], .rounded-lg", { hasText: testTitle })
       );
       await expect(helpCard.first()).toBeVisible();
+      await expect(helpCard.first()).toContainText(/Unverbindlicher Wunschbetrag: 10,00 Euro/i);
       console.log("[B] Hilfe-Anfrage im Feed gefunden");
     });
   });

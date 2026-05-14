@@ -13,22 +13,11 @@ export interface PilotHousehold {
   street_name: string;
   house_number: string;
   invite_code: string;
-  codes: PilotHouseholdCodeSummary[];
   quarter: {
     name: string;
     slug: string;
     invite_prefix: string;
   };
-}
-
-export interface PilotHouseholdCodeSummary {
-  id: string;
-  code_hint: string;
-  code_kind: "primary" | "replacement";
-  status: "available" | "assigned" | "claimed" | "revoked" | "expired";
-  batch_label: string;
-  printed_at: string | null;
-  claimed_at: string | null;
 }
 
 // ============================================================
@@ -48,16 +37,7 @@ export async function getPilotHouseholds(
     .select(
       `
       id, street_name, house_number, invite_code,
-      quarter:quarters!inner(name, slug, invite_prefix),
-      codes:pilot_household_access_codes(
-        id,
-        code_hint,
-        code_kind,
-        status,
-        batch_label,
-        printed_at,
-        claimed_at
-      )
+      quarter:quarters!inner(name, slug, invite_prefix)
     `,
     )
     .eq("quarters.invite_prefix", "PILOT")
@@ -68,8 +48,5 @@ export async function getPilotHouseholds(
     throw new ServiceError(error.message, 500);
   }
 
-  return ((data ?? []) as unknown as PilotHousehold[]).map((household) => ({
-    ...household,
-    codes: household.codes ?? [],
-  }));
+  return (data ?? []) as unknown as PilotHousehold[];
 }

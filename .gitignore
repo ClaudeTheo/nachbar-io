@@ -47,6 +47,8 @@ next-env.d.ts
 playwright-report/
 test-results/
 .auth/
+storybook-static/
+chromatic-diagnostics.json
 
 # Tool-generated
 docs/superpowers/

@@ -41,7 +41,8 @@ describe("RegisterStepIdentity", () => {
     expect(screen.getByLabelText("Nachname")).toBeInTheDocument();
     expect(screen.getByLabelText("Geburtsdatum")).toBeInTheDocument();
     expect(screen.getByText(/Vertrauen, Sicherheit und Pilot-Zuordnung/i)).toBeInTheDocument();
-    expect(screen.getByText(/Elternteil den Kinderaccount anlegen/i)).toBeInTheDocument();
+    expect(screen.getByText(/Jugendliche ab 14/i)).toBeInTheDocument();
+    expect(screen.getByText(/Jugendmodus starten/i)).toBeInTheDocument();
     expect(screen.queryByText(/Klarname ist nicht erforderlich/i)).not.toBeInTheDocument();
   });
 

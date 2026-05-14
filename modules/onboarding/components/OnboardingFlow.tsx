@@ -22,9 +22,10 @@ import { SlideWelcome } from "./slides/SlideWelcome";
 import { SlideEmergency } from "./slides/SlideEmergency";
 import SlideVideo from "./slides/SlideVideo";
 import { SlideReady } from "./slides/SlideReady";
+import { SlideFamilySetup } from "./slides/SlideFamilySetup";
 import { SlideSkills } from "./SlideSkills";
 
-const TOTAL_SLIDES = 6;
+const TOTAL_SLIDES = 7;
 const SWIPE_THRESHOLD = 50;
 
 const BUTTON_LABELS = [
@@ -32,6 +33,7 @@ const BUTTON_LABELS = [
   "Weiter",           // Modusauswahl
   "Verstanden",       // Notfall-System
   "Weiter",           // Hilfsangebote
+  "Weiter",           // Familie & Betreuung
   "Weiter",           // Video
   "Zum Dashboard",    // Fertig
 ];
@@ -248,8 +250,9 @@ export function OnboardingFlow() {
       );
       case 2: return <SlideEmergency />;
       case 3: return <SlideSkills selectedSkills={selectedSkills} onToggle={toggleSkill} />;
-      case 4: return <SlideVideo variant="welcome" />;
-      case 5: return <SlideReady displayName={displayName} />;
+      case 4: return <SlideFamilySetup />;
+      case 5: return <SlideVideo variant="welcome" />;
+      case 6: return <SlideReady displayName={displayName} />;
       default: return null;
     }
   }

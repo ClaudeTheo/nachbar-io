@@ -63,6 +63,7 @@ describe("GET /api/pilot/households", () => {
     const body = await res.json();
     expect(body.households).toHaveLength(1);
     expect(body.households[0].invite_code).toBe("PILOT-ABCD-EFGH");
+    expect(body.households[0].codes).toEqual([]);
   });
 
   it("gibt 500 bei Datenbankfehler zurueck", async () => {

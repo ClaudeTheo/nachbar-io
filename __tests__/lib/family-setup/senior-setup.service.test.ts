@@ -1,5 +1,4 @@
 import { describe, expect, it, vi } from "vitest";
-import { ServiceError } from "@/lib/services/service-error";
 
 interface DbCall {
   table: string;
@@ -186,7 +185,7 @@ describe("senior setup service", () => {
         displayName: "Erika",
         now: new Date("2026-05-14T10:00:00.000Z"),
       }),
-    ).rejects.toMatchObject<ServiceError>({
+    ).rejects.toMatchObject({
       status: 409,
       code: "CAREGIVER_LINK_EXISTS",
     });

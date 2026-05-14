@@ -28,7 +28,8 @@ interface QueryBuilder {
 }
 
 interface FamilySetupDb {
-  from: (table: string) => QueryBuilder;
+  // Supabase gibt je nach Query-Schritt unterschiedliche Builder-Typen zurueck.
+  from: (table: string) => any;
   auth?: {
     admin?: {
       createUser: (input: {
@@ -147,7 +148,7 @@ export async function claimChildSetupInvitation(
     .from("family_setup_invitations")
     .select("*")
     .eq("token_hash", tokenHash)
-    .single<FamilySetupInvitationRow>();
+    .single();
 
   if (invitationError || !invitation || !canClaimInvitation(invitation, now)) {
     throw new ServiceError("Setup-Code ist ungueltig oder abgelaufen.", 410);
@@ -162,7 +163,7 @@ export async function claimChildSetupInvitation(
     .is("used_at", null)
     .gt("expires_at", claimedAt)
     .select("id")
-    .single<{ id: string }>();
+    .single();
 
   if (claimError || !claimLock) {
     throw new ServiceError("Setup-Code wurde bereits verwendet.", 409);
@@ -240,7 +241,7 @@ async function loadGuardianMembership(
     .from("household_members")
     .select("household_id, households(quarter_id)")
     .eq("user_id", guardianUserId)
-    .maybeSingle<GuardianMembership>();
+    .maybeSingle();
 
   return data ?? null;
 }
@@ -283,7 +284,7 @@ async function insertChildSetupInvitation(
       },
     })
     .select("id, expires_at")
-    .single<{ id: string; expires_at: string }>();
+    .single();
 
   if (error || !data) {
     throw new ServiceError("Kinderzugang konnte nicht vorbereitet werden.", 500);

@@ -1,5 +1,4 @@
 import { describe, expect, it, vi } from "vitest";
-import { ServiceError } from "@/lib/services/service-error";
 
 interface DbCall {
   table: string;
@@ -127,7 +126,7 @@ describe("child setup service", () => {
         appUrl: "https://nachbar.test",
         now: new Date("2026-05-14T10:00:00.000Z"),
       }),
-    ).rejects.toMatchObject<ServiceError>({
+    ).rejects.toMatchObject({
       status: 409,
       code: "CHILD_LIMIT_REVIEW_REQUIRED",
       data: { status: "needs_admin_review" },
@@ -173,7 +172,7 @@ describe("child setup service", () => {
         displayName: "Mia",
         now: new Date("2026-05-14T10:00:00.000Z"),
       }),
-    ).rejects.toMatchObject<ServiceError>({ status: 409 });
+    ).rejects.toMatchObject({ status: 409 });
 
     expect(db.calls.some((call) => call.table === "family_child_links")).toBe(false);
   });

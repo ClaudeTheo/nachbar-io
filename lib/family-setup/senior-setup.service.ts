@@ -27,7 +27,8 @@ interface QueryBuilder {
 }
 
 interface FamilySetupDb {
-  from: (table: string) => QueryBuilder;
+  // Supabase gibt je nach Query-Schritt unterschiedliche Builder-Typen zurueck.
+  from: (table: string) => any;
   auth?: {
     admin?: {
       createUser: (input: {
@@ -125,7 +126,7 @@ export async function createSeniorSetupInvitation(
       },
     })
     .select("id, expires_at")
-    .single<{ id: string; expires_at: string }>();
+    .single();
 
   if (error || !data) {
     throw new ServiceError("Senior-Zugang konnte nicht vorbereitet werden.", 500);
@@ -155,7 +156,7 @@ export async function claimSeniorSetupInvitation(
     .from("family_setup_invitations")
     .select("*")
     .eq("token_hash", tokenHash)
-    .single<SeniorSetupInvitationRow>();
+    .single();
 
   if (invitationError || !invitation || !canClaimInvitation(invitation, now)) {
     throw new ServiceError("Setup-Code ist ungueltig oder abgelaufen.", 410);
@@ -170,7 +171,7 @@ export async function claimSeniorSetupInvitation(
     .is("used_at", null)
     .gt("expires_at", claimedAt)
     .select("id")
-    .single<{ id: string }>();
+    .single();
 
   if (claimError || !claimLock) {
     throw new ServiceError("Setup-Code wurde bereits verwendet.", 409);
@@ -221,7 +222,7 @@ async function loadMembership(
     .from("household_members")
     .select("household_id, households(quarter_id)")
     .eq("user_id", userId)
-    .maybeSingle<Membership>();
+    .maybeSingle();
 
   return data ?? null;
 }
@@ -300,7 +301,7 @@ async function persistCaregiverLink(
       sensitive_data_allowed: false,
     })
     .select("id")
-    .single<{ id: string }>();
+    .single();
 
   if (error?.code === "23505") {
     throw new ServiceError(

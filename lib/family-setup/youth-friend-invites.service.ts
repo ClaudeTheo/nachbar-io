@@ -22,7 +22,8 @@ interface QueryBuilder {
 }
 
 interface FamilySetupDb {
-  from: (table: string) => QueryBuilder;
+  // Supabase gibt je nach Query-Schritt unterschiedliche Builder-Typen zurueck.
+  from: (table: string) => any;
 }
 
 interface GuardianLinkRow {
@@ -102,7 +103,7 @@ export async function createYouthFriendInviteRequest(
       },
     })
     .select("id")
-    .single<{ id: string }>();
+    .single();
 
   if (error || !data) {
     throw new ServiceError("Freundeinladung konnte nicht vorbereitet werden.", 500);
@@ -123,7 +124,7 @@ export async function approveYouthFriendInviteRequest(
     .from("family_setup_invitations")
     .select("*")
     .eq("id", input.requestId)
-    .single<FriendInviteRow>();
+    .single();
 
   if (requestError || !request || request.status !== "pending_parent_approval") {
     throw new ServiceError("Freundeinladung ist nicht mehr freigabefaehig.", 409);
@@ -164,7 +165,7 @@ export async function approveYouthFriendInviteRequest(
     .eq("id", request.id)
     .eq("status", "pending_parent_approval")
     .select("id, expires_at")
-    .single<{ id: string; expires_at: string }>();
+    .single();
 
   if (error || !data) {
     throw new ServiceError("Freundeinladung konnte nicht freigegeben werden.", 500);
@@ -200,7 +201,7 @@ async function loadGuardianLinkForChild(
     .eq("child_user_id", childUserId)
     .eq("status", "active")
     .is("revoked_at", null)
-    .maybeSingle<GuardianLinkRow>();
+    .maybeSingle();
   return data ?? null;
 }
 
@@ -216,6 +217,6 @@ async function loadActiveGuardianLink(
     .eq("child_user_id", childUserId)
     .eq("status", "active")
     .is("revoked_at", null)
-    .maybeSingle<{ id: string }>();
+    .maybeSingle();
   return data ?? null;
 }

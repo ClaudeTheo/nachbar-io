@@ -85,7 +85,9 @@ function RedesignBottomNav() {
   const pathname = usePathname();
   const { count: unreadCount } = useUnreadCount();
   const { role } = useNavRole();
-  const items = getNavItems(role);
+  const isYouthRoute =
+    pathname === "/jugend" || Boolean(pathname?.startsWith("/jugend/"));
+  const items = getNavItems(isYouthRoute ? "youth" : role);
 
   return (
     <div className="mx-auto flex h-16 max-w-lg items-center justify-around">

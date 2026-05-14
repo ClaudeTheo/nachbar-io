@@ -277,4 +277,44 @@ describe("updateSession (Auth-Middleware)", () => {
     expect(res.status).not.toBe(503);
     expect(res.status).not.toBe(403);
   });
+
+  it("laesst Jugendnutzer in die Jugend-App", async () => {
+    mockGetUser.mockResolvedValue({ data: { user: { id: "youth-user" } } });
+    mockSingle.mockResolvedValue({
+      data: { ui_mode: "youth", is_admin: false },
+      error: null,
+    });
+
+    const req = new NextRequest("http://localhost/jugend");
+    const res = await updateSession(req);
+
+    expect(res.status).not.toBe(307);
+  });
+
+  it("laesst Admins auch ohne youth-ui-mode in die Jugend-App", async () => {
+    mockGetUser.mockResolvedValue({ data: { user: { id: "admin-user" } } });
+    mockSingle.mockResolvedValue({
+      data: { ui_mode: "comfort", is_admin: true },
+      error: null,
+    });
+
+    const req = new NextRequest("http://localhost/jugend/tauschen");
+    const res = await updateSession(req);
+
+    expect(res.status).not.toBe(307);
+  });
+
+  it("leitet Nicht-Jugendliche ohne Adminrechte aus der Jugend-App heraus", async () => {
+    mockGetUser.mockResolvedValue({ data: { user: { id: "adult-user" } } });
+    mockSingle.mockResolvedValue({
+      data: { ui_mode: "comfort", is_admin: false },
+      error: null,
+    });
+
+    const req = new NextRequest("http://localhost/jugend/gruppen");
+    const res = await updateSession(req);
+
+    expect(res.status).toBe(307);
+    expect(res.headers.get("location")).toBe("http://localhost/dashboard");
+  });
 });

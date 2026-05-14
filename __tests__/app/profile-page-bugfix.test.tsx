@@ -379,7 +379,7 @@ describe("ProfilePage — Error-Handling Bugfixes", () => {
   // =========================================================================
   // 6. Null ui_mode → "active" Default
   // =========================================================================
-  it('behandelt null ui_mode als "active" und zeigt alle Modus-Optionen', async () => {
+  it('behandelt null ui_mode als "active" und blendet Jugend fuer Nicht-Admins aus', async () => {
     mockUserSelect.mockResolvedValue({
       data: makeProfile({ ui_mode: null }),
       error: null,
@@ -392,6 +392,20 @@ describe("ProfilePage — Error-Handling Bugfixes", () => {
       expect(screen.getByText("Aktiv")).toBeDefined();
       expect(screen.getByText("Komfort")).toBeDefined();
       expect(screen.getByText("Einfach")).toBeDefined();
+      expect(screen.queryByText("Junges Quartier")).toBeNull();
+    });
+  });
+
+  it("zeigt Jugendmodus als Admin-Testzugang", async () => {
+    mockUserSelect.mockResolvedValue({
+      data: makeProfile({ is_admin: true }),
+      error: null,
+    });
+    mockHouseholdSelect.mockResolvedValue({ data: null, error: null });
+
+    render(<ProfilePage />);
+
+    await waitFor(() => {
       expect(screen.getByText("Junges Quartier")).toBeDefined();
     });
   });

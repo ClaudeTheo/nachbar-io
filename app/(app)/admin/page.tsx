@@ -447,6 +447,7 @@ export default function AdminPage() {
             <div className="grid grid-cols-2 gap-2">
               <QuickActionCard icon={<TriangleAlert className="h-5 w-5 text-alert-amber" />} label="Offene Meldungen" count={stats.openAlerts} onClick={() => setActiveTab("content")} urgent={stats.openAlerts > 0} />
               <QuickActionCard icon={<Users className="h-5 w-5 text-quartier-green" />} label="Nutzer verwalten" count={stats.totalUsers} onClick={() => setActiveTab("users")} />
+              <QuickActionCard icon={<Shield className="h-5 w-5 text-cyan-500" />} label="Jugend-App testen" onClick={() => router.push("/jugend")} />
               <QuickActionCard icon={<Megaphone className="h-5 w-5 text-blue-500" />} label="Push senden" onClick={() => setActiveTab("push")} />
               <QuickActionCard icon={<Newspaper className="h-5 w-5 text-rose-500" />} label="News erstellen" onClick={() => setActiveTab("news")} />
             </div>

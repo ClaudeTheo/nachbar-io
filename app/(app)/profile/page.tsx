@@ -324,6 +324,9 @@ export default function ProfilePage() {
   }
 
   const currentUiMode = isUserUiMode(user.ui_mode) ? user.ui_mode : "active";
+  const selectableUiModes = USER_UI_MODES.filter(
+    (mode) => mode !== "youth" || currentUiMode === "youth" || user.is_admin,
+  );
 
   return (
     <div className="space-y-4">
@@ -663,7 +666,7 @@ export default function ProfilePage() {
                   Aktueller Modus: {USER_MODE_CONFIG[currentUiMode].label}
                 </p>
                 <div className="mt-3 grid grid-cols-2 gap-2">
-                  {USER_UI_MODES.map((mode) => (
+                  {selectableUiModes.map((mode) => (
                     <Button
                       key={mode}
                       type="button"

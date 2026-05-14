@@ -159,6 +159,10 @@ export async function updateSession(
   // Jugend-Freigabe: Oeffentliche Elternfreigabe-Seiten (via SMS-Token, kein Login)
   const isYouthConsentPage =
     request.nextUrl.pathname.startsWith("/jugend/freigabe");
+  const isYouthAppPage =
+    (request.nextUrl.pathname === "/jugend" ||
+      request.nextUrl.pathname.startsWith("/jugend/")) &&
+    !isYouthConsentPage;
   // Kiosk: Eigenes Auth-System (QR-Code, PIN, Gast-Modus) — keine Supabase-Session noetig
   const isKioskPage = request.nextUrl.pathname.startsWith("/kiosk");
 
@@ -232,6 +236,23 @@ export async function updateSession(
 
       const url = request.nextUrl.clone();
       url.pathname = "/freigabe-ausstehend";
+      return NextResponse.redirect(url);
+    }
+  }
+
+  if (user && isYouthAppPage) {
+    const { data: profile } = await supabase
+      .from("users")
+      .select("ui_mode, is_admin")
+      .eq("id", user.id)
+      .single();
+
+    const canUseYouthApp =
+      profile?.ui_mode === "youth" || profile?.is_admin === true;
+
+    if (!canUseYouthApp) {
+      const url = request.nextUrl.clone();
+      url.pathname = "/dashboard";
       return NextResponse.redirect(url);
     }
   }

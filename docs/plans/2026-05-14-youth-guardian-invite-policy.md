@@ -18,6 +18,10 @@ Elternteil des einladenden Kindes.
 - Das Elternteil des einladenden Kindes muss bestaetigen, dass ein echtes
   Vertrauensverhaeltnis besteht.
 - Die eingeladene Person bekommt nur den altersgerechten Jugend-Zugang.
+- Kinderaccounts werden immer mit `users.ui_mode = 'youth'` angelegt.
+- Nach Login fuehrt `/after-login` dadurch direkt nach `/jugend`.
+- Die Jugend-App nutzt eine eigene moderne Oberflaeche, nicht die Erwachsenen-
+  Startseite.
 - U13 duerfen keine Aufgaben annehmen.
 - U18 duerfen nur kostenlose, niedrig-riskante, altersgerechte Funktionen nutzen
   und benoetigen Freigabe fuer erweiterte Funktionen.
@@ -44,4 +48,6 @@ weitergeleitet oder in Gruppen gepostet werden.
 - Ab dem 6. Kind: Antrag statt direkter Erstellung.
 - Kinder-Freundeinladung: Kind erstellt Vorschlag, Elternteil bestaetigt,
   dann wird ein einmaliger Code erzeugt.
+- Eltern-Code-Login: eingeloggtes Kind bekommt direkt den `youth`-Modus und
+  sieht die moderne Jugend-App (`/jugend`) mit altersgerechter Navigation.
 - Admin-Uebersicht fuer Antraege und auffaellige Einladungen.

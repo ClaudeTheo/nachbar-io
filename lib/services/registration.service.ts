@@ -12,6 +12,7 @@ import {
 import { ServiceError } from "@/lib/services/service-error";
 import { CURRENT_CONSENT_VERSION } from "@/lib/care/constants";
 import { isClosedPilotMode } from "@/lib/closed-pilot";
+import type { UserUiMode } from "@/lib/user-modes";
 
 // ============================================================
 // Typen
@@ -24,7 +25,7 @@ export interface RegistrationInput {
   firstName?: string;
   lastName?: string;
   dateOfBirth?: string;
-  uiMode?: "active" | "senior";
+  uiMode?: UserUiMode;
   householdId?: string;
   streetName?: string;
   houseNumber?: string;

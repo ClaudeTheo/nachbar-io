@@ -131,6 +131,14 @@ for Production; use GitHub Actions/Linux or `vercel deploy --prod` without
 
 - Before new code or new structure: run a repo pre-check with `rg` and document
   whether matching infrastructure already exists.
+- **Security mini-audit before any wave touching auth/RLS/admin surface.**
+  Triggers: new migration with user-writable rights, new admin route, RLS policy
+  change, new auth/token path, new `users.settings` key, role/permission check.
+  Run the 5-minute checklist from `../.claude/rules/security-mini-audit.md`:
+  RLS read-pass + trigger inventory + privilege-column sweep + audit-trail check
+  + rate-limit check. STOP on CRITICAL/HIGH and report to founder.
+  Lesson Pass 63 (2026-05-15): 1 CRITICAL + 3 HIGH findings sat between
+  Phase-5 audit (2026-05-04) and Pass 63 undetected; ADM-3 dormant since Mig 001.
 - TDD is required for behavioral changes: RED, GREEN, then refactor.
 - Keep MVP scope small. Avoid duplicate abstractions and migrations unless the
   codebase proves they are needed.

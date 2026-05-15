@@ -20,6 +20,10 @@ describe("closed pilot public paths", () => {
     expect(isClosedPilotPublicPath("/map-activity-pins-preview")).toBe(true);
   });
 
+  it("keeps the local four-mode UI preview public in closed pilot", () => {
+    expect(isClosedPilotPublicPath("/ui-modes-preview")).toBe(true);
+  });
+
   it("keeps setup-code claim pages public in closed pilot", () => {
     expect(isClosedPilotPublicPath("/setup/example-token")).toBe(true);
   });

@@ -36,6 +36,7 @@ import { isLegacyRoute } from "@/lib/legacy-routes";
 import { PageHeader } from "@/components/ui/page-header";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { UserModeChoiceCard } from "@/components/modes/UserModeSurface";
 import { Separator } from "@/components/ui/separator";
 import { TrustBadge } from "@/components/TrustBadge";
 import { resolveAvatarUrl } from "@/lib/storage";
@@ -668,18 +669,16 @@ export default function ProfilePage() {
                 <p className="mt-1 text-sm text-muted-foreground">
                   Aktueller Modus: {USER_MODE_CONFIG[currentUiMode].label}
                 </p>
-                <div className="mt-3 grid grid-cols-2 gap-2">
+                <div className="mt-3 grid gap-2">
                   {selectableUiModes.map((mode) => (
-                    <Button
+                    <UserModeChoiceCard
                       key={mode}
-                      type="button"
-                      size="sm"
-                      variant={currentUiMode === mode ? "default" : "outline"}
+                      active={currentUiMode === mode}
                       disabled={currentUiMode === mode}
-                      onClick={() => handleSetUiMode(mode)}
-                    >
-                      {USER_MODE_CONFIG[mode].label}
-                    </Button>
+                      mode={mode}
+                      onSelect={handleSetUiMode}
+                      variant="compact"
+                    />
                   ))}
                 </div>
               </div>

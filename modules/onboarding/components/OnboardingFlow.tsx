@@ -7,12 +7,11 @@ import { createClient } from "@/lib/supabase/client";
 import { getCachedUser } from "@/lib/supabase/cached-auth";
 import { completeOnboarding } from "../services/onboarding";
 import { Button } from "@/components/ui/button";
+import { UserModeChoiceCard } from "@/components/modes/UserModeSurface";
 import { ProgressDots } from "./ProgressDots";
 import { ConfettiEffect } from "./ConfettiEffect";
 import {
   getUserModeConfig,
-  USER_MODE_CONFIG,
-  USER_MODE_ONBOARDING_INTROS,
   USER_UI_MODES,
   type UserUiMode,
 } from "@/lib/user-modes";
@@ -214,36 +213,15 @@ export function OnboardingFlow() {
               </p>
             </div>
             <div className="grid gap-3">
-              {USER_UI_MODES.map((mode) => {
-                const config = USER_MODE_CONFIG[mode];
-                const active = selectedMode === mode;
-                return (
-                  <button
-                    key={mode}
-                    type="button"
-                    onClick={() => setSelectedMode(mode)}
-                    className={`rounded-xl border p-4 text-left transition-colors ${
-                      active
-                        ? "border-quartier-green bg-quartier-green/10"
-                        : "border-[#ebe5dd] bg-white"
-                    }`}
-                  >
-                    <span className="font-semibold text-anthrazit">
-                      {config.label}
-                    </span>
-                    <span className="mt-1 block text-sm text-muted-foreground">
-                      {config.description}
-                    </span>
-                    <span className="mt-3 block space-y-1 text-xs leading-5 text-muted-foreground">
-                      {USER_MODE_ONBOARDING_INTROS[mode].map((intro) => (
-                        <span key={intro} className="block">
-                          {intro}
-                        </span>
-                      ))}
-                    </span>
-                  </button>
-                );
-              })}
+              {USER_UI_MODES.map((mode) => (
+                <UserModeChoiceCard
+                  key={mode}
+                  active={selectedMode === mode}
+                  mode={mode}
+                  onSelect={setSelectedMode}
+                  variant="compact"
+                />
+              ))}
             </div>
           </div>
         </div>

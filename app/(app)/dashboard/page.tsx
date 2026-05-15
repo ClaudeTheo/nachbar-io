@@ -16,6 +16,7 @@ import { FloatingHelpButton } from "@/components/FloatingHelpButton";
 import { DailyCheckinBubble } from "@/modules/care/components/checkin/DailyCheckinBubble";
 import { BrandFooter } from "@/components/brand/BrandFooter";
 import { MapThumbnail } from "@/components/map/MapThumbnail";
+import { UserModeFocusStrip } from "@/components/modes/UserModeSurface";
 import { useMapStatuses } from "@/lib/hooks/useMapStatuses";
 import { useAuth } from "@/hooks/use-auth";
 import { createClient } from "@/lib/supabase/client";
@@ -39,6 +40,7 @@ function formatEyebrowDate(d: Date): string {
 export default function DashboardPage() {
   const {
     userName,
+    uiMode,
     dashboardDensity,
     reputationLevel,
     loading,
@@ -269,6 +271,8 @@ export default function DashboardPage() {
               </div>
             </div>
           )}
+
+          <UserModeFocusStrip mode={uiMode} />
 
           {/* ============================================================
               Nachbar-Karte (Founder 2026-05-12) — Karte des Quartiers mit

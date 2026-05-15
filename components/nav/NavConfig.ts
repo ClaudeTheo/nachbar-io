@@ -53,7 +53,7 @@ const seniorNav: NavItemConfig[] = [
   },
   {
     href: "/care",
-    label: "Gesundheit",
+    label: "Mein Tag",
     icon: Heart,
     activeColor: "text-red-700",
   },
@@ -107,7 +107,7 @@ const caregiverNav: NavItemConfig[] = [
   },
   {
     href: "/care",
-    label: "Gesundheit",
+    label: "Mein Tag",
     icon: HeartPulse,
     activeColor: "text-red-700",
   },

@@ -1,5 +1,5 @@
 // app/(app)/care/page.tsx
-// Gesundheit Hub — 6 große Kacheln (2-Spalten-Raster)
+// Mein-Tag Hub — 6 große Kacheln (2-Spalten-Raster)
 "use client";
 
 import { useEffect, useState } from "react";
@@ -191,10 +191,10 @@ export default function GesundheitHubPage() {
       <PageHeader
         title={
           <>
-            <Heart className="h-6 w-6 text-red-500" /> Gesundheit
+            <Heart className="h-6 w-6 text-red-500" /> Mein Tag
           </>
         }
-        subtitle="Ihr persönliches Gesundheits-Dashboard"
+        subtitle="Alltag, Gesundheit und Termine auf einen Blick"
         backHref="/dashboard"
         backLabel="Zurück zum Dashboard"
       />

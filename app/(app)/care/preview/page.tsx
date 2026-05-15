@@ -21,10 +21,10 @@ export default async function CareLocalPreviewPage() {
       <PageHeader
         title={
           <>
-            <Heart className="h-6 w-6 text-red-500" /> Gesundheit
+            <Heart className="h-6 w-6 text-red-500" /> Mein Tag
           </>
         }
-        subtitle="Ihr persönliches Gesundheits-Dashboard"
+        subtitle="Alltag, Gesundheit und Termine auf einen Blick"
         backHref="/dashboard"
         backLabel="Zurück zum Dashboard"
       />

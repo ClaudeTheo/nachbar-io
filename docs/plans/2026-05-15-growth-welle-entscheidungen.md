@@ -43,7 +43,7 @@ Nicht erlaubt ohne neues Founder-Go:
 
 | Punkt | Entscheidung fuer V1 |
 |---|---|
-| Aktiv Bottom-Nav `Gesundheit` vs. `Quartier` | Nicht anfassen in V1. **F-1 entschieden Pass 71+ (2026-05-16): `Gesundheit` → `Mein Tag` umbenennen.** Grund: Haftungs-arm (kein medizinisches Versprechen, beschreibt Zeitraum nicht Wirkung), Senior-tauglich, erweiterungsfaehig. Implementation in spaeterer Welle (`lib/navigation.ts` + 4 Modi + Tests, ~30 min). |
+| Aktiv Bottom-Nav `Gesundheit` vs. `Quartier` | Nicht anfassen in V1. **F-1 entschieden Pass 71+ (2026-05-16): `Gesundheit` → `Mein Tag` umbenennen.** Grund: Haftungs-arm (kein medizinisches Versprechen, beschreibt Zeitraum nicht Wirkung), Senior-tauglich, erweiterungsfaehig. Umsetzung lokal durch Codex: `components/nav/NavConfig.ts`, Care-Hub-Heading, Preview und Tests; keine Route-/DB-/API-Aenderung. |
 | Eigene `Gemeinschaft`-Hub-Seite | Nicht in V1. Erst Copy/Sortierung fuehlen lassen. **F-2 entschieden Pass 71+ (2026-05-16): Variante A — bleibt Kategorie unter DiscoverGrid. Grund: Pilot 0 mit ~5 Familien zu duenn fuer eigene Hub-Seite. Nach Pilot-Aktivitaet evaluieren ob B/C nachgezogen wird. Kein Lock-in.** |
 | Jugendliche Freunde aktiv einladen | Keine neue Jugend-Einladefunktion in V1. Bestehende Schutzlogik bleibt. **F-3 entschieden Pass 71+ (2026-05-16): Variante A — Status Quo, Eltern-Freigabe vor Kind-zu-Kind-Einladung bleibt (Mig 197 wie LIVE). Grund: Maximaler Jugendschutz, DSGVO-Art-8-konform, Haftungs-arm. Reality-Check fuer Pilot 0 (5-10 Familien) macht Frage akademisch — kann in Phase 2 neu bewertet werden.** |
 | Anerkennung fuer Empfehlungen | Keine neue Anerkennungs-/Punkte-Mechanik. Frontend-Copy darf Punkte leiser machen, Backend bleibt unberuehrt. |

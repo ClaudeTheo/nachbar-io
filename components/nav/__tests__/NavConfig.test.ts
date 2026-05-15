@@ -11,7 +11,7 @@ describe("getNavItems", () => {
     expect(items[1].label).toBe("Quartier");
     // Task B-5: Drift-Aufloesung — /quartier-info ist der Gewinner.
     expect(items[1].href).toBe("/quartier-info");
-    expect(items[2].label).toBe("Gesundheit");
+    expect(items[2].label).toBe("Mein Tag");
     expect(items[2].href).toBe("/care");
     expect(items[3].label).toBe("Ich");
     expect(items[3].href).toBe("/profile");
@@ -30,7 +30,7 @@ describe("getNavItems", () => {
     const items = getNavItems("caregiver");
     expect(items).toHaveLength(4);
     expect(items[1].href).toBe("/care/status");
-    expect(items[2].label).toBe("Gesundheit");
+    expect(items[2].label).toBe("Mein Tag");
     expect(items[2].href).toBe("/care");
     expect(items[3].href).toBe("/profile");
   });

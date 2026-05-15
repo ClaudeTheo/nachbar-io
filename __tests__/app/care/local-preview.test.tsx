@@ -23,7 +23,7 @@ describe("CareLocalPreviewPage", () => {
     render(await CareLocalPreviewPage());
 
     expect(
-      screen.getByRole("heading", { name: /Gesundheit/i }),
+      screen.getByRole("heading", { name: /Mein Tag/i }),
     ).toBeInTheDocument();
     expect(screen.getByText(/Check-in/i)).toBeInTheDocument();
     expect(screen.getByText(/Medikamente/i)).toBeInTheDocument();

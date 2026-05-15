@@ -177,7 +177,7 @@ const currentStructures: Record<RoleId, Structure> = {
     bottomNav: [
       { label: "Übersicht", href: "/dashboard", icon: Home },
       { label: "Status", href: "/care/status", icon: Heart },
-      { label: "Gesundheit", href: "/care", icon: HeartPulse },
+      { label: "Mein Tag", href: "/care", icon: HeartPulse },
       { label: "Ich", href: "/profile", icon: User },
     ],
     topActions: [
@@ -375,7 +375,7 @@ const proposedStructures: Record<RoleId, Structure> = {
     bottomNav: [
       { label: "Start", href: "/dashboard", icon: Home },
       { label: "Status", href: "/care/status", icon: Heart },
-      { label: "Gesundheit", href: "/care", icon: HeartPulse },
+      { label: "Mein Tag", href: "/care", icon: HeartPulse },
       { label: "Ich", href: "/profile", icon: User },
     ],
     topActions: [
@@ -431,7 +431,7 @@ const proposedStructures: Record<RoleId, Structure> = {
       "Nachbarn hinzufügen bleibt da, aber Komfort bleibt zuerst Alltag und Sicherheit.",
     ],
     decisions: [
-      "Status und Gesundheit bleiben Hauptnavigation.",
+      "Status und Mein Tag bleiben Hauptnavigation.",
       "Mein Kreis wird Familie plus Nachbarn, nicht nur Pflegekontakt.",
       "Kommunikationswege heißen nicht Inbox, sondern Kontakt/Kreis.",
     ],

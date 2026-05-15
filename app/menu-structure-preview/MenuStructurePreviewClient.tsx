@@ -296,7 +296,7 @@ const currentStructures: Record<RoleId, Structure> = {
 
 const proposedStructures: Record<RoleId, Structure> = {
   aktiv: {
-    headline: "Vorschlag: Die Quartiergemeinschaft wird der erste Produktbereich.",
+    headline: "Vorschlag: Die Quartiergemeinschaft bleibt der erste Produktbereich.",
     bottomNav: [
       { label: "Start", href: "/dashboard", icon: Home },
       { label: "Quartier", href: "/quartier-info", icon: Building2 },
@@ -304,20 +304,20 @@ const proposedStructures: Record<RoleId, Structure> = {
       { label: "Ich", href: "/profile", icon: User },
     ],
     topActions: [
-      { label: "Nachbar hinzufügen", href: "/kontakte/neu", icon: UserPlus, note: "Der wichtigste Wachstumsweg: vertraute Menschen direkt in die App holen." },
-      { label: "App empfehlen", href: "/invitations", icon: Share2, note: "Ein persönlicher Empfehlungslink statt kalter Werbung." },
       { label: "Heute im Quartier", href: "/news", icon: Newspaper, note: "News, Rathaus und Hinweise zusammen." },
+      { label: "Gemeinschaft", href: "/kontakte", icon: UsersRound, note: "Menschen, Gruppen und Generationen stehen vor dem Empfehlungsmechanismus." },
       { label: "Hilfe anbieten", href: "/hilfe", icon: Heart, note: "Aktiv soll helfen können." },
+      { label: "Teilen & Finden", href: "/teilen", icon: Repeat2, note: "Markt/Leihen/Wer hat gebündelt." },
     ],
     groups: [
       {
         title: "Gemeinschaft",
-        subtitle: "Nachbarn, Empfehlungen, Generationen, Vertrauen",
+        subtitle: "Menschen, Generationen, Vertrauen",
         tone: "green",
         items: [
-          { label: "Nachbar hinzufügen", href: "/kontakte/neu", icon: UserPlus, note: "Kontakt einladen, Haushalt bestätigen, Beziehung aufbauen." },
-          { label: "App empfehlen", href: "/invitations", icon: Share2, note: "Teilen per Link, QR oder persönlicher Einladung." },
-          { label: "Gemeinsam helfen", href: "/hilfe", icon: Heart, note: "Motiviert, weil der eigene Kreis sichtbar wächst." },
+          { label: "Menschen im Quartier", href: "/kontakte", icon: UsersRound, note: "Wer ist schon da, wen kenne ich, wer hilft wem?" },
+          { label: "Nachbar hinzufügen", href: "/kontakte/neu", icon: UserPlus, note: "Wichtige Nebenfunktion: sichtbar, aber nicht der Haupt-CTA." },
+          { label: "App empfehlen", href: "/invitations", icon: Share2, note: "Persönlich und freiwillig, nicht wie ein Promo-Code." },
         ],
       },
       {
@@ -362,13 +362,13 @@ const proposedStructures: Record<RoleId, Structure> = {
     ],
     feel: [
       "Die App fühlt sich zuerst nach Nachbarschaft an, nicht nach Verwaltung.",
-      "Wachstum passiert über Vertrauen: Nachbar hinzufügen, empfehlen, gemeinsam helfen.",
-      "Funktionen sind wichtig, aber sie hängen sichtbar an Menschen im Quartier.",
+      "Wachstum passiert nebenbei über Vertrauen, nicht über dauernde Invite-Hinweise.",
+      "Funktionen bleiben wichtig, aber sie hängen sichtbar an Menschen im Quartier.",
     ],
     decisions: [
-      "Start muss sofort Gemeinschaft zeigen: Wer ist da, wen kann ich einladen, was passiert in der Nähe?",
+      "Start muss sofort Gemeinschaft zeigen: Wer ist da, was passiert in der Nähe, wo kann ich mitmachen?",
       "Gesundheit bleibt erreichbar, aber nicht als Aktiv-Haupttab.",
-      "Empfehlung und Nachbar-hinzufügen werden eigene sichtbare Wachstumswege.",
+      "Empfehlung und Nachbar-hinzufügen bleiben auffindbar, aber sekundär.",
     ],
   },
   komfort: {
@@ -381,9 +381,9 @@ const proposedStructures: Record<RoleId, Structure> = {
     ],
     topActions: [
       { label: "Alles okay?", href: "/care/status", icon: CheckCircle2, note: "Ein ruhiger Tagesanker." },
-      { label: "Nachbar einladen", href: "/kontakte/neu", icon: UserPlus, note: "Für Komfort langsam und vertrauensvoll: bekannte Person hinzufügen." },
-      { label: "Termine", href: "/care/termine", icon: CalendarDays, note: "Schnell erreichbar." },
       { label: "Mein Kreis", href: "/mein-kreis", icon: UsersRound, note: "Familie, Pflegekontakt und vertraute Nachbarn." },
+      { label: "Termine", href: "/care/termine", icon: CalendarDays, note: "Schnell erreichbar." },
+      { label: "Medikamente", href: "/care/medications", icon: Pill, note: "Sichtbar, aber nicht alarmistisch." },
     ],
     groups: [
       {
@@ -429,7 +429,7 @@ const proposedStructures: Record<RoleId, Structure> = {
     feel: [
       "Weniger laut, stärker wie eine vertrauenswürdige Alltags-App.",
       "Pflege ist klar, aber eingebettet in echte Menschen.",
-      "Das Wachstum wirkt nicht wie Marketing, sondern wie: Ich hole jemanden Vertrautes dazu.",
+      "Nachbarn hinzufügen bleibt da, aber Komfort bleibt zuerst Alltag und Sicherheit.",
     ],
     decisions: [
       "Status und Gesundheit bleiben Hauptnavigation.",
@@ -446,10 +446,10 @@ const proposedStructures: Record<RoleId, Structure> = {
       { label: "Gruppen", href: "/jugend/gruppen", icon: UsersRound },
     ],
     topActions: [
-      { label: "Freund einladen", href: "/jugend/freunde/einladen", icon: UserPlus, note: "Wachstum über echte Freundschaft, nicht über trockene Registrierung." },
       { label: "Was geht?", href: "/jugend/aufgaben", icon: ClipboardList, note: "Missionen ohne Projektarbeits-Gefühl." },
       { label: "In der Nähe", href: "/map", icon: Map, note: "Karte als Erlebnis." },
       { label: "Tauschen", href: "/jugend/tauschen", icon: Repeat2, note: "Direkt." },
+      { label: "Gruppen", href: "/jugend/gruppen", icon: UsersRound, note: "Sozial." },
     ],
     groups: [
       {
@@ -489,7 +489,7 @@ const proposedStructures: Record<RoleId, Structure> = {
     ],
     decisions: [
       "Bottom-Nav unverändert lassen.",
-      "Freund-einladen wird sichtbar, aber mit Freigabe und Schutz.",
+      "Freund-einladen bleibt in Community sichtbar, aber nicht als erster Einstieg.",
       "Keine trockenen Verwaltungswörter im Jugendmodus.",
     ],
   },
@@ -503,9 +503,9 @@ const proposedStructures: Record<RoleId, Structure> = {
     ],
     topActions: [
       { label: "Mein Kreis", href: "/mein-kreis", icon: UsersRound, note: "Wer ist für mich da?" },
-      { label: "Nachbar dazu", href: "/kontakte/neu", icon: UserPlus, note: "Sehr einfache Einladung: Person, Telefon, bestätigen." },
       { label: "Hier bei mir", href: "/hier-bei-mir", icon: Building2, note: "Was ist in meiner Nähe?" },
       { label: "Schreiben", href: "/schreiben", icon: MessageCircle, note: "Eine einfache Nachricht." },
+      { label: "Notfall", href: "/sos", icon: AlertTriangle, note: "112/110 zuerst." },
     ],
     groups: [
       {
@@ -566,16 +566,16 @@ const duplicationNotes = [
 
 const communityGrowthNotes = [
   {
-    title: "Primärer Loop",
-    body: "Ein Nutzer erlebt Nutzen, fügt einen echten Nachbarn hinzu, beide sehen mehr Quartierleben und empfehlen weiter.",
+    title: "Leiser Loop",
+    body: "Erst Nutzen und Zugehörigkeit zeigen. Danach wird das Hinzufügen eines Nachbarn logisch, nicht aufdringlich.",
   },
   {
     title: "Motivatoren",
     body: "Vertrauen, konkrete Hilfe, lokale Sichtbarkeit, kleine Anerkennung und das Gefühl: Meine Straße wird lebendiger.",
   },
   {
-    title: "Nicht als Werbung",
-    body: "Empfehlungen sollten persönlich wirken: 'Ich lade Sie in unsere QuartierApp ein', nicht wie ein Promo-Code.",
+    title: "Nicht Haupt-CTA",
+    body: "Einladung und Empfehlung bleiben erreichbar, aber die App verkauft sich über Gemeinschaft und Alltag.",
   },
 ];
 
@@ -704,7 +704,7 @@ export function MenuStructurePreviewClient() {
 
             <section className="rounded-[8px] border border-[#4CAF87]/30 bg-white p-5 shadow-sm">
               <h2 className="text-xl font-semibold text-[#2D3142]">
-                Wachstumslogik der Quartiergemeinschaft
+                Leise Wachstumslogik der Quartiergemeinschaft
               </h2>
               <div className="mt-4 grid gap-3 md:grid-cols-3">
                 {communityGrowthNotes.map((note) => (

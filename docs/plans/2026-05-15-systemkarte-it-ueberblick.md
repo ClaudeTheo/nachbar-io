@@ -7,6 +7,12 @@ Zweck: Ein IT-Profi soll auf den ersten Blick erkennen, welche Apps, Module, Dat
 
 Nachbar.io ist keine einzelne App mehr, sondern eine Quartiersplattform mit mehreren Oberflaechen auf einem gemeinsamen Supabase-Datenmodell.
 
+Grafische One-Pager-Version:
+
+![Nachbar.io Systemkarte](./2026-05-15-nachbario-systemkarte.svg)
+
+Teilbare PNG-Version: [`2026-05-15-nachbario-systemkarte.png`](./2026-05-15-nachbario-systemkarte.png)
+
 ```mermaid
 flowchart LR
   subgraph Rollen["Nutzerrollen"]

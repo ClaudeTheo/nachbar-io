@@ -642,6 +642,15 @@
       URL.revokeObjectURL(url);
     }
 
+    function safeScriptString(value) {
+      return JSON.stringify(value)
+        .replace(/</g, "\\u003c")
+        .replace(/>/g, "\\u003e")
+        .replace(/&/g, "\\u0026")
+        .replace(/\u2028/g, "\\u2028")
+        .replace(/\u2029/g, "\\u2029");
+    }
+
     function downloadSummary() {
       updateSummary();
       download("nachbar-io-ui-modi-entscheidungen.txt", document.getElementById("summaryOutput").value, "text/plain;charset=utf-8");
@@ -649,9 +658,18 @@
     }
 
     function downloadHtml() {
-      const html = "<!doctype html>\n" + document.documentElement.outerHTML;
+      saveState();
+      const persistedState = [
+        "<script>",
+        "localStorage.setItem(" + safeScriptString(storageKey) + ", " + safeScriptString(JSON.stringify(state)) + ");",
+        "</script>"
+      ].join("\n");
+      const html = ("<!doctype html>\n" + document.documentElement.outerHTML).replace(
+        /<script\b/,
+        persistedState + "\n<script"
+      );
       download("nachbar-io-ui-modi-entscheidungsmatrix-bearbeitet.html", html, "text/html;charset=utf-8");
-      setStatus("Bearbeitete HTML wurde heruntergeladen.");
+      setStatus("Bearbeitete HTML wurde mit Ihren Auswahlen heruntergeladen.");
     }
 
     function setStatus(message) {

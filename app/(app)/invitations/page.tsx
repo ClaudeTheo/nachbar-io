@@ -97,7 +97,6 @@ export default function InvitationsPage() {
     (i) => i.status === "accepted" || i.status === "converted",
   ).length;
   const expiredCount = invitations.filter((i) => i.status === "expired").length;
-  const pointsEarned = acceptedCount * 50;
 
   // Einladelimit: Admin = unbegrenzt, PILOT_MODE = 50, Free = 15
   const isPilot = process.env.NEXT_PUBLIC_PILOT_MODE === "true";
@@ -169,7 +168,7 @@ export default function InvitationsPage() {
     <div className="space-y-4">
       {/* Header */}
       <PageHeader
-        title="Meine Einladungen"
+        title="QuartierApp persönlich zeigen"
         backHref="/dashboard"
         actions={
           <Button
@@ -178,7 +177,7 @@ export default function InvitationsPage() {
             onClick={() => setShowModal(true)}
           >
             <UserPlus className="mr-1.5 h-4 w-4" />
-            Einladen
+            Person einladen
           </Button>
         }
       />
@@ -201,10 +200,10 @@ export default function InvitationsPage() {
         </Card>
         <Card>
           <CardContent className="p-3 text-center">
-            <p className="text-2xl font-bold text-quartier-green">
-              {pointsEarned}
+            <p className="text-2xl font-bold text-muted-foreground">
+              {expiredCount}
             </p>
-            <p className="text-[11px] text-muted-foreground">Punkte</p>
+            <p className="text-[11px] text-muted-foreground">Abgelaufen</p>
           </CardContent>
         </Card>
       </div>
@@ -212,10 +211,11 @@ export default function InvitationsPage() {
       {/* Info-Hinweis */}
       {openCount < inviteLimit && invitations.length === 0 && !loading && (
         <div className="rounded-lg bg-blue-50 p-4 text-sm text-blue-700">
-          <p className="font-medium">Nachbarn einladen</p>
+          <p className="font-medium">Persönlich einladen</p>
           <p className="mt-1 text-xs">
-            Laden Sie Nachbarn per WhatsApp, E-Mail oder Code ein. Sie erhalten
-            <strong> 50 Punkte</strong> für jede angenommene Einladung!
+            Teilen Sie QuartierApp mit Menschen, die wirklich zu Ihrem Haus,
+            Ihrer Straße oder Ihrem Quartier gehören. Eine persönliche
+            Einladung wirkt besser als Werbung.
           </p>
         </div>
       )}
@@ -239,14 +239,14 @@ export default function InvitationsPage() {
           <CardContent className="p-8 text-center">
             <UserPlus className="mx-auto h-12 w-12 text-muted-foreground/30" />
             <p className="mt-3 text-sm text-muted-foreground">
-              Sie haben noch keine Einladungen versendet.
+              Sie haben QuartierApp noch niemandem persönlich gezeigt.
             </p>
             <Button
               className="mt-4 bg-quartier-green hover:bg-quartier-green-dark"
               onClick={() => setShowModal(true)}
             >
               <UserPlus className="mr-2 h-4 w-4" />
-              Ersten Nachbarn einladen
+              Erste Person einladen
             </Button>
           </CardContent>
         </Card>
@@ -301,12 +301,6 @@ export default function InvitationsPage() {
                       >
                         {getStatusLabel(invitation.status)}
                       </span>
-                      {(invitation.status === "accepted" ||
-                        invitation.status === "converted") && (
-                        <span className="text-quartier-green font-medium">
-                          +50 Punkte
-                        </span>
-                      )}
                     </div>
                   </div>
 

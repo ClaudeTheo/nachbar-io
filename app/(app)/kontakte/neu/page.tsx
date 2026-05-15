@@ -54,27 +54,28 @@ export default function NeuerKontaktPage() {
         >
           <ArrowLeft className="h-6 w-6" />
         </Link>
-        <h1 className="text-lg font-bold text-[#2D3142]">Neuer Kontakt</h1>
+        <h1 className="text-lg font-bold text-[#2D3142]">Nachbar hinzufügen</h1>
       </header>
 
       <form onSubmit={handleSubmit} className="space-y-4 p-4">
         <MyUserIdCard />
 
         <div className="rounded-2xl border border-[#2D3142]/10 bg-[#F8F9FA] p-4 text-sm text-[#2D3142]/80">
-          <strong>Tipp:</strong> Fragen Sie Ihren Bekannten nach seiner
-          Nutzer-ID. Spaeter gibt es auch einen Einladungs-Link.
+          <strong>Tipp:</strong> Fügen Sie Menschen hinzu, die Sie aus Ihrem
+          Haus, Ihrer Straße oder Ihrem Quartier kennen. Fragen Sie nach der
+          Nutzer-ID; später gibt es dafür auch einen einfachen Einladungs-Link.
         </div>
 
         <label className="block">
           <span className="mb-2 block text-sm font-semibold text-[#2D3142]">
-            Nutzer-ID
+            Nutzer-ID der vertrauten Person
           </span>
           <input
             type="text"
             value={userId}
             onChange={(e) => setUserId(e.target.value)}
             required
-            placeholder="UUID des anderen Nutzers"
+            placeholder="z.B. UUID der Person"
             className="min-h-20 w-full rounded-2xl border border-[#2D3142]/20 bg-white px-4 py-3 font-mono text-sm focus:border-[#4CAF87] focus:outline-none"
           />
         </label>
@@ -114,7 +115,7 @@ export default function NeuerKontaktPage() {
           className="flex min-h-20 w-full items-center justify-center gap-2 rounded-2xl bg-[#4CAF87] px-4 text-base font-semibold text-white disabled:opacity-50"
         >
           <UserPlus className="h-5 w-5" />
-          {submitting ? "Wird gesendet..." : "Anfrage senden"}
+          {submitting ? "Wird gesendet..." : "Kontaktanfrage senden"}
         </button>
       </form>
     </div>

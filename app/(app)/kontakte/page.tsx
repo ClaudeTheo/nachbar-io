@@ -84,15 +84,24 @@ export default function KontaktePage() {
         >
           <ArrowLeft className="h-6 w-6" />
         </Link>
-        <h1 className="flex-1 text-lg font-bold text-[#2D3142]">Kontakte</h1>
+        <h1 className="flex-1 text-lg font-bold text-[#2D3142]">
+          Menschen im Quartier
+        </h1>
         <Link
           href="/kontakte/neu"
           className="flex h-14 min-w-20 items-center justify-center gap-2 rounded-2xl bg-[#4CAF87] px-4 text-sm font-semibold text-white"
         >
           <UserPlus className="h-5 w-5" />
-          Einladen
+          Hinzufügen
         </Link>
       </header>
+
+      <div className="border-b border-[#2D3142]/10 bg-[#F8F9FA] px-4 py-3">
+        <p className="text-sm leading-6 text-[#2D3142]/75">
+          Hier entsteht Ihr vertrauter Kreis: Familie, Bekannte und Nachbarn,
+          die Sie wirklich kennen.
+        </p>
+      </div>
 
       {error ? (
         <div className="m-4 rounded-2xl bg-red-50 px-4 py-3 text-sm text-red-900">
@@ -154,9 +163,9 @@ export default function KontaktePage() {
             </h2>
             {accepted.length === 0 ? (
               <div className="px-4 py-6 text-center text-sm text-[#2D3142]/60">
-                Noch niemand im Kreis.{" "}
+                Noch niemand in Ihrem Kreis.{" "}
                 <Link href="/kontakte/neu" className="underline">
-                  Einladen
+                  Nachbar hinzufügen
                 </Link>
               </div>
             ) : (

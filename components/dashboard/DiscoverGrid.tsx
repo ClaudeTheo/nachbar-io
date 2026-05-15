@@ -54,7 +54,7 @@ interface DiscoverItem {
 }
 
 const CATEGORY_LABELS: Record<TileCategory, string> = {
-  nachbarschaft: "Nachbarschaft",
+  nachbarschaft: "Gemeinschaft",
   hilfe_pflege: "Hilfe & Pflege",
   quartier_info: "Quartier-Info",
   mehr: "Mehr Funktionen",
@@ -71,7 +71,7 @@ const VISIBLE_CATEGORIES: TileCategory[] = [
 // Reihenfolge im Array bestimmt Render-Reihenfolge innerhalb jeder Kategorie.
 // Exportiert, damit Tests die Liste konsistent referenzieren koennen.
 export const allItems: DiscoverItem[] = [
-  // === Nachbarschaft (5 Tiles, immer sichtbar) ===
+  // === Gemeinschaft (5 Tiles, immer sichtbar) ===
   {
     href: "/board",
     label: "Brett",
@@ -404,7 +404,7 @@ export function DiscoverGrid() {
           Entdecken
         </p>
         <h2 className="text-[22px] font-semibold leading-[1.3] tracking-[-0.01em] text-anthrazit">
-          Alle Funktionen Ihres Quartiers.
+          Gemeinschaft, Hilfe und lokale Informationen.
         </h2>
       </header>
 

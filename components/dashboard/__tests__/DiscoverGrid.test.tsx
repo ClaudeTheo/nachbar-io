@@ -40,7 +40,7 @@ beforeEach(() => {
 describe("DiscoverGrid", () => {
   // === Sichtbarkeit & Gesamtzaehlung ===
 
-  it("zeigt initial 13 Tiles (Nachbarschaft 5 + Hilfe&Pflege 4 + Quartier-Info 4)", () => {
+  it("zeigt initial 13 Tiles (Gemeinschaft 5 + Hilfe&Pflege 4 + Quartier-Info 4)", () => {
     // Plan 2026-05-11 Task 3 + Founder-Korrektur 2026-05-11: Sprechstunde und
     // Praevention leben nur im Gesundheit-Tab (CareHubTileGrid), nicht hier —
     // daher Hilfe&Pflege und Quartier-Info je 4 statt 5 Tiles.
@@ -64,7 +64,7 @@ describe("DiscoverGrid", () => {
     fireEvent.click(btn);
     const grid = container.querySelector('[data-testid="discover-grid"]')!;
     const links = grid.querySelectorAll("a");
-    // 5 Nachbarschaft + 4 Hilfe&Pflege + 4 Quartier-Info + 9 Mehr = 22
+    // 5 Gemeinschaft + 4 Hilfe&Pflege + 4 Quartier-Info + 9 Mehr = 22
     expect(links.length).toBe(22);
     // Button verschwindet
     expect(
@@ -118,14 +118,14 @@ describe("DiscoverGrid", () => {
 
   // === Kategorie-Sektionen ===
 
-  it("rendert die drei Kategorie-Headlines (Nachbarschaft, Hilfe & Pflege, Quartier-Info)", () => {
+  it("rendert die drei Kategorie-Headlines (Gemeinschaft, Hilfe & Pflege, Quartier-Info)", () => {
     const { container } = render(<DiscoverGrid />);
-    expect(container.textContent).toContain("Nachbarschaft");
+    expect(container.textContent).toContain("Gemeinschaft");
     expect(container.textContent).toContain("Hilfe & Pflege");
     expect(container.textContent).toContain("Quartier-Info");
   });
 
-  it("Nachbarschaft-Sektion enthaelt Brett, Hilfe, Marktplatz, Gruppen, Veranstaltungen", () => {
+  it("Gemeinschaft-Sektion enthaelt Brett, Hilfe, Marktplatz, Gruppen, Veranstaltungen", () => {
     const { container } = render(<DiscoverGrid />);
     const section = container.querySelector(
       '[data-testid="category-nachbarschaft"]',
@@ -288,7 +288,7 @@ describe("DiscoverGrid", () => {
       expect(hrefs).not.toContain("/events");
     });
 
-    // Nachbarschaft-Sektion hat dann nur noch 4 Tiles (vorher 5 inkl. Events)
+    // Gemeinschaft-Sektion hat dann nur noch 4 Tiles (vorher 5 inkl. Events)
     const nachbarschaft = container.querySelector(
       '[data-testid="category-nachbarschaft"]',
     )!;

@@ -22,7 +22,6 @@ import {
   ShoppingBag,
   Share2,
   Stethoscope,
-  Trophy,
   User,
   UserPlus,
   UsersRound,
@@ -361,7 +360,7 @@ const proposedStructures: Record<RoleId, Structure> = {
       },
     ],
     feel: [
-      "Die App fühlt sich zuerst nach Nachbarschaft an, nicht nach Verwaltung.",
+      "Die App fühlt sich zuerst nach Quartiergemeinschaft an, nicht nach Verwaltung.",
       "Wachstum passiert nebenbei über Vertrauen, nicht über dauernde Invite-Hinweise.",
       "Funktionen bleiben wichtig, aber sie hängen sichtbar an Menschen im Quartier.",
     ],
@@ -472,13 +471,13 @@ const proposedStructures: Record<RoleId, Structure> = {
       },
       {
         title: "Community",
-        subtitle: "Freunde, Gruppen, Tauschen, Empfehlung",
+        subtitle: "Freunde, Gruppen, Tauschen, Mitmachen",
         tone: "green",
         items: [
-          { label: "Freund einladen", href: "/jugend/freunde/einladen", icon: UserPlus, note: "Einladung mit Elternfreigabe, aber jugendlich formuliert." },
+          { label: "Freunde im Quartier", href: "/jugend/gruppen", icon: UsersRound, note: "Kontakte entstehen über geschützte Gruppen, nicht über offene Werbung." },
           { label: "Tauschen", href: "/jugend/tauschen", icon: Repeat2, note: "Geben/finden." },
           { label: "Gruppen", href: "/jugend/gruppen", icon: UsersRound, note: "Dranbleiben." },
-          { label: "Quartier-Bonus", href: "/jugend/badges", icon: Trophy, note: "Motivation für Mitmachen und sinnvolles Empfehlen." },
+          { label: "Mitmachen", href: "/jugend/badges", icon: Heart, note: "Motivation für echte Beiträge statt Punkte-Druck." },
         ],
       },
     ],
@@ -489,7 +488,7 @@ const proposedStructures: Record<RoleId, Structure> = {
     ],
     decisions: [
       "Bottom-Nav unverändert lassen.",
-      "Freund-einladen bleibt in Community sichtbar, aber nicht als erster Einstieg.",
+      "Kontakte und Gruppen bleiben sichtbar, aber ohne Invite-Druck.",
       "Keine trockenen Verwaltungswörter im Jugendmodus.",
     ],
   },
@@ -571,7 +570,7 @@ const communityGrowthNotes = [
   },
   {
     title: "Motivatoren",
-    body: "Vertrauen, konkrete Hilfe, lokale Sichtbarkeit, kleine Anerkennung und das Gefühl: Meine Straße wird lebendiger.",
+    body: "Vertrauen, konkrete Hilfe, lokale Sichtbarkeit, echtes Mitmachen und das Gefühl: Meine Straße wird lebendiger.",
   },
   {
     title: "Nicht Haupt-CTA",

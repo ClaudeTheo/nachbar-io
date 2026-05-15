@@ -70,7 +70,7 @@ export function AlertBanners({
         className="flex w-full items-center justify-center gap-2 rounded-xl border-2 border-dashed border-quartier-green/40 bg-quartier-green/5 p-3 text-sm font-medium text-quartier-green transition-all hover:border-quartier-green hover:bg-quartier-green/10 active:scale-[0.98]"
       >
         <UserPlus className="h-4 w-4" />
-        Nachbar einladen — 50 Punkte erhalten
+        Nachbar hinzufügen
       </button>
     </>
   );

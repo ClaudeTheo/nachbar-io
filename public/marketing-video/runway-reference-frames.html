@@ -1,0 +1,377 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Nachbar.io Runway Reference Frames</title>
+  <style>
+    * { box-sizing: border-box; }
+    html, body { margin: 0; background: #10131a; font-family: Inter, Arial, sans-serif; }
+    .frame {
+      position: relative;
+      width: 1920px;
+      height: 1080px;
+      overflow: hidden;
+      color: #2d3142;
+      isolation: isolate;
+    }
+    .bg {
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(circle at 18% 20%, rgba(255,255,255,.76), transparent 25%),
+        linear-gradient(180deg, #dceaf2 0%, #f7efe2 54%, #d8e5d4 100%);
+    }
+    .bg:before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        linear-gradient(142deg, transparent 0 42%, rgba(45,49,66,.14) 42.2% 43.2%, transparent 43.4%),
+        linear-gradient(160deg, transparent 0 58%, rgba(76,175,135,.14) 58.1% 59.2%, transparent 59.5%);
+      opacity: .75;
+    }
+    .hills {
+      position: absolute;
+      left: -80px;
+      right: -80px;
+      bottom: 0;
+      height: 360px;
+      background:
+        radial-gradient(ellipse at 18% 100%, #58704f 0 42%, transparent 43%),
+        radial-gradient(ellipse at 50% 106%, #78946d 0 46%, transparent 47%),
+        radial-gradient(ellipse at 84% 102%, #506849 0 44%, transparent 45%);
+      opacity: .92;
+    }
+    .street {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: -80px;
+      height: 300px;
+      background: linear-gradient(12deg, #9e9689 0 40%, #bdb3a3 41% 52%, #8f877b 53% 100%);
+      clip-path: polygon(0 72%, 100% 30%, 100% 100%, 0 100%);
+      opacity: .82;
+    }
+    .houses {
+      position: absolute;
+      left: 90px;
+      right: 90px;
+      bottom: 205px;
+      height: 230px;
+      display: flex;
+      gap: 28px;
+      align-items: flex-end;
+      opacity: .94;
+    }
+    .house {
+      width: 220px;
+      height: 128px;
+      background: #f4eadf;
+      border: 2px solid rgba(45,49,66,.18);
+      box-shadow: 0 18px 35px rgba(45,49,66,.14);
+      position: relative;
+    }
+    .house:before {
+      content: "";
+      position: absolute;
+      left: -10px;
+      right: -10px;
+      top: -54px;
+      height: 62px;
+      background: #bd6b45;
+      clip-path: polygon(0 100%, 50% 0, 100% 100%);
+    }
+    .house:after {
+      content: "";
+      position: absolute;
+      left: 28px;
+      top: 36px;
+      width: 38px;
+      height: 46px;
+      background: #8fb3c2;
+      box-shadow: 70px 0 #8fb3c2, 140px 0 #8fb3c2;
+      border-radius: 6px;
+    }
+    .tree {
+      position: absolute;
+      bottom: 292px;
+      width: 90px;
+      height: 210px;
+      background: #496b47;
+      clip-path: polygon(50% 0, 0 42%, 26% 42%, 0 70%, 33% 70%, 13% 100%, 87% 100%, 67% 70%, 100% 70%, 74% 42%, 100% 42%);
+      opacity: .9;
+    }
+    .tree.t1 { left: 126px; transform: scale(1.18); }
+    .tree.t2 { left: 1480px; transform: scale(1.35); }
+    .tree.t3 { left: 1690px; transform: scale(.98); }
+    .people {
+      position: absolute;
+      left: 140px;
+      bottom: 170px;
+      display: flex;
+      gap: 40px;
+      align-items: flex-end;
+    }
+    .person {
+      width: 46px;
+      height: 118px;
+      position: relative;
+      border-radius: 28px 28px 10px 10px;
+      background: var(--coat, #4caf87);
+      box-shadow: 0 16px 25px rgba(0,0,0,.18);
+    }
+    .person:before {
+      content: "";
+      position: absolute;
+      top: -36px;
+      left: 7px;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: #d7a06c;
+    }
+    .person.small { transform: scale(.78); transform-origin: bottom; }
+    .person.tall { transform: scale(1.1); transform-origin: bottom; }
+    .device {
+      position: absolute;
+      right: 150px;
+      top: 118px;
+      width: 455px;
+      height: 846px;
+      border-radius: 62px;
+      background: #10131a;
+      box-shadow: 0 40px 120px rgba(16,19,26,.35);
+      padding: 24px;
+      transform: rotate(2deg);
+    }
+    .tablet {
+      right: 115px;
+      top: 150px;
+      width: 640px;
+      height: 720px;
+      border-radius: 54px;
+      transform: rotate(-1deg);
+    }
+    .screen {
+      height: 100%;
+      border-radius: 44px;
+      background: #fffaf2;
+      overflow: hidden;
+      position: relative;
+      border: 1px solid rgba(255,255,255,.45);
+    }
+    .status {
+      height: 46px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 26px;
+      font-size: 16px;
+      font-weight: 700;
+      color: #2d3142;
+    }
+    .appbar {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 18px 28px 10px;
+    }
+    .logo {
+      width: 50px;
+      height: 50px;
+      border-radius: 18px;
+      object-fit: contain;
+      background: #fff;
+      box-shadow: 0 6px 18px rgba(45,49,66,.12);
+    }
+    .brand { font-size: 24px; font-weight: 800; letter-spacing: 0; }
+    .sub { color: #687083; font-size: 15px; margin-top: 1px; }
+    .hero-card {
+      margin: 22px 24px;
+      border-radius: 28px;
+      padding: 28px;
+      background: linear-gradient(135deg, rgba(76,175,135,.18), rgba(194,107,67,.13));
+      border: 1px solid rgba(45,49,66,.08);
+    }
+    .eyebrow { font-size: 14px; font-weight: 800; color: #4c7d66; text-transform: uppercase; letter-spacing: .08em; }
+    h1 { font-size: 34px; line-height: 1.03; margin: 10px 0 12px; letter-spacing: 0; }
+    .copy { font-size: 18px; line-height: 1.35; color: #51596b; }
+    .tiles { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; padding: 0 24px; }
+    .tile {
+      min-height: 108px;
+      border-radius: 24px;
+      background: #fff;
+      box-shadow: 0 10px 28px rgba(45,49,66,.10);
+      padding: 18px;
+      border: 1px solid rgba(45,49,66,.06);
+      font-size: 17px;
+      font-weight: 800;
+    }
+    .tile span { display: block; margin-top: 8px; font-size: 13px; font-weight: 600; color: #687083; }
+    .wide { grid-column: span 2; }
+    .bottom-nav {
+      position: absolute;
+      left: 18px;
+      right: 18px;
+      bottom: 18px;
+      height: 72px;
+      border-radius: 26px;
+      background: rgba(255,255,255,.92);
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      font-size: 12px;
+      color: #687083;
+      box-shadow: 0 12px 35px rgba(45,49,66,.12);
+    }
+    .navitem strong { display: block; color: #2d3142; font-size: 21px; text-align: center; margin-bottom: 3px; }
+    .headline {
+      position: absolute;
+      left: 108px;
+      top: 118px;
+      width: 720px;
+      color: #202331;
+      text-shadow: 0 2px 20px rgba(255,255,255,.7);
+    }
+    .headline .kicker { color: #4c7d66; font-weight: 900; letter-spacing: .08em; text-transform: uppercase; font-size: 24px; }
+    .headline h2 { margin: 18px 0 18px; font-size: 86px; line-height: .94; letter-spacing: 0; }
+    .headline p { margin: 0; max-width: 640px; font-size: 32px; line-height: 1.25; color: #3f4657; }
+    .badge-row { display: flex; gap: 18px; margin-top: 34px; }
+    .badge { padding: 13px 19px; border-radius: 999px; background: rgba(255,255,255,.74); font-weight: 800; font-size: 20px; box-shadow: 0 10px 30px rgba(45,49,66,.10); }
+    .youth .bg { background: linear-gradient(180deg, #dfeff0 0%, #fff1dd 56%, #e3eddc 100%); }
+    .youth .person { --coat: #2d3142; }
+    .youth .person:nth-child(2) { --coat: #4caf87; }
+    .youth .person:nth-child(3) { --coat: #c26b43; }
+    .senior .device { width: 520px; height: 800px; right: 135px; top: 138px; }
+    .senior .tile { min-height: 126px; font-size: 21px; }
+    .senior h1 { font-size: 42px; }
+    .partner .bg { background: linear-gradient(180deg, #d8e7ef 0%, #f8efe4 52%, #dce7d7 100%); }
+    .partner .device { transform: rotate(-2deg); }
+    .partner .houses { bottom: 250px; }
+    .partner .person { --coat: #2d3142; }
+    .partner .person:nth-child(2) { --coat: #4caf87; }
+    .partner .person:nth-child(3) { --coat: #7f8fa6; }
+    .watermark {
+      position: absolute;
+      left: 64px;
+      bottom: 46px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      font-size: 25px;
+      font-weight: 900;
+      color: rgba(45,49,66,.76);
+    }
+    .watermark img { width: 54px; height: 54px; object-fit: contain; }
+  </style>
+</head>
+<body>
+  <section class="frame general" id="general">
+    <div class="bg"></div><div class="hills"></div><div class="street"></div>
+    <div class="tree t1"></div><div class="tree t2"></div><div class="tree t3"></div>
+    <div class="houses"><div class="house"></div><div class="house" style="height:150px"></div><div class="house"></div><div class="house" style="height:138px"></div></div>
+    <div class="people"><div class="person"></div><div class="person small" style="--coat:#c26b43"></div><div class="person tall" style="--coat:#2d3142"></div></div>
+    <div class="headline">
+      <div class="kicker">Nachbar.io</div>
+      <h2>Der digitale Dorfplatz.</h2>
+      <p>Quartier, Hilfe, Termine und Menschen an einem vertrauten Ort.</p>
+      <div class="badge-row"><div class="badge">Bad Saeckingen</div><div class="badge">ruhig</div><div class="badge">lokal</div></div>
+    </div>
+    <div class="device">
+      <div class="screen">
+        <div class="status"><span>09:41</span><span>●●●</span></div>
+        <div class="appbar"><img class="logo" src="../brand/quartierapp-logo-v2/quartierapp-logo-v2-symbol.png"><div><div class="brand">Nachbar.io</div><div class="sub">Ihr Quartier</div></div></div>
+        <div class="hero-card"><div class="eyebrow">Heute im Quartier</div><h1>Guten Morgen, Thomas.</h1><div class="copy">Was passiert in Ihrer Nachbarschaft?</div></div>
+        <div class="tiles">
+          <div class="tile">Hilfe anbieten<span>Einkauf, Begleitung, Alltag</span></div>
+          <div class="tile">Neuigkeiten<span>Rathaus und Quartier</span></div>
+          <div class="tile wide">Veranstaltungen<span>Treffen, Gruppen, Ehrenamt</span></div>
+        </div>
+        <div class="bottom-nav"><div class="navitem"><strong>⌂</strong>Start</div><div class="navitem"><strong>○</strong>Karte</div><div class="navitem"><strong>＋</strong>Hilfe</div><div class="navitem"><strong>☰</strong>Profil</div></div>
+      </div>
+    </div>
+    <div class="watermark"><img src="../brand/quartierapp-logo-v2/quartierapp-logo-v2-symbol.png"> Nachbar.io</div>
+  </section>
+
+  <section class="frame youth" id="youth">
+    <div class="bg"></div><div class="hills"></div><div class="street"></div>
+    <div class="tree t1"></div><div class="tree t2"></div><div class="houses"><div class="house"></div><div class="house" style="height:160px"></div><div class="house"></div></div>
+    <div class="people" style="left:180px; gap:54px;"><div class="person tall"></div><div class="person"></div><div class="person small"></div></div>
+    <div class="headline">
+      <div class="kicker">Jugend & Aktiv</div>
+      <h2>Mitmachen statt suchen.</h2>
+      <p>Gruppen, Tauschen, Events und spontane Hilfe direkt im Quartier.</p>
+      <div class="badge-row"><div class="badge">Gruppen</div><div class="badge">Tauschen</div><div class="badge">Events</div></div>
+    </div>
+    <div class="device">
+      <div class="screen">
+        <div class="status"><span>17:20</span><span>●●●</span></div>
+        <div class="appbar"><img class="logo" src="../brand/quartierapp-logo-v2/quartierapp-logo-v2-symbol.png"><div><div class="brand">Jugend</div><div class="sub">Rund um dich</div></div></div>
+        <div class="hero-card"><div class="eyebrow">Heute beliebt</div><h1>Treff am Rhein um 18 Uhr</h1><div class="copy">3 neue Gruppen in Ihrer Naehe.</div></div>
+        <div class="tiles">
+          <div class="tile">Tauschen<span>Fahrradlicht gesucht</span></div>
+          <div class="tile">Gruppe finden<span>Sport, Lernen, Musik</span></div>
+          <div class="tile wide">Challenge<span>5 Nachbarn helfen diese Woche</span></div>
+        </div>
+        <div class="bottom-nav"><div class="navitem"><strong>⌂</strong>Feed</div><div class="navitem"><strong>◎</strong>Karte</div><div class="navitem"><strong>＋</strong>Post</div><div class="navitem"><strong>☰</strong>Mehr</div></div>
+      </div>
+    </div>
+    <div class="watermark"><img src="../brand/quartierapp-logo-v2/quartierapp-logo-v2-symbol.png"> Nachbar.io</div>
+  </section>
+
+  <section class="frame senior" id="senior">
+    <div class="bg"></div><div class="hills"></div><div class="street"></div>
+    <div class="tree t1"></div><div class="tree t2"></div><div class="houses"><div class="house"></div><div class="house" style="height:155px"></div><div class="house"></div></div>
+    <div class="people" style="left:160px;"><div class="person tall" style="--coat:#4caf87"></div><div class="person" style="--coat:#9d8b76"></div></div>
+    <div class="headline">
+      <div class="kicker">Einfach & Komfort</div>
+      <h2>Große Tasten. Klare Hilfe.</h2>
+      <p>Für Menschen, die Technik ruhig, sicher und verständlich brauchen.</p>
+      <div class="badge-row"><div class="badge">80 px Touch</div><div class="badge">wenige Schritte</div></div>
+    </div>
+    <div class="device">
+      <div class="screen">
+        <div class="status"><span>09:41</span><span>●●●</span></div>
+        <div class="appbar"><img class="logo" src="../brand/quartierapp-logo-v2/quartierapp-logo-v2-symbol.png"><div><div class="brand">Einfach</div><div class="sub">Alles gut erreichbar</div></div></div>
+        <div class="hero-card"><div class="eyebrow">Willkommen</div><h1>Was möchten Sie tun?</h1><div class="copy">Tippen Sie auf eine große Kachel.</div></div>
+        <div class="tiles">
+          <div class="tile">Ich brauche Hilfe<span>Nachbarn informieren</span></div>
+          <div class="tile">Mir geht es gut<span>Check-in senden</span></div>
+          <div class="tile">Termine<span>Heute und morgen</span></div>
+          <div class="tile">Familie<span>Kontakt aufnehmen</span></div>
+        </div>
+        <div class="bottom-nav"><div class="navitem"><strong>⌂</strong>Start</div><div class="navitem"><strong>☎</strong>Kontakt</div><div class="navitem"><strong>!</strong>Hilfe</div></div>
+      </div>
+    </div>
+    <div class="watermark"><img src="../brand/quartierapp-logo-v2/quartierapp-logo-v2-symbol.png"> Nachbar.io</div>
+  </section>
+
+  <section class="frame partner" id="partner">
+    <div class="bg"></div><div class="hills"></div><div class="street"></div>
+    <div class="tree t1"></div><div class="tree t2"></div><div class="tree t3"></div>
+    <div class="houses"><div class="house" style="height:150px"></div><div class="house"></div><div class="house" style="height:165px"></div></div>
+    <div class="people" style="left:170px; bottom:185px;"><div class="person tall"></div><div class="person"></div><div class="person small"></div></div>
+    <div class="headline">
+      <div class="kicker">Rathaus · Pflege · Arzt</div>
+      <h2>Ein Quartier, viele Rollen.</h2>
+      <p>Kommunen, Pflege, Angehörige und Ärzte arbeiten mit derselben vertrauten Oberfläche.</p>
+      <div class="badge-row"><div class="badge">Rathaus</div><div class="badge">Pflege</div><div class="badge">Arzt</div></div>
+    </div>
+    <div class="device tablet">
+      <div class="screen">
+        <div class="status"><span>09:41</span><span>●●●</span></div>
+        <div class="appbar"><img class="logo" src="../brand/quartierapp-logo-v2/quartierapp-logo-v2-symbol.png"><div><div class="brand">Quartier-Dashboard</div><div class="sub">Übersicht für Organisationen</div></div></div>
+        <div class="hero-card"><div class="eyebrow">Bad Saeckingen</div><h1>Alles im Blick.</h1><div class="copy">Meldungen, Termine, Hilfeanfragen und Versorgung.</div></div>
+        <div class="tiles">
+          <div class="tile">Offene Hilfe<span>7 Anfragen</span></div>
+          <div class="tile">Pflegekontakte<span>12 aktive Links</span></div>
+          <div class="tile">Rathausmeldungen<span>3 geplant</span></div>
+          <div class="tile">Arzttermine<span>Heute 4</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="watermark"><img src="../brand/quartierapp-logo-v2/quartierapp-logo-v2-symbol.png"> Nachbar.io</div>
+  </section>
+</body>
+</html>

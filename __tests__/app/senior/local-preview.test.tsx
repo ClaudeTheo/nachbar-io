@@ -15,15 +15,21 @@ describe("SeniorLocalPreviewPage", () => {
     cleanup();
   });
 
-  it("rendert den Senior-Einstieg mit grossen Kernaktionen", async () => {
+  it("rendert den echten Senior-Kreis-Start mit vier Kacheln", async () => {
     const { default: SeniorLocalPreviewPage } = await import(
       "@/app/senior/preview/page"
     );
 
     render(await SeniorLocalPreviewPage());
 
-    expect(screen.getByText(/Guten Tag, Erika/i)).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /Hilfe anfragen/i })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /Alles in Ordnung/i })).toBeInTheDocument();
+    expect(screen.getAllByTestId("kreis-start-tile")).toHaveLength(4);
+    expect(screen.getByRole("link", { name: /Mein Kreis/i })).toHaveAttribute(
+      "href",
+      "/mein-kreis",
+    );
+    expect(screen.getByRole("link", { name: /Notfall/i })).toHaveAttribute(
+      "href",
+      "/sos",
+    );
   });
 });

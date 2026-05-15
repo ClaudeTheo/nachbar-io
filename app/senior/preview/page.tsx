@@ -1,9 +1,16 @@
 import { notFound } from "next/navigation";
-import { SeniorLocalPreviewClient } from "@/app/senior/preview/SeniorLocalPreviewClient";
+
+import KreisStartPage from "@/app/(senior)/kreis-start/page";
 import { isLocalUiPreviewEnabled } from "@/lib/local-ui-preview";
 
 export default async function SeniorLocalPreviewPage() {
   if (!isLocalUiPreviewEnabled()) notFound();
 
-  return <SeniorLocalPreviewClient />;
+  return (
+    <main className="min-h-screen bg-warmwhite px-4 py-6 text-anthrazit">
+      <div className="mx-auto max-w-[460px]">
+        <KreisStartPage />
+      </div>
+    </main>
+  );
 }

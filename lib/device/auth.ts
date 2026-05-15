@@ -1,5 +1,5 @@
 // Shared Device-Authentifizierung
-// Extrahiert Token aus Request (Authorization-Header > Body > Query-Param)
+// Extrahiert Token aus Request (Authorization-Header > Body)
 // und hasht es mit SHA-256 fuer den DB-Abgleich
 
 import { createHash } from "crypto";
@@ -16,7 +16,7 @@ function isValidTokenFormat(token: string): boolean {
   return token.length >= 16 && token.length <= 128 && /^[a-f0-9]+$/i.test(token);
 }
 
-// Token aus Request extrahieren (Prioritaet: Header > Body > Query)
+// Token aus Request extrahieren (Prioritaet: Header > Body)
 export function extractToken(request: NextRequest, body?: Record<string, unknown>): string | null {
   // 1. Authorization-Header (bevorzugt)
   const authHeader = request.headers.get("authorization");
@@ -27,12 +27,6 @@ export function extractToken(request: NextRequest, body?: Record<string, unknown
   // 2. Body (fuer POST-Requests)
   if (body?.token && typeof body.token === "string") {
     return body.token;
-  }
-
-  // 3. Query-Parameter (Fallback, deprecated)
-  const queryToken = request.nextUrl.searchParams.get("token");
-  if (queryToken) {
-    return queryToken;
   }
 
   return null;

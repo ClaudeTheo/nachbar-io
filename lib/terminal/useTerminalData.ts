@@ -181,6 +181,10 @@ export function normalizeNews(value: unknown): NewsItem[] {
   });
 }
 
+function deviceAuthHeaders(token: string): HeadersInit {
+  return { Authorization: `Bearer ${token}` };
+}
+
 function normalizeWeather(value: unknown): WeatherInfo {
   const record = isRecord(value) ? value : {};
   const temp = record.temp;
@@ -227,7 +231,9 @@ export function useTerminalData(token: string): UseTerminalDataReturn {
   // Status-Daten laden
   const refresh = useCallback(async () => {
     try {
-      const res = await fetch(`/api/device/status?token=${encodeURIComponent(token)}`);
+      const res = await fetch("/api/device/status", {
+        headers: deviceAuthHeaders(token),
+      });
       if (!res.ok) {
         const errBody = await res.json().catch(() => ({}));
         throw new Error(errBody.error || `HTTP ${res.status}`);
@@ -249,8 +255,8 @@ export function useTerminalData(token: string): UseTerminalDataReturn {
     try {
       const res = await fetch("/api/device/checkin", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ token }),
+        headers: { "Content-Type": "application/json", ...deviceAuthHeaders(token) },
+        body: JSON.stringify({}),
       });
       if (!res.ok) {
         const errBody = await res.json().catch(() => ({}));
@@ -270,8 +276,8 @@ export function useTerminalData(token: string): UseTerminalDataReturn {
     try {
       const res = await fetch("/api/device/alert-ack", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ alertId, token }),
+        headers: { "Content-Type": "application/json", ...deviceAuthHeaders(token) },
+        body: JSON.stringify({ alertId }),
       });
       if (!res.ok) {
         const errBody = await res.json().catch(() => ({}));

@@ -26,6 +26,10 @@ interface FamilyStatusData {
   weather: { temp: number | null; icon: string };
 }
 
+function deviceAuthHeaders(token: string): HeadersInit {
+  return { Authorization: `Bearer ${token}` };
+}
+
 export default function FamilyDashboard({
   params,
 }: {
@@ -38,9 +42,9 @@ export default function FamilyDashboard({
 
   const fetchStatus = useCallback(async () => {
     try {
-      const res = await fetch(
-        `/api/device/status?token=${encodeURIComponent(token)}`
-      );
+      const res = await fetch("/api/device/status", {
+        headers: deviceAuthHeaders(token),
+      });
       if (!res.ok) {
         const body = await res.json().catch(() => ({}));
         throw new Error(body.error || `HTTP ${res.status}`);

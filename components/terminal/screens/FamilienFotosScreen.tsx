@@ -56,6 +56,10 @@ function normalizePhotos(value: unknown): KioskPhoto[] {
     : [];
 }
 
+function deviceAuthHeaders(token: string): HeadersInit {
+  return { Authorization: `Bearer ${token}` };
+}
+
 export default function FamilienFotosScreen() {
   const { setActiveScreen, token } = useTerminal();
   const [photos, setPhotos] = useState<KioskPhoto[]>([]);
@@ -65,9 +69,9 @@ export default function FamilienFotosScreen() {
   useEffect(() => {
     async function loadPhotos() {
       try {
-        const res = await fetch(
-          `/api/device/photos?token=${encodeURIComponent(token)}`,
-        );
+        const res = await fetch("/api/device/photos", {
+          headers: deviceAuthHeaders(token),
+        });
         if (!res.ok) throw new Error("Fehler beim Laden");
         const data = await res.json();
         setPhotos(normalizePhotos(data.photos));

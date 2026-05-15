@@ -84,6 +84,10 @@ function normalizeAppointments(value: unknown): AppointmentItem[] {
     : [];
 }
 
+function deviceAuthHeaders(token: string): HeadersInit {
+  return { Authorization: `Bearer ${token}` };
+}
+
 export default function ErinnerungenScreen() {
   const { setActiveScreen, token } = useTerminal();
   const [stickies, setStickies] = useState<StickyItem[]>([]);
@@ -92,7 +96,9 @@ export default function ErinnerungenScreen() {
 
   const loadReminders = useCallback(async () => {
     try {
-      const res = await fetch(`/api/device/reminders?token=${encodeURIComponent(token)}`);
+      const res = await fetch("/api/device/reminders", {
+        headers: deviceAuthHeaders(token),
+      });
       if (!res.ok) throw new Error("Fehler beim Laden");
       const data = await res.json();
       setStickies(normalizeStickies(data.stickies));
@@ -112,8 +118,8 @@ export default function ErinnerungenScreen() {
     try {
       const res = await fetch("/api/device/reminder-ack", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ reminderId, token }),
+        headers: { "Content-Type": "application/json", ...deviceAuthHeaders(token) },
+        body: JSON.stringify({ reminderId }),
       });
       if (res.ok) {
         setStickies((prev) => prev.filter((s) => s.id !== reminderId));

@@ -46,6 +46,10 @@ function normalizeUpcomingAppointment(value: unknown): UpcomingAppointment | nul
   };
 }
 
+function deviceAuthHeaders(token: string): HeadersInit {
+  return { Authorization: `Bearer ${token}` };
+}
+
 export default function AppointmentPopup() {
   const { token } = useTerminal();
   const [popup, setPopup] = useState<UpcomingAppointment | null>(null);
@@ -54,7 +58,9 @@ export default function AppointmentPopup() {
 
   const checkUpcoming = useCallback(async () => {
     try {
-      const res = await fetch(`/api/device/reminders?token=${encodeURIComponent(token)}`);
+      const res = await fetch("/api/device/reminders", {
+        headers: deviceAuthHeaders(token),
+      });
       if (!res.ok) return;
       const data = await res.json();
       const nextPopup = normalizeUpcomingAppointment(data.upcomingPopup);

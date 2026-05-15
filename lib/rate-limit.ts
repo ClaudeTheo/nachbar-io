@@ -52,6 +52,8 @@ const RATE_LIMIT_CONFIG: RateLimitCategory[] = [
   {
     name: "expensive",
     prefixes: [
+      "/api/account/delete-request",
+      "/api/kiosk/tts",
       "/api/news/aggregate",
       "/api/push/send",
       "/api/push/notify",

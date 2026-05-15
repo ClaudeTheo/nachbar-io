@@ -151,6 +151,10 @@ function normalizeForecast(value: unknown): ScreensaverForecastDay[] {
     : [];
 }
 
+function deviceAuthHeaders(token: string): HeadersInit {
+  return { Authorization: `Bearer ${token}` };
+}
+
 // Screensaver-Overlay: Foto-Diashow (oder Gradient-Fallback) nach 5 Min. Inaktivität
 export default function ScreensaverOverlay() {
   const { isIdle, wake } = useIdleTimer();
@@ -169,8 +173,8 @@ export default function ScreensaverOverlay() {
     async function loadScreensaverData() {
       try {
         const [photosRes, remindersRes] = await Promise.all([
-          fetch(`/api/device/photos?token=${encodeURIComponent(token)}`),
-          fetch(`/api/device/reminders?token=${encodeURIComponent(token)}`),
+          fetch("/api/device/photos", { headers: deviceAuthHeaders(token) }),
+          fetch("/api/device/reminders", { headers: deviceAuthHeaders(token) }),
         ]);
         if (photosRes.ok) {
           const pData = await photosRes.json();

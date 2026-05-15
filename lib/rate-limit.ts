@@ -48,6 +48,16 @@ const RATE_LIMIT_CONFIG: RateLimitCategory[] = [
     limit: 5,
     windowMs: 60_000,
   },
+  // Family-Setup: Token-/Short-Code-Claim — eng begrenzt gegen Brute-Force
+  // Pass 63 Audit FS-1: Vorher nur default 60/min, jetzt 10/min IP-basiert.
+  // Token-Entropie (32 byte base64url) schuetzt; Limit ist Defense-in-Depth gegen
+  // Probing-Patterns (Timing-Seitenkanaele, Short-Code-Erratung sobald aktiv).
+  {
+    name: "family-setup",
+    prefixes: ["/api/family-setup/"],
+    limit: 10,
+    windowMs: 60_000,
+  },
   // Teure Operationen: Sehr streng (Claude API, Push-Broadcast, etc.)
   {
     name: "expensive",

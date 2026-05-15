@@ -126,9 +126,9 @@ describe("Terminal Reminder-Array-Guards", () => {
     fireEvent.click(screen.getAllByRole("button")[1]);
 
     await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(2));
+    // Pass 65 (8a3c6a6): Device-Token wird nicht mehr im Body mitgegeben, sondern via Authorization-Header.
     expect(JSON.parse(String(fetchMock.mock.calls[1][1]?.body))).toMatchObject({
       reminderId: "sticky-spaced",
-      token: "device-token",
     });
   });
 

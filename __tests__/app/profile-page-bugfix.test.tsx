@@ -70,6 +70,9 @@ vi.mock("lucide-react", () => {
     Monitor: iconStub("monitor"),
     Check: iconStub("check"),
     Brain: iconStub("brain"),
+    Sparkles: iconStub("sparkles"),
+    CheckCircle2: iconStub("check-circle-2"),
+    HeartHandshake: iconStub("heart-handshake"),
   };
 });
 
@@ -389,9 +392,11 @@ describe("ProfilePage — Error-Handling Bugfixes", () => {
     render(<ProfilePage />);
 
     await waitFor(() => {
-      expect(screen.getByText("Aktiv")).toBeDefined();
-      expect(screen.getByText("Komfort")).toBeDefined();
-      expect(screen.getByText("Einfach")).toBeDefined();
+      // Pass 64 UserModeSurface rendert Mode-Namen ggf. mehrfach (Card + Badge).
+      // Wir pruefen Vorhandensein via getAllByText, nicht Eindeutigkeit.
+      expect(screen.getAllByText("Aktiv").length).toBeGreaterThan(0);
+      expect(screen.getAllByText("Komfort").length).toBeGreaterThan(0);
+      expect(screen.getAllByText("Einfach").length).toBeGreaterThan(0);
       expect(screen.queryByText("Junges Quartier")).toBeNull();
     });
   });

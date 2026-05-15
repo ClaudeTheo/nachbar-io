@@ -1,0 +1,514 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Nachbar.io – Entscheidungsmatrix für 4 Oberflächen</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #2d3142;
+      --muted: #667085;
+      --line: #d9dee7;
+      --soft: #f8faf9;
+      --paper: #fffaf3;
+      --green: #2f7a62;
+      --green-light: #e6f2ed;
+      --red: #ef4444;
+      --amber: #f59e0b;
+      --blue: #2563eb;
+      --cyan-dark: #071923;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      background: var(--paper);
+      color: var(--ink);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      line-height: 1.5;
+    }
+
+    header {
+      padding: 32px 24px 20px;
+      border-bottom: 1px solid var(--line);
+      background: rgba(255, 250, 243, 0.94);
+      position: sticky;
+      top: 0;
+      z-index: 5;
+      backdrop-filter: blur(10px);
+    }
+
+    main {
+      max-width: 1680px;
+      margin: 0 auto;
+      padding: 24px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(28px, 4vw, 44px);
+      line-height: 1.08;
+      letter-spacing: 0;
+    }
+
+    h2 {
+      margin: 0 0 10px;
+      font-size: 21px;
+      line-height: 1.2;
+    }
+
+    p {
+      margin: 0;
+    }
+
+    .eyebrow {
+      color: var(--green);
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-bottom: 10px;
+    }
+
+    .intro {
+      max-width: 980px;
+      margin-top: 12px;
+      color: var(--muted);
+      font-size: 15px;
+    }
+
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 20px;
+    }
+
+    button,
+    .button {
+      min-height: 44px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: white;
+      color: var(--ink);
+      padding: 10px 14px;
+      font: inherit;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    button.primary {
+      border-color: var(--green);
+      background: var(--green);
+      color: white;
+    }
+
+    button.danger {
+      border-color: #fecaca;
+      color: #b91c1c;
+    }
+
+    .grid {
+      display: grid;
+      gap: 16px;
+    }
+
+    .mode-grid {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      margin: 22px 0;
+    }
+
+    .mode {
+      min-height: 170px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: white;
+      padding: 16px;
+    }
+
+    .mode strong {
+      display: block;
+      font-size: 18px;
+      margin-bottom: 8px;
+    }
+
+    .mode small {
+      display: block;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .mode.youth {
+      background: var(--cyan-dark);
+      border-color: #164052;
+      color: white;
+    }
+
+    .mode.youth small {
+      color: #c8d9dc;
+    }
+
+    .mode.comfort {
+      background: #f6fbf8;
+      border-color: #bfd8cd;
+    }
+
+    .mode.senior {
+      border-color: #fecaca;
+    }
+
+    .help-box {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: white;
+      padding: 16px;
+      margin-bottom: 18px;
+    }
+
+    .help-box ul {
+      margin: 10px 0 0;
+      padding-left: 20px;
+    }
+
+    .filters {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: end;
+      margin: 18px 0;
+      padding: 14px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: white;
+    }
+
+    label {
+      display: grid;
+      gap: 5px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    input,
+    select,
+    textarea {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: white;
+      color: var(--ink);
+      font: inherit;
+      padding: 9px 10px;
+    }
+
+    textarea {
+      min-height: 42px;
+      resize: vertical;
+    }
+
+    .table-wrap {
+      overflow: auto;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: white;
+    }
+
+    table {
+      width: 100%;
+      min-width: 1320px;
+      border-collapse: collapse;
+    }
+
+    th,
+    td {
+      border-bottom: 1px solid var(--line);
+      border-right: 1px solid #edf0f5;
+      padding: 10px;
+      vertical-align: top;
+    }
+
+    th:last-child,
+    td:last-child {
+      border-right: 0;
+    }
+
+    th {
+      position: sticky;
+      top: 145px;
+      z-index: 4;
+      background: #f6f8fb;
+      text-align: left;
+      font-size: 12px;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    tr[data-group-start="true"] td {
+      border-top: 3px solid var(--ink);
+    }
+
+    .group {
+      min-width: 145px;
+      font-weight: 800;
+    }
+
+    .function {
+      min-width: 210px;
+      font-weight: 800;
+    }
+
+    .plain {
+      min-width: 280px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .mode-cell {
+      min-width: 145px;
+    }
+
+    .note-cell {
+      min-width: 240px;
+    }
+
+    .current {
+      display: inline-flex;
+      align-items: center;
+      min-height: 24px;
+      border-radius: 999px;
+      padding: 3px 8px;
+      font-size: 12px;
+      font-weight: 800;
+      margin-bottom: 6px;
+      background: #f1f5f9;
+      color: #334155;
+    }
+
+    .current.yes {
+      background: var(--green-light);
+      color: var(--green);
+    }
+
+    .current.no {
+      background: #f8fafc;
+      color: #64748b;
+    }
+
+    .current.limited {
+      background: #fff7ed;
+      color: #c2410c;
+    }
+
+    .current.risk {
+      background: #fef2f2;
+      color: #b91c1c;
+    }
+
+    .decision {
+      margin-top: 4px;
+    }
+
+    .decision.keep {
+      border-color: #9bd3bd;
+      background: #f4fbf8;
+    }
+
+    .decision.remove {
+      border-color: #fecaca;
+      background: #fff5f5;
+    }
+
+    .decision.later {
+      border-color: #fed7aa;
+      background: #fff8ed;
+    }
+
+    .decision.change {
+      border-color: #bfdbfe;
+      background: #eff6ff;
+    }
+
+    .decision.unsure {
+      border-color: #d1d5db;
+      background: white;
+    }
+
+    .summary {
+      margin-top: 18px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: white;
+      padding: 16px;
+    }
+
+    .summary-output {
+      min-height: 180px;
+      margin-top: 10px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      white-space: pre-wrap;
+    }
+
+    .status-line {
+      margin-top: 10px;
+      color: var(--green);
+      font-weight: 800;
+      min-height: 22px;
+    }
+
+    .print-note {
+      color: var(--muted);
+      font-size: 13px;
+      margin-top: 10px;
+    }
+
+    @media (max-width: 980px) {
+      header {
+        position: static;
+      }
+
+      th {
+        top: 0;
+      }
+
+      .mode-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media print {
+      header {
+        position: static;
+      }
+
+      .toolbar,
+      .filters,
+      .summary button,
+      .print-note {
+        display: none;
+      }
+
+      body {
+        background: white;
+      }
+
+      main {
+        padding: 0;
+      }
+
+      table {
+        min-width: 0;
+        font-size: 10px;
+      }
+
+      th {
+        position: static;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="eyebrow">Nachbar.io · Arbeitsblatt</div>
+    <h1>Welche Funktionen bleiben in welcher Oberfläche?</h1>
+    <p class="intro">
+      Dieses Blatt ist zum Entscheiden gedacht. Bitte wählen Sie pro Funktion und pro Oberfläche aus:
+      lassen, entfernen, später, ändern oder unsicher. Ihre Auswahl bleibt in diesem Browser gespeichert.
+    </p>
+    <div class="toolbar" aria-label="Aktionen">
+      <button class="primary" id="copySummary">Zusammenfassung kopieren</button>
+      <button id="downloadSummary">Zusammenfassung herunterladen</button>
+      <button id="downloadHtml">Bearbeitete HTML speichern</button>
+      <button class="danger" id="resetAll">Alles zurücksetzen</button>
+    </div>
+    <p class="status-line" id="statusLine" role="status"></p>
+  </header>
+
+  <main>
+    <section class="grid mode-grid" aria-label="Die vier Oberflächen">
+      <div class="mode youth">
+        <strong>Jugend</strong>
+        <small>Für 14 bis 17 Jahre. Karte, Missionen, Gruppen, Tauschen. Kein Geld, keine genauen Adressen, keine privaten Senior-Daten.</small>
+      </div>
+      <div class="mode">
+        <strong>Aktiv</strong>
+        <small>Normale App für selbstständige Bewohner. Viel Überblick, viele Funktionen, schnelle Wege.</small>
+      </div>
+      <div class="mode comfort">
+        <strong>Komfort</strong>
+        <small>Ruhigere App für Menschen, die weniger Dichte und mehr Führung wollen. Gleiche Basis, weniger Ablenkung.</small>
+      </div>
+      <div class="mode senior">
+        <strong>Einfach</strong>
+        <small>Senioren-Start mit sehr großen Tasten, kurzen Wegen und Notruf zuerst.</small>
+      </div>
+    </section>
+
+    <section class="help-box" aria-label="So füllen Sie die Tabelle aus">
+      <h2>So füllen Sie es aus</h2>
+      <ul>
+        <li><strong>Lassen:</strong> Diese Funktion soll in dieser Oberfläche sichtbar sein.</li>
+        <li><strong>Entfernen:</strong> Diese Funktion soll dort nicht sichtbar sein.</li>
+        <li><strong>Später:</strong> Für den Pilot noch nicht, aber grundsätzlich interessant.</li>
+        <li><strong>Ändern:</strong> Funktion bleibt, aber anders: einfacher, größer, weniger Text, anderer Name.</li>
+        <li><strong>Unsicher:</strong> Bitte später gemeinsam entscheiden.</li>
+      </ul>
+    </section>
+
+    <section class="filters" aria-label="Filter">
+      <label>
+        Suche
+        <input id="searchInput" type="search" placeholder="z. B. Notruf, Karte, Jugend, Pflege">
+      </label>
+      <label>
+        Bereich
+        <select id="groupFilter">
+          <option value="all">Alle Bereiche</option>
+        </select>
+      </label>
+      <label>
+        Nur offene Entscheidungen
+        <select id="openFilter">
+          <option value="all">Alles anzeigen</option>
+          <option value="open">Nur unsichere/zu ändernde</option>
+        </select>
+      </label>
+    </section>
+
+    <section class="table-wrap" aria-label="Entscheidungstabelle">
+      <table>
+        <thead>
+          <tr>
+            <th>Bereich</th>
+            <th>Funktion</th>
+            <th>Was bedeutet das?</th>
+            <th>Jugend</th>
+            <th>Aktiv</th>
+            <th>Komfort</th>
+            <th>Einfach</th>
+            <th>Ihre Notiz</th>
+          </tr>
+        </thead>
+        <tbody id="matrixBody"></tbody>
+      </table>
+    </section>
+
+    <section class="summary">
+      <h2>Zusammenfassung für Codex</h2>
+      <p class="print-note">
+        Wenn Sie fertig sind: „Zusammenfassung kopieren“ drücken und den Text hier im Chat einfügen.
+      </p>
+      <textarea id="summaryOutput" class="summary-output" aria-label="Zusammenfassung" readonly></textarea>
+    </section>
+  </main>
+
+  <script src="/ui-modi-entscheidungsmatrix.js" defer></script>
+</body>
+</html>
+

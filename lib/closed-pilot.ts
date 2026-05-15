@@ -16,6 +16,8 @@ const CLOSED_PILOT_PUBLIC_PATHS = new Set([
   "/care/preview",
   "/care/consent/preview",
   "/ui-modes-preview",
+  "/ui-modi-entscheidungsmatrix",
+  "/ui-modi-entscheidungsmatrix.html",
   "/map-activity-pins-preview",
   "/jugend-ui-preview",
   "/jugend-missionen-preview",

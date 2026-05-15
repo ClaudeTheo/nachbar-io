@@ -24,6 +24,13 @@ describe("closed pilot public paths", () => {
     expect(isClosedPilotPublicPath("/ui-modes-preview")).toBe(true);
   });
 
+  it("keeps the editable four-mode decision matrix public in closed pilot", () => {
+    expect(isClosedPilotPublicPath("/ui-modi-entscheidungsmatrix")).toBe(true);
+    expect(isClosedPilotPublicPath("/ui-modi-entscheidungsmatrix.html")).toBe(
+      true,
+    );
+  });
+
   it("keeps setup-code claim pages public in closed pilot", () => {
     expect(isClosedPilotPublicPath("/setup/example-token")).toBe(true);
   });

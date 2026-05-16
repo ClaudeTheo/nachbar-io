@@ -91,6 +91,7 @@ describe("map activity feed", () => {
       filterMapActivityFeedForContext([ownPin], {
         mode: "active",
         userId: "u-owner",
+        householdId: "hh-other",
         role: "resident",
       }),
     ).toHaveLength(1);
@@ -103,10 +104,54 @@ describe("map activity feed", () => {
     ).toHaveLength(0);
   });
 
+  it("zeigt haushaltsverankerte Pins nur dem eigenen Haushalt exakt", () => {
+    const ownHomePin: MapActivityFeedCandidate = {
+      ...baseCandidate,
+      id: "own-home-pin",
+      locationPrecision: "exact",
+      locationScope: "home",
+      exactForOwnerOnly: true,
+      ownerUserId: "u-owner",
+      householdId: "hh-1",
+    };
+
+    const [ownPin] = filterMapActivityFeedForContext([ownHomePin], {
+      mode: "active",
+      userId: "u-household-member",
+      householdId: "hh-1",
+      role: "resident",
+    });
+    const [publicPin] = filterMapActivityFeedForContext([ownHomePin], {
+      mode: "active",
+      userId: "u-neighbor",
+      householdId: "hh-2",
+      role: "resident",
+    });
+
+    expect(ownPin).toEqual(
+      expect.objectContaining({
+        lat: 47.562348,
+        lng: 7.945317,
+        locationPrecision: "exact",
+        approximate: false,
+      }),
+    );
+    expect(publicPin).toEqual(
+      expect.objectContaining({
+        lat: 47.562,
+        lng: 7.945,
+        locationPrecision: "approx_50m",
+        approximate: true,
+      }),
+    );
+  });
+
   it("wandelt aktive Alerts mit Standort in Warn-Pins um", () => {
     const candidates = mapAlertRowsToActivityCandidates([
       {
         id: "alert-1",
+        user_id: "u-1",
+        household_id: "hh-1",
         category: "security",
         title: "Hinweis am Weg",
         description: "Laterne ausgefallen",
@@ -114,10 +159,14 @@ describe("map activity feed", () => {
         is_emergency: false,
         location_lat: 47.562348,
         location_lng: 7.945317,
+        location_source: "gps",
         created_at: "2026-05-13T16:00:00Z",
+        household: null,
       },
       {
         id: "alert-no-location",
+        user_id: "u-1",
+        household_id: "hh-1",
         category: "security",
         title: "Ohne Standort",
         description: null,
@@ -125,10 +174,14 @@ describe("map activity feed", () => {
         is_emergency: false,
         location_lat: null,
         location_lng: null,
+        location_source: null,
         created_at: "2026-05-13T16:05:00Z",
+        household: null,
       },
       {
         id: "alert-emergency",
+        user_id: "u-2",
+        household_id: "hh-2",
         category: "medical",
         title: "Unfall",
         description: "Akute Lage",
@@ -136,7 +189,9 @@ describe("map activity feed", () => {
         is_emergency: true,
         location_lat: 47.562948,
         location_lng: 7.946117,
+        location_source: "gps",
         created_at: "2026-05-13T16:10:00Z",
+        household: null,
       },
     ]);
 
@@ -159,6 +214,40 @@ describe("map activity feed", () => {
         urgency: "emergency",
         colorState: "red",
         locationScope: "quarter_area",
+      }),
+    ]);
+  });
+
+  it("verankert Stromausfaelle am Haushalts-Punkt statt am ungenauen Geraetestandort", () => {
+    const candidates = mapAlertRowsToActivityCandidates([
+      {
+        id: "power-1",
+        user_id: "u-1",
+        household_id: "hh-1",
+        category: "power_outage",
+        title: "Stromausfall",
+        description: "Sicherung ist raus",
+        status: "open",
+        is_emergency: false,
+        location_lat: 47.553999,
+        location_lng: 7.964999,
+        location_source: "gps",
+        created_at: "2026-05-16T09:00:00Z",
+        household: { lat: 47.553512, lng: 7.964123 },
+      },
+    ]);
+
+    expect(candidates).toEqual([
+      expect.objectContaining({
+        id: "alert-power-1",
+        lat: 47.553512,
+        lng: 7.964123,
+        locationPrecision: "exact",
+        locationScope: "home",
+        approximate: false,
+        exactForOwnerOnly: true,
+        ownerUserId: "u-1",
+        householdId: "hh-1",
       }),
     ]);
   });

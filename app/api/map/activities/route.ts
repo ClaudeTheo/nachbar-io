@@ -4,7 +4,7 @@ import {
   loadMapActivityFeed,
   resolveMapActivityMode,
 } from "@/lib/map-activity-feed";
-import { getUserQuarterId } from "@/lib/quarters/helpers";
+import { getUserHouseholdId, getUserQuarterId } from "@/lib/quarters/helpers";
 import { createClient } from "@/lib/supabase/server";
 
 export const dynamic = "force-dynamic";
@@ -38,6 +38,7 @@ export async function GET(request: NextRequest) {
     const requestedQuarterId = request.nextUrl.searchParams.get("quarter_id");
     const quarterId =
       requestedQuarterId ?? (await getUserQuarterId(supabase, user.id));
+    const householdId = await getUserHouseholdId(supabase, user.id);
 
     const pins = await loadMapActivityFeed({
       supabase,
@@ -46,6 +47,7 @@ export async function GET(request: NextRequest) {
         mode,
         role: profile?.role ?? "resident",
         userId: user.id,
+        householdId,
       },
     });
 

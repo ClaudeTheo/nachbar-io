@@ -3,7 +3,7 @@
 
 import { describe, it, expect, beforeEach } from "vitest";
 import { createRouteMockSupabase } from "@/lib/care/__tests__/mock-supabase";
-import { getUserQuarterId, getUserRole } from "../helpers";
+import { getUserHouseholdId, getUserQuarterId, getUserRole } from "../helpers";
 
 describe("getUserQuarterId", () => {
   const mock = createRouteMockSupabase();
@@ -51,6 +51,34 @@ describe("getUserQuarterId", () => {
     });
 
     const result = await getUserQuarterId(mock.supabase, "user-1");
+    expect(result).toBeNull();
+  });
+});
+
+describe("getUserHouseholdId", () => {
+  const mock = createRouteMockSupabase();
+
+  beforeEach(() => {
+    mock.reset();
+  });
+
+  it("gibt die household_id fuer verifizierte Mitgliedschaften zurueck", async () => {
+    mock.addResponse("household_members", {
+      data: { household_id: "hh-1" },
+      error: null,
+    });
+
+    const result = await getUserHouseholdId(mock.supabase, "user-1");
+    expect(result).toBe("hh-1");
+  });
+
+  it("gibt null zurueck wenn kein Haushalt gefunden wird", async () => {
+    mock.addResponse("household_members", {
+      data: null,
+      error: null,
+    });
+
+    const result = await getUserHouseholdId(mock.supabase, "user-unknown");
     expect(result).toBeNull();
   });
 });

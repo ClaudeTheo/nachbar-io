@@ -27,11 +27,12 @@ export interface MapActivityFeedCandidate extends MapActivityPin {
   href?: string;
   ownerUserId?: string | null;
   householdId?: string | null;
+  exactForOwnerOnly?: boolean;
 }
 
 export type MapActivityFeedItem = Omit<
   MapActivityFeedCandidate,
-  "ownerUserId" | "householdId"
+  "ownerUserId" | "householdId" | "exactForOwnerOnly"
 >;
 
 export interface MapActivityFeedContext {
@@ -43,6 +44,8 @@ export interface MapActivityFeedContext {
 
 export interface AlertActivityRow {
   id: string;
+  user_id: string | null;
+  household_id: string | null;
   category: string | null;
   title: string | null;
   description: string | null;
@@ -50,10 +53,19 @@ export interface AlertActivityRow {
   is_emergency: boolean | null;
   location_lat: number | null;
   location_lng: number | null;
+  location_source: string | null;
   created_at: string | null;
+  household?:
+    | { lat: number | null; lng: number | null }
+    | { lat: number | null; lng: number | null }[]
+    | null;
 }
 
 const ACTIVE_ALERT_STATUSES = new Set(["open", "help_coming"]);
+const HOUSEHOLD_ANCHORED_ALERT_CATEGORIES = new Set([
+  "power_outage",
+  "water_damage",
+]);
 const CAREGIVER_ROLES = new Set([
   "caregiver",
   "org_admin",
@@ -87,6 +99,16 @@ function isFiniteCoordinate(value: number | null | undefined): value is number {
 
 function coarsenCoordinate(value: number): number {
   return Number(value.toFixed(3));
+}
+
+function isOwnLocation(
+  pin: MapActivityFeedCandidate,
+  context: MapActivityFeedContext,
+): boolean {
+  return (
+    pin.ownerUserId === context.userId ||
+    (Boolean(pin.householdId) && pin.householdId === context.householdId)
+  );
 }
 
 function canSeePin(
@@ -123,7 +145,9 @@ function sanitizePinForContext(
   }
 
   const canUseExactLocation =
-    pin.locationPrecision === "exact" && context.mode !== "youth";
+    pin.locationPrecision === "exact" &&
+    context.mode !== "youth" &&
+    (!pin.exactForOwnerOnly || isOwnLocation(pin, context));
   const locationPrecision = canUseExactLocation
     ? pin.locationPrecision
     : pin.locationPrecision === "exact"
@@ -137,7 +161,7 @@ function sanitizePinForContext(
     lng: canUseExactLocation ? pin.lng : coarsenCoordinate(pin.lng),
     title: pin.title,
     description: pin.description,
-    approximate: pin.approximate ?? !canUseExactLocation,
+    approximate: canUseExactLocation ? (pin.approximate ?? false) : true,
     locationPrecision,
     urgency: pin.urgency,
     colorState: pin.colorState,
@@ -147,6 +171,50 @@ function sanitizePinForContext(
     startsAt: pin.startsAt,
     href: pin.href,
   };
+}
+
+function readHouseholdCoordinates(
+  household: AlertActivityRow["household"],
+): { lat: number; lng: number } | null {
+  const householdRow = Array.isArray(household) ? household[0] : household;
+
+  if (
+    householdRow &&
+    isFiniteCoordinate(householdRow.lat) &&
+    isFiniteCoordinate(householdRow.lng)
+  ) {
+    return { lat: householdRow.lat, lng: householdRow.lng };
+  }
+
+  return null;
+}
+
+function resolveAlertCoordinates(row: AlertActivityRow): {
+  lat: number;
+  lng: number;
+  anchoredToHousehold: boolean;
+} | null {
+  const householdCoordinates = readHouseholdCoordinates(row.household);
+  const shouldUseHouseholdAnchor =
+    HOUSEHOLD_ANCHORED_ALERT_CATEGORIES.has(row.category ?? "") ||
+    row.location_source === "household";
+
+  if (shouldUseHouseholdAnchor && householdCoordinates) {
+    return {
+      ...householdCoordinates,
+      anchoredToHousehold: true,
+    };
+  }
+
+  if (isFiniteCoordinate(row.location_lat) && isFiniteCoordinate(row.location_lng)) {
+    return {
+      lat: row.location_lat,
+      lng: row.location_lng,
+      anchoredToHousehold: false,
+    };
+  }
+
+  return null;
 }
 
 export function filterMapActivityFeedForContext(
@@ -166,7 +234,8 @@ export function mapAlertRowsToActivityCandidates(
       return [];
     }
 
-    if (!isFiniteCoordinate(row.location_lat) || !isFiniteCoordinate(row.location_lng)) {
+    const coordinates = resolveAlertCoordinates(row);
+    if (!coordinates) {
       return [];
     }
 
@@ -182,19 +251,26 @@ export function mapAlertRowsToActivityCandidates(
       {
         id: `alert-${row.id}`,
         type: rule.type,
-        lat: row.location_lat,
-        lng: row.location_lng,
+        lat: coordinates.lat,
+        lng: coordinates.lng,
         title: row.title?.trim() || "Hinweis im Quartier",
         description: row.description?.trim() || undefined,
-        approximate: true,
-        locationPrecision: "approx_50m",
+        approximate: coordinates.anchoredToHousehold ? false : true,
+        locationPrecision: coordinates.anchoredToHousehold
+          ? "exact"
+          : "approx_50m",
         urgency: rule.urgency,
         colorState: rule.colorState,
-        locationScope: rule.locationScope,
+        locationScope: coordinates.anchoredToHousehold
+          ? "home"
+          : rule.locationScope,
         visibility: "public",
         source: "alerts",
         startsAt: row.created_at ?? undefined,
         href: "/alerts",
+        ownerUserId: row.user_id,
+        householdId: row.household_id,
+        exactForOwnerOnly: coordinates.anchoredToHousehold,
       },
     ];
   });
@@ -212,7 +288,7 @@ export async function loadMapActivityFeed({
   let query = supabase
     .from("alerts")
     .select(
-      "id, category, title, description, status, is_emergency, location_lat, location_lng, created_at",
+      "id, user_id, household_id, category, title, description, status, is_emergency, location_lat, location_lng, location_source, created_at, household:households(lat, lng)",
     )
     .in("status", ["open", "help_coming"])
     .not("location_lat", "is", null)

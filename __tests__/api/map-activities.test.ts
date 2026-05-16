@@ -5,6 +5,7 @@ import { createRouteMockSupabase } from "@/lib/care/__tests__/mock-supabase";
 
 const mockSupabase = createRouteMockSupabase();
 const getUserQuarterIdMock = vi.fn();
+const getUserHouseholdIdMock = vi.fn();
 const loadMapActivityFeedMock = vi.fn();
 
 vi.mock("@/lib/supabase/server", () => ({
@@ -14,6 +15,7 @@ vi.mock("@/lib/supabase/server", () => ({
 }));
 
 vi.mock("@/lib/quarters/helpers", () => ({
+  getUserHouseholdId: (...args: unknown[]) => getUserHouseholdIdMock(...args),
   getUserQuarterId: (...args: unknown[]) => getUserQuarterIdMock(...args),
 }));
 
@@ -34,6 +36,7 @@ function makeGetRequest(url = "http://localhost/api/map/activities") {
 describe("GET /api/map/activities", () => {
   beforeEach(() => {
     mockSupabase.reset();
+    getUserHouseholdIdMock.mockReset();
     getUserQuarterIdMock.mockReset();
     loadMapActivityFeedMock.mockReset();
   });
@@ -54,6 +57,7 @@ describe("GET /api/map/activities", () => {
       error: null,
     });
     getUserQuarterIdMock.mockResolvedValue("q-1");
+    getUserHouseholdIdMock.mockResolvedValue("hh-youth");
     loadMapActivityFeedMock.mockResolvedValue([
       {
         id: "pin-1",
@@ -82,6 +86,7 @@ describe("GET /api/map/activities", () => {
           mode: "youth",
           role: "resident",
           userId: "u-youth",
+          householdId: "hh-youth",
         }),
         quarterId: "q-1",
       }),
@@ -95,6 +100,7 @@ describe("GET /api/map/activities", () => {
       error: null,
     });
     getUserQuarterIdMock.mockResolvedValue("q-1");
+    getUserHouseholdIdMock.mockResolvedValue("hh-active");
     loadMapActivityFeedMock.mockResolvedValue([]);
 
     const { GET } = await import("@/app/api/map/activities/route");

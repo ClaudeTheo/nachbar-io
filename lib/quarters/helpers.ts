@@ -18,6 +18,22 @@ export async function getUserQuarterId(
   return (data?.households as unknown as { quarter_id: string } | null)?.quarter_id ?? null;
 }
 
+// Gibt die household_id des aktuellen Nutzers zurueck
+export async function getUserHouseholdId(
+  supabase: SupabaseClient,
+  userId: string
+): Promise<string | null> {
+  const { data } = await supabase
+    .from("household_members")
+    .select("household_id")
+    .eq("user_id", userId)
+    .not("verified_at", "is", null)
+    .limit(1)
+    .maybeSingle();
+
+  return typeof data?.household_id === "string" ? data.household_id : null;
+}
+
 // Gibt die Rolle des Nutzers zurueck
 export async function getUserRole(
   supabase: SupabaseClient,

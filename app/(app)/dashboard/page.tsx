@@ -439,8 +439,8 @@ export default function DashboardPage() {
       {/* FAB Schnell-Hilfe */}
       <FloatingHelpButton />
 
-      {/* Check-in Sprechblase — erscheint nach 5 Sek, Nutzer muss antworten */}
-      <DailyCheckinBubble />
+      {/* Check-in Sprechblase nur im Einfach/Senior-Modus automatisch zeigen. */}
+      <DailyCheckinBubble enabled={uiMode === "senior"} />
     </>
   );
 }

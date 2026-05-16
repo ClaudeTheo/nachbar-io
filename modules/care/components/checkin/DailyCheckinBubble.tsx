@@ -37,7 +37,11 @@ const GREETINGS = [
   "Willkommen zurück! Alles in Ordnung bei Ihnen?",
 ];
 
-export function DailyCheckinBubble() {
+interface DailyCheckinBubbleProps {
+  enabled?: boolean;
+}
+
+export function DailyCheckinBubble({ enabled = true }: DailyCheckinBubbleProps) {
   const [phase, setPhase] = useState<
     "loading" | "waiting" | "visible" | "mood" | "submitting" | "thankyou" | "hidden"
   >("loading");
@@ -67,11 +71,15 @@ export function DailyCheckinBubble() {
   }, []);
 
   useEffect(() => {
+    if (!enabled) {
+      return;
+    }
+
     const timer = setTimeout(() => {
       loadStatus();
     }, 0);
     return () => clearTimeout(timer);
-  }, [loadStatus]);
+  }, [enabled, loadStatus]);
 
   // 5-Sekunden-Timer: Sprechblase einblenden
   useEffect(() => {
@@ -115,7 +123,12 @@ export function DailyCheckinBubble() {
   };
 
   // Nichts anzeigen
-  if (phase === "loading" || phase === "waiting" || phase === "hidden") {
+  if (
+    !enabled ||
+    phase === "loading" ||
+    phase === "waiting" ||
+    phase === "hidden"
+  ) {
     return null;
   }
 
@@ -132,6 +145,7 @@ export function DailyCheckinBubble() {
       {/* Sprechblase — im oberen Drittel des Screens, gut erreichbar */}
       <div
         className="fixed z-50 top-[25%] left-4 right-4 max-w-sm mx-auto"
+        data-testid="checkin-bubble"
         style={{
           animation: "slideInRight 0.4s ease-out",
         }}

@@ -38,7 +38,7 @@ jobs:
         run: npx tsx scripts/ai-test-users-cleanup-dry-run.ts
 
       - name: Upload report artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: ai-test-cleanup-dry-run-report
           path: output/ai-test-cleanup-dry-run-*.json

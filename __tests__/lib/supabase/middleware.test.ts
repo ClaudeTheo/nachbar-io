@@ -209,6 +209,19 @@ describe("updateSession (Auth-Middleware)", () => {
     expect(res.headers.get("location")).toBe("http://localhost/");
   });
 
+  it("leitet die Legacy-Tauschboerse vor dem Closed-Pilot-Gate zur Jugend-Tauschboerse", async () => {
+    vi.stubEnv("NEXT_PUBLIC_CLOSED_PILOT_MODE", "true");
+    mockGetUser.mockResolvedValue({ data: { user: null } });
+
+    const req = new NextRequest("http://localhost/tauschen");
+    const res = await updateSession(req);
+
+    expect(res.status).toBe(307);
+    expect(res.headers.get("location")).toBe(
+      "http://localhost/jugend/tauschen",
+    );
+  });
+
   it("redirected pending Closed-Pilot-Nutzer zur Freigabe-Seite", async () => {
     vi.stubEnv("NEXT_PUBLIC_CLOSED_PILOT_MODE", "true");
     mockGetUser.mockResolvedValue({ data: { user: { id: "user-pending" } } });

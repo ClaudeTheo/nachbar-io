@@ -150,6 +150,9 @@ export async function updateSession(
     request.nextUrl.pathname.startsWith("/richtlinien");
   const isPendingApprovalPage =
     request.nextUrl.pathname.startsWith("/freigabe-ausstehend");
+  const legacyRedirects = new Map<string, string>([
+    ["/tauschen", "/jugend/tauschen"],
+  ]);
   const isClosedPilotPublicApi =
     isApiRoute && isClosedPilotPublicApiPath(request.nextUrl.pathname);
   const isClosedPilotE2eTestLoginApi =
@@ -165,6 +168,13 @@ export async function updateSession(
     !isYouthConsentPage;
   // Kiosk: Eigenes Auth-System (QR-Code, PIN, Gast-Modus) — keine Supabase-Session noetig
   const isKioskPage = request.nextUrl.pathname.startsWith("/kiosk");
+
+  const legacyRedirectTarget = legacyRedirects.get(request.nextUrl.pathname);
+  if (legacyRedirectTarget) {
+    const url = request.nextUrl.clone();
+    url.pathname = legacyRedirectTarget;
+    return NextResponse.redirect(url);
+  }
 
   if (
     !user &&

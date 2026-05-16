@@ -47,7 +47,7 @@ test.describe("S5: Authentifizierter Senior/Care-Spot-Check", () => {
     await waitForStableUI(page);
     await expect(page).toHaveURL(/\/care$/);
     await expect(
-      page.getByRole("heading", { name: /Gesundheit/i }),
+      page.getByRole("heading", { name: /Mein Tag|Gesundheit/i }),
     ).toBeVisible({ timeout: TIMEOUTS.elementVisible });
     await expect(page.getByText("Check-in", { exact: true })).toBeVisible();
 

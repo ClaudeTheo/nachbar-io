@@ -140,6 +140,10 @@ async function acceptGuidelinesIfShown(page: Page) {
 
 test.describe("S13: 5-User-Interaktion", () => {
   test.setTimeout(360_000);
+  test.skip(
+    !process.env.E2E_LIVE,
+    "S13 prueft den Live-/Pilot-Flow gegen Cloud/Prod-Testdaten.",
+  );
 
   let agents: Record<UserKey, TestAgent>;
   let userIds: Record<UserKey, string>;

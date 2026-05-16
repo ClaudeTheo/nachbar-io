@@ -4,6 +4,10 @@ import * as fs from "fs";
 import type { AgentCredentials, AgentRole } from "./types";
 import { TEST_AGENTS, TEST_MODE_HEADERS, TIMEOUTS } from "./test-config";
 import { authFile } from "../helpers/auth-paths";
+import {
+  buildSupabaseSessionCookies,
+  getSupabaseStorageKey,
+} from "./supabase-auth-cookie";
 
 export interface TestAgent {
   id: string;
@@ -149,6 +153,7 @@ export async function loginAgent(agent: TestAgent): Promise<void> {
   // Test-Login-API aufrufen mit Retry bei Rate-Limiting (429) oder temporaerem 401
   // Supabase gibt manchmal 401 statt 429 bei IP-basiertem Rate-Limiting zurueck
   let lastError = "";
+  let useSupabaseDirect = false;
   for (let attempt = 0; attempt < 5; attempt++) {
     if (attempt > 0) {
       const delay = 2000 * attempt; // 2s, 4s, 6s, 8s
@@ -182,7 +187,13 @@ export async function loginAgent(agent: TestAgent): Promise<void> {
             "Content-Type": "application/json",
             Prefer: "return=minimal",
           },
-          body: JSON.stringify({ settings: { onboarding_completed: true } }),
+          body: JSON.stringify({
+            settings: {
+              onboarding_completed: true,
+              is_test_user: true,
+              test_user_kind: "e2e_seed",
+            },
+          }),
         });
       }
       break;
@@ -190,6 +201,17 @@ export async function loginAgent(agent: TestAgent): Promise<void> {
 
     lastError = await response.text();
     const status = response.status();
+    if (
+      status === 404 ||
+      (status === 503 && lastError.includes("closed_pilot"))
+    ) {
+      console.log(
+        `${prefix} /api/test/login fuer Live nicht verfuegbar (${status}) -> Supabase-Direkt-Auth`,
+      );
+      useSupabaseDirect = true;
+      break;
+    }
+
     const isRetryable =
       status === 429 ||
       (status === 401 && lastError.includes("Invalid login credentials"));
@@ -201,10 +223,90 @@ export async function loginAgent(agent: TestAgent): Promise<void> {
     }
 
     if (attempt === 4) {
+      if (status === 401) {
+        console.log(
+          `${prefix} Test-Login 401 nach 5 Versuchen -> Supabase-Direkt-Auth`,
+        );
+        useSupabaseDirect = true;
+        break;
+      }
       throw new Error(
         `${prefix} Test-Login: Rate-Limit nach 5 Versuchen: ${lastError}`,
       );
     }
+  }
+
+  if (useSupabaseDirect) {
+    const authResp = await fetch(
+      `${supabaseUrl}/auth/v1/token?grant_type=password`,
+      {
+        method: "POST",
+        headers: {
+          apikey: supabaseAnonKey,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email: credentials.email,
+          password: credentials.password,
+        }),
+      },
+    );
+
+    if (!authResp.ok) {
+      throw new Error(
+        `${prefix} Supabase-Direkt-Auth fehlgeschlagen: ${authResp.status} ${await authResp.text()}`,
+      );
+    }
+
+    const authData = await authResp.json();
+    agent.userId = authData.user?.id;
+    const storageKey = getSupabaseStorageKey(supabaseUrl);
+    const sessionJson = JSON.stringify(authData);
+
+    for (let attempt = 0; attempt < 3; attempt++) {
+      try {
+        await page.waitForLoadState("domcontentloaded", { timeout: 5000 }).catch(() => {});
+        await page.evaluate(
+          ({ key, value }: { key: string; value: string }) => {
+            localStorage.setItem(key, value);
+          },
+          { key: storageKey, value: sessionJson },
+        );
+        break;
+      } catch (error) {
+        if (attempt === 2) throw error;
+        await page.waitForTimeout(500);
+      }
+    }
+
+    await page.context().addCookies(
+      buildSupabaseSessionCookies({
+        storageKey,
+        sessionJson,
+        currentUrl: page.url(),
+      }),
+    );
+
+    if (supabaseUrlEnv && serviceKey && agent.userId) {
+      await fetch(`${supabaseUrlEnv}/rest/v1/users?id=eq.${agent.userId}`, {
+        method: "PATCH",
+        headers: {
+          apikey: serviceKey,
+          Authorization: `Bearer ${serviceKey}`,
+          "Content-Type": "application/json",
+          Prefer: "return=minimal",
+        },
+        body: JSON.stringify({
+          settings: {
+            onboarding_completed: true,
+            is_test_user: true,
+            test_user_kind: "e2e_seed",
+          },
+        }),
+      });
+    }
+
+    console.log(`${prefix} Supabase-Direkt-Auth OK -> userId=${agent.userId}`);
   }
 
   // Kurz warten damit Dev-Server vorherige Requests abschliessen kann

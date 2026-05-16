@@ -11,7 +11,7 @@ import { metadata } from "@/app/layout";
 
 describe("Closed-Pilot-Metadaten", () => {
   it("beschreibt keine oeffentlich freigeschaltete Produktseite", () => {
-    expect(metadata.title).toBe("Nachbar.io — Geschlossener Pilot");
+    expect(metadata.title).toBe("QuartierApp — Geschlossener Pilot");
     expect(metadata.description).toContain("nicht öffentlich freigeschaltet");
     expect(metadata.robots).toMatchObject({
       index: false,

@@ -106,10 +106,10 @@ export async function calculateAndStoreRewardTier(
   let upgradeHint: string | undefined;
   if (tier === "bronze") {
     upgradeHint =
-      "Fuer 2 Monate Nachbar Plus: Fuellen Sie den Abschluss-Fragebogen (PSS-10) aus.";
+      "Fuer 2 Monate QuartierApp Plus: Fuellen Sie den Abschluss-Fragebogen (PSS-10) aus.";
   } else if (tier === "silver") {
     upgradeHint =
-      "Fuer 3 Monate Nachbar Plus: Schreiben Sie eine kurze Bewertung zum Kurs.";
+      "Fuer 3 Monate QuartierApp Plus: Schreiben Sie eine kurze Bewertung zum Kurs.";
   }
 
   return { tier, upgradeHint };
@@ -254,8 +254,8 @@ export async function grantPlusTrial(
     if (grantChanged) {
       sendPush(supabase, {
         userId: link.caregiver_id,
-        title: "Nachbar Plus geschenkt!",
-        body: `Sie erhalten ${months} ${months === 1 ? "Monat" : "Monate"} Nachbar Plus gratis.`,
+        title: "QuartierApp Plus geschenkt!",
+        body: `Sie erhalten ${months} ${months === 1 ? "Monat" : "Monate"} QuartierApp Plus gratis.`,
         url: "/care",
         tag: "plus-trial-granted",
       }).catch((e) => console.warn(`[reward] Push fehlgeschlagen:`, e));
@@ -343,7 +343,7 @@ export async function processTrialExpiries(
       const endDate = new Date(link.plus_trial_end).toLocaleDateString("de-DE");
       sendPush(supabase, {
         userId: link.caregiver_id,
-        title: "Nachbar Plus endet bald",
+        title: "QuartierApp Plus endet bald",
         body: `Ihr Gratis-Zeitraum endet am ${endDate}. Fuer 8,90 EUR/Monat weiter nutzen?`,
         url: "/care",
         tag: "plus-trial-7d-reminder",
@@ -363,7 +363,7 @@ export async function processTrialExpiries(
     for (const link of remind1) {
       sendPush(supabase, {
         userId: link.caregiver_id,
-        title: "Letzter Tag Nachbar Plus",
+        title: "Letzter Tag QuartierApp Plus",
         body: "Morgen endet Ihr Gratis-Zeitraum. Jetzt fuer 8,90 EUR/Monat weitermachen!",
         url: "/care",
         tag: "plus-trial-1d-reminder",

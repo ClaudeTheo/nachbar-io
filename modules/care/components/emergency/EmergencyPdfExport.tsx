@@ -149,7 +149,7 @@ export function EmergencyPdfExport({
         Date.now() + 72 * 60 * 60 * 1000,
       ).toLocaleDateString("de-DE");
       doc.text(
-        `Erstellt mit nachbar.io — QR-Code gueltig bis ${expiryDate}`,
+        `Erstellt mit QuartierApp — QR-Code gueltig bis ${expiryDate}`,
         15,
         285,
       );
@@ -331,7 +331,7 @@ export function EmergencyPdfExport({
         doc.setFontSize(8);
         doc.setTextColor(128, 128, 128);
         doc.text(
-          `Erstellt mit nachbar.io — Seite ${i}/${pageCount} — QR-Code gueltig bis ${expiryDate}`,
+          `Erstellt mit QuartierApp — Seite ${i}/${pageCount} — QR-Code gueltig bis ${expiryDate}`,
           15,
           285,
         );

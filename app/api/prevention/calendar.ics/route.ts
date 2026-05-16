@@ -61,7 +61,7 @@ export async function GET(req: NextRequest) {
     const icsLines: string[] = [
       "BEGIN:VCALENDAR",
       "VERSION:2.0",
-      "PRODID:-//Nachbar.io//Praevention//DE",
+      "PRODID:-//QuartierApp//Praevention//DE",
       "CALSCALE:GREGORIAN",
       "METHOD:PUBLISH",
       `X-WR-CALNAME:${course.title}`,

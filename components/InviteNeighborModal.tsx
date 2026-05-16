@@ -29,6 +29,8 @@ export function InviteNeighborModal({
   open,
   onClose,
 }: InviteNeighborModalProps) {
+  const directSendEnabled =
+    process.env.NEXT_PUBLIC_INVITE_DIRECT_SEND_ENABLED === "true";
   const [street, setStreet] = useState("");
   const [houseNumber, setHouseNumber] = useState("");
   const [method, setMethod] = useState<InviteMethod | null>(null);
@@ -134,8 +136,8 @@ export function InviteNeighborModal({
     method &&
     (method === "code" ||
       method === "whatsapp" ||
-      (method === "email" && emailTarget.trim()) ||
-      (method === "sms" && recipientPhone.trim()));
+      (directSendEnabled && method === "email" && emailTarget.trim()) ||
+      (directSendEnabled && method === "sms" && recipientPhone.trim()));
 
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center sm:items-center">
@@ -314,32 +316,36 @@ export function InviteNeighborModal({
                   />
                   <span className="text-xs font-medium">WhatsApp</span>
                 </button>
-                <button
-                  onClick={() => setMethod("sms")}
-                  className={`flex flex-col items-center gap-1 rounded-lg border-2 p-3 transition-colors ${
-                    method === "sms"
-                      ? "border-blue-500 bg-blue-50"
-                      : "border-border hover:border-blue-300"
-                  }`}
-                >
-                  <Smartphone
-                    className={`h-5 w-5 ${method === "sms" ? "text-blue-500" : "text-muted-foreground"}`}
-                  />
-                  <span className="text-xs font-medium">SMS</span>
-                </button>
-                <button
-                  onClick={() => setMethod("email")}
-                  className={`flex flex-col items-center gap-1 rounded-lg border-2 p-3 transition-colors ${
-                    method === "email"
-                      ? "border-blue-500 bg-blue-50"
-                      : "border-border hover:border-blue-300"
-                  }`}
-                >
-                  <Mail
-                    className={`h-5 w-5 ${method === "email" ? "text-blue-500" : "text-muted-foreground"}`}
-                  />
-                  <span className="text-xs font-medium">E-Mail</span>
-                </button>
+                {directSendEnabled && (
+                  <>
+                    <button
+                      onClick={() => setMethod("sms")}
+                      className={`flex flex-col items-center gap-1 rounded-lg border-2 p-3 transition-colors ${
+                        method === "sms"
+                          ? "border-blue-500 bg-blue-50"
+                          : "border-border hover:border-blue-300"
+                      }`}
+                    >
+                      <Smartphone
+                        className={`h-5 w-5 ${method === "sms" ? "text-blue-500" : "text-muted-foreground"}`}
+                      />
+                      <span className="text-xs font-medium">SMS</span>
+                    </button>
+                    <button
+                      onClick={() => setMethod("email")}
+                      className={`flex flex-col items-center gap-1 rounded-lg border-2 p-3 transition-colors ${
+                        method === "email"
+                          ? "border-blue-500 bg-blue-50"
+                          : "border-border hover:border-blue-300"
+                      }`}
+                    >
+                      <Mail
+                        className={`h-5 w-5 ${method === "email" ? "text-blue-500" : "text-muted-foreground"}`}
+                      />
+                      <span className="text-xs font-medium">E-Mail</span>
+                    </button>
+                  </>
+                )}
                 <button
                   onClick={() => setMethod("code")}
                   className={`flex flex-col items-center gap-1 rounded-lg border-2 p-3 transition-colors ${
@@ -368,7 +374,7 @@ export function InviteNeighborModal({
                 <p className="text-[10px] text-muted-foreground">
                   {method === "sms"
                     ? "Wir senden eine persönliche SMS-Einladung"
-                    : "Optional — öffnet WhatsApp direkt an diese Nummer"}
+                    : "Optional — öffnet WhatsApp direkt an diese Nummer. Sie entscheiden selbst, ob Sie die Nachricht senden."}
                 </p>
               </div>
             )}

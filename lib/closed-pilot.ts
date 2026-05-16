@@ -76,7 +76,7 @@ export function isClosedPilotPublicApiPath(pathname: string) {
 export function buildClosedPilotApiBody() {
   return {
     error:
-      "Der Nachbar.io-Pilot ist geschlossen und nimmt aktuell keine Anmeldungen oder personenbezogenen Daten an.",
+      "Der QuartierApp-Pilot ist geschlossen und nimmt aktuell keine Anmeldungen oder personenbezogenen Daten an.",
     status: "closed_pilot",
   };
 }

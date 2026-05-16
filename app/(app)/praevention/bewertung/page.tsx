@@ -122,7 +122,7 @@ function BewertungContent() {
         </h2>
         <p className="mb-6 text-gray-600">
           {rating >= 3 && text
-            ? "Sie haben die Gold-Stufe erreicht — 3 Monate Nachbar Plus fuer Ihre Angehoerigen!"
+            ? "Sie haben die Gold-Stufe erreicht — 3 Monate QuartierApp Plus fuer Ihre Angehoerigen!"
             : "Ihre Bewertung hilft uns, den Kurs zu verbessern."}
         </p>
 
@@ -172,7 +172,7 @@ function BewertungContent() {
       <div className="mb-6 rounded-xl bg-yellow-50 border border-yellow-200 p-4">
         <p className="text-sm text-yellow-800">
           <strong>🥇 Gold-Stufe:</strong> Bewerten Sie den Kurs mit mindestens 3
-          Sternen und einem kurzen Text, um 3 Monate Nachbar Plus fuer Ihre
+          Sternen und einem kurzen Text, um 3 Monate QuartierApp Plus fuer Ihre
           Angehoerigen freizuschalten.
         </p>
       </div>

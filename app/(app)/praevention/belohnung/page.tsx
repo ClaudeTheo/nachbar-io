@@ -190,7 +190,7 @@ function BelohnungContent() {
                   {result.monthsGranted}{" "}
                   {result.monthsGranted === 1 ? "Monat" : "Monate"}
                 </strong>{" "}
-                Nachbar Plus geschenkt!
+                QuartierApp Plus geschenkt!
               </p>
               <div className="rounded-xl bg-emerald-50 p-3">
                 <p className="text-sm text-emerald-700">
@@ -259,7 +259,7 @@ function BelohnungContent() {
             </h2>
             <p className="mb-4 text-gray-600">
               Ihre Angehoerigen erhalten {config!.months}{" "}
-              {config!.months === 1 ? "Monat" : "Monate"} Nachbar Plus
+              {config!.months === 1 ? "Monat" : "Monate"} QuartierApp Plus
               geschenkt.
             </p>
 

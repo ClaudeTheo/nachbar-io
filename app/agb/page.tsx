@@ -2,7 +2,7 @@ import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 
 // Allgemeine Geschäftsbedingungen (AGB)
-// Stand: März 2026
+// Stand: Mai 2026
 export default function AGBPage() {
   return (
     <main className="min-h-screen bg-warmwhite px-4 py-8">
@@ -27,10 +27,17 @@ export default function AGBPage() {
             </h2>
             <p>
               Diese Allgemeinen Geschäftsbedingungen regeln die Nutzung der
-              Plattform QuartierApp (quartierapp.de), betrieben von Thomas
-              Theobald, Purkersdorfer Straße 35, 79713 Bad Säckingen
+              Plattform QuartierApp (derzeit erreichbar unter
+              nachbar-io.vercel.app), betrieben von Thomas Theobald,
+              Purkersdorfer Straße 35, 79713 Bad Säckingen
               (nachfolgend &bdquo;Betreiber&ldquo;). Sie gelten für alle
-              Zugangswege: Web-App, Arzt-Portal und Pi-Kiosk-Terminal.
+              freigeschalteten Zugangswege: Web-App, Arzt-Portal sowie
+              künftige native oder betreute Gerätezugänge.
+            </p>
+            <p className="mt-2">
+              Während des geschlossenen Pilotbetriebs werden keine
+              kostenpflichtigen Verträge über diese öffentliche Pilotseite
+              abgeschlossen.
             </p>
             <p className="mt-2">
               Mit der Registrierung und Nutzung von QuartierApp erklären Sie
@@ -50,22 +57,22 @@ export default function AGBPage() {
             </p>
             <ul className="ml-4 mt-2 list-disc space-y-1">
               <li>
-                <strong>Nachbar Free</strong> (kostenlos): Schwarzes Brett,
+                <strong>QuartierApp Free</strong> (kostenlos): Schwarzes Brett,
                 Marktplatz, Quartierskarte, Hilfeanfragen, Veranstaltungen,
                 lokale Nachrichten, optionale Koordinationsfunktionen
                 (Tagescheck, Erinnerungen)
               </li>
               <li>
-                <strong>Nachbar Plus</strong> (kostenpflichtig):
+                <strong>QuartierApp Plus</strong> (kostenpflichtig):
                 Angehörigen-Verknüpfung, Statuseinsicht, Video-Anrufe mit
                 Angehörigen, Chat
               </li>
               <li>
-                <strong>Nachbar Pro Community</strong> (B2B, kostenpflichtig):
+                <strong>QuartierApp Pro Community</strong> (B2B, kostenpflichtig):
                 Quartiers-Dashboard, Content-Moderation, Statistiken, Export
               </li>
               <li>
-                <strong>Nachbar Pro Medical</strong> (B2B, kostenpflichtig):
+                <strong>QuartierApp Pro Medical</strong> (B2B, kostenpflichtig):
                 Online-Terminbuchung, ärztliche Videosprechstunde
                 (über KBV-zertifizierten Drittanbieter). Weitere Funktionen
                 (Patienten-CRM, digitale Anamnese) werden stufenweise
@@ -315,7 +322,7 @@ export default function AGBPage() {
 
             <h3 className="mt-3 font-semibold">9.1 Kostenfreie Nutzung</h3>
             <p>
-              Nachbar Free ist dauerhaft kostenfrei. Der Betreiber behält sich
+              QuartierApp Free ist dauerhaft kostenfrei. Der Betreiber behält sich
               vor, Funktionen weiterzuentwickeln, zu ändern oder neu zu
               strukturieren. Wesentliche Änderungen bestehender Funktionen
               werden vorab angekündigt.
@@ -325,9 +332,12 @@ export default function AGBPage() {
               9.2 Kostenpflichtige Funktionen
             </h3>
             <p>
-              Nachbar Plus, Pro Community und Pro Medical sind kostenpflichtige
-              Abonnements. Die Zahlung erfolgt über den Zahlungsdienstleister
-              Stripe. Die aktuellen Preise werden vor Vertragsabschluss
+              QuartierApp Plus, Pro Community und Pro Medical sind geplante
+              kostenpflichtige Abonnements. Sie werden erst angeboten, wenn die
+              jeweilige Funktion ausdrücklich freigeschaltet ist. Die Zahlung
+              erfolgt dann über den Zahlungsdienstleister Stripe. Preise,
+              Laufzeit, Verlängerung, Kündigungsbedingungen und etwaige
+              Verbraucher-Widerrufsrechte werden vor Vertragsabschluss
               transparent angezeigt.
             </p>
 
@@ -402,7 +412,7 @@ export default function AGBPage() {
               </li>
             </ul>
             <p className="mt-4 text-xs text-muted-foreground">
-              Stand: März 2026
+              Stand: Mai 2026
             </p>
           </section>
         </div>

@@ -8,6 +8,7 @@ import {
   MessageCircle,
   Newspaper,
   Megaphone,
+  UsersRound,
 } from "lucide-react";
 import { DiscoverGrid } from "@/components/dashboard/DiscoverGrid";
 import { PullToRefresh } from "@/components/PullToRefresh";
@@ -154,6 +155,7 @@ export default function DashboardPage() {
 
   const greeting = getGreeting();
   const isComfortDashboard = dashboardDensity === "calm";
+  const showSeniorCheckinQuickAction = uiMode === "senior";
   const eyebrowDate = formatEyebrowDate(new Date());
   // Founder 2026-05-12: Eyebrow zeigt die Stadt (z.B. "BAD SÄCKINGEN"), nicht
   // den Quartier-Namen ("Purkersdorfer/Sanary/Rebberg") — sonst wird der
@@ -346,21 +348,42 @@ export default function DashboardPage() {
                 Hover: green-line Border + leicht erhoehte Opacity.
                 Active: green-tint Background (keine Transform-Animation). */}
             <div className={`grid grid-cols-2 ${isComfortDashboard ? "gap-4" : "gap-3"}`}>
-              {/* 1. Check-in */}
-              <Link
-                href="/care/checkin"
-                className={`glass-tile flex flex-col justify-center p-4 ${
-                  isComfortDashboard ? "min-h-[92px]" : "min-h-[80px]"
-                }`}
-              >
-                <div className="flex items-center gap-2">
-                  <CheckCircle2 className="h-5 w-5 text-quartier-green" />
-                  <span className="font-semibold text-anthrazit">Check-in</span>
-                </div>
-                <p className="mt-1 text-xs text-muted-foreground">
-                  Wie geht es Ihnen?
-                </p>
-              </Link>
+              {/* 1. Modusbewusster Einstieg: Check-in nur im Seniorenmodus. */}
+              {showSeniorCheckinQuickAction ? (
+                <Link
+                  href="/care/checkin"
+                  className={`glass-tile flex flex-col justify-center p-4 ${
+                    isComfortDashboard ? "min-h-[92px]" : "min-h-[80px]"
+                  }`}
+                >
+                  <div className="flex items-center gap-2">
+                    <CheckCircle2 className="h-5 w-5 text-quartier-green" />
+                    <span className="font-semibold text-anthrazit">
+                      Check-in
+                    </span>
+                  </div>
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    Wie geht es Ihnen?
+                  </p>
+                </Link>
+              ) : (
+                <Link
+                  href="/gruppen"
+                  className={`glass-tile flex flex-col justify-center p-4 ${
+                    isComfortDashboard ? "min-h-[92px]" : "min-h-[80px]"
+                  }`}
+                >
+                  <div className="flex items-center gap-2">
+                    <UsersRound className="h-5 w-5 text-quartier-green" />
+                    <span className="font-semibold text-anthrazit">
+                      Gemeinschaft
+                    </span>
+                  </div>
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    Gruppen & Nachbarn
+                  </p>
+                </Link>
+              )}
 
               {/* 2. Nachrichten */}
               <Link

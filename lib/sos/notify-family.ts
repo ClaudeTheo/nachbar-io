@@ -27,7 +27,7 @@ export async function notifyFamily(
 
   // 2. SMS an alle Kontakte mit Telefonnummer senden
   const message =
-    "Nachbar.io: Eine Person aus Ihrem hinterlegten Hilfekreis bittet um Rueckmeldung. Bitte oeffnen Sie die App oder melden Sie sich ueber den bekannten direkten Kontakt. Bei akuter Gefahr zuerst 112/110.";
+    "QuartierApp: Eine Person aus Ihrem hinterlegten Hilfekreis bittet um Rueckmeldung. Bitte oeffnen Sie die App oder melden Sie sich ueber den bekannten direkten Kontakt. Bei akuter Gefahr zuerst 112/110.";
 
   let notified = 0;
   let failed = 0;

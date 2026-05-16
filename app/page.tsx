@@ -81,7 +81,7 @@ export default function LandingPage() {
             className="inline-block h-1.5 w-1.5 rounded-full bg-quartier-green"
             aria-hidden="true"
           />
-          Nachbar.io · Bad Säckingen
+          QuartierApp · Bad Säckingen
         </p>
 
         <h1 className="mt-3 max-w-2xl text-4xl font-extrabold leading-[1.1] tracking-[-0.02em] text-anthrazit sm:text-5xl">

@@ -16,7 +16,7 @@ function getResend(): Resend | null {
 }
 
 const FROM_ADDRESS =
-  process.env.EMAIL_FROM || "Nachbar.io Hilfe <hilfe@nachbar.io>";
+  process.env.EMAIL_FROM || "QuartierApp Hilfe <hilfe@nachbar.io>";
 
 const MONTH_NAMES: Record<string, string> = {
   "01": "Januar",
@@ -133,7 +133,7 @@ function getMonthlyReportHtml(p: {
     <tr><td align="center">
       <table width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;background-color:#ffffff;border-radius:16px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.06);">
         <tr><td style="background-color:#2D3142;padding:28px 32px;text-align:center;">
-          <h1 style="margin:0;color:#ffffff;font-size:22px;font-weight:700;">Nachbar.io</h1>
+          <h1 style="margin:0;color:#ffffff;font-size:22px;font-weight:700;">QuartierApp</h1>
           <p style="margin:8px 0 0;color:#4CAF87;font-size:14px;font-weight:600;">Sammelabrechnung</p>
         </td></tr>
         <tr><td style="padding:32px;">
@@ -166,7 +166,7 @@ function getMonthlyReportHtml(p: {
           </p>
         </td></tr>
         <tr><td style="background-color:#f8f8fa;padding:20px 32px;text-align:center;border-top:1px solid #eee;">
-          <p style="margin:0;color:#999;font-size:11px;">Nachbar.io — Quartiers-Plattform<br>Erstellt mit nachbar.io</p>
+          <p style="margin:0;color:#999;font-size:11px;">QuartierApp — Quartiers-Plattform<br>Erstellt mit QuartierApp</p>
         </td></tr>
       </table>
     </td></tr>
@@ -197,5 +197,5 @@ Die detaillierte Abrechnung finden Sie im Anhang als PDF.
 Hinweis: Erstattung gemaess §45b SGB XI. Allgemeine Informationen, keine Rechtsberatung.
 
 --
-Nachbar.io — Quartiers-Plattform`;
+QuartierApp — Quartiers-Plattform`;
 }

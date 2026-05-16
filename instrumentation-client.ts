@@ -2,18 +2,21 @@
 // Laeuft im Browser und nutzt die Next.js instrumentation-client-Konvention.
 import * as Sentry from "@sentry/nextjs";
 
+const enableSessionReplay =
+  process.env.NEXT_PUBLIC_ENABLE_SENTRY_REPLAY === "true";
+
 Sentry.init({
   dsn: process.env.NEXT_PUBLIC_SENTRY_DSN,
 
   // Performance Monitoring: 10% der Requests im Production
   tracesSampleRate: process.env.NODE_ENV === "production" ? 0.1 : 1.0,
 
-  // Session Replay: 1% normal, 100% bei Fehlern
-  replaysSessionSampleRate: 0.01,
-  replaysOnErrorSampleRate: 1.0,
+  // Datenschutz-Default: Replay bleibt aus, bis es bewusst freigegeben wird.
+  replaysSessionSampleRate: enableSessionReplay ? 0.01 : 0,
+  replaysOnErrorSampleRate: enableSessionReplay ? 1.0 : 0,
 
   integrations: [
-    Sentry.replayIntegration(),
+    ...(enableSessionReplay ? [Sentry.replayIntegration()] : []),
     Sentry.browserTracingIntegration(),
   ],
 

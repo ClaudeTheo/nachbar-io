@@ -177,7 +177,7 @@ export function generateMonthlyReport(data: MonthlyReportData): Uint8Array {
     { maxWidth: contentWidth },
   );
   y += 8;
-  doc.text("Erstellt mit nachbar.io", margin, y);
+  doc.text("Erstellt mit QuartierApp", margin, y);
 
   // Footer
   doc.setFontSize(7);

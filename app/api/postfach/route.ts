@@ -101,7 +101,7 @@ export async function POST(request: NextRequest) {
 
   if (!orgs || orgs.length === 0) {
     return NextResponse.json(
-      { error: "Ihre Kommune nutzt nachbar.io noch nicht." },
+      { error: "Ihre Kommune nutzt QuartierApp noch nicht." },
       { status: 404 },
     );
   }

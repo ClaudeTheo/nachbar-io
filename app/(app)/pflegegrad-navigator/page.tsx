@@ -10,7 +10,7 @@ import { PflegegradNavigator } from "@/modules/care/components/navigator/Pflegeg
 import type { AssessmentRecord } from "@/modules/care/components/navigator/AssessmentHistory";
 
 export const metadata = {
-  title: "Pflegegrad-Navigator | nachbar.io",
+  title: "Pflegegrad-Navigator | QuartierApp",
   description: "Schätzen Sie Ihren Pflegegrad mit dem NBA-Fragebogen ein. Kostenlos und unverbindlich.",
 };
 

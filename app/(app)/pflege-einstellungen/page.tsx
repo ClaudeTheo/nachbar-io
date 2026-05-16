@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 import { PflegeSettings } from "./PflegeSettings";
 
 export const metadata = {
-  title: "Pflege-Einstellungen | nachbar.io",
+  title: "Pflege-Einstellungen | QuartierApp",
 };
 
 export default async function PflegeEinstellungenPage() {

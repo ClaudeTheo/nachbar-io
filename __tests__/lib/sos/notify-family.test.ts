@@ -74,7 +74,7 @@ describe("notifyFamily", () => {
 
     // Twilio-SMS bleibt bewusst generisch und enthaelt keinen Senior-Namen.
     const firstCall = mockSendSms.mock.calls[0][0];
-    expect(firstCall.message).toContain("Nachbar.io");
+    expect(firstCall.message).toContain("QuartierApp");
     expect(firstCall.message).not.toContain("Erna Müller");
     expect(firstCall.message).not.toContain("Notfall-Knopf");
 

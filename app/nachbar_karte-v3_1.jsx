@@ -126,7 +126,7 @@ export default function NachbarKarte() {
       <div style={{ width:"100%", maxWidth:1083, marginBottom:10, display:"flex",
         alignItems:"center", justifyContent:"space-between", flexWrap:"wrap", gap:8 }}>
         <div>
-          <div style={{ fontSize:"1.1rem", fontWeight:700, color:"#f8fafc" }}>🏘 Nachbar.io – Bad Säckingen</div>
+          <div style={{ fontSize:"1.1rem", fontWeight:700, color:"#f8fafc" }}>🏘 QuartierApp – Bad Säckingen</div>
           <div style={{ fontSize:"0.72rem", color:"#64748b" }}>Klick = Status wechseln &nbsp;·&nbsp; Grau → 🟢 Zuhause → 🔴 Abwesend</div>
         </div>
         <div style={{ display:"flex", gap:6, flexWrap:"wrap", alignItems:"center" }}>

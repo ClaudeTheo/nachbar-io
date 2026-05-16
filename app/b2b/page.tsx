@@ -198,10 +198,10 @@ function B2BFooter() {
     <footer className="border-t bg-white py-8">
       <div className="mx-auto max-w-5xl px-6 text-center">
         <p className="text-sm text-gray-500">
-          QuartierApp — Ein Projekt von nachbar.io
+          QuartierApp — Ein Projekt von Theobase
         </p>
         <p className="mt-2 text-xs text-gray-500">
-          Kontakt: thomasth@gmx.de | nachbar.io
+          Kontakt: thomasth@gmx.de
         </p>
         <div className="mt-4 flex justify-center flex-wrap gap-2 text-xs text-gray-500">
           <Link

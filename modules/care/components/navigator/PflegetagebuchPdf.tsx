@@ -144,7 +144,7 @@ export function PflegetagebuchPdf() {
       doc.setTextColor(128, 128, 128);
       const disclaimer =
         "Dieses Pflegetagebuch dient ausschließlich der Orientierung und Vorbereitung auf die Begutachtung durch den " +
-        "Medizinischen Dienst (MD). Es ersetzt keine offizielle Begutachtung. Erstellt mit nachbar.io — Kostenlose " +
+        "Medizinischen Dienst (MD). Es ersetzt keine offizielle Begutachtung. Erstellt mit QuartierApp — Kostenlose " +
         "Beratung: 030 340 60 66-02 (Pflegestützpunkt). Alle Angaben ohne Gewähr.";
       doc.text(disclaimer, margin, pageHeight - 10, { maxWidth: totalWidth });
 

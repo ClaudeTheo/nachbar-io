@@ -12,7 +12,7 @@ export interface PasskeyConfig {
 export function getPasskeyConfig(): PasskeyConfig {
   const isProd = process.env.NODE_ENV === 'production';
   return {
-    rpName: 'nachbar.io',
+    rpName: 'QuartierApp',
     rpID: isProd ? 'nachbar-io.vercel.app' : 'localhost',
     origin: isProd
       ? 'https://nachbar-io.vercel.app'

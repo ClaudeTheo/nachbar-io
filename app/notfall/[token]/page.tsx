@@ -187,7 +187,7 @@ export default async function NotfallPublicPage({ params }: PageProps) {
 
         {/* Footer */}
         <div className="mt-8 border-t border-gray-200 pt-4 text-center text-sm text-gray-400">
-          <p>Erstellt mit nachbar.io</p>
+          <p>Erstellt mit QuartierApp</p>
           <p>Gueltig bis {validUntil}</p>
         </div>
       </div>

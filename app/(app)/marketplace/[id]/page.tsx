@@ -132,7 +132,7 @@ export default function MarketplaceDetailPage() {
 
       {!isOwner && item.status === "active" && (
         <div className="rounded-lg border border-quartier-green/20 bg-quartier-green/5 px-3 py-2 text-sm text-muted-foreground">
-          Kontakt läuft über Nachbar.io. Telefonnummer und Adresse werden nicht
+          Kontakt läuft über QuartierApp. Telefonnummer und Adresse werden nicht
           öffentlich angezeigt.
         </div>
       )}

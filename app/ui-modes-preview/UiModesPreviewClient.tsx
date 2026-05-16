@@ -14,7 +14,7 @@ export function UiModesPreviewClient() {
         <header className="flex flex-col gap-4 border-b border-anthrazit/10 pb-6 md:flex-row md:items-end md:justify-between">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.08em] text-quartier-green">
-              Nachbar.io UI-Modi
+              QuartierApp UI-Modi
             </p>
             <h1 className="mt-2 text-3xl font-semibold leading-tight">
               Vier Oberflaechen auf einen Blick

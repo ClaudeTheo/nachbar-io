@@ -167,7 +167,7 @@ export default function ZertifikatPage() {
           <p>Zertifikat-ID: {cert.certificateId}</p>
           <p>Ausgestellt am: {cert.issuedAt}</p>
           <p className="mt-2">
-            Anbieter: nachbar.io — Digitale Quartiersentwicklung
+            Anbieter: QuartierApp — Digitale Quartiersentwicklung
           </p>
         </div>
       </div>
@@ -176,7 +176,7 @@ export default function ZertifikatPage() {
       <div className="mt-6 rounded-xl bg-yellow-50 border border-yellow-200 p-4 text-center print:hidden">
         <p className="text-sm text-yellow-800">
           🎁 <strong>Kursbelohnung:</strong> Ihre Angehoerigen erhalten bis zu 3
-          Monate Nachbar Plus geschenkt!
+          Monate QuartierApp Plus geschenkt!
         </p>
         <Link
           href="/praevention/belohnung"

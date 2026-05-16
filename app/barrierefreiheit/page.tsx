@@ -30,7 +30,7 @@ export default function BarrierefreiheitPage() {
           {/* Einleitung */}
           <section>
             <p>
-              Thomas Theobald ist bestrebt, die QuartierApp (nachbar.io) im
+              Thomas Theobald ist bestrebt, die QuartierApp im
               Einklang mit dem Barrierefreiheitsstärkungsgesetz (BFSG) und der
               europäischen Norm EN 301 549 barrierefrei zugänglich zu machen.
             </p>
@@ -74,15 +74,18 @@ export default function BarrierefreiheitPage() {
             </h2>
             <p>
               Die QuartierApp ist{" "}
-              <strong className="text-anthrazit">weitgehend konform</strong> mit
-              den Web Content Accessibility Guidelines (WCAG) 2.1 auf Stufe AA
-              sowie der harmonisierten europäischen Norm EN 301 549 V3.2.1
-              (2021-03).
+              <strong className="text-anthrazit">
+                nach aktuellem Prüfstand weitgehend konform
+              </strong>{" "}
+              mit den Web Content Accessibility Guidelines (WCAG) 2.1 auf Stufe
+              AA sowie der harmonisierten europäischen Norm EN 301 549 V3.2.1
+              (2021-03). Die Erklärung wird fortlaufend überprüft, weil sich
+              Funktionsumfang und Oberflächen im Pilot weiterentwickeln.
             </p>
             <p className="mt-2">
-              Die Konformität wurde durch automatisierte Tests (Google Lighthouse
-              Accessibility Score 95–100 auf allen Portalen) sowie manuelle
-              Prüfungen überprüft.
+              Die Konformität wird durch automatisierte Tests und manuelle
+              Stichproben geprüft. Bekannte Einschränkungen sind unten
+              transparent aufgeführt.
             </p>
           </section>
 
@@ -263,7 +266,7 @@ export default function BarrierefreiheitPage() {
             <p className="mt-2">
               Die Erklärung wird regelmäßig überprüft und bei wesentlichen
               Änderungen der Anwendung aktualisiert. Die letzte inhaltliche
-              Prüfung erfolgte am <strong>5. April 2026</strong>.
+              Prüfung erfolgte am <strong>16. Mai 2026</strong>.
             </p>
           </section>
 

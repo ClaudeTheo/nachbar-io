@@ -5,7 +5,7 @@ import { redirect } from "next/navigation";
 import { SeniorQuestionnaire } from "@/modules/care/components/questionnaire/SeniorQuestionnaire";
 
 export const metadata = {
-  title: "KI-Fragebogen | nachbar.io",
+  title: "KI-Fragebogen | QuartierApp",
 };
 
 export default async function KiFragebogenPage() {

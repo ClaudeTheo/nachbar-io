@@ -206,7 +206,7 @@ export function OnboardingFlow() {
                 Ihr Modus
               </p>
               <h1 className="mt-2 text-2xl font-bold text-anthrazit">
-                Wie möchten Sie Nachbar.io nutzen?
+                Wie möchten Sie QuartierApp nutzen?
               </h1>
               <p className="mt-2 text-sm text-muted-foreground">
                 Sie können das später in Ihrem Profil ändern.

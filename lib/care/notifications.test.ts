@@ -104,7 +104,7 @@ describe("sendCareNotification", () => {
 
       expect(sendSms).toHaveBeenCalledWith({
         phone: "+4915112345678",
-        message: expect.stringContaining("Nachbar.io"),
+        message: expect.stringContaining("QuartierApp"),
       });
       expect(result.sms).toBe(true);
     });
@@ -120,7 +120,7 @@ describe("sendCareNotification", () => {
       });
 
       const message = vi.mocked(sendSms).mock.calls[0]?.[0]?.message ?? "";
-      expect(message).toContain("Nachbar.io");
+      expect(message).toContain("QuartierApp");
       expect(message).not.toContain("Frau Mueller");
       expect(message).not.toContain("Schwindel");
       expect(message).not.toContain("Wohnung 2");
@@ -149,7 +149,7 @@ describe("sendCareNotification", () => {
 
       expect(initiateCall).toHaveBeenCalledWith({
         phone: "+4915112345678",
-        ttsMessage: expect.stringContaining("Nachbar.io"),
+        ttsMessage: expect.stringContaining("QuartierApp"),
       });
       expect(result.voice).toBe(true);
     });
@@ -166,7 +166,7 @@ describe("sendCareNotification", () => {
 
       const ttsMessage =
         vi.mocked(initiateCall).mock.calls[0]?.[0]?.ttsMessage ?? "";
-      expect(ttsMessage).toContain("Nachbar.io");
+      expect(ttsMessage).toContain("QuartierApp");
       expect(ttsMessage).not.toContain("Frau Mueller");
       expect(ttsMessage).not.toContain("Schwindel");
       expect(ttsMessage).not.toContain("Wohnung 2");

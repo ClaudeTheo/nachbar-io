@@ -74,7 +74,7 @@ export default function AnleitungSeniorPage() {
       {/* Print Header */}
       <div className="hidden print:block p-8">
         <h1 className="text-2xl font-bold">
-          Nachbar.io — Anleitung für Pflegebedürftige
+          QuartierApp — Anleitung für Pflegebedürftige
         </h1>
         <p className="text-lg text-gray-600 mt-1">
           So finden Sie Hilfe und rechnen ab

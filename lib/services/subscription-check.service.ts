@@ -39,13 +39,13 @@ export async function runSubscriptionCheck(
         user_id: userId,
         type: 'system',
         title: 'Ihr Testzeitraum ist abgelaufen',
-        body: 'Ihr kostenloser Testzeitraum ist beendet. Sie nutzen jetzt Nachbar Free. Upgraden Sie jederzeit, um alle Funktionen wieder freizuschalten.',
+        body: 'Ihr kostenloser Testzeitraum ist beendet. Sie nutzen jetzt QuartierApp Free. Upgraden Sie jederzeit, um alle Funktionen wieder freizuschalten.',
       });
 
       await sendPush(supabase, {
         userId,
         title: 'Testzeitraum abgelaufen',
-        body: 'Sie nutzen jetzt Nachbar Free. Upgraden Sie jederzeit fuer alle Funktionen.',
+        body: 'Sie nutzen jetzt QuartierApp Free. Upgraden Sie jederzeit fuer alle Funktionen.',
         url: '/einstellungen/abo',
       });
     } catch (err) {

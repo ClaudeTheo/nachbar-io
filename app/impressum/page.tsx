@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 
-// Impressum gemäß § 5 TMG / § 18 MStV
+// Impressum gemäß § 5 DDG / § 18 MStV
 export default function ImpressumPage() {
   return (
     <main className="min-h-screen bg-warmwhite px-4 py-8">
@@ -17,10 +17,10 @@ export default function ImpressumPage() {
         <h1 className="mb-8 text-2xl font-bold text-anthrazit">Impressum</h1>
 
         <div className="space-y-8 text-sm leading-relaxed text-anthrazit/80">
-          {/* Angaben gemäß § 5 TMG */}
+          {/* Angaben gemäß § 5 DDG */}
           <section>
             <h2 className="mb-2 text-lg font-semibold text-anthrazit">
-              Angaben gemäß § 5 TMG
+              Angaben gemäß § 5 DDG
             </h2>
             <p>
               Thomas Theobald
@@ -38,15 +38,14 @@ export default function ImpressumPage() {
               Hinweis zur Rechtsform — vor Handelsregistereintragung
             </h2>
             <p>
-              Die Theobase GmbH befindet sich in Gruendung. Die Beurkundung des
-              Gesellschaftsvertrags beim Notariat Stadler, Bad Saeckingen, ist
-              fuer den 27.04.2026 geplant. Bis zur Eintragung beim zustaendigen
-              Handelsregister firmiert die Gesellschaft als Theobase GmbH i.G.
+              Die Theobase GmbH befindet sich in Gründung. Bis zur Eintragung
+              beim zuständigen Handelsregister ist Thomas Theobald persönlich
+              verantwortlicher Anbieter dieses geschlossenen Pilotbetriebs.
             </p>
             <p className="mt-2">
-              In dieser Uebergangsphase ist verantwortlich im Sinne von § 5 TMG
-              und Art. 4 Nr. 7 DSGVO: Thomas Theobald, Purkersdorfer Strasse 35,
-              79713 Bad Saeckingen, E-Mail: thomasth@gmx.de.
+              Verantwortlich im Sinne von § 5 DDG und Art. 4 Nr. 7 DSGVO:
+              Thomas Theobald, Purkersdorfer Straße 35, 79713 Bad Säckingen,
+              E-Mail: thomasth@gmx.de.
             </p>
             <ul className="ml-4 mt-2 list-disc space-y-1">
               <li>Es findet kein entgeltlicher Vertragsbetrieb statt.</li>
@@ -82,11 +81,11 @@ export default function ImpressumPage() {
               Umsatzsteuer
             </h2>
             <p>
-              Derzeit wird keine gewerbliche Tätigkeit ausgeübt. Die Plattform
-              befindet sich im nichtkommerziellen Pilotbetrieb. Eine
-              Umsatzsteuer-Identifikationsnummer gemäß § 27a UStG liegt nicht
-              vor. Diese Angabe wird bei Aufnahme einer gewerblichen Tätigkeit
-              aktualisiert.
+              Der geschlossene Pilotbetrieb ist derzeit kostenfrei; über diese
+              öffentliche Pilotseite werden keine Zahlungen entgegengenommen.
+              Eine Umsatzsteuer-Identifikationsnummer gemäß § 27a UStG liegt
+              derzeit nicht vor. Diese Angabe wird vor Aufnahme eines
+              entgeltlichen Vertragsbetriebs aktualisiert.
             </p>
           </section>
 
@@ -132,12 +131,12 @@ export default function ImpressumPage() {
               Haftung für Inhalte
             </h2>
             <p>
-              Als Diensteanbieter sind wir gemäß § 7 Abs. 1 TMG für eigene
-              Inhalte auf diesen Seiten nach den allgemeinen Gesetzen
-              verantwortlich. Nach §§ 8 bis 10 TMG sind wir als Diensteanbieter
-              jedoch nicht verpflichtet, übermittelte oder gespeicherte fremde
-              Informationen zu überwachen oder nach Umständen zu forschen, die
-              auf eine rechtswidrige Tätigkeit hinweisen.
+              Als Diensteanbieter sind wir für eigene Inhalte auf diesen Seiten
+              nach den allgemeinen Gesetzen verantwortlich. Eine allgemeine
+              Pflicht, übermittelte oder gespeicherte fremde Informationen zu
+              überwachen oder nach Umständen zu forschen, die auf eine
+              rechtswidrige Tätigkeit hinweisen, besteht nur im gesetzlich
+              vorgesehenen Umfang.
             </p>
             <p className="mt-2">
               Verpflichtungen zur Entfernung oder Sperrung der Nutzung von
@@ -183,10 +182,11 @@ export default function ImpressumPage() {
               Hinweis zur Plattform
             </h2>
             <p>
-              QuartierApp ist ein nichtkommerzielles Community-Projekt für die
-              Nachbarschaft in Bad Säckingen. Die Nutzung ist kostenlos. Die
-              Plattform wird ehrenamtlich betrieben und dient der Förderung des
-              nachbarschaftlichen Zusammenhalts.
+              QuartierApp ist im aktuellen Pilot eine geschlossene,
+              kostenfreie Erprobung für Nachbarschaft und Quartiersleben in Bad
+              Säckingen. Kostenpflichtige Module werden erst angeboten, wenn sie
+              ausdrücklich freigeschaltet und vor Vertragsschluss transparent
+              beschrieben werden.
             </p>
           </section>
 

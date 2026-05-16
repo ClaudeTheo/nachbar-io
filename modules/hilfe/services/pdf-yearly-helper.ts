@@ -88,7 +88,7 @@ export function generateYearlyHelperReport(data: YearlyHelperData): Uint8Array {
     doc.setFontSize(7);
     doc.setTextColor(120, 120, 120);
     doc.text(
-      `Erstellt mit nachbar.io — Keine Rechtsberatung — Seite ${pageNumber}`,
+      `Erstellt mit QuartierApp — Keine Rechtsberatung — Seite ${pageNumber}`,
       margin,
       287,
     );
@@ -288,7 +288,7 @@ export function generateYearlyHelperReport(data: YearlyHelperData): Uint8Array {
     doc.setFontSize(7);
     doc.setTextColor(120, 120, 120);
     doc.text(
-      `Erstellt mit nachbar.io — Keine Rechtsberatung — Seite ${p} von ${totalPages}`,
+      `Erstellt mit QuartierApp — Keine Rechtsberatung — Seite ${p} von ${totalPages}`,
       margin,
       287,
     );

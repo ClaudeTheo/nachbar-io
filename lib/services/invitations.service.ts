@@ -23,6 +23,7 @@ import {
 // ============================================================
 
 const VALID_METHODS: InviteChannel[] = ["email", "whatsapp", "code", "sms"];
+const DIRECT_SEND_METHODS = new Set<InviteChannel>(["email", "sms"]);
 
 // ============================================================
 // Einladung senden
@@ -89,6 +90,17 @@ export async function sendInvitation(
     throw new ServiceError("Ungültige Einladungsmethode", 400);
   }
 
+  const inviteMethod = method as InviteChannel;
+  const directSendEnabled =
+    process.env.INVITE_DIRECT_SEND_ENABLED === "true" ||
+    process.env.NEXT_PUBLIC_INVITE_DIRECT_SEND_ENABLED === "true";
+  if (DIRECT_SEND_METHODS.has(inviteMethod) && !directSendEnabled) {
+    throw new ServiceError(
+      "Direkter Versand per SMS oder E-Mail ist im Pilot noch nicht freigegeben. Bitte teilen Sie den Einladungscode persönlich oder per WhatsApp.",
+      403,
+    );
+  }
+
   // Kanal-spezifische Validierung
   if (method === "email" && !target) {
     throw new ServiceError("E-Mail-Adresse ist erforderlich", 400);
@@ -120,7 +132,7 @@ export async function sendInvitation(
     throw new ServiceError(
       `Sie haben Ihr Einladungslimit erreicht (${limit} Einladungen). ${
         userPlan === "free"
-          ? "Mit Nachbar Plus können Sie mehr Nachbarn einladen."
+          ? "Mit QuartierApp Plus können Sie mehr Nachbarn einladen."
           : "Bitte warten Sie, bis bestehende Einladungen angenommen oder abgelaufen sind."
       }`,
       429,

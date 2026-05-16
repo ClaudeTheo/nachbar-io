@@ -302,7 +302,7 @@ export function generateReceipt(data: ReceiptData): Uint8Array {
     doc.setFont('helvetica', 'normal');
     doc.setTextColor(150);
     doc.text(
-      `Erstellt mit nachbar.io — Seite ${i} von ${pageCount}`,
+      `Erstellt mit QuartierApp — Seite ${i} von ${pageCount}`,
       pageWidth / 2, 287,
       { align: 'center' },
     );

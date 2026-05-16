@@ -6,7 +6,7 @@ import { ServiceError } from "@/lib/services/service-error";
 
 const PHOTON_BASE = "https://photon.komoot.io";
 const TIMEOUT_MS = 5000;
-const USER_AGENT = "QuartierApp/1.0 (nachbar.io)";
+const USER_AGENT = "QuartierApp/1.0 (https://nachbar-io.vercel.app)";
 
 // ---------- Typen ----------
 

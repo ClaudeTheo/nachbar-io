@@ -24,10 +24,10 @@ export type BillingCycle = BillingInterval;
 // --- Anzeigenamen ---
 
 export const PLAN_DISPLAY_NAMES: Record<PlanType, string> = {
-  free: 'Nachbar Free',
-  plus: 'Nachbar Plus',
-  pro_community: 'Nachbar Pro Community',
-  pro_medical: 'Nachbar Pro Medical',
+  free: 'QuartierApp Free',
+  plus: 'QuartierApp Plus',
+  pro_community: 'QuartierApp Pro Community',
+  pro_medical: 'QuartierApp Pro Medical',
 };
 
 // --- Preise in Euro (fuer UI-Anzeige, nicht fuer Stripe-Checkout) ---

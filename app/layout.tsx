@@ -27,9 +27,9 @@ const siteUrl =
   process.env.NEXT_PUBLIC_SITE_URL || "https://nachbar-io.vercel.app";
 
 export const metadata: Metadata = {
-  title: "Nachbar.io — Geschlossener Pilot",
+  title: "QuartierApp — Geschlossener Pilot",
   description:
-    "Nachbar.io ist noch nicht öffentlich freigeschaltet. Der geschlossene Pilot wird lokal vorbereitet und nimmt aktuell keine Registrierungen an.",
+    "QuartierApp ist noch nicht öffentlich freigeschaltet. Der geschlossene Pilot wird lokal vorbereitet und nimmt aktuell keine Registrierungen an.",
   manifest: "/manifest.json",
   metadataBase: new URL(siteUrl),
   robots: isClosedPilotMode()
@@ -47,23 +47,23 @@ export const metadata: Metadata = {
     locale: "de_DE",
     url: siteUrl,
     siteName: "QuartierApp",
-    title: "Nachbar.io — Geschlossener Pilot",
+    title: "QuartierApp — Geschlossener Pilot",
     description:
-      "Nachbar.io ist noch nicht öffentlich freigeschaltet.",
+      "QuartierApp ist noch nicht öffentlich freigeschaltet.",
     images: [
       {
         url: "/opengraph-image",
         width: 1200,
         height: 630,
-        alt: "Nachbar.io — Geschlossener Pilot",
+        alt: "QuartierApp — Geschlossener Pilot",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Nachbar.io — Geschlossener Pilot",
+    title: "QuartierApp — Geschlossener Pilot",
     description:
-      "Nachbar.io ist noch nicht öffentlich freigeschaltet.",
+      "QuartierApp ist noch nicht öffentlich freigeschaltet.",
     images: ["/opengraph-image"],
   },
   appleWebApp: {

@@ -133,7 +133,7 @@ export async function updateSession(
     request.nextUrl.pathname.startsWith("/auth/callback");
   const isApiRoute = request.nextUrl.pathname.startsWith("/api");
   const isRootPage = request.nextUrl.pathname === "/";
-  // Rechtliche Seiten muessen IMMER oeffentlich zugaenglich sein (DSGVO / TMG / BFSG)
+  // Rechtliche Seiten muessen IMMER oeffentlich zugaenglich sein (DSGVO / DDG / BFSG)
   const isLegalPage =
     request.nextUrl.pathname.startsWith("/datenschutz") ||
     request.nextUrl.pathname.startsWith("/impressum") ||

@@ -63,7 +63,7 @@ async function fetchWithRetryAttempt<T>(
   const mergedHeaders = new Headers(ctx.headers);
 
   if (!mergedHeaders.has("User-Agent")) {
-    mergedHeaders.set("User-Agent", "nachbar.io/1.0 (+https://nachbar.io)");
+    mergedHeaders.set("User-Agent", "QuartierApp/1.0 (+https://nachbar-io.vercel.app)");
   }
 
   try {

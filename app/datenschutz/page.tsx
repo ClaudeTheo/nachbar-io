@@ -47,9 +47,9 @@ export default function DatenschutzPage() {
             <p>
               Diese Datenschutzerklärung gilt für alle Zugangswege zu
               QuartierApp: die Web-App (nachbar-io.vercel.app), das Arzt-Portal
-              (nachbar-arzt.vercel.app) sowie das Pi-Kiosk-Terminal im Quartier.
-              Alle Zugangswege nutzen dieselbe Datenbank und unterliegen
-              denselben Datenschutzgrundsätzen.
+              (nachbar-arzt.vercel.app) sowie künftige native oder betreute
+              Gerätezugänge. Alle freigeschalteten Zugangswege nutzen dieselbe
+              Datenbank und unterliegen denselben Datenschutzgrundsätzen.
             </p>
           </section>
 
@@ -549,10 +549,11 @@ export default function DatenschutzPage() {
                 entfernt (PII-Filter).
               </li>
               <li>
-                <strong>Session Replay:</strong> Bei 1 % der Sitzungen und bei
-                100 % der Fehlersitzungen wird eine anonymisierte
-                Bildschirmaufzeichnung erstellt, um Fehlerursachen
-                nachvollziehen zu können. Texteingaben werden dabei maskiert.
+                <strong>Session Replay:</strong> Bildschirmaufzeichnungen sind
+                im geschlossenen Pilot standardmäßig deaktiviert. Eine
+                Aktivierung erfolgt nur nach erneuter Datenschutzprüfung,
+                dokumentierter Maskierung sensibler Inhalte und, soweit
+                erforderlich, ausdrücklicher Einwilligung.
               </li>
               <li>
                 <strong>Speicherdauer:</strong> Fehlerberichte werden 90 Tage

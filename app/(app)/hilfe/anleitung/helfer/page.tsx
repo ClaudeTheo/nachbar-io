@@ -76,7 +76,7 @@ export default function AnleitungHelferPage() {
 
       {/* Print Header */}
       <div className="hidden print:block p-8">
-        <h1 className="text-2xl font-bold">Nachbar.io — Anleitung für Helfer</h1>
+        <h1 className="text-2xl font-bold">QuartierApp — Anleitung für Helfer</h1>
         <p className="text-lg text-gray-600 mt-1">So verdienen Sie Geld mit Nachbarschaftshilfe</p>
         <hr className="mt-4" />
       </div>

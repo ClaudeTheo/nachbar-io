@@ -53,7 +53,7 @@ interface CareNotificationRecipientsInput {
 }
 
 const EXTERNAL_CARE_NOTIFICATION_MESSAGE =
-  'Nachbar.io: Es gibt eine neue Care-Benachrichtigung. Bitte oeffnen Sie die App oder melden Sie sich ueber den bekannten direkten Kontakt. Bei akuter Gefahr zuerst 112/110.';
+  'QuartierApp: Es gibt eine neue Care-Benachrichtigung. Bitte oeffnen Sie die App oder melden Sie sich ueber den bekannten direkten Kontakt. Bei akuter Gefahr zuerst 112/110.';
 
 export async function getCareNotificationRecipients(
   supabase: SupabaseClient,

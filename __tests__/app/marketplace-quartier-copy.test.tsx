@@ -179,7 +179,7 @@ describe("Quartier-Marktplatz Copy", () => {
     ).toBeInTheDocument();
   });
 
-  it("zeigt im Detail sicheren Kontakt per Nachbar.io statt öffentlicher Kontaktdaten", async () => {
+  it("zeigt im Detail sicheren Kontakt per QuartierApp statt öffentlicher Kontaktdaten", async () => {
     render(<MarketplaceDetailPage />);
 
     await waitFor(() => {
@@ -191,7 +191,7 @@ describe("Quartier-Marktplatz Copy", () => {
       screen.getByText(/Telefonnummer und Adresse werden nicht öffentlich angezeigt/i),
     ).toBeInTheDocument();
     expect(
-      screen.getByText(/Kontakt läuft über Nachbar.io/i),
+      screen.getByText(/Kontakt läuft über QuartierApp/i),
     ).toBeInTheDocument();
   });
 

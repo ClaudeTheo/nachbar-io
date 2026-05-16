@@ -318,7 +318,7 @@ describe("QuartierInfoPage Vorlesen-Integration (G-5)", () => {
         json: () =>
           Promise.resolve({
             error:
-              "Der Nachbar.io-Pilot ist geschlossen und nimmt aktuell keine Anmeldungen oder personenbezogenen Daten an.",
+              "Der QuartierApp-Pilot ist geschlossen und nimmt aktuell keine Anmeldungen oder personenbezogenen Daten an.",
             status: "closed_pilot",
           }),
       }),

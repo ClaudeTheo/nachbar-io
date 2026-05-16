@@ -26,7 +26,7 @@ import { GuidelinesGate } from "@/components/moderation/GuidelinesAcceptance";
 
 const TYPE_HINTS: Record<string, string> = {
   sell:
-    "Privatverkauf unter Nachbarn. Nachbar.io ist keine gewerbliche Plattform.",
+    "Privatverkauf unter Nachbarn. QuartierApp ist keine gewerbliche Plattform.",
   lend: "Rückgabe und Pfand bitte direkt absprechen.",
   give: "Gut für Dinge, die noch nützlich sind und im Quartier bleiben dürfen.",
   search:

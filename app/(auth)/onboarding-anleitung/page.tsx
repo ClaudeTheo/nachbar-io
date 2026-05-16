@@ -25,7 +25,7 @@ export default function OnboardingAnleitungPage() {
         </p>
       </div>
 
-      {/* Was ist Nachbar.io */}
+      {/* Was ist QuartierApp */}
       <div className="mb-6 rounded-xl border-2 border-quartier-green bg-quartier-green/5 p-5 print:border print:bg-white">
         <h2 className="mb-2 text-xl font-semibold text-quartier-green">
           Was ist QuartierApp?
@@ -203,7 +203,7 @@ export default function OnboardingAnleitungPage() {
       {/* Footer */}
       <div className="text-center text-sm text-muted-foreground print:mt-8">
         <p>QuartierApp — Ihre digitale Nachbarschaft</p>
-        <p className="mt-1">nachbar.io</p>
+        <p className="mt-1">QuartierApp</p>
       </div>
     </div>
   );

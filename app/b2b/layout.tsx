@@ -3,7 +3,7 @@
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'QuartierApp für Organisationen | nachbar.io',
+  title: 'QuartierApp für Organisationen',
   description: 'Digitale Quartiersvernetzung für Kommunen, Pflegedienste und Wohnungsbaugesellschaften. Lebenszeichen-Übersicht, nachbarschaftliche Vernetzung und anonymisierte Quartiers-Statistiken.',
 };
 

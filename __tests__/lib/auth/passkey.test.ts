@@ -4,7 +4,7 @@ import { getPasskeyConfig, generatePasskeySecret } from '@/lib/auth/passkey';
 describe('passkey config', () => {
   it('returns rpName and rpID', () => {
     const config = getPasskeyConfig();
-    expect(config.rpName).toBe('nachbar.io');
+    expect(config.rpName).toBe('QuartierApp');
     expect(config.rpID).toBeDefined();
     expect(config.origin).toBeDefined();
   });

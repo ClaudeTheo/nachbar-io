@@ -17,9 +17,9 @@ describe('PLAN_DISPLAY_NAMES', () => {
     expect(Object.keys(PLAN_DISPLAY_NAMES)).toHaveLength(4);
   });
 
-  it('alle Anzeigenamen beginnen mit "Nachbar"', () => {
+  it('alle Anzeigenamen beginnen mit "QuartierApp"', () => {
     for (const name of Object.values(PLAN_DISPLAY_NAMES)) {
-      expect(name).toMatch(/^Nachbar /);
+      expect(name).toMatch(/^QuartierApp /);
     }
   });
 });

@@ -28,8 +28,8 @@ describe("legal pages AI and pilot copy", () => {
     render(<ImpressumPage />);
 
     expect(screen.getByText(/Hinweis zur Rechtsform/i)).toBeInTheDocument();
-    expect(screen.getByText(/Theobase GmbH i\.G\./i)).toBeInTheDocument();
-    expect(screen.getByText(/ist fuer den 27\.04\.2026 geplant/i)).toBeInTheDocument();
+    expect(screen.getByText(/Theobase GmbH befindet sich in Gründung/i)).toBeInTheDocument();
+    expect(screen.queryByText(/27\.04\.2026/i)).not.toBeInTheDocument();
     expect(screen.queryByText(/erfolgte beim Notariat/i)).not.toBeInTheDocument();
     expect(screen.getByText(/Pilotbetrieb ist eine geschlossene/i)).toBeInTheDocument();
   });

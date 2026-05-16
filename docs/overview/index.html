@@ -1,0 +1,875 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>QuartierApp — Technische und konzeptionelle Übersicht</title>
+<style>
+  :root {
+    --petrol: #2e7d5e;
+    --petrol-dark: #1f5640;
+    --anthrazit: #3d3d50;
+    --warmwhite: #fdf8f3;
+    --warmgrey: #f0ebe3;
+    --amber: #f59e0b;
+    --emergency: #ef4444;
+    --text: #2d2d36;
+    --text-muted: #6b6b78;
+    --border: #d8d2c5;
+  }
+
+  * { box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'Nunito', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: var(--warmwhite);
+    color: var(--text);
+    line-height: 1.65;
+    margin: 0;
+    font-size: 16px;
+  }
+
+  header.hero {
+    background: linear-gradient(135deg, var(--petrol) 0%, var(--petrol-dark) 100%);
+    color: white;
+    padding: 4rem 2rem 3rem;
+  }
+
+  .container {
+    max-width: 1080px;
+    margin: 0 auto;
+    padding: 0 2rem;
+  }
+
+  header.hero h1 {
+    font-size: 2.5rem;
+    margin: 0 0 0.5rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+  }
+
+  header.hero .tagline {
+    font-size: 1.2rem;
+    opacity: 0.9;
+    margin: 0;
+    max-width: 720px;
+  }
+
+  header.hero .meta {
+    margin-top: 1.5rem;
+    font-size: 0.9rem;
+    opacity: 0.75;
+  }
+
+  nav.toc {
+    background: var(--warmgrey);
+    border-bottom: 1px solid var(--border);
+    padding: 1rem 2rem;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    backdrop-filter: blur(12px);
+  }
+
+  nav.toc ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+    max-width: 1080px;
+    margin: 0 auto;
+    font-size: 0.9rem;
+  }
+
+  nav.toc a {
+    color: var(--anthrazit);
+    text-decoration: none;
+    font-weight: 600;
+  }
+
+  nav.toc a:hover { color: var(--petrol); }
+
+  main { padding: 3rem 2rem; }
+
+  section {
+    margin-bottom: 4rem;
+    scroll-margin-top: 80px;
+  }
+
+  h2 {
+    font-size: 1.75rem;
+    color: var(--anthrazit);
+    border-bottom: 3px solid var(--petrol);
+    padding-bottom: 0.5rem;
+    margin-top: 0;
+    margin-bottom: 1.5rem;
+  }
+
+  h3 {
+    color: var(--petrol);
+    font-size: 1.25rem;
+    margin-top: 2rem;
+    margin-bottom: 0.75rem;
+  }
+
+  h4 {
+    color: var(--anthrazit);
+    font-size: 1.05rem;
+    margin-top: 1.5rem;
+    margin-bottom: 0.5rem;
+  }
+
+  p { margin: 0 0 1rem; }
+
+  ul, ol { padding-left: 1.5rem; }
+  li { margin-bottom: 0.4rem; }
+
+  .card {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+  }
+
+  .card.highlight {
+    border-left: 4px solid var(--petrol);
+  }
+
+  .card.warning {
+    border-left: 4px solid var(--amber);
+    background: #fffbf0;
+  }
+
+  .card.danger {
+    border-left: 4px solid var(--emergency);
+    background: #fef2f2;
+  }
+
+  .grid-2 {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1.5rem;
+  }
+
+  .grid-3 {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1rem;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1rem 0;
+    font-size: 0.95rem;
+    background: white;
+    border-radius: 8px;
+    overflow: hidden;
+  }
+
+  th {
+    background: var(--anthrazit);
+    color: white;
+    text-align: left;
+    padding: 0.75rem 1rem;
+    font-weight: 600;
+  }
+
+  td {
+    padding: 0.6rem 1rem;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+  }
+
+  tr:last-child td { border-bottom: none; }
+  tr:nth-child(even) { background: var(--warmwhite); }
+
+  code, pre {
+    font-family: 'JetBrains Mono', 'Courier New', monospace;
+    font-size: 0.88rem;
+  }
+
+  code {
+    background: var(--warmgrey);
+    padding: 0.1em 0.4em;
+    border-radius: 4px;
+    color: var(--petrol-dark);
+  }
+
+  pre {
+    background: var(--anthrazit);
+    color: #e0e0e8;
+    padding: 1rem 1.5rem;
+    border-radius: 8px;
+    overflow-x: auto;
+    line-height: 1.5;
+  }
+
+  pre code {
+    background: transparent;
+    color: inherit;
+    padding: 0;
+  }
+
+  .badge {
+    display: inline-block;
+    padding: 0.2em 0.7em;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-right: 0.4em;
+  }
+
+  .badge.live { background: #dcfce7; color: #166534; }
+  .badge.dev { background: #fef3c7; color: #92400e; }
+  .badge.planned { background: #e0e7ff; color: #3730a3; }
+  .badge.offen { background: #fee2e2; color: #991b1b; }
+
+  .kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 1rem;
+    margin: 1.5rem 0;
+  }
+
+  .kpi {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1rem;
+    text-align: center;
+  }
+
+  .kpi-value {
+    font-size: 1.75rem;
+    font-weight: 800;
+    color: var(--petrol);
+    line-height: 1;
+  }
+
+  .kpi-label {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    margin-top: 0.3rem;
+  }
+
+  .quote {
+    border-left: 4px solid var(--petrol);
+    padding: 0.5rem 1.5rem;
+    font-style: italic;
+    color: var(--text-muted);
+    margin: 1.5rem 0;
+    background: var(--warmgrey);
+    border-radius: 0 8px 8px 0;
+  }
+
+  .lang-switch {
+    position: absolute;
+    top: 1.5rem;
+    right: 2rem;
+    background: rgba(255,255,255,0.15);
+    padding: 0.4rem 0.9rem;
+    border-radius: 999px;
+    font-size: 0.85rem;
+    text-decoration: none;
+    color: white;
+    border: 1px solid rgba(255,255,255,0.3);
+  }
+
+  .lang-switch:hover { background: rgba(255,255,255,0.25); }
+
+  footer {
+    background: var(--anthrazit);
+    color: white;
+    padding: 2rem;
+    text-align: center;
+    font-size: 0.9rem;
+  }
+
+  footer a { color: var(--warmgrey); }
+
+  @media print {
+    nav.toc { position: static; }
+    section { page-break-inside: avoid; }
+    header.hero { background: white !important; color: var(--anthrazit) !important; }
+    .lang-switch { display: none; }
+  }
+
+  @media (max-width: 720px) {
+    header.hero { padding: 2.5rem 1.5rem 2rem; }
+    header.hero h1 { font-size: 1.8rem; }
+    main { padding: 2rem 1rem; }
+    nav.toc ul { gap: 1rem; font-size: 0.85rem; }
+    .lang-switch { position: static; display: inline-block; margin-top: 1rem; }
+  }
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <a href="index-en.html" class="lang-switch">EN</a>
+  <div class="container">
+    <h1>QuartierApp</h1>
+    <p class="tagline">Privater Vertrauensraum für Senior:innen, Familie und Quartier — DSGVO-konform, MDR-readiness-Niveau, ohne Medizinprodukt-Status.</p>
+    <p class="meta">Repository <code>nachbar-io</code> · Marke <strong>QuartierApp</strong> · Stand 2026-05-16 (Pass 72)</p>
+  </div>
+</header>
+
+<nav class="toc">
+  <ul>
+    <li><a href="#vision">Vision</a></li>
+    <li><a href="#social">Sozialer Hintergrund</a></li>
+    <li><a href="#architektur">Architektur</a></li>
+    <li><a href="#stack">Tech-Stack</a></li>
+    <li><a href="#security">Security</a></li>
+    <li><a href="#compliance">Compliance</a></li>
+    <li><a href="#daten">Datenmodell</a></li>
+    <li><a href="#ux">UX & Senior</a></li>
+    <li><a href="#tests">Tests</a></li>
+    <li><a href="#pilot">Pilot</a></li>
+    <li><a href="#reality">Reality-Check</a></li>
+  </ul>
+</nav>
+
+<main>
+<div class="container">
+
+<!-- ===== 1. VISION ===== -->
+<section id="vision">
+  <h2>1. Vision &amp; Produkt-Kern</h2>
+
+  <div class="card highlight">
+    <h3 style="margin-top:0">In einem Satz</h3>
+    <p>QuartierApp ist ein privater Vertrauensraum, in dem Senior:innen, ihre Familie und ihre Nachbarschaft ohne soziale Plattform-Logik verbunden bleiben — mit lokalem Bezug zu Quartier-Informationen (Müll, Wetter, Notfälle, Behörden, OSM-POIs).</p>
+  </div>
+
+  <h3>Phase-1-Produkt</h3>
+  <p><strong>"Familienkreis + Quartier-Infos"</strong> — kein Marktplatz, kein Wettbewerb zu WhatsApp, sondern ein <em>kuratierter, geschützter Raum</em>. Wer hereinkommt, kennt jemanden, der bereits drin ist (Hausnummer-Code per Brief, kein digital-only Onboarding).</p>
+
+  <h3>Vier Versionen</h3>
+  <table>
+    <thead>
+      <tr><th>Variante</th><th>Zielgruppe</th><th>Preis</th><th>Status</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><strong>Free</strong></td><td>Resident: Eigene Familie + Quartier sehen</td><td>0&nbsp;€</td><td><span class="badge live">Live</span></td></tr>
+      <tr><td><strong>Plus</strong></td><td>Caregiver: Status, Heartbeat, Check-in der zugewiesenen Senior:innen</td><td>8,90&nbsp;€&nbsp;/&nbsp;Monat</td><td><span class="badge live">Live</span></td></tr>
+      <tr><td><strong>Pro Community</strong></td><td>Org-Admin: Quartiers-Statistiken anonymisiert</td><td>79&nbsp;€&nbsp;/&nbsp;Monat</td><td><span class="badge dev">Dev</span></td></tr>
+      <tr><td><strong>Pro Medical</strong></td><td>Arzt-Portal: Patienten, Anamnese, GDT</td><td>—</td><td><span class="badge planned">Geparkt nach MRR &gt; 500</span></td></tr>
+    </tbody>
+  </table>
+
+  <h3>Tonalitäts-Regel (im Repo verankert)</h3>
+  <div class="quote">"Siezen, ruhig, sachlich, kein Startup-Hype. Notfall-Banner zeigt IMMER 112/110 zuerst, vor allem anderen."</div>
+</section>
+
+<!-- ===== 2. SOZIALER HINTERGRUND ===== -->
+<section id="social">
+  <h2>2. Sozialer Hintergrund &amp; Motivation</h2>
+
+  <h3>Das Problem</h3>
+  <p>Senior:innen in Deutschland erleben drei sich überlagernde Krisen:</p>
+  <div class="grid-2">
+    <div class="card">
+      <h4>Vereinsamung</h4>
+      <p>Laut Bundesinstitut für Bevölkerungsforschung leben über 6&nbsp;Millionen Menschen über 65 in Deutschland allein. Mit 80+ steigt der Anteil sozial isolierter Personen auf über 25&nbsp;%. WhatsApp ist eine Brücke, aber keine Quartiers-Plattform.</p>
+    </div>
+    <div class="card">
+      <h4>Pflegelücke</h4>
+      <p>5,2&nbsp;Millionen Pflegebedürftige (PSG II/III) — 84&nbsp;% werden zu Hause versorgt, meist von Angehörigen ohne digitale Unterstützung. Mediennutzung ist heterogen, Apps wirken oft als Hürde.</p>
+    </div>
+    <div class="card">
+      <h4>Digitale Marginalisierung</h4>
+      <p>Die meisten "Senior-Apps" sind Pflege-Erfassungs-Tools für Profis oder Notruf-Knöpfe — nicht für Beziehungsräume. QuartierApp positioniert sich als <strong>Beziehungsraum</strong>, der Pflege erleichtert, aber nicht zum Erfassungs-Tool wird.</p>
+    </div>
+    <div class="card">
+      <h4>Verlust lokaler Strukturen</h4>
+      <p>Quartiersnachbarschaft als alltägliches Hilfsnetz verschwindet. QuartierApp will diese Struktur digital nachbilden — mit harter Quartiers-Bindung (kein "Friends-of-Friends-of-Friends" wie soziale Netze).</p>
+    </div>
+  </div>
+
+  <h3>Drei Produkt-Prinzipien</h3>
+  <ol>
+    <li><strong>Vertrauen vor Reichweite.</strong> Kein viraler Wachstum, kein Empfehlungs-Druck. Wer rein will, braucht einen Hausnummer-Code per Brief.</li>
+    <li><strong>Nutzen vor Funktion.</strong> Lieber wenige Features, die Senior:innen sofort verstehen, als ein Funktions-Feuerwerk, das verwirrt.</li>
+    <li><strong>Sicherheit vor Bequemlichkeit.</strong> Medikamenten- und Check-in-Daten sind End-zu-End verschlüsselt. Eltern müssen Kind-zu-Kind-Einladungen freigeben (DSGVO Art.&nbsp;8).</li>
+  </ol>
+
+  <h3>Marke</h3>
+  <p>Tonalität "ruhig, sachlich, kein Startup-Hype". Markenfarben Petrol <code>#2e7d5e</code>, Anthrazit <code>#3d3d50</code>, Warmweiß <code>#fdf8f3</code>. Font Nunito. 8&nbsp;px Grid. Siezen in der UI, Duzen nur intern.</p>
+</section>
+
+<!-- ===== 3. ARCHITEKTUR ===== -->
+<section id="architektur">
+  <h2>3. Architektur-Übersicht</h2>
+
+  <h3>Multi-Portal-Workspace</h3>
+  <p>Fünf Apps teilen sich <strong>eine</strong> Supabase-Instance via getrennte RLS-Rollen — kein Microservices-Sprawl, sondern eine konsistente Datenbasis.</p>
+  <table>
+    <thead><tr><th>Repository</th><th>Rolle</th><th>Port (Dev)</th><th>Status</th></tr></thead>
+    <tbody>
+      <tr><td><code>nachbar-io</code></td><td>Hauptapp + Senior-Wrapper</td><td>3000</td><td><span class="badge live">Live</span></td></tr>
+      <tr><td><code>nachbar-arzt</code></td><td>Arzt-Portal (GDT, Stripe-Credits)</td><td>3002</td><td><span class="badge dev">Dev</span></td></tr>
+      <tr><td><code>nachbar-civic</code></td><td>OZG-Civic-Postfach</td><td>3003</td><td><span class="badge dev">Dev</span></td></tr>
+      <tr><td><code>nachbar-pflege</code></td><td>Pflege-Portal</td><td>3004</td><td><span class="badge dev">Dev</span></td></tr>
+      <tr><td><code>nachbar-admin</code></td><td>Admin-Dashboard, Quarter-Scoping</td><td>3005</td><td><span class="badge live">Live</span></td></tr>
+    </tbody>
+  </table>
+
+  <h3>Generation Modes</h3>
+  <p>Eine Codebase, vier UX-Modi (<code>youth</code> / <code>active</code> / <code>comfort</code> / <code>senior</code>). Zentrale Konfiguration in <code>lib/user-modes.ts</code> als <strong>Mode-Surface-Registry</strong> mit Eyebrow, Titel, Subtitle, VisualIntent, PrimaryAction, SecondaryAction, drei Prinzipien pro Modus.</p>
+
+  <h3>Native Wrapper</h3>
+  <ul>
+    <li><strong>Senior-App Windows:</strong> Tauri 2.x (Rust) auf AWOW Mini-PC, wrappt <code>nachbar-io/app/(senior)/*</code></li>
+    <li><strong>Android/iOS:</strong> Capacitor (geplant), gleiche Web-Codebasis</li>
+    <li><strong>Pi-Kiosk:</strong> Archiviert 2026-04-19, ersetzt durch Tauri-Windows-Wrapper</li>
+  </ul>
+
+  <h3>Deployment-Architektur</h3>
+  <pre><code>GitHub Repo (ClaudeTheo/nachbar-io)
+        ↓ workflow_dispatch
+GitHub Actions (Lint + Vitest Gate)
+        ↓
+Vercel Pro (Region fra1, Edge Runtime)
+        ↓
+Supabase EU Frankfurt (Postgres 15)
+        ↓
+Upstash Redis (Rate-Limit, Trap-State)</code></pre>
+  <p><strong>Wichtig:</strong> Kein Auto-Deploy auf Push. Deploys sind bewusste Aktionen via <code>gh workflow run deploy.yml</code> — Kostenkontrolle und Sicherheitsgate.</p>
+</section>
+
+<!-- ===== 4. TECH-STACK ===== -->
+<section id="stack">
+  <h2>4. Tech-Stack im Detail</h2>
+
+  <h3>Frontend</h3>
+  <table>
+    <thead><tr><th>Technologie</th><th>Version</th><th>Zweck</th></tr></thead>
+    <tbody>
+      <tr><td>Next.js</td><td>16 (App Router)</td><td>React-Framework, Server Components</td></tr>
+      <tr><td>TypeScript</td><td>strict mode</td><td>Type-Safety, <code>npx tsc --noEmit</code> als CI-Gate</td></tr>
+      <tr><td>Tailwind CSS</td><td>v4</td><td>Utility-first Styling</td></tr>
+      <tr><td>shadcn/ui</td><td>aktuell</td><td>Headless-Komponenten-Set</td></tr>
+      <tr><td>Leaflet</td><td>+&nbsp;OpenStreetMap</td><td>Karten ohne Google-Tracking</td></tr>
+      <tr><td>Storybook + Chromatic</td><td>aktuell</td><td>UI-Komponenten-Library, Youth-UI</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Backend &amp; Datenbank</h3>
+  <table>
+    <thead><tr><th>Komponente</th><th>Detail</th></tr></thead>
+    <tbody>
+      <tr><td>Postgres</td><td>15, via Supabase EU-Central-1 Frankfurt</td></tr>
+      <tr><td>Row Level Security</td><td>auf allen Tabellen, Default Deny</td></tr>
+      <tr><td>Migrations</td><td>~198 SQL-Migrationen, File-first-Konvention</td></tr>
+      <tr><td>Edge Functions</td><td>Supabase Functions, Region eu-central-1</td></tr>
+      <tr><td>Auth</td><td>Magic Link (Resend SMTP), OTP, custom Founder-Bypass</td></tr>
+      <tr><td>Realtime</td><td>Postgres LISTEN/NOTIFY via Supabase Realtime (Chat-Modul)</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Externe Services</h3>
+  <table>
+    <thead><tr><th>Service</th><th>Zweck</th><th>Status</th></tr></thead>
+    <tbody>
+      <tr><td>Resend</td><td>SMTP für Magic Links</td><td><span class="badge live">Live</span></td></tr>
+      <tr><td>Twilio</td><td>SMS-OTP</td><td><span class="badge dev">Test-Modus</span></td></tr>
+      <tr><td>OpenAI</td><td>TTS <code>gpt-4o-mini-tts</code></td><td><span class="badge live">Live</span></td></tr>
+      <tr><td>Anthropic Claude</td><td>KI-Begleiter (Senior-Assistent)</td><td><span class="badge offen">OFF bis AVV</span></td></tr>
+      <tr><td>Mistral (DE)</td><td>DSGVO-konformer KI-Pfad via IONOS</td><td><span class="badge planned">Geplant</span></td></tr>
+      <tr><td>Azure Neural HD EU</td><td>TTS für Voice-Layer</td><td><span class="badge planned">Geplant</span></td></tr>
+      <tr><td>Stripe</td><td>Subscription-Billing, 5 Preise</td><td><span class="badge dev">Test-Modus</span></td></tr>
+      <tr><td>Metered</td><td>TURN-Server für WebRTC</td><td><span class="badge dev">Free-Tier</span></td></tr>
+      <tr><td>IONOS</td><td>DNS für <code>quartierapp.de</code></td><td><span class="badge live">Live</span></td></tr>
+      <tr><td>Upstash Redis</td><td>Rate-Limiting, Brute-Force-Traps</td><td><span class="badge live">Live</span></td></tr>
+    </tbody>
+  </table>
+
+  <h3>Infrastruktur &amp; CI/CD</h3>
+  <ul>
+    <li><strong>Vercel Pro</strong> — Edge Runtime, Region fra1, Firewall mit Founder-IP-Bypass</li>
+    <li><strong>GitHub Actions</strong> — <code>workflow_dispatch</code>-only Deploys, Lint + Vitest als Gate</li>
+    <li><strong>Code-Größe</strong> — ca. 58.000 LoC TypeScript &amp; SQL, ~198 Migrationen, 7 ADRs</li>
+    <li><strong>Node-Version</strong> — 22 (seit 2026-05-14)</li>
+  </ul>
+
+  <h3>Spezielle Patterns</h3>
+  <div class="card">
+    <ul>
+      <li><strong>Service-Rules-Engine-Pattern</strong> — Reine Funktionen in <code>modules/&lt;feature&gt;/services/&lt;rule-set&gt;.ts</code> für Validierungs-/Business-Logik</li>
+      <li><strong>Local-only Preview-Routes</strong> — <code>isLocalUiPreviewEnabled()</code>-Guard mit <code>notFound()</code> in Production</li>
+      <li><strong>Mode-Surface-Registry</strong> — Statt inline if-Branches eine zentrale Map pro UI-Modus</li>
+      <li><strong>File-first-Migration</strong> — SQL-Datei vor <code>schema_migrations</code>-Insert, sonst Branch-Replay defekt</li>
+      <li><strong>Down-Migration-Konvention</strong> — Rollback-SQL unter <code>supabase/rollbacks/</code>, NICHT <code>supabase/migrations/</code></li>
+      <li><strong>Pre-Check vor Neubau</strong> — <code>rg</code>/<code>Glob</code> auf bestehende Infrastruktur, bevor neue Lib/Service/Migration entsteht</li>
+      <li><strong>Versioned Encryption</strong> — Format <code>aes256gcm:v1:...</code>, alte Werte bleiben lesbar bei Key-Rotation</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ===== 5. SECURITY ===== -->
+<section id="security">
+  <h2>5. Sicherheits-Architektur</h2>
+
+  <p>QuartierApp bewegt sich auf <strong>MDR-Readiness-Niveau</strong> (IEC 62304 Klasse B) ohne Medizinprodukt-Status. Das heißt: Architektur und Prozesse sind so robust wie für Medizinprodukte gefordert — aber das Produkt selbst nimmt keine Diagnose-/Therapie-Funktion an.</p>
+
+  <h3>Drei Verteidigungs-Ebenen</h3>
+  <div class="grid-2">
+    <div class="card highlight">
+      <h4>Layer 1 — Network &amp; WAF</h4>
+      <ul>
+        <li>TLS 1.3, HSTS</li>
+        <li>CSP-Nonces in <code>&lt;script&gt;</code>-Tags (kein <code>unsafe-inline</code>)</li>
+        <li>Closed-Pilot-Middleware (503-Default für non-whitelisted Pfade)</li>
+        <li>Trap-System statt CAPTCHA (Honey-Routes, <code>auth_bruteforce</code> via Upstash)</li>
+        <li>Rate-Limiting via Upstash Redis pro Pfad-Kategorie</li>
+        <li>Vercel-Firewall mit Founder-IP-Bypass <code>93.200.153.4</code></li>
+      </ul>
+    </div>
+    <div class="card highlight">
+      <h4>Layer 2 — Application</h4>
+      <ul>
+        <li>Hash-only Token-Storage (SHA-256), nie Klartext</li>
+        <li>Tokens nie in Query-Strings (Server-Logs, Browser-History, Referer)</li>
+        <li>Founder-Bypass-Helper mit hardcoded User-ID-Set</li>
+        <li>Service-Role-Key nur server-side, Legacy-JWT disabled</li>
+        <li>Webhook-Validierung über <code>isValidExternalUrl</code></li>
+        <li>Externe Links nur über <code>SafeExternalLink</code>-Komponente</li>
+      </ul>
+    </div>
+    <div class="card highlight">
+      <h4>Layer 3 — Datenbank</h4>
+      <ul>
+        <li>Row Level Security auf <strong>allen</strong> Tabellen, Default Deny</li>
+        <li>BEFORE-UPDATE Trigger machen 12 Spalten <strong>sticky</strong> (<code>is_admin</code>, <code>role</code>, <code>trust_level</code>...)</li>
+        <li>AES-256-GCM Field-Encryption für sensitive Felder</li>
+        <li>Audit-Trail über <code>admin_audit_log</code> und <code>family_setup_audit</code></li>
+        <li>11 Event-Types im Family-Setup-Audit (SHA-256-Hash für IP + User-Agent)</li>
+        <li>Anon-Bypass-Schutz auch wenn RLS-Policy versehentlich offen ist</li>
+      </ul>
+    </div>
+    <div class="card highlight">
+      <h4>Layer 4 — Process</h4>
+      <ul>
+        <li>Mini-Audit-Pflicht für jede Welle mit Auth-/RLS-/Admin-Surface (5-Min-Checklist)</li>
+        <li>Pre-Check vor Neubau (Grep auf bestehende Infrastruktur)</li>
+        <li>Vollaudit-Welle vor Pilotstart und MRR-Schwellen</li>
+        <li>Externer Pentest geplant ab MRR &gt; 2.000&nbsp;€</li>
+        <li>Founder-Go für Rote Zone (Push, Prod-Mig, Secrets, Billing, Auth)</li>
+      </ul>
+    </div>
+  </div>
+
+  <h3>Sicherheits-Verlauf (5 Audit-Phasen)</h3>
+  <table>
+    <thead><tr><th>Phase</th><th>Fokus</th><th>Status</th></tr></thead>
+    <tbody>
+      <tr><td>Phase 1</td><td>Initial-RLS + Auth</td><td><span class="badge live">Done</span></td></tr>
+      <tr><td>Phase 2</td><td>Hardening (CSP, Rate-Limit, Trap-System)</td><td><span class="badge live">Done</span></td></tr>
+      <tr><td>Phase 3</td><td>Care-Modul (Field-Encryption, Privacy)</td><td><span class="badge live">Done</span></td></tr>
+      <tr><td>Phase 4</td><td>Claude-Zweitmeinung (Score ~87&nbsp;%)</td><td><span class="badge live">Done</span></td></tr>
+      <tr><td>Phase 5</td><td>Family-Setup + Youth-Profiles</td><td><span class="badge live">Done</span></td></tr>
+      <tr><td>Pass 68/69</td><td>Mini-Audit-Regel + Mig 198 (Privilege-Escalation-Schutz)</td><td><span class="badge live">Live Prod</span></td></tr>
+    </tbody>
+  </table>
+
+  <h3>Beispiel: Privilege-Escalation-Schutz (Mig 198)</h3>
+  <p>Selbst wenn eine RLS-Policy versehentlich anon-Update erlaubte, würde der BEFORE-UPDATE-Trigger den Versuch reverten:</p>
+  <pre><code>UPDATE users
+SET is_admin = true, role = 'attacker', trust_level = 'guest'
+-- vom Trigger automatisch zurückgesetzt
+-- 12 Spalten sind sticky: is_admin, role, trust_level,
+-- youth_restrictions, youth_registration_status, pilot_role, ...
+-- service_role bypasst korrekt</code></pre>
+
+  <h3>Verschlüsselung at-rest</h3>
+  <ul>
+    <li><strong>Sensitive Felder:</strong> Medikamenten-Einträge, Check-in-Nachrichten</li>
+    <li><strong>Format:</strong> <code>aes256gcm:v1:&lt;ciphertext&gt;</code> — versioniert für Key-Rotation</li>
+    <li><strong>Schlüsselablage:</strong> Vercel <code>--sensitive</code> Env, nie Dashboard-Paste (Trailing-Newline-Korruption)</li>
+    <li><strong>Implementierung:</strong> <code>lib/care/field-encryption.ts</code></li>
+  </ul>
+</section>
+
+<!-- ===== 6. COMPLIANCE ===== -->
+<section id="compliance">
+  <h2>6. Compliance &amp; Regulatorik</h2>
+
+  <div class="card warning">
+    <h4 style="margin-top:0">Position: KEIN Medizinprodukt</h4>
+    <p>Bewusste Compliance-Entscheidung. Position-Paper <code>RPP-001</code>, Intended-Use-Statement <code>docs/15_INTENDED_USE_STATEMENT.md</code>. QuartierApp übernimmt keine Diagnose-, Therapie- oder Überwachungs-Funktion.</p>
+  </div>
+
+  <h3>Aber: MDR-Readiness</h3>
+  <p>Architektur und Prozesse sind so vorbereitet, dass eine spätere medizinische Erweiterung ohne Re-Engineering möglich wäre:</p>
+  <ul>
+    <li><strong>IEC 62304 Klasse B</strong> Software-Lifecycle</li>
+    <li><strong>ISO 14971</strong> Risk Management</li>
+    <li><strong>DSFA</strong> (Datenschutz-Folgenabschätzung) für Care-Modul</li>
+    <li><strong>FMEA</strong> für Care-Modul</li>
+    <li><strong>11 Kiosk-Hazards</strong> (HAZ-K-001 bis HAZ-K-011) identifiziert</li>
+    <li><strong>27 Requirements</strong> dokumentiert</li>
+    <li><strong>2 akzeptierte Hoch-Restrisiken</strong> (Offline-Betrieb, Stromausfall) — Nutzen-Risiko-Abwägung dokumentiert</li>
+  </ul>
+
+  <h3>DSGVO</h3>
+  <table>
+    <thead><tr><th>Aspekt</th><th>Umsetzung</th></tr></thead>
+    <tbody>
+      <tr><td>Datenresidenz</td><td>Supabase EU Frankfurt, kein Daten-Export USA</td></tr>
+      <tr><td>RLS</td><td>Default Deny auf allen Tabellen, Quarter-Scoping</td></tr>
+      <tr><td>Adressdaten</td><td>Nie im Client-State, nur <code>household_id</code></td></tr>
+      <tr><td>AVV</td><td>Anthropic + Mistral nach HR-Eintragung GmbH</td></tr>
+      <tr><td>Minderjährige</td><td>14-17 Eltern-Freigabe für Kind-zu-Kind-Einladung (Art. 8)</td></tr>
+      <tr><td>Unter 14</td><td>Self-Service blockiert (403), nur via Eltern-/Betreuer-Setup</td></tr>
+      <tr><td>Tokens</td><td>Hash-only Storage, nie Klartext, nie URL-Param</td></tr>
+      <tr><td>Recht auf Vergessenwerden</td><td>UGC-Truncate-Pfad, pseudonymisierte Audit-Logs</td></tr>
+    </tbody>
+  </table>
+
+  <h3>GmbH &amp; Rechtsträger</h3>
+  <ul>
+    <li><strong>Theobase GmbH (i.&nbsp;Gr.)</strong> — Beurkundet 2026-04-27, HR-Eintragung AG Freiburg läuft</li>
+    <li>Stammkapital 25.000&nbsp;€ eingezahlt 2026-05-11</li>
+    <li>Bank: FYRST (Kontomodell BASE, native DATEV-Anbindung)</li>
+    <li>Steuerberater: Albiez, Rheinfelden</li>
+    <li>Notar: Stadler, Bad Säckingen</li>
+  </ul>
+</section>
+
+<!-- ===== 7. DATENMODELL ===== -->
+<section id="daten">
+  <h2>7. Datenmodell-Highlights</h2>
+
+  <h3>Rollen-System (RLS)</h3>
+  <table>
+    <thead><tr><th>Rolle</th><th>Was sie sehen darf</th></tr></thead>
+    <tbody>
+      <tr><td><code>resident</code></td><td>Eigene Daten + Quartier</td></tr>
+      <tr><td><code>caregiver</code></td><td>Status/Heartbeat/Check-in der zugewiesenen Bewohner via <code>caregiver_links</code></td></tr>
+      <tr><td><code>org_admin</code></td><td>Quartier-Admin, anonymisierte Statistik</td></tr>
+      <tr><td><code>org_viewer</code></td><td>Nur lesend auf Quartier-Statistiken</td></tr>
+      <tr><td><code>doctor</code></td><td>Eigene Patienten, Termine, Anamnese, GDT</td></tr>
+      <tr><td><code>doctor_admin</code></td><td>Praxis-Verwaltung</td></tr>
+      <tr><td><code>quarter_admin</code></td><td>Plattform-Admin pro Quartier</td></tr>
+      <tr><td><code>super_admin</code></td><td>Plattform-Operationen (Founder-IDs)</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Care-Privacy: Zwei getrennte Verknüpfungstabellen</h3>
+  <div class="grid-2">
+    <div class="card">
+      <h4><code>caregiver_links</code></h4>
+      <p>Caregiver-zu-Senior. <strong>Sieht:</strong> Status, Heartbeat, Check-in. <strong>Sieht NICHT:</strong> volle Medikamenten-Historie ohne Senior-Consent. RLS prüft Bidirektionalität.</p>
+    </div>
+    <div class="card">
+      <h4><code>family_child_links</code></h4>
+      <p>Guardian-zu-Kind. <strong>Sieht:</strong> alle Kind-Daten, voller Zugriff (Elternverantwortung). Max 5 Direkt-Kinderkonten pro Guardian, dann <code>needs_admin_review</code>.</p>
+    </div>
+  </div>
+
+  <h3>Family-Setup-Flow (Mig 197)</h3>
+  <ul>
+    <li><strong>3 Token-Typen:</strong> <code>child_direct</code>, <code>child_friend</code>, <code>senior_setup</code></li>
+    <li><strong>6 Status-States:</strong> <code>pending</code>, <code>claimed</code>, <code>revoked</code>, <code>expired</code>, <code>pending_parent_approval</code>, <code>needs_admin_review</code></li>
+    <li><strong>Hash-only:</strong> <code>token_hash</code>, <code>short_code_hash</code> UNIQUE</li>
+    <li><strong>Kind-zu-Kind:</strong> <code>pending_parent_approval</code> bis Elternteil über dedicated API zustimmt</li>
+  </ul>
+
+  <h3>Pilot-Code-Modell</h3>
+  <p>Genau <strong>1</strong> <code>households.invite_code</code> pro Haushalt. Per Brief verteilt. Kein Aushang, kein Mehrfach-/Ersatzcode-Inventar für Pilot&nbsp;0. Ein bewusster UX-Hebel: wer einen Code hat, weiß dass jemand ihm einen geschickt hat.</p>
+
+  <h3>Generation-Modes-Constraint</h3>
+  <p>Bei der Family-Setup-Token-Erstellung gilt: <code>target_ui_mode IN ('youth','senior','comfort')</code>. Der <code>active</code>-Modus ist NUR für Self-Registration, nicht als Setup-Target — das verhindert dass ein Erwachsener für sich einen Setup-Link generieren lässt.</p>
+
+  <h3>Recognition Outside-App (Mig 196, Apply-go offen)</h3>
+  <p>Sprache "Freiwillige Anerkennung", nicht "Aufwandsentschädigung". Constraint <code>recognition_handling = 'outside_app_only'</code> sichert strukturell, dass die App selbst <strong>kein Geld annimmt oder bewegt</strong>. Recognition-Typen: <code>free</code>, <code>thank_you</code>, <code>suggested_amount</code> (100-5000 Cent = 1-50&nbsp;€), <code>by_agreement</code>.</p>
+</section>
+
+<!-- ===== 8. UX & SENIOR ===== -->
+<section id="ux">
+  <h2>8. UX-Architektur &amp; Senior-Modi</h2>
+
+  <h3>Senior-Constraints (im Repo verankert)</h3>
+  <div class="kpi-grid">
+    <div class="kpi"><div class="kpi-value">80 px</div><div class="kpi-label">Min. Touch-Target</div></div>
+    <div class="kpi"><div class="kpi-value">4.5:1</div><div class="kpi-label">Kontrast WCAG AA</div></div>
+    <div class="kpi"><div class="kpi-value">4</div><div class="kpi-label">Max Taps pro Aktion</div></div>
+    <div class="kpi"><div class="kpi-value">112</div><div class="kpi-label">Notruf zuerst</div></div>
+  </div>
+
+  <h3>Vier UI-Modi</h3>
+  <table>
+    <thead><tr><th>Modus</th><th>Zielgruppe</th><th>Besonderheit</th></tr></thead>
+    <tbody>
+      <tr><td><strong>youth</strong></td><td>14-17 Jahre</td><td>Tausch, Gruppen, Schutzlogik (<code>basis_access_only</code>, <code>no_payments</code>, <code>no_sensitive_care_data</code>)</td></tr>
+      <tr><td><strong>active</strong></td><td>Berufstätige Angehörige</td><td>Volle Funktion, schnelle Interaktion</td></tr>
+      <tr><td><strong>comfort</strong></td><td>Junge Senior:innen</td><td>Etwas größer, klarer strukturiert</td></tr>
+      <tr><td><strong>senior</strong></td><td>80+ Senior:innen</td><td>80&nbsp;px-Targets, große Schrift, 4-Tap-Regel, max. 4 Bottom-Nav-Knöpfe</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Notfall-Architektur</h3>
+  <div class="card danger">
+    <h4 style="margin-top:0">HAZ-K-Regel</h4>
+    <p>Kategorien <code>fire</code>, <code>medical</code>, <code>crime</code> zeigen IMMER <strong>112/110</strong> zuerst, vor allem anderen UI-Element. Der Notfall-Banner ist Pflicht und wird bei jedem Render geprüft. Disclaimer "kein Medizingerät" ist im Pilot-Brief und in der App sichtbar.</p>
+  </div>
+
+  <h3>Sprachsystem</h3>
+  <ul>
+    <li><strong>UI-Texte:</strong> Deutsch, Siezen, ruhig</li>
+    <li><strong>Code-Kommentare:</strong> Deutsch</li>
+    <li><strong>Variablen/Funktionen:</strong> Englisch</li>
+    <li><strong>Commit-Messages:</strong> Englisch</li>
+    <li><strong>Marken-Name nach außen:</strong> QuartierApp (NICHT Nachbar.io)</li>
+  </ul>
+</section>
+
+<!-- ===== 9. TESTS ===== -->
+<section id="tests">
+  <h2>9. Test-Strategie</h2>
+
+  <h3>Test-Pyramide</h3>
+  <table>
+    <thead><tr><th>Schicht</th><th>Tool</th><th>Coverage</th></tr></thead>
+    <tbody>
+      <tr><td>Unit</td><td>Vitest</td><td>~hoch (TDD strict im Repo)</td></tr>
+      <tr><td>Integration</td><td>Vitest mit Test-DB</td><td>Service-Layer, Auth-Pfade</td></tr>
+      <tr><td>End-to-End</td><td>Playwright</td><td>13 Auth-Profile, OTP-Helper</td></tr>
+      <tr><td>UI-Komponenten</td><td>Storybook + Chromatic</td><td>Youth-UI, Visual-Regression</td></tr>
+    </tbody>
+  </table>
+
+  <h3>TDD-Regel (im Repo verankert)</h3>
+  <div class="quote">"Test first, RED, GREEN. Neue Features brauchen Unit-/Integrationstests. Pre-Check vor Neubau ist erster TodoWrite-Eintrag."</div>
+
+  <h3>CI-Gate</h3>
+  <pre><code>GitHub Actions Workflow:
+  1. Install (Node 22, pnpm/npm)
+  2. Lint (eslint --max-warnings 0)
+  3. Type-Check (npx tsc --noEmit)
+  4. Vitest (alle Tests grün)
+  5. Build (Next.js production)
+  → wenn alle 5 grün: Deploy-Token freigegeben</code></pre>
+
+  <h3>Wichtige Test-Patterns</h3>
+  <ul>
+    <li><strong>OTP-Login-Helper</strong> <code>tests/e2e/helpers/login-with-otp.ts</code> (107 LOC) — stabile E2E-Auth</li>
+    <li><strong>RTL-Cleanup</strong> <code>afterEach(cleanup)</code> Pflicht in allen RTL-Tests (verhindert Drift)</li>
+    <li><strong>Local-Stack-Tests</strong> <code>npm run dev</code> default gegen lokales Supabase (Port 54321)</li>
+    <li><strong>Closed-Pilot-Smokes</strong> Whitelist-Pflege bei jeder neuen non-User-API-Route</li>
+  </ul>
+</section>
+
+<!-- ===== 10. PILOT ===== -->
+<section id="pilot">
+  <h2>10. Pilot &amp; Roll-out-Strategie</h2>
+
+  <h3>Pilot-Quartier</h3>
+  <div class="card highlight">
+    <h4 style="margin-top:0">Bad Säckingen — Closed Pilot 0</h4>
+    <ul>
+      <li><strong>Region:</strong> Purkersdorfer Straße, Sanarystraße, Oberer Rebberg</li>
+      <li><strong>Koordinaten:</strong> 47.5535&nbsp;N / 7.964&nbsp;E</li>
+      <li><strong>Quartier-ID:</strong> <code>ee6cfcab-f615-47cd-afe7-808a27cb584b</code></li>
+      <li><strong>Ziel-Reichweite:</strong> 5-10 handverlesene Pilot-Familien</li>
+      <li><strong>Akquise:</strong> Persönlich, kein Massenversand. Hausnummer-Code per Brief.</li>
+    </ul>
+  </div>
+
+  <h3>Daten-Quellen Welle 1 (deployed 2026-04-17)</h3>
+  <ul>
+    <li><strong>NINA</strong> — Bundesweites Notfall-Warnsystem</li>
+    <li><strong>DWD</strong> — Wetterwarnungen</li>
+    <li><strong>UBA</strong> — Umweltbundesamt (Luftqualität)</li>
+    <li><strong>LGL-BW</strong> — Lebensmittel-/Veterinär-Warnungen Baden-Württemberg</li>
+  </ul>
+
+  <h3>Welle 2 (geplant)</h3>
+  <ul>
+    <li>OSM-POIs (Apotheken, Ärzte, Tafeln, Behörden)</li>
+    <li>DELFI — ÖPNV-Daten</li>
+  </ul>
+
+  <h3>Closed-Pilot-Middleware</h3>
+  <p>Default-Antwort für alle non-whitelisted Pfade: <strong>503</strong>. Whitelist enthält <code>/api/health</code>, <code>/api/map/activities</code>, <code>/api/family-setup/[token]</code>, <code>/setup/[token]</code>, <code>/jugend-*-preview</code>. Cron-Endpoints sind Pattern-whitelisted, Vercel-Edge-Layer 403 separat.</p>
+
+  <h3>Founder-Gates (Vor-Pilot-Pflicht)</h3>
+  <ul>
+    <li>§1-§4, §6, §8, §9 — <strong>Done</strong> (Hardening, CSP, Env, Cron, Mig)</li>
+    <li>§5 — <span class="badge offen">Offen</span> Provider-AVV (wartet auf HR-Eintragung)</li>
+    <li>§7 — <span class="badge planned">Deferred</span> Mig 178 (Pilot-Phase-1-Defaults)</li>
+    <li>§10 — <span class="badge offen">Offen</span> Mig 196 (Recognition Outside-App)</li>
+    <li>§11 — <span class="badge offen">Offen</span> Pilot-Brief-Druckvorlage Founder-Freigabe</li>
+    <li>§12 — <span class="badge offen">Offen</span> F-1 Push-Go (<code>Gesundheit</code> → <code>Mein Tag</code>)</li>
+  </ul>
+</section>
+
+<!-- ===== 11. REALITY-CHECK ===== -->
+<section id="reality">
+  <h2>11. Reality-Check &amp; Status</h2>
+
+  <div class="card danger">
+    <h4 style="margin-top:0">Ehrliche Zahlen</h4>
+    <div class="kpi-grid">
+      <div class="kpi"><div class="kpi-value">0</div><div class="kpi-label">Echte Nutzer</div></div>
+      <div class="kpi"><div class="kpi-value">0&nbsp;€</div><div class="kpi-label">Umsatz</div></div>
+      <div class="kpi"><div class="kpi-value">0</div><div class="kpi-label">Verträge mit Dritten</div></div>
+      <div class="kpi"><div class="kpi-value">1</div><div class="kpi-label">Pilot-Haushalt (Founder)</div></div>
+    </div>
+  </div>
+
+  <h3>Was schon LIVE ist</h3>
+  <ul>
+    <li>Web-App <code>nachbar-io.vercel.app</code> (Closed-Pilot-Modus)</li>
+    <li>Admin-Dashboard mit Quarter-Scoping</li>
+    <li>Quartier-Info-Hub Welle 1 (NINA/DWD/UBA/LGL)</li>
+    <li>Family-Setup-Flow (Mig 197)</li>
+    <li>Privilege-Escalation-Schutz (Mig 198)</li>
+    <li>Generation Modes (4 UI-Modi)</li>
+    <li>Stripe-Test-Modus (5 Preise)</li>
+    <li>OpenAI-TTS für Voice</li>
+  </ul>
+
+  <h3>Was wartet</h3>
+  <ul>
+    <li>HR-Eintragung der GmbH (Notar Stadler eingereicht, 2-3 Wochen)</li>
+    <li>AVV mit Anthropic + Mistral (nach HR-Eintragung)</li>
+    <li>5-10 Pilot-Familien (Haupt-Engpass, Founder-Hand)</li>
+    <li>Provider-Live für KI-Begleiter (<code>AI_PROVIDER_OFF=true</code> aktuell)</li>
+    <li>Externer Pentest (geplant ab MRR &gt; 2.000&nbsp;€)</li>
+    <li>Google Play Account 25&nbsp;$ + Android-APK via Capacitor</li>
+  </ul>
+
+  <h3>Score-Stand (Pass 72)</h3>
+  <div class="kpi-grid">
+    <div class="kpi"><div class="kpi-value">~96&nbsp;%</div><div class="kpi-label">Code-Audit-Readiness</div></div>
+    <div class="kpi"><div class="kpi-value">~94&nbsp;%</div><div class="kpi-label">LIVE-Audit-Readiness</div></div>
+    <div class="kpi"><div class="kpi-value">~58k</div><div class="kpi-label">Lines of Code</div></div>
+    <div class="kpi"><div class="kpi-value">~198</div><div class="kpi-label">SQL-Migrationen</div></div>
+  </div>
+
+  <h3>Wave-Historie (kompakt)</h3>
+  <p>Pass 35-72 dokumentieren ~6 Monate aktive Entwicklung — Visual-Polish, Doctor-Discovery, Status-Pins, Generation Modes, Brand-Assets, Map-Activity-Pins, Youth-Pivot, Family-Setup, Storybook, UI-Mode-Surface, Pilot-Brief, Security-Audit-Closure, Marketing-Storyboards, Growth-Welle V1 LIVE, alle 4 Founder-Fragen entschieden.</p>
+</section>
+
+</div>
+</main>
+
+<footer>
+  <p><strong>QuartierApp</strong> · Theobase GmbH (i.&nbsp;Gr.) · Bad Säckingen</p>
+  <p>Domain <code>quartierapp.de</code> · App <a href="https://nachbar-io.vercel.app">nachbar-io.vercel.app</a> · Pilot-Phase 0</p>
+  <p style="opacity:0.6; margin-top:1rem;">Generiert 2026-05-16 · Pass 72 · Ehrlich gerechnet, nicht geschönt.</p>
+</footer>
+
+</body>
+</html>

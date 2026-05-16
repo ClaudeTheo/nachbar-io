@@ -27,6 +27,14 @@ interface MedicationDueStatus {
   completedCount: number;
 }
 
+const ACTIVE_SOS_STATUSES = new Set([
+  "triggered",
+  "notified",
+  "accepted",
+  "helper_enroute",
+  "escalated",
+]);
+
 export default function GesundheitHubPage() {
   const { user, loading: authLoading } = useAuth();
   const [loading, setLoading] = useState(true);
@@ -104,8 +112,13 @@ export default function GesundheitHubPage() {
   useEffect(() => {
     async function loadAlerts() {
       try {
-        const res = await fetch("/api/care/sos");
-        if (res.ok) setActiveAlerts(await res.json());
+        const res = await fetch("/api/care/sos", { cache: "no-store" });
+        if (res.ok) {
+          const alerts: CareSosAlert[] = await res.json();
+          setActiveAlerts(
+            alerts.filter((alert) => ACTIVE_SOS_STATUSES.has(alert.status)),
+          );
+        }
       } catch {
         /* silent */
       }

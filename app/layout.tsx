@@ -27,7 +27,10 @@ const siteUrl =
   process.env.NEXT_PUBLIC_SITE_URL || "https://nachbar-io.vercel.app";
 
 export const metadata: Metadata = {
-  title: "QuartierApp — Geschlossener Pilot",
+  title: {
+    default: "QuartierApp — Geschlossener Pilot",
+    template: "%s — QuartierApp",
+  },
   description:
     "QuartierApp ist noch nicht öffentlich freigeschaltet. Der geschlossene Pilot wird lokal vorbereitet und nimmt aktuell keine Registrierungen an.",
   manifest: "/manifest.json",

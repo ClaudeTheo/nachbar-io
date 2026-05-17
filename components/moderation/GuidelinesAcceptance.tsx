@@ -12,7 +12,7 @@ const GUIDELINES_SUMMARY = [
   "Keine Hassrede, Drohungen, Betrug oder Spam",
   "Marktplatz: Nur legale Artikel, wahrheitsgemäße Beschreibungen",
   "Verstöße führen zu Verwarnungen und Sperren",
-  "Einspruch möglich per E-Mail an support@quartierapp.de",
+  "Einspruch möglich per E-Mail an thomasth@gmx.de",
 ] as const;
 
 interface GuidelinesAcceptanceProps {

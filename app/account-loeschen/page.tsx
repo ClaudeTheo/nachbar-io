@@ -221,8 +221,8 @@ export default function AccountLoeschenPage() {
         </p>
         <p>
           Bei Fragen wenden Sie sich an{" "}
-          <a href="mailto:support@quartierapp.de" className="underline">
-            support@quartierapp.de
+          <a href="mailto:thomasth@gmx.de" className="underline">
+            thomasth@gmx.de
           </a>
         </p>
       </section>

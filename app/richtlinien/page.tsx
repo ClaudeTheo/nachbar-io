@@ -95,8 +95,8 @@ export default function RichtlinienPage() {
         <h2 className="text-lg font-semibold text-anthrazit mb-3">7. Einspruch einlegen</h2>
         <p className="text-sm text-muted-foreground">
           Sie sind mit einer Moderationsentscheidung nicht einverstanden? Schreiben Sie uns an{' '}
-          <a href="mailto:support@quartierapp.de" className="text-quartier-green underline">
-            support@quartierapp.de
+          <a href="mailto:thomasth@gmx.de" className="text-quartier-green underline">
+            thomasth@gmx.de
           </a>{' '}
           mit Ihrer Begründung. Wir prüfen jeden Einspruch innerhalb von 48 Stunden.
         </p>

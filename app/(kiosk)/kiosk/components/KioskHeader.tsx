@@ -2,15 +2,18 @@
 
 import { useEffect, useState } from "react";
 
-/** Uhr + Datum + Wetter-Widget für das Kiosk-Dashboard */
+/**
+ * Uhr + Datum fuer das Kiosk-Dashboard.
+ *
+ * Wetter-Widget seit 2026-05-17 stillgelegt: Kiosk-Bereich ist im Pilot
+ * archiviert (vgl. Layout-Metadata), der oeffentliche `/api/weather`-Endpunkt
+ * antwortet im Closed-Pilot mit 503 und produziert sonst nur Console-Errors.
+ * Sobald der Kiosk-Modus wieder aktiviert wird, kann das Wetter-Widget
+ * reaktiviert werden — bis dahin zeigt der Header nur Uhr + Datum.
+ */
 export default function KioskHeader() {
   const [time, setTime] = useState("");
   const [date, setDate] = useState("");
-  const [weather, setWeather] = useState<{
-    temp: number;
-    icon: string;
-    label: string;
-  } | null>(null);
 
   // Uhrzeit + Datum aktualisieren
   useEffect(() => {
@@ -34,44 +37,11 @@ export default function KioskHeader() {
     return () => clearInterval(interval);
   }, []);
 
-  // Wetter laden (mit Fallback)
-  useEffect(() => {
-    async function fetchWeather() {
-      try {
-        const res = await fetch("/api/weather");
-        if (!res.ok) throw new Error("Wetter nicht verfügbar");
-        const data = await res.json();
-        setWeather({
-          temp: Math.round(data.temp ?? data.temperature ?? 0),
-          icon: data.icon ?? "🌤",
-          label: data.label ?? data.description ?? "Wetter",
-        });
-      } catch {
-        // Fallback: kein Wetter anzeigen
-        setWeather(null);
-      }
-    }
-
-    fetchWeather();
-  }, []);
-
   return (
     <header className="kiosk-header">
       <div>
         <div className="kiosk-clock">{time}</div>
         <div className="kiosk-date">{date}</div>
-      </div>
-
-      <div className="kiosk-weather">
-        {weather ? (
-          <>
-            <span style={{ fontSize: 28, marginRight: 8 }}>{weather.icon}</span>
-            <span className="kiosk-weather-temp">{weather.temp}°C</span>
-            <div style={{ fontSize: 14, marginTop: 2 }}>{weather.label}</div>
-          </>
-        ) : (
-          <span style={{ opacity: 0.5 }}>Wetter wird geladen...</span>
-        )}
       </div>
     </header>
   );

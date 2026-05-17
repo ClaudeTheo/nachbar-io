@@ -1,5 +1,10 @@
 import Link from "next/link";
+import type { Metadata } from "next";
 import { ArrowLeft } from "lucide-react";
+
+export const metadata: Metadata = {
+  title: "Datenschutz",
+};
 
 // Datenschutzerklärung gemäß DSGVO Art. 13, 14
 // TDDDG-konform, Stand: März 2026
@@ -35,7 +40,7 @@ export default function DatenschutzPage() {
               <br />
               79713 Bad Säckingen
               <br />
-              E-Mail: ThomasTh@gmx.de
+              E-Mail: thomasth@gmx.de
             </p>
           </section>
 
@@ -279,7 +284,7 @@ export default function DatenschutzPage() {
               <li>
                 <strong>Widerruf:</strong> Jederzeit in den Profileinstellungen
                 oder per Checkbox bei jedem einzelnen Hilferuf. Alternativ
-                genügt eine E-Mail an ThomasTh@gmx.de
+                genügt eine E-Mail an thomasth@gmx.de
               </li>
               <li>
                 <strong>Fallback:</strong> Wenn Sie GPS verweigern, wird die
@@ -697,7 +702,7 @@ export default function DatenschutzPage() {
               diese jederzeit mit Wirkung für die Zukunft widerrufen. Die
               Rechtmäßigkeit der bis zum Widerruf erfolgten Verarbeitung bleibt
               unberührt. Den Widerruf können Sie in den App-Einstellungen
-              vornehmen oder per E-Mail an ThomasTh@gmx.de mitteilen.
+              vornehmen oder per E-Mail an thomasth@gmx.de mitteilen.
             </p>
           </section>
 
@@ -733,7 +738,7 @@ export default function DatenschutzPage() {
             </p>
             <p className="mt-2">
               Alternativ können Sie die Löschung Ihrer Daten per E-Mail an
-              ThomasTh@gmx.de beantragen.
+              thomasth@gmx.de beantragen.
             </p>
           </section>
 

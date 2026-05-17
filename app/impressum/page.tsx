@@ -1,5 +1,10 @@
 import Link from "next/link";
+import type { Metadata } from "next";
 import { ArrowLeft } from "lucide-react";
+
+export const metadata: Metadata = {
+  title: "Impressum",
+};
 
 // Impressum gemäß § 5 DDG / § 18 MStV
 export default function ImpressumPage() {
@@ -69,7 +74,7 @@ export default function ImpressumPage() {
               Kontakt
             </h2>
             <p>
-              E-Mail: ThomasTh@gmx.de
+              E-Mail: thomasth@gmx.de
               <br />
               Telefon: +49 7761 5599557
             </p>

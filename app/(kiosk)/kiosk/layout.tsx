@@ -4,8 +4,8 @@ import type { Metadata, Viewport } from "next";
 import "./kiosk.css";
 
 export const metadata: Metadata = {
-  title: "Nachbar Kiosk — Ihr digitaler Begleiter",
-  description: "Quartier-Terminal für Senioren: Nachrichten, Radio, Gesundheit, KI-Begleiter",
+  title: "QuartierApp Kiosk (Archiv)",
+  description: "Archivierter Web-Kiosk-Bereich. Im aktuellen Pilot nicht genutzt — die normale QuartierApp ist der Fokus.",
 };
 
 export const viewport: Viewport = {

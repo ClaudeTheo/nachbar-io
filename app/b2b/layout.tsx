@@ -1,9 +1,9 @@
 // app/b2b/layout.tsx
-// Nachbar.io — B2B-Landingpage Layout (oeffentlich, kein Auth)
+// QuartierApp — B2B-Landingpage Layout (oeffentlich, kein Auth)
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'QuartierApp für Organisationen',
+  title: 'Für Organisationen',
   description: 'Digitale Quartiersvernetzung für Kommunen, Pflegedienste und Wohnungsbaugesellschaften. Lebenszeichen-Übersicht, nachbarschaftliche Vernetzung und anonymisierte Quartiers-Statistiken.',
 };
 

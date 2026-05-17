@@ -3,7 +3,7 @@ import { ArrowLeft } from "lucide-react";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Barrierefreiheit | QuartierApp",
+  title: "Barrierefreiheit",
   description:
     "Erklärung zur Barrierefreiheit der QuartierApp gemäß Barrierefreiheitsstärkungsgesetz (BFSG).",
 };

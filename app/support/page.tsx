@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { Mail, Clock, CircleHelp, Shield, FileText } from 'lucide-react';
 
 export const metadata: Metadata = {
-  title: 'Support — QuartierApp',
+  title: 'Support',
   description: 'Hilfe und Kontakt für QuartierApp',
 };
 
@@ -27,11 +27,11 @@ export default function SupportPage() {
           </div>
         </div>
         <a
-          href="mailto:support@quartierapp.de"
+          href="mailto:thomasth@gmx.de"
           className="inline-flex items-center gap-2 rounded-lg bg-quartier-green px-4 py-2.5 text-sm font-medium text-white hover:bg-quartier-green-dark transition-colors"
         >
           <Mail className="h-4 w-4" />
-          support@quartierapp.de
+          thomasth@gmx.de
         </a>
         <div className="flex items-center gap-2 mt-3 text-xs text-muted-foreground">
           <Clock className="h-3.5 w-3.5" />

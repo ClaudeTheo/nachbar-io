@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 
 import { QuartierAppLogo } from "@/components/brand/QuartierAppLogo";
+import { LegalLinksFooter } from "@/components/legal/LegalLinksFooter";
 
 // Closed-Pilot Landing — Visual-Polish v7 Iteration 2 (Landing).
 // Aquarell-Hintergrund (Schwarzwald-Tanne + Haeuser + Sonne) dezent als
@@ -141,17 +142,9 @@ export default function LandingPage() {
           </article>
         </div>
 
-        <nav className="mt-12 flex flex-wrap gap-5 text-sm font-medium text-quartier-green">
-          <Link className="underline-offset-4 hover:underline" href="/datenschutz">
-            Datenschutz
-          </Link>
-          <Link className="underline-offset-4 hover:underline" href="/impressum">
-            Impressum
-          </Link>
-          <Link className="underline-offset-4 hover:underline" href="/agb">
-            AGB
-          </Link>
-        </nav>
+        <LegalLinksFooter align="start" className="mt-12" />
+        {/* Barrierefreiheit ergaenzt seit 2026-05-17 — vorher fehlte der Link
+            auf der Landing, obwohl die BFSG-Erklaerung public erreichbar ist. */}
       </section>
     </main>
   );

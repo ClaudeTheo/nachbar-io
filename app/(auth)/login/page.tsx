@@ -115,11 +115,25 @@ export default function LoginPage() {
 
       if (otpError) {
         console.error("Magic Link Fehler:", otpError);
-        if (otpError.message?.includes("rate limit")) {
+        const msg = otpError.message?.toLowerCase() ?? "";
+        if (msg.includes("rate limit")) {
           setError("Zu viele Versuche. Bitte warten Sie einen Moment.");
+        } else if (
+          // Supabase liefert "Signups not allowed for otp" wenn die
+          // E-Mail keinem freigeschalteten Pilot-Account zugeordnet ist
+          // (kombiniert mit `shouldCreateUser: false`). Die generische
+          // "Versuchen Sie es erneut"-Meldung verleitete Pilot-Tester
+          // zu immer neuen Sendversuchen — siehe Pass-85 Bug-Report.
+          msg.includes("signups not allowed") ||
+          msg.includes("user not found") ||
+          msg.includes("not allowed for otp")
+        ) {
+          setError(
+            "Diese E-Mail-Adresse ist noch nicht für den Pilot freigeschaltet. Bitte verwenden Sie Ihren Einladungscode aus dem Brief oder schreiben Sie an thomasth@gmx.de.",
+          );
         } else {
           setError(
-            "Anmelde-Code konnte nicht gesendet werden. Bitte versuchen Sie es erneut.",
+            "Anmelde-Code konnte nicht gesendet werden. Bitte versuchen Sie es später erneut.",
           );
         }
         setLoading(false);

@@ -34,6 +34,11 @@ const CLOSED_PILOT_PUBLIC_API_PATHS = new Set([
   "/api/register/complete",
   "/api/news/scrape",
   "/api/news/rss",
+  // Pass-85: Bug-Reports muessen gerade im Pilot ankommen koennen — sonst
+  // verliert der Founder genau das Feedback, fuer das der geschlossene
+  // Test laeuft. Der Endpoint validiert selbst Honeypot + Rate-Limit
+  // (siehe app/api/bug-reports/anonymous/route.ts).
+  "/api/bug-reports/anonymous",
 ]);
 
 function isClosedPilotPublicFamilySetupApiPath(pathname: string) {

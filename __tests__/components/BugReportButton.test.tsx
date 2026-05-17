@@ -356,7 +356,10 @@ describe('BugReportButton', () => {
       global.fetch = originalFetch;
     });
 
-    it('zeigt Fehler-Toast bei API-Fehler im anonymen Modus', async () => {
+    it('zeigt API-Fehlermeldung im anonymen Modus durch', async () => {
+      // Seit 2026-05-17 wird die konkrete Server-Meldung (z. B. Rate-Limit)
+      // an den Pilot-Tester durchgereicht statt der generischen "konnte
+      // nicht gesendet werden"-Default. Das hilft beim Triagieren.
       const originalFetch = global.fetch;
       global.fetch = mockFetch;
       mockFetch.mockResolvedValue({
@@ -371,7 +374,7 @@ describe('BugReportButton', () => {
       fireEvent.click(submitBtn!);
 
       await waitFor(() => {
-        expect(mockToastError).toHaveBeenCalledWith('Bug-Report konnte nicht gesendet werden.');
+        expect(mockToastError).toHaveBeenCalledWith('Zu viele Bug-Reports');
       });
 
       global.fetch = originalFetch;

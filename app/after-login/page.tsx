@@ -29,9 +29,9 @@ export default async function AfterLoginPage() {
 
   const { data: profile } = await supabase
     .from("users")
-    .select("ui_mode")
+    .select("ui_mode, is_admin")
     .eq("id", user.id)
-    .single<{ ui_mode: UserUiMode }>();
+    .single<{ ui_mode: UserUiMode; is_admin: boolean }>();
 
-  redirect(resolvePostLoginPath(profile?.ui_mode));
+  redirect(resolvePostLoginPath(profile?.ui_mode, { isAdmin: profile?.is_admin }));
 }

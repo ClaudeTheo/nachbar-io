@@ -7,6 +7,11 @@ import { describe, it, expect } from "vitest";
 import { resolvePostLoginPath } from "@/lib/auth/post-login-redirect";
 
 describe("resolvePostLoginPath (B-4)", () => {
+  it("sendet Admins immer auf /admin", () => {
+    expect(resolvePostLoginPath("youth", { isAdmin: true })).toBe("/admin");
+    expect(resolvePostLoginPath("senior", { isAdmin: true })).toBe("/admin");
+  });
+
   it("sendet Senioren auf /kreis-start (4-Kachel-Startscreen aus B-2)", () => {
     expect(resolvePostLoginPath("senior")).toBe("/kreis-start");
   });

@@ -1,7 +1,7 @@
 export const USER_UI_MODES = ["youth", "active", "comfort", "senior"] as const;
 
 export type UserUiMode = (typeof USER_UI_MODES)[number];
-export type UserModePostLoginPath = "/jugend" | "/dashboard" | "/kreis-start";
+export type UserModePostLoginPath = "/jugend" | "/dashboard" | "/kreis-start" | "/admin";
 export type DashboardDensity = "playful" | "standard" | "calm" | "simple";
 
 export interface UserModeSurface {

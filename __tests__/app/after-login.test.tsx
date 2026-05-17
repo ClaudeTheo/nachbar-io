@@ -22,7 +22,7 @@ vi.mock("next/navigation", () => ({
 
 // Supabase-Server-Client Mock — pro Test ueberschreibbar
 type MockUser = { id: string } | null;
-type MockProfile = { ui_mode: string } | null;
+type MockProfile = { ui_mode: string; is_admin?: boolean } | null;
 
 let mockUser: MockUser;
 let mockProfile: MockProfile;
@@ -69,15 +69,23 @@ describe("/after-login (B-4)", () => {
 
   it("sendet Senior auf /kreis-start", async () => {
     mockUser = { id: "user-senior-1" };
-    mockProfile = { ui_mode: "senior" };
+    mockProfile = { ui_mode: "senior", is_admin: false };
 
     const path = await runPage();
     expect(path).toBe("/kreis-start");
   });
 
+  it("sendet Admins trotz Jugendmodus auf /admin", async () => {
+    mockUser = { id: "admin-youth-1" };
+    mockProfile = { ui_mode: "youth", is_admin: true };
+
+    const path = await runPage();
+    expect(path).toBe("/admin");
+  });
+
   it("sendet aktive Nutzer auf /dashboard", async () => {
     mockUser = { id: "user-active-1" };
-    mockProfile = { ui_mode: "active" };
+    mockProfile = { ui_mode: "active", is_admin: false };
 
     const path = await runPage();
     expect(path).toBe("/dashboard");

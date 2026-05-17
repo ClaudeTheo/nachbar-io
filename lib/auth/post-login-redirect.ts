@@ -12,7 +12,12 @@ import { getUserModeConfig, isUserUiMode, type UserModePostLoginPath } from "@/l
 
 export function resolvePostLoginPath(
   uiMode: UserUiMode | null | undefined,
+  options?: { isAdmin?: boolean | null },
 ): UserModePostLoginPath {
+  if (options?.isAdmin === true) {
+    return "/admin";
+  }
+
   if (isUserUiMode(uiMode)) {
     return getUserModeConfig(uiMode).postLoginPath;
   }

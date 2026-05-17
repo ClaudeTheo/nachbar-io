@@ -47,7 +47,7 @@ describe("AccountLoeschenPage", () => {
 
   it("zeigt Support-E-Mail", () => {
     render(<AccountLoeschenPage />);
-    expect(screen.getByText("support@quartierapp.de")).toBeTruthy();
+    expect(screen.getByText("thomasth@gmx.de")).toBeTruthy();
   });
 
   it("zeigt Footer-Links zu Datenschutz, Impressum, Support", () => {

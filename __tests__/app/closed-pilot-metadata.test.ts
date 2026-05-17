@@ -11,7 +11,13 @@ import { metadata } from "@/app/layout";
 
 describe("Closed-Pilot-Metadaten", () => {
   it("beschreibt keine oeffentlich freigeschaltete Produktseite", () => {
-    expect(metadata.title).toBe("QuartierApp — Geschlossener Pilot");
+    // Seit 2026-05-17 ist `title` ein Template-Objekt: Pages, die keinen
+    // eigenen Title setzen, erben `default`; andere kriegen den `template`-
+    // Suffix " — QuartierApp" automatisch dran.
+    expect(metadata.title).toMatchObject({
+      default: "QuartierApp — Geschlossener Pilot",
+      template: "%s — QuartierApp",
+    });
     expect(metadata.description).toContain("nicht öffentlich freigeschaltet");
     expect(metadata.robots).toMatchObject({
       index: false,

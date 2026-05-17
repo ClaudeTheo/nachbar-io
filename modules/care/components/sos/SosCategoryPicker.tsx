@@ -73,7 +73,7 @@ export function SosCategoryPicker({ source = 'app', onSosCreated }: SosCategoryP
           Was brauchen Sie?
         </h2>
         {error && (
-          <div className="rounded-lg bg-emergency-red/10 p-3 text-sm text-emergency-red text-center">
+          <div className="rounded-lg bg-emergency-red/10 p-3 text-sm text-red-800 text-center">
             {error}
           </div>
         )}
@@ -91,10 +91,12 @@ export function SosCategoryPicker({ source = 'app', onSosCreated }: SosCategoryP
             <span className="flex items-center gap-4">
               <span className="text-3xl" role="img" aria-hidden="true">{cat.icon}</span>
               <span>
-                <span className={`block text-lg font-bold ${cat.isEmergency ? 'text-emergency-red' : 'text-anthrazit'}`}>
+                <span className={`block text-lg font-bold ${cat.isEmergency ? 'text-red-800' : 'text-anthrazit'}`}>
                   {cat.label}
                 </span>
-                <span className="block text-sm text-muted-foreground">{cat.description}</span>
+                <span className={`block text-sm ${cat.isEmergency ? 'text-red-900' : 'text-muted-foreground'}`}>
+                  {cat.description}
+                </span>
               </span>
             </span>
           </button>

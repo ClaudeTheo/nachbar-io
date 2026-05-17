@@ -160,4 +160,11 @@ describe('SosCategoryPicker', () => {
       expect(btn.style.touchAction).toBe('manipulation');
     });
   });
+
+  it('verwendet kontraststarke Farben fuer die Notfall-Kategorie', () => {
+    render(<SosCategoryPicker />);
+
+    expect(screen.getByText(/Dringende Hilfe/)).toHaveClass('text-red-800');
+    expect(screen.getByText(/Bitte rufen Sie im Notfall 112/)).toHaveClass('text-red-900');
+  });
 });

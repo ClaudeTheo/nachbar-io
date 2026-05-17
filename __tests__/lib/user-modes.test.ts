@@ -13,6 +13,25 @@ describe("USER_MODE_CONFIG", () => {
     expect(Object.keys(USER_MODE_CONFIG)).toEqual(USER_UI_MODES);
   });
 
+  it("nutzt comfort als waehbaren Aktiv 55+ Modus", () => {
+    const comfort = getUserModeConfig("comfort");
+
+    expect(comfort.label).toBe("Aktiv 55+");
+    expect(comfort.dashboardDensity).toBe("calm");
+    expect(comfort.postLoginPath).toBe("/dashboard");
+    expect(comfort.surface.eyebrow).toBe("Aktiv 55+");
+    expect(comfort.surface.title).toMatch(/ruhig/i);
+    expect(comfort.surface.subtitle).toMatch(/selbststaendig|selbstständig/i);
+  });
+
+  it("haelt active getrennt von Aktiv 55+", () => {
+    expect(USER_MODE_CONFIG.active.label).toBe("Aktiv");
+    expect(USER_MODE_CONFIG.active.dashboardDensity).toBe("standard");
+    expect(USER_MODE_CONFIG.active.surface.title).not.toBe(
+      USER_MODE_CONFIG.comfort.surface.title,
+    );
+  });
+
   it("verwendet die vorhandenen Senior- und Jugend-Einstiege", () => {
     expect(getUserModeConfig("senior").postLoginPath).toBe("/kreis-start");
     expect(getUserModeConfig("youth").postLoginPath).toBe("/jugend");
@@ -22,6 +41,8 @@ describe("USER_MODE_CONFIG", () => {
     expect(isUserUiMode("comfort")).toBe(true);
     expect(isUserUiMode("active")).toBe(true);
     expect(isUserUiMode("normal")).toBe(false);
+    expect(isUserUiMode("active_55")).toBe(false);
+    expect(isUserUiMode("55plus")).toBe(false);
     expect(isUserUiMode(null)).toBe(false);
   });
 

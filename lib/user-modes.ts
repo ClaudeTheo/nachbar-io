@@ -72,23 +72,23 @@ export const USER_MODE_CONFIG = {
     },
   },
   comfort: {
-    label: "Komfort",
-    description: "Ruhige Uebersicht mit mehr Klarheit",
+    label: "Aktiv 55+",
+    description: "Ruhiger Alltag, Nachbarschaft und klare Wege",
     postLoginPath: "/dashboard",
     dashboardDensity: "calm",
     surface: {
-      eyebrow: "Komfortmodus",
-      title: "Ruhige Uebersicht mit klaren Wegen",
+      eyebrow: "Aktiv 55+",
+      title: "Ruhiger Ueberblick fuer aktive Nachbarn",
       subtitle:
-        "Fuer Angehoerige und Nutzer, die weniger Dichte, groessere Abstaende und klare Prioritaeten wollen.",
+        "Fuer Menschen, die die QuartierApp selbststaendig nutzen und dabei groessere Abstaende, klare Prioritaeten und weniger Dichte moechten.",
       visualIntent:
-        "Entzerrte Oberflaeche mit groesseren Zielen, weniger optischem Druck und klarer Lesereihenfolge.",
-      primaryAction: { label: "Ruhige Uebersicht", href: "/dashboard" },
-      secondaryAction: { label: "Profil", href: "/profile" },
+        "Entzerrte Oberflaeche mit groesseren Zielen, ruhiger Lesereihenfolge und Alltag vor Pflege.",
+      primaryAction: { label: "Ruhig starten", href: "/dashboard" },
+      secondaryAction: { label: "Mein Tag", href: "/my-day" },
       principles: [
-        "Mehr Abstand",
-        "Weniger Ablenkung",
-        "Naechster Schritt klar",
+        "Ruhiger Alltag",
+        "Nachbarschaft bleibt sichtbar",
+        "Sicherheit ohne Pflegegefuehl",
       ],
     },
   },
@@ -125,8 +125,8 @@ export const USER_MODE_ONBOARDING_INTROS = {
     "Gut fuer Menschen, die die App selbststaendig nutzen",
   ],
   comfort: [
-    "Weniger Ablenkung, ruhigere Uebersichten und klare Wege",
-    "Gut fuer Angehoerige oder alle, die Struktur bevorzugen",
+    "Ruhigere Uebersicht, groessere Abstaende und klare Wege",
+    "Gut fuer aktive Nachbarn ab 55, die selbststaendig bleiben moechten",
   ],
   senior: [
     "Grosse Schaltflaechen, einfache Sprache und kurze Wege",

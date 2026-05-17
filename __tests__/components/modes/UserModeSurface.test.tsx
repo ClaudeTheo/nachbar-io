@@ -31,7 +31,7 @@ describe("UserModeSurface", () => {
     }
     expect(screen.getByText("Junges Quartier")).toBeInTheDocument();
     expect(screen.getByText("Aktiv")).toBeInTheDocument();
-    expect(screen.getByText("Komfort")).toBeInTheDocument();
+    expect(screen.getByText("Aktiv 55+")).toBeInTheDocument();
     expect(screen.getByText("Einfach")).toBeInTheDocument();
   });
 
@@ -46,7 +46,7 @@ describe("UserModeSurface", () => {
       />,
     );
 
-    const button = screen.getByRole("button", { name: /komfort/i });
+    const button = screen.getByRole("button", { name: /aktiv 55\+/i });
     expect(button).toHaveAttribute("aria-pressed", "true");
 
     fireEvent.click(button);

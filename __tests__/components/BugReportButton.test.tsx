@@ -71,6 +71,7 @@ vi.mock('@/components/ui/textarea', () => ({
 }));
 
 vi.mock('lucide-react', () => ({
+  AlertCircle: (props: Record<string, unknown>) => <svg data-testid="icon-alert" {...props} />,
   Bug: (props: Record<string, unknown>) => <svg data-testid="icon-bug" {...props} />,
   Send: (props: Record<string, unknown>) => <svg data-testid="icon-send" {...props} />,
   Loader2: (props: Record<string, unknown>) => <svg data-testid="icon-loader" {...props} />,

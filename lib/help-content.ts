@@ -29,7 +29,7 @@ export const HELP_CATEGORIES: HelpCategory[] = [
       },
       {
         question: "Kann ich den Seniorenmodus aktivieren?",
-        answer: "Ja! Unter Profil finden Sie den Schalter 'Seniorenmodus'. Dieser vergrößert alle Texte und Buttons für bessere Lesbarkeit und vereinfacht die Navigation auf maximal 4 Klicks.",
+        answer: "Ja. Unter Profil können Sie zwischen Aktiv, Aktiv 55+ und Einfach wechseln. Aktiv 55+ ist ruhiger und größer, bleibt aber eine normale Nachbarschafts-App. Einfach nutzt sehr große Schaltflächen, kurze Wege und Notruf zuerst.",
       },
       {
         question: "Wie ändere ich meinen Anzeigenamen?",

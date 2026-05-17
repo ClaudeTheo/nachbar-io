@@ -6,6 +6,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { createHash } from "crypto";
 import { safeInsertNotification } from "@/lib/notifications-server";
 import {
+  formatCode,
   generateSecureCode,
   generateTempPassword,
   normalizeCode,
@@ -113,13 +114,21 @@ export async function checkInviteCode(
   if (!normalized || normalized.length < 4) {
     return { valid: false };
   }
+  const candidateCodes = Array.from(
+    new Set([
+      normalized,
+      formatCode(normalized),
+      inviteCode.trim().toUpperCase(),
+    ]),
+  );
 
   // 1. Zuerst in households.invite_code suchen (B2B-Codes)
   const { data: household } = await adminDb
     .from("households")
     .select("id, street_name, house_number, quarter_id")
-    .eq("invite_code", normalized)
-    .single();
+    .in("invite_code", candidateCodes)
+    .limit(1)
+    .maybeSingle();
 
   if (household) {
     return {
@@ -137,9 +146,10 @@ export async function checkInviteCode(
     .select(
       "id, household_id, quarter_id, inviter_id, households(street_name, house_number)",
     )
-    .eq("invite_code", normalized)
+    .in("invite_code", candidateCodes)
     .eq("status", "sent")
-    .single();
+    .limit(1)
+    .maybeSingle();
 
   if (invitation?.household_id) {
     const hh = invitation.households as unknown as {

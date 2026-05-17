@@ -1,10 +1,10 @@
-// Nachbar.io — S1: Onboarding (3-Schritt Magic-Link-Flow)
-// Neuer Flow: Entry → [Invite-Code ODER Adresse] → Pilotdaten+Email → KI-Consent → Magic Link gesendet
+// Nachbar.io — S1: Onboarding (5-Schritt Magic-Link-Flow)
+// Neuer Flow: Entry → [Invite-Code ODER Adresse] → Pilotdaten+Email → Pilot-Rolle → Oberflaeche → KI-Consent → Magic Link gesendet
 import { test, expect } from "@playwright/test";
 import { RegisterPage, LoginPage } from "../pages";
 import { TEST_AGENTS } from "../helpers/test-config";
 
-test.describe("S1: Onboarding — 4-Schritt Magic-Link-Flow", () => {
+test.describe("S1: Onboarding — 5-Schritt Magic-Link-Flow", () => {
   test("S1.1 — Registrierung via Invite-Code bis Magic-Link-Bestaetigung", async ({
     browser,
   }) => {

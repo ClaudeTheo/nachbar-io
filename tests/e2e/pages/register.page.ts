@@ -1,5 +1,5 @@
-// Nachbar.io — Page Object: Registrierungs-Seite (4-Schritt Magic-Link-Flow)
-// Flow: Entry → [Invite-Code ODER Adresse] → Identity → KI-Consent → Magic Link gesendet
+// Nachbar.io — Page Object: Registrierungs-Seite (5-Schritt Magic-Link-Flow)
+// Flow: Entry → [Invite-Code ODER Adresse] → Identity → Pilot-Rolle → Oberflaeche → KI-Consent → Magic Link gesendet
 import { Page, Locator, expect } from "@playwright/test";
 import { TIMEOUTS } from "../helpers/test-config";
 
@@ -28,9 +28,13 @@ export class RegisterPage {
 
   // Schritt 3: Pilot-Rolle
   readonly testRoleButton: Locator;
+  readonly continueToUiModeButton: Locator;
+
+  // Schritt 4: Oberflaeche
+  readonly activeModeButton: Locator;
   readonly continueToAiConsentButton: Locator;
 
-  // Schritt 4: KI-Consent
+  // Schritt 5: KI-Consent
   readonly decideAiLaterButton: Locator;
   readonly submitAiChoiceButton: Locator;
 
@@ -75,9 +79,15 @@ export class RegisterPage {
     this.testRoleButton = page.getByRole("button", {
       name: /Ich probiere nur testweise/,
     });
-    this.continueToAiConsentButton = page.getByRole("button", {
-      name: "Weiter zur KI-Auswahl",
+    this.continueToUiModeButton = page.getByRole("button", {
+      name: /Weiter zur Oberfl/,
     });
+
+    // Oberflaeche
+    this.activeModeButton = page.getByRole("button", {
+      name: /^Aktiv:/,
+    });
+    this.continueToAiConsentButton = page.getByRole("button", { name: "Weiter" });
 
     // KI-Consent
     this.decideAiLaterButton = page.getByRole("button", {
@@ -97,7 +107,7 @@ export class RegisterPage {
     this.backButton = page.getByText("Zurück");
     this.errorMessage = page.locator(".text-emergency-red");
     this.loginLink = page.getByRole("link", { name: "Jetzt anmelden" });
-    this.stepIndicator = page.locator("text=/Schritt \\d+ von 4/");
+    this.stepIndicator = page.locator("text=/Schritt \\d+ von 5/");
   }
 
   async goto() {
@@ -122,9 +132,9 @@ export class RegisterPage {
       .catch(() => {});
   }
 
-  // Pruefen, auf welchem Schritt wir sind (1 oder 2)
+  // Pruefen, auf welchem Schritt wir sind.
   async assertOnStep(step: number) {
-    await expect(this.page.getByText(`Schritt ${step} von 4`)).toBeVisible({
+    await expect(this.page.getByText(`Schritt ${step} von 5`)).toBeVisible({
       timeout: TIMEOUTS.elementVisible,
     });
   }
@@ -180,6 +190,12 @@ export class RegisterPage {
       timeout: TIMEOUTS.elementVisible,
     });
     await this.testRoleButton.click();
+    await this.continueToUiModeButton.click();
+    await this.activeModeButton.waitFor({
+      state: "visible",
+      timeout: TIMEOUTS.elementVisible,
+    });
+    await this.activeModeButton.click();
     await this.continueToAiConsentButton.click();
     await this.decideAiLaterButton.waitFor({
       state: "visible",

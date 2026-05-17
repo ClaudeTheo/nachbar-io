@@ -6,7 +6,7 @@
 // Unterstützt anonymen Modus (ohne Login) für Login-/Onboarding-Seiten
 
 import { useState, useEffect, useRef, useCallback, useContext } from "react";
-import { AlertCircle, Bug, Send, Loader2, X } from "lucide-react";
+import { Bug, Send, Loader2, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import {
@@ -44,10 +44,6 @@ export function BugReportButton({ anonymous = false }: BugReportButtonProps) {
   const [comment, setComment] = useState("");
   const [loading, setLoading] = useState(false);
   const [honeypot, setHoneypot] = useState("");
-  // Inline-Fehler IM Sheet anzeigen — der globale `toast.error` ist oben
-  // platziert und wird vom Sheet (von unten) optisch leicht verdeckt; Pilot-
-  // Tester sahen die Meldung nicht und klickten mehrfach auf "Bug melden".
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const consoleErrorsRef = useRef<CapturedError[]>([]);
   const originalConsoleError = useRef<typeof console.error | null>(null);
   const lastScrollYRef = useRef(0);
@@ -140,7 +136,6 @@ export function BugReportButton({ anonymous = false }: BugReportButtonProps) {
   // Anonymer Submit-Handler
   const handleAnonymousSubmit = useCallback(async () => {
     setLoading(true);
-    setErrorMessage(null);
     try {
       // Screenshot als Base64 Data-URL (kein Storage-Zugriff ohne Auth)
       let screenshotUrl: string | null = null;
@@ -184,7 +179,6 @@ export function BugReportButton({ anonymous = false }: BugReportButtonProps) {
 
       toast.success("Bug-Report gesendet! Vielen Dank.");
       setComment("");
-      setErrorMessage(null);
       setOpen(false);
     } catch (err) {
       console.error("[BugReport] Fehler:", err);
@@ -192,7 +186,6 @@ export function BugReportButton({ anonymous = false }: BugReportButtonProps) {
         err instanceof Error && err.message
           ? err.message
           : "Bug-Report konnte nicht gesendet werden.";
-      setErrorMessage(reason);
       toast.error(reason);
     } finally {
       setLoading(false);
@@ -202,7 +195,6 @@ export function BugReportButton({ anonymous = false }: BugReportButtonProps) {
   // Authentifizierter Submit-Handler (bestehende Logik)
   const handleAuthenticatedSubmit = useCallback(async () => {
     setLoading(true);
-    setErrorMessage(null);
     try {
       const supabase = createClient();
       const { user } = await getCachedUser(supabase);
@@ -259,7 +251,6 @@ export function BugReportButton({ anonymous = false }: BugReportButtonProps) {
 
       toast.success("Bug-Report gesendet! Vielen Dank.");
       setComment("");
-      setErrorMessage(null);
       setOpen(false);
     } catch (err) {
       console.error("[BugReport] Fehler:", err);
@@ -267,7 +258,6 @@ export function BugReportButton({ anonymous = false }: BugReportButtonProps) {
         err instanceof Error && err.message
           ? err.message
           : "Bug-Report konnte nicht gesendet werden.";
-      setErrorMessage(reason);
       toast.error(reason);
     } finally {
       setLoading(false);
@@ -293,13 +283,7 @@ export function BugReportButton({ anonymous = false }: BugReportButtonProps) {
       </button>
 
       {/* Bug-Report Sheet von unten */}
-      <Sheet
-        open={open}
-        onOpenChange={(next) => {
-          setOpen(next);
-          if (!next) setErrorMessage(null);
-        }}
-      >
+      <Sheet open={open} onOpenChange={setOpen}>
         <SheetContent side="bottom" className="mx-auto max-w-lg rounded-t-2xl">
           <SheetHeader>
             <SheetTitle className="flex items-center gap-2 text-anthrazit">
@@ -313,17 +297,6 @@ export function BugReportButton({ anonymous = false }: BugReportButtonProps) {
           </SheetHeader>
 
           <div className="mt-4 space-y-4">
-            {/* Inline-Fehler IM Sheet (sichtbar auch wenn Toast verdeckt ist) */}
-            {errorMessage && (
-              <div
-                role="alert"
-                className="flex items-start gap-2 rounded-lg border border-emergency-red/30 bg-emergency-red/5 p-3 text-sm text-emergency-red"
-              >
-                <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
-                <span>{errorMessage}</span>
-              </div>
-            )}
-
             {/* Honeypot-Feld für Spam-Schutz (nur im anonymen Modus) */}
             {anonymous && (
               <input

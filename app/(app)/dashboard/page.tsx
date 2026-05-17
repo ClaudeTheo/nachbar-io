@@ -156,6 +156,7 @@ export default function DashboardPage() {
   const greeting = getGreeting();
   const isComfortDashboard = dashboardDensity === "calm";
   const showSeniorCheckinQuickAction = uiMode === "senior";
+  const showComfortDayQuickAction = uiMode === "comfort";
   const eyebrowDate = formatEyebrowDate(new Date());
   // Founder 2026-05-12: Eyebrow zeigt die Stadt (z.B. "BAD SÄCKINGEN"), nicht
   // den Quartier-Namen ("Purkersdorfer/Sanary/Rebberg") — sonst wird der
@@ -348,7 +349,7 @@ export default function DashboardPage() {
                 Hover: green-line Border + leicht erhoehte Opacity.
                 Active: green-tint Background (keine Transform-Animation). */}
             <div className={`grid grid-cols-2 ${isComfortDashboard ? "gap-4" : "gap-3"}`}>
-              {/* 1. Modusbewusster Einstieg: Check-in nur im Seniorenmodus. */}
+              {/* 1. Modusbewusster Einstieg: Check-in, Mein Tag oder Gemeinschaft. */}
               {showSeniorCheckinQuickAction ? (
                 <Link
                   href="/care/checkin"
@@ -364,6 +365,21 @@ export default function DashboardPage() {
                   </div>
                   <p className="mt-1 text-xs text-muted-foreground">
                     Wie geht es Ihnen?
+                  </p>
+                </Link>
+              ) : showComfortDayQuickAction ? (
+                <Link
+                  href="/my-day"
+                  className="glass-tile flex min-h-[92px] flex-col justify-center p-4"
+                >
+                  <div className="flex items-center gap-2">
+                    <CheckCircle2 className="h-5 w-5 text-quartier-green" />
+                    <span className="font-semibold text-anthrazit">
+                      Mein Tag
+                    </span>
+                  </div>
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    Termine, Hinweise, Alltag
                   </p>
                 </Link>
               ) : (

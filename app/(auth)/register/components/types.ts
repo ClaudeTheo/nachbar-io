@@ -1,6 +1,7 @@
 // Typen fuer den Registrierungs-Flow
 import type { AddressSuggestion } from "@/lib/geo/photon-client";
 import type { AiAssistanceLevel } from "@/lib/ki-help/ai-assistance-levels";
+import type { UserUiMode } from "@/lib/user-modes";
 export type { AiAssistanceLevel } from "@/lib/ki-help/ai-assistance-levels";
 
 // Schritt-Typen fuer den 2-Schritt-Flow
@@ -10,6 +11,7 @@ export type Step =
   | "address"
   | "identity"
   | "pilot_role"
+  | "ui_mode"
   | "ai_consent"
   | "magic_link_sent";
 
@@ -32,6 +34,7 @@ export interface RegisterFormState {
   city: string;
   geoQuarter: { quarter_id: string; quarter_name: string; action: string } | null;
   pilotRole?: PilotRole;
+  uiMode?: UserUiMode;
   aiConsentChoice?: "yes" | "no" | "later";
   aiAssistanceLevel?: AiAssistanceLevel;
   website?: string;

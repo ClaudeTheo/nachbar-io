@@ -395,7 +395,7 @@ describe("ProfilePage — Error-Handling Bugfixes", () => {
       // Pass 64 UserModeSurface rendert Mode-Namen ggf. mehrfach (Card + Badge).
       // Wir pruefen Vorhandensein via getAllByText, nicht Eindeutigkeit.
       expect(screen.getAllByText("Aktiv").length).toBeGreaterThan(0);
-      expect(screen.getAllByText("Komfort").length).toBeGreaterThan(0);
+      expect(screen.getAllByText("Aktiv 55+").length).toBeGreaterThan(0);
       expect(screen.getAllByText("Einfach").length).toBeGreaterThan(0);
       expect(screen.queryByText("Junges Quartier")).toBeNull();
     });

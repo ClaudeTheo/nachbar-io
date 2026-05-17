@@ -195,7 +195,7 @@ describe("UserManagement Pilot-Freigaben", () => {
 
     expect(screen.getByRole("button", { name: "Junges Quartier" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Aktiv" })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Komfort" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Aktiv 55+" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Einfach" })).toBeInTheDocument();
   });
 });

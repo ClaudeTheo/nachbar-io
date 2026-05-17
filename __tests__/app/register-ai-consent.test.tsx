@@ -162,14 +162,14 @@ describe("RegisterStepAiConsent — Polish 2026-04-27", () => {
     expect(checkbox.closest("label")).toHaveClass("min-h-[80px]");
   });
 
-  it("geht von der KI-Auswahl zurueck zur Pilot-Rolle", async () => {
+  it("geht von der KI-Auswahl zurueck zur Oberflaechen-Auswahl", async () => {
     const user = userEvent.setup();
     const setStep = vi.fn();
     render(<StatefulAiConsent onStep={setStep} />);
 
     await user.click(screen.getByRole("button", { name: "Zurück" }));
 
-    expect(setStep).toHaveBeenCalledWith("pilot_role");
+    expect(setStep).toHaveBeenCalledWith("ui_mode");
   });
 
   it("Aus und Spaeter entscheiden brauchen keine KI-Einwilligungs-Checkbox", async () => {

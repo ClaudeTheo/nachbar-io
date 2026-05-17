@@ -84,7 +84,7 @@ export function RegisterStepAiConsent({
           pilotRole: state.pilotRole,
           aiConsentChoice: choice,
           aiAssistanceLevel: selectedLevel,
-          uiMode: "active",
+          uiMode: state.uiMode ?? "active",
           householdId: state.householdId,
           streetName: state.selectedAddress?.street || undefined,
           houseNumber: state.houseNumber.trim() || undefined,
@@ -277,7 +277,7 @@ export function RegisterStepAiConsent({
         type="button"
         onClick={() => {
           setState({ error: null });
-          setStep("pilot_role");
+          setStep("ui_mode");
         }}
         className="flex w-full items-center justify-center gap-1 text-sm text-muted-foreground hover:underline"
       >

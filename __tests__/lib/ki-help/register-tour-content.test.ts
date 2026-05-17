@@ -11,6 +11,7 @@ const steps: Step[] = [
   "address",
   "identity",
   "pilot_role",
+  "ui_mode",
   "ai_consent",
   "magic_link_sent",
 ];
@@ -35,5 +36,11 @@ describe("REGISTER_TOUR_HINTS", () => {
     expect(getRegisterTourHint("pilot_role")).toBe(
       "Hier wählen Sie, wie Sie teilnehmen: für sich selbst, als Unterstützung für jemanden, als Hilfe im Quartier oder nur testweise.",
     );
+  });
+
+  it("explains the ui mode step without adding a database value", () => {
+    expect(getRegisterTourHint("ui_mode")).toContain("Aktiv 55+");
+    expect(getRegisterTourHint("ui_mode")).toContain("Einfach");
+    expect(getRegisterTourHint("ui_mode")).toContain("Profil");
   });
 });

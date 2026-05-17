@@ -7,6 +7,7 @@ import { KiHelpOnboardingHint } from "@/components/ki-help/KiHelpOnboardingHint"
 import {
   RegisterStepIdentity,
   RegisterStepPilotRole,
+  RegisterStepUiMode,
   RegisterStepAiConsent,
 } from "../components";
 import type { RegisterFormState, Step } from "../components";
@@ -41,6 +42,7 @@ function buildLocalPreviewState(): RegisterFormState {
       action: "preview",
     },
     pilotRole: "test_user",
+    uiMode: "comfort",
     loading: false,
     geoLoading: false,
     error: null,
@@ -62,11 +64,12 @@ export function RegisterPreviewForm({ initialStep }: { initialStep: Step }) {
     [],
   );
 
-  const totalSteps = 4;
+  const totalSteps = 5;
   const currentStep = (() => {
     if (step === "identity") return 2;
     if (step === "pilot_role") return 3;
-    return 4;
+    if (step === "ui_mode") return 4;
+    return 5;
   })();
 
   return (
@@ -107,6 +110,9 @@ export function RegisterPreviewForm({ initialStep }: { initialStep: Step }) {
         )}
         {step === "pilot_role" && (
           <RegisterStepPilotRole state={formState} setState={updateState} setStep={setStep} />
+        )}
+        {step === "ui_mode" && (
+          <RegisterStepUiMode state={formState} setState={updateState} setStep={setStep} />
         )}
         {step === "ai_consent" && (
           <RegisterStepAiConsent

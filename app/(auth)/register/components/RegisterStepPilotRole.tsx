@@ -57,7 +57,7 @@ export function RegisterStepPilotRole({ state, setState, setStep }: StepProps) {
     }
 
     setState({ error: null });
-    setStep("ai_consent");
+    setStep("ui_mode");
   }
 
   return (
@@ -180,7 +180,7 @@ export function RegisterStepPilotRole({ state, setState, setStep }: StepProps) {
             Ihre Auswahl: {selectedRole.summaryLabel}
           </p>
           <p className="mt-1 text-muted-foreground">
-            Im nächsten Schritt entscheiden Sie in Ruhe zur KI-Hilfe.
+            Im nächsten Schritt wählen Sie die passende Oberfläche.
           </p>
         </div>
       )}
@@ -193,7 +193,7 @@ export function RegisterStepPilotRole({ state, setState, setStep }: StepProps) {
         onClick={continueToAiConsent}
         className="min-h-14 w-full bg-quartier-green hover:bg-quartier-green-dark"
       >
-        Weiter zur KI-Auswahl
+        Weiter zur Oberfläche
       </Button>
 
       <button

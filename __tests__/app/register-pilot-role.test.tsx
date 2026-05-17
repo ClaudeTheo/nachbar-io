@@ -75,7 +75,7 @@ describe("RegisterStepPilotRole", () => {
     expect(screen.queryByText(/fuer|unterstuetze|Angehoerige|Zurueck/i)).not.toBeInTheDocument();
   });
 
-  it("markiert die gewaehlte Rolle und geht bewusst danach zur KI-Auswahl", async () => {
+  it("markiert die gewaehlte Rolle und geht bewusst danach zur Oberflaechen-Auswahl", async () => {
     const setStep = vi.fn();
     const user = userEvent.setup();
 
@@ -89,9 +89,9 @@ describe("RegisterStepPilotRole", () => {
     );
     expect(setStep).not.toHaveBeenCalled();
 
-    await user.click(screen.getByRole("button", { name: "Weiter zur KI-Auswahl" }));
+    await user.click(screen.getByRole("button", { name: "Weiter zur Oberfläche" }));
 
-    expect(setStep).toHaveBeenCalledWith("ai_consent");
+    expect(setStep).toHaveBeenCalledWith("ui_mode");
   });
 
   it("zeigt die gewaehlte Rolle als ruhige Zusammenfassung vor dem Weitergehen", async () => {
@@ -103,7 +103,7 @@ describe("RegisterStepPilotRole", () => {
 
     expect(screen.getByText("Ihre Auswahl: Unterstützer")).toBeInTheDocument();
     expect(
-      screen.getByText(/Im nächsten Schritt entscheiden Sie in Ruhe zur KI-Hilfe/i),
+      screen.getByText(/Im nächsten Schritt wählen Sie die passende Oberfläche/i),
     ).toBeInTheDocument();
   });
 

@@ -1,9 +1,13 @@
 // __tests__/app/kreis-start.test.tsx
 // Phase 1 Design-Doc 2026-04-10 Abschnitt 3: 4-Kachel-Startscreen fuer Bewohner 65+.
 
-import { describe, it, expect } from "vitest";
-import { render, screen } from "@testing-library/react";
+import { afterEach, describe, it, expect } from "vitest";
+import { cleanup, render, screen } from "@testing-library/react";
 import KreisStartPage from "@/app/(senior)/kreis-start/page";
+
+afterEach(() => {
+  cleanup();
+});
 
 describe("KreisStartPage (Phase 1 Design-Doc 3)", () => {
   it("rendert genau 4 Kacheln mit den vorgegebenen Labels", () => {
@@ -44,6 +48,16 @@ describe("KreisStartPage (Phase 1 Design-Doc 3)", () => {
       const style = tile.getAttribute("style") ?? "";
       expect(style).toContain("min-height");
     }
+  });
+
+  it("Notfall-Kachel nutzt kontraststarkes Rot und nennt 112", () => {
+    render(<KreisStartPage />);
+
+    const emergencyTile = screen.getByRole("link", { name: /Notfall 112/i });
+    expect(emergencyTile).toHaveAttribute("href", "/sos");
+    expect(emergencyTile.className).toContain("bg-red-900");
+    expect(emergencyTile.className).toContain("border-red-950");
+    expect(emergencyTile.className).toContain("text-white");
   });
 
   it("zeigt Termine-Link unterhalb der Kacheln", () => {

@@ -137,4 +137,20 @@ describe("PushBanner", () => {
       expect(mockSubscribeToPush).toHaveBeenCalledTimes(1);
     });
   });
+
+  it("hat 80px Touch-Ziele fuer Senior-Nutzung", async () => {
+    mockIsPushSupported.mockReturnValue(true);
+    mockIsSubscribed.mockResolvedValue(false);
+
+    render(<PushBanner />);
+
+    await waitFor(() => {
+      expect(screen.getByText("Einschalten")).toBeInTheDocument();
+    });
+
+    expect(screen.getByRole("button", { name: "Einschalten" }).style.minHeight)
+      .toBe("80px");
+    expect(screen.getByRole("button", { name: "Später" }).style.minHeight)
+      .toBe("80px");
+  });
 });

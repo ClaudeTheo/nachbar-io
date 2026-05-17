@@ -77,14 +77,16 @@ export function PushBanner() {
         <button
           type="button"
           onClick={handleEnable}
-          className="min-h-[56px] flex-1 rounded-xl bg-white px-6 text-lg font-bold text-[#2d6a4f] shadow-sm active:scale-95"
+          className="min-h-[80px] flex-1 rounded-xl bg-white px-6 text-lg font-bold text-[#2d6a4f] shadow-sm active:scale-95"
+          style={{ minHeight: "80px", touchAction: "manipulation" }}
         >
           Einschalten
         </button>
         <button
           type="button"
           onClick={handleDismiss}
-          className="min-h-[56px] flex-1 rounded-xl text-lg font-semibold text-white underline-offset-2 hover:underline active:scale-95"
+          className="min-h-[80px] flex-1 rounded-xl text-lg font-semibold text-white underline-offset-2 hover:underline active:scale-95"
+          style={{ minHeight: "80px", touchAction: "manipulation" }}
         >
           Später
         </button>

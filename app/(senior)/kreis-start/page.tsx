@@ -42,7 +42,7 @@ const TILES: TileDef[] = [
     variant: "neutral",
   },
   {
-    label: "Notfall",
+    label: "Notfall 112",
     description: "Hilfe rufen",
     href: "/sos",
     variant: "emergency",
@@ -67,7 +67,7 @@ export default function KreisStartPage() {
             data-testid="kreis-start-tile"
             className={
               tile.variant === "emergency"
-                ? "flex flex-col items-center justify-center rounded-2xl border-2 border-red-600 bg-red-600 p-6 text-center text-white focus:outline-none focus:ring-4 focus:ring-red-300"
+                ? "flex flex-col items-center justify-center rounded-2xl border-2 border-red-950 bg-red-900 p-6 text-center text-white focus:outline-none focus:ring-4 focus:ring-red-300"
                 : "flex flex-col items-center justify-center rounded-2xl border-2 border-anthrazit bg-white p-6 text-center text-anthrazit focus:outline-none focus:ring-4 focus:ring-quartier-green/40"
             }
             style={{

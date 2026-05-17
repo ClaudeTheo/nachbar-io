@@ -30,9 +30,13 @@ interface CapturedError {
 
 interface BugReportButtonProps {
   anonymous?: boolean;
+  senior?: boolean;
 }
 
-export function BugReportButton({ anonymous = false }: BugReportButtonProps) {
+export function BugReportButton({
+  anonymous = false,
+  senior = false,
+}: BugReportButtonProps) {
   // Bug-Report-Button ist immer sichtbar — kein Scroll-Hide (Founder 2026-05-13).
   const fabVisible = true;
   // Sicherer Quartier-Zugriff: useContext gibt null zurück wenn kein Provider
@@ -272,14 +276,21 @@ export function BugReportButton({ anonymous = false }: BugReportButtonProps) {
       {/* Floating Action Button — unten-links, über der BottomNav */}
       <button
         onClick={() => setOpen(true)}
-        className={`fixed bottom-24 left-3 z-40 flex h-11 w-11 items-center justify-center rounded-full bg-alert-amber shadow-lg transition-all active:scale-95 sm:left-4 sm:h-12 sm:w-12 sm:hover:scale-110 sm:hover:shadow-xl ${
+        className={`fixed ${
+          senior
+            ? "bottom-28 left-4 h-20 w-20"
+            : "bottom-24 left-3 h-11 w-11 sm:left-4 sm:h-12 sm:w-12 sm:hover:scale-110"
+        } z-40 flex items-center justify-center rounded-full bg-alert-amber shadow-lg transition-all active:scale-95 sm:hover:shadow-xl ${
           fabVisible ? "fab-visible" : "fab-hidden"
         }`}
         aria-label="Bug melden"
         aria-haspopup="dialog"
         data-testid="bug-report-fab"
+        style={
+          senior ? { minHeight: "80px", minWidth: "80px" } : undefined
+        }
       >
-        <Bug className="h-5 w-5 text-white" />
+        <Bug className={senior ? "h-8 w-8 text-white" : "h-5 w-5 text-white"} />
       </button>
 
       {/* Bug-Report Sheet von unten */}

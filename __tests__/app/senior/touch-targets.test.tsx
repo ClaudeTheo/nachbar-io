@@ -9,6 +9,28 @@ vi.mock("next/navigation", () => ({
   usePathname: () => "/senior/home",
 }));
 
+vi.mock("@/components/BugReportButton", () => ({
+  BugReportButton: ({ senior }: { senior?: boolean }) => (
+    <button
+      data-testid="bug-report-fab"
+      style={{
+        minHeight: senior ? "80px" : undefined,
+        minWidth: senior ? "80px" : undefined,
+      }}
+    >
+      Bug melden
+    </button>
+  ),
+}));
+
+vi.mock("@/components/senior/PushBanner", () => ({
+  PushBanner: () => <div data-testid="push-banner-stub" />,
+}));
+
+vi.mock("@/components/senior/RefreshRotationMounter", () => ({
+  RefreshRotationMounter: () => null,
+}));
+
 afterEach(() => {
   cleanup();
 });
@@ -29,6 +51,25 @@ describe("SeniorLayout Touch-Targets", () => {
     ).toBe("80px");
     expect(screen.getByRole("link", { name: /notruf 112/i }).style.minHeight)
       .toBe("80px");
+  });
+});
+
+describe("SeniorDeviceLayout Touch-Targets", () => {
+  it("zeigt auf /kreis-start dauerhaft Notruf 112 und 80px Bug-Melden-Ziel", async () => {
+    const { default: SeniorDeviceLayout } = await import(
+      "@/app/(senior)/layout"
+    );
+
+    render(
+      <SeniorDeviceLayout>
+        <p>Inhalt</p>
+      </SeniorDeviceLayout>,
+    );
+
+    const notruf = screen.getByRole("link", { name: /notruf 112/i });
+    expect(notruf).toHaveAttribute("href", "tel:112");
+    expect(notruf.style.minHeight).toBe("80px");
+    expect(screen.getByTestId("bug-report-fab").style.minHeight).toBe("80px");
   });
 });
 

@@ -24,13 +24,13 @@ vi.mock("@/components/ki-help/AiAssistanceLevelPicker", () => ({
     onChange,
   }: {
     value: string | null;
-    onChange: (value: "none" | "basic" | "everyday") => void;
+    onChange: (value: "off" | "basic" | "everyday") => void;
   }) => (
     <div>
       <button
         type="button"
-        aria-pressed={value === "none"}
-        onClick={() => onChange("none")}
+        aria-pressed={value === "off"}
+        onClick={() => onChange("off")}
       >
         Ohne KI
       </button>
@@ -39,7 +39,7 @@ vi.mock("@/components/ki-help/AiAssistanceLevelPicker", () => ({
 }));
 
 vi.mock("@/lib/ki-help/ai-assistance-levels", () => ({
-  levelToConsentChoice: (level: string) => (level === "none" ? "no" : "yes"),
+  levelToConsentChoice: (level: string) => (level === "off" ? "no" : "yes"),
 }));
 
 function baseState(): RegisterFormState {
@@ -65,7 +65,7 @@ function baseState(): RegisterFormState {
     pilotRole: "resident",
     uiMode: "comfort",
     aiConsentChoice: "later",
-    aiAssistanceLevel: "none",
+    aiAssistanceLevel: "off",
     loading: false,
     geoLoading: false,
     error: null,

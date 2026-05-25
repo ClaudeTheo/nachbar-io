@@ -57,3 +57,29 @@ describe("buildSystemPrompt — harte Antwort-Laengen-Regel", () => {
     expect(prompt).not.toContain("SEHR EINFACHE ANTWORTEN");
   });
 });
+
+describe("buildSystemPrompt — Hausnotruf-/Notrufdienst-Selbst-Abgrenzung", () => {
+  it("grenzt QuartierApp explizit von Hausnotruf-Anbietern ab (Wissens-Block)", () => {
+    const prompt = buildSystemPrompt(emptyCtx, { mutLevel: 1 });
+    expect(prompt).toMatch(/QuartierApp selbst ist KEIN Hausnotruf/);
+  });
+
+  it("verweist bei akuter Gefahr immer zuerst auf 112/110, nie nur auf QuartierApp", () => {
+    const prompt = buildSystemPrompt(emptyCtx, { mutLevel: 1 });
+    expect(prompt).toMatch(/IMMER zuerst 112.*oder 110/);
+    expect(prompt).toMatch(/Verweise NIE allein auf QuartierApp als Notfall-Loesung/);
+  });
+
+  it("klassifiziert QuartierApp explizit als keine Leitstelle und keinen Notrufdienst", () => {
+    const prompt = buildSystemPrompt(emptyCtx, { mutLevel: 1 });
+    expect(prompt).toMatch(/KEINE Leitstelle/);
+    expect(prompt).toMatch(/KEIN Notrufdienst/);
+  });
+
+  it("haelt die Selbst-Abgrenzung in allen Mut-Stufen aufrecht", () => {
+    for (const mutLevel of [1, 2, 3, 4] as const) {
+      const prompt = buildSystemPrompt(emptyCtx, { mutLevel });
+      expect(prompt).toMatch(/QuartierApp selbst ist KEIN Hausnotruf/);
+    }
+  });
+});

@@ -7,7 +7,7 @@ export const metadata: Metadata = {
 };
 
 // Datenschutzerklärung gemäß DSGVO Art. 13, 14
-// TDDDG-konform, Stand: März 2026
+// TDDDG-konform, Stand: Mai 2026
 export default function DatenschutzPage() {
   return (
     <main className="min-h-screen bg-warmwhite px-4 py-8">
@@ -351,10 +351,10 @@ export default function DatenschutzPage() {
               5.11 Pilot-Phase Bad Saeckingen: Pflichtfelder mit Zweckbindung
             </h3>
             <p>
-              In der geschlossenen Pilotphase mit 5 bis 10 Familien aus Bad
-              Saeckingen erheben wir bei der Registrierung nur die
-              Pflichtangaben, die fuer Vertrauen, Sicherheit und die
-              Quartier-/Haushaltszuordnung notwendig sind.
+              In der geschlossenen Pilotphase im Pilotgebiet Bad Saeckingen
+              erheben wir bei der Registrierung nur die Pflichtangaben, die
+              fuer Vertrauen, Sicherheit und die Quartier-/Haushaltszuordnung
+              notwendig sind.
             </p>
             <div className="mt-3 overflow-x-auto">
               <table className="w-full border-collapse text-left text-xs">
@@ -872,7 +872,7 @@ export default function DatenschutzPage() {
               Push-Benachrichtigung oder E-Mail informiert.
             </p>
             <p className="mt-2 text-xs text-muted-foreground">
-              Stand: März 2026
+              Stand: Mai 2026
             </p>
           </section>
         </div>

@@ -159,7 +159,7 @@ export default function AGBPage() {
               Die optionalen Koordinationsfunktionen (Erinnerungen, Tagescheck,
               Helfer-Übersicht) sind organisatorische Hilfsmittel zur
               Alltagsunterstützung. Sie ersetzen weder professionelle Pflege,
-              ärztliche Beratung noch medizinische Notrufsysteme.
+              ärztliche Beratung noch den offiziellen Notruf 112/110.
             </p>
             <p className="mt-2">
               Die Erinnerungs- und Medikamentenfunktionen dienen ausschließlich
@@ -176,7 +176,8 @@ export default function AGBPage() {
               medizinischen Notfällen, bei Feuer oder Straftaten ist immer
               zuerst der offizielle Notruf zu wählen. Die Hilfeanfrage-Funktion
               der App dient ausschließlich der nachbarschaftlichen Koordination
-              im Alltag.
+              im Alltag. QuartierApp ist kein Hausnotruf, keine Leitstelle und
+              garantiert keine Reaktionszeit.
             </p>
 
             <h3 className="mt-3 font-semibold">5.3 Haftungsbegrenzung</h3>

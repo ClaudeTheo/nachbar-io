@@ -12,6 +12,7 @@ describe("DatenschutzPage", () => {
     expect(screen.getAllByText(/Geburtsdatum/i).length).toBeGreaterThan(0);
     expect(screen.getByText(/Adresse.*Quartier-Zuordnung/i)).toBeInTheDocument();
     expect(screen.queryByText(/kein Klarname erforderlich/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/5 bis 10 Familien/i)).not.toBeInTheDocument();
   });
 
   it("beschreibt Vercel-Hosting praezise ohne zu weitgehende No-Data-Zusage", () => {

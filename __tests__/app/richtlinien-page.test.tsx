@@ -9,6 +9,7 @@ describe("RichtlinienPage", () => {
     render(<RichtlinienPage />);
 
     expect(screen.getByText(/Meldestelle fuer rechtswidrige Inhalte/i)).toBeInTheDocument();
+    expect(screen.getByText(/Stand: Mai 2026/i)).toBeInTheDocument();
     expect(screen.getByText(/innerhalb von 24 Stunden/i)).toBeInTheDocument();
     expect(screen.getByText(/wesentlichen Grund/i)).toBeInTheDocument();
     expect(

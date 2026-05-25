@@ -131,9 +131,10 @@ export default function RichtlinienPage() {
         <Link href="/agb" className="underline hover:text-anthrazit">AGB</Link>
         <Link href="/support" className="underline hover:text-anthrazit">Support</Link>
         <Link href="/impressum" className="underline hover:text-anthrazit">Impressum</Link>
+        <Link href="/barrierefreiheit" className="underline hover:text-anthrazit">Barrierefreiheit</Link>
       </div>
 
-      <p className="text-xs text-muted-foreground mt-6">Stand: März 2026</p>
+      <p className="text-xs text-muted-foreground mt-6">Stand: Mai 2026</p>
     </main>
   );
 }

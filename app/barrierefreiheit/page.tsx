@@ -266,7 +266,7 @@ export default function BarrierefreiheitPage() {
             <p className="mt-2">
               Die Erklärung wird regelmäßig überprüft und bei wesentlichen
               Änderungen der Anwendung aktualisiert. Die letzte inhaltliche
-              Prüfung erfolgte am <strong>16. Mai 2026</strong>.
+              Prüfung erfolgte am <strong>25. Mai 2026</strong>.
             </p>
           </section>
 

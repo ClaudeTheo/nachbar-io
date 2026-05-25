@@ -1,119 +1,65 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import {
   Bell,
-  CheckCircle2,
+  CalendarDays,
+  HeartHandshake,
+  MapPin,
+  Megaphone,
   MessageCircle,
   Newspaper,
-  Megaphone,
   UsersRound,
+  type LucideIcon,
 } from "lucide-react";
-import { DiscoverGrid } from "@/components/dashboard/DiscoverGrid";
 import { PullToRefresh } from "@/components/PullToRefresh";
 import { ReputationBadge } from "@/components/ReputationBadge";
 import { FloatingHelpButton } from "@/components/FloatingHelpButton";
 import { DailyCheckinBubble } from "@/modules/care/components/checkin/DailyCheckinBubble";
-import { BrandFooter } from "@/components/brand/BrandFooter";
-import { MapThumbnail } from "@/components/map/MapThumbnail";
-import { UserModeFocusStrip } from "@/components/modes/UserModeSurface";
-import { useMapStatuses } from "@/lib/hooks/useMapStatuses";
-import { useAuth } from "@/hooks/use-auth";
-import { createClient } from "@/lib/supabase/client";
-import { loadCaregiverPendingCheckinHouseholds } from "@/lib/care/caregiver-pending-checkins";
 import { Skeleton } from "@/components/ui/skeleton";
 
-import { useDashboardData, getGreeting } from "./hooks/useDashboardData";
+import { getGreeting, useDashboardData } from "./hooks/useDashboardData";
 
-// Eyebrow-Datum fuer Hero ("SAMSTAG · 11. MAI") — Visual-Polish v7.
 function formatEyebrowDate(d: Date): string {
-  const wochentag = d
+  const weekday = d
     .toLocaleDateString("de-DE", { weekday: "long" })
     .toUpperCase();
-  const tag = d.getDate();
-  const monat = d
+  const day = d.getDate();
+  const month = d
     .toLocaleDateString("de-DE", { month: "long" })
     .toUpperCase();
-  return `${wochentag} · ${tag}. ${monat}`;
+  return `${weekday} - ${day}. ${month}`;
 }
+
+type StartAction = {
+  href: string;
+  icon: LucideIcon;
+  label: string;
+  description: string;
+  tone: string;
+};
 
 export default function DashboardPage() {
   const {
-    userName,
-    uiMode,
-    dashboardDensity,
-    reputationLevel,
-    loading,
-    weatherData,
+    alerts,
     caregivers,
-    unreadCount,
     currentQuarter,
-    quarterLoading,
+    dashboardDensity,
+    helpRequests,
     loadDashboard,
+    loading,
+    news,
+    quarterLoading,
+    reputationLevel,
+    uiMode,
+    unreadCount,
+    userName,
+    weatherData,
   } = useDashboardData();
 
-  // Founder-Wunsch 2026-05-12: Karte auf der App-Startseite zwischen Hero
-  // und "Heute"-Section mit Status-Pins. Punkt-Farbe je Haushalt:
-  // - green = okay (Default)
-  // - red = SOS / kritischer Alert (Founder-A)
-  // - yellow = aktive Hilfe-Anfrage oder gelber Alert (Founder-B)
-  // - orange = Paket-Annahme heute aktiv
-  // - blue = Urlaubsmodus
-  // Quellen via useMapStatuses (alerts + help_requests + paketannahme +
-  // vacation_modes — alle bereits im Hook angebunden). Care-Check-in-Status
-  // (Founder-C) folgt in einer Folgewelle (eigener DB-Query noetig).
-  const { geoHouses, residentCounts, statuses } = useMapStatuses(
-    currentQuarter?.id,
-    currentQuarter?.map_config,
-    currentQuarter?.center_lat,
-    currentQuarter?.center_lng,
-  );
-
-  // Founder-C 2026-05-12 (Variante X — DSGVO-konform):
-  // Caregiver-only Care-Checkin-Status. Sieht NUR der angemeldete Nutzer
-  // fuer SEINE per caregiver_links zugewiesenen Senioren — andere
-  // Nachbarn bekommen via RLS ein leeres Result.
-  const { user } = useAuth();
-  const [caregiverPendingHouseholds, setCaregiverPendingHouseholds] =
-    useState<Set<string>>(new Set());
-  useEffect(() => {
-    if (!user?.id) return;
-    let cancelled = false;
-    const supabase = createClient();
-    void loadCaregiverPendingCheckinHouseholds(supabase, user.id).then(
-      (households) => {
-        if (!cancelled) setCaregiverPendingHouseholds(households);
-      },
-    );
-    return () => {
-      cancelled = true;
-    };
-  }, [user?.id]);
-
-  const previewPoints = useMemo(
-    () =>
-      geoHouses
-        .filter((house) => residentCounts[house.id] > 0)
-        .map((house) => {
-          const baseStatus = statuses[house.id] ?? "green";
-          // Caregiver-Pending nur sichtbar wenn baseStatus noch "green" ist
-          // (rote/gelbe Eskalationen aus Hook haben Priori­taet — mergeMapStatus-
-          // Logik). Damit "ueberlagert" der Caregiver-Pin sanft, ohne SOS-Pins
-          // zu uebermalen.
-          const color =
-            baseStatus === "green" && caregiverPendingHouseholds.has(house.id)
-              ? ("yellow" as const)
-              : baseStatus;
-          return { lat: house.lat, lng: house.lng, color };
-        }),
-    [geoHouses, residentCounts, statuses, caregiverPendingHouseholds],
-  );
-
-  // Loading-Skeleton (unveraendert ggue. C-0).
   if (loading && (quarterLoading || currentQuarter)) {
     return (
-      <div className="space-y-8 animate-fade-in-up">
+      <div className="animate-fade-in-up space-y-8">
         <div className="flex items-center justify-between">
           <div>
             <Skeleton className="h-8 w-48" />
@@ -121,20 +67,21 @@ export default function DashboardPage() {
           </div>
           <Skeleton className="h-10 w-10 rounded-full" />
         </div>
-        <Skeleton className="h-14 w-full rounded-xl" />
-        {[1, 2, 3].map((i) => (
-          <Skeleton key={i} className="h-24 w-full rounded-lg" />
-        ))}
+        <Skeleton className="h-36 w-full rounded-2xl" />
+        <Skeleton className="h-24 w-full rounded-2xl" />
+        <Skeleton className="h-24 w-full rounded-2xl" />
       </div>
     );
   }
 
-  // Kein Quartier zugeordnet — hilfreiche Meldung (unveraendert).
   if (!quarterLoading && !currentQuarter) {
     return (
-      <div className="flex flex-col items-center justify-center py-16 text-center animate-fade-in-up">
-        <div className="mb-4 text-5xl" aria-hidden="true">
-          🏘️
+      <div className="animate-fade-in-up flex flex-col items-center justify-center py-16 text-center">
+        <div
+          className="mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-quartier-green/10 text-2xl font-bold text-quartier-green"
+          aria-hidden="true"
+        >
+          Q
         </div>
         <h1 className="text-xl font-extrabold text-anthrazit">
           Willkommen bei QuartierApp
@@ -155,53 +102,100 @@ export default function DashboardPage() {
 
   const greeting = getGreeting();
   const isComfortDashboard = dashboardDensity === "calm";
-  const showSeniorCheckinQuickAction = uiMode === "senior";
-  const showComfortDayQuickAction = uiMode === "comfort";
-  const eyebrowDate = formatEyebrowDate(new Date());
-  // Founder 2026-05-12: Eyebrow zeigt die Stadt (z.B. "BAD SÄCKINGEN"), nicht
-  // den Quartier-Namen ("Purkersdorfer/Sanary/Rebberg") — sonst wird der
-  // Eyebrow zu lang und der Kontrast zu Headline leidet.
-  const quartierName = (
-    currentQuarter?.city ??
-    currentQuarter?.name ??
-    "Ihr Quartier"
-  ).toUpperCase();
+  const quarterLabel =
+    currentQuarter?.city ?? currentQuarter?.name ?? "Ihr Quartier";
+  const quarterName = quarterLabel.toUpperCase();
+  const primaryAction: StartAction =
+    uiMode === "comfort"
+      ? {
+          href: "/my-day",
+          icon: CalendarDays,
+          label: "Mein Tag",
+          description: "Termine, Hinweise und Alltag in Ruhe.",
+          tone: "bg-[#2d6a4f]",
+        }
+      : {
+          href: "/gruppen",
+          icon: UsersRound,
+          label: "Gemeinschaft",
+          description: "Gruppen, Nachbarn und Austausch.",
+          tone: "bg-quartier-green",
+        };
+
+  const PrimaryIcon = primaryAction.icon;
+  const summaryItems = [
+    {
+      href: "/quartier-info",
+      icon: MapPin,
+      label: "Mein Quartier",
+      value: "Rathaus, Karte, Veranstaltungen",
+    },
+    {
+      href: "/my-day",
+      icon: CalendarDays,
+      label: "Mein Tag",
+      value: "Heute planen und nichts Wichtiges verpassen",
+    },
+    {
+      href: "/notifications",
+      icon: MessageCircle,
+      label: "Nachrichten",
+      value:
+        unreadCount > 0
+          ? `${unreadCount > 9 ? "9+" : unreadCount} ungelesen`
+          : "Alles gelesen",
+    },
+  ];
+
+  const signalItems = [
+    {
+      href: "/news",
+      icon: Newspaper,
+      label: "Neue Infos",
+      value: news.length > 0 ? `${news.length} Meldungen` : "Keine neuen Meldungen",
+    },
+    {
+      href: "/hilfe",
+      icon: HeartHandshake,
+      label: "Hilfe im Quartier",
+      value:
+        helpRequests.length > 0
+          ? `${helpRequests.length} offene Anfragen`
+          : "Keine offenen Anfragen",
+    },
+    {
+      href: "/alerts",
+      icon: Megaphone,
+      label: "Warnungen",
+      value: alerts.length > 0 ? `${alerts.length} aktiv` : "Keine aktiven Warnungen",
+    },
+  ];
 
   return (
     <>
       <PullToRefresh onRefresh={loadDashboard}>
         <div
-          className={`animate-fade-in-up py-12 md:py-16 ${
-            isComfortDashboard ? "space-y-14" : "space-y-12"
+          className={`animate-fade-in-up pb-10 pt-10 ${
+            isComfortDashboard ? "space-y-8" : "space-y-7"
           }`}
           data-dashboard-density={dashboardDensity}
         >
-          {/* ============================================================
-              HERO — Visual-Polish v7 (kein Card, kein Avatar, typo-getrieben).
-              SOS-Pill bewusst entfernt (Founder-Entscheidung 2026-05-11):
-              SOS gehoert nur in Senior-Layout (app/senior/*), nicht ins
-              Standard-Dashboard. Notruf-112-Erstplatzierung bleibt durch
-              Senior-Notruf-Leiste in app/senior/layout.tsx erhalten.
-              ============================================================ */}
-          <section className="flex items-start justify-between gap-6">
+          <section className="flex items-start justify-between gap-5">
             <div className="min-w-0 flex-1">
-              {/* Eyebrow (accent dot + Datum + Quartier) */}
               <p className="flex items-center gap-2 text-xs font-medium uppercase tracking-[0.08em] text-anthrazit-light">
                 <span
                   className="inline-block h-1.5 w-1.5 rounded-full bg-quartier-green"
                   aria-hidden
                 />
-                {eyebrowDate} · {quartierName}
+                {formatEyebrowDate(new Date())} - {quarterName}
               </p>
-
-              {/* Hero-Greeting H1 (36 px / 1.15 / 600 / -0.02em) */}
               <h1
-                className="mt-3 text-[36px] font-semibold leading-[1.15] tracking-[-0.02em] text-anthrazit"
+                className={`mt-3 font-semibold leading-[1.15] text-anthrazit ${
+                  isComfortDashboard ? "text-[34px]" : "text-[36px]"
+                }`}
                 data-testid="dashboard-greeting"
               >
-                {userName
-                  ? `${greeting.text}, ${userName}.`
-                  : "QuartierApp"}
+                {userName ? `${greeting.text}, ${userName}.` : "QuartierApp"}
                 {reputationLevel >= 2 && (
                   <span className="ml-2 align-middle">
                     <ReputationBadge level={reputationLevel} size="sm" />
@@ -210,11 +204,10 @@ export default function DashboardPage() {
               </h1>
             </div>
 
-            {/* Notification-Bell + Wetter rechts */}
             <div className="flex shrink-0 flex-col items-end gap-3">
               <Link
                 href="/notifications"
-                className="relative rounded-full p-2 transition-colors hover:bg-anthrazit-tint"
+                className="relative flex min-h-11 min-w-11 items-center justify-center rounded-full transition-colors hover:bg-anthrazit-tint"
                 aria-label="Benachrichtigungen"
                 data-testid="notification-bell"
               >
@@ -231,11 +224,12 @@ export default function DashboardPage() {
 
               {weatherData?.temp != null && (
                 <div className="text-right">
-                  <div className="text-[32px] font-semibold leading-none tabular-nums text-anthrazit">
-                    {Math.round(weatherData.temp)}°
+                  <div className="text-[30px] font-semibold leading-none tabular-nums text-anthrazit">
+                    {Math.round(weatherData.temp)}
+                    <span aria-hidden="true">&deg;</span>
                   </div>
                   {weatherData.description && (
-                    <div className="mt-1 text-sm text-anthrazit-light">
+                    <div className="mt-1 max-w-24 text-sm text-anthrazit-light">
                       {weatherData.description}
                     </div>
                   )}
@@ -244,20 +238,50 @@ export default function DashboardPage() {
             </div>
           </section>
 
-          {/* Angehoerige-Schnellzugriff (unveraendert ggue. C-0) */}
-          {caregivers.length > 0 && (
-            <div
-              data-testid="dashboard-caregivers"
-              className="flex items-center gap-3 px-1"
+          <section
+            className="rounded-2xl border border-anthrazit-tint bg-lifted-cream p-4 shadow-soft"
+            aria-label="Naechster Schritt"
+          >
+            <p className="text-xs font-semibold uppercase tracking-[0.08em] text-muted-foreground">
+              Start
+            </p>
+            <h2 className="mt-2 text-xl font-semibold text-anthrazit">
+              Was jetzt am naechsten liegt.
+            </h2>
+            <Link
+              href={primaryAction.href}
+              className={`${primaryAction.tone} mt-4 flex min-h-[72px] items-center gap-3 rounded-2xl px-4 py-3 text-white shadow-sm transition-transform active:scale-[0.98]`}
+              data-testid="dashboard-primary-action"
             >
-              <span className="text-xs text-muted-foreground">Angehörige:</span>
-              <div className="flex -space-x-2">
+              <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-white/18">
+                <PrimaryIcon className="h-6 w-6" />
+              </span>
+              <span className="min-w-0">
+                <span className="block text-base font-semibold">
+                  {primaryAction.label}
+                </span>
+                <span className="mt-1 block text-sm text-white/82">
+                  {primaryAction.description}
+                </span>
+              </span>
+            </Link>
+          </section>
+
+          {caregivers.length > 0 && (
+            <section
+              data-testid="dashboard-caregivers"
+              className="rounded-2xl border border-anthrazit-tint bg-white p-4"
+            >
+              <p className="text-sm font-semibold text-anthrazit">
+                Verbundene Angehoerige
+              </p>
+              <div className="mt-3 flex -space-x-2">
                 {caregivers.map((cg) => (
                   <Link
                     key={cg.caregiver_id}
                     href={`/messages/${cg.caregiver_id}`}
-                    className="flex h-9 w-9 items-center justify-center rounded-full border-2 border-white bg-quartier-green/10 text-xs font-semibold text-quartier-green transition-all hover:ring-2 hover:ring-quartier-green/30"
-                    title={cg.display_name || "Angehöriger"}
+                    className="flex h-10 w-10 items-center justify-center rounded-full border-2 border-white bg-quartier-green/10 text-xs font-semibold text-quartier-green transition-all hover:ring-2 hover:ring-quartier-green/30"
+                    title={cg.display_name || "Angehoeriger"}
                   >
                     {cg.avatar_url ? (
                       // eslint-disable-next-line @next/next/no-img-element
@@ -272,213 +296,65 @@ export default function DashboardPage() {
                   </Link>
                 ))}
               </div>
-            </div>
+            </section>
           )}
 
-          <UserModeFocusStrip mode={uiMode} />
-
-          {/* ============================================================
-              Nachbar-Karte (Founder 2026-05-12) — Karte des Quartiers mit
-              registrierten Haushalten als Punkte. Klick fuehrt zur Vollkarte.
-              Status-Pins ("Hilfe braucht") folgen in einer Folge-Welle nach
-              Definition der Status-Quelle (SOS / offene Hilfe / Care).
-              ============================================================ */}
-          {currentQuarter?.center_lat != null &&
-            currentQuarter?.center_lng != null && (
-              <section data-testid="dashboard-map" className="space-y-2">
-                <MapThumbnail
-                  lat={currentQuarter.center_lat}
-                  lng={currentQuarter.center_lng}
-                  zoom={currentQuarter.zoom_level ?? 16}
-                  label={`${currentQuarter.city ?? currentQuarter.name ?? "Quartier"} — Karte`}
-                  points={previewPoints}
-                />
-                {/* Mini-Legende fuer Status-Pins (Founder 2026-05-12). */}
-                <ul
-                  aria-label="Bedeutung der Karten-Punkte"
-                  className="flex flex-wrap gap-x-4 gap-y-1 px-1 text-[11px] text-anthrazit-light"
-                >
-                  <li className="flex items-center gap-1.5">
-                    <span
-                      className="inline-block h-2 w-2 rounded-full bg-quartier-green"
-                      aria-hidden="true"
-                    />
-                    Okay
-                  </li>
-                  <li className="flex items-center gap-1.5">
-                    <span
-                      className="inline-block h-2 w-2 rounded-full bg-alert-amber"
-                      aria-hidden="true"
-                    />
-                    Hilfe gesucht
-                  </li>
-                  <li className="flex items-center gap-1.5">
-                    <span
-                      className="inline-block h-2 w-2 rounded-full bg-emergency-red"
-                      aria-hidden="true"
-                    />
-                    Notfall
-                  </li>
-                </ul>
-              </section>
-            )}
-
-          {/* ============================================================
-              "Heute in Ihrem Quartier." — Anker statt SOS-Pill.
-              Visual-Polish v7 Re-Flow: H2 + Eyebrow als Magazin-Section-Trenner.
-              Schnellzugriffe bleiben in C-1 in alter Bauart — Glas-Tile-Umstellung
-              kommt in C-2.
-              ============================================================ */}
-          <section className="space-y-6">
-            <header className="space-y-1">
-              <p className="flex items-center gap-2 text-xs font-medium uppercase tracking-[0.08em] text-anthrazit-light">
-                <span
-                  className="inline-block h-1.5 w-1.5 rounded-full bg-quartier-green"
-                  aria-hidden
-                />
-                Heute · {quartierName}
-              </p>
-              <h2 className="text-[22px] font-semibold leading-[1.3] tracking-[-0.01em] text-anthrazit">
-                Heute in Ihrem Quartier.
-              </h2>
-            </header>
-
-            {/* Schnellzugriffe als .glass-tile (Visual-Polish v7 C-2):
-                cream-Glas Alpha 0.40 + blur 12 px desktop / 6 px mobile
-                via @supports backdrop-filter, Solid-Fallback fuer aeltere Browser.
-                Hover: green-line Border + leicht erhoehte Opacity.
-                Active: green-tint Background (keine Transform-Animation). */}
-            <div className={`grid grid-cols-2 ${isComfortDashboard ? "gap-4" : "gap-3"}`}>
-              {/* 1. Modusbewusster Einstieg: Check-in, Mein Tag oder Gemeinschaft. */}
-              {showSeniorCheckinQuickAction ? (
+          <section className="grid gap-3" aria-label="Hauptbereiche">
+            {summaryItems.map((item) => {
+              const Icon = item.icon;
+              return (
                 <Link
-                  href="/care/checkin"
-                  className={`glass-tile flex flex-col justify-center p-4 ${
-                    isComfortDashboard ? "min-h-[92px]" : "min-h-[80px]"
-                  }`}
+                  key={item.href}
+                  href={item.href}
+                  className="flex min-h-[68px] items-center gap-3 rounded-2xl border border-anthrazit-tint bg-white p-4 shadow-sm transition-colors hover:bg-lifted-cream"
                 >
-                  <div className="flex items-center gap-2">
-                    <CheckCircle2 className="h-5 w-5 text-quartier-green" />
-                    <span className="font-semibold text-anthrazit">
-                      Check-in
+                  <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-quartier-green/10 text-quartier-green">
+                    <Icon className="h-5 w-5" />
+                  </span>
+                  <span className="min-w-0 flex-1">
+                    <span className="block font-semibold text-anthrazit">
+                      {item.label}
                     </span>
-                  </div>
-                  <p className="mt-1 text-xs text-muted-foreground">
-                    Wie geht es Ihnen?
-                  </p>
-                </Link>
-              ) : showComfortDayQuickAction ? (
-                <Link
-                  href="/my-day"
-                  className="glass-tile flex min-h-[92px] flex-col justify-center p-4"
-                >
-                  <div className="flex items-center gap-2">
-                    <CheckCircle2 className="h-5 w-5 text-quartier-green" />
-                    <span className="font-semibold text-anthrazit">
-                      Mein Tag
+                    <span className="mt-1 block text-sm text-muted-foreground">
+                      {item.value}
                     </span>
-                  </div>
-                  <p className="mt-1 text-xs text-muted-foreground">
-                    Termine, Hinweise, Alltag
-                  </p>
+                  </span>
                 </Link>
-              ) : (
-                <Link
-                  href="/gruppen"
-                  className={`glass-tile flex flex-col justify-center p-4 ${
-                    isComfortDashboard ? "min-h-[92px]" : "min-h-[80px]"
-                  }`}
-                >
-                  <div className="flex items-center gap-2">
-                    <UsersRound className="h-5 w-5 text-quartier-green" />
-                    <span className="font-semibold text-anthrazit">
-                      Gemeinschaft
-                    </span>
-                  </div>
-                  <p className="mt-1 text-xs text-muted-foreground">
-                    Gruppen & Nachbarn
-                  </p>
-                </Link>
-              )}
-
-              {/* 2. Nachrichten */}
-              <Link
-                href="/notifications"
-                className={`glass-tile flex flex-col justify-center p-4 ${
-                  isComfortDashboard ? "min-h-[92px]" : "min-h-[80px]"
-                }`}
-              >
-                <div className="flex items-center gap-2">
-                  <MessageCircle className="h-5 w-5 text-blue-500" />
-                  <span className="font-semibold text-anthrazit">
-                    Nachrichten
-                  </span>
-                </div>
-                <p className="mt-1 text-xs text-muted-foreground">
-                  Benachrichtigungen
-                </p>
-                {unreadCount > 0 && (
-                  <span className="absolute right-2 top-2 flex h-5 w-5 items-center justify-center rounded-full bg-emergency-red text-[10px] font-bold text-white">
-                    {unreadCount > 9 ? "9+" : unreadCount}
-                  </span>
-                )}
-              </Link>
-
-              {/* 3. Neuigkeiten */}
-              <Link
-                href="/news"
-                className={`glass-tile flex flex-col justify-center p-4 ${
-                  isComfortDashboard ? "min-h-[92px]" : "min-h-[80px]"
-                }`}
-              >
-                <div className="flex items-center gap-2">
-                  <Newspaper className="h-5 w-5 text-violet-500" />
-                  <span className="font-semibold text-anthrazit">
-                    Neuigkeiten
-                  </span>
-                </div>
-                <p className="mt-1 text-xs text-muted-foreground">
-                  Quartiers-News
-                </p>
-              </Link>
-
-              {/* 4. Bekanntmachungen */}
-              <Link
-                href="/city-services"
-                className={`glass-tile flex flex-col justify-center p-4 ${
-                  isComfortDashboard ? "min-h-[92px]" : "min-h-[80px]"
-                }`}
-              >
-                <div className="flex items-center gap-2">
-                  <Megaphone className="h-5 w-5 text-amber-600" />
-                  <span className="font-semibold text-anthrazit">
-                    Bekanntmachungen
-                  </span>
-                </div>
-                <p className="mt-1 text-xs text-muted-foreground">
-                  Aus dem Rathaus
-                </p>
-              </Link>
-            </div>
+              );
+            })}
           </section>
 
-          {/* Entdecken — DiscoverGrid bleibt in C-1 unveraendert
-              (Mastercard-Umbau auf 4 Kategorien + Ghost-Watermarks kommt in C-3). */}
-          <DiscoverGrid />
+          <section className="space-y-3" aria-label="Kurzer Status">
+            <h2 className="text-base font-semibold text-anthrazit">
+              Kurzer Status
+            </h2>
+            <div className="grid gap-3">
+              {signalItems.map((item) => {
+                const Icon = item.icon;
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    className="flex min-h-[58px] items-center justify-between gap-3 rounded-2xl border border-anthrazit-tint bg-lifted-cream px-4 py-3"
+                  >
+                    <span className="flex items-center gap-3">
+                      <Icon className="h-5 w-5 text-muted-foreground" />
+                      <span className="font-medium text-anthrazit">
+                        {item.label}
+                      </span>
+                    </span>
+                    <span className="text-right text-sm text-muted-foreground">
+                      {item.value}
+                    </span>
+                  </Link>
+                );
+              })}
+            </div>
+          </section>
         </div>
-
-        {/* Brand-Footer-Dark (Visual-Polish v7 Welle 3) — Magazin-Abschluss
-            mit Eyebrow + Magazin-Sig + voller Logo-Lockup + Meta-Zeile.
-            Ausserhalb des Page-Padding-Containers, damit der dunkle
-            BG die volle Breite einnimmt (negative-margin Trick im
-            BrandFooter selbst). */}
-        <BrandFooter />
       </PullToRefresh>
 
-      {/* FAB Schnell-Hilfe */}
       <FloatingHelpButton />
-
-      {/* Check-in Sprechblase nur im Einfach/Senior-Modus automatisch zeigen. */}
       <DailyCheckinBubble enabled={uiMode === "senior"} />
     </>
   );

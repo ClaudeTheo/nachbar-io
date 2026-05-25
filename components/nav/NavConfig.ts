@@ -47,12 +47,12 @@ const seniorNav: NavItemConfig[] = [
     // /quartier redirectet serverseitig, aber wir verlinken hier direkt,
     // um den Redirect-Flash im Tab-Wechsel zu vermeiden.
     href: "/quartier-info",
-    label: "Quartier",
+    label: "Mein Quartier",
     icon: Building2,
     activeColor: "text-blue-700",
   },
   {
-    href: "/care",
+    href: "/my-day",
     label: "Mein Tag",
     icon: Heart,
     activeColor: "text-red-700",
@@ -106,7 +106,7 @@ const caregiverNav: NavItemConfig[] = [
     activeColor: "text-[#2F7A62]",
   },
   {
-    href: "/care",
+    href: "/my-day",
     label: "Mein Tag",
     icon: HeartPulse,
     activeColor: "text-red-700",
@@ -129,7 +129,7 @@ const orgAdminNav: NavItemConfig[] = [
   {
     // Task B-5: Drift-Aufloesung — /quartier-info ist der Gewinner (analog seniorNav).
     href: "/quartier-info",
-    label: "Quartier",
+    label: "Mein Quartier",
     icon: Building2,
     activeColor: "text-blue-700",
   },

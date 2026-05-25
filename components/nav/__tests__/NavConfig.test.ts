@@ -8,11 +8,11 @@ describe("getNavItems", () => {
     expect(items).toHaveLength(4);
     expect(items[0].label).toBe("Start");
     expect(items[0].href).toBe("/dashboard");
-    expect(items[1].label).toBe("Quartier");
+    expect(items[1].label).toBe("Mein Quartier");
     // Task B-5: Drift-Aufloesung — /quartier-info ist der Gewinner.
     expect(items[1].href).toBe("/quartier-info");
     expect(items[2].label).toBe("Mein Tag");
-    expect(items[2].href).toBe("/care");
+    expect(items[2].href).toBe("/my-day");
     expect(items[3].label).toBe("Ich");
     expect(items[3].href).toBe("/profile");
   });
@@ -31,7 +31,7 @@ describe("getNavItems", () => {
     expect(items).toHaveLength(4);
     expect(items[1].href).toBe("/care/status");
     expect(items[2].label).toBe("Mein Tag");
-    expect(items[2].href).toBe("/care");
+    expect(items[2].href).toBe("/my-day");
     expect(items[3].href).toBe("/profile");
   });
 
@@ -40,6 +40,7 @@ describe("getNavItems", () => {
     expect(items).toHaveLength(4);
     // Task B-5: Drift-Aufloesung — /quartier-info ist der Gewinner.
     expect(items[1].href).toBe("/quartier-info");
+    expect(items[1].label).toBe("Mein Quartier");
     expect(items[2].label).toBe("Verwaltung");
     expect(items[2].href).toBe("/org");
     expect(items[3].href).toBe("/profile");

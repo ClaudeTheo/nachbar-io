@@ -201,7 +201,7 @@ describe("MyDayPage", () => {
   it("zeigt Heartbeat-Info", async () => {
     render(<MyDayPage />);
     await waitFor(() => {
-      expect(screen.getByText(/Letzte Aktivität/)).toBeInTheDocument();
+      expect(screen.getByText(/Letzte Aktivitaet/)).toBeInTheDocument();
     });
   });
 });

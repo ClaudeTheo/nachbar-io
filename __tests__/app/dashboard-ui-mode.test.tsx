@@ -17,6 +17,10 @@ vi.mock("@/app/(app)/dashboard/hooks/useDashboardData", () => ({
     uiMode: mockedUiMode,
     dashboardDensity: mockedDashboardDensity,
     reputationLevel: 0,
+    alerts: [],
+    news: [],
+    helpRequests: [],
+    marketplaceItems: [],
     loading: false,
     weatherData: null,
     caregivers: [],
@@ -35,40 +39,12 @@ vi.mock("@/app/(app)/dashboard/hooks/useDashboardData", () => ({
   }),
 }));
 
-vi.mock("@/lib/hooks/useMapStatuses", () => ({
-  useMapStatuses: () => ({ geoHouses: [], residentCounts: {}, statuses: {} }),
-}));
-
-vi.mock("@/hooks/use-auth", () => ({
-  useAuth: () => ({ user: { id: "user-1" } }),
-}));
-
-vi.mock("@/lib/supabase/client", () => ({
-  createClient: () => ({}),
-}));
-
-vi.mock("@/lib/care/caregiver-pending-checkins", () => ({
-  loadCaregiverPendingCheckinHouseholds: () => Promise.resolve(new Set()),
-}));
-
-vi.mock("@/components/dashboard/DiscoverGrid", () => ({
-  DiscoverGrid: () => <div data-testid="discover-grid" />,
-}));
-
-vi.mock("@/components/map/MapThumbnail", () => ({
-  MapThumbnail: () => <div data-testid="map-thumbnail" />,
-}));
-
 vi.mock("@/components/PullToRefresh", () => ({
   PullToRefresh: ({ children }: { children: React.ReactNode }) => <>{children}</>,
 }));
 
 vi.mock("@/modules/care/components/checkin/DailyCheckinBubble", () => ({
   DailyCheckinBubble: () => null,
-}));
-
-vi.mock("@/components/brand/BrandFooter", () => ({
-  BrandFooter: () => null,
 }));
 
 vi.mock("@/components/FloatingHelpButton", () => ({
@@ -82,13 +58,12 @@ describe("Dashboard ui modes", () => {
 
     render(<DashboardPage />);
 
-    expect(screen.getByText("Aktivmodus")).toBeInTheDocument();
     expect(
-      screen.getByRole("link", { name: /Gemeinschaft\s+Gruppen & Nachbarn/i }),
+      screen.getByRole("link", { name: /GemeinschaftGruppen, Nachbarn und Austausch/i }),
     ).toHaveAttribute("href", "/gruppen");
     expect(
-      screen.queryByRole("link", { name: /Mein Tag\s+Termine, Hinweise, Alltag/i }),
-    ).not.toBeInTheDocument();
+      screen.getByRole("link", { name: /Mein TagHeute planen/i }),
+    ).toHaveAttribute("href", "/my-day");
   });
 
   it("shows Mein Tag first for Aktiv 55+ comfort users", () => {
@@ -97,12 +72,11 @@ describe("Dashboard ui modes", () => {
 
     render(<DashboardPage />);
 
-    expect(screen.getByText("Aktiv 55+")).toBeInTheDocument();
     expect(
-      screen.getByRole("link", { name: /Mein Tag\s+Termine, Hinweise, Alltag/i }),
+      screen.getByRole("link", { name: /Mein TagTermine, Hinweise und Alltag/i }),
     ).toHaveAttribute("href", "/my-day");
     expect(
-      screen.getByText("Ruhiger Ueberblick fuer aktive Nachbarn"),
+      screen.getByText("Was jetzt am naechsten liegt."),
     ).toBeInTheDocument();
   });
 });

@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { SetupQrCard } from "./SetupQrCard";
 
 type SetupMode = "child" | "senior";
+type SeniorSetupMode = "senior" | "comfort";
 
 interface SetupResult {
   setupUrl: string;
@@ -20,6 +21,8 @@ export function FamilySetupPanel() {
   const [childName, setChildName] = useState("");
   const [childBirthYear, setChildBirthYear] = useState("");
   const [seniorName, setSeniorName] = useState("");
+  const [seniorSetupMode, setSeniorSetupMode] =
+    useState<SeniorSetupMode>("senior");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<SetupResult | null>(null);
@@ -42,7 +45,7 @@ export function FamilySetupPanel() {
         : {
             seniorDisplayName: seniorName,
             relationshipType: "child",
-            targetUiMode: "senior",
+            targetUiMode: seniorSetupMode,
           };
 
     try {
@@ -74,7 +77,7 @@ export function FamilySetupPanel() {
         <div className="flex items-start gap-3">
           <Shield className="mt-0.5 h-5 w-5 text-quartier-green" />
           <div>
-            <h2 className="font-medium text-anthrazit">Familie & Betreuung</h2>
+            <h2 className="font-medium text-anthrazit">Familie verbinden</h2>
             <p className="mt-1 text-sm text-muted-foreground">
               Kinder- und Senior-Zugänge sicher per QR-Code vorbereiten.
             </p>
@@ -140,6 +143,41 @@ export function FamilySetupPanel() {
                 onChange={(event) => setSeniorName(event.target.value)}
                 required
               />
+              <fieldset className="space-y-2">
+                <legend className="text-sm font-medium text-anthrazit">
+                  Oberflaeche fuer den Zugang
+                </legend>
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    type="button"
+                    aria-pressed={seniorSetupMode === "senior"}
+                    onClick={() => setSeniorSetupMode("senior")}
+                    className={`min-h-14 rounded-lg border px-3 text-sm font-medium ${
+                      seniorSetupMode === "senior"
+                        ? "border-quartier-green bg-quartier-green/10 text-anthrazit"
+                        : "border-border bg-white text-muted-foreground"
+                    }`}
+                  >
+                    Einfach
+                  </button>
+                  <button
+                    type="button"
+                    aria-pressed={seniorSetupMode === "comfort"}
+                    onClick={() => setSeniorSetupMode("comfort")}
+                    className={`min-h-14 rounded-lg border px-3 text-sm font-medium ${
+                      seniorSetupMode === "comfort"
+                        ? "border-quartier-green bg-quartier-green/10 text-anthrazit"
+                        : "border-border bg-white text-muted-foreground"
+                    }`}
+                  >
+                    Aktiv 55+
+                  </button>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Einfach hat grosse Kacheln. Aktiv 55+ nutzt die gleiche App
+                  wie Erwachsene, nur ruhiger.
+                </p>
+              </fieldset>
             </>
           )}
 

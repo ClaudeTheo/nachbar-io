@@ -332,7 +332,7 @@ export default function ProfilePage() {
 
   return (
     <div className="space-y-4">
-      <LargeTitle title="Mein Profil" />
+      <LargeTitle title="Ich" />
       <PageHeader title="" backHref="/dashboard" />
 
       {/* Profil-Card */}
@@ -747,6 +747,18 @@ export default function ProfilePage() {
           </Link>
           <Link href="/agb" className="hover:text-anthrazit hover:underline">
             AGB
+          </Link>
+          <Link
+            href="/richtlinien"
+            className="hover:text-anthrazit hover:underline"
+          >
+            Richtlinien
+          </Link>
+          <Link
+            href="/barrierefreiheit"
+            className="hover:text-anthrazit hover:underline"
+          >
+            Barrierefreiheit
           </Link>
         </div>
       </div>

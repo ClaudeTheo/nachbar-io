@@ -10,8 +10,10 @@ vi.mock("qrcode.react", () => ({
 }));
 
 describe("FamilySetupPanel", () => {
+  let fetchMock: ReturnType<typeof vi.fn>;
+
   beforeEach(() => {
-    global.fetch = vi.fn(async (url: RequestInfo | URL) => {
+    fetchMock = vi.fn(async (url: RequestInfo | URL) => {
       const path = String(url);
       return {
         ok: true,
@@ -24,6 +26,7 @@ describe("FamilySetupPanel", () => {
         }),
       } as Response;
     });
+    global.fetch = fetchMock as unknown as typeof fetch;
   });
 
   afterEach(() => {
@@ -69,5 +72,26 @@ describe("FamilySetupPanel", () => {
     });
     expect(screen.getByText("SENIOR12")).toBeInTheDocument();
     expect(screen.getByText(/sensible Daten bleiben geschützt/i)).toBeInTheDocument();
+    expect(JSON.parse(String(fetchMock.mock.calls[0][1]?.body))).toMatchObject({
+      targetUiMode: "senior",
+    });
+  });
+
+  it("can create an Aktiv 55+ senior setup", async () => {
+    render(<FamilySetupPanel />);
+
+    fireEvent.click(screen.getByRole("button", { name: "Senior" }));
+    fireEvent.change(screen.getByLabelText("Name des Seniors"), {
+      target: { value: "Erika" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Aktiv 55+" }));
+    fireEvent.click(screen.getByRole("button", { name: /Senior-Zugang erstellen/i }));
+
+    await waitFor(() => {
+      expect(fetchMock).toHaveBeenCalled();
+    });
+    expect(JSON.parse(String(fetchMock.mock.calls[0][1]?.body))).toMatchObject({
+      targetUiMode: "comfort",
+    });
   });
 });

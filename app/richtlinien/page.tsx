@@ -29,7 +29,7 @@ export default function RichtlinienPage() {
       {/* Verbotene Inhalte */}
       <section className="mb-8">
         <h2 className="text-lg font-semibold text-anthrazit mb-3">2. Verbotene Inhalte</h2>
-        <p className="text-sm text-muted-foreground mb-3">Folgende Inhalte führen zur sofortigen Entfernung und können zu einer Sperre führen:</p>
+        <p className="text-sm text-muted-foreground mb-3">Folgende Inhalte koennen zur Entfernung, Einschraenkung oder Sperre fuehren:</p>
         <ul className="list-disc pl-6 space-y-2 text-sm text-muted-foreground">
           <li><strong>Hassrede und Diskriminierung:</strong> Beleidigungen, Hetze oder Diskriminierung aufgrund von Herkunft, Religion, Geschlecht, Alter oder Behinderung.</li>
           <li><strong>Bedrohungen und Gewalt:</strong> Drohungen, Einschüchterung oder Aufrufe zu Gewalt.</li>
@@ -66,39 +66,62 @@ export default function RichtlinienPage() {
       <section className="mb-8">
         <h2 className="text-lg font-semibold text-anthrazit mb-3">5. So melden Sie Verstöße</h2>
         <p className="text-sm text-muted-foreground mb-3">
-          Wenn Sie einen Verstoß gegen diese Richtlinien bemerken:
+          Wenn Sie einen Verstoss gegen diese Richtlinien oder moeglicherweise
+          rechtswidrige Inhalte bemerken:
         </p>
         <ol className="list-decimal pl-6 space-y-2 text-sm text-muted-foreground">
           <li>Tippen Sie auf das Drei-Punkte-Menü (⋮) beim betreffenden Beitrag oder Profil.</li>
           <li>Wählen Sie &quot;Melden&quot; und den passenden Grund aus.</li>
           <li>Optional: Ergänzen Sie Details zur Meldung.</li>
-          <li>Unser Moderationsteam prüft die Meldung innerhalb von 24 Stunden.</li>
+          <li>Unser Moderationsteam prueft die Meldung so schnell wie moeglich, im Pilot in der Regel innerhalb von 24 Stunden.</li>
         </ol>
         <p className="text-sm text-muted-foreground mt-3">
           Bei akuter Gefahr für Leib und Leben rufen Sie bitte sofort <strong>110</strong> (Polizei) oder <strong>112</strong> (Notruf) an.
         </p>
       </section>
 
+      {/* DSA-Meldestelle */}
+      <section className="mb-8">
+        <h2 className="text-lg font-semibold text-anthrazit mb-3">6. Meldestelle fuer rechtswidrige Inhalte</h2>
+        <p className="text-sm text-muted-foreground">
+          Hinweise auf rechtswidrige Inhalte koennen Sie direkt in der App oder
+          per E-Mail an{" "}
+          <a href="mailto:thomasth@gmx.de?subject=Meldung%20rechtswidriger%20Inhalt%20QuartierApp" className="text-quartier-green underline">
+            thomasth@gmx.de
+          </a>{" "}
+          senden. Bitte nennen Sie den betroffenen Beitrag, den Grund der
+          Meldung und, wenn moeglich, einen kurzen Zusammenhang. Wir bestaetigen
+          den Eingang, pruefen die Meldung und informieren ueber die getroffene
+          Entscheidung, soweit dies rechtlich und technisch moeglich ist.
+        </p>
+      </section>
+
       {/* Konsequenzen */}
       <section className="mb-8">
-        <h2 className="text-lg font-semibold text-anthrazit mb-3">6. Konsequenzen bei Verstößen</h2>
+        <h2 className="text-lg font-semibold text-anthrazit mb-3">7. Konsequenzen bei Verstoessen</h2>
         <p className="text-sm text-muted-foreground mb-3">Je nach Schwere des Verstoßes:</p>
         <ol className="list-decimal pl-6 space-y-2 text-sm text-muted-foreground">
           <li><strong>Verwarnung:</strong> Hinweis auf den Regelverstoß mit Aufforderung zur Verhaltensänderung.</li>
           <li><strong>Temporäre Sperre:</strong> Vorübergehende Einschränkung der Nutzung (7-30 Tage).</li>
           <li><strong>Permanente Sperre:</strong> Dauerhafte Sperrung des Accounts bei schweren oder wiederholten Verstößen.</li>
         </ol>
+        <p className="text-sm text-muted-foreground mt-3">
+          Bei Moderationsentscheidungen nennen wir den wesentlichen Grund, sofern
+          dadurch keine Rechte anderer Personen, laufende Pruefungen oder
+          Sicherheitsmassnahmen gefaehrdet werden.
+        </p>
       </section>
 
       {/* Einspruch */}
       <section className="mb-8">
-        <h2 className="text-lg font-semibold text-anthrazit mb-3">7. Einspruch einlegen</h2>
+        <h2 className="text-lg font-semibold text-anthrazit mb-3">8. Einspruch einlegen</h2>
         <p className="text-sm text-muted-foreground">
           Sie sind mit einer Moderationsentscheidung nicht einverstanden? Schreiben Sie uns an{' '}
           <a href="mailto:thomasth@gmx.de" className="text-quartier-green underline">
             thomasth@gmx.de
           </a>{' '}
-          mit Ihrer Begründung. Wir prüfen jeden Einspruch innerhalb von 48 Stunden.
+          mit Ihrer Begruendung. Wir pruefen jeden Einspruch zeitnah und im
+          Pilot in der Regel innerhalb von 48 Stunden.
         </p>
       </section>
 

@@ -50,7 +50,9 @@ export default function FreigabeSeite() {
             Vielen Dank! Ihr Kind hat nun Zugang zu den erweiterten Funktionen der QuartierApp.
           </p>
           <p className="text-sm text-gray-500 mt-4">
-            Sie können die Freigabe jederzeit widerrufen unter: quartierapp.de/jugend/freigabe/widerruf
+            Sie koennen die Freigabe jederzeit mit Wirkung fuer die Zukunft
+            widerrufen. Der Widerruf startet unter:
+            quartierapp.de/jugend/freigabe/widerruf
           </p>
         </div>
       </div>
@@ -105,9 +107,11 @@ export default function FreigabeSeite() {
               className="mt-1 w-5 h-5 rounded border-gray-300"
             />
             <span className="text-sm text-gray-700">
-              Ich bestätige, dass ich der/die Erziehungsberechtigte bin und erteile die Freigabe
-              für die erweiterten Funktionen der QuartierApp. Diese Freigabe kann jederzeit
-              widerrufen werden.
+              Ich bestaetige, dass ich der/die Erziehungsberechtigte bin und
+              erteile die Freigabe fuer die erweiterten Funktionen der
+              QuartierApp. Dazu gehoeren nur altersgerechte, moderierte
+              Funktionen. Diese Freigabe kann jederzeit mit Wirkung fuer die
+              Zukunft widerrufen werden.
             </span>
           </label>
 

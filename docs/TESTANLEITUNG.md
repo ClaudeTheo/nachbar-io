@@ -126,7 +126,7 @@ Bitte gehen Sie die folgenden Aufgaben der Reihe nach durch und haken Sie ab, wa
 
 ## 4. Sonderfälle testen
 
-### J. Notfall-System
+### J. 112/110-Hinweis
 
 > **ACHTUNG:** Dies testet das Notfall-Banner. Bitte NICHT den echten Notruf wählen!
 

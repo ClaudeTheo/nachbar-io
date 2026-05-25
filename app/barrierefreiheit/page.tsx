@@ -57,7 +57,7 @@ export default function BarrierefreiheitPage() {
               QuartierApp ist eine digitale Plattform zur Vernetzung von
               Bewohnerinnen und Bewohnern innerhalb eines Quartiers. Die App
               bietet Nachbarschaftshilfe, ein Schwarzes Brett, einen Marktplatz,
-              lokale Informationen, ein Notfall-System sowie optionale Module für
+              lokale Informationen, einen 112/110-Hinweis sowie optionale Module für
               Angehörige, Pflegedienste, Kommunen und Ärzte.
             </p>
             <p className="mt-2">

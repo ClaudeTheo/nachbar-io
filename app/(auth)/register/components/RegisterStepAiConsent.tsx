@@ -171,6 +171,10 @@ export function RegisterStepAiConsent({
               Hallo, ich bin die KI-Hilfe der QuartierApp. Ich kann später beim
               Vorlesen, Formulieren und Verstehen helfen.
             </p>
+            <p className="text-muted-foreground">
+              Wenn Sie mich nutzen, sprechen Sie mit einem KI-System. Antworten
+              koennen Fehler enthalten und ersetzen keine Fachberatung.
+            </p>
             <ul className="space-y-1.5 text-muted-foreground">
               <li className="flex items-start gap-2">
                 <Volume2 className="mt-0.5 h-4 w-4 shrink-0 text-quartier-green" />
@@ -214,6 +218,11 @@ export function RegisterStepAiConsent({
           ausgewählte KI-Hilfe, sobald diese Funktion freigegeben ist.
         </p>
         <p className="mt-2 text-muted-foreground">
+          KI-Antworten werden als KI-Hilfe angezeigt. Sie dienen nur als
+          Unterstuetzung in der App und sind keine medizinische, rechtliche oder
+          finanzielle Beratung.
+        </p>
+        <p className="mt-2 text-muted-foreground">
           Sie können diese Einwilligung jederzeit später widerrufen. Ohne Ihre
           Einwilligung bleibt die KI-Hilfe ausgeschaltet.
         </p>
@@ -254,8 +263,9 @@ export function RegisterStepAiConsent({
           />
           <span>
             Ich willige freiwillig ein, dass die QuartierApp meine Eingaben für
-            die ausgewählte KI-Hilfe verarbeitet. Ich kann diese Einwilligung
-            später widerrufen.
+            die ausgewählte KI-Hilfe verarbeitet. Mir ist bewusst, dass ich mit
+            einem KI-System interagiere und Antworten Fehler enthalten koennen.
+            Ich kann diese Einwilligung spaeter widerrufen.
           </span>
         </label>
       )}

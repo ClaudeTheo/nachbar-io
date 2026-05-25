@@ -84,7 +84,7 @@ export const ESCALATION_LEVELS = [
   },
   {
     level: 4,
-    label: "Leitstelle / Externe",
+    label: "Admin / externe Kontakte",
     role: null,
     channels: ["sms", "voice", "admin_alert"],
   },

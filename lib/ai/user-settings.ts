@@ -10,7 +10,7 @@ import {
 } from "@/lib/ki-help/ai-assistance-levels";
 
 export const AI_HELP_DISABLED_MESSAGE =
-  "KI-Hilfe ist ausgeschaltet. Sie koennen die KI-Hilfe in den Einstellungen aktivieren, wenn Sie Vorlesen, Sprachverstehen oder den Assistenten nutzen moechten.";
+  "KI-Hilfe ist ausgeschaltet. Sie koennen die KI-Hilfe in den Einstellungen aktivieren, wenn Sie Vorlesen, Sprachverstehen oder den Assistenten nutzen moechten. KI-Antworten koennen Fehler enthalten und ersetzen keine Fachberatung.";
 
 type JsonObject = Record<string, unknown>;
 

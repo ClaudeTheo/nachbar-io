@@ -606,7 +606,7 @@ Eskalationsstufe und Abo-Plan aktiviert werden.
 | 1     | Nachbarn       | x    | x      |     |       |             |
 | 2     | Angehoerige    | x    | x      | x   |       |             |
 | 3     | Pflegedienst   | x    | x      | x   | x     |             |
-| 4     | Leitstelle     |      |        | x   | x     | x           |
+| 4     | Admin/Extern   |      |        | x   | x     | x           |
 
 ### 5.4 Benachrichtigungstypen
 

@@ -24,7 +24,7 @@ Empfohlen: 1080 x 1920 px (9:16, Phone Portrait)
 | Nr | Screen | Beschreibung | Route |
 |----|--------|-------------|-------|
 | 1 | Startseite | Quartier-Feed mit aktuellen Beitraegen | `/dashboard` |
-| 2 | Notfall-System | 112/110 Banner + GPS-Standort | `/alerts/new` (Kategorie fire) |
+| 2 | 112/110-Hinweis | Notrufnummern zuerst + optionaler Standort-Hinweis | `/alerts/new` (Kategorie fire) |
 | 3 | Marktplatz | Anzeigen-Uebersicht mit Fotos | `/marketplace` |
 | 4 | Quartierskarte | Leaflet-Karte mit Pins | `/map` |
 | 5 | Check-in | Tages-Statusmeldung (gut/geht so/schlecht) | `/care/checkin` |

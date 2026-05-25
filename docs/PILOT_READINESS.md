@@ -70,7 +70,7 @@ Aktion erfolgt.
 | 1 | Nachbarn (verifiziert) | Sofort | Push, In-App |
 | 2 | Angehoerige | Nach 5 Minuten | Push, In-App, SMS |
 | 3 | Pflegedienst | Nach 15 Minuten | Push, In-App, SMS, Sprachanruf |
-| 4 | Leitstelle / Administration | Nach 30 Minuten | SMS, Sprachanruf, Admin-Alert |
+| 4 | Administration / externe Kontakte | Nach 30 Minuten | SMS, Sprachanruf, Admin-Alert |
 
 Alle Zeitintervalle sind pro Senior individuell konfigurierbar. Die
 Eskalation erfolgt automatisch per Cron-Job (jede Minute) oder kann

@@ -12,8 +12,8 @@ QuartierApp verbindet Ihre Nachbarschaft — sicher, lokal und datenschutzkonfor
 
 Fuer Bewohner des Quartiers Bad Saeckingen (Purkersdorfer Str., Sanarystr., Oberer Rebberg) bietet QuartierApp:
 
-NOTFALL-SYSTEM
-Bei Gefahr sofort 112 oder 110 — QuartierApp zeigt den Notruf-Banner prominent an und kann Ihren GPS-Standort an Helfer weitergeben. Kein Ersatz fuer den Notruf, aber eine schnelle Ergaenzung.
+NOTFALL-HINWEIS
+Bei Gefahr zuerst 112 oder 110. QuartierApp zeigt diesen Hinweis prominent an. Danach koennen Sie zusaetzlich vertraute Kontakte oder Nachbarn informieren. QuartierApp ist kein Hausnotruf, keine Leitstelle und garantiert keine Reaktionszeit.
 
 SCHWARZES BRETT
 Teilen Sie Neuigkeiten, Gesuche und Hinweise mit Ihren Nachbarn. Von der verlorenen Katze bis zum Strassenfest — alles an einem Ort.
@@ -25,10 +25,10 @@ QUARTIERSKARTE
 Sehen Sie auf einen Blick, was in Ihrem Quartier passiert. OpenStreetMap-basiert, ohne Tracking, ohne Werbung.
 
 TAEGLICHER CHECK-IN
-Wie geht es Ihnen heute? Ein kurzer Klick genuegt. Fuer Sie selbst — und wenn Sie moechten, koennen Angehoerige Ihren Status sehen (nur mit Ihrer ausdruecklichen Einwilligung).
+Wie geht es Ihnen heute? Ein kurzer Klick genuegt. Der Check-in ist eine freiwillige Organisationshilfe fuer den Alltag. Wenn Sie moechten, koennen Angehoerige den Status sehen (nur mit Ihrer ausdruecklichen Einwilligung).
 
-KI-NACHRICHTEN
-Lokale Nachrichten aus dem Amtsblatt, automatisch zusammengefasst. Kein Scrollen durch endlose Seiten — das Wichtigste auf einen Blick.
+KI-HILFE OPTIONAL
+KI-Hilfe wird nur nach Einwilligung freigeschaltet. Nutzer sehen klar, wenn sie mit KI interagieren. KI-Antworten koennen Fehler enthalten und ersetzen keine medizinische, rechtliche oder finanzielle Beratung.
 
 MUELLKALENDER
 Nie wieder die Tonne vergessen. Echte Abfuhrtermine Ihres Entsorgers, automatisch synchronisiert.
@@ -47,7 +47,7 @@ DATENSCHUTZ
 - Konto-Loeschung jederzeit moeglich (in der App und auf quartierapp.de)
 
 FUER SENIOREN OPTIMIERT
-Grosse Buttons (mind. 80px), hoher Kontrast (4.5:1), maximal 4 Klicks fuer jede Aktion. QuartierApp ist fuer alle Altersgruppen gemacht.
+Grosse Buttons (mind. 80px), hoher Kontrast (4.5:1), klare Wege und Notrufhinweis zuerst. QuartierApp ist fuer alle Altersgruppen gemacht.
 
 KOSTENLOS
 QuartierApp ist in der Pilotphase komplett kostenlos. Keine versteckten Kosten, keine In-App-Kaeufe.
@@ -88,19 +88,19 @@ App Overview:
 
 Key Points for Review:
   - No paid features, no IAP, no external purchase flows (pilot phase)
-  - Content moderated via AI (Claude Haiku) + admin review queue
+  - User-generated content can be reported by users and reviewed by admins
+  - AI assistance is optional, consent-based, and clearly disclosed to users
   - Location: foreground-only, no background location
-  - Check-in is subjective wellbeing status, NOT medical diagnosis
+  - Check-in is subjective daily status, NOT medical diagnosis or monitoring
   - Push notifications require opt-in
   - Account deletion available in-app (/profile/delete) AND via web (quartierapp.de/account-loeschen, German alias: quartierapp.de/konto-loeschen)
   - UGC: Community guidelines acceptance required before first post
-  - Emergency: 112/110 banner shown for fire/medical/crime — app does NOT replace emergency services
+  - Emergency: 112/110 banner shown for fire/medical/crime - app is NOT an emergency service, house alarm system, dispatch center, or medical device
 
 Data Sharing:
-  - User-generated content is sent to Anthropic Claude API (Haiku) for:
-    (1) AI news summarization, (2) content moderation scoring
-  - Anthropic does not store data permanently (API usage, no training)
-  - All other data stays within Supabase EU infrastructure (Frankfurt)
+  - Personal AI features are off by default and require user consent
+  - Where AI providers are enabled, users are informed before use and outputs are disclosed as AI assistance
+  - Core database is hosted in Supabase EU infrastructure (Frankfurt)
 ```
 
 ---
@@ -114,10 +114,14 @@ Data Sharing:
 | Grober Standort | Ja | Nein | App-Funktionalitaet (Quartierskarte) |
 | Genauer Standort | Ja | Nein | App-Funktionalitaet (Notfall-GPS, temporaer) |
 | Gesundheitsdaten (Check-in-Status) | Ja | Nein | App-Funktionalitaet |
-| User Content (Posts, Meldungen) | Ja | Ja (Anthropic) | App-Funktionalitaet, Sicherheit |
+| User Content (Posts, Meldungen) | Ja | Optional (KI-Anbieter, nur wenn freigeschaltet) | App-Funktionalitaet, Sicherheit |
 | Fotos/Videos | Ja | Nein | App-Funktionalitaet |
 
 **Zusaetzlich deklarieren:**
 - Verschluesselung: TLS in Transit + AES-256-GCM at Rest (sensible Felder)
 - Account-Loeschung: verfuegbar (In-App + Web)
 - DSGVO-konform: EU-Hosting (Frankfurt)
+
+## Wording Guardrails
+
+Vor jedem Store-Submit `docs/LEGAL_MARKETING_WORDING_GUARDRAILS.md` pruefen.

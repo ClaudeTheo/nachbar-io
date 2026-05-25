@@ -49,7 +49,30 @@ describe('Youth Task Validation', () => {
 
     const taskCall = mock.fromCalls.find((call) => call.table === "youth_tasks");
     expect(taskCall?.args).toContainEqual(["eq", "status", "open"]);
+    expect(taskCall?.args).toContainEqual(["eq", "moderation_status", "approved"]);
     expect(taskCall?.args).toContainEqual(["eq", "risk_level", "niedrig"]);
+  });
+
+  it("erstellt Jugend-Aufgaben nur als pending moderation", async () => {
+    const mock = createRouteMockSupabase();
+    mock.addResponse("youth_tasks", { data: { id: "task-1" }, error: null });
+
+    await createYouthTask(mock.supabase, "creator-1", {
+      quarter_id: "q-1",
+      title: "Handy einrichten",
+      description: "Bitte beim Einrichten der neuen App helfen.",
+      category: "technik",
+      risk_level: "niedrig",
+      estimated_minutes: 30,
+    });
+
+    const taskCall = mock.fromCalls.find((call) => call.table === "youth_tasks");
+    const insertCall = taskCall?.args.find((args) => args[0] === "insert");
+    expect(insertCall?.[1]).toMatchObject({
+      moderation_status: "pending",
+      status: "open",
+      risk_level: "niedrig",
+    });
   });
 
   it("blockiert nicht niedrig-riskante Jugend-Aufgaben beim Erstellen", async () => {

@@ -332,7 +332,7 @@ export function CareProfileForm({ userId, onSuccess }: CareProfileFormProps) {
             <span className="text-sm text-muted-foreground">Min.</span>
           </div>
           <div className="flex items-center gap-3">
-            <label className="text-sm text-anthrazit w-40">Stufe 4 (Leitstelle):</label>
+            <label className="text-sm text-anthrazit w-40">Stufe 4 (Admin/Externe):</label>
             <input
               type="number"
               min={1}

@@ -467,10 +467,14 @@ export default function DatenschutzPage() {
             <h4 className="mt-2 font-medium">Vercel (Frontend-Hosting)</h4>
             <p>
               Vercel Inc., USA. Es gilt ein Data Processing Agreement (DPA) mit
-              SCCs. Über Vercel werden Seitenzugriffe ausgeliefert;
-              personenbezogene Nutzerdaten werden nicht an Vercel übermittelt.
+              SCCs. Ueber Vercel werden Seitenzugriffe und API-Routen
+              ausgeliefert. Dabei koennen technisch notwendige Zugriffsdaten wie
+              IP-Adresse, Request-Header, Zeitpunkt des Zugriffs und
+              Session-Cookies verarbeitet werden. Inhaltsdaten aus privaten
+              Nachrichten, Care-Funktionen oder Gesundheitsdaten werden nicht zu
+              Tracking- oder Werbezwecken an Vercel uebermittelt.
               Rechtsgrundlage: Art. 6 Abs. 1 lit. f DSGVO (berechtigtes
-              Interesse an zuverlässigem Hosting).
+              Interesse an sicherem und zuverlaessigem Hosting).
             </p>
 
             <h4 className="mt-2 font-medium">Twilio (SMS & Sprachanrufe)</h4>

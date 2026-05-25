@@ -1,112 +1,57 @@
-// app/jugend/freigabe/widerruf/page.tsx
-// Jugend-Modul: Oeffentliche Widerrufs-Seite (kein Login noetig)
-'use client';
+import Link from "next/link";
 
-import { useState } from 'react';
-
+// Oeffentliche Widerrufs-Info: kein direkter Widerruf nur anhand einer Telefonnummer.
+// Der produktive Guardian-Widerruf braucht einen verifizierten Token- oder Support-Prozess.
 export default function WiderrufSeite() {
-  const [phone, setPhone] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [success, setSuccess] = useState(false);
-  const [error, setError] = useState('');
+  return (
+    <main className="flex min-h-screen items-center justify-center bg-warmwhite p-6">
+      <div className="w-full max-w-md rounded-2xl bg-white p-8 shadow-lg">
+        <div className="mb-8 text-center">
+          <h1 className="text-2xl font-bold text-anthrazit">QuartierApp</h1>
+          <p className="mt-1 text-gray-500">Elternfreigabe widerrufen</p>
+        </div>
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    if (!phone.trim()) return;
-
-    setLoading(true);
-    setError('');
-
-    // Formatierung: sicherstellen dass + vorangestellt
-    const formatted = phone.startsWith('+') ? phone : `+49${phone.replace(/^0/, '')}`;
-
-    try {
-      // SMS mit Widerrufs-Link senden (in Phase 2: dedizierte Revoke-SMS API)
-      const res = await fetch('/api/youth/consent/revoke', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          guardian_phone: formatted,
-          revoked_via: 'sms_link',
-        }),
-      });
-
-      if (res.ok) {
-        setSuccess(true);
-      } else {
-        const data = await res.json();
-        setError(data.error || 'Ein Fehler ist aufgetreten.');
-      }
-    } catch {
-      setError('Verbindungsfehler. Bitte versuchen Sie es erneut.');
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  if (success) {
-    return (
-      <div className="min-h-screen bg-warmwhite flex items-center justify-center p-6">
-        <div className="max-w-md w-full bg-white rounded-2xl shadow-lg p-8 text-center">
-          <h1 className="text-2xl font-bold text-anthrazit">Widerruf eingeleitet</h1>
-          <p className="text-gray-600 mt-4">
-            Falls eine aktive Freigabe mit dieser Nummer verknüpft ist,
-            wurde sie widerrufen. Ihr Kind wird auf die Basis-Stufe zurückgesetzt.
+        <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
+          <p className="font-semibold">Sicherer Widerruf</p>
+          <p className="mt-2">
+            Aus Sicherheitsgruenden widerrufen wir eine Jugendfreigabe nicht
+            allein ueber eine frei eingegebene Telefonnummer im Browser.
           </p>
         </div>
-      </div>
-    );
-  }
 
-  return (
-    <div className="min-h-screen bg-warmwhite flex items-center justify-center p-6">
-      <div className="max-w-md w-full bg-white rounded-2xl shadow-lg p-8">
-        <div className="text-center mb-8">
-          <h1 className="text-2xl font-bold text-anthrazit">QuartierApp</h1>
-          <p className="text-gray-500 mt-1">Elternfreigabe widerrufen</p>
+        <div className="mt-6 space-y-4 text-sm leading-relaxed text-gray-700">
+          <p>
+            Schreiben Sie uns bitte kurz mit dem Namen des Jugendlichen und der
+            Telefonnummer, ueber die die Freigabe erteilt wurde. Wir pruefen die
+            Zuordnung und setzen die erweiterten Jugendfunktionen danach
+            zurueck.
+          </p>
+          <p>
+            Wenn der Jugendliche selbst eingeloggt ist, kann die Freigabe auch
+            ueber das eigene Profil oder durch einen Admin widerrufen werden.
+          </p>
         </div>
 
-        <p className="text-gray-600 mb-6">
-          Geben Sie die Telefonnummer ein, mit der Sie die Freigabe erteilt haben.
-          Die Freigabe wird sofort widerrufen.
-        </p>
-
-        {error && (
-          <div className="bg-red-50 border-2 border-red-200 rounded-xl p-3 mb-4">
-            <p className="text-red-700 text-sm">{error}</p>
-          </div>
-        )}
-
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-1">
-              Ihre Telefonnummer
-            </label>
-            <input
-              id="phone"
-              type="tel"
-              value={phone}
-              onChange={e => setPhone(e.target.value)}
-              placeholder="+49 170 1234567"
-              required
-              className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl text-lg focus:border-green-400 focus:outline-none"
-            />
-          </div>
-
-          <button
-            type="submit"
-            disabled={loading || !phone.trim()}
-            className="w-full py-4 bg-red-600 text-white rounded-xl font-medium text-lg hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+        <div className="mt-6 grid gap-3">
+          <a
+            href="mailto:thomasth@gmx.de?subject=Widerruf%20Elternfreigabe%20QuartierApp"
+            className="flex min-h-14 items-center justify-center rounded-xl bg-red-600 px-4 text-center text-base font-semibold text-white transition-colors hover:bg-red-700"
           >
-            {loading ? 'Wird verarbeitet...' : 'Freigabe widerrufen'}
-          </button>
-        </form>
+            Widerruf per E-Mail starten
+          </a>
+          <Link
+            href="/datenschutz"
+            className="flex min-h-12 items-center justify-center rounded-xl border border-gray-200 px-4 text-center text-sm font-medium text-anthrazit hover:border-quartier-green/50"
+          >
+            Datenschutz ansehen
+          </Link>
+        </div>
 
-        <p className="text-xs text-gray-400 text-center mt-6">
-          Nach dem Widerruf werden die erweiterten Funktionen
-          für Ihr Kind sofort deaktiviert.
+        <p className="mt-6 text-center text-xs text-gray-400">
+          Die Freigabe ist freiwillig und kann jederzeit mit Wirkung fuer die
+          Zukunft widerrufen werden.
         </p>
       </div>
-    </div>
+    </main>
   );
 }

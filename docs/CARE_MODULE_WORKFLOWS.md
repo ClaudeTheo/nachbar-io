@@ -145,7 +145,7 @@ Senior oder Helfer eskaliert manuell
 3. Helfer der neuen Stufe benachrichtigen:
    - Stufe 2 (Angehoerige): push + in_app + sms
    - Stufe 3 (Pflegedienst): push + in_app + sms + voice
-   - Stufe 4 (Leitstelle): admin_alert (alle Admins)
+   - Stufe 4 (Admin/externe Kontakte): admin_alert (alle Admins)
     |
     v
 4. Audit-Log: 'sos_escalated' (manual: true)
@@ -461,7 +461,7 @@ Admin prueft Helfer-Antrag
 
 ```
   Stufe 1              Stufe 2              Stufe 3              Stufe 4
-  Nachbarn             Angehoerige          Pflegedienst         Leitstelle
+  Nachbarn             Angehoerige          Pflegedienst         Admin/Extern
     |                    |                    |                    |
     | 5 Min              | 15 Min             | 30 Min             |
     | (konfigurierbar)   | (konfigurierbar)   | (konfigurierbar)   |
@@ -664,7 +664,7 @@ Kanaele (parallel, je nach payload.channels):
 | 1 | Nachbar | push, in_app |
 | 2 | Angehoeriger | push, in_app, sms |
 | 3 | Pflegedienst | push, in_app, sms, voice |
-| 4 | Leitstelle/Admin | sms, voice, admin_alert |
+| 4 | Admin/externe Kontakte | sms, voice, admin_alert |
 
 ### Stub-Status der Kanaele
 

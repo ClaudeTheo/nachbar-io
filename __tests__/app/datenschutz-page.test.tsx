@@ -13,4 +13,14 @@ describe("DatenschutzPage", () => {
     expect(screen.getByText(/Adresse.*Quartier-Zuordnung/i)).toBeInTheDocument();
     expect(screen.queryByText(/kein Klarname erforderlich/i)).not.toBeInTheDocument();
   });
+
+  it("beschreibt Vercel-Hosting praezise ohne zu weitgehende No-Data-Zusage", () => {
+    render(<DatenschutzPage />);
+
+    expect(screen.getByText(/technisch notwendige Zugriffsdaten/i)).toBeInTheDocument();
+    expect(screen.getAllByText(/IP-Adresse/i).length).toBeGreaterThan(0);
+    expect(
+      screen.queryByText(/personenbezogene Nutzerdaten werden nicht an Vercel/i),
+    ).not.toBeInTheDocument();
+  });
 });

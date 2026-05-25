@@ -30,7 +30,7 @@ const SWIPE_THRESHOLD = 50;
 const BUTTON_LABELS = [
   "Weiter",           // Willkommen
   "Weiter",           // Modusauswahl
-  "Verstanden",       // Notfall-System
+  "Verstanden",       // 112/110-Hinweis
   "Weiter",           // Hilfsangebote
   "Weiter",           // Familie & Betreuung
   "Weiter",           // Video
@@ -42,7 +42,7 @@ const BUTTON_LABELS = [
  *
  * Konzept: Nur das Wichtigste zeigen — den Rest entdeckt der Nutzer selbst.
  * 1. Willkommen (personalisiert)
- * 2. Notfall-System (KRITISCH — muss jeder kennen)
+ * 2. 112/110-Hinweis (KRITISCH — muss jeder kennen)
  * 3. Promo-Video (emotionaler Einstieg)
  * 4. Fertig (mit Konfetti)
  *

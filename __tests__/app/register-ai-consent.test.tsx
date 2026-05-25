@@ -72,6 +72,8 @@ describe("RegisterStepAiConsent — Polish 2026-04-27", () => {
     expect(
       screen.getByText(/Sie entscheiden selbst, ob und wann Sie mich nutzen/i),
     ).toBeInTheDocument();
+    expect(screen.getByText(/sprechen Sie mit einem KI-System/i)).toBeInTheDocument();
+    expect(screen.getByText(/Antworten koennen Fehler enthalten/i)).toBeInTheDocument();
     expect(screen.getByText(/Standardmäßig aus/i)).toBeInTheDocument();
     expect(screen.getByText(/Sie müssen sich jetzt nicht entscheiden/i)).toBeInTheDocument();
     expect(
@@ -85,6 +87,9 @@ describe("RegisterStepAiConsent — Polish 2026-04-27", () => {
     expect(screen.getByText("Datenschutz und Einwilligung")).toBeInTheDocument();
     expect(screen.getByText(/freiwillig/i)).toBeInTheDocument();
     expect(screen.getByText(/jederzeit später widerrufen/i)).toBeInTheDocument();
+    expect(
+      screen.getByText(/keine medizinische, rechtliche oder finanzielle Beratung/i),
+    ).toBeInTheDocument();
     expect(
       screen.getByText(/Keine KI-Hilfe ist auch eine vollständige Auswahl/i),
     ).toBeInTheDocument();

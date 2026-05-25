@@ -60,7 +60,7 @@ export default function SupportPage() {
           />
           <FaqItem
             question="Ist QuartierApp kostenlos?"
-            answer="Die Grundfunktionen (Schwarzes Brett, Marktplatz, Notfall-System, Quartierskarte) sind dauerhaft kostenlos. Erweiterte Funktionen für Angehörige und Organisationen sind kostenpflichtig."
+            answer="Die Grundfunktionen (Schwarzes Brett, Marktplatz, 112/110-Hinweis, Quartierskarte) sind dauerhaft kostenlos. Erweiterte Funktionen für Angehörige und Organisationen sind kostenpflichtig."
           />
         </div>
       </section>

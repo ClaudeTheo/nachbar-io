@@ -115,6 +115,7 @@ export async function listYouthTasks(
     .from("youth_tasks")
     .select("*")
     .eq("status", taskStatus)
+    .eq("moderation_status", "approved")
     .eq("risk_level", "niedrig")
     .order("created_at", { ascending: false })
     .limit(50);
@@ -208,7 +209,8 @@ export async function createYouthTask(
       estimated_minutes: estimated_minutes || null,
       points_reward: points_reward || 20,
       status: "open",
-      moderation_status: "approved", // Bewohner-erstellte Aufgaben direkt freigegeben
+      // Jugend-Aufgaben werden vor Sichtbarkeit geprueft.
+      moderation_status: "pending",
     })
     .select()
     .single();

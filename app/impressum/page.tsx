@@ -61,6 +61,12 @@ export default function ImpressumPage() {
               </li>
             </ul>
             <p className="mt-2">
+              Vertretungsberechtigt nach Eintragung der Theobase GmbH: Thomas
+              Theobald (zukünftiger Geschäftsführer). Bis zur Eintragung im
+              Handelsregister besteht persönliche Handelndenhaftung gemäß § 11
+              Abs. 2 GmbHG.
+            </p>
+            <p className="mt-2">
               Sobald die Handelsregistereintragung vorliegt, wird dieses
               Impressum um Firma, Rechtsform, Sitz, Vertretung,
               Handelsregisternummer und Umsatzsteuer-Identifikationsnummer

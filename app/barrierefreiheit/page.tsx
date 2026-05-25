@@ -8,8 +8,10 @@ export const metadata: Metadata = {
     "Erklärung zur Barrierefreiheit der QuartierApp gemäß Barrierefreiheitsstärkungsgesetz (BFSG).",
 };
 
-// Erklärung zur Barrierefreiheit gemäß BFSG (Barrierefreiheitsstärkungsgesetz)
-// Pflicht seit 28. Juni 2025 — EU-Richtlinie 2019/882 (European Accessibility Act)
+// Erklärung zur Barrierefreiheit — freiwillige Selbstverpflichtung
+// BFSG greift nicht: Kleinstunternehmen-Ausnahme nach § 3 Abs. 3 BFSG
+// (< 10 Beschäftigte UND < 2 Mio EUR Jahresumsatz). Wir orientieren uns
+// dennoch an WCAG 2.1 AA / EN 301 549 wegen Senior-Zielgruppe.
 export default function BarrierefreiheitPage() {
   return (
     <main className="min-h-screen bg-warmwhite px-4 py-8">
@@ -64,6 +66,30 @@ export default function BarrierefreiheitPage() {
               Die Nutzung erfolgt über einen Webbrowser auf Desktop-Geräten,
               Tablets und Smartphones. Alle Kernfunktionen sind ohne
               Installation nutzbar (Progressive Web App).
+            </p>
+          </section>
+
+          {/* Kleinstunternehmen-Ausnahme — Klarstellung gegen UWG-Risiko */}
+          <section className="rounded-lg border border-amber-200 bg-amber-50 p-4">
+            <h2 className="mb-2 text-lg font-semibold text-anthrazit">
+              Hinweis zum Anwendungsbereich
+            </h2>
+            <p>
+              Die Theobase GmbH (in Gründung) ist Kleinstunternehmen im Sinne
+              von <strong>§ 3 Abs. 3 BFSG</strong> (Solo-Founder,
+              geschlossener Pilotbetrieb, weniger als zehn Beschäftigte und
+              unter zwei Millionen Euro Jahresumsatz). Die als Dienstleistung
+              erbrachte QuartierApp ist damit vom Anwendungsbereich des
+              Barrierefreiheitsstärkungsgesetzes ausgenommen.
+            </p>
+            <p className="mt-2">
+              Wir orientieren uns trotzdem <strong>freiwillig</strong> an den
+              technischen Anforderungen des BFSG, insbesondere an den Web
+              Content Accessibility Guidelines (WCAG) 2.1 Stufe AA und der
+              europäischen Norm EN 301 549. Grund ist unsere Zielgruppe: ältere
+              Menschen und Familien, für die Barrierefreiheit kein Komfort,
+              sondern Voraussetzung ist. Diese Erklärung ist eine freiwillige
+              Selbstverpflichtung, keine Pflichterklärung.
             </p>
           </section>
 
@@ -203,33 +229,21 @@ export default function BarrierefreiheitPage() {
           {/* Durchsetzungsverfahren */}
           <section>
             <h2 className="mb-2 text-lg font-semibold text-anthrazit">
-              Durchsetzungsverfahren
+              Wenn wir nicht reagieren
             </h2>
             <p>
-              Sollten Sie mit unserer Antwort nicht zufrieden sein oder
-              innerhalb der genannten Frist keine Rückmeldung erhalten, können
-              Sie sich an die zuständige Marktüberwachungsbehörde wenden:
+              Sollten Sie mit unserer Antwort auf eine Rückmeldung nicht
+              zufrieden sein oder innerhalb von 14 Tagen keine Rückmeldung
+              erhalten, können Sie sich an den Verbraucherschutz oder an eine
+              Schlichtungsstelle wenden. Eine zuständige
+              Marktüberwachungsbehörde nach BFSG ist für QuartierApp aktuell
+              nicht zuständig, weil das BFSG aufgrund der
+              Kleinstunternehmen-Ausnahme nicht anwendbar ist (siehe oben).
             </p>
-            <p className="mt-3">
-              <strong className="text-anthrazit">
-                Marktüberwachungsbehörde für Barrierefreiheit
-              </strong>
-              <br />
-              Landesverwaltungsamt Sachsen-Anhalt
-              <br />
-              Marktüberwachung — Barrierefreiheitsanforderungen
-              <br />
-              Ernst-Kamieth-Straße 2, 06112 Halle (Saale)
-              <br />
-              E-Mail:{" "}
-              <a
-                href="mailto:marktaufsicht.bfsg@lvwa.sachsen-anhalt.de"
-                className="text-quartier-green underline"
-              >
-                marktaufsicht.bfsg@lvwa.sachsen-anhalt.de
-              </a>
-              <br />
-              Telefon: +49 345 514-0
+            <p className="mt-2">
+              Sobald die Theobase GmbH wächst und die
+              Kleinstunternehmen-Schwelle überschreitet, aktualisieren wir
+              diese Erklärung um die zuständige Marktüberwachungsbehörde.
             </p>
           </section>
 
@@ -288,6 +302,8 @@ export default function BarrierefreiheitPage() {
             </p>
           </section>
         </div>
+
+        <p className="mt-6 text-xs text-muted-foreground">Stand: Mai 2026</p>
 
         {/* Footer */}
         <div className="mt-12 flex flex-wrap gap-4 border-t border-border pt-4 text-xs text-muted-foreground">

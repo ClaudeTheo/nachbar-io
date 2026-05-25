@@ -1,8 +1,20 @@
 # Nachbar.io — Datenschutz-Folgenabschaetzung (DSFA) Care-Modul
 
-> Version 1.0 — Stand: 2026-03-12
+> Version 1.1 — Stand: 2026-05-25
 > Rechtsgrundlage: DSGVO Art. 35 (Datenschutz-Folgenabschaetzung)
-> Scope: Care-Modul (SOS, Check-in, Medikamente, Termine, Helfer)
+> Scope: Care-Modul (SOS, Check-in, Medikamente, Termine, Helfer) + KI-Komponenten (Memory, Voice-Companion, Praevention)
+> Referenzen: `docs/AI_ACT_SELF_CHECK.md` (Annex-I/III-Negativ-Statement), `docs/LEGAL_MARKETING_WORDING_GUARDRAILS.md`
+
+## Aenderungen v1.0 → v1.1 (2026-05-25)
+
+1. **Scope erweitert** um KI-Komponenten (Memory-Modul, Voice-Companion, Praevention-Companion).
+2. **Indikatoren 8 + 9** (innovative Technologie / Drittlandtransfer) auf „bedingt zutreffend" gesetzt (Aktivierung erst nach AVV/SCC).
+3. **Datenkategorien** um pseudonymisierte Memory-Embeddings ergaenzt.
+4. **Empfaengerliste** um KI-Anbieter erweitert (Anthropic, OpenAI, Mistral AI, Picovoice).
+5. **Neue Risiken R11-R13** (KI-Halluzination im Gesundheitskontext, Provider-Breach, Re-Identifikation aus Embeddings).
+6. **Neue Sektion 4.6** KI-spezifische TOMs (Medical-Blocklist, Provider-Off-Switch, Pseudonymisierung, AI_PROVIDER_OFF).
+7. **Massnahmenplan** um M11-M14 erweitert (AVV/DPA pro KI-Anbieter).
+8. **Verweis** auf AI-Act-Self-Check als Annex-III-Negativ-Statement.
 
 ---
 
@@ -27,11 +39,11 @@
 | 5. Grosse Datenmenge | Nein | ~30-40 Senioren (Pilotphase) |
 | 6. Datensatz-Verknuepfung | Nein | Kein Matching verschiedener Quellen |
 | 7. Schutzbeduerftigen Personen | **JA** | Senioren (vulnerable Gruppe) |
-| 8. Innovative Technologie | Nein | Standard-Webtechnologie |
-| 9. Datenuebergabe in Drittlaender | Nein | EU Frankfurt (Supabase), EU (Vercel) |
+| 8. Innovative Technologie | **Bedingt JA** | KI/LLM-Komponenten (Memory, Voice, Praevention) sind aktuell deaktiviert (`AI_PROVIDER_OFF=true`). Aktivierung erst nach AVV/DPA. Solange deaktiviert: Standard-Webtechnologie. |
+| 9. Datenuebergabe in Drittlaender | **Bedingt JA** | EU Frankfurt (Supabase, Vercel) bleibt. Bei KI-Aktivierung Anthropic / OpenAI (USA) ueber SCC + Zero-Data-Retention; Mistral AI (FR) als EU-Fallback; Picovoice lokal auf dem Endgeraet. |
 | 10. Hinderung an Rechtsausuebung | Nein | Keine Zugangsbeschraenkung |
 
-**Ergebnis: 2 von 10 Indikatoren zutreffend (4 + 7). Bei >= 2 Indikatoren ist eine DSFA ERFORDERLICH.**
+**Ergebnis: 2 fest + 2 bedingt zutreffend (4 + 7 fest; 8 + 9 bedingt nach KI-Aktivierung). Bei >= 2 Indikatoren ist eine DSFA ERFORDERLICH** — Bewertung in v1.1 weiterhin gegeben. Bei KI-Aktivierung muessen Indikatoren 8 und 9 explizit auf JA gesetzt werden.
 
 ---
 
@@ -47,6 +59,9 @@ Koordination von Nachbarschaftshilfe und Senioren-Unterstuetzung im Quartier, ei
 - Medikamenten-Erinnerungen
 - Termin-Erinnerungen
 - Helfer-Koordination
+- **KI-Memory** (Speicherung vom Nutzer freigegebener Fakten zur Personalisierung; aktiv nur nach Einwilligung; Medical-Blocklist gegen Gesundheitsdaten)
+- **Voice-Companion** (Sprachverstaendnis + freundliche Begleitung; keine medizinische Beratung; klar als KI gekennzeichnet)
+- **Praevention-Companion** (allgemeine Senior-Information; keine Diagnose/Therapie/medizinischen Ratschlaege)
 
 ### 2.3 Rechtsgrundlage
 
@@ -57,6 +72,9 @@ Koordination von Nachbarschaftshilfe und Senioren-Unterstuetzung im Quartier, ei
 | SOS-Weiterleitung an Helfer | Lebenswichtiges Interesse + Einwilligung | Art. 6(1)(d) + Art. 9(2)(c) |
 | Benachrichtigungen (Push/SMS) | Vertragsdurchfuehrung | Art. 6(1)(b) |
 | Audit-Log | Berechtigtes Interesse | Art. 6(1)(f) |
+| KI-Memory (allgemeine Fakten) | Einwilligung | Art. 6(1)(a) |
+| KI-Memory bei Gesundheitsbezug | Blocklist verhindert Speicherung; bei Umgehung waere Art. 9(2)(a) noetig | Art. 9(2)(a) |
+| Voice-/Praevention-Companion | Einwilligung + Vertragsdurchfuehrung | Art. 6(1)(a) + (b) |
 
 ### 2.4 Kategorien betroffener Personen
 
@@ -78,6 +96,9 @@ Koordination von Nachbarschaftshilfe und Senioren-Unterstuetzung im Quartier, ei
 | Notfalldaten | SOS-Kategorie, SOS-Notizen | **Ja** | **AES-256-GCM** |
 | Termindaten | Termin-Typ, Ort, Notizen | **Ja** | **AES-256-GCM** |
 | Nutzungsdaten | Logins, Audit-Log, Cron-Heartbeats | Nein | Nein |
+| KI-Memory-Fakten | Pseudonymisierte Texte ueber Vorlieben, Familie, Kontext | Nein (Blocklist verhindert Art. 9) | Pseudonymisierung-Layer |
+| Memory-Embeddings | Vektordarstellung der Fakten fuer Aehnlichkeitssuche | Nein | Vektor pseudonymisiert |
+| Voice-Transkripte (transient) | STT-Rohtext bei Sprachverarbeitung | Bedingt Art. 9 bei Gesundheitssprache | In-Memory, kein persistentes Storage |
 
 ### 2.6 Empfaenger
 
@@ -89,6 +110,10 @@ Koordination von Nachbarschaftshilfe und Senioren-Unterstuetzung im Quartier, ei
 | Supabase (Auftragsverarbeiter) | Alle Daten (verschluesselt) | AVV erforderlich |
 | Vercel (Auftragsverarbeiter) | Nur Frontend-Assets, keine Daten | AVV erforderlich |
 | Twilio (Auftragsverarbeiter) | Telefonnummer + Nachrichtentext bei SMS/Voice | AVV erforderlich |
+| Anthropic PBC (USA) | KI-Eingabe (Companion-Prompt + Quartier-Kontext) | AVV/DPA + SCC + Zero-Data-Retention, aktiv erst nach Freigabe |
+| OpenAI Inc. (USA) | Text fuer TTS (Vorlesen) | AVV/DPA + SCC, aktiv erst nach Freigabe |
+| Mistral AI SAS (FR) | EU-Fallback Sprachverstaendnis | AVV/DPA, EU-Region |
+| Picovoice Inc. | Wake-Word lokal auf Endgeraet | Kein Datentransfer |
 
 ### 2.7 Speicherdauer
 
@@ -119,6 +144,9 @@ Koordination von Nachbarschaftshilfe und Senioren-Unterstuetzung im Quartier, ei
 | R8 | Twilio-Subprocessor Datenzugriff | Gering | Mittel | NIEDRIG | AVV mit Twilio, nur Telefonnummer + Nachricht |
 | R9 | Falsche SOS-Eskalation verraet Zustand | Gering | Mittel | NIEDRIG | Kategorie verschluesselt, nur Stufe sichtbar |
 | R10 | Betroffenenrechte nicht umsetzbar | Gering | Hoch | MITTEL | Loeschkaskade implementiert, Auskunft ueber Admin |
+| R11 | KI-Halluzination im Gesundheitskontext (falsche medizinische Aussage) | Mittel | Hoch | MITTEL-HOCH | System-Prompt-Disclaim (`lib/ai/system-prompts/senior-app-knowledge.md`), Voice-Hausnotruf-Selbst-Abgrenzung (2026-05-25), Medical-Blocklist im Memory |
+| R12 | KI-Provider-Breach (Anthropic, OpenAI) | Sehr gering | Hoch | MITTEL | SCC + Zero-Data-Retention, Pseudonymisierung vor Versand, `AI_PROVIDER_OFF=true` bis AVV/DPA |
+| R13 | Re-Identifikation aus Memory-Embeddings | Gering | Mittel | NIEDRIG-MITTEL | Embeddings ohne direkte Identifier, Blocklist gegen Gesundheits-/Finanzdaten, RLS auf Memory-Tabelle |
 
 ### 3.2 Schwere-Bewertung nach Auswirkung auf Betroffene
 
@@ -174,7 +202,23 @@ Koordination von Nachbarschaftshilfe und Senioren-Unterstuetzung im Quartier, ei
 | DB-Retry bei Eskalation | Implementiert | 3 Versuche + Admin-Alert |
 | Graceful Degradation | Teilweise | Companion-Device als Backup |
 
-### 4.5 Betroffenenrechte
+### 4.5 KI-spezifische Massnahmen (neu in v1.1)
+
+| Massnahme | Status | Details |
+|---|---|---|
+| Globaler Provider-Off-Switch (`AI_PROVIDER_OFF=true`) | Aktiv | Solange aktiv liefern alle KI-Endpunkte 503. Erst nach AVV/DPA + Founder-Go deaktivierbar. |
+| Medical-Blocklist (Memory-Modul) | Implementiert | `modules/memory/services/medical-blocklist.ts` — blockt Diagnosen, Medikamente, Therapien, Vitalwerte vor Speicherung |
+| `validateMemorySave` Pre-Save-Check | Implementiert | Pruefung jedes Memory-Eintrags gegen Blocklist + Consent |
+| System-Prompt Selbst-Abgrenzung (Voice + Companion) | Implementiert | Hausnotruf-/Leitstelle-/Notrufdienst-Negativ-Statement in `modules/voice/services/system-prompt.ts` (Stand 2026-05-25) |
+| Pseudonymisierungs-Layer vor Provider-Versand | Geplant | Wird vor erster Aktivierung implementiert; entfernt direkte Identifier aus KI-Prompt |
+| KI-Kennzeichnung (Art. 50 AI Act) | Implementiert | Chatbot-Antworten klar als KI markiert, Erinnerungen mit KI-Kennzeichnung |
+| Opt-out KI-Funktionen | Implementiert | Pro Funktion ueber Profil-Einstellungen abschaltbar |
+| KI-News Caching (Layer-1) | Implementiert | Reduziert API-Aufrufe an Anthropic; senkt Anzahl Drittlandtransfers |
+| Annex-I/III-Self-Check | Dokumentiert | `docs/AI_ACT_SELF_CHECK.md` — QuartierApp ist kein Hochrisiko-KI-System |
+
+---
+
+### 4.6 Betroffenenrechte
 
 | Recht | Umsetzung | Status |
 |---|---|---|
@@ -195,7 +239,9 @@ Koordination von Nachbarschaftshilfe und Senioren-Unterstuetzung im Quartier, ei
 | R2 | Supabase-Breach | AKZEPTABEL | Feldverschluesselung macht Daten ohne Key unlesbar |
 | R3 | Key-Kompromittierung | AKZEPTABEL | Key-Rotation geplant, Key nie in Code/Git |
 | R4 | Netzwerkausfall bei SOS | AKZEPTABEL MIT EINSCHRAENKUNG | EmergencyBanner zeigt IMMER 112, Companion-Device als Backup |
-| R5 | Profilierung durch aggregierte Daten | AKZEPTABEL | Keine KI-Analyse, nur einfache Zaehlung in Berichten |
+| R5 | Profilierung durch aggregierte Daten | AKZEPTABEL | Keine KI-Analyse fuer Profiling, nur einfache Zaehlung in Berichten |
+| R6 | KI-Halluzination im Senioren-Kontext (z. B. falsche Pflegegrad-Auskunft) | AKZEPTABEL MIT EINSCHRAENKUNG | System-Prompt-Disclaim ("So viel ich weiss..."), Verweis auf VdK/Pflegestuetzpunkte, Hausnotruf-Selbst-Abgrenzung (Stand 2026-05-25). Restrisiko verbleibt, wird durch klare KI-Kennzeichnung (Art. 50) und Opt-out reduziert. |
+| R7 | KI-Provider-Drittlandtransfer (Anthropic, OpenAI USA) | AKZEPTABEL NACH AKTIVIERUNG | `AI_PROVIDER_OFF=true` bis AVV/SCC/Zero-Data-Retention dokumentiert. Mistral AI als EU-Fallback verfuegbar. Cloud-Act-Restrisiko bei normalen (nicht-medizinischen) Daten akzeptiert. |
 
 ---
 
@@ -230,6 +276,11 @@ Eine vorherige Konsultation der Aufsichtsbehoerde ist erforderlich, wenn das Res
 | M3 | AVV mit Vercel pruefen/unterzeichnen | Betreiber | Vor Launch |
 | M4 | DSB-Stellungnahme einholen | Betreiber | Vor Launch |
 | M5 | Einwilligungsdialog (Art. 9) implementieren | Entwicklung | Vor Launch |
+| M11 | AVV/DPA mit Anthropic (Claude) inkl. SCC + Zero-Data-Retention-Setting | Betreiber | Vor KI-Aktivierung |
+| M12 | AVV/DPA mit OpenAI (TTS) inkl. SCC | Betreiber | Vor TTS-Aktivierung |
+| M13 | AVV/DPA mit Mistral AI (EU-Fallback) | Betreiber | Vor EU-Fallback-Aktivierung |
+| M14 | Pseudonymisierungs-Layer vor Provider-Versand implementieren | Entwicklung | Vor KI-Aktivierung |
+| M15 | KI-Kennzeichnung (Art. 50 AI Act) in allen UI-Touchpoints konsistent | Entwicklung | Vor KI-Aktivierung |
 
 ### Mittelfristig (innerhalb 90 Tagen)
 
@@ -251,4 +302,4 @@ Die DSFA ergibt, dass die Verarbeitung von Gesundheitsdaten im Care-Modul von Na
 
 ---
 
-*Erstellt am: 2026-03-12 | Naechste Pruefung: 2026-09-12 (halbjaehrlich) oder bei wesentlichen Aenderungen*
+*Erstellt am: 2026-03-12 | v1.1 ergaenzt: 2026-05-25 (KI-Komponenten) | Naechste Pruefung: 2026-11-25 (halbjaehrlich) oder bei wesentlichen Aenderungen, insbesondere bei Deaktivierung von `AI_PROVIDER_OFF`*

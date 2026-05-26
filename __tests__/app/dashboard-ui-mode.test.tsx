@@ -66,6 +66,26 @@ describe("Dashboard ui modes", () => {
     ).toHaveAttribute("href", "/my-day");
   });
 
+  it("keeps start main areas aligned with the four-tab app structure", () => {
+    mockedUiMode = "active";
+    mockedDashboardDensity = "standard";
+
+    render(<DashboardPage />);
+
+    expect(
+      screen.getByRole("link", { name: /Mein QuartierRathaus, Karte, Veranstaltungen/i }),
+    ).toHaveAttribute("href", "/quartier-info");
+    expect(
+      screen.getByRole("link", { name: /Mein TagHeute planen/i }),
+    ).toHaveAttribute("href", "/my-day");
+    expect(
+      screen.getByRole("link", { name: /IchProfil, Haushalt und Einstellungen/i }),
+    ).toHaveAttribute("href", "/profile");
+    expect(
+      screen.queryByRole("link", { name: /Nachrichten/i }),
+    ).not.toBeInTheDocument();
+  });
+
   it("shows Mein Tag first for Aktiv 55+ comfort users", () => {
     mockedUiMode = "comfort";
     mockedDashboardDensity = "calm";

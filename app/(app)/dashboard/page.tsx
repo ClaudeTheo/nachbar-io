@@ -7,8 +7,8 @@ import {
   HeartHandshake,
   MapPin,
   Megaphone,
-  MessageCircle,
   Newspaper,
+  User,
   UsersRound,
   type LucideIcon,
 } from "lucide-react";
@@ -137,13 +137,10 @@ export default function DashboardPage() {
       value: "Heute planen und nichts Wichtiges verpassen",
     },
     {
-      href: "/notifications",
-      icon: MessageCircle,
-      label: "Nachrichten",
-      value:
-        unreadCount > 0
-          ? `${unreadCount > 9 ? "9+" : unreadCount} ungelesen`
-          : "Alles gelesen",
+      href: "/profile",
+      icon: User,
+      label: "Ich",
+      value: "Profil, Haushalt und Einstellungen",
     },
   ];
 

@@ -84,10 +84,10 @@ function LegacyBottomNav() {
 function RedesignBottomNav() {
   const pathname = usePathname();
   const { count: unreadCount } = useUnreadCount();
-  const { role } = useNavRole();
+  const { role, uiMode } = useNavRole();
   const isYouthRoute =
     pathname === "/jugend" || Boolean(pathname?.startsWith("/jugend/"));
-  const items = getNavItems(isYouthRoute ? "youth" : role);
+  const items = getNavItems(isYouthRoute ? "youth" : role, { uiMode });
 
   return (
     <div className="mx-auto flex h-16 max-w-lg items-center justify-around">

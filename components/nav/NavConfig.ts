@@ -20,10 +20,20 @@ import {
 } from "lucide-react";
 import { useAuth } from "@/components/providers/auth-provider";
 import { createClient } from "@/lib/supabase/client";
+import { isUserUiMode, type UserUiMode } from "@/lib/user-modes";
 
 // --- Typen ---
 
 export type NavRole = "senior" | "helper" | "caregiver" | "org_admin" | "youth";
+
+interface NavResolution {
+  role: NavRole;
+  uiMode: UserUiMode | null;
+}
+
+interface NavItemsOptions {
+  uiMode?: UserUiMode | null;
+}
 
 export interface NavItemConfig {
   href: string;
@@ -147,6 +157,10 @@ const orgAdminNav: NavItemConfig[] = [
   },
 ];
 
+const activeResidentNav: NavItemConfig[] = seniorNav.map((item, index) =>
+  index === 1 ? { ...item, label: "Quartier" } : item,
+);
+
 const youthNav: NavItemConfig[] = [
   {
     href: "/jugend",
@@ -175,7 +189,10 @@ const youthNav: NavItemConfig[] = [
 ];
 
 /** Gibt die Nav-Konfiguration für eine Rolle zurück. */
-export function getNavItems(role: NavRole): NavItemConfig[] {
+export function getNavItems(
+  role: NavRole,
+  options: NavItemsOptions = {},
+): NavItemConfig[] {
   switch (role) {
     case "youth":
       return youthNav;
@@ -187,7 +204,7 @@ export function getNavItems(role: NavRole): NavItemConfig[] {
       return orgAdminNav;
     case "senior":
     default:
-      return seniorNav;
+      return options.uiMode === "active" ? activeResidentNav : seniorNav;
   }
 }
 
@@ -202,7 +219,7 @@ export function getNavItems(role: NavRole): NavItemConfig[] {
  *
  * Priorität: org_admin > caregiver > helper > senior
  */
-async function detectNavRole(userId: string): Promise<NavRole> {
+async function detectNavRole(userId: string): Promise<NavResolution> {
   const supabase = createClient();
 
   // Parallele Abfragen
@@ -223,13 +240,18 @@ async function detectNavRole(userId: string): Promise<NavRole> {
       .limit(1),
   ]);
 
-  if (profileResult.data?.ui_mode === "youth") return "youth";
-  if (orgResult.data && orgResult.data.length > 0) return "org_admin";
-  if (caregiverResult.data && caregiverResult.data.length > 0)
-    return "caregiver";
-  if (helperResult.data && helperResult.data.length > 0) return "helper";
+  const rawUiMode = profileResult.data?.ui_mode;
+  const uiMode = isUserUiMode(rawUiMode) ? rawUiMode : null;
 
-  return "senior";
+  if (uiMode === "youth") return { role: "youth", uiMode };
+  if (orgResult.data && orgResult.data.length > 0)
+    return { role: "org_admin", uiMode };
+  if (caregiverResult.data && caregiverResult.data.length > 0)
+    return { role: "caregiver", uiMode };
+  if (helperResult.data && helperResult.data.length > 0)
+    return { role: "helper", uiMode };
+
+  return { role: "senior", uiMode };
 }
 
 // --- React Hook ---
@@ -238,10 +260,17 @@ async function detectNavRole(userId: string): Promise<NavRole> {
  * Hook: Gibt die aktuelle Nav-Rolle des eingeloggten Users zurück.
  * Lädt async, Default: "senior".
  */
-export function useNavRole(): { role: NavRole; loading: boolean } {
+export function useNavRole(): {
+  role: NavRole;
+  uiMode: UserUiMode | null;
+  loading: boolean;
+} {
   const { user } = useAuth();
   const currentUserId = user?.id ?? null;
-  const [resolvedRole, setResolvedRole] = useState<NavRole>("senior");
+  const [resolvedNav, setResolvedNav] = useState<NavResolution>({
+    role: "senior",
+    uiMode: null,
+  });
   const [resolvedUserId, setResolvedUserId] = useState<string | null>(null);
 
   useEffect(() => {
@@ -253,13 +282,13 @@ export function useNavRole(): { role: NavRole; loading: boolean } {
     detectNavRole(currentUserId)
       .then((detected) => {
         if (!cancelled) {
-          setResolvedRole(detected);
+          setResolvedNav(detected);
           setResolvedUserId(currentUserId);
         }
       })
       .catch(() => {
         if (!cancelled) {
-          setResolvedRole("senior");
+          setResolvedNav({ role: "senior", uiMode: null });
           setResolvedUserId(currentUserId);
         }
       });
@@ -270,7 +299,8 @@ export function useNavRole(): { role: NavRole; loading: boolean } {
   }, [currentUserId]);
 
   return {
-    role: currentUserId ? resolvedRole : "senior",
+    role: currentUserId ? resolvedNav.role : "senior",
+    uiMode: currentUserId ? resolvedNav.uiMode : null,
     loading: Boolean(currentUserId) && resolvedUserId !== currentUserId,
   };
 }

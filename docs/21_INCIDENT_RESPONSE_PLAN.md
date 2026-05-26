@@ -15,9 +15,9 @@ Teammitglieder mit Zugriff auf Produktionssysteme.
 
 | Rolle | Name | Kontakt | Erreichbarkeit |
 |-------|------|---------|----------------|
-| Incident Manager | [TBD] | thomasth@gmx.de | 24/7 |
-| Technischer Lead | [TBD] | — | Geschaeftszeiten |
-| Datenschutzbeauftragter | [TBD, extern] | — | Geschaeftszeiten |
+| Incident Manager | Thomas Theobald (Solo-Founder, Theobase GmbH i.Gr.) | thomasth@gmx.de | Best effort, Erstreaktion < 24h werktags. Keine garantierte 24/7-Erreichbarkeit. |
+| Technischer Lead | identisch (Solo-Founder) | thomasth@gmx.de | Best effort, Erstreaktion < 24h werktags |
+| Datenschutzbeauftragter | nicht bestellt (Kleinstunternehmen, < 20 Personen mit Zugang zu personenbezogenen Daten i.S.v. § 38 BDSG) | — | n/a |
 | Supabase Support | — | support@supabase.io | 24/7 (Business Plan) |
 | Twilio Support | — | support.twilio.com | 24/7 |
 

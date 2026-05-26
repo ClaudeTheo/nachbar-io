@@ -54,7 +54,7 @@ Nachbar.io ist **KEIN**:
 
 - **Geographisch:** Pilotquartier Bad Saeckingen (Purkersdorfer Strasse, Sanarystrasse, Oberer Rebberg)
 - **Technisch:** Smartphone/Tablet mit Internetzugang (PWA), optional Companion-Device (E-Paper)
-- **Zeitlich:** 24/7 verfuegbar, Check-ins zu konfigurierbaren Zeiten
+- **Zeitlich:** Software technisch durchgaengig erreichbar (keine SLA fuer Reaktionszeit, kein zertifiziertes Empfangszentrum). Check-ins zu konfigurierbaren Zeiten.
 - **Netzwerk:** WiFi oder Mobilfunk erforderlich (kein Offline-Notfallmodus)
 
 ## 7. Funktionsmodule und ihre Klassifikation

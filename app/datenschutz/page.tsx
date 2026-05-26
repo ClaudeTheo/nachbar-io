@@ -34,13 +34,21 @@ export default function DatenschutzPage() {
               Verantwortlich für die Datenverarbeitung auf dieser Plattform ist:
             </p>
             <p className="mt-2">
-              Thomas Theobald
+              Theobase GmbH (in Gründung)
+              <br />
+              vertreten durch Thomas Theobald (zukünftiger Geschäftsführer)
               <br />
               Purkersdorfer Straße 35
               <br />
               79713 Bad Säckingen
               <br />
               E-Mail: thomasth@gmx.de
+            </p>
+            <p className="mt-2">
+              Die Theobase GmbH befindet sich in Gründung. Bis zur Eintragung
+              beim zuständigen Handelsregister ist Thomas Theobald persönlich
+              verantwortlicher Anbieter dieses geschlossenen Pilotbetriebs.
+              Persönliche Handelndenhaftung gemäß § 11 Abs. 2 GmbHG.
             </p>
           </section>
 

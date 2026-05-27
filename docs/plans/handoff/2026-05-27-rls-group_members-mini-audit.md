@@ -2,7 +2,8 @@
 
 Datum: 2026-05-27  
 Branch: `codex/rls-group-members-2026-05-27`  
-Status: Lokal angewendet und verifiziert, kein Production-Apply, kein Push.
+Status: Lokal und in Production angewendet/verifiziert. Branch gepusht,
+Draft-PR #15 offen.
 
 ## Anlass
 
@@ -108,6 +109,22 @@ Datei: `supabase/migrations/20260527183000_enable_rls_group_members.sql`
 - Static Guards gruen:
   `npm run test -- __tests__/lib/group-members-rls-migration.test.ts __tests__/lib/migration-versions.test.ts`
 
+## Production-Apply 2026-05-27
+
+Founder-Go durch Thomas: "go dafuer".
+
+- Standardpfad `npx supabase migration up --linked` war wegen historischem
+  Prod-Drift blockiert: Remote-Migrations existieren ohne lokale Datei.
+- Kontrollierter Einzeldatei-Pfad:
+  `npx supabase db query --linked -f supabase/migrations/20260527183000_enable_rls_group_members.sql`
+- Danach `group_members` in Prod verifiziert:
+  - RLS aktiv.
+  - 4 Policies.
+  - `anon`: keine Tabellenrechte.
+  - `authenticated`: nur `SELECT`, `INSERT`, `UPDATE`.
+- Migration-History wurde nach erfolgreichem Apply repariert:
+  `supabase migration repair --linked --status applied 20260527183000`.
+
 ## Risiko vor Production-Apply
 
 Der Patch ist bewusst kompatibel mit den bestehenden User-Client-Codepfaden.
@@ -115,11 +132,9 @@ Trotzdem vor Prod-Apply pruefen:
 
 1. Gruppen-Flows smoke-testen: Gruppe erstellen, offener Gruppe beitreten,
    geschlossener Gruppe beitreten (`pending`), verlassen, Mitglied genehmigen.
-2. Danach erst Founder-Go fuer Production-Apply einholen.
+2. Branch/PR mergen, damit File-first-History in `master` landet.
 
 ## Out of Scope
 
-- Kein Apply auf Production.
-- Kein Push.
 - Keine Aenderung an `spatial_ref_sys`.
 - Keine Refaktorierung der Gruppenservices auf `service_role`.

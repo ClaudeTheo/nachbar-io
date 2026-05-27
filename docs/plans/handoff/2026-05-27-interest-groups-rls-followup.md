@@ -2,7 +2,8 @@
 
 Datum: 2026-05-27  
 Branch: `codex/rls-group-members-2026-05-27`  
-Status: Lokal angewendet und verifiziert, kein Production-Apply, kein Push.
+Status: Lokal und in Production angewendet/verifiziert. Branch gepusht,
+Draft-PR #15 offen.
 
 ## Anlass
 
@@ -109,16 +110,35 @@ Datei: `supabase/migrations/20260527191000_restore_interest_groups_rls.sql`
 - ESLint fuer neue Testdateien gruen.
 - Diff-Secret-Check: kein Secret/Token-Fund.
 
+## Production-Apply 2026-05-27
+
+Founder-Go durch Thomas: "go dafuer".
+
+- Standardpfad `npx supabase migration up --linked` war wegen historischem
+  Prod-Drift blockiert: Remote-Migrations existieren ohne lokale Datei.
+- Kontrollierter Einzeldatei-Pfad:
+  `npx supabase db query --linked -f supabase/migrations/20260527191000_restore_interest_groups_rls.sql`
+- Migration-History wurde nach erfolgreichem Apply repariert:
+  `supabase migration repair --linked --status applied 20260527191000`.
+- Production-Verifikation danach:
+  - `groups`: RLS aktiv, 4 Policies.
+  - `group_members`: RLS aktiv, 4 Policies.
+  - `group_posts`: RLS aktiv, 3 Policies.
+  - `group_post_comments`: RLS aktiv, 3 Policies.
+  - `group_notification_settings`: RLS aktiv, 4 Policies.
+  - `anon`: keine Tabellenrechte auf den Gruppen-Tabellen.
+  - Historische breite Prod-Policy-Namen sind entfernt.
+  - Row-Counts bleiben 0.
+  - Migration-History zeigt beide Versionen als local/remote applied:
+    `20260527183000`, `20260527191000`.
+
 ## Offene Punkte vor Production-Apply
 
-1. Vor Prod-Go read-only pruefen, ob Prod bereits manuelle Gruppen-Policies hat.
-2. Falls ja: Namen/Inhalte gegen diese Migration vergleichen, damit keine
-   manuell bessere Prod-Policy ersetzt wird.
-3. Erst danach Founder-Go fuer Production-Apply einholen.
+1. Draft-PR #15 reviewen und mergen, damit die bereits applizierten
+   Migration-Dateien in `master` landen.
+2. Nach Merge/Deploy nur read-only Smoke; kein weiterer DB-Write noetig.
 
 ## Out of Scope
 
-- Kein Apply auf Production.
-- Kein Push.
 - Keine Refaktorierung der Gruppenservices.
 - Keine UI-Aenderung.

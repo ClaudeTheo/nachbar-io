@@ -1,0 +1,901 @@
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>QuartierApp Erwachsenenstruktur</title>
+    <style>
+      :root {
+        --ink: #17202a;
+        --muted: #667085;
+        --green: #4caf87;
+        --green-dark: #236b50;
+        --blue: #2563eb;
+        --amber: #f59e0b;
+        --red: #991b1b;
+        --glass: rgba(255, 255, 255, 0.5);
+        --glass-strong: rgba(255, 255, 255, 0.72);
+        --line: rgba(255, 255, 255, 0.62);
+        --dark-line: rgba(45, 49, 66, 0.13);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        background:
+          radial-gradient(circle at 12% 8%, rgba(76, 175, 135, 0.32), transparent 28%),
+          radial-gradient(circle at 84% 16%, rgba(37, 99, 235, 0.2), transparent 30%),
+          linear-gradient(145deg, #f8fbfa, #e2ebef 54%, #cfdadf);
+        color: var(--ink);
+        font-family:
+          Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+          "Segoe UI", sans-serif;
+        letter-spacing: 0;
+      }
+
+      h1,
+      h2,
+      h3,
+      p {
+        margin: 0;
+      }
+
+      button {
+        font: inherit;
+      }
+
+      @keyframes ambient {
+        0%,
+        100% {
+          background-position: 0% 0%, 100% 0%, 50% 100%;
+        }
+        50% {
+          background-position: 8% 5%, 90% 8%, 50% 100%;
+        }
+      }
+
+      @keyframes arrive {
+        from {
+          opacity: 0;
+          transform: translateY(10px) scale(0.99);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0) scale(1);
+        }
+      }
+
+      @keyframes shine {
+        0% {
+          opacity: 0;
+          transform: translateX(-130%) rotate(15deg);
+        }
+        40% {
+          opacity: 0.42;
+        }
+        100% {
+          opacity: 0;
+          transform: translateX(145%) rotate(15deg);
+        }
+      }
+
+      .page {
+        max-width: 1480px;
+        margin: 0 auto;
+        padding: 22px;
+      }
+
+      .intro {
+        display: flex;
+        align-items: end;
+        justify-content: space-between;
+        gap: 24px;
+        padding-bottom: 20px;
+      }
+
+      .intro h1 {
+        font-size: 31px;
+        line-height: 1.1;
+      }
+
+      .intro p {
+        max-width: 820px;
+        margin-top: 8px;
+        color: #4e5d68;
+        font-size: 15px;
+        line-height: 1.5;
+      }
+
+      .badge {
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        background: var(--glass);
+        color: #40505d;
+        font-size: 12px;
+        font-weight: 850;
+        padding: 9px 13px;
+        white-space: nowrap;
+        backdrop-filter: blur(24px) saturate(1.45);
+        box-shadow:
+          inset 0 1px 0 rgba(255, 255, 255, 0.76),
+          0 12px 36px rgba(45, 49, 66, 0.12);
+      }
+
+      .comparison {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 18px;
+        align-items: start;
+      }
+
+      .screen-note {
+        width: 100%;
+        min-height: 108px;
+        border: 1px solid var(--line);
+        border-radius: 18px;
+        background: var(--glass);
+        padding: 14px;
+        backdrop-filter: blur(26px) saturate(1.35);
+        box-shadow:
+          inset 0 1px 0 rgba(255, 255, 255, 0.74),
+          0 16px 42px rgba(45, 49, 66, 0.12);
+      }
+
+      .screen-note h2 {
+        font-size: 17px;
+        line-height: 1.2;
+      }
+
+      .screen-note p {
+        margin-top: 6px;
+        color: #536170;
+        font-size: 13px;
+        line-height: 1.42;
+      }
+
+      .phone-wrap {
+        display: grid;
+        gap: 10px;
+        justify-items: center;
+      }
+
+      .phone {
+        position: relative;
+        width: 100%;
+        max-width: 340px;
+        height: 760px;
+        overflow: hidden;
+        border: 9px solid #111723;
+        border-radius: 38px;
+        background: #111723;
+        box-shadow:
+          0 32px 90px rgba(25, 34, 48, 0.32),
+          0 2px 0 rgba(255, 255, 255, 0.3) inset;
+        animation: arrive 620ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+      }
+
+      .phone::before {
+        content: "";
+        position: absolute;
+        top: 9px;
+        left: 50%;
+        z-index: 5;
+        width: 94px;
+        height: 27px;
+        border-radius: 999px;
+        background: rgba(10, 14, 20, 0.92);
+        transform: translateX(-50%);
+      }
+
+      .screen {
+        position: relative;
+        display: flex;
+        min-height: 100%;
+        flex-direction: column;
+        overflow: hidden;
+        border-radius: 28px;
+        background:
+          radial-gradient(circle at 22% 8%, rgba(255, 255, 255, 0.96), transparent 26%),
+          radial-gradient(circle at 88% 18%, rgba(76, 175, 135, 0.22), transparent 34%),
+          linear-gradient(180deg, #f9fcfb, #eef4f2 58%, #e6edf0);
+        background-size: 130% 130%, 130% 130%, 100% 100%;
+        animation: ambient 15s ease-in-out infinite;
+      }
+
+      .statusbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        height: 36px;
+        padding: 0 22px;
+        color: #15202b;
+        font-size: 12px;
+        font-weight: 850;
+      }
+
+      .content {
+        position: relative;
+        flex: 1;
+        overflow: hidden;
+        padding: 15px;
+      }
+
+      .glass-top,
+      .glass-nav,
+      .glass-card,
+      .primary {
+        position: relative;
+        overflow: hidden;
+        border: 1px solid var(--line);
+        background: var(--glass);
+        backdrop-filter: blur(28px) saturate(1.45);
+        box-shadow:
+          inset 0 1px 0 rgba(255, 255, 255, 0.82),
+          0 14px 34px rgba(45, 49, 66, 0.12);
+      }
+
+      .glass-top::after,
+      .glass-nav::after,
+      .primary::after {
+        content: "";
+        position: absolute;
+        inset: -45% auto -45% -42%;
+        width: 42%;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.7), transparent);
+        filter: blur(2px);
+        pointer-events: none;
+        animation: shine 7s ease-in-out infinite;
+      }
+
+      .glass-top {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        min-height: 62px;
+        border-radius: 20px;
+        padding: 0 12px 0 16px;
+      }
+
+      .brand {
+        font-size: 18px;
+        font-weight: 900;
+      }
+
+      .round-control {
+        display: grid;
+        place-items: center;
+        width: 48px;
+        height: 48px;
+        border: 1px solid rgba(255, 255, 255, 0.78);
+        border-radius: 16px;
+        background: rgba(255, 255, 255, 0.48);
+        color: var(--ink);
+        font-size: 15px;
+        font-weight: 900;
+        transition:
+          transform 150ms ease,
+          background 150ms ease;
+      }
+
+      .round-control:active {
+        transform: scale(0.96);
+        background: rgba(255, 255, 255, 0.68);
+      }
+
+      .eyebrow {
+        margin-top: 18px;
+        color: #5f6d79;
+        font-size: 12px;
+        font-weight: 850;
+        text-transform: uppercase;
+      }
+
+      .headline {
+        margin-top: 6px;
+        font-size: 31px;
+        line-height: 1.05;
+      }
+
+      .subline {
+        margin-top: 7px;
+        color: #5e6b76;
+        font-size: 14px;
+        line-height: 1.38;
+      }
+
+      .primary {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        width: 100%;
+        min-height: 94px;
+        margin-top: 16px;
+        border-radius: 22px;
+        color: var(--ink);
+        padding: 0 16px;
+        text-align: left;
+        transition:
+          transform 160ms ease,
+          background 160ms ease,
+          box-shadow 160ms ease;
+      }
+
+      .primary:active {
+        transform: scale(0.985);
+        background: rgba(255, 255, 255, 0.68);
+      }
+
+      .primary strong,
+      .action strong,
+      .list-row strong,
+      .profile-row strong,
+      .day-row strong {
+        display: block;
+        font-size: 16px;
+        line-height: 1.2;
+      }
+
+      .primary span span,
+      .action span,
+      .list-row span,
+      .profile-row span,
+      .day-row span {
+        display: block;
+        margin-top: 4px;
+        color: #5e6b76;
+        font-size: 13px;
+      }
+
+      .arrow {
+        font-size: 28px;
+        font-weight: 850;
+      }
+
+      .mini-status {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 8px;
+        margin-top: 12px;
+      }
+
+      .glass-card {
+        min-height: 84px;
+        border-radius: 20px;
+        padding: 12px;
+      }
+
+      .glass-card strong {
+        display: block;
+        font-size: 18px;
+      }
+
+      .glass-card span {
+        display: block;
+        margin-top: 4px;
+        color: #63717d;
+        font-size: 12px;
+      }
+
+      .section-title {
+        margin: 20px 0 8px;
+        font-size: 14px;
+        font-weight: 900;
+      }
+
+      .quick-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px;
+        margin-top: 12px;
+      }
+
+      .feature-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 9px;
+        margin-top: 12px;
+      }
+
+      .feature {
+        min-height: 86px;
+        border: 1px solid var(--line);
+        border-radius: 20px;
+        background: rgba(255, 255, 255, 0.46);
+        padding: 12px;
+        backdrop-filter: blur(22px) saturate(1.35);
+      }
+
+      .feature strong {
+        display: block;
+        font-size: 15px;
+      }
+
+      .feature span {
+        display: block;
+        margin-top: 5px;
+        color: #5e6b76;
+        font-size: 12px;
+        line-height: 1.3;
+      }
+
+      .action {
+        display: flex;
+        min-height: 112px;
+        flex-direction: column;
+        justify-content: space-between;
+        border: 1px solid var(--line);
+        border-radius: 20px;
+        background: rgba(255, 255, 255, 0.44);
+        color: var(--ink);
+        padding: 13px;
+        text-align: left;
+        backdrop-filter: blur(22px) saturate(1.35);
+        transition:
+          transform 150ms ease,
+          background 150ms ease;
+      }
+
+      .action:active {
+        transform: scale(0.985);
+        background: rgba(255, 255, 255, 0.68);
+      }
+
+      .symbol {
+        display: grid;
+        place-items: center;
+        width: 36px;
+        height: 36px;
+        border-radius: 14px;
+        background: rgba(255, 255, 255, 0.62);
+        color: var(--green-dark);
+        font-size: 14px;
+        font-weight: 900;
+      }
+
+      .list {
+        display: grid;
+        gap: 8px;
+      }
+
+      .list-row,
+      .profile-row,
+      .day-row {
+        display: grid;
+        grid-template-columns: 42px 1fr auto;
+        align-items: center;
+        min-height: 70px;
+        gap: 10px;
+        border: 1px solid var(--line);
+        border-radius: 18px;
+        background: rgba(255, 255, 255, 0.48);
+        padding: 0 10px;
+        backdrop-filter: blur(20px) saturate(1.3);
+        animation: arrive 520ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+      }
+
+      .profile-row {
+        grid-template-columns: 42px 1fr;
+      }
+
+      .day-row {
+        grid-template-columns: 58px 1fr auto;
+      }
+
+      .mark {
+        display: grid;
+        place-items: center;
+        width: 38px;
+        height: 38px;
+        border-radius: 14px;
+        background: rgba(255, 255, 255, 0.66);
+        color: var(--green-dark);
+        font-weight: 900;
+      }
+
+      .map {
+        position: relative;
+        height: 250px;
+        margin-top: 16px;
+        overflow: hidden;
+        border: 1px solid var(--line);
+        border-radius: 26px;
+        background:
+          linear-gradient(90deg, transparent 49%, rgba(35, 107, 80, 0.12) 50%, transparent 51%),
+          linear-gradient(0deg, transparent 49%, rgba(35, 107, 80, 0.12) 50%, transparent 51%),
+          rgba(255, 255, 255, 0.45);
+        background-size: 56px 56px;
+        backdrop-filter: blur(22px) saturate(1.3);
+      }
+
+      .route {
+        position: absolute;
+        left: 52px;
+        top: 74px;
+        width: 218px;
+        height: 112px;
+        border: 9px solid rgba(76, 175, 135, 0.36);
+        border-bottom: 0;
+        border-radius: 44px 44px 0 0;
+        transform: rotate(-12deg);
+      }
+
+      .pin {
+        position: absolute;
+        display: grid;
+        place-items: center;
+        width: 50px;
+        height: 50px;
+        border: 4px solid rgba(255, 255, 255, 0.92);
+        border-radius: 50%;
+        background: var(--green-dark);
+        color: #fff;
+        font-weight: 900;
+        box-shadow: 0 10px 24px rgba(45, 49, 66, 0.2);
+      }
+
+      .pin.one {
+        left: 68px;
+        top: 82px;
+      }
+
+      .pin.two {
+        right: 56px;
+        top: 150px;
+        background: var(--amber);
+      }
+
+      .pin.three {
+        left: 156px;
+        bottom: 42px;
+        background: var(--blue);
+      }
+
+      .time {
+        color: #63717d;
+        font-size: 12px;
+        font-weight: 850;
+      }
+
+      .profile-head {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        min-height: 96px;
+        margin-top: 16px;
+        border: 1px solid var(--line);
+        border-radius: 24px;
+        background: rgba(255, 255, 255, 0.5);
+        padding: 14px;
+        backdrop-filter: blur(24px) saturate(1.35);
+      }
+
+      .avatar {
+        display: grid;
+        place-items: center;
+        width: 60px;
+        height: 60px;
+        border-radius: 22px;
+        background: rgba(35, 107, 80, 0.12);
+        color: var(--green-dark);
+        font-size: 20px;
+        font-weight: 900;
+      }
+
+      .profile-head strong {
+        display: block;
+        font-size: 20px;
+      }
+
+      .profile-head span {
+        display: block;
+        margin-top: 4px;
+        color: #63717d;
+        font-size: 13px;
+      }
+
+      .glass-nav {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 4px;
+        min-height: 78px;
+        margin: 0 10px 10px;
+        border-radius: 24px;
+        padding: 6px;
+      }
+
+      .nav-item {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 64px;
+        flex-direction: column;
+        gap: 4px;
+        border-radius: 18px;
+        color: #61707c;
+        font-size: 11px;
+        font-weight: 850;
+        transition:
+          transform 150ms ease,
+          background 150ms ease,
+          color 150ms ease;
+      }
+
+      .nav-item:active {
+        transform: scale(0.95);
+      }
+
+      .nav-item.active {
+        background: rgba(255, 255, 255, 0.62);
+        color: var(--green-dark);
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.92);
+      }
+
+      .nav-item b {
+        font-size: 14px;
+        line-height: 1;
+      }
+
+      .decision {
+        margin-top: 20px;
+        border: 1px solid var(--line);
+        border-radius: 18px;
+        background: var(--glass);
+        padding: 16px;
+        backdrop-filter: blur(26px) saturate(1.35);
+        box-shadow:
+          inset 0 1px 0 rgba(255, 255, 255, 0.76),
+          0 16px 42px rgba(45, 49, 66, 0.12);
+      }
+
+      .decision h2 {
+        font-size: 20px;
+      }
+
+      .decision p {
+        margin-top: 8px;
+        color: #365345;
+        font-size: 15px;
+        line-height: 1.5;
+      }
+
+      .mode-note {
+        margin-top: 12px;
+        border-left: 4px solid var(--green);
+        border-radius: 12px;
+        background: rgba(255, 255, 255, 0.46);
+        padding: 12px;
+        color: #365345;
+        font-size: 14px;
+        line-height: 1.45;
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        *,
+        *::before,
+        *::after {
+          animation-duration: 1ms !important;
+          animation-iteration-count: 1 !important;
+          transition-duration: 1ms !important;
+        }
+      }
+
+      @media (max-width: 1240px) {
+        .comparison {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+      }
+
+      @media (max-width: 680px) {
+        .page {
+          padding: 14px;
+        }
+
+        .intro {
+          align-items: start;
+          flex-direction: column;
+        }
+
+        .comparison {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="page">
+      <section class="intro">
+        <div>
+          <h1>Erwachsenen-App: vier Tabs, klare Startseite</h1>
+          <p>
+            Vorschlag fuer die Struktur: Start bleibt minimal. Alles Weitere
+            wandert in Mein Quartier, Mein Tag und Ich. Erwachsene und Aktiv
+            55+ nutzen dieselben Funktionen und dieselbe Navigation; Aktiv 55+
+            bekommt nur groessere Abstaende, ruhigere Texte und weniger Dichte.
+          </p>
+        </div>
+        <span class="badge">Start · Mein Quartier · Mein Tag · Ich</span>
+      </section>
+
+      <section class="comparison">
+        <article class="phone-wrap">
+          <div class="screen-note">
+            <h2>1. Start</h2>
+            <p>Nur das Wichtigste: Status, eine Hauptaktion, kleine Hinweise. Kein Modul-Stapel.</p>
+          </div>
+          <div class="phone">
+            <div class="screen">
+              <div class="statusbar"><span>09:41</span><span>5G 87%</span></div>
+              <section class="content">
+                <div class="glass-top">
+                  <div class="brand">QuartierApp</div>
+                  <button class="round-control" aria-label="Benachrichtigungen">N</button>
+                </div>
+                <p class="eyebrow">Bad Saeckingen · Montag</p>
+                <h3 class="headline">Alles ruhig.</h3>
+                <p class="subline">Keine Warnmeldung. Neues aus Rathaus und Quartier liegt bereit.</p>
+
+                <button class="primary">
+                  <span><strong>Mein Quartier oeffnen</strong><span>Rathaus, Veranstaltungen, Karte und Hilfe</span></span>
+                  <span class="arrow">›</span>
+                </button>
+
+                <div class="mini-status">
+                  <div class="glass-card"><strong>0</strong><span>Warnungen</span></div>
+                  <div class="glass-card"><strong>4</strong><span>Quartier</span></div>
+                  <div class="glass-card"><strong>15:00</strong><span>Termin</span></div>
+                </div>
+
+                <h3 class="section-title">Schnell</h3>
+                <div class="quick-grid">
+                  <button class="action"><b class="symbol">Q</b><strong>Quartier</strong><span>Karte und Hinweise</span></button>
+                  <button class="action"><b class="symbol">T</b><strong>Mein Tag</strong><span>Termine und Alltag</span></button>
+                </div>
+              </section>
+              <nav class="glass-nav">
+                <div class="nav-item active"><b>ST</b>Start</div>
+                <div class="nav-item"><b>QU</b>Quartier</div>
+                <div class="nav-item"><b>TA</b>Mein Tag</div>
+                <div class="nav-item"><b>IC</b>Ich</div>
+              </nav>
+            </div>
+          </div>
+        </article>
+
+        <article class="phone-wrap">
+          <div class="screen-note">
+            <h2>2. Mein Quartier</h2>
+            <p>Der grosse Sammelort: Rathaus, Warnungen, Amtsblatt, Events, Karte, Orte, Hilfe, Gruppen.</p>
+          </div>
+          <div class="phone">
+            <div class="screen">
+              <div class="statusbar"><span>09:41</span><span>5G 87%</span></div>
+              <section class="content">
+                <div class="glass-top">
+                  <div class="brand">Mein Quartier</div>
+                  <button class="round-control" aria-label="Liste">L</button>
+                </div>
+                <p class="eyebrow">Purkersdorfer Strasse</p>
+                <h3 class="headline">Quartier</h3>
+                <div class="map">
+                  <div class="route"></div>
+                  <div class="pin one">H</div>
+                  <div class="pin two">!</div>
+                  <div class="pin three">T</div>
+                </div>
+                <h3 class="section-title">Alles vor Ort</h3>
+                <div class="feature-grid">
+                  <div class="feature"><strong>Rathaus</strong><span>Bekanntmachungen, Amtsblatt, Meldungen</span></div>
+                  <div class="feature"><strong>Veranstaltungen</strong><span>Treffen, Kultur, Vereine, Kurse</span></div>
+                  <div class="feature"><strong>Karte & Orte</strong><span>POIs, OePNV, Aerzte, Services</span></div>
+                  <div class="feature"><strong>Hilfe & Gruppen</strong><span>Nachbarn, Hilfe suchen, anbieten</span></div>
+                </div>
+                <h3 class="section-title">Neu</h3>
+                <div class="list">
+                  <div class="list-row"><div class="mark">R</div><div><strong>Rathaus-Info</strong><span>Neue Baustellenmeldung</span></div><span class="arrow">›</span></div>
+                  <div class="list-row"><div class="mark">E</div><div><strong>Veranstaltung</strong><span>Begegnungscafe heute 15:00</span></div><span class="arrow">›</span></div>
+                </div>
+              </section>
+              <nav class="glass-nav">
+                <div class="nav-item"><b>ST</b>Start</div>
+                <div class="nav-item active"><b>QU</b>Quartier</div>
+                <div class="nav-item"><b>TA</b>Mein Tag</div>
+                <div class="nav-item"><b>IC</b>Ich</div>
+              </nav>
+            </div>
+          </div>
+        </article>
+
+        <article class="phone-wrap">
+          <div class="screen-note">
+            <h2>3. Mein Tag</h2>
+            <p>Gleiche Funktionen, aber zeitlich sortiert: Wetter, Müll, Termine, Events, Nachrichten.</p>
+          </div>
+          <div class="phone">
+            <div class="screen">
+              <div class="statusbar"><span>09:41</span><span>5G 87%</span></div>
+              <section class="content">
+                <div class="glass-top">
+                  <div class="brand">Mein Tag</div>
+                  <button class="round-control" aria-label="Kalender">K</button>
+                </div>
+                <p class="eyebrow">Montag · 18. Mai</p>
+                <h3 class="headline">Heute</h3>
+                <p class="subline">Wetter, Termine und Nachrichten in einer Liste.</p>
+
+                <div class="list" style="margin-top: 16px">
+                  <div class="day-row"><div class="time">Jetzt</div><div><strong>Leichter Regen</strong><span>Schirm mitnehmen</span></div><span class="arrow">›</span></div>
+                  <div class="day-row"><div class="time">11:30</div><div><strong>Nachricht beantworten</strong><span>Tanja fragt wegen Freitag</span></div><span class="arrow">›</span></div>
+                  <div class="day-row"><div class="time">15:00</div><div><strong>Begegnungscafe</strong><span>Gemeindehaus, 600 m</span></div><span class="arrow">›</span></div>
+                  <div class="day-row"><div class="time">Morgen</div><div><strong>Biotonne</strong><span>Heute Abend rausstellen</span></div><span class="arrow">›</span></div>
+                </div>
+              </section>
+              <nav class="glass-nav">
+                <div class="nav-item"><b>ST</b>Start</div>
+                <div class="nav-item"><b>QU</b>Quartier</div>
+                <div class="nav-item active"><b>TA</b>Mein Tag</div>
+                <div class="nav-item"><b>IC</b>Ich</div>
+              </nav>
+            </div>
+          </div>
+        </article>
+
+        <article class="phone-wrap">
+          <div class="screen-note">
+            <h2>4. Ich</h2>
+            <p>Persoenlich: Profil, Sicherheit, Modus. Aktiv 55+ ist hier nur eine Darstellung, kein Funktionsverlust.</p>
+          </div>
+          <div class="phone">
+            <div class="screen">
+              <div class="statusbar"><span>09:41</span><span>5G 87%</span></div>
+              <section class="content">
+                <div class="glass-top">
+                  <div class="brand">Ich</div>
+                  <button class="round-control" aria-label="Einstellungen">E</button>
+                </div>
+                <div class="profile-head">
+                  <div class="avatar">A</div>
+                  <div><strong>Anna T.</strong><span>Aktiv · Bad Saeckingen</span></div>
+                </div>
+
+                <h3 class="section-title">Persoenlich</h3>
+                <div class="list">
+                  <div class="profile-row"><div class="mark">M</div><div><strong>Darstellung</strong><span>Aktiv oder Aktiv 55+ - gleiche Funktionen</span></div></div>
+                  <div class="profile-row"><div class="mark">B</div><div><strong>Benachrichtigungen</strong><span>Nachrichten und wichtige Hinweise</span></div></div>
+                  <div class="profile-row"><div class="mark">S</div><div><strong>Sicherheit</strong><span>Daten, Einladung, Datenschutz</span></div></div>
+                  <div class="profile-row"><div class="mark">H</div><div><strong>Hilfe zur App</strong><span>Kurze Anleitung und Kontakt</span></div></div>
+                </div>
+              </section>
+              <nav class="glass-nav">
+                <div class="nav-item"><b>ST</b>Start</div>
+                <div class="nav-item"><b>QU</b>Quartier</div>
+                <div class="nav-item"><b>TA</b>Mein Tag</div>
+                <div class="nav-item active"><b>IC</b>Ich</div>
+              </nav>
+            </div>
+          </div>
+        </article>
+      </section>
+
+      <section class="decision">
+        <h2>Warum diese Struktur besser passt</h2>
+        <p>
+          Die Startseite muss nicht alles zeigen. Sie muss nur beruhigen und
+          den naechsten Schritt anbieten. Alles Raeumliche liegt in Mein
+          Quartier, alles Zeitliche in Mein Tag, alles Persoenliche in Ich.
+          Dadurch wird die App schneller, erwachsener und viel weniger
+          KI-artig.
+        </p>
+        <div class="mode-note">
+          Aktiv 55+ nutzt dieselbe Struktur und dieselben Funktionen wie
+          Erwachsene: Start, Mein Quartier, Mein Tag, Ich. Der Unterschied ist
+          nur die Darstellung: groessere Schrift, mehr Abstand, weniger
+          gleichzeitige Eintraege und ruhigere Priorisierung.
+        </div>
+      </section>
+    </main>
+  </body>
+</html>

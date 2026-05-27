@@ -1,0 +1,722 @@
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>QuartierApp Mobile UI Vergleich</title>
+    <style>
+      :root {
+        --ink: #2d3142;
+        --muted: #667085;
+        --line: #d8dee6;
+        --soft: #f5f7f8;
+        --paper: #ffffff;
+        --green: #4caf87;
+        --green-dark: #236b50;
+        --amber: #f59e0b;
+        --blue: #2563eb;
+        --red: #ef4444;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        background: #e8edf1;
+        color: var(--ink);
+        font-family:
+          Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+          "Segoe UI", sans-serif;
+        letter-spacing: 0;
+      }
+
+      h1,
+      h2,
+      h3,
+      p {
+        margin: 0;
+      }
+
+      .page {
+        max-width: 1480px;
+        margin: 0 auto;
+        padding: 22px;
+      }
+
+      .intro {
+        display: flex;
+        align-items: end;
+        justify-content: space-between;
+        gap: 24px;
+        padding-bottom: 20px;
+      }
+
+      .intro h1 {
+        font-size: 30px;
+        line-height: 1.12;
+      }
+
+      .intro p {
+        max-width: 760px;
+        margin-top: 8px;
+        color: var(--muted);
+        font-size: 15px;
+        line-height: 1.5;
+      }
+
+      .badge {
+        border: 1px solid #cbd3dd;
+        border-radius: 999px;
+        background: #fff;
+        color: var(--muted);
+        font-size: 12px;
+        font-weight: 800;
+        padding: 8px 12px;
+        white-space: nowrap;
+      }
+
+      .comparison {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 18px;
+        align-items: start;
+      }
+
+      .candidate {
+        display: grid;
+        gap: 10px;
+        justify-items: center;
+      }
+
+      .caption {
+        width: 100%;
+        min-height: 120px;
+        border: 1px solid #cbd3dd;
+        border-radius: 8px;
+        background: #fff;
+        padding: 14px;
+      }
+
+      .caption h2 {
+        font-size: 17px;
+        line-height: 1.2;
+      }
+
+      .caption p {
+        margin-top: 6px;
+        color: var(--muted);
+        font-size: 13px;
+        line-height: 1.42;
+      }
+
+      .score {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        margin-top: 10px;
+      }
+
+      .score span {
+        border-radius: 999px;
+        background: #eef2f4;
+        color: var(--ink);
+        font-size: 11px;
+        font-weight: 850;
+        padding: 5px 8px;
+      }
+
+      .score .best {
+        background: #e7f5ef;
+        color: #1d664b;
+      }
+
+      .phone {
+        position: relative;
+        width: 100%;
+        max-width: 340px;
+        height: 760px;
+        overflow: hidden;
+        border: 9px solid #151922;
+        border-radius: 34px;
+        background: var(--paper);
+        box-shadow: 0 24px 70px rgb(45 49 66 / 22%);
+      }
+
+      .screen {
+        display: flex;
+        min-height: 100%;
+        flex-direction: column;
+        background: #fff;
+      }
+
+      .statusbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        height: 32px;
+        padding: 0 20px;
+        color: #17202a;
+        font-size: 12px;
+        font-weight: 850;
+      }
+
+      .appbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        min-height: 60px;
+        border-bottom: 1px solid var(--line);
+        padding: 0 16px;
+      }
+
+      .brand {
+        font-size: 18px;
+        font-weight: 900;
+      }
+
+      .icon-button {
+        display: grid;
+        place-items: center;
+        width: 56px;
+        height: 56px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: #fff;
+        color: var(--ink);
+        font-size: 18px;
+        font-weight: 900;
+      }
+
+      .content {
+        flex: 1;
+        overflow: hidden;
+        padding: 16px;
+      }
+
+      .date {
+        color: var(--muted);
+        font-size: 12px;
+        font-weight: 850;
+        text-transform: uppercase;
+      }
+
+      .headline {
+        margin-top: 6px;
+        font-size: 27px;
+        line-height: 1.12;
+      }
+
+      .subline {
+        margin-top: 6px;
+        color: var(--muted);
+        font-size: 14px;
+        line-height: 1.38;
+      }
+
+      .primary-action,
+      .wide-action,
+      .task-card,
+      .service-button {
+        width: 100%;
+        border-radius: 8px;
+        text-align: left;
+      }
+
+      .primary-action {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        min-height: 80px;
+        margin-top: 16px;
+        border: 0;
+        background: var(--green-dark);
+        color: #fff;
+        padding: 0 16px;
+      }
+
+      .primary-action strong,
+      .wide-action strong,
+      .task-card strong,
+      .service-button strong,
+      .feed-row strong,
+      .agenda-main strong {
+        display: block;
+        font-size: 16px;
+        line-height: 1.2;
+      }
+
+      .primary-action span span,
+      .wide-action span span,
+      .task-card span,
+      .service-button span span,
+      .feed-row span,
+      .agenda-main span {
+        display: block;
+        margin-top: 4px;
+        color: inherit;
+        font-size: 13px;
+        opacity: 0.8;
+      }
+
+      .arrow {
+        font-size: 26px;
+        font-weight: 850;
+      }
+
+      .quick-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px;
+        margin-top: 12px;
+      }
+
+      .tile {
+        display: flex;
+        min-height: 112px;
+        flex-direction: column;
+        justify-content: space-between;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: #fff;
+        padding: 13px;
+      }
+
+      .tile b {
+        display: grid;
+        place-items: center;
+        width: 34px;
+        height: 34px;
+        border-radius: 8px;
+        background: #edf4f0;
+        color: var(--green-dark);
+        font-size: 14px;
+      }
+
+      .tile strong {
+        display: block;
+        font-size: 16px;
+      }
+
+      .tile span {
+        display: block;
+        margin-top: 4px;
+        color: var(--muted);
+        font-size: 12px;
+      }
+
+      .section-title {
+        margin: 20px 0 8px;
+        font-size: 14px;
+        font-weight: 900;
+      }
+
+      .feed-list {
+        border-top: 1px solid var(--line);
+      }
+
+      .feed-row {
+        display: grid;
+        grid-template-columns: 40px 1fr;
+        align-items: center;
+        min-height: 68px;
+        gap: 10px;
+        border-bottom: 1px solid var(--line);
+      }
+
+      .mark {
+        display: grid;
+        place-items: center;
+        width: 40px;
+        height: 40px;
+        border-radius: 8px;
+        background: #eef4f1;
+        color: var(--green-dark);
+        font-weight: 900;
+      }
+
+      .bottom-nav {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        min-height: 80px;
+        border-top: 1px solid var(--line);
+        background: #fff;
+        padding: 6px 6px 8px;
+      }
+
+      .nav-item {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 66px;
+        flex-direction: column;
+        gap: 4px;
+        border-radius: 8px;
+        color: var(--muted);
+        font-size: 11px;
+        font-weight: 850;
+      }
+
+      .nav-item.active {
+        background: #eaf6f1;
+        color: var(--green-dark);
+      }
+
+      .nav-item b {
+        font-size: 15px;
+        line-height: 1;
+      }
+
+      .agenda {
+        margin-top: 16px;
+        border-top: 2px solid var(--ink);
+      }
+
+      .agenda-row {
+        display: grid;
+        grid-template-columns: 58px 1fr;
+        min-height: 78px;
+        border-bottom: 1px solid var(--line);
+      }
+
+      .time {
+        padding-top: 14px;
+        color: var(--muted);
+        font-size: 12px;
+        font-weight: 850;
+      }
+
+      .agenda-main {
+        padding: 12px 0;
+      }
+
+      .wide-action {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        min-height: 72px;
+        border: 1px solid var(--line);
+        background: #fff;
+        color: var(--ink);
+        padding: 0 14px;
+      }
+
+      .stack {
+        display: grid;
+        gap: 10px;
+        margin-top: 14px;
+      }
+
+      .hero-panel {
+        display: flex;
+        min-height: 156px;
+        flex-direction: column;
+        justify-content: flex-end;
+        margin: 14px -16px 0;
+        padding: 16px;
+        background:
+          linear-gradient(180deg, rgb(45 49 66 / 4%), rgb(45 49 66 / 66%)),
+          linear-gradient(135deg, #dbe8e1, #9bb8aa 48%, #526b62);
+        color: #fff;
+      }
+
+      .hero-panel strong {
+        display: block;
+        font-size: 23px;
+        line-height: 1.1;
+      }
+
+      .hero-panel span {
+        display: block;
+        margin-top: 6px;
+        font-size: 13px;
+        opacity: 0.9;
+      }
+
+      .service-list {
+        display: grid;
+        gap: 8px;
+        margin-top: 14px;
+      }
+
+      .service-button {
+        display: grid;
+        grid-template-columns: 48px 1fr auto;
+        align-items: center;
+        min-height: 72px;
+        border: 1px solid var(--line);
+        background: #fff;
+        color: var(--ink);
+        padding: 0 12px;
+      }
+
+      .service-icon {
+        display: grid;
+        place-items: center;
+        width: 40px;
+        height: 40px;
+        border-radius: 8px;
+        background: #edf4f0;
+        color: var(--green-dark);
+        font-weight: 900;
+      }
+
+      .task-stack {
+        display: grid;
+        gap: 11px;
+        margin-top: 16px;
+      }
+
+      .task-card {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        align-items: center;
+        min-height: 82px;
+        border: 1px solid var(--line);
+        background: #fff;
+        padding: 13px;
+      }
+
+      .check {
+        display: grid;
+        place-items: center;
+        width: 44px;
+        height: 44px;
+        border: 2px solid var(--line);
+        border-radius: 50%;
+        color: var(--green-dark);
+        font-weight: 900;
+      }
+
+      .verdict {
+        margin-top: 20px;
+        border: 1px solid #bfdccc;
+        border-radius: 8px;
+        background: #f5fbf8;
+        padding: 16px;
+      }
+
+      .verdict h2 {
+        font-size: 20px;
+      }
+
+      .verdict p {
+        margin-top: 8px;
+        color: #355f4f;
+        font-size: 15px;
+        line-height: 1.5;
+      }
+
+      @media (max-width: 1240px) {
+        .comparison {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+      }
+
+      @media (max-width: 680px) {
+        .page {
+          padding: 14px;
+        }
+
+        .intro {
+          align-items: start;
+          flex-direction: column;
+        }
+
+        .comparison {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="page">
+      <section class="intro">
+        <div>
+          <h1>Vier Mobile-Vorschlaege fuer die Erwachsenen-App</h1>
+          <p>
+            Alle vier sind fuer Fingerbedienung gedacht: grosse Touch-Ziele,
+            klare Daumenwege und Bottom-Navigation. Der Unterschied liegt darin,
+            womit die App startet.
+          </p>
+        </div>
+        <span class="badge">Handy zuerst · 56-80 px Touch-Ziele</span>
+      </section>
+
+      <section class="comparison">
+        <article class="candidate">
+          <div class="caption">
+            <h2>1. Start mit vier Wegen</h2>
+            <p>Beste Orientierung fuer neue Nutzer. Man sieht sofort, was man tun kann.</p>
+            <div class="score"><span class="best">Bedienbarkeit sehr gut</span><span>Erlebnis gut</span></div>
+          </div>
+          <div class="phone">
+            <div class="screen">
+              <div class="statusbar"><span>09:41</span><span>5G 87%</span></div>
+              <header class="appbar">
+                <div class="brand">QuartierApp</div>
+                <button class="icon-button" aria-label="Benachrichtigungen">N</button>
+              </header>
+              <section class="content">
+                <p class="date">Montag · Bad Saeckingen</p>
+                <h3 class="headline">Guten Morgen, Anna.</h3>
+                <p class="subline">Keine Warnmeldung. Ein Termin heute.</p>
+                <button class="primary-action">
+                  <span><strong>Gemeinschaft</strong><span>Nachbarn, Gruppen, neue Beitraege</span></span>
+                  <span class="arrow">›</span>
+                </button>
+                <div class="quick-grid">
+                  <button class="tile"><b>N</b><strong>Nachrichten</strong><span>2 neu</span></button>
+                  <button class="tile"><b>H</b><strong>Hilfe</strong><span>Suchen oder anbieten</span></button>
+                  <button class="tile"><b>K</b><strong>Karte</strong><span>Orte und Hinweise</span></button>
+                  <button class="tile"><b>T</b><strong>Termine</strong><span>Heute 15:00</span></button>
+                </div>
+                <h3 class="section-title">Aktuell</h3>
+                <div class="feed-list">
+                  <div class="feed-row"><div class="mark">1</div><div><strong>Biotonne morgen</strong><span>Ab 6:00 Uhr bereitstellen</span></div></div>
+                  <div class="feed-row"><div class="mark">2</div><div><strong>Begegnungscafe</strong><span>Heute um 15:00 Uhr</span></div></div>
+                </div>
+              </section>
+              <nav class="bottom-nav">
+                <div class="nav-item active"><b>ST</b>Start</div>
+                <div class="nav-item"><b>NA</b>Nachrichten</div>
+                <div class="nav-item"><b>KA</b>Karte</div>
+                <div class="nav-item"><b>ME</b>Mehr</div>
+              </nav>
+            </div>
+          </div>
+        </article>
+
+        <article class="candidate">
+          <div class="caption">
+            <h2>2. Mein Tag</h2>
+            <p>Beste Alltagserfahrung. Fuehlt sich ruhig, persoenlich und weniger technisch an.</p>
+            <div class="score"><span>Bedienbarkeit gut</span><span class="best">Erlebnis sehr gut</span></div>
+          </div>
+          <div class="phone">
+            <div class="screen">
+              <div class="statusbar"><span>09:41</span><span>5G 87%</span></div>
+              <header class="appbar">
+                <div class="brand">Mein Tag</div>
+                <button class="icon-button" aria-label="Profil">A</button>
+              </header>
+              <section class="content">
+                <p class="date">Montag · 18. Mai</p>
+                <h3 class="headline">Heute</h3>
+                <p class="subline">Wetter, Termine und Nachrichten in zeitlicher Reihenfolge.</p>
+                <div class="agenda">
+                  <div class="agenda-row">
+                    <div class="time">Jetzt</div>
+                    <div class="agenda-main"><strong>Leichter Regen</strong><span>Schirm mitnehmen</span></div>
+                  </div>
+                  <div class="agenda-row">
+                    <div class="time">11:30</div>
+                    <div class="agenda-main"><strong>Tanja fragt nach</strong><span>Freitag Einkauf bestaetigen</span></div>
+                  </div>
+                  <div class="agenda-row">
+                    <div class="time">15:00</div>
+                    <div class="agenda-main"><strong>Begegnungscafe</strong><span>Gemeindehaus, 600 m</span></div>
+                  </div>
+                  <div class="agenda-row">
+                    <div class="time">Morgen</div>
+                    <div class="agenda-main"><strong>Biotonne</strong><span>Heute Abend rausstellen</span></div>
+                  </div>
+                </div>
+              </section>
+              <nav class="bottom-nav">
+                <div class="nav-item active"><b>HE</b>Heute</div>
+                <div class="nav-item"><b>FA</b>Familie</div>
+                <div class="nav-item"><b>HI</b>Hilfe</div>
+                <div class="nav-item"><b>ME</b>Mehr</div>
+              </nav>
+            </div>
+          </div>
+        </article>
+
+        <article class="candidate">
+          <div class="caption">
+            <h2>3. Lokal wie eine Stadt-App</h2>
+            <p>Serioes und kommunal. Gut fuer Vertrauen, aber weniger warm als die Tagesansicht.</p>
+            <div class="score"><span>Bedienbarkeit gut</span><span>Vertrauen sehr gut</span></div>
+          </div>
+          <div class="phone">
+            <div class="screen">
+              <div class="statusbar"><span>09:41</span><span>5G 87%</span></div>
+              <header class="appbar">
+                <div class="brand">Bad Saeckingen</div>
+                <button class="icon-button" aria-label="Suche">S</button>
+              </header>
+              <section class="content">
+                <p class="date">Quartier Purkersdorfer Strasse</p>
+                <h3 class="headline">Vor Ort</h3>
+                <div class="hero-panel">
+                  <strong>Heute im Quartier</strong>
+                  <span>Keine Warnmeldung. Zwei neue Hinweise. Ein Termin.</span>
+                </div>
+                <div class="service-list">
+                  <button class="service-button"><span class="service-icon">!</span><span><strong>Meldungen</strong><span>Stadt, Wetter, Verkehr</span></span><span class="arrow">›</span></button>
+                  <button class="service-button"><span class="service-icon">H</span><span><strong>Hilfe</strong><span>Suchen oder anbieten</span></span><span class="arrow">›</span></button>
+                  <button class="service-button"><span class="service-icon">K</span><span><strong>Karte</strong><span>Orte, Angebote, Hinweise</span></span><span class="arrow">›</span></button>
+                </div>
+              </section>
+              <nav class="bottom-nav">
+                <div class="nav-item active"><b>VO</b>Vor Ort</div>
+                <div class="nav-item"><b>NA</b>Nachbarn</div>
+                <div class="nav-item"><b>ME</b>Meldungen</div>
+                <div class="nav-item"><b>+</b>Mehr</div>
+              </nav>
+            </div>
+          </div>
+        </article>
+
+        <article class="candidate">
+          <div class="caption">
+            <h2>4. Aufgaben zuerst</h2>
+            <p>Am direktesten. Sehr praktisch, aber kann etwas sachlich und weniger herzlich wirken.</p>
+            <div class="score"><span class="best">Bedienbarkeit sehr gut</span><span>Erlebnis mittel</span></div>
+          </div>
+          <div class="phone">
+            <div class="screen">
+              <div class="statusbar"><span>09:41</span><span>5G 87%</span></div>
+              <header class="appbar">
+                <div class="brand">Heute erledigen</div>
+                <button class="icon-button" aria-label="Filter">F</button>
+              </header>
+              <section class="content">
+                <p class="date">3 offene Punkte</p>
+                <h3 class="headline">Kurz durchgehen</h3>
+                <p class="subline">Alles ist mit einem Finger erreichbar, ohne lange Erklaerung.</p>
+                <div class="task-stack">
+                  <button class="task-card"><div><strong>Nachricht beantworten</strong><span>Tanja fragt wegen Freitag</span></div><span class="check">1</span></button>
+                  <button class="task-card"><div><strong>Biotonne merken</strong><span>Morgen ab 6:00 Uhr</span></div><span class="check">2</span></button>
+                  <button class="task-card"><div><strong>Hilfeangebot ansehen</strong><span>Bernd kann tragen helfen</span></div><span class="check">3</span></button>
+                </div>
+                <h3 class="section-title">Danach</h3>
+                <button class="wide-action"><span><strong>Quartier oeffnen</strong><span>Karte, Gruppen und Meldungen</span></span><span class="arrow">›</span></button>
+              </section>
+              <nav class="bottom-nav">
+                <div class="nav-item active"><b>AU</b>Aufgaben</div>
+                <div class="nav-item"><b>QU</b>Quartier</div>
+                <div class="nav-item"><b>NA</b>Nachricht</div>
+                <div class="nav-item"><b>ME</b>Mehr</div>
+              </nav>
+            </div>
+          </div>
+        </article>
+      </section>
+
+      <section class="verdict">
+        <h2>Meine Empfehlung: Vorschlag 1 als Basis, Vorschlag 2 als Startinhalt</h2>
+        <p>
+          Fuer die Bedienbarkeit ist Vorschlag 1 am staerksten: vier klare Wege,
+          grosse Flaechen, wenig Nachdenken. Fuer die Erfahrung ist Vorschlag 2
+          am angenehmsten, weil die App wie ein Tagesbegleiter wirkt statt wie
+          ein Dashboard. Ich wuerde deshalb den Start wie Vorschlag 1 bauen,
+          aber die erste Kachel und den oberen Bereich als "Mein Tag" aus
+          Vorschlag 2 gestalten.
+        </p>
+      </section>
+    </main>
+  </body>
+</html>

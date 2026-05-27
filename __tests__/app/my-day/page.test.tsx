@@ -19,6 +19,9 @@ vi.mock("lucide-react", () => ({
   Calendar: (props: Record<string, unknown>) => (
     <svg data-testid="icon-calendar" {...props} />
   ),
+  ClipboardList: (props: Record<string, unknown>) => (
+    <svg data-testid="icon-clipboard" {...props} />
+  ),
   Phone: (props: Record<string, unknown>) => (
     <svg data-testid="icon-phone" {...props} />
   ),
@@ -174,6 +177,27 @@ describe("MyDayPage", () => {
     await waitFor(() => {
       expect(screen.getByTestId("day-calendar")).toBeInTheDocument();
     });
+  });
+
+  it("richtet Mein Tag auf Termine, Aufgaben und Muell aus", async () => {
+    render(<MyDayPage />);
+
+    await waitFor(() => {
+      expect(screen.getByTestId("my-day-page")).toBeInTheDocument();
+    });
+
+    expect(
+      screen.getByRole("link", { name: /TermineArzt, Hilfe und Verabredungen/i }),
+    ).toHaveAttribute("href", "/care/appointments");
+    expect(
+      screen.getByRole("link", { name: /AufgabenOffene Dinge, Hilfe/i }),
+    ).toHaveAttribute("href", "/care/tasks");
+    expect(
+      screen.getByRole("link", { name: /MuellkalenderAbholung heute/i }),
+    ).toHaveAttribute("href", "/waste-calendar");
+    expect(
+      screen.queryByRole("link", { name: /Veranstaltungen/i }),
+    ).not.toBeInTheDocument();
   });
 
   it("zeigt Medikamenten-Bereich", async () => {

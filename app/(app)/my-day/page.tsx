@@ -6,6 +6,7 @@ import {
   AlertTriangle,
   Calendar,
   CheckCircle2,
+  ClipboardList,
   Clock,
   Frown,
   HandHeart,
@@ -160,10 +161,10 @@ export default function MyDayPage() {
       description: "Arzt, Hilfe und Verabredungen",
     },
     {
-      href: "/events",
-      icon: Clock,
-      label: "Veranstaltungen",
-      description: "Was heute und bald im Quartier passiert",
+      href: "/care/tasks",
+      icon: ClipboardList,
+      label: "Aufgaben",
+      description: "Offene Dinge, Hilfe und Erledigungen",
     },
     {
       href: "/waste-calendar",
@@ -212,7 +213,7 @@ export default function MyDayPage() {
           {getGreeting()}
         </h1>
         <p className="mt-2 text-sm text-muted-foreground">
-          Termine, Veranstaltungen, Muell und wichtige Hinweise an einem Ort.
+          Termine, Aufgaben, Muell und wichtige Hinweise an einem Ort.
         </p>
         {lastHeartbeat && (
           <div className="mt-3 flex items-center gap-1.5 text-sm text-muted-foreground">

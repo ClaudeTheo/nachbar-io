@@ -98,7 +98,7 @@ const currentStructures: Record<RoleId, Structure> = {
     headline: "Heute: viel ist erreichbar, aber mehrere Einstiege konkurrieren.",
     bottomNav: [
       { label: "Start", href: "/dashboard", icon: Home },
-      { label: "Quartier", href: "/quartier-info", icon: Building2 },
+      { label: "Quartier", href: "/quartier", icon: Building2 },
       { label: "Gesundheit", href: "/care", icon: Heart },
       { label: "Ich", href: "/profile", icon: User },
     ],
@@ -298,7 +298,7 @@ const proposedStructures: Record<RoleId, Structure> = {
     headline: "Vorschlag: Die Quartiergemeinschaft bleibt der erste Produktbereich.",
     bottomNav: [
       { label: "Start", href: "/dashboard", icon: Home },
-      { label: "Quartier", href: "/quartier-info", icon: Building2 },
+      { label: "Quartier", href: "/quartier", icon: Building2 },
       { label: "Hilfe", href: "/hilfe", icon: Heart },
       { label: "Ich", href: "/profile", icon: User },
     ],

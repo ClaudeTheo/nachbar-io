@@ -74,7 +74,7 @@ describe("Dashboard ui modes", () => {
 
     expect(
       screen.getByRole("link", { name: /Mein QuartierRathaus, Karte, Veranstaltungen/i }),
-    ).toHaveAttribute("href", "/quartier-info");
+    ).toHaveAttribute("href", "/quartier");
     expect(
       screen.getByRole("link", { name: /Mein TagHeute planen/i }),
     ).toHaveAttribute("href", "/my-day");

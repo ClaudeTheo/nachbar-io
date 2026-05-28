@@ -125,7 +125,7 @@ export default function DashboardPage() {
   const PrimaryIcon = primaryAction.icon;
   const summaryItems = [
     {
-      href: "/quartier-info",
+      href: "/quartier",
       icon: MapPin,
       label: "Mein Quartier",
       value: "Rathaus, Karte, Veranstaltungen",

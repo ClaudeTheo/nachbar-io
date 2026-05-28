@@ -42,13 +42,19 @@ test.describe("Auth-Flow: Dashboard", () => {
     await dashboard.goto();
     await dashboard.assertLoaded();
 
-    // Zum Quartier-Info-Hub navigieren
+    // Zum "Mein Quartier"-Hub navigieren (Welle 3, Option C)
     await dashboard.navigateVia("map");
-    await expect(page).toHaveURL(/\/quartier-info/);
+    await expect(page).toHaveURL(/\/quartier(?!-info)/);
     await waitForStableUI(page);
 
-    await expect(page.getByTestId("info-weather")).toBeVisible();
-    console.log("[AUTH] Quartier-Info-Hub erreicht ✓");
+    // Hub zeigt Titel + Kacheln; /quartier-info ist nur EINE Kachel.
+    await expect(
+      page.getByRole("heading", { name: /Mein Quartier/i }),
+    ).toBeVisible();
+    await expect(
+      page.getByRole("link", { name: /Wetter & Warnungen/i }),
+    ).toBeVisible();
+    console.log("[AUTH] Mein-Quartier-Hub erreicht ✓");
   });
 
   test("AF1.4 — Navigation via BottomNav zu Gesundheit", async ({ page }) => {

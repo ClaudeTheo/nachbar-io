@@ -9,7 +9,7 @@ describe("getNavItems", () => {
     expect(items[0].label).toBe("Start");
     expect(items[0].href).toBe("/dashboard");
     expect(items[1].label).toBe("Mein Quartier");
-    expect(items[1].href).toBe("/quartier-info");
+    expect(items[1].href).toBe("/quartier");
     expect(items[2].label).toBe("Mein Tag");
     expect(items[2].href).toBe("/my-day");
     expect(items[3].label).toBe("Ich");
@@ -22,7 +22,7 @@ describe("getNavItems", () => {
     expect(items[0].label).toBe("Start");
     expect(items[0].href).toBe("/dashboard");
     expect(items[1].label).toBe("Quartier");
-    expect(items[1].href).toBe("/quartier-info");
+    expect(items[1].href).toBe("/quartier");
     expect(items[2].label).toBe("Mein Tag");
     expect(items[2].href).toBe("/my-day");
     expect(items[3].label).toBe("Ich");
@@ -35,7 +35,7 @@ describe("getNavItems", () => {
     expect(items[0].label).toBe("Start");
     expect(items[0].href).toBe("/dashboard");
     expect(items[1].label).toBe("Mein Quartier");
-    expect(items[1].href).toBe("/quartier-info");
+    expect(items[1].href).toBe("/quartier");
     expect(items[2].label).toBe("Mein Tag");
     expect(items[2].href).toBe("/my-day");
     expect(items[3].label).toBe("Ich");
@@ -63,7 +63,7 @@ describe("getNavItems", () => {
   it("gibt 4 Items fuer Org-Admin zurueck", () => {
     const items = getNavItems("org_admin");
     expect(items).toHaveLength(4);
-    expect(items[1].href).toBe("/quartier-info");
+    expect(items[1].href).toBe("/quartier");
     expect(items[1].label).toBe("Mein Quartier");
     expect(items[2].label).toBe("Verwaltung");
     expect(items[2].href).toBe("/org");

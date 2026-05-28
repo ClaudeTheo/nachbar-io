@@ -32,7 +32,7 @@ export default function BarrierefreiheitPage() {
           {/* Einleitung */}
           <section>
             <p>
-              Thomas Theobald ist bestrebt, die QuartierApp im
+              Die Theobase GmbH ist bestrebt, die QuartierApp im
               Einklang mit dem Barrierefreiheitsstärkungsgesetz (BFSG) und der
               europäischen Norm EN 301 549 barrierefrei zugänglich zu machen.
             </p>
@@ -75,9 +75,9 @@ export default function BarrierefreiheitPage() {
               Hinweis zum Anwendungsbereich
             </h2>
             <p>
-              Die Theobase GmbH (in Gründung) ist Kleinstunternehmen im Sinne
-              von <strong>§ 3 Abs. 3 BFSG</strong> (Solo-Founder,
-              geschlossener Pilotbetrieb, weniger als zehn Beschäftigte und
+              Die Theobase GmbH ist Kleinstunternehmen im Sinne
+              von <strong>§ 3 Abs. 3 BFSG</strong> (geschlossener
+              Pilotbetrieb, weniger als zehn Beschäftigte und
               unter zwei Millionen Euro Jahresumsatz). Die als Dienstleistung
               erbrachte QuartierApp ist damit vom Anwendungsbereich des
               Barrierefreiheitsstärkungsgesetzes ausgenommen.
@@ -208,7 +208,7 @@ export default function BarrierefreiheitPage() {
             <p className="mt-3">
               <strong className="text-anthrazit">Kontakt:</strong>
               <br />
-              Thomas Theobald
+              Theobase GmbH, Thomas Walter Theobald
               <br />
               E-Mail:{" "}
               <a

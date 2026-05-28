@@ -28,7 +28,7 @@ export default function ImpressumPage() {
               Angaben gemäß § 5 DDG
             </h2>
             <p>
-              Thomas Theobald
+              Theobase GmbH
               <br />
               Purkersdorfer Straße 35
               <br />
@@ -36,42 +36,36 @@ export default function ImpressumPage() {
               <br />
               Deutschland
             </p>
+            <p className="mt-2">
+              Vertreten durch den Geschäftsführer: Thomas Walter Theobald
+              <br />
+              Registergericht: Amtsgericht Freiburg im Breisgau
+              <br />
+              Registernummer: HRB 735685
+            </p>
           </section>
 
-          <section className="rounded-lg border border-amber-200 bg-amber-50 p-4">
+          <section>
             <h2 className="mb-2 text-lg font-semibold text-anthrazit">
-              Hinweis zur Rechtsform — vor Handelsregistereintragung
+              Hinweis zum Pilotbetrieb
             </h2>
             <p>
-              Die Theobase GmbH befindet sich in Gründung. Bis zur Eintragung
-              beim zuständigen Handelsregister ist Thomas Theobald persönlich
-              verantwortlicher Anbieter dieses geschlossenen Pilotbetriebs.
-            </p>
-            <p className="mt-2">
               Verantwortlich im Sinne von § 5 DDG und Art. 4 Nr. 7 DSGVO:
-              Thomas Theobald, Purkersdorfer Straße 35, 79713 Bad Säckingen,
+              Theobase GmbH, vertreten durch den Geschäftsführer Thomas Walter
+              Theobald, Purkersdorfer Straße 35, 79713 Bad Säckingen,
               E-Mail: thomasth@gmx.de.
             </p>
             <ul className="ml-4 mt-2 list-disc space-y-1">
-              <li>Es findet kein entgeltlicher Vertragsbetrieb statt.</li>
-              <li>Es werden keine Zahlungen entgegengenommen.</li>
+              <li>Es findet derzeit kein entgeltlicher Vertragsbetrieb statt.</li>
+              <li>
+                Über diese öffentliche Pilotseite werden keine Zahlungen
+                entgegengenommen.
+              </li>
               <li>
                 Der Pilotbetrieb ist eine geschlossene, freiwillige Erprobung
                 mit ausgewaehlten Familien aus Bad Saeckingen.
               </li>
             </ul>
-            <p className="mt-2">
-              Vertretungsberechtigt nach Eintragung der Theobase GmbH: Thomas
-              Theobald (zukünftiger Geschäftsführer). Bis zur Eintragung im
-              Handelsregister besteht persönliche Handelndenhaftung gemäß § 11
-              Abs. 2 GmbHG.
-            </p>
-            <p className="mt-2">
-              Sobald die Handelsregistereintragung vorliegt, wird dieses
-              Impressum um Firma, Rechtsform, Sitz, Vertretung,
-              Handelsregisternummer und Umsatzsteuer-Identifikationsnummer
-              aktualisiert.
-            </p>
           </section>
 
           {/* Kontakt */}
@@ -94,9 +88,9 @@ export default function ImpressumPage() {
             <p>
               Der geschlossene Pilotbetrieb ist derzeit kostenfrei; über diese
               öffentliche Pilotseite werden keine Zahlungen entgegengenommen.
-              Eine Umsatzsteuer-Identifikationsnummer gemäß § 27a UStG liegt
-              derzeit nicht vor. Diese Angabe wird vor Aufnahme eines
-              entgeltlichen Vertragsbetriebs aktualisiert.
+              Eine Umsatzsteuer-Identifikationsnummer gemäß § 27a UStG wurde
+              noch nicht erteilt. Diese Angabe wird hier ergänzt, sobald sie
+              vorliegt.
             </p>
           </section>
 
@@ -106,7 +100,8 @@ export default function ImpressumPage() {
               Verantwortlich für den Inhalt nach § 18 Abs. 2 MStV
             </h2>
             <p>
-              Thomas Theobald
+              Theobase GmbH, vertreten durch den Geschäftsführer Thomas Walter
+              Theobald
               <br />
               Purkersdorfer Straße 35, 79713 Bad Säckingen
             </p>

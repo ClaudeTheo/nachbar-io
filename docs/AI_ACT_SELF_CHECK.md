@@ -1,7 +1,7 @@
 # QuartierApp — AI Act Self-Check
 
 > **Stand:** 2026-05-25
-> **Verantwortlich:** Theobase GmbH (in Gruendung), Thomas Theobald
+> **Verantwortlich:** Theobase GmbH (HRB 735685, AG Freiburg i. Br.), Geschaeftsfuehrer Thomas Walter Theobald
 > **Scope:** alle KI-Funktionen der QuartierApp (Web + Senior-App + Arzt-Portal)
 > **Rechtsgrundlage Self-Check:** EU Verordnung 2024/1689 (AI Act), Stand nach KI-Omnibus (politische Einigung Mai 2026)
 

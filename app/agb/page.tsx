@@ -33,9 +33,11 @@ export default function AGBPage() {
             <p>
               Diese Allgemeinen Geschäftsbedingungen regeln die Nutzung der
               Plattform QuartierApp (derzeit erreichbar unter
-              nachbar-io.vercel.app), betrieben von Thomas Theobald,
-              Purkersdorfer Straße 35, 79713 Bad Säckingen
-              (nachfolgend &bdquo;Betreiber&ldquo;). Sie gelten für alle
+              nachbar-io.vercel.app), betrieben von der Theobase GmbH,
+              Purkersdorfer Straße 35, 79713 Bad Säckingen (Amtsgericht
+              Freiburg im Breisgau, HRB 735685, vertreten durch den
+              Geschäftsführer Thomas Walter Theobald; nachfolgend
+              &bdquo;Betreiber&ldquo;). Sie gelten für alle
               freigeschalteten Zugangswege: Web-App, Arzt-Portal sowie
               künftige native oder betreute Gerätezugänge.
             </p>

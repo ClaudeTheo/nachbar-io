@@ -15,11 +15,12 @@ describe("DatenschutzPage", () => {
     expect(screen.queryByText(/5 bis 10 Familien/i)).not.toBeInTheDocument();
   });
 
-  it("nennt die GmbH in Gruendung und Handelndenhaftung wie das Impressum", () => {
+  it("nennt die eingetragene GmbH mit HRB und Registergericht", () => {
     render(<DatenschutzPage />);
 
-    expect(screen.getByText(/Theobase GmbH \(in Gründung\)/i)).toBeInTheDocument();
-    expect(screen.getByText(/§ 11 Abs\. 2 GmbHG/i)).toBeInTheDocument();
+    expect(screen.getAllByText(/HRB 735685/i).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/Amtsgericht Freiburg im Breisgau/i).length).toBeGreaterThan(0);
+    expect(screen.queryByText(/in Gründung/i)).not.toBeInTheDocument();
   });
 
   it("beschreibt Vercel-Hosting praezise ohne zu weitgehende No-Data-Zusage", () => {

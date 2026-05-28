@@ -49,4 +49,13 @@ describe("package scripts", () => {
       "node scripts/e2e-localhost-preflight.mjs",
     );
   });
+
+  it("provides a gitleaks pre-commit hook installer", () => {
+    const hook = readFileSync(".githooks/pre-commit", "utf8");
+
+    expect(packageJson.scripts["hooks:install"]).toBe(
+      "git config core.hooksPath .githooks",
+    );
+    expect(hook).toContain("gitleaks protect --staged");
+  });
 });

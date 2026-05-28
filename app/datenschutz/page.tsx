@@ -47,9 +47,8 @@ export default function DatenschutzPage() {
               Registergericht: Amtsgericht Freiburg im Breisgau, HRB 735685
             </p>
             <p className="mt-2">
-              Die Theobase GmbH ist seit dem 22.05.2026 im Handelsregister B
-              des Amtsgerichts Freiburg im Breisgau unter HRB 735685
-              eingetragen.
+              Die Theobase GmbH ist im Handelsregister B des Amtsgerichts
+              Freiburg im Breisgau unter HRB 735685 eingetragen.
             </p>
           </section>
 

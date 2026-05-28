@@ -6,6 +6,7 @@
     "dev": "npm run dev:local",
     "dev:local": "node scripts/dev-server.mjs local",
     "dev:cloud": "node scripts/dev-server.mjs cloud",
+    "hooks:install": "git config core.hooksPath .githooks",
     "supabase:start": "supabase start",
     "supabase:stop": "supabase stop",
     "supabase:status": "supabase status",

@@ -1,0 +1,10 @@
+#!/bin/sh
+set -eu
+
+if ! command -v gitleaks >/dev/null 2>&1; then
+  echo "gitleaks is required for this repo pre-commit hook."
+  echo "Install it from https://github.com/gitleaks/gitleaks or with: winget install Gitleaks.Gitleaks"
+  exit 1
+fi
+
+gitleaks protect --staged --redact --no-banner --source .

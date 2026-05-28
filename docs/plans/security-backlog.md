@@ -28,6 +28,7 @@ Offene `DISABLE ROW LEVEL SECURITY`-Findings: keine.
 |---|---|---|---|---|
 | 2026-05-27 | RLS-GROUP-MEMBERS | CRITICAL | `public.group_members` ohne RLS nach Mig 161 | PR #15 gemerged. Prod verifiziert: RLS aktiv, 4 Policies, `anon` ohne Grants, `authenticated` nur `SELECT`, `INSERT`, `UPDATE`. |
 | 2026-05-27 | RLS-INTEREST-GROUPS | HIGH | Historische Interest-Groups-Policies/Grants zu breit bzw. driftend | PR #15 gemerged. `groups`, `group_posts`, `group_post_comments`, `group_notification_settings` mit RLS/Policies/Grants wiederhergestellt und Prod verifiziert. |
+| 2026-05-28 | SECRET-SCAN-HOOK | MEDIUM | Pre-Commit-Schutz gegen versehentlich gestagte Secrets | `.githooks/pre-commit` mit `gitleaks protect --staged` plus `npm run hooks:install` ergaenzt; `vitest.setup.ts` setzt nur fehlende Dummy-Test-ENV-Werte. |
 
 ## Offen
 

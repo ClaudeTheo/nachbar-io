@@ -34,21 +34,22 @@ export default function DatenschutzPage() {
               Verantwortlich für die Datenverarbeitung auf dieser Plattform ist:
             </p>
             <p className="mt-2">
-              Theobase GmbH (in Gründung)
+              Theobase GmbH
               <br />
-              vertreten durch Thomas Theobald (zukünftiger Geschäftsführer)
+              vertreten durch den Geschäftsführer Thomas Walter Theobald
               <br />
               Purkersdorfer Straße 35
               <br />
               79713 Bad Säckingen
               <br />
               E-Mail: thomasth@gmx.de
+              <br />
+              Registergericht: Amtsgericht Freiburg im Breisgau, HRB 735685
             </p>
             <p className="mt-2">
-              Die Theobase GmbH befindet sich in Gründung. Bis zur Eintragung
-              beim zuständigen Handelsregister ist Thomas Theobald persönlich
-              verantwortlicher Anbieter dieses geschlossenen Pilotbetriebs.
-              Persönliche Handelndenhaftung gemäß § 11 Abs. 2 GmbHG.
+              Die Theobase GmbH ist seit dem 22.05.2026 im Handelsregister B
+              des Amtsgerichts Freiburg im Breisgau unter HRB 735685
+              eingetragen.
             </p>
           </section>
 

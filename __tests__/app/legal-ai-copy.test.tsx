@@ -29,16 +29,16 @@ describe("legal pages AI and pilot copy", () => {
     expect(screen.queryByText(/medizinische Notrufsysteme/i)).not.toBeInTheDocument();
   });
 
-  it("shows the GmbH in Gruendung transition note in Impressum", () => {
+  it("shows the registered GmbH details in Impressum", () => {
     render(<ImpressumPage />);
 
-    expect(screen.getByText(/Hinweis zur Rechtsform/i)).toBeInTheDocument();
-    expect(screen.getByText(/Theobase GmbH befindet sich in Gründung/i)).toBeInTheDocument();
+    expect(screen.getAllByText(/HRB 735685/i).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/Amtsgericht Freiburg im Breisgau/i).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/Thomas Walter Theobald/i).length).toBeGreaterThan(0);
     expect(screen.queryByText(/27\.04\.2026/i)).not.toBeInTheDocument();
     expect(screen.queryByText(/erfolgte beim Notariat/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/in Gründung/i)).not.toBeInTheDocument();
     expect(screen.getByText(/Pilotbetrieb ist eine geschlossene/i)).toBeInTheDocument();
-    expect(screen.getByText(/Vertretungsberechtigt nach Eintragung/i)).toBeInTheDocument();
-    expect(screen.getByText(/Handelndenhaftung/i)).toBeInTheDocument();
     expect(screen.getByText(/Stand: Mai 2026/i)).toBeInTheDocument();
     expect(screen.queryByText(/medizinische Notrufsysteme/i)).not.toBeInTheDocument();
   });

@@ -50,7 +50,7 @@
 ## 2. Beschreibung der Verarbeitung
 
 ### 2.1 Verantwortlicher
-Nachbar.io Betreiber (Pilotprojekt Bad Saeckingen)
+Theobase GmbH (HRB 735685, Amtsgericht Freiburg im Breisgau), Purkersdorfer Strasse 35, 79713 Bad Saeckingen, vertreten durch Geschaeftsfuehrer Thomas Walter Theobald. (Pilotprojekt Bad Saeckingen)
 
 ### 2.2 Zweck der Verarbeitung
 Koordination von Nachbarschaftshilfe und Senioren-Unterstuetzung im Quartier, einschliesslich:

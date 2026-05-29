@@ -25,7 +25,13 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     // --background = #fdf8f3) reicht. Sonst ueberdeckt der Wrapper-BG
     // den -z-10 Aquarell-Layer (CSS-Stacking: negative-z child wird
     // hinter parent's BG-Painting gerendert).
-    <div className="relative min-h-screen pb-20">
+    // pb-36: genug Bodenabstand, damit die letzte Inhaltszeile beim
+    // Herunterscrollen NICHT von den schwebenden Buttons (Voice-FAB +
+    // Bug-Report, fixed bottom-24) verdeckt wird. pb-20 klaerte nur die
+    // BottomNav (65px), nicht die FABs (Oberkante ~152px). Gemessen
+    // 2026-05-29: letzte Kachel-Unterkante 104px -> mit pb-36 ~168px,
+    // sauber ueber dem FAB-Top.
+    <div className="relative min-h-screen pb-36">
       {/* Visual-Polish v7 Iteration 2 — dezenter Aquarell-Hintergrund
           (Schwarzwald-Tanne + Haeuser + Sonne) fuer alle eingeloggten
           Seiten. Decorative, aria-hidden, im hintersten z-Index. */}

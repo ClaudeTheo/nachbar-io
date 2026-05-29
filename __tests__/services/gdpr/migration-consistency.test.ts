@@ -25,14 +25,18 @@ describe("GDPR-Migration ↔ Registry", () => {
     }
   });
 
-  it("macht jede NOT-NULL-Aktor-Spalte zuerst nullable", () => {
+  it("macht jede NOT-NULL-Aktor-Spalte zuerst nullable (drift-toleranter DO-Block)", () => {
     for (const fk of columnsToMakeNullable()) {
-      const re = new RegExp(
-        `ALTER TABLE\\s+\\S*\\b${fk.table}\\s+ALTER COLUMN\\s+${fk.column}\\s+DROP NOT NULL`,
-        "i",
-      );
-      expect(re.test(sql), `${fk.table}.${fk.column} wird nicht nullable gemacht`).toBe(true);
+      const needle = `('${fk.table}','${fk.column}')`;
+      expect(sql, `${fk.table}.${fk.column} fehlt im nullable-Block`).toContain(needle);
     }
+    expect(sql).toContain("DROP NOT NULL");
+  });
+
+  it("ist drift-tolerant (überspringt im lokalen Stack fehlende Prod-Tabellen)", () => {
+    // Der CI-Smoke-Stack hat nicht alle Prod-Drift-Tabellen → to_regclass-Guard Pflicht
+    expect(sql).toContain("to_regclass");
+    expect(sql).toContain("CONTINUE");
   });
 
   it("definiert die RPC gdpr_delete_user nur für service_role", () => {

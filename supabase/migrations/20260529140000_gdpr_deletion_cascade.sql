@@ -12,13 +12,18 @@
 --   4. SECURITY-DEFINER-RPC gdpr_delete_user(uuid) als einziger Lösch-Einstieg.
 --
 -- Spiegel der TS-Registry lib/services/gdpr/user-data-registry.ts (GDPR_DELETION_FKS).
--- Der Static-Test __tests__/gdpr/gdpr-migration.test.ts prüft TS↔SQL-Konsistenz.
+-- Der Static-Test __tests__/services/gdpr/migration-consistency.test.ts prüft TS<->SQL.
+--
+-- DRIFT-TOLERANZ (Pflicht bei nachbar-io): Der CI-Smoke-Stack repliziert nur die
+-- migrierten Tabellen, NICHT die Prod-Drift-Tabellen (z.B. pflegegrad_assessments
+-- existiert in Prod, aber nicht im lokalen Replay). Jedes ALTER prüft daher per
+-- to_regclass/information_schema, ob Tabelle+Spalte existieren, und überspringt sonst.
+-- In Prod (alle Tabellen vorhanden) werden alle FKs behandelt.
 --
 -- SCOPE: Resident/Caregiver/Senior/Memory/Group/Consent-Datenraum (Pilot).
 -- Profi-Verticals (doctor_*/medical_*/civic_*/practice_*/prescriptions/prevention-
--- staff/team_*) sind vertagt — im geschlossenen Pilot existieren keine solchen
--- Nutzer (außer dem nicht-löschbaren Founder). Der Lösch-Service schlägt fail-loud
--- fehl, falls ein nicht abgedeckter FK blockiert (kein Silent-Success).
+-- staff/team_*) sind vertagt. Der Lösch-Service schlägt fail-loud fehl, falls ein
+-- nicht abgedeckter FK blockiert (kein Silent-Success).
 --
 -- File-first: Diese Datei wird vor schema_migrations-Insert committet. Prod-Apply +
 -- Merge = Founder-Go (rote Zone). Idempotent (mehrfach ausführbar).
@@ -26,16 +31,34 @@
 -- ============================================================
 -- Schritt 1 — Aktor-Spalten nullable machen (für ON DELETE SET NULL)
 -- ============================================================
-ALTER TABLE public.care_documents          ALTER COLUMN generated_by    DROP NOT NULL;
-ALTER TABLE public.care_audit_log          ALTER COLUMN actor_id        DROP NOT NULL;
-ALTER TABLE public.groups                  ALTER COLUMN creator_id      DROP NOT NULL;
-ALTER TABLE public.user_memory_audit_log   ALTER COLUMN actor_user_id   DROP NOT NULL;
-ALTER TABLE public.user_memory_audit_log   ALTER COLUMN target_user_id  DROP NOT NULL;
-ALTER TABLE public.pflegegrad_assessments  ALTER COLUMN assessor_id     DROP NOT NULL;
-ALTER TABLE public.admin_audit_log         ALTER COLUMN admin_id        DROP NOT NULL;
-ALTER TABLE public.audit_log               ALTER COLUMN actor_id        DROP NOT NULL;
-ALTER TABLE public.org_audit_log           ALTER COLUMN user_id         DROP NOT NULL;
-ALTER TABLE public.invite_codes            ALTER COLUMN created_by      DROP NOT NULL;
+DO $do$
+DECLARE
+  r RECORD;
+BEGIN
+  FOR r IN
+    SELECT * FROM (VALUES
+      ('care_documents','generated_by'),
+      ('care_audit_log','actor_id'),
+      ('groups','creator_id'),
+      ('user_memory_audit_log','actor_user_id'),
+      ('user_memory_audit_log','target_user_id'),
+      ('pflegegrad_assessments','assessor_id'),
+      ('admin_audit_log','admin_id'),
+      ('audit_log','actor_id'),
+      ('org_audit_log','user_id'),
+      ('invite_codes','created_by')
+    ) AS t(tbl, col)
+  LOOP
+    IF to_regclass('public.' || r.tbl) IS NOT NULL
+       AND EXISTS (
+         SELECT 1 FROM information_schema.columns
+         WHERE table_schema = 'public' AND table_name = r.tbl AND column_name = r.col
+       ) THEN
+      EXECUTE format('ALTER TABLE public.%I ALTER COLUMN %I DROP NOT NULL', r.tbl, r.col);
+    END IF;
+  END LOOP;
+END
+$do$;
 
 -- ============================================================
 -- Schritt 2 — care_audit_log-Trigger GDPR-fähig machen
@@ -50,14 +73,14 @@ LANGUAGE plpgsql
 AS $function$
 BEGIN
   IF current_setting('app.gdpr_delete', true) = 'on' THEN
-    RETURN COALESCE(NEW, OLD); -- DELETE: NEW=NULL→OLD; UPDATE: NEW
+    RETURN COALESCE(NEW, OLD); -- DELETE: NEW=NULL->OLD; UPDATE: NEW
   END IF;
   RAISE EXCEPTION 'care_audit_log: UPDATE und DELETE sind nicht erlaubt';
 END;
 $function$;
 
 -- ============================================================
--- Schritt 3 — FK-delete_rule umstellen (idempotent, namensunabhängig)
+-- Schritt 3 — FK-delete_rule umstellen (idempotent, namens- & drift-tolerant)
 -- ============================================================
 DO $do$
 DECLARE
@@ -141,6 +164,15 @@ BEGIN
       ('caregiver_invites','used_by','auth','SET NULL')
     ) AS t(tbl, col, parent_schema, rule)
   LOOP
+    -- Drift-Toleranz: Tabelle/Spalte muss im aktuellen Stack existieren
+    IF to_regclass('public.' || r.tbl) IS NULL
+       OR NOT EXISTS (
+         SELECT 1 FROM information_schema.columns
+         WHERE table_schema = 'public' AND table_name = r.tbl AND column_name = r.col
+       ) THEN
+      CONTINUE;
+    END IF;
+
     -- Bestehenden FK auf public.<tbl>.<col> → <parent_schema>.users(id) finden
     SELECT c.conname INTO v_conname
     FROM pg_constraint c

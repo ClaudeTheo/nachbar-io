@@ -330,8 +330,17 @@ export default function ProfilePage() {
     (mode) => mode !== "youth" || currentUiMode === "youth" || user.is_admin,
   );
 
+  // Aktiv 55+ ("calm") und Senior ("simple") bekommen groessere Abstaende
+  // (ruhigeres "Ich"-Layout, konsistent mit /my-day und Dashboard).
+  const profileDensity = getUserModeConfig(currentUiMode).dashboardDensity;
+  const isCalm = profileDensity === "calm" || profileDensity === "simple";
+
   return (
-    <div className="space-y-4">
+    <div
+      className={isCalm ? "space-y-6" : "space-y-4"}
+      data-testid="profile-page"
+      data-profile-density={profileDensity}
+    >
       <LargeTitle title="Ich" />
       <PageHeader title="" backHref="/dashboard" />
 

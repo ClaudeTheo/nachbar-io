@@ -86,6 +86,7 @@ DO $do$
 DECLARE
   r RECORD;
   v_conname text;
+  v_new_name text;
 BEGIN
   FOR r IN
     SELECT * FROM (VALUES
@@ -189,13 +190,19 @@ BEGIN
       AND (SELECT attname FROM pg_attribute
            WHERE attrelid = child.oid AND attnum = c.conkey[1]) = r.col;
 
+    -- FK-NAMEN ERHALTEN: PostgREST-Embeds referenzieren FK-Namen explizit
+    -- (z.B. sos.service.ts users!care_sos_alerts_senior_id_fkey, helpers.service,
+    -- device.service caregiver_links_caregiver_id_fkey). Umbenennen würde diese
+    -- Embeds brechen ("Could not find a relationship"). Daher bestehenden Namen
+    -- wiederverwenden; nur falls keiner existiert, den Konventionsnamen vergeben.
+    v_new_name := COALESCE(v_conname, r.tbl || '_' || r.col || '_fkey');
     IF v_conname IS NOT NULL THEN
       EXECUTE format('ALTER TABLE public.%I DROP CONSTRAINT %I', r.tbl, v_conname);
     END IF;
 
     EXECUTE format(
       'ALTER TABLE public.%I ADD CONSTRAINT %I FOREIGN KEY (%I) REFERENCES %I.users(id) ON DELETE %s',
-      r.tbl, r.tbl || '_' || r.col || '_gdpr_fkey', r.col, r.parent_schema, r.rule
+      r.tbl, v_new_name, r.col, r.parent_schema, r.rule
     );
   END LOOP;
 END

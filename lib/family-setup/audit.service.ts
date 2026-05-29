@@ -40,9 +40,15 @@ export interface FamilySetupAuditInput {
   metadata?: Record<string, unknown>;
 }
 
+// Bewusst verengter Struktur-Typ: recordFamilySetupAudit braucht nur
+// db.from(table).insert(payload) — entkoppelt vom vollen SupabaseClient
+// (Testbarkeit + lockere Kopplung). Param ist Record<string, unknown>
+// (nicht unknown), damit der reale SupabaseClient ab @supabase/supabase-js
+// 2.10x strukturell zuweisbar bleibt: dessen insert(values) erwartet
+// {} | {}[], und `unknown` ist dazu nicht zuweisbar.
 interface AuditDb {
   from: (table: string) => {
-    insert: (payload: unknown) => PromiseLike<{
+    insert: (payload: Record<string, unknown>) => PromiseLike<{
       error: { message?: string; code?: string } | null;
     }>;
   };

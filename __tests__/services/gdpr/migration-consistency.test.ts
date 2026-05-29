@@ -1,0 +1,79 @@
+// Static-Analyse: TS-Registry ↔ SQL-Migration-Konsistenz + Registry-Selbstkonsistenz.
+// Ersatz für den (wegen Prod-Drift nicht möglichen) Supabase-Branch-Test.
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
+import { describe, it, expect } from "vitest";
+import {
+  GDPR_DELETION_FKS,
+  GDPR_EXPORT_TABLES,
+  columnsToMakeNullable,
+} from "@/lib/services/gdpr/user-data-registry";
+
+const sql = readFileSync(
+  join(process.cwd(), "supabase/migrations/20260529140000_gdpr_deletion_cascade.sql"),
+  "utf8",
+);
+
+describe("GDPR-Migration ↔ Registry", () => {
+  it("enthält für jeden Lösch-FK das passende VALUES-Tupel", () => {
+    for (const fk of GDPR_DELETION_FKS) {
+      const rule = fk.rule === "cascade" ? "CASCADE" : "SET NULL";
+      const needle = `('${fk.table}','${fk.column}','${fk.schema}','${rule}')`;
+      expect(sql, `FK ${fk.schema}.${fk.table}.${fk.column} fehlt in Migration`).toContain(
+        needle,
+      );
+    }
+  });
+
+  it("macht jede NOT-NULL-Aktor-Spalte zuerst nullable", () => {
+    for (const fk of columnsToMakeNullable()) {
+      const re = new RegExp(
+        `ALTER TABLE\\s+\\S*\\b${fk.table}\\s+ALTER COLUMN\\s+${fk.column}\\s+DROP NOT NULL`,
+        "i",
+      );
+      expect(re.test(sql), `${fk.table}.${fk.column} wird nicht nullable gemacht`).toBe(true);
+    }
+  });
+
+  it("definiert die RPC gdpr_delete_user nur für service_role", () => {
+    expect(sql).toContain("FUNCTION public.gdpr_delete_user(target_user_id uuid)");
+    expect(sql).toContain("SECURITY DEFINER");
+    expect(sql).toMatch(/GRANT EXECUTE ON FUNCTION public\.gdpr_delete_user\(uuid\) TO service_role/);
+    expect(sql).toMatch(/REVOKE ALL ON FUNCTION public\.gdpr_delete_user\(uuid\) FROM PUBLIC/);
+  });
+
+  it("macht den care_audit_log-Trigger GDPR-fähig (GUC-Gate, kein Blanko-Bypass)", () => {
+    expect(sql).toContain("app.gdpr_delete");
+    expect(sql).toContain("prevent_audit_modification");
+    // Der Schutz bleibt für normale Pfade bestehen
+    expect(sql).toContain("RAISE EXCEPTION");
+  });
+});
+
+describe("GDPR-Registry-Selbstkonsistenz", () => {
+  it("führt jede sensible Art.9-Care-Tabelle im Export", () => {
+    const exportTables = GDPR_EXPORT_TABLES.map((t) => t.table);
+    for (const t of ["care_profiles", "care_medications", "care_checkins", "care_sos_alerts"]) {
+      expect(exportTables).toContain(t);
+    }
+  });
+
+  it("löscht jede sensible Art.9-Care-Tabelle per CASCADE", () => {
+    const cascadeTables = GDPR_DELETION_FKS.filter((f) => f.rule === "cascade").map((f) => f.table);
+    for (const t of ["care_checkins", "care_medications", "care_sos_alerts", "care_profiles_hilfe"]) {
+      expect(cascadeTables).toContain(t);
+    }
+  });
+
+  it("hat keine doppelten FK-Einträge (schema.table.column eindeutig)", () => {
+    const keys = GDPR_DELETION_FKS.map((f) => `${f.schema}.${f.table}.${f.column}`);
+    expect(new Set(keys).size).toBe(keys.length);
+  });
+
+  it("markiert mindestens die Kern-Gesundheitstabellen als Art. 9", () => {
+    const art9 = GDPR_EXPORT_TABLES.filter((t) => t.art9).map((t) => t.table);
+    expect(art9).toContain("care_profiles");
+    expect(art9).toContain("care_medications");
+    expect(art9.length).toBeGreaterThanOrEqual(5);
+  });
+});

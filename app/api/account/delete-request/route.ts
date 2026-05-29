@@ -1,11 +1,11 @@
 // POST /api/account/delete-request
 // Öffentliche API-Route für Account-Löschung via Web
 // Google Play Store Policy: Account-Löschung muss auch ohne App möglich sein
-// Business-Logik in user-account.service.ts
+// Business-Logik in lib/services/gdpr/account-deletion.service.ts
 
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
-import { requestAccountDeletion } from "@/lib/services/user-account.service";
+import { requestAccountDeletion } from "@/lib/services/gdpr/account-deletion.service";
 import { handleServiceError } from "@/lib/services/service-error";
 
 export async function POST(request: NextRequest) {

@@ -32,4 +32,15 @@ describe("DatenschutzPage", () => {
       screen.queryByText(/personenbezogene Nutzerdaten werden nicht an Vercel/i),
     ).not.toBeInTheDocument();
   });
+
+  it("nennt in der Löschliste die Art.-9-Gesundheitsdaten und die Anonymisierung von Protokolldaten (Audit B6)", () => {
+    render(<DatenschutzPage />);
+
+    // Die Löschliste muss die früher ausgelassenen Care-/Art.9-Daten ehrlich nennen
+    expect(screen.getAllByText(/Gesundheits- und Pflegedaten/i).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/Medikamente/i).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/KI-Gedächtnis/i).length).toBeGreaterThan(0);
+    // Sicherheits-/Protokolldaten werden anonymisiert statt gelöscht (Founder-Entscheidung)
+    expect(screen.getAllByText(/anonymisiert/i).length).toBeGreaterThan(0);
+  });
 });

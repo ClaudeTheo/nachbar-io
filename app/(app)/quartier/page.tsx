@@ -1,31 +1,19 @@
 // app/(app)/quartier/page.tsx
-// Phase-1 Task B-5: Drift-Aufloesung `/quartier` vs. `/quartier-info`.
+// "Mein Quartier"-Hub (App-Struktur Welle 3, Option C).
 //
-// Entscheidung (siehe docs/plans/phase1-quartier-route-decision.md im Parent-Repo):
-//   - Gewinner: /quartier-info  (Wetter, Muell, NINA, OePNV, Apotheken — passt zur
-//     HIER-BEI-MIR-Kachel auf /kreis-start)
-//   - Verlierer: /quartier      (Navigations-Hub zu Legacy-Community-Features)
+// /quartier ist wieder der kanonische Bottom-Tab "Mein Quartier" und rendert
+// den schlanken Navigations-Hub (QuartierHub). Der fruehere B-5-Redirect auf
+// /quartier-info samt Feature-Flag `legacy_quartier_hub` ist entfernt:
+//   - /quartier-info bleibt das Info-Modul (Wetter/NINA/ÖPNV/Apotheken) und ist
+//     im Hub nur EINE Kachel.
+//   - /hier-bei-mir und Voice-/Warnungs-Kontexte zeigen weiter direkt auf
+//     /quartier-info (B-5 bleibt dort gueltig).
 //
-// Diese Route leitet deshalb per Default auf /quartier-info um. Der alte Hub bleibt
-// als Rollback-Pfad erreichbar, wenn das Feature-Flag `legacy_quartier_hub` in
-// Supabase manuell auf enabled=true gesetzt wird. Default-Verhalten ohne
-// DB-Eintrag: fail-closed → Redirect.
+// Rollback fuer diese Aufbauphase laeuft ueber Git/PR, nicht ueber ein
+// Runtime-Flag.
 
-import { redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
-import { isFeatureEnabledServer } from "@/lib/feature-flags-server";
-import { QuartierHubLegacy } from "./QuartierHubLegacy";
+import { QuartierHub } from "./QuartierHub";
 
-export default async function QuartierPage() {
-  const supabase = await createClient();
-  const legacyHubEnabled = await isFeatureEnabledServer(
-    supabase,
-    "legacy_quartier_hub",
-  );
-
-  if (!legacyHubEnabled) {
-    redirect("/quartier-info");
-  }
-
-  return <QuartierHubLegacy />;
+export default function QuartierPage() {
+  return <QuartierHub />;
 }

@@ -53,10 +53,10 @@ const seniorNav: NavItemConfig[] = [
     activeColor: "text-[#2F7A62]",
   },
   {
-    // Task B-5: Drift-Aufloesung — /quartier-info ist der Gewinner.
-    // /quartier redirectet serverseitig, aber wir verlinken hier direkt,
-    // um den Redirect-Flash im Tab-Wechsel zu vermeiden.
-    href: "/quartier-info",
+    // Welle 3 (Option C): /quartier ist wieder der kanonische "Mein Quartier"-
+    // Tab und rendert den Navigations-Hub. /quartier-info bleibt das Info-Modul
+    // und ist im Hub nur EINE Kachel.
+    href: "/quartier",
     label: "Mein Quartier",
     icon: Building2,
     activeColor: "text-blue-700",
@@ -137,8 +137,8 @@ const orgAdminNav: NavItemConfig[] = [
     activeColor: "text-[#2F7A62]",
   },
   {
-    // Task B-5: Drift-Aufloesung — /quartier-info ist der Gewinner (analog seniorNav).
-    href: "/quartier-info",
+    // Welle 3 (Option C): "Mein Quartier"-Hub unter /quartier (analog seniorNav).
+    href: "/quartier",
     label: "Mein Quartier",
     icon: Building2,
     activeColor: "text-blue-700",

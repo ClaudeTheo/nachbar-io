@@ -468,4 +468,46 @@ describe("ProfilePage — Error-Handling Bugfixes", () => {
     // /companion ist jetzt aktiv (Phase-I-Gate aufgeloest).
     expect(screen.getAllByText("Im Pilot noch deaktiviert").length).toBe(2);
   });
+
+  // =========================================================================
+  // Density-Layout (App-Struktur Welle 5, Konsistenz mit /my-day + Dashboard)
+  // =========================================================================
+  it("nutzt Standard-Density fuer aktive Nutzer", async () => {
+    mockUserSelect.mockResolvedValue({
+      data: makeProfile({ ui_mode: "active" }),
+      error: null,
+    });
+    mockHouseholdSelect.mockResolvedValue({ data: null, error: null });
+
+    render(<ProfilePage />);
+
+    const page = await screen.findByTestId("profile-page");
+    expect(page).toHaveAttribute("data-profile-density", "standard");
+  });
+
+  it("nutzt ein ruhiges Layout (calm) fuer Aktiv 55+ (comfort)", async () => {
+    mockUserSelect.mockResolvedValue({
+      data: makeProfile({ ui_mode: "comfort" }),
+      error: null,
+    });
+    mockHouseholdSelect.mockResolvedValue({ data: null, error: null });
+
+    render(<ProfilePage />);
+
+    const page = await screen.findByTestId("profile-page");
+    expect(page).toHaveAttribute("data-profile-density", "calm");
+  });
+
+  it("nutzt das einfache Layout (simple) fuer den Seniorenmodus", async () => {
+    mockUserSelect.mockResolvedValue({
+      data: makeProfile({ ui_mode: "senior" }),
+      error: null,
+    });
+    mockHouseholdSelect.mockResolvedValue({ data: null, error: null });
+
+    render(<ProfilePage />);
+
+    const page = await screen.findByTestId("profile-page");
+    expect(page).toHaveAttribute("data-profile-density", "simple");
+  });
 });

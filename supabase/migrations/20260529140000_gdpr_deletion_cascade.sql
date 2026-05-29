@@ -86,7 +86,6 @@ DO $do$
 DECLARE
   r RECORD;
   v_conname text;
-  v_new_name text;
 BEGIN
   FOR r IN
     SELECT * FROM (VALUES
@@ -190,19 +189,22 @@ BEGIN
       AND (SELECT attname FROM pg_attribute
            WHERE attrelid = child.oid AND attnum = c.conkey[1]) = r.col;
 
-    -- FK-NAMEN ERHALTEN: PostgREST-Embeds referenzieren FK-Namen explizit
-    -- (z.B. sos.service.ts users!care_sos_alerts_senior_id_fkey, helpers.service,
-    -- device.service caregiver_links_caregiver_id_fkey). Umbenennen würde diese
-    -- Embeds brechen ("Could not find a relationship"). Daher bestehenden Namen
-    -- wiederverwenden; nur falls keiner existiert, den Konventionsnamen vergeben.
-    v_new_name := COALESCE(v_conname, r.tbl || '_' || r.col || '_fkey');
-    IF v_conname IS NOT NULL THEN
-      EXECUTE format('ALTER TABLE public.%I DROP CONSTRAINT %I', r.tbl, v_conname);
+    -- Nur BESTEHENDE FKs umstellen, mit GLEICHEM Namen (DROP + ADD). Gründe:
+    --  1. PostgREST-Embeds referenzieren FK-Namen explizit (users!care_sos_alerts_senior_id_fkey,
+    --     care_helpers_user_id_fkey, caregiver_links_caregiver_id_fkey) → Namen müssen bleiben.
+    --  2. Existiert auf diesem parent_schema kein FK (Prod-Drift: z.B. caregiver_links hat in
+    --     Prod public+auth-FK auf resident_id, im lokalen Replay nur auth), gibt es nichts
+    --     umzustellen → überspringen. Ein erzwungener Konventionsname würde sonst mit dem
+    --     vorhandenen FK des anderen Schemas kollidieren (SQLSTATE 42710).
+    --  Alle Tupel oben stammen aus dem realen Prod-Schema, existieren dort also.
+    IF v_conname IS NULL THEN
+      CONTINUE;
     END IF;
 
+    EXECUTE format('ALTER TABLE public.%I DROP CONSTRAINT %I', r.tbl, v_conname);
     EXECUTE format(
       'ALTER TABLE public.%I ADD CONSTRAINT %I FOREIGN KEY (%I) REFERENCES %I.users(id) ON DELETE %s',
-      r.tbl, v_new_name, r.col, r.parent_schema, r.rule
+      r.tbl, v_conname, r.col, r.parent_schema, r.rule
     );
   END LOOP;
 END

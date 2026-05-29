@@ -309,6 +309,16 @@ export function useMapStatuses(
         const useGeo =
           isGeoQuarter(mapConfig) || (centerLat != null && centerLng != null);
 
+        // Ohne zugeordnetes Quartier keine Quartiersdaten laden: Default-Layout
+        // anzeigen, aber KEINE (fremden Pilot-)Haushalte/Live-Status holen.
+        if (!quarterId) {
+          setHouses(DEFAULT_HOUSES);
+          setGeoHouses([]);
+          setStatuses(createDefaultStatuses(DEFAULT_HOUSES));
+          setResidentCounts({});
+          return;
+        }
+
         // Haeuser fuer aktuelles Quartier laden (SVG oder Geo/Leaflet)
         let loadedHouses: MapHouseData[] = DEFAULT_HOUSES;
         let loadedGeoHouses: GeoMapHouseData[] = [];

@@ -28,7 +28,10 @@ test.describe("Auth-Flow: Dashboard", () => {
     await dashboard.assertLoaded();
 
     // Alle BottomNav-Eintraege pruefen
-    const navLabels = ["Start", "Quartier", "Gesundheit", "Ich"];
+    // 4-Tab-Struktur (NavConfig): Start, (Mein) Quartier, Mein Tag, Ich.
+    // "Quartier" matcht per Substring sowohl "Quartier" (Aktiv 55+) als auch
+    // "Mein Quartier" (Senior/Komfort) — modus-unabhaengig.
+    const navLabels = ["Start", "Quartier", "Mein Tag", "Ich"];
     for (const label of navLabels) {
       const navItem = dashboard.bottomNav.getByText(label);
       await expect(navItem).toBeVisible();

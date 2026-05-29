@@ -2,8 +2,26 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { getUserQuarterId } from "@/lib/quarters/helpers";
 import { validateLocationData } from "@/modules/alerts/services/validate-location";
+import {
+  getLocationForRole,
+  type LocationRole,
+} from "@/modules/alerts/services/location-visibility";
+
+// Minimaler Zeilentyp der Alert-Liste (komplexer Join-Select liefert any)
+interface AlertListRow {
+  id: string;
+  user_id: string | null;
+  location_lat: number | null;
+  location_lng: number | null;
+  location_source: string | null;
+  household?: unknown;
+  [key: string]: unknown;
+}
 
 // GET /api/alerts — Alle aktiven Alerts abrufen (authentifiziert)
+// Datenminimiert (Security H3 / DSGVO W5): KEINE Haushalts-Adresse, Koordinaten
+// je nach Rolle/Helfer-Status des Abrufers. Exakte Einzel-Position nur ueber
+// /api/alerts/[id]/location.
 export async function GET() {
   const supabase = await createClient();
 
@@ -19,10 +37,12 @@ export async function GET() {
     );
   }
 
+  // households-Join entfernt: die volle Adresse wird nicht mehr an alle
+  // Quartiersmitglieder ausgeliefert.
   const { data, error } = await supabase
     .from("alerts")
     .select(
-      "*, user:users(display_name, avatar_url), household:households(street_name, house_number, lat, lng), responses:alert_responses(*, responder:users(display_name, avatar_url))",
+      "*, user:users(display_name, avatar_url), responses:alert_responses(*, responder:users(display_name, avatar_url))",
     )
     .in("status", ["open", "help_coming"])
     .order("created_at", { ascending: false });
@@ -35,7 +55,88 @@ export async function GET() {
     );
   }
 
-  return NextResponse.json(data);
+  const alerts = (data ?? []) as AlertListRow[];
+  if (alerts.length === 0) {
+    return NextResponse.json([]);
+  }
+
+  // Rolle des Abrufers fuer die Standort-Praezision bestimmen (Prioritaet wie
+  // /api/alerts/[id]/location). Alle Lookups gebatcht ueber die Liste.
+  const alertIds = alerts.map((a) => a.id);
+
+  // Plus-Angehoeriger: fuer welche Bewohner ist der Abrufer Angehoeriger?
+  const { data: caregiverLinks } = await supabase
+    .from("caregiver_links")
+    .select("resident_id")
+    .eq("caregiver_id", user.id)
+    .is("revoked_at", null);
+  const residentIds = new Set(
+    ((caregiverLinks ?? []) as { resident_id: string }[]).map(
+      (l) => l.resident_id,
+    ),
+  );
+
+  // Pro-Organisation?
+  const { data: orgMember } = await supabase
+    .from("org_members")
+    .select("id")
+    .eq("user_id", user.id)
+    .maybeSingle();
+
+  // Arzt (Pro Medical)?
+  const { data: doctorProfile } = await supabase
+    .from("doctor_profiles")
+    .select("user_id")
+    .eq("user_id", user.id)
+    .maybeSingle();
+
+  // Auf welche Alerts hat der Abrufer geantwortet (= bestaetigter Helfer)?
+  const { data: responses } = await supabase
+    .from("alert_responses")
+    .select("alert_id")
+    .eq("responder_user_id", user.id)
+    .in("alert_id", alertIds);
+  const respondedAlertIds = new Set(
+    ((responses ?? []) as { alert_id: string }[]).map((r) => r.alert_id),
+  );
+
+  const minimized = alerts.map((alert) => {
+    // household defensiv entfernen (falls je wieder mitselektiert)
+    const rest = { ...alert };
+    delete rest.household;
+
+    // Rolle pro Alert bestimmen
+    let role: LocationRole = "free";
+    let isConfirmedHelper = false;
+    if (alert.user_id && residentIds.has(alert.user_id)) {
+      role = "plus_family";
+    } else if (orgMember) {
+      role = "pro";
+      isConfirmedHelper = respondedAlertIds.has(alert.id);
+    } else if (doctorProfile) {
+      role = "pro_medical";
+      isConfirmedHelper = respondedAlertIds.has(alert.id);
+    }
+
+    const location = getLocationForRole(
+      {
+        location_lat: alert.location_lat,
+        location_lng: alert.location_lng,
+        location_source: alert.location_source,
+      },
+      role,
+      isConfirmedHelper,
+    );
+
+    return {
+      ...rest,
+      location_lat: location?.lat ?? null,
+      location_lng: location?.lng ?? null,
+      location_exact: location?.exact ?? false,
+    };
+  });
+
+  return NextResponse.json(minimized);
 }
 
 // POST /api/alerts — Neuen Alert erstellen und Nachbarn benachrichtigen

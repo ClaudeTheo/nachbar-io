@@ -86,3 +86,20 @@ CREATE POLICY map_houses_quarter_select ON map_houses FOR SELECT USING (
 3. /api/alerts umbauen.
 4. GREEN: Tests + tsc + vitest. RLS via Supabase-Branch verifizieren.
 5. Commit + PR. Merge + Prod-Apply = Founder-Go.
+
+## Implementierungs-Ergebnis (2026-05-29, Branch `chore/security/rls-quarter-isolation-2026-05-29`)
+
+**Founder-Entscheidung: Welle gesplittet.** Diese Welle = Zeilen-Quartier-Isolation + /api/alerts-Minimierung. Der `invite_code`-Spalten-REVOKE wurde HERAUSGENOMMEN, weil der Pre-Check zeigte, dass er die Admin-UI bricht: `admin/page.tsx:145`, `useMapEditorState.ts:75` und `household.service.ts` laden `households.select("*")` ueber den Browser-Client (authenticated); ein Spalten-REVOKE laesst diese Queries komplett fehlschlagen (`permission denied for column invite_code`). → eigene Folge-Welle mit Admin-Service-Role-Lesepfad.
+
+**Dateien:**
+- `supabase/migrations/20260529120000_quarter_isolate_stammdaten.sql` — 2 SECURITY-DEFINER-Helper (`is_same_quarter_user`, `is_household_in_my_quarter`, beide `SET search_path = public, pg_temp` + REVOKE/GRANT) + 3 SELECT-Policies (households direkt via `quarter_id`, users + map_houses via Helper, map_houses mit `household_id IS NULL`-Fallback fuer freie Pins). `users_read_own` + `map_houses_user_upsert` bleiben.
+- `app/api/alerts/route.ts` — GET: households-Join entfernt, `getLocationForRole` pro Alert (Tier via caregiver_links/org_members/doctor_profiles, `isConfirmedHelper` via gebatchte alert_responses).
+- `__tests__/lib/quarter-isolate-stammdaten-rls-migration.test.ts` (7 Tests, statische SQL-Analyse) + `app/api/alerts/route.test.ts` (8 Tests, GET-Minimierung + POST-Validierung; konsolidiert das geloeschte `__tests__/api/alerts.test.ts`).
+
+**Verifikation:** vitest 15/15 (neu) + 106/106 (alle alerts-bezogenen) gruen; `tsc --noEmit` gruen; eslint gruen.
+
+**Branch-Test NICHT durchfuehrbar (dokumentierter Blocker):** Supabase-Branch `rls-quarter-isolation-test` (`hghnzdkinyljnyslclxf`) erstellt, aber `MIGRATIONS_FAILED` — der Branch-Replay stoppt bereits bei **Migration 002** (verifiziert: `get_user_quarter_id`/`is_super_admin`/`map_houses` aus Mig 007/051 fehlen). Der Prod-Drift macht den Branch-Replay noch kaputter als den lokalen Stack (Mig 178). Meine Migration baut auf Mig 007 + 051, daher im Branch nicht testbar — exakt die group_members-Saga (Pass 126), die deshalb via `db query --linked` auf Prod mit Founder-Go appliziert wurde. Branch wieder geloescht (keine laufenden Kosten). **Korrektheits-Stuetzen statt Branch-Test:** (1) statische SQL-Tests gruen, (2) households-Policy = exaktes Mig-052-Muster (in Prod bewaehrt), (3) Helper = exaktes Mig-20260527191000-Muster (in Prod bewaehrt), (4) Rekursionsfreiheit durch SECURITY DEFINER.
+
+**Founder-Prod-Apply-Verifikation (nach Go):** Migration via `npx supabase db query --linked -f supabase/migrations/20260529120000_quarter_isolate_stammdaten.sql` + `migration repair --linked --status applied 20260529120000`. Danach Smoke: `SELECT polname, cmd FROM pg_policies WHERE tablename IN ('households','users','map_houses')` — erwartet `households_quarter_select`, `users_quarter_select`, `map_houses_quarter_select` + Eigen-/Upsert-Policies; `households_read_authenticated`/`users_read_verified`/`map_houses_read` weg.
+
+**Rekursions-Analyse:** `get_user_quarter_id()` (Mig 051) ist `SECURITY DEFINER` → umgeht RLS. Die neuen Helper sind ebenfalls SECURITY DEFINER → kein Rekursionsrisiko trotz `household_members`/`households`-Zugriff in der Policy-Auswertung.

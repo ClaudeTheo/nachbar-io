@@ -20,6 +20,11 @@ import { Card, CardContent } from "@/components/ui/card";
 import { createClient } from "@/lib/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { haptic } from "@/lib/haptics";
+import {
+  getUserModeConfig,
+  isUserUiMode,
+  type DashboardDensity,
+} from "@/lib/user-modes";
 
 type CheckInStatus = "good" | "okay" | "bad" | null;
 
@@ -51,6 +56,7 @@ export default function MyDayPage() {
   const [todayEvents, setTodayEvents] = useState<
     Array<{ time: string; title: string; type: string }>
   >([]);
+  const [density, setDensity] = useState<DashboardDensity>("standard");
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -60,6 +66,19 @@ export default function MyDayPage() {
 
     async function loadDayData() {
       try {
+        // Darstellungs-Dichte aus dem ui_mode des Nutzers ableiten
+        // (Aktiv 55+ -> "calm", Senior -> "simple"). Fehlt der Wert,
+        // bleibt es beim Standard-Layout.
+        const { data: profile } = await supabase
+          .from("users")
+          .select("ui_mode")
+          .eq("id", userId)
+          .limit(1);
+        const rawUiMode = profile?.[0]?.ui_mode;
+        if (isUserUiMode(rawUiMode)) {
+          setDensity(getUserModeConfig(rawUiMode).dashboardDensity);
+        }
+
         const { data: heartbeat } = await supabase
           .from("heartbeats")
           .select("created_at")
@@ -195,6 +214,10 @@ export default function MyDayPage() {
     },
   ];
 
+  // Aktiv 55+ ("calm") und Senior ("simple") bekommen eine ruhigere
+  // Darstellung: groessere Abstaende und groessere Tagesbereich-Ziele.
+  const isCalm = density === "calm" || density === "simple";
+
   if (loading) {
     return (
       <div className="space-y-4" data-testid="my-day-loading">
@@ -206,10 +229,18 @@ export default function MyDayPage() {
   }
 
   return (
-    <div className="space-y-5 pb-4" data-testid="my-day-page">
+    <div
+      className={`pb-4 ${isCalm ? "space-y-7" : "space-y-5"}`}
+      data-testid="my-day-page"
+      data-my-day-density={density}
+    >
       <section className="rounded-2xl border border-anthrazit-tint bg-lifted-cream p-5 shadow-soft">
         <p className="text-sm text-muted-foreground">{formatDate()}</p>
-        <h1 className="mt-1 text-2xl font-bold text-anthrazit">
+        <h1
+          className={`mt-1 font-bold text-anthrazit ${
+            isCalm ? "text-3xl" : "text-2xl"
+          }`}
+        >
           {getGreeting()}
         </h1>
         <p className="mt-2 text-sm text-muted-foreground">
@@ -269,7 +300,9 @@ export default function MyDayPage() {
             <Link
               key={item.href}
               href={item.href}
-              className="flex min-h-[72px] items-center gap-3 rounded-2xl border border-anthrazit-tint bg-white p-4 shadow-sm"
+              className={`flex items-center gap-3 rounded-2xl border border-anthrazit-tint bg-white p-4 shadow-sm ${
+                isCalm ? "min-h-[88px]" : "min-h-[72px]"
+              }`}
             >
               <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-quartier-green/10 text-quartier-green">
                 <Icon className="h-5 w-5" />

@@ -85,10 +85,25 @@ const mockHeartbeats = [
   { created_at: new Date(Date.now() - 5 * 60000).toISOString() },
 ];
 const mockInsert = vi.fn(() => Promise.resolve({ error: null }));
+// Mutable ui_mode fuer Density-Tests (null = kein ui_mode -> Default "active")
+let mockUiMode: string | null = null;
 
 vi.mock("@/lib/supabase/client", () => ({
   createClient: () => ({
     from: (table: string) => {
+      if (table === "users") {
+        return {
+          select: () => ({
+            eq: () => ({
+              limit: () =>
+                Promise.resolve({
+                  data: mockUiMode ? [{ ui_mode: mockUiMode }] : [],
+                  error: null,
+                }),
+            }),
+          }),
+        };
+      }
       if (table === "heartbeats") {
         return {
           select: () => ({
@@ -137,6 +152,7 @@ import MyDayPage from "@/app/(app)/my-day/page";
 
 beforeEach(() => {
   vi.clearAllMocks();
+  mockUiMode = null;
 });
 
 afterEach(() => {
@@ -227,5 +243,26 @@ describe("MyDayPage", () => {
     await waitFor(() => {
       expect(screen.getByText(/Letzte Aktivitaet/)).toBeInTheDocument();
     });
+  });
+
+  it("nutzt das Standard-Layout fuer aktive Nutzer", async () => {
+    mockUiMode = "active";
+    render(<MyDayPage />);
+    const page = await screen.findByTestId("my-day-page");
+    expect(page).toHaveAttribute("data-my-day-density", "standard");
+  });
+
+  it("nutzt ein ruhiges Layout (calm) fuer Aktiv 55+ (comfort)", async () => {
+    mockUiMode = "comfort";
+    render(<MyDayPage />);
+    const page = await screen.findByTestId("my-day-page");
+    expect(page).toHaveAttribute("data-my-day-density", "calm");
+  });
+
+  it("nutzt das einfache Layout (simple) fuer den Seniorenmodus", async () => {
+    mockUiMode = "senior";
+    render(<MyDayPage />);
+    const page = await screen.findByTestId("my-day-page");
+    expect(page).toHaveAttribute("data-my-day-density", "simple");
   });
 });

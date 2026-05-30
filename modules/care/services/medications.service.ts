@@ -160,7 +160,7 @@ export async function createMedication(
     eventType: "profile_updated",
     referenceType: "care_medications",
     referenceId: medication.id,
-    metadata: { action: "created", name, schedule },
+    metadata: { action: "created", schedule },
   }).catch(() => {});
 
   return medication;

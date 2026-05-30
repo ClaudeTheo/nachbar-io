@@ -237,7 +237,6 @@ export async function runMedicationsCron(
               referenceId: missedLog.id,
               metadata: {
                 medicationId: medication.id,
-                medicationName: medication.name,
                 scheduledAt: scheduledAt.toISOString(),
                 scheduledTime: timeStr,
               },

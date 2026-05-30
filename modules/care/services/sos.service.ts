@@ -458,7 +458,7 @@ export async function updateSosStatus(
       eventType: auditEventType,
       referenceType: "care_sos_alerts",
       referenceId: alertId,
-      metadata: { newStatus, notes: notes ?? null },
+      metadata: { newStatus },
     });
   } catch (auditError) {
     // Audit-Fehler blockiert nicht die Antwort

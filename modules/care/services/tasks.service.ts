@@ -203,7 +203,7 @@ export async function createTask(
     eventType: "task_created",
     referenceType: "care_tasks",
     referenceId: task.id,
-    metadata: { title: task.title, category: task.category },
+    metadata: { category: task.category },
   }).catch(() => {});
 
   return task;
@@ -423,7 +423,7 @@ export async function deleteTask(
     eventType: "task_deleted",
     referenceType: "care_tasks",
     referenceId: taskId,
-    metadata: { title: task.title },
+    metadata: {},
   }).catch(() => {});
 
   return { success: true };

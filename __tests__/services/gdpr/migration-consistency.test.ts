@@ -9,10 +9,19 @@ import {
   columnsToMakeNullable,
 } from "@/lib/services/gdpr/user-data-registry";
 
-const sql = readFileSync(
-  join(process.cwd(), "supabase/migrations/20260529140000_gdpr_deletion_cascade.sql"),
-  "utf8",
-);
+// Die Lösch-Topologie ist auf zwei Migrationen verteilt: 20260529140000 (care_*/memory/
+// group/consent — CASCADE+SET NULL + RPC + Trigger) und 20260530120000 (Aktor-/Bezugs-FKs
+// außerhalb Profi-Vertical — SET NULL). Beide zusammen spiegeln GDPR_DELETION_FKS.
+const sql =
+  readFileSync(
+    join(process.cwd(), "supabase/migrations/20260529140000_gdpr_deletion_cascade.sql"),
+    "utf8",
+  ) +
+  "\n" +
+  readFileSync(
+    join(process.cwd(), "supabase/migrations/20260530120000_gdpr_deletion_setnull_actors_part2.sql"),
+    "utf8",
+  );
 
 // Folge-Migration: härtet die EXECUTE-Grants (anon/authenticated-Leak via Supabase
 // default privileges, der durch REVOKE FROM PUBLIC allein NICHT geschlossen wird).

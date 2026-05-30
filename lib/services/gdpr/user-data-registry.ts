@@ -222,6 +222,37 @@ export const GDPR_DELETION_FKS: readonly GdprDeletionFk[] = [
   { schema: "auth", table: "invite_codes", column: "created_by", rule: "set null", wasNotNull: true },
   { schema: "auth", table: "invite_codes", column: "used_by", rule: "set null" },
   { schema: "auth", table: "caregiver_invites", column: "used_by", rule: "set null" },
+
+  // === Teil 2 (Migration 20260530120000): Aktor-/Bezugs-FKs außerhalb Profi-Vertical ===
+  // Alle SET NULL (Bezug anonymisieren, Zeile bleibt). Profi-Medizin/Civic/Pflege bleiben
+  // vertagt (Aufbewahrungsfristen § 630f BGB / MBO-Ä). Alle parent = auth.users.
+  // --- Resident / Familie / Youth ---
+  { schema: "auth", table: "neighbor_invitations", column: "accepted_by", rule: "set null" },
+  { schema: "auth", table: "neighbor_invitations", column: "converted_user_id", rule: "set null" },
+  { schema: "auth", table: "users", column: "registered_by", rule: "set null" },
+  { schema: "auth", table: "content_reports", column: "reporter_id", rule: "set null", wasNotNull: true },
+  { schema: "auth", table: "content_reports", column: "reviewed_by", rule: "set null" },
+  { schema: "auth", table: "youth_tasks", column: "accepted_by", rule: "set null" },
+  { schema: "auth", table: "youth_tasks", column: "created_by", rule: "set null", wasNotNull: true },
+  { schema: "auth", table: "youth_moderation_log", column: "moderator_id", rule: "set null", wasNotNull: true },
+  // --- Admin / Org / Business (Aktor-/Log-Bezüge — Buchhaltung/Logs bleiben erhalten) ---
+  { schema: "auth", table: "access_codes", column: "created_by", rule: "set null", wasNotNull: true },
+  { schema: "auth", table: "admin_access_logs", column: "admin_id", rule: "set null", wasNotNull: true },
+  { schema: "auth", table: "admin_expenses", column: "admin_id", rule: "set null" },
+  { schema: "auth", table: "business_settings", column: "updated_by", rule: "set null" },
+  { schema: "auth", table: "business_transactions", column: "created_by", rule: "set null" },
+  { schema: "auth", table: "data_breach_incidents", column: "admin_id", rule: "set null" },
+  { schema: "auth", table: "feature_flags_audit_log", column: "changed_by", rule: "set null" },
+  { schema: "auth", table: "moderation_actions", column: "created_by", rule: "set null" },
+  { schema: "auth", table: "moderation_queue", column: "reviewed_by", rule: "set null" },
+  { schema: "auth", table: "monthly_summaries", column: "closed_by", rule: "set null" },
+  { schema: "auth", table: "tech_incidents", column: "admin_id", rule: "set null" },
+  { schema: "auth", table: "verification_requests", column: "reviewed_by", rule: "set null" },
+  { schema: "auth", table: "org_neighbors", column: "confirmed_by", rule: "set null" },
+  { schema: "auth", table: "org_neighbors", column: "requested_by", rule: "set null" },
+  { schema: "auth", table: "organizations", column: "verified_by", rule: "set null" },
+  { schema: "auth", table: "cross_org_requests", column: "created_by", rule: "set null", wasNotNull: true },
+  { schema: "auth", table: "cross_org_requests", column: "modified_by", rule: "set null" },
 ] as const;
 
 // ============================================================

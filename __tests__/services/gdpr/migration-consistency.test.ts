@@ -14,6 +14,13 @@ const sql = readFileSync(
   "utf8",
 );
 
+// Folge-Migration: härtet die EXECUTE-Grants (anon/authenticated-Leak via Supabase
+// default privileges, der durch REVOKE FROM PUBLIC allein NICHT geschlossen wird).
+const sqlRevoke = readFileSync(
+  join(process.cwd(), "supabase/migrations/20260529150000_gdpr_delete_user_revoke_anon.sql"),
+  "utf8",
+);
+
 describe("GDPR-Migration ↔ Registry", () => {
   it("enthält für jeden Lösch-FK das passende VALUES-Tupel", () => {
     for (const fk of GDPR_DELETION_FKS) {
@@ -44,6 +51,17 @@ describe("GDPR-Migration ↔ Registry", () => {
     expect(sql).toContain("SECURITY DEFINER");
     expect(sql).toMatch(/GRANT EXECUTE ON FUNCTION public\.gdpr_delete_user\(uuid\) TO service_role/);
     expect(sql).toMatch(/REVOKE ALL ON FUNCTION public\.gdpr_delete_user\(uuid\) FROM PUBLIC/);
+  });
+
+  it("entzieht anon und authenticated explizit EXECUTE (Supabase default-privileges-Leak)", () => {
+    // REVOKE FROM PUBLIC allein reicht bei Supabase NICHT: ALTER DEFAULT PRIVILEGES vergibt
+    // anon/authenticated explizite EXECUTE-Grants, die FROM PUBLIC nicht entfernt. Sonst
+    // könnte jeder eingeloggte (oder via anon-Key sogar nicht-eingeloggte) Nutzer die
+    // SECURITY-DEFINER-RPC aufrufen und beliebige Nutzer löschen (RLS-Bypass).
+    expect(sqlRevoke).toMatch(/REVOKE EXECUTE ON FUNCTION public\.gdpr_delete_user\(uuid\) FROM anon/);
+    expect(sqlRevoke).toMatch(
+      /REVOKE EXECUTE ON FUNCTION public\.gdpr_delete_user\(uuid\) FROM authenticated/,
+    );
   });
 
   it("macht den care_audit_log-Trigger GDPR-fähig (GUC-Gate, kein Blanko-Bypass)", () => {

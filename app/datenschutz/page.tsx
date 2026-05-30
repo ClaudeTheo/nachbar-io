@@ -461,21 +461,33 @@ export default function DatenschutzPage() {
 
             <h3 className="mt-3 font-semibold">6.2 Auftragsverarbeiter</h3>
 
+            <p>
+              <strong>Hinweis (geschlossener Pilot):</strong> Es werden derzeit
+              keine personenbezogenen Daten echter Nutzer verarbeitet. Die
+              nachstehend genannten Auftragsverarbeitungsvertraege (AVV) bzw.
+              Data Processing Agreements (DPA) mit Standardvertragsklauseln (SCC)
+              werden vor Aufnahme der Verarbeitung personenbezogener Daten echter
+              Nutzer abgeschlossen; bis dahin findet keine entsprechende
+              Uebermittlung statt.
+            </p>
+
             <h4 className="mt-2 font-medium">
               Supabase (Datenbank & Authentifizierung)
             </h4>
             <p>
               Supabase Inc., EU-Region Frankfurt. Alle Daten verbleiben in der
               EU. Rechtsgrundlage: Art. 6 Abs. 1 lit. b DSGVO
-              (Vertragserfüllung). Es gilt ein Auftragsverarbeitungsvertrag
-              (AVV) gemäß Art. 28 DSGVO. Speicherdauer: Gemäß den in §8
+              (Vertragserfüllung). Der Auftragsverarbeitungsvertrag
+              (AVV) gemäß Art. 28 DSGVO wird vor Aufnahme der Verarbeitung
+              abgeschlossen (siehe Hinweis oben). Speicherdauer: Gemäß den in §8
               genannten Fristen.
             </p>
 
             <h4 className="mt-2 font-medium">Vercel (Frontend-Hosting)</h4>
             <p>
-              Vercel Inc., USA. Es gilt ein Data Processing Agreement (DPA) mit
-              SCCs. Ueber Vercel werden Seitenzugriffe und API-Routen
+              Vercel Inc., USA. Ein Data Processing Agreement (DPA) mit SCCs
+              wird vor Aufnahme der Verarbeitung abgeschlossen (siehe Hinweis
+              oben). Ueber Vercel werden Seitenzugriffe und API-Routen
               ausgeliefert. Dabei koennen technisch notwendige Zugriffsdaten wie
               IP-Adresse, Request-Header, Zeitpunkt des Zugriffs und
               Session-Cookies verarbeitet werden. Inhaltsdaten aus privaten
@@ -490,8 +502,10 @@ export default function DatenschutzPage() {
               Twilio Inc., USA. Wird für den Versand von SMS
               (Magic-Link-Fallback) und Sprachanrufe (SOS-Eskalation) genutzt.
               Rechtsgrundlage: Art. 6 Abs. 1 lit. b DSGVO (Vertragserfüllung).
-              Speicherdauer: Maximal 30 Tage (Zustellprotokolle). Übermittlung
-              auf Grundlage von SCCs gemäß Art. 46 Abs. 2 lit. c DSGVO.
+              Speicherdauer: Maximal 30 Tage (Zustellprotokolle). Eine
+              Übermittlung erfolgt auf Grundlage von SCCs gemäß Art. 46 Abs. 2
+              lit. c DSGVO; der Vertrag wird vor Aufnahme der Verarbeitung
+              abgeschlossen (siehe Hinweis oben).
             </p>
 
             <h4 className="mt-2 font-medium">Stripe (Zahlungsabwicklung)</h4>
@@ -544,7 +558,9 @@ export default function DatenschutzPage() {
               Rechtsgrundlage: Art. 6 Abs. 1 lit. b DSGVO (Vertragserfüllung).
               Es werden nur Verbindungsdaten (IP-Adressen) während der aktiven
               Verbindung verarbeitet (Speicherdauer: maximal 24 Stunden), keine
-              Gesprächsinhalte. Übermittlung auf Grundlage von SCCs.
+              Gesprächsinhalte. Eine Übermittlung erfolgt auf Grundlage von
+              SCCs; der Vertrag wird vor Aufnahme der Verarbeitung abgeschlossen
+              (siehe Hinweis oben).
             </p>
 
             <h4 className="mt-2 font-medium">Sentry (Fehlerüberwachung)</h4>
@@ -577,9 +593,10 @@ export default function DatenschutzPage() {
                 gespeichert, danach automatisch gelöscht.
               </li>
               <li>
-                <strong>Vertrag:</strong> Data Processing Agreement (DPA) mit
-                EU-Standardvertragsklauseln (SCCs) gemäß Art. 46 Abs. 2 lit. c
-                DSGVO.
+                <strong>Vertrag:</strong> Ein Data Processing Agreement (DPA)
+                mit EU-Standardvertragsklauseln (SCCs) gemäß Art. 46 Abs. 2 lit.
+                c DSGVO wird vor Aufnahme der Verarbeitung abgeschlossen (siehe
+                Hinweis oben).
               </li>
             </ul>
 

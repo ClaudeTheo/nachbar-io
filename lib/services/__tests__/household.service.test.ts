@@ -15,6 +15,7 @@ import {
   getMembership,
   getHouseholdMembers,
   getHouseholdsByQuarter,
+  HOUSEHOLD_SELECT_COLUMNS,
 } from "../household.service";
 
 const MOCK_HOUSEHOLD = {
@@ -52,7 +53,8 @@ describe("getHousehold", () => {
 
     const result = await getHousehold("hh-1");
     expect(mockFrom).toHaveBeenCalledWith("households");
-    expect(chain.select).toHaveBeenCalledWith("*");
+    // Spaltenschutz Mig 20260530160000: explizite Spalten ohne invite_code, kein "*"
+    expect(chain.select).toHaveBeenCalledWith(HOUSEHOLD_SELECT_COLUMNS);
     expect(chain.eq).toHaveBeenCalledWith("id", "hh-1");
     expect(result.street_name).toBe("Purkersdorfer Straße");
   });
@@ -86,7 +88,10 @@ describe("getHouseholdForUser", () => {
 
     const result = await getHouseholdForUser("user-1");
     expect(mockFrom).toHaveBeenCalledWith("household_members");
-    expect(chain.select).toHaveBeenCalledWith("household:households(*)");
+    // eingebettetes households-Select ohne invite_code (Spaltenschutz Mig 20260530160000)
+    expect(chain.select).toHaveBeenCalledWith(
+      `household:households(${HOUSEHOLD_SELECT_COLUMNS})`,
+    );
     expect(chain.eq).toHaveBeenCalledWith("user_id", "user-1");
     expect(chain.not).toHaveBeenCalledWith("verified_at", "is", null);
     expect(result?.street_name).toBe("Purkersdorfer Straße");
@@ -185,8 +190,21 @@ describe("getHouseholdsByQuarter", () => {
 
     const result = await getHouseholdsByQuarter("q-1");
     expect(mockFrom).toHaveBeenCalledWith("households");
+    expect(chain.select).toHaveBeenCalledWith(HOUSEHOLD_SELECT_COLUMNS);
     expect(chain.eq).toHaveBeenCalledWith("quarter_id", "q-1");
     expect(chain.order).toHaveBeenCalledWith("street_name", { ascending: true });
     expect(result).toHaveLength(1);
+  });
+});
+
+describe("HOUSEHOLD_SELECT_COLUMNS (Spaltenschutz)", () => {
+  it("enthaelt invite_code NICHT (Browser-Lesepfade duerfen ihn nicht lesen)", () => {
+    expect(HOUSEHOLD_SELECT_COLUMNS).not.toContain("invite_code");
+  });
+
+  it("enthaelt die fuers UI noetigen Stammspalten", () => {
+    for (const col of ["id", "street_name", "house_number", "lat", "lng", "quarter_id"]) {
+      expect(HOUSEHOLD_SELECT_COLUMNS).toContain(col);
+    }
   });
 });

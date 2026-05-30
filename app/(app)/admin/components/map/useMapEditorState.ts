@@ -5,6 +5,7 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { toast } from "sonner";
+import { HOUSEHOLD_SELECT_COLUMNS } from "@/lib/services/household.service";
 import {
   MAP_W, MAP_H, STREET_LABELS, DEFAULT_HOUSES,
   loadQuarterHouses, parseViewBox,
@@ -72,11 +73,14 @@ export function useMapEditorState() {
     try {
       const supabase = createClient();
       const [{ data: hData }, { data: mData }, { data: uData }] = await Promise.all([
-        supabase.from("households").select("*"),
+        // invite_code wird hier nicht gebraucht (nur street/house/members) und ist
+        // fuer Browser-Clients seit Mig 20260530160000 nicht mehr lesbar.
+        supabase.from("households").select(HOUSEHOLD_SELECT_COLUMNS),
         supabase.from("household_members").select("*, user:users(display_name, avatar_url)"),
         supabase.from("users").select("id, display_name, avatar_url, email_hash, ui_mode, trust_level, is_admin, created_at, last_seen, settings"),
       ]);
-      const households = (hData ?? []) as Household[];
+      // select() mit Spalten-Variable liefert keinen praezisen Type -> ueber unknown casten
+      const households = (hData ?? []) as unknown as Household[];
       const members = (mData ?? []) as (HouseholdMember & { user?: Pick<User, "display_name" | "avatar_url"> })[];
       const users = (uData ?? []) as User[];
       const map: Record<string, HouseholdWithMembers> = {};

@@ -48,6 +48,7 @@ import {
   getProfile,
   getHouseholdForUser,
   setUiMode,
+  type HouseholdPublic,
 } from "@/lib/services";
 import { CollapsibleVoiceSettings } from "@/modules/voice/components/companion/VoiceSettings";
 import { useVoicePreferences } from "@/hooks/useVoicePreferences";
@@ -57,7 +58,7 @@ import { BadgeGallery } from "@/components/gamification/BadgeGallery";
 import { FamilySetupPanel } from "@/modules/family-setup/components/FamilySetupPanel";
 import { formatCode, generateSecureCode } from "@/lib/invite-codes";
 import { toast } from "sonner";
-import type { User, Household, ReputationStats } from "@/lib/supabase/types";
+import type { User, ReputationStats } from "@/lib/supabase/types";
 import {
   getUserModeConfig,
   isUserUiMode,
@@ -163,7 +164,7 @@ export default function ProfilePage() {
   const { preferences: voicePrefs, updatePreferences: updateVoicePrefs } =
     useVoicePreferences();
   const [user, setUser] = useState<User | null>(null);
-  const [household, setHousehold] = useState<Household | null>(null);
+  const [household, setHousehold] = useState<HouseholdPublic | null>(null);
   const [reputation, setReputation] = useState<ReputationStats | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);

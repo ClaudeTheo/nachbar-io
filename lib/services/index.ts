@@ -33,7 +33,9 @@ export {
   getHouseholdServer,
   getHouseholdForUserServer,
   getHouseholdMembersServer,
+  HOUSEHOLD_SELECT_COLUMNS,
 } from "./household.service";
+export type { HouseholdPublic } from "./household.service";
 
 export { completeRegistration } from "./registration.service";
 export type {

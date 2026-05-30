@@ -125,8 +125,7 @@ export default function AdminPage() {
 
     const [
       { data: userData },
-      { data: householdData },
-      { data: memberData },
+      enrichedHouseholds,
       { data: alertData },
       { count: helpCount },
       { count: marketCount },
@@ -142,8 +141,12 @@ export default function AdminPage() {
       { count: prevHelpCount },
     ] = await Promise.all([
       supabase.from("users").select("*").order("created_at", { ascending: false }),
-      supabase.from("households").select("*").order("street_name", { ascending: true }),
-      supabase.from("household_members").select("household_id"),
+      // Haushalte inkl. invite_code + memberCount via Service-Role-Route — invite_code
+      // ist fuer Browser-Clients seit Mig 20260530160000 gesperrt. Sichtbarkeit bleibt
+      // RLS-bestimmt; liefert (Household & { memberCount })[].
+      fetch("/api/admin/households")
+        .then((r) => (r.ok ? r.json() : []))
+        .catch(() => []) as Promise<(Household & { memberCount: number })[]>,
       supabase
         .from("alerts")
         .select("*, user:users(display_name), household:households(street_name, house_number)")
@@ -164,19 +167,7 @@ export default function AdminPage() {
     ]);
 
     const userList = (userData ?? []) as User[];
-    const householdList = householdData ?? [];
-    const members = memberData ?? [];
     const alertList = (alertData ?? []) as unknown as Alert[];
-
-    const memberCounts = new Map<string, number>();
-    members.forEach((m) => {
-      memberCounts.set(m.household_id, (memberCounts.get(m.household_id) ?? 0) + 1);
-    });
-
-    const enrichedHouseholds = householdList.map((h) => ({
-      ...h,
-      memberCount: memberCounts.get(h.id) ?? 0,
-    }));
 
     function calcTrend(recent: number, prev: number): number {
       if (prev === 0) return recent > 0 ? 100 : 0;
@@ -187,7 +178,7 @@ export default function AdminPage() {
     setHouseholds(enrichedHouseholds);
     setStats({
       totalUsers: userList.length,
-      totalHouseholds: householdList.length,
+      totalHouseholds: enrichedHouseholds.length,
       occupiedHouseholds: enrichedHouseholds.filter((h) => h.memberCount > 0).length,
       openAlerts: alertList.filter((a) => a.status === "open").length,
       totalAlerts: alertList.length,

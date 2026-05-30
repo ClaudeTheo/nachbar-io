@@ -8,34 +8,58 @@ import { generateSecureCode } from "@/lib/invite-codes";
 import { ServiceError } from "@/lib/services/service-error";
 
 // ============================================================
+// Spaltenschutz households.invite_code (Mig 20260530160000)
+// ============================================================
+//
+// Browser-Clients (authenticated/anon) duerfen households.invite_code seit
+// Mig 20260530160000 NICHT mehr lesen. PostgREST wirft bei select("*"), sobald
+// eine Spalte nicht lesbar ist — daher laden die client-seitigen Lesepfade
+// explizit alle Spalten AUSSER invite_code. Der invite_code-Lesepfad fuer
+// Admins laeuft server-seitig ueber app/api/admin/households (Service-Role).
+//
+// WICHTIG (durable): Bei neuen households-Spalten hier ergaenzen UND in der Mig
+// GRANT SELECT (<spalte>) TO authenticated, anon nachziehen — sonst sind sie
+// fuer Browser-Clients unsichtbar.
+export const HOUSEHOLD_SELECT_COLUMNS =
+  "id, street_name, house_number, lat, lng, verified, created_at, quarter_id, " +
+  "map_house_id, quiet_hours_enabled, quiet_hours_start, quiet_hours_end, " +
+  "postal_code, city, position_source, position_accuracy, position_verified, " +
+  "position_verified_at, position_manual_override, position_raw_payload";
+
+/** Haushalt ohne den geschuetzten invite_code (Browser-Lesepfade). */
+export type HouseholdPublic = Omit<Household, "invite_code">;
+
+// ============================================================
 // Client-seitige Funktionen
 // ============================================================
 
-/** Haushalt anhand der ID laden. */
-export async function getHousehold(householdId: string): Promise<Household> {
+/** Haushalt anhand der ID laden (ohne invite_code — Browser-Lesepfad). */
+export async function getHousehold(
+  householdId: string,
+): Promise<HouseholdPublic> {
   const supabase = createClient();
   const { data, error } = await supabase
     .from("households")
-    .select("*")
+    .select(HOUSEHOLD_SELECT_COLUMNS)
     .eq("id", householdId)
     .single();
   if (error) throw error;
-  return data as Household;
+  return data as unknown as HouseholdPublic;
 }
 
-/** Haushalt eines Nutzers laden (ueber household_members Join). */
+/** Haushalt eines Nutzers laden (ueber household_members Join, ohne invite_code). */
 export async function getHouseholdForUser(
   userId: string,
-): Promise<Household | null> {
+): Promise<HouseholdPublic | null> {
   const supabase = createClient();
   const { data, error } = await supabase
     .from("household_members")
-    .select("household:households(*)")
+    .select(`household:households(${HOUSEHOLD_SELECT_COLUMNS})`)
     .eq("user_id", userId)
     .not("verified_at", "is", null)
     .maybeSingle();
   if (error) throw error;
-  return (data?.household as unknown as Household) ?? null;
+  return (data?.household as unknown as HouseholdPublic) ?? null;
 }
 
 /** Membership eines Nutzers laden (household_id + role). */
@@ -68,18 +92,18 @@ export async function getHouseholdMembers(
   return (data ?? []) as HouseholdMember[];
 }
 
-/** Alle Haushalte eines Quartiers laden (fuer Karte / Admin). */
+/** Alle Haushalte eines Quartiers laden (fuer Karte / Admin, ohne invite_code). */
 export async function getHouseholdsByQuarter(
   quarterId: string,
-): Promise<Household[]> {
+): Promise<HouseholdPublic[]> {
   const supabase = createClient();
   const { data, error } = await supabase
     .from("households")
-    .select("*")
+    .select(HOUSEHOLD_SELECT_COLUMNS)
     .eq("quarter_id", quarterId)
     .order("street_name", { ascending: true });
   if (error) throw error;
-  return (data ?? []) as Household[];
+  return (data ?? []) as unknown as HouseholdPublic[];
 }
 
 // ============================================================

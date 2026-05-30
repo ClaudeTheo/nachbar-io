@@ -1,6 +1,11 @@
-// Nachbar.io — Retention Cleanup Service (DSGVO Loeschkonzept)
-// Loescht Daten die ihre Aufbewahrungsfrist ueberschritten haben
-// Aufgerufen via /api/cron/retention-cleanup (woechentlich)
+// Nachbar.io — Retention Cleanup Service (DSGVO Art. 5 Abs. 1 lit. e Speicherbegrenzung)
+// Loescht Daten, die ihre Aufbewahrungsfrist ueberschritten haben.
+// Aufgerufen via /api/cron/retention-cleanup (woechentlich).
+//
+// FIX Pre-Pilot-Audit B7: Der frühere Code löschte aus `checkins`, `messages` und
+// `news_summaries` — keine dieser Tabellen existiert in Prod, der Cron lief faktisch
+// ins Leere und Care-/Art.9-Daten hatten gar keine Frist. Jetzt: reale Tabellennamen
+// inkl. care_checkins/heartbeats/care_sos_alerts; Protokoll in data_retention_log.
 
 import type { SupabaseClient } from "@supabase/supabase-js";
 
@@ -8,17 +13,21 @@ export interface RetentionResult {
   success: true;
   timestamp: string;
   deleted: {
-    checkins: number;
-    messages: number;
-    news_summaries: number;
+    care_checkins: number;
+    senior_checkins: number;
+    heartbeats: number;
+    care_sos_alerts: number;
+    direct_messages: number;
   };
 }
 
 // Retention-Fristen laut VVT + Loeschkonzept
-const RETENTION = {
-  checkins_days: 90, // V02: Check-in 90 Tage
-  messages_days: 365, // V04: Nachrichten 1 Jahr
-  news_summaries_days: 7, // V05: KI-Zusammenfassungen 7 Tage
+const RETENTION_DAYS = {
+  care_checkins: 90, // V02: Tagescheck (Art. 9) 90 Tage
+  senior_checkins: 90, // Aktivitäts-Tagescheck 90 Tage
+  heartbeats: 90, // Lebenszeichen 90 Tage
+  care_sos_alerts: 90, // erledigte Notfall-Alarme 90 Tage
+  direct_messages: 365, // V04: Nachrichten 1 Jahr
 } as const;
 
 function daysAgo(days: number): string {
@@ -30,35 +39,33 @@ function daysAgo(days: number): string {
 export async function runRetentionCleanup(
   supabase: SupabaseClient,
 ): Promise<RetentionResult> {
-  // 1. Check-ins aelter als 90 Tage
-  const { count: checkinsDeleted } = await supabase
-    .from("checkins")
-    .delete({ count: "exact" })
-    .lt("created_at", daysAgo(RETENTION.checkins_days));
+  async function purge(table: string, days: number): Promise<number> {
+    const { count } = await supabase
+      .from(table)
+      .delete({ count: "exact" })
+      .lt("created_at", daysAgo(days));
+    return count ?? 0;
+  }
 
-  // 2. Nachrichten aelter als 365 Tage
-  const { count: messagesDeleted } = await supabase
-    .from("messages")
-    .delete({ count: "exact" })
-    .lt("created_at", daysAgo(RETENTION.messages_days));
-
-  // 3. KI-News-Summaries aelter als 7 Tage
-  const { count: newsDeleted } = await supabase
-    .from("news_summaries")
-    .delete({ count: "exact" })
-    .lt("created_at", daysAgo(RETENTION.news_summaries_days));
-
-  // Audit-Log: Retention-Lauf dokumentieren
   const deleted = {
-    checkins: checkinsDeleted ?? 0,
-    messages: messagesDeleted ?? 0,
-    news_summaries: newsDeleted ?? 0,
+    care_checkins: await purge("care_checkins", RETENTION_DAYS.care_checkins),
+    senior_checkins: await purge("senior_checkins", RETENTION_DAYS.senior_checkins),
+    heartbeats: await purge("heartbeats", RETENTION_DAYS.heartbeats),
+    care_sos_alerts: await purge("care_sos_alerts", RETENTION_DAYS.care_sos_alerts),
+    direct_messages: await purge("direct_messages", RETENTION_DAYS.direct_messages),
   };
 
-  await supabase.from("org_audit_log").insert({
-    action: "retention_cleanup",
-    details: { ...deleted, retention_config: RETENTION },
-  });
+  // Protokoll in der dedizierten data_retention_log-Tabelle
+  try {
+    await supabase.from("data_retention_log").insert({
+      heartbeats_deleted: deleted.heartbeats,
+      checkins_deleted: deleted.care_checkins + deleted.senior_checkins,
+      sos_alerts_deleted: deleted.care_sos_alerts,
+      details: { ...deleted, retention_days: RETENTION_DAYS },
+    });
+  } catch (logError) {
+    console.warn("Retention-Protokoll konnte nicht geschrieben werden:", logError);
+  }
 
   return {
     success: true,

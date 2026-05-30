@@ -98,7 +98,7 @@ export default function AccountLoeschenPage() {
               <TriangleAlert className="h-4 w-4 mt-0.5 flex-shrink-0" />
               <div>
                 <p className="font-medium">Diese Aktion kann nicht rückgängig gemacht werden.</p>
-                <p className="mt-1">Alle Ihre Daten werden innerhalb von 30 Tagen unwiderruflich gelöscht: Profil, Beiträge, Marktplatz-Anzeigen, Nachrichten und Bewertungen.</p>
+                <p className="mt-1">Alle Ihre Daten werden unwiderruflich gelöscht: Profil, Beiträge, Marktplatz-Anzeigen, Nachrichten, Bewertungen sowie Ihre Gesundheits- und Pflegedaten (z. B. Pflegeprofil, Medikamente, Tagescheck).</p>
               </div>
             </div>
           </div>

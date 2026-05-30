@@ -1,11 +1,11 @@
 // POST /api/user/delete
 // DSGVO Art. 17 — Recht auf Löschung
-// Business-Logik in user-account.service.ts
+// Business-Logik in lib/services/gdpr/account-deletion.service.ts
 
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createClient as createAdminClient } from "@supabase/supabase-js";
-import { deleteUser } from "@/lib/services/user-account.service";
+import { deleteUserAuthenticated } from "@/lib/services/gdpr/account-deletion.service";
 import { handleServiceError } from "@/lib/services/service-error";
 
 export async function POST(request: NextRequest) {
@@ -40,7 +40,7 @@ export async function POST(request: NextRequest) {
   const adminSupabase = createAdminClient(supabaseUrl, serviceRoleKey);
 
   try {
-    const result = await deleteUser(
+    const result = await deleteUserAuthenticated(
       adminSupabase,
       user.id,
       body.confirmText ?? "",

@@ -37,7 +37,7 @@ describe("AccountLoeschenPage", () => {
     expect(
       screen.getByText(/Diese Aktion kann nicht rückgängig gemacht werden/),
     ).toBeTruthy();
-    expect(screen.getByText(/30 Tagen unwiderruflich gelöscht/)).toBeTruthy();
+    expect(screen.getByText(/unwiderruflich gelöscht/)).toBeTruthy();
   });
 
   it("zeigt DSGVO-Hinweis", () => {

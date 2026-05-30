@@ -731,18 +731,32 @@ export default function DatenschutzPage() {
             </p>
             <ul className="ml-4 mt-2 list-disc space-y-1">
               <li>Nutzerprofil und Einstellungen</li>
-              <li>Haushaltszuordnung und Angehörigen-Verknüpfungen</li>
               <li>
-                Alle erstellten Einträge (Hilfeanfragen, Marktplatz,
-                Veranstaltungen)
+                Haushaltszuordnung sowie Angehörigen- und
+                Betreuungs-Verknüpfungen
               </li>
-              <li>Alle Nachrichten</li>
-              <li>Tagescheck-Historie und Aktivitätssignale</li>
-              <li>Erinnerungen und Einkaufslisten</li>
-              <li>Bewertungen und Empfehlungen</li>
-              <li>Push-Subscriptions</li>
-              <li>Reputationsdaten</li>
+              <li>
+                Alle erstellten Einträge (Hilfeanfragen, Marktplatz, Leihbörse,
+                Veranstaltungen, Umfragen, Tipps)
+              </li>
+              <li>Alle Nachrichten und Gruppenbeiträge</li>
+              <li>Tagescheck-Historie und Aktivitätssignale (Lebenszeichen)</li>
+              <li>
+                Gesundheits- und Pflegedaten: Pflegeprofil, Medikamente,
+                Notfall-Alarme, Pflegetermine, Einkaufs-Anfragen (besonders
+                geschützte Daten nach Art. 9 DSGVO)
+              </li>
+              <li>KI-Gedächtnis: gespeicherte persönliche Fakten</li>
+              <li>Erteilte Einwilligungen</li>
+              <li>Bewertungen, Empfehlungen und Reputationsdaten</li>
+              <li>Push-Benachrichtigungen und Anmelde-Schlüssel (Passkeys)</li>
             </ul>
+            <p className="mt-2">
+              Besonders schützenswerte Gesundheitsdaten (Art. 9 DSGVO) werden
+              vollständig gelöscht. In Sicherheits- und Protokolldaten, die wir
+              aus gesetzlichen Nachweisgründen aufbewahren müssen, wird Ihr
+              Personenbezug entfernt (anonymisiert).
+            </p>
             <p className="mt-2">
               Anonymisierte, aggregierte Statistiken (z. B. Gesamtzahl der
               Hilfeanfragen) können zu Analysezwecken beibehalten werden, da sie

@@ -1,10 +1,11 @@
 // GET /api/user/export
-// DSGVO Art. 20 — Recht auf Datenportabilität
-// Business-Logik in user-account.service.ts
+// DSGVO Art. 15/20 — Auskunft + Datenportabilität
+// Business-Logik in lib/services/gdpr/account-export.service.ts (Single Source)
 
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import { exportUserData } from "@/lib/services/user-account.service";
+import { getAdminSupabase } from "@/lib/supabase/admin";
+import { exportAccountData } from "@/lib/services/gdpr/account-export.service";
 import { handleServiceError } from "@/lib/services/service-error";
 
 export async function GET() {
@@ -17,7 +18,8 @@ export async function GET() {
   }
 
   try {
-    const exportData = await exportUserData(supabase, user.id);
+    // Service-Role für Vollständigkeit (kein RLS-Blindspot); Filter strikt auf user.id
+    const exportData = await exportAccountData(getAdminSupabase(), user.id);
 
     // Als JSON-Download zurueckgeben
     return new NextResponse(JSON.stringify(exportData, null, 2), {

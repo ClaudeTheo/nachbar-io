@@ -63,7 +63,7 @@ export default function ImpressumPage() {
               </li>
               <li>
                 Der Pilotbetrieb ist eine geschlossene, freiwillige Erprobung
-                mit ausgewaehlten Familien aus Bad Saeckingen.
+                mit ausgewählten Familien aus Bad Säckingen.
               </li>
             </ul>
           </section>

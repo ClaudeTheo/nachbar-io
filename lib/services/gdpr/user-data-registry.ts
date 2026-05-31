@@ -253,6 +253,40 @@ export const GDPR_DELETION_FKS: readonly GdprDeletionFk[] = [
   { schema: "auth", table: "organizations", column: "verified_by", rule: "set null" },
   { schema: "auth", table: "cross_org_requests", column: "created_by", rule: "set null", wasNotNull: true },
   { schema: "auth", table: "cross_org_requests", column: "modified_by", rule: "set null" },
+
+  // === Teil 3a (Migration 20260531213000): Civic/OZG/Prevention/Pflege-Profi —
+  // reine Aktor-/Ersteller-/Beleg-FKs. Alle SET NULL: die Zeile gehört der Verwaltung/
+  // dem Quartier/einem anderen Nutzer ODER ist ein Zahlungsbeleg (§147 AO) — der Aktor-
+  // Bezug wird anonymisiert, der amtliche/Quartiers-Eintrag bleibt. Gleiche Philosophie
+  // wie Teil 2 (created_by/*_by/payer). NICHT enthalten (= Teil 3b, Founder-/Albiez-
+  // Entscheidung CASCADE vs SET NULL): civic_messages.citizen_user_id/sender_user_id
+  // (OZG-Korrespondenz, mögl. Verwaltungsaufbewahrung), civic_survey_votes.user_id,
+  // prevention_enrollments.user_id, prevention_messages.sender_id/recipient_id,
+  // prevention_reviews.user_id, prevention_visibility_consent.user_id (Einwilligung).
+  // NICHT enthalten (= Teil 4, §630f-Aufbewahrung): doctor_*/medical_*/anamnesis_/
+  // prescription_*/practices/practice_members/team_*/recall_reminders/waiting_room.
+  // --- Civic / OZG (Verwaltungs-/Quartiers-Einträge) ---
+  { schema: "auth", table: "citizen_reports", column: "reported_by", rule: "set null" },
+  { schema: "auth", table: "civic_announcements", column: "created_by", rule: "set null" },
+  { schema: "auth", table: "civic_appointments", column: "created_by", rule: "set null" },
+  { schema: "auth", table: "civic_document_requests", column: "requested_by", rule: "set null" },
+  { schema: "auth", table: "civic_events", column: "created_by", rule: "set null" },
+  { schema: "auth", table: "civic_message_attachments", column: "uploaded_by", rule: "set null", wasNotNull: true },
+  { schema: "auth", table: "civic_messages", column: "read_by", rule: "set null" },
+  { schema: "auth", table: "civic_surveys", column: "created_by", rule: "set null" },
+  { schema: "auth", table: "construction_sites", column: "created_by", rule: "set null" },
+  { schema: "auth", table: "crisis_alerts", column: "created_by", rule: "set null" },
+  { schema: "auth", table: "municipal_announcements", column: "author_id", rule: "set null" },
+  // --- Pflege-Profi (Zuweisungs-Aktoren) ---
+  { schema: "auth", table: "pflege_resident_assignments", column: "assigned_by", rule: "set null", wasNotNull: true },
+  { schema: "auth", table: "pflege_resident_assignments", column: "revoked_by", rule: "set null" },
+  // --- Prevention (Kurs-Aktoren + Zahlungs-Belege) ---
+  { schema: "public", table: "prevention_course_content", column: "updated_by", rule: "set null" },
+  { schema: "public", table: "prevention_courses", column: "instructor_id", rule: "set null", wasNotNull: true },
+  { schema: "public", table: "prevention_enrollments", column: "certificate_issued_by", rule: "set null" },
+  { schema: "public", table: "prevention_enrollments", column: "payer_user_id", rule: "set null" },
+  { schema: "public", table: "prevention_group_calls", column: "instructor_id", rule: "set null", wasNotNull: true },
+  { schema: "public", table: "prevention_payments", column: "payer_user_id", rule: "set null" },
 ] as const;
 
 // ============================================================

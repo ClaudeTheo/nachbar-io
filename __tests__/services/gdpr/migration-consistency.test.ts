@@ -9,9 +9,10 @@ import {
   columnsToMakeNullable,
 } from "@/lib/services/gdpr/user-data-registry";
 
-// Die Lösch-Topologie ist auf zwei Migrationen verteilt: 20260529140000 (care_*/memory/
-// group/consent — CASCADE+SET NULL + RPC + Trigger) und 20260530120000 (Aktor-/Bezugs-FKs
-// außerhalb Profi-Vertical — SET NULL). Beide zusammen spiegeln GDPR_DELETION_FKS.
+// Die Lösch-Topologie ist auf drei Migrationen verteilt: 20260529140000 (care_*/memory/
+// group/consent — CASCADE+SET NULL + RPC + Trigger), 20260530120000 (Aktor-/Bezugs-FKs
+// außerhalb Profi-Vertical — SET NULL) und 20260531213000 (Civic/OZG/Prevention/Pflege-
+// Profi Aktor-/Beleg-FKs Teil 3a — SET NULL). Alle drei zusammen spiegeln GDPR_DELETION_FKS.
 const sql =
   readFileSync(
     join(process.cwd(), "supabase/migrations/20260529140000_gdpr_deletion_cascade.sql"),
@@ -20,6 +21,14 @@ const sql =
   "\n" +
   readFileSync(
     join(process.cwd(), "supabase/migrations/20260530120000_gdpr_deletion_setnull_actors_part2.sql"),
+    "utf8",
+  ) +
+  "\n" +
+  readFileSync(
+    join(
+      process.cwd(),
+      "supabase/migrations/20260531213000_gdpr_deletion_setnull_civic_prevention_part3.sql",
+    ),
     "utf8",
   );
 

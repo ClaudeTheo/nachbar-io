@@ -1,7 +1,8 @@
 # Profi-Vertical-Lösch-FKs — Folge-Welle (Planung)
 
 **Datum:** 2026-05-31
-**Status:** PLANUNG (keine Migration geschrieben, keine Code-Änderung)
+**Status:** **Teil 3a GEBAUT (lokal, File-first, Tests grün — Prod-Apply = Founder-Go offen).** Teil 3b
+(8 Subjekt-/Korrespondenz-FKs) = Founder-Entscheidung offen. Teil 4 (§630f) = vor Profi-Pilot + Albiez.
 **Autor:** Claude (Analyse gegen Prod `uylszchlyhbpbmslcnka` read-only verifiziert)
 **Kontext:** Letzter offener Block-A-Punkt (Pre-Pilot-Audit 2026-05-29). Knüpft an
 `2026-05-29-dsgvo-cluster-b-betroffenenrechte-plan.md` Zeile 52 an (dort wurde die Profi-Vertical-FK-Welle
@@ -109,16 +110,49 @@ Gruppe-A-FKs **grundlos** nicht löschbar. Teil 3 räumt das mit dem schon abgen
 ohne das rechtlich komplexe §630f-Konzept abzuwarten. Teil 4 bleibt bewusst vor dem Profi-Pilot, weil es
 ein Rechts- nicht nur Technik-Thema ist.
 
-## 5. Mini-Audit-Skizze (Regel `.claude/rules/security-mini-audit.md`)
+## 4a. Konkrete Teil-3-Aufteilung (Prod-verifiziert, 27 NO-ACTION-FKs Civic/OZG/Prevention/Pflege)
 
-Bei Bau von Teil 3 Pflicht-Block ausfüllen. Voraussichtlich:
-- **RLS/Trigger:** FK-ON-DELETE-Änderung ist Policy-neutral (nur `ALTER TABLE … DROP/ADD CONSTRAINT`).
-  Prüfen, dass keine NOT-NULL→NULL-Lockerung einen RLS-WRITE-Pfad öffnet (SET NULL nur auf Aktor-Spalten,
-  nicht auf Scope-/Owner-Spalten, die RLS nutzt).
-- **Privilege-Spalten:** keine `is_admin`/`role`/`trust_level` betroffen.
-- **Audit-Trail:** Löschung protokolliert weiterhin via `data_requests` (bestehend).
-- **Rate-Limit:** unverändert (Lösch-Anfrage 3/h In-Memory).
-- **Registry-Konsistenz:** `migration-consistency.test.ts` um die neuen FKs erweitern (RED→GREEN).
+**Teil 3a — GEBAUT (19 FKs, alle SET NULL, Migration `20260531213000`):** reine Aktor-/Ersteller-/Beleg-FKs.
+`citizen_reports.reported_by`, `civic_announcements.created_by`, `civic_appointments.created_by`,
+`civic_document_requests.requested_by`, `civic_events.created_by`, `civic_message_attachments.uploaded_by`*,
+`civic_messages.read_by`, `civic_surveys.created_by`, `construction_sites.created_by`,
+`crisis_alerts.created_by`, `municipal_announcements.author_id`, `pflege_resident_assignments.assigned_by`*,
+`pflege_resident_assignments.revoked_by`, `prevention_course_content.updated_by`,
+`prevention_courses.instructor_id`*, `prevention_enrollments.certificate_issued_by`,
+`prevention_enrollments.payer_user_id`, `prevention_group_calls.instructor_id`*,
+`prevention_payments.payer_user_id`. (* = war NOT NULL → in Schritt 1 nullable gemacht.)
+
+**Teil 3b — OFFEN (8 FKs, Founder-/Albiez-Entscheidung CASCADE vs SET NULL):**
+| FK | Natur | Empfehlung |
+|---|---|---|
+| `civic_messages.citizen_user_id` (NOT NULL) | OZG-Korrespondenz, Freitext | **Rechtsfrage:** Verwaltungsaufbewahrung? Wenn ja → SET NULL (anonym), sonst CASCADE |
+| `civic_messages.sender_user_id` (NOT NULL) | OZG-Korrespondenz | wie oben |
+| `civic_survey_votes.user_id` (NOT NULL) | Umfrage-Stimme | **SET NULL** (Aggregat-Integrität bleibt, kein PII mehr) |
+| `prevention_enrollments.user_id` (NOT NULL) | Kurs-Einschreibung + Beleg | **SET NULL** (Teilnahme-/Zahlungsnachweis bleibt anonym) |
+| `prevention_messages.sender_id` (NOT NULL) | eigene Nachricht, Freitext | **CASCADE** (eigene Daten weg) |
+| `prevention_messages.recipient_id` | empfangene Nachricht | **SET NULL** (bleibt für Sender) |
+| `prevention_reviews.user_id` (NOT NULL) | eigene Bewertung, evtl. Freitext | **CASCADE** (eigene Daten weg) |
+| `prevention_visibility_consent.user_id` (NOT NULL) | Einwilligung | **CASCADE** (konsistent mit `user_consents`) |
+
+Hinweis: Teil 3a macht Civic/Prevention-Nutzer **noch nicht** vollständig löschbar (die 8 3b-FKs blockieren
+weiter). Im geschlossenen Pilot 0 solche Nutzer → folgenlos; 3b vor Civic-/OZG-Pilot entscheiden + bauen.
+
+## 5. Mini-Audit (Regel `.claude/rules/security-mini-audit.md`) — Teil 3a, 2026-05-31
+
+```text
+Mini-Audit Profi-FK Teil 3a (2026-05-31):
+- RLS/Trigger geprüft: citizen_reports, civic_* (announcements/appointments/document_requests/events/
+  message_attachments/messages/surveys), construction_sites, crisis_alerts, municipal_announcements,
+  pflege_resident_assignments, prevention_* (course_content/courses/enrollments/group_calls/payments)
+- Findings: 0 CRITICAL/HIGH. RLS-Pass (pg_policies): 8 Policies nutzen die Aktor-Spalten, ALLE als
+  `actor_col = auth.uid()` (direkt/Subquery), KEINE `IS NULL` → SET NULL→NULL gibt keinem Nutzer Zugriff
+  (Zeile wird nur ownerlos/restriktiver). Keine der 19 Spalten ist is_admin/role/trust_level/consent.
+  Migration ändert nur FK-delete_rule + 4× DROP NOT NULL — keine Policy/Grant/Trigger berührt.
+- Audit-Trail: ja (Löschung → data_requests, bestehend) | Rate-Limit: unverändert (Lösch-Anfrage 3/h)
+```
+
+- **Registry-Konsistenz:** `migration-consistency.test.ts` um Teil 3a erweitert (RED→GREEN, 10/10);
+  volle GDPR-Suite 36/36, `tsc` exit 0, eslint exit 0.
 
 ## 6. Offene Fragen (Founder / Albiez)
 

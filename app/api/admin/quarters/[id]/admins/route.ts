@@ -101,7 +101,7 @@ export async function DELETE(
   }
 
   try {
-    await removeQuarterAdmin(getAdminDb(), id, user_id);
+    await removeQuarterAdmin(getAdminDb(), id, user_id, auth.user!.id);
     return NextResponse.json({ message: "Quartier-Admin entfernt" });
   } catch (err) {
     return handleServiceError(err);

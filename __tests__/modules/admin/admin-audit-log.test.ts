@@ -3,6 +3,10 @@ import { createUserByAdmin } from "@/modules/admin/services/create-user.service"
 import { processVerification } from "@/modules/admin/services/verify-address.service";
 import { sendBroadcast } from "@/modules/admin/services/broadcast.service";
 import { archiveQuarter } from "@/modules/admin/services/quarter-detail.service";
+import {
+  assignQuarterAdmin,
+  removeQuarterAdmin,
+} from "@/modules/admin/services/quarter-admins.service";
 
 const mockSafeInsertNotification = vi.fn();
 const mockSafeInsertNotifications = vi.fn();
@@ -181,6 +185,56 @@ function makeQuarterClient() {
     }),
   };
 
+  return { client, auditInsert };
+}
+
+function makeAssignQuarterAdminClient(targetRole = "user") {
+  const auditInsert = vi.fn().mockResolvedValue({ error: null });
+  const roleUpdateEq = vi.fn().mockResolvedValue({ error: null });
+  const client = {
+    from: vi.fn((table: string) => {
+      if (table === "quarters") {
+        return { select: () => ({ eq: () => ({ single: () => Promise.resolve({ data: { id: "quarter-1" }, error: null }) }) }) };
+      }
+      if (table === "users") {
+        return {
+          select: () => ({ eq: () => ({ single: () => Promise.resolve({ data: { id: "user-1", role: targetRole }, error: null }) }) }),
+          update: vi.fn(() => ({ eq: roleUpdateEq })),
+        };
+      }
+      if (table === "quarter_admins") {
+        return {
+          select: () => ({ eq: () => ({ eq: () => ({ maybeSingle: () => Promise.resolve({ data: null, error: null }) }) }) }),
+          insert: () => ({ select: () => ({ single: () => Promise.resolve({ data: { id: "qa-1", quarter_id: "quarter-1", user_id: "user-1" }, error: null }) }) }),
+        };
+      }
+      if (table === "admin_audit_log") return { insert: auditInsert };
+      throw new Error(`Unexpected table ${table}`);
+    }),
+  };
+  return { client, auditInsert, roleUpdateEq };
+}
+
+function makeRemoveQuarterAdminClient(remainingCount = 0, profileRole = "quarter_admin") {
+  const auditInsert = vi.fn().mockResolvedValue({ error: null });
+  const client = {
+    from: vi.fn((table: string) => {
+      if (table === "quarter_admins") {
+        return {
+          delete: () => ({ eq: () => ({ eq: () => Promise.resolve({ error: null }) }) }),
+          select: () => ({ eq: () => Promise.resolve({ count: remainingCount, error: null }) }),
+        };
+      }
+      if (table === "users") {
+        return {
+          select: () => ({ eq: () => ({ single: () => Promise.resolve({ data: { role: profileRole }, error: null }) }) }),
+          update: () => ({ eq: () => Promise.resolve({ error: null }) }),
+        };
+      }
+      if (table === "admin_audit_log") return { insert: auditInsert };
+      throw new Error(`Unexpected table ${table}`);
+    }),
+  };
   return { client, auditInsert };
 }
 
@@ -369,6 +423,40 @@ describe("admin audit log", () => {
       details: {
         status: "archived",
         name: "Bad Saeckingen",
+      },
+    });
+  });
+
+  it("protokolliert die Zuweisung eines Quartier-Admins (mit Rollen-Aenderung)", async () => {
+    const { client, auditInsert } = makeAssignQuarterAdminClient("user");
+
+    await assignQuarterAdmin(client as never, "quarter-1", "user-1", "admin-1");
+
+    expect(auditInsert).toHaveBeenCalledWith({
+      admin_id: "admin-1",
+      action: "admin_assign_quarter_admin",
+      target_type: "quarter_admin",
+      target_id: "user-1",
+      details: {
+        quarterId: "quarter-1",
+        roleChangedToQuarterAdmin: true,
+      },
+    });
+  });
+
+  it("protokolliert das Entfernen eines Quartier-Admins (mit Rollen-Reset)", async () => {
+    const { client, auditInsert } = makeRemoveQuarterAdminClient(0, "quarter_admin");
+
+    await removeQuarterAdmin(client as never, "quarter-1", "user-1", "admin-1");
+
+    expect(auditInsert).toHaveBeenCalledWith({
+      admin_id: "admin-1",
+      action: "admin_remove_quarter_admin",
+      target_type: "quarter_admin",
+      target_id: "user-1",
+      details: {
+        quarterId: "quarter-1",
+        roleResetToUser: true,
       },
     });
   });

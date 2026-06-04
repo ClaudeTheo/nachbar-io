@@ -93,12 +93,25 @@ export async function assignQuarterAdmin(
   }
 
   // Rolle auf quarter_admin setzen wenn aktuell nur 'user'
-  if (targetUser.role === "user") {
+  const roleChangedToQuarterAdmin = targetUser.role === "user";
+  if (roleChangedToQuarterAdmin) {
     await adminDb
       .from("users")
       .update({ role: "quarter_admin" })
       .eq("id", userId);
   }
+
+  // Audit-Trail: privilegierte Rollen-Vergabe protokollieren (PII-/Art.9-frei: nur IDs + Rollen-Status)
+  await adminDb.from("admin_audit_log").insert({
+    admin_id: assignedBy,
+    action: "admin_assign_quarter_admin",
+    target_type: "quarter_admin",
+    target_id: userId,
+    details: {
+      quarterId,
+      roleChangedToQuarterAdmin,
+    },
+  });
 
   return created;
 }
@@ -109,7 +122,8 @@ export async function assignQuarterAdmin(
 export async function removeQuarterAdmin(
   adminDb: SupabaseClient,
   quarterId: string,
-  userId: string
+  userId: string,
+  removedBy: string
 ) {
   // Quarter-Admin Eintrag löschen
   const { error } = await adminDb
@@ -129,6 +143,7 @@ export async function removeQuarterAdmin(
     .eq("user_id", userId);
 
   // Wenn keine weiteren Zuweisungen, Rolle auf 'user' zurücksetzen
+  let roleResetToUser = false;
   if ((count ?? 0) === 0) {
     const { data: userProfile } = await adminDb
       .from("users")
@@ -142,6 +157,19 @@ export async function removeQuarterAdmin(
         .from("users")
         .update({ role: "user" })
         .eq("id", userId);
+      roleResetToUser = true;
     }
   }
+
+  // Audit-Trail: privilegierten Rollen-Entzug protokollieren (PII-/Art.9-frei: nur IDs + Rollen-Status)
+  await adminDb.from("admin_audit_log").insert({
+    admin_id: removedBy,
+    action: "admin_remove_quarter_admin",
+    target_type: "quarter_admin",
+    target_id: userId,
+    details: {
+      quarterId,
+      roleResetToUser,
+    },
+  });
 }

@@ -6,6 +6,11 @@ import {
   generateSessionResponse,
 } from "@/modules/praevention/services/ki-session.service";
 import { calculateCurrentWeek } from "@/modules/praevention/services/sessions.service";
+import {
+  AI_HELP_DISABLED_MESSAGE,
+  canUsePersonalAi,
+} from "@/lib/ai/user-settings";
+import { consumeAiDailyUserLimit } from "@/lib/ai/rate-limit";
 
 export async function POST(request: NextRequest) {
   const supabase = await createClient();
@@ -39,6 +44,27 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(
       { error: "message und enrollmentId sind erforderlich" },
       { status: 400 },
+    );
+  }
+
+  const aiAllowed = await canUsePersonalAi(supabase, user.id);
+  if (!aiAllowed) {
+    return NextResponse.json({ error: AI_HELP_DISABLED_MESSAGE }, { status: 503 });
+  }
+
+  const aiRateLimit = await consumeAiDailyUserLimit({ userId: user.id });
+  if (aiRateLimit.unavailable) {
+    return NextResponse.json(
+      { error: "KI-Nutzungsschutz ist gerade nicht verfuegbar." },
+      { status: 503 },
+    );
+  }
+  if (!aiRateLimit.allowed) {
+    return NextResponse.json(
+      {
+        error: `KI-Tageslimit erreicht (${aiRateLimit.limit} Anfragen pro Tag). Bitte versuchen Sie es morgen erneut.`,
+      },
+      { status: 429 },
     );
   }
 

@@ -3,6 +3,10 @@
 // Design-Ref: docs/plans/2026-04-05-praevention-ki-systembeschreibung.md
 
 import Anthropic from "@anthropic-ai/sdk";
+import {
+  pseudonymizeAiMessages,
+  pseudonymizeAiText,
+} from "@/lib/ai/pseudonymize";
 
 // Eskalations-Stufen
 export type EscalationLevel = "green" | "yellow" | "red";
@@ -194,6 +198,7 @@ export async function generateSessionResponse(
   ]
     .filter(Boolean)
     .join("\n\n");
+  const safeSystemPrompt = pseudonymizeAiText(systemPrompt).text;
 
   // Nachrichten-Verlauf (max 10 Paare)
   const messages = request.sessionHistory.slice(-20).map((m) => ({
@@ -203,13 +208,14 @@ export async function generateSessionResponse(
 
   // Aktuelle Nachricht anhaengen
   messages.push({ role: "user", content: request.userMessage });
+  const safeMessages = pseudonymizeAiMessages(messages);
 
   const anthropic = new Anthropic({ apiKey });
   const response = await anthropic.messages.create({
     model: "claude-haiku-4-5-20251001",
     max_tokens: 800,
-    system: systemPrompt,
-    messages,
+    system: safeSystemPrompt,
+    messages: safeMessages,
   });
 
   const reply =

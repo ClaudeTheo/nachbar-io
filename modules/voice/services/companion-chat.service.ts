@@ -33,6 +33,10 @@ import {
 } from "@/modules/memory/types";
 import type { MemorySaveProposal } from "@/modules/memory/types";
 import { buildAiDisabledResponse } from "@/lib/ai/user-settings";
+import {
+  pseudonymizeAiMessages,
+  pseudonymizeAiText,
+} from "@/lib/ai/pseudonymize";
 
 /** Maximale Anzahl an Nachrichten im Session-Gedaechtnis */
 const MAX_MESSAGES = 20;
@@ -129,13 +133,15 @@ export async function handleStreamingResponse(
           return;
         }
 
+        const safeSystemPrompt = pseudonymizeAiText(systemPrompt).text;
+        const safeMessages = pseudonymizeAiMessages(messages);
         const anthropic = new Anthropic();
         const stream = anthropic.messages.stream({
           model: "claude-haiku-4-5-20251001",
           max_tokens: 768,
-          system: systemPrompt,
+          system: safeSystemPrompt,
           tools: activeTools,
-          messages,
+          messages: safeMessages,
         });
 
         let fullReply = "";
@@ -264,13 +270,15 @@ export async function handleJsonResponse(
   if (disabledResponse) return disabledResponse;
 
   const activeTools = tools || companionTools;
+  const safeSystemPrompt = pseudonymizeAiText(systemPrompt).text;
+  const safeMessages = pseudonymizeAiMessages(messages);
   const anthropic = new Anthropic();
   const response = await anthropic.messages.create({
     model: "claude-haiku-4-5-20251001",
     max_tokens: 768,
-    system: systemPrompt,
+    system: safeSystemPrompt,
     tools: activeTools,
-    messages,
+    messages: safeMessages,
   });
 
   // Antwort verarbeiten: Text, Tool-Results und Bestaetigungen extrahieren
@@ -591,13 +599,18 @@ export async function formulateMessage(
   }
 
   const client = new Anthropic({ apiKey });
-  const systemPrompt = buildFormulationPrompt(recipientName, mutLevel);
+  const safeRecipientName =
+    pseudonymizeAiText(recipientName).text || "Kontaktperson";
+  const systemPrompt = pseudonymizeAiText(
+    buildFormulationPrompt(safeRecipientName, mutLevel),
+  ).text;
+  const safeTranscript = pseudonymizeAiText(transcript).text;
 
   const response = await client.messages.create({
     model: "claude-haiku-4-5-20251001",
     max_tokens: 400,
     system: systemPrompt,
-    messages: [{ role: "user", content: transcript }],
+    messages: [{ role: "user", content: safeTranscript }],
   });
 
   const textBlock = response.content.find((b) => b.type === "text");

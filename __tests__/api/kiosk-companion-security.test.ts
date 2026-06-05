@@ -7,6 +7,7 @@ const mockSendMessage = vi.fn();
 const mockStartChat = vi.fn();
 const mockGetGenerativeModel = vi.fn();
 const mockAnthropicCreate = vi.fn();
+const mockCanUsePersonalAi = vi.fn();
 
 function chainable() {
   const obj: Record<string, unknown> = {};
@@ -29,6 +30,11 @@ vi.mock("@/modules/memory/services/memory-loader", () => ({
 vi.mock("@/lib/ai/rate-limit", () => ({
   consumeAiDailyUserLimit: (...args: unknown[]) =>
     mockConsumeAiDailyUserLimit(...args),
+}));
+
+vi.mock("@/lib/ai/user-settings", () => ({
+  AI_HELP_DISABLED_MESSAGE: "KI-Hilfe ist ausgeschaltet.",
+  canUsePersonalAi: (...args: unknown[]) => mockCanUsePersonalAi(...args),
 }));
 
 vi.mock("@google/generative-ai", () => ({
@@ -71,6 +77,7 @@ describe("POST /api/kiosk/companion security", () => {
     process.env.KIOSK_DEVICE_TOKEN = "valid-device-token";
     process.env.KIOSK_DEVICE_USER_ID = "resident-env";
 
+    mockCanUsePersonalAi.mockResolvedValue(true);
     mockMaybeSingle.mockResolvedValue({ data: null, error: null });
     mockLoadMemoryContext.mockResolvedValue("Memory: mag Tee.");
     mockConsumeAiDailyUserLimit.mockResolvedValue({
@@ -138,6 +145,29 @@ describe("POST /api/kiosk/companion security", () => {
     expect(mockSendMessage).not.toHaveBeenCalled();
   });
 
+  it("blockt vor Rate-Limit, Memory und Provider wenn KI-Hilfe ausgeschaltet ist", async () => {
+    mockCanUsePersonalAi.mockResolvedValueOnce(false);
+    const { POST } = await importRoute();
+
+    const res = await POST(
+      makeRequest(
+        { deviceId: "dev-1", message: "Was wissen Sie ueber mich?" },
+        { "x-device-token": "valid-device-token" },
+      ),
+    );
+
+    expect(res.status).toBe(503);
+    const body = await res.json();
+    expect(body.aiDisabled).toBe(true);
+    expect(mockCanUsePersonalAi).toHaveBeenCalledWith(
+      expect.anything(),
+      "resident-env",
+    );
+    expect(mockConsumeAiDailyUserLimit).not.toHaveBeenCalled();
+    expect(mockLoadMemoryContext).not.toHaveBeenCalled();
+    expect(mockSendMessage).not.toHaveBeenCalled();
+  });
+
   it("nutzt fuer Memory und Rate-Limit nur die verifizierte Device-Bindung", async () => {
     const { POST } = await importRoute();
 
@@ -168,6 +198,30 @@ describe("POST /api/kiosk/companion security", () => {
       "kiosk_plus",
     );
     expect(mockStartChat).toHaveBeenCalledWith({ history: [] });
+  });
+
+  it("pseudonymisiert Kiosk-Nachrichten vor dem Gemini-Aufruf", async () => {
+    const { POST } = await importRoute();
+
+    const res = await POST(
+      makeRequest(
+        {
+          deviceId: "dev-1",
+          message:
+            "Ich wohne Purkersdorfer Strasse 12 und meine Nummer ist 0171 1234567.",
+        },
+        { "x-device-token": "valid-device-token" },
+      ),
+    );
+
+    expect(res.status).toBe(200);
+    expect(mockSendMessage).toHaveBeenCalledWith(
+      expect.stringContaining("[ADRESSE]"),
+    );
+    const sentMessage = String(mockSendMessage.mock.calls[0]?.[0]);
+    expect(sentMessage).toContain("[TELEFON]");
+    expect(sentMessage).not.toContain("Purkersdorfer");
+    expect(sentMessage).not.toContain("0171");
   });
 
   it("gibt 403 wenn eine DB-Device-Bindung durch Body-user_id gespooft wird", async () => {

@@ -17,6 +17,7 @@ import { ReputationBadge } from "@/components/ReputationBadge";
 import { FloatingHelpButton } from "@/components/FloatingHelpButton";
 import { DailyCheckinBubble } from "@/modules/care/components/checkin/DailyCheckinBubble";
 import { Skeleton } from "@/components/ui/skeleton";
+import { getUserModeConfig } from "@/lib/user-modes";
 
 import { getGreeting, useDashboardData } from "./hooks/useDashboardData";
 
@@ -105,6 +106,7 @@ export default function DashboardPage() {
   const quarterLabel =
     currentQuarter?.city ?? currentQuarter?.name ?? "Ihr Quartier";
   const quarterName = quarterLabel.toUpperCase();
+  const modeLabel = uiMode === "comfort" ? getUserModeConfig(uiMode).label : null;
   const primaryAction: StartAction =
     uiMode === "comfort"
       ? {
@@ -185,6 +187,14 @@ export default function DashboardPage() {
                   aria-hidden
                 />
                 {formatEyebrowDate(new Date())} - {quarterName}
+                {modeLabel && (
+                  <span
+                    className="rounded-full border border-quartier-green/25 bg-quartier-green/10 px-2 py-0.5 text-[11px] font-semibold normal-case tracking-normal text-[#2d6a4f]"
+                    data-testid="dashboard-ui-mode-label"
+                  >
+                    {modeLabel}
+                  </span>
+                )}
               </p>
               <h1
                 className={`mt-3 font-semibold leading-[1.15] text-anthrazit ${

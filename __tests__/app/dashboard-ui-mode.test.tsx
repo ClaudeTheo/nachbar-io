@@ -95,6 +95,9 @@ describe("Dashboard ui modes", () => {
     expect(
       screen.getByRole("link", { name: /Mein TagTermine, Hinweise und Alltag/i }),
     ).toHaveAttribute("href", "/my-day");
+    expect(screen.getByTestId("dashboard-ui-mode-label")).toHaveTextContent(
+      "Aktiv 55+",
+    );
     expect(
       screen.getByText("Was jetzt am naechsten liegt."),
     ).toBeInTheDocument();

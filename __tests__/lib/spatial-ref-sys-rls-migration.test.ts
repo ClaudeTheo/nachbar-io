@@ -18,6 +18,14 @@ describe("20260610100000_spatial_ref_sys_rls_readonly migration", () => {
     expect(SQL).toContain("supabase_admin");
     expect(SQL).toContain("owner-only rls-ddl");
     expect(SQL).toContain("garantierte schutz bleibt revoke all + grant select");
+    expect(SQL).toContain("owner-/supabase-admin-rechte");
+    expect(SQL).toContain("gegenprobe: 0 treffer");
+  });
+
+  it("meldet, wenn supabase_admin-GRANTs per postgres nicht entfernt wurden", () => {
+    expect(SQL).toContain("has_table_privilege");
+    expect(SQL).toContain("revoke konnte supabase_admin-grants nicht entfernen");
+    expect(SQL).toContain("owner-level-fix erforderlich");
   });
 
   it("kapselt RLS-DDL in einem insufficient_privilege-sicheren DO-Block", () => {

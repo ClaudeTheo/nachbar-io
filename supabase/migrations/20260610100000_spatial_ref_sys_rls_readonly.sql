@@ -11,26 +11,37 @@
 -- Ziel: SRID-Referenzdaten bleiben oeffentlich lesbar, damit PostGIS- und
 -- Client-Lookups nicht brechen. Schreibende Zugriffe werden fuer Browser-
 -- Rollen explizit entzogen und zusaetzlich durch RLS ohne DML-Policy blockiert.
+--
+-- Supabase-Hosted-Hinweis: public.spatial_ref_sys kann der Rolle supabase_admin
+-- gehoeren, weil PostGIS als Extension installiert wurde. In diesem Fall darf die
+-- Migration als postgres REVOKE/GRANT anwenden, aber keine Owner-only RLS-DDL auf
+-- der Tabelle ausfuehren. Der RLS-Teil ist deshalb best-effort gekapselt; der
+-- garantierte Schutz bleibt REVOKE ALL + GRANT SELECT.
 -- ============================================================
 
 BEGIN;
 
-ALTER TABLE public.spatial_ref_sys ENABLE ROW LEVEL SECURITY;
-
 REVOKE ALL ON TABLE public.spatial_ref_sys FROM anon, authenticated;
 GRANT SELECT ON TABLE public.spatial_ref_sys TO anon, authenticated;
 
-DROP POLICY IF EXISTS spatial_ref_sys_read_reference_data
-  ON public.spatial_ref_sys;
+DO $$
+BEGIN
+  ALTER TABLE public.spatial_ref_sys ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY spatial_ref_sys_read_reference_data
-  ON public.spatial_ref_sys
-  FOR SELECT
-  TO anon, authenticated
-  USING (true);
+  DROP POLICY IF EXISTS spatial_ref_sys_read_reference_data
+    ON public.spatial_ref_sys;
 
-COMMENT ON POLICY spatial_ref_sys_read_reference_data
-  ON public.spatial_ref_sys
-  IS 'PostGIS SRID-Referenzen sind oeffentlich lesbar; Browser-Rollen haben keine INSERT/UPDATE/DELETE-Policy.';
+  CREATE POLICY spatial_ref_sys_read_reference_data
+    ON public.spatial_ref_sys
+    FOR SELECT
+    TO anon, authenticated
+    USING (true);
+
+  COMMENT ON POLICY spatial_ref_sys_read_reference_data
+    ON public.spatial_ref_sys
+    IS 'PostGIS SRID-Referenzen sind oeffentlich lesbar; Browser-Rollen haben keine INSERT/UPDATE/DELETE-Policy.';
+EXCEPTION WHEN insufficient_privilege THEN
+  RAISE NOTICE 'spatial_ref_sys: keine Owner-Rechte fuer RLS - REVOKE/GRANT bleibt der wirksame Schutz';
+END $$;
 
 COMMIT;

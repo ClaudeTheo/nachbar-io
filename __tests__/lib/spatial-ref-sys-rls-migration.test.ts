@@ -14,9 +14,21 @@ const MIGRATION = readFileSync(
 const SQL = MIGRATION.toLowerCase();
 
 describe("20260610100000_spatial_ref_sys_rls_readonly migration", () => {
-  it("aktiviert RLS auf der PostGIS-Referenztabelle", () => {
+  it("dokumentiert den Supabase-Owner-Vorbehalt", () => {
+    expect(SQL).toContain("supabase_admin");
+    expect(SQL).toContain("owner-only rls-ddl");
+    expect(SQL).toContain("garantierte schutz bleibt revoke all + grant select");
+  });
+
+  it("kapselt RLS-DDL in einem insufficient_privilege-sicheren DO-Block", () => {
+    expect(SQL).toContain("do $$");
     expect(SQL).toContain(
       "alter table public.spatial_ref_sys enable row level security",
+    );
+    expect(SQL).toContain("exception when insufficient_privilege then");
+    expect(SQL).toContain("raise notice");
+    expect(SQL).toContain(
+      "revoke/grant bleibt der wirksame schutz",
     );
   });
 
@@ -31,6 +43,8 @@ describe("20260610100000_spatial_ref_sys_rls_readonly migration", () => {
 
   it("erstellt nur eine SELECT-Policy fuer SRID-Referenzdaten", () => {
     expect(SQL).toContain("create policy spatial_ref_sys_read_reference_data");
+    expect(SQL).toContain("drop policy if exists spatial_ref_sys_read_reference_data");
+    expect(SQL).toContain("comment on policy spatial_ref_sys_read_reference_data");
     expect(SQL).toContain("for select");
     expect(SQL).toContain("to anon, authenticated");
     expect(SQL).toContain("using (true)");

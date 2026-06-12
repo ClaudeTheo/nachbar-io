@@ -60,7 +60,7 @@ describe("Dashboard ui modes", () => {
 
     expect(
       screen.getByRole("link", { name: /Hier bei mirWetter, Warnungen, Müllabfuhr/i }),
-    ).toHaveAttribute("href", "/hier-bei-mir");
+    ).toHaveAttribute("href", "/quartier-info");
     expect(
       screen.getByRole("link", { name: /Mein TagHeute planen/i }),
     ).toHaveAttribute("href", "/my-day");

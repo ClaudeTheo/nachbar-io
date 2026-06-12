@@ -116,8 +116,10 @@ export default function DashboardPage() {
       : {
           // Pilot: "Hier bei mir" zeigt fuer jeden Nutzer garantiert echte
           // Inhalte (Wetter, Warnungen, Muell, Apotheken) — /gruppen ist im
-          // jungen Quartier leer und ein toter erster Klick (Befund A4:1)
-          href: "/hier-bei-mir",
+          // jungen Quartier leer und ein toter erster Klick (Befund A4:1).
+          // Welle S1: /hier-bei-mir gehoert jetzt der (senior)-Shell; die
+          // (app)-Welt nutzt den identischen Inhalt unter /quartier-info.
+          href: "/quartier-info",
           icon: MapPin,
           label: "Hier bei mir",
           description: "Wetter, Warnungen, Müllabfuhr und mehr.",

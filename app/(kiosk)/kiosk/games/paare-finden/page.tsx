@@ -15,8 +15,8 @@ function shuffle<T>(arr: T[]): T[] {
   return a;
 }
 
-/** Memory-Spiel: 4x4 Karten mit 8 Emoji-Paaren */
-export default function MemoryGamePage() {
+/** Paare finden: 4x4 Karten mit 8 Emoji-Paaren */
+export default function PairsGamePage() {
   const [cards, setCards] = useState<string[]>(() =>
     shuffle([...EMOJIS, ...EMOJIS]),
   );
@@ -71,9 +71,9 @@ export default function MemoryGamePage() {
   );
 
   const getCardClass = (index: number) => {
-    if (matched.has(index)) return "kiosk-memory-card matched";
-    if (revealed.includes(index)) return "kiosk-memory-card revealed";
-    return "kiosk-memory-card hidden";
+    if (matched.has(index)) return "kiosk-pairs-card matched";
+    if (revealed.includes(index)) return "kiosk-pairs-card revealed";
+    return "kiosk-pairs-card hidden";
   };
 
   return (
@@ -90,7 +90,7 @@ export default function MemoryGamePage() {
           margin: "24px 0 20px",
         }}
       >
-        <h1 style={{ fontSize: 32, fontWeight: 700 }}>🧠 Memory</h1>
+        <h1 style={{ fontSize: 32, fontWeight: 700 }}>🧩 Paare finden</h1>
         <span style={{ fontSize: 18, color: "#6b7280" }}>
           {moves} {moves === 1 ? "Zug" : "Züge"}
         </span>

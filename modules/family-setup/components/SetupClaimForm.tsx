@@ -1,10 +1,12 @@
 "use client";
 
 import { FormEvent, useEffect, useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { createClient } from "@/lib/supabase/client";
 
 interface SetupClaimFormProps {
   token: string;
@@ -25,6 +27,8 @@ export function SetupClaimForm({ token }: SetupClaimFormProps) {
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  // Zugang wurde aktiviert, aber die automatische Anmeldung schlug fehl
+  const [claimedNeedsLogin, setClaimedNeedsLogin] = useState(false);
 
   useEffect(() => {
     let active = true;
@@ -63,6 +67,20 @@ export function SetupClaimForm({ token }: SetupClaimFormProps) {
       if (!response.ok) {
         throw new Error(json.error ?? "Zugang konnte nicht aktiviert werden.");
       }
+
+      // Direkt anmelden (Befund A2:2): Der Claim erstellt das Konto nur
+      // serverseitig ohne Session — ohne Login wuerde die Middleware den
+      // frisch aktivierten Nutzer auf die Landing-Page zurueckwerfen.
+      const supabase = createClient();
+      const { error: signInError } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+      if (signInError) {
+        setClaimedNeedsLogin(true);
+        return;
+      }
+
       router.push(json.redirectTo ?? "/after-login");
     } catch (err) {
       setError((err as Error).message);
@@ -73,6 +91,25 @@ export function SetupClaimForm({ token }: SetupClaimFormProps) {
 
   if (isLoading) {
     return <div className="py-12 text-center text-muted-foreground">Laden...</div>;
+  }
+
+  if (claimedNeedsLogin) {
+    return (
+      <Card>
+        <CardContent className="space-y-4 p-4">
+          <h1 className="text-lg font-semibold text-anthrazit">
+            Ihr Zugang ist bereit
+          </h1>
+          <p className="text-sm text-muted-foreground">
+            Die automatische Anmeldung hat nicht geklappt. Bitte melden Sie
+            sich einmal mit Ihrer E-Mail-Adresse und Ihrem Passwort an.
+          </p>
+          <Button asChild className="w-full" style={{ minHeight: "56px" }}>
+            <Link href="/login">Zur Anmeldung</Link>
+          </Button>
+        </CardContent>
+      </Card>
+    );
   }
 
   if (!preview) {

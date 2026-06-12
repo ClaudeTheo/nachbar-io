@@ -45,4 +45,14 @@ describe("completeOnboarding", () => {
     });
     expect(mockEqAfterUpdate).toHaveBeenCalledWith("id", "user-1");
   });
+
+  it("fasst ui_mode NICHT an, wenn keine Modus-Wahl uebergeben wird (Befund A1:1)", async () => {
+    await completeOnboarding({});
+
+    expect(mockUpdate).toHaveBeenCalledWith({
+      settings: { existing: true, onboarding_completed: true },
+    });
+    const payload = mockUpdate.mock.calls[0][0] as Record<string, unknown>;
+    expect("ui_mode" in payload).toBe(false);
+  });
 });

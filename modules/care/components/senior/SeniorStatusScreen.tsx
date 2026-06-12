@@ -10,7 +10,8 @@ interface SeniorStatusScreenProps {
 
 const STATUS_CONFIG = {
   checkin_ok: { icon: '✅', title: 'Danke!', subtitle: 'Ihr Check-in wurde gespeichert.', color: 'text-green-600' },
-  checkin_not_well: { icon: '💛', title: 'Wir kuemmern uns!', subtitle: 'Ihre Angehörigen wurden informiert.', color: 'text-yellow-600' },
+  // Gelb auf Weiss waere nur ~2.9:1 — Titel dunkel, Farbe traegt das Icon (Befund B1:2)
+  checkin_not_well: { icon: '💛', title: 'Wir kuemmern uns!', subtitle: 'Ihre Angehörigen wurden informiert.', color: 'text-anthrazit' },
   sos_sent: { icon: '🆘', title: 'Hilfe wird gerufen!', subtitle: 'Ihre Nachbarn wurden benachrichtigt.', color: 'text-red-600' },
 };
 
@@ -25,8 +26,9 @@ export function SeniorStatusScreen({ type, autoCloseSeconds = 10 }: SeniorStatus
   }, [autoCloseSeconds, router]);
 
   return (
-    <div className="text-center space-y-6 py-8">
-      <div className="text-8xl">{config.icon}</div>
+    // role=status: Statuswechsel wird auch fuer Screenreader angesagt (Befund B3:2)
+    <div className="text-center space-y-6 py-8" role="status" aria-live="polite">
+      <div className="text-8xl" aria-hidden="true">{config.icon}</div>
       <h1 className={`text-4xl font-bold ${config.color}`}>{config.title}</h1>
       <p className="text-xl text-gray-600">{config.subtitle}</p>
       <p className="text-base text-gray-400 mt-8">Zurück zum Startbildschirm in {autoCloseSeconds} Sekunden...</p>

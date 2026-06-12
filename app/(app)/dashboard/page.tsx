@@ -9,7 +9,6 @@ import {
   Megaphone,
   Newspaper,
   User,
-  UsersRound,
   type LucideIcon,
 } from "lucide-react";
 import { PullToRefresh } from "@/components/PullToRefresh";
@@ -115,10 +114,13 @@ export default function DashboardPage() {
           tone: "bg-[#2d6a4f]",
         }
       : {
-          href: "/gruppen",
-          icon: UsersRound,
-          label: "Gemeinschaft",
-          description: "Gruppen, Nachbarn und Austausch.",
+          // Pilot: "Hier bei mir" zeigt fuer jeden Nutzer garantiert echte
+          // Inhalte (Wetter, Warnungen, Muell, Apotheken) — /gruppen ist im
+          // jungen Quartier leer und ein toter erster Klick (Befund A4:1)
+          href: "/hier-bei-mir",
+          icon: MapPin,
+          label: "Hier bei mir",
+          description: "Wetter, Warnungen, Müllabfuhr und mehr.",
           tone: "bg-quartier-green",
         };
 

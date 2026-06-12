@@ -50,7 +50,7 @@ const TYPE_ROUTES: Record<string, string> = {
   poll_vote: "/polls",
   tip_confirmation: "/tips",
   news: "/news",
-  checkin_reminder: "/senior/checkin",
+  checkin_reminder: "/checkin",
   system: "/dashboard",
 };
 

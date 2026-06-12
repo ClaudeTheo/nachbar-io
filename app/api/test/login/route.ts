@@ -134,7 +134,7 @@ export async function POST(request: NextRequest) {
     userId: data.user?.id,
     redirectTo:
       data.user?.user_metadata?.ui_mode === "senior"
-        ? "/senior/home"
+        ? "/kreis-start"
         : "/dashboard",
   });
 }

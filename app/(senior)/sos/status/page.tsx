@@ -65,5 +65,5 @@ function SeniorSosStatusContent() {
     );
   }
 
-  return <SeniorStatusScreen type="sos_sent" autoCloseSeconds={30} />;
+  return <SeniorStatusScreen type="sos_sent" />;
 }

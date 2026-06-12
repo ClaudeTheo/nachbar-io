@@ -1,11 +1,9 @@
 'use client';
 
-import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 
 interface SeniorStatusScreenProps {
   type: 'checkin_ok' | 'checkin_not_well' | 'sos_sent';
-  autoCloseSeconds?: number;
 }
 
 const STATUS_CONFIG = {
@@ -15,15 +13,8 @@ const STATUS_CONFIG = {
   sos_sent: { icon: '🆘', title: 'Hilfe wird gerufen!', subtitle: 'Ihre Nachbarn wurden benachrichtigt.', color: 'text-red-600' },
 };
 
-export function SeniorStatusScreen({ type, autoCloseSeconds = 10 }: SeniorStatusScreenProps) {
-  const router = useRouter();
+export function SeniorStatusScreen({ type }: SeniorStatusScreenProps) {
   const config = STATUS_CONFIG[type];
-
-  useEffect(() => {
-    // Zurück zur Senior-Startseite (nicht zur Landing-Page)
-    const timer = setTimeout(() => router.push('/senior/home'), autoCloseSeconds * 1000);
-    return () => clearTimeout(timer);
-  }, [autoCloseSeconds, router]);
 
   return (
     // role=status: Statuswechsel wird auch fuer Screenreader angesagt (Befund B3:2)
@@ -31,7 +22,21 @@ export function SeniorStatusScreen({ type, autoCloseSeconds = 10 }: SeniorStatus
       <div className="text-8xl" aria-hidden="true">{config.icon}</div>
       <h1 className={`text-4xl font-bold ${config.color}`}>{config.title}</h1>
       <p className="text-xl text-gray-600">{config.subtitle}</p>
-      <p className="text-base text-gray-400 mt-8">Zurück zum Startbildschirm in {autoCloseSeconds} Sekunden...</p>
+
+      {/*
+        Welle S1 / Befund B3:2 (WCAG 2.2.1 "Timing Adjustable"): KEIN Auto-Redirect
+        mehr. Frueher navigierte ein Timer nach 10-30s ungefragt auf /senior/home
+        zurueck — gerade nach einem SOS will der Senior den Status aber behalten,
+        nicht weggeleitet werden. Stattdessen entscheidet er selbst per grossem
+        Button (80px Touch-Target) und landet in der kanonischen Shell.
+      */}
+      <Link
+        href="/kreis-start"
+        className="mx-auto mt-8 flex max-w-sm items-center justify-center rounded-2xl border-2 border-anthrazit bg-white px-6 text-xl font-bold text-anthrazit focus:outline-none focus:ring-4 focus:ring-quartier-green/40"
+        style={{ minHeight: '80px', touchAction: 'manipulation' }}
+      >
+        Zurück zur Startseite
+      </Link>
     </div>
   );
 }

@@ -1,25 +1,66 @@
-import { readFileSync } from "fs";
+import { existsSync, readFileSync } from "fs";
 import { join } from "path";
 import { describe, expect, it } from "vitest";
 
+const MIGRATION_PATH = join(
+  process.cwd(),
+  "supabase",
+  "migrations",
+  "20260610193356_spatial_ref_sys_rls_readonly.sql",
+);
+const OLD_MIGRATION_PATH = join(
+  process.cwd(),
+  "supabase",
+  "migrations",
+  "20260610100000_spatial_ref_sys_rls_readonly.sql",
+);
 const MIGRATION = readFileSync(
-  join(
-    process.cwd(),
-    "supabase",
-    "migrations",
-    "20260610100000_spatial_ref_sys_rls_readonly.sql",
-  ),
+  MIGRATION_PATH,
   "utf8",
 );
 const SQL = MIGRATION.toLowerCase();
 
-describe("20260610100000_spatial_ref_sys_rls_readonly migration", () => {
-  it("dokumentiert den Supabase-Owner-Vorbehalt", () => {
+describe("20260610193356_spatial_ref_sys_rls_readonly migration", () => {
+  it("nutzt die in Prod markierte MCP-Apply-Version statt der alten lokalen Version", () => {
+    expect(existsSync(MIGRATION_PATH)).toBe(true);
+    expect(existsSync(OLD_MIGRATION_PATH)).toBe(false);
+    expect(SQL).toContain("migration 20260610193356");
+    expect(SQL).toContain("migration-history-version ist 20260610193356");
+  });
+
+  it("dokumentiert den Supabase-Support-Fix und den Owner-Vorbehalt", () => {
+    expect(SQL).toContain("su-393741");
+    expect(SQL).toContain("postgis-extension serverseitig von public nach extensions");
+    expect(SQL).toContain("prod enthaelt deshalb keine public.spatial_ref_sys mehr");
     expect(SQL).toContain("supabase_admin");
     expect(SQL).toContain("owner-only rls-ddl");
-    expect(SQL).toContain("garantierte schutz bleibt revoke all + grant select");
-    expect(SQL).toContain("owner-/supabase-admin-rechte");
-    expect(SQL).toContain("gegenprobe: 0 treffer");
+    expect(SQL).toContain(
+      "garantierte schutz fuer local/alt-setups bleibt revoke all + grant select",
+    );
+    expect(SQL).toContain("versucht bewusst nicht, postgis selbst nach extensions zu verschieben");
+  });
+
+  it("schuetzt alle public.spatial_ref_sys-Zugriffe hinter einem Existenz-Guard", () => {
+    const guardIndex = SQL.indexOf(
+      "if to_regclass('public.spatial_ref_sys') is null then",
+    );
+    const returnIndex = SQL.indexOf("return;", guardIndex);
+    const revokeIndex = SQL.indexOf(
+      "revoke all on table public.spatial_ref_sys from anon, authenticated",
+    );
+    const grantIndex = SQL.indexOf(
+      "grant select on table public.spatial_ref_sys to anon, authenticated",
+    );
+    const rlsIndex = SQL.indexOf(
+      "alter table public.spatial_ref_sys enable row level security",
+    );
+
+    expect(guardIndex).toBeGreaterThan(-1);
+    expect(returnIndex).toBeGreaterThan(guardIndex);
+    expect(revokeIndex).toBeGreaterThan(returnIndex);
+    expect(grantIndex).toBeGreaterThan(returnIndex);
+    expect(rlsIndex).toBeGreaterThan(returnIndex);
+    expect(SQL).toContain("legacy-hardening wird uebersprungen");
   });
 
   it("meldet, wenn supabase_admin-GRANTs per postgres nicht entfernt wurden", () => {

@@ -7,6 +7,8 @@ import { sendPush } from '@/lib/care/channels/push';
 import { writeCronHeartbeat } from '@/lib/care/cron-heartbeat';
 import { safeInsertNotification } from '@/lib/notifications-server';
 import { ServiceError } from '@/lib/services/service-error';
+import { pseudonymizeAiText } from '@/lib/ai/pseudonymize';
+import { isFeatureEnabledServer } from '@/lib/feature-flags-server';
 
 export interface DigestCronResult {
   success: boolean;
@@ -20,6 +22,10 @@ export async function runDigestCron(supabase: SupabaseClient): Promise<DigestCro
   const now = new Date();
   const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
   let digestsSent = 0;
+
+  if (await isFeatureEnabledServer(supabase, 'AI_PROVIDER_OFF')) {
+    return { success: true, digestsSent: 0, timestamp: now.toISOString(), skipped: true, reason: 'ai_provider_off' };
+  }
 
   // Anthropic Client — ohne Key kein Digest
   const anthropicKey = process.env.ANTHROPIC_API_KEY;
@@ -82,15 +88,24 @@ export async function runDigestCron(supabase: SupabaseClient): Promise<DigestCro
     // Claude Haiku Zusammenfassung
     let summary: string;
     try {
+      const promptContent = pseudonymizeAiText(
+        `Du bist der Nachbarschafts-Assistent fuer das Quartier "${quarter.name}".\n` +
+          `Fasse die Woche in 3-5 Saetzen zusammen. Tonalitaet: freundlich, Siezen, sachlich.\n` +
+          `Keine Emojis. Kein Hype.\n` +
+          `Daten: ${JSON.stringify(weekData)}`,
+      ).text;
       const response = await anthropic.messages.create({
         model: 'claude-haiku-4-5-20251001',
         max_tokens: 300,
         messages: [{
           role: 'user',
+          content: promptContent,
+          /*
           content: `Du bist der Nachbarschafts-Assistent für das Quartier "${quarter.name}".\n` +
             `Fasse die Woche in 3-5 Sätzen zusammen. Tonalitaet: freundlich, Siezen, sachlich.\n` +
             `Keine Emojis. Kein Hype.\n` +
             `Daten: ${JSON.stringify(weekData)}`,
+          */
         }],
       });
       summary = response.content[0].type === 'text' ? response.content[0].text : '';

@@ -13,6 +13,7 @@ import {
   type AIToolCall,
   type FetchImpl,
 } from "./types";
+import { pseudonymizeAiChatInput } from "./pseudonymize";
 
 const MISTRAL_ENDPOINT = "https://api.mistral.ai/v1/chat/completions";
 const DEFAULT_MODEL = "mistral-medium-latest";
@@ -88,16 +89,18 @@ class MistralProvider implements AIProvider {
   ) {}
 
   async chat(input: AIChatInput): Promise<AIResponse> {
+    const safeInput = pseudonymizeAiChatInput(input);
+
     // OpenAI-Style: system als erste Message.
     const messages = [
-      { role: "system", content: input.system },
-      ...input.messages,
+      { role: "system", content: safeInput.system },
+      ...safeInput.messages,
     ];
 
     // OpenAI-Function-Calling-Shape: { type: "function", function: { name, description, parameters } }
     const tools =
-      input.tools && input.tools.length > 0
-        ? input.tools.map((t) => ({
+      safeInput.tools && safeInput.tools.length > 0
+        ? safeInput.tools.map((t) => ({
             type: "function",
             function: {
               name: t.name,
@@ -110,7 +113,7 @@ class MistralProvider implements AIProvider {
     const body: Record<string, unknown> = {
       model: this.model,
       messages,
-      max_tokens: input.max_tokens ?? DEFAULT_MAX_TOKENS,
+      max_tokens: safeInput.max_tokens ?? DEFAULT_MAX_TOKENS,
     };
     if (tools) body.tools = tools;
 

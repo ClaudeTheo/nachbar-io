@@ -3,9 +3,15 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import {
+  detectEscalation,
   generateSessionResponse,
 } from "@/modules/praevention/services/ki-session.service";
 import { calculateCurrentWeek } from "@/modules/praevention/services/sessions.service";
+import {
+  AI_HELP_DISABLED_MESSAGE,
+  canUsePersonalAi,
+} from "@/lib/ai/user-settings";
+import { consumeAiDailyUserLimit } from "@/lib/ai/rate-limit";
 
 export async function POST(request: NextRequest) {
   const supabase = await createClient();
@@ -55,6 +61,39 @@ export async function POST(request: NextRequest) {
       { error: "Einschreibung nicht gefunden" },
       { status: 404 },
     );
+  }
+
+  // KI-Schutzgates (Befund D5:2): Einwilligung + AI_PROVIDER_OFF-Flag +
+  // Tageslimit — derselbe Standard wie companion/chat und voice/*.
+  // WICHTIG: Die deterministische Krisen-Erkennung bleibt ungated — bei
+  // roten Signalwoertern liefert generateSessionResponse die 112-/
+  // Telefonseelsorge-Antwort OHNE jeden KI-Provider-Call. Diese Antwort
+  // darf nie an Consent oder Off-Switch scheitern.
+  if (detectEscalation(message) !== "red") {
+    const aiAllowed = await canUsePersonalAi(supabase, user.id);
+    if (!aiAllowed) {
+      return NextResponse.json(
+        { error: AI_HELP_DISABLED_MESSAGE, aiDisabled: true },
+        { status: 503 },
+      );
+    }
+
+    const aiRateLimit = await consumeAiDailyUserLimit({ userId: user.id });
+    if (aiRateLimit.unavailable) {
+      return NextResponse.json(
+        { error: "KI-Nutzungsschutz ist gerade nicht verfügbar." },
+        { status: 503 },
+      );
+    }
+    if (!aiRateLimit.allowed) {
+      return NextResponse.json(
+        {
+          error: `Sie haben heute schon ${aiRateLimit.limit} KI-Nachrichten geschrieben. Bitte kommen Sie morgen wieder.`,
+          limited: true,
+        },
+        { status: 429 },
+      );
+    }
   }
 
   // Kurs-Start laden fuer aktuelle Woche

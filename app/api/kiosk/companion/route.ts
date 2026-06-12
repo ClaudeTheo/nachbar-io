@@ -6,10 +6,17 @@ import {
   AI_DAILY_USER_LIMIT,
   consumeAiDailyUserLimit,
 } from "@/lib/ai/rate-limit";
+import {
+  AI_HELP_DISABLED_MESSAGE,
+  canUsePersonalAi,
+} from "@/lib/ai/user-settings";
 import { loadMemoryContext } from "@/modules/memory/services/memory-loader";
 
-// KI-Provider: "gemini" oder "claude" (über Env-Variable steuerbar)
-const AI_PROVIDER = process.env.KIOSK_AI_PROVIDER || "gemini";
+// KI-Provider: "gemini" oder "claude" (über Env-Variable steuerbar).
+// Default "claude" (Befund D5:3/D6:2): Google/Gemini steht weder in der
+// Datenschutzerklärung noch im AVV-Plan — Gemini nur per explizitem Opt-in
+// über KIOSK_AI_PROVIDER, bewusste Founder-Entscheidung vorausgesetzt.
+const AI_PROVIDER = process.env.KIOSK_AI_PROVIDER || "claude";
 // Gemini-Modell: Wechselbar wenn Google neue Versionen released
 // gemini-2.5-flash-lite: Günstigstes Modell ($0.10/$0.40 pro 1M Token), stabil, 1.000 Req/Tag kostenlos
 const GEMINI_MODEL = process.env.GEMINI_MODEL || "gemini-2.5-flash-lite";
@@ -242,6 +249,20 @@ export async function POST(request: Request) {
             "Dieses Gerät ist einem anderen Bewohner zugeordnet. Bitte richten Sie den Kiosk neu ein.",
         },
         { status: 403 },
+      );
+    }
+
+    // KI-Consent-Gate (Befund D1:2/D6:2): respektiert Nutzer-Toggle,
+    // AI_PROVIDER_OFF-Feature-Flag und ai_onboarding-Einwilligung des
+    // gebundenen Bewohners — derselbe Standard wie companion/chat.
+    const aiAllowed = await canUsePersonalAi(supabase, boundUserId);
+    if (!aiAllowed) {
+      return NextResponse.json(
+        {
+          error: "KI-Hilfe ist für diesen Bewohner nicht freigeschaltet.",
+          reply: AI_HELP_DISABLED_MESSAGE,
+        },
+        { status: 503 },
       );
     }
 

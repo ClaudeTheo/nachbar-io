@@ -231,9 +231,27 @@ EU-Inferenz (Ziel): Mistral EU (Chat + STT/Voxtral) · Azure EU (TTS)
 - **1 Befund widerlegt:** „Drei parallele KI-Schalter ohne Synchronisation" (ursprünglich D4:2) — der Skeptiker wies nach, dass `/api/settings/ai` beim Ausschalten den `ai_onboarding`-Consent korrekt mit widerruft (lib/ai/user-settings.ts:105-107). Nicht in den Bericht aufgenommen.
 - Mehrere Befunde wurden vom Skeptiker **präzisiert** statt nur bestätigt (z.B. D1:2: der ungepushte Commit ergänzt das Kiosk-Consent-Gate bereits; A3:1: Check-in ist bewusst Phase 2d und von kreis-start nicht verlinkt — Fix nötig vor Freischaltung, nicht vor Pilotstart).
 
-## 9. Nächste Schritte (Vorschlag, alles Founder-Entscheidung)
+## 9. Umsetzungsstand (Fix-Welle 2026-06-12, Branch `claude/pilot-quickwins-2026-06-12`)
 
-1. Top-5-sofort-Liste als eine kleine Fix-Welle umsetzen (überwiegend S; Push von `9294485` = Rote Zone, braucht Founder-Go + Pre-Push-Mini-Audit).
+Auf Founder-„ok" wurden die Top-5-sofort-Punkte **2–5** lokal umgesetzt (Commits auf dem Fix-Branch, **kein Push**):
+
+- ✅ **#2 Schatten-KI-Routen:** `/api/prevention/session` hat jetzt Consent-Gate (`canUsePersonalAi`) + KI-Tageslimit; die deterministische Krisen-Erkennung (rote Signalwörter → 112-Antwort ohne Provider-Call) bleibt bewusst ungated. `/api/kiosk/companion` hat jetzt dasselbe Consent-Gate; Gemini ist nicht mehr Default (nur noch explizit via `KIOSK_AI_PROVIDER`).
+- ✅ **#3 Onboarding-Brüche:** welcome-Tour lädt den bestehenden `ui_mode` und überschreibt ihn nicht mehr; nach Family-Setup-Claim wird der Senior direkt eingeloggt (Fallback-Karte „Ihr Zugang ist bereit" bei Login-Fehler).
+- ✅ **#4 Stumme Fehler + Kontrast:** Check-in-Fehlerbanner mit `role="alert"`; SeniorButton-Primary auf Weiß-auf-Grün; Gelb/Amber-Flächen auf dunklen Text; SeniorStatusScreen mit `role="status"`.
+- ✅ **#5 Erster Klick:** Dashboard-Primary-Action → `/hier-bei-mir`; Quartier-Hub von 12 auf 7 Kacheln mit garantiertem Inhalt.
+- ⏳ **#1 (Push Commit `9294485`):** NICHT angefasst — Rote Zone, braucht explizites Founder-Go + Pre-Push-Mini-Audit.
+
+```text
+Mini-Audit Fix-Welle (2026-06-12):
+- RLS/Trigger geprueft: keine Tabellen/Policies geaendert; prevention_enrollments weiterhin user-scoped (RLS-Client + eq user_id); Kiosk liest Settings/Consents nur fuer den device-gebundenen Bewohner NACH Token-Verifikation
+- Findings: 0 neue — beide Routen sind Richtung KI-Provider strikter (fail-closed bei fehlender Einwilligung); bekanntes Rest-Risiko D5:4 (AI_PROVIDER_OFF-Flag selbst fail-open bei DB-Fehler) unveraendert offen
+- Audit-Trail: unveraendert (Eskalations-Logging in prevention_sessions bleibt) | Rate-Limit: NEU auf prevention/session via consumeAiDailyUserLimit (DB-basiert, edge-konsistent, wie companion/chat)
+```
+
+Verifikation: `npx tsc --noEmit` Exit 0; alle berührten Testdateien grün (43 Tests in 10 Files, inkl. 7 neuer Regressionstests); volle Suite lief nach Abschluss der Welle.
+
+## 10. Nächste Schritte (Vorschlag, alles Founder-Entscheidung)
+
+1. ~~Top-5-sofort-Liste als kleine Fix-Welle~~ → **erledigt bis auf #1**, siehe §9. Offen: Founder-Go für Push von `9294485` (+ Merge dieses Fix-Branches).
 2. Vor dem KI-Go (§5 AVV): Stufe 0 des Architektur-Stufenplans als eigene Welle (KI-Gateway-Konsequenz).
 3. Vor dem ersten Pilot-Haushalt: Top-5-strategisch #3 und #4 (eine Senior-Welt, Senior-Hälfte des Familienkreises) — das ist die eigentliche Produktarbeit, die der Pilot braucht.
-4. Diese Datei + Detail-Datei committen (grüne Zone, lokal) — oder verwerfen.

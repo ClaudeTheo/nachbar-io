@@ -1,7 +1,6 @@
 "use client";
 
 import { FormEvent, useEffect, useState } from "react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -104,8 +103,13 @@ export function SetupClaimForm({ token }: SetupClaimFormProps) {
             Die automatische Anmeldung hat nicht geklappt. Bitte melden Sie
             sich einmal mit Ihrer E-Mail-Adresse und Ihrem Passwort an.
           </p>
-          <Button asChild className="w-full" style={{ minHeight: "56px" }}>
-            <Link href="/login">Zur Anmeldung</Link>
+          <Button
+            type="button"
+            className="w-full"
+            style={{ minHeight: "56px" }}
+            onClick={() => router.push("/login")}
+          >
+            Zur Anmeldung
           </Button>
         </CardContent>
       </Card>

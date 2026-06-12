@@ -52,7 +52,10 @@ describe("completeOnboarding", () => {
     expect(mockUpdate).toHaveBeenCalledWith({
       settings: { existing: true, onboarding_completed: true },
     });
-    const payload = mockUpdate.mock.calls[0][0] as Record<string, unknown>;
+    const payload = (mockUpdate.mock.calls[0] as unknown[])[0] as Record<
+      string,
+      unknown
+    >;
     expect("ui_mode" in payload).toBe(false);
   });
 });

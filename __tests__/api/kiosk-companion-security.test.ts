@@ -31,6 +31,13 @@ vi.mock("@/lib/ai/rate-limit", () => ({
     mockConsumeAiDailyUserLimit(...args),
 }));
 
+const mockCanUsePersonalAi = vi.fn();
+vi.mock("@/lib/ai/user-settings", () => ({
+  AI_HELP_DISABLED_MESSAGE:
+    "Die KI-Hilfe ist zurzeit ausgeschaltet.",
+  canUsePersonalAi: (...args: unknown[]) => mockCanUsePersonalAi(...args),
+}));
+
 vi.mock("@google/generative-ai", () => ({
   GoogleGenerativeAI: class MockGoogleGenerativeAI {
     getGenerativeModel(...args: unknown[]) {
@@ -72,6 +79,7 @@ describe("POST /api/kiosk/companion security", () => {
     process.env.KIOSK_DEVICE_USER_ID = "resident-env";
 
     mockMaybeSingle.mockResolvedValue({ data: null, error: null });
+    mockCanUsePersonalAi.mockResolvedValue(true);
     mockLoadMemoryContext.mockResolvedValue("Memory: mag Tee.");
     mockConsumeAiDailyUserLimit.mockResolvedValue({
       allowed: true,
@@ -216,6 +224,29 @@ describe("POST /api/kiosk/companion security", () => {
     expect(res.status).toBe(503);
     expect(mockLoadMemoryContext).not.toHaveBeenCalled();
     expect(mockSendMessage).not.toHaveBeenCalled();
+  });
+
+  // Befund D1:2/D6:2: Kiosk war der einzige KI-Pfad ohne Einwilligungspruefung
+  it("gibt 503 ohne KI-Einwilligung des gebundenen Bewohners — vor Memory, Limit und Provider", async () => {
+    mockCanUsePersonalAi.mockResolvedValueOnce(false);
+    const { POST } = await importRoute();
+
+    const res = await POST(
+      makeRequest(
+        { deviceId: "dev-1", message: "Hallo" },
+        { "x-device-token": "valid-device-token" },
+      ),
+    );
+
+    expect(res.status).toBe(503);
+    expect(mockCanUsePersonalAi).toHaveBeenCalledWith(
+      expect.anything(),
+      "resident-env",
+    );
+    expect(mockConsumeAiDailyUserLimit).not.toHaveBeenCalled();
+    expect(mockLoadMemoryContext).not.toHaveBeenCalled();
+    expect(mockSendMessage).not.toHaveBeenCalled();
+    expect(mockAnthropicCreate).not.toHaveBeenCalled();
   });
 
   it("blockt vor Provider-Aufruf wenn das KI-Tageslimit erreicht ist", async () => {

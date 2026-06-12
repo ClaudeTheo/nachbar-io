@@ -89,10 +89,9 @@ describe("SetupClaimForm", () => {
     fireEvent.click(screen.getByRole("button", { name: /Zugang aktivieren/i }));
 
     expect(await screen.findByText(/Ihr Zugang ist bereit/i)).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: /Zur Anmeldung/i })).toHaveAttribute(
-      "href",
-      "/login",
-    );
     expect(mockPush).not.toHaveBeenCalled();
+
+    fireEvent.click(screen.getByRole("button", { name: /Zur Anmeldung/i }));
+    expect(mockPush).toHaveBeenCalledWith("/login");
   });
 });

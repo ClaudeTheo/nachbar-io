@@ -19,13 +19,8 @@ import {
   CalendarDays,
   Map,
   Users,
-  ClipboardList,
   Newspaper,
   Trash2,
-  Wrench,
-  GraduationCap,
-  PackageSearch,
-  Vote,
   type LucideIcon,
 } from "lucide-react";
 import { PageHeader } from "@/components/ui/page-header";
@@ -39,6 +34,12 @@ interface QuartierTile {
 }
 
 // Reihenfolge: Aktuelles/Warnungen zuerst, dann Gemeinschaft, dann Orte.
+//
+// Pilot-Verschlankung (Befund C1:2): Nur Kacheln mit garantiertem Inhalt.
+// Entfernt bis echte Inhalte/Flags existieren: Schwarzes Brett, Handwerker
+// (HANDWERKER_PORTAL=false seit Mig 160 → Kachel fuehrte auf eine Sperrseite),
+// Experten, Gefunden & Verloren, Abstimmungen — alles UGC, das mit 5-10
+// Pilot-Familien leer ist. Wieder aufnehmbar via Git-History dieses Files.
 const tiles: QuartierTile[] = [
   {
     href: "/quartier-info",
@@ -76,13 +77,6 @@ const tiles: QuartierTile[] = [
     iconColor: "text-quartier-green",
   },
   {
-    href: "/board",
-    label: "Schwarzes Brett",
-    description: "Neuigkeiten",
-    icon: ClipboardList,
-    iconColor: "text-amber-600",
-  },
-  {
     href: "/news",
     label: "Nachrichten",
     description: "Aktuelles aus dem Quartier",
@@ -95,34 +89,6 @@ const tiles: QuartierTile[] = [
     description: "Abfuhrtermine",
     icon: Trash2,
     iconColor: "text-green-700",
-  },
-  {
-    href: "/handwerker",
-    label: "Handwerker",
-    description: "Betriebe in der Nähe",
-    icon: Wrench,
-    iconColor: "text-orange-600",
-  },
-  {
-    href: "/experts",
-    label: "Experten",
-    description: "Rat und Wissen",
-    icon: GraduationCap,
-    iconColor: "text-indigo-600",
-  },
-  {
-    href: "/lost-found",
-    label: "Gefunden & Verloren",
-    description: "Fundsachen",
-    icon: PackageSearch,
-    iconColor: "text-rose-600",
-  },
-  {
-    href: "/polls",
-    label: "Abstimmungen",
-    description: "Mitentscheiden",
-    icon: Vote,
-    iconColor: "text-teal-600",
   },
 ];
 

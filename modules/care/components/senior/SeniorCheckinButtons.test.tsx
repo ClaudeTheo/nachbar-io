@@ -125,4 +125,27 @@ describe('SeniorCheckinButtons', () => {
       }));
     });
   });
+
+  // Befund B3:1 / A3:1: Fehlschlag darf nie stumm bleiben (falsche Beruhigung)
+  it('zeigt bei API-Fehler eine sichtbare Meldung mit role=alert', async () => {
+    mockFetch.mockResolvedValueOnce({ ok: false, json: () => Promise.resolve({}) });
+
+    render(<SeniorCheckinButtons />);
+    fireEvent.click(screen.getByText(/Mir geht es gut/));
+
+    const alert = await screen.findByRole('alert');
+    expect(alert).toHaveTextContent(/hat leider nicht geklappt/i);
+    // Buttons sind wieder aktiv — der Senior kann es erneut versuchen
+    expect(screen.getByText(/Mir geht es gut/).closest('button')).not.toBeDisabled();
+  });
+
+  it('zeigt auch bei Netzwerkfehler die Meldung', async () => {
+    mockFetch.mockRejectedValueOnce(new Error('offline'));
+
+    render(<SeniorCheckinButtons />);
+    fireEvent.click(screen.getByText(/Nicht so gut/));
+
+    expect(await screen.findByRole('alert')).toBeInTheDocument();
+    expect(mockPush).not.toHaveBeenCalled();
+  });
 });

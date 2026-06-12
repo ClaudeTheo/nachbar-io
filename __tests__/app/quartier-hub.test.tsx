@@ -20,19 +20,15 @@ describe("QuartierHub", () => {
     render(<QuartierHub />);
 
     // Reihenfolge laut Codex-Empfehlung: Warnungen/Info zuerst.
+    // Pilot-Verschlankung (Befund C1:2): nur Kacheln mit garantiertem Inhalt.
     const expected: Array<[RegExp, string]> = [
       [/Wetter & Warnungen/i, "/quartier-info"],
       [/Rathaus & Services/i, "/city-services"],
       [/Veranstaltungen/i, "/events"],
       [/Karte/i, "/map"],
       [/Gruppen/i, "/gruppen"],
-      [/Schwarzes Brett/i, "/board"],
       [/Nachrichten/i, "/news"],
       [/Müllkalender/i, "/waste-calendar"],
-      [/Handwerker/i, "/handwerker"],
-      [/Experten/i, "/experts"],
-      [/Gefunden & Verloren/i, "/lost-found"],
-      [/Abstimmungen/i, "/polls"],
     ];
 
     for (const [name, href] of expected) {
@@ -40,12 +36,21 @@ describe("QuartierHub", () => {
     }
   });
 
-  it("hat genau 12 Bereichs-Kacheln", () => {
+  it("hat genau 7 Bereichs-Kacheln (Pilot-Verschlankung C1:2)", () => {
     render(<QuartierHub />);
     const tiles = screen
       .getAllByRole("link")
       .filter((el) => el.getAttribute("href") !== "/dashboard");
-    expect(tiles).toHaveLength(12);
+    expect(tiles).toHaveLength(7);
+  });
+
+  it("zeigt im Pilot keine leeren UGC-/abgeschalteten Kacheln", () => {
+    render(<QuartierHub />);
+    expect(
+      screen.queryByRole("link", {
+        name: /Schwarzes Brett|Handwerker|Experten|Gefunden & Verloren|Abstimmungen/i,
+      }),
+    ).not.toBeInTheDocument();
   });
 
   it("nimmt keine medizinischen oder abrechnungsnahen Bereiche in den Hub", () => {

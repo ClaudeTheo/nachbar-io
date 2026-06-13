@@ -35,9 +35,11 @@ const TILES: TileDef[] = [
   },
   {
     label: "Schreiben",
-    description: "Nachricht oder Termin — mit KI-Hilfe",
+    // Welle S2 (A1:6): kein KI-Versprechen, solange AI_PROVIDER_OFF im Pilot
+    // gilt — der Senior tippt oder diktiert, KI-Hilfe folgt nach dem AVV-Go.
+    description: "Nachricht oder Termin schreiben",
     // Task H-1: /schreiben zeigt die Vertrauenskontakte als Kacheln und
-    // oeffnet WhatsApp mit einem Tap. KI-Hilfe folgt in Phase 2.
+    // oeffnet WhatsApp mit einem Tap.
     href: "/schreiben",
     variant: "neutral",
   },

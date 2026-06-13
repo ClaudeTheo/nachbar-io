@@ -153,4 +153,17 @@ describe("ReviewView (H-3/H-4)", () => {
       screen.getByText("Hallo Anna wie geht es dir"),
     ).toBeDefined();
   });
+
+  it("startInEditMode: zeigt direkt eine leere Textarea ohne KI-Aufruf (S2/A3:3)", () => {
+    const fetchSpy = vi.fn();
+    global.fetch = fetchSpy as unknown as typeof fetch;
+
+    render(<ReviewView {...defaultProps} transcript="" startInEditMode />);
+
+    const textarea = screen.getByLabelText("Nachricht bearbeiten");
+    expect((textarea as HTMLTextAreaElement).value).toBe("");
+    // Kein "Formuliere Nachricht..."-Spinner, kein KI-Fetch
+    expect(screen.queryByText("Formuliere Nachricht...")).toBeNull();
+    expect(fetchSpy).not.toHaveBeenCalled();
+  });
 });

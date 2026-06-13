@@ -111,4 +111,19 @@ describe("MicView (H-2)", () => {
 
     setItemSpy.mockRestore();
   });
+
+  it("'Lieber tippen' setzt das Tipp-Flag und navigiert zur Review-Seite (S2/A3:3)", async () => {
+    const setItemSpy = vi.spyOn(Storage.prototype, "setItem");
+
+    render(<MicView {...defaultProps} recipientIndex={2} />);
+
+    const { userEvent } = await import("@testing-library/user-event");
+    const user = userEvent.setup();
+    await user.click(screen.getByTestId("tippen-button"));
+
+    expect(setItemSpy).toHaveBeenCalledWith("schreiben_tippen_2", "1");
+    expect(mockPush).toHaveBeenCalledWith("/schreiben/review/2");
+
+    setItemSpy.mockRestore();
+  });
 });

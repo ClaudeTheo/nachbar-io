@@ -34,7 +34,7 @@ describe("KreisStartPage (Phase 1 Design-Doc 3)", () => {
       screen.getAllByText(/Wetter, M(ü|ue)ll, was gerade ist/i).length,
     ).toBeGreaterThan(0);
     expect(
-      screen.getAllByText(/Nachricht oder Termin.*KI-Hilfe/i).length,
+      screen.getAllByText(/Nachricht oder Termin schreiben/i).length,
     ).toBeGreaterThan(0);
     expect(screen.getAllByText(/Hilfe rufen/i).length).toBeGreaterThan(0);
   });

@@ -18,6 +18,7 @@ import { DailyCheckinBubble } from "@/modules/care/components/checkin/DailyCheck
 import { Skeleton } from "@/components/ui/skeleton";
 
 import { getGreeting, useDashboardData } from "./hooks/useDashboardData";
+import { useOpenCaregiverChat } from "@/modules/care/hooks/useOpenCaregiverChat";
 
 function formatEyebrowDate(d: Date): string {
   const weekday = d
@@ -55,6 +56,10 @@ export default function DashboardPage() {
     userName,
     weatherData,
   } = useDashboardData();
+
+  // Welle S2 (C2:1): Klick auf einen Angehoerigen loest die Konversation auf
+  // und navigiert nach /chat/{id} (statt auf den toten /messages/{userId}-Link).
+  const { openChat, pendingId, error: chatError } = useOpenCaregiverChat();
 
   if (loading && (quarterLoading || currentQuarter)) {
     return (
@@ -278,10 +283,13 @@ export default function DashboardPage() {
               </p>
               <div className="mt-3 flex -space-x-2">
                 {caregivers.map((cg) => (
-                  <Link
+                  <button
                     key={cg.caregiver_id}
-                    href={`/messages/${cg.caregiver_id}`}
-                    className="flex h-10 w-10 items-center justify-center rounded-full border-2 border-white bg-quartier-green/10 text-xs font-semibold text-quartier-green transition-all hover:ring-2 hover:ring-quartier-green/30"
+                    type="button"
+                    onClick={() => openChat(cg.caregiver_id)}
+                    disabled={pendingId === cg.caregiver_id}
+                    aria-label={`Mit ${cg.display_name || "Angehörigem"} schreiben`}
+                    className="flex h-10 w-10 items-center justify-center rounded-full border-2 border-white bg-quartier-green/10 text-xs font-semibold text-quartier-green transition-all hover:ring-2 hover:ring-quartier-green/30 disabled:opacity-60"
                     title={cg.display_name || "Angehoeriger"}
                   >
                     {cg.avatar_url ? (
@@ -294,9 +302,14 @@ export default function DashboardPage() {
                     ) : (
                       (cg.display_name || "?").charAt(0).toUpperCase()
                     )}
-                  </Link>
+                  </button>
                 ))}
               </div>
+              {chatError && (
+                <p className="mt-2 text-xs text-red-600" role="alert">
+                  {chatError}
+                </p>
+              )}
             </section>
           )}
 

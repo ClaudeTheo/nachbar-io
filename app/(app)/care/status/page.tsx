@@ -21,6 +21,7 @@ import { IllustrationRenderer } from "@/components/illustrations/IllustrationRen
 import { createClient } from "@/lib/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { haptic } from "@/lib/haptics";
+import { useOpenResidentChat } from "@/modules/care/hooks/useOpenCaregiverChat";
 
 /** Termin-Sicht fuer Angehoerige: NUR Datum, Uhrzeit, Arztname, Typ — KEINE Notizen/Diagnosen */
 interface CaregiverAppointmentView {
@@ -158,6 +159,9 @@ export default function CareStatusPage() {
   const [expandedHistory, setExpandedHistory] = useState<
     Record<string, boolean>
   >({});
+  // Welle S2 (C2:1): Klick auf "Nachricht" loest die Konversation mit dem
+  // Bewohner auf und navigiert nach /chat/{id} (statt toten /messages/{userId}).
+  const { openChat, pendingId, error: chatError } = useOpenResidentChat();
 
   useEffect(() => {
     if (!user?.id) return;
@@ -352,6 +356,14 @@ export default function CareStatusPage() {
         </Card>
       ) : (
         <div className="space-y-4">
+          {chatError && (
+            <p
+              className="rounded-xl bg-red-50 p-3 text-sm text-red-700"
+              role="alert"
+            >
+              {chatError}
+            </p>
+          )}
           {residents.map((resident) => {
             const escalation = getEscalationLevel(resident.lastHeartbeat);
             const checkinInfo = resident.checkinStatus
@@ -533,16 +545,20 @@ export default function CareStatusPage() {
                       <Video className="h-4 w-4" />
                       Video-Anruf
                     </Link>
-                    <Link
-                      href={`/messages/${resident.id}`}
-                      onClick={() => haptic("light")}
-                      className="flex-1 flex items-center justify-center gap-2 rounded-xl border border-gray-200 text-anthrazit font-medium text-sm transition-all active:scale-95"
+                    <button
+                      type="button"
+                      onClick={() => {
+                        haptic("light");
+                        openChat(resident.id);
+                      }}
+                      disabled={pendingId === resident.id}
+                      className="flex-1 flex items-center justify-center gap-2 rounded-xl border border-gray-200 text-anthrazit font-medium text-sm transition-all active:scale-95 disabled:opacity-60"
                       style={{ minHeight: "44px", touchAction: "manipulation" }}
                       data-testid={`chat-${resident.id}`}
                     >
                       <MessageCircle className="h-4 w-4" />
-                      Nachricht
-                    </Link>
+                      {pendingId === resident.id ? "Öffnet…" : "Nachricht"}
+                    </button>
                     <Link
                       href={`tel:`}
                       className="flex items-center justify-center rounded-xl border border-gray-200 text-anthrazit transition-all active:scale-95 px-3"

@@ -4,9 +4,9 @@
 // Nachricht. Anruf folgt mit der Video-Welle (S2 Schritt 5).
 "use client";
 
-import Link from "next/link";
 import { MessageCircle } from "lucide-react";
 import type { CaregiverInfo } from "@/modules/care/hooks/useMyCaregivers";
+import { useOpenCaregiverChat } from "@/modules/care/hooks/useOpenCaregiverChat";
 
 // Beziehungs-Label menschlich lesbar (roh aus caregiver_links.relationship_type).
 const RELATIONSHIP_LABEL: Record<string, string> = {
@@ -30,8 +30,15 @@ export function MyCaregiversList({
 }: {
   caregivers: CaregiverInfo[];
 }) {
+  const { openChat, pendingId, error } = useOpenCaregiverChat();
+
   return (
     <div className="grid gap-3" data-testid="my-caregivers-list">
+      {error && (
+        <p className="text-lg text-red-700" role="alert">
+          {error}
+        </p>
+      )}
       {caregivers.map((c) => (
         <div key={c.id} className="rounded-2xl border-2 border-anthrazit/15 bg-white p-4">
           <div className="flex items-center gap-4">
@@ -62,17 +69,19 @@ export function MyCaregiversList({
             </div>
           </div>
 
-          {/* Aktion: Nachricht */}
+          {/* Aktion: Nachricht — loest die Konversation auf und oeffnet /chat */}
           <div className="mt-3">
-            <Link
-              href="/messages"
+            <button
+              type="button"
+              onClick={() => openChat(c.id)}
+              disabled={pendingId === c.id}
               aria-label={`${c.display_name} eine Nachricht schreiben`}
-              className="flex items-center justify-center gap-2 rounded-2xl border-2 border-quartier-green bg-quartier-green px-5 text-lg font-semibold text-white focus:outline-none focus:ring-4 focus:ring-quartier-green/40"
+              className="flex w-full items-center justify-center gap-2 rounded-2xl border-2 border-quartier-green bg-quartier-green px-5 text-lg font-semibold text-white focus:outline-none focus:ring-4 focus:ring-quartier-green/40 disabled:opacity-60"
               style={{ minHeight: "56px" }}
             >
               <MessageCircle className="h-6 w-6" />
-              Nachricht
-            </Link>
+              {pendingId === c.id ? "Wird geöffnet…" : "Nachricht"}
+            </button>
           </div>
         </div>
       ))}

@@ -1,90 +1,103 @@
-// Nachbar.io — Page Object: Senioren-Terminal
+// Nachbar.io — Page Object: kanonische Senioren-Shell
 import { Page, Locator, expect } from "@playwright/test";
 import { TIMEOUTS } from "../helpers/test-config";
 import { waitForStableUI } from "../helpers/observer";
 
+type SeniorTileLabel =
+  | "Mein Kreis"
+  | "Hier bei mir"
+  | "Schreiben"
+  | "Notfall 112";
+
+const SENIOR_TILE_TARGETS: Record<SeniorTileLabel, string> = {
+  "Mein Kreis": "/mein-kreis",
+  "Hier bei mir": "/hier-bei-mir",
+  Schreiben: "/schreiben",
+  "Notfall 112": "/sos",
+};
+
 export class SeniorHomePage {
   readonly page: Page;
-  readonly greeting: Locator;
-  readonly helpButton: Locator;
-  readonly newsButton: Locator;
-  readonly checkinButton: Locator;
-  readonly contactButton: Locator;
-  readonly switchModeButton: Locator;
+  readonly tiles: Locator;
+  readonly appointmentsLink: Locator;
+  readonly profileLink: Locator;
 
   constructor(page: Page) {
     this.page = page;
-    // .first() verhindert strict-mode-violation: data-testid UND inner <p> matchen beide
-    this.greeting = page
-      .locator("[data-testid='senior-greeting']")
-      .or(page.getByText(/Guten Tag|Guten Morgen|Guten Abend/i).first())
-      .first();
-    this.helpButton = page
-      .locator("[data-testid='senior-help-button']")
-      .or(page.getByText("Hilfe anfragen"));
-    this.newsButton = page
-      .locator("[data-testid='senior-news-button']")
-      .or(page.getByText("Nachrichten"));
-    this.checkinButton = page
-      .locator("[data-testid='senior-checkin-button']")
-      .or(page.getByText("Alles in Ordnung"));
-    this.contactButton = page
-      .locator("[data-testid='senior-contact-button']")
-      .or(page.getByText("Nachbarn kontaktieren"));
-    this.switchModeButton = page.getByText("Zum normalen Modus");
+    this.tiles = page.locator("[data-testid='kreis-start-tile']");
+    this.appointmentsLink = page.locator(
+      "[data-testid='kreis-start-termine-link']",
+    );
+    this.profileLink = page.locator("[data-testid='kreis-start-profil-link']");
+  }
+
+  tile(label: SeniorTileLabel): Locator {
+    return this.tiles.filter({ hasText: label });
   }
 
   async goto() {
-    await this.page.goto("/senior/home");
+    await this.page.goto("/kreis-start");
     await waitForStableUI(this.page);
   }
 
   async assertLoaded() {
-    await expect(this.page).toHaveURL(/\/senior/);
-    await expect(this.greeting).toBeVisible({ timeout: TIMEOUTS.pageLoad });
+    await expect(this.page).toHaveURL(/\/kreis-start/);
+    await expect(this.tiles).toHaveCount(4, { timeout: TIMEOUTS.pageLoad });
   }
 
-  async assertAllButtonsVisible() {
-    await expect(this.helpButton).toBeVisible();
-    await expect(this.newsButton).toBeVisible();
-    await expect(this.checkinButton).toBeVisible();
-    await expect(this.contactButton).toBeVisible();
+  async assertAllTilesVisible() {
+    await this.assertLoaded();
+    for (const label of Object.keys(SENIOR_TILE_TARGETS) as SeniorTileLabel[]) {
+      await expect(this.tile(label)).toBeVisible();
+    }
   }
 
-  /** Prueft ob Buttons mindestens 80px hoch sind (Senior-Accessibility) */
+  async assertTileTargets() {
+    for (const [label, href] of Object.entries(SENIOR_TILE_TARGETS)) {
+      await expect(this.tile(label as SeniorTileLabel)).toHaveAttribute(
+        "href",
+        href,
+      );
+    }
+  }
+
+  /** Prueft ob die kanonischen Senior-Links mindestens 80px hoch sind. */
   async assertTouchTargetSize() {
-    const buttons = this.page.locator(
-      "[data-testid^='senior-'] button, .senior-button",
+    const targets = this.page.locator(
+      "[data-testid='kreis-start-tile'], [data-testid='kreis-start-secondary-actions'] a",
     );
-    const count = await buttons.count();
+    const count = await targets.count();
 
     for (let i = 0; i < count; i++) {
-      const box = await buttons.nth(i).boundingBox();
+      const box = await targets.nth(i).boundingBox();
       if (box) {
         expect(box.height).toBeGreaterThanOrEqual(76); // Toleranz 4px
       }
     }
   }
 
-  async clickHelp() {
-    await this.helpButton.click();
-    await this.page.waitForURL("**/senior/help**", {
+  async clickTile(label: SeniorTileLabel) {
+    await this.tile(label).click();
+    await this.page.waitForURL(`**${SENIOR_TILE_TARGETS[label]}**`, {
       timeout: TIMEOUTS.pageLoad,
     });
+    await waitForStableUI(this.page);
   }
 
-  async clickCheckin() {
-    await this.checkinButton.click();
-    await this.page.waitForURL("**/senior/checkin**", {
-      timeout: TIMEOUTS.pageLoad,
-    });
+  async clickMeinKreis() {
+    await this.clickTile("Mein Kreis");
   }
 
-  async clickNews() {
-    await this.newsButton.click();
-    await this.page.waitForURL("**/senior/news**", {
-      timeout: TIMEOUTS.pageLoad,
-    });
+  async clickHierBeiMir() {
+    await this.clickTile("Hier bei mir");
+  }
+
+  async clickSchreiben() {
+    await this.clickTile("Schreiben");
+  }
+
+  async clickSos() {
+    await this.clickTile("Notfall 112");
   }
 }
 
@@ -97,58 +110,79 @@ export class SeniorCheckinPage {
 
   constructor(page: Page) {
     this.page = page;
-    this.okButton = page
-      .getByText(/Mir geht es gut/i)
-      .first()
-      .or(page.locator("[data-testid='checkin-ok']"));
-    this.notWellButton = page
-      .getByText(/Nicht so gut/i)
-      .first()
-      .or(page.locator("[data-testid='checkin-not-well']"));
-    this.needHelpButton = page
-      .getByText(/Brauche Hilfe/i)
-      .first()
-      .or(page.locator("[data-testid='checkin-need-help']"));
+    this.okButton = page.getByRole("button", { name: /Mir geht es gut/i });
+    this.notWellButton = page.getByRole("button", { name: /Nicht so gut/i });
+    this.needHelpButton = page.getByRole("button", { name: /Brauche Hilfe/i });
     this.confirmMessage = page
-      .locator("[data-testid='checkin-confirmed']")
-      .or(page.getByText(/Danke|bestätigt|erfolgreich/i));
+      .getByRole("status")
+      .or(page.getByText(/Danke|gespeichert|Startseite/i));
   }
 
   async goto() {
-    await this.page.goto("/senior/checkin");
+    await this.page.goto("/checkin");
     await waitForStableUI(this.page);
+  }
+
+  async assertLoaded() {
+    await expect(this.page).toHaveURL(/\/checkin/);
+    await expect(
+      this.page.getByRole("heading", { name: /Wie geht es Ihnen/i }),
+    ).toBeVisible({ timeout: TIMEOUTS.elementVisible });
+    await expect(this.okButton).toBeVisible();
+    await expect(this.notWellButton).toBeVisible();
+    await expect(this.needHelpButton).toBeVisible();
   }
 
   async checkinOk() {
     await this.okButton.click();
+    await this.page.waitForURL("**/confirmed**", {
+      timeout: TIMEOUTS.pageLoad,
+    });
+    await waitForStableUI(this.page);
+  }
+
+  async checkinNotWell() {
+    await this.notWellButton.click();
+    await this.page.waitForURL("**/confirmed**", {
+      timeout: TIMEOUTS.pageLoad,
+    });
     await waitForStableUI(this.page);
   }
 
   async assertCheckinConfirmed() {
-    // Erfolgsbestaetigung oder Weiterleitung
-    await expect(
-      this.confirmMessage.or(
-        this.page.getByText(/bestätigt|danke|erfolgreich/i),
-      ),
-    ).toBeVisible({ timeout: TIMEOUTS.elementVisible });
+    await expect(this.confirmMessage.first()).toBeVisible({
+      timeout: TIMEOUTS.elementVisible,
+    });
   }
 }
 
 export class SeniorHelpPage {
   readonly page: Page;
-  readonly callButton: Locator;
-  readonly sosButton: Locator;
+  readonly emergencyButton: Locator;
+  readonly generalHelpButton: Locator;
 
   constructor(page: Page) {
     this.page = page;
-    this.callButton = page.locator("[data-testid='senior-call']");
-    this.sosButton = page
-      .locator("[data-testid='senior-sos']")
-      .or(page.getByText(/SOS|Notruf|Notfall/i));
+    this.emergencyButton = page.getByRole("button", {
+      name: /Dringende Hilfe|112|Notfall/i,
+    });
+    this.generalHelpButton = page.getByRole("button", {
+      name: /Allgemeine Hilfe/i,
+    });
   }
 
   async goto() {
-    await this.page.goto("/senior/help");
+    await this.page.goto("/sos");
     await waitForStableUI(this.page);
+  }
+
+  async assertLoaded() {
+    await expect(this.page).toHaveURL(/\/sos/);
+    await expect(
+      this.page.getByRole("heading", { name: /Was brauchen Sie/i }),
+    ).toBeVisible({ timeout: TIMEOUTS.elementVisible });
+    await expect(
+      this.emergencyButton.or(this.generalHelpButton).first(),
+    ).toBeVisible();
   }
 }

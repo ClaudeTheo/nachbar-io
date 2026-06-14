@@ -93,6 +93,13 @@ function runCli() {
     return;
   }
 
+  if (process.env.E2E_ALLOW_CLOUD_LOCALHOST === "true") {
+    console.log(
+      "[e2e-preflight] WARN: Cloud/Prod-Supabase auf localhost explizit erlaubt (E2E_ALLOW_CLOUD_LOCALHOST=true).",
+    );
+    return;
+  }
+
   const servers = listLocalhostServers();
   const problems = detectLocalhostPreflightProblems(servers, { baseUrl });
 

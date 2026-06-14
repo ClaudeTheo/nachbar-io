@@ -112,8 +112,14 @@ test.describe("Pilot-Smoke — 12 Pilot-Kriterien (Bad Saeckingen 2026-04)", () 
 
   // ── Kriterium 6: HIER BEI MIR — Wetter- oder Muellkalender-Widget ──
   test("pilot-criterion-06-hier-bei-mir-widget", async ({ page }) => {
+    // Entscheidung 2026-06-13: Kriterium bleibt in der Senior-Welt.
+    // Die Spec nutzt senior_s als storageState; /hier-bei-mir prueft damit die
+    // kanonische (senior)-Shell statt die dichte Standard-Seite /quartier-info.
     const res = await page.goto("/hier-bei-mir");
     expect(res?.ok()).toBeTruthy();
+    await expect(
+      page.getByRole("heading", { name: /Hier bei mir/i }),
+    ).toBeVisible();
 
     // Mindestens eines der beiden Widgets muss sichtbar sein.
     const wetter = page.getByText(/Wetter|°C|Temperatur/i).first();

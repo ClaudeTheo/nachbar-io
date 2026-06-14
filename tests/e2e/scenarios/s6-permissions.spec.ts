@@ -43,10 +43,10 @@ test.describe("S6: Permission / Privacy Grenzen", () => {
     console.log("[X] /admin → Redirect kontrolliert ✓");
   });
 
-  test("S6.5 — Unauthentifizierter Zugriff auf Senior-Home → Redirect zu Login", async ({ page }) => {
-    await page.goto("/senior/home");
+  test("S6.5 — Unauthentifizierter Zugriff auf Kreis-Start → Redirect zu Login", async ({ page }) => {
+    await page.goto("/kreis-start");
     await expectControlledUnauthRedirect(page);
-    console.log("[X] /senior/home → Redirect kontrolliert ✓");
+    console.log("[X] /kreis-start → Redirect kontrolliert ✓");
   });
 
   test("S6.6 — Unauthentifizierter Zugriff auf Care → Redirect zu Login", async ({ page }) => {

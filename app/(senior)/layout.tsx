@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 import { PushBanner } from "@/components/senior/PushBanner";
 import { RefreshRotationMounter } from "@/components/senior/RefreshRotationMounter";
 import { BugReportButton } from "@/components/BugReportButton";
+import { GlobalCallListener } from "@/components/video/GlobalCallListener";
 import { QuarterProvider } from "@/lib/quarters";
 
 export const metadata = {
@@ -29,6 +30,9 @@ export default function SeniorDeviceLayout({
         }}
       >
         <RefreshRotationMounter />
+        {/* Eingehende Videoanrufe auch auf dem Senioren-Gerät anzeigen (S2-5 / C2:4) —
+            Fullscreen-Overlay mit 80px Annehmen/Ablehnen. */}
+        <GlobalCallListener />
         <main className="mx-auto max-w-md px-6 pb-36 pt-8">
           <PushBanner />
           {children}

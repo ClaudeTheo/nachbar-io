@@ -4,7 +4,8 @@
 // Nachricht. Anruf folgt mit der Video-Welle (S2 Schritt 5).
 "use client";
 
-import { MessageCircle } from "lucide-react";
+import { MessageCircle, Phone } from "lucide-react";
+import { useRouter } from "next/navigation";
 import type { CaregiverInfo } from "@/modules/care/hooks/useMyCaregivers";
 import { useOpenCaregiverChat } from "@/modules/care/hooks/useOpenCaregiverChat";
 
@@ -31,6 +32,7 @@ export function MyCaregiversList({
   caregivers: CaregiverInfo[];
 }) {
   const { openChat, pendingId, error } = useOpenCaregiverChat();
+  const router = useRouter();
 
   return (
     <div className="grid gap-3" data-testid="my-caregivers-list">
@@ -69,18 +71,29 @@ export function MyCaregiversList({
             </div>
           </div>
 
-          {/* Aktion: Nachricht — loest die Konversation auf und oeffnet /chat */}
-          <div className="mt-3">
+          {/* Aktionen: Nachricht (loest die Konversation auf, oeffnet /chat) +
+              Anruf (Senior -> Angehoeriger, S2 Schritt 5 / C2:4). */}
+          <div className="mt-3 grid grid-cols-2 gap-2">
             <button
               type="button"
               onClick={() => openChat(c.id)}
               disabled={pendingId === c.id}
               aria-label={`${c.display_name} eine Nachricht schreiben`}
-              className="flex w-full items-center justify-center gap-2 rounded-2xl border-2 border-quartier-green bg-quartier-green px-5 text-lg font-semibold text-white focus:outline-none focus:ring-4 focus:ring-quartier-green/40 disabled:opacity-60"
+              className="flex w-full items-center justify-center gap-2 rounded-2xl border-2 border-quartier-green bg-quartier-green px-4 text-lg font-semibold text-white focus:outline-none focus:ring-4 focus:ring-quartier-green/40 disabled:opacity-60"
               style={{ minHeight: "56px" }}
             >
               <MessageCircle className="h-6 w-6" />
               {pendingId === c.id ? "Wird geöffnet…" : "Nachricht"}
+            </button>
+            <button
+              type="button"
+              onClick={() => router.push(`/call/${c.id}`)}
+              aria-label={`${c.display_name} anrufen`}
+              className="flex w-full items-center justify-center gap-2 rounded-2xl border-2 border-quartier-green bg-white px-4 text-lg font-semibold text-quartier-green focus:outline-none focus:ring-4 focus:ring-quartier-green/40"
+              style={{ minHeight: "56px" }}
+            >
+              <Phone className="h-6 w-6" />
+              Anrufen
             </button>
           </div>
         </div>

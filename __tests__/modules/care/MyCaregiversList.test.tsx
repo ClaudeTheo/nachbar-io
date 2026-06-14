@@ -4,13 +4,17 @@
 // oeffnet /chat — er ist kein toter /messages-Link mehr.
 
 import { describe, it, expect, vi, afterEach } from "vitest";
-import { render, screen, cleanup } from "@testing-library/react";
+import { render, screen, fireEvent, cleanup } from "@testing-library/react";
 
-vi.mock("next/navigation", () => ({ useRouter: () => ({ push: vi.fn() }) }));
+const pushMock = vi.hoisted(() => vi.fn());
+vi.mock("next/navigation", () => ({ useRouter: () => ({ push: pushMock }) }));
 
 import { MyCaregiversList } from "@/modules/care/components/senior/MyCaregiversList";
 
-afterEach(cleanup);
+afterEach(() => {
+  cleanup();
+  pushMock.mockClear();
+});
 
 const caregivers = [
   { id: "c1", display_name: "Maria Muster", avatar_url: null, relationship_type: "child" },
@@ -33,5 +37,20 @@ describe("MyCaregiversList (S2/C2:2)", () => {
     });
     expect(buttons).toHaveLength(2);
     expect(buttons[0].style.minHeight).toBe("56px");
+  });
+
+  it("bietet pro Person einen Anrufen-Button (56px Touch-Target)", () => {
+    render(<MyCaregiversList caregivers={caregivers} />);
+    const buttons = screen.getAllByRole("button", { name: /anrufen/i });
+    expect(buttons).toHaveLength(2);
+    expect(buttons[0].style.minHeight).toBe("56px");
+  });
+
+  it("navigiert beim Anrufen auf /call/<id> der jeweiligen Person", () => {
+    render(<MyCaregiversList caregivers={caregivers} />);
+    fireEvent.click(
+      screen.getByRole("button", { name: /maria muster anrufen/i }),
+    );
+    expect(pushMock).toHaveBeenCalledWith("/call/c1");
   });
 });

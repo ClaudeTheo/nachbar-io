@@ -143,13 +143,23 @@ export class SeniorCheckinPage {
     await this.waitForCheckinResult();
   }
 
-  // Erfolg = Navigation auf **/confirmed**; im flag-gateten Zustand (lokaler CI-Stack /
-  // CHECKIN_MESSAGES_ENABLED off, vgl. s9 "erfolgreich oder kontrolliert gated") bleibt
-  // die Seite ohne Navigation — weich behandeln statt hart zu timeouten.
+  // Erfolg = Navigation auf **/confirmed**. Im flag-gateten Zustand (lokaler CI-Stack /
+  // CHECKIN_MESSAGES_ENABLED off → API 503, vgl. s9 "erfolgreich oder kontrolliert
+  // gated") bleibt die Seite und zeigt stattdessen einen Fehler-Alert. Auf das ERSTE der
+  // beiden Ereignisse warten (kurzer Timeout) — sonst verbrennt waitForURL den vollen
+  // pageLoad-Timeout (60s) auf eine Navigation, die nie kommt, sprengt das 60s-Test-Budget
+  // und stirbt mit "Target page, context or browser has been closed".
   private async waitForCheckinResult() {
-    await this.page
-      .waitForURL("**/confirmed**", { timeout: TIMEOUTS.pageLoad })
-      .catch(() => {});
+    await Promise.race([
+      this.page
+        .waitForURL("**/confirmed**", { timeout: TIMEOUTS.elementVisible })
+        .catch(() => {}),
+      this.page
+        .getByRole("alert")
+        .first()
+        .waitFor({ state: "visible", timeout: TIMEOUTS.elementVisible })
+        .catch(() => {}),
+    ]);
     await waitForStableUI(this.page);
   }
 

@@ -130,8 +130,10 @@ test.describe("S12: Kontaktanfrage -> Annahme -> Chat", () => {
           });
         }
 
-        // Anfrage stammt von Anna; annehmen, dann Chat aus "Mein Kreis" starten
-        await expect(page.getByText(/Anna T\./i).first()).toBeVisible();
+        // Genau eine offene Anfrage (Test-Isolation): annehmen. Kein Name-Check
+        // hier — der Anzeigename ist vor der Verbindung privacy-gated (null),
+        // erst nach Annahme sichtbar. Korrektheit sichert die spaetere
+        // chat-partner-name = "Anna T." Pruefung auf /chat/[id].
         await acceptButton.click();
 
         const startChatButton = page

@@ -201,7 +201,7 @@ export default function MyDayPage() {
       color: "bg-quartier-green",
     },
     {
-      href: "/messages",
+      href: "/chat",
       icon: Phone,
       label: "Nachrichten",
       color: "bg-info-blue",

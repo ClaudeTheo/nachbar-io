@@ -26,9 +26,9 @@ test.describe("S6: Permission / Privacy Grenzen", () => {
   });
 
   test("S6.2 — Unauthentifizierter Zugriff auf Messages → Redirect zu Login", async ({ page }) => {
-    await page.goto("/messages");
+    await page.goto("/chat");
     await expectControlledUnauthRedirect(page);
-    console.log("[X] /messages → Redirect kontrolliert ✓");
+    console.log("[X] /chat → Redirect kontrolliert ✓");
   });
 
   test("S6.3 — Unauthentifizierter Zugriff auf Help → Redirect zu Login", async ({ page }) => {

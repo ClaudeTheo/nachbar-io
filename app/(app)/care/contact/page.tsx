@@ -68,7 +68,7 @@ export default function CareContactPage() {
       });
       if (res.ok) {
         const data = await res.json();
-        router.push(`/messages/${data.conversation_id}`);
+        router.push(`/chat/${data.conversation_id}`);
       }
     } catch {
       // Fehler still ignorieren

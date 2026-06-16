@@ -158,6 +158,7 @@ export function ChatInput({
 
         <div className="flex flex-1 items-end gap-2">
           <textarea
+            data-testid="chat-input"
             value={text}
             onChange={(e) => setText(e.target.value)}
             onKeyDown={(e) => {
@@ -175,6 +176,7 @@ export function ChatInput({
             type="button"
             onClick={handleTextSend}
             disabled={!text.trim() || uploading || disabled}
+            data-testid="chat-send"
             aria-label="Nachricht senden"
             className="flex h-20 w-20 flex-shrink-0 items-center justify-center rounded-2xl bg-[#4CAF87] text-white disabled:opacity-50"
           >

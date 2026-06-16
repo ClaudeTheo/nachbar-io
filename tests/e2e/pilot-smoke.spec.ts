@@ -161,8 +161,8 @@ test.describe("Pilot-Smoke — 12 Pilot-Kriterien (Bad Saeckingen 2026-04)", () 
 
   // ── Kriterium 9: Nachrichten 1:1-Flow erreichbar ───────────────────
   test("pilot-criterion-09-nachrichten-1on1", async ({ page }) => {
-    // Nachrichten-Liste: /messages (ohne [id]) sollte 200 oder Redirect geben.
-    const res = await page.goto("/messages");
+    // Nachrichten-Liste: /chat (kanonisch) sollte 200 oder Redirect geben.
+    const res = await page.goto("/chat");
     expect(res?.status()).toBeLessThan(500);
     // Harte Inhaltspruefung waere ein echter Chat-Partner — ausserhalb dieses
     // Smoke-Tests. TODO: In Multi-Agent-Suite (s3-chat.spec.ts) abdecken.

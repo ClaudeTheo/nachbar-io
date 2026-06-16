@@ -154,7 +154,7 @@ export default function LeihboerseDetailPage() {
               referenceType: "leihboerse_item",
             });
 
-            if (convId) router.push(`/messages/${convId}`);
+            if (convId) router.push(`/chat/${convId}`);
           }}
           className="w-full bg-quartier-green hover:bg-quartier-green-dark"
         >

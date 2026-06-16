@@ -305,7 +305,7 @@ export default function SeniorDetailPage() {
             });
             if (res.ok) {
               const data = await res.json();
-              router.push(`/messages/${data.conversation_id}`);
+              router.push(`/chat/${data.conversation_id}`);
             }
           }}
           className="flex flex-1 items-center justify-center gap-2 rounded-xl border border-border bg-white py-3 text-sm font-medium text-anthrazit hover:bg-muted"

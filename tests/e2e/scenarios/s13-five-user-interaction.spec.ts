@@ -247,7 +247,7 @@ test.describe("S13: 5-User-Interaktion", () => {
       requestMessage,
     );
 
-    await agents.bernd.page.goto(`/messages/${conversationId}`);
+    await agents.bernd.page.goto(`/chat/${conversationId}`);
     await waitForStableUI(agents.bernd.page);
     await agents.bernd.page.locator("[data-testid='chat-input']").fill(replyMessage);
     await agents.bernd.page.locator("[data-testid='chat-send']").click();
@@ -255,7 +255,7 @@ test.describe("S13: 5-User-Interaktion", () => {
       timeout: TIMEOUTS.elementVisible,
     });
 
-    await agents.anna.page.goto("/messages");
+    await agents.anna.page.goto("/chat");
     await waitForStableUI(agents.anna.page);
     const conversationCard = agents.anna.page
       .locator("[data-testid='conversation-card']")
@@ -265,7 +265,7 @@ test.describe("S13: 5-User-Interaktion", () => {
       state: "visible",
       timeout: TIMEOUTS.elementVisible,
     });
-    await agents.anna.page.goto(`/messages/${conversationId}`);
+    await agents.anna.page.goto(`/chat/${conversationId}`);
     await waitForStableUI(agents.anna.page, { timeout: TIMEOUTS.pageLoad });
     await waitForChatMessage(agents.anna.page, replyMessage, {
       timeout: TIMEOUTS.realtimeDelivery,

@@ -31,7 +31,7 @@ const ALLOWED_ROUTES = [
   "/dashboard",
   "/kreis-start",
   "/notifications",
-  "/messages",
+  "/chat",
   "/companion",
   // Schwarzes Brett / Pinnwand
   "/alerts",
@@ -523,7 +523,7 @@ export const companionTools: CompanionToolDefinition[] = [
   {
     name: "navigate_to",
     description:
-      "Navigiert den Nutzer zu einer bestimmten Seite in der App. Wichtige Routen: /dashboard (Startseite), /profile/edit (Profil/Adresse bearbeiten), /profile/location (Standort/Adresse aendern), /profile/map-position (Kartenposition anpassen), /profile/notifications (Benachrichtigungen einstellen), /news (Quartiersnews), /notifications (Alle Benachrichtigungen), /messages (Nachrichten), /map (Quartierskarte), /help (Nachbarschaftshilfe), /help/new (Neue Hilfsanfrage), /waste-calendar (Muellkalender), /events (Veranstaltungen), /marketplace (Marktplatz), /board (Pinnwand), /reports/new (Mangel/Problem melden), /praevention (Gesundheit & Praevention), /sprechstunde (Arzt-Sprechstunde), /checkin (Tages-Check-in), /medications (Medikamente), /tips (Alltags-Tipps), /city-services (Rathaus & Infos), /settings (Einstellungen).",
+      "Navigiert den Nutzer zu einer bestimmten Seite in der App. Wichtige Routen: /dashboard (Startseite), /profile/edit (Profil/Adresse bearbeiten), /profile/location (Standort/Adresse aendern), /profile/map-position (Kartenposition anpassen), /profile/notifications (Benachrichtigungen einstellen), /news (Quartiersnews), /notifications (Alle Benachrichtigungen), /chat (Nachrichten), /map (Quartierskarte), /help (Nachbarschaftshilfe), /help/new (Neue Hilfsanfrage), /waste-calendar (Muellkalender), /events (Veranstaltungen), /marketplace (Marktplatz), /board (Pinnwand), /reports/new (Mangel/Problem melden), /praevention (Gesundheit & Praevention), /sprechstunde (Arzt-Sprechstunde), /checkin (Tages-Check-in), /medications (Medikamente), /tips (Alltags-Tipps), /city-services (Rathaus & Infos), /settings (Einstellungen).",
     input_schema: {
       type: "object",
       properties: {

@@ -257,7 +257,7 @@ test.describe("Angehöriger (Plus)", () => {
   test("A9: Chat oeffnen", async () => {
     const { page } = agents.angehoeriger;
 
-    await page.goto("/messages");
+    await page.goto("/chat");
     await page.waitForLoadState("networkidle").catch(() => {});
 
     await expect(page.locator("main")).toBeVisible({

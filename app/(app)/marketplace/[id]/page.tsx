@@ -196,7 +196,7 @@ export default function MarketplaceDetailPage() {
               referenceType: "marketplace_item",
             });
 
-            if (convId) router.push(`/messages/${convId}`);
+            if (convId) router.push(`/chat/${convId}`);
           }}
         >
           <MessageCircle className="mr-2 h-4 w-4" />

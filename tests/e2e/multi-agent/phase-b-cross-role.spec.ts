@@ -567,7 +567,7 @@ test.describe("B7: Chat — Betreuer → Senior", () => {
       "E2E-B7: Betreuer-Senior-Konversation",
     );
 
-    await page.goto(`/messages/${conversationId}`);
+    await page.goto(`/chat/${conversationId}`);
     await page.waitForLoadState("networkidle").catch(() => {});
 
     // Nachricht eingeben + senden (data-testid chat-input/chat-send)
@@ -591,7 +591,7 @@ test.describe("B7: Chat — Betreuer → Senior", () => {
     const { page } = agents.bewohner;
 
     expect(conversationId, "conversationId aus B7a").toBeTruthy();
-    await page.goto(`/messages/${conversationId}`);
+    await page.goto(`/chat/${conversationId}`);
     await page.waitForLoadState("networkidle").catch(() => {});
 
     await expect(page.locator("main")).toBeVisible({

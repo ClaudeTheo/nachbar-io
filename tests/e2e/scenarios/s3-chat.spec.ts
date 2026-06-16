@@ -25,9 +25,9 @@ test.describe("S3: Direktnachricht / Chat Zustellung", () => {
 
   test("S3.1 — Nachrichten-Seite laed korrekt fuer beide Agenten", async () => {
     await withAgent(agentA, "Messages laden", async ({ page }) => {
-      await page.goto("/messages");
+      await page.goto("/chat");
       await waitForStableUI(page);
-      await expect(page).toHaveURL(/\/messages/);
+      await expect(page).toHaveURL(/\/chat/);
 
       // Seite laed ohne Fehler — nur echte Fehler-Banner pruefen,
       // nicht harmlose [role="alert"] Elemente (Sonner-Toasts, Next.js Dev-Overlay, etc.)
@@ -39,9 +39,9 @@ test.describe("S3: Direktnachricht / Chat Zustellung", () => {
     });
 
     await withAgent(agentB, "Messages laden", async ({ page }) => {
-      await page.goto("/messages");
+      await page.goto("/chat");
       await waitForStableUI(page);
-      await expect(page).toHaveURL(/\/messages/);
+      await expect(page).toHaveURL(/\/chat/);
     });
   });
 
@@ -53,12 +53,12 @@ test.describe("S3: Direktnachricht / Chat Zustellung", () => {
 
     // Agent A: Zur Nachrichten-Seite navigieren
     await withAgent(agentA, "Chat oeffnen", async ({ page }) => {
-      await page.goto("/messages");
+      await page.goto("/chat");
       await waitForStableUI(page);
 
       // Pruefen ob Konversationen existieren
       const conversationCards = page.locator("[data-testid='conversation-card']").or(
-        page.locator("a[href^='/messages/']")
+        page.locator("a[href^='/chat/']")
       );
       const count = await conversationCards.count();
 
@@ -66,7 +66,7 @@ test.describe("S3: Direktnachricht / Chat Zustellung", () => {
         // Erste Konversation oeffnen
         await conversationCards.first().click();
         await waitForStableUI(page);
-        await expect(page).toHaveURL(/\/messages\/.+/);
+        await expect(page).toHaveURL(/\/chat\/.+/);
 
         // Nachricht senden
         const input = page.locator("[data-testid='chat-input']").or(
@@ -85,11 +85,11 @@ test.describe("S3: Direktnachricht / Chat Zustellung", () => {
 
     // Agent B: Nachricht empfangen
     await withAgent(agentB, "Nachricht empfangen", async ({ page }) => {
-      await page.goto("/messages");
+      await page.goto("/chat");
       await waitForStableUI(page);
 
       const conversationCards = page.locator("[data-testid='conversation-card']").or(
-        page.locator("a[href^='/messages/']")
+        page.locator("a[href^='/chat/']")
       );
       const count = await conversationCards.count();
 

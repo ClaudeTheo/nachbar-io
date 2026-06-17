@@ -3,10 +3,9 @@
 > Erstellt: 2026-06-12 (Welle D0, Task D0-4). Eigene Formulierungen, kein
 > fremdes Material (UrhG/§ 87a). Sprichwörter = Volksgut, gemeinfrei.
 >
-> **REVIEW-STATUS: OFFEN — Founder prüft jede Frage auf Richtigkeit,
-> bevor sie in `modules/spiele/data/tagesraetsel-fragen.ts` (SP1-2) wandert.**
-> KI-Entwurf ersetzt keine Faktenprüfung. Zweifelhafte Fragen streichen
-> oder ersetzen — 40 gute Fragen reichen auch.
+> **REVIEW-STATUS: FREIGEGEBEN — Founder 2026-06-17 (as-is, alle 50 Fragen).**
+> Übernommen nach `modules/spiele/data/tagesraetsel-fragen.ts` (SP1-2).
+> Spätere Korrekturen einzelner Fragen direkt in der Datendatei pflegen.
 >
 > Format je Frage (entspricht `TagesraetselFrage` aus dem Wellenplan):
 > Frage, 4 Antworten (→ markiert die beste), „Geschichte" = 1–3 Sätze, die

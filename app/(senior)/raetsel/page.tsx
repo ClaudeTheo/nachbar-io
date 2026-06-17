@@ -7,6 +7,7 @@
 import { getDailyQuestions } from "@/modules/spiele/services/tagesraetsel.service";
 import { TAGESRAETSEL_FRAGEN } from "@/modules/spiele/data/tagesraetsel-fragen";
 import { Tagesraetsel } from "@/modules/spiele/components/Tagesraetsel";
+import { TeilnahmePing } from "@/modules/spiele/components/TeilnahmePing";
 
 export const metadata = {
   title: "Tagesrätsel",
@@ -25,6 +26,8 @@ export default function SeniorRaetselPage() {
         Geschichte zum Schmunzeln.
       </p>
       <Tagesraetsel fragen={fragen} failureFree />
+      {/* Punkte nur fuers Mitmachen — getrennt von Tagesraetsel (persistenzfrei) */}
+      <TeilnahmePing />
     </section>
   );
 }

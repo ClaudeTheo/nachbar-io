@@ -296,6 +296,39 @@ export function getDailyQuestions(
 
 **Definition of Done SP1:** Kein „Memory" mehr im Produkt; Senior öffnet das Tagesrätsel in ≤2 Taps von kreis-start, beantwortet 5 Fragen ohne jede Fehler-Beschämung und ohne dass irgendein Ergebnis gespeichert wird; Wording-Guard-Test schützt die Bann-Liste dauerhaft.
 
+**Mini-Audit-Block (SP1-4 — neue API-Surface):**
+
+```text
+Mini-Audit SP1-4 (2026-06-17):
+- Trigger: neue API-Route mit personenbezogenem Schreibpfad (points_log INSERT +
+  users.total_points/points_level UPDATE via awardPoints) -> Mini-Audit Pflicht.
+- RLS/Trigger geprueft: points_log, users. Route nutzt User-Kontext-Client
+  (createClient, Cookie-Auth) — IDENTISCHES Muster wie bestehende /api/points/award
+  + checkin/group_post (alle awardPoints mit User-Client). Keine neue Tabelle, keine
+  neue Policy, keine Migration -> kein Trigger-Inventar-Delta.
+- Privilege-Spalten-Sweep: Route schreibt ausschliesslich total_points + points_level
+  (via awardPoints). KEIN Zugriff auf is_admin/role/trust_level/settings/consent.
+  Aktion serverseitig HARTKODIERT "daily_puzzle" (POST ohne Request-Parameter) ->
+  Client kann keine hoeherwertige Aktion waehlen. STRENGER als /api/points/award
+  (dort waehlt der Client die Aktion aus POINTS_CONFIG).
+- Findings: 0 CRITICAL / 0 HIGH.
+- Pre-Check-Konflikt (Code vs. Handover): Handover forderte Closed-Pilot-Whitelist
+  fuer /api/spiele/*. CODE IST AUTORITATIV — der 503 closed_pilot trifft NUR
+  User-lose Calls (lib/supabase/middleware.ts:181, `!user`). /api/spiele/teilnahme
+  ist authentifiziert; die Whitelist (CLOSED_PILOT_PUBLIC_API_PATHS) ist laut Regel
+  feedback_closed_pilot_whitelist_pflege ausschliesslich fuer Cron/Webhook/Service.
+  ENTSCHEIDUNG: NICHT whitelisten (Aufnahme wuerde die Route oeffentlich machen und
+  der 401-Anforderung widersprechen). Festgenagelt per Test in
+  __tests__/lib/closed-pilot.test.ts (isClosedPilotPublicApiPath -> false).
+- Audit-Trail: points_log ist der Pro-Vergabe-Nachweis. Keine auth-/rollen-/consent-
+  relevante Aktion -> kein admin_audit_log-Pflichteintrag.
+- Rate-Limit: /api/-middleware-Default (In-Memory ~60/min, RL-1-Backlog). Idempotent
+  durch awardPoints-Tageslimit (dailyLimit:1 -> max. 1 Vergabe/User/Tag, egal wie oft
+  der Ping feuert). Kein Token-/Code-Lookup -> kein Brute-Force-Surface. Closed-Pilot:
+  unauth -> 503; eingeloggt-aber-nicht-freigegeben -> 403 pilot_approval_pending.
+- Keine Migration -> kein Prod-Apply noetig.
+```
+
 ---
 
 ## Welle SP2 — Familienfoto-Spiele (M, nach SB)

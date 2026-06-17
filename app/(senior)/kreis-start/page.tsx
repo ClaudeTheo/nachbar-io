@@ -10,8 +10,12 @@
 
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
-import { getSeniorHouseholdPhotos } from "@/modules/care/services/senior-kiosk.service";
+import {
+  getSeniorHouseholdPhotos,
+  getSeniorHouseholdStickies,
+} from "@/modules/care/services/senior-kiosk.service";
 import { FamilienMomentCard } from "@/modules/care/components/senior/FamilienMomentCard";
+import { StickyNotesList } from "@/modules/care/components/senior/StickyNotesList";
 
 type TileDef = {
   label: string;
@@ -58,7 +62,10 @@ export default async function KreisStartPage() {
   // SB-2: neuestes Familienfoto laden (RLS-scoped auf den eigenen Haushalt).
   // Fehler/leerer Haushalt -> Karte wird einfach nicht angezeigt (additiv).
   const supabase = await createClient();
-  const photos = await getSeniorHouseholdPhotos(supabase, { limit: 1 });
+  const [photos, stickies] = await Promise.all([
+    getSeniorHouseholdPhotos(supabase, { limit: 1 }),
+    getSeniorHouseholdStickies(supabase),
+  ]);
   const newest = photos[0] ?? null;
   const momentPhoto = newest
     ? {
@@ -67,6 +74,7 @@ export default async function KreisStartPage() {
         uploaderId: newest.uploaderId,
       }
     : null;
+  const stickyItems = stickies.map((s) => ({ id: s.id, title: s.title }));
 
   return (
     <section aria-label="Startbildschirm">
@@ -133,6 +141,9 @@ export default async function KreisStartPage() {
 
       {/* SB-2: „Erster gemeinsamer Moment" — unter dem Kachel-Grid, nie als 5. Kachel. */}
       <FamilienMomentCard photo={momentPhoto} />
+
+      {/* SB-4: offene Zettel der Familie mit Ein-Tap-Quittung — unter dem Grid. */}
+      <StickyNotesList stickies={stickyItems} />
     </section>
   );
 }

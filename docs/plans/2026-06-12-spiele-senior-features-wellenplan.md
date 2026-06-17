@@ -311,7 +311,25 @@ Mini-Audit SP1-4 (2026-06-17):
   Aktion serverseitig HARTKODIERT "daily_puzzle" (POST ohne Request-Parameter) ->
   Client kann keine hoeherwertige Aktion waehlen. STRENGER als /api/points/award
   (dort waehlt der Client die Aktion aus POINTS_CONFIG).
-- Findings: 0 CRITICAL / 0 HIGH.
+- Findings (SP1-4-Scope = NEUE Fläche): 0 CRITICAL / 0 HIGH. SP1-4 fuegt KEINE neue
+  Schreib-Fläche hinzu — identischer User-Context-awardPoints-Pfad wie das bereits
+  geshippte /api/points/award.
+- Adversarialer 3-Linsen-Nachreview (2026-06-17, Workflow): Korrektheit + Closed-Pilot-
+  Entscheidung bestaetigt sicher. RLS-Linse fand 2 VORBESTEHENDE (NICHT durch SP1-4
+  eingefuehrte) Subsystem-Schwaechen, am echten Code verifiziert:
+  (a) users_update_own (Mig 001:316) hat kein WITH CHECK/Spalten-Guard; der Mig-198-
+      Trigger stickied is_admin/role/trust_level (=> KEINE Admin-Eskalation), aber NICHT
+      total_points/points_level => ein Authentifizierter kann eigene Punkte/Level
+      inflationieren (kosmetisch; kein Leaderboard, kein punkte-gebundenes Billing).
+  (b) points_log_insert_service (Mig 138:39) = WITH CHECK (true) => jeder Authentifizierte
+      kann points_log-Zeilen fuer beliebige user_id einfuegen (App-Code passt korrekt
+      auth.uid() durch; die Policy ist die zu-permissive Altlast).
+  + MEDIUM TOCTOU: awardPoints SELECT-then-INSERT ist nicht atomar (dailyLimit per
+      Concurrent-POST umgehbar) — ebenfalls subsystemweit/vorbestehend.
+  Disposition: SP1-4 bleibt (kein neuer Surface, alle Gates gruen, kein Revert-Nutzen).
+  Vorbestehende Haertung als SEPARATER Founder-gated Task geflaggt (RLS-WITH-CHECK /
+  Mig-198 um total_points/points_level erweitern / points_log_insert_own / UNIQUE-Index
+  (user_id,action,created_at::date)). Kontext: 0 echte Nutzer, nur Founder in Prod-DB.
 - Pre-Check-Konflikt (Code vs. Handover): Handover forderte Closed-Pilot-Whitelist
   fuer /api/spiele/*. CODE IST AUTORITATIV — der 503 closed_pilot trifft NUR
   User-lose Calls (lib/supabase/middleware.ts:181, `!user`). /api/spiele/teilnahme

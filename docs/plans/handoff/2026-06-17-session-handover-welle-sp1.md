@@ -1,5 +1,17 @@
-# Session-Übergabe 2026-06-17 → nächste Session: **SP1-Rest (Founder-Gate) / SP2**
+# Session-Übergabe 2026-06-17 → nächste Session: **SP1-4 + my-day-Karte / SP2**
 
+> 🆕 **UPDATE 2026-06-17 #3 — FOUNDER-GATE FREIGEGEBEN, SP1-2-Daten + SP1-3 (Senior-UI) GESHIPPT.** Thomas hat die 50 Tagesrätsel-Fragen freigegeben (as-is). Daraufhin gebaut + committet:
+> - **SP1-2-Daten (`b5bb17a`):** `modules/spiele/data/tagesraetsel-fragen.ts` (50 Fragen, 15 lokal) + Integritäts-Test; Entwurf-Doc auf `REVIEW-STATUS: FREIGEGEBEN`. Wording-Guard scannt die Datei (grün). **Lehre:** der Guard flaggte zuerst „**Therap**ie" in MEINEM Header-**Kommentar** → Bann-Wörter auch in Kommentaren vermeiden.
+> - **SP1-3 (`de19a33`):** `modules/spiele/components/Tagesraetsel.tsx` (Prop `failureFree`: KEINE Rot-/Falsch-Markierung, Story nach jeder Antwort, ≥80px, **keine Persistenz/kein Score**) + `app/(senior)/raetsel/page.tsx` (Server berechnet die Tages-5 via `getDailyQuestions` → keine Hydration-Drift, `failureFree`) + Sekundär-Link „Tagesrätsel" auf `kreis-start` (volle Zeile, 4-Kachel-Regel intakt). Senior kann das Rätsel jetzt end-to-end spielen.
+> - Verifiziert: alle Spiele-/Senior-Tests grün, `tsc`/eslint clean, kein Regress (kreis-start/touch-targets). Push + CI: siehe Git-Stand unten (origin nach Push = der `de19a33`-Tip).
+>
+> **OFFEN (nächste Session):**
+> 1. **SP1-4 — Teilnahme-Punkte** (eigener Block, **neue API-Surface → Mini-Audit + Closed-Pilot-Whitelist PFLICHT**): `modules/gamification/services/constants.ts` `daily_puzzle: { points: 5, dailyLimit: 1 }` + `app/api/spiele/teilnahme/route.ts` (POST vergibt serverseitig die **hartkodierte** Aktion `daily_puzzle`, 401 unauth, **kein** Request-Feld für richtig/falsch — nimmt gar keine Ergebnisse an) + fire-and-forget-Ping vom Client **getrennt** von `Tagesraetsel` (z. B. `<TeilnahmePing>`-Komponente, damit `Tagesraetsel` persistenzfrei bleibt — sonst bricht der „kein-fetch-beim-Antworten"-Test) + Closed-Pilot-Whitelist für `/api/spiele/*` (sonst 503, siehe `feedback_closed_pilot_whitelist_pflege`).
+> 2. **SP1-3-Rest — my-day-Tagesimpuls-Karte:** kleine density-aware Karte auf `app/(app)/my-day/page.tsx` (`failureFree` aus `ui_mode==='simple'`, Muster ~Z.69). Adult-Seite, optional.
+> 3. **SP2 (ungated):** Familienfoto-„Paare finden" auf SB-3 (siehe §4 unten).
+>
+> ---
+>
 > **Für die nächste Claude/Codex-Session.** Welle **SB (Senior-Bildschirm) ist geshippt + CI-grün** (vorige Übergabe: `2026-06-16-session-handover-welle-sb.md`). Danach wurde der **ungated SP1-2-Kern** gebaut (Tagesrätsel-Rotations-Service + Wording-Guard + Kiosk-DRY-Refactor). **Der eigentliche Tagesrätsel-Inhalt (50 Fragen) ist Founder-gated** — siehe §3. Diese Datei ist der Einstieg; die Auto-Memory `project_session_handover.md` zeigt hierher.
 
 ## 0. TL;DR — was zuerst tun

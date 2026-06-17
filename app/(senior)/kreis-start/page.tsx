@@ -137,6 +137,15 @@ export default async function KreisStartPage() {
         >
           Mein Profil
         </Link>
+        {/* SP1-3: Tagesrätsel als Sekundär-Aktion (volle Zeile, NICHT 5. Kachel). */}
+        <Link
+          href="/raetsel"
+          className="col-span-2 inline-flex items-center justify-center rounded-2xl border-2 border-anthrazit/20 bg-white px-4 text-center text-base font-semibold text-anthrazit transition-colors hover:border-anthrazit/50 hover:bg-gray-50"
+          data-testid="kreis-start-raetsel-link"
+          style={{ minHeight: "80px", minWidth: "80px" }}
+        >
+          Tagesrätsel — kleine Denkpause
+        </Link>
       </div>
 
       {/* SB-2: „Erster gemeinsamer Moment" — unter dem Kachel-Grid, nie als 5. Kachel. */}

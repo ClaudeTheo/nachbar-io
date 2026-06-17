@@ -15,15 +15,13 @@
 > **Für die nächste Claude/Codex-Session.** Welle **SB (Senior-Bildschirm) ist geshippt + CI-grün** (vorige Übergabe: `2026-06-16-session-handover-welle-sb.md`). Danach wurde der **ungated SP1-2-Kern** gebaut (Tagesrätsel-Rotations-Service + Wording-Guard + Kiosk-DRY-Refactor). **Der eigentliche Tagesrätsel-Inhalt (50 Fragen) ist Founder-gated** — siehe §3. Diese Datei ist der Einstieg; die Auto-Memory `project_session_handover.md` zeigt hierher.
 
 ## 0. TL;DR — was zuerst tun
-1. **Stand prüfen:** `cd "C:/Users/thoma/Claud Code/Handy APP/nachbar-io" && git log --oneline -5 && gh run list -L 4 -R ClaudeTheo/nachbar-io` — erwartet `origin/master = e87cdbb`, CI grün.
-2. **Founder-Gate klären (§3):** Hat Thomas die 50 Tagesrätsel-Fragen (`docs/plans/2026-06-12-tagesraetsel-fragen-entwurf.md`) faktengeprüft? 
-   - **Ja →** SP1-2-Datendatei + SP1-3 (Senior-UI) + SP1-4 (Teilnahme-Punkte) bauen.
-   - **Nein →** **SP2 (Familienfoto-Spiele)** ist der nächste **ungated** Code-Schritt (baut auf SB-3 `/api/senior/photos`). Siehe §4.
+1. **Stand prüfen:** `cd "C:/Users/thoma/Claud Code/Handy APP/nachbar-io" && git log --oneline -6 && gh run list -L 4 -R ClaudeTheo/nachbar-io` — erwartet `origin/master = 53c81d0`, CI grün (E2E `27698850170` + CodeQL `27698849568` SUCCESS).
+2. **Gate ist FREIGEGEBEN, SP1-2-Daten + SP1-3 sind GESHIPPT** (siehe UPDATE #3 oben; §3 ist historisch). **Nächster Code-Schritt = SP1-4** (Teilnahme-Punkte — neue API-Surface → Mini-Audit + Closed-Pilot-Whitelist PFLICHT) + die optionale my-day-Karte, danach **SP2** (Familienfoto-Spiele, ungated, hängt an nichts). Reihenfolge nach Founder-Präferenz.
 3. **Autoritatives Rezept:** `docs/plans/2026-06-12-spiele-senior-features-wellenplan.md` (Abschnitte „Welle SP1", „Welle SP2", „Welle AA").
 
 ## 1. Git-/CI-Stand (exakt, 2026-06-17)
 - **nachbar-io ist ein EIGENES Repo** unter `C:\Users\thoma\Claud Code\Handy APP\nachbar-io` — **NICHT im Worktree**. Für alles: **Bash mit absolutem Pfad** (`cd "C:/Users/thoma/Claud Code/Handy APP/nachbar-io" && …`). PowerShell-Tool ist auf den Worktree gesandboxt.
-- `origin/master = e87cdbb` (`feat(spiele): daily puzzle rotation service …`). Commits dieser Session über dem SB-Push (`dfe5d4b`): nur `e87cdbb` (SP1-2).
+- `origin/master = 53c81d0` (Doc-Tip). Code-Commits über dem SB-Push (`dfe5d4b`): `e87cdbb` (SP1-2-Kern: Service/Guard/Kiosk-DRY) · `b5bb17a` (SP1-2-Daten: 50 freigegebene Fragen) · `de19a33` (SP1-3: failure-free Senior-UI). Alle in `origin/master`, **CI grün** (E2E `27698850170` + CodeQL `27698849568` SUCCESS), **kein Deploy** (workflow_dispatch).
 - **SB-Welle** davor: `ce52364` (SB-1 RLS) · `bbc9008` (SB-2) · `e6885d2` (SB-3) · `425a884` (SB-4) · `c6bec0f` (Test-Fixes) · `dfe5d4b` (Mini-Audit-Doc). Alle in `origin/master`, CI grün, **kein Deploy** (workflow_dispatch).
 - **⚠️ Test-Lauf-Gotcha:** Ein verschachteltes **gitignored** Worktree `.claude/worktrees/elated-mestorf-e47719/` enthält stale Test-Dupes. Full-Vitest **immer** mit `npx vitest run --exclude "**/.claude/**"` laufen, sonst falsche Failures. Außerdem maskiert `... | tail` den Vitest-Exit-Code (tail exitet 0) → für den echten Exit `${PIPESTATUS[0]}` lesen, nicht der Pipe-Exit.
 - Working Tree: nur bewusst nicht-committete Reste (NIE `git add .`): `M …phase-b-quarantine-ship.md`, `?? .session-artifacts/`, `?? …codex-an-claude-*.md` (3), `?? scripts/run-e2e-cloud.mjs`.
@@ -37,10 +35,9 @@
 
 **SP1-1** („Memory"→„Paare finden") war bereits erledigt (`app/(kiosk)/kiosk/games/paare-finden/page.tsx`).
 
-## 3. 🔴 FOUNDER-GATE (blockiert SP1-Inhalt)
-- Die 50 Tagesrätsel-Fragen in `docs/plans/2026-06-12-tagesraetsel-fragen-entwurf.md` sind **unreviewter KI-Entwurf (Review OPEN)**. KI-Entwurf ≠ Faktenprüfung.
-- **Bis Thomas jede Frage geprüft hat, darf die Produktiv-Datendatei `modules/spiele/data/tagesraetsel-fragen.ts` NICHT befüllt werden** → das blockiert SP1-2-Datendatei, SP1-3 (Senior-UI `app/(senior)/raetsel/` + „Mein Tag"-Karte), SP1-4 (Teilnahme-Punkte).
-- **Nach Founder-Go:** `modules/spiele/data/tagesraetsel-fragen.ts` aus den geprüften Fragen anlegen (Shape `TagesraetselFrage` aus dem Service), dann SP1-3 (failure-free UI, Wording-Guard schützt) + SP1-4 (Punkte nur für Teilnahme, nie Ergebnis — Route `app/api/spiele/teilnahme`).
+## 3. ✅ FOUNDER-GATE — FREIGEGEBEN 2026-06-17 (erledigt, historisch)
+- Thomas hat die 50 Tagesrätsel-Fragen freigegeben (as-is). Datendatei `modules/spiele/data/tagesraetsel-fragen.ts` (`b5bb17a`) + failure-free Senior-UI `app/(senior)/raetsel/` (`de19a33`) sind GESHIPPT + CI-grün; Entwurf-Doc-Marker = FREIGEGEBEN.
+- **Offen aus SP1-Inhalt:** nur noch **SP1-4** (Teilnahme-Punkte — siehe UPDATE #3 oben, Mini-Audit + Closed-Pilot-Whitelist PFLICHT) + die optionale **my-day-Tagesimpuls-Karte**. Spätere Frage-Korrekturen direkt in der Datendatei pflegen.
 
 ## 4. Empfohlener nächster Code-Schritt, falls Gate offen: **Welle SP2** (ungated)
 SP2 (Familienfoto-Spiele) hängt **nicht** an den Fragen, sondern an **SB-3 `/api/senior/photos`** (geshippt). Plan: Wellenplan Abschnitt „Welle SP2":

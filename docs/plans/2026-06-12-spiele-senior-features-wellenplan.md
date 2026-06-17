@@ -207,7 +207,23 @@ Umsetzung exakt nach S3-Plan (`2026-06-12-senior-welt-familienkreis-wellenplan.m
 
 **Tests SB gesamt:** RLS-Verhalten (SB-1), API-Routen (SB-3/SB-4), RTL für alle drei UI-Bausteine.
 **Definition of Done SB:** Senior sieht im Leerlauf Familienfotos, auf dem Home den neuesten Familien-Moment + offene Zettel, kann mit einem Tap quittieren — Familie bekommt die Quittung als Push ohne Inhalt. Kein einziger neuer Datentyp, keine neue Angehörigen-UI (KioskReminderForm/Foto-Upload existieren).
-**Mini-Audit-Block:** _nach SB-0 hier eintragen._
+**Mini-Audit-Block:**
+
+```text
+Mini-Audit Welle SB (2026-06-17):
+- RLS/Trigger geprueft: kiosk_photos, kiosk_reminders, household_members (Mig 083 + Baseline-Snapshot)
+- Trigger: KEINE auf kiosk_photos/kiosk_reminders (kein BEFORE-UPDATE, keine sticky-Privilege-Spalten)
+- Findings: 0 CRITICAL / 0 HIGH. SB-1 ergaenzt nur SELECT-Policies (verifizierte Haushaltsmitglieder,
+  household_id IN verified-members; Fotos zusaetzlich visible=true). Kein neuer Schreibpfad zu Privileg-Spalten.
+  acknowledged_at wird in SB-4 bewusst via Admin-Client + eigene Checks gesetzt (RLS-UPDATE bleibt zu).
+  2 MEDIUM-Designvorgaben umgesetzt: acknowledge-Route = duenne Route + Service mit verified-member-Check +
+  IS-NULL-Doppel-Ack-Guard; Quittungs-Push ohne Zettel-Inhalt (Datensparsamkeit).
+- Audit-Trail: Quittung erzeugt Notification + Push an created_by (= Nachweis); keine auth-/rollen-/consent-
+  relevante Aktion -> kein admin_audit_log-Pflichteintrag noetig.
+- Rate-Limit: middleware-Default /api/ (60/min, In-Memory — RL-1-Backlog). Push-Spam zusaetzlich begrenzt durch
+  idempotenten Ack (1 Push pro Zettel) + Haushalts-Scoping. Kein Token-/Code-Lookup -> kein Brute-Force-Surface.
+- Migration file-first, NICHT prod-applied (Founder-Go).
+```
 
 ---
 

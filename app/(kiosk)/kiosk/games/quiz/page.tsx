@@ -2,6 +2,10 @@
 
 import Link from "next/link";
 import { useCallback, useState, useSyncExternalStore } from "react";
+import {
+  getDailyQuestions,
+  dailyCacheKey,
+} from "@/modules/spiele/services/tagesraetsel.service";
 
 interface Question {
   q: string;
@@ -27,31 +31,15 @@ const subscribeToDayChange = () => () => {};
 let cachedQuestionDay = "";
 let cachedQuestions = ALL_QUESTIONS.slice(0, QUESTIONS_PER_GAME);
 
-function getQuestionCacheKey() {
-  const now = new Date();
-  return `${now.getFullYear()}-${now.getMonth()}-${now.getDate()}`;
-}
-
-/** Tagesbasierte Auswahl: 5 Fragen basierend auf dem Tag des Jahres */
-function getDailyQuestions(): Question[] {
-  const now = new Date();
-  const start = new Date(now.getFullYear(), 0, 0);
-  const dayOfYear = Math.floor(
-    (now.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)
-  );
-  const offset = dayOfYear % ALL_QUESTIONS.length;
-  const selected: Question[] = [];
-  for (let i = 0; i < QUESTIONS_PER_GAME; i++) {
-    selected.push(ALL_QUESTIONS[(offset + i) % ALL_QUESTIONS.length]);
-  }
-  return selected;
-}
-
+// Tagesbasierte Auswahl: gemeinsamer Service (DRY mit dem Senior-Tagesraetsel).
+// getCachedDailyQuestions memoisiert die Tages-Auswahl als stabile Referenz
+// (Pflicht fuer useSyncExternalStore-getSnapshot).
 function getCachedDailyQuestions(): Question[] {
-  const cacheKey = getQuestionCacheKey();
+  const today = new Date();
+  const cacheKey = dailyCacheKey(today);
   if (cacheKey !== cachedQuestionDay) {
     cachedQuestionDay = cacheKey;
-    cachedQuestions = getDailyQuestions();
+    cachedQuestions = getDailyQuestions(today, ALL_QUESTIONS, QUESTIONS_PER_GAME);
   }
   return cachedQuestions;
 }

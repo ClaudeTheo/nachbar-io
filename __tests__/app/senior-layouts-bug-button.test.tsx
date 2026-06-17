@@ -27,6 +27,12 @@ vi.mock("@/components/senior/RefreshRotationMounter", () => ({
   RefreshRotationMounter: () => null,
 }));
 
+// GlobalCallListener (seit S2-5 im (senior)-Layout) nutzt useRouter + Realtime —
+// hier nicht unter Test, daher stubben (analog BugReportButton/PushBanner).
+vi.mock("@/components/video/GlobalCallListener", () => ({
+  GlobalCallListener: () => null,
+}));
+
 vi.mock("lucide-react", () => ({
   ArrowLeft: () => <svg data-testid="icon-arrow-left" />,
 }));

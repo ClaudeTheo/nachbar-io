@@ -9,7 +9,9 @@ export default async function SeniorLocalPreviewPage() {
   return (
     <main className="min-h-screen bg-warmwhite px-4 py-6 text-anthrazit">
       <div className="mx-auto max-w-[460px]">
-        <KreisStartPage />
+        {/* KreisStartPage ist seit Welle SB eine async Server-Komponente -> hier
+            eager awaiten und das Ergebnis einbetten (produktiv aequivalent). */}
+        {await KreisStartPage()}
       </div>
     </main>
   );

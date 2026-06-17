@@ -10,6 +10,17 @@ vi.mock("next/navigation", () => ({
   }),
 }));
 
+// KreisStartPage ist seit Welle SB async + laedt Foto/Stickies — Supabase-Server-
+// Client + Senior-Kiosk-Service mocken (leere Daten -> nur die 4 Kacheln).
+vi.mock("@/lib/supabase/server", () => ({
+  createClient: vi.fn().mockResolvedValue({}),
+}));
+
+vi.mock("@/modules/care/services/senior-kiosk.service", () => ({
+  getSeniorHouseholdPhotos: vi.fn().mockResolvedValue([]),
+  getSeniorHouseholdStickies: vi.fn().mockResolvedValue([]),
+}));
+
 describe("SeniorLocalPreviewPage", () => {
   afterEach(() => {
     cleanup();

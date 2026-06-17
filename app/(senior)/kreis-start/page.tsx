@@ -146,6 +146,15 @@ export default async function KreisStartPage() {
         >
           Tagesrätsel — kleine Denkpause
         </Link>
+        {/* SP2-1: „Paare finden" mit Familienfotos — Sekundär-Aktion, NICHT 5. Kachel. */}
+        <Link
+          href="/spiele/paare-finden"
+          className="col-span-2 inline-flex items-center justify-center rounded-2xl border-2 border-anthrazit/20 bg-white px-4 text-center text-base font-semibold text-anthrazit transition-colors hover:border-anthrazit/50 hover:bg-gray-50"
+          data-testid="kreis-start-paare-link"
+          style={{ minHeight: "80px", minWidth: "80px" }}
+        >
+          Paare finden — mit Familienfotos
+        </Link>
       </div>
 
       {/* SB-2: „Erster gemeinsamer Moment" — unter dem Kachel-Grid, nie als 5. Kachel. */}

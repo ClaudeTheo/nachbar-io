@@ -9,6 +9,9 @@
 //   - Siezen, kein Emoji ausser bei NOTFALL
 
 import Link from "next/link";
+import { createClient } from "@/lib/supabase/server";
+import { getSeniorHouseholdPhotos } from "@/modules/care/services/senior-kiosk.service";
+import { FamilienMomentCard } from "@/modules/care/components/senior/FamilienMomentCard";
 
 type TileDef = {
   label: string;
@@ -51,7 +54,20 @@ const TILES: TileDef[] = [
   },
 ];
 
-export default function KreisStartPage() {
+export default async function KreisStartPage() {
+  // SB-2: neuestes Familienfoto laden (RLS-scoped auf den eigenen Haushalt).
+  // Fehler/leerer Haushalt -> Karte wird einfach nicht angezeigt (additiv).
+  const supabase = await createClient();
+  const photos = await getSeniorHouseholdPhotos(supabase, { limit: 1 });
+  const newest = photos[0] ?? null;
+  const momentPhoto = newest
+    ? {
+        url: newest.url,
+        caption: newest.caption,
+        uploaderId: newest.uploaderId,
+      }
+    : null;
+
   return (
     <section aria-label="Startbildschirm">
       <h1 className="sr-only">Startbildschirm</h1>
@@ -114,6 +130,9 @@ export default function KreisStartPage() {
           Mein Profil
         </Link>
       </div>
+
+      {/* SB-2: „Erster gemeinsamer Moment" — unter dem Kachel-Grid, nie als 5. Kachel. */}
+      <FamilienMomentCard photo={momentPhoto} />
     </section>
   );
 }

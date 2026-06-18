@@ -109,6 +109,7 @@ describe('GET /api/device/contacts', () => {
             auto_answer_allowed: true,
             auto_answer_start: '08:00',
             auto_answer_end: '20:00',
+            auto_answer_senior_consented_at: '2026-01-01T00:00:00Z',
             users: { display_name: 'Lisa Mueller', avatar_url: 'https://example.com/lisa.jpg' },
           },
           {
@@ -117,6 +118,7 @@ describe('GET /api/device/contacts', () => {
             auto_answer_allowed: false,
             auto_answer_start: '09:00',
             auto_answer_end: '18:00',
+            auto_answer_senior_consented_at: null,
             users: { display_name: 'Max Schmidt', avatar_url: null },
           },
         ],
@@ -147,6 +149,41 @@ describe('GET /api/device/contacts', () => {
     });
     expect(json.contacts[1].caregiver_name).toBe('Max Schmidt');
     expect(json.contacts[1].caregiver_avatar).toBeNull();
+  });
+
+  it('liefert auto_answer_allowed=false wenn der Senior NICHT eingewilligt hat', async () => {
+    // Welle AA-2: der echte Gate. Auch wenn der Angehoerige Auto-Annahme erlaubt
+    // (auto_answer_allowed=true), greift sie erst nach ausdruecklicher Senior-Einwilligung.
+    const supabase = createMockSupabase([
+      { data: [{ user_id: 'resident-1' }], error: null },
+      {
+        data: [
+          {
+            id: 'link-1',
+            caregiver_id: 'cg-1',
+            auto_answer_allowed: true,
+            auto_answer_start: '08:00',
+            auto_answer_end: '20:00',
+            auto_answer_senior_consented_at: null,
+            users: { display_name: 'Lisa Mueller', avatar_url: null },
+          },
+        ],
+        error: null,
+      },
+    ]);
+
+    mockAuthenticateDevice.mockResolvedValue({
+      device: { id: 'dev-1', household_id: 'hh-1' },
+      supabase,
+    });
+    mockIsAuthError.mockReturnValue(false);
+
+    const { GET } = await import('@/app/api/device/contacts/route');
+    const response = await GET(makeRequest('valid-token-1234567890'));
+    const json = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(json.contacts[0].auto_answer_allowed).toBe(false);
   });
 
   it('gibt leere Kontaktliste wenn kein Bewohner im Haushalt', async () => {

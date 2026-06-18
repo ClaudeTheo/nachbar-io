@@ -32,8 +32,11 @@ function isNoContactError(err: unknown): boolean {
 
 export function FamilienMomentCard({
   photo,
+  heading = "Neu von Ihrer Familie",
 }: {
   photo: FamilienMomentPhoto | null;
+  /** Ueberschrift + aria-label der Karte. Default = SB-2-Wortlaut. */
+  heading?: string;
 }) {
   const [mode, setMode] = useState<Mode>("idle");
   const [errorText, setErrorText] = useState<string>("");
@@ -74,13 +77,11 @@ export function FamilienMomentCard({
 
   return (
     <section
-      aria-label="Neu von Ihrer Familie"
+      aria-label={heading}
       data-testid="familien-moment-card"
       className="mt-8 rounded-2xl border-2 border-anthrazit/15 bg-white p-4"
     >
-      <h2 className="mb-3 text-xl font-bold text-anthrazit">
-        Neu von Ihrer Familie
-      </h2>
+      <h2 className="mb-3 text-xl font-bold text-anthrazit">{heading}</h2>
 
       {/* Signed-URL ist dynamisch -> klassisches img statt next/image */}
       {/* eslint-disable-next-line @next/next/no-img-element */}

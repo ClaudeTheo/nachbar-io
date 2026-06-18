@@ -21,7 +21,22 @@ const BANNED =
 const SCAN_DIRS = [
   join(process.cwd(), "modules", "spiele"),
   join(process.cwd(), "app", "(senior)", "raetsel"),
+  // SP2-2: „Erinnerung der Woche"-Seite mit abdecken.
+  join(process.cwd(), "app", "(senior)", "erinnerung"),
 ];
+
+// SP2-2: Einzeldateien ausserhalb der Scan-Verzeichnisse, die zum Spiele-/
+// Erinnerungs-Wording gehoeren (die Komponente lebt im care-Modul).
+const EXTRA_FILES = [
+  join(
+    process.cwd(),
+    "modules",
+    "care",
+    "components",
+    "senior",
+    "ErinnerungDerWoche.tsx",
+  ),
+].filter((f) => existsSync(f));
 
 function collectSourceFiles(dir: string): string[] {
   if (!existsSync(dir)) return [];
@@ -43,7 +58,7 @@ function collectSourceFiles(dir: string): string[] {
 }
 
 describe("Spiele Wording-Guard (SP1-2)", () => {
-  const files = SCAN_DIRS.flatMap(collectSourceFiles);
+  const files = [...SCAN_DIRS.flatMap(collectSourceFiles), ...EXTRA_FILES];
 
   it("scannt tatsaechlich Produktiv-Quellen (Guard ist kein No-Op)", () => {
     // Mindestens der Tagesraetsel-Service muss gefunden werden, sonst greift

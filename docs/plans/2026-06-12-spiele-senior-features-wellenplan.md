@@ -429,7 +429,16 @@ File-first, lokal testen, **Prod-Apply nur mit Founder-Go**. Commit: `feat(db): 
 **Step 3:** Commit: `feat(senior): visible auto-answer countdown in senior shell`
 
 **Definition of Done AA:** Auto-Annahme funktioniert nur bei beidseitigem Opt-in, innerhalb der Zeitfenster, mit sichtbarem Countdown und Ein-Tap-Abbruch; Senior kann sie jederzeit selbst abschalten; jede Consent-Änderung ist auditiert.
-**Mini-Audit-Block:** _nach AA-0 hier eintragen._
+**Mini-Audit-Block:**
+
+```text
+Mini-Audit Welle AA (2026-06-18):
+- RLS/Trigger geprueft: caregiver_links (071 update_resident spaltenlos; 084 auto_answer_*; 197 consent_status/profile_edit_allowed/sensitive_data_allowed; 142 Trigger protect_plus_trial_end schuetzt NUR plus_trial_end), care_audit_log (028, neuer event_type auto_answer_consent_changed)
+- Findings: AA-RLS-3 HIGH (IDOR) + AA-AUDIT-1 HIGH (Audit-Luecke) — beide introducedByAA, im Bau GELOEST (AA-3: service_role + expliziter resident==auth.uid-Ownership-Check + writeAuditLog; AA-1: schmaler Sticky-Trigger nur fuer die neue Spalte). Vorbestehende Altlasten (KEIN AA-Stopper): AA-RLS-1 CRITICAL + CL-1 HIGH (spaltenlose resident-UPDATE-Policy laesst consent_status/sensitive_data_allowed setzen) + AA-RLS-2 HIGH (Prod-Drift caregiver-UPDATE-Policy) -> separater Founder-gateter Task task_796f821c. MEDIUM: AA-LOGIC-2 (shouldAutoAnswer war dead code; realer Gate jetzt device.service.ts), AA-AUDIT-3 (event_type-Union ergaenzt).
+- Audit-Trail: ja (writeAuditLog -> care_audit_log bei jedem Consent-Wechsel) | Rate-Limit: nicht noetig (authentifiziert, kein Token-/Code-Lookup; default /api/ 60/min greift)
+```
+
+> STOP-Gate-Verlauf: Pre-Check + Mini-Audit ergaben 2 AA-eingefuehrte HIGH -> STOP + Founder. Founder-Go „gehaertetes AA bauen" + „CL-1 als separater Task" -> beide HIGH im Bau als verbindliche Auflagen umgesetzt (TDD-verifiziert: IDOR-403-Test + Audit-Call-Test), Altlasten an task_796f821c uebergeben. SB-1- und AA-1-Migration bleiben **file-first** (Prod-Apply = Founder-Go).
 
 ---
 

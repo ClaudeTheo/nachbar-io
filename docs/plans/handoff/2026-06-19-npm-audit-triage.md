@@ -18,9 +18,10 @@ Guardrails eingehalten:
 - Kein `git push origin master`.
 - Aenderungen nur am `package-lock.json`, kein `package.json`.
 
-Hinweis zur lokalen Runtime: Die verfuegbare lokale Node-Version war
-`v24.13.1` (Codex-Bundle `v24.14.0`). Der Projektkontext nennt Node 22; die
-lokale Verifikation lief daher unter Node 24. Die PR-CI ist der Node-22-Gegencheck.
+Hinweis zur lokalen Runtime: Der erste Fixlauf lief versehentlich mit der lokal
+vorhandenen Node-Version `v24.13.1` (Codex-Bundle `v24.14.0`). Nach roter
+Node-22-CI wurde fuer den Lockfile-Sync-Fix ein portables Node `v22.23.0`
+mit npm `10.9.8` verwendet.
 
 ## Rohbefund vor Fix
 
@@ -101,7 +102,7 @@ Wichtige Aufloesungen nach Fix:
 - Exit 0
 - keine HIGH/Critical Prod-Vulnerabilities mehr.
 
-`npm audit --omit=dev --json`:
+Erster lokaler `npm audit --omit=dev --json`-Stand unter Node 24:
 
 - `critical`: 0
 - `high`: 0
@@ -110,13 +111,47 @@ Wichtige Aufloesungen nach Fix:
 - `total`: 2
 - verbleibend nur `next/postcss` (Breaking-/Force-Fix).
 
+Finaler Node-22-Stand nach Lockfile-Sync-Fix:
+
+- `critical`: 0
+- `high`: 0
+- `moderate`: 3
+- `low`: 0
+- `total`: 3
+- verbleibend nur die `@sentry/nextjs -> next -> postcss`-Kette. npm bietet
+  dafuer weiter nur `npm audit fix --force` mit `next@9.3.3` an.
+
+## Node-22-Lockfile-Fix
+
+PR #44 CI Smoke S7 schlug initial in `npm ci` fehl:
+
+- `Missing: type-fest@4.41.0 from lock file`
+
+Root Cause: Der Node-24-`npm audit fix` hatte den optionalen Storybook-Eintrag
+`node_modules/@storybook/nextjs/node_modules/type-fest` entfernt. Der gleiche
+Lockfile-Sync-Defekt war bereits in den Dependabot-Fixes `99ee539`/`643d671`
+aufgetreten.
+
+Fix: Der optionale Eintrag wurde exakt wie in den frueheren gruenen Fixes
+restauriert:
+
+- `node_modules/@storybook/nextjs/node_modules/type-fest`
+- Version `4.41.0`
+- `dev: true`
+- `optional: true`
+
 ## Verifikation
 
 Durchgefuehrt im Worktree `nachbar-io-npm-audit`:
 
-- `npx tsc --noEmit` -> gruen.
-- `npx vitest run --exclude "**/.claude/**"` -> 722 Testdateien, 5078 passed, 1 skipped.
-- `npm run build` -> gruen, Next.js `16.2.9` (Turbopack), 244 static pages generiert.
+- `npm ci` unter Node `v22.23.0` / npm `10.9.8` -> gruen.
+- `npx tsc --noEmit` unter Node 22 -> gruen.
+- `npx vitest run --exclude "**/.claude/**"` unter Node 22 -> final gruen:
+  722 Testdateien, 5078 passed, 1 skipped. Ein erster Full-Run hatte einen
+  Timeout in `__tests__/config/csp-local-supabase.test.ts`; gezielter Rerun
+  6/6 gruen, anschliessender Full-Run gruen.
+- `npm run build` unter Node 22 -> gruen, Next.js `16.2.9` (Turbopack), 244
+  static pages generiert.
 
 ## Diff
 
@@ -125,5 +160,5 @@ Durchgefuehrt im Worktree `nachbar-io-npm-audit`:
 
 ## Offen
 
-- Draft-PR gegen `master` oeffnen, CI als Node-22-Gegencheck abwarten.
+- Draft-PR #44 CI nach dem Lockfile-Sync-Fix abwarten.
 - Kein Deploy in dieser Aufgabe.

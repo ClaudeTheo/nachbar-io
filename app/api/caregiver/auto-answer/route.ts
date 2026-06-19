@@ -9,6 +9,7 @@ import {
   errorResponse,
 } from "@/lib/care/api-helpers";
 import { handleServiceError } from "@/lib/services/service-error";
+import { getAdminSupabase } from "@/lib/supabase/admin";
 import {
   getAutoAnswerSettings,
   updateAutoAnswerSettings,
@@ -55,12 +56,17 @@ export async function PATCH(request: NextRequest) {
   }
 
   try {
-    const result = await updateAutoAnswerSettings(auth.supabase, auth.user.id, {
-      linkId: body.linkId ?? "",
-      autoAnswerAllowed: body.autoAnswerAllowed,
-      autoAnswerStart: body.autoAnswerStart,
-      autoAnswerEnd: body.autoAnswerEnd,
-    });
+    const result = await updateAutoAnswerSettings(
+      auth.supabase,
+      getAdminSupabase(),
+      auth.user.id,
+      {
+        linkId: body.linkId ?? "",
+        autoAnswerAllowed: body.autoAnswerAllowed,
+        autoAnswerStart: body.autoAnswerStart,
+        autoAnswerEnd: body.autoAnswerEnd,
+      },
+    );
     return NextResponse.json(result);
   } catch (error) {
     return handleServiceError(error);

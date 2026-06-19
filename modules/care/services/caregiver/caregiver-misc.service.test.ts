@@ -60,6 +60,8 @@ describe("updateAutoAnswerSettings", () => {
       "auto_answer_start",
     ]);
     expect(adminCalls).toContainEqual(["eq", "id", "link-1"]);
+    expect(adminCalls).toContainEqual(["eq", "caregiver_id", "caregiver-1"]);
+    expect(adminCalls).toContainEqual(["is", "revoked_at", null]);
   });
 
   it("blockiert fremde oder widerrufene Links vor dem Admin-Update", async () => {

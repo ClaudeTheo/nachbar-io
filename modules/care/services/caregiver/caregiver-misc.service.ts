@@ -103,6 +103,8 @@ export async function updateAutoAnswerSettings(
     .from("caregiver_links")
     .update(updatePayload)
     .eq("id", linkId)
+    .eq("caregiver_id", userId)
+    .is("revoked_at", null)
     .select("id")
     .maybeSingle();
 

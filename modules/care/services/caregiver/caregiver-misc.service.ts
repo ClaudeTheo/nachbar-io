@@ -1,7 +1,7 @@
 // modules/care/services/caregiver/caregiver-misc.service.ts
 // Nachbar.io — Auto-Answer-Einstellungen und Chat-Konversation (Business Logic)
 
-import { SupabaseClient } from "@supabase/supabase-js";
+import type { SupabaseClient } from "@supabase/supabase-js";
 import { ServiceError } from "@/lib/services/service-error";
 
 // ---------- getAutoAnswerSettings ----------
@@ -47,6 +47,7 @@ export interface UpdateAutoAnswerInput {
 
 export async function updateAutoAnswerSettings(
   supabase: SupabaseClient,
+  admin: SupabaseClient,
   userId: string,
   input: UpdateAutoAnswerInput,
 ): Promise<{ ok: true }> {
@@ -56,19 +57,61 @@ export async function updateAutoAnswerSettings(
     throw new ServiceError("linkId fehlt", 400);
   }
 
-  const { error } = await supabase
+  // Auth-Client: Link muss aktiv sein und dem Angehoerigen gehoeren.
+  const { data: link, error: linkError } = await supabase
     .from("caregiver_links")
-    .update({
-      auto_answer_allowed: autoAnswerAllowed,
-      auto_answer_start: autoAnswerStart,
-      auto_answer_end: autoAnswerEnd,
-    })
+    .select("id")
     .eq("id", linkId)
     .eq("caregiver_id", userId)
-    .is("revoked_at", null);
+    .is("revoked_at", null)
+    .maybeSingle();
 
-  if (error) {
-    throw new ServiceError("Update fehlgeschlagen", 500);
+  if (linkError) {
+    throw new ServiceError(
+      "Link konnte nicht geprueft werden",
+      500,
+      "link_check_failed",
+    );
+  }
+
+  if (!link) {
+    throw new ServiceError("Link nicht gefunden", 404, "link_not_found");
+  }
+
+  const updatePayload: {
+    auto_answer_allowed?: boolean;
+    auto_answer_start?: string;
+    auto_answer_end?: string;
+  } = {};
+
+  if (typeof autoAnswerAllowed === "boolean") {
+    updatePayload.auto_answer_allowed = autoAnswerAllowed;
+  }
+  if (typeof autoAnswerStart === "string") {
+    updatePayload.auto_answer_start = autoAnswerStart;
+  }
+  if (typeof autoAnswerEnd === "string") {
+    updatePayload.auto_answer_end = autoAnswerEnd;
+  }
+
+  if (Object.keys(updatePayload).length === 0) {
+    throw new ServiceError("Keine Aenderungen", 400, "no_update_fields");
+  }
+
+  // Admin-Client: RLS-Policy-Luecke umgehen, aber nur nach obigem Ownership-Check.
+  const { data: updated, error } = await admin
+    .from("caregiver_links")
+    .update(updatePayload)
+    .eq("id", linkId)
+    .select("id")
+    .maybeSingle();
+
+  if (error || !updated) {
+    throw new ServiceError(
+      "Update fehlgeschlagen",
+      500,
+      "auto_answer_update_failed",
+    );
   }
 
   return { ok: true };

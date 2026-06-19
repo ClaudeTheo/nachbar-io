@@ -11,10 +11,15 @@ let mockUser: { id: string; email: string } | null;
 // Subscription-Ergebnis fuer Plus-Gate
 const PLUS_SUB_RESULT = { data: { plan: 'plus', status: 'active' }, error: null };
 
-function createMockSupabase(callResults: Array<{ data: unknown; error: unknown }>) {
+function createMockSupabase(
+  callResults: Array<{ data: unknown; error: unknown }>,
+  includeSubscriptionGate = true,
+) {
   let callIndex = 0;
   // Subscription-Gate als ersten Aufruf voranstellen
-  const allResults = [PLUS_SUB_RESULT, ...callResults];
+  const allResults = includeSubscriptionGate
+    ? [PLUS_SUB_RESULT, ...callResults]
+    : callResults;
 
   return {
     auth: {
@@ -43,6 +48,7 @@ function createMockSupabase(callResults: Array<{ data: unknown; error: unknown }
 }
 
 let mockSupabase: ReturnType<typeof createMockSupabase>;
+let mockAdminSupabase: ReturnType<typeof createMockSupabase>;
 
 vi.mock('next/headers', () => ({
   cookies: vi.fn().mockResolvedValue({
@@ -53,6 +59,14 @@ vi.mock('next/headers', () => ({
 
 vi.mock('@/lib/supabase/server', () => ({
   createClient: vi.fn().mockImplementation(() => Promise.resolve(mockSupabase)),
+}));
+
+vi.mock('@/lib/supabase/admin', () => ({
+  getAdminSupabase: vi.fn().mockImplementation(() => mockAdminSupabase),
+}));
+
+vi.mock('@/lib/care/audit', () => ({
+  writeAuditLog: vi.fn().mockResolvedValue(undefined),
 }));
 
 // --- Hilfsfunktionen ---
@@ -132,12 +146,16 @@ describe('PATCH /api/caregiver/auto-answer', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockUser = { id: 'cg-1', email: 'lisa@test.de' };
+    mockAdminSupabase = createMockSupabase([], false);
   });
 
   it('aktualisiert Auto-Answer-Einstellungen', async () => {
     mockSupabase = createMockSupabase([
-      { data: null, error: null },
+      { data: { id: 'link-123', resident_id: 'resident-1' }, error: null },
     ]);
+    mockAdminSupabase = createMockSupabase([
+      { data: { id: 'link-123' }, error: null },
+    ], false);
 
     const { PATCH } = await import('@/app/api/caregiver/auto-answer/route');
     const response = await PATCH(makePatchRequest({

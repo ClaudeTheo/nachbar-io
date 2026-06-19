@@ -147,6 +147,7 @@ export const AUDIT_EVENT_LABELS: Record<CareAuditEventType, string> = {
   helper_registered: "Helfer registriert",
   helper_verified: "Helfer verifiziert",
   auto_answer_consent_changed: "Auto-Annahme-Einwilligung geändert",
+  auto_answer_settings_changed: "Auto-Annahme-Einstellungen geändert",
   document_generated: "Dokument erstellt",
   profile_updated: "Profil aktualisiert",
   task_created: "Aufgabe erstellt",

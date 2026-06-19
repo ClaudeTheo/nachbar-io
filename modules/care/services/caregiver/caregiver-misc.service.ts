@@ -2,6 +2,7 @@
 // Nachbar.io — Auto-Answer-Einstellungen und Chat-Konversation (Business Logic)
 
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { writeAuditLog } from "@/lib/care/audit";
 import { ServiceError } from "@/lib/services/service-error";
 
 // ---------- getAutoAnswerSettings ----------
@@ -60,7 +61,7 @@ export async function updateAutoAnswerSettings(
   // Auth-Client: Link muss aktiv sein und dem Angehoerigen gehoeren.
   const { data: link, error: linkError } = await supabase
     .from("caregiver_links")
-    .select("id")
+    .select("id, resident_id")
     .eq("id", linkId)
     .eq("caregiver_id", userId)
     .is("revoked_at", null)
@@ -115,6 +116,15 @@ export async function updateAutoAnswerSettings(
       "auto_answer_update_failed",
     );
   }
+
+  await writeAuditLog(admin, {
+    seniorId: link.resident_id,
+    actorId: userId,
+    eventType: "auto_answer_settings_changed",
+    referenceType: "caregiver_link",
+    referenceId: linkId,
+    metadata: { changedFields: Object.keys(updatePayload) },
+  });
 
   return { ok: true };
 }

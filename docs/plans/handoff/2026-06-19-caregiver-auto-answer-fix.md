@@ -51,5 +51,9 @@ Alle Checks gruen in der Codex-Session vor Draft-PR.
 
 ## Offen
 
-Audit fuer Caregiver-Auto-Answer-Setting-Aenderungen folgt separat. Keine
-Migration und kein Prod-Apply in dieser PR.
+Audit fuer Caregiver-Auto-Answer-Setting-Aenderungen wurde im Folge-Branch
+`codex/care-audit-event-type-reconcile` adressiert:
+`auto_answer_settings_changed` + CHECK-Reconcile-Migration
+`20260619120000_care_audit_log_event_type_reconcile.sql`.
+
+Kein Prod-Apply ohne Founder-Go.

@@ -52,15 +52,15 @@ vi.mock("@/components/FloatingHelpButton", () => ({
 }));
 
 describe("Dashboard ui modes", () => {
-  it("shows Gemeinschaft first for active users", () => {
+  it("shows Hier bei mir first for active users (Pilot, Befund A4:1)", () => {
     mockedUiMode = "active";
     mockedDashboardDensity = "standard";
 
     render(<DashboardPage />);
 
     expect(
-      screen.getByRole("link", { name: /GemeinschaftGruppen, Nachbarn und Austausch/i }),
-    ).toHaveAttribute("href", "/gruppen");
+      screen.getByRole("link", { name: /Hier bei mirWetter, Warnungen, Müllabfuhr/i }),
+    ).toHaveAttribute("href", "/quartier-info");
     expect(
       screen.getByRole("link", { name: /Mein TagHeute planen/i }),
     ).toHaveAttribute("href", "/my-day");

@@ -103,4 +103,13 @@ describe("closed pilot public paths", () => {
     expect(isClosedPilotPublicApiPath("/api/admin/stats")).toBe(false);
     expect(isClosedPilotPublicApiPath("/api/care/sos")).toBe(false);
   });
+
+  // Welle SP1-4: /api/spiele/teilnahme ist eine AUTHENTIFIZIERTE Route (Senior
+  // mit Session vergibt Teilnahme-Punkte). Sie darf NICHT in die Public-API-
+  // Whitelist — der 503-Filter trifft nur User-lose Calls (lib/supabase/
+  // middleware.ts), eine Aufnahme wuerde die Route oeffentlich machen und der
+  // 401-Anforderung widersprechen. Negativ-Entscheidung bewusst festgenagelt.
+  it("does NOT whitelist the authenticated spiele participation API", () => {
+    expect(isClosedPilotPublicApiPath("/api/spiele/teilnahme")).toBe(false);
+  });
 });

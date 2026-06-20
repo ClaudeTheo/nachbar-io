@@ -6,6 +6,8 @@ export interface AutoAnswerContact {
   autoAnswerStart: string; // HH:MM Format
   autoAnswerEnd: string;   // HH:MM Format
   revokedAt: string | null;
+  // Welle AA: Zeitpunkt der ausdruecklichen Senior-Einwilligung. null = keine Einwilligung.
+  seniorConsentedAt: string | null;
 }
 
 export interface QuietHoursConfig {
@@ -32,9 +34,10 @@ export function isInTimeWindow(now: string, start: string, end: string): boolean
  * Entscheidet ob ein eingehender Anruf automatisch angenommen werden soll.
  * Regelhierarchie:
  * 1. Kontakt hat aktiven Link (nicht widerrufen)?
- * 2. auto_answer_allowed = true?
- * 3. Aktuelle Zeit im Kontakt-Zeitfenster?
- * 4. NICHT in globalen Ruhezeiten?
+ * 2. Senior hat ausdruecklich eingewilligt (Welle AA)?
+ * 3. auto_answer_allowed = true (Angehoeriger erlaubt)?
+ * 4. Aktuelle Zeit im Kontakt-Zeitfenster?
+ * 5. NICHT in globalen Ruhezeiten?
  */
 export function shouldAutoAnswer(
   contact: AutoAnswerContact,
@@ -43,6 +46,9 @@ export function shouldAutoAnswer(
 ): boolean {
   // Link widerrufen?
   if (contact.revokedAt !== null) return false;
+
+  // Senior hat nicht eingewilligt? (Auto-Annahme braucht BEIDE Seiten)
+  if (!contact.seniorConsentedAt) return false;
 
   // Auto-Answer nicht erlaubt?
   if (!contact.autoAnswerAllowed) return false;

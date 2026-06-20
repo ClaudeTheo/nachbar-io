@@ -31,6 +31,23 @@ vi.mock("@/components/senior/RefreshRotationMounter", () => ({
   RefreshRotationMounter: () => null,
 }));
 
+// GlobalCallListener (seit S2-5 im (senior)-Layout) nutzt useRouter + Realtime —
+// hier nicht unter Test, daher stubben (analog BugReportButton/PushBanner).
+vi.mock("@/components/video/GlobalCallListener", () => ({
+  GlobalCallListener: () => null,
+}));
+
+// KreisStartPage ist seit Welle SB eine async Server-Komponente (laedt Foto +
+// Stickies) — Supabase-Server-Client + Senior-Kiosk-Service mocken.
+vi.mock("@/lib/supabase/server", () => ({
+  createClient: vi.fn().mockResolvedValue({}),
+}));
+
+vi.mock("@/modules/care/services/senior-kiosk.service", () => ({
+  getSeniorHouseholdPhotos: vi.fn().mockResolvedValue([]),
+  getSeniorHouseholdStickies: vi.fn().mockResolvedValue([]),
+}));
+
 afterEach(() => {
   cleanup();
 });
@@ -79,7 +96,7 @@ describe("KreisStartPage Touch-Targets", () => {
       "@/app/(senior)/kreis-start/page"
     );
 
-    render(<KreisStartPage />);
+    render(await KreisStartPage());
 
     const secondaryActions = screen.getByTestId("kreis-start-secondary-actions");
     expect(

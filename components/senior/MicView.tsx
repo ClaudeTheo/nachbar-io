@@ -82,7 +82,7 @@ export function MicView({
           setState("transcript");
         } catch {
           setError(
-            "Die Spracherkennung ist gerade nicht verfuegbar. Bitte versuchen Sie es spaeter.",
+            "Die Spracherkennung ist gerade nicht verfügbar. Sie können Ihre Nachricht stattdessen tippen.",
           );
           setState("ready");
         }
@@ -127,6 +127,13 @@ export function MicView({
     );
     router.push(`/schreiben/review/${recipientIndex}`);
   }, [recipientIndex, transcript, router]);
+
+  // Lieber tippen: ohne Sprachaufnahme direkt in den Tipp-Modus der Review-Seite
+  // (Welle S2 / A3:3 — Ausweg, wenn die Spracherkennung nicht verfuegbar ist).
+  const handleTippen = useCallback(() => {
+    sessionStorage.setItem(`schreiben_tippen_${recipientIndex}`, "1");
+    router.push(`/schreiben/review/${recipientIndex}`);
+  }, [recipientIndex, router]);
 
   return (
     <section aria-label="Sprachaufnahme">
@@ -204,6 +211,19 @@ export function MicView({
                   ? "Tippen Sie zum Sprechen"
                   : "Aufnahme laeuft... Tippen Sie zum Stoppen"}
               </p>
+
+              {/* Ausweg ohne Sprache: direkt tippen (Welle S2 / A3:3) */}
+              {state === "ready" && (
+                <button
+                  type="button"
+                  onClick={handleTippen}
+                  className="rounded-2xl border-2 border-anthrazit bg-white px-6 py-3 text-base font-semibold text-anthrazit focus:outline-none focus:ring-4 focus:ring-quartier-green/40"
+                  style={{ minHeight: "56px" }}
+                  data-testid="tippen-button"
+                >
+                  Lieber tippen
+                </button>
+              )}
             </>
           )}
         </div>

@@ -25,6 +25,7 @@ import { HeartbeatTimeline } from "@/modules/care/components/checkin/HeartbeatTi
 import { usePresence } from "@/lib/video-calls/usePresence";
 import { OnlineIndicator } from "@/components/video/OnlineIndicator";
 import { CaregiverMemoryEditor } from "@/modules/memory/components/CaregiverMemoryEditor";
+import { PairSeniorDeviceCard } from "@/modules/family-setup/components/PairSeniorDeviceCard";
 
 interface MedicationEntry {
   id: string;
@@ -304,7 +305,7 @@ export default function SeniorDetailPage() {
             });
             if (res.ok) {
               const data = await res.json();
-              router.push(`/messages/${data.conversation_id}`);
+              router.push(`/chat/${data.conversation_id}`);
             }
           }}
           className="flex flex-1 items-center justify-center gap-2 rounded-xl border border-border bg-white py-3 text-sm font-medium text-anthrazit hover:bg-muted"
@@ -372,6 +373,12 @@ export default function SeniorDetailPage() {
         )}
         <HeartbeatTimeline residentId={seniorId} />
       </div>
+
+      {/* Geraet verbinden (S2-7): Angehoerige/Pflege/Admin koennen einen Pairing-Code
+          fuer das Senioren-Geraet erzeugen. start-code ist caregiver_links-autorisiert. */}
+      {(role === "relative" || role === "care_service" || role === "admin") && (
+        <PairSeniorDeviceCard seniorId={seniorId} seniorName={seniorName} />
+      )}
 
       {activeSosAlert ? (
         <div

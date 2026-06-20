@@ -125,7 +125,10 @@ export default function DirectChatPage({
         >
           <ArrowLeft className="h-6 w-6" />
         </Link>
-        <h1 className="truncate text-lg font-bold text-[#2D3142]">
+        <h1
+          data-testid="chat-partner-name"
+          className="truncate text-lg font-bold text-[#2D3142]"
+        >
           {peerName ?? "Chat"}
         </h1>
       </header>

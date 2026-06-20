@@ -13,6 +13,7 @@ import {
   type AIToolCall,
   type FetchImpl,
 } from "./types";
+import { pseudonymizeAiChatInput } from "./pseudonymize";
 
 const CLAUDE_ENDPOINT = "https://api.anthropic.com/v1/messages";
 const ANTHROPIC_VERSION = "2023-06-01";
@@ -66,27 +67,31 @@ class ClaudeProvider implements AIProvider {
   ) {}
 
   async chat(input: AIChatInput): Promise<AIResponse> {
+    const safeInput = pseudonymizeAiChatInput(input);
+
     // Prompt-Caching: bei cache_control.system=true wird der System-Prompt als
     // Content-Block-Array mit cache_control:ephemeral gesendet. 5 min TTL,
     // spart -90% Input-Kosten bei wiederholten Calls mit identischem Prompt.
     // cache_control.messages bleibt fuer Multi-Turn-Caching reserviert und wird
     // hier noch nicht angewendet.
-    const systemPayload = input.cache_control?.system
+    const systemPayload = safeInput.cache_control?.system
       ? [
           {
             type: "text" as const,
-            text: input.system,
+            text: safeInput.system,
             cache_control: { type: "ephemeral" as const },
           },
         ]
-      : input.system;
+      : safeInput.system;
 
     const body = {
       model: this.model,
-      max_tokens: input.max_tokens ?? DEFAULT_MAX_TOKENS,
+      max_tokens: safeInput.max_tokens ?? DEFAULT_MAX_TOKENS,
       system: systemPayload,
-      messages: input.messages,
-      ...(input.tools && input.tools.length > 0 ? { tools: input.tools } : {}),
+      messages: safeInput.messages,
+      ...(safeInput.tools && safeInput.tools.length > 0
+        ? { tools: safeInput.tools }
+        : {}),
     };
 
     let response: Response;

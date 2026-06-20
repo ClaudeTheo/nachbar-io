@@ -1,6 +1,6 @@
 # QuartierApp - Legal Marketing Wording Guardrails
 
-Stand: 2026-05-25
+Stand: 2026-06-12
 
 Diese Datei ist die Arbeitsregel fuer App-Store-Texte, Landingpages, Demos,
 Pitch-Decks und In-App-Wording. Ziel: QuartierApp klar als Quartiers-,
@@ -48,6 +48,33 @@ Gut:
 Vermeiden:
 
 > Die App ueberwacht Senioren und erkennt, wenn etwas nicht stimmt.
+
+## Spiele & Aktivierung
+
+Spiele sind Unterhaltung, Beschaeftigung und gemeinsame Zeit - nie Medizin.
+
+Erlaubt:
+
+- "Tagesraetsel", "Denkpause", "Spiel & Spass", "gemeinsam spielen"
+- "Beschaeftigung", "Zeitvertreib", "kleine Aufgabe des Tages"
+- "aktiv bleiben im Quartier" (sozial gemeint), "Freude am Knobeln"
+
+Nicht verwenden:
+
+- "Gedaechtnistraining", "Gehirnjogging", "kognitives Training"
+- "geistig fit halten", "Demenz-Praevention/-Vorbeugung"
+- "Therapie", "therapeutisch", "Sturzprophylaxe"
+- "foerdert Gedaechtnis/Konzentration/Reaktion", "wissenschaftlich belegt"
+- "verhindert/verlangsamt Abbau", "misst geistige Fitness", "erkennt Veraenderungen"
+
+Begruendung: Wirkversprechen veraendern die Zweckbestimmung Richtung
+Medizinprodukt (Lumosity-FTC-Lehre, RPP-001). Mess-/Erkennungs-Claims
+tragen zusaetzlich Art.-9-/Ueberwachungs-Risiko. Produktregel dazu:
+Spielergebnisse werden nicht gespeichert und nicht ausgewertet
+(Founder-Entscheidung 3, Media4Care-Analyse 2026-06-12). Punkte gibt es
+nur fuer Teilnahme, nie fuer Leistung. Keine fremden Markennamen fuer
+Spiele ("Memory" ist eine Ravensburger-Marke - unser Spiel heisst
+"Paare finden").
 
 ## Medikamente
 

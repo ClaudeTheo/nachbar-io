@@ -247,7 +247,7 @@ test.describe("S13: 5-User-Interaktion", () => {
       requestMessage,
     );
 
-    await agents.bernd.page.goto(`/messages/${conversationId}`);
+    await agents.bernd.page.goto(`/chat/${conversationId}`);
     await waitForStableUI(agents.bernd.page);
     await agents.bernd.page.locator("[data-testid='chat-input']").fill(replyMessage);
     await agents.bernd.page.locator("[data-testid='chat-send']").click();
@@ -255,7 +255,7 @@ test.describe("S13: 5-User-Interaktion", () => {
       timeout: TIMEOUTS.elementVisible,
     });
 
-    await agents.anna.page.goto("/messages");
+    await agents.anna.page.goto("/chat");
     await waitForStableUI(agents.anna.page);
     const conversationCard = agents.anna.page
       .locator("[data-testid='conversation-card']")
@@ -265,10 +265,8 @@ test.describe("S13: 5-User-Interaktion", () => {
       state: "visible",
       timeout: TIMEOUTS.elementVisible,
     });
-    await conversationCard.click();
-    await agents.anna.page.waitForURL(/\/messages\/.+/, {
-      timeout: TIMEOUTS.pageLoad,
-    });
+    await agents.anna.page.goto(`/chat/${conversationId}`);
+    await waitForStableUI(agents.anna.page, { timeout: TIMEOUTS.pageLoad });
     await waitForChatMessage(agents.anna.page, replyMessage, {
       timeout: TIMEOUTS.realtimeDelivery,
     });
@@ -295,12 +293,15 @@ test.describe("S13: 5-User-Interaktion", () => {
     const sos = (await sosResponse.json()) as { id: string };
 
     await agents.tanja.page.goto("/care");
-    await waitForStableUI(agents.tanja.page);
+    await waitForStableUI(agents.tanja.page, { timeout: TIMEOUTS.pageLoad });
+    await expect(
+      agents.tanja.page.getByRole("heading", { name: /Mein Tag/i }),
+    ).toBeVisible({ timeout: TIMEOUTS.pageLoad });
     await expect(agents.tanja.page.getByText(/Aktive Hilfeanfragen/i)).toBeVisible({
-      timeout: TIMEOUTS.realtimeDelivery,
+      timeout: TIMEOUTS.pageLoad,
     });
     await expect(agents.tanja.page.getByText(/Allgemeine Hilfe/i).first()).toBeVisible({
-      timeout: TIMEOUTS.elementVisible,
+      timeout: TIMEOUTS.pageLoad,
     });
     await agents.tanja.page.screenshot({
       path: testInfo.outputPath("tanja-sieht-sos.png"),

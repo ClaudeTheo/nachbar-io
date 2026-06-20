@@ -415,6 +415,7 @@ export async function getDeviceContacts(
       auto_answer_allowed,
       auto_answer_start,
       auto_answer_end,
+      auto_answer_senior_consented_at,
       users!caregiver_links_caregiver_id_fkey(display_name, avatar_url)
     `,
     )
@@ -431,7 +432,11 @@ export async function getDeviceContacts(
       caregiver_id: link.caregiver_id,
       caregiver_name: user?.display_name ?? "Unbekannt",
       caregiver_avatar: user?.avatar_url ?? null,
-      auto_answer_allowed: link.auto_answer_allowed,
+      // Welle AA: Auto-Annahme nur, wenn BEIDE Seiten zustimmen — der Angehoerige
+      // (auto_answer_allowed) UND der Senior (auto_answer_senior_consented_at != null).
+      auto_answer_allowed:
+        Boolean(link.auto_answer_allowed) &&
+        link.auto_answer_senior_consented_at != null,
       auto_answer_start: link.auto_answer_start,
       auto_answer_end: link.auto_answer_end,
     };

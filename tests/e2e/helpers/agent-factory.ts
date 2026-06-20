@@ -312,16 +312,17 @@ export async function loginAgent(agent: TestAgent): Promise<void> {
   // Kurz warten damit Dev-Server vorherige Requests abschliessen kann
   await page.waitForTimeout(1000);
 
-  // Zur Zielseite navigieren (Cookies aus dem API-Call sind im Context)
+  // Zur Zielseite navigieren (Cookies aus dem API-Call sind im Context).
+  // Welle S1: Senioren landen auf der kanonischen Shell /kreis-start.
   const target =
-    credentials.uiMode === "senior" ? "/senior/home" : "/dashboard";
+    credentials.uiMode === "senior" ? "/kreis-start" : "/dashboard";
   await page.goto(target, {
     timeout: TIMEOUTS.pageLoad,
     waitUntil: "domcontentloaded",
   });
 
   if (credentials.uiMode === "senior") {
-    await page.waitForURL("**/senior/**", { timeout: TIMEOUTS.pageLoad });
+    await page.waitForURL("**/kreis-start**", { timeout: TIMEOUTS.pageLoad });
   } else {
     // Dashboard oder /welcome akzeptieren (Onboarding-Redirect moeglich)
     await page.waitForURL(/\/(dashboard|welcome)/, {

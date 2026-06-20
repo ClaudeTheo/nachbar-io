@@ -20,7 +20,7 @@ test.describe("S5: Authentifizierter Senior/Care-Spot-Check", () => {
     });
   });
 
-  test("senior_s erreicht /senior, /senior/home, /care und /care/consent", async ({
+  test("senior_s erreicht /senior → /kreis-start, /care und /care/consent", async ({
     page,
   }) => {
     const errors = createConsoleErrorCollector(page);
@@ -29,18 +29,18 @@ test.describe("S5: Authentifizierter Senior/Care-Spot-Check", () => {
       waitUntil: "domcontentloaded",
     });
     expect(seniorEntry?.status() ?? 0).toBeLessThan(500);
-    await expect(page).toHaveURL(/\/senior\/home/);
-    await expect(page.getByTestId("senior-greeting")).toBeVisible({
+    await expect(page).toHaveURL(/\/kreis-start/);
+    await expect(page.getByTestId("kreis-start-tile")).toHaveCount(4, {
       timeout: TIMEOUTS.elementVisible,
     });
-    await expect(page.getByText("Hilfe anfragen")).toBeVisible();
+    await expect(page.getByText("Notfall 112")).toBeVisible();
 
-    const seniorHome = await page.goto("/senior/home", {
+    const seniorHome = await page.goto("/kreis-start", {
       waitUntil: "domcontentloaded",
     });
     expect(seniorHome?.status() ?? 0).toBeLessThan(500);
-    await expect(page).toHaveURL(/\/senior\/home/);
-    await expect(page.getByTestId("senior-greeting")).toBeVisible();
+    await expect(page).toHaveURL(/\/kreis-start/);
+    await expect(page.getByTestId("kreis-start-tile")).toHaveCount(4);
 
     const care = await page.goto("/care", { waitUntil: "domcontentloaded" });
     expect(care?.status() ?? 0).toBeLessThan(500);

@@ -26,33 +26,40 @@ test.afterAll(async () => {
 // ============================================================
 
 test.describe("Bewohner (Senior/Free)", () => {
-  test("A1: Dashboard im Senior-Modus oeffnen", async () => {
+  test("A1: Kanonische Senior-Shell oeffnen", async () => {
     const { page } = agents.bewohner;
 
-    await page.goto("/senior/home");
+    await page.goto("/kreis-start");
     await page.waitForLoadState("networkidle").catch(() => {});
 
-    // Senior-Modus: Groessere Touch-Targets, vereinfachte Navigation
-    await expect(page).toHaveURL(/senior/);
-
-    // Senior-Begruessung sichtbar
-    const greeting = page.locator("[data-testid='senior-greeting']");
-    if (await greeting.isVisible({ timeout: 5000 }).catch(() => false)) {
-      console.log("[S] Senior-Begruessung sichtbar");
-    }
+    await expect(page).toHaveURL(/\/kreis-start/);
+    await expect(page.locator("[data-testid='kreis-start-tile']")).toHaveCount(4);
+    await expect(page.getByText("Mein Kreis")).toBeVisible();
+    await expect(page.getByText("Hier bei mir")).toBeVisible();
+    await expect(page.getByText("Schreiben", { exact: true })).toBeVisible();
+    await expect(page.getByText("Notfall 112")).toBeVisible();
 
     await page.screenshot({
       path: "test-results/multi-agent/bewohner-dashboard.png",
     });
 
-    console.log("[S] Dashboard im Senior-Modus geladen");
+    console.log("[S] Kanonische Senior-Shell geladen");
   });
 
   test("A2: Taegliches Check-in durchfuehren", async () => {
     const { page } = agents.bewohner;
 
-    await page.goto("/senior/checkin");
+    await page.goto("/checkin");
     await page.waitForLoadState("networkidle").catch(() => {});
+
+    await expect(
+      page.getByRole("heading", { name: /Wie geht es Ihnen/i }),
+    ).toBeVisible({ timeout: TIMEOUTS.elementVisible });
+    await page.getByRole("button", { name: /Mir geht es gut/i }).click();
+    await page.waitForURL("**/confirmed**", { timeout: TIMEOUTS.pageLoad });
+    await expect(page.getByRole("status")).toBeVisible({
+      timeout: TIMEOUTS.elementVisible,
+    });
 
     // Check-in Button oder Mood-Auswahl suchen
     const checkinButton = page.locator("[data-testid='checkin-button']");
@@ -250,7 +257,7 @@ test.describe("Angehöriger (Plus)", () => {
   test("A9: Chat oeffnen", async () => {
     const { page } = agents.angehoeriger;
 
-    await page.goto("/messages");
+    await page.goto("/chat");
     await page.waitForLoadState("networkidle").catch(() => {});
 
     await expect(page.locator("main")).toBeVisible({

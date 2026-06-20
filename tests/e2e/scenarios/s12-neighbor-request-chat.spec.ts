@@ -1,5 +1,5 @@
 // Nachbar.io — S12: Kontaktanfrage → Annahme → echter Chat
-// Aktueller Produktpfad: Bewohner-Browser in /messages, nicht Hilfe-Boerse.
+// Aktueller Produktpfad: Bewohner-Browser in /chat, nicht Hilfe-Boerse.
 import { test, expect } from "@playwright/test";
 import {
   createAgent,
@@ -85,7 +85,7 @@ test.describe("S12: Kontaktanfrage -> Annahme -> Chat", () => {
     );
 
     await withAgent(agentA, "Kontaktanfrage senden", async ({ page }) => {
-      await page.goto("/messages");
+      await page.goto("/chat");
       await waitForStableUI(page);
 
       const requestResponse = await page.request.post(
@@ -107,30 +107,44 @@ test.describe("S12: Kontaktanfrage -> Annahme -> Chat", () => {
       agentB,
       "Anfrage annehmen und antworten",
       async ({ page }) => {
-        await page.goto("/messages");
+        // Chat-Unify (Schritt 3): /chat zeigt Anfragen nur noch als Zaehler +
+        // Link; die Annahme-UI lebt jetzt auf /kontakte ("Offene Anfragen").
+        await page.goto("/kontakte");
         await waitForStableUI(page);
 
-        const pendingCard = page
-          .locator("div.rounded-lg")
-          .filter({ hasText: requestMessage })
+        const acceptButton = page
+          .getByRole("button", { name: "Annehmen" })
           .first();
 
         try {
-          await pendingCard.waitFor({
+          await acceptButton.waitFor({
             state: "visible",
             timeout: TIMEOUTS.realtimeDelivery,
           });
         } catch {
           await page.reload();
           await waitForStableUI(page);
-          await pendingCard.waitFor({
+          await acceptButton.waitFor({
             state: "visible",
             timeout: TIMEOUTS.elementVisible,
           });
         }
 
-        await pendingCard.getByRole("button", { name: /Annehmen/i }).click();
-        await page.waitForURL(/\/messages\/.+/, { timeout: TIMEOUTS.pageLoad });
+        // Genau eine offene Anfrage (Test-Isolation): annehmen. Kein Name-Check
+        // hier — der Anzeigename ist vor der Verbindung privacy-gated (null),
+        // erst nach Annahme sichtbar. Korrektheit sichert die spaetere
+        // chat-partner-name = "Anna T." Pruefung auf /chat/[id].
+        await acceptButton.click();
+
+        const startChatButton = page
+          .getByRole("button", { name: "Chat", exact: true })
+          .first();
+        await startChatButton.waitFor({
+          state: "visible",
+          timeout: TIMEOUTS.elementVisible,
+        });
+        await startChatButton.click();
+        await page.waitForURL(/\/chat\/.+/, { timeout: TIMEOUTS.pageLoad });
 
         await expect(
           page.locator("[data-testid='chat-partner-name']"),
@@ -152,7 +166,7 @@ test.describe("S12: Kontaktanfrage -> Annahme -> Chat", () => {
       agentA,
       "Antwort empfangen und zurueckschreiben",
       async ({ page }) => {
-        await page.goto("/messages");
+        await page.goto("/chat");
         await waitForStableUI(page);
 
         const conversationCard = page
@@ -164,7 +178,7 @@ test.describe("S12: Kontaktanfrage -> Annahme -> Chat", () => {
           timeout: TIMEOUTS.elementVisible,
         });
         await conversationCard.click();
-        await page.waitForURL(/\/messages\/.+/, { timeout: TIMEOUTS.pageLoad });
+        await page.waitForURL(/\/chat\/.+/, { timeout: TIMEOUTS.pageLoad });
 
         try {
           await waitForChatMessage(page, replyMessage, {

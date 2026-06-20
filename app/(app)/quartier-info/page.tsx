@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback, useMemo } from "react";
+import { useMemo } from "react";
 import Link from "next/link";
 import {
   Cloud,
@@ -27,12 +27,10 @@ import { QuartierAppLogo } from "@/components/brand/QuartierAppLogo";
 import { WeatherWidget } from "@/components/weather/WeatherWidget";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ExternalWarningBanner } from "@/components/warnings/external-warning-banner";
-import { useQuarter } from "@/lib/quarters";
 import { TTSButton } from "@/modules/voice/components/companion/TTSButton";
 import { buildDailyBrief } from "@/modules/voice/services/daily-brief.service";
-import { normalizeQuartierInfoResponse } from "@/modules/info-hub/normalize-response";
+import { useQuartierInfo } from "@/modules/info-hub/useQuartierInfo";
 import type {
-  QuartierInfoResponse,
   RathausLink,
   WasteNext,
   OepnvStop,
@@ -118,87 +116,19 @@ function DynamicIcon({
   return <Icon className={className} />;
 }
 
-type QuartierInfoErrorBody = {
-  error?: string;
-  status?: string;
-};
-
-function getQuartierInfoErrorMessage(
-  responseStatus: number,
-  body: unknown,
-): string {
-  if (
-    body &&
-    typeof body === "object" &&
-    "error" in body &&
-    typeof (body as QuartierInfoErrorBody).error === "string"
-  ) {
-    return (body as QuartierInfoErrorBody).error ?? "";
-  }
-
-  return `Quartierdaten konnten nicht geladen werden (HTTP ${responseStatus}).`;
-}
-
 export default function QuartierInfoPage() {
-  const {
-    currentQuarter,
-    loading: quarterLoading,
-    refreshQuarter,
-  } = useQuarter();
-  const quarterId = currentQuarter?.id;
+  const { currentQuarter, quarterLoading, data, apiError, loading, refresh } =
+    useQuartierInfo();
   const { geoHouses, residentCounts } = useMapStatuses(
-    quarterId,
+    currentQuarter?.id,
     currentQuarter?.map_config,
     currentQuarter?.center_lat,
     currentQuarter?.center_lng,
   );
-  const [data, setData] = useState<QuartierInfoResponse | null>(null);
-  const [apiError, setApiError] = useState<string | null>(null);
-  const [loadingData, setLoadingData] = useState(true);
   const pageShellClass =
     "space-y-6 pb-24 animate-fade-in-up lg:relative lg:left-1/2 lg:w-[min(calc(100vw-4rem),960px)] lg:-translate-x-1/2 lg:space-y-8";
 
-  const loadData = useCallback(async () => {
-    if (!quarterId) {
-      setData(null);
-      setApiError(null);
-      setLoadingData(false);
-      return;
-    }
-    setLoadingData(true);
-    setApiError(null);
-    try {
-      const res = await fetch(`/api/quartier-info?quarter_id=${quarterId}`);
-      const d = await res.json();
-      if (!res.ok) {
-        setData(null);
-        setApiError(getQuartierInfoErrorMessage(res.status, d));
-        return;
-      }
-      setData(normalizeQuartierInfoResponse(d));
-    } catch {
-      setData(null);
-      setApiError("Quartierdaten konnten gerade nicht geladen werden.");
-    } finally {
-      setLoadingData(false);
-    }
-  }, [quarterId]);
-
-  useEffect(() => {
-    if (quarterLoading) return;
-    loadData();
-  }, [quarterLoading, loadData]);
-
-  const handleRefresh = useCallback(async () => {
-    if (!quarterId) {
-      await refreshQuarter();
-      return;
-    }
-
-    await loadData();
-  }, [loadData, quarterId, refreshQuarter]);
-
-  const loading = quarterLoading || loadingData;
+  const handleRefresh = refresh;
   const hasNotdienstUrl = Boolean(data?.notdienst_url);
   const hasEventsCalendarUrl = Boolean(data?.events_calendar_url);
   const previewPoints = useMemo(

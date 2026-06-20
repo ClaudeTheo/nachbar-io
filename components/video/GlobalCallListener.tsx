@@ -7,12 +7,15 @@ import { useEffect, useState, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { Phone, PhoneOff } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
+import { shouldAutoAnswerIncomingCall } from '@/lib/video-calls/incoming-auto-answer';
+import { AutoAnswerCountdown } from './AutoAnswerCountdown';
 
 interface IncomingCall {
   id: string;
   callerId: string;
   callerName: string;
   callId: string;
+  autoAnswer: boolean;
 }
 
 const RING_TIMEOUT_MS = 30_000; // 30s, danach missed
@@ -157,15 +160,32 @@ export function GlobalCallListener() {
               .eq('id', call.caller_id)
               .single();
 
+            // Welle AA-4: Auto-Annahme nur bei beidseitigem Opt-in im Zeitfenster.
+            const now = new Date();
+            const currentTime = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+            let autoAnswer = false;
+            try {
+              autoAnswer = await shouldAutoAnswerIncomingCall(
+                supabase,
+                user.id,
+                call.caller_id,
+                currentTime,
+              );
+            } catch {
+              autoAnswer = false; // im Zweifel normal klingeln
+            }
+
             const callRecord: IncomingCall = {
               id: call.id,
               callerId: call.caller_id,
               callerName: caller?.display_name ?? 'Unbekannt',
               callId: call.id, // video_calls.id als Call-Channel-ID
+              autoAnswer,
             };
 
             setIncomingCall(callRecord);
-            startRingtone();
+            // Bei Auto-Annahme kein Klingeln — der sichtbare Countdown uebernimmt.
+            if (!autoAnswer) startRingtone();
 
             // Auto-Dismiss nach 30s → missed
             timeoutRef.current = setTimeout(() => {
@@ -199,6 +219,17 @@ export function GlobalCallListener() {
 
   // Kein eingehender Anruf → nichts rendern
   if (!incomingCall) return null;
+
+  // Welle AA-4: beidseitiges Opt-in → sichtbarer Countdown statt Klingel-Overlay.
+  if (incomingCall.autoAnswer) {
+    return (
+      <AutoAnswerCountdown
+        callerName={incomingCall.callerName}
+        onAutoAnswer={acceptCall}
+        onCancel={rejectCall}
+      />
+    );
+  }
 
   return (
     <div

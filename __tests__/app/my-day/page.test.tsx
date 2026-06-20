@@ -49,6 +49,9 @@ vi.mock("lucide-react", () => ({
   Frown: (props: Record<string, unknown>) => (
     <svg data-testid="icon-frown" {...props} />
   ),
+  Sparkles: (props: Record<string, unknown>) => (
+    <svg data-testid="icon-sparkles" {...props} />
+  ),
 }));
 
 vi.mock("@/components/ui/card", () => ({

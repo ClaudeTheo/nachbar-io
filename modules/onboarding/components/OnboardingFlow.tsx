@@ -12,6 +12,7 @@ import { ProgressDots } from "./ProgressDots";
 import { ConfettiEffect } from "./ConfettiEffect";
 import {
   getUserModeConfig,
+  isUserUiMode,
   USER_UI_MODES,
   type UserUiMode,
 } from "@/lib/user-modes";
@@ -57,7 +58,9 @@ export function OnboardingFlow() {
   const [isAnimating, setIsAnimating] = useState(false);
   const [slideKey, setSlideKey] = useState(0);
   const [selectedSkills, setSelectedSkills] = useState<string[]>([]);
-  const [selectedMode, setSelectedMode] = useState<UserUiMode>("active");
+  // null = noch keine Wahl getroffen und kein DB-Wert geladen — dann wird
+  // ui_mode beim Abschliessen NICHT angefasst (Registrierungs-Wahl bleibt erhalten)
+  const [selectedMode, setSelectedMode] = useState<UserUiMode | null>(null);
 
   function toggleSkill(skillId: string) {
     setSelectedSkills(prev =>
@@ -80,10 +83,17 @@ export function OnboardingFlow() {
 
       const { data: profile } = await supabase
         .from("users")
-        .select("display_name")
+        .select("display_name, ui_mode")
         .eq("id", user.id)
         .single();
-      if (profile) setDisplayName(profile.display_name);
+      if (profile) {
+        setDisplayName(profile.display_name);
+        // Bei der Registrierung gewaehlten Modus vorbelegen, statt ihn
+        // spaeter still mit dem Default zu ueberschreiben (Befund A1:1)
+        if (isUserUiMode(profile.ui_mode)) {
+          setSelectedMode((prev) => prev ?? profile.ui_mode);
+        }
+      }
     }
     loadData();
   }, []);
@@ -109,10 +119,10 @@ export function OnboardingFlow() {
     }, 200);
   }, [currentSlide, isAnimating]);
 
-  // Onboarding abschließen
+  // Onboarding abschließen — ui_mode nur schreiben, wenn eine Wahl vorliegt
   async function handleComplete() {
-    await completeOnboarding({ uiMode: selectedMode });
-    router.push(getUserModeConfig(selectedMode).postLoginPath);
+    await completeOnboarding(selectedMode ? { uiMode: selectedMode } : {});
+    router.push(getUserModeConfig(selectedMode ?? "active").postLoginPath);
   }
 
   // Weiter-Button Handler
@@ -149,10 +159,11 @@ export function OnboardingFlow() {
     goToSlide(currentSlide + 1);
   }
 
-  // Überspringen
+  // Überspringen — fasst ui_mode nie an, ausser der Nutzer hat aktiv gewaehlt
+  // bzw. der bestehende Modus wurde geladen (dann ist das Schreiben ein No-op)
   async function handleSkip() {
-    await completeOnboarding({ uiMode: selectedMode });
-    router.push(getUserModeConfig(selectedMode).postLoginPath);
+    await completeOnboarding(selectedMode ? { uiMode: selectedMode } : {});
+    router.push(getUserModeConfig(selectedMode ?? "active").postLoginPath);
   }
 
   // Touch-Handler für Swipe

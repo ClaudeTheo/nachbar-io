@@ -21,7 +21,7 @@ export class MessagesPage {
   }
 
   async goto() {
-    await this.page.goto("/messages");
+    await this.page.goto("/chat");
     await waitForStableUI(this.page);
   }
 
@@ -31,7 +31,7 @@ export class MessagesPage {
 
   async openConversationByName(name: string) {
     await this.conversationCards.filter({ hasText: name }).first().click();
-    await this.page.waitForURL("**/messages/**", { timeout: TIMEOUTS.pageLoad });
+    await this.page.waitForURL("**/chat/**", { timeout: TIMEOUTS.pageLoad });
     await waitForStableUI(this.page);
   }
 

@@ -249,7 +249,7 @@ export default function ExpertDetailPage() {
       .maybeSingle();
 
     if (existing) {
-      router.push(`/messages/${existing.id}`);
+      router.push(`/chat/${existing.id}`);
     } else {
       // Neue Konversation erstellen
       const { data: newConv } = await supabase
@@ -262,7 +262,7 @@ export default function ExpertDetailPage() {
         .select("id")
         .single();
       if (newConv) {
-        router.push(`/messages/${newConv.id}`);
+        router.push(`/chat/${newConv.id}`);
       }
     }
   }

@@ -1,7 +1,8 @@
 // app/senior/page.tsx
-// Einstiegspunkt fuer den Seniorenmodus.
+// Welle S1 (2026-06-12): Legacy-Einstieg stillgelegt — redirectet in die
+// kanonische (senior)-Shell. Es gibt nur noch EINE Senior-Startseite.
 import { redirect } from "next/navigation";
 
 export default function SeniorEntryPage() {
-  redirect("/senior/home");
+  redirect("/kreis-start");
 }

@@ -320,8 +320,8 @@
   border-radius: 4px;
 }
 
-/* Memory-Spiel Karten */
-.kiosk-memory-card {
+/* Paare-finden-Spiel Karten */
+.kiosk-pairs-card {
   aspect-ratio: 1;
   display: flex;
   align-items: center;
@@ -333,27 +333,27 @@
   min-height: 80px;
 }
 
-.kiosk-memory-card.hidden {
+.kiosk-pairs-card.hidden {
   background: #e8ede3;
   border: 2px solid #d1d9c9;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
 }
 
-.kiosk-memory-card.hidden::after {
+.kiosk-pairs-card.hidden::after {
   content: "?";
   font-size: 28px;
   font-weight: 700;
   color: #9ca3af;
 }
 
-.kiosk-memory-card.revealed {
+.kiosk-pairs-card.revealed {
   background: #f0fdf4;
   border: 2px solid #4caf87;
   transform: scale(1.05);
   box-shadow: 0 4px 12px rgba(76, 175, 135, 0.2);
 }
 
-.kiosk-memory-card.matched {
+.kiosk-pairs-card.matched {
   background: #eff6ff;
   border: 2px solid #60a5fa;
   opacity: 0.7;

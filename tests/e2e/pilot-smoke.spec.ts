@@ -112,8 +112,14 @@ test.describe("Pilot-Smoke — 12 Pilot-Kriterien (Bad Saeckingen 2026-04)", () 
 
   // ── Kriterium 6: HIER BEI MIR — Wetter- oder Muellkalender-Widget ──
   test("pilot-criterion-06-hier-bei-mir-widget", async ({ page }) => {
+    // Entscheidung 2026-06-13: Kriterium bleibt in der Senior-Welt.
+    // Die Spec nutzt senior_s als storageState; /hier-bei-mir prueft damit die
+    // kanonische (senior)-Shell statt die dichte Standard-Seite /quartier-info.
     const res = await page.goto("/hier-bei-mir");
     expect(res?.ok()).toBeTruthy();
+    await expect(
+      page.getByRole("heading", { name: /Hier bei mir/i }),
+    ).toBeVisible();
 
     // Mindestens eines der beiden Widgets muss sichtbar sein.
     const wetter = page.getByText(/Wetter|°C|Temperatur/i).first();
@@ -155,8 +161,8 @@ test.describe("Pilot-Smoke — 12 Pilot-Kriterien (Bad Saeckingen 2026-04)", () 
 
   // ── Kriterium 9: Nachrichten 1:1-Flow erreichbar ───────────────────
   test("pilot-criterion-09-nachrichten-1on1", async ({ page }) => {
-    // Nachrichten-Liste: /messages (ohne [id]) sollte 200 oder Redirect geben.
-    const res = await page.goto("/messages");
+    // Nachrichten-Liste: /chat (kanonisch) sollte 200 oder Redirect geben.
+    const res = await page.goto("/chat");
     expect(res?.status()).toBeLessThan(500);
     // Harte Inhaltspruefung waere ein echter Chat-Partner — ausserhalb dieses
     // Smoke-Tests. TODO: In Multi-Agent-Suite (s3-chat.spec.ts) abdecken.

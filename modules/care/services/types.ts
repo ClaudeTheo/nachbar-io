@@ -93,6 +93,8 @@ export type CareAuditEventType =
   | "caregiver_linked"
   | "caregiver_revoked"
   | "heartbeat_toggle"
+  | "auto_answer_consent_changed"
+  | "auto_answer_settings_changed"
   | "escalation_triggered"
   | "escalation_resolved"
   | "consent_updated"

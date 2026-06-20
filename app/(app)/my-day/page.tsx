@@ -25,6 +25,7 @@ import {
   isUserUiMode,
   type DashboardDensity,
 } from "@/lib/user-modes";
+import { TagesimpulsCard } from "@/modules/spiele/components/TagesimpulsCard";
 
 type CheckInStatus = "good" | "okay" | "bad" | null;
 
@@ -201,7 +202,7 @@ export default function MyDayPage() {
       color: "bg-quartier-green",
     },
     {
-      href: "/messages",
+      href: "/chat",
       icon: Phone,
       label: "Nachrichten",
       color: "bg-info-blue",
@@ -361,6 +362,8 @@ export default function MyDayPage() {
           )}
         </CardContent>
       </Card>
+
+      <TagesimpulsCard failureFree={density === "simple"} />
 
       <Card data-testid="medication-card">
         <CardContent className="p-4">

@@ -2,7 +2,10 @@
 // Gruppen-Nachrichten liegen in chat-groups.service.ts.
 
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { createClient as createServiceClient } from "@supabase/supabase-js";
 import { ServiceError } from "@/lib/services/service-error";
+import { safeInsertNotification } from "@/lib/notifications-server";
+import { sendPush } from "@/modules/care/services/channels/push";
 
 export type MediaType = "image" | "audio";
 
@@ -132,6 +135,62 @@ export async function listMessages(
 }
 
 /**
+ * Welle S2 (Befund C2:3): Den Empfaenger ueber eine neue Nachricht informieren —
+ * Notification + Web Push. DATENSPARSAM: nur der Vorname des Absenders, NIEMALS
+ * der Nachrichteninhalt im Payload. Cross-User-Insert braucht den service_role-
+ * Client, da `notif_insert_self_only` (Mig 076) nur Eigen-Inserts erlaubt.
+ * Best-effort: Fehler werden geloggt, blockieren den Versand aber nicht.
+ */
+async function notifyMessageRecipient(
+  senderId: string,
+  conv: { participant_1: string; participant_2: string },
+  conversationId: string,
+): Promise<void> {
+  try {
+    const serviceUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    if (!serviceUrl || !serviceKey) return;
+
+    const recipientId =
+      conv.participant_1 === senderId ? conv.participant_2 : conv.participant_1;
+    if (!recipientId || recipientId === senderId) return;
+
+    const serviceClient = createServiceClient(serviceUrl, serviceKey);
+
+    const { data: sender } = await serviceClient
+      .from("users")
+      .select("display_name")
+      .eq("id", senderId)
+      .single();
+    const firstName =
+      (sender?.display_name ?? "").trim().split(/\s+/)[0] || "Jemand";
+
+    // KEIN Nachrichteninhalt im Payload (DSGVO-Datensparsamkeit, C2:3).
+    await safeInsertNotification(serviceClient, {
+      user_id: recipientId,
+      type: "message",
+      title: "Neue Nachricht",
+      body: `von ${firstName}`,
+      reference_id: conversationId,
+      reference_type: "conversation",
+    });
+
+    await sendPush(serviceClient, {
+      userId: recipientId,
+      title: "Neue Nachricht",
+      body: `von ${firstName}`,
+      url: `/chat/${conversationId}`,
+      tag: `message-${conversationId}`,
+    });
+  } catch (err) {
+    console.error(
+      "[messages/send] Benachrichtigung fehlgeschlagen (nicht-blockierend):",
+      err,
+    );
+  }
+}
+
+/**
  * Nachricht senden. Aktualisiert last_message_at der Konversation.
  */
 export async function sendMessage(
@@ -182,6 +241,9 @@ export async function sendMessage(
     .from("conversations")
     .update({ last_message_at: message.created_at })
     .eq("id", conversationId);
+
+  // Welle S2 (C2:3): Empfaenger benachrichtigen (datensparsam, ohne Inhalt).
+  await notifyMessageRecipient(userId, conv, conversationId);
 
   return message;
 }

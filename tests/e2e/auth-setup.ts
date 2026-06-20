@@ -64,7 +64,7 @@ setup("Auth: senior_s einloggen", async ({ page }) => {
     agent.email,
     agent.password,
     "senior_s",
-    /\/(senior|dashboard|welcome)/,
+    /\/(kreis-start|senior|dashboard|welcome)/,
   );
 });
 
@@ -176,7 +176,7 @@ async function loginAndSave(
     const text = await response.text();
 
     // 404 = Route existiert nicht auf Production → Supabase-direkt Fallback
-    if (status === 404) {
+    if (status === 404 || (status === 503 && text.includes("closed_pilot"))) {
       console.log(
         `[AUTH] ${agentId} /api/test/login nicht verfuegbar (404) → Supabase-Direkt-Auth`,
       );

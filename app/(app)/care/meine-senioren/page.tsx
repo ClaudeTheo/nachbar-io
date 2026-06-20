@@ -7,12 +7,19 @@ import { ArrowRight, ShieldCheck, UserCog, Users, UserPlus } from "lucide-react"
 import Link from "next/link";
 import { PageHeader } from "@/components/ui/page-header";
 import { useAssignedSeniors } from "@/lib/care/hooks/useAssignedSeniors";
+import { useMyCaregivers } from "@/modules/care/hooks/useMyCaregivers";
+import { MyCaregiversList } from "@/modules/care/components/senior/MyCaregiversList";
 import { PlusTeaserKarte } from "@/components/leistungen/PlusTeaserKarte";
 import { useLeistungenTeaserState } from "@/lib/leistungen/use-teaser-state";
 
 export default function MeinKreisPage() {
   const { seniors, helperRole, loading, error } = useAssignedSeniors();
+  // Welle S2 (C2:2): Gegenrichtung — wer gehoert aus Bewohner-Sicht zum Kreis.
+  const { caregivers } = useMyCaregivers();
   const teaser = useLeistungenTeaserState();
+  // Bewohner ohne zugewiesene Senioren, aber mit verbundenen Angehoerigen:
+  // Reverse-Ansicht statt leerem Zustand.
+  const showReverseCircle = seniors.length === 0 && caregivers.length > 0;
 
   if (loading) {
     return (
@@ -53,8 +60,13 @@ export default function MeinKreisPage() {
         </div>
       )}
 
-      {/* Leerer Zustand */}
-      {!error && seniors.length === 0 && (
+      {/* Reverse-Ansicht: Bewohner sieht seine verbundenen Angehoerigen (C2:2) */}
+      {!error && showReverseCircle && (
+        <MyCaregiversList caregivers={caregivers} />
+      )}
+
+      {/* Leerer Zustand — nur wenn wirklich niemand verbunden ist */}
+      {!error && seniors.length === 0 && caregivers.length === 0 && (
         <div className="rounded-xl border-2 border-dashed border-muted p-8 text-center">
           <Users className="h-12 w-12 text-muted-foreground mx-auto mb-3" />
           <p className="text-lg font-medium text-anthrazit">

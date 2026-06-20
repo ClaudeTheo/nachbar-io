@@ -314,7 +314,7 @@ test.describe("C2: Race Conditions — Parallele Aktionen", () => {
   test("C2c: Mehrere Agenten laden Dashboard gleichzeitig", async () => {
     // Alle 4 Agenten laden gleichzeitig ihre Start-Seite
     const pages = [
-      { page: agents.bewohner.page, target: "/senior/home", label: "Senior" },
+      { page: agents.bewohner.page, target: "/kreis-start", label: "Senior" },
       {
         page: agents.angehoeriger.page,
         target: "/dashboard",
@@ -342,7 +342,7 @@ test.describe("C2: Race Conditions — Parallele Aktionen", () => {
 
     // Screenshots
     await Promise.all(
-      pages.map((p, i) =>
+      pages.map((p) =>
         p.page.screenshot({
           path: `test-results/multi-agent/c2c-race-dashboard-${p.label.toLowerCase()}.png`,
         }),
@@ -507,8 +507,6 @@ test.describe("C4: Rollen-Isolation — Datenschutz", () => {
     await page.goto("/care/caregiver");
     await page.waitForLoadState("networkidle").catch(() => {});
 
-    const url = page.url();
-
     // Arzt der kein Betreuer ist sollte keine Caregiver-Einstellungen sehen
     const caregiverSettings = page.getByText(
       /einladungs-code erstellen/i,
@@ -557,8 +555,8 @@ test.describe("C5: Session-Integritaet", () => {
     const checks = [
       {
         agent: agents.bewohner,
-        target: "/senior/home",
-        expectedName: "Gertrude",
+        target: "/kreis-start",
+        expectedName: "Mein Kreis",
       },
       {
         agent: agents.angehoeriger,

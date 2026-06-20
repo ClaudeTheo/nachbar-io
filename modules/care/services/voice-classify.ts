@@ -3,6 +3,7 @@
 
 import Anthropic from "@anthropic-ai/sdk";
 import type { TaskCategory } from "@/modules/care/components/tasks/TaskCard";
+import { pseudonymizeAiText } from "@/lib/ai/pseudonymize";
 
 /** Ergebnis der KI-Klassifizierung */
 export interface ClassifyResult {
@@ -68,6 +69,7 @@ export async function classifyTaskFromVoice(
 
   try {
     const anthropic = new Anthropic({ apiKey });
+    const safeText = pseudonymizeAiText(text).text;
 
     const response = await anthropic.messages.create({
       model: "claude-haiku-4-5-20251001",
@@ -76,7 +78,7 @@ export async function classifyTaskFromVoice(
       messages: [
         {
           role: "user",
-          content: `Klassifiziere diese Spracheingabe:\n\n"${text}"`,
+          content: `Klassifiziere diese Spracheingabe:\n\n"${safeText}"`,
         },
       ],
     });

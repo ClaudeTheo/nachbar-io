@@ -35,6 +35,12 @@ export interface ReviewViewProps {
   recipientIndex: number;
   recipientPhone: string;
   transcript: string;
+  /**
+   * Welle S2 (A3:3): Direkt-Tippen ohne Sprachaufnahme. Startet die View im
+   * Bearbeitungsmodus mit leerem Text und ueberspringt die KI-Formulierung —
+   * der Pfad, wenn die KI (AI_PROVIDER_OFF) gar nicht verfuegbar ist.
+   */
+  startInEditMode?: boolean;
 }
 
 export function ReviewView({
@@ -42,8 +48,11 @@ export function ReviewView({
   recipientIndex,
   recipientPhone,
   transcript,
+  startInEditMode = false,
 }: ReviewViewProps) {
-  const [state, setState] = useState<ReviewState>("loading");
+  const [state, setState] = useState<ReviewState>(
+    startInEditMode ? "editing" : "loading",
+  );
   const [suggestion, setSuggestion] = useState("");
   const [editText, setEditText] = useState("");
   const [kiFailed, setKiFailed] = useState(false);
@@ -56,8 +65,9 @@ export function ReviewView({
   // Aktuell angezeigter Text (KI-Vorschlag oder bearbeiteter Text)
   const currentText = suggestion;
 
-  // KI-Formulierung beim Mount laden
+  // KI-Formulierung beim Mount laden — entfaellt beim Direkt-Tippen.
   useEffect(() => {
+    if (startInEditMode) return;
     let cancelled = false;
 
     async function formulate() {
@@ -89,7 +99,7 @@ export function ReviewView({
     return () => {
       cancelled = true;
     };
-  }, [transcript, recipientName]);
+  }, [transcript, recipientName, startInEditMode]);
 
   // Aendern-Button: Wechsel in Bearbeitungsmodus
   const handleEdit = useCallback(() => {

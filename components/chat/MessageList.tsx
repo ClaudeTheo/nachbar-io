@@ -52,6 +52,7 @@ export function MessageList({
         return (
           <div
             key={msg.id}
+            data-testid="chat-message"
             className={`flex ${isSelf ? "justify-end" : "justify-start"}`}
           >
             <div

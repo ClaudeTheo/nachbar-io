@@ -206,7 +206,7 @@ export function HouseInfoPanel({
 
     if (existing) {
       onOpenChange(false);
-      router.push(`/messages/${existing.id}`);
+      router.push(`/chat/${existing.id}`);
     } else {
       // Neue Konversation erstellen (participant_1 < participant_2 wegen CHECK)
       const p1 = currentUserId < otherUserId ? currentUserId : otherUserId;
@@ -220,7 +220,7 @@ export function HouseInfoPanel({
 
       if (newConv) {
         onOpenChange(false);
-        router.push(`/messages/${newConv.id}`);
+        router.push(`/chat/${newConv.id}`);
       }
     }
   }

@@ -23,6 +23,7 @@ export function ConversationListItem({
   return (
     <Link
       href={href}
+      data-testid="conversation-card"
       className="flex min-h-20 items-center gap-3 border-b border-[#2D3142]/10 bg-white px-4 py-3 transition-colors hover:bg-[#2D3142]/5"
     >
       <div

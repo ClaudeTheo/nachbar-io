@@ -42,6 +42,7 @@ describe('shouldAutoAnswer', () => {
     autoAnswerStart: '08:00',
     autoAnswerEnd: '20:00',
     revokedAt: null,
+    seniorConsentedAt: '2026-01-01T00:00:00Z',
   };
 
   const quietHoursOff: QuietHoursConfig = {
@@ -84,7 +85,19 @@ describe('shouldAutoAnswer', () => {
       autoAnswerStart: '22:00',
       autoAnswerEnd: '07:00',
       revokedAt: null,
+      seniorConsentedAt: '2026-01-01T00:00:00Z',
     };
     expect(shouldAutoAnswer(nightContact, quietHoursOff, '23:00')).toBe(true);
+  });
+
+  it('gibt false zurück wenn der Senior NICHT eingewilligt hat (seniorConsentedAt null)', () => {
+    // Auto-Annahme braucht BEIDE Seiten: Angehoeriger erlaubt + Senior willigt ein.
+    const noConsent = { ...activeContact, seniorConsentedAt: null };
+    expect(shouldAutoAnswer(noConsent, quietHoursOff, '12:00')).toBe(false);
+  });
+
+  it('gibt true zurück wenn Senior eingewilligt hat und alle anderen Bedingungen erfüllt', () => {
+    const consented = { ...activeContact, seniorConsentedAt: '2026-06-01T09:00:00Z' };
+    expect(shouldAutoAnswer(consented, quietHoursOff, '12:00')).toBe(true);
   });
 });

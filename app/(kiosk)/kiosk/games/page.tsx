@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 
-/** Spiele-Menue: Auswahl zwischen Memory und Tagesquiz */
+/** Spiele-Menue: Auswahl zwischen Paare finden und Tagesquiz */
 export default function GamesMenuPage() {
   return (
     <div style={{ padding: "20px 28px" }}>
@@ -15,9 +15,9 @@ export default function GamesMenuPage() {
       </h1>
 
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
-        <Link href="/kiosk/games/memory" className="kiosk-tile" data-accent="green">
-          <span className="kiosk-tile-icon">🧠</span>
-          <span className="kiosk-tile-label">Memory</span>
+        <Link href="/kiosk/games/paare-finden" className="kiosk-tile" data-accent="green">
+          <span className="kiosk-tile-icon">🧩</span>
+          <span className="kiosk-tile-label">Paare finden</span>
         </Link>
 
         <Link href="/kiosk/games/quiz" className="kiosk-tile" data-accent="orange">

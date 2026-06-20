@@ -19,6 +19,7 @@ export const POINTS_CONFIG: Record<
   streak_7_days: { points: 25, dailyLimit: 1 },
   prevention_daily: { points: 10, dailyLimit: 1 },
   prevention_weekly: { points: 25, dailyLimit: 1 },
+  daily_puzzle: { points: 5, dailyLimit: 1 },
 };
 
 // Einmalige Aktionen — werden nur 1x im Leben vergeben
@@ -48,4 +49,5 @@ export const ACTION_LABELS: Record<string, string> = {
   streak_7_days: "7-Tage-Streak",
   prevention_daily: "Tägliche Übung",
   prevention_weekly: "Wochen-Sitzung",
+  daily_puzzle: "Tagesrätsel ausprobiert",
 };

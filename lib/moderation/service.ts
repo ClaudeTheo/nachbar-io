@@ -4,6 +4,7 @@
 import Anthropic from '@anthropic-ai/sdk';
 import { preFilter } from '@/lib/moderation/word-filter';
 import type { ContentForModeration, ModerationResult, ModerationScore } from '@/lib/moderation/types';
+import { pseudonymizeAiText } from '@/lib/ai/pseudonymize';
 
 /**
  * Moderiert Inhalte in zwei Schritten:
@@ -33,6 +34,7 @@ export async function moderateContent(content: ContentForModeration): Promise<Mo
 
   try {
     const anthropic = new Anthropic({ apiKey });
+    const safeContentText = pseudonymizeAiText(content.text).text;
 
     const response = await anthropic.messages.create({
       model: 'claude-haiku-4-5-20251001',
@@ -53,7 +55,7 @@ JSON-Format:
       messages: [
         {
           role: 'user',
-          content: `Bewerte diesen Inhalt:\n\n${content.text}`,
+          content: `Bewerte diesen Inhalt:\n\n${safeContentText}`,
         },
       ],
     });

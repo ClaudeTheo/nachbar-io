@@ -107,7 +107,7 @@ test.describe("S7: Smoke / Regression Quick Pack", () => {
   test("S7.8 — Auth-Protected Routes redirecten kontrolliert", async ({ page }) => {
     const protectedPages = [
       "/dashboard",
-      "/messages",
+      "/chat",
       "/help",
       "/map",
       "/profile",

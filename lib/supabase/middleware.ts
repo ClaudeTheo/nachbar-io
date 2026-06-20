@@ -152,6 +152,8 @@ export async function updateSession(
     request.nextUrl.pathname.startsWith("/freigabe-ausstehend");
   const legacyRedirects = new Map<string, string>([
     ["/tauschen", "/jugend/tauschen"],
+    // Schritt 3 (Chat-Unify): Legacy-Nachrichtenliste auf kanonisches /chat umleiten
+    ["/messages", "/chat"],
   ]);
   const isClosedPilotPublicApi =
     isApiRoute && isClosedPilotPublicApiPath(request.nextUrl.pathname);

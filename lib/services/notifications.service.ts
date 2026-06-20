@@ -21,11 +21,11 @@ export interface CreateNotificationParams {
 
 // Push-URL-Mapping fuer Notification-Typen
 const TYPE_ROUTES: Record<string, string> = {
-  message: "/messages",
+  message: "/chat",
   alert: "/alerts",
   help_match: "/help",
-  connection_request: "/messages",
-  connection_accepted: "/messages",
+  connection_request: "/chat",
+  connection_accepted: "/chat",
   event_participation: "/events",
 };
 

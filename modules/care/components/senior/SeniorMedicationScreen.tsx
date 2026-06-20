@@ -81,7 +81,8 @@ export function SeniorMedicationScreen({
               </div>
             ) : isSnoozed ? (
               <div className="flex items-center justify-center rounded-lg bg-amber-500 px-4 py-6 text-center">
-                <p className="text-2xl font-bold text-white">
+                {/* Dunkler Text auf Amber — Weiss waere nur ~2.2:1 (Befund B1:2) */}
+                <p className="text-2xl font-bold text-anthrazit">
                   ⏰ Verschoben
                 </p>
               </div>
@@ -115,7 +116,7 @@ export function SeniorMedicationScreen({
                       'snoozed'
                     )
                   }
-                  className="rounded-2xl bg-amber-500 px-4 py-6 text-xl font-bold text-white active:bg-amber-600 disabled:opacity-50"
+                  className="rounded-2xl bg-amber-500 px-4 py-6 text-xl font-bold text-anthrazit active:bg-amber-600 disabled:opacity-50"
                   style={{
                     minHeight: '80px',
                     touchAction: 'manipulation',

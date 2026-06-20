@@ -266,7 +266,8 @@ export async function completeLogin(
   console.info("[Passkey] login-complete: Session erzeugt OK");
 
   const session = signInResult.data;
-  const redirect = profile.ui_mode === "senior" ? "/senior/home" : "/dashboard";
+  // Welle S1: Senioren landen auf der kanonischen Shell /kreis-start.
+  const redirect = profile.ui_mode === "senior" ? "/kreis-start" : "/dashboard";
 
   return {
     success: true,

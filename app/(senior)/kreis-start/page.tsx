@@ -9,6 +9,13 @@
 //   - Siezen, kein Emoji ausser bei NOTFALL
 
 import Link from "next/link";
+import { createClient } from "@/lib/supabase/server";
+import {
+  getSeniorHouseholdPhotos,
+  getSeniorHouseholdStickies,
+} from "@/modules/care/services/senior-kiosk.service";
+import { FamilienMomentCard } from "@/modules/care/components/senior/FamilienMomentCard";
+import { StickyNotesList } from "@/modules/care/components/senior/StickyNotesList";
 
 type TileDef = {
   label: string;
@@ -35,9 +42,11 @@ const TILES: TileDef[] = [
   },
   {
     label: "Schreiben",
-    description: "Nachricht oder Termin — mit KI-Hilfe",
+    // Welle S2 (A1:6): kein KI-Versprechen, solange AI_PROVIDER_OFF im Pilot
+    // gilt — der Senior tippt oder diktiert, KI-Hilfe folgt nach dem AVV-Go.
+    description: "Nachricht oder Termin schreiben",
     // Task H-1: /schreiben zeigt die Vertrauenskontakte als Kacheln und
-    // oeffnet WhatsApp mit einem Tap. KI-Hilfe folgt in Phase 2.
+    // oeffnet WhatsApp mit einem Tap.
     href: "/schreiben",
     variant: "neutral",
   },
@@ -49,7 +58,24 @@ const TILES: TileDef[] = [
   },
 ];
 
-export default function KreisStartPage() {
+export default async function KreisStartPage() {
+  // SB-2: neuestes Familienfoto laden (RLS-scoped auf den eigenen Haushalt).
+  // Fehler/leerer Haushalt -> Karte wird einfach nicht angezeigt (additiv).
+  const supabase = await createClient();
+  const [photos, stickies] = await Promise.all([
+    getSeniorHouseholdPhotos(supabase, { limit: 1 }),
+    getSeniorHouseholdStickies(supabase),
+  ]);
+  const newest = photos[0] ?? null;
+  const momentPhoto = newest
+    ? {
+        url: newest.url,
+        caption: newest.caption,
+        uploaderId: newest.uploaderId,
+      }
+    : null;
+  const stickyItems = stickies.map((s) => ({ id: s.id, title: s.title }));
+
   return (
     <section aria-label="Startbildschirm">
       <h1 className="sr-only">Startbildschirm</h1>
@@ -111,7 +137,40 @@ export default function KreisStartPage() {
         >
           Mein Profil
         </Link>
+        {/* SP1-3: Tagesrätsel als Sekundär-Aktion (volle Zeile, NICHT 5. Kachel). */}
+        <Link
+          href="/raetsel"
+          className="col-span-2 inline-flex items-center justify-center rounded-2xl border-2 border-anthrazit/20 bg-white px-4 text-center text-base font-semibold text-anthrazit transition-colors hover:border-anthrazit/50 hover:bg-gray-50"
+          data-testid="kreis-start-raetsel-link"
+          style={{ minHeight: "80px", minWidth: "80px" }}
+        >
+          Tagesrätsel — kleine Denkpause
+        </Link>
+        {/* SP2-1: „Paare finden" mit Familienfotos — Sekundär-Aktion, NICHT 5. Kachel. */}
+        <Link
+          href="/spiele/paare-finden"
+          className="col-span-2 inline-flex items-center justify-center rounded-2xl border-2 border-anthrazit/20 bg-white px-4 text-center text-base font-semibold text-anthrazit transition-colors hover:border-anthrazit/50 hover:bg-gray-50"
+          data-testid="kreis-start-paare-link"
+          style={{ minHeight: "80px", minWidth: "80px" }}
+        >
+          Paare finden — mit Familienfotos
+        </Link>
+        {/* SP2-2: „Erinnerung der Woche" — Sekundär-Aktion, NICHT 5. Kachel. */}
+        <Link
+          href="/erinnerung"
+          className="col-span-2 inline-flex items-center justify-center rounded-2xl border-2 border-anthrazit/20 bg-white px-4 text-center text-base font-semibold text-anthrazit transition-colors hover:border-anthrazit/50 hover:bg-gray-50"
+          data-testid="kreis-start-erinnerung-link"
+          style={{ minHeight: "80px", minWidth: "80px" }}
+        >
+          Erinnerung der Woche
+        </Link>
       </div>
+
+      {/* SB-2: „Erster gemeinsamer Moment" — unter dem Kachel-Grid, nie als 5. Kachel. */}
+      <FamilienMomentCard photo={momentPhoto} />
+
+      {/* SB-4: offene Zettel der Familie mit Ein-Tap-Quittung — unter dem Grid. */}
+      <StickyNotesList stickies={stickyItems} />
     </section>
   );
 }

@@ -145,6 +145,19 @@ describe('SosCategoryPicker', () => {
     });
   });
 
+  it('Fehlermeldung hat role=alert (Befund B3:3 — Fehler darf nicht stumm bleiben)', async () => {
+    mockFetch.mockResolvedValueOnce({
+      ok: false,
+      json: () => Promise.resolve({ error: 'Feature nicht verfügbar' }),
+    });
+
+    render(<SosCategoryPicker />);
+    fireEvent.click(screen.getByText('Allgemeine Hilfe'));
+
+    const alert = await screen.findByRole('alert');
+    expect(alert).toHaveTextContent('Feature nicht verfügbar');
+  });
+
   it('Kategorie-Buttons haben minHeight 80px (Senior Touch-Target)', () => {
     render(<SosCategoryPicker />);
     const buttons = screen.getAllByRole('button');

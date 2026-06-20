@@ -25,8 +25,10 @@ export default function SeniorDeviceLayout({
       <div
         className="min-h-screen bg-white text-anthrazit"
         style={{
-          // E-Ink-optimiert: Kein Gradient, kein Schatten, hoher Kontrast
-          fontSize: "20px",
+          // E-Ink-optimiert: Kein Gradient, kein Schatten, hoher Kontrast.
+          // Befund B3:6: rem statt px, damit die System-/Browser-Schriftgroesse
+          // (Senioren-Einstellung "groessere Schrift") proportional mit skaliert.
+          fontSize: "1.25rem",
           lineHeight: "1.6",
         }}
       >

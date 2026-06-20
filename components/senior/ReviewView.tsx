@@ -8,7 +8,7 @@
 //   4. error      — Transkript als Fallback mit Amber-Warnung
 //
 // Senior-UI Regeln:
-//   - Action-Buttons: >=56px
+//   - Action-Buttons: >=80px (Senior-Pflicht, Befund B1:5)
 //   - Back-Link: >=44px
 //   - Text: text-xl
 //   - Anthrazit-Farben, rounded-2xl, focus:ring-4
@@ -180,7 +180,7 @@ export function ReviewView({
               type="button"
               onClick={handleEdit}
               className="flex-1 rounded-2xl border-2 border-anthrazit bg-white px-6 py-3 text-base font-semibold text-anthrazit focus:outline-none focus:ring-4 focus:ring-quartier-green/40"
-              style={{ minHeight: "56px" }}
+              style={{ minHeight: "80px" }}
             >
               Aendern
             </button>
@@ -192,7 +192,7 @@ export function ReviewView({
                 rel="noopener noreferrer"
                 onClick={handleSend}
                 className="flex-1 inline-flex items-center justify-center rounded-2xl border-2 border-quartier-green bg-quartier-green px-6 py-3 text-base font-semibold text-white focus:outline-none focus:ring-4 focus:ring-quartier-green/40 text-center"
-                style={{ minHeight: "56px" }}
+                style={{ minHeight: "80px" }}
               >
                 Senden
               </a>
@@ -229,7 +229,7 @@ export function ReviewView({
                   }
                 }}
                 className="mt-3 w-full rounded-2xl border-2 border-quartier-green bg-quartier-green px-6 py-3 text-base font-semibold text-white focus:outline-none focus:ring-4 focus:ring-quartier-green/40"
-                style={{ minHeight: "56px" }}
+                style={{ minHeight: "80px" }}
               >
                 {eventSaving ? "Wird eingetragen..." : "Termin eintragen"}
               </button>
@@ -258,7 +258,7 @@ export function ReviewView({
             type="button"
             onClick={handleEditDone}
             className="rounded-2xl border-2 border-quartier-green bg-quartier-green px-6 py-3 text-base font-semibold text-white focus:outline-none focus:ring-4 focus:ring-quartier-green/40"
-            style={{ minHeight: "56px" }}
+            style={{ minHeight: "80px" }}
           >
             Fertig
           </button>

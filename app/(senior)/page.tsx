@@ -87,12 +87,12 @@ export default function SeniorDeviceHomePage() {
         className="block w-full rounded-2xl bg-blue-600 px-8 py-8 text-2xl font-bold text-white shadow-lg active:bg-blue-700 text-center"
         style={{ minHeight: "80px", touchAction: "manipulation" }}
       >
-        💊 Medikamente
+        <span aria-hidden="true">💊</span> Medikamente
       </a>
 
-      {/* Naechstes Medikament */}
+      {/* Naechstes Medikament (Befund B1:3: gray-600 statt gray-400 fuer 4.5:1) */}
       {nextMed && (
-        <p className="text-base text-gray-400">
+        <p className="text-base text-gray-600">
           Naechstes Medikament: {nextMed} Uhr
         </p>
       )}
@@ -103,7 +103,7 @@ export default function SeniorDeviceHomePage() {
         className="block w-full rounded-2xl bg-purple-600 px-8 py-8 text-2xl font-bold text-white shadow-lg active:bg-purple-700 text-center"
         style={{ minHeight: "80px", touchAction: "manipulation" }}
       >
-        📹 Sprechstunde
+        <span aria-hidden="true">📹</span> Sprechstunde
       </a>
 
       {/* Check-in Button */}
@@ -112,7 +112,7 @@ export default function SeniorDeviceHomePage() {
         className="block w-full rounded-2xl bg-green-600 px-8 py-8 text-2xl font-bold text-white shadow-lg active:bg-green-700 text-center"
         style={{ minHeight: "80px", touchAction: "manipulation" }}
       >
-        ✅ Mir geht es gut
+        <span aria-hidden="true">✅</span> Mir geht es gut
       </a>
 
       {/* KI kennenlernen — Welle C C6c */}
@@ -121,12 +121,12 @@ export default function SeniorDeviceHomePage() {
         className="block w-full rounded-2xl bg-indigo-600 px-8 py-8 text-2xl font-bold text-white shadow-lg active:bg-indigo-700 text-center"
         style={{ minHeight: "80px", touchAction: "manipulation" }}
       >
-        🤝 KI kennenlernen
+        <span aria-hidden="true">🤝</span> KI kennenlernen
       </a>
 
-      {/* Naechster Check-in */}
+      {/* Naechster Check-in (Befund B1:3: gray-600 statt gray-400 fuer 4.5:1) */}
       {nextCheckin && (
-        <p className="text-base text-gray-400">
+        <p className="text-base text-gray-600">
           Naechster Check-in: {nextCheckin} Uhr
         </p>
       )}

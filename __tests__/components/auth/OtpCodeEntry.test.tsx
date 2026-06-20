@@ -59,3 +59,50 @@ describe("OtpCodeEntry", () => {
     expect(onResend).toHaveBeenCalledTimes(2);
   });
 });
+
+// Befund B3:4: OTP-Eingabe barrierefrei — autoComplete fuer iOS/Android-Autofill,
+// Fehler hoerbar via role=alert. Eigener Block ohne Fake-Timer (findByRole).
+describe("OtpCodeEntry — Barrierefreiheit (B3:4)", () => {
+  afterEach(() => {
+    cleanup();
+    vi.clearAllMocks();
+  });
+
+  it("erstes Eingabefeld hat autoComplete='one-time-code'", () => {
+    render(
+      <OtpCodeEntry
+        email="pilot@example.com"
+        onBack={vi.fn()}
+        onResend={vi.fn()}
+      />,
+    );
+    const inputs = screen.getAllByRole("textbox");
+    expect(inputs[0]).toHaveAttribute("autocomplete", "one-time-code");
+  });
+
+  it("zeigt den Fehler mit role='alert' bei ungueltigem Code", async () => {
+    const { createClient } = await import("@/lib/supabase/client");
+    (createClient as unknown as ReturnType<typeof vi.fn>).mockReturnValue({
+      auth: {
+        verifyOtp: vi.fn().mockResolvedValue({ error: { message: "invalid" } }),
+      },
+    });
+
+    render(
+      <OtpCodeEntry
+        email="pilot@example.com"
+        onBack={vi.fn()}
+        onResend={vi.fn()}
+      />,
+    );
+
+    const inputs = screen.getAllByRole("textbox");
+    for (let i = 0; i < 6; i += 1) {
+      fireEvent.change(inputs[i], { target: { value: String(i) } });
+    }
+
+    expect(await screen.findByRole("alert")).toHaveTextContent(
+      /ungueltig|ungültig|abgelaufen/i,
+    );
+  });
+});

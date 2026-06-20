@@ -9,7 +9,7 @@
 //
 // Senior-UI Regeln (Phase-1 Design-Doc):
 //   - Mic-Button: >=120px
-//   - Action-Buttons: >=56px
+//   - Action-Buttons: >=80px (Senior-Pflicht, Befund B1:5)
 //   - Back-Link: >=44px
 //   - Anthrazit-Farben, rounded-2xl, focus:ring-4
 
@@ -218,7 +218,7 @@ export function MicView({
                   type="button"
                   onClick={handleTippen}
                   className="rounded-2xl border-2 border-anthrazit bg-white px-6 py-3 text-base font-semibold text-anthrazit focus:outline-none focus:ring-4 focus:ring-quartier-green/40"
-                  style={{ minHeight: "56px" }}
+                  style={{ minHeight: "80px" }}
                   data-testid="tippen-button"
                 >
                   Lieber tippen
@@ -243,7 +243,7 @@ export function MicView({
               type="button"
               onClick={handleRetry}
               className="flex-1 rounded-2xl border-2 border-anthrazit bg-white px-6 py-3 text-base font-semibold text-anthrazit focus:outline-none focus:ring-4 focus:ring-quartier-green/40"
-              style={{ minHeight: "56px" }}
+              style={{ minHeight: "80px" }}
             >
               Nochmal
             </button>
@@ -251,7 +251,7 @@ export function MicView({
               type="button"
               onClick={handleDone}
               className="flex-1 rounded-2xl border-2 border-quartier-green bg-quartier-green px-6 py-3 text-base font-semibold text-white focus:outline-none focus:ring-4 focus:ring-quartier-green/40"
-              style={{ minHeight: "56px" }}
+              style={{ minHeight: "80px" }}
             >
               Fertig
             </button>

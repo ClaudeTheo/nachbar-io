@@ -79,7 +79,7 @@ describe("KreisStartPage (Phase 1 Design-Doc 3)", () => {
       '[data-testid="kreis-start-termine-link"]',
     );
     expect(link).not.toBeNull();
-    expect(link!.getAttribute("href")).toBe("/mein-kreis/termine");
+    expect(link!.getAttribute("href")).toBe("/meine-termine");
     expect(link!.textContent).toContain("Termine");
   });
 

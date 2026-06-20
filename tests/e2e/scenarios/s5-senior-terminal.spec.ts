@@ -57,11 +57,11 @@ test.describe("S5: Senioren-Shell Komplett-Test", () => {
 
       await seniorHome.goto();
       await seniorHome.clickMeinKreis();
-      await expect(page).toHaveURL(/\/mein-kreis/);
+      await expect(page).toHaveURL(/\/familienkreis/);
       await expect(page.locator("main")).toBeVisible({
         timeout: TIMEOUTS.elementVisible,
       });
-      console.log("[S] → /mein-kreis OK");
+      console.log("[S] → /familienkreis OK");
 
       await seniorHome.goto();
       await seniorHome.clickHierBeiMir();

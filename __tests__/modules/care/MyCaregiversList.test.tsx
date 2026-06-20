@@ -46,6 +46,16 @@ describe("MyCaregiversList (S2/C2:2)", () => {
     expect(buttons[0].style.minHeight).toBe("56px");
   });
 
+  it("nutzt 80px Touch-Targets im Senior-Modus (large) — Befund C2:4", () => {
+    render(<MyCaregiversList caregivers={caregivers} large />);
+    const nachricht = screen.getAllByRole("button", {
+      name: /nachricht schreiben/i,
+    });
+    const anrufen = screen.getAllByRole("button", { name: /anrufen/i });
+    expect(nachricht[0].style.minHeight).toBe("80px");
+    expect(anrufen[0].style.minHeight).toBe("80px");
+  });
+
   it("navigiert beim Anrufen auf /call/<id> der jeweiligen Person", () => {
     render(<MyCaregiversList caregivers={caregivers} />);
     fireEvent.click(

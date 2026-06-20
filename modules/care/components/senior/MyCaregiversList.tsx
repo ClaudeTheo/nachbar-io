@@ -28,11 +28,16 @@ function relationshipLabel(type: string | null): string {
 
 export function MyCaregiversList({
   caregivers,
+  large = false,
 }: {
   caregivers: CaregiverInfo[];
+  // Welle F2 (C2:4): In der Senior-Shell (/kreis) 80px-Touch-Targets erzwingen;
+  // in der normalen (app)-Ansicht bleibt es bei 56px.
+  large?: boolean;
 }) {
   const { openChat, pendingId, error } = useOpenCaregiverChat();
   const router = useRouter();
+  const actionMinHeight = large ? "80px" : "56px";
 
   return (
     <div className="grid gap-3" data-testid="my-caregivers-list">
@@ -80,7 +85,7 @@ export function MyCaregiversList({
               disabled={pendingId === c.id}
               aria-label={`${c.display_name} eine Nachricht schreiben`}
               className="flex w-full items-center justify-center gap-2 rounded-2xl border-2 border-quartier-green bg-quartier-green px-4 text-lg font-semibold text-white focus:outline-none focus:ring-4 focus:ring-quartier-green/40 disabled:opacity-60"
-              style={{ minHeight: "56px" }}
+              style={{ minHeight: actionMinHeight }}
             >
               <MessageCircle className="h-6 w-6" />
               {pendingId === c.id ? "Wird geöffnet…" : "Nachricht"}
@@ -90,7 +95,7 @@ export function MyCaregiversList({
               onClick={() => router.push(`/call/${c.id}`)}
               aria-label={`${c.display_name} anrufen`}
               className="flex w-full items-center justify-center gap-2 rounded-2xl border-2 border-quartier-green bg-white px-4 text-lg font-semibold text-quartier-green focus:outline-none focus:ring-4 focus:ring-quartier-green/40"
-              style={{ minHeight: "56px" }}
+              style={{ minHeight: actionMinHeight }}
             >
               <Phone className="h-6 w-6" />
               Anrufen

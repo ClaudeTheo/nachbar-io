@@ -36,7 +36,7 @@ describe("SeniorLocalPreviewPage", () => {
     expect(screen.getAllByTestId("kreis-start-tile")).toHaveLength(4);
     expect(screen.getByRole("link", { name: /Mein Kreis/i })).toHaveAttribute(
       "href",
-      "/mein-kreis",
+      "/familienkreis",
     );
     expect(screen.getByRole("link", { name: /Notfall/i })).toHaveAttribute(
       "href",

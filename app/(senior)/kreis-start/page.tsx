@@ -28,8 +28,10 @@ const TILES: TileDef[] = [
   {
     label: "Mein Kreis",
     description: "Familie, Nachrichten, Video anrufen",
-    // Task C-4: stabile Route /mein-kreis, die den meine-senioren Screen rendert.
-    href: "/mein-kreis",
+    // Welle F2 (C2:2): Senior-Shell-Route /familienkreis (Reverse-Circle, 80px),
+    // damit der Senior beim Tap in der (senior)-Shell bleibt statt in die
+    // (app)-Shell (/mein-kreis) mit BottomNav ohne 112-Footer zu fallen.
+    href: "/familienkreis",
     variant: "neutral",
   },
   {

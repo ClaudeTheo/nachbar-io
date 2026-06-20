@@ -10,7 +10,7 @@ type SeniorTileLabel =
   | "Notfall 112";
 
 const SENIOR_TILE_TARGETS: Record<SeniorTileLabel, string> = {
-  "Mein Kreis": "/mein-kreis",
+  "Mein Kreis": "/familienkreis",
   "Hier bei mir": "/hier-bei-mir",
   Schreiben: "/schreiben",
   "Notfall 112": "/sos",

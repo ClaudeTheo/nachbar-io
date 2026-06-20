@@ -90,4 +90,19 @@ describe("CircleEventsManager (F3/C2:5)", () => {
     expect(body.title).toBe("Besuch");
     expect(body.whoComes).toBe("Maria");
   });
+
+  it("markiert einen Termin per DELETE /api/circle-events/<id> als erledigt", async () => {
+    listUpcomingMock.mockResolvedValue([makeEvent()]);
+    render(<CircleEventsManager residentId="s9" residentName="Oma" />);
+    await screen.findByText("Besuch");
+
+    fireEvent.click(screen.getByRole("button", { name: /erledigt/i }));
+
+    await waitFor(() => {
+      expect(fetchMock).toHaveBeenCalledWith(
+        "/api/circle-events/e1",
+        expect.objectContaining({ method: "DELETE" }),
+      );
+    });
+  });
 });

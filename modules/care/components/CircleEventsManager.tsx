@@ -8,7 +8,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { CalendarPlus } from "lucide-react";
+import { CalendarPlus, Check } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import {
   listUpcoming,
@@ -40,6 +40,7 @@ export function CircleEventsManager({
   const [title, setTitle] = useState("");
   const [whoComes, setWhoComes] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [doneId, setDoneId] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -57,6 +58,25 @@ export function CircleEventsManager({
   useEffect(() => {
     load();
   }, [load]);
+
+  // Termin als erledigt markieren (Soft-Delete). Scope liegt im Service
+  // (.eq created_by) + RLS — ein fremder Termin verschwindet schlicht nicht.
+  async function handleDone(id: string) {
+    setDoneId(id);
+    setError(null);
+    try {
+      const res = await fetch(`/api/circle-events/${id}`, { method: "DELETE" });
+      if (!res.ok) {
+        setError("Termin konnte nicht als erledigt markiert werden.");
+        return;
+      }
+      await load();
+    } catch {
+      setError("Verbindungsfehler. Bitte erneut versuchen.");
+    } finally {
+      setDoneId(null);
+    }
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -178,13 +198,27 @@ export function CircleEventsManager({
           {events.map((ev) => (
             <li
               key={ev.id}
-              className="rounded-xl border border-gray-200 bg-white p-3"
+              className="flex items-start justify-between gap-3 rounded-xl border border-gray-200 bg-white p-3"
             >
-              <p className="text-sm font-semibold text-anthrazit">{ev.title}</p>
-              <p className="text-xs text-muted-foreground">
-                {formatWhen(ev.scheduled_at)}
-                {ev.who_comes ? ` · ${ev.who_comes}` : ""}
-              </p>
+              <div className="min-w-0">
+                <p className="text-sm font-semibold text-anthrazit">
+                  {ev.title}
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  {formatWhen(ev.scheduled_at)}
+                  {ev.who_comes ? ` · ${ev.who_comes}` : ""}
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => handleDone(ev.id)}
+                disabled={doneId === ev.id}
+                aria-label={`${ev.title} als erledigt markieren`}
+                className="inline-flex flex-shrink-0 items-center gap-1 rounded-lg border border-gray-300 px-3 py-1.5 text-xs font-medium text-anthrazit hover:bg-gray-50 disabled:opacity-60"
+              >
+                <Check className="h-4 w-4" />
+                {doneId === ev.id ? "…" : "Erledigt"}
+              </button>
             </li>
           ))}
         </ul>

@@ -124,7 +124,10 @@ export default async function KreisStartPage() {
         data-testid="kreis-start-secondary-actions"
       >
         <Link
-          href="/mein-kreis/termine"
+          // Welle F3-Folge (C2:5): Senior-Shell-Route /meine-termine, damit der
+          // Senior beim Tap in der (senior)-Shell bleibt statt in die (app)-Shell
+          // (/mein-kreis/termine) ohne 112-Footer/grosse Schrift zu fallen.
+          href="/meine-termine"
           className="inline-flex items-center justify-center rounded-2xl border-2 border-anthrazit/20 bg-white px-4 text-center text-base font-semibold text-anthrazit transition-colors hover:border-anthrazit/50 hover:bg-gray-50"
           data-testid="kreis-start-termine-link"
           style={{ minHeight: "80px", minWidth: "80px" }}

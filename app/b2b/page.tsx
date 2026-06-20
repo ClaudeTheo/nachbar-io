@@ -179,7 +179,9 @@ function PricingSection() {
                 ))}
               </ul>
               <a
-                href="mailto:thomasth@gmx.de?subject=QuartierApp%20B2B%20Anfrage%20-%20${plan.name}"
+                href={`mailto:thomasth@gmx.de?subject=${encodeURIComponent(
+                  `QuartierApp B2B Anfrage - ${plan.name}`,
+                )}`}
                 className="mt-6 block w-full rounded-lg bg-[#2D3142] py-3 min-h-[44px] text-center text-sm font-semibold text-white hover:bg-[#3d4157] transition-colors"
               >
                 Kontakt aufnehmen
@@ -198,7 +200,7 @@ function B2BFooter() {
     <footer className="border-t bg-white py-8">
       <div className="mx-auto max-w-5xl px-6 text-center">
         <p className="text-sm text-gray-500">
-          QuartierApp — Ein Projekt von Theobase
+          QuartierApp — Ein Projekt der Theobase GmbH
         </p>
         <p className="mt-2 text-xs text-gray-500">
           Kontakt: thomasth@gmx.de

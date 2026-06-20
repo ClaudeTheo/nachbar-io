@@ -533,6 +533,21 @@ export default function CareStatusPage() {
                     </div>
                   )}
 
+                  {/* C2:6: Familienkalender (Besuche/Termine im Kreis) war bisher
+                      nirgends aus dem Caregiver-Einstieg verlinkt. Direkter Weg zum
+                      Kalender DIESES Bewohners (F3-"Termine"-Tab). Abgesetzt von den
+                      Arzt-Terminen oben, die nur Status sind. */}
+                  <Link
+                    href={`/care/meine-senioren/${resident.id}`}
+                    onClick={() => haptic("light")}
+                    className="flex items-center justify-center gap-2 rounded-xl border border-quartier-green/40 bg-quartier-green/5 text-sm font-medium text-quartier-green transition-all active:scale-95"
+                    style={{ minHeight: "44px", touchAction: "manipulation" }}
+                    data-testid={`familienkalender-${resident.id}`}
+                  >
+                    <CalendarDays className="h-4 w-4" />
+                    Familienkalender öffnen
+                  </Link>
+
                   {/* Aktionen */}
                   <div className="flex gap-2">
                     <Link

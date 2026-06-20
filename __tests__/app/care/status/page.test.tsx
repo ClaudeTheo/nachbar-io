@@ -29,6 +29,9 @@ vi.mock("lucide-react", () => ({
   Activity: (props: Record<string, unknown>) => <svg {...props} />,
   Phone: (props: Record<string, unknown>) => <svg {...props} />,
   ArrowLeft: (props: Record<string, unknown>) => <svg {...props} />,
+  CalendarDays: (props: Record<string, unknown>) => <svg {...props} />,
+  ChevronDown: (props: Record<string, unknown>) => <svg {...props} />,
+  ClipboardList: (props: Record<string, unknown>) => <svg {...props} />,
 }));
 
 vi.mock("@/components/ui/card", () => ({
@@ -168,6 +171,15 @@ describe("CareStatusPage", () => {
       const checkins = screen.getAllByTestId("checkin-status-res-1");
       expect(checkins.length).toBeGreaterThanOrEqual(1);
       expect(screen.getAllByText("Gut").length).toBeGreaterThanOrEqual(1);
+    });
+  });
+
+  it("verlinkt pro Bewohner zum Familienkalender (C2:6)", async () => {
+    render(<CareStatusPage />);
+    await waitFor(() => {
+      const links = screen.getAllByTestId("familienkalender-res-1");
+      expect(links.length).toBeGreaterThanOrEqual(1);
+      expect(links[0].getAttribute("href")).toBe("/care/meine-senioren/res-1");
     });
   });
 

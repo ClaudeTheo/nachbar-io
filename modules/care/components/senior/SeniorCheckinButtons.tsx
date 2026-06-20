@@ -49,18 +49,18 @@ export function SeniorCheckinButtons({ scheduledAt }: { scheduledAt?: string }) 
       <button onClick={() => handleCheckin('ok', 'good')} disabled={loading}
         className="w-full rounded-2xl bg-green-600 px-8 py-8 text-2xl font-bold text-white shadow-lg active:bg-green-700 disabled:opacity-50"
         style={{ minHeight: '80px', touchAction: 'manipulation' }}>
-        😊 Mir geht es gut
+        <span aria-hidden="true">😊</span> Mir geht es gut
       </button>
       {/* Dunkler Text auf Gelb: Weiss auf yellow-500 waere nur ~2:1 (Befund B1:2) */}
       <button onClick={() => handleCheckin('not_well', 'neutral')} disabled={loading}
         className="w-full rounded-2xl bg-yellow-500 px-8 py-8 text-2xl font-bold text-anthrazit shadow-lg active:bg-yellow-600 disabled:opacity-50"
         style={{ minHeight: '80px', touchAction: 'manipulation' }}>
-        😐 Nicht so gut
+        <span aria-hidden="true">😐</span> Nicht so gut
       </button>
       <button onClick={() => handleCheckin('need_help', 'bad')} disabled={loading}
         className="w-full rounded-2xl bg-red-600 px-8 py-8 text-2xl font-bold text-white shadow-lg active:bg-red-700 disabled:opacity-50"
         style={{ minHeight: '80px', touchAction: 'manipulation' }}>
-        🆘 Brauche Hilfe
+        <span aria-hidden="true">🆘</span> Brauche Hilfe
       </button>
     </div>
   );

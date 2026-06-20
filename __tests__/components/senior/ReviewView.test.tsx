@@ -78,6 +78,31 @@ describe("ReviewView (H-3/H-4)", () => {
     expect(screen.getByText("Senden")).toBeDefined();
   });
 
+  it("Aktions-Buttons (Aendern/Senden) haben min-height >= 80px (Befund B1:5)", async () => {
+    global.fetch = vi.fn(() =>
+      Promise.resolve(
+        new Response(JSON.stringify({ text: "Hallo Anna" }), {
+          status: 200,
+          headers: { "Content-Type": "application/json" },
+        }),
+      ),
+    ) as unknown as typeof fetch;
+
+    render(<ReviewView {...defaultProps} />);
+
+    await waitFor(() => {
+      expect(screen.getByText("Aendern")).toBeDefined();
+    });
+
+    function minHeight(el: Element): number {
+      const m = (el.getAttribute("style") ?? "").match(/min-height:\s*(\d+)px/);
+      return m ? Number(m[1]) : 0;
+    }
+
+    expect(minHeight(screen.getByText("Aendern"))).toBeGreaterThanOrEqual(80);
+    expect(minHeight(screen.getByText("Senden"))).toBeGreaterThanOrEqual(80);
+  });
+
   it("Aendern-Button zeigt bearbeitbare Textarea", async () => {
     global.fetch = vi.fn(() =>
       Promise.resolve(

@@ -161,6 +161,9 @@ export function OtpCodeEntry({ email, redirectTo = "/welcome", onBack, onResend 
             onChange={e => handleDigitChange(i, e.target.value)}
             onKeyDown={e => handleKeyDown(i, e)}
             disabled={loading}
+            // Befund B3:4: autoComplete="one-time-code" am ersten Feld erlaubt
+            // iOS/Android das automatische Einfuegen des SMS-/E-Mail-Codes.
+            autoComplete={i === 0 ? "one-time-code" : "off"}
             className="h-14 w-12 rounded-xl border-2 border-gray-300 text-center text-2xl font-bold text-anthrazit
               focus:border-quartier-green focus:outline-none focus:ring-2 focus:ring-quartier-green/30
               disabled:bg-gray-100 disabled:opacity-60
@@ -170,9 +173,9 @@ export function OtpCodeEntry({ email, redirectTo = "/welcome", onBack, onResend 
         ))}
       </div>
 
-      {/* Fehler */}
+      {/* Fehler — role=alert: wird auch fuer Screenreader angesagt (Befund B3:4) */}
       {error && (
-        <div className="rounded-lg bg-red-50 p-3 text-sm text-red-700">
+        <div role="alert" className="rounded-lg bg-red-50 p-3 text-sm text-red-700">
           {error}
         </div>
       )}

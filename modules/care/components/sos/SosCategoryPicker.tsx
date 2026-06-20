@@ -73,10 +73,15 @@ export function SosCategoryPicker({ source = 'app', onSosCreated }: SosCategoryP
           Was brauchen Sie?
         </h2>
         {error && (
-          <div className="rounded-lg bg-emergency-red/10 p-3 text-sm text-red-800 text-center">
+          // Befund B3:3: Fehler hoerbar ansagen (role=alert), sonst bleibt ein
+          // fehlgeschlagener SOS-Versand fuer sehbehinderte Nutzer unsichtbar.
+          <div role="alert" className="rounded-lg bg-emergency-red/10 p-3 text-sm text-red-800 text-center">
             {error}
           </div>
         )}
+        <p className="sr-only" aria-live="polite">
+          {loading ? 'Ihre Anfrage wird gesendet …' : ''}
+        </p>
         {CARE_SOS_CATEGORIES.map((cat) => (
           <button
             key={cat.id}

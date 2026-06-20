@@ -48,6 +48,23 @@ describe("MicView (H-2)", () => {
     expect(Number(match![1])).toBeGreaterThanOrEqual(96);
   });
 
+  it("Aktions-Buttons haben min-height >= 80px (Befund B1:5, Senior-Pflicht)", () => {
+    function minHeight(el: Element): number {
+      const m = (el.getAttribute("style") ?? "").match(/min-height:\s*(\d+)px/);
+      return m ? Number(m[1]) : 0;
+    }
+
+    // ready-Zustand: 'Lieber tippen'
+    const { unmount } = render(<MicView {...defaultProps} />);
+    expect(minHeight(screen.getByTestId("tippen-button"))).toBeGreaterThanOrEqual(80);
+    unmount();
+
+    // transcript-Zustand: 'Nochmal' + 'Fertig'
+    render(<MicView {...defaultProps} _testTranscript="Test" />);
+    expect(minHeight(screen.getByText("Nochmal"))).toBeGreaterThanOrEqual(80);
+    expect(minHeight(screen.getByText("Fertig"))).toBeGreaterThanOrEqual(80);
+  });
+
   it("zeigt Transkript mit Nochmal und Fertig Buttons (_testTranscript)", () => {
     render(
       <MicView {...defaultProps} _testTranscript="Hallo, wie geht es Ihnen?" />,

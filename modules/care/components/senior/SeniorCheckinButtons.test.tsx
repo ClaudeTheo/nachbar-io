@@ -139,6 +139,15 @@ describe('SeniorCheckinButtons', () => {
     expect(screen.getByText(/Mir geht es gut/).closest('button')).not.toBeDisabled();
   });
 
+  // Befund B3:5: Bedeutungstragende Emojis sind dekorativ (Text-Label folgt) →
+  // aria-hidden, damit Screenreader sie nicht als "Smiley"/"SOS" vorlesen.
+  it('Emojis in den Buttons sind aria-hidden (Befund B3:5)', () => {
+    render(<SeniorCheckinButtons />);
+    ['😊', '😐', '🆘'].forEach((emoji) => {
+      expect(screen.getByText(emoji)).toHaveAttribute('aria-hidden', 'true');
+    });
+  });
+
   it('zeigt auch bei Netzwerkfehler die Meldung', async () => {
     mockFetch.mockRejectedValueOnce(new Error('offline'));
 

@@ -16,6 +16,7 @@ import {
   Phone,
   Brain,
   Stethoscope,
+  CalendarDays,
 } from "lucide-react";
 import Link from "next/link";
 import { PageHeader } from "@/components/ui/page-header";
@@ -26,6 +27,7 @@ import { usePresence } from "@/lib/video-calls/usePresence";
 import { OnlineIndicator } from "@/components/video/OnlineIndicator";
 import { CaregiverMemoryEditor } from "@/modules/memory/components/CaregiverMemoryEditor";
 import { PairSeniorDeviceCard } from "@/modules/family-setup/components/PairSeniorDeviceCard";
+import { CircleEventsManager } from "@/modules/care/components/CircleEventsManager";
 
 interface MedicationEntry {
   id: string;
@@ -59,7 +61,13 @@ interface CareVisitEntry {
   org_name: string | null;
 }
 
-type Tab = "medikamente" | "checkins" | "sos" | "pflege" | "gedaechtnis";
+type Tab =
+  | "medikamente"
+  | "checkins"
+  | "sos"
+  | "pflege"
+  | "termine"
+  | "gedaechtnis";
 
 const SOS_CATEGORY_LABELS: Record<string, string> = {
   general_help: "Allgemeine Hilfe",
@@ -244,6 +252,11 @@ export default function SeniorDetailPage() {
       key: "pflege",
       label: "Pflege-Besuche",
       icon: <Stethoscope className="h-4 w-4" />,
+    },
+    {
+      key: "termine",
+      label: "Termine",
+      icon: <CalendarDays className="h-4 w-4" />,
     },
     {
       key: "gedaechtnis",
@@ -659,6 +672,14 @@ export default function SeniorDetailPage() {
                 })
               )}
             </div>
+          )}
+
+          {/* Termine-Tab (F3 / C2:5): Angehoeriger sieht + legt Familien-Termine an */}
+          {activeTab === "termine" && (
+            <CircleEventsManager
+              residentId={seniorId}
+              residentName={seniorName || "die Person"}
+            />
           )}
 
           {/* Gedaechtnis-Tab */}

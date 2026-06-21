@@ -1,6 +1,9 @@
 -- Migration 178: Phase-1-Defaults fuer Feature-Flags
 -- DO NOT APPLY TO PROD UNTIL FOUNDER-GO FOR PHASE-1 SWITCH
 -- Datei bewusst apply-later. Kein schema_migrations-Insert ohne Founder-Go.
+-- Keys muessen exakt den in Mig-086 geseedeten Schluesseln entsprechen, sonst ist
+-- das UPDATE ein stiller No-op. Korrigiert (Welle 1): MARKETPLACE -> MARKETPLACE_ENABLED,
+-- EVENTS -> EVENTS_ENABLED, LOST_FOUND entfernt (Schluessel existiert in Mig-086 nicht).
 
 update public.feature_flags
 set
@@ -17,10 +20,9 @@ where key in (
   'GDT_ENABLED',
   'CARE_ACCESS_INDIVIDUAL_CAREGIVER',
   'CARE_ACCESS_CARE_COMPANY',
-  'MARKETPLACE',
-  'EVENTS',
+  'MARKETPLACE_ENABLED',
+  'EVENTS_ENABLED',
   'BOARD_ENABLED',
-  'LOST_FOUND',
   'KOMMUNAL_MODULE',
   'MODERATION_ENABLED',
   'ORG_DASHBOARD',

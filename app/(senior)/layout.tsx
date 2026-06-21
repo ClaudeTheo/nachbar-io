@@ -12,8 +12,10 @@ export const metadata = {
 };
 
 /**
- * Layout fuer das stationaere Senioren-Geraet (E-Ink-optimiert).
- * Stark vereinfacht: Kein BottomNav, grosse Schrift, hoher Kontrast.
+ * Layout fuer das stationaere Senioren-Geraet (AWOW Farb-Touchscreen,
+ * Tauri/Capacitor-Wrapper — der fruehere E-Ink-Pi-Kiosk ist seit 2026-04-19
+ * archiviert). Stark vereinfacht: Kein BottomNav, grosse Schrift, hoher
+ * Kontrast; Buntfarben + dezente Schatten zur Unterscheidbarkeit der Kacheln.
  */
 export default function SeniorDeviceLayout({
   children,
@@ -25,7 +27,7 @@ export default function SeniorDeviceLayout({
       <div
         className="min-h-screen bg-white text-anthrazit"
         style={{
-          // E-Ink-optimiert: Kein Gradient, kein Schatten, hoher Kontrast.
+          // Ruhiger Hintergrund (weiss, kein Gradient), hoher Kontrast.
           // Befund B3:6: rem statt px, damit die System-/Browser-Schriftgroesse
           // (Senioren-Einstellung "groessere Schrift") proportional mit skaliert.
           fontSize: "1.25rem",

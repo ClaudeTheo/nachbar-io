@@ -69,13 +69,13 @@ const BENEFITS = [
     icon: <BarChart3 className="h-6 w-6" />,
     title: "Anonymisierte Statistiken",
     description:
-      "Quartier-Dashboard mit aggregierten KPIs: Aktivität, Aktivitätsabdeckung, Check-in-Rate. CSV/XLSX-Export inklusive.",
+      "Quartier-Dashboard mit aggregierten Kennzahlen: aktive Haushalte, Aktivitätsrate, Heartbeat-Abdeckung und offene Eskalationen.",
   },
   {
     icon: <Users className="h-6 w-6" />,
-    title: "Content-Moderation",
+    title: "Meldungs-Management",
     description:
-      "Beiträge moderieren, Nutzer stummschalten oder sperren. Vollständiger Audit-Log für alle administrativen Aktionen.",
+      "Eingegangene Mängelmelder-Meldungen sichten, mit Status und Notiz bearbeiten oder entfernen. Jede Aktion wird protokolliert.",
   },
   {
     icon: <CircleCheck className="h-6 w-6" />,
@@ -122,12 +122,9 @@ const PLANS = [
     unit: "/ Quartier / Monat",
     target: "Kommunen, Pflegedienste, Wohnungsbau",
     features: [
-      "Quartier-Dashboard mit Statistiken",
-      "Content-Moderation + Audit-Log",
-      "Eskalationsmanagement",
-      "CSV/XLSX-Export",
-      "Nutzer stummschalten / sperren",
-      "Anonymisierte Quartier-Aktivitätsübersicht",
+      "Quartier-Dashboard mit anonymisierten Statistiken",
+      "Mängelmelder-Meldungen moderieren (mit Protokoll)",
+      "Bekanntmachungen veröffentlichen",
     ],
     highlight: true,
   },

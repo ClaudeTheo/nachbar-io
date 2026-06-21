@@ -62,9 +62,12 @@ describe('GpsPicker', () => {
     expect(onTextChange).toHaveBeenCalledWith('Sanarystraße 5');
   });
 
-  it('hat mindestens 2 Buttons (GPS + Karte)', () => {
-    render(<GpsPicker {...defaultProps} />);
-    const buttons = screen.getAllByRole('button');
-    expect(buttons.length).toBeGreaterThanOrEqual(2);
+  it('zeigt GPS-Button und Karten-Link, sobald Koordinaten gesetzt sind', () => {
+    render(<GpsPicker {...defaultProps} lat={47.5535} lng={7.964} />);
+    // GPS-Button ist immer vorhanden
+    expect(screen.getAllByRole('button').length).toBeGreaterThanOrEqual(1);
+    // Die Karte ist ein OpenStreetMap-Link (kein Button) und erscheint nur mit Koordinaten
+    const mapLink = screen.getByRole('link', { name: /OpenStreetMap/i });
+    expect(mapLink.getAttribute('href')).toContain('openstreetmap.org');
   });
 });

@@ -3,16 +3,21 @@ import { join } from "path";
 import { describe, expect, it } from "vitest";
 
 describe("migration versions", () => {
+  // Verzeichnis genau einmal listen statt pro it()-Block.
+  const migrationEntries = readdirSync(
+    join(process.cwd(), "supabase", "migrations"),
+  );
+
   it("legt Rollback-Dateien nicht im Up-Migrationsordner ab", () => {
-    const rollbackFiles = readdirSync(
-      join(process.cwd(), "supabase", "migrations"),
-    ).filter((name) => name.endsWith(".down.sql"));
+    const rollbackFiles = migrationEntries.filter((name) =>
+      name.endsWith(".down.sql"),
+    );
 
     expect(rollbackFiles).toEqual([]);
   });
 
   it("hat eindeutige Up-Migration-Versionen", () => {
-    const migrations = readdirSync(join(process.cwd(), "supabase", "migrations"))
+    const migrations = migrationEntries
       .filter((name) => name.endsWith(".sql"))
       .filter((name) => !name.endsWith(".down.sql"));
 

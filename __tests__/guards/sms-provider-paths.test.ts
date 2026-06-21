@@ -42,18 +42,25 @@ function walkProductionFiles(dir: string, files: string[] = []): string[] {
   return files;
 }
 
+// Walk + Source-Read genau einmal pro Testlauf: beide it()-Bloecke teilen sich
+// den Cache, statt den ~1,3-MB-Produktions-Tree je erneut zu walken/lesen.
+let productionFilesCache: string[] | undefined;
 function productionFiles(): string[] {
-  return ["app", "modules", "lib"].flatMap((dir) =>
+  return (productionFilesCache ??= ["app", "modules", "lib"].flatMap((dir) =>
     walkProductionFiles(join(ROOT, dir)),
-  );
+  ));
+}
+
+let productionSourcesCache: { path: string; source: string }[] | undefined;
+function productionSources(): { path: string; source: string }[] {
+  return (productionSourcesCache ??= productionFiles().map((file) => ({
+    path: toRepoPath(file),
+    source: readFileSync(file, "utf8"),
+  })));
 }
 
 function callsiteFiles(pattern: RegExp): string[] {
-  return productionFiles()
-    .map((file) => ({
-      path: toRepoPath(file),
-      source: readFileSync(file, "utf8"),
-    }))
+  return productionSources()
     .filter(({ source }) => pattern.test(source))
     .map(({ path }) => path)
     .sort();

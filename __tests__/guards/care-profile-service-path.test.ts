@@ -46,10 +46,21 @@ function walkProductionFiles(dir: string, files: string[] = []): string[] {
   return files;
 }
 
+// Walk + Source-Read genau einmal pro Testlauf: beide it()-Bloecke teilen sich
+// den Cache, statt den Produktions-Tree je erneut zu walken/lesen.
+let productionFilesCache: string[] | undefined;
 function productionFiles(): string[] {
-  return ["app", "modules", "lib"].flatMap((dir) =>
+  return (productionFilesCache ??= ["app", "modules", "lib"].flatMap((dir) =>
     walkProductionFiles(join(ROOT, dir)),
-  );
+  ));
+}
+
+let productionSourcesCache: { path: string; source: string }[] | undefined;
+function productionSources(): { path: string; source: string }[] {
+  return (productionSourcesCache ??= productionFiles().map((file) => ({
+    path: toRepoPath(file),
+    source: readFileSync(file, "utf8"),
+  })));
 }
 
 function toRepoPath(file: string): string {
@@ -58,11 +69,7 @@ function toRepoPath(file: string): string {
 
 describe("care_profiles emergency_contacts service path guard", () => {
   it("haelt direkte care_profiles-Tabellenzugriffe ausserhalb erlaubter Serverpfade fern", () => {
-    const offenders = productionFiles()
-      .map((file) => ({
-        path: toRepoPath(file),
-        source: readFileSync(file, "utf8"),
-      }))
+    const offenders = productionSources()
       .filter(({ path, source }) => {
         if (!source.match(/\.from\(\s*["']care_profiles["']\s*\)/)) {
           return false;
@@ -96,11 +103,7 @@ describe("care_profiles emergency_contacts service path guard", () => {
       "app/(app)/care/consent/page.tsx",
     ]);
 
-    const offenders = productionFiles()
-      .map((file) => ({
-        path: toRepoPath(file),
-        source: readFileSync(file, "utf8"),
-      }))
+    const offenders = productionSources()
       .filter(({ path, source }) => {
         if (!source.includes("emergency_contacts")) {
           return false;

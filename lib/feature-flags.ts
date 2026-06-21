@@ -82,6 +82,19 @@ export async function getFeatureFlags(): Promise<FeatureFlag[]> {
 }
 
 /**
+ * Prueft clientseitig, ob ein Feature-Flag schlicht aktiviert ist (enabled === true).
+ *
+ * Spiegelt isFeatureEnabledServer() — OHNE Rollen-/Plan-/Quartier-Logik.
+ * Gedacht fuer UI-Gates, die ein serverseitiges enabled-Gate vorziehen sollen
+ * (z.B. BILLING_ENABLED), damit der Nutzer nicht erst nach ausgefuelltem
+ * Formular im 503 landet.
+ */
+export async function isFeatureEnabledClient(flagKey: string): Promise<boolean> {
+  const flags = await getFeatureFlags();
+  return flags.find((f) => f.key === flagKey)?.enabled === true;
+}
+
+/**
  * Prueft ob ein User Zugriff auf ein Feature hat.
  *
  * Logik:

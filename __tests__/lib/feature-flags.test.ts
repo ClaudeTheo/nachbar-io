@@ -6,6 +6,7 @@ import {
   checkFeatureAccess,
   getFeatureFlags,
   invalidateFlagCache,
+  isFeatureEnabledClient,
   type FeatureFlag,
   type UserContext,
 } from '@/lib/feature-flags';
@@ -89,6 +90,40 @@ describe('Feature-Flag System', () => {
 
       // Nur ein DB-Aufruf wegen Cache
       expect(mockSelect).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  describe('isFeatureEnabledClient', () => {
+    it('gibt true zurueck wenn Flag aktiviert ist', async () => {
+      setMockFlags([{ ...baseFlag, key: 'BILLING_ENABLED', enabled: true }]);
+
+      expect(await isFeatureEnabledClient('BILLING_ENABLED')).toBe(true);
+    });
+
+    it('gibt false zurueck wenn Flag deaktiviert ist', async () => {
+      setMockFlags([{ ...baseFlag, key: 'BILLING_ENABLED', enabled: false }]);
+
+      expect(await isFeatureEnabledClient('BILLING_ENABLED')).toBe(false);
+    });
+
+    it('gibt false zurueck wenn Flag nicht existiert', async () => {
+      setMockFlags([{ ...baseFlag, key: 'OTHER_FLAG', enabled: true }]);
+
+      expect(await isFeatureEnabledClient('BILLING_ENABLED')).toBe(false);
+    });
+
+    it('ignoriert Rollen-/Plan-Einschraenkungen (nur enabled zaehlt)', async () => {
+      setMockFlags([
+        {
+          ...baseFlag,
+          key: 'BILLING_ENABLED',
+          enabled: true,
+          required_roles: ['admin'],
+          required_plans: ['pro'],
+        },
+      ]);
+
+      expect(await isFeatureEnabledClient('BILLING_ENABLED')).toBe(true);
     });
   });
 

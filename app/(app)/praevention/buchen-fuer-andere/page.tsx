@@ -11,6 +11,8 @@ import {
   Loader2,
 } from "lucide-react";
 import Link from "next/link";
+import { isFeatureEnabledClient } from "@/lib/feature-flags";
+import { BookingUnavailable } from "@/components/praevention/BookingUnavailable";
 
 interface CaregiverLink {
   id: string;
@@ -57,9 +59,16 @@ function BuchenFuerAndereContent() {
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // null = noch nicht geprueft; gate erst zeigen wenn sicher false
+  const [bookingEnabled, setBookingEnabled] = useState<boolean | null>(null);
 
   const loadData = useCallback(async () => {
     try {
+      // Billing-Gate vorziehen: spiegelt das serverseitige BILLING_ENABLED-Gate
+      // der Checkout-Route, damit der Nutzer nicht erst nach ausgefuelltem
+      // Formular im 503 landet.
+      setBookingEnabled(await isFeatureEnabledClient("BILLING_ENABLED"));
+
       const [coursesRes, linksRes] = await Promise.all([
         fetch("/api/prevention/courses"),
         fetch("/api/caregiver/links"),
@@ -165,6 +174,11 @@ function BuchenFuerAndereContent() {
         <div className="h-8 w-8 animate-spin rounded-full border-4 border-emerald-200 border-t-emerald-600" />
       </div>
     );
+  }
+
+  // Online-Buchung deaktiviert: ehrlicher Hinweis statt toter Sackgasse
+  if (bookingEnabled === false) {
+    return <BookingUnavailable />;
   }
 
   return (

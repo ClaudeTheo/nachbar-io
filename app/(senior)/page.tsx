@@ -106,13 +106,14 @@ export default function SeniorDeviceHomePage() {
         <span aria-hidden="true">📹</span> Sprechstunde
       </a>
 
-      {/* Check-in Button */}
+      {/* Check-in Button (B1:6: navigiert nur auf /checkin, das "Wie geht es
+          Ihnen?" fragt — Label spiegelt die Frage statt die Antwort vorwegzunehmen) */}
       <a
         href="/checkin"
         className="block w-full rounded-2xl bg-green-600 px-8 py-8 text-2xl font-bold text-white shadow-lg active:bg-green-700 text-center"
         style={{ minHeight: "80px", touchAction: "manipulation" }}
       >
-        <span aria-hidden="true">✅</span> Mir geht es gut
+        <span aria-hidden="true">✅</span> Wie geht es mir?
       </a>
 
       {/* KI kennenlernen — Welle C C6c */}

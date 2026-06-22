@@ -25,6 +25,17 @@ describe("Closed-Pilot-Startseite", () => {
     ).toBeNull();
   });
 
+  it("bietet eingeladenen Testhaushalten einen Einladungscode-Einstieg auf /register", () => {
+    render(<LandingPage />);
+
+    const inviteCta = screen.getByRole("link", {
+      name: /mit einladungscode starten/i,
+    });
+    expect(inviteCta).toHaveAttribute("href", "/register");
+    // Wording-Guard: darf nicht als offene "registrieren"-Werbung gelesen werden.
+    expect(inviteCta).not.toHaveTextContent(/registrieren/i);
+  });
+
   it("rendert das QuartierApp-Aquarell-Symbol im Hero (Tanne + Haeuser + Sonne)", () => {
     render(<LandingPage />);
 

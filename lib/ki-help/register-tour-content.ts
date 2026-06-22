@@ -9,8 +9,6 @@ export const REGISTER_TOUR_HINTS: Record<Step, string> = {
     "Ihre Adresse hilft, den richtigen Haushalt und das richtige Quartier zu finden. Sie wird nicht öffentlich angezeigt.",
   identity:
     "Name, Geburtsdatum und E-Mail helfen bei Vertrauen, Sicherheit und der eindeutigen Zuordnung im Pilot.",
-  pilot_role:
-    "Hier wählen Sie, wie Sie teilnehmen: für sich selbst, als Unterstützung für jemanden, als Hilfe im Quartier oder nur testweise.",
   ui_mode:
     "Hier wählen Sie die passende Oberfläche: Aktiv, Aktiv 55+ oder Einfach. Sie können das später im Profil ändern.",
   ai_consent:

@@ -9,7 +9,8 @@ function buildState(): RegisterFormState {
     displayName: "",
     firstName: "",
     lastName: "",
-    dateOfBirth: "",
+    // Minderjaehriges Geburtsdatum (relativ, ~15 Jahre): Jugend-Hinweis wird seit W4b nur < 18 gezeigt.
+    dateOfBirth: `${new Date().getFullYear() - 15}-01-01`,
     inviteCode: "",
     householdId: null,
     referrerId: null,
@@ -44,6 +45,31 @@ describe("RegisterStepIdentity", () => {
     expect(screen.getByText(/Jugendliche ab 14/i)).toBeInTheDocument();
     expect(screen.getByText(/Jugendmodus starten/i)).toBeInTheDocument();
     expect(screen.queryByText(/Klarname ist nicht erforderlich/i)).not.toBeInTheDocument();
+  });
+
+  it("versteckt den Jugend-Hinweis fuer Erwachsene (Geburtsdatum >= 18)", () => {
+    render(
+      <RegisterStepIdentity
+        state={{ ...buildState(), dateOfBirth: "1977-04-25" }}
+        setState={vi.fn()}
+        setStep={vi.fn()}
+      />,
+    );
+
+    expect(screen.queryByText(/Jugendliche ab 14/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/Jugendmodus starten/i)).not.toBeInTheDocument();
+  });
+
+  it("zeigt den Jugend-Hinweis fuer Minderjaehrige (< 18)", () => {
+    render(
+      <RegisterStepIdentity
+        state={{ ...buildState(), dateOfBirth: `${new Date().getFullYear() - 15}-01-01` }}
+        setState={vi.fn()}
+        setStep={vi.fn()}
+      />,
+    );
+
+    expect(screen.getByText(/Jugendliche ab 14/i)).toBeInTheDocument();
   });
 
   it("vermeidet Inline-Styles im Preview-kritischen Formular", () => {

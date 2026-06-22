@@ -13,13 +13,12 @@ import {
   RegisterStepInvite,
   RegisterStepAddress,
   RegisterStepIdentity,
-  RegisterStepPilotRole,
   RegisterStepUiMode,
   RegisterStepAiConsent,
 } from "./components";
 import type { Step, RegisterFormState } from "./components";
 
-const LOCAL_PREVIEW_STEPS: Step[] = ["identity", "pilot_role", "ui_mode", "ai_consent"];
+const LOCAL_PREVIEW_STEPS: Step[] = ["identity", "ui_mode", "ai_consent"];
 
 function isLocalPreviewEnabled() {
   return process.env.NODE_ENV !== "production";
@@ -77,7 +76,6 @@ function buildLocalPreviewState(): RegisterFormState {
       quarter_name: "Bad Säckingen",
       action: "preview",
     },
-    pilotRole: "test_user",
     uiMode: "comfort",
   };
 }
@@ -159,14 +157,13 @@ function RegisterForm() {
   );
 
   // === Fortschrittsberechnung ===
-  const totalSteps = 5;
+  const totalSteps = 4;
   const currentStep = (() => {
     if (step === "entry" || step === "invite_code" || step === "address") return 1;
     if (step === "identity") return 2;
-    if (step === "pilot_role") return 3;
-    if (step === "ui_mode") return 4;
-    if (step === "ai_consent") return 5;
-    return 5; // magic_link_sent
+    if (step === "ui_mode") return 3;
+    if (step === "ai_consent") return 4;
+    return 4; // magic_link_sent
   })();
 
   return (
@@ -232,17 +229,12 @@ function RegisterForm() {
           <RegisterStepIdentity state={formState} setState={updateState} setStep={setStep} />
         )}
 
-        {/* Schritt 3: Pilot-Rolle */}
-        {step === "pilot_role" && (
-          <RegisterStepPilotRole state={formState} setState={updateState} setStep={setStep} />
-        )}
-
-        {/* Schritt 4: Oberflaeche */}
+        {/* Schritt 3: Oberflaeche */}
         {step === "ui_mode" && (
           <RegisterStepUiMode state={formState} setState={updateState} setStep={setStep} />
         )}
 
-        {/* Schritt 5: KI-Einwilligung */}
+        {/* Schritt 4: KI-Einwilligung */}
         {step === "ai_consent" && (
           <RegisterStepAiConsent
             state={formState}

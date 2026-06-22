@@ -1,5 +1,5 @@
-// Nachbar.io — Page Object: Registrierungs-Seite (5-Schritt Magic-Link-Flow)
-// Flow: Entry → [Invite-Code ODER Adresse] → Identity → Pilot-Rolle → Oberflaeche → KI-Consent → Magic Link gesendet
+// Nachbar.io — Page Object: Registrierungs-Seite (4-Schritt Magic-Link-Flow)
+// Flow: Entry → [Invite-Code ODER Adresse] → Identity → Oberflaeche → KI-Consent → Magic Link gesendet
 import { Page, Locator, expect } from "@playwright/test";
 import { TIMEOUTS } from "../helpers/test-config";
 
@@ -19,18 +19,14 @@ export class RegisterPage {
   readonly geoDetectButton: Locator;
   readonly addressNextButton: Locator;
 
-  // Schritt 2: Identity (Pilotdaten + E-Mail)
+  // Schritt 2: Identity (Pilotdaten + E-Mail) → direkt zur Oberflaeche
   readonly firstNameInput: Locator;
   readonly lastNameInput: Locator;
   readonly dateOfBirthInput: Locator;
   readonly emailInput: Locator;
-  readonly continueToPilotRoleButton: Locator;
-
-  // Schritt 3: Pilot-Rolle
-  readonly testRoleButton: Locator;
   readonly continueToUiModeButton: Locator;
 
-  // Schritt 4: Oberflaeche
+  // Schritt 3: Oberflaeche
   readonly activeModeButton: Locator;
   readonly continueToAiConsentButton: Locator;
 
@@ -66,19 +62,11 @@ export class RegisterPage {
     this.geoDetectButton = page.getByText("Standort automatisch erkennen");
     this.addressNextButton = page.getByRole("button", { name: "Weiter" });
 
-    // Identity
+    // Identity → direkt zur Oberflaeche (Pilot-Rolle-Schritt seit W4b entfernt)
     this.firstNameInput = page.getByLabel("Vorname");
     this.lastNameInput = page.getByLabel("Nachname");
     this.dateOfBirthInput = page.getByLabel("Geburtsdatum");
     this.emailInput = page.getByLabel("E-Mail-Adresse");
-    this.continueToPilotRoleButton = page.getByRole("button", {
-      name: "Weiter zur Pilot-Rolle",
-    });
-
-    // Pilot-Rolle
-    this.testRoleButton = page.getByRole("button", {
-      name: /Ich probiere nur testweise/,
-    });
     this.continueToUiModeButton = page.getByRole("button", {
       name: /Weiter zur Oberfl/,
     });
@@ -107,7 +95,7 @@ export class RegisterPage {
     this.backButton = page.getByText("Zurück");
     this.errorMessage = page.locator(".text-emergency-red");
     this.loginLink = page.getByRole("link", { name: "Jetzt anmelden" });
-    this.stepIndicator = page.locator("text=/Schritt \\d+ von 5/");
+    this.stepIndicator = page.locator("text=/Schritt \\d+ von 4/");
   }
 
   async goto() {
@@ -134,7 +122,7 @@ export class RegisterPage {
 
   // Pruefen, auf welchem Schritt wir sind.
   async assertOnStep(step: number) {
-    await expect(this.page.getByText(`Schritt ${step} von 5`)).toBeVisible({
+    await expect(this.page.getByText(`Schritt ${step} von 4`)).toBeVisible({
       timeout: TIMEOUTS.elementVisible,
     });
   }
@@ -184,12 +172,6 @@ export class RegisterPage {
     await this.lastNameInput.fill(lastName);
     await this.dateOfBirthInput.fill(dateOfBirth);
     await this.emailInput.fill(email);
-    await this.continueToPilotRoleButton.click();
-    await this.testRoleButton.waitFor({
-      state: "visible",
-      timeout: TIMEOUTS.elementVisible,
-    });
-    await this.testRoleButton.click();
     await this.continueToUiModeButton.click();
     await this.activeModeButton.waitFor({
       state: "visible",

@@ -4,7 +4,6 @@ import { RegisterPreviewForm } from "../RegisterPreviewForm";
 
 const PREVIEW_STEPS: Record<string, Step> = {
   identity: "identity",
-  "pilot-role": "pilot_role",
   "ui-mode": "ui_mode",
   "ai-consent": "ai_consent",
 };

@@ -68,10 +68,12 @@ export async function proxy(request: NextRequest) {
     // Flag aktiv: normal weiter (Auth, Rate-Limit etc. laufen durch).
   }
 
-  // Phase I: Legacy-Routen auf /kreis-start umleiten
+  // Pilot-Positivliste (C1:6): flag-lose, nicht-pilotreife Module sanft auf
+  // /dashboard umleiten ("in Vorbereitung", kein 404). Health-Routes oben
+  // bleiben bei /kreis-start.
   if (isLegacyRoute(pathname)) {
     const url = request.nextUrl.clone();
-    url.pathname = "/kreis-start";
+    url.pathname = "/dashboard";
     return secure(NextResponse.redirect(url));
   }
 

@@ -53,32 +53,36 @@ describe("Legacy Route Gate (2026-05-11 aufgeloest)", () => {
     mockGetCachedFlagEnabled.mockResolvedValue(false);
   });
 
-  // Diese Routes wurden bis 2026-05-10 im Proxy auf /kreis-start umgeleitet
-  // (LEGACY_ROUTE_PREFIXES). Founder-Entscheidung 2026-05-11: Phase-I-Gate
-  // aufgeloest, Features sollen wieder direkt erreichbar sein.
-  const previouslyLegacyRoutes = [
-    "/board",
-    "/marketplace",
-    "/gruppen",
+  // Welle 3 (C1:6, Founder-Go 2026-06-22): Pilot-Positivliste kehrt die
+  // 2026-05-11-Entscheidung um. Flag-lose, nicht-pilotreife Module sind wieder
+  // verriegelt und werden SANFT auf /dashboard umgeleitet (nicht /kreis-start,
+  // nicht 404). board/marketplace/events laufen ueber eigene Flag-Gates und
+  // bleiben hier proxy-seitig erreichbar.
+  const blockedRoutes = [
+    "/lost-found",
     "/polls",
-    "/companion",
-    "/praevention",
-    "/reports",
+    "/leihboerse",
+    "/whohas",
     "/mitessen",
+    "/noise",
+    "/tips",
+    "/experts",
+    "/packages",
   ];
 
-  for (const route of previouslyLegacyRoutes) {
-    it(`erlaubt ${route} (frueher Legacy, jetzt aktiv)`, async () => {
+  for (const route of blockedRoutes) {
+    it(`leitet ${route} sanft auf /dashboard um`, async () => {
       const res = await proxy(makeRequest(route));
-      const location = res?.headers?.get("location") ?? "";
-      expect(location).not.toContain("/kreis-start");
+      expect(res.status).toBe(307);
+      expect(res.headers.get("location")).toContain("/dashboard");
+      expect(res.headers.get("location")).not.toContain("/kreis-start");
     });
   }
 
-  it("erlaubt auch Sub-Routen wie /marketplace/123", async () => {
-    const res = await proxy(makeRequest("/marketplace/123"));
-    const location = res?.headers?.get("location") ?? "";
-    expect(location).not.toContain("/kreis-start");
+  it("leitet auch Sub-Routen wie /leihboerse/123 um", async () => {
+    const res = await proxy(makeRequest("/leihboerse/123"));
+    expect(res.status).toBe(307);
+    expect(res.headers.get("location")).toContain("/dashboard");
   });
 
   const allowedRoutes = [
@@ -92,14 +96,22 @@ describe("Legacy Route Gate (2026-05-11 aufgeloest)", () => {
     "/care/meine-senioren",
     "/jugend",
     "/admin",
+    "/gruppen",
+    "/hilfe",
+    "/chat",
+    "/board", // Flag-Gate (Welle 1), proxy-seitig erreichbar
+    "/marketplace", // Flag-Gate (Welle 1)
+    "/events", // Flag-Gate (events-layout)
+    "/was-steht-uns-zu", // Leistungen-Info (LIVE)
   ];
 
   for (const route of allowedRoutes) {
-    it(`erlaubt Phase-1-Route ${route}`, async () => {
+    it(`erlaubt Pilot-Route ${route} (kein Legacy-Redirect)`, async () => {
       const res = await proxy(makeRequest(route));
-      // Sollte KEIN Redirect auf /kreis-start sein
       const location = res?.headers?.get("location") ?? "";
+      // Weder auf /kreis-start (Health) noch auf /dashboard (Positivliste)
       expect(location).not.toContain("/kreis-start");
+      expect(location).not.toContain("/dashboard");
     });
   }
 

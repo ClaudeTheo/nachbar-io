@@ -31,35 +31,41 @@ describe("cron secret usage guard", () => {
     ...EXTRA_PROTECTED_FILES,
   ].sort();
 
+  // Jede Datei genau einmal lesen statt pro it()-Block erneut.
+  const protectedSources = protectedFiles.map((file) => ({
+    file,
+    source: readFileSync(join(ROOT, file), "utf8"),
+  }));
+
   it("nutzt den zentralen timing-safe Cron-Secret-Helper", () => {
-    const offenders = protectedFiles.filter((file) => {
-      const source = readFileSync(join(ROOT, file), "utf8");
-      return (
-        source.includes("CRON_SECRET") &&
-        !source.includes("@/lib/security/cron-secret") &&
-        !source.includes("./cron-secret")
-      );
-    });
+    const offenders = protectedSources
+      .filter(
+        ({ source }) =>
+          source.includes("CRON_SECRET") &&
+          !source.includes("@/lib/security/cron-secret") &&
+          !source.includes("./cron-secret"),
+      )
+      .map(({ file }) => file);
 
     expect(offenders).toEqual([]);
   });
 
   it("enthaelt keine direkten Bearer-Stringvergleiche mit CRON_SECRET", () => {
-    const directBearerComparisons = protectedFiles.filter((file) => {
-      const source = readFileSync(join(ROOT, file), "utf8");
-      return /[`'"]Bearer\s+\$\{cronSecret\}[`'"]/.test(source);
-    });
+    const directBearerComparisons = protectedSources
+      .filter(({ source }) => /[`'"]Bearer\s+\$\{cronSecret\}[`'"]/.test(source))
+      .map(({ file }) => file);
 
     expect(directBearerComparisons).toEqual([]);
   });
 
   it("enthaelt keine direkten Vergleiche gegen process.env.CRON_SECRET", () => {
-    const directEnvComparisons = protectedFiles.filter((file) => {
-      const source = readFileSync(join(ROOT, file), "utf8");
-      return /[!=]={2,3}\s*process\.env\.CRON_SECRET|process\.env\.CRON_SECRET\s*[!=]={2,3}/.test(
-        source,
-      );
-    });
+    const directEnvComparisons = protectedSources
+      .filter(({ source }) =>
+        /[!=]={2,3}\s*process\.env\.CRON_SECRET|process\.env\.CRON_SECRET\s*[!=]={2,3}/.test(
+          source,
+        ),
+      )
+      .map(({ file }) => file);
 
     expect(directEnvComparisons).toEqual([]);
   });

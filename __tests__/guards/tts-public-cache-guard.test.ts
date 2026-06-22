@@ -37,10 +37,12 @@ function walkProductionFiles(dir: string, files: string[] = []): string[] {
   return files;
 }
 
+// Walk genau einmal pro Testlauf cachen.
+let productionFilesCache: string[] | undefined;
 function productionFiles(): string[] {
-  return ["app", "modules", "lib"].flatMap((dir) =>
+  return (productionFilesCache ??= ["app", "modules", "lib"].flatMap((dir) =>
     walkProductionFiles(join(ROOT, dir)),
-  );
+  ));
 }
 
 describe("TTS public cache privacy guard", () => {

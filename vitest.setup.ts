@@ -2,8 +2,17 @@
 // Globale Mocks und Matcher fuer alle Tests
 
 import "@testing-library/jest-dom/vitest";
-import { vi } from "vitest";
+import { afterEach, vi } from "vitest";
+import { cleanup } from "@testing-library/react";
 import React from "react";
+
+// Globales DOM-Cleanup nach jedem Test (RTL-Standard). Ohne globals:true
+// registriert Vitest kein automatisches Cleanup; ohne diesen Hook akkumuliert
+// das jsdom-DOM innerhalb einer Datei (RAM + langsamere Queries). Idempotent,
+// also unschaedlich fuer Tests mit eigenem afterEach(cleanup).
+afterEach(() => {
+  cleanup();
+});
 
 const envKey = (...parts: string[]) => parts.join("_");
 

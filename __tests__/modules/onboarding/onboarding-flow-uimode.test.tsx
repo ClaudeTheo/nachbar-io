@@ -112,4 +112,31 @@ describe("OnboardingFlow — ui_mode-Erhalt (A1:1)", () => {
     await waitFor(() => expect(mockCompleteOnboarding).toHaveBeenCalledWith({}));
     expect(mockPush).toHaveBeenCalledWith("/dashboard");
   });
+
+  // A1:1: Die Tour fragt den Modus NICHT mehr erneut — die Registrierung setzt
+  // ihn (Schritt 4) und die Tour laedt/erhaelt ihn nur noch. Die zweite Slide
+  // war frueher die Modus-Auswahl ("Wie moechten Sie QuartierApp nutzen?").
+  it("zeigt keine Modus-Auswahl-Slide mehr", async () => {
+    mockSingle.mockResolvedValue({
+      data: { display_name: "Erika", ui_mode: "senior" },
+      error: null,
+    });
+
+    render(<OnboardingFlow />);
+    await waitFor(() => expect(mockSingle).toHaveBeenCalled());
+    await act(async () => {});
+
+    // Von der Willkommens-Slide eine weiter. Frueher kam hier die Modus-Slide;
+    // jetzt direkt der 112-Hinweis (CTA "Verstanden"). Erst auf den neuen
+    // Slide-Marker warten (sonst race mit der 200ms-Slide-Animation), dann
+    // sicherstellen, dass die Modus-Auswahl nirgends auftaucht.
+    await userEvent.click(screen.getByText("Weiter"));
+    await waitFor(() => expect(screen.getByText("Verstanden")).toBeTruthy());
+
+    expect(
+      screen.queryByText(/Wie möchten Sie QuartierApp nutzen/i),
+    ).toBeNull();
+    expect(screen.queryByTestId("mode-senior")).toBeNull();
+    expect(screen.queryByTestId("mode-active")).toBeNull();
+  });
 });

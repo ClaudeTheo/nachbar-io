@@ -58,7 +58,7 @@ export function SetupQrCard({
               {kind === "child" ? "Kinderzugang bereit" : "Senior-Zugang bereit"}
             </p>
             <p className="mt-1 text-sm text-muted-foreground">
-              QR scannen oder den Kurzcode manuell eingeben.
+              QR-Code scannen oder den Einladungslink teilen.
             </p>
           </div>
           <div className="flex items-center gap-2">

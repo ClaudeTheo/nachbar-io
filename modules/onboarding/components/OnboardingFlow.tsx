@@ -7,13 +7,11 @@ import { createClient } from "@/lib/supabase/client";
 import { getCachedUser } from "@/lib/supabase/cached-auth";
 import { completeOnboarding } from "../services/onboarding";
 import { Button } from "@/components/ui/button";
-import { UserModeChoiceCard } from "@/components/modes/UserModeSurface";
 import { ProgressDots } from "./ProgressDots";
 import { ConfettiEffect } from "./ConfettiEffect";
 import {
   getUserModeConfig,
   isUserUiMode,
-  USER_UI_MODES,
   type UserUiMode,
 } from "@/lib/user-modes";
 
@@ -25,12 +23,13 @@ import { SlideReady } from "./slides/SlideReady";
 import { SlideFamilySetup } from "./slides/SlideFamilySetup";
 import { SlideSkills } from "./SlideSkills";
 
-const TOTAL_SLIDES = 7;
+const TOTAL_SLIDES = 6;
 const SWIPE_THRESHOLD = 50;
 
+// A1:1: Keine Modus-Auswahl-Slide mehr — die Registrierung (Schritt 4) setzt
+// den ui_mode, die Tour laedt/erhaelt ihn nur noch.
 const BUTTON_LABELS = [
   "Weiter",           // Willkommen
-  "Weiter",           // Modusauswahl
   "Verstanden",       // 112/110-Hinweis
   "Weiter",           // Hilfsangebote
   "Weiter",           // Familie & Betreuung
@@ -127,8 +126,8 @@ export function OnboardingFlow() {
 
   // Weiter-Button Handler
   async function handleNext() {
-    // Skills speichern beim Verlassen der Hilfsangebote-Slide
-    if (currentSlide === 3 && selectedSkills.length > 0) {
+    // Skills speichern beim Verlassen der Hilfsangebote-Slide (Index 2 seit A1:1)
+    if (currentSlide === 2 && selectedSkills.length > 0) {
       try {
         const supabase = createClient();
         const { user } = await getCachedUser(supabase);
@@ -209,39 +208,12 @@ export function OnboardingFlow() {
   function renderSlide() {
     switch (currentSlide) {
       case 0: return <SlideWelcome />;
-      case 1: return (
-        <div className="flex h-full flex-col justify-center px-6">
-          <div className="mx-auto w-full max-w-md space-y-5">
-            <div>
-              <p className="text-sm font-medium text-quartier-green">
-                Ihr Modus
-              </p>
-              <h1 className="mt-2 text-2xl font-bold text-anthrazit">
-                Wie möchten Sie QuartierApp nutzen?
-              </h1>
-              <p className="mt-2 text-sm text-muted-foreground">
-                Sie können das später in Ihrem Profil ändern.
-              </p>
-            </div>
-            <div className="grid gap-3">
-              {USER_UI_MODES.map((mode) => (
-                <UserModeChoiceCard
-                  key={mode}
-                  active={selectedMode === mode}
-                  mode={mode}
-                  onSelect={setSelectedMode}
-                  variant="compact"
-                />
-              ))}
-            </div>
-          </div>
-        </div>
-      );
-      case 2: return <SlideEmergency />;
-      case 3: return <SlideSkills selectedSkills={selectedSkills} onToggle={toggleSkill} />;
-      case 4: return <SlideFamilySetup />;
-      case 5: return <SlideVideo variant="welcome" />;
-      case 6: return <SlideReady displayName={displayName} />;
+      // A1:1: Modus-Auswahl-Slide entfernt — Registrierung setzt ui_mode.
+      case 1: return <SlideEmergency />;
+      case 2: return <SlideSkills selectedSkills={selectedSkills} onToggle={toggleSkill} />;
+      case 3: return <SlideFamilySetup />;
+      case 4: return <SlideVideo variant="welcome" />;
+      case 5: return <SlideReady displayName={displayName} />;
       default: return null;
     }
   }
@@ -304,7 +276,7 @@ export function OnboardingFlow() {
           }`}
           style={{ minHeight: "56px" }}
         >
-          {currentSlide === 3 && selectedSkills.length === 0
+          {currentSlide === 2 && selectedSkills.length === 0
             ? "Überspringen"
             : BUTTON_LABELS[currentSlide]}
         </Button>

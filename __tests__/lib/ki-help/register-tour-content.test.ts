@@ -10,7 +10,6 @@ const steps: Step[] = [
   "invite_code",
   "address",
   "identity",
-  "pilot_role",
   "ui_mode",
   "ai_consent",
   "magic_link_sent",
@@ -30,12 +29,6 @@ describe("REGISTER_TOUR_HINTS", () => {
         /OpenAI|Anthropic|Mistral|Live-KI|Vorlesen|Stimme|Audio|gesendet|gespeichert/i,
       );
     }
-  });
-
-  it("explains the pilot role step without jargon", () => {
-    expect(getRegisterTourHint("pilot_role")).toBe(
-      "Hier wählen Sie, wie Sie teilnehmen: für sich selbst, als Unterstützung für jemanden, als Hilfe im Quartier oder nur testweise.",
-    );
   });
 
   it("explains the ui mode step without adding a database value", () => {

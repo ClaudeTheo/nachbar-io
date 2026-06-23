@@ -19,6 +19,20 @@ function isValidDateOfBirth(value: string) {
   return parsed <= todayUtc;
 }
 
+// Alter aus Geburtsdatum (UTC, tagesgenau) — spiegelt die Server-Logik calculateAge,
+// damit der Client-seitige Jugend-Hinweis dieselbe <18-Schwelle nutzt wie isYouth.
+function ageFromDateOfBirth(value: string): number | null {
+  if (!isValidDateOfBirth(value)) return null;
+  const birth = new Date(`${value}T00:00:00.000Z`);
+  const now = new Date();
+  let age = now.getUTCFullYear() - birth.getUTCFullYear();
+  const monthDiff = now.getUTCMonth() - birth.getUTCMonth();
+  if (monthDiff < 0 || (monthDiff === 0 && now.getUTCDate() < birth.getUTCDate())) {
+    age -= 1;
+  }
+  return age;
+}
+
 export function RegisterStepIdentity({ state, setState, setStep }: StepProps) {
   const [honeypot, setHoneypot] = useState("");
 
@@ -55,7 +69,7 @@ export function RegisterStepIdentity({ state, setState, setStep }: StepProps) {
     try {
       const displayName = buildFullName(state.firstName, state.lastName);
       setState({ displayName, website: honeypot, loading: false });
-      setStep("pilot_role");
+      setStep("ui_mode");
     } catch (err) {
       console.error("Registrierung Netzwerkfehler:", err);
       setState({ error: "Netzwerkfehler. Bitte prüfen Sie Ihre Internetverbindung.", loading: false });
@@ -151,9 +165,15 @@ export function RegisterStepIdentity({ state, setState, setStep }: StepProps) {
         <p className="mt-1 text-xs text-muted-foreground">
           Das Geburtsdatum hilft bei Verantwortung und eindeutiger Zuordnung im Test.
         </p>
-        <p className="mt-1 text-xs text-muted-foreground">
-          Jugendliche ab 14 können mit Hausnummer-Code eingeschränkt im Jugendmodus starten. Unter 14 braucht es einen Eltern- oder Betreuerzugang.
-        </p>
+        {/* Jugend-Hinweis nur fuer Minderjaehrige (< 18) — Erwachsene brauchen ihn nicht. */}
+        {(() => {
+          const age = ageFromDateOfBirth(state.dateOfBirth.trim());
+          return age !== null && age < 18;
+        })() && (
+          <p className="mt-1 text-xs text-muted-foreground">
+            Jugendliche ab 14 können mit Hausnummer-Code eingeschränkt im Jugendmodus starten. Unter 14 braucht es einen Eltern- oder Betreuerzugang.
+          </p>
+        )}
       </div>
 
       <div>
@@ -177,7 +197,7 @@ export function RegisterStepIdentity({ state, setState, setStep }: StepProps) {
       {state.error && <p className="text-sm text-emergency-red">{state.error}</p>}
 
       <Button type="submit" disabled={state.loading} className="w-full bg-quartier-green hover:bg-quartier-green-dark">
-        {state.loading ? "Wird verarbeitet..." : "Weiter zur Pilot-Rolle"}
+        {state.loading ? "Wird verarbeitet..." : "Weiter zur Oberfläche"}
       </Button>
       <button
         type="button"

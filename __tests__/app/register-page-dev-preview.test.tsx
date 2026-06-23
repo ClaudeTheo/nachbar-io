@@ -42,21 +42,9 @@ describe("RegisterPage local preview steps", () => {
 
     render(<RegisterPage />);
 
-    expect(await screen.findByText("Schritt 2 von 5")).toBeInTheDocument();
+    expect(await screen.findByText("Schritt 2 von 4")).toBeInTheDocument();
     expect(screen.getByLabelText("Vorname")).toHaveValue("Test");
     expect(screen.getByLabelText("E-Mail-Adresse")).toHaveValue("test.person@example.invalid");
-  });
-
-  it("opens the pilot-role step directly for local preview", async () => {
-    navigationMock.searchParams.value = new URLSearchParams("previewStep=pilot_role");
-
-    render(<RegisterPage />);
-
-    expect(await screen.findByText("Schritt 3 von 5")).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /Ich probiere nur testweise/i })).toHaveAttribute(
-      "aria-pressed",
-      "true",
-    );
   });
 
   it("opens the ui-mode step directly for local preview", async () => {
@@ -64,7 +52,7 @@ describe("RegisterPage local preview steps", () => {
 
     render(<RegisterPage />);
 
-    expect(await screen.findByText("Schritt 4 von 5")).toBeInTheDocument();
+    expect(await screen.findByText("Schritt 3 von 4")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /Aktiv 55\+:/i })).toHaveAttribute(
       "aria-pressed",
       "true",
@@ -76,7 +64,7 @@ describe("RegisterPage local preview steps", () => {
 
     render(<RegisterPage />);
 
-    expect(await screen.findByText("Schritt 5 von 5")).toBeInTheDocument();
+    expect(await screen.findByText("Schritt 4 von 4")).toBeInTheDocument();
     expect(screen.getByText("Möchten Sie Unterstützung durch die KI-Hilfe?")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /Auswahl speichern und Link senden/i })).toBeDisabled();
   });
@@ -90,7 +78,7 @@ describe("RegisterPage local preview steps", () => {
 
     render(<RegisterPage />);
 
-    expect(await screen.findByText("Schritt 5 von 5")).toBeInTheDocument();
+    expect(await screen.findByText("Schritt 4 von 4")).toBeInTheDocument();
     await user.click(screen.getByRole("button", { name: /^Aus\s/i }));
     await user.click(
       screen.getByRole("button", {
@@ -110,7 +98,7 @@ describe("RegisterPage local preview steps", () => {
 
     render(<RegisterPage />);
 
-    expect(await screen.findByText("Schritt 2 von 5")).toBeInTheDocument();
+    expect(await screen.findByText("Schritt 2 von 4")).toBeInTheDocument();
     expect(screen.getByLabelText("Vorname")).toHaveValue("Test");
   });
 
@@ -158,20 +146,16 @@ describe("RegisterPage local preview steps", () => {
   });
 
   it("renders the preview form directly for dedicated local preview routes without internal links", () => {
-    render(<RegisterPreviewForm initialStep="pilot_role" />);
+    render(<RegisterPreviewForm initialStep="identity" />);
 
-    expect(screen.getByText("Schritt 3 von 5")).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /Ich probiere nur testweise/i })).toHaveAttribute(
-      "aria-pressed",
-      "true",
-    );
+    expect(screen.getByText("Schritt 2 von 4")).toBeInTheDocument();
     expect(screen.queryByRole("link", { name: /Vorschau Schritt/i })).not.toBeInTheDocument();
   });
 
   it("renders the dedicated ui-mode preview route", () => {
     render(<RegisterPreviewForm initialStep="ui_mode" />);
 
-    expect(screen.getByText("Schritt 4 von 5")).toBeInTheDocument();
+    expect(screen.getByText("Schritt 3 von 4")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /Aktiv 55\+:/i })).toHaveAttribute(
       "aria-pressed",
       "true",

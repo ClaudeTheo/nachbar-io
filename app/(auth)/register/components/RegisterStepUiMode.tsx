@@ -113,7 +113,7 @@ export function RegisterStepUiMode({ state, setState, setStep }: StepProps) {
         <Button
           type="button"
           variant="outline"
-          onClick={() => setStep("pilot_role")}
+          onClick={() => setStep("identity")}
           className="min-h-12 flex-1"
         >
           <ArrowLeft className="mr-2 h-4 w-4" />

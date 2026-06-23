@@ -4,13 +4,12 @@ import type { AiAssistanceLevel } from "@/lib/ki-help/ai-assistance-levels";
 import type { UserUiMode } from "@/lib/user-modes";
 export type { AiAssistanceLevel } from "@/lib/ki-help/ai-assistance-levels";
 
-// Schritt-Typen fuer den 2-Schritt-Flow
+// Schritt-Typen fuer den Registrierungs-Flow
 export type Step =
   | "entry"
   | "invite_code"
   | "address"
   | "identity"
-  | "pilot_role"
   | "ui_mode"
   | "ai_consent"
   | "magic_link_sent";

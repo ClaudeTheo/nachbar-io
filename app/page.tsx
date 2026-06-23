@@ -97,21 +97,28 @@ export default function LandingPage() {
         <p className="mt-5 max-w-2xl text-lg leading-[1.65] text-anthrazit-light">
           Diese Testversion ist noch nicht öffentlich freigeschaltet. Wir
           bereiten den Familienkreis für einen kleinen, kontrollierten Pilot
-          vor und nehmen hier aktuell keine Registrierungen oder echten
-          personenbezogenen Daten an.
+          vor und öffnen den Zugang nur für eingeladene Testhaushalte mit
+          persönlichem Einladungscode. Ohne Einladung nehmen wir hier keine
+          echten personenbezogenen Daten an.
         </p>
 
         <div className="mt-8 flex flex-wrap items-center gap-4">
           <Link
             className="inline-flex min-h-12 items-center justify-center rounded-md bg-quartier-green px-6 py-3 text-sm font-semibold text-warmwhite shadow-sm transition hover:bg-quartier-green-dark"
+            href="/register"
+          >
+            Mit Einladungscode starten
+          </Link>
+          <Link
+            className="inline-flex min-h-12 items-center justify-center rounded-md border border-quartier-green/40 px-6 py-3 text-sm font-semibold text-quartier-green transition hover:bg-quartier-green/5"
             href="/login"
           >
             Anmelden
           </Link>
-          <span className="text-sm leading-6 text-anthrazit-light">
-            Nur für eingeladene Testhaushalte.
-          </span>
         </div>
+        <p className="mt-3 text-sm leading-6 text-anthrazit-light">
+          Nur für eingeladene Testhaushalte — der Zugang ist persönlich.
+        </p>
 
         {/* Drei Info-Karten — Hairline-Border + Lifted-Cream-BG (Magazin-Style). */}
         <div className="mt-12 grid gap-4 text-sm text-anthrazit sm:grid-cols-3">

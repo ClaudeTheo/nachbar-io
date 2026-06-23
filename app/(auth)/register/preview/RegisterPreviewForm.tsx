@@ -6,7 +6,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { KiHelpOnboardingHint } from "@/components/ki-help/KiHelpOnboardingHint";
 import {
   RegisterStepIdentity,
-  RegisterStepPilotRole,
   RegisterStepUiMode,
   RegisterStepAiConsent,
 } from "../components";
@@ -41,7 +40,6 @@ function buildLocalPreviewState(): RegisterFormState {
       quarter_name: "Bad Säckingen",
       action: "preview",
     },
-    pilotRole: "test_user",
     uiMode: "comfort",
     loading: false,
     geoLoading: false,
@@ -64,12 +62,11 @@ export function RegisterPreviewForm({ initialStep }: { initialStep: Step }) {
     [],
   );
 
-  const totalSteps = 5;
+  const totalSteps = 4;
   const currentStep = (() => {
     if (step === "identity") return 2;
-    if (step === "pilot_role") return 3;
-    if (step === "ui_mode") return 4;
-    return 5;
+    if (step === "ui_mode") return 3;
+    return 4;
   })();
 
   return (
@@ -107,9 +104,6 @@ export function RegisterPreviewForm({ initialStep }: { initialStep: Step }) {
       <CardContent>
         {step === "identity" && (
           <RegisterStepIdentity state={formState} setState={updateState} setStep={setStep} />
-        )}
-        {step === "pilot_role" && (
-          <RegisterStepPilotRole state={formState} setState={updateState} setStep={setStep} />
         )}
         {step === "ui_mode" && (
           <RegisterStepUiMode state={formState} setState={updateState} setStep={setStep} />

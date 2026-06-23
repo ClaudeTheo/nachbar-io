@@ -8,7 +8,17 @@ import { afterEach, describe, it, expect, vi } from "vitest";
 import { cleanup, render, screen } from "@testing-library/react";
 
 vi.mock("@/lib/supabase/server", () => ({
-  createClient: vi.fn().mockResolvedValue({}),
+  createClient: vi.fn().mockResolvedValue({
+    auth: { getUser: vi.fn().mockResolvedValue({ data: { user: null } }) },
+  }),
+}));
+
+vi.mock("@/lib/supabase/admin", () => ({
+  getAdminSupabase: vi.fn(() => ({})),
+}));
+
+vi.mock("@/lib/family-setup/senior-consent.service", () => ({
+  listPendingSeniorConsents: vi.fn().mockResolvedValue([]),
 }));
 
 vi.mock("@/modules/care/services/senior-kiosk.service", () => ({

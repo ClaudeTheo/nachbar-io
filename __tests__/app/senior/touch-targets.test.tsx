@@ -7,6 +7,8 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("next/navigation", () => ({
   usePathname: () => "/senior/home",
+  // KreisStartPage rendert seit W5 SeniorConsentPrompt (Client, useRouter).
+  useRouter: () => ({ refresh: vi.fn() }),
 }));
 
 vi.mock("@/components/BugReportButton", () => ({
@@ -40,7 +42,17 @@ vi.mock("@/components/video/GlobalCallListener", () => ({
 // KreisStartPage ist seit Welle SB eine async Server-Komponente (laedt Foto +
 // Stickies) — Supabase-Server-Client + Senior-Kiosk-Service mocken.
 vi.mock("@/lib/supabase/server", () => ({
-  createClient: vi.fn().mockResolvedValue({}),
+  createClient: vi.fn().mockResolvedValue({
+    auth: { getUser: vi.fn().mockResolvedValue({ data: { user: null } }) },
+  }),
+}));
+
+vi.mock("@/lib/supabase/admin", () => ({
+  getAdminSupabase: vi.fn(() => ({})),
+}));
+
+vi.mock("@/lib/family-setup/senior-consent.service", () => ({
+  listPendingSeniorConsents: vi.fn().mockResolvedValue([]),
 }));
 
 vi.mock("@/modules/care/services/senior-kiosk.service", () => ({

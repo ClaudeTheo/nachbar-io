@@ -10,12 +10,15 @@
 
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
+import { getAdminSupabase } from "@/lib/supabase/admin";
 import {
   getSeniorHouseholdPhotos,
   getSeniorHouseholdStickies,
 } from "@/modules/care/services/senior-kiosk.service";
+import { listPendingSeniorConsents } from "@/lib/family-setup/senior-consent.service";
 import { FamilienMomentCard } from "@/modules/care/components/senior/FamilienMomentCard";
 import { StickyNotesList } from "@/modules/care/components/senior/StickyNotesList";
+import { SeniorConsentPrompt } from "@/modules/care/components/senior/SeniorConsentPrompt";
 
 type TileDef = {
   label: string;
@@ -64,9 +67,14 @@ export default async function KreisStartPage() {
   // SB-2: neuestes Familienfoto laden (RLS-scoped auf den eigenen Haushalt).
   // Fehler/leerer Haushalt -> Karte wird einfach nicht angezeigt (additiv).
   const supabase = await createClient();
-  const [photos, stickies] = await Promise.all([
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  const [photos, stickies, pendingConsents] = await Promise.all([
     getSeniorHouseholdPhotos(supabase, { limit: 1 }),
     getSeniorHouseholdStickies(supabase),
+    // A2:4: offene Begleitungs-Einwilligungen des Seniors (admin-Client, scoped auf resident_id=user.id).
+    user ? listPendingSeniorConsents(getAdminSupabase(), user.id) : Promise.resolve([]),
   ]);
   const newest = photos[0] ?? null;
   const momentPhoto = newest
@@ -81,6 +89,9 @@ export default async function KreisStartPage() {
   return (
     <section aria-label="Startbildschirm">
       <h1 className="sr-only">Startbildschirm</h1>
+
+      {/* A2:4: Begleitungs-Einwilligung bestätigen — über dem Kachel-Grid, nur wenn offen. */}
+      <SeniorConsentPrompt consents={pendingConsents} />
 
       <div
         className="grid gap-4"

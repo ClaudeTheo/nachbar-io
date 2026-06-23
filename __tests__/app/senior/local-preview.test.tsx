@@ -8,12 +8,24 @@ vi.mock("next/navigation", () => ({
   notFound: vi.fn(() => {
     throw new Error("NEXT_NOT_FOUND");
   }),
+  // KreisStartPage rendert seit W5 SeniorConsentPrompt (Client, useRouter).
+  useRouter: () => ({ refresh: vi.fn() }),
 }));
 
 // KreisStartPage ist seit Welle SB async + laedt Foto/Stickies — Supabase-Server-
 // Client + Senior-Kiosk-Service mocken (leere Daten -> nur die 4 Kacheln).
 vi.mock("@/lib/supabase/server", () => ({
-  createClient: vi.fn().mockResolvedValue({}),
+  createClient: vi.fn().mockResolvedValue({
+    auth: { getUser: vi.fn().mockResolvedValue({ data: { user: null } }) },
+  }),
+}));
+
+vi.mock("@/lib/supabase/admin", () => ({
+  getAdminSupabase: vi.fn(() => ({})),
+}));
+
+vi.mock("@/lib/family-setup/senior-consent.service", () => ({
+  listPendingSeniorConsents: vi.fn().mockResolvedValue([]),
 }));
 
 vi.mock("@/modules/care/services/senior-kiosk.service", () => ({

@@ -13,11 +13,22 @@ import { AvatarPicker } from "@/components/AvatarPicker";
 import { createClient } from "@/lib/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { getProfile, updateProfile } from "@/lib/services";
+import {
+  isSelfSelectablePilotRole,
+  type SelfSelectablePilotRole,
+} from "@/lib/services/profile.service";
+import { PilotRoleSection } from "@/app/(app)/profile/components/PilotRoleSection";
 import type { User } from "@/lib/supabase/types";
 
 interface HouseholdAddress {
   street_name: string;
   house_number: string;
+}
+
+// Liest die selbst-waehlbare Pilot-Rolle aus den settings (null falls unbekannt/test_user).
+function readSelfPilotRole(settings: unknown): SelfSelectablePilotRole | null {
+  const role = (settings as Record<string, unknown> | null)?.pilot_role;
+  return isSelfSelectablePilotRole(role) ? role : null;
 }
 
 export default function ProfileEditPage() {
@@ -441,6 +452,11 @@ export default function ProfileEditPage() {
           </div>
           <ChevronRight className="h-4 w-4 text-muted-foreground" />
         </Link>
+
+        {/* Pilot-Selbstauskunft (W4b-2): nach der Registrierung hier aenderbar. */}
+        <div id="pilotRole" className="rounded-lg border border-border p-3">
+          <PilotRoleSection initialRole={readSelfPilotRole(user.settings)} />
+        </div>
 
         <div className="space-y-2">
           <label className="text-sm font-medium text-anthrazit">E-Mail</label>

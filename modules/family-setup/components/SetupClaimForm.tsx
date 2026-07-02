@@ -28,6 +28,9 @@ export function SetupClaimForm({ token }: SetupClaimFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   // Zugang wurde aktiviert, aber die automatische Anmeldung schlug fehl
   const [claimedNeedsLogin, setClaimedNeedsLogin] = useState(false);
+  // Senior-Variante (A2:5): ein Feld pro Schritt + Passwort-Sichtbarkeit
+  const [seniorStep, setSeniorStep] = useState<1 | 2 | 3>(1);
+  const [showPassword, setShowPassword] = useState(false);
 
   useEffect(() => {
     let active = true;
@@ -129,6 +132,150 @@ export function SetupClaimForm({ token }: SetupClaimFormProps) {
   }
 
   const isChild = preview.flowType === "child_direct" || preview.flowType === "child_friend";
+  // A2:5 — Senioren (auch Komfort-Modus) bekommen die Schritt-für-Schritt-Variante
+  const isSeniorMode =
+    preview.targetUiMode === "senior" || preview.targetUiMode === "comfort";
+
+  if (isSeniorMode) {
+    return (
+      <Card>
+        <CardContent className="space-y-6 p-5">
+          <div>
+            <h1 className="text-2xl font-bold text-anthrazit">
+              Senior-Zugang einrichten
+            </h1>
+            <p className="mt-2 text-lg text-muted-foreground">
+              Schritt {seniorStep} von 3
+            </p>
+          </div>
+
+          <form className="space-y-4" onSubmit={handleSubmit}>
+            {seniorStep === 1 && (
+              <div className="space-y-3">
+                <label
+                  className="block text-xl font-medium text-anthrazit"
+                  htmlFor="setup-display-name"
+                >
+                  Ihr Name
+                </label>
+                <Input
+                  id="setup-display-name"
+                  value={displayName}
+                  onChange={(event) => setDisplayName(event.target.value)}
+                  className="text-xl"
+                  style={{ minHeight: "80px" }}
+                  autoComplete="name"
+                />
+                <p className="text-lg text-muted-foreground">
+                  So sehen Ihre Angehörigen Sie in der App.
+                </p>
+              </div>
+            )}
+
+            {seniorStep === 2 && (
+              <div className="space-y-3">
+                <label
+                  className="block text-xl font-medium text-anthrazit"
+                  htmlFor="setup-email"
+                >
+                  E-Mail-Adresse
+                </label>
+                <Input
+                  id="setup-email"
+                  type="email"
+                  value={email}
+                  onChange={(event) => setEmail(event.target.value)}
+                  className="text-xl"
+                  style={{ minHeight: "80px" }}
+                  autoComplete="email"
+                />
+                <p className="text-lg text-muted-foreground">
+                  Keine eigene E-Mail-Adresse? Ihr Angehöriger kann seine
+                  E-Mail-Adresse eintragen und das Formular gemeinsam mit
+                  Ihnen ausfüllen.
+                </p>
+              </div>
+            )}
+
+            {seniorStep === 3 && (
+              <div className="space-y-3">
+                <label
+                  className="block text-xl font-medium text-anthrazit"
+                  htmlFor="setup-password"
+                >
+                  Passwort
+                </label>
+                <Input
+                  id="setup-password"
+                  type={showPassword ? "text" : "password"}
+                  value={password}
+                  onChange={(event) => setPassword(event.target.value)}
+                  className="text-xl"
+                  style={{ minHeight: "80px" }}
+                  autoComplete="new-password"
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="w-full text-xl"
+                  style={{ minHeight: "80px" }}
+                  onClick={() => setShowPassword((current) => !current)}
+                >
+                  {showPassword ? "Passwort verbergen" : "Passwort anzeigen"}
+                </Button>
+                <p className="text-lg text-muted-foreground">
+                  Wählen Sie ein Passwort, das Sie sich gut merken können.
+                </p>
+              </div>
+            )}
+
+            {error && <p className="text-lg text-emergency-red">{error}</p>}
+
+            <div className="space-y-3">
+              {seniorStep < 3 ? (
+                <Button
+                  type="button"
+                  className="w-full text-xl"
+                  style={{ minHeight: "80px" }}
+                  disabled={
+                    seniorStep === 1 ? !displayName.trim() : !email.trim()
+                  }
+                  onClick={() =>
+                    setSeniorStep((current) => (current + 1) as 2 | 3)
+                  }
+                >
+                  Weiter
+                </Button>
+              ) : (
+                <Button
+                  type="submit"
+                  disabled={isSubmitting || !password}
+                  className="w-full text-xl"
+                  style={{ minHeight: "80px" }}
+                >
+                  Zugang aktivieren
+                </Button>
+              )}
+
+              {seniorStep > 1 && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="w-full text-xl"
+                  style={{ minHeight: "80px" }}
+                  onClick={() =>
+                    setSeniorStep((current) => (current - 1) as 1 | 2)
+                  }
+                >
+                  Zurück
+                </Button>
+              )}
+            </div>
+          </form>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <Card>

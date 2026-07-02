@@ -69,6 +69,149 @@ describe("SetupClaimForm", () => {
     );
   });
 
+  // --- A2:5 — Senior-Variante: ein Feld pro Schritt, 80px, Passwort-Toggle ---
+
+  const seniorTestPasswort = "rosengarten am rhein 42";
+
+  function mockSeniorFetch(capture?: { body?: unknown }) {
+    global.fetch = vi.fn(async (url: RequestInfo | URL, init?: RequestInit) => {
+      if (!init) {
+        return {
+          ok: true,
+          json: async () => ({
+            flowType: "senior_setup",
+            targetUiMode: "senior",
+            expiresAt: "2099-05-15T10:00:00.000Z",
+          }),
+        } as Response;
+      }
+      if (capture) capture.body = JSON.parse(String(init.body));
+      return {
+        ok: true,
+        json: async () => ({ userId: "senior-user-1", redirectTo: "/kreis-start" }),
+      } as Response;
+    });
+  }
+
+  describe("Senior-Variante (A2:5)", () => {
+    it("zeigt Schritt 1 von 3 mit nur einem Feld (Anzeigename)", async () => {
+      mockSeniorFetch();
+      render(<SetupClaimForm token="raw-token" />);
+
+      expect(await screen.findByText(/Senior-Zugang einrichten/i)).toBeInTheDocument();
+      expect(screen.getByText(/Schritt 1 von 3/i)).toBeInTheDocument();
+      expect(screen.getByLabelText(/Ihr Name/i)).toBeInTheDocument();
+      // Ein Feld pro Schritt: E-Mail und Passwort noch nicht sichtbar
+      expect(screen.queryByLabelText(/E-Mail-Adresse/i)).not.toBeInTheDocument();
+      expect(screen.queryByLabelText(/^Passwort$/i)).not.toBeInTheDocument();
+      expect(screen.getByRole("button", { name: /Weiter/i })).toBeInTheDocument();
+    });
+
+    it("fuehrt durch alle drei Schritte und aktiviert den Zugang mit unveraendertem Payload", async () => {
+      const capture: { body?: unknown } = {};
+      mockSeniorFetch(capture);
+      render(<SetupClaimForm token="raw-token" />);
+
+      await screen.findByText(/Schritt 1 von 3/i);
+      fireEvent.change(screen.getByLabelText(/Ihr Name/i), {
+        target: { value: "Rosa Beispiel" },
+      });
+      fireEvent.click(screen.getByRole("button", { name: /Weiter/i }));
+
+      // Schritt 2: E-Mail + Alternative-Hinweis fuer Seniorinnen ohne eigene Adresse
+      expect(screen.getByText(/Schritt 2 von 3/i)).toBeInTheDocument();
+      expect(screen.getByText(/Keine eigene E-Mail-Adresse/i)).toBeInTheDocument();
+      fireEvent.change(screen.getByLabelText(/E-Mail-Adresse/i), {
+        target: { value: "familie@example.test" },
+      });
+      fireEvent.click(screen.getByRole("button", { name: /Weiter/i }));
+
+      // Schritt 3: Passwort + aktivieren
+      expect(screen.getByText(/Schritt 3 von 3/i)).toBeInTheDocument();
+      fireEvent.change(screen.getByLabelText(/^Passwort$/i), {
+        target: { value: seniorTestPasswort },
+      });
+      fireEvent.click(screen.getByRole("button", { name: /Zugang aktivieren/i }));
+
+      await waitFor(() => expect(mockPush).toHaveBeenCalledWith("/kreis-start"));
+      expect(capture.body).toEqual({
+        displayName: "Rosa Beispiel",
+        email: "familie@example.test",
+        password: seniorTestPasswort,
+      });
+    });
+
+    it("Passwort-Umschalter macht die Eingabe sichtbar und wieder unsichtbar", async () => {
+      mockSeniorFetch();
+      render(<SetupClaimForm token="raw-token" />);
+
+      await screen.findByText(/Schritt 1 von 3/i);
+      fireEvent.change(screen.getByLabelText(/Ihr Name/i), {
+        target: { value: "Rosa" },
+      });
+      fireEvent.click(screen.getByRole("button", { name: /Weiter/i }));
+      fireEvent.change(screen.getByLabelText(/E-Mail-Adresse/i), {
+        target: { value: "familie@example.test" },
+      });
+      fireEvent.click(screen.getByRole("button", { name: /Weiter/i }));
+
+      const passwordInput = screen.getByLabelText(/^Passwort$/i);
+      expect(passwordInput).toHaveAttribute("type", "password");
+
+      fireEvent.click(screen.getByRole("button", { name: /Passwort anzeigen/i }));
+      expect(passwordInput).toHaveAttribute("type", "text");
+
+      fireEvent.click(screen.getByRole("button", { name: /Passwort verbergen/i }));
+      expect(passwordInput).toHaveAttribute("type", "password");
+    });
+
+    it("Zurueck geht einen Schritt zurueck und behaelt die Eingabe", async () => {
+      mockSeniorFetch();
+      render(<SetupClaimForm token="raw-token" />);
+
+      await screen.findByText(/Schritt 1 von 3/i);
+      fireEvent.change(screen.getByLabelText(/Ihr Name/i), {
+        target: { value: "Rosa Beispiel" },
+      });
+      fireEvent.click(screen.getByRole("button", { name: /Weiter/i }));
+      expect(screen.getByText(/Schritt 2 von 3/i)).toBeInTheDocument();
+
+      fireEvent.click(screen.getByRole("button", { name: /Zurück/i }));
+      expect(screen.getByText(/Schritt 1 von 3/i)).toBeInTheDocument();
+      expect(screen.getByLabelText(/Ihr Name/i)).toHaveValue("Rosa Beispiel");
+    });
+
+    it("Eingaben und Buttons haben mindestens 80px Touch-Hoehe", async () => {
+      mockSeniorFetch();
+      render(<SetupClaimForm token="raw-token" />);
+
+      await screen.findByText(/Schritt 1 von 3/i);
+      expect(screen.getByLabelText(/Ihr Name/i)).toHaveStyle({ minHeight: "80px" });
+      expect(screen.getByRole("button", { name: /Weiter/i })).toHaveStyle({
+        minHeight: "80px",
+      });
+    });
+
+    it("comfort-Modus bekommt ebenfalls die Senior-Variante", async () => {
+      global.fetch = vi.fn(async (url: RequestInfo | URL, init?: RequestInit) => {
+        if (!init) {
+          return {
+            ok: true,
+            json: async () => ({
+              flowType: "senior_setup",
+              targetUiMode: "comfort",
+              expiresAt: "2099-05-15T10:00:00.000Z",
+            }),
+          } as Response;
+        }
+        return { ok: true, json: async () => ({}) } as Response;
+      });
+      render(<SetupClaimForm token="raw-token" />);
+
+      expect(await screen.findByText(/Schritt 1 von 3/i)).toBeInTheDocument();
+    });
+  });
+
   it("zeigt bei fehlgeschlagener Auto-Anmeldung einen Hinweis statt still zu redirecten", async () => {
     mockSignInWithPassword.mockResolvedValue({
       error: { message: "Invalid login credentials" },

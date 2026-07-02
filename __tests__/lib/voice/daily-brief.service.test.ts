@@ -278,4 +278,69 @@ describe("buildDailyBrief", () => {
       expect(brief).not.toMatch(/Restmüll|Biomüll|Papier/);
     });
   });
+
+  // W6 (A4:3): Der Brief spricht aus derselben Warnquelle wie der sichtbare
+  // ExternalWarningBanner (/api/warnings/*), nicht mehr aus der toten
+  // data.nina-Pipeline — Ohr und Auge duerfen sich nicht widersprechen.
+  describe("externe Warnquelle (W6, A4:3 — Ohr = Auge mit dem Warn-Banner)", () => {
+    const bannerWarning = {
+      headline: "Sturmboeen im Landkreis",
+      severity: "severe" as const,
+    };
+
+    it("nutzt die uebergebenen Banner-Warnungen statt data.nina", () => {
+      const brief = buildDailyBrief({ ...fullPayload, nina: [] }, [bannerWarning]);
+      expect(brief).toContain("Achtung: Sturmboeen im Landkreis.");
+      expect(brief).toContain("Warnstufe schwer");
+      expect(brief).not.toContain("Es liegen gerade keine Warnungen vor");
+    });
+
+    it("ignoriert data.nina, wenn die Banner-Quelle leer ist", () => {
+      const brief = buildDailyBrief(fullPayload, []);
+      expect(brief).toContain("Es liegen gerade keine Warnungen vor");
+      expect(brief).not.toContain("Gewitter im Anmarsch");
+    });
+
+    it("sagt bei noch nicht geladener Warnquelle (null) ehrlich 'keine Daten' statt 'keine Warnungen'", () => {
+      const brief = buildDailyBrief(fullPayload, null);
+      expect(brief).toContain("Zu Warnungen habe ich gerade keine Daten");
+      expect(brief).not.toContain("Es liegen gerade keine Warnungen vor");
+      expect(brief).not.toContain("Achtung");
+    });
+
+    it("mappt die lowercase-Warnstufen der Banner-Quelle auf deutsche Stufen", () => {
+      expect(
+        buildDailyBrief({}, [{ headline: "A", severity: "extreme" }]),
+      ).toContain("Warnstufe extrem");
+      expect(
+        buildDailyBrief({}, [{ headline: "A", severity: "moderate" }]),
+      ).toContain("Warnstufe mittel");
+      expect(
+        buildDailyBrief({}, [{ headline: "A", severity: "minor" }]),
+      ).toContain("Warnstufe gering");
+    });
+
+    it("laesst die Warnstufe bei severity=unknown weg, statt Unsinn vorzulesen", () => {
+      const brief = buildDailyBrief({}, [
+        { headline: "Stoerung im Mobilfunknetz", severity: "unknown" },
+      ]);
+      expect(brief).toContain("Achtung: Stoerung im Mobilfunknetz.");
+      expect(brief).not.toContain("Warnstufe");
+    });
+
+    it("erwaehnt zusaetzliche Banner-Warnungen wie beim Legacy-Pfad", () => {
+      const brief = buildDailyBrief({}, [
+        bannerWarning,
+        { headline: "Hochwasser", severity: "moderate" as const },
+      ]);
+      expect(brief).toContain("Sturmboeen im Landkreis");
+      expect(brief).toContain("1 weitere Warnung");
+    });
+
+    it("ohne zweiten Parameter bleibt der Legacy-Pfad (data.nina) unveraendert", () => {
+      const brief = buildDailyBrief(fullPayload);
+      expect(brief).toContain("Gewitter im Anmarsch");
+      expect(brief).toContain("schwer");
+    });
+  });
 });

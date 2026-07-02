@@ -150,6 +150,46 @@ function warningSentence(nina: NinaWarning[] | null | undefined): string {
   return `Achtung: ${first.headline}. Warnstufe ${level}.${suffix}`;
 }
 
+/**
+ * Warnung aus der Banner-Quelle (/api/warnings/*, W6 A4:3).
+ * Bewusst strukturell minimal, damit der Voice-Service nicht von der
+ * Komponenten-Schicht importieren muss — ExternalWarningItem aus
+ * components/warnings/use-external-warnings ist strukturell kompatibel.
+ */
+export interface SpokenWarning {
+  headline: string;
+  severity: "minor" | "moderate" | "severe" | "extreme" | "unknown";
+}
+
+// Die Banner-Quelle liefert Severity lowercase (inkl. "unknown");
+// "unknown" wird nicht als Warnstufe vorgelesen.
+const EXTERNAL_SEVERITY_DE: Record<SpokenWarning["severity"], string | null> = {
+  extreme: "extrem",
+  severe: "schwer",
+  moderate: "mittel",
+  minor: "gering",
+  unknown: null,
+};
+
+function externalWarningSentence(warnings: SpokenWarning[] | null): string {
+  if (warnings === null) {
+    // Warnquelle (noch) nicht geladen — ehrlich sagen statt "keine Warnungen"
+    // zu behaupten, waehrend der Banner gleich etwas anzeigen koennte.
+    return "Zu Warnungen habe ich gerade keine Daten.";
+  }
+  if (warnings.length === 0) {
+    return "Es liegen gerade keine Warnungen vor.";
+  }
+  const first = warnings[0];
+  const level = EXTERNAL_SEVERITY_DE[first.severity];
+  const levelPart = level ? ` Warnstufe ${level}.` : "";
+  const suffix =
+    warnings.length > 1
+      ? ` Es gibt ${warnings.length - 1} weitere Warnungen auf der Hier-bei-mir-Seite.`
+      : "";
+  return `Achtung: ${first.headline}.${levelPart}${suffix}`;
+}
+
 function wasteSentence(waste: WasteNext[] | null | undefined): string {
   if (!waste || waste.length === 0) {
     return "Zur Muellabfuhr habe ich gerade keine Daten.";
@@ -174,10 +214,18 @@ function eventSentence(events: LocalEvent[] | null | undefined): string {
  * Trennung durch doppelten Zeilenumbruch fuer TTS-Pausen.
  *
  * @param data Die Rohdaten aus `/api/quartier-info`. Darf Partial-leer sein.
+ * @param externalWarnings Warnungen aus der Banner-Quelle (W6, A4:3 —
+ *        useExternalWarnings). `undefined` = Legacy-Pfad ueber `data.nina`;
+ *        `null` = Quelle noch nicht geladen/fehlgeschlagen; Array = vorlesen.
+ *        Seiten, die den ExternalWarningBanner rendern, MUESSEN dieselben
+ *        Warnungen hier uebergeben, damit Ohr und Auge uebereinstimmen.
  * @returns Ein zusammenhaengender Sprechtext. Niemals leer —
  *          bei komplett leeren Daten werden fuenf Fallback-Saetze geliefert.
  */
-export function buildDailyBrief(data: Partial<QuartierInfoResponse>): string {
+export function buildDailyBrief(
+  data: Partial<QuartierInfoResponse>,
+  externalWarnings?: SpokenWarning[] | null,
+): string {
   const weather = isQuartierWeather(data.weather) ? data.weather : null;
   const pollen = isPollenData(data.pollen) ? data.pollen : null;
   const nina = Array.isArray(data.nina) ? data.nina : [];
@@ -187,7 +235,9 @@ export function buildDailyBrief(data: Partial<QuartierInfoResponse>): string {
   const parts = [
     weatherSentence(weather),
     pollenSentence(pollen),
-    warningSentence(nina),
+    externalWarnings === undefined
+      ? warningSentence(nina)
+      : externalWarningSentence(externalWarnings),
     wasteSentence(wasteNext),
     eventSentence(events),
   ];

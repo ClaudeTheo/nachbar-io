@@ -19,8 +19,14 @@ vi.mock("@/components/warnings/external-warning-banner", () => ({
 vi.mock("@/modules/voice/components/companion/TTSButton", () => ({
   TTSButton: () => <button>Vorlesen</button>,
 }));
+const buildDailyBriefMock = vi.hoisted(() => vi.fn(() => "Tagesüberblick"));
 vi.mock("@/modules/voice/services/daily-brief.service", () => ({
-  buildDailyBrief: () => "Tagesüberblick",
+  buildDailyBrief: buildDailyBriefMock,
+}));
+// W6 (A4:3): gemeinsame Warnquelle deterministisch leer mocken —
+// der Container reicht sie an Banner und Vorlesen-Brief durch.
+vi.mock("@/components/warnings/use-external-warnings", () => ({
+  useExternalWarnings: () => ({ warnings: [] }),
 }));
 
 const useQuartierInfoMock = vi.fn();
@@ -33,6 +39,7 @@ import SeniorHierBeiMirPage from "@/app/(senior)/hier-bei-mir/page";
 afterEach(() => {
   cleanup();
   useQuartierInfoMock.mockReset();
+  buildDailyBriefMock.mockClear();
 });
 
 const sampleData = {
@@ -93,6 +100,19 @@ describe("Senior /hier-bei-mir (A4:4)", () => {
     // 80px Touch-Target fuer den Anruf-Knopf
     expect(callLink.style.minHeight).toBe("80px");
     expect(screen.getByRole("button", { name: /vorlesen/i })).toBeInTheDocument();
+  });
+
+  it("uebergibt die Banner-Warnquelle an den Vorlesen-Brief (W6, Ohr = Auge)", () => {
+    useQuartierInfoMock.mockReturnValue({
+      currentQuarter: { id: "q1" },
+      data: sampleData,
+      apiError: null,
+      loading: false,
+      refresh: vi.fn(),
+    });
+    render(<SeniorHierBeiMirPage />);
+
+    expect(buildDailyBriefMock).toHaveBeenCalledWith(sampleData, []);
   });
 
   it("zeigt einen ruhigen Hinweis, wenn kein Quartier hinterlegt ist", () => {

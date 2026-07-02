@@ -24,6 +24,48 @@ describe("ExternalWarningBanner", () => {
     expect(container).toBeEmptyDOMElement();
   });
 
+  it("rendert uebergebene items ohne eigenen Fetch (W6, geteilte Warnquelle)", () => {
+    const fetchMock = vi.fn();
+    vi.stubGlobal("fetch", fetchMock);
+
+    render(
+      <ExternalWarningBanner
+        items={[
+          {
+            id: "dwd-1",
+            provider: "dwd",
+            headline: "Sturmboeen im Landkreis",
+            description: null,
+            instruction: null,
+            severity: "severe",
+            sentAt: null,
+            expiresAt: null,
+            attributionText: "Quelle: Deutscher Wetterdienst (DWD)",
+          },
+        ]}
+      />,
+    );
+
+    expect(screen.getByText("Sturmboeen im Landkreis")).toBeInTheDocument();
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it("zeigt bei items=[] den emptyState und bei items=null nichts", () => {
+    const fetchMock = vi.fn();
+    vi.stubGlobal("fetch", fetchMock);
+
+    const { container, rerender } = render(
+      <ExternalWarningBanner items={null} emptyState={<span>leer</span>} />,
+    );
+    expect(container).toBeEmptyDOMElement();
+
+    rerender(
+      <ExternalWarningBanner items={[]} emptyState={<span>leer</span>} />,
+    );
+    expect(screen.getByText("leer")).toBeInTheDocument();
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
   it("renders attribution for a single warning", async () => {
     const fetchMock = vi
       .fn()

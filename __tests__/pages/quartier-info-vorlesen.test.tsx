@@ -136,9 +136,90 @@ describe("QuartierInfoPage Vorlesen-Integration (G-5)", () => {
       expect(screen.getByTestId("tts-button")).toBeInTheDocument();
     });
 
-    const btn = screen.getByTestId("tts-button");
-    const expectedText = buildDailyBrief(MOCK_DATA);
-    expect(btn.getAttribute("data-tts-text")).toBe(expectedText);
+    // W6: Der Warnungs-Teil kommt aus der Banner-Quelle (/api/warnings/*).
+    // Der pauschale fetch-Mock liefert dort MOCK_DATA (kein Array) -> [] —
+    // also auf den Endzustand mit geladener Warnquelle warten.
+    const expectedText = buildDailyBrief(MOCK_DATA, []);
+    await waitFor(() => {
+      expect(
+        screen.getByTestId("tts-button").getAttribute("data-tts-text"),
+      ).toBe(expectedText);
+    });
+  });
+
+  it("liest dieselben Warnungen vor, die der Banner zeigt (W6, Ohr = Auge)", async () => {
+    const dwdWarning = {
+      id: "dwd-1",
+      provider: "dwd",
+      headline: "Sturmboeen im Landkreis Waldshut",
+      description: null,
+      instruction: null,
+      severity: "severe",
+      sent_at: "2026-07-01T10:00:00.000Z",
+      expires_at: null,
+      attribution_text: "Quelle: Deutscher Wetterdienst (DWD)",
+    };
+    vi.stubGlobal(
+      "fetch",
+      vi.fn((input: RequestInfo | URL) => {
+        const url = String(input);
+        if (url.includes("/api/warnings/dwd")) {
+          return Promise.resolve({
+            ok: true,
+            json: () => Promise.resolve([dwdWarning]),
+          });
+        }
+        if (url.includes("/api/warnings/")) {
+          return Promise.resolve({ ok: true, json: () => Promise.resolve([]) });
+        }
+        return Promise.resolve({
+          ok: true,
+          json: () => Promise.resolve(MOCK_DATA),
+        });
+      }),
+    );
+
+    render(<QuartierInfoPage />);
+
+    // Auge: der Banner zeigt die DWD-Warnung
+    expect(
+      await screen.findByText("Sturmboeen im Landkreis Waldshut"),
+    ).toBeInTheDocument();
+
+    // Ohr: der Vorlesen-Text enthaelt dieselbe Warnung — obwohl data.nina leer ist
+    await waitFor(() => {
+      const ttsText =
+        screen.getByTestId("tts-button").getAttribute("data-tts-text") ?? "";
+      expect(ttsText).toContain("Sturmboeen im Landkreis Waldshut");
+      expect(ttsText).not.toContain("Es liegen gerade keine Warnungen vor");
+    });
+  });
+
+  it("sagt 'keine Daten' statt 'keine Warnungen', solange die Warnquelle nicht geantwortet hat", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn((input: RequestInfo | URL) => {
+        const url = String(input);
+        if (url.includes("/api/warnings/")) {
+          return new Promise(() => {}); // Warnquelle haengt absichtlich
+        }
+        return Promise.resolve({
+          ok: true,
+          json: () => Promise.resolve(MOCK_DATA),
+        });
+      }),
+    );
+
+    render(<QuartierInfoPage />);
+
+    await waitFor(() => {
+      expect(screen.getByTestId("tts-button")).toBeInTheDocument();
+    });
+
+    const ttsText =
+      screen.getByTestId("tts-button").getAttribute("data-tts-text") ?? "";
+    expect(ttsText).toContain("Zu Warnungen habe ich gerade keine Daten");
+    expect(ttsText).not.toContain("Es liegen gerade keine Warnungen vor");
   });
 
   it("zeigt keinen Vorlesen-Button waehrend des Ladens", () => {

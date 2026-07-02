@@ -168,7 +168,14 @@ export async function getQuartierInfo(
     }
   }
 
-  // 4. NINA-Warnungen — nur wenn AGS fuer das Quartier konfiguriert ist
+  // 4. NINA-Warnungen — DEPRECATED (W6, A4:3): Diese Pipeline ist fuer alle
+  // per Migration angelegten Quartiere leer (kein quarters.settings.nina_ags
+  // geseedet; Mig 125 schrieb nach municipal_config.features, und der
+  // nina-sync-Cron laeuft wegen einer nicht existenten quarters.active-Spalte
+  // ins Leere). Sichtbare Warnquelle ist der Banner-Pfad /api/warnings/*
+  // (external_warning_cache via bbk_ars); der Vorlesen-Brief nutzt seit W6
+  // dieselbe Quelle (useExternalWarnings -> buildDailyBrief). Das nina-Feld
+  // bleibt vorerst im Response-Shape; Vollentfernung als eigene Cleanup-Welle.
   let nina = cacheMap.get("nina") as QuartierInfoResponse["nina"] | undefined;
   if (!nina) {
     try {
@@ -188,24 +195,40 @@ export async function getQuartierInfo(
     }
   }
 
-  // 5. Naechste Muellabfuhr aus waste_collection_dates
+  // 5. Naechste Muellabfuhr aus waste_collection_dates — auf die
+  // Sammelgebiete des Quartiers gescoped und ohne abgesagte Termine
+  // (W6, A4:2; gleiches Muster wie app/(app)/waste-calendar/page.tsx).
+  // Wichtig: /api/quartier-info laeuft mit service_role — das Scoping MUSS
+  // in der Query passieren, RLS greift hier nicht.
   const wasteNext: WasteNext[] = [];
   try {
-    const today = new Date().toISOString().slice(0, 10);
-    const { data: wasteDates } = await supabase
-      .from("waste_collection_dates")
-      .select("collection_date, waste_type, label")
-      .gte("collection_date", today)
-      .order("collection_date", { ascending: true })
-      .limit(3);
+    const { data: areaLinks } = await supabase
+      .from("quarter_collection_areas")
+      .select("area_id")
+      .eq("quarter_id", quarterId);
+    const areaIds = (areaLinks ?? []).map(
+      (a: { area_id: string }) => a.area_id,
+    );
 
-    if (wasteDates) {
-      for (const w of wasteDates) {
-        wasteNext.push({
-          date: w.collection_date,
-          type: w.waste_type,
-          label: w.label || w.waste_type,
-        });
+    if (areaIds.length > 0) {
+      const today = new Date().toISOString().slice(0, 10);
+      const { data: wasteDates } = await supabase
+        .from("waste_collection_dates")
+        .select("collection_date, waste_type, label")
+        .in("area_id", areaIds)
+        .eq("is_cancelled", false)
+        .gte("collection_date", today)
+        .order("collection_date", { ascending: true })
+        .limit(3);
+
+      if (wasteDates) {
+        for (const w of wasteDates) {
+          wasteNext.push({
+            date: w.collection_date,
+            type: w.waste_type,
+            label: w.label || w.waste_type,
+          });
+        }
       }
     }
   } catch {

@@ -27,6 +27,7 @@ import { QuartierAppLogo } from "@/components/brand/QuartierAppLogo";
 import { WeatherWidget } from "@/components/weather/WeatherWidget";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ExternalWarningBanner } from "@/components/warnings/external-warning-banner";
+import { useExternalWarnings } from "@/components/warnings/use-external-warnings";
 import { TTSButton } from "@/modules/voice/components/companion/TTSButton";
 import { buildDailyBrief } from "@/modules/voice/services/daily-brief.service";
 import { useQuartierInfo } from "@/modules/info-hub/useQuartierInfo";
@@ -119,6 +120,10 @@ function DynamicIcon({
 export default function QuartierInfoPage() {
   const { currentQuarter, quarterLoading, data, apiError, loading, refresh } =
     useQuartierInfo();
+  // W6 (A4:3): Eine Warnquelle fuer Banner UND Vorlesen-Brief (Ohr = Auge).
+  const { warnings: externalWarnings } = useExternalWarnings({
+    enabled: Boolean(currentQuarter),
+  });
   const { geoHouses, residentCounts } = useMapStatuses(
     currentQuarter?.id,
     currentQuarter?.map_config,
@@ -235,7 +240,7 @@ export default function QuartierInfoPage() {
       {/* Vorlesen-Button (G-5) */}
       {!loading && data && (
         <section data-testid="info-vorlesen">
-          <TTSButton text={buildDailyBrief(data)} />
+          <TTSButton text={buildDailyBrief(data, externalWarnings)} />
         </section>
       )}
 
@@ -310,6 +315,7 @@ export default function QuartierInfoPage() {
           <Skeleton className="h-8 w-full" />
         ) : (
           <ExternalWarningBanner
+            items={externalWarnings}
             showAction={false}
             emptyState={
               <div className="flex items-center gap-2 text-green-700">

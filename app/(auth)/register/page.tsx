@@ -18,12 +18,6 @@ import {
 } from "./components";
 import type { Step, RegisterFormState } from "./components";
 
-const LOCAL_PREVIEW_STEPS: Step[] = ["identity", "ui_mode", "ai_consent"];
-
-function isLocalPreviewEnabled() {
-  return process.env.NODE_ENV !== "production";
-}
-
 function buildInitialFormState(): RegisterFormState {
   return {
     email: "",
@@ -49,52 +43,6 @@ function buildInitialFormState(): RegisterFormState {
   };
 }
 
-function buildLocalPreviewState(): RegisterFormState {
-  return {
-    ...buildInitialFormState(),
-    email: "test.person@example.invalid",
-    displayName: "Test Person",
-    firstName: "Test",
-    lastName: "Person",
-    dateOfBirth: "1948-01-01",
-    verificationMethod: "address_manual",
-    selectedAddress: {
-      street: "Purkersdorfer Straße",
-      postalCode: "79713",
-      city: "Bad Säckingen",
-      state: "Baden-Württemberg",
-      country: "DE",
-      lat: 47.553,
-      lng: 7.946,
-      displayText: "Purkersdorfer Straße, 79713 Bad Säckingen",
-    },
-    houseNumber: "12",
-    postalCode: "79713",
-    city: "Bad Säckingen",
-    geoQuarter: {
-      quarter_id: "local-preview-bad-saeckingen",
-      quarter_name: "Bad Säckingen",
-      action: "preview",
-    },
-    uiMode: "comfort",
-  };
-}
-
-function getLocalPreviewStep(searchParams: Pick<URLSearchParams, "get">): Step | null {
-  if (!isLocalPreviewEnabled()) return null;
-
-  const previewStep =
-    searchParams.get("previewStep") ??
-    (typeof window !== "undefined"
-      ? new URLSearchParams(window.location.search).get("previewStep")
-      : null);
-  if (LOCAL_PREVIEW_STEPS.includes(previewStep as Step)) {
-    return previewStep as Step;
-  }
-
-  return null;
-}
-
 // Wrapper mit Suspense-Boundary für useSearchParams
 export default function RegisterPage() {
   return (
@@ -108,23 +56,12 @@ function RegisterForm() {
   // === State ===
   const [step, setStep] = useState<Step>("entry");
   const [formState, setFormState] = useState<RegisterFormState>(() => buildInitialFormState());
-  const [isLocalPreview, setIsLocalPreview] = useState(false);
 
   const searchParams = useSearchParams();
 
   // === URL-Parameter: Invite-Code und Referrer aus QR-Code/Link ===
   /* eslint-disable react-hooks/set-state-in-effect -- URL-Params einmalig in State übernehmen */
   useEffect(() => {
-    const previewStep = getLocalPreviewStep(searchParams);
-    if (previewStep) {
-      setFormState(buildLocalPreviewState());
-      setIsLocalPreview(true);
-      setStep(previewStep);
-      return;
-    }
-
-    setIsLocalPreview(false);
-
     const invite = searchParams.get("invite");
     const ref = searchParams.get("ref");
     if (invite) {
@@ -236,12 +173,7 @@ function RegisterForm() {
 
         {/* Schritt 4: KI-Einwilligung */}
         {step === "ai_consent" && (
-          <RegisterStepAiConsent
-            state={formState}
-            setState={updateState}
-            setStep={setStep}
-            isPreview={isLocalPreview}
-          />
+          <RegisterStepAiConsent state={formState} setState={updateState} setStep={setStep} />
         )}
 
         {/* Bestätigung: OTP-Code Eingabe */}

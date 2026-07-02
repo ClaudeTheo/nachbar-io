@@ -7,7 +7,6 @@ export {
   setUiMode,
   updateProfile,
   toggleUiMode,
-  updateUserSettings,
   getProfileServer,
   updateProfileServer,
 } from "./profile.service";

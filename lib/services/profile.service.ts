@@ -68,24 +68,6 @@ export async function toggleUiMode(userId: string, currentMode: UserUiMode): Pro
   return setUiMode(userId, newMode);
 }
 
-/** Nutzer-Einstellungen aktualisieren (merge in settings-JSONB). */
-export async function updateUserSettings(
-  userId: string,
-  settingsPatch: Record<string, unknown>
-): Promise<User> {
-  const supabase = createClient();
-  // Aktuelle Settings laden, dann mergen
-  const { data: current, error: fetchErr } = await supabase
-    .from("users")
-    .select("settings")
-    .eq("id", userId)
-    .single();
-  if (fetchErr) throw fetchErr;
-
-  const merged = { ...(current?.settings as Record<string, unknown> ?? {}), ...settingsPatch };
-  return updateProfile(userId, { settings: merged });
-}
-
 // ============================================================
 // Server-seitige Funktionen (fuer API Routes / Server Components)
 // ============================================================

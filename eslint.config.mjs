@@ -13,6 +13,10 @@ const eslintConfig = defineConfig([
     "build/**",
     "next-env.d.ts",
     // Local generated artifacts:
+    // .claude/**: verschachtelte Git-Worktrees (.claude/worktrees/*) enthalten
+    // Datei-Duplikate ohne eigene node_modules — gleicher Ausschluss wie in
+    // vitest.config.ts, sonst ist der volle Lint-Lauf rot.
+    ".claude/**",
     ".codex-logs/**",
     ".vercel/**",
     "coverage/**",

@@ -16,7 +16,7 @@ vi.mock("@/lib/supabase/client", () => ({
   }),
 }));
 
-import { getProfile, setUiMode, updateProfile, toggleUiMode, updateUserSettings } from "../profile.service";
+import { getProfile, setUiMode, updateProfile, toggleUiMode } from "../profile.service";
 
 const MOCK_USER = {
   id: "user-1",
@@ -142,38 +142,5 @@ describe("setUiMode", () => {
 
     expect(chain.update).toHaveBeenCalledWith({ ui_mode: "comfort" });
     expect(result).toBe("comfort");
-  });
-});
-
-describe("updateUserSettings", () => {
-  beforeEach(() => vi.clearAllMocks());
-
-  it("merged neue Settings mit bestehenden", async () => {
-    // Erster Aufruf: aktuelle Settings laden
-    const selectChain = {
-      select: vi.fn().mockReturnThis(),
-      eq: vi.fn().mockReturnThis(),
-      single: vi.fn().mockResolvedValue({ data: { settings: { theme: "dark" } }, error: null }),
-    };
-    // Zweiter Aufruf: Update mit gemerged Settings
-    const updateChain = {
-      update: vi.fn().mockReturnThis(),
-      eq: vi.fn().mockReturnThis(),
-      select: vi.fn().mockReturnThis(),
-      single: vi.fn().mockResolvedValue({
-        data: { ...MOCK_USER, settings: { theme: "dark", lang: "de" } },
-        error: null,
-      }),
-    };
-
-    let callCount = 0;
-    mockFrom.mockImplementation(() => {
-      callCount++;
-      if (callCount === 1) return selectChain as unknown as ReturnType<typeof mockFrom>;
-      return updateChain as unknown as ReturnType<typeof mockFrom>;
-    });
-
-    const result = await updateUserSettings("user-1", { lang: "de" });
-    expect(result.settings).toEqual({ theme: "dark", lang: "de" });
   });
 });

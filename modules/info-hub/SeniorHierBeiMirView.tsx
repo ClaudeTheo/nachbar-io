@@ -63,11 +63,11 @@ export interface SeniorHierBeiMirViewProps {
   onRefresh: () => void;
   /**
    * Warnungen aus useExternalWarnings (W6, A4:3) — gehen an Banner UND
-   * Vorlesen-Brief, damit Ohr und Auge uebereinstimmen. Optional, damit die
-   * lokale UI-Preview die View weiter ohne Fetch rendern kann (dann laedt
-   * der Banner selbst und der Brief nutzt den Legacy-Pfad).
+   * Vorlesen-Brief, damit Ohr und Auge aus derselben Datenmenge sprechen.
+   * Bewusst Pflicht-Prop: ein Consumer, der ihn vergisst, liesse Banner
+   * (Self-Fetch) und Brief (Legacy data.nina) wieder auseinanderlaufen.
    */
-  warnings?: ExternalWarningItem[] | null;
+  warnings: ExternalWarningItem[] | null;
 }
 
 export function SeniorHierBeiMirView({

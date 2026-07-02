@@ -159,25 +159,23 @@ describe("QuartierInfoPage Vorlesen-Integration (G-5)", () => {
       expires_at: null,
       attribution_text: "Quelle: Deutscher Wetterdienst (DWD)",
     };
-    vi.stubGlobal(
-      "fetch",
-      vi.fn((input: RequestInfo | URL) => {
-        const url = String(input);
-        if (url.includes("/api/warnings/dwd")) {
-          return Promise.resolve({
-            ok: true,
-            json: () => Promise.resolve([dwdWarning]),
-          });
-        }
-        if (url.includes("/api/warnings/")) {
-          return Promise.resolve({ ok: true, json: () => Promise.resolve([]) });
-        }
+    const fetchMock = vi.fn((input: RequestInfo | URL) => {
+      const url = String(input);
+      if (url.includes("/api/warnings/dwd")) {
         return Promise.resolve({
           ok: true,
-          json: () => Promise.resolve(MOCK_DATA),
+          json: () => Promise.resolve([dwdWarning]),
         });
-      }),
-    );
+      }
+      if (url.includes("/api/warnings/")) {
+        return Promise.resolve({ ok: true, json: () => Promise.resolve([]) });
+      }
+      return Promise.resolve({
+        ok: true,
+        json: () => Promise.resolve(MOCK_DATA),
+      });
+    });
+    vi.stubGlobal("fetch", fetchMock);
 
     render(<QuartierInfoPage />);
 
@@ -193,6 +191,13 @@ describe("QuartierInfoPage Vorlesen-Integration (G-5)", () => {
       expect(ttsText).toContain("Sturmboeen im Landkreis Waldshut");
       expect(ttsText).not.toContain("Es liegen gerade keine Warnungen vor");
     });
+
+    // Geteilte Quelle: genau 3 Warn-Fetches (einmal pro Provider) — der Banner
+    // darf NICHT zusaetzlich selbst fetchen (items-Prop vergessen = Regression)
+    const warningCalls = fetchMock.mock.calls.filter((call) =>
+      String(call[0]).includes("/api/warnings/"),
+    );
+    expect(warningCalls).toHaveLength(3);
   });
 
   it("sagt 'keine Daten' statt 'keine Warnungen', solange die Warnquelle nicht geantwortet hat", async () => {

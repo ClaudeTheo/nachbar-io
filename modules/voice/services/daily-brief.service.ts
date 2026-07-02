@@ -183,10 +183,15 @@ function externalWarningSentence(warnings: SpokenWarning[] | null): string {
   const first = warnings[0];
   const level = EXTERNAL_SEVERITY_DE[first.severity];
   const levelPart = level ? ` Warnstufe ${level}.` : "";
+  // Ohne Seitenverweis: der Brief laeuft auf /quartier-info UND /hier-bei-mir,
+  // und der Warn-Banner steht ohnehin direkt auf derselben Seite.
+  const remaining = warnings.length - 1;
   const suffix =
-    warnings.length > 1
-      ? ` Es gibt ${warnings.length - 1} weitere Warnungen auf der Hier-bei-mir-Seite.`
-      : "";
+    remaining === 0
+      ? ""
+      : remaining === 1
+        ? " Es gibt eine weitere Warnung."
+        : ` Es gibt ${remaining} weitere Warnungen.`;
   return `Achtung: ${first.headline}.${levelPart}${suffix}`;
 }
 

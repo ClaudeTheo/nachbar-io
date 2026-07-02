@@ -328,13 +328,23 @@ describe("buildDailyBrief", () => {
       expect(brief).not.toContain("Warnstufe");
     });
 
-    it("erwaehnt zusaetzliche Banner-Warnungen wie beim Legacy-Pfad", () => {
+    it("erwaehnt eine zusaetzliche Banner-Warnung im korrekten Singular", () => {
       const brief = buildDailyBrief({}, [
         bannerWarning,
         { headline: "Hochwasser", severity: "moderate" as const },
       ]);
       expect(brief).toContain("Sturmboeen im Landkreis");
-      expect(brief).toContain("1 weitere Warnung");
+      expect(brief).toContain("Es gibt eine weitere Warnung.");
+      expect(brief).not.toContain("weitere Warnungen");
+    });
+
+    it("zaehlt mehrere zusaetzliche Banner-Warnungen im Plural", () => {
+      const brief = buildDailyBrief({}, [
+        bannerWarning,
+        { headline: "Hochwasser", severity: "moderate" as const },
+        { headline: "Glaette", severity: "minor" as const },
+      ]);
+      expect(brief).toContain("Es gibt 2 weitere Warnungen.");
     });
 
     it("ohne zweiten Parameter bleibt der Legacy-Pfad (data.nina) unveraendert", () => {

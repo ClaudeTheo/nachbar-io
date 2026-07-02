@@ -12,8 +12,19 @@ vi.mock("@/components/weather/WeatherWidget", () => ({
   WeatherWidget: () => <div data-testid="weather-mock" />,
 }));
 vi.mock("@/components/warnings/external-warning-banner", () => ({
-  ExternalWarningBanner: ({ emptyState }: { emptyState?: React.ReactNode }) => (
-    <div data-testid="warnings-mock">{emptyState}</div>
+  ExternalWarningBanner: ({
+    emptyState,
+    items,
+  }: {
+    emptyState?: React.ReactNode;
+    items?: unknown[] | null;
+  }) => (
+    <div
+      data-testid="warnings-mock"
+      data-items-count={items == null ? "null" : String(items.length)}
+    >
+      {emptyState}
+    </div>
   ),
 }));
 vi.mock("@/modules/voice/components/companion/TTSButton", () => ({
@@ -112,7 +123,11 @@ describe("Senior /hier-bei-mir (A4:4)", () => {
     });
     render(<SeniorHierBeiMirPage />);
 
+    // Brief bekommt dieselbe Warnmenge wie der Banner (items-Prop)
     expect(buildDailyBriefMock).toHaveBeenCalledWith(sampleData, []);
+    expect(
+      screen.getByTestId("warnings-mock").getAttribute("data-items-count"),
+    ).toBe("0");
   });
 
   it("zeigt einen ruhigen Hinweis, wenn kein Quartier hinterlegt ist", () => {

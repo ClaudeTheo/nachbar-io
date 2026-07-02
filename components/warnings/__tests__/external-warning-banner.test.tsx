@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { cleanup, render, screen, waitFor, within } from "@testing-library/react";
+import { act, cleanup, render, screen, waitFor, within } from "@testing-library/react";
 import { ExternalWarningBanner } from "../external-warning-banner";
 
 describe("ExternalWarningBanner", () => {
@@ -22,6 +22,26 @@ describe("ExternalWarningBanner", () => {
     });
 
     expect(container).toBeEmptyDOMElement();
+  });
+
+  it("zeigt bei Totalausfall der Warnquellen KEINE gruene Entwarnung (W6)", async () => {
+    const fetchMock = vi.fn().mockRejectedValue(new Error("offline"));
+    vi.stubGlobal("fetch", fetchMock);
+
+    const { container } = render(
+      <ExternalWarningBanner emptyState={<span>Alles ruhig</span>} />,
+    );
+
+    await waitFor(() => {
+      expect(fetchMock).toHaveBeenCalledTimes(3);
+    });
+    // Promise.allSettled-Kette ausrollen lassen, damit der Endzustand steht
+    await act(async () => {
+      await Promise.resolve();
+    });
+
+    expect(container).toBeEmptyDOMElement();
+    expect(screen.queryByText("Alles ruhig")).not.toBeInTheDocument();
   });
 
   it("rendert uebergebene items ohne eigenen Fetch (W6, geteilte Warnquelle)", () => {

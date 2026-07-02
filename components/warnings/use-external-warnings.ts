@@ -45,9 +45,10 @@ export interface ExternalWarningItem {
  * Laedt die aktiven Warnungen aller Provider (NINA, DWD, UBA) und haelt sie
  * severity-sortiert im State.
  *
- * @returns `warnings === null` solange geladen wird; danach das (ggf. leere)
- *          sortierte Array. Provider-Fehler ergeben stille Teilausfaelle —
- *          gleiche Semantik wie der Banner vor der Extraktion.
+ * @returns `warnings === null` solange geladen wird ODER wenn ALLE Provider
+ *          fehlschlagen (offline/5xx) — dann darf weder der Banner gruene
+ *          Entwarnung zeigen noch der Brief "keine Warnungen" vorlesen.
+ *          Teilausfaelle bleiben still (die erreichbaren Provider zaehlen).
  */
 export function useExternalWarnings(options?: { enabled?: boolean }): {
   warnings: ExternalWarningItem[] | null;
@@ -70,9 +71,17 @@ export function useExternalWarnings(options?: { enabled?: boolean }): {
         return;
       }
 
-      const combined = settled.flatMap((result) =>
-        result.status === "fulfilled" ? result.value : [],
+      const results = settled.map((result) =>
+        result.status === "fulfilled" ? result.value : null,
       );
+      // Totalausfall (alle Provider fehlgeschlagen): bei null bleiben —
+      // "keine Daten" ist ehrlich, "[] = keine Warnungen" waere Entwarnung.
+      if (results.every((result) => result === null)) {
+        setWarnings(null);
+        return;
+      }
+
+      const combined = results.flatMap((result) => result ?? []);
       setWarnings(sortWarnings(combined));
     }
 
@@ -86,13 +95,17 @@ export function useExternalWarnings(options?: { enabled?: boolean }): {
   return { warnings };
 }
 
-async function fetchProviderWarnings(provider: WarningProvider) {
+// null = Provider nicht erreichbar/fehlgeschlagen (fuer die Totalausfall-
+// Erkennung); [] = Provider erreichbar, aber keine (validen) Warnungen.
+async function fetchProviderWarnings(
+  provider: WarningProvider,
+): Promise<ExternalWarningItem[] | null> {
   try {
     const response = await fetch(`/api/warnings/${provider}`, {
       cache: "no-store",
     });
     if (!response.ok) {
-      return [];
+      return null;
     }
 
     const payload = await response.json();
@@ -104,7 +117,7 @@ async function fetchProviderWarnings(provider: WarningProvider) {
       .map(normalizeWarning)
       .filter((warning): warning is ExternalWarningItem => warning !== null);
   } catch {
-    return [];
+    return null;
   }
 }
 

@@ -1,6 +1,7 @@
 // app/(senior)/layout.tsx
 import type { ReactNode } from "react";
 import { PushBanner } from "@/components/senior/PushBanner";
+import { SeniorOfflineBanner } from "@/components/senior/SeniorOfflineBanner";
 import { RefreshRotationMounter } from "@/components/senior/RefreshRotationMounter";
 import { BugReportButton } from "@/components/BugReportButton";
 import { GlobalCallListener } from "@/components/video/GlobalCallListener";
@@ -41,6 +42,8 @@ export default function SeniorDeviceLayout({
         {/* SB-3: Foto-Karussell als Ruhezustand (nach 5 Min. Inaktivitaet, Tap beendet). */}
         <SeniorScreensaver />
         <main className="mx-auto max-w-md px-6 pb-36 pt-8">
+          {/* W7 (A3:6): Netzausfall explizit und beruhigend kommunizieren. */}
+          <SeniorOfflineBanner />
           <PushBanner />
           {children}
         </main>

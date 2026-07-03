@@ -41,6 +41,10 @@ jobs:
           node-version: 22
           cache: npm
 
+      # npm 11 = gleiche Lockfile-Semantik wie Dependabot/lokale Dev-Umgebung (siehe PR #76).
+      - name: Use npm 11
+        run: npm install -g npm@11
+
       - name: Install Dependencies
         run: npm ci
 

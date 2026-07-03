@@ -25,6 +25,12 @@ jobs:
           cache: npm
           cache-dependency-path: package-lock.json
 
+      # npm 11 = gleiche Lockfile-Semantik wie Dependabot/lokale Dev-Umgebung.
+      # npm 10 (Node-22-Default) lehnt Dependabot-regenerierte Lockfiles ab
+      # (nested type-fest-Entry, siehe PR #76).
+      - name: Use npm 11
+        run: npm install -g npm@11
+
       - name: Install dependencies
         shell: bash
         run: |
@@ -106,6 +112,12 @@ jobs:
           node-version: 22
           cache: npm
           cache-dependency-path: package-lock.json
+
+      # npm 11 = gleiche Lockfile-Semantik wie Dependabot/lokale Dev-Umgebung.
+      # npm 10 (Node-22-Default) lehnt Dependabot-regenerierte Lockfiles ab
+      # (nested type-fest-Entry, siehe PR #76).
+      - name: Use npm 11
+        run: npm install -g npm@11
 
       - name: Install dependencies
         shell: bash

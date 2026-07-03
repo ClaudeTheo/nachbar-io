@@ -20,6 +20,7 @@ import { ExternalWarningBanner } from "@/components/warnings/external-warning-ba
 import { ExternalLink as SafeExternalLink } from "@/components/ExternalLink";
 import { TTSButton } from "@/modules/voice/components/companion/TTSButton";
 import { buildDailyBrief } from "@/modules/voice/services/daily-brief.service";
+import type { ExternalWarningItem } from "@/components/warnings/use-external-warnings";
 import type { UseQuartierInfoResult } from "@/modules/info-hub/useQuartierInfo";
 import type {
   WasteNext,
@@ -60,6 +61,13 @@ export interface SeniorHierBeiMirViewProps {
   apiError: UseQuartierInfoResult["apiError"];
   loading: boolean;
   onRefresh: () => void;
+  /**
+   * Warnungen aus useExternalWarnings (W6, A4:3) — gehen an Banner UND
+   * Vorlesen-Brief, damit Ohr und Auge aus derselben Datenmenge sprechen.
+   * Bewusst Pflicht-Prop: ein Consumer, der ihn vergisst, liesse Banner
+   * (Self-Fetch) und Brief (Legacy data.nina) wieder auseinanderlaufen.
+   */
+  warnings: ExternalWarningItem[] | null;
 }
 
 export function SeniorHierBeiMirView({
@@ -68,6 +76,7 @@ export function SeniorHierBeiMirView({
   apiError,
   loading,
   onRefresh,
+  warnings,
 }: SeniorHierBeiMirViewProps) {
   return (
     <div className="space-y-6">
@@ -103,7 +112,7 @@ export function SeniorHierBeiMirView({
           {/* Vorlesen */}
           {!loading && data && (
             <div data-testid="senior-info-vorlesen">
-              <TTSButton text={buildDailyBrief(data)} />
+              <TTSButton text={buildDailyBrief(data, warnings)} />
             </div>
           )}
 
@@ -121,6 +130,7 @@ export function SeniorHierBeiMirView({
           {/* Warnungen */}
           <SeniorCard title="Warnungen">
             <ExternalWarningBanner
+              items={warnings}
               showAction={false}
               emptyState={
                 <div className="flex items-center gap-2 text-green-700">

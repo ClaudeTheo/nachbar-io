@@ -13,9 +13,14 @@
 
 import { SeniorHierBeiMirView } from "@/modules/info-hub/SeniorHierBeiMirView";
 import { useQuartierInfo } from "@/modules/info-hub/useQuartierInfo";
+import { useExternalWarnings } from "@/components/warnings/use-external-warnings";
 
 export default function SeniorHierBeiMirPage() {
   const { currentQuarter, data, apiError, loading, refresh } = useQuartierInfo();
+  // W6 (A4:3): Eine Warnquelle fuer Banner UND Vorlesen-Brief (Ohr = Auge).
+  const { warnings } = useExternalWarnings({
+    enabled: Boolean(currentQuarter),
+  });
 
   return (
     <SeniorHierBeiMirView
@@ -24,6 +29,7 @@ export default function SeniorHierBeiMirPage() {
       apiError={apiError}
       loading={loading}
       onRefresh={refresh}
+      warnings={warnings}
     />
   );
 }

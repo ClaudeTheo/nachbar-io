@@ -1,34 +1,16 @@
 "use client";
 
 import type { ReactNode } from "react";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo } from "react";
 import Link from "next/link";
 import { AlertTriangle, ChevronRight } from "lucide-react";
 import { AttributionFooter } from "./attribution-footer";
-
-type Provider = "nina" | "dwd" | "uba";
-type Severity = "minor" | "moderate" | "severe" | "extreme" | "unknown";
-
-const PROVIDERS: Provider[] = ["nina", "dwd", "uba"];
-const SEVERITY_RANK: Record<Severity, number> = {
-  extreme: 4,
-  severe: 3,
-  moderate: 2,
-  minor: 1,
-  unknown: 0,
-};
-
-interface ExternalWarningItem {
-  id: string;
-  provider: Provider;
-  headline: string;
-  description: string | null;
-  instruction: string | null;
-  severity: Severity;
-  sentAt: string | null;
-  expiresAt: string | null;
-  attributionText: string;
-}
+import {
+  useExternalWarnings,
+  type ExternalWarningItem,
+  type WarningProvider,
+  type WarningSeverity,
+} from "./use-external-warnings";
 
 interface ExternalWarningBannerProps {
   emptyState?: ReactNode;
@@ -36,6 +18,14 @@ interface ExternalWarningBannerProps {
   showAction?: boolean;
   actionHref?: string;
   actionLabel?: string;
+  /**
+   * Extern geladene Warnungen (W6, A4:3): Seiten, die den Banner UND den
+   * Vorlesen-Brief rendern, laden die Warnungen einmal via
+   * useExternalWarnings und uebergeben sie hier — Ohr und Auge sprechen
+   * dann aus derselben Datenmenge. `undefined` = Banner laedt selbst
+   * (Verhalten vor W6); `null` = Laden laeuft noch.
+   */
+  items?: ExternalWarningItem[] | null;
 }
 
 export function ExternalWarningBanner({
@@ -44,35 +34,17 @@ export function ExternalWarningBanner({
   showAction = true,
   actionHref = "/quartier-info#warnungen",
   actionLabel = "Warnung anzeigen",
+  items,
 }: ExternalWarningBannerProps) {
-  const [warnings, setWarnings] = useState<ExternalWarningItem[] | null>(null);
+  const { warnings: fetchedWarnings } = useExternalWarnings({
+    enabled: items === undefined,
+  });
+  const warnings = items === undefined ? fetchedWarnings : items;
 
-  useEffect(() => {
-    let cancelled = false;
-
-    async function loadWarnings() {
-      const settled = await Promise.allSettled(
-        PROVIDERS.map((provider) => fetchProviderWarnings(provider)),
-      );
-      if (cancelled) {
-        return;
-      }
-
-      const combined = settled.flatMap((result) =>
-        result.status === "fulfilled" ? result.value : [],
-      );
-      const sorted = sortWarnings(combined);
-      setWarnings(typeof maxItems === "number" ? sorted.slice(0, maxItems) : sorted);
-    }
-
-    void loadWarnings();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [maxItems]);
-
-  const visibleWarnings = useMemo(() => warnings ?? [], [warnings]);
+  const visibleWarnings = useMemo(() => {
+    const list = warnings ?? [];
+    return typeof maxItems === "number" ? list.slice(0, maxItems) : list;
+  }, [warnings, maxItems]);
 
   if (warnings == null) {
     return null;
@@ -152,90 +124,7 @@ export function ExternalWarningBanner({
   );
 }
 
-async function fetchProviderWarnings(provider: Provider) {
-  try {
-    const response = await fetch(`/api/warnings/${provider}`, {
-      cache: "no-store",
-    });
-    if (!response.ok) {
-      return [];
-    }
-
-    const payload = await response.json();
-    if (!Array.isArray(payload)) {
-      return [];
-    }
-
-    return payload
-      .map(normalizeWarning)
-      .filter((warning): warning is ExternalWarningItem => warning !== null);
-  } catch {
-    return [];
-  }
-}
-
-function normalizeWarning(value: unknown): ExternalWarningItem | null {
-  if (!value || typeof value !== "object") {
-    return null;
-  }
-
-  const record = value as Record<string, unknown>;
-  const provider = normalizeProvider(record.provider);
-  const severity = normalizeSeverity(record.severity);
-  const id = typeof record.id === "string" ? record.id : null;
-  const headline = typeof record.headline === "string" ? record.headline : null;
-  const attributionText =
-    typeof record.attribution_text === "string" ? record.attribution_text : null;
-  const sentAt =
-    typeof record.sent_at === "string" ? record.sent_at.trim() : null;
-  const expiresAt =
-    typeof record.expires_at === "string" ? record.expires_at.trim() : null;
-
-  if (!provider || !severity || !id || !headline || !attributionText) {
-    return null;
-  }
-
-  return {
-    id,
-    provider,
-    headline,
-    description: typeof record.description === "string" ? record.description : null,
-    instruction: typeof record.instruction === "string" ? record.instruction : null,
-    severity,
-    sentAt: sentAt && sentAt.length > 0 ? sentAt : null,
-    expiresAt: expiresAt && expiresAt.length > 0 ? expiresAt : null,
-    attributionText,
-  };
-}
-
-function normalizeProvider(value: unknown): Provider | null {
-  return value === "nina" || value === "dwd" || value === "uba" ? value : null;
-}
-
-function normalizeSeverity(value: unknown): Severity | null {
-  return value === "minor" ||
-    value === "moderate" ||
-    value === "severe" ||
-    value === "extreme" ||
-    value === "unknown"
-    ? value
-    : null;
-}
-
-function sortWarnings(warnings: ExternalWarningItem[]) {
-  return [...warnings].sort((left, right) => {
-    const severityDiff = SEVERITY_RANK[right.severity] - SEVERITY_RANK[left.severity];
-    if (severityDiff !== 0) {
-      return severityDiff;
-    }
-
-    const leftSent = left.sentAt ? Date.parse(left.sentAt) : 0;
-    const rightSent = right.sentAt ? Date.parse(right.sentAt) : 0;
-    return rightSent - leftSent;
-  });
-}
-
-function formatProvider(provider: Provider) {
+function formatProvider(provider: WarningProvider) {
   if (provider === "nina") {
     return "NINA";
   }
@@ -247,7 +136,7 @@ function formatProvider(provider: Provider) {
   return "UBA";
 }
 
-function formatSeverity(severity: Severity) {
+function formatSeverity(severity: WarningSeverity) {
   if (severity === "extreme" || severity === "severe") {
     return "Hohe Prioritaet";
   }

@@ -77,31 +77,32 @@ test.describe("S8: Care SOS Workflow", () => {
     });
   });
 
-  test("S8.3 — Nicht-Notfall-Kategorie loest direkt SOS aus (kein EmergencyBanner)", async () => {
+  test("S8.3 — Nicht-Notfall-Kategorie zeigt Bestaetigung, dann SOS (kein EmergencyBanner)", async () => {
     await withAgent(agentS, "Nicht-Notfall SOS", async ({ page }) => {
       const errors = createConsoleErrorCollector(page);
       const sosPage = new CareSosNewPage(page);
       await sosPage.goto();
 
-      // "Allgemeine Hilfe" waehlen — kein EmergencyBanner
+      // "Allgemeine Hilfe" waehlen — kein EmergencyBanner, KEIN sofortiger
+      // Alarm: erst die Bestaetigungsansicht (W8, A3:4 Fehlalarm-Schutz)
       await sosPage.selectGeneralHelp();
+      await expect(sosPage.emergencyBanner).not.toBeVisible();
+      await expect(
+        page.getByRole("button", { name: /Ja, Hilfe anfragen/i }),
+      ).toBeVisible({ timeout: TIMEOUTS.elementVisible });
 
-      // Banner darf NICHT erscheinen
-      await expect(sosPage.emergencyBanner)
-        .not.toBeVisible()
-        .catch(() => {
-          // Evtl. wurde die Seite schon weitergeleitet (= SOS ausgeloest)
-        });
+      // Erst der Bestaetigungs-Tap feuert den Alarm
+      await sosPage.confirmHelp();
 
-      // Sollte zur SOS-Status-Seite navigiert werden
+      // Sollte zur SOS-Detail-Seite navigiert werden (nicht /new)
       await page
-        .waitForURL(/\/care\/sos\//, { timeout: TIMEOUTS.pageLoad })
+        .waitForURL(/\/care\/sos\/(?!new)/, { timeout: TIMEOUTS.pageLoad })
         .catch(() => {
           console.log("[S] Kein Redirect — evtl. Fehler oder anderes Routing");
         });
 
       errors.stop();
-      console.log("[S] Allgemeine Hilfe SOS ausgeloest, kein EmergencyBanner");
+      console.log("[S] Allgemeine Hilfe: Bestaetigung gezeigt, SOS ausgeloest");
     });
   });
 
@@ -136,6 +137,8 @@ test.describe("S8: Care SOS Workflow", () => {
       const sosPage = new CareSosNewPage(page);
       await sosPage.goto();
       await sosPage.selectGeneralHelp();
+      // W8 (A3:4): Bestaetigungs-Tap noetig, sonst wird kein Alarm erstellt
+      await sosPage.confirmHelp();
       await waitForStableUI(page);
       console.log("[S] SOS ausgeloest");
     });

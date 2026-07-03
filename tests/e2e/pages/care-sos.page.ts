@@ -80,6 +80,15 @@ export class CareSosNewPage {
     await waitForStableUI(this.page);
   }
 
+  // W8 (A3:4): Nicht-Notfall-Kategorien brauchen seit dem 2-Tap-Umbau einen
+  // expliziten Bestaetigungs-Tap, bevor der Alarm gefeuert wird.
+  async confirmHelp() {
+    await this.page
+      .getByRole("button", { name: /Ja, Hilfe anfragen/i })
+      .click();
+    await waitForStableUI(this.page);
+  }
+
   async assertEmergencyBannerShown() {
     await expect(this.emergencyBanner).toBeVisible();
     await expect(this.emergencyCall112).toBeVisible();

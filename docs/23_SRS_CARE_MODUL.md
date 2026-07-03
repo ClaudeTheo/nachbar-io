@@ -62,7 +62,7 @@ und Validierung.
 
 ### REQ-SOS-001: SOS-Alert erstellen und speichern
 **Prioritaet:** KRITISCH | **FMEA:** FM-SOS-01 | **Risk Register:** R-001
-- Das System MUSS einen SOS-Alert in der Datenbank erstellen, wenn ein Senior eine Kategorie waehlt
+- Das System MUSS einen SOS-Alert in der Datenbank erstellen, wenn ein Senior eine Kategorie waehlt UND bestaetigt (W8/A3:4 Fehlalarm-Schutz: Nicht-Notfall-Kategorien erfordern einen expliziten Bestaetigungs-Tap; bei Notfall-Kategorien ist der EmergencyBanner-Acknowledge die Bestaetigung)
 - Der Alert MUSS die Felder `senior_id`, `category`, `status`, `notes` enthalten
 - `notes` MUSS mit AES-256-GCM verschluesselt werden (REQ-SOS-006)
 - Der initiale Status MUSS `triggered` sein
@@ -73,7 +73,7 @@ und Validierung.
 - Bei Kategorien `medical_emergency`, `fire`, `crime` MUSS das EmergencyBanner angezeigt werden
 - Das Banner MUSS VOR jeder anderen Aktion erscheinen
 - Das Banner MUSS die Nummern 112 und 110 als klickbare tel:-Links enthalten
-- **Testnachweis:** 22 Tests (9 EmergencyBanner + 13 SosCategoryPicker)
+- **Testnachweis:** 30 Tests (9 EmergencyBanner + 21 SosCategoryPicker)
 
 ### REQ-SOS-003: 112/110 als klickbare Links
 **Prioritaet:** KRITISCH | **FMEA:** FM-NB-03

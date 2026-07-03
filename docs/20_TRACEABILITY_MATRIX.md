@@ -19,7 +19,7 @@ Diese Matrix stellt die Verbindung her zwischen:
 | REQ-ID | Anforderung | Quellcode | Tests | FMEA | Status |
 |--------|-------------|-----------|-------|------|--------|
 | REQ-SOS-001 | SOS-Alert muss erstellt und gespeichert werden | `app/api/care/sos/route.ts` (POST) | `app/api/care/sos/route.test.ts` (14 Tests) | FM-SOS-01 | VERIFIZIERT |
-| REQ-SOS-002 | EmergencyBanner bei Notfall-Kategorie IMMER anzeigen | `components/care/SosCategoryPicker.tsx`, `components/EmergencyBanner.tsx` | `EmergencyBanner.test.tsx` (9 Tests), `SosCategoryPicker.test.tsx` (13 Tests) | FM-NB-02 | VERIFIZIERT |
+| REQ-SOS-002 | EmergencyBanner bei Notfall-Kategorie IMMER anzeigen | `modules/care/components/sos/SosCategoryPicker.tsx`, `components/EmergencyBanner.tsx` | `EmergencyBanner.test.tsx` (9 Tests), `SosCategoryPicker.test.tsx` (21 Tests) | FM-NB-02 | VERIFIZIERT |
 | REQ-SOS-003 | 112/110 Links muessen tel:-Links sein | `components/EmergencyBanner.tsx` | `EmergencyBanner.test.tsx` (Zeile 24-33) | FM-NB-03 | VERIFIZIERT |
 | REQ-SOS-004 | Escape darf EmergencyBanner NICHT schliessen | `components/EmergencyBanner.tsx` (onKeyDown) | `EmergencyBanner.test.tsx` (Zeile 72-80) | FM-NB-02 | VERIFIZIERT |
 | REQ-SOS-005 | Feature-Gate prueft Abo-Plan vor SOS | `app/api/care/sos/route.ts`, `lib/care/permissions.ts` | `route.test.ts` (Feature-Gate Tests) | FM-SOS-03 | VERIFIZIERT |

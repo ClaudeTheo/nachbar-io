@@ -85,6 +85,38 @@ describe('SosCategoryPicker', () => {
       screen.getByRole('button', { name: /Ja, Hilfe anfragen/i }),
     ).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /Abbrechen/i })).toBeInTheDocument();
+    // Ansichtswechsel muss fuer Screenreader hoerbar sein (role=status)
+    expect(screen.getByRole('status')).toHaveTextContent(/Möchten Sie diese Hilfe anfragen/);
+  });
+
+  it('Doppel-Tap auf "Ja, Hilfe anfragen" feuert nur EINEN Alarm (W8)', async () => {
+    render(<SosCategoryPicker />);
+    fireEvent.click(screen.getByText('Allgemeine Hilfe'));
+    const confirmButton = screen.getByRole('button', { name: /Ja, Hilfe anfragen/i });
+    fireEvent.click(confirmButton);
+    fireEvent.click(confirmButton);
+
+    await waitFor(() => {
+      expect(mockFetch).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  it('App-Flaeche behaelt den Server-Upsell-Text (Mapping gilt NUR fuer source=device)', async () => {
+    mockFetch.mockResolvedValueOnce({
+      ok: false,
+      status: 403,
+      json: () =>
+        Promise.resolve({
+          error: 'Ihr Abo-Plan unterstützt diese SOS-Kategorie nicht. Bitte upgraden Sie Ihren Plan.',
+          requiredFeature: 'sos_all',
+        }),
+    });
+
+    render(<SosCategoryPicker />); // default source='app' (Angehoerigen-Flow)
+    chooseAndConfirm('Allgemeine Hilfe');
+
+    const alert = await screen.findByRole('alert');
+    expect(alert).toHaveTextContent(/Abo-Plan/);
   });
 
   it('Abbrechen in der Bestaetigung feuert keinen Alarm und zeigt wieder die Kategorien (W8)', () => {

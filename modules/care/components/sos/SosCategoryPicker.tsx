@@ -24,6 +24,9 @@ export function SosCategoryPicker({ source = 'app', onSosCreated }: SosCategoryP
   const [error, setError] = useState<string | null>(null);
 
   async function triggerSos(category: CareSosCategory) {
+    // Re-Entrancy-Guard (Doppel-Tap): der Alarm loest nicht zurueckholbare
+    // Level-1-Pushes aus — zusaetzlich zum disabled-Attribut absichern.
+    if (loading) return;
     setLoading(true);
     setError(null);
     try {
@@ -51,6 +54,11 @@ export function SosCategoryPicker({ source = 'app', onSosCreated }: SosCategoryP
         const statusPath = source === 'device' ? `/sos/status?id=${alert.id}` : `/care/sos/${alert.id}`;
         router.push(statusPath);
       }
+      // Erfolgsfall: loading bewusst true lassen, bis die Navigation die
+      // Seite ersetzt — sonst ist "Ja, Hilfe anfragen" waehrend der
+      // Navigations-Latenz wieder aktiv und ein zweiter Tap feuert einen
+      // Duplikat-Alarm.
+      return;
     } catch {
       setError('Verbindungsfehler. Bitte versuchen Sie es erneut.');
     }
@@ -105,6 +113,10 @@ export function SosCategoryPicker({ source = 'app', onSosCreated }: SosCategoryP
           // (Kategorie + Bestaetigung), Senior-Regel max. 4 Taps eingehalten.
           <>
             <div
+              // role=status: der Ansichtswechsel muss fuer Screenreader
+              // hoerbar sein — sonst wirkt der stille Zwischenschritt wie
+              // eine bereits abgeschickte Anfrage (Geist von B3:3).
+              role="status"
               className="rounded-xl border-2 border-gray-200 bg-white p-5 text-center"
               data-testid="sos-confirm"
             >

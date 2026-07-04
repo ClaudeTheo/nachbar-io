@@ -23,7 +23,13 @@ import {
   Trash2,
   type LucideIcon,
 } from "lucide-react";
+import {
+  GenerationModeAction,
+  GenerationModeShell,
+  GenerationModeTile,
+} from "@/components/modes/GenerationModeSurface";
 import { PageHeader } from "@/components/ui/page-header";
+import { isUxRedesignEnabled } from "@/lib/ux-flags";
 
 interface QuartierTile {
   href: string;
@@ -93,6 +99,38 @@ const tiles: QuartierTile[] = [
 ];
 
 export function QuartierHub() {
+  if (isUxRedesignEnabled("UX_GENERATION_DESIGN_V2")) {
+    return (
+      <div className="px-4 py-6">
+        <GenerationModeShell
+          actions={
+            <GenerationModeAction href="/dashboard" mode="active" variant="secondary">
+              Zurueck
+            </GenerationModeAction>
+          }
+          eyebrow="Mein Quartier"
+          mode="active"
+          subtitle="Oeffentliche Orte, Termine und Hinweise ohne Umwege."
+          testId="quartier-generation-v2"
+          title="Alles vor Ort, klar sortiert."
+        >
+          <div className="grid gap-3 sm:grid-cols-2">
+            {tiles.map(({ href, label, description, icon: Icon }) => (
+              <GenerationModeTile
+                key={href}
+                href={href}
+                icon={Icon}
+                label={label}
+                mode="active"
+                value={description}
+              />
+            ))}
+          </div>
+        </GenerationModeShell>
+      </div>
+    );
+  }
+
   return (
     <div className="px-4 py-6 space-y-6">
       <PageHeader

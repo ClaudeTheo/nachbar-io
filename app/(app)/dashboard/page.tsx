@@ -14,8 +14,16 @@ import {
 import { PullToRefresh } from "@/components/PullToRefresh";
 import { ReputationBadge } from "@/components/ReputationBadge";
 import { FloatingHelpButton } from "@/components/FloatingHelpButton";
+import {
+  GenerationModeAction,
+  GenerationModeMetric,
+  GenerationModeShell,
+  GenerationModeTile,
+} from "@/components/modes/GenerationModeSurface";
 import { DailyCheckinBubble } from "@/modules/care/components/checkin/DailyCheckinBubble";
 import { Skeleton } from "@/components/ui/skeleton";
+import { getGenerationDesign } from "@/lib/generation-design";
+import { isUxRedesignEnabled } from "@/lib/ux-flags";
 
 import { getGreeting, useDashboardData } from "./hooks/useDashboardData";
 import { useOpenCaregiverChat } from "@/modules/care/hooks/useOpenCaregiverChat";
@@ -176,6 +184,153 @@ export default function DashboardPage() {
       value: alerts.length > 0 ? `${alerts.length} aktiv` : "Keine aktiven Warnungen",
     },
   ];
+  const generationMode =
+    uiMode === "comfort" ? "comfort" : uiMode === "active" ? "active" : null;
+
+  if (
+    generationMode &&
+    isUxRedesignEnabled("UX_GENERATION_DESIGN_V2")
+  ) {
+    const design = getGenerationDesign(generationMode);
+    const generationTitle = userName
+      ? `${greeting.text}, ${userName}.`
+      : design.preview.headline;
+
+    return (
+      <>
+        <PullToRefresh onRefresh={loadDashboard}>
+          <div
+            className={`animate-fade-in-up pb-10 pt-10 ${
+              isComfortDashboard ? "space-y-8" : "space-y-6"
+            }`}
+            data-dashboard-density={dashboardDensity}
+            data-generation-design="v2"
+          >
+            <GenerationModeShell
+              actions={
+                <>
+                  <GenerationModeAction href={primaryAction.href} mode={generationMode}>
+                    {primaryAction.label}
+                  </GenerationModeAction>
+                  <GenerationModeAction
+                    href="/notifications"
+                    mode={generationMode}
+                    variant="secondary"
+                  >
+                    {unreadCount > 0 ? `${unreadCount} neu` : "Inbox"}
+                  </GenerationModeAction>
+                </>
+              }
+              eyebrow={`${formatEyebrowDate(new Date())} - ${quarterName}`}
+              mode={generationMode}
+              subtitle={primaryAction.description}
+              testId="dashboard-generation-v2"
+              title={generationTitle}
+            >
+              <div className="grid gap-3 md:grid-cols-3">
+                <GenerationModeMetric
+                  label="Wetter"
+                  mode={generationMode}
+                  note={weatherData?.description ?? "Vor Ort im Blick"}
+                  value={
+                    weatherData?.temp != null
+                      ? `${Math.round(weatherData.temp)} Grad`
+                      : "bereit"
+                  }
+                />
+                <GenerationModeMetric
+                  label="Nachrichten"
+                  mode={generationMode}
+                  note="Neue Infos im Quartier"
+                  value={news.length > 0 ? String(news.length) : "0"}
+                />
+                <GenerationModeMetric
+                  label="Hilfe"
+                  mode={generationMode}
+                  note="Offene Anfragen"
+                  value={helpRequests.length > 0 ? String(helpRequests.length) : "0"}
+                />
+              </div>
+            </GenerationModeShell>
+
+            {caregivers.length > 0 && (
+              <section
+                data-testid="dashboard-caregivers"
+                className="space-y-3"
+              >
+                <h2 className="text-base font-semibold text-anthrazit">
+                  Verbundene Angehoerige
+                </h2>
+                <div className="flex -space-x-2">
+                  {caregivers.map((cg) => (
+                    <button
+                      key={cg.caregiver_id}
+                      type="button"
+                      onClick={() => openChat(cg.caregiver_id)}
+                      disabled={pendingId === cg.caregiver_id}
+                      aria-label={`Mit ${cg.display_name || "Angehoerigem"} schreiben`}
+                      className="flex h-11 w-11 items-center justify-center rounded-full border-2 border-white bg-quartier-green/10 text-xs font-semibold text-quartier-green transition-all hover:ring-2 hover:ring-quartier-green/30 disabled:opacity-60"
+                      title={cg.display_name || "Angehoeriger"}
+                    >
+                      {cg.avatar_url ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          src={cg.avatar_url}
+                          alt=""
+                          className="h-full w-full rounded-full object-cover"
+                        />
+                      ) : (
+                        (cg.display_name || "?").charAt(0).toUpperCase()
+                      )}
+                    </button>
+                  ))}
+                </div>
+                {chatError && (
+                  <p className="text-xs text-red-600" role="alert">
+                    {chatError}
+                  </p>
+                )}
+              </section>
+            )}
+
+            <section className="grid gap-3" aria-label="Heute wichtig">
+              {summaryItems.map((item) => (
+                <GenerationModeTile
+                  key={item.href}
+                  href={item.href}
+                  icon={item.icon}
+                  label={item.label}
+                  mode={generationMode}
+                  value={item.value}
+                />
+              ))}
+            </section>
+
+            <section className="space-y-3" aria-label="Kurzer Status">
+              <h2 className="text-base font-semibold text-anthrazit">
+                Kurzer Status
+              </h2>
+              <div className="grid gap-3">
+                {signalItems.map((item) => (
+                  <GenerationModeTile
+                    key={item.href}
+                    href={item.href}
+                    icon={item.icon}
+                    label={item.label}
+                    mode={generationMode}
+                    value={item.value}
+                  />
+                ))}
+              </div>
+            </section>
+          </div>
+        </PullToRefresh>
+
+        <FloatingHelpButton />
+        <DailyCheckinBubble enabled={false} />
+      </>
+    );
+  }
 
   return (
     <>

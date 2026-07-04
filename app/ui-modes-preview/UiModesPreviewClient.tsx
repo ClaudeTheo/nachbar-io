@@ -3,6 +3,7 @@
 import Link from "next/link";
 
 import {
+  GenerationModeMatrix,
   ModeComparisonPreview,
   UserModePreviewStack,
 } from "@/components/modes/UserModeSurface";
@@ -14,13 +15,14 @@ export function UiModesPreviewClient() {
         <header className="flex flex-col gap-4 border-b border-anthrazit/10 pb-6 md:flex-row md:items-end md:justify-between">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.08em] text-quartier-green">
-              QuartierApp UI-Modi
+              Generation Design V2
             </p>
             <h1 className="mt-2 text-3xl font-semibold leading-tight">
-              Vier Oberflaechen auf einen Blick
+              Erwachsene zuerst, Jugend als Prototyp
             </h1>
             <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">
-              Lokale Entwickler-Preview fuer Jugend, Aktiv, Komfort und Einfach.
+              Lokale Preview fuer Aktiv, Aktiv 55+, Einfach und die geparkte
+              Jugend-Arcade-Quest. Echte Routen bleiben hinter dem Feature-Flag.
             </p>
           </div>
           <Link
@@ -30,6 +32,11 @@ export function UiModesPreviewClient() {
             Zum Dashboard
           </Link>
         </header>
+
+        <section aria-label="Generation Design Matrix" className="space-y-3">
+          <h2 className="text-lg font-semibold">Verbindliche Modus-Matrix</h2>
+          <GenerationModeMatrix />
+        </section>
 
         <section aria-label="Modusvergleich" className="space-y-3">
           <h2 className="text-lg font-semibold">Auswahlkarten</h2>

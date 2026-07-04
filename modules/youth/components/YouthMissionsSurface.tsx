@@ -153,7 +153,7 @@ export function YouthMissionsSurface({
     <div className="-mx-4 -mt-2 min-h-[calc(100vh-5rem)] bg-[#071923] px-4 py-5 text-white">
       <Link
         href="/jugend"
-        className="inline-flex min-h-10 items-center gap-2 rounded-full border border-white/14 px-3 py-2 text-sm font-bold text-cyan-50/78"
+        className="inline-flex min-h-11 items-center gap-2 rounded-full border border-white/14 px-3 py-2 text-sm font-bold text-cyan-50/78"
       >
         <ArrowLeft className="h-4 w-4" aria-hidden="true" />
         Zurück
@@ -218,7 +218,7 @@ export function YouthMissionsSurface({
           </div>
           <Link
             href="/jugend/gruppen"
-            className="inline-flex min-h-10 items-center gap-1 rounded-full border border-cyan-100/20 px-3 py-2 text-xs font-bold text-cyan-100 transition hover:border-cyan-100/45"
+            className="inline-flex min-h-11 items-center gap-1 rounded-full border border-cyan-100/20 px-3 py-2 text-xs font-bold text-cyan-100 transition hover:border-cyan-100/45"
           >
             Gruppen
             <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />

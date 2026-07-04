@@ -34,4 +34,13 @@ describe("isUxRedesignEnabled", () => {
     process.env.NEXT_PUBLIC_UX_REDESIGN_ILLUSTRATIONS = "false";
     expect(isUxRedesignEnabled("UX_REDESIGN_ILLUSTRATIONS")).toBe(false);
   });
+
+  it("haelt Generation Design V2 fuer echte Routen standardmaessig aus", () => {
+    delete process.env.NEXT_PUBLIC_UX_GENERATION_DESIGN_V2;
+    expect(isUxRedesignEnabled("UX_GENERATION_DESIGN_V2")).toBe(false);
+    process.env.NEXT_PUBLIC_UX_GENERATION_DESIGN_V2 = "true";
+    expect(isUxRedesignEnabled("UX_GENERATION_DESIGN_V2")).toBe(true);
+    process.env.NEXT_PUBLIC_UX_GENERATION_DESIGN_V2 = "false";
+    expect(isUxRedesignEnabled("UX_GENERATION_DESIGN_V2")).toBe(false);
+  });
 });

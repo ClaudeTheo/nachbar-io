@@ -1,54 +1,41 @@
 "use client";
 
-import Link from "next/link";
 import {
   Bell,
-  CheckCircle2,
   HeartHandshake,
   Map,
   Sparkles,
   type LucideIcon,
 } from "lucide-react";
 
+import {
+  GENERATION_DESIGN_MODES,
+  getGenerationDesign,
+} from "@/lib/generation-design";
 import { cn } from "@/lib/utils";
 import {
   getUserModeConfig,
   USER_UI_MODES,
   type UserUiMode,
 } from "@/lib/user-modes";
+import {
+  GenerationCommunityXpPanel,
+  GenerationGuardrailList,
+  GenerationModeAction,
+  GenerationModeMetric,
+  GenerationModeShell,
+  GenerationModeTile,
+} from "@/components/modes/GenerationModeSurface";
 
 type ModeStyle = {
-  container: string;
-  accent: string;
-  iconWrap: string;
   icon: LucideIcon;
 };
 
 const MODE_STYLES: Record<UserUiMode, ModeStyle> = {
-  youth: {
-    container: "border-cyan-200/30 bg-[#071923] text-white",
-    accent: "bg-lime-300 text-[#071923]",
-    iconWrap: "bg-cyan-200/10 text-lime-200",
-    icon: Sparkles,
-  },
-  active: {
-    container: "border-quartier-green/30 bg-white text-anthrazit",
-    accent: "bg-quartier-green text-white",
-    iconWrap: "bg-quartier-green/10 text-quartier-green",
-    icon: Map,
-  },
-  comfort: {
-    container: "border-[#cbd8d0] bg-[#f8fbfa] text-anthrazit",
-    accent: "bg-[#2d6a4f] text-white",
-    iconWrap: "bg-[#dce9e2] text-[#2d6a4f]",
-    icon: Bell,
-  },
-  senior: {
-    container: "border-red-200 bg-white text-anthrazit",
-    accent: "bg-emergency-red text-white",
-    iconWrap: "bg-red-50 text-emergency-red",
-    icon: HeartHandshake,
-  },
+  youth: { icon: Sparkles },
+  active: { icon: Map },
+  comfort: { icon: Bell },
+  senior: { icon: HeartHandshake },
 };
 
 type UserModeChoiceCardProps = {
@@ -66,11 +53,13 @@ function ModeContent({
   variant = "full",
 }: Pick<UserModeChoiceCardProps, "active" | "mode" | "variant">) {
   const config = getUserModeConfig(mode);
-  const style = MODE_STYLES[mode];
-  const Icon = style.icon;
+  const design = getGenerationDesign(mode);
+  const Icon = MODE_STYLES[mode].icon;
   const surface = config.surface;
   const isCompact = variant === "compact";
-  const principles = isCompact ? surface.principles.slice(0, 1) : surface.principles;
+  const principles = isCompact
+    ? surface.principles.slice(0, 1)
+    : surface.principles;
 
   return (
     <>
@@ -78,7 +67,7 @@ function ModeContent({
         <span
           className={cn(
             "flex h-10 w-10 shrink-0 items-center justify-center rounded-lg",
-            style.iconWrap,
+            design.iconWrapClass,
           )}
           aria-hidden="true"
         >
@@ -93,7 +82,7 @@ function ModeContent({
               <span
                 className={cn(
                   "rounded-full px-2 py-0.5 text-[11px] font-semibold",
-                  style.accent,
+                  design.accentClass,
                 )}
               >
                 Aktiv
@@ -133,10 +122,11 @@ export function UserModeChoiceCard({
   variant = "full",
 }: UserModeChoiceCardProps) {
   const config = getUserModeConfig(mode);
-  const style = MODE_STYLES[mode];
+  const design = getGenerationDesign(mode);
   const cardClassName = cn(
-    "w-full rounded-lg border p-4 text-left shadow-sm transition-colors focus:outline-none focus:ring-4 focus:ring-quartier-green/25",
-    style.container,
+    "w-full border p-4 text-left shadow-sm transition-colors focus:outline-none focus:ring-4 focus:ring-quartier-green/25",
+    design.radiusClass,
+    design.containerClass,
     active && "ring-2 ring-quartier-green/35",
     disabled && "cursor-default opacity-80",
     className,
@@ -169,72 +159,53 @@ type UserModeFocusStripProps = {
   mode: UserUiMode;
 };
 
-export function UserModeFocusStrip({ className, mode }: UserModeFocusStripProps) {
+export function UserModeFocusStrip({
+  className,
+  mode,
+}: UserModeFocusStripProps) {
   const config = getUserModeConfig(mode);
   const surface = config.surface;
-  const style = MODE_STYLES[mode];
-  const Icon = style.icon;
+  const Icon = MODE_STYLES[mode].icon;
+  const design = getGenerationDesign(mode);
 
   return (
-    <section
-      aria-label={`${config.label}-Oberflaeche`}
-      className={cn(
-        "rounded-lg border p-4 shadow-sm md:p-5",
-        style.container,
-        className,
-      )}
-      data-testid={`user-mode-focus-${mode}`}
-    >
-      <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
-        <div className="min-w-0">
-          <p className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.08em] opacity-70">
-            <span
-              className={cn(
-                "flex h-7 w-7 items-center justify-center rounded-lg",
-                style.iconWrap,
-              )}
-              aria-hidden="true"
-            >
-              <Icon className="h-4 w-4" />
-            </span>
-            {surface.eyebrow}
-          </p>
-          <h2 className="mt-3 text-xl font-semibold leading-tight">
-            {surface.title}
-          </h2>
-          <p className="mt-2 max-w-2xl text-sm leading-6 opacity-80">
-            {surface.subtitle}
-          </p>
-        </div>
-
-        <div className="flex shrink-0 flex-wrap gap-2">
-          <Link
-            href={surface.primaryAction.href}
-            className={cn(
-              "inline-flex min-h-11 items-center justify-center rounded-lg px-4 text-sm font-semibold",
-              style.accent,
-            )}
-          >
+    <GenerationModeShell
+      actions={
+        <>
+          <GenerationModeAction href={surface.primaryAction.href} mode={mode}>
             {surface.primaryAction.label}
-          </Link>
-          <Link
+          </GenerationModeAction>
+          <GenerationModeAction
             href={surface.secondaryAction.href}
-            className="inline-flex min-h-11 items-center justify-center rounded-lg border border-current/20 px-4 text-sm font-semibold"
+            mode={mode}
+            variant="secondary"
           >
             {surface.secondaryAction.label}
-          </Link>
-        </div>
-      </div>
-
-      <ul className="mt-4 grid gap-2 text-sm md:grid-cols-3">
-        {surface.principles.map((principle) => (
-          <li key={principle} className="flex items-center gap-2 opacity-90">
-            <CheckCircle2 className="h-4 w-4 shrink-0 text-quartier-green" />
-            <span>{principle}</span>
-          </li>
+          </GenerationModeAction>
+        </>
+      }
+      className={className}
+      eyebrow={surface.eyebrow}
+      mode={mode}
+      subtitle={surface.subtitle}
+      testId={`user-mode-focus-${mode}`}
+      title={surface.title}
+    >
+      <div className="grid gap-3 md:grid-cols-3">
+        {design.focus.map((focus) => (
+          <GenerationModeTile
+            key={focus}
+            icon={Icon}
+            label={config.label}
+            mode={mode}
+            value={focus}
+          />
         ))}
-      </ul>
-    </section>
+      </div>
+      <div className="mt-4">
+        <GenerationGuardrailList mode={mode} />
+      </div>
+    </GenerationModeShell>
   );
 }
 
@@ -260,6 +231,53 @@ export function UserModePreviewStack() {
       {USER_UI_MODES.map((mode) => (
         <UserModeFocusStrip key={mode} mode={mode} />
       ))}
+    </div>
+  );
+}
+
+export function GenerationModeMatrix() {
+  return (
+    <div className="grid gap-4 xl:grid-cols-4">
+      {GENERATION_DESIGN_MODES.map((mode) => {
+        const config = getUserModeConfig(mode);
+        const design = getGenerationDesign(mode);
+        const Icon = MODE_STYLES[mode].icon;
+
+        return (
+          <GenerationModeShell
+            key={mode}
+            eyebrow={design.stageLabel}
+            mode={mode}
+            subtitle={design.preview.subline}
+            testId={`generation-mode-matrix-${mode}`}
+            title={design.preview.headline}
+          >
+            <div className="space-y-4">
+              <GenerationModeMetric
+                label={design.preview.metricLabel}
+                mode={mode}
+                note={design.preview.metricNote}
+                value={design.preview.metricValue}
+              />
+              {design.communityXp && (
+                <GenerationCommunityXpPanel communityXp={design.communityXp} />
+              )}
+              <div className="grid gap-2">
+                {design.focus.map((focus) => (
+                  <GenerationModeTile
+                    key={focus}
+                    icon={Icon}
+                    label={config.label}
+                    mode={mode}
+                    value={focus}
+                  />
+                ))}
+              </div>
+              <GenerationGuardrailList mode={mode} />
+            </div>
+          </GenerationModeShell>
+        );
+      })}
     </div>
   );
 }

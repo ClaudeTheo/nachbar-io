@@ -64,7 +64,10 @@ describe("USER_MODE_CONFIG", () => {
     expect(getUserModeSurface("senior").principles.join(" ")).toMatch(
       /notruf/i,
     );
-    expect(getUserModeSurface("youth").title).toMatch(/karte|mission/i);
+    expect(getUserModeSurface("youth").title).toMatch(/quest|crew/i);
     expect(getUserModeSurface("youth").primaryAction.href).toBe("/jugend");
+    expect(getUserModeSurface("youth").principles.join(" ")).toMatch(
+      /Keine Ranglisten/i,
+    );
   });
 });

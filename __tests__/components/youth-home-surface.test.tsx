@@ -25,7 +25,7 @@ describe("YouthHomeSurface", () => {
     );
 
     expect(screen.getByText("QuartierApp Jugend")).toBeInTheDocument();
-    expect(screen.getByText("Dein Quartier, dein Move.")).toBeInTheDocument();
+    expect(screen.getByText("Deine Quartier-Quest.")).toBeInTheDocument();
 
     const mapSection = screen.getByTestId("youth-map-section");
     expect(within(mapSection).getByTestId("map-slot")).toBeInTheDocument();

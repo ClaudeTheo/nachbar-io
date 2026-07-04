@@ -221,7 +221,7 @@ export function YouthHomeSurface({
             QuartierApp Jugend
           </div>
           <h1 className="max-w-[13ch] text-[2.35rem] font-black leading-[0.96] text-white sm:text-5xl">
-            Dein Quartier, dein Move.
+            Deine Quartier-Quest.
           </h1>
           <p className="mt-3 max-w-sm text-sm leading-6 text-cyan-50/80">
             Lernen, treffen, helfen und sehen, was direkt um dich herum
@@ -266,7 +266,7 @@ export function YouthHomeSurface({
               </div>
               <Link
                 href="/map"
-                className="inline-flex min-h-10 items-center gap-1 rounded-full border border-cyan-100/20 px-3 py-2 text-xs font-bold text-cyan-100 transition hover:border-cyan-100/45"
+                className="inline-flex min-h-11 items-center gap-1 rounded-full border border-cyan-100/20 px-3 py-2 text-xs font-bold text-cyan-100 transition hover:border-cyan-100/45"
               >
                 Groß öffnen
                 <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
@@ -309,7 +309,7 @@ export function YouthHomeSurface({
               </div>
               <Link
                 href="/jugend/aufgaben"
-                className="inline-flex min-h-10 items-center gap-1 rounded-full bg-lime-300 px-3 py-2 text-xs font-black text-slate-950 transition hover:bg-lime-200"
+                className="inline-flex min-h-11 items-center gap-1 rounded-full bg-lime-300 px-3 py-2 text-xs font-black text-slate-950 transition hover:bg-lime-200"
               >
                 Alle
                 <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />

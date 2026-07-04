@@ -31,43 +31,43 @@ export interface UserModeConfig {
 export const USER_MODE_CONFIG = {
   youth: {
     label: "Junges Quartier",
-    description: "Mithelfen, Punkte sammeln, Events entdecken",
+    description: "Missionen, sichere Gruppen und Quartier-Quest",
     postLoginPath: "/jugend",
     dashboardDensity: "playful",
     surface: {
       eyebrow: "Jugendmodus",
-      title: "Karte, Missionen und Gruppen",
+      title: "Quest-Map und sichere Crews",
       subtitle:
-        "Der Einstieg fuer junge Nachbarn: Aufgaben sehen, sichere Gruppen finden und Quartier-Punkte sammeln.",
+        "Der Jugendmodus bleibt als Arcade-Quest-Prototyp in Preview, bis Pilotfamilien echten Bedarf zeigen.",
       visualIntent:
-        "Dunkle Map-first-Flaeche mit klaren Aktivitaets-Pins und spielerischer Energie.",
+        "Dunkle Map-first-Flaeche mit Mission-Deck, kooperativer Community-XP und klarer Safety Copy.",
       primaryAction: { label: "Jugendstart", href: "/jugend" },
-      secondaryAction: { label: "Missionen", href: "/jugend/missionen" },
+      secondaryAction: { label: "Missionen", href: "/jugend/aufgaben" },
       principles: [
-        "Karte zuerst",
-        "Punkte nur mit Schutzregeln",
-        "Keine Adressen im Client",
+        "Preview statt Ausbau",
+        "Community-XP ohne Geldwert",
+        "Keine Ranglisten",
       ],
     },
   },
   active: {
     label: "Aktiv",
-    description: "Nachbarschaft, Alltag und lokale Infos",
+    description: "Erwachsener Alltag, Quartier und Hilfe",
     postLoginPath: "/dashboard",
     dashboardDensity: "standard",
     surface: {
       eyebrow: "Aktivmodus",
-      title: "Alles fuer den Alltag schnell im Blick",
+      title: "Heute, Quartier und Hilfe im Blick",
       subtitle:
-        "Der normale Arbeitsmodus fuer Nachbarn, die Karte, Nachrichten und Hilfe selbststaendig nutzen.",
+        "Der Akquise-Modus fuer Pilotfamilien: modern, erwachsen und direkt auf die naechsten Schritte fokussiert.",
       visualIntent:
-        "Dichte, ruhige Tagesuebersicht mit klaren Schnellzugriffen und Quartier-Kontext.",
+        "Ruhige Arbeitsflaeche mit weniger Kachelrauschen, klaren Bereichen und einem starken Tagesfokus.",
       primaryAction: { label: "Dashboard", href: "/dashboard" },
       secondaryAction: { label: "Karte", href: "/map" },
       principles: [
-        "Schnellzugriffe sichtbar",
-        "Karte und Heute im Fokus",
-        "Quartierdaten nur verifiziert",
+        "Erwachsener Erstkontakt",
+        "Heute statt Kachelwand",
+        "Verifizierter Quartierkontext",
       ],
     },
   },
@@ -78,17 +78,17 @@ export const USER_MODE_CONFIG = {
     dashboardDensity: "calm",
     surface: {
       eyebrow: "Aktiv 55+",
-      title: "Ruhiger Ueberblick fuer aktive Nachbarn",
+      title: "Ruhig starten, selbststaendig bleiben",
       subtitle:
-        "Fuer Menschen, die die QuartierApp selbststaendig nutzen und dabei groessere Abstaende, klare Prioritaeten und weniger Dichte moechten.",
+        "Fuer aktive Nachbarn, die selbststaendig bleiben und dabei groessere Abstaende, klare Prioritaeten und weniger Dichte moechten, ohne Pflegegefuehl.",
       visualIntent:
-        "Entzerrte Oberflaeche mit groesseren Zielen, ruhiger Lesereihenfolge und Alltag vor Pflege.",
+        "Entzerrte Oberflaeche mit groesseren Zielen, ruhiger Lesereihenfolge und selbststaendigem Alltag.",
       primaryAction: { label: "Ruhig starten", href: "/dashboard" },
       secondaryAction: { label: "Mein Tag", href: "/my-day" },
       principles: [
-        "Ruhiger Alltag",
+        "Selbststaendig bleiben",
         "Nachbarschaft bleibt sichtbar",
-        "Sicherheit ohne Pflegegefuehl",
+        "Kein Pflegegefuehl",
       ],
     },
   },
@@ -103,12 +103,12 @@ export const USER_MODE_CONFIG = {
       subtitle:
         "Der einfachste Einstieg mit vier Kacheln, kurzen Wegen und dauerhaft klarer Sicherheitslogik.",
       visualIntent:
-        "Maximal reduzierte Bedienung mit 80px-Zielen, sehr klarer Hierarchie und ruhigem Text.",
+        "Maximal reduzierte Bedienung mit 80px-Zielen, sehr klarer Hierarchie und nur kosmetischer Politur ausserhalb SOS.",
       primaryAction: { label: "Einfach starten", href: "/kreis-start" },
       secondaryAction: { label: "Mein Kreis", href: "/mein-kreis" },
       principles: [
         "Notruf zuerst",
-        "Vier grosse Kacheln",
+        "80px Touch-Ziele",
         "Maximal vier Taps pro Aktion",
       ],
     },

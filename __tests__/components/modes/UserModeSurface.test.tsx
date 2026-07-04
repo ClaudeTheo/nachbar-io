@@ -15,6 +15,7 @@ vi.mock("next/link", () => ({
 }));
 
 import {
+  GenerationModeMatrix,
   ModeComparisonPreview,
   UserModeChoiceCard,
   UserModeFocusStrip,
@@ -58,11 +59,23 @@ describe("UserModeSurface", () => {
     render(<UserModeFocusStrip mode="senior" />);
 
     expect(
-      screen.getByRole("region", { name: /einfach-oberflaeche/i }),
+      screen.getByRole("region", { name: /grosse tasten/i }),
     ).toBeInTheDocument();
     expect(
       screen.getByRole("link", { name: /einfach starten/i }),
     ).toHaveAttribute("href", "/kreis-start");
     expect(screen.getAllByText(/Notruf zuerst/i).length).toBeGreaterThan(0);
+  });
+
+  it("rendert die Generation-Design-Matrix mit geparkter Jugend-XP", () => {
+    render(<GenerationModeMatrix />);
+
+    expect(screen.getByTestId("generation-mode-matrix-active")).toBeTruthy();
+    expect(screen.getByTestId("generation-mode-matrix-comfort")).toBeTruthy();
+    expect(screen.getByTestId("generation-mode-matrix-youth")).toBeTruthy();
+    expect(screen.getByTestId("community-xp-preview")).toHaveTextContent(
+      /UI-only/i,
+    );
+    expect(screen.getAllByText(/Keine Ranglisten/i).length).toBeGreaterThan(0);
   });
 });

@@ -2,6 +2,10 @@
   "name": "nachbar-io",
   "version": "2.5.0",
   "private": true,
+  "engines": {
+    "node": ">=22",
+    "npm": ">=10"
+  },
   "scripts": {
     "dev": "npm run dev:local",
     "dev:local": "node scripts/dev-server.mjs local",
@@ -119,7 +123,7 @@
     "fake-indexeddb": "^6.2.5",
     "jsdom": "^28.1.0",
     "storybook": "^10.3.6",
-    "supabase": "^2.88.1",
+    "supabase": "2.102.0",
     "tailwindcss": "^4.2.2",
     "typescript": "^5",
     "vitest": "^4.1.0"

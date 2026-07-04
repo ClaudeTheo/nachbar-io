@@ -1,0 +1,42 @@
+name: CI Unit Tests & Types
+
+# PR-Gate für Unit-Tests/Typen/Lint (R10, Architektur-Review 2026-07-04).
+# Bisher liefen Vitest+Lint erst im Deploy-Workflow (NACH dem Merge) —
+# ein PR konnte grün mergen und master undeploybar machen.
+on:
+  pull_request:
+    branches: [master]
+
+concurrency:
+  group: ci-tests-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  unit:
+    name: Vitest + tsc + eslint
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      # npm 11 = gleiche Lockfile-Semantik wie Dependabot/lokale Dev-Umgebung (siehe PR #76/#77).
+      - name: Use npm 11
+        run: npm install -g npm@11
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Type-Check
+        run: npx tsc --noEmit
+
+      - name: Unit Tests (Vitest)
+        run: npm run test
+
+      - name: Lint
+        run: npx eslint

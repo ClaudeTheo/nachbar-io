@@ -86,7 +86,7 @@ const rlsStatus = rows(`
 const triggers = rows(`
   SELECT event_object_schema || '.' || event_object_table,
          trigger_name,
-         string_agg(event_manipulation, ','),
+         string_agg(event_manipulation, ',' ORDER BY event_manipulation),
          action_timing
   FROM information_schema.triggers
   WHERE trigger_schema IN ('public')

@@ -615,14 +615,14 @@ Kennzahlen: **570 Policies** · 208 public-Tabellen (1 OHNE RLS) · 36 Trigger �
 | public.feature_flags | feature_flags_audit_log_trigger | DELETE,INSERT,UPDATE | AFTER |
 | public.feature_flags | feature_flags_updated_at | UPDATE | BEFORE |
 | public.group_members | trg_group_members_identity_immutable | UPDATE | BEFORE |
-| public.group_members | trg_group_members_refresh_member_count | UPDATE,INSERT,DELETE | AFTER |
+| public.group_members | trg_group_members_refresh_member_count | DELETE,INSERT,UPDATE | AFTER |
 | public.groups | trg_groups_identity_immutable | UPDATE | BEFORE |
 | public.household_members | trg_quarter_lifecycle | INSERT,UPDATE | AFTER |
 | public.household_members | trigger_enforce_member_defaults | INSERT | BEFORE |
 | public.households | households_trim_street_name_trigger | INSERT,UPDATE | BEFORE |
 | public.households | trg_sync_household_quarter_id | INSERT,UPDATE | BEFORE |
 | public.map_houses | map_houses_updated_at | UPDATE | BEFORE |
-| public.map_houses | trg_sync_map_house_geo | UPDATE,INSERT | BEFORE |
+| public.map_houses | trg_sync_map_house_geo | INSERT,UPDATE | BEFORE |
 | public.map_houses | trg_validate_house_in_boundary | INSERT,UPDATE | BEFORE |
 | public.org_audit_log | trg_audit_hash_chain | INSERT | BEFORE |
 | public.speed_dial_favorites | trg_speed_dial_updated_at | UPDATE | BEFORE |

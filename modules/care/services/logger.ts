@@ -3,6 +3,7 @@
 // Gibt korrelierbare, maschinenlesbare Log-Eintraege aus (Vercel Logs / Structured Logging)
 
 import { randomUUID } from 'crypto';
+import * as Sentry from '@sentry/nextjs';
 
 /** Log-Level fuer strukturierte Ausgabe */
 type LogLevel = 'info' | 'warn' | 'error';
@@ -78,6 +79,23 @@ export function createCareLogger(route: string, existingRequestId?: string) {
     error(event: string, error?: unknown, metadata?: Record<string, unknown>, fields?: Partial<LogEntry>) {
       const errorMessage = error instanceof Error ? error.message : String(error ?? '');
       emit('error', event, { error: errorMessage, metadata, ...fields });
+
+      // Sentry-Bridge (R7): Fehler-Aggregation fuer Care-/SOS-kritische Pfade.
+      // Bewusst OHNE metadata/userId — beforeSend redigiert `extra` nicht (DSGVO);
+      // Fehlermeldungen selbst werden dort E-Mail-/Telefon-redigiert.
+      try {
+        const exception =
+          error instanceof Error ? error : new Error(`${event}: ${errorMessage}`);
+        Sentry.captureException(exception, {
+          tags: {
+            care_route: route,
+            care_event: event,
+            request_id: requestId,
+          },
+        });
+      } catch {
+        // Sentry darf das strukturierte Logging nie verhindern
+      }
     },
 
     /** Abschluss-Log mit Gesamt-Dauer und HTTP-Statuscode */

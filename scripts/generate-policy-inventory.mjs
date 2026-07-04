@@ -113,6 +113,7 @@ const md = `# Policy-Inventar (generiert)
 > **NICHT von Hand editieren.** Generiert via \`node scripts/generate-policy-inventory.mjs\`
 > aus dem lokalen Supabase-Stack (= Migrations-Replay-Stand, NICHT zwingend Prod — siehe
 > Schema-Baseline-Konzept \`docs/plans/2026-07-04-schema-baseline-konzept.md\`).
+> Inventar immer nach \`supabase db reset\` generieren (nicht nach blossem \`start\`), sonst spiegelt es einen veralteten Stack.
 > Nach jeder Migration mit Policy-/Trigger-/Grant-Bezug neu generieren und einchecken —
 > der Git-Diff dieser Datei IST das Security-Review-Artefakt.
 

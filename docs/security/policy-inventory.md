@@ -3,10 +3,11 @@
 > **NICHT von Hand editieren.** Generiert via `node scripts/generate-policy-inventory.mjs`
 > aus dem lokalen Supabase-Stack (= Migrations-Replay-Stand, NICHT zwingend Prod — siehe
 > Schema-Baseline-Konzept `docs/plans/2026-07-04-schema-baseline-konzept.md`).
+> Inventar immer nach `supabase db reset` generieren (nicht nach blossem `start`), sonst spiegelt es einen veralteten Stack.
 > Nach jeder Migration mit Policy-/Trigger-/Grant-Bezug neu generieren und einchecken —
 > der Git-Diff dieser Datei IST das Security-Review-Artefakt.
 
-Kennzahlen: **568 Policies** · 208 public-Tabellen (1 OHNE RLS) · 34 Trigger · 628 Grant-Zeilen
+Kennzahlen: **570 Policies** · 208 public-Tabellen (1 OHNE RLS) · 36 Trigger · 628 Grant-Zeilen
 
 ## ⚠️ Tabellen ohne RLS (public)
 
@@ -331,16 +332,18 @@ Kennzahlen: **568 Policies** · 208 public-Tabellen (1 OHNE RLS) · 34 Trigger �
 | public.household_members | hm_insert_restricted | INSERT | public |  | ((user_id = auth.uid()) AND ((EXISTS ( SELECT 1 FROM verification_requests vr WHERE ((vr.user_id = auth.uid()) AND (vr.household_id = household_members.househol |
 | public.household_members | hm_read | SELECT | public | ((user_id = auth.uid()) OR is_verified_member()) |
 | public.households | households_admin | ALL | public | is_admin() |
-| public.households | households_read_authenticated | SELECT | public | (auth.uid() IS NOT NULL) |
+| public.households | households_quarter_select | SELECT | public | ((quarter_id = get_user_quarter_id()) OR is_super_admin() OR is_quarter_admin_for(quarter_id)) |
 | public.households | households_update | UPDATE | public | ((EXISTS ( SELECT 1 FROM household_members hm WHERE ((hm.household_id = households.id) AND (hm.user_id = auth.uid()) AND (hm.verified_at IS NOT NULL)))) OR (EXI |
 | public.insurance_configs | insurance_configs_read | SELECT | public | true |
 | public.kiosk_photos | kiosk_photos_delete | DELETE | public | (uploaded_by = auth.uid()) |
 | public.kiosk_photos | kiosk_photos_insert | INSERT | public |  | ((uploaded_by = auth.uid()) AND (household_id IN ( SELECT h.id FROM ((households h JOIN household_members hm ON ((hm.household_id = h.id))) JOIN caregiver_links |
 | public.kiosk_photos | kiosk_photos_select | SELECT | public | ((household_id IN ( SELECT h.id FROM ((households h JOIN household_members hm ON ((hm.household_id = h.id))) JOIN caregiver_links cl ON ((cl.resident_id = hm.us |
+| public.kiosk_photos | kiosk_photos_select_household_member | SELECT | public | ((visible = true) AND (household_id IN ( SELECT hm.household_id FROM household_members hm WHERE ((hm.user_id = auth.uid()) AND (hm.verified_at IS NOT NULL))))) |
 | public.kiosk_photos | kiosk_photos_update | UPDATE | public | (uploaded_by = auth.uid()) |
 | public.kiosk_reminders | kiosk_reminders_delete | DELETE | public | (created_by = auth.uid()) |
 | public.kiosk_reminders | kiosk_reminders_insert | INSERT | public |  | ((created_by = auth.uid()) AND (household_id IN ( SELECT h.id FROM ((households h JOIN household_members hm ON ((hm.household_id = h.id))) JOIN caregiver_links |
 | public.kiosk_reminders | kiosk_reminders_select | SELECT | public | ((household_id IN ( SELECT h.id FROM ((households h JOIN household_members hm ON ((hm.household_id = h.id))) JOIN caregiver_links cl ON ((cl.resident_id = hm.us |
+| public.kiosk_reminders | kiosk_reminders_select_household_member | SELECT | public | (household_id IN ( SELECT hm.household_id FROM household_members hm WHERE ((hm.user_id = auth.uid()) AND (hm.verified_at IS NOT NULL)))) |
 | public.kiosk_reminders | kiosk_reminders_update | UPDATE | public | (created_by = auth.uid()) |
 | public.kpi_targets | kpi_targets_manage_admin | ALL | public | is_admin() |
 | public.kpi_targets | kpi_targets_read_admin | SELECT | public | is_admin() |
@@ -357,7 +360,7 @@ Kennzahlen: **568 Policies** · 208 public-Tabellen (1 OHNE RLS) · 34 Trigger �
 | public.map_houses | map_houses_admin_insert | INSERT | public |  | is_admin() |
 | public.map_houses | map_houses_admin_update | UPDATE | public | is_admin() |
 | public.map_houses | map_houses_own_position | UPDATE | public | (is_verified_member() AND (EXISTS ( SELECT 1 FROM (household_members hm JOIN households h ON ((h.id = hm.household_id))) WHERE ((hm.user_id = auth.uid()) AND (h | (is_verified_member() AND (EXISTS ( SELECT 1 FROM (household_members hm JOIN households h ON ((h.id = hm.household_id))) WHERE ((hm.user_id = auth.uid()) AND (h |
-| public.map_houses | map_houses_read | SELECT | public | is_verified_member() |
+| public.map_houses | map_houses_quarter_select | SELECT | public | (is_super_admin() OR (household_id IS NULL) OR is_household_in_my_quarter(household_id)) |
 | public.map_houses | map_houses_user_upsert | ALL | public | (household_id IN ( SELECT household_members.household_id FROM household_members WHERE ((household_members.user_id = auth.uid()) AND (household_members.verified_ |
 | public.marketplace_items | marketplace_items_quarter_delete | DELETE | public | (is_super_admin() OR is_quarter_admin_for(quarter_id)) |
 | public.marketplace_items | marketplace_items_quarter_insert | INSERT | public |  | ((quarter_id = get_user_quarter_id()) OR is_super_admin() OR is_quarter_admin_for(quarter_id)) |
@@ -517,8 +520,8 @@ Kennzahlen: **568 Policies** · 208 public-Tabellen (1 OHNE RLS) · 34 Trigger �
 | public.user_memory_facts | user_own_facts_select | SELECT | public | (auth.uid() = user_id) |
 | public.user_memory_facts | user_own_facts_update | UPDATE | public | (auth.uid() = user_id) |
 | public.users | users_insert | INSERT | public |  | (id = auth.uid()) |
+| public.users | users_quarter_select | SELECT | public | ((id = auth.uid()) OR is_super_admin() OR is_same_quarter_user(id)) |
 | public.users | users_read_own | SELECT | public | (id = auth.uid()) |
-| public.users | users_read_verified | SELECT | public | is_verified_member() |
 | public.users | users_update_own | UPDATE | public | (id = auth.uid()) |
 | public.vacation_modes | vacation_create | INSERT | public |  | (is_verified_member() AND (user_id = auth.uid())) |
 | public.vacation_modes | vacation_delete | DELETE | public | (user_id = auth.uid()) |
@@ -603,16 +606,18 @@ Kennzahlen: **568 Policies** · 208 public-Tabellen (1 OHNE RLS) · 34 Trigger �
 | public.care_shopping_requests | care_shopping_requests_updated_at | UPDATE | BEFORE |
 | public.care_subscriptions | care_subscriptions_updated_at | UPDATE | BEFORE |
 | public.care_tasks | care_tasks_updated_at | UPDATE | BEFORE |
+| public.caregiver_links | enforce_caregiver_links_update_restrictions_trigger | UPDATE | BEFORE |
+| public.caregiver_links | protect_auto_answer_senior_consent_trigger | UPDATE | BEFORE |
 | public.caregiver_links | protect_plus_trial_end_trigger | UPDATE | BEFORE |
 | public.chat_group_members | trg_chat_group_members_limit | INSERT | BEFORE |
 | public.chat_groups | on_chat_group_created | INSERT | AFTER |
 | public.external_warning_cache | external_warning_cache_updated_at | UPDATE | BEFORE |
-| public.feature_flags | feature_flags_audit_log_trigger | UPDATE,INSERT,DELETE | AFTER |
+| public.feature_flags | feature_flags_audit_log_trigger | DELETE,INSERT,UPDATE | AFTER |
 | public.feature_flags | feature_flags_updated_at | UPDATE | BEFORE |
 | public.group_members | trg_group_members_identity_immutable | UPDATE | BEFORE |
-| public.group_members | trg_group_members_refresh_member_count | UPDATE,DELETE,INSERT | AFTER |
+| public.group_members | trg_group_members_refresh_member_count | UPDATE,INSERT,DELETE | AFTER |
 | public.groups | trg_groups_identity_immutable | UPDATE | BEFORE |
-| public.household_members | trg_quarter_lifecycle | UPDATE,INSERT | AFTER |
+| public.household_members | trg_quarter_lifecycle | INSERT,UPDATE | AFTER |
 | public.household_members | trigger_enforce_member_defaults | INSERT | BEFORE |
 | public.households | households_trim_street_name_trigger | INSERT,UPDATE | BEFORE |
 | public.households | trg_sync_household_quarter_id | INSERT,UPDATE | BEFORE |
@@ -961,8 +966,8 @@ Kennzahlen: **568 Policies** · 208 public-Tabellen (1 OHNE RLS) · 34 Trigger �
 | public.household_members | anon | DELETE,INSERT,REFERENCES,SELECT,TRIGGER,TRUNCATE,UPDATE |
 | public.household_members | authenticated | DELETE,INSERT,REFERENCES,SELECT,TRIGGER,TRUNCATE,UPDATE |
 | public.household_members | service_role | DELETE,INSERT,REFERENCES,SELECT,TRIGGER,TRUNCATE,UPDATE |
-| public.households | anon | DELETE,INSERT,REFERENCES,SELECT,TRIGGER,TRUNCATE,UPDATE |
-| public.households | authenticated | DELETE,INSERT,REFERENCES,SELECT,TRIGGER,TRUNCATE,UPDATE |
+| public.households | anon | DELETE,INSERT,REFERENCES,TRIGGER,TRUNCATE,UPDATE |
+| public.households | authenticated | DELETE,INSERT,REFERENCES,TRIGGER,TRUNCATE,UPDATE |
 | public.households | service_role | DELETE,INSERT,REFERENCES,SELECT,TRIGGER,TRUNCATE,UPDATE |
 | public.insurance_configs | anon | DELETE,INSERT,REFERENCES,SELECT,TRIGGER,TRUNCATE,UPDATE |
 | public.insurance_configs | authenticated | DELETE,INSERT,REFERENCES,SELECT,TRIGGER,TRUNCATE,UPDATE |

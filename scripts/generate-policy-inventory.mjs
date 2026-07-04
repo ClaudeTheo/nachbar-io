@@ -136,7 +136,7 @@ ${table(["Tabelle", "Rolle", "Privilegien"], grants)}
 `;
 
 mkdirSync(dirname(OUT_PATH), { recursive: true });
-writeFileSync(OUT_PATH, md, "utf8");
+writeFileSync(OUT_PATH, `${md.trimEnd()}\n`, "utf8");
 console.log(
   `OK: ${policies.length} Policies, ${triggers.length} Trigger, ${grants.length} Grant-Zeilen, ` +
     `${noRls.length} Tabellen ohne RLS -> ${OUT_PATH}`,

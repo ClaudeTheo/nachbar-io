@@ -37,13 +37,13 @@ describe('CRON_JOBS Konfiguration', () => {
       'subscription_check', 'expire_invitations', 'hilfe_reminder',
       'heartbeat_cleanup', 'forensic_cleanup', 'analytics',
       'waste_reminder', 'waste_sync', 'amtsblatt_sync',
-      'quartier_info_sync', 'osm_poi_sync', 'quartier_events_sync', 'nina_sync',
+      'quartier_info_sync', 'osm_poi_sync', 'quartier_events_sync',
       'news_scrape', 'news_rss',
       'synthetic_smoke',
       'doctors_refresh',
     ];
-    expect(jobIds).toHaveLength(30);
-    expect(Object.keys(CRON_JOBS)).toHaveLength(30);
+    expect(jobIds).toHaveLength(29);
+    expect(Object.keys(CRON_JOBS)).toHaveLength(29);
     for (const id of jobIds) {
       expect(CRON_JOBS[id]).toBeDefined();
       expect(CRON_JOBS[id].name).toBeTruthy();
@@ -104,7 +104,7 @@ describe('checkCronHealth', () => {
 
     const results = await checkCronHealth(supabase);
 
-    expect(results).toHaveLength(30); // Alle vercel.json-Crons
+    expect(results).toHaveLength(29); // Alle vercel.json-Crons
     for (const result of results) {
       expect(result.status).toBe('error');
       expect(result.lastRunAt).toBeNull();

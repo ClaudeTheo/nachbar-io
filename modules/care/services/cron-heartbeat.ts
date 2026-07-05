@@ -45,7 +45,6 @@ export const CRON_JOBS = {
   quartier_info_sync: { name: 'Quartier-Info-Sync', expectedIntervalMinutes: 1440, criticalAfterMinutes: 2880 },
   osm_poi_sync: { name: 'OSM-POI-Sync', expectedIntervalMinutes: 10080, criticalAfterMinutes: 14400 },
   quartier_events_sync: { name: 'Quartier-Events-Sync', expectedIntervalMinutes: 1440, criticalAfterMinutes: 2880 },
-  nina_sync: { name: 'NINA-Warnungen', expectedIntervalMinutes: 1440, criticalAfterMinutes: 2880 },
 
   // News (Pfade ausserhalb /cron/, aber als Vercel-Cron getriggert)
   news_scrape: { name: 'News-Scraper', expectedIntervalMinutes: 10080, criticalAfterMinutes: 14400 },

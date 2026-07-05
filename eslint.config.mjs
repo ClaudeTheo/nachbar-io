@@ -17,6 +17,7 @@ const eslintConfig = defineConfig([
     // Datei-Duplikate ohne eigene node_modules — gleicher Ausschluss wie in
     // vitest.config.ts, sonst ist der volle Lint-Lauf rot.
     ".claude/**",
+    ".codex-worktrees/**",
     ".codex-logs/**",
     ".vercel/**",
     "coverage/**",

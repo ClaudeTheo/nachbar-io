@@ -57,6 +57,12 @@ jobs:
       - name: Start local Supabase
         run: npx supabase start
 
+      - name: Verify policy inventory is up to date
+        shell: bash
+        run: |
+          node scripts/generate-policy-inventory.mjs
+          git diff --exit-code -- docs/security/policy-inventory.md
+
       - name: Configure local Supabase env
         shell: bash
         run: |

@@ -86,7 +86,7 @@ const rlsStatus = rows(`
 const triggers = rows(`
   SELECT event_object_schema || '.' || event_object_table,
          trigger_name,
-         string_agg(event_manipulation, ','),
+         string_agg(event_manipulation, ',' ORDER BY event_manipulation),
          action_timing
   FROM information_schema.triggers
   WHERE trigger_schema IN ('public')
@@ -113,6 +113,7 @@ const md = `# Policy-Inventar (generiert)
 > **NICHT von Hand editieren.** Generiert via \`node scripts/generate-policy-inventory.mjs\`
 > aus dem lokalen Supabase-Stack (= Migrations-Replay-Stand, NICHT zwingend Prod — siehe
 > Schema-Baseline-Konzept \`docs/plans/2026-07-04-schema-baseline-konzept.md\`).
+> Inventar immer nach \`supabase db reset\` generieren (nicht nach blossem \`start\`), sonst spiegelt es einen veralteten Stack.
 > Nach jeder Migration mit Policy-/Trigger-/Grant-Bezug neu generieren und einchecken —
 > der Git-Diff dieser Datei IST das Security-Review-Artefakt.
 
@@ -136,7 +137,7 @@ ${table(["Tabelle", "Rolle", "Privilegien"], grants)}
 `;
 
 mkdirSync(dirname(OUT_PATH), { recursive: true });
-writeFileSync(OUT_PATH, md, "utf8");
+writeFileSync(OUT_PATH, `${md.trimEnd()}\n`, "utf8");
 console.log(
   `OK: ${policies.length} Policies, ${triggers.length} Trigger, ${grants.length} Grant-Zeilen, ` +
     `${noRls.length} Tabellen ohne RLS -> ${OUT_PATH}`,

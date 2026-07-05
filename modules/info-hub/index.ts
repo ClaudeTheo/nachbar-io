@@ -42,7 +42,3 @@ export { EVENTS_BAD_SAECKINGEN, EVENTS_CALENDAR_URL } from "./services/events";
 
 // Rathaus-Links
 export { RATHAUS_LINKS } from "./services/rathaus-links";
-
-// Komponenten
-export { InfoBar } from "./components/InfoBar";
-export { NinaAlert } from "./components/NinaAlert";

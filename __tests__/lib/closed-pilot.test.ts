@@ -78,7 +78,6 @@ describe("closed pilot public paths", () => {
     "/api/cron/quartier-info-sync",
     "/api/cron/osm-poi-sync",
     "/api/cron/quartier-events-sync",
-    "/api/cron/nina-sync",
     "/api/cron/forensic-cleanup",
     "/api/cron/synthetic-smoke",
     "/api/cron/expire-invitations",

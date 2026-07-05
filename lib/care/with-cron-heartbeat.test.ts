@@ -44,7 +44,7 @@ describe("withCronHeartbeat", () => {
 
   it("500 wenn CRON_SECRET fehlt", async () => {
     delete process.env.CRON_SECRET;
-    const handler = withCronHeartbeat("nina_sync", async () => ({ ok: true }));
+    const handler = withCronHeartbeat("digest", async () => ({ ok: true }));
     const res = await handler(makeRequest({ authorization: VALID_AUTH }));
 
     expect(res.status).toBe(500);
@@ -52,7 +52,7 @@ describe("withCronHeartbeat", () => {
   });
 
   it("401 wenn Authorization-Header fehlt oder falsch", async () => {
-    const handler = withCronHeartbeat("nina_sync", async () => ({ ok: true }));
+    const handler = withCronHeartbeat("digest", async () => ({ ok: true }));
 
     const res1 = await handler(makeRequest());
     expect(res1.status).toBe(401);
@@ -65,7 +65,7 @@ describe("withCronHeartbeat", () => {
 
   it("ruft Handler auf und gibt Result als JSON-Response zurueck", async () => {
     const handlerImpl = vi.fn().mockResolvedValue({ synced: 5, errors: 0 });
-    const handler = withCronHeartbeat("nina_sync", handlerImpl);
+    const handler = withCronHeartbeat("digest", handlerImpl);
 
     const res = await handler(makeRequest({ authorization: VALID_AUTH }));
     const body = await res.json();
@@ -76,7 +76,7 @@ describe("withCronHeartbeat", () => {
   });
 
   it("schreibt Heartbeat mit Handler-Result als Metadata bei Erfolg", async () => {
-    const handler = withCronHeartbeat("nina_sync", async () => ({
+    const handler = withCronHeartbeat("digest", async () => ({
       synced: 5,
       errors: 0,
     }));
@@ -85,7 +85,7 @@ describe("withCronHeartbeat", () => {
 
     expect(upsertFn).toHaveBeenCalledWith(
       expect.objectContaining({
-        job_id: "nina_sync",
+        job_id: "digest",
         metadata: { synced: 5, errors: 0 },
       }),
       { onConflict: "job_id" },
@@ -93,7 +93,7 @@ describe("withCronHeartbeat", () => {
   });
 
   it("schreibt KEINEN Heartbeat wenn Handler wirft", async () => {
-    const handler = withCronHeartbeat("nina_sync", async () => {
+    const handler = withCronHeartbeat("digest", async () => {
       throw new Error("boom");
     });
 
@@ -105,7 +105,7 @@ describe("withCronHeartbeat", () => {
 
   it("uebergibt supabase + request an Handler", async () => {
     const handlerImpl = vi.fn().mockResolvedValue({ ok: true });
-    const handler = withCronHeartbeat("nina_sync", handlerImpl);
+    const handler = withCronHeartbeat("digest", handlerImpl);
 
     const req = makeRequest({ authorization: VALID_AUTH });
     await handler(req);
@@ -114,13 +114,13 @@ describe("withCronHeartbeat", () => {
   });
 
   it("kapselt primitive Handler-Returns in metadata.result", async () => {
-    const handler = withCronHeartbeat("nina_sync", async () => 42);
+    const handler = withCronHeartbeat("digest", async () => 42);
 
     await handler(makeRequest({ authorization: VALID_AUTH }));
 
     expect(upsertFn).toHaveBeenCalledWith(
       expect.objectContaining({
-        job_id: "nina_sync",
+        job_id: "digest",
         metadata: { result: 42 },
       }),
       { onConflict: "job_id" },

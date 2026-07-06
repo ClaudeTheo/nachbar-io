@@ -118,7 +118,7 @@
     "@types/web-push": "^3.6.4",
     "chromatic": "^17.5.0",
     "dotenv": "^17.3.1",
-    "eslint": "^9",
+    "eslint": "^10",
     "eslint-config-next": "^16.2.10",
     "fake-indexeddb": "^6.2.5",
     "jsdom": "^28.1.0",

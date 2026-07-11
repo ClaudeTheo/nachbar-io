@@ -166,6 +166,8 @@ async function ensureProfile(userId: string) {
         test_user_kind: "demo",
         // Investoren sollen direkt im Dashboard landen, nicht im 6-Schritte-Onboarding
         onboarding_completed: true,
+        // KI-Hilfe (Vorlesen, Assistent, Sprachverstehen) fuer die Demo freischalten
+        ai_assistance_level: "everyday",
       },
     },
     { onConflict: "id" },

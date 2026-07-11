@@ -86,11 +86,12 @@ export default function ImpressumPage() {
               Umsatzsteuer
             </h2>
             <p>
+              Umsatzsteuer-Identifikationsnummer gemäß § 27a UStG:{" "}
+              <span className="font-medium text-anthrazit">DE463152997</span>
+            </p>
+            <p className="mt-2">
               Der geschlossene Pilotbetrieb ist derzeit kostenfrei; über diese
               öffentliche Pilotseite werden keine Zahlungen entgegengenommen.
-              Eine Umsatzsteuer-Identifikationsnummer gemäß § 27a UStG wurde
-              noch nicht erteilt. Diese Angabe wird hier ergänzt, sobald sie
-              vorliegt.
             </p>
           </section>
 
@@ -229,7 +230,7 @@ export default function ImpressumPage() {
             </p>
           </section>
 
-          <p className="text-xs text-muted-foreground">Stand: Mai 2026</p>
+          <p className="text-xs text-muted-foreground">Stand: Juli 2026</p>
         </div>
 
         {/* Footer */}

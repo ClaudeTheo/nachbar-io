@@ -178,6 +178,42 @@ async function ensureProfile(userId: string) {
   );
 }
 
+// KI-Hilfe braucht neben settings.ai_assistance_level auch einen granted
+// care_consents-Eintrag fuer "ai_onboarding" (canUsePersonalAi, Zwei-Gate-Modell).
+// Der AI_PROVIDER_OFF-Feature-Flag bleibt davon unberuehrt (Founder-Kill-Switch).
+async function ensureAiConsent(userId: string) {
+  const { data: existing, error: selErr } = await supabase
+    .from("care_consents")
+    .select("id, granted")
+    .eq("user_id", userId)
+    .eq("feature", "ai_onboarding")
+    .maybeSingle();
+  if (selErr) throw selErr;
+
+  if (existing?.granted) {
+    console.log("✓ KI-Consent (ai_onboarding) existiert");
+    return;
+  }
+
+  if (existing) {
+    const { error: updErr } = await supabase
+      .from("care_consents")
+      .update({ granted: true, granted_at: new Date().toISOString() })
+      .eq("id", existing.id);
+    if (updErr) throw updErr;
+  } else {
+    const { error: insErr } = await supabase.from("care_consents").insert({
+      user_id: userId,
+      feature: "ai_onboarding",
+      granted: true,
+      consent_version: "demo-seed",
+      granted_at: new Date().toISOString(),
+    });
+    if (insErr) throw insErr;
+  }
+  console.log("+ KI-Consent (ai_onboarding) gesetzt");
+}
+
 async function ensureHousehold(quarterId: string): Promise<string> {
   const { data: existing, error: selErr } = await supabase
     .from("households")
@@ -253,6 +289,7 @@ async function main() {
   const quarterId = await ensureQuarter();
   const userId = await ensureAuthUser();
   await ensureProfile(userId);
+  await ensureAiConsent(userId);
   const householdId = await ensureHousehold(quarterId);
   await ensureMembership(householdId, userId);
 

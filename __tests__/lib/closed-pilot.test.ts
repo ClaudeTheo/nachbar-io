@@ -35,6 +35,12 @@ describe("closed pilot public paths", () => {
     expect(isClosedPilotPublicPath("/setup/example-token")).toBe(true);
   });
 
+  // Investoren-Demo-Zugang: Route-Handler auf Seiten-Pfad, authentifiziert sich
+  // ueber DEMO_ACCESS_TOKEN in der URL (kein Session-Vorlauf moeglich).
+  it("keeps the demo access entry point reachable in closed pilot", () => {
+    expect(isClosedPilotPublicPath("/demo-zugang")).toBe(true);
+  });
+
   it("keeps registration APIs public for pending onboarding", () => {
     expect(isClosedPilotPublicApiPath("/api/register/check-invite")).toBe(true);
     expect(isClosedPilotPublicApiPath("/api/register/complete")).toBe(true);

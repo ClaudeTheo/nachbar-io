@@ -187,6 +187,19 @@ describe("updateSession (Auth-Middleware)", () => {
     },
   );
 
+  // Investoren-Demo-Zugang: muss auch NACH dem Closed-Pilot (Flag off) ohne
+  // Session erreichbar bleiben — die Route prueft selbst den DEMO_ACCESS_TOKEN.
+  it("laesst den Demo-Zugang /demo-zugang ohne Auth zur Route durch", async () => {
+    mockGetUser.mockResolvedValue({ data: { user: null } });
+
+    const req = new NextRequest("http://localhost/demo-zugang?t=abc");
+    const res = await updateSession(req);
+
+    expect(res.status).not.toBe(307);
+    expect(res.status).not.toBe(503);
+    expect(res.headers.get("location")).toBeNull();
+  });
+
   it("redirected geschuetzte Seiten zu /login ohne Auth", async () => {
     mockGetUser.mockResolvedValue({ data: { user: null } });
     const req = new NextRequest("http://localhost/dashboard");

@@ -58,6 +58,15 @@ const RATE_LIMIT_CONFIG: RateLimitCategory[] = [
     limit: 10,
     windowMs: 60_000,
   },
+  // Investoren-Demo-Zugang: Token-Lookup auf Seiten-Pfad — eng begrenzt gegen
+  // Brute-Force. Wird von der Route selbst geprueft (nicht vom Proxy), weil
+  // Closed-Pilot-Public-Paths den Proxy-Rate-Limit-Pfad nicht durchlaufen.
+  {
+    name: "demo-login",
+    prefixes: ["/demo-zugang"],
+    limit: 5,
+    windowMs: 60_000,
+  },
   // Teure Operationen: Sehr streng (Claude API, Push-Broadcast, etc.)
   {
     name: "expensive",

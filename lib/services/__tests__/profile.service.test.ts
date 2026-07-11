@@ -143,4 +143,22 @@ describe("setUiMode", () => {
     expect(chain.update).toHaveBeenCalledWith({ ui_mode: "comfort" });
     expect(result).toBe("comfort");
   });
+
+  it("gibt den tatsaechlich persistierten Modus zurueck, wenn der Youth-Trigger den Wechsel still blockiert (Mig 198)", async () => {
+    // Mig 198 (enforce_user_update_restrictions) haelt ui_mode bei OLD='youth'
+    // sticky: das Update laeuft OHNE Fehler durch, der Trigger ueberschreibt
+    // NEW.ui_mode — die RETURNING-Row enthaelt weiterhin "youth".
+    const chain = {
+      update: vi.fn().mockReturnThis(),
+      eq: vi.fn().mockReturnThis(),
+      select: vi.fn().mockReturnThis(),
+      single: vi.fn().mockResolvedValue({ data: { ...MOCK_USER, ui_mode: "youth" }, error: null }),
+    };
+    mockFrom.mockReturnValue(chain as unknown as ReturnType<typeof mockFrom>);
+
+    const result = await setUiMode("user-1", "senior");
+
+    expect(chain.update).toHaveBeenCalledWith({ ui_mode: "senior" });
+    expect(result).toBe("youth");
+  });
 });

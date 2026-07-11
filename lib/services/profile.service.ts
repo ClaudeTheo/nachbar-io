@@ -53,13 +53,19 @@ export async function updateProfile(
   return data as User;
 }
 
-/** UI-Modus gezielt setzen. */
+/**
+ * UI-Modus gezielt setzen. Gibt den tatsaechlich persistierten Modus zurueck:
+ * der Mig-198-Trigger (enforce_user_update_restrictions) haelt ui_mode bei
+ * Youth-Accounts sticky — das Update laeuft dann OHNE Fehler durch, aber die
+ * RETURNING-Row enthaelt weiterhin "youth". Aufrufer muessen den Rueckgabewert
+ * gegen den Wunsch-Modus pruefen, statt Erfolg anzunehmen.
+ */
 export async function setUiMode(userId: string, mode: UserUiMode): Promise<UserUiMode> {
   if (!isUserUiMode(mode)) {
     throw new Error("Ungueltiger UI-Modus");
   }
-  await updateProfile(userId, { ui_mode: mode });
-  return mode;
+  const updated = await updateProfile(userId, { ui_mode: mode });
+  return isUserUiMode(updated.ui_mode) ? updated.ui_mode : mode;
 }
 
 /** Legacy-Umschalter (active ↔ senior). */

@@ -2,6 +2,8 @@
 // Satz-basiertes TTS-Streaming: Text wird satzweise an die TTS-API gesendet
 // Erster Satz startet sofort, weitere werden gepipelined
 
+import { normalizeVoice } from '@/modules/voice/lib/voice-names'
+
 export interface SentenceStreamTTSOptions {
   voice?: string
   onSpeakingDone?: () => void
@@ -53,7 +55,8 @@ export class SentenceStreamTTS {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         text: sentence,
-        voice: this.options.voice ?? 'nova'
+        // Migration: Alt-Werte (nova/ash/onyx) → marin/cedar (2026-07)
+        voice: normalizeVoice(this.options.voice)
       })
     })
     if (!res.ok) return

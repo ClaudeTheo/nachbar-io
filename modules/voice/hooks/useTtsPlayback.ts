@@ -7,20 +7,21 @@
 //
 // API: { play(text), stop(), isLoading, isPlaying }
 // Voice/Speed werden aus localStorage ("quartier-voice-prefs-synced") gelesen,
-// Default ash / 0.95.
+// Default marin / 0.95 (Stimmen-Wechsel 2026-07).
 
 "use client";
 
 import { useState, useRef, useCallback, useEffect } from "react";
 import { toast } from "sonner";
 import { getIOSAudioManager } from "../services/ios-audio-manager";
+import { DEFAULT_VOICE, normalizeVoice } from "@/modules/voice/lib/voice-names";
 
 interface VoicePrefs {
   voice: string;
   speed: number;
 }
 
-const DEFAULTS: VoicePrefs = { voice: "ash", speed: 0.95 };
+const DEFAULTS: VoicePrefs = { voice: DEFAULT_VOICE, speed: 0.95 };
 
 function readVoicePrefs(): VoicePrefs {
   if (typeof window === "undefined") return DEFAULTS;
@@ -29,7 +30,8 @@ function readVoicePrefs(): VoicePrefs {
     if (!raw) return DEFAULTS;
     const parsed = JSON.parse(raw) as Partial<VoicePrefs>;
     return {
-      voice: parsed.voice || DEFAULTS.voice,
+      // Migration: Alt-Werte (nova/ash/onyx) → marin/cedar (2026-07)
+      voice: normalizeVoice(parsed.voice),
       speed: typeof parsed.speed === "number" ? parsed.speed : DEFAULTS.speed,
     };
   } catch {
@@ -219,8 +221,8 @@ export function useTtsPlayback(): UseTtsPlaybackReturn {
         if (!data?.voice_preferences) return;
         const prefs = data.voice_preferences as Record<string, unknown>;
         const resolved = {
-          voice:
-            prefs.voice === "ash" || prefs.voice === "onyx" ? "ash" : "nova",
+          // Migration: Alt-Werte (nova/ash/onyx) → marin/cedar (2026-07)
+          voice: normalizeVoice(prefs.voice),
           speed: typeof prefs.speed === "number" ? prefs.speed : DEFAULTS.speed,
         };
         localStorage.setItem(

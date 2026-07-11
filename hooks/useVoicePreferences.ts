@@ -4,10 +4,11 @@ import { useState, useEffect, useCallback } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import type { VoicePreferences } from "@/modules/voice/components/companion/VoiceSettings";
+import { DEFAULT_VOICE, normalizeVoice } from "@/modules/voice/lib/voice-names";
 
 // Default-Einstellungen fuer die Stimme
 const VOICE_DEFAULTS: VoicePreferences = {
-  voice: "nova",
+  voice: DEFAULT_VOICE,
   speed: 1.0,
   formality: "formal",
   patienceMode: false,
@@ -40,10 +41,8 @@ export function useVoicePreferences() {
         if (data?.voice_preferences) {
           const prefs = data.voice_preferences as Record<string, unknown>;
           const resolved: VoicePreferences = {
-            // Migration: "onyx" → "ash" (wärmere Stimme, Session 59)
-            voice: (prefs.voice === "ash" || prefs.voice === "onyx"
-              ? "ash"
-              : "nova") as VoicePreferences["voice"],
+            // Migration: Alt-Werte (nova/ash/onyx) → marin/cedar (2026-07)
+            voice: normalizeVoice(prefs.voice),
             speed: typeof prefs.speed === "number" ? prefs.speed : 1.0,
             formality: (prefs.formality === "informal"
               ? "informal"

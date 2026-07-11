@@ -2,12 +2,14 @@
 
 // Stimmen-Einstellungen fuer den KI-Companion
 // Session 59: 3 Tempos (Schnell/Normal/Langsam), ash statt onyx, zuklappbar
+// Stimmen-Wechsel 2026-07: marin/cedar (neue gpt-4o-mini-tts-Generation)
 
 import { useState, useRef, useCallback } from 'react'
 import { Volume2, Square, Loader2, ChevronDown } from 'lucide-react'
+import { FEMALE_VOICE, MALE_VOICE, normalizeVoice, type VoiceName } from '@/modules/voice/lib/voice-names'
 
 export interface VoicePreferences {
-  voice: 'nova' | 'ash'     // nova = weiblich, ash = maennlich (warm, akzentfrei)
+  voice: VoiceName           // marin = weiblich, cedar = maennlich (neue Generation)
   speed: number              // 1.15 = schnell, 1.0 = normal, 0.85 = langsam
   formality: 'formal' | 'informal'
   patienceMode?: boolean
@@ -27,12 +29,12 @@ interface ToggleOption {
 // Vorschau-Saetze je nach Anrede und Stimme
 const PREVIEW_TEXTS: Record<string, Record<string, string>> = {
   formal: {
-    nova: 'Guten Tag! Ich freue mich, dass Sie da sind. Wie kann ich Ihnen heute helfen?',
-    ash: 'Guten Tag! Schön, dass Sie da sind. Wie kann ich Ihnen heute behilflich sein?',
+    marin: 'Guten Tag! Ich freue mich, dass Sie da sind. Wie kann ich Ihnen heute helfen?',
+    cedar: 'Guten Tag! Schön, dass Sie da sind. Wie kann ich Ihnen heute behilflich sein?',
   },
   informal: {
-    nova: 'Hallo! Schön, dass du da bist. Wie kann ich dir heute helfen?',
-    ash: 'Hey! Gut, dass du da bist. Wie kann ich dir heute helfen?',
+    marin: 'Hallo! Schön, dass du da bist. Wie kann ich dir heute helfen?',
+    cedar: 'Hey! Gut, dass du da bist. Wie kann ich dir heute helfen?',
   },
 }
 
@@ -96,15 +98,16 @@ export function VoiceSettings({ settings, onChange }: VoiceSettingsProps) {
     abortRef.current = new AbortController()
 
     try {
-      const text = PREVIEW_TEXTS[settings.formality]?.[settings.voice]
-        || PREVIEW_TEXTS.formal.nova
+      const previewVoice = normalizeVoice(settings.voice)
+      const text = PREVIEW_TEXTS[settings.formality]?.[previewVoice]
+        || PREVIEW_TEXTS.formal.marin
 
       const res = await fetch('/api/voice/tts', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           text,
-          voice: settings.voice,
+          voice: previewVoice,
           speed: settings.speed,
         }),
         signal: abortRef.current.signal,
@@ -142,8 +145,8 @@ export function VoiceSettings({ settings, onChange }: VoiceSettingsProps) {
     }
   }, [settings.voice, settings.speed, settings.formality, previewState, stopPreview])
 
-  // Migriere alte "onyx" Einstellung zu "ash"
-  const currentVoice = settings.voice === 'onyx' as string ? 'ash' : settings.voice
+  // Migriere alte Werte (nova/ash/onyx) auf die neue Stimmen-Generation
+  const currentVoice = normalizeVoice(settings.voice)
 
   return (
     <div className="flex flex-col gap-4">
@@ -151,12 +154,12 @@ export function VoiceSettings({ settings, onChange }: VoiceSettingsProps) {
       <ToggleGroup
         label="Stimme"
         options={[
-          { label: 'Weiblich', value: 'nova', active: currentVoice === 'nova' },
-          { label: 'Männlich', value: 'ash', active: currentVoice === 'ash' },
+          { label: 'Weiblich', value: FEMALE_VOICE, active: currentVoice === FEMALE_VOICE },
+          { label: 'Männlich', value: MALE_VOICE, active: currentVoice === MALE_VOICE },
         ]}
         onSelect={(value) => {
           stopPreview()
-          onChange({ ...settings, voice: value as 'nova' | 'ash' })
+          onChange({ ...settings, voice: value as VoiceName })
         }}
       />
 

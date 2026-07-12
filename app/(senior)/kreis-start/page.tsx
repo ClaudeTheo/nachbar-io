@@ -19,6 +19,7 @@ import { listPendingSeniorConsents } from "@/lib/family-setup/senior-consent.ser
 import { FamilienMomentCard } from "@/modules/care/components/senior/FamilienMomentCard";
 import { StickyNotesList } from "@/modules/care/components/senior/StickyNotesList";
 import { SeniorConsentPrompt } from "@/modules/care/components/senior/SeniorConsentPrompt";
+import { isRealtimeVoiceEnabled } from "@/lib/ai/realtime-voice";
 
 type TileDef = {
   label: string;
@@ -64,6 +65,7 @@ const TILES: TileDef[] = [
 ];
 
 export default async function KreisStartPage() {
+  const realtimeVoiceEnabled = isRealtimeVoiceEnabled();
   // SB-2: neuestes Familienfoto laden (RLS-scoped auf den eigenen Haushalt).
   // Fehler/leerer Haushalt -> Karte wird einfach nicht angezeigt (additiv).
   const supabase = await createClient();
@@ -153,6 +155,16 @@ export default async function KreisStartPage() {
         >
           Mein Profil
         </Link>
+        {realtimeVoiceEnabled ? (
+          <Link
+            href="/sprachbegleiter"
+            className="col-span-2 inline-flex items-center justify-center rounded-2xl border-2 border-quartier-green bg-white px-4 text-center text-xl font-bold text-anthrazit transition-colors hover:bg-quartier-green/10"
+            data-testid="kreis-start-realtime-voice-link"
+            style={{ minHeight: "80px", minWidth: "80px" }}
+          >
+            Mit KI sprechen
+          </Link>
+        ) : null}
         {/* SP1-3: Tagesrätsel als Sekundär-Aktion (volle Zeile, NICHT 5. Kachel). */}
         <Link
           href="/raetsel"

@@ -97,3 +97,53 @@ describe("AI per-user Tageslimit", () => {
     });
   });
 });
+
+describe("Realtime Voice Stundenlimit", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mockGetSecurityRedis.mockReturnValue({
+      incr: mockIncr,
+      expire: mockExpire,
+    });
+    mockIncr.mockResolvedValue(1);
+    mockExpire.mockResolvedValue(1);
+  });
+
+  it("erlaubt hoechstens acht Sitzungsstarts pro Nutzer und Stunde", async () => {
+    const { consumeRealtimeVoiceSessionLimit, REALTIME_VOICE_HOURLY_LIMIT } =
+      await import("@/lib/ai/rate-limit");
+
+    const result = await consumeRealtimeVoiceSessionLimit({ userId: "user-7" });
+
+    expect(result).toEqual({
+      allowed: true,
+      limit: REALTIME_VOICE_HOURLY_LIMIT,
+      remaining: 7,
+    });
+    expect(mockIncr).toHaveBeenCalledWith("ai:realtime-voice:user:user-7");
+    expect(mockExpire).toHaveBeenCalledWith("ai:realtime-voice:user:user-7", 3600);
+  });
+
+  it("blockiert den neunten Sitzungsstart", async () => {
+    const { consumeRealtimeVoiceSessionLimit } = await import("@/lib/ai/rate-limit");
+    mockIncr.mockResolvedValue(9);
+
+    const result = await consumeRealtimeVoiceSessionLimit({ userId: "user-7" });
+
+    expect(result).toEqual({ allowed: false, limit: 8, remaining: 0 });
+  });
+
+  it("schliesst bei fehlendem Redis den teuren Pfad", async () => {
+    const { consumeRealtimeVoiceSessionLimit } = await import("@/lib/ai/rate-limit");
+    mockGetSecurityRedis.mockReturnValue(null);
+
+    await expect(
+      consumeRealtimeVoiceSessionLimit({ userId: "user-7" }),
+    ).resolves.toEqual({
+      allowed: false,
+      unavailable: true,
+      limit: 8,
+      remaining: 0,
+    });
+  });
+});

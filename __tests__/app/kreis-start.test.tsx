@@ -30,6 +30,7 @@ import KreisStartPage from "@/app/(senior)/kreis-start/page";
 
 afterEach(() => {
   cleanup();
+  vi.unstubAllEnvs();
 });
 
 describe("KreisStartPage (Phase 1 Design-Doc 3)", () => {
@@ -91,6 +92,18 @@ describe("KreisStartPage (Phase 1 Design-Doc 3)", () => {
     expect(link).not.toBeNull();
     expect(link!.getAttribute("href")).toBe("/meine-termine");
     expect(link!.textContent).toContain("Termine");
+  });
+
+  it("zeigt Realtime-Sprache bei aktivem Server-Gate als 80px-Sekundaeraktion", async () => {
+    vi.stubEnv("OPENAI_API_KEY", "test-key");
+    vi.stubEnv("REALTIME_VOICE_ENABLED", "1");
+
+    render(await KreisStartPage());
+
+    const link = screen.getByRole("link", { name: /Mit KI sprechen/i });
+    expect(link).toHaveAttribute("href", "/sprachbegleiter");
+    expect(link.style.minHeight).toBe("80px");
+    expect(screen.getAllByTestId("kreis-start-tile")).toHaveLength(4);
   });
 
   it("keine Badges mit Zahlen (Design-Doc 3.1)", async () => {

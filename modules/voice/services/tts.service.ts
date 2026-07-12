@@ -6,6 +6,7 @@
 
 import { ServiceError } from "@/lib/services/service-error";
 import { getAdminSupabase } from "@/lib/supabase/admin";
+import { DEFAULT_VOICE } from "@/modules/voice/lib/voice-names";
 
 export interface TtsRequest {
   text: string;
@@ -42,7 +43,7 @@ function validateTtsInput(params: TtsRequest): ValidatedTtsInput {
   if (text.length > 1000)
     throw new ServiceError("Text zu lang (max. 1000 Zeichen).", 400);
 
-  const voice = typeof params.voice === "string" ? params.voice : "ash";
+  const voice = typeof params.voice === "string" ? params.voice : DEFAULT_VOICE;
   const speed =
     typeof params.speed === "number" &&
     params.speed >= 0.25 &&

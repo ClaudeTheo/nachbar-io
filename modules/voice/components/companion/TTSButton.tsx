@@ -9,6 +9,7 @@ import { Volume2, Loader2, Square, Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { getIOSAudioManager } from "../../services/ios-audio-manager";
+import { DEFAULT_VOICE, normalizeVoice } from "@/modules/voice/lib/voice-names";
 
 interface TTSButtonProps {
   text: string;
@@ -22,7 +23,7 @@ const PILOT_MODE = process.env.NEXT_PUBLIC_PILOT_MODE === "true";
  * Falls noch nichts im localStorage: laedt direkt aus Supabase und cached.
  */
 async function getVoiceSettings(): Promise<{ voice: string; speed: number }> {
-  const defaults = { voice: "ash", speed: 0.95 };
+  const defaults = { voice: DEFAULT_VOICE as string, speed: 0.95 };
   if (typeof window === "undefined") return defaults;
 
   try {
@@ -31,7 +32,8 @@ async function getVoiceSettings(): Promise<{ voice: string; speed: number }> {
     if (stored) {
       const parsed = JSON.parse(stored);
       return {
-        voice: parsed.voice || defaults.voice,
+        // Migration: Alt-Werte (nova/ash/onyx) → marin/cedar (2026-07)
+        voice: normalizeVoice(parsed.voice),
         speed: typeof parsed.speed === "number" ? parsed.speed : defaults.speed,
       };
     }
@@ -51,9 +53,7 @@ async function getVoiceSettings(): Promise<{ voice: string; speed: number }> {
       if (data?.voice_preferences) {
         const prefs = data.voice_preferences as Record<string, unknown>;
         const resolved = {
-          voice: (prefs.voice === "ash" || prefs.voice === "onyx"
-            ? "ash"
-            : "nova") as string,
+          voice: normalizeVoice(prefs.voice) as string,
           speed: typeof prefs.speed === "number" ? prefs.speed : defaults.speed,
           formality: prefs.formality || "formal",
         };

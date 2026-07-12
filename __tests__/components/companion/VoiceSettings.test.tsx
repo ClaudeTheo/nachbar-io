@@ -6,7 +6,7 @@ describe("VoiceSettings", () => {
   afterEach(() => cleanup());
 
   const defaults = {
-    voice: "nova" as const,
+    voice: "marin" as const,
     speed: 1.0,
     formality: "formal" as const,
     patienceMode: false,
@@ -20,12 +20,27 @@ describe("VoiceSettings", () => {
     expect(screen.getByText("Sehr einfache Antworten")).toBeInTheDocument();
   });
 
-  it("Stimme: Weiblich/Männlich Toggle", () => {
+  it("Stimme: Weiblich/Männlich Toggle (marin/cedar)", () => {
     const onChange = vi.fn();
     render(<VoiceSettings settings={defaults} onChange={onChange} />);
     fireEvent.click(screen.getByText(/Männlich/i));
     expect(onChange).toHaveBeenCalledWith(
-      expect.objectContaining({ voice: "ash" }),
+      expect.objectContaining({ voice: "cedar" }),
+    );
+  });
+
+  it("migriert Alt-Stimmen: nova → marin (Weiblich), ash/onyx → cedar (Männlich)", () => {
+    const onChange = vi.fn();
+    // Gespeicherte Alt-Einstellung "nova" — Klick auf Weiblich liefert marin
+    render(
+      <VoiceSettings
+        settings={{ ...defaults, voice: "nova" as never }}
+        onChange={onChange}
+      />,
+    );
+    fireEvent.click(screen.getByText(/Weiblich/i));
+    expect(onChange).toHaveBeenCalledWith(
+      expect.objectContaining({ voice: "marin" }),
     );
   });
 

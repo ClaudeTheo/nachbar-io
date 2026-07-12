@@ -112,7 +112,8 @@ export default function SessionScreen({
       const res = await fetch("/api/voice/tts", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text, voice: "nova", speed: 0.85 }),
+        // Stimmen-Wechsel 2026-07: marin (neue gpt-4o-mini-tts-Generation)
+        body: JSON.stringify({ text, voice: "marin", speed: 0.85 }),
       });
       if (res.ok) {
         const blob = await res.blob();

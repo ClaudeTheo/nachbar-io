@@ -113,9 +113,11 @@ describe("useTtsPlayback", () => {
     expect(url).toBe("/api/voice/tts");
     expect(init.method).toBe("POST");
     const body = JSON.parse(init.body as string);
+    // localStorage haelt den Alt-Wert "ash" — der Hook migriert beim Lesen
+    // auf die neue maennliche Stimme "cedar" (Stimmen-Wechsel 2026-07).
     expect(body).toEqual({
       text: "Hallo Welt",
-      voice: "ash",
+      voice: "cedar",
       speed: 0.95,
     });
   });
@@ -355,7 +357,8 @@ describe("useTtsPlayback", () => {
       const stored = localStorage.getItem("quartier-voice-prefs-synced");
       expect(stored).not.toBeNull();
       const parsed = JSON.parse(stored!);
-      expect(parsed.voice).toBe("ash");
+      // Supabase haelt den Alt-Wert "ash" — der Sync migriert auf "cedar"
+      expect(parsed.voice).toBe("cedar");
       expect(parsed.speed).toBe(0.85);
     });
   });

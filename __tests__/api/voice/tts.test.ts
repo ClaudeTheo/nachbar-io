@@ -206,7 +206,9 @@ describe("POST /api/voice/tts", () => {
     expect(callBody.speed).toBe(0.85);
   });
 
-  it("nutzt Default-Voice 'ash' und Default-Speed 0.95", async () => {
+  // Stimmen-Wechsel 2026-07: Default = "marin" (neue gpt-4o-mini-tts-Generation,
+  // OpenAI-Empfehlung "best quality"; gleiche Stimme wie der Lern-App-Trainer).
+  it("nutzt Default-Voice 'marin' und Default-Speed 0.95", async () => {
     mockCacheMiss();
 
     const { POST } = await import("@/app/api/voice/tts/route");
@@ -221,7 +223,7 @@ describe("POST /api/voice/tts", () => {
       (c) => typeof c[0] === "string" && c[0].includes("api.openai.com"),
     );
     const callBody = JSON.parse(openaiCall![1].body);
-    expect(callBody.voice).toBe("ash");
+    expect(callBody.voice).toBe("marin");
     expect(callBody.speed).toBe(0.95);
   });
 

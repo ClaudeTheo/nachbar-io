@@ -2,6 +2,8 @@
 // Satz-basiertes TTS-Streaming: Text wird satzweise an die TTS-API gesendet
 // Erster Satz startet sofort, weitere werden gepipelined
 
+import { DEFAULT_VOICE } from '@/modules/voice/lib/voice-names'
+
 export interface SentenceStreamTTSOptions {
   voice?: string
   onSpeakingDone?: () => void
@@ -53,7 +55,9 @@ export class SentenceStreamTTS {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         text: sentence,
-        voice: this.options.voice ?? 'nova'
+        // Explizit konfigurierte Stimme gewinnt (Engine-Vertrag, siehe Test);
+        // nur der Default folgt dem Stimmen-Wechsel 2026-07 auf marin.
+        voice: this.options.voice ?? DEFAULT_VOICE
       })
     })
     if (!res.ok) return

@@ -16,6 +16,11 @@ const SHARED_EXCLUDE = [
   "**/.next/**",
   ".claude/**",
   "**/worktrees/**",
+  // Codex-Review-Worktrees (z. B. .codex-worktrees/pr82-review) sind stale
+  // Repo-Kopien ohne node_modules — `**/worktrees/**` matcht den Ordnernamen
+  // ".codex-worktrees" NICHT (Lehre Session 2026-07-11: doppelte Testlaeufe
+  // mit 208 Geister-Failures).
+  "**/.codex-worktrees/**",
 ];
 
 // DOM-abhaengige .test.ts-Dateien (renderHook/@testing-library bzw. direkte

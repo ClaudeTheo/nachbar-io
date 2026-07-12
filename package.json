@@ -45,6 +45,7 @@
     "test:e2e:pilot": "playwright test --config=tests/e2e/playwright.config.ts --project=pilot-smoke",
     "test:admin-login": "playwright test --config=tests/e2e/admin-login.playwright.config.ts",
     "seed:quarter": "npx tsx scripts/seed-quarter.ts",
+    "seed:demo": "npx tsx scripts/seed-demo-account.ts",
     "db:types": "supabase gen types typescript --project-id uylszchlyhbpbmslcnka > lib/supabase/database.types.ts"
   },
   "dependencies": {

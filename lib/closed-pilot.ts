@@ -7,6 +7,9 @@ const CLOSED_PILOT_PUBLIC_PATHS = new Set([
   "/barrierefreiheit",
   "/datenquellen",
   "/datenschutz",
+  // Investoren-Demo-Zugang: Route-Handler authentifiziert sich selbst ueber
+  // DEMO_ACCESS_TOKEN (timing-safe) + Rate-Limit; ohne Env-Variablen 404.
+  "/demo-zugang",
   "/freigabe-ausstehend",
   "/impressum",
   "/login",

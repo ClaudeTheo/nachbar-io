@@ -139,11 +139,13 @@ export async function updateSession(
     request.nextUrl.pathname.startsWith("/impressum") ||
     request.nextUrl.pathname.startsWith("/agb") ||
     request.nextUrl.pathname.startsWith("/barrierefreiheit");
-  // Oeffentliche Seiten: Testanleitung, Onboarding-Anleitung, B2B-Landingpage, Store-Pflichtseiten
+  // Oeffentliche Seiten: Testanleitung, Onboarding-Anleitung, B2B-Landingpage,
+  // Demo-Zugang (prueft selbst DEMO_ACCESS_TOKEN), Store-Pflichtseiten
   const isPublicPage =
     request.nextUrl.pathname.startsWith("/testanleitung") ||
     request.nextUrl.pathname.startsWith("/onboarding-anleitung") ||
     request.nextUrl.pathname.startsWith("/b2b") ||
+    request.nextUrl.pathname.startsWith("/demo-zugang") ||
     request.nextUrl.pathname.startsWith("/account-loeschen") ||
     request.nextUrl.pathname.startsWith("/konto-loeschen") ||
     request.nextUrl.pathname.startsWith("/support") ||

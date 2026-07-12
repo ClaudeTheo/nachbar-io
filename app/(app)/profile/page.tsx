@@ -171,6 +171,7 @@ export default function ProfilePage() {
   const [inviteCode, setInviteCode] = useState<string | null>(null);
   const [inviteCount, setInviteCount] = useState(0);
   const [codeCopied, setCodeCopied] = useState(false);
+  const [uiModeNotice, setUiModeNotice] = useState<string | null>(null);
   const router = useRouter();
 
   useEffect(() => {
@@ -267,9 +268,18 @@ export default function ProfilePage() {
 
   async function handleSetUiMode(mode: UserUiMode) {
     if (!user) return;
-    const newMode = await setUiMode(user.id, mode);
-    setUser({ ...user, ui_mode: newMode });
-    router.push(getUserModeConfig(newMode).postLoginPath);
+    // setUiMode liefert den tatsaechlich persistierten Modus: der Mig-198-Trigger
+    // haelt ui_mode bei Youth-Accounts sticky, ohne dass Supabase einen Fehler
+    // meldet. Abweichung = Wechsel wurde serverseitig nicht uebernommen.
+    const persistedMode = await setUiMode(user.id, mode);
+    setUser({ ...user, ui_mode: persistedMode });
+    if (persistedMode !== mode) {
+      setUiModeNotice(
+        "Ihre Oberfläche bleibt im Jugendmodus. Der Jugendmodus kann nur von einem Erwachsenen oder Admin geändert werden.",
+      );
+      return;
+    }
+    router.push(getUserModeConfig(persistedMode).postLoginPath);
   }
 
   async function copyInviteCode() {
@@ -330,6 +340,11 @@ export default function ProfilePage() {
   const selectableUiModes = USER_UI_MODES.filter(
     (mode) => mode !== "youth" || currentUiMode === "youth" || user.is_admin,
   );
+  // Youth-Accounts koennen den Modus nicht selbst verlassen (Mig-198-Trigger,
+  // Jugendschutz YOUTH-1) — Karten gesperrt darstellen statt stillem Fehlschlag.
+  // Admins bleiben klickbar (Testzugang); scheitert der Wechsel serverseitig,
+  // greift der Hinweis aus handleSetUiMode.
+  const uiModeLocked = currentUiMode === "youth" && !user.is_admin;
 
   // Aktiv 55+ ("calm") und Senior ("simple") bekommen groessere Abstaende
   // (ruhigeres "Ich"-Layout, konsistent mit /my-day und Dashboard).
@@ -684,13 +699,30 @@ export default function ProfilePage() {
                     <UserModeChoiceCard
                       key={mode}
                       active={currentUiMode === mode}
-                      disabled={currentUiMode === mode}
+                      disabled={currentUiMode === mode || uiModeLocked}
                       mode={mode}
                       onSelect={handleSetUiMode}
                       variant="compact"
                     />
                   ))}
                 </div>
+                {uiModeNotice ? (
+                  <p
+                    className="mt-3 text-sm text-alert-amber"
+                    role="status"
+                    data-testid="ui-mode-notice"
+                  >
+                    {uiModeNotice}
+                  </p>
+                ) : uiModeLocked ? (
+                  <p
+                    className="mt-3 text-sm text-muted-foreground"
+                    data-testid="ui-mode-lock-hint"
+                  >
+                    Der Jugendmodus kann nur von einem Erwachsenen oder Admin
+                    geändert werden.
+                  </p>
+                ) : null}
               </div>
             </div>
           </div>

@@ -81,6 +81,32 @@ describe("DialogMode Realtime Voice", () => {
     expect(mockEnd).toHaveBeenCalled();
   });
 
+  it("erfuellt die 80px-Touchziel-Regel auch fuer Zustimmung und Mikrofon-Schalter", async () => {
+    render(<DialogMode />);
+    const checkbox = screen.getByRole("checkbox", { name: /Hinweis verstanden/i });
+    // Die klickbare Trefflaeche ist die gesamte Label-Zeile.
+    expect(checkbox.closest("label")?.className).toContain("min-h-[80px]");
+
+    fireEvent.click(checkbox);
+    fireEvent.click(screen.getByRole("button", { name: /Gespr.*starten/i }));
+
+    const micToggle = await screen.findByRole("button", {
+      name: /Mikrofon ausschalten/i,
+    });
+    expect(micToggle.className).toContain("min-h-[80px]");
+  });
+
+  it("gibt die Sitzung frei, wenn der Senior die Seite verlaesst (Unmount)", async () => {
+    const { unmount } = render(<DialogMode />);
+    fireEvent.click(screen.getByRole("checkbox", { name: /Hinweis verstanden/i }));
+    fireEvent.click(screen.getByRole("button", { name: /Gespr.*starten/i }));
+    await waitFor(() => expect(mockConnect).toHaveBeenCalled());
+
+    // Wegnavigieren ist bei Senioren der Regelfall (statt "Gespraech beenden").
+    unmount();
+    expect(mockEnd).toHaveBeenCalled();
+  });
+
   it("beendet die Sitzung clientseitig am serverseitig vorgegebenen Limit", async () => {
     vi.useFakeTimers();
     mockFetch.mockResolvedValueOnce(

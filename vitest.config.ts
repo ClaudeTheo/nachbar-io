@@ -33,6 +33,7 @@ const DOM_TEST_TS = [
   "__tests__/lib/platform-storage.test.ts",
   "__tests__/lib/voice/ios-audio-manager.test.ts",
   "__tests__/lib/voice/whisper-engine.test.ts",
+  "__tests__/lib/webrtc/realtime-voice.test.ts",
   "lib/device-pairing/__tests__/use-refresh-rotation.test.ts",
   "lib/geo/__tests__/photon-client.test.ts",
   "lib/quarters/__tests__/hooks.test.ts",

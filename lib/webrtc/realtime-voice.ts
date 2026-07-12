@@ -24,6 +24,10 @@ export class RealtimeVoiceSession {
   private microphone: MediaStream | null = null;
   private audioElement: HTMLAudioElement | null = null;
   private state: RealtimeVoiceState = "idle";
+  // Wird bei jedem Teardown (end/cleanup) gesetzt. connect() prueft es nach
+  // jedem await: so bleibt kein Mikrofon-Stream und keine bezahlte OpenAI-
+  // Verbindung offen, wenn die Sitzung waehrend des Aufbaus beendet wird.
+  private closed = false;
 
   constructor(private readonly callbacks: RealtimeVoiceCallbacks) {}
 
@@ -32,11 +36,13 @@ export class RealtimeVoiceSession {
     model: string;
     audioElement: HTMLAudioElement;
   }): Promise<void> {
+    this.closed = false;
     this.setState("connecting");
     this.audioElement = input.audioElement;
 
+    let stream: MediaStream;
     try {
-      this.microphone = await navigator.mediaDevices.getUserMedia({
+      stream = await navigator.mediaDevices.getUserMedia({
         audio: {
           echoCancellation: true,
           noiseSuppression: true,
@@ -50,6 +56,16 @@ export class RealtimeVoiceSession {
       );
       return;
     }
+
+    // Race-Guard: Die Sitzung wurde beendet (Unmount, Beenden-Knopf, Fehler),
+    // waehrend die Mikrofon-Freigabe noch lief. cleanup() lief bereits, als
+    // this.microphone noch null war und konnte nichts stoppen — also den
+    // gerade erhaltenen Stream hier direkt stoppen und abbrechen.
+    if (this.closed) {
+      for (const track of stream.getTracks()) track.stop();
+      return;
+    }
+    this.microphone = stream;
 
     try {
       const connection = new RTCPeerConnection();
@@ -83,6 +99,7 @@ export class RealtimeVoiceSession {
 
       const offer = await connection.createOffer();
       await connection.setLocalDescription(offer);
+      if (this.closed) return this.cleanup();
       const response = await fetch(
         `${REALTIME_CALLS_URL}?model=${encodeURIComponent(input.model)}`,
         {
@@ -96,9 +113,11 @@ export class RealtimeVoiceSession {
       );
 
       if (!response.ok) throw new Error("realtime_connection_failed");
+      const answerSdp = await response.text();
+      if (this.closed) return this.cleanup();
       await connection.setRemoteDescription({
         type: "answer",
-        sdp: await response.text(),
+        sdp: answerSdp,
       });
     } catch {
       this.setState("error");
@@ -160,6 +179,9 @@ export class RealtimeVoiceSession {
   }
 
   private cleanup(): void {
+    // Markiert die Sitzung als beendet, damit ein noch laufendes connect()
+    // nach seinem naechsten await abbricht (Race-Guard).
+    this.closed = true;
     try {
       this.dataChannel?.close();
     } catch {}

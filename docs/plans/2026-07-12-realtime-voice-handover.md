@@ -192,3 +192,40 @@ Merge, kein Deploy und keine Env-Scharfschaltung.
 - ESLint auf allen geänderten TS/TSX-Dateien: grün.
 - `npm run build`: grün; `/api/voice/realtime/session`, `/companion` und
   `/sprachbegleiter` im Next.js-Route-Manifest enthalten.
+
+---
+
+## Härtung nach Claude Critical Review (2026-07-12)
+
+Claude hat den Branch unabhängig verifiziert (volle Vitest-Suite 5284 grün + tsc
+selbst nachgelaufen) und den Diff mit sechs adversarialen Review-Linsen geprüft.
+Ergebnis: 0 CRITICAL, aber 1 HIGH + weitere Findings, die Codex' Selbst-Review
+nicht gefunden hatte. Behoben in Nachtrag-Commit(s) auf demselben Branch:
+
+- **#1 HIGH (behoben) — Mikrofon-Race in `lib/webrtc/realtime-voice.ts`:**
+  Wurde die Sitzung während des asynchronen Aufbaus beendet (Unmount / Beenden-
+  Knopf während `connecting` / Fehler), lief `cleanup()` ins Leere (mic noch
+  null) und der danach auflösende `getUserMedia`-Stream blieb offen — Mikrofon-
+  LED blieb an, plus verwaiste bezahlte OpenAI-Verbindung. Fix: `closed`-Flag,
+  in `cleanup()` gesetzt, nach jedem `await` in `connect()` geprüft; der gerade
+  erhaltene Stream wird gestoppt und der Aufbau abgebrochen.
+- **#7 MED (behoben) — 80px-Touchziel (CLAUDE.md, nicht verhandelbar):**
+  Consent-Checkbox-Zeile (48px) und Mikrofon-Schalter (48px) auf `min-h-[80px]`;
+  Checkbox visuell auf `h-9 w-9`.
+- **#5/#6 MED (behoben) — Test-Lücken:** Neuer `__tests__/lib/webrtc/
+  realtime-voice.test.ts` (Race-Teardown, Track-Stop, Verbindungsabbruch —
+  vorher war der ganze Client wegemockt) + Unmount-Teardown-Test in
+  `DialogMode.test.tsx`.
+
+### Bewusst NICHT geändert — dokumentierte Restpunkte
+
+- **#3/#4 Kosten (Founder-Hand):** Die Session-Dauer bleibt clientseitig gekappt
+  (OpenAI bietet kein Server-Feld; siehe oben). Ein Tages-/Concurrency-Cap auf
+  *Starts* wirkt nur marginal gegen eine einzelne lange Session. **Wirksame
+  Bremse = OpenAI-Budget-/Usage-Limit im OpenAI-Dashboard (Founder).** Für den
+  Closed-Pilot mit wenigen vertrauenswürdigen Nutzern + Demo ist das Restrisiko
+  vertretbar; vor breitem Public-Launch neu bewerten (serverseitiger Hangup).
+- **#2 LOW — Consent-UI-Gate:** Der `ai_onboarding`-Consent wird serverseitig in
+  der Route erzwungen (kein Audio ohne Consent an OpenAI), aber die Einstiege
+  gaten im UI nur auf das Env-Flag. Rein UX (verwirrende Fehlermeldung statt
+  ausgeblendetem Einstieg), kein Datenleck. Optionale Nachbesserung.

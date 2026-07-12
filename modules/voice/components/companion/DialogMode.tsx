@@ -167,12 +167,12 @@ export function DialogMode({ onMicError }: DialogModeProps = {}) {
               von Nachbar.io nicht gespeichert; auch Transkripte werden nicht
               gespeichert.
             </p>
-            <label className="mt-4 flex min-h-12 cursor-pointer items-center gap-3 font-medium">
+            <label className="mt-4 flex min-h-[80px] cursor-pointer items-center gap-3 font-medium">
               <input
                 type="checkbox"
                 checked={noticeConfirmed}
                 onChange={(event) => setNoticeConfirmed(event.target.checked)}
-                className="h-7 w-7 accent-[#4CAF87]"
+                className="h-9 w-9 accent-[#4CAF87]"
               />
               Ich habe den Hinweis verstanden
             </label>
@@ -203,7 +203,7 @@ export function DialogMode({ onMicError }: DialogModeProps = {}) {
           <Button
             onClick={toggleMic}
             variant="outline"
-            className="min-h-12 w-full rounded-lg text-base"
+            className="min-h-[80px] w-full rounded-lg text-base"
             aria-pressed={!micEnabled}
           >
             {micEnabled ? <Mic className="mr-2" /> : <MicOff className="mr-2" />}

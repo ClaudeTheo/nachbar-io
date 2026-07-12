@@ -53,11 +53,14 @@ const DEMO_QUARTER = {
   settings: { demo: true },
 };
 
+// Reale Adresse im Pilotgebiet als Demo-Kulisse (Founder-Wunsch 2026-07-12):
+// dadurch zeigen Karte/Wetter/Warnungen echte Bad-Saeckingen-Inhalte. Der
+// Haushalt bleibt trotzdem im ISOLIERTEN Demo-Quartier — nie im Pilot-Quartier.
 const DEMO_HOUSEHOLD = {
-  street_name: "Beispielweg",
-  house_number: "1",
-  lat: 47.5495,
-  lng: 7.9525,
+  street_name: "Purkersdorfer Strasse",
+  house_number: "37",
+  lat: 47.5535,
+  lng: 7.964,
   city: "Bad Saeckingen",
   verified: true,
 };
@@ -215,16 +218,26 @@ async function ensureAiConsent(userId: string) {
 }
 
 async function ensureHousehold(quarterId: string): Promise<string> {
+  // Lookup ueber das Quartier (nicht ueber die Adresse): das Demo-Quartier hat
+  // genau einen Haushalt, dessen Adresse sich per Re-Seed aendern darf.
   const { data: existing, error: selErr } = await supabase
     .from("households")
     .select("id")
     .eq("quarter_id", quarterId)
-    .eq("street_name", DEMO_HOUSEHOLD.street_name)
-    .eq("house_number", DEMO_HOUSEHOLD.house_number)
+    .order("created_at", { ascending: true })
+    .limit(1)
     .maybeSingle();
   if (selErr) throw selErr;
+
   if (existing) {
-    console.log(`✓ Demo-Haushalt existiert (${existing.id})`);
+    const { error: updErr } = await supabase
+      .from("households")
+      .update({ ...DEMO_HOUSEHOLD, quarter_id: quarterId })
+      .eq("id", existing.id);
+    if (updErr) throw updErr;
+    console.log(
+      `✓ Demo-Haushalt aktualisiert (${existing.id}, ${DEMO_HOUSEHOLD.street_name} ${DEMO_HOUSEHOLD.house_number})`,
+    );
     return existing.id;
   }
 
@@ -240,6 +253,51 @@ async function ensureHousehold(quarterId: string): Promise<string> {
   if (insErr) throw insErr;
   console.log(`+ Demo-Haushalt angelegt (${inserted.id})`);
   return inserted.id;
+}
+
+// Kopiert die Datenquellen-Verdrahtung des echten Pilot-Quartiers auf das
+// Demo-Quartier: bbk_ars/bw_ars (NINA/LGL-Warnungs-Crons selektieren Quartiere
+// mit gesetztem ARS), waste_area_id (Muellkalender), postal_code und die
+// echten Koordinaten (Wetter/Pollen/Karte). Nur DATEN-Verdrahtung — Nutzer,
+// Haushalte und Inhalte des Pilot-Quartiers bleiben unberuehrt und fuer den
+// Demo-Account per RLS unsichtbar.
+async function syncQuarterDataSources(demoQuarterId: string) {
+  const { data: source, error: selErr } = await supabase
+    .from("quarters")
+    .select("slug, center_lat, center_lng, bounds_sw_lat, bounds_sw_lng, bounds_ne_lat, bounds_ne_lng, postal_code, bbk_ars, bw_ars, waste_area_id")
+    .neq("id", demoQuarterId)
+    .not("bbk_ars", "is", null)
+    .order("created_at", { ascending: true })
+    .limit(1)
+    .maybeSingle();
+  if (selErr) throw selErr;
+
+  if (!source) {
+    console.log(
+      "! Kein Quell-Quartier mit bbk_ars gefunden — Datenquellen-Kopie uebersprungen (z. B. lokaler Stack)",
+    );
+    return;
+  }
+
+  const { error: updErr } = await supabase
+    .from("quarters")
+    .update({
+      center_lat: source.center_lat,
+      center_lng: source.center_lng,
+      bounds_sw_lat: source.bounds_sw_lat,
+      bounds_sw_lng: source.bounds_sw_lng,
+      bounds_ne_lat: source.bounds_ne_lat,
+      bounds_ne_lng: source.bounds_ne_lng,
+      postal_code: source.postal_code,
+      bbk_ars: source.bbk_ars,
+      bw_ars: source.bw_ars,
+      waste_area_id: source.waste_area_id,
+    })
+    .eq("id", demoQuarterId);
+  if (updErr) throw updErr;
+  console.log(
+    `✓ Datenquellen vom Quartier "${source.slug}" uebernommen (Warnungen/Muell/Wetter-Geo)`,
+  );
 }
 
 async function ensureMembership(householdId: string, userId: string) {
@@ -287,6 +345,7 @@ async function main() {
   console.log(`Seed Demo-Account gegen ${SUPABASE_URL}`);
 
   const quarterId = await ensureQuarter();
+  await syncQuarterDataSources(quarterId);
   const userId = await ensureAuthUser();
   await ensureProfile(userId);
   await ensureAiConsent(userId);

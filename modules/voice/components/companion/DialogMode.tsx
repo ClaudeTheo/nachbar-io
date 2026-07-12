@@ -1,259 +1,223 @@
 "use client";
 
-import { useState, useRef, useCallback, useEffect } from "react";
-import { Mic, Square, Send } from "lucide-react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Mic, MicOff, Square } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useDialogMode } from "@/hooks/useDialogMode";
-import { useStreamingChat } from "@/hooks/useStreamingChat";
-import { AutoListenIndicator } from "./AutoListenIndicator";
-import { StreamingTextDisplay } from "./StreamingTextDisplay";
-import { SpeakerAnimation } from "../voice/SpeakerAnimation";
-import { createSpeechEngine } from "../../engines/create-speech-engine";
-import { SilenceDetector } from "../../engines/silence-detector";
-import { SentenceStreamTTS } from "../../engines/sentence-stream-tts";
-import type { SpeechEngine } from "../../engines/speech-engine";
+import {
+  RealtimeVoiceSession,
+  type RealtimeVoiceState,
+} from "@/lib/webrtc/realtime-voice";
 
 interface DialogModeProps {
   onMessage?: (role: "user" | "assistant", content: string) => void;
-  onMicError?: () => void; // Callback wenn Mikrofon verweigert -> Tab-Wechsel zu Chat
+  onMicError?: () => void;
 }
 
-// DialogMode — Sprach-Dialog-Modus mit State-Machine
-// Nutzt useDialogMode für States, SilenceDetector, SentenceStreamTTS
-export function DialogMode({ onMessage, onMicError }: DialogModeProps) {
-  const dialog = useDialogMode();
-  const { streamingText, isStreaming, sendStreaming } = useStreamingChat();
-  const [textInput, setTextInput] = useState("");
-  const [currentResponse, setCurrentResponse] = useState("");
-  const [micBlocked, setMicBlocked] = useState(false);
+type SessionMint = {
+  clientSecret: string;
+  model: string;
+  maxSessionSeconds: number;
+};
 
-  const engineRef = useRef<SpeechEngine | null>(null);
-  const silenceRef = useRef<SilenceDetector | null>(null);
-  const ttsRef = useRef<SentenceStreamTTS | null>(null);
-  const messagesRef = useRef<
-    Array<{ role: "user" | "assistant"; content: string }>
-  >([]);
+export function DialogMode({ onMicError }: DialogModeProps = {}) {
+  const audioRef = useRef<HTMLAudioElement>(null);
+  const sessionRef = useRef<RealtimeVoiceSession | null>(null);
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const deadlineRef = useRef(0);
+  const [noticeConfirmed, setNoticeConfirmed] = useState(false);
+  const [sessionState, setSessionState] = useState<RealtimeVoiceState>("idle");
+  const [userSpeaking, setUserSpeaking] = useState(false);
+  const [assistantSpeaking, setAssistantSpeaking] = useState(false);
+  const [micEnabled, setMicEnabled] = useState(true);
+  const [remainingSeconds, setRemainingSeconds] = useState(600);
+  const [error, setError] = useState<string | null>(null);
 
-  // Speech Engine einmalig initialisieren
-  useEffect(() => {
-    engineRef.current = createSpeechEngine();
-    return () => engineRef.current?.cleanup();
+  const clearTimer = useCallback(() => {
+    if (timerRef.current) clearInterval(timerRef.current);
+    timerRef.current = null;
   }, []);
 
-  // Streaming-Text verarbeiten: Sätze extrahieren und an TTS weiterleiten
-  const prevStreamingRef = useRef(false);
+  const stopSession = useCallback(() => {
+    clearTimer();
+    sessionRef.current?.end();
+    sessionRef.current = null;
+    setSessionState("idle");
+    setUserSpeaking(false);
+    setAssistantSpeaking(false);
+    setMicEnabled(true);
+    setNoticeConfirmed(false);
+  }, [clearTimer]);
+
   useEffect(() => {
-    if (isStreaming && streamingText) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setCurrentResponse(streamingText);
-    }
+    return () => {
+      clearTimer();
+      sessionRef.current?.end();
+    };
+  }, [clearTimer]);
 
-    // Stream beendet
-    if (prevStreamingRef.current && !isStreaming && streamingText) {
-      setCurrentResponse(streamingText);
-      onMessage?.("assistant", streamingText);
-      messagesRef.current.push({ role: "assistant", content: streamingText });
-
-      // TTS für restlichen Text
-      if (ttsRef.current) {
-        const remaining = ttsRef.current.flush();
-        if (remaining.length > 0) {
-          ttsRef.current.playQueue(remaining);
-        }
-      }
-
-      dialog.setResponse(streamingText);
-    }
-    prevStreamingRef.current = isStreaming;
-  }, [isStreaming, streamingText, dialog, onMessage]);
-
-  // Nachricht an API senden
-  const sendMessage = useCallback(
-    async (text: string) => {
-      onMessage?.("user", text);
-      messagesRef.current.push({ role: "user", content: text });
-      setCurrentResponse("");
-
-      // TTS vorbereiten
-      ttsRef.current = new SentenceStreamTTS({
-        onSpeakingDone: () => dialog.setSpeakingDone(),
-      });
-
-      dialog.handleTranscript(text);
-
-      // Falls Abschied erkannt, nicht senden
-      if (dialog.isFarewell(text)) return;
-
-      await sendStreaming(messagesRef.current);
+  const handleSessionError = useCallback(
+    (message: string) => {
+      clearTimer();
+      sessionRef.current?.end();
+      sessionRef.current = null;
+      setSessionState("idle");
+      setUserSpeaking(false);
+      setAssistantSpeaking(false);
+      setError(message);
+      if (/Mikrofonzugriff/i.test(message)) onMicError?.();
     },
-    [dialog, onMessage, sendStreaming],
+    [clearTimer, onMicError],
   );
 
-  // Dialog starten
-  const handleStart = useCallback(() => {
-    dialog.startDialog();
+  const startSession = useCallback(async () => {
+    if (!noticeConfirmed || !audioRef.current) return;
+    setError(null);
+    setSessionState("connecting");
+    setMicEnabled(true);
 
-    // Silence Detector starten
-    silenceRef.current = new SilenceDetector({
-      silenceThreshold: 0.05,
-      silenceDurationMs: 3000,
-      onSilence: () => {
-        // Nach 3s Stille: "Noch etwas?" fragen
-        dialog.triggerSilenceCheck();
-      },
-      onLevelChange: (level) => {
-        dialog.setAudioLevel(level);
-      },
-    });
-
-    // Spracheingabe starten wenn verfügbar
-    const engine = engineRef.current;
-    if (engine) {
-      engine.startListening({
-        onTranscript: (text) => {
-          if (text.trim()) {
-            sendMessage(text.trim());
-          }
-        },
-        onAudioLevel: (level) => {
-          silenceRef.current?.feedAudioLevel(level);
-        },
-        onStateChange: () => {},
-        onError: (msg) => {
-          // Mikrofon verweigert -> Fallback auf Text-Chat
-          if (msg.includes("not-allowed") || msg.includes("Mikrofon")) {
-            setMicBlocked(true);
-            dialog.stopDialog();
-            onMicError?.();
-          }
-        },
+    let mint: SessionMint;
+    try {
+      const response = await fetch("/api/voice/realtime/session", {
+        method: "POST",
       });
+      if (response.status === 429) {
+        throw new Error(
+          "Das Stundenlimit ist erreicht. Bitte versuchen Sie es später erneut.",
+        );
+      }
+      if (!response.ok) {
+        throw new Error(
+          "Die Sprach-KI ist gerade nicht verfügbar. Bitte nutzen Sie den Chat.",
+        );
+      }
+      mint = (await response.json()) as SessionMint;
+    } catch (cause) {
+      setSessionState("idle");
+      setError(
+        cause instanceof Error
+          ? cause.message
+          : "Die Sprach-KI ist gerade nicht verfügbar.",
+      );
+      return;
     }
-  }, [dialog, sendMessage, onMicError]);
 
-  // Dialog stoppen
-  const handleStop = useCallback(() => {
-    dialog.stopDialog();
-    engineRef.current?.stopListening();
-    silenceRef.current?.cleanup();
-    silenceRef.current = null;
-    ttsRef.current?.stop();
-    ttsRef.current = null;
-    setCurrentResponse("");
-  }, [dialog]);
+    const session = new RealtimeVoiceSession({
+      onStateChange: setSessionState,
+      onUserSpeakingChange: setUserSpeaking,
+      onAssistantSpeakingChange: setAssistantSpeaking,
+      onError: handleSessionError,
+    });
+    sessionRef.current = session;
+    setRemainingSeconds(mint.maxSessionSeconds);
+    deadlineRef.current = Date.now() + mint.maxSessionSeconds * 1000;
+    timerRef.current = setInterval(() => {
+      const remaining = Math.max(
+        0,
+        Math.ceil((deadlineRef.current - Date.now()) / 1000),
+      );
+      setRemainingSeconds(remaining);
+      if (remaining === 0) stopSession();
+    }, 1000);
 
-  // Text-Fallback: Enter zum Senden
-  const handleTextSubmit = useCallback(() => {
-    const text = textInput.trim();
-    if (!text) return;
-    setTextInput("");
-    sendMessage(text);
-  }, [textInput, sendMessage]);
+    await session.connect({
+      clientSecret: mint.clientSecret,
+      model: mint.model,
+      audioElement: audioRef.current,
+    });
+  }, [handleSessionError, noticeConfirmed, stopSession]);
 
-  // --- Render ---
-  const isActive = dialog.state !== "idle";
+  const toggleMic = useCallback(() => {
+    setMicEnabled((current) => {
+      sessionRef.current?.setMicEnabled(!current);
+      return !current;
+    });
+  }, []);
+
+  const active = sessionState !== "idle" && sessionState !== "ended";
+  const status = useMemo(() => {
+    if (sessionState === "connecting") return "Verbindung wird hergestellt...";
+    if (assistantSpeaking) return "Die KI spricht";
+    if (userSpeaking) return "Ich höre Ihnen zu";
+    if (!micEnabled) return "Mikrofon ist ausgeschaltet";
+    return "Bereit - sprechen Sie in Ruhe";
+  }, [assistantSpeaking, micEnabled, sessionState, userSpeaking]);
 
   return (
-    <div className="flex h-full flex-col items-center justify-center gap-6 p-4">
-      {/* Idle: Großer Start-Button oder Mikrofon-Hinweis */}
-      {!isActive && !micBlocked && (
-        <Button
-          onClick={handleStart}
-          className="min-h-[80px] w-full max-w-sm rounded-2xl bg-[#4CAF87] text-lg font-semibold text-white hover:bg-[#4CAF87]/90"
-          aria-label="Gespräch starten"
-        >
-          <Mic className="mr-3 h-6 w-6" />
-          Gespräch starten
-        </Button>
-      )}
-      {!isActive && micBlocked && (
-        <div
-          className="w-full max-w-sm rounded-2xl border border-[#F59E0B]/30 bg-[#F59E0B]/5 p-4 text-center"
-          data-testid="mic-blocked-hint"
-        >
-          <p className="text-sm font-medium text-[#2D3142]">
-            Mikrofon nicht verfügbar.
-          </p>
-          <p className="mt-1 text-xs text-[#2D3142]/60">
-            Bitte nutzen Sie den Text-Chat.
-          </p>
-        </div>
-      )}
+    <div className="mx-auto flex h-full w-full max-w-xl flex-col gap-5 p-4">
+      <audio ref={audioRef} hidden />
 
-      {/* Aktiv: Dialog-UI */}
-      {isActive && (
-        <div className="flex w-full max-w-sm flex-col items-center gap-4">
-          {/* State: greeting/speaking — KI spricht */}
-          {(dialog.state === "greeting" || dialog.state === "speaking") && (
-            <div className="flex w-full flex-col items-center gap-3">
-              <SpeakerAnimation isPlaying={true} />
-              {currentResponse && (
-                <div className="w-full rounded-2xl border border-border bg-white px-4 py-3 text-sm text-[#2D3142]">
-                  <StreamingTextDisplay
-                    text={currentResponse}
-                    isStreaming={isStreaming}
-                  />
-                </div>
-              )}
-              {dialog.state === "greeting" && !currentResponse && (
-                <p className="text-sm text-[#2D3142]/70">
-                  Hallo, wie kann ich Ihnen helfen?
-                </p>
-              )}
-            </div>
-          )}
+      <div
+        className="rounded-lg border-2 border-[#EF4444] bg-white p-4 text-center text-base font-bold text-[#2D3142]"
+        role="note"
+      >
+        Im Notfall: 112. Polizei: 110.
+      </div>
 
-          {/* State: listening — Zuhoeren */}
-          {dialog.state === "listening" && (
-            <AutoListenIndicator
-              isListening={true}
-              audioLevel={dialog.audioLevel}
-            />
-          )}
+      {error ? (
+        <p className="rounded-lg border border-[#F59E0B] bg-[#FFF7E6] p-4 text-base text-[#2D3142]" role="alert">
+          {error}
+        </p>
+      ) : null}
 
-          {/* State: processing — Verarbeiten */}
-          {dialog.state === "processing" && (
-            <div className="flex flex-col items-center gap-3">
-              <div className="h-12 w-12 animate-spin rounded-full border-4 border-[#4CAF87]/30 border-t-[#4CAF87]" />
-              <p className="text-sm text-[#2D3142]/70">Verarbeite...</p>
-            </div>
-          )}
+      {!active ? (
+        <div className="flex flex-col gap-5">
+          <div className="rounded-lg border border-[#2D3142]/20 bg-white p-4 text-base leading-7 text-[#2D3142]">
+            <p>
+              Ihre Stimme wird zur Verarbeitung an OpenAI übertragen. Sie wird
+              von Nachbar.io nicht gespeichert; auch Transkripte werden nicht
+              gespeichert.
+            </p>
+            <label className="mt-4 flex min-h-12 cursor-pointer items-center gap-3 font-medium">
+              <input
+                type="checkbox"
+                checked={noticeConfirmed}
+                onChange={(event) => setNoticeConfirmed(event.target.checked)}
+                className="h-7 w-7 accent-[#4CAF87]"
+              />
+              Ich habe den Hinweis verstanden
+            </label>
+          </div>
 
-          {/* State: silence_check */}
-          {dialog.state === "silence_check" && (
-            <p className="text-base font-medium text-[#2D3142]">Noch etwas?</p>
-          )}
-
-          {/* Stopp-Button (immer sichtbar während Dialog) */}
           <Button
-            onClick={handleStop}
-            className="min-h-[80px] w-full rounded-2xl bg-red-500 text-lg font-semibold text-white hover:bg-red-600"
-            aria-label="Stopp"
+            onClick={() => void startSession()}
+            disabled={!noticeConfirmed}
+            className="min-h-[80px] w-full rounded-lg bg-[#4CAF87] text-lg font-semibold text-white hover:bg-[#3D9975]"
+            aria-label="Gespräch starten"
           >
-            <Square className="mr-3 h-5 w-5" />
-            Stopp
+            <Mic className="mr-3 h-6 w-6" aria-hidden="true" />
+            Gespräch starten
+          </Button>
+        </div>
+      ) : (
+        <div className="flex flex-1 flex-col items-center justify-center gap-5">
+          <div className="flex min-h-40 w-full flex-col items-center justify-center gap-3 rounded-lg border border-[#2D3142]/20 bg-white p-6">
+            <Mic className="h-10 w-10 text-[#4CAF87]" aria-hidden="true" />
+            <p className="text-center text-xl font-semibold text-[#2D3142]" aria-live="polite">
+              {status}
+            </p>
+            <p className="text-base tabular-nums text-[#2D3142]/70">
+              {Math.floor(remainingSeconds / 60)}:{String(remainingSeconds % 60).padStart(2, "0")}
+            </p>
+          </div>
+
+          <Button
+            onClick={toggleMic}
+            variant="outline"
+            className="min-h-12 w-full rounded-lg text-base"
+            aria-pressed={!micEnabled}
+          >
+            {micEnabled ? <Mic className="mr-2" /> : <MicOff className="mr-2" />}
+            {micEnabled ? "Mikrofon ausschalten" : "Mikrofon einschalten"}
           </Button>
 
-          {/* Text-Fallback (kleines Eingabefeld) */}
-          <div className="flex w-full gap-2">
-            <input
-              type="text"
-              value={textInput}
-              onChange={(e) => setTextInput(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && handleTextSubmit()}
-              placeholder="Text eingeben..."
-              className="flex-1 rounded-xl border border-border bg-white px-3 py-2 text-sm focus:border-[#4CAF87] focus:outline-none focus:ring-1 focus:ring-[#4CAF87]"
-            />
-            <Button
-              onClick={handleTextSubmit}
-              disabled={!textInput.trim()}
-              size="icon"
-              className="h-10 w-10 rounded-full bg-[#4CAF87] hover:bg-[#4CAF87]/90 disabled:opacity-40"
-              aria-label="Senden"
-            >
-              <Send className="h-4 w-4" />
-            </Button>
-          </div>
+          <Button
+            onClick={stopSession}
+            className="min-h-[80px] w-full rounded-lg bg-[#2D3142] text-lg font-semibold text-white hover:bg-[#202331]"
+            aria-label="Gespräch beenden"
+          >
+            <Square className="mr-3 h-5 w-5" aria-hidden="true" />
+            Gespräch beenden
+          </Button>
         </div>
       )}
     </div>

@@ -1,87 +1,108 @@
-import { render, screen, fireEvent, cleanup } from "@testing-library/react";
-import { describe, it, expect, vi, afterEach } from "vitest";
+import { act, cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { DialogMode } from "@/modules/voice/components/companion/DialogMode";
 
-// Mock voice-Module (brauchen Browser-APIs)
-vi.mock("@/modules/voice/engines/create-speech-engine", () => ({
-  createSpeechEngine: vi.fn().mockReturnValue(null),
+const { mockConnect, mockEnd, mockSetMicEnabled, mockFetch } = vi.hoisted(() => ({
+  mockConnect: vi.fn(),
+  mockEnd: vi.fn(),
+  mockSetMicEnabled: vi.fn(),
+  mockFetch: vi.fn(),
 }));
 
-vi.mock("@/modules/voice/engines/silence-detector", () => {
-  const SilenceDetector = vi.fn().mockImplementation(function (
-    this: Record<string, unknown>,
-  ) {
-    this.feedAudioLevel = vi.fn();
-    this.reset = vi.fn();
-    this.cleanup = vi.fn();
-    this.currentLevel = 0;
-  });
-  return { SilenceDetector };
-});
-
-vi.mock("@/modules/voice/engines/sentence-stream-tts", () => {
-  const SentenceStreamTTS = vi.fn().mockImplementation(function (
-    this: Record<string, unknown>,
-  ) {
-    this.feedText = vi.fn().mockReturnValue([]);
-    this.flush = vi.fn().mockReturnValue([]);
-    this.speakSentence = vi.fn().mockResolvedValue(undefined);
-    this.playQueue = vi.fn().mockResolvedValue(undefined);
-    this.stop = vi.fn();
-  });
-  return { SentenceStreamTTS };
-});
-
-vi.mock("@/hooks/useStreamingChat", () => ({
-  useStreamingChat: vi.fn().mockReturnValue({
-    streamingText: "",
-    isStreaming: false,
-    error: null,
-    sendStreaming: vi.fn().mockResolvedValue(undefined),
-    reset: vi.fn(),
-  }),
+vi.mock("@/lib/webrtc/realtime-voice", () => ({
+  RealtimeVoiceSession: class MockRealtimeVoiceSession {
+    connect = mockConnect;
+    end = mockEnd;
+    setMicEnabled = mockSetMicEnabled;
+  },
 }));
 
-describe("DialogMode", () => {
-  afterEach(() => cleanup());
-  it('zeigt "Gespräch starten" Button initial', () => {
-    render(<DialogMode onMessage={vi.fn()} />);
-    expect(
-      screen.getByRole("button", { name: /Gespräch starten/i }),
-    ).toBeInTheDocument();
+global.fetch = mockFetch;
+
+describe("DialogMode Realtime Voice", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mockConnect.mockResolvedValue(undefined);
+    mockFetch.mockResolvedValue(
+      Response.json({
+        clientSecret: "ephemeral-secret",
+        model: "gpt-realtime-mini",
+        maxSessionSeconds: 600,
+      }),
+    );
   });
 
-  it("Button ist mindestens 80px hoch (Senior-Modus)", () => {
-    render(<DialogMode onMessage={vi.fn()} />);
-    const btn = screen.getByRole("button", { name: /Gespräch starten/i });
-    expect(btn.className).toContain("min-h-[80px]");
+  afterEach(() => {
+    cleanup();
+    vi.useRealTimers();
   });
 
-  it("zeigt Stopp-Button nach Start", () => {
-    render(<DialogMode onMessage={vi.fn()} />);
-    fireEvent.click(screen.getByRole("button", { name: /Gespräch starten/i }));
-    expect(screen.getByRole("button", { name: /Stopp/i })).toBeInTheDocument();
+  it("zeigt Transparenz und Notrufnummern vor dem ersten Sprechen", () => {
+    render(<DialogMode />);
+
+    expect(screen.getByText(/Stimme.*OpenAI/i)).toBeInTheDocument();
+    expect(screen.getByText(/nicht.*gespeichert/i)).toBeInTheDocument();
+    expect(screen.getByText(/112/)).toBeInTheDocument();
+    expect(screen.getByText(/110/)).toBeInTheDocument();
   });
 
-  it("Stopp-Button ist 80px hoch", () => {
-    render(<DialogMode onMessage={vi.fn()} />);
-    fireEvent.click(screen.getByRole("button", { name: /Gespräch starten/i }));
-    const stopBtn = screen.getByRole("button", { name: /Stopp/i });
-    expect(stopBtn.className).toContain("min-h-[80px]");
+  it("startet erst nach ausdruecklicher Bestaetigung des Hinweises", async () => {
+    render(<DialogMode />);
+    const start = screen.getByRole("button", { name: /Gespr.*starten/i });
+
+    expect(start).toBeDisabled();
+    fireEvent.click(screen.getByRole("checkbox", { name: /Hinweis verstanden/i }));
+    expect(start).toBeEnabled();
+    fireEvent.click(start);
+
+    await waitFor(() => expect(mockFetch).toHaveBeenCalledWith(
+      "/api/voice/realtime/session",
+      expect.objectContaining({ method: "POST" }),
+    ));
+    await waitFor(() => expect(mockConnect).toHaveBeenCalledWith(
+      expect.objectContaining({
+        clientSecret: "ephemeral-secret",
+        model: "gpt-realtime-mini",
+      }),
+    ));
   });
 
-  it("zeigt Text-Fallback Eingabefeld waehrend Dialog", () => {
-    render(<DialogMode onMessage={vi.fn()} />);
-    fireEvent.click(screen.getByRole("button", { name: /Gespräch starten/i }));
-    expect(screen.getByPlaceholderText(/Text eingeben/i)).toBeInTheDocument();
+  it("nutzt Senior-Touchziele fuer Start und Stopp", async () => {
+    render(<DialogMode />);
+    const start = screen.getByRole("button", { name: /Gespr.*starten/i });
+    expect(start.className).toContain("min-h-[80px]");
+
+    fireEvent.click(screen.getByRole("checkbox", { name: /Hinweis verstanden/i }));
+    fireEvent.click(start);
+
+    const stop = await screen.findByRole("button", { name: /Gespr.*beenden/i });
+    expect(stop.className).toContain("min-h-[80px]");
+    fireEvent.click(stop);
+    expect(mockEnd).toHaveBeenCalled();
   });
 
-  it("Stopp kehrt zu Start-Button zurueck", () => {
-    render(<DialogMode onMessage={vi.fn()} />);
-    fireEvent.click(screen.getByRole("button", { name: /Gespräch starten/i }));
-    fireEvent.click(screen.getByRole("button", { name: /Stopp/i }));
-    expect(
-      screen.getByRole("button", { name: /Gespräch starten/i }),
-    ).toBeInTheDocument();
+  it("beendet die Sitzung clientseitig am serverseitig vorgegebenen Limit", async () => {
+    vi.useFakeTimers();
+    mockFetch.mockResolvedValueOnce(
+      Response.json({
+        clientSecret: "ephemeral-secret",
+        model: "gpt-realtime-mini",
+        maxSessionSeconds: 1,
+      }),
+    );
+    render(<DialogMode />);
+    fireEvent.click(screen.getByRole("checkbox", { name: /Hinweis verstanden/i }));
+
+    await act(async () => {
+      fireEvent.click(screen.getByRole("button", { name: /Gespr.*starten/i }));
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+    await act(async () => {
+      vi.advanceTimersByTime(1_000);
+      await Promise.resolve();
+    });
+
+    expect(mockEnd).toHaveBeenCalled();
   });
 });

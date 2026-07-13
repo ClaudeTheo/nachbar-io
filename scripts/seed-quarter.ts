@@ -70,7 +70,7 @@ const NEWS = [
 // ============================================================
 // Hauptfunktion
 // ============================================================
-async function seedQuarter(quarterSlug: string) {
+async function seedQuarter(quarterSlug: string, authorId?: string) {
   console.log(`\n🌱 Seeding Quartier: ${quarterSlug}\n`);
 
   // Quartier finden
@@ -99,20 +99,35 @@ async function seedQuarter(quarterSlug: string) {
     return;
   }
 
-  // System-User finden oder erstellen (fuer automatische Posts)
-  const { data: systemUser } = await supabase
-    .from('users')
-    .select('id')
-    .eq('role', 'admin')
-    .limit(1)
-    .maybeSingle();
+  // Autor der Beispiel-Posts: explizit per --author-id (z. B. Demo-User),
+  // sonst wie bisher der erste Admin-User.
+  let systemUserId: string;
+  if (authorId) {
+    const { data: author, error: aErr } = await supabase
+      .from('users')
+      .select('id')
+      .eq('id', authorId)
+      .maybeSingle();
+    if (aErr || !author) {
+      console.error(`Autor-User ${authorId} nicht gefunden.`);
+      process.exit(1);
+    }
+    systemUserId = author.id;
+    console.log(`Autor: ${systemUserId} (per --author-id)`);
+  } else {
+    const { data: systemUser } = await supabase
+      .from('users')
+      .select('id')
+      .eq('role', 'admin')
+      .limit(1)
+      .maybeSingle();
 
-  if (!systemUser) {
-    console.error('Kein Admin-User gefunden. Bitte zuerst einen Admin anlegen.');
-    process.exit(1);
+    if (!systemUser) {
+      console.error('Kein Admin-User gefunden. Bitte zuerst einen Admin anlegen oder --author-id=<uuid> uebergeben.');
+      process.exit(1);
+    }
+    systemUserId = systemUser.id;
   }
-
-  const systemUserId = systemUser.id;
   let created = 0;
 
   // 1. Board-Posts erstellen
@@ -214,13 +229,15 @@ function randomPastDate(maxDaysAgo: number): string {
 const args = process.argv.slice(2);
 const quarterArg = args.find(a => a.startsWith('--quarter='));
 const quarterSlug = quarterArg?.split('=')[1];
+const authorArg = args.find(a => a.startsWith('--author-id='));
+const authorId = authorArg?.split('=')[1];
 
 if (!quarterSlug) {
-  console.error('Usage: npm run seed:quarter -- --quarter=bad-saeckingen');
+  console.error('Usage: npm run seed:quarter -- --quarter=bad-saeckingen [--author-id=<uuid>]');
   process.exit(1);
 }
 
-seedQuarter(quarterSlug).catch(err => {
+seedQuarter(quarterSlug, authorId).catch(err => {
   console.error('Seeding fehlgeschlagen:', err);
   process.exit(1);
 });

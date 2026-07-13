@@ -93,19 +93,21 @@ export async function getWeeklyDigest(
 ): Promise<WeeklyDigest> {
   const sevenDaysAgo = new Date(Date.now() - 7 * 86400000).toISOString();
 
-  // Board-Posts diese Woche
+  // Board-Posts diese Woche (Schwarzes Brett liegt in help_requests, category='board')
   const { count: boardPosts } = await supabase
-    .from('board_posts')
+    .from('help_requests')
     .select('id', { count: 'exact', head: true })
     .eq('quarter_id', quarterId)
+    .eq('category', 'board')
     .gte('created_at', sevenDaysAgo);
 
-  // Hilfsangebote (category = help_offered)
+  // Hilfsangebote diese Woche (type='offer', ohne Schwarzes-Brett-Beitraege)
   const { count: helpOffered } = await supabase
-    .from('board_posts')
+    .from('help_requests')
     .select('id', { count: 'exact', head: true })
     .eq('quarter_id', quarterId)
-    .eq('category', 'help_offered')
+    .eq('type', 'offer')
+    .neq('category', 'board')
     .gte('created_at', sevenDaysAgo);
 
   // Events diese Woche

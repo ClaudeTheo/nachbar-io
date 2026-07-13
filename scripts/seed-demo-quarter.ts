@@ -29,26 +29,29 @@ const DEMO_EMAIL = 'review@quartierapp.de';
 const DEMO_PASSWORD = 'QuartierReview2026!';
 const DEMO_INVITE_CODE = 'DEMO-REVIEW';
 
-// Realistische Board-Posts fuer Bad Saeckingen
-const DEMO_POSTS = [
-  { title: 'Straßenflohmarkt am Samstag!', content: 'Liebe Nachbarn, am kommenden Samstag (10-16 Uhr) veranstalten wir einen Straßenflohmarkt in der Purkersdorfer Straße. Jeder kann einen Tisch vor die Tür stellen. Bitte gebt kurz Bescheid wer mitmacht!', category: 'general' },
-  { title: 'Paketannahme angeboten', content: 'Bin tagsüber meistens zu Hause (Homeoffice) und nehme gerne Pakete für Nachbarn an. Einfach bei mir klingeln oder kurz anrufen.', category: 'help_offered' },
-  { title: 'Suche Hilfe beim Umzug', content: 'Ziehe nächste Woche in die Sanarystraße und brauche 2-3 kräftige Hände zum Tragen. Kann mit Kuchen und Getränken danken!', category: 'help_wanted' },
-  { title: 'Fundstück: Kinderfahrrad', content: 'Habe ein blaues Kinderfahrrad (ca. 20 Zoll) am Spielplatz gefunden. Steht bei mir im Hof. Wem gehört es?', category: 'general' },
-  { title: 'Gemeinsames Gärtnern', content: 'Wer hat Lust, das Hochbeet vor dem Gemeinschaftsraum neu zu bepflanzen? Habe Erde und Setzlinge. Samstag 10 Uhr?', category: 'general' },
-  { title: 'Einkaufsfahrt zum Edeka', content: 'Fahre jeden Mittwoch und Samstag zum Edeka. Wer möchte mitfahren oder mir eine Einkaufsliste geben? Gerne melden!', category: 'help_offered' },
-  { title: 'Hundesitter gesucht', content: 'Bin vom 15.-20. auf Geschäftsreise. Wer könnte auf meinen Labrador Max aufpassen? Er ist lieb und gut erzogen.', category: 'help_wanted' },
-  { title: 'Achtung: Straßensperrung', content: 'Ab Montag wird die Sanarystraße wegen Kanalarbeiten teilweise gesperrt. Dauer: ca. 2 Wochen. Umleitung über Rebbergweg.', category: 'general' },
-  { title: 'Yoga im Park — jeden Dienstag', content: 'Biete kostenlose Yoga-Stunde im Park an. Dienstags, 18 Uhr am Rheinufer. Bitte eigene Matte mitbringen. Anfänger willkommen!', category: 'general' },
-  { title: 'Nachbarschaftshilfe für Senioren', content: 'Ich helfe älteren Nachbarn gerne bei kleinen Reparaturen, Glühbirnen wechseln, etc. Einfach über die App melden.', category: 'help_offered' },
+// Realistische Board-Beitraege fuer Bad Saeckingen.
+// Schwarzes Brett = help_requests (type='offer', category='board'); der ganze
+// Text steht im NOT-NULL-Feld title (so liest ihn app/(app)/board/page.tsx).
+const DEMO_MESSAGES = [
+  'Liebe Nachbarn, am kommenden Samstag (10-16 Uhr) veranstalten wir einen Straßenflohmarkt in der Purkersdorfer Straße. Jeder kann einen Tisch vor die Tür stellen. Bitte gebt kurz Bescheid wer mitmacht!',
+  'Bin tagsüber meistens zu Hause (Homeoffice) und nehme gerne Pakete für Nachbarn an. Einfach bei mir klingeln oder kurz anrufen.',
+  'Ziehe nächste Woche in die Sanarystraße und brauche 2-3 kräftige Hände zum Tragen. Kann mit Kuchen und Getränken danken!',
+  'Habe ein blaues Kinderfahrrad (ca. 20 Zoll) am Spielplatz gefunden. Steht bei mir im Hof. Wem gehört es?',
+  'Wer hat Lust, das Hochbeet vor dem Gemeinschaftsraum neu zu bepflanzen? Habe Erde und Setzlinge. Samstag 10 Uhr?',
+  'Fahre jeden Mittwoch und Samstag zum Edeka. Wer möchte mitfahren oder mir eine Einkaufsliste geben? Gerne melden!',
+  'Bin vom 15.-20. auf Geschäftsreise. Wer könnte auf meinen Labrador Max aufpassen? Er ist lieb und gut erzogen.',
+  'Ab Montag wird die Sanarystraße wegen Kanalarbeiten teilweise gesperrt. Dauer: ca. 2 Wochen. Umleitung über Rebbergweg.',
+  'Biete kostenlose Yoga-Stunde im Park an. Dienstags, 18 Uhr am Rheinufer. Bitte eigene Matte mitbringen. Anfänger willkommen!',
+  'Ich helfe älteren Nachbarn gerne bei kleinen Reparaturen, Glühbirnen wechseln, etc. Einfach über die App melden.',
 ];
 
-// Marktplatz-Anzeigen
+// Marktplatz-Anzeigen (marketplace_items). category muss aus dem festen Set
+// stammen: furniture | tools | kids | books | electronics | clothing | plants | household | other.
 const DEMO_MARKETPLACE = [
-  { title: 'Fahrrad zu verkaufen', description: 'Damenrad, 28 Zoll, 7-Gang Shimano, gut erhalten. Nur Abholung.', price: 85, category: 'vehicles' },
+  { title: 'Fahrrad zu verkaufen', description: 'Damenrad, 28 Zoll, 7-Gang Shimano, gut erhalten. Nur Abholung.', price: 85, category: 'other' },
   { title: 'Bücherregal (Billy, weiß)', description: 'IKEA Billy Regal, 80x200cm, weiß, sehr guter Zustand. Muss selbst abgebaut werden.', price: 25, category: 'furniture' },
   { title: 'Babykleidung Paket (6-12M)', description: 'Großes Paket mit Bodies, Stramplern, Mützen. Alles gewaschen und in gutem Zustand.', price: 15, category: 'clothing' },
-  { title: 'Rasenmäher Bosch Rotak', description: 'Elektro-Rasenmäher, 40cm Schnittbreite, funktioniert einwandfrei. Nur Abholung.', price: 45, category: 'garden' },
+  { title: 'Rasenmäher Bosch Rotak', description: 'Elektro-Rasenmäher, 40cm Schnittbreite, funktioniert einwandfrei. Nur Abholung.', price: 45, category: 'tools' },
   { title: 'Kaffeemaschine De Longhi', description: 'Vollautomatische Kaffeemaschine, frisch entkalkt, mit Milchschäumer. NP 400€.', price: 120, category: 'electronics' },
 ];
 
@@ -143,31 +146,34 @@ async function seedDemo() {
   const postUserId = adminUser?.id || demoUserId;
   let created = 0;
 
-  // 4. Board-Posts
-  console.log('\n📋 Board-Posts...');
-  for (const post of DEMO_POSTS) {
-    const { error } = await supabase.from('board_posts').insert({
+  // 4. Board-Beitraege (Schwarzes Brett = help_requests, category='board')
+  console.log('\n📋 Schwarzes Brett...');
+  for (const message of DEMO_MESSAGES) {
+    const { error } = await supabase.from('help_requests').insert({
       user_id: postUserId,
       quarter_id: quarter.id,
-      title: post.title,
-      content: post.content,
-      category: post.category,
+      type: 'offer',
+      category: 'board',
+      title: message,
+      description: null,
+      status: 'active',
       created_at: randomPastDate(21),
     });
     if (error) {
-      console.warn(`  ⚠️  ${post.title}: ${error.message}`);
+      console.warn(`  ⚠️  Beitrag: ${error.message}`);
     } else {
       created++;
-      console.log(`  ✓ ${post.title}`);
+      console.log(`  ✓ ${message.slice(0, 50)}…`);
     }
   }
 
-  // 5. Marktplatz
+  // 5. Marktplatz (marketplace_items)
   console.log('\n🛒 Marktplatz-Anzeigen...');
   for (const item of DEMO_MARKETPLACE) {
-    const { error } = await supabase.from('marketplace_listings').insert({
+    const { error } = await supabase.from('marketplace_items').insert({
       user_id: postUserId,
       quarter_id: quarter.id,
+      type: 'sell',
       title: item.title,
       description: item.description,
       price: item.price,
@@ -188,12 +194,12 @@ async function seedDemo() {
   for (const event of DEMO_EVENTS) {
     const eventDate = new Date();
     eventDate.setDate(eventDate.getDate() + event.date_offset_days);
-    eventDate.setHours(18, 0, 0, 0);
 
     const { error } = await supabase.from('events').insert({
       title: event.title,
       description: event.description,
-      event_date: eventDate.toISOString(),
+      // events.event_date ist eine DATE-Spalte -> nur YYYY-MM-DD, kein Timestamp.
+      event_date: eventDate.toISOString().slice(0, 10),
       location: event.location,
       quarter_id: quarter.id,
       user_id: postUserId,

@@ -78,12 +78,16 @@ export async function sendWelcomePack(
   // 3. Automatischer Willkommens-Post auf dem Schwarzen Brett
   // Nur wenn Board aktiv ist und Nutzer zugestimmt hat
   // (Im Pilot: immer erstellen)
-  await supabase.from('board_posts').insert({
+  // Schwarzes Brett liegt in help_requests (type='offer', category='board');
+  // der Beitragstext steht im NOT-NULL-Feld title, description bleibt leer.
+  await supabase.from('help_requests').insert({
     user_id: userId,
     quarter_id: quarterId,
-    title: `${displayName} ist neu im Quartier`,
-    content: `Herzlich willkommen! ${displayName} ist jetzt Teil unserer Nachbarschaft.`,
-    category: 'general',
+    type: 'offer',
+    category: 'board',
+    title: `Herzlich willkommen! ${displayName} ist jetzt Teil unserer Nachbarschaft.`,
+    description: null,
+    status: 'active',
   });
 
   return { sent: true };

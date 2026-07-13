@@ -3,8 +3,8 @@
 // Content-Seeding fuer neue Quartiere
 // Usage: npm run seed:quarter -- --quarter=bad-saeckingen
 //
-// Erstellt Beispielinhalt: Board-Posts, Dienstleister, Events, News, Willkommen
-// Idempotent: Prueft ob bereits geseedet (via metadata-Flag in quarters)
+// Erstellt Beispielinhalt: Schwarzes Brett (help_requests), Events, Quartier-News.
+// Idempotent: Prueft ob bereits genug Board-Beitraege existieren.
 
 import { createClient } from '@supabase/supabase-js';
 
@@ -24,33 +24,24 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
 // ============================================================
 // Seed-Daten
 // ============================================================
-const BOARD_POSTS = [
-  { title: 'Willkommen im Quartier!', content: 'Herzlich willkommen in unserer digitalen Nachbarschaft. Hier können Sie sich mit Ihren Nachbarn vernetzen, Hilfe anbieten oder suchen, und über Neuigkeiten im Quartier auf dem Laufenden bleiben.', category: 'general' },
-  { title: 'Hilfe beim Einkaufen angeboten', content: 'Ich fahre jeden Dienstag und Freitag zum Edeka. Wer möchte, kann mir eine Einkaufsliste geben — ich bringe es gerne mit.', category: 'help_offered' },
-  { title: 'Suche Hilfe beim Rasenmähen', content: 'Kann mir jemand diese Woche beim Rasenmähen helfen? Mein Rasenmäher ist leider kaputt. Vielen Dank!', category: 'help_wanted' },
-  { title: 'Babysitter gesucht', content: 'Suche zuverlässige/n Babysitter/in für Samstag Abend (18-22 Uhr). Zwei Kinder, 4 und 6 Jahre. Bitte melden!', category: 'help_wanted' },
-  { title: 'Frische Äpfel vom Garten', content: 'Habe zu viele Äpfel im Garten. Wer mag, kann gerne vorbeikommen und sich bedienen. Purkersdorfer Straße.', category: 'general' },
-  { title: 'Paketannahme möglich', content: 'Bin tagsüber meistens zu Hause und nehme gerne Pakete für Nachbarn an. Einfach kurz Bescheid geben!', category: 'help_offered' },
-  { title: 'Fundstück: Schlüsselbund', content: 'Habe heute Morgen einen Schlüsselbund auf dem Gehweg gefunden (Sanarystraße, Höhe Nr. 12). Wem gehört er?', category: 'general' },
-  { title: 'Lärmbelästigung Baustelle', content: 'Weiß jemand, wie lange die Baustelle an der Ecke noch dauert? Der Lärm ab 7 Uhr morgens ist schon heftig.', category: 'general' },
-  { title: 'Gemüse vom Wochenmarkt teilen', content: 'Kaufe immer zu viel auf dem Wochenmarkt. Wer mag, kann sich Tomaten, Zucchini und Salat abholen.', category: 'help_offered' },
-  { title: 'Gartenmöbel zu verschenken', content: 'Zwei Gartenstühle und ein kleiner Tisch, gut erhalten. Abholung ab sofort. Oberer Rebberg.', category: 'marketplace' },
-  { title: 'Fahrgemeinschaft zum Bahnhof?', content: 'Fahre jeden Morgen um 7:15 Uhr zum Bahnhof. Wer möchte mitfahren? Kostenlos, spare mir das alleine Fahren.', category: 'general' },
-  { title: 'Lesegruppe gründen?', content: 'Hätte jemand Interesse an einer monatlichen Lesegruppe? Wir könnten uns abwechselnd bei jemandem zu Hause treffen.', category: 'general' },
-  { title: 'Katze zugelaufen', content: 'Seit gestern streunt eine graue Katze mit weißen Pfoten um unser Haus. Wem gehört sie?', category: 'general' },
-  { title: 'Werkzeug zum Ausleihen', content: 'Habe eine Bohrmaschine, Stichsäge und Schlagbohrer. Kann gerne ausgeliehen werden. Einfach melden!', category: 'help_offered' },
-  { title: 'Nachbarschafts-Flohmarkt', content: 'Wer hätte Lust auf einen Flohmarkt im Quartier? Jeder stellt einen Tisch vor die Tür. Termin: nächster Samstag?', category: 'general' },
-];
-
-const BUSINESSES = [
-  { name: 'Bäckerei Schmid', description: 'Frisches Brot und Gebäck seit 1978. Täglich frisch gebacken.', category: 'bakery', phone: '+49 7761 12345', address: 'Basler Straße 22' },
-  { name: 'Apotheke am Markt', description: 'Ihre freundliche Apotheke mit Lieferdienst für Senioren.', category: 'pharmacy', phone: '+49 7761 23456', address: 'Marktplatz 5' },
-  { name: 'Blumen Müller', description: 'Blumensträuße, Topfpflanzen und Grabgestecke.', category: 'florist', phone: '+49 7761 34567', address: 'Rheinstraße 14' },
-  { name: 'Hausarztpraxis Dr. Weber', description: 'Allgemeinmedizin, Vorsorge, Hausbesuche.', category: 'doctor', phone: '+49 7761 45678', address: 'Schützenstraße 8' },
-  { name: 'Metzgerei Hofmann', description: 'Fleisch und Wurst aus regionaler Tierhaltung.', category: 'butcher', phone: '+49 7761 56789', address: 'Laufenburger Straße 3' },
-  { name: 'Friseur Haargenau', description: 'Damen, Herren und Kinder. Termine auch samstags.', category: 'hairdresser', phone: '+49 7761 67890', address: 'Steinbrückstraße 11' },
-  { name: 'Schlüsseldienst Keller', description: 'Schlüssel nachmachen, Schlösser reparieren. 24h Notdienst.', category: 'locksmith', phone: '+49 7761 78901', address: 'Münsterplatz 2' },
-  { name: 'Edeka Fröhlich', description: 'Lebensmittel, Getränke, Haushaltswaren. Lieferservice möglich.', category: 'supermarket', phone: '+49 7761 89012', address: 'Waldshuter Straße 17' },
+// Schwarzes Brett: help_requests mit type='offer', category='board'. Der ganze
+// Beitragstext steht im Feld title (so liest ihn app/(app)/board/page.tsx).
+const BOARD_MESSAGES = [
+  'Herzlich willkommen in unserer digitalen Nachbarschaft. Hier können Sie sich mit Ihren Nachbarn vernetzen, Hilfe anbieten oder suchen, und über Neuigkeiten im Quartier auf dem Laufenden bleiben.',
+  'Ich fahre jeden Dienstag und Freitag zum Edeka. Wer möchte, kann mir eine Einkaufsliste geben — ich bringe es gerne mit.',
+  'Kann mir jemand diese Woche beim Rasenmähen helfen? Mein Rasenmäher ist leider kaputt. Vielen Dank!',
+  'Suche zuverlässige Betreuung für Samstag Abend (18-22 Uhr). Zwei Kinder, 4 und 6 Jahre. Bitte melden!',
+  'Habe zu viele Äpfel im Garten. Wer mag, kann gerne vorbeikommen und sich bedienen. Purkersdorfer Straße.',
+  'Bin tagsüber meistens zu Hause und nehme gerne Pakete für Nachbarn an. Einfach kurz Bescheid geben!',
+  'Habe heute Morgen einen Schlüsselbund auf dem Gehweg gefunden (Sanarystraße, Höhe Nr. 12). Wem gehört er?',
+  'Weiß jemand, wie lange die Baustelle an der Ecke noch dauert? Der Lärm ab 7 Uhr morgens ist schon heftig.',
+  'Kaufe immer zu viel auf dem Wochenmarkt. Wer mag, kann sich Tomaten, Zucchini und Salat abholen.',
+  'Zwei Gartenstühle und ein kleiner Tisch, gut erhalten, zu verschenken. Abholung ab sofort. Oberer Rebberg.',
+  'Fahre jeden Morgen um 7:15 Uhr zum Bahnhof. Wer möchte mitfahren? Kostenlos, spare mir das alleine Fahren.',
+  'Hätte jemand Interesse an einer monatlichen Lesegruppe? Wir könnten uns abwechselnd bei jemandem zu Hause treffen.',
+  'Seit gestern streunt eine graue Katze mit weißen Pfoten um unser Haus. Wem gehört sie?',
+  'Habe eine Bohrmaschine, Stichsäge und Schlagbohrer zum Ausleihen. Einfach melden!',
+  'Wer hätte Lust auf einen Flohmarkt im Quartier? Jeder stellt einen Tisch vor die Tür. Termin: nächster Samstag?',
 ];
 
 const EVENTS = [
@@ -59,12 +50,14 @@ const EVENTS = [
   { title: 'Nachbarschafts-Stammtisch', description: 'Monatlicher Stammtisch zum Kennenlernen und Austauschen. Alle Nachbarn willkommen!', date_offset_days: 21, location: 'Gasthaus zum Löwen' },
 ];
 
+// Quartier-News: news_items (kein User-FK). category muss aus dem festen Set
+// stammen: infrastructure | events | administration | weather | waste | other.
 const NEWS = [
-  { title: 'Neue Sitzbank am Rebberg aufgestellt', summary: 'Die Stadt hat eine neue Sitzbank mit Aussicht auf den Rhein aufgestellt. Perfekt für eine Pause beim Spaziergang.' },
-  { title: 'Straßenlaterne Sanarystraße repariert', summary: 'Die defekte Straßenlaterne an der Ecke Sanarystraße/Rebbergweg wurde gestern endlich repariert.' },
-  { title: 'Müllabfuhr-Termine geändert', summary: 'Ab nächster Woche werden Gelber Sack und Biomüll einen Tag früher abgeholt. Neuer Kalender liegt im Rathaus aus.' },
-  { title: 'Spielplatz bekommt neues Klettergerüst', summary: 'Der Spielplatz am Oberen Rebberg wird nächste Woche um ein neues Klettergerüst erweitert.' },
-  { title: 'Achtung Glatteis in den Morgenstunden', summary: 'Die Wettervorhersage warnt vor Glätte in den nächsten Tagen. Bitte Vorsicht auf Gehwegen!' },
+  { title: 'Neue Sitzbank am Rebberg aufgestellt', summary: 'Die Stadt hat eine neue Sitzbank mit Aussicht auf den Rhein aufgestellt. Perfekt für eine Pause beim Spaziergang.', category: 'infrastructure' },
+  { title: 'Straßenlaterne Sanarystraße repariert', summary: 'Die defekte Straßenlaterne an der Ecke Sanarystraße/Rebbergweg wurde gestern endlich repariert.', category: 'infrastructure' },
+  { title: 'Müllabfuhr-Termine geändert', summary: 'Ab nächster Woche werden Gelber Sack und Biomüll einen Tag früher abgeholt. Neuer Kalender liegt im Rathaus aus.', category: 'waste' },
+  { title: 'Spielplatz bekommt neues Klettergerüst', summary: 'Der Spielplatz am Oberen Rebberg wird nächste Woche um ein neues Klettergerüst erweitert.', category: 'infrastructure' },
+  { title: 'Achtung Glatteis in den Morgenstunden', summary: 'Die Wettervorhersage warnt vor Glätte in den nächsten Tagen. Bitte Vorsicht auf Gehwegen!', category: 'weather' },
 ];
 
 // ============================================================
@@ -88,14 +81,15 @@ async function seedQuarter(quarterSlug: string, authorId?: string) {
 
   console.log(`Quartier gefunden: ${quarter.name} (${quarter.id})`);
 
-  // Idempotenz pruefen: Gibt es schon genug Board-Posts?
+  // Idempotenz pruefen: Gibt es schon genug Board-Beitraege?
   const { count: existingPosts } = await supabase
-    .from('board_posts')
+    .from('help_requests')
     .select('id', { count: 'exact', head: true })
-    .eq('quarter_id', quarter.id);
+    .eq('quarter_id', quarter.id)
+    .eq('category', 'board');
 
   if ((existingPosts ?? 0) >= 10) {
-    console.log(`⚠️  Quartier "${quarter.name}" hat bereits ${existingPosts} Posts. Seeding nicht nötig.`);
+    console.log(`⚠️  Quartier "${quarter.name}" hat bereits ${existingPosts} Board-Beitraege. Seeding nicht nötig.`);
     return;
   }
 
@@ -130,60 +124,41 @@ async function seedQuarter(quarterSlug: string, authorId?: string) {
   }
   let created = 0;
 
-  // 1. Board-Posts erstellen
-  console.log('\n📋 Board-Posts...');
-  for (const post of BOARD_POSTS) {
-    const { error } = await supabase.from('board_posts').insert({
+  // 1. Board-Beitraege (Schwarzes Brett) erstellen
+  console.log('\n📋 Schwarzes Brett...');
+  for (const message of BOARD_MESSAGES) {
+    const { error } = await supabase.from('help_requests').insert({
       user_id: systemUserId,
       quarter_id: quarter.id,
-      title: post.title,
-      content: post.content,
-      category: post.category,
+      type: 'offer',
+      category: 'board',
+      title: message,
+      description: null,
+      status: 'active',
       created_at: randomPastDate(30),
     });
     if (error) {
-      console.warn(`  ⚠️  Post "${post.title}": ${error.message}`);
+      console.warn(`  ⚠️  Beitrag: ${error.message}`);
     } else {
       created++;
-      console.log(`  ✓ ${post.title}`);
+      console.log(`  ✓ ${message.slice(0, 50)}…`);
     }
   }
 
-  // 2. Dienstleister erstellen
-  console.log('\n🏪 Dienstleister...');
-  for (const biz of BUSINESSES) {
-    const { error } = await supabase.from('businesses').insert({
-      name: biz.name,
-      description: biz.description,
-      category: biz.category,
-      phone: biz.phone,
-      address: biz.address,
-      quarter_id: quarter.id,
-      verified: true,
-      created_at: randomPastDate(60),
-    });
-    if (error) {
-      console.warn(`  ⚠️  Dienstleister "${biz.name}": ${error.message}`);
-    } else {
-      created++;
-      console.log(`  ✓ ${biz.name}`);
-    }
-  }
-
-  // 3. Events erstellen
+  // 2. Events erstellen
   console.log('\n📅 Events...');
   for (const event of EVENTS) {
     const eventDate = new Date();
     eventDate.setDate(eventDate.getDate() + event.date_offset_days);
 
     const { error } = await supabase.from('events').insert({
+      user_id: systemUserId,
+      quarter_id: quarter.id,
       title: event.title,
       description: event.description,
-      event_date: eventDate.toISOString(),
+      // events.event_date ist eine DATE-Spalte -> nur YYYY-MM-DD, kein Timestamp.
+      event_date: eventDate.toISOString().slice(0, 10),
       location: event.location,
-      quarter_id: quarter.id,
-      created_by: systemUserId,
-      created_at: new Date().toISOString(),
     });
     if (error) {
       console.warn(`  ⚠️  Event "${event.title}": ${error.message}`);
@@ -193,15 +168,15 @@ async function seedQuarter(quarterSlug: string, authorId?: string) {
     }
   }
 
-  // 4. News erstellen
+  // 3. Quartier-News erstellen
   console.log('\n📰 Quartier-News...');
   for (const news of NEWS) {
-    const { error } = await supabase.from('news').insert({
-      title: news.title,
-      summary: news.summary,
+    const { error } = await supabase.from('news_items').insert({
+      original_title: news.title,
+      ai_summary: news.summary,
+      category: news.category,
       quarter_id: quarter.id,
-      source: 'seed',
-      created_at: randomPastDate(14),
+      published_at: randomPastDate(14),
     });
     if (error) {
       console.warn(`  ⚠️  News "${news.title}": ${error.message}`);

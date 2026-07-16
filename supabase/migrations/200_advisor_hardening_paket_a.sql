@@ -4,7 +4,13 @@
 -- 1) RLS-2: claude_messages ist ein ungenutzter Drift-Tisch (nur Baseline-Snapshot,
 --    kein App-Code). Die anon-ALL-Policy oeffnete ihn komplett fuer unauthentifizierte
 --    Zugriffe -> Policy droppen = default deny. claude_messages_service (service_role) bleibt.
-DROP POLICY IF EXISTS claude_messages_anon ON public.claude_messages;
+DO $$
+BEGIN
+  IF to_regclass('public.claude_messages') IS NOT NULL THEN
+    EXECUTE 'DROP POLICY IF EXISTS claude_messages_anon ON public.claude_messages';
+  END IF;
+END
+$$;
 
 -- 2) ST-1: Public Buckets brauchen keine SELECT-Policy fuer den Objektzugriff
 --    (Public-URL umgeht RLS). Die breiten SELECT-Policies erlaubten nur das Listing

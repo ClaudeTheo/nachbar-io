@@ -7,7 +7,7 @@
 > Nach jeder Migration mit Policy-/Trigger-/Grant-Bezug neu generieren und einchecken —
 > der Git-Diff dieser Datei IST das Security-Review-Artefakt.
 
-Kennzahlen: **570 Policies** · 208 public-Tabellen (1 OHNE RLS) · 36 Trigger · 628 Grant-Zeilen
+Kennzahlen: **567 Policies** · 208 public-Tabellen (1 OHNE RLS) · 36 Trigger · 628 Grant-Zeilen
 
 ## ⚠️ Tabellen ohne RLS (public)
 
@@ -579,15 +579,12 @@ Kennzahlen: **570 Policies** · 208 public-Tabellen (1 OHNE RLS) · 36 Trigger �
 | storage.objects | chat_media_insert | INSERT | public |  | ((bucket_id = 'chat-media'::text) AND (auth.uid() IS NOT NULL) AND ((((storage.foldername(name))[1] = 'direct'::text) AND (EXISTS ( SELECT 1 FROM conversations |
 | storage.objects | chat_media_select | SELECT | public | ((bucket_id = 'chat-media'::text) AND ((((storage.foldername(name))[1] = 'direct'::text) AND (EXISTS ( SELECT 1 FROM conversations c WHERE (((c.id)::text = (sto |
 | storage.objects | citizen_read_attachments | SELECT | public | ((bucket_id = 'civic-attachments'::text) AND (EXISTS ( SELECT 1 FROM (civic_message_attachments cma JOIN civic_messages cm ON ((cm.id = cma.message_id))) WHERE |
-| storage.objects | images_read_all | SELECT | public | (bucket_id = 'images'::text) |
 | storage.objects | report_photos_delete | DELETE | public | ((bucket_id = 'report-photos'::text) AND (((storage.foldername(name))[1] = (auth.uid())::text) OR (EXISTS ( SELECT 1 FROM users WHERE ((users.id = auth.uid()) A |
 | storage.objects | report_photos_insert | INSERT | public |  | ((bucket_id = 'report-photos'::text) AND (auth.role() = 'authenticated'::text)) |
-| storage.objects | report_photos_select | SELECT | public | (bucket_id = 'report-photos'::text) |
 | storage.objects | service_upload_civic_attachments | INSERT | public |  | ((bucket_id = 'civic-attachments'::text) AND (auth.role() = 'service_role'::text)) |
 | storage.objects | staff_read_attachments | SELECT | public | ((bucket_id = 'civic-attachments'::text) AND (EXISTS ( SELECT 1 FROM ((civic_message_attachments cma JOIN civic_messages cm ON ((cm.id = cma.message_id))) JOIN |
 | storage.objects | test_screenshots_delete | DELETE | public | ((bucket_id = 'images'::text) AND ((storage.foldername(name))[1] = 'test-screenshots'::text) AND (auth.uid() IS NOT NULL)) |
 | storage.objects | test_screenshots_upload | INSERT | public |  | ((bucket_id = 'images'::text) AND ((storage.foldername(name))[1] = 'test-screenshots'::text) AND (auth.uid() IS NOT NULL) AND (EXISTS ( SELECT 1 FROM users WHER |
-| storage.objects | tts-cache public read | SELECT | public | (bucket_id = 'tts-cache'::text) |
 | storage.objects | tts-cache service update | UPDATE | public | ((bucket_id = 'tts-cache'::text) AND (auth.role() = 'service_role'::text)) |
 | storage.objects | tts-cache service write | INSERT | public |  | ((bucket_id = 'tts-cache'::text) AND (auth.role() = 'service_role'::text)) |
 

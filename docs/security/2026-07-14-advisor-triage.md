@@ -41,6 +41,34 @@ SECURITY DEFINER View) liegen im Repo und warten auf Prod-Apply (Founder-Go).
 Einordnung Ausnutzbarkeit heute: Closed Pilot, 0 echte Nutzer, Signup invite-gated — Angriffsflaeche primaer
 durch eigene Test-Accounts. Fuer Produktreife (echte Nutzer) sind RLS-1 bis -4 harte Blocker.
 
+## Paket B+C Implementierungsstand 2026-07-16
+
+Der Code- und Live-Pre-Check hat die offenen Policies bestaetigt und zugleich zwei
+Abweichungen von der urspruenglichen Triage gefunden:
+
+- Der in Migration 014 definierte `enforce_user_defaults`-Insert-Trigger fehlt live.
+  Migration 201 ersetzt ihn daher durch einen service-role-kompatiblen Insert-Guard,
+  der privilegierte Nutzerfelder auf sichere Defaults setzt. Family-Setup und
+  Registrierung wurden als service-role-Pfade verifiziert.
+- Gamification- und Jugend-Services schreiben teilweise weiterhin mit der
+  authentifizierten User-Session. Die betreffenden INSERT-Policies werden deshalb
+  auf `user_id = auth.uid()` begrenzt, nicht ersatzlos entfernt. Direkte
+  Eigenmanipulation von Punktewert/Aktion bleibt als Restbefund bestehen und braucht
+  einen separaten Server-Adapter, bevor diese Policies vollstaendig entfallen koennen.
+
+Migration 202 pinnt die 31 live ermittelten Funktions-Signaturen auf
+`search_path = public, pg_temp` und entzieht `PUBLIC`, `anon` und `authenticated`
+die Ausfuehrung der 10 SECURITY-DEFINER-Triggerfunktionen sowie der beiden
+Cleanup-Funktionen. `get_display_names(uuid[])` bleibt fuer authentifizierte Clients
+ausfuehrbar.
+
+Der verpflichtende Supabase-Branch-Test konnte am 2026-07-16 nicht bis zu den neuen
+Migrationen gelangen: Ein frischer Branch replayte nur 001/002 und brach danach mit
+`relation "public.care_consents" does not exist` ab. Ein Branch-Rebase auf Production
+endete mit demselben `MIGRATIONS_FAILED`-Status. Der kostenpflichtige Test-Branch wurde
+anschliessend geloescht. Bis der bestehende Branch-Replay/Prod-Drift repariert ist,
+bleibt Paket B+C blockiert und darf nicht auf Production angewendet werden.
+
 ```text
 Mini-Audit Produktreife-Block-1 (2026-07-14):
 - RLS/Trigger geprueft: 23 always-true-Policies (pg_policies live), users-INSERT-Trigger, view quarter_collection_areas

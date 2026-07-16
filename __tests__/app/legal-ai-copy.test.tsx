@@ -39,7 +39,7 @@ describe("legal pages AI and pilot copy", () => {
     expect(screen.queryByText(/erfolgte beim Notariat/i)).not.toBeInTheDocument();
     expect(screen.queryByText(/in Gründung/i)).not.toBeInTheDocument();
     expect(screen.getByText(/Pilotbetrieb ist eine geschlossene/i)).toBeInTheDocument();
-    expect(screen.getByText(/Stand: Mai 2026/i)).toBeInTheDocument();
+    expect(screen.getByText(/Stand: Juli 2026/i)).toBeInTheDocument();
     expect(screen.queryByText(/medizinische Notrufsysteme/i)).not.toBeInTheDocument();
   });
 

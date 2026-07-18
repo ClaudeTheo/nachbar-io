@@ -24,11 +24,19 @@ describe("AiHelpSettingsToggle", () => {
   it("loads the current assistance level and marks Basis", async () => {
     render(<AiHelpSettingsToggle />);
 
-    await waitFor(() =>
-      expect(screen.getByRole("button", { name: /^Basis/i })).toHaveAttribute(
-        "aria-pressed",
-        "true",
-      ),
+    // waitFor-Default (1000 ms) ist auf der CI-Box zu knapp: Unter GC-/Paging-
+    // Stalls (10 Forks auf ~16 GB, siehe vitest.config.ts) kann der fetch-
+    // Microtask, der level auf "basic" setzt, kurz aushungern -> aria-pressed
+    // wird erst nach >1 s true und waitFor bricht vorher ab (Flake, der am
+    // 2026-07-13 das Prod-Deploy-Gate blockierte). Timeout an die Box-Toleranz
+    // angleichen, analog pair.test.tsx.
+    await waitFor(
+      () =>
+        expect(screen.getByRole("button", { name: /^Basis/i })).toHaveAttribute(
+          "aria-pressed",
+          "true",
+        ),
+      { timeout: 5000, interval: 100 },
     );
     expect(
       screen.queryByRole("button", { name: /Später entscheiden/i }),

@@ -62,12 +62,38 @@ die Ausfuehrung der 10 SECURITY-DEFINER-Triggerfunktionen sowie der beiden
 Cleanup-Funktionen. `get_display_names(uuid[])` bleibt fuer authentifizierte Clients
 ausfuehrbar.
 
-Der verpflichtende Supabase-Branch-Test konnte am 2026-07-16 nicht bis zu den neuen
-Migrationen gelangen: Ein frischer Branch replayte nur 001/002 und brach danach mit
-`relation "public.care_consents" does not exist` ab. Ein Branch-Rebase auf Production
-endete mit demselben `MIGRATIONS_FAILED`-Status. Der kostenpflichtige Test-Branch wurde
-anschliessend geloescht. Bis der bestehende Branch-Replay/Prod-Drift repariert ist,
-bleibt Paket B+C blockiert und darf nicht auf Production angewendet werden.
+Der damalige Branch-Replay-Blocker wurde am 2026-07-17 durch die kanonische
+Production-History mit 199 Migrationen beseitigt. Der verpflichtende erneute
+Supabase-Branch-Test lief am 2026-07-18 vollstaendig gruen:
+
+Ein erster technisch gesunder Versuch wurde vor 201/202 automatisch geloescht, weil
+der lokale SQL-Datei-Loader eine nicht verfuegbare Base64-Funktion verwendete. Der
+Fehler betraf nur die Test-Orchestrierung; der folgende Wiederholungslauf lieferte die
+Evidenz:
+
+- Der nicht persistente Branch startete ohne Production-Daten, replayte alle 199
+  kanonischen Migrationen und endete `ACTIVE_HEALTHY` mit 0 Auth- und 0 App-Nutzern.
+- Branch-only Test-Fixtures ergaenzten ausschliesslich weiterhin nicht replayte
+  Production-Objekte: `business_settings`, `passkey_challenges`, sechs
+  sicherheitsrelevante `users`-Spalten und `handle_new_user()`.
+- Die unveraenderten Migrationen 201 und 202 wurden danach erfolgreich angewandt.
+  Der Branch hatte damit 202 Tracking-Eintraege: 199 History + Fixture + B + C.
+- Alle Policy-Smokes waren gruen: `users_insert`, Invitation-UPDATE,
+  Gamification-INSERTs und Finance-Policies waren gescoped; elf unsichere
+  Service-/Passkey-Policies waren entfernt; der User-Insert-Guard war installiert.
+- Der Verhaltens-Smoke setzte privilegierte Eigenwerte auf `resident`, `new`,
+  `is_admin=false`, 0 Punkte und entfernte geschuetzte Settings. Ein Insert fuer eine
+  fremde User-ID scheiterte erwartungsgemaess mit PostgreSQL `42501` an RLS.
+- Paket C: 31/31 Funktions-`search_path`-Pins und 12/12 EXECUTE-Revokes verifiziert;
+  `get_display_names(uuid[])` blieb fuer `authenticated` ausfuehrbar.
+- Supabase Security Advisor auf dem Testbranch: 0 Findings. Der Testbranch wurde
+  unmittelbar danach geloescht; anschliessend existierte wieder nur `main`.
+
+Production blieb unveraendert: read-only verifiziert 199 Migrationen, 0
+Advisor-Testmigrationen, 47 als Test markierte Profile und 0 nicht als Test markierte
+Profile. Es gab keinen Production-Apply, keinen Deploy und keinen Git-Push. Paket B+C
+ist damit branch-verifiziert; ein Production-Apply bleibt ein eigener roter Schritt
+mit separatem Founder-Go.
 
 ```text
 Mini-Audit Produktreife-Block-1 (2026-07-14):

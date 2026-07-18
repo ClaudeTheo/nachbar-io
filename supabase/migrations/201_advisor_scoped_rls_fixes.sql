@@ -38,17 +38,29 @@ BEGIN
   NEW.trust_level := 'new';
   NEW.total_points := 0;
   NEW.points_level := 1;
-  NEW.doctor_verified_at := NULL;
-  NEW.doctor_verification_status := 'none';
+  IF to_jsonb(NEW) ? 'doctor_verified_at' THEN
+    NEW.doctor_verified_at := NULL;
+  END IF;
+  IF to_jsonb(NEW) ? 'doctor_verification_status' THEN
+    NEW.doctor_verification_status := 'none';
+  END IF;
   NEW.verified_by := NULL;
   NEW.verification_notes := NULL;
-  NEW.registered_by := NULL;
-  NEW.registered_by_role := NULL;
+  IF to_jsonb(NEW) ? 'registered_by' THEN
+    NEW.registered_by := NULL;
+  END IF;
+  IF to_jsonb(NEW) ? 'registered_by_role' THEN
+    NEW.registered_by_role := NULL;
+  END IF;
   NEW.deleted_at := NULL;
   NEW.retention_until := NULL;
   NEW.passkey_secret := NULL;
-  NEW.passkey_challenge := NULL;
-  NEW.passkey_challenge_expires_at := NULL;
+  IF to_jsonb(NEW) ? 'passkey_challenge' THEN
+    NEW.passkey_challenge := NULL;
+  END IF;
+  IF to_jsonb(NEW) ? 'passkey_challenge_expires_at' THEN
+    NEW.passkey_challenge_expires_at := NULL;
+  END IF;
 
   NEW.settings := COALESCE(NEW.settings, '{}'::jsonb);
   FOREACH key IN ARRAY protected_keys
@@ -81,19 +93,22 @@ CREATE POLICY neighbor_invitations_update ON public.neighbor_invitations
   WITH CHECK (inviter_id = auth.uid() OR public.is_admin());
 
 -- RLS-4: invoice data is service-written; cookie sessions are platform-admin only.
-DROP POLICY IF EXISTS "admin_insert_invoices" ON public.invoices;
-DROP POLICY IF EXISTS "admin_read_invoices" ON public.invoices;
-DROP POLICY IF EXISTS "admin_update_invoices" ON public.invoices;
-CREATE POLICY admin_insert_invoices ON public.invoices
-  FOR INSERT TO authenticated
-  WITH CHECK (public.is_admin());
-CREATE POLICY admin_read_invoices ON public.invoices
-  FOR SELECT TO authenticated
-  USING (public.is_admin());
-CREATE POLICY admin_update_invoices ON public.invoices
-  FOR UPDATE TO authenticated
-  USING (public.is_admin())
-  WITH CHECK (public.is_admin());
+DO $$
+BEGIN
+  IF to_regclass('public.invoices') IS NOT NULL THEN
+    EXECUTE 'DROP POLICY IF EXISTS "admin_insert_invoices" ON public.invoices';
+    EXECUTE 'DROP POLICY IF EXISTS "admin_read_invoices" ON public.invoices';
+    EXECUTE 'DROP POLICY IF EXISTS "admin_update_invoices" ON public.invoices';
+    EXECUTE 'CREATE POLICY admin_insert_invoices ON public.invoices
+      FOR INSERT TO authenticated WITH CHECK (public.is_admin())';
+    EXECUTE 'CREATE POLICY admin_read_invoices ON public.invoices
+      FOR SELECT TO authenticated USING (public.is_admin())';
+    EXECUTE 'CREATE POLICY admin_update_invoices ON public.invoices
+      FOR UPDATE TO authenticated USING (public.is_admin())
+      WITH CHECK (public.is_admin())';
+  END IF;
+END;
+$$;
 
 -- RLS-5: current application services still write with the user's session.
 -- Scope those writes to the caller's own row instead of breaking the flows.
@@ -123,40 +138,66 @@ CREATE POLICY reputation_points_insert ON public.reputation_points
   WITH CHECK (user_id = auth.uid());
 
 -- RLS-6: passkey challenges are accessed only by the server-side admin client.
-DROP POLICY IF EXISTS "passkey_challenges_insert" ON public.passkey_challenges;
-DROP POLICY IF EXISTS "passkey_challenges_select" ON public.passkey_challenges;
-DROP POLICY IF EXISTS "passkey_challenges_delete" ON public.passkey_challenges;
+DO $$
+BEGIN
+  IF to_regclass('public.passkey_challenges') IS NOT NULL THEN
+    EXECUTE 'DROP POLICY IF EXISTS "passkey_challenges_insert" ON public.passkey_challenges';
+    EXECUTE 'DROP POLICY IF EXISTS "passkey_challenges_select" ON public.passkey_challenges';
+    EXECUTE 'DROP POLICY IF EXISTS "passkey_challenges_delete" ON public.passkey_challenges';
+  END IF;
+END;
+$$;
 
 -- RLS-7: service_role bypasses RLS, so service-named true policies are unsafe
 -- and unnecessary. Existing caller-scoped policies remain in place.
 DROP POLICY IF EXISTS "user_blocks_service" ON public.user_blocks;
 DROP POLICY IF EXISTS "warning_cache_service_insert" ON public.warning_cache;
 DROP POLICY IF EXISTS "warning_cache_service_delete" ON public.warning_cache;
-DROP POLICY IF EXISTS "cron_job_runs_service" ON public.cron_job_runs;
+DO $$
+BEGIN
+  IF to_regclass('public.cron_job_runs') IS NOT NULL THEN
+    EXECUTE 'DROP POLICY IF EXISTS "cron_job_runs_service" ON public.cron_job_runs';
+  END IF;
+END;
+$$;
 DROP POLICY IF EXISTS "civic_audit_log_service_insert" ON public.civic_audit_log;
 DROP POLICY IF EXISTS "civic_members_service_insert" ON public.civic_members;
 DROP POLICY IF EXISTS "civic_messages_service_insert" ON public.civic_messages;
 DROP POLICY IF EXISTS "civic_org_service_insert" ON public.civic_organizations;
 
-DROP POLICY IF EXISTS "admin_all_summaries" ON public.monthly_summaries;
-CREATE POLICY admin_all_summaries ON public.monthly_summaries
-  FOR ALL TO authenticated
-  USING (public.is_admin())
-  WITH CHECK (public.is_admin());
+DO $$
+BEGIN
+  IF to_regclass('public.monthly_summaries') IS NOT NULL THEN
+    EXECUTE 'DROP POLICY IF EXISTS "admin_all_summaries" ON public.monthly_summaries';
+    EXECUTE 'CREATE POLICY admin_all_summaries ON public.monthly_summaries
+      FOR ALL TO authenticated USING (public.is_admin())
+      WITH CHECK (public.is_admin())';
+  END IF;
+END;
+$$;
 
-DROP POLICY IF EXISTS "Service role full access on business_settings" ON public.business_settings;
-CREATE POLICY business_settings_admin_all ON public.business_settings
-  FOR ALL TO authenticated
-  USING (public.is_admin())
-  WITH CHECK (public.is_admin());
+DO $$
+BEGIN
+  IF to_regclass('public.business_settings') IS NOT NULL THEN
+    EXECUTE 'DROP POLICY IF EXISTS "Service role full access on business_settings" ON public.business_settings';
+    EXECUTE 'CREATE POLICY business_settings_admin_all ON public.business_settings
+      FOR ALL TO authenticated USING (public.is_admin())
+      WITH CHECK (public.is_admin())';
+  END IF;
+END;
+$$;
 
-DROP POLICY IF EXISTS "admin_insert_transactions" ON public.business_transactions;
-DROP POLICY IF EXISTS "admin_read_transactions" ON public.business_transactions;
-CREATE POLICY admin_insert_transactions ON public.business_transactions
-  FOR INSERT TO authenticated
-  WITH CHECK (public.is_admin());
-CREATE POLICY admin_read_transactions ON public.business_transactions
-  FOR SELECT TO authenticated
-  USING (public.is_admin());
+DO $$
+BEGIN
+  IF to_regclass('public.business_transactions') IS NOT NULL THEN
+    EXECUTE 'DROP POLICY IF EXISTS "admin_insert_transactions" ON public.business_transactions';
+    EXECUTE 'DROP POLICY IF EXISTS "admin_read_transactions" ON public.business_transactions';
+    EXECUTE 'CREATE POLICY admin_insert_transactions ON public.business_transactions
+      FOR INSERT TO authenticated WITH CHECK (public.is_admin())';
+    EXECUTE 'CREATE POLICY admin_read_transactions ON public.business_transactions
+      FOR SELECT TO authenticated USING (public.is_admin())';
+  END IF;
+END;
+$$;
 
 COMMIT;

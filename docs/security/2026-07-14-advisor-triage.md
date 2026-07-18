@@ -95,6 +95,35 @@ Profile. Es gab keinen Production-Apply, keinen Deploy und keinen Git-Push. Pake
 ist damit branch-verifiziert; ein Production-Apply bleibt ein eigener roter Schritt
 mit separatem Founder-Go.
 
+### Fixture-freier lokaler Replay 2026-07-18
+
+Die beim Branch-Test noch benoetigten Drift-Fixtures zeigten eine zweite, rein lokale
+Replay-Luecke: Migration 201 referenzierte sechs Production-only Tabellen und sechs
+Production-only `users`-Spalten direkt; Migration 202 erwartete alle gehaerteten
+Funktionen bereits im lokalen Schema. Die Migrationen und ihre Rollbacks sind deshalb
+jetzt ohne Aenderung der Production-Wirkung defensiv:
+
+- Paket B prueft die sechs optionalen Tabellen mit `to_regclass(...)` und die sechs
+  optionalen `users`-Spalten im Insert-Trigger mit `to_jsonb(NEW) ? '<spalte>'`.
+- Paket C prueft jede der 31 Search-Path- und 12 EXECUTE-Signaturen mit
+  `to_regprocedure(...)`; Up und Down verwenden dieselben Signaturlisten.
+- Ein vollstaendiger lokaler `supabase db reset --local --no-seed` replayte danach
+  201 Migrationen ohne Fixture. Die Abschluss-Smokes bestaetigten 31/31 vorhandene
+  Search-Path-Pins und 11/11 vorhandene Revokes; die zwoelfte Revokefunktion ist im
+  lokalen Schema absichtlich nicht vorhanden.
+- Reale Rollback-/Reapply-Smokes fuer 202 und 201 liefen in Reihenfolge
+  `202 down -> 201 down -> 201 up -> 202 up` gruen. Der kritische User-Insert-Smoke
+  sanitizte weiterhin Rolle, Admin-, Trust- und Punktefelder sowie geschuetzte
+  Settings, obwohl die sechs Production-only Spalten lokal fehlen.
+- Statische Verifikation: 13/13 Vitest-Tests, ESLint fuer das geaenderte Testfile,
+  gezielter TypeScript-Check und `git diff --check` gruen. Der vollstaendige
+  Worktree-Typecheck blieb wegen einer haengenden, unvollstaendigen lokalen
+  `npm ci`-Installation technisch nicht aussagekraeftig; geaendert wurden nur SQL
+  und der gezielt gepruefte Migrationstest.
+
+Fuer diesen Nachlauf wurde kein weiterer Cloud-Branch erstellt. Production, Deploy
+und Remote-Git blieben unangetastet.
+
 ```text
 Mini-Audit Produktreife-Block-1 (2026-07-14):
 - RLS/Trigger geprueft: 23 always-true-Policies (pg_policies live), users-INSERT-Trigger, view quarter_collection_areas

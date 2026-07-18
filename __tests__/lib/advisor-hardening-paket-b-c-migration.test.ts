@@ -33,6 +33,34 @@ describe("advisor hardening package B migration", () => {
     expect(sql).toContain("current_setting('role', true) = 'service_role'");
   });
 
+  it("remains replayable when production-only tables and user columns are absent", () => {
+    const sql = readFileSync(upPath, "utf8").toLowerCase();
+    const downSql = readFileSync(downPath, "utf8").toLowerCase();
+
+    for (const table of [
+      "invoices",
+      "passkey_challenges",
+      "cron_job_runs",
+      "monthly_summaries",
+      "business_settings",
+      "business_transactions",
+    ]) {
+      expect(sql).toContain(`to_regclass('public.${table}')`);
+      expect(downSql).toContain(`to_regclass('public.${table}')`);
+    }
+
+    for (const column of [
+      "doctor_verified_at",
+      "doctor_verification_status",
+      "registered_by",
+      "registered_by_role",
+      "passkey_challenge",
+      "passkey_challenge_expires_at",
+    ]) {
+      expect(sql).toContain(`to_jsonb(new) ? '${column}'`);
+    }
+  });
+
   it("scopes user-owned writes and removes service-only public policies", () => {
     const sql = readFileSync(upPath, "utf8").toLowerCase();
 
@@ -102,16 +130,24 @@ describe("advisor hardening package C migration", () => {
 
   it("pins all 31 advisor-listed function search paths", () => {
     const sql = readFileSync(upPath, "utf8").toLowerCase();
-    const pinned = sql.match(/set search_path = public, pg_temp/g) ?? [];
+    const pinnedBlock = sql.match(
+      /pinned_signatures text\[\] := array\[(.*?)\];/s,
+    )?.[1];
+    const pinned = pinnedBlock?.match(/'public\.[^']+\([^']*\)'/g) ?? [];
+
     expect(pinned).toHaveLength(31);
+    expect(sql).toContain("to_regprocedure(function_signature)");
     expect(sql).toContain(
-      "alter function public.assign_point_to_quarter(geometry, text, text, text, text)",
+      "alter function %s set search_path = public, pg_temp",
     );
     expect(sql).toContain(
-      "alter function public.find_nearest_seeding_quarter(double precision, double precision, double precision)",
+      "'public.assign_point_to_quarter(geometry, text, text, text, text)'",
     );
     expect(sql).toContain(
-      "alter function public.validate_house_in_quarter_boundary()",
+      "'public.find_nearest_seeding_quarter(double precision, double precision, double precision)'",
+    );
+    expect(sql).toContain(
+      "'public.validate_house_in_quarter_boundary()'",
     );
   });
 
@@ -132,12 +168,28 @@ describe("advisor hardening package C migration", () => {
       "refresh_group_member_count()",
       "update_tip_confirmation_count()",
     ]) {
-      expect(sql).toContain(
-        `revoke execute on function public.${fn} from public, anon, authenticated`,
-      );
+      expect(sql).toContain(`'public.${fn}'`);
     }
+    expect(sql).toContain(
+      "revoke execute on function %s from public, anon, authenticated",
+    );
     expect(sql).not.toContain(
       "revoke execute on function public.get_display_names(uuid[]) from authenticated",
+    );
+  });
+
+  it("guards up and rollback function operations against production drift", () => {
+    const sql = readFileSync(upPath, "utf8").toLowerCase();
+    const downSql = readFileSync(downPath, "utf8").toLowerCase();
+
+    for (const guardedSql of [sql, downSql]) {
+      expect(guardedSql).toContain("to_regprocedure(function_signature)");
+      expect(guardedSql).toContain("pinned_signatures text[] := array[");
+      expect(guardedSql).toContain("revoked_signatures text[] := array[");
+    }
+    expect(downSql).toContain("alter function %s reset search_path");
+    expect(downSql).toContain(
+      "grant execute on function %s to public, anon, authenticated",
     );
   });
 

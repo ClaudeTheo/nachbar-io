@@ -2,7 +2,7 @@
 // Phase-1 Task G-5: Deterministischer Tagesueberblick fuer den Vorlesen-Button
 // auf /hier-bei-mir.
 //
-// Baut aus den Quartier-Info-Daten (Wetter, NINA, Muell, Events) einen
+// Baut aus Quartier-Info-Daten und externen Warnungen einen
 // zusammenhaengenden, senior-freundlichen Sprechtext. Rein Template-basiert
 // — KEIN LLM, KEINE Halluzinationen. Bei fehlenden Quellen wird explizit
 // gesagt "Dazu habe ich gerade keine Daten", nicht geraten.
@@ -19,23 +19,10 @@
 import type {
   QuartierInfoResponse,
   QuartierWeather,
-  NinaWarning,
-  NinaSeverity,
   PollenData,
   WasteNext,
   LocalEvent,
 } from "@/modules/info-hub/types";
-
-/**
- * Feste Uebersetzungstabelle fuer NINA-Severity-Stufen.
- * Die NINA-API liefert die Labels auf Englisch, wir lesen auf Deutsch vor.
- */
-const SEVERITY_DE: Record<NinaSeverity, string> = {
-  Extreme: "extrem",
-  Severe: "schwer",
-  Moderate: "mittel",
-  Minor: "gering",
-};
 
 /**
  * Formatiert ein ISO-Datum (YYYY-MM-DD) als deutschen Langsatz:
@@ -135,21 +122,6 @@ function isPollenIntensity(value: unknown): boolean {
   );
 }
 
-function warningSentence(nina: NinaWarning[] | null | undefined): string {
-  if (!nina || nina.length === 0) {
-    return "Es liegen gerade keine Warnungen vor.";
-  }
-  // Nur die erste Warnung vorlesen, damit der Brief kompakt bleibt.
-  // Falls mehrere Warnungen existieren, wird das am Ende angehaengt.
-  const first = nina[0];
-  const level = SEVERITY_DE[first.severity];
-  const suffix =
-    nina.length > 1
-      ? ` Es gibt ${nina.length - 1} weitere Warnungen auf der Hier-bei-mir-Seite.`
-      : "";
-  return `Achtung: ${first.headline}. Warnstufe ${level}.${suffix}`;
-}
-
 /**
  * Warnung aus der Banner-Quelle (/api/warnings/*, W6 A4:3).
  * Bewusst strukturell minimal, damit der Voice-Service nicht von der
@@ -220,29 +192,26 @@ function eventSentence(events: LocalEvent[] | null | undefined): string {
  *
  * @param data Die Rohdaten aus `/api/quartier-info`. Darf Partial-leer sein.
  * @param externalWarnings Warnungen aus der Banner-Quelle (W6, A4:3 —
- *        useExternalWarnings). `undefined` = Legacy-Pfad ueber `data.nina`;
- *        `null` = Quelle noch nicht geladen/fehlgeschlagen; Array = vorlesen.
- *        Seiten, die den ExternalWarningBanner rendern, MUESSEN dieselben
- *        Warnungen hier uebergeben, damit Ohr und Auge uebereinstimmen.
+ *        useExternalWarnings). `null` = Quelle noch nicht geladen/fehlgeschlagen;
+ *        Array = vorlesen. Seiten, die den ExternalWarningBanner rendern,
+ *        MUESSEN dieselben Warnungen hier uebergeben, damit Ohr und Auge
+ *        uebereinstimmen.
  * @returns Ein zusammenhaengender Sprechtext. Niemals leer —
  *          bei komplett leeren Daten werden fuenf Fallback-Saetze geliefert.
  */
 export function buildDailyBrief(
   data: Partial<QuartierInfoResponse>,
-  externalWarnings?: SpokenWarning[] | null,
+  externalWarnings: SpokenWarning[] | null,
 ): string {
   const weather = isQuartierWeather(data.weather) ? data.weather : null;
   const pollen = isPollenData(data.pollen) ? data.pollen : null;
-  const nina = Array.isArray(data.nina) ? data.nina : [];
   const wasteNext = Array.isArray(data.waste_next) ? data.waste_next : [];
   const events = Array.isArray(data.events) ? data.events : [];
 
   const parts = [
     weatherSentence(weather),
     pollenSentence(pollen),
-    externalWarnings === undefined
-      ? warningSentence(nina)
-      : externalWarningSentence(externalWarnings),
+    externalWarningSentence(externalWarnings ?? null),
     wasteSentence(wasteNext),
     eventSentence(events),
   ];

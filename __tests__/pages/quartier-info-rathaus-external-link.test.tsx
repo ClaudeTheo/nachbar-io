@@ -92,7 +92,6 @@ const RATHAUS_LINK = {
 const MOCK_DATA = {
   weather: { temp: 18, description: "sonnig", icon: "01d", forecast: [] },
   pollen: null,
-  nina: [],
   waste_next: [],
   events: [],
   oepnv: [],

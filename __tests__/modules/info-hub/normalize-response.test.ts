@@ -12,7 +12,7 @@ describe("normalizeQuartierInfoResponse", () => {
       events: { title: "Kaputt" },
     });
 
-    expect(normalized.nina).toEqual([]);
+    expect(normalized).not.toHaveProperty("nina");
     expect(normalized.waste_next).toEqual([]);
     expect(normalized.rathaus).toEqual([]);
     expect(normalized.oepnv).toEqual([]);
@@ -129,69 +129,6 @@ describe("normalizeQuartierInfoResponse", () => {
             hint: "Ersatzverkehr",
           },
         ],
-      },
-    ]);
-  });
-
-  it("filtert falsch geformte NINA-Warnungen", () => {
-    const normalized = normalizeQuartierInfoResponse({
-      nina: [
-        { id: "warnung-ohne-severity", headline: "Ohne Warnstufe" },
-        { id: "warnung-ohne-headline", severity: "Severe" },
-        {
-          id: "warnung-falsche-severity",
-          severity: "Critical",
-          headline: "Kaputt",
-        },
-        {
-          id: "warnung-1",
-          warning_id: "warning-1",
-          severity: "Severe",
-          headline: "Gewitter im Anmarsch",
-          description: null,
-          sent_at: "2026-05-07T16:00:00Z",
-          expires_at: null,
-        },
-      ],
-    });
-
-    expect(normalized.nina).toEqual([
-      {
-        id: "warnung-1",
-        warning_id: "warning-1",
-        severity: "Severe",
-        headline: "Gewitter im Anmarsch",
-        description: null,
-        sent_at: "2026-05-07T16:00:00Z",
-        expires_at: null,
-      },
-    ]);
-  });
-
-  it("trimmt valide NINA-Warnungs-Datumsstrings mit Rand-Leerzeichen", () => {
-    const normalized = normalizeQuartierInfoResponse({
-      nina: [
-        {
-          id: "warnung-1",
-          warning_id: "warning-1",
-          severity: "Severe",
-          headline: "Gewitter im Anmarsch",
-          description: null,
-          sent_at: "  2026-05-07T16:00:00Z  ",
-          expires_at: null,
-        },
-      ],
-    });
-
-    expect(normalized.nina).toEqual([
-      {
-        id: "warnung-1",
-        warning_id: "warning-1",
-        severity: "Severe",
-        headline: "Gewitter im Anmarsch",
-        description: null,
-        sent_at: "2026-05-07T16:00:00Z",
-        expires_at: null,
       },
     ]);
   });

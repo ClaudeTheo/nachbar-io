@@ -1,5 +1,5 @@
 // Nachbar.io — Quartier-Info-Service
-// Zentralisiert alle Quartier-Informationen (Wetter, Pollen, NINA, Muell, OEPNV etc.).
+// Zentralisiert Quartier-Informationen (Wetter, Pollen, Muell, OEPNV etc.).
 // Laedt Apotheken, Events, OEPNV-Stops und Rathaus-Links dynamisch aus municipal_config.
 
 import type { SupabaseClient } from "@supabase/supabase-js";
@@ -16,7 +16,6 @@ import {
   fetchPollenData,
   isLegacyDefaultPollenRegion,
 } from "@/modules/info-hub/services/pollen-client";
-import { fetchNinaWarnings } from "@/modules/info-hub/services/nina-client";
 import { fetchDepartures } from "@/modules/info-hub/services/oepnv-client";
 import { RATHAUS_LINKS } from "@/modules/info-hub/services/rathaus-links";
 import type {
@@ -168,34 +167,7 @@ export async function getQuartierInfo(
     }
   }
 
-  // 4. NINA-Warnungen — DEPRECATED (W6, A4:3): Diese Pipeline ist fuer alle
-  // per Migration angelegten Quartiere leer (kein quarters.settings.nina_ags
-  // geseedet; Mig 125 schrieb nach municipal_config.features, und der
-  // nina-sync-Cron laeuft wegen einer nicht existenten quarters.active-Spalte
-  // ins Leere). Sichtbare Warnquelle ist der Banner-Pfad /api/warnings/*
-  // (external_warning_cache via bbk_ars); der Vorlesen-Brief nutzt seit W6
-  // dieselbe Quelle (useExternalWarnings -> buildDailyBrief). Das nina-Feld
-  // bleibt vorerst im Response-Shape; Vollentfernung als eigene Cleanup-Welle.
-  let nina = cacheMap.get("nina") as QuartierInfoResponse["nina"] | undefined;
-  if (!nina) {
-    try {
-      const { data: quarterData } = await supabase
-        .from("quarters")
-        .select("settings")
-        .eq("id", quarterId)
-        .single();
-      const ninaAgs = quarterData?.settings?.nina_ags;
-      if (ninaAgs) {
-        nina = await fetchNinaWarnings(ninaAgs);
-      } else {
-        nina = [];
-      }
-    } catch {
-      nina = [];
-    }
-  }
-
-  // 5. Naechste Muellabfuhr aus waste_collection_dates — auf die
+  // 4. Naechste Muellabfuhr aus waste_collection_dates — auf die
   // Sammelgebiete des Quartiers gescoped und ohne abgesagte Termine
   // (W6, A4:2; gleiches Muster wie app/(app)/waste-calendar/page.tsx).
   // Wichtig: /api/quartier-info laeuft mit service_role — das Scoping MUSS
@@ -235,7 +207,7 @@ export async function getQuartierInfo(
     // Muellabfuhr ist optional
   }
 
-  // 6. OEPNV — aus Cache oder Live-Fetch mit dynamischen Haltestellen
+  // 5. OEPNV — aus Cache oder Live-Fetch mit dynamischen Haltestellen
   let oepnv = cacheMap.get("oepnv") as OepnvStop[] | undefined;
   if (!oepnv) {
     try {
@@ -254,10 +226,9 @@ export async function getQuartierInfo(
     }
   }
 
-  // 7. Response zusammenbauen
+  // 6. Response zusammenbauen
   return {
     weather: weather || null,
-    nina: nina || [],
     pollen: pollen || null,
     waste_next: wasteNext,
     rathaus: rathausLinks,

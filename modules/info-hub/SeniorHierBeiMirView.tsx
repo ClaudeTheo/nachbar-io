@@ -65,7 +65,7 @@ export interface SeniorHierBeiMirViewProps {
    * Warnungen aus useExternalWarnings (W6, A4:3) — gehen an Banner UND
    * Vorlesen-Brief, damit Ohr und Auge aus derselben Datenmenge sprechen.
    * Bewusst Pflicht-Prop: ein Consumer, der ihn vergisst, liesse Banner
-   * (Self-Fetch) und Brief (Legacy data.nina) wieder auseinanderlaufen.
+   * (Self-Fetch) und Brief wieder auseinanderlaufen.
    */
   warnings: ExternalWarningItem[] | null;
 }

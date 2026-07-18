@@ -3,7 +3,7 @@
 // components/warnings/use-external-warnings.ts
 // W6 (A4:3): Gemeinsame Warnquelle fuer den ExternalWarningBanner UND den
 // Vorlesen-Tagesbrief (buildDailyBrief). Vorher hatte nur der Banner diese
-// Pipeline (/api/warnings/*); der Brief las die tote data.nina-Pipeline —
+// Pipeline (/api/warnings/*); der Brief las zuvor eine zweite Warnpipeline —
 // Ohr (Vorlesen) und Auge (Banner) konnten sich widersprechen.
 //
 // Fetch-, Normalisierungs- und Sortierlogik stammen 1:1 aus dem Banner

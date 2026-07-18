@@ -20,9 +20,6 @@ vi.mock("@/modules/info-hub/services/pollen-client", () => ({
     ),
 }));
 
-vi.mock("@/modules/info-hub/services/nina-client", () => ({
-  fetchNinaWarnings: vi.fn().mockResolvedValue([]),
-}));
 
 vi.mock("@/modules/info-hub/services/oepnv-client", () => ({
   fetchDepartures: vi.fn().mockResolvedValue({

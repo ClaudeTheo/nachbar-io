@@ -15,19 +15,6 @@ export interface QuartierWeather {
   forecast: QuartierWeatherDay[];
 }
 
-// NINA-Warnungen (Bundesamt fuer Bevoelkerungsschutz)
-export type NinaSeverity = "Extreme" | "Severe" | "Moderate" | "Minor";
-
-export interface NinaWarning {
-  id: string;
-  warning_id: string;
-  severity: NinaSeverity;
-  headline: string;
-  description: string | null;
-  sent_at: string;
-  expires_at: string | null;
-}
-
 // Pollenflug (DWD)
 export type PollenIntensity = 0 | 0.5 | 1 | 1.5 | 2 | 2.5 | 3;
 
@@ -92,7 +79,6 @@ export interface LocalEvent {
 // Gesamt-Response der API
 export interface QuartierInfoResponse {
   weather: QuartierWeather | null;
-  nina: NinaWarning[];
   pollen: PollenData | null;
   waste_next: WasteNext[];
   rathaus: RathausLink[];

@@ -7,7 +7,7 @@
 > Nach jeder Migration mit Policy-/Trigger-/Grant-Bezug neu generieren und einchecken —
 > der Git-Diff dieser Datei IST das Security-Review-Artefakt.
 
-Kennzahlen: **567 Policies** · 208 public-Tabellen (1 OHNE RLS) · 36 Trigger · 628 Grant-Zeilen
+Kennzahlen: **562 Policies** · 208 public-Tabellen (1 OHNE RLS) · 36 Trigger · 628 Grant-Zeilen
 
 ## ⚠️ Tabellen ohne RLS (public)
 
@@ -157,7 +157,6 @@ Kennzahlen: **567 Policies** · 208 public-Tabellen (1 OHNE RLS) · 36 Trigger �
 | public.civic_appointments | civic_appointments_select | SELECT | public | (auth.uid() IS NOT NULL) |
 | public.civic_appointments | civic_appointments_update | UPDATE | public | (auth.uid() IS NOT NULL) |
 | public.civic_audit_log | civic_audit_log_select | SELECT | public | (org_id IN ( SELECT civic_members.org_id FROM civic_members WHERE (civic_members.user_id = auth.uid()))) |
-| public.civic_audit_log | civic_audit_log_service_insert | INSERT | public |  | true |
 | public.civic_document_requests | civic_document_requests_insert | INSERT | public |  | (auth.uid() IS NOT NULL) |
 | public.civic_document_requests | civic_document_requests_select | SELECT | public | (auth.uid() IS NOT NULL) |
 | public.civic_document_requests | civic_document_requests_update | UPDATE | public | (auth.uid() IS NOT NULL) |
@@ -165,17 +164,14 @@ Kennzahlen: **567 Policies** · 208 public-Tabellen (1 OHNE RLS) · 36 Trigger �
 | public.civic_events | civic_events_select | SELECT | public | (auth.uid() IS NOT NULL) |
 | public.civic_members | civic_members_select_org | SELECT | public | (org_id IN ( SELECT civic_members_1.org_id FROM civic_members civic_members_1 WHERE ((civic_members_1.user_id = auth.uid()) AND (civic_members_1.role = 'civic_a |
 | public.civic_members | civic_members_select_own | SELECT | public | (user_id = auth.uid()) |
-| public.civic_members | civic_members_service_insert | INSERT | public |  | true |
 | public.civic_message_attachments | citizen_read_own_attachments | SELECT | public | (EXISTS ( SELECT 1 FROM civic_messages cm WHERE ((cm.id = civic_message_attachments.message_id) AND (cm.citizen_user_id = auth.uid())))) |
 | public.civic_message_attachments | service_insert_attachments | INSERT | public |  | (auth.role() = 'service_role'::text) |
 | public.civic_message_attachments | staff_read_org_attachments | SELECT | public | (EXISTS ( SELECT 1 FROM (civic_messages cm JOIN civic_members cmem ON (((cmem.org_id = cm.org_id) AND (cmem.user_id = auth.uid())))) WHERE (cm.id = civic_messag |
 | public.civic_messages | civic_messages_citizen_insert | INSERT | public |  | (citizen_user_id = auth.uid()) |
 | public.civic_messages | civic_messages_citizen_select | SELECT | public | (citizen_user_id = auth.uid()) |
-| public.civic_messages | civic_messages_service_insert | INSERT | public |  | true |
 | public.civic_messages | civic_messages_staff_select | SELECT | public | (org_id IN ( SELECT civic_members.org_id FROM civic_members WHERE (civic_members.user_id = auth.uid()))) |
 | public.civic_messages | civic_messages_staff_update | UPDATE | public | (org_id IN ( SELECT civic_members.org_id FROM civic_members WHERE (civic_members.user_id = auth.uid()))) | (org_id IN ( SELECT civic_members.org_id FROM civic_members WHERE (civic_members.user_id = auth.uid()))) |
 | public.civic_organizations | civic_org_select | SELECT | public | (id IN ( SELECT civic_members.org_id FROM civic_members WHERE (civic_members.user_id = auth.uid()))) |
-| public.civic_organizations | civic_org_service_insert | INSERT | public |  | true |
 | public.civic_organizations | civic_org_update | UPDATE | public | (id IN ( SELECT civic_members.org_id FROM civic_members WHERE ((civic_members.user_id = auth.uid()) AND (civic_members.role = 'civic_admin'::text)))) |
 | public.civic_survey_options | civic_survey_options_insert | INSERT | public |  | (auth.uid() IS NOT NULL) |
 | public.civic_survey_options | civic_survey_options_select | SELECT | public | (auth.uid() IS NOT NULL) |
@@ -395,7 +391,7 @@ Kennzahlen: **567 Policies** · 208 public-Tabellen (1 OHNE RLS) · 36 Trigger �
 | public.neighbor_connections | nc_update | UPDATE | public | (is_verified_member() AND (target_id = auth.uid())) |
 | public.neighbor_invitations | neighbor_invitations_admin_read | SELECT | public | (EXISTS ( SELECT 1 FROM users WHERE ((users.id = auth.uid()) AND (users.is_admin = true)))) |
 | public.neighbor_invitations | neighbor_invitations_own_read | SELECT | public | (auth.uid() = inviter_id) |
-| public.neighbor_invitations | neighbor_invitations_update | UPDATE | public | ((inviter_id = auth.uid()) OR is_admin()) |
+| public.neighbor_invitations | neighbor_invitations_update | UPDATE | authenticated | ((inviter_id = auth.uid()) OR is_admin()) | ((inviter_id = auth.uid()) OR is_admin()) |
 | public.neighbor_invitations | neighbor_invitations_verified_insert | INSERT | public |  | ((auth.uid() = inviter_id) AND (EXISTS ( SELECT 1 FROM users WHERE ((users.id = auth.uid()) AND (users.trust_level = ANY (ARRAY['verified'::text, 'trusted'::tex |
 | public.neighbor_vouches | vouches_insert | INSERT | public |  | ((voucher_id = auth.uid()) AND (EXISTS ( SELECT 1 FROM users WHERE ((users.id = auth.uid()) AND (users.trust_level = ANY (ARRAY['verified'::text, 'trusted'::tex |
 | public.neighbor_vouches | vouches_read | SELECT | public | ((voucher_id = auth.uid()) OR (target_id = auth.uid()) OR is_super_admin()) |
@@ -429,7 +425,7 @@ Kennzahlen: **567 Policies** · 208 public-Tabellen (1 OHNE RLS) · 36 Trigger �
 | public.pflege_resident_assignments | pra_update_admin | UPDATE | public | (org_id IN ( SELECT om.org_id FROM org_members om WHERE ((om.user_id = auth.uid()) AND (om.role = 'admin'::org_member_role)))) |
 | public.plus_trial_grants | trial_grants_instructor | SELECT | public | (enrollment_id IN ( SELECT pe.id FROM (prevention_enrollments pe JOIN prevention_courses pc ON ((pc.id = pe.course_id))) WHERE (pc.instructor_id = auth.uid()))) |
 | public.plus_trial_grants | trial_grants_own | SELECT | public | (caregiver_user_id = auth.uid()) |
-| public.points_log | points_log_insert_service | INSERT | public |  | true |
+| public.points_log | points_log_insert_service | INSERT | authenticated |  | (user_id = auth.uid()) |
 | public.points_log | points_log_select_own | SELECT | public | (auth.uid() = user_id) |
 | public.poll_options | poll_options_create | INSERT | public |  | (is_verified_member() AND (EXISTS ( SELECT 1 FROM polls WHERE ((polls.id = poll_options.poll_id) AND (polls.user_id = auth.uid()))))) |
 | public.poll_options | poll_options_read | SELECT | public | is_verified_member() |
@@ -467,6 +463,7 @@ Kennzahlen: **567 Policies** · 208 public-Tabellen (1 OHNE RLS) · 36 Trigger �
 | public.quartier_info_cache | quartier_info_cache_select | SELECT | authenticated | true |
 | public.recall_reminders | recall_doctor_own | ALL | public | (doctor_id = auth.uid()) |
 | public.reputation_points | reputation_points_admin_read | SELECT | public | (EXISTS ( SELECT 1 FROM users WHERE ((users.id = auth.uid()) AND (users.is_admin = true)))) |
+| public.reputation_points | reputation_points_insert | INSERT | authenticated |  | (user_id = auth.uid()) |
 | public.reputation_points | reputation_points_own_read | SELECT | public | (auth.uid() = user_id) |
 | public.retention_policies | service_role_only | ALL | public | (auth.role() = 'service_role'::text) |
 | public.security_events | sec_events_admin_read | SELECT | public | (auth.uid() IN ( SELECT org_members.user_id FROM org_members WHERE (org_members.role = 'admin'::org_member_role))) |
@@ -502,7 +499,7 @@ Kennzahlen: **567 Policies** · 208 public-Tabellen (1 OHNE RLS) · 36 Trigger �
 | public.tip_reviews | tip_reviews_delete | DELETE | public | (user_id = auth.uid()) |
 | public.tip_reviews | tip_reviews_insert | INSERT | public |  | ((user_id = auth.uid()) AND (EXISTS ( SELECT 1 FROM auth.users u WHERE ((u.id = auth.uid()) AND (u.created_at < (now() - '7 days'::interval)))))) |
 | public.tip_reviews | tip_reviews_read | SELECT | public | true |
-| public.user_badges | user_badges_insert_service | INSERT | public |  | true |
+| public.user_badges | user_badges_insert_service | INSERT | authenticated |  | (user_id = auth.uid()) |
 | public.user_badges | user_badges_select_all | SELECT | public | true |
 | public.user_blocks | user_blocks_manage_own | ALL | public | (auth.uid() = blocker_id) |
 | public.user_blocks | user_blocks_see_blocked | SELECT | public | (auth.uid() = blocked_id) |
@@ -519,7 +516,7 @@ Kennzahlen: **567 Policies** · 208 public-Tabellen (1 OHNE RLS) · 36 Trigger �
 | public.user_memory_facts | user_own_facts_insert | INSERT | public |  | ((auth.uid() = user_id) OR (auth.uid() = source_user_id)) |
 | public.user_memory_facts | user_own_facts_select | SELECT | public | (auth.uid() = user_id) |
 | public.user_memory_facts | user_own_facts_update | UPDATE | public | (auth.uid() = user_id) |
-| public.users | users_insert | INSERT | public |  | (id = auth.uid()) |
+| public.users | users_insert | INSERT | authenticated |  | (id = auth.uid()) |
 | public.users | users_quarter_select | SELECT | public | ((id = auth.uid()) OR is_super_admin() OR is_same_quarter_user(id)) |
 | public.users | users_read_own | SELECT | public | (id = auth.uid()) |
 | public.users | users_update_own | UPDATE | public | (id = auth.uid()) |
@@ -536,8 +533,6 @@ Kennzahlen: **567 Policies** · 208 public-Tabellen (1 OHNE RLS) · 36 Trigger �
 | public.video_calls | video_calls_update_participants | UPDATE | public | ((auth.uid() = caller_id) OR (auth.uid() = callee_id)) | ((auth.uid() = caller_id) OR (auth.uid() = callee_id)) |
 | public.video_credits | video_credits_owner_select | SELECT | public | (auth.uid() = doctor_id) |
 | public.warning_cache | warning_cache_select | SELECT | public | ((quarter_id IS NULL) OR (quarter_id = ( SELECT get_user_quarter_id() AS get_user_quarter_id)) OR (EXISTS ( SELECT 1 FROM users WHERE ((users.id = auth.uid()) A |
-| public.warning_cache | warning_cache_service_delete | DELETE | public | true |
-| public.warning_cache | warning_cache_service_insert | INSERT | public |  | true |
 | public.waste_collection_areas | wca_admin | ALL | authenticated | (EXISTS ( SELECT 1 FROM users WHERE ((users.id = auth.uid()) AND (users.role = 'admin'::text)))) |
 | public.waste_collection_areas | wca_read | SELECT | authenticated | true |
 | public.waste_collection_areas | wca_service | ALL | service_role | true | true |
@@ -557,13 +552,13 @@ Kennzahlen: **567 Policies** · 208 public-Tabellen (1 OHNE RLS) · 36 Trigger �
 | public.youth_badges | youth_badges_delete_service_only | DELETE | service_role | true |
 | public.youth_badges | youth_badges_insert_service_only | INSERT | service_role |  | true |
 | public.youth_badges | youth_badges_select_authenticated | SELECT | authenticated | true |
-| public.youth_earned_badges | youth_earned_badges_insert_service | INSERT | public |  | true |
+| public.youth_earned_badges | youth_earned_badges_insert_service | INSERT | authenticated |  | (user_id = auth.uid()) |
 | public.youth_earned_badges | youth_earned_badges_select_own | SELECT | public | (auth.uid() = user_id) |
 | public.youth_guardian_consents | youth_consents_insert_own | INSERT | public |  | (auth.uid() = youth_user_id) |
 | public.youth_guardian_consents | youth_consents_select_own | SELECT | public | (auth.uid() = youth_user_id) |
 | public.youth_moderation_log | youth_moderation_select_org | SELECT | public | ((moderator_id = auth.uid()) OR (EXISTS ( SELECT 1 FROM org_members om WHERE ((om.user_id = auth.uid()) AND (om.role = 'admin'::org_member_role))))) |
 | public.youth_points_ledger | youth_points_select_own | SELECT | public | (auth.uid() = user_id) |
-| public.youth_profiles | youth_profiles_insert_service | INSERT | public |  | true |
+| public.youth_profiles | youth_profiles_insert_service | INSERT | authenticated |  | (user_id = auth.uid()) |
 | public.youth_profiles | youth_profiles_select_org | SELECT | public | (EXISTS ( SELECT 1 FROM org_members om WHERE ((om.user_id = auth.uid()) AND (om.role = ANY (ARRAY['admin'::org_member_role, 'viewer'::org_member_role])) AND (yo |
 | public.youth_profiles | youth_profiles_select_own | SELECT | public | (auth.uid() = user_id) |
 | public.youth_profiles | youth_profiles_update_own | UPDATE | public | (auth.uid() = user_id) | (auth.uid() = user_id) |
@@ -626,7 +621,7 @@ Kennzahlen: **567 Policies** · 208 public-Tabellen (1 OHNE RLS) · 36 Trigger �
 | public.tip_confirmations | trigger_tip_confirmation_count | DELETE,INSERT | AFTER |
 | public.user_memory_facts | trigger_memory_facts_updated_at | UPDATE | BEFORE |
 | public.users | trg_users_update_restrictions | UPDATE | BEFORE |
-| public.users | trigger_enforce_user_defaults | INSERT | BEFORE |
+| public.users | trigger_enforce_user_insert_restrictions | INSERT | BEFORE |
 | public.youth_profiles | trg_youth_profiles_update_restrictions | UPDATE | BEFORE |
 | public.youth_profiles | youth_profiles_updated_at | UPDATE | BEFORE |
 

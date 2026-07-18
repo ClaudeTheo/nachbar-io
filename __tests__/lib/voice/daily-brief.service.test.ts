@@ -2,11 +2,13 @@
 // Phase-1 Task G-5: Unit-Tests fuer den deterministischen Tagesueberblick.
 
 import { describe, it, expect } from "vitest";
-import { buildDailyBrief } from "@/modules/voice/services/daily-brief.service";
+import {
+  buildDailyBrief,
+  type SpokenWarning,
+} from "@/modules/voice/services/daily-brief.service";
 import type {
   QuartierInfoResponse,
   QuartierWeather,
-  NinaWarning,
   PollenData,
   WasteNext,
   LocalEvent,
@@ -21,15 +23,12 @@ const fullWeather: QuartierWeather = {
   forecast: [],
 };
 
-const fullWarning: NinaWarning = {
-  id: "w1",
-  warning_id: "w1",
-  severity: "Severe",
+const fullWarning: SpokenWarning = {
+  severity: "severe",
   headline: "Gewitter im Anmarsch",
-  description: null,
-  sent_at: "2026-04-11T10:00:00Z",
-  expires_at: null,
 };
+
+const fullWarnings: SpokenWarning[] = [fullWarning];
 
 const fullWaste: WasteNext = {
   date: "2026-04-14",
@@ -56,7 +55,6 @@ const fullPollen: PollenData = {
 
 const fullPayload: Partial<QuartierInfoResponse> = {
   weather: fullWeather,
-  nina: [fullWarning],
   pollen: fullPollen,
   waste_next: [fullWaste],
   events: [fullEvent],
@@ -65,34 +63,34 @@ const fullPayload: Partial<QuartierInfoResponse> = {
 describe("buildDailyBrief", () => {
   describe("mit vollstaendigen Daten", () => {
     it("enthaelt Wetter mit Temperatur und Beschreibung", () => {
-      const brief = buildDailyBrief(fullPayload);
+      const brief = buildDailyBrief(fullPayload, fullWarnings);
       expect(brief).toContain("sonnig");
       expect(brief).toContain("18 Grad");
     });
 
-    it("enthaelt NINA-Warnung mit Headline und Warnstufe", () => {
-      const brief = buildDailyBrief(fullPayload);
+    it("enthaelt externe Warnung mit Headline und Warnstufe", () => {
+      const brief = buildDailyBrief(fullPayload, fullWarnings);
       expect(brief).toContain("Achtung");
       expect(brief).toContain("Gewitter im Anmarsch");
       expect(brief).toContain("schwer");
     });
 
     it("enthaelt Muellabfuhr-Datum im deutschen Langformat", () => {
-      const brief = buildDailyBrief(fullPayload);
+      const brief = buildDailyBrief(fullPayload, fullWarnings);
       expect(brief).toContain("Restmüll");
       // formatWasteDate rendert "Dienstag, 14. April" fuer 2026-04-14
       expect(brief).toMatch(/14\. April/);
     });
 
     it("enthaelt Veranstaltung mit Titel und Zeit", () => {
-      const brief = buildDailyBrief(fullPayload);
+      const brief = buildDailyBrief(fullPayload, fullWarnings);
       expect(brief).toContain("Wochenmarkt");
       expect(brief).toContain("Mi und Sa, 08 bis 12 Uhr");
       expect(brief).toContain("Rathausplatz");
     });
 
     it("trennt die fuenf Abschnitte mit doppeltem Zeilenumbruch", () => {
-      const brief = buildDailyBrief(fullPayload);
+      const brief = buildDailyBrief(fullPayload, fullWarnings);
       // Vier Trennstellen zwischen fuenf Saetzen
       // (Wetter, Pollen, Warnungen, Muell, Veranstaltung)
       const separators = brief.split("\n\n").length - 1;
@@ -100,32 +98,38 @@ describe("buildDailyBrief", () => {
     });
 
     it("nennt bei Pollenflug den staerksten Allergen mit Stufe", () => {
-      const brief = buildDailyBrief(fullPayload);
+      const brief = buildDailyBrief(fullPayload, fullWarnings);
       // Birke hat today=2.5 -> Stufe "hoch"
       expect(brief).toContain("Birke");
       expect(brief).toContain("hoch");
     });
 
     it("ist deterministisch — zwei Aufrufe liefern denselben Text", () => {
-      const a = buildDailyBrief(fullPayload);
-      const b = buildDailyBrief(fullPayload);
+      const a = buildDailyBrief(fullPayload, fullWarnings);
+      const b = buildDailyBrief(fullPayload, fullWarnings);
       expect(a).toBe(b);
     });
   });
 
   describe("Fallback-Verhalten bei fehlenden Quellen", () => {
     it("sagt explizit, dass Wetterdaten fehlen, wenn weather=null", () => {
-      const brief = buildDailyBrief({ ...fullPayload, weather: null });
+      const brief = buildDailyBrief(
+        { ...fullPayload, weather: null },
+        fullWarnings,
+      );
       expect(brief).toContain("Zum Wetter habe ich gerade keine Daten");
       // Und halluziniert KEINE Temperatur
       expect(brief).not.toMatch(/\d+ Grad/);
     });
 
     it("sagt explizit, dass Wetterdaten fehlen, wenn temp=null", () => {
-      const brief = buildDailyBrief({
-        ...fullPayload,
-        weather: { ...fullWeather, temp: null },
-      });
+      const brief = buildDailyBrief(
+        {
+          ...fullPayload,
+          weather: { ...fullWeather, temp: null },
+        },
+        fullWarnings,
+      );
       expect(brief).toContain("Zum Wetter habe ich gerade keine Daten");
     });
 
@@ -136,7 +140,7 @@ describe("buildDailyBrief", () => {
         pollen: { pollen: ["Birke"] },
       } as unknown as Partial<QuartierInfoResponse>;
 
-      const brief = buildDailyBrief(malformedPayload);
+      const brief = buildDailyBrief(malformedPayload, fullWarnings);
 
       expect(brief).toContain("Zum Wetter habe ich gerade keine Daten");
       expect(brief).toContain("Zum Pollenflug habe ich gerade keine Daten");
@@ -145,58 +149,60 @@ describe("buildDailyBrief", () => {
       expect(brief).not.toContain("kaum Pollenflug");
     });
 
-    it("sagt 'keine Warnungen' bei leerem NINA-Array", () => {
-      const brief = buildDailyBrief({ ...fullPayload, nina: [] });
+    it("sagt 'keine Warnungen' bei leerer externer Warnliste", () => {
+      const brief = buildDailyBrief(fullPayload, []);
       expect(brief).toContain("Es liegen gerade keine Warnungen vor");
       expect(brief).not.toContain("Achtung");
     });
 
     it("erwaehnt die Anzahl zusaetzlicher Warnungen, wenn >1", () => {
-      const secondWarning: NinaWarning = {
-        ...fullWarning,
-        id: "w2",
-        warning_id: "w2",
+      const secondWarning: SpokenWarning = {
+        severity: "moderate",
         headline: "Hochwasser",
       };
-      const brief = buildDailyBrief({
-        ...fullPayload,
-        nina: [fullWarning, secondWarning],
-      });
-      // Erste Warnung im Text, Hinweis auf 1 weitere Warnung
+      const brief = buildDailyBrief(fullPayload, [fullWarning, secondWarning]);
+      // Erste Warnung im Text, Hinweis auf eine weitere Warnung
       expect(brief).toContain("Gewitter im Anmarsch");
-      expect(brief).toContain("1 weitere Warnung");
+      expect(brief).toContain("eine weitere Warnung");
     });
 
     it("sagt explizit, dass Muelldaten fehlen, wenn waste_next leer", () => {
-      const brief = buildDailyBrief({ ...fullPayload, waste_next: [] });
+      const brief = buildDailyBrief(
+        { ...fullPayload, waste_next: [] },
+        fullWarnings,
+      );
       expect(brief).toContain("Zur Muellabfuhr habe ich gerade keine Daten");
     });
 
     it("sagt explizit, dass Event-Daten fehlen, wenn events leer", () => {
-      const brief = buildDailyBrief({ ...fullPayload, events: [] });
+      const brief = buildDailyBrief(
+        { ...fullPayload, events: [] },
+        fullWarnings,
+      );
       expect(brief).toContain("Zu Veranstaltungen habe ich gerade keine Daten");
     });
 
-    it("behandelt Nicht-Array-Werte fuer Warnungen, Muell und Events wie fehlende Quellen", () => {
+    it("behandelt Nicht-Array-Werte fuer Muell und Events wie fehlende Quellen", () => {
       const malformedPayload = {
         ...fullPayload,
-        nina: { headline: "Kaputte Warnliste" },
         waste_next: { label: "Kaputter Muellwert" },
         events: { title: "Kaputter Terminwert" },
       } as unknown as Partial<QuartierInfoResponse>;
 
-      const brief = buildDailyBrief(malformedPayload);
+      const brief = buildDailyBrief(malformedPayload, []);
 
       expect(brief).toContain("Es liegen gerade keine Warnungen vor");
       expect(brief).toContain("Zur Muellabfuhr habe ich gerade keine Daten");
       expect(brief).toContain("Zu Veranstaltungen habe ich gerade keine Daten");
-      expect(brief).not.toContain("Kaputte Warnliste");
       expect(brief).not.toContain("Kaputter Muellwert");
       expect(brief).not.toContain("Kaputter Terminwert");
     });
 
     it("sagt explizit, dass Pollendaten fehlen, wenn pollen=null", () => {
-      const brief = buildDailyBrief({ ...fullPayload, pollen: null });
+      const brief = buildDailyBrief(
+        { ...fullPayload, pollen: null },
+        fullWarnings,
+      );
       expect(brief).toContain("Zum Pollenflug habe ich gerade keine Daten");
       expect(brief).not.toContain("Birke");
     });
@@ -213,7 +219,7 @@ describe("buildDailyBrief", () => {
         },
       } as unknown as Partial<QuartierInfoResponse>;
 
-      const brief = buildDailyBrief(malformedPayload);
+      const brief = buildDailyBrief(malformedPayload, fullWarnings);
 
       expect(brief).toContain("Zum Pollenflug habe ich gerade keine Daten");
       expect(brief).not.toContain("Birke");
@@ -228,7 +234,10 @@ describe("buildDailyBrief", () => {
           Graeser: { today: 0, tomorrow: 0 },
         },
       };
-      const brief = buildDailyBrief({ ...fullPayload, pollen: zeroPollen });
+      const brief = buildDailyBrief(
+        { ...fullPayload, pollen: zeroPollen },
+        fullWarnings,
+      );
       expect(brief).toContain("kaum Pollenflug");
     });
 
@@ -240,7 +249,10 @@ describe("buildDailyBrief", () => {
           Graeser: { today: 0.5, tomorrow: 0.5 },
         },
       };
-      const brief = buildDailyBrief({ ...fullPayload, pollen: lowPollen });
+      const brief = buildDailyBrief(
+        { ...fullPayload, pollen: lowPollen },
+        fullWarnings,
+      );
       expect(brief).toContain("nur gering");
       // Kein Einzel-Allergen-Name, weil unter Schwelle
       expect(brief).not.toMatch(/Birke.*Stufe/);
@@ -253,7 +265,10 @@ describe("buildDailyBrief", () => {
           Graeser: { today: 2, tomorrow: 2 },
         },
       };
-      const brief = buildDailyBrief({ ...fullPayload, pollen: midPollen });
+      const brief = buildDailyBrief(
+        { ...fullPayload, pollen: midPollen },
+        fullWarnings,
+      );
       expect(brief).toContain("Graeser");
       expect(brief).toContain("mittel");
       expect(brief).not.toContain("hoch");
@@ -262,7 +277,7 @@ describe("buildDailyBrief", () => {
 
   describe("komplett leere Eingabe", () => {
     it("liefert fuenf Fallback-Saetze, nie einen leeren String", () => {
-      const brief = buildDailyBrief({});
+      const brief = buildDailyBrief({}, []);
       expect(brief).toContain("Zum Wetter habe ich gerade keine Daten");
       expect(brief).toContain("Zum Pollenflug habe ich gerade keine Daten");
       expect(brief).toContain("Es liegen gerade keine Warnungen vor");
@@ -272,7 +287,7 @@ describe("buildDailyBrief", () => {
     });
 
     it("halluziniert keine Fakten bei leerer Eingabe", () => {
-      const brief = buildDailyBrief({});
+      const brief = buildDailyBrief({}, []);
       // Keine Zahlen fuer Temperatur, keine Datum-Nennung
       expect(brief).not.toMatch(/\d+ Grad/);
       expect(brief).not.toMatch(/Restmüll|Biomüll|Papier/);
@@ -280,22 +295,22 @@ describe("buildDailyBrief", () => {
   });
 
   // W6 (A4:3): Der Brief spricht aus derselben Warnquelle wie der sichtbare
-  // ExternalWarningBanner (/api/warnings/*), nicht mehr aus der toten
-  // data.nina-Pipeline — Ohr und Auge duerfen sich nicht widersprechen.
+  // ExternalWarningBanner (/api/warnings/*) — Ohr und Auge duerfen sich nicht
+  // widersprechen.
   describe("externe Warnquelle (W6, A4:3 — Ohr = Auge mit dem Warn-Banner)", () => {
     const bannerWarning = {
       headline: "Sturmboeen im Landkreis",
       severity: "severe" as const,
     };
 
-    it("nutzt die uebergebenen Banner-Warnungen statt data.nina", () => {
-      const brief = buildDailyBrief({ ...fullPayload, nina: [] }, [bannerWarning]);
+    it("nutzt die uebergebenen Banner-Warnungen", () => {
+      const brief = buildDailyBrief(fullPayload, [bannerWarning]);
       expect(brief).toContain("Achtung: Sturmboeen im Landkreis.");
       expect(brief).toContain("Warnstufe schwer");
       expect(brief).not.toContain("Es liegen gerade keine Warnungen vor");
     });
 
-    it("ignoriert data.nina, wenn die Banner-Quelle leer ist", () => {
+    it("meldet keine Warnungen, wenn die Banner-Quelle leer ist", () => {
       const brief = buildDailyBrief(fullPayload, []);
       expect(brief).toContain("Es liegen gerade keine Warnungen vor");
       expect(brief).not.toContain("Gewitter im Anmarsch");
@@ -347,10 +362,5 @@ describe("buildDailyBrief", () => {
       expect(brief).toContain("Es gibt 2 weitere Warnungen.");
     });
 
-    it("ohne zweiten Parameter bleibt der Legacy-Pfad (data.nina) unveraendert", () => {
-      const brief = buildDailyBrief(fullPayload);
-      expect(brief).toContain("Gewitter im Anmarsch");
-      expect(brief).toContain("schwer");
-    });
   });
 });

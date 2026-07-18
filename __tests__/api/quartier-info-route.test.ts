@@ -41,7 +41,7 @@ describe("GET /api/quartier-info", () => {
       supabase: {},
     });
     mockCreateClient.mockReturnValue({ from: vi.fn() });
-    mockGetQuartierInfo.mockResolvedValue({ weather: null, nina: [] });
+    mockGetQuartierInfo.mockResolvedValue({ weather: null });
   });
 
   it("blockiert unauthentifizierte Requests bevor der Service-Role-Client erstellt wird", async () => {
@@ -66,10 +66,7 @@ describe("GET /api/quartier-info", () => {
       "test-service-role",
     );
     expect(mockGetQuartierInfo).toHaveBeenCalledWith(expect.anything(), "q-1");
-    await expect(res.json()).resolves.toMatchObject({
-      weather: null,
-      nina: [],
-    });
+    await expect(res.json()).resolves.toMatchObject({ weather: null });
   });
 
   it("normalisiert Listenfelder auf Route-Ebene zu Arrays", async () => {
@@ -91,7 +88,6 @@ describe("GET /api/quartier-info", () => {
     expect(res.status).toBe(200);
     await expect(res.json()).resolves.toEqual({
       weather: null,
-      nina: [],
       pollen: null,
       waste_next: [],
       rathaus: [],
@@ -106,7 +102,6 @@ describe("GET /api/quartier-info", () => {
   it("filtert kaputte Rathaus-Link-Eintraege auf Route-Ebene", async () => {
     mockGetQuartierInfo.mockResolvedValueOnce({
       weather: null,
-      nina: [],
       rathaus: [
         {
           label: "Kaputter Link",
@@ -141,7 +136,6 @@ describe("GET /api/quartier-info", () => {
   it("filtert kaputte Apotheken-Eintraege auf Route-Ebene", async () => {
     mockGetQuartierInfo.mockResolvedValueOnce({
       weather: null,
-      nina: [],
       apotheken: [
         {
           name: "Kaputte Apotheke",
@@ -176,7 +170,6 @@ describe("GET /api/quartier-info", () => {
   it("filtert kaputte Event-Eintraege auf Route-Ebene", async () => {
     mockGetQuartierInfo.mockResolvedValueOnce({
       weather: null,
-      nina: [],
       events: [
         {
           title: "Kaputter Termin",
@@ -214,7 +207,6 @@ describe("GET /api/quartier-info", () => {
   it("filtert kaputte OePNV-Abfahrten auf Route-Ebene", async () => {
     mockGetQuartierInfo.mockResolvedValueOnce({
       weather: null,
-      nina: [],
       oepnv: [
         {
           id: "stop-1",
@@ -273,7 +265,6 @@ describe("GET /api/quartier-info", () => {
           { day: "Do", tempMax: 12, icon: "rain" },
         ],
       },
-      nina: [],
     });
 
     const { GET } = await import("@/app/api/quartier-info/route");
@@ -293,7 +284,6 @@ describe("GET /api/quartier-info", () => {
   it("filtert Polleneintraege mit ungueltigen Intensitaeten auf Route-Ebene", async () => {
     mockGetQuartierInfo.mockResolvedValueOnce({
       weather: null,
-      nina: [],
       pollen: {
         region: "Oberrhein",
         pollen: {

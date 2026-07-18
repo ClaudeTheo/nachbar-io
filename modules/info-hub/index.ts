@@ -5,8 +5,6 @@
 export type {
   QuartierWeatherDay,
   QuartierWeather,
-  NinaSeverity,
-  NinaWarning,
   PollenIntensity,
   PollenEntry,
   PollenData,
@@ -21,9 +19,6 @@ export type {
 
 // Wetter
 export { wmoToIcon, fetchWeather } from "./services/weather-client";
-
-// NINA-Warnungen
-export { fetchNinaWarnings } from "./services/nina-client";
 
 // Pollenflug
 export { fetchPollenData } from "./services/pollen-client";

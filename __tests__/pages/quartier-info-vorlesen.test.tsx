@@ -88,7 +88,6 @@ const MOCK_DATA = {
       },
     },
   },
-  nina: [],
   waste_next: [{ date: "2026-04-15", type: "restmuell", label: "Restmuell" }],
   events: [
     {
@@ -184,7 +183,7 @@ describe("QuartierInfoPage Vorlesen-Integration (G-5)", () => {
       await screen.findByText("Sturmboeen im Landkreis Waldshut"),
     ).toBeInTheDocument();
 
-    // Ohr: der Vorlesen-Text enthaelt dieselbe Warnung — obwohl data.nina leer ist
+    // Ohr: der Vorlesen-Text enthaelt dieselbe Warnung aus der Banner-Quelle.
     await waitFor(() => {
       const ttsText =
         screen.getByTestId("tts-button").getAttribute("data-tts-text") ?? "";
@@ -364,7 +363,6 @@ describe("QuartierInfoPage Vorlesen-Integration (G-5)", () => {
   it("normalisiert kaputte API-Listen vor UI und Vorlesen", async () => {
     const malformedListData = {
       ...MOCK_DATA,
-      nina: { headline: "Kaputte Warnliste" },
       waste_next: { label: "Kaputter Muellwert" },
       rathaus: { label: "Kaputter Rathauswert" },
       oepnv: { id: "Kaputter Haltestellenwert" },

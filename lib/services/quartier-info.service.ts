@@ -1,5 +1,5 @@
 // Nachbar.io — Quartier-Info-Service
-// Zentralisiert alle Quartier-Informationen (Wetter, Pollen, NINA, Muell, OEPNV etc.).
+// Zentralisiert Quartier-Informationen (Wetter, Pollen, Muell, OEPNV etc.).
 // Laedt Apotheken, Events, OEPNV-Stops und Rathaus-Links dynamisch aus municipal_config.
 
 import type { SupabaseClient } from "@supabase/supabase-js";

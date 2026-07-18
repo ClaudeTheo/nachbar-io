@@ -131,7 +131,7 @@ describe("advisor hardening package C migration", () => {
   it("pins all 31 advisor-listed function search paths", () => {
     const sql = readFileSync(upPath, "utf8").toLowerCase();
     const pinnedBlock = sql.match(
-      /pinned_signatures text\[\] := array\[(.*?)\];/s,
+      /pinned_signatures text\[\] := array\[([\s\S]*?)\];/,
     )?.[1];
     const pinned = pinnedBlock?.match(/'public\.[^']+\([^']*\)'/g) ?? [];
 

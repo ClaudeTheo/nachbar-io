@@ -103,7 +103,7 @@ function LostFoundCard({ item }: { item: LostFoundItem }) {
         <p className="mt-1 text-xs text-info-blue">📍 {item.location_hint}</p>
       )}
       <p className="mt-2 text-xs text-muted-foreground">
-        {item.user?.display_name} · {timeAgo}
+        {item.user?.display_name ?? "Nachbar"} · {timeAgo}
       </p>
     </div>
   );

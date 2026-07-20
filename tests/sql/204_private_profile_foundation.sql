@@ -217,4 +217,102 @@ begin
 end
 $test$;
 
+-- GDPR-Regression: Auth-verankerte Consumer duerfen das Loeschen von
+-- public.users nicht ueber die additive Profilprojektion blockieren.
+select set_config('request.jwt.claim.sub', '', true);
+
+insert into public.help_requests (
+  id, user_id, type, category, title, quarter_id
+) values (
+  '20430000-0000-0000-0000-000000000001',
+  '20420000-0000-0000-0000-000000000001',
+  'need',
+  'other',
+  'GDPR Testbeitrag',
+  '20400000-0000-0000-0000-000000000001'
+);
+
+insert into public.board_comments (post_id, user_id, text) values (
+  '20430000-0000-0000-0000-000000000001',
+  '20420000-0000-0000-0000-000000000006',
+  'GDPR Testkommentar'
+);
+
+insert into public.shared_meals (
+  id, user_id, quarter_id, type, title, servings, meal_date
+) values (
+  '20430000-0000-0000-0000-000000000002',
+  '20420000-0000-0000-0000-000000000006',
+  '20400000-0000-0000-0000-000000000001',
+  'portion',
+  'GDPR Testessen',
+  1,
+  current_date
+);
+
+insert into public.community_tips (
+  id, user_id, category, title, description
+) values (
+  '20430000-0000-0000-0000-000000000003',
+  '20420000-0000-0000-0000-000000000001',
+  'other',
+  'GDPR Testtipp',
+  'Bleibt beim Loeschen des Review-Autors erhalten'
+);
+
+insert into public.tip_reviews (tip_id, user_id, rating) values (
+  '20430000-0000-0000-0000-000000000003',
+  '20420000-0000-0000-0000-000000000006',
+  5
+);
+
+select public.gdpr_delete_user(
+  '20420000-0000-0000-0000-000000000006'
+);
+
+do $test$
+declare
+  remaining_count integer;
+begin
+  select count(*) into remaining_count
+  from public.users
+  where id = '20420000-0000-0000-0000-000000000006';
+  if remaining_count <> 0 then
+    raise exception 'gdpr_delete_user hat public.users nicht geloescht';
+  end if;
+
+  select count(*) into remaining_count
+  from public.user_public_profiles
+  where user_id = '20420000-0000-0000-0000-000000000006';
+  if remaining_count <> 1 then
+    raise exception 'Profil muss bis zur anschliessenden auth.users-Loeschung bestehen bleiben';
+  end if;
+end
+$test$;
+
+delete from auth.users
+where id = '20420000-0000-0000-0000-000000000006';
+
+do $test$
+declare
+  remaining_count integer;
+begin
+  select count(*) into remaining_count
+  from public.user_public_profiles
+  where user_id = '20420000-0000-0000-0000-000000000006';
+  if remaining_count <> 0 then
+    raise exception 'auth.users-Loeschung hat die Profilprojektion nicht kaskadiert';
+  end if;
+
+  select
+    (select count(*) from public.board_comments where user_id = '20420000-0000-0000-0000-000000000006')
+    + (select count(*) from public.shared_meals where user_id = '20420000-0000-0000-0000-000000000006')
+    + (select count(*) from public.tip_reviews where user_id = '20420000-0000-0000-0000-000000000006')
+  into remaining_count;
+  if remaining_count <> 0 then
+    raise exception 'Auth-verankerte GDPR-Consumer wurden nicht geloescht: %', remaining_count;
+  end if;
+end
+$test$;
+
 rollback;

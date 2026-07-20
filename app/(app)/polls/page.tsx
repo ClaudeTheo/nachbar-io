@@ -139,7 +139,9 @@ function PollCard({ poll }: { poll: Poll }) {
               {poll.vote_count || 0} Stimmen
             </span>
             <span className="text-xs text-muted-foreground">·</span>
-            <span className="text-xs text-muted-foreground">{poll.user?.display_name}</span>
+            <span className="text-xs text-muted-foreground">
+              {poll.user?.display_name ?? "Nachbar"}
+            </span>
             <span className="text-xs text-muted-foreground">·</span>
             <span className="text-xs text-muted-foreground">{timeAgo}</span>
           </div>

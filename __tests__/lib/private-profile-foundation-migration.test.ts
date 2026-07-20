@@ -22,11 +22,14 @@ const LOCAL_ROLE_SEED = readSql(
   "seeds",
   "00-role-grants.sql",
 );
+const LOCAL_DATA_SEED = readSql("supabase", "seed.sql");
 
 describe("204_private_profile_foundation migration", () => {
   it("legt die teilbare Minimalprojektion an und synchronisiert sie aus users", () => {
     expect(SQL).toContain("create table if not exists public.user_public_profiles");
-    expect(SQL).toMatch(/user_id uuid primary key[\s\S]*references public\.users\s*\(id\)/);
+    expect(SQL).toMatch(
+      /user_id uuid primary key[\s\S]*references auth\.users\s*\(id\) on delete cascade/,
+    );
     expect(SQL).toContain("display_name text");
     expect(SQL).toContain("avatar_url text");
     expect(SQL).toMatch(/insert into public\.user_public_profiles[\s\S]*select[\s\S]*from public\.users/);
@@ -59,6 +62,16 @@ describe("204_private_profile_foundation migration", () => {
     expect(SQL).not.toMatch(/create (or replace )?function[^;]*(search|discover)[^;]*discovery_profiles/);
   });
 
+  it("kann die vier Discovery-Policies idempotent neu anlegen", () => {
+    for (const policy of ["select", "insert", "update", "delete"]) {
+      expect(SQL).toMatch(
+        new RegExp(
+          `drop policy if exists discovery_profiles_owner_${policy}\\s+on public\\.discovery_profiles;\\s+create policy discovery_profiles_owner_${policy}`,
+        ),
+      );
+    }
+  });
+
   it("macht user_id und adult_attested_at fuer Browser-Clients nicht beschreibbar", () => {
     expect(SQL).toContain("create trigger trg_protect_discovery_profile_fields");
     expect(SQL).toContain("new.adult_attested_at := old.adult_attested_at");
@@ -89,6 +102,12 @@ describe("204_private_profile_foundation migration", () => {
     );
     expect(LOCAL_ROLE_SEED).not.toMatch(
       /grant (insert|update) \([^)]*(user_id|adult_attested_at)[^)]*\)\s+on table public\.discovery_profiles to authenticated/,
+    );
+  });
+
+  it("ankert lokale synthetische public.users vor dem Profil-Trigger in auth.users", () => {
+    expect(LOCAL_DATA_SEED).toMatch(
+      /insert into auth\.users \(id\)[\s\S]*generate_series\(1, 18\)[\s\S]*insert into users \(id/,
     );
   });
 

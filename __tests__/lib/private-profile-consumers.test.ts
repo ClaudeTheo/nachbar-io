@@ -28,6 +28,16 @@ const OWN_OR_PRIVILEGED_USERS_READERS = new Set([
   "modules/onboarding/components/OnboardingFlow.tsx", // Eigenes Profil.
 ]);
 
+// Oeffentliche Discovery-/Vertrauensflaechen bleiben bis Welle 5 ueber die
+// bestehende quartier-lesbare users-Policy erreichbar. Sie sind keine private
+// soziale Beziehung und duerfen deshalb nicht auf user_public_profiles wechseln.
+const PUBLIC_DISCOVERY_TRUST_USERS_READERS = new Set([
+  "app/(app)/experts/page.tsx",
+  "app/(app)/experts/[userId]/page.tsx",
+  "app/api/doctors/route.ts",
+  "lib/services/vouching.service.ts",
+]);
+
 function repoPath(path: string): string {
   return relative(ROOT, path).replaceAll("\\", "/");
 }
@@ -41,8 +51,13 @@ function isDeferredOrPrivileged(path: string): boolean {
     file.startsWith("modules/admin/") ||
     file === "components/HouseInfoPanel.tsx" ||
     file === "app/(app)/care/meine-senioren/[seniorId]/edit/page.tsx" ||
+    PUBLIC_DISCOVERY_TRUST_USERS_READERS.has(file) ||
     OWN_OR_PRIVILEGED_USERS_READERS.has(file)
   );
+}
+
+function sourceAt(path: string): string {
+  return readFileSync(join(ROOT, path), "utf8");
 }
 
 describe("private profile consumer sweep", () => {
@@ -77,5 +92,32 @@ describe("private profile consumer sweep", () => {
       });
 
     expect(offenders).toEqual([]);
+  });
+
+  it("begrenzt oeffentliche Discovery-Leser auf die freigegebenen users-Felder", () => {
+    expect(sourceAt("app/(app)/experts/page.tsx")).toContain(
+      "user:users(id, display_name, avatar_url, trust_level, created_at)",
+    );
+    expect(sourceAt("app/(app)/experts/[userId]/page.tsx")).toMatch(
+      /\.from\("users"\)[\s\S]{0,100}?\.select\("id, display_name, trust_level, created_at"\)/,
+    );
+    expect(sourceAt("app/api/doctors/route.ts")).toMatch(
+      /\.from\("users"\)[\s\S]{0,100}?\.select\("id, display_name, avatar_url"\)/,
+    );
+    expect(sourceAt("lib/services/vouching.service.ts")).toContain(
+      "users!inner(id, display_name, trust_level)",
+    );
+  });
+
+  it("zeigt bei RLS-leeren privaten Profilen einen neutralen Autor-Fallback", () => {
+    for (const path of [
+      "app/(app)/marketplace/page.tsx",
+      "app/(app)/leihboerse/page.tsx",
+      "app/(app)/lost-found/page.tsx",
+      "app/(app)/polls/page.tsx",
+      "app/(app)/packages/page.tsx",
+    ]) {
+      expect(sourceAt(path), path).toContain('user?.display_name ?? "Nachbar"');
+    }
   });
 });

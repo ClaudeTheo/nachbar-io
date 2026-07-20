@@ -193,7 +193,7 @@ function LeihboerseCard({ item }: { item: LeihboerseItem }) {
           <div className="mt-2 flex items-center justify-between">
             {item.deposit && <span className="text-sm text-muted-foreground">Pfand: {item.deposit}</span>}
             <span className="ml-auto text-xs text-muted-foreground">
-              {item.user?.display_name} · {timeAgo}
+              {item.user?.display_name ?? "Nachbar"} · {timeAgo}
             </span>
           </div>
         </div>

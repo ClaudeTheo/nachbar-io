@@ -173,8 +173,7 @@ export async function listUnverifiedNeighbors(
       `
       user_id,
       households!inner(quarter_id, street_name, house_number),
-      users!inner(trust_level),
-      public_profile:user_public_profiles!household_members_user_public_profile_fkey(display_name)
+      users!inner(id, display_name, trust_level)
     `,
     )
     .eq("households.quarter_id", quarterId)
@@ -214,15 +213,13 @@ export async function listUnverifiedNeighbors(
         street_name: string;
         house_number: string;
       };
-      const profileRaw = Array.isArray(u.public_profile)
-        ? u.public_profile[0]
-        : u.public_profile;
-      const publicProfile = profileRaw as unknown as {
+      const userRaw = Array.isArray(u.users) ? u.users[0] : u.users;
+      const neighbor = userRaw as unknown as {
         display_name: string;
       } | null;
       return {
         id: u.user_id,
-        display_name: publicProfile?.display_name ?? "Nachbar/in",
+        display_name: neighbor?.display_name ?? "Nachbar/in",
         street: household.street_name,
         house_number: household.house_number,
         vouch_count: countMap.get(u.user_id) ?? 0,

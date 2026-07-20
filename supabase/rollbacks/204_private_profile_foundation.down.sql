@@ -1,4 +1,5 @@
--- Rollback fuer Migration 204_private_profile_foundation.sql
+-- Rollback fuer Migration 204_private_profile_foundation.sql.
+-- Das Entfernen der Profilprojektion entfernt zugleich ihren Lifecycle-FK zu auth.users.
 
 BEGIN;
 

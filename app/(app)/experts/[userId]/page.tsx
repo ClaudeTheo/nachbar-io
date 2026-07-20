@@ -69,7 +69,7 @@ export default function ExpertDetailPage() {
     // Experten-Profil laden
     const { data: userData } = await supabase
       .from("users")
-      .select("*")
+      .select("id, display_name, trust_level, created_at")
       .eq("id", expertUserId)
       .single();
     if (userData) setExpert(userData as User);

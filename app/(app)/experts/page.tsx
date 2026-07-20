@@ -47,7 +47,9 @@ export default function ExpertsPage() {
       // Alle oeffentlichen Skills laden (mit User-Daten)
       const { data: skillsData } = await supabase
         .from("skills")
-        .select("*, user:user_public_profiles!skills_user_public_profile_fkey(user_id, display_name, avatar_url, created_at)")
+        .select(
+          "*, user:users(id, display_name, avatar_url, trust_level, created_at)",
+        )
         .eq("quarter_id", currentQuarter!.id)
         .eq("is_public", true)
         .order("created_at", { ascending: false });
@@ -91,29 +93,30 @@ export default function ExpertsPage() {
       const userMap = new Map<string, ExpertListItem>();
       for (const skill of skillsData) {
         const user = skill.user as unknown as {
-          user_id: string;
+          id: string;
           display_name: string;
           avatar_url: string | null;
+          trust_level: string;
           created_at: string;
         } | null;
         if (!user) continue;
 
-        if (!userMap.has(user.user_id)) {
-          const agg = reviewAgg[user.user_id];
-          userMap.set(user.user_id, {
-            user_id: user.user_id,
+        if (!userMap.has(user.id)) {
+          const agg = reviewAgg[user.id];
+          userMap.set(user.id, {
+            user_id: user.id,
             display_name: user.display_name,
             avatar_url: user.avatar_url,
-            trust_level: "new",
+            trust_level: user.trust_level,
             created_at: user.created_at,
             skills: [],
             avg_rating: agg ? agg.total / agg.count : null,
             review_count: agg?.count ?? 0,
-            endorsement_count: endorsementCounts[user.user_id] ?? 0,
+            endorsement_count: endorsementCounts[user.id] ?? 0,
           });
         }
 
-        userMap.get(user.user_id)!.skills.push(skill as unknown as Skill);
+        userMap.get(user.id)!.skills.push(skill as unknown as Skill);
       }
 
       setExperts(Array.from(userMap.values()));

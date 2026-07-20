@@ -11,7 +11,7 @@ BEGIN;
 -- ---------------------------------------------------------------------------
 
 CREATE TABLE IF NOT EXISTS public.user_public_profiles (
-  user_id uuid PRIMARY KEY REFERENCES public.users(id) ON DELETE CASCADE,
+  user_id uuid PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
   display_name text NOT NULL,
   avatar_url text,
   created_at timestamptz NOT NULL DEFAULT now(),
@@ -290,12 +290,16 @@ CREATE TRIGGER trg_protect_discovery_profile_fields
 
 ALTER TABLE public.discovery_profiles ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS discovery_profiles_owner_select
+  ON public.discovery_profiles;
 CREATE POLICY discovery_profiles_owner_select
   ON public.discovery_profiles
   FOR SELECT
   TO authenticated
   USING (user_id = (SELECT auth.uid()));
 
+DROP POLICY IF EXISTS discovery_profiles_owner_insert
+  ON public.discovery_profiles;
 CREATE POLICY discovery_profiles_owner_insert
   ON public.discovery_profiles
   FOR INSERT
@@ -313,6 +317,8 @@ CREATE POLICY discovery_profiles_owner_insert
     )
   );
 
+DROP POLICY IF EXISTS discovery_profiles_owner_update
+  ON public.discovery_profiles;
 CREATE POLICY discovery_profiles_owner_update
   ON public.discovery_profiles
   FOR UPDATE
@@ -331,6 +337,8 @@ CREATE POLICY discovery_profiles_owner_update
     )
   );
 
+DROP POLICY IF EXISTS discovery_profiles_owner_delete
+  ON public.discovery_profiles;
 CREATE POLICY discovery_profiles_owner_delete
   ON public.discovery_profiles
   FOR DELETE

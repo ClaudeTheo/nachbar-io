@@ -47,6 +47,10 @@ let mockExternalDoctorsResult: { data: unknown; error: unknown } = {
   data: [],
   error: null,
 };
+let mockUsersResult: { data: unknown; error: unknown } = {
+  data: [],
+  error: null,
+};
 
 vi.mock("@/lib/supabase/server", () => ({
   createClient: vi.fn().mockImplementation(() =>
@@ -54,7 +58,13 @@ vi.mock("@/lib/supabase/server", () => ({
       from: vi.fn((table: string) => {
         const chain: Record<string, unknown> = {};
         const result =
-          table === "external_doctors" ? mockExternalDoctorsResult : mockQueryResult;
+          table === "external_doctors"
+            ? mockExternalDoctorsResult
+            : table === "users"
+              ? mockUsersResult
+              : table === "user_public_profiles"
+                ? { data: [], error: null }
+                : mockQueryResult;
         const terminalResult = Promise.resolve(result);
 
         chain.select = vi.fn().mockReturnValue(chain);
@@ -80,6 +90,7 @@ beforeEach(() => {
   vi.clearAllMocks();
   mockQueryResult = { data: [], error: null };
   mockExternalDoctorsResult = { data: [], error: null };
+  mockUsersResult = { data: [], error: null };
 });
 
 describe("GET /api/doctors", () => {
@@ -109,6 +120,40 @@ describe("GET /api/doctors", () => {
     expect(Array.isArray(json)).toBe(true);
     expect(json[0].distance_km).toBeDefined();
     expect(json[0].specialization).toContain("Allgemeinmedizin");
+  });
+
+  it("zeigt unverbundenen Quartiersmitgliedern den echten Arztnamen", async () => {
+    mockQueryResult = {
+      data: [
+        {
+          id: "d-public",
+          user_id: "u-public",
+          specialization: ["Allgemeinmedizin"],
+          visible: true,
+          latitude: 47.5535,
+          longitude: 7.964,
+        },
+      ],
+      error: null,
+    };
+    mockUsersResult = {
+      data: [
+        {
+          id: "u-public",
+          display_name: "Dr. Erika Beispiel",
+          avatar_url: null,
+        },
+      ],
+      error: null,
+    };
+
+    const { GET } = await import("@/app/api/doctors/route");
+    const response = await GET(
+      makeNextRequest("http://localhost/api/doctors") as never,
+    );
+    const json = await response.json();
+
+    expect(json[0].users?.display_name).toBe("Dr. Erika Beispiel");
   });
 
   it("gibt leere Liste zurueck wenn keine Aerzte vorhanden", async () => {

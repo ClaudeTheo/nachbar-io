@@ -197,7 +197,7 @@ function MarketplaceCard({ item }: { item: MarketplaceItem }) {
                   : ""}
             </span>
             <span className="text-xs text-muted-foreground">
-              {item.user?.display_name} · {timeAgo}
+              {item.user?.display_name ?? "Nachbar"} · {timeAgo}
             </span>
           </div>
         </div>

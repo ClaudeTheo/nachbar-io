@@ -1,135 +1,129 @@
-# Claude-Handoff: Welle 3A – privates Profilfundament
+# Claude-Handoff: Welle 3A – privates Profilfundament, Review-Fixes
 
 **Datum:** 2026-07-20
+
 **Branch:** `codex/private-profile-foundation-w3`
+
 **Basis:** `origin/master` bei `07466940781131dde1fce9e1272ea2d080b71621`
-**Status:** lokal implementiert und verifiziert; Draft-PR für Claude-Review; kein Prod-Apply, Merge oder Deploy
+
+**Review-Ausgang:** Claude-Gate auf `e50e555`: 5 P1 + 2 P2
+
+**Status:** alle sieben Funde lokal test-first behoben; Draft-PR #113 für erneutes Claude-Review; kein Supabase-Branch-Test, Prod-Apply, Merge oder Deploy
 
 ## Ergebnis
 
-Welle 3 wurde wegen des codebase-weiten Consumer-Sweeps bewusst in zwei additive Schritte geteilt:
+Migration 204 bleibt additiv und wurde in place korrigiert; es gibt keine Migration 205.
 
-- **Welle 3A (dieser PR):** `user_public_profiles` und private `discovery_profiles`, alle nicht-administrativen Fremdprofil-Consumer auf die minimale Projektion umstellen.
-- **Welle 3B (roter Restschritt):** `HouseInfoPanel`/Kartenstatus auf öffentliches Gebäude-Niveau reduzieren und erst danach die breite `users_quarter_select`-Policy entfernen.
+- `user_public_profiles.user_id` hängt jetzt an `auth.users(id) ON DELETE CASCADE`. Damit überlebt die Projektion den ersten Schritt von `gdpr_delete_user()` (`DELETE public.users`) und endet erst mit dem anschließenden Auth-Lifecycle.
+- Die vier Owner-Policies von `discovery_profiles` haben `DROP POLICY IF EXISTS`-Guards und lassen sich erneut anwenden.
+- Der lokale Seed erzeugt für seine 18 synthetischen `public.users` zuerst passende `auth.users`-Anker, ohne Login-Daten anzulegen.
+- Expertenliste und -detail, Ärzteverzeichnis sowie Vouching verwenden für ihre öffentliche Discovery-/Vertrauensfunktion wieder den bestehenden quartierslesbaren `users`-Pfad mit eng begrenzten Spalten.
+- Experten werden für unverbundene Quartiersmitglieder wieder angezeigt; `trust_level` und Verifizierungsbadge sind echt statt hart auf `new` gesetzt.
+- Marktplatz, Leihbörse, Fundbüro, Umfragen und Paketannahme rendern bei RLS-leerer privater Projektion neutral `Nachbar`.
+- Das S7-Inventar prüft nun zusätzlich `/experts` und `/care/aerzte`; `/marketplace` war bereits enthalten.
 
-Damit bleiben Rollout und Rollback beherrschbar: Dieser PR verengt die bestehende `users`-Policy noch nicht, schafft aber die vollständige Consumer-Voraussetzung dafür.
+## Pflicht-Pre-Check
 
-## Pre-Check und Wiederverwendung
+### Namenspfad
 
-Codebase-weite Suche bestätigte vorhandene Beziehungsmodelle; es wurde keine zweite Kontakt- oder Care-Struktur gebaut:
+Codebase-weit existiert `public.get_display_names(uuid[])` aus Migration 167. Der Helper ist für Vouching nicht geeignet: Er liefert Namen ausschließlich bei akzeptiertem `contact_links`-Kontakt oder gemeinsamer Chat-Gruppe. Noch unverbundene, zu bestätigende Nachbarn würden damit weiterhin namenlos bleiben. Vouching verwendet deshalb keinen neuen RPC, sondern den bereits per `users_quarter_select` quartiersbeschränkten Join.
 
-- angenommene Kontakte: `contact_links` aus Migration 161,
-- Care-Beziehungen: `caregiver_links` aus Migration 071,
-- Familienbeziehungen: `family_child_links` aus Migration 197,
-- Welle-1-Schutz: Migration 203,
-- quartiersfähige Feature-Flags aus Welle 2.
+### GDPR-Topologie
 
-Der Sweep fand deutlich mehr Fremdprofil-Leser als nur Karte und `HouseInfoPanel` (84 eingebettete `users`-Joins, 34 direkte Leser und fünf nicht leer-sichere Darstellungen im initialen RED). Deshalb wurde der im Auftrag erlaubte A/B-Split gewählt.
+`20260529140000_gdpr_deletion_cascade.sql` löscht in `gdpr_delete_user()` zuerst nur `public.users`; der Service löscht `auth.users` danach separat. `board_comments`, `shared_meals` und `tip_reviews` sind Auth-verankerte Consumer. Mit der bisherigen Profil-FK zu `public.users` wurde die Profilzeile zu früh kaskadiert und die neuen Bridge-FKs blockierten die Löschung. Die Verankerung an `auth.users` teilt nun den korrekten Consumer-Lifecycle, ohne 35 einzelne Bridge-FKs umzubauen.
 
-## Diff
+## Diff der Review-Fixes
 
-### Migration 204 und Rollback
+### Migration und Rollback
 
-`supabase/migrations/204_private_profile_foundation.sql` führt additiv ein:
+- `supabase/migrations/204_private_profile_foundation.sql`
+  - Profil-FK: `auth.users(id) ON DELETE CASCADE`
+  - vier idempotente Discovery-Policy-Guards
+  - RLS, GRANTs, `adult_attested_at`, Trigger und private Beziehungsprojektion ansonsten unverändert
+- `supabase/rollbacks/204_private_profile_foundation.down.sql`
+  - bestehender atomarer Drop entfernt den Auth-Lifecycle-FK zusammen mit der Projektion
+- `supabase/seed.sql`
+  - lokale synthetische Auth-Anker vor den 18 Public-User-Zeilen
+- `tests/sql/204_private_profile_foundation.sql`
+  - echte GDPR-Fixture mit `board_comments`, `shared_meals` und `tip_reviews`
+  - prüft erfolgreichen Public-Delete, Fortbestand der Projektion bis zum Auth-Delete und anschließende vollständige Kaskade
 
-- `user_public_profiles` mit `user_id`, Anzeigename, Avatar und Zeitstempeln,
-- Backfill aus `public.users` und einen `SECURITY DEFINER`-Sync-Trigger mit fixiertem `search_path`,
-- SELECT nur für die eigene Person oder eine angenommene Kontakt-, aktive Familien- oder aktive Care-Beziehung,
-- explizite REVOKEs/GRANTs und RLS,
-- benannte, `NOT VALID` gesetzte FK-Brücken für bestehende PostgREST-Embedded-Consumer,
-- `discovery_profiles` mit opaker UUID, internem `user_id`, serverseitig abgeleitetem Quartier, Opt-in standardmäßig `false`, Intro-Limit 140 und serverseitigem Volljährigkeitssignal,
-- ausschließlich Own-only-RLS; keine Fremdsuche, kein Discovery-RPC und kein Karten-/Rastermodell.
+### Öffentliche Discovery-/Vertrauensflächen
 
-`supabase/rollbacks/204_private_profile_foundation.down.sql` entfernt FK-Brücken, Trigger, Tabellen und Funktionen transaktional und idempotent.
+Diese Flächen sind bewusst keine private soziale Beziehung und bleiben bis Welle 5 auf dem bestehenden quartierslesbaren `users`-Pfad:
 
-`supabase/seeds/00-role-grants.sql` enthält die lokale Grant-Parität. Das war notwendig, weil der globale lokale Seed nach dem Migrationslauf sonst die eingeschränkten Spaltenrechte wieder verbreitert hätte.
+- `app/(app)/experts/page.tsx`: `id, display_name, avatar_url, trust_level, created_at`
+- `app/(app)/experts/[userId]/page.tsx`: `id, display_name, trust_level, created_at`; kein `select("*")`
+- `app/api/doctors/route.ts`: `id, display_name, avatar_url`
+- `lib/services/vouching.service.ts`: `id, display_name, trust_level`
 
-### Consumer-Sweep
+Der Consumer-Guard führt diese Dateien in einem eigenen kommentierten Allowlist-Block. Private soziale Flächen bleiben auf `user_public_profiles`.
 
-Alle gefundenen nicht-administrativen Leser fremder Anzeigenamen/Avatare verwenden nun `user_public_profiles` – einschließlich Board, Marktplatz, Fundbüro, Leihbörse, Events, Hilfe, Care, Gruppen, Prävention, Voice, Ärzte und Benachrichtigungsservices. Direkte Leser selektieren `user_id` nur intern als Alias, wenn die vorhandene Consumer-Form ein `id` benötigt.
-
-Leer-Ergebnisse aus RLS werden robust behandelt. Sichtbare Namen fallen neutral auf „Nachbar/in“, „Ein Nachbar“, „Arzt“ oder „Unbekannt“ zurück. Adressen wurden nicht in Client-State aufgenommen.
-
-Bewusst unverändert bleiben:
-
-- eigene Profil-/Onboarding-Leser,
-- administrative oder Service-Role-Leser,
-- `HouseInfoPanel` und der Karten-Personenstatus bis Welle 3B,
-- die schmale Senior-Bearbeitungsroute, deren bestehende Care-Berechtigung in Welle 3B separat aufgelöst wird,
-- `users_quarter_select` bis alle 3B-Consumer zuerst reduziert sind.
-
-## TDD-Nachweis
+## RED → GREEN
 
 ### RED
 
-- Die neuen Migrations- und Consumer-Tests schlugen zunächst wegen fehlender Tabellen/Policies fehl.
-- Der statische Consumer-Sweep meldete 84 eingebettete Fremdprofil-Joins, 34 direkte Leser und fünf nicht leer-sichere Profilzugriffe.
-- Der erste SQL-Leakage-Lauf deckte auf, dass `supabase/seeds/00-role-grants.sql` die eingeschränkten Discovery-Spaltenrechte nachträglich wieder öffnete.
-- Der erste vollständige Vitest-Lauf nach der Consumer-Umstellung fand neun veraltete Tabellen-Mocks; sie wurden ausschließlich auf die neue Projektion umgestellt.
+- Gezielter Vitest-Lauf: **7 Fehlschläge / 26 Tests**
+  - Profil-FK noch an `public.users`
+  - vier Discovery-Policies nicht idempotent
+  - Expertenbadge hart `new`
+  - Arzt- und Vouching-Namen bei unverbundenen Personen leer
+  - öffentliche Leser nicht eng genug bzw. falsche Quelle
+  - fünf fehlende Autoren-Fallbacks
+- SQL-GDPR-Test: exakter Abbruch in `gdpr_delete_user()` an `board_comments_user_public_profile_fkey`.
+- Erster vollständiger Replay nach dem FK-Fix: Seed-RED, weil lokale synthetische Public-User noch keine Auth-Anker hatten.
 
 ### GREEN
 
-- `npx supabase db reset --local` – zweimal grün; vollständiger Replay bis Migration 204.
-- `tests/sql/204_private_profile_foundation.sql` – grün vor und nach Rollback/Reapply.
-  - eigener/angenommener Kontakt/aktive Familie/aktive Care-Beziehung sichtbar,
-  - quartiersfremde, unverbundene Person: **0 Zeilen**,
-  - fremdes Discovery-Profil: **0 Zeilen**,
-  - internes `user_id` für Browser nicht selektierbar,
-  - manipulierte Quartier-/Volljährigkeitswerte abgewiesen,
-  - fehlende verifizierte Mitgliedschaft fail-closed,
-  - Opt-in erst nach serverseitiger Volljährigkeitsbestätigung.
-- `npx vitest run __tests__/lib/private-profile-foundation-migration.test.ts __tests__/lib/private-profile-consumers.test.ts --reporter=dot` – **10/10 grün**.
-- `npx vitest run` – vollständige Suite grün, Exit 0.
-- `npx tsc --noEmit` – grün.
-- `npm run lint` – grün.
-- `npm run build` – grün, 246 statische Seiten erzeugt.
-- `git diff --check` – grün (nur erwartete Windows-LF/CRLF-Hinweise).
-- `node scripts/generate-policy-inventory.mjs` nach vollständigem Reset – grün; 567 Policies, 38 Trigger, 632 Grant-Zeilen; einzig `spatial_ref_sys` wie zuvor ohne RLS.
-- Relevante lokale Playwright-Route-/Render-Smokes für Karte, Marktplatz, Hilfe, Events, Nachrichten, Experten und Fundbüro: **12/12 grün** mit lokalem Supabase und einem Worker.
+- Gezielte Review-Suite: **26/26** grün.
+- Migration-/Seed-Regression: **9/9** grün.
+- `tests/sql/204_private_profile_foundation.sql`: grün nach beiden vollständigen Resets sowie nach direktem Reapply und Rollback → Reapply.
+- `npx supabase db reset --local`: **zweimal vollständig grün** bis Migration 204 inklusive Seed.
+- Migration 204 direkt auf bereits angewandtem Stand: grün.
+- Rollback 204 → Reapply 204: grün.
+- DB-Introspektion: `user_public_profiles_user_id_fkey` zeigt `auth.users` + Delete-Regel `CASCADE`.
+- `npx vitest run`: **5.355 bestanden, 1 bestehender Skip**.
+- `npx tsc --noEmit`: grün.
+- `npm run lint`: grün.
+- `npm run build`: grün; 246 Seiten generiert.
+- `git diff --check`: grün.
+- `node scripts/generate-policy-inventory.mjs`: 567 Policies, 38 Trigger, 632 Grant-Zeilen, nur `spatial_ref_sys` ohne RLS; erzeugte Datei ist byte-identisch zur eingecheckten Fassung.
 
-### Bekannte Playwright-Testschuld
+### Playwright
 
-Der ungekürzte Karten-/Marktplatz-Satz ist **12/14**: Zwei bestehende Tests erwarten für unauthentifizierte Aufrufe `/login` oder die Zielroute, der aktuelle Proxy leitet tatsächlich nach `/`. Das Verhalten liegt vor der neuen Datenabfrage und außerhalb dieses Diffs; die Tests wurden nicht beiläufig umgeschrieben. Ein erster Lauf ohne `.env.local` war erwartungsgemäß nicht aussagekräftig (fehlende lokale Supabase-Prozesswerte) und führte zu 500/Timeouts. Es wurde keine ENV-Datei angelegt oder geändert.
+- Auth-Setup: **10 Setup-/Auth-Tests bestanden**, die drei neuen Seitentests starteten nicht, weil im isolierten Worktree kein `.auth/nachbar_a.json` erzeugt werden konnte: lokale Supabase-URL und Anon-Key fehlen in `.env.local`.
+- S7-Redirect-Smoke: ebenfalls lokal nicht aussagekräftig; ohne dieselben Prozesswerte erzeugen Supabase-Client-Routen 500er und der Lauf überschreitet beim Kompilieren der erweiterten Routen die 60-Sekunden-Grenze.
+- Es wurde keine ENV-/Secret-Datei angelegt, kopiert oder geändert. CI muss den erweiterten S7-Scope (`/marketplace`, `/experts`, `/care/aerzte`) mit seiner lokalen Supabase-Konfiguration bestätigen.
 
 ## Security-Mini-Audit
 
-### Schutzgüter und Grenzen
+### Ergebnis: 0 CRITICAL / 0 HIGH
 
-- Schutzgüter: Profilidentität, interne User-ID, Quartiersmitgliedschaft, Beziehungsgraph und Volljährigkeitssignal.
-- Vertrauensgrenzen: Browser → PostgREST/RLS; `auth.uid()` → verifizierte Haushaltsmitgliedschaft; `service_role`/DB-Trigger → serverseitige Felder.
+- **FK-Reanchoring:** ändert nur den Lösch-Lifecycle. Es fügt weder SELECT/INSERT/UPDATE/DELETE-Rechte noch eine Policy oder einen RPC hinzu. Die bestehende RLS von `user_public_profiles` bleibt byte-identisch.
+- **GDPR-Reihenfolge:** `gdpr_delete_user()` kann `public.users` löschen, während die Profilprojektion bis zum nachgelagerten Auth-Delete bestehen bleibt. Der Auth-Delete kaskadiert Projektion und Auth-Consumer im selben Statement.
+- **Öffentliche Namensleser:** exponieren ausschließlich die oben genannten Minimalspalten und laufen durch die bestehende Policy `users_quarter_select`; kein Service-Role-Bypass und kein neuer Definer-Pfad.
+- **Vouching:** `get_display_names` wird bewusst nicht zweckentfremdet. Quartier-Isolation bleibt der vorhandene `users!inner`-/Household-Pfad; der Name-Fallback greift nur bei tatsächlich leerem Ergebnis.
+- **Discovery:** `adult_attested_at`, Own-only-RLS, opake ID, serverseitige Quartiersableitung und Browser-Spaltenrechte sind unverändert. Die neuen `DROP POLICY IF EXISTS`-Zeilen ändern keine Semantik.
+- **Overfetch:** Experten-Detail liest nicht mehr `users.*`; Ärzte, Experten und Vouching lesen kein `settings`, `phone`, `is_admin`, E-Mail- oder Adressfeld.
+- **Unverändert:** Notfallregel 112/110, Invite-Grenzen, RLS anderer Tabellen und Verbot von Adressdaten im Client-State.
 
-### Prüfergebnis
+## Welle-3B-/Welle-5-Abhängigkeit
 
-- **Kein IDOR über Discovery:** Zufällige UUID plus Own-only-RLS; es existiert keine fremde SELECT-Policy und kein Such-RPC.
-- **Keine interne ID-Freigabe:** `authenticated` erhält kein SELECT auf `discovery_profiles.user_id`.
-- **Kein manipuliertes Quartier:** Trigger leitet `user_id` und `quarter_id` ausschließlich aus `auth.uid()` und einer verifizierten eigenen Haushaltsmitgliedschaft ab; ohne Mitgliedschaft fail-closed.
-- **Volljährigkeit server-only:** Browser dürfen `adult_attested_at` weder INSERTen noch UPDATEen; der Trigger setzt/manipulationsschützt das Feld zusätzlich. `discoverable=true` ist per CHECK ohne Attestation unmöglich.
-- **Beziehungsgebundene Projektion:** Fremde öffentliche Profile sind nur bei `accepted`, aktiver und nicht widerrufener Familien- oder aktiver und nicht widerrufener Care-Beziehung sichtbar.
-- **Definer-Härtung:** Beide Triggerfunktionen haben fixierten `search_path`; EXECUTE ist für PUBLIC, anon und authenticated entzogen.
-- **Explizite Rechte:** anon erhält keine Rechte; authenticated nur die benötigten Tabellen-/Spaltenrechte; service_role bleibt der bewusst vertraute Serverpfad.
-- **Additiver Rollout:** FK-Brücken sind `NOT VALID`, erzwingen aber neue Referenzen. Historischer Auth/Public-Drift blockiert damit weder Apply noch Rollback.
-- Notfallregeln 112/110, Invite-Grenzen, RLS anderer Tabellen und Adress-Client-State wurden nicht verändert.
+`users_quarter_select` darf nicht in Welle 3B entfernt werden, bevor Welle 5 Experten, Ärzte, Vouching und gegebenenfalls Business-Reviews auf ein eigenes öffentliches Namensmodell umgestellt hat. Die privaten sozialen Consumer und `HouseInfoPanel`/Karte sind davon getrennt zu behandeln.
 
-### Restrisiken für Claude
+## Offene rote Gates
 
-- Die breite `users_quarter_select`-Policy existiert absichtlich noch bis Welle 3B. Dieser PR allein schließt daher noch nicht den gesamten Quartiersprofil-Lesepfad.
-- Profilnamen in quartieweiten Inhalten sind nun für unverbundene Personen absichtlich neutral. Insbesondere Ärzte-/Expertenansichten verlieren ohne explizite Beziehung Namen; die Expertenliste zeigt deshalb keinen aus `users.trust_level` abgeleiteten Verifizierungsbadge mehr. Bitte als gewünschte Privacy-Folge gegen das Produktkonzept prüfen.
-- `service_role` ist weiterhin vollständig privilegiert und muss ausschließlich serverseitig bleiben.
-- Die neue Migration wurde nicht auf einem kostenpflichtigen Supabase-Branch und nicht auf Prod angewandt.
-
-## Klare rote Restschritte: Welle 3B
-
-1. Erst nach Merge/Apply von 3A von aktuellem `origin/master` starten.
-2. RED-Tests ergänzen: `HouseInfoPanel` rendert ohne fremde Mitglieder/Vacation-Daten; `useMapStatuses` liefert keine Personen- oder Haushaltsdetails.
-3. Panel und Karte auf öffentliches Gebäude-/Aktivitätsniveau reduzieren; keine Adressdaten im Client-State.
-4. `app/(app)/care/meine-senioren/[seniorId]/edit` über die bestehende, verifizierte Care-Beziehung oder einen bereits vorhandenen sicheren Serverpfad versorgen – keinen breiten `users`-Leser behalten.
-5. Den Consumer-Sweep ohne Ausnahmen wiederholen und erst dann `users_quarter_select` entfernen; eigene, administrative und ausdrücklich verifizierte Rollenpfade erhalten.
-6. SQL-Leakage, vollständigen lokalen Replay, Rollback/Reapply, Policy-Inventar, Vitest, Typecheck, Lint, Build und relevante Playwright-Flows erneut ausführen.
+1. **Supabase-Branch-Test nur nach separatem Kosten-Go:** Nutzer mit `board_comments`, `shared_meals` und `tip_reviews`; `gdpr_delete_user()` muss erfolgreich sein. Lokal ist dieselbe Fixture grün, ersetzt aber nicht das externe Branch-Gate.
+2. GitHub-CI muss nach dem Push vollständig grün sein, einschließlich erweitertem S7.
+3. Claude-Review auf dem neuen Head.
+4. Kein Merge, Prod-Apply oder Deploy in diesem Auftrag.
+5. Prod-Apply von Migration 204 bleibt ein separater Founder-Go-Schritt nach Merge und Branch-Test.
 
 ## Nicht ausgeführt
 
-- kein Supabase-Branch-Test,
+- kein kostenpflichtiger Supabase-Branch-Test,
 - kein Prod-Apply,
 - kein Deploy,
-- keine ENV-/Secret-Dateiänderung,
-- kein Merge.
+- keine ENV-/Secret-Änderung,
+- kein Merge,
+- keine Migration 205.

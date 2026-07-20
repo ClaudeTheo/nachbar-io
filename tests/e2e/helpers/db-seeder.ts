@@ -35,6 +35,14 @@ export function getE2eUserRole(creds: AgentCredentials): E2eUserRole {
   }
 }
 
+export function shouldVerifyE2eMembership(memberError: string | null): boolean {
+  return (
+    !memberError ||
+    memberError.includes("duplicate") ||
+    memberError.includes("409")
+  );
+}
+
 /**
  * Supabase Auth Admin API — Test-Nutzer erstellen.
  * Pflicht ueber den zentralen Helper: setzt is_test_user=true in
@@ -230,11 +238,10 @@ async function seedAgent(
       },
     );
 
-    if (
-      memberError &&
-      (memberError.includes("duplicate") || memberError.includes("409"))
-    ) {
-      // Bestehende Zeile: verified_at sicherstellen (alter Datensatz hat evtl. NULL)
+    if (shouldVerifyE2eMembership(memberError)) {
+      // Der INSERT-Trigger entfernt verified_at fuer nicht-authentifizierte
+      // Aufrufer. Service-Role-Seeding verifiziert die Zeile deshalb immer in
+      // einem separaten UPDATE; das gilt auch fuer merge-duplicates-Upserts.
       const { error: patchError } = await supabaseAdmin(
         "household_members",
         "PATCH",
@@ -248,7 +255,7 @@ async function seedAgent(
       } else {
         console.log(`[SEED] Agent ${agentId} verified_at aktualisiert`);
       }
-    } else if (memberError) {
+    } else {
       console.warn(`[SEED] Agent ${agentId} Mitgliedschaft: ${memberError}`);
     }
   }

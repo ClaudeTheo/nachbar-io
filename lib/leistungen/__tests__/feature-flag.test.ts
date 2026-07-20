@@ -5,7 +5,14 @@ describe("leistungen_info feature flag", () => {
   it("liest den Flag ueber isFeatureEnabledServer", async () => {
     const mockSingle = vi
       .fn()
-      .mockResolvedValue({ data: { enabled: true }, error: null });
+      .mockResolvedValue({
+        data: {
+          enabled: true,
+          enabled_quarters: [],
+          admin_override: false,
+        },
+        error: null,
+      });
     const mockEq = vi.fn(() => ({ single: mockSingle }));
     const mockSelect = vi.fn(() => ({ eq: mockEq }));
     const mockFrom = vi.fn(() => ({ select: mockSelect }));
@@ -21,7 +28,7 @@ describe("leistungen_info feature flag", () => {
     expect(mockEq).toHaveBeenCalledWith("key", "leistungen_info");
   });
 
-  it("fail-open: false wenn DB-Fehler", async () => {
+  it("fail-closed: false wenn DB-Fehler", async () => {
     const mockSingle = vi.fn().mockRejectedValue(new Error("db down"));
     const mockEq = vi.fn(() => ({ single: mockSingle }));
     const mockSelect = vi.fn(() => ({ eq: mockEq }));
@@ -39,7 +46,14 @@ describe("leistungen_info feature flag", () => {
   it("ignoriert PILOT_MODE wenn der DB-Flag deaktiviert ist", async () => {
     const mockSingle = vi
       .fn()
-      .mockResolvedValue({ data: { enabled: false }, error: null });
+      .mockResolvedValue({
+        data: {
+          enabled: false,
+          enabled_quarters: [],
+          admin_override: false,
+        },
+        error: null,
+      });
     const mockEq = vi.fn(() => ({ single: mockSingle }));
     const mockSelect = vi.fn(() => ({ eq: mockEq }));
     const mockFrom = vi.fn(() => ({ select: mockSelect }));

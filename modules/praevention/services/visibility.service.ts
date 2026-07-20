@@ -148,7 +148,7 @@ export async function getCaregiverPreventionStatus(
       `
       id, user_id, attendance_rate, completed_at,
       course:prevention_courses(title, starts_at),
-      user:users!prevention_enrollments_user_id_fkey(display_name)
+      user:user_public_profiles!prevention_enrollments_public_profile_fkey(display_name)
     `,
     )
     .in("user_id", residentIds);

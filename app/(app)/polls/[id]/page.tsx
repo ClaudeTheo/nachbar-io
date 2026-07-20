@@ -33,7 +33,7 @@ export default function PollDetailPage() {
     // Umfrage laden
     const { data: pollData } = await supabase
       .from("polls")
-      .select("*, user:users(display_name, avatar_url)")
+      .select("*, user:user_public_profiles!polls_user_public_profile_fkey(display_name, avatar_url)")
       .eq("id", id)
       .maybeSingle();
 

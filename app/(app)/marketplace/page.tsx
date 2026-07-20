@@ -34,7 +34,7 @@ export default function MarketplacePage() {
       const supabase = createClient();
       let query = supabase
         .from("marketplace_items")
-        .select("*, user:users(display_name, avatar_url)")
+        .select("*, user:user_public_profiles!marketplace_user_public_profile_fkey(display_name, avatar_url)")
         .eq("quarter_id", currentQuarter!.id)
         .eq("status", "active")
         .order("created_at", { ascending: false });
@@ -197,7 +197,7 @@ function MarketplaceCard({ item }: { item: MarketplaceItem }) {
                   : ""}
             </span>
             <span className="text-xs text-muted-foreground">
-              {item.user?.display_name} · {timeAgo}
+              {item.user?.display_name ?? "Nachbar"} · {timeAgo}
             </span>
           </div>
         </div>

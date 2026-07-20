@@ -50,7 +50,7 @@ export function BoardComments({ postId, currentUserId }: BoardCommentsProps) {
     const { data } = await supabase
       .from("board_comments")
       .select(
-        "id, user_id, text, created_at, user:users(display_name, avatar_url)",
+        "id, user_id, text, created_at, user:user_public_profiles!board_comments_user_public_profile_fkey(display_name, avatar_url)",
       )
       .eq("post_id", postId)
       .order("created_at", { ascending: true })
@@ -79,7 +79,7 @@ export function BoardComments({ postId, currentUserId }: BoardCommentsProps) {
         text: newComment.trim(),
       })
       .select(
-        "id, user_id, text, created_at, user:users(display_name, avatar_url)",
+        "id, user_id, text, created_at, user:user_public_profiles!board_comments_user_public_profile_fkey(display_name, avatar_url)",
       )
       .single();
 

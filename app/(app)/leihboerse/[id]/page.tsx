@@ -31,7 +31,7 @@ export default function LeihboerseDetailPage() {
 
       const { data } = await supabase
         .from("leihboerse_items")
-        .select("*, user:users!user_id(display_name, avatar_url)")
+        .select("*, user:user_public_profiles!leihboerse_user_public_profile_fkey(display_name, avatar_url)")
         .eq("id", id)
         .maybeSingle();
 

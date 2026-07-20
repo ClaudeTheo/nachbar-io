@@ -105,7 +105,7 @@ vi.mock("@/lib/supabase/client", () => ({
       if (table === "caregiver_links") {
         return makeChain({ data: [{ resident_id: "res-1" }], error: null });
       }
-      if (table === "users") {
+      if (table === "user_public_profiles") {
         return makeChain({
           data: [{ id: "res-1", display_name: "Oma Helga", avatar_url: null }],
           error: null,

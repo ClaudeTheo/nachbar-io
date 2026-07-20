@@ -116,6 +116,8 @@ test.describe("S7: Smoke / Regression Quick Pack", () => {
       "/care",
       "/alerts",
       "/marketplace",
+      "/experts",
+      "/care/aerzte",
     ];
 
     for (const path of protectedPages) {

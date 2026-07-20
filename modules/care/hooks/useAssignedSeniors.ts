@@ -119,9 +119,9 @@ export function useAssignedSeniors(): UseAssignedSeniorsResult {
 
         // Senior-Profile laden
         const { data: seniorProfiles, error: profileError } = await supabase
-          .from('users')
-          .select('id, display_name, avatar_url')
-          .in('id', assignedSeniorIds);
+          .from('user_public_profiles')
+          .select('id:user_id, display_name, avatar_url')
+          .in('user_id', assignedSeniorIds);
 
         if (profileError) {
           setError(profileError.message);

@@ -27,7 +27,7 @@ export default function EventsPage() {
 
       const { data } = await supabase
         .from("events")
-        .select("*, user:users(display_name, avatar_url)")
+        .select("*, user:user_public_profiles!events_user_public_profile_fkey(display_name, avatar_url)")
         .eq("quarter_id", currentQuarter!.id)
         .gte("event_date", today)
         .order("event_date", { ascending: true });

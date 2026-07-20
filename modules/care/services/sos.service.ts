@@ -48,9 +48,9 @@ const SOS_ALERT_SELECT = `*,
         eta_minutes,
         note,
         created_at,
-        helper:users(display_name, avatar_url)
+        helper:user_public_profiles!care_sos_helper_public_profile_fkey(display_name, avatar_url)
       ),
-      senior:users!care_sos_alerts_senior_id_fkey(
+      senior:user_public_profiles!care_sos_senior_public_profile_fkey(
         display_name,
         avatar_url
       )`;

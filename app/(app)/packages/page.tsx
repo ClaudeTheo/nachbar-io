@@ -58,13 +58,13 @@ export default function PackagesPage() {
       const [availResult, requestResult, householdsResult, membersResult] = await Promise.all([
         supabase
           .from("paketannahme")
-          .select("*, user:users(display_name, avatar_url)")
+          .select("*, user:user_public_profiles!paketannahme_user_public_profile_fkey(display_name, avatar_url)")
           .eq("quarter_id", currentQuarter!.id)
           .eq("available_date", today)
           .order("created_at", { ascending: false }),
         supabase
           .from("help_requests")
-          .select("*, user:users(display_name, avatar_url)")
+          .select("*, user:user_public_profiles!paketannahme_user_public_profile_fkey(display_name, avatar_url)")
           .eq("quarter_id", currentQuarter!.id)
           .eq("category", "package")
           .eq("type", "need")
@@ -146,7 +146,7 @@ export default function PackagesPage() {
           available_date: today,
           note: note.trim() || null,
         })
-        .select("*, user:users(display_name, avatar_url)")
+        .select("*, user:user_public_profiles!paketannahme_user_public_profile_fkey(display_name, avatar_url)")
         .single();
 
       if (error) {
@@ -181,7 +181,7 @@ export default function PackagesPage() {
         description: requestDescription.trim(),
         status: "active",
       })
-      .select("*, user:users(display_name, avatar_url)")
+      .select("*, user:user_public_profiles!paketannahme_user_public_profile_fkey(display_name, avatar_url)")
       .single();
 
     if (error) {
@@ -499,7 +499,9 @@ function AvailableList({
               📦
             </div>
             <div className="min-w-0 flex-1">
-              <p className="font-medium text-anthrazit">{entry.user?.display_name}</p>
+              <p className="font-medium text-anthrazit">
+                {entry.user?.display_name ?? "Nachbar"}
+              </p>
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 {entry.note && <span className="truncate">{entry.note}</span>}
                 {dist !== null && <span className="shrink-0">~{Math.round(dist)}m</span>}

@@ -115,7 +115,7 @@ export function AlertCard({
                 {alert.user && (
                   <span className="flex items-center gap-1">
                     <User size={12} />
-                    {alert.user.display_name}
+                    {alert.user?.display_name ?? "Nachbar/in"}
                     {reputationLevel && reputationLevel >= 2 && (
                       <ReputationBadge level={reputationLevel} size="sm" />
                     )}
@@ -203,7 +203,7 @@ export function AlertCard({
               {alert.user && (
                 <span className="flex items-center gap-1">
                   <User size={12} />
-                  {alert.user.display_name}
+                  {alert.user?.display_name ?? "Nachbar/in"}
                   {reputationLevel && reputationLevel >= 2 && (
                     <ReputationBadge level={reputationLevel} size="sm" />
                   )}

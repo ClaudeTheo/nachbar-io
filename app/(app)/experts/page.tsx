@@ -14,7 +14,7 @@ import { Badge } from "@/components/ui/badge";
 import { createClient } from "@/lib/supabase/client";
 import { useQuarter } from "@/lib/quarters";
 import { EXPERT_CATEGORIES, SKILL_CATEGORIES, TRUST_LEVELS } from "@/lib/constants";
-import type { Skill, User } from "@/lib/supabase/types";
+import type { Skill } from "@/lib/supabase/types";
 
 // Aggregiertes Experten-Profil fuer die Liste
 interface ExpertListItem {
@@ -47,7 +47,9 @@ export default function ExpertsPage() {
       // Alle oeffentlichen Skills laden (mit User-Daten)
       const { data: skillsData } = await supabase
         .from("skills")
-        .select("*, user:users(id, display_name, avatar_url, trust_level, created_at)")
+        .select(
+          "*, user:users(id, display_name, avatar_url, trust_level, created_at)",
+        )
         .eq("quarter_id", currentQuarter!.id)
         .eq("is_public", true)
         .order("created_at", { ascending: false });
@@ -90,7 +92,13 @@ export default function ExpertsPage() {
       // Skills nach User gruppieren
       const userMap = new Map<string, ExpertListItem>();
       for (const skill of skillsData) {
-        const user = skill.user as unknown as User;
+        const user = skill.user as unknown as {
+          id: string;
+          display_name: string;
+          avatar_url: string | null;
+          trust_level: string;
+          created_at: string;
+        } | null;
         if (!user) continue;
 
         if (!userMap.has(user.id)) {

@@ -88,7 +88,7 @@ export async function getDashboardOverview(
   const { data: enrollments } = await supabase
     .from("prevention_enrollments")
     .select(
-      "id, user_id, user:users!prevention_enrollments_user_id_fkey(display_name)",
+      "id, user_id, user:user_public_profiles!prevention_enrollments_public_profile_fkey(display_name)",
     )
     .eq("course_id", course.id);
 
@@ -180,7 +180,7 @@ export async function getParticipantDetails(
   const { data: enrollments } = await supabase
     .from("prevention_enrollments")
     .select(
-      "*, user:users!prevention_enrollments_user_id_fkey(display_name, avatar_url)",
+      "*, user:user_public_profiles!prevention_enrollments_public_profile_fkey(display_name, avatar_url)",
     )
     .eq("course_id", courseId)
     .order("enrolled_at", { ascending: true });

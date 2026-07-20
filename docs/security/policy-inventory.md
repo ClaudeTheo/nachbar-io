@@ -7,7 +7,7 @@
 > Nach jeder Migration mit Policy-/Trigger-/Grant-Bezug neu generieren und einchecken —
 > der Git-Diff dieser Datei IST das Security-Review-Artefakt.
 
-Kennzahlen: **562 Policies** · 208 public-Tabellen (1 OHNE RLS) · 36 Trigger · 628 Grant-Zeilen
+Kennzahlen: **567 Policies** · 210 public-Tabellen (1 OHNE RLS) · 38 Trigger · 632 Grant-Zeilen
 
 ## ⚠️ Tabellen ohne RLS (public)
 
@@ -239,6 +239,10 @@ Kennzahlen: **562 Policies** · 208 public-Tabellen (1 OHNE RLS) · 36 Trigger �
 | public.device_tokens | device_tokens_update_household | UPDATE | public | ((household_id IN ( SELECT household_members.household_id FROM household_members WHERE ((household_members.user_id = auth.uid()) AND (household_members.verified |
 | public.direct_messages | dm_create | INSERT | public |  | ((sender_id = auth.uid()) AND (EXISTS ( SELECT 1 FROM conversations c WHERE ((c.id = direct_messages.conversation_id) AND ((c.participant_1 = auth.uid()) OR (c. |
 | public.direct_messages | dm_read | SELECT | public | (EXISTS ( SELECT 1 FROM conversations c WHERE ((c.id = direct_messages.conversation_id) AND ((c.participant_1 = auth.uid()) OR (c.participant_2 = auth.uid())))) |
+| public.discovery_profiles | discovery_profiles_owner_delete | DELETE | authenticated | (user_id = ( SELECT auth.uid() AS uid)) |
+| public.discovery_profiles | discovery_profiles_owner_insert | INSERT | authenticated |  | ((user_id = ( SELECT auth.uid() AS uid)) AND (EXISTS ( SELECT 1 FROM (household_members hm JOIN households h ON ((h.id = hm.household_id))) WHERE ((hm.user_id = |
+| public.discovery_profiles | discovery_profiles_owner_select | SELECT | authenticated | (user_id = ( SELECT auth.uid() AS uid)) |
+| public.discovery_profiles | discovery_profiles_owner_update | UPDATE | authenticated | (user_id = ( SELECT auth.uid() AS uid)) | ((user_id = ( SELECT auth.uid() AS uid)) AND (EXISTS ( SELECT 1 FROM (household_members hm JOIN households h ON ((h.id = hm.household_id))) WHERE ((hm.user_id = |
 | public.doctor_consents | doctor_own_consents | ALL | public | (auth.uid() = user_id) |
 | public.doctor_profiles | doctor_profiles_own_write | ALL | public | (user_id = auth.uid()) |
 | public.doctor_profiles | doctor_profiles_public_read | SELECT | public | ((visible = true) OR (user_id = auth.uid())) |
@@ -516,6 +520,7 @@ Kennzahlen: **562 Policies** · 208 public-Tabellen (1 OHNE RLS) · 36 Trigger �
 | public.user_memory_facts | user_own_facts_insert | INSERT | public |  | ((auth.uid() = user_id) OR (auth.uid() = source_user_id)) |
 | public.user_memory_facts | user_own_facts_select | SELECT | public | (auth.uid() = user_id) |
 | public.user_memory_facts | user_own_facts_update | UPDATE | public | (auth.uid() = user_id) |
+| public.user_public_profiles | user_public_profiles_relationship_select | SELECT | authenticated | ((user_id = ( SELECT auth.uid() AS uid)) OR (EXISTS ( SELECT 1 FROM contact_links cl WHERE ((cl.status = 'accepted'::text) AND (((cl.requester_id = ( SELECT aut |
 | public.users | users_insert | INSERT | authenticated |  | (id = auth.uid()) |
 | public.users | users_quarter_select | SELECT | public | ((id = auth.uid()) OR is_super_admin() OR is_same_quarter_user(id)) |
 | public.users | users_read_own | SELECT | public | (id = auth.uid()) |
@@ -603,6 +608,7 @@ Kennzahlen: **562 Policies** · 208 public-Tabellen (1 OHNE RLS) · 36 Trigger �
 | public.caregiver_links | protect_plus_trial_end_trigger | UPDATE | BEFORE |
 | public.chat_group_members | trg_chat_group_members_limit | INSERT | BEFORE |
 | public.chat_groups | on_chat_group_created | INSERT | AFTER |
+| public.discovery_profiles | trg_protect_discovery_profile_fields | INSERT,UPDATE | BEFORE |
 | public.external_warning_cache | external_warning_cache_updated_at | UPDATE | BEFORE |
 | public.feature_flags | feature_flags_audit_log_trigger | DELETE,INSERT,UPDATE | AFTER |
 | public.feature_flags | feature_flags_updated_at | UPDATE | BEFORE |
@@ -620,6 +626,7 @@ Kennzahlen: **562 Policies** · 208 public-Tabellen (1 OHNE RLS) · 36 Trigger �
 | public.speed_dial_favorites | trg_speed_dial_updated_at | UPDATE | BEFORE |
 | public.tip_confirmations | trigger_tip_confirmation_count | DELETE,INSERT | AFTER |
 | public.user_memory_facts | trigger_memory_facts_updated_at | UPDATE | BEFORE |
+| public.users | trg_sync_user_public_profile | INSERT,UPDATE | AFTER |
 | public.users | trg_users_update_restrictions | UPDATE | BEFORE |
 | public.users | trigger_enforce_user_insert_restrictions | INSERT | BEFORE |
 | public.youth_profiles | trg_youth_profiles_update_restrictions | UPDATE | BEFORE |
@@ -861,6 +868,8 @@ Kennzahlen: **562 Policies** · 208 public-Tabellen (1 OHNE RLS) · 36 Trigger �
 | public.direct_messages | anon | DELETE,INSERT,REFERENCES,SELECT,TRIGGER,TRUNCATE,UPDATE |
 | public.direct_messages | authenticated | DELETE,INSERT,REFERENCES,SELECT,TRIGGER,TRUNCATE,UPDATE |
 | public.direct_messages | service_role | DELETE,INSERT,REFERENCES,SELECT,TRIGGER,TRUNCATE,UPDATE |
+| public.discovery_profiles | authenticated | DELETE |
+| public.discovery_profiles | service_role | DELETE,INSERT,REFERENCES,SELECT,TRIGGER,TRUNCATE,UPDATE |
 | public.doctor_consents | anon | DELETE,INSERT,REFERENCES,SELECT,TRIGGER,TRUNCATE,UPDATE |
 | public.doctor_consents | authenticated | DELETE,INSERT,REFERENCES,SELECT,TRIGGER,TRUNCATE,UPDATE |
 | public.doctor_consents | service_role | DELETE,INSERT,REFERENCES,SELECT,TRIGGER,TRUNCATE,UPDATE |
@@ -1195,6 +1204,8 @@ Kennzahlen: **562 Policies** · 208 public-Tabellen (1 OHNE RLS) · 36 Trigger �
 | public.user_memory_facts | anon | DELETE,INSERT,REFERENCES,SELECT,TRIGGER,TRUNCATE,UPDATE |
 | public.user_memory_facts | authenticated | DELETE,INSERT,REFERENCES,SELECT,TRIGGER,TRUNCATE,UPDATE |
 | public.user_memory_facts | service_role | DELETE,INSERT,REFERENCES,SELECT,TRIGGER,TRUNCATE,UPDATE |
+| public.user_public_profiles | authenticated | SELECT |
+| public.user_public_profiles | service_role | DELETE,INSERT,REFERENCES,SELECT,TRIGGER,TRUNCATE,UPDATE |
 | public.users | anon | DELETE,INSERT,REFERENCES,SELECT,TRIGGER,TRUNCATE,UPDATE |
 | public.users | authenticated | DELETE,INSERT,REFERENCES,SELECT,TRIGGER,TRUNCATE,UPDATE |
 | public.users | service_role | DELETE,INSERT,REFERENCES,SELECT,TRIGGER,TRUNCATE,UPDATE |

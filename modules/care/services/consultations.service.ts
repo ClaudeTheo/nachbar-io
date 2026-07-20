@@ -281,9 +281,9 @@ export async function negotiateConsultation(
   const doctorId = slot.host_user_id ?? slot.doctor_id;
   if (doctorId) {
     const { data: patient } = await supabase
-      .from("users")
+      .from("user_public_profiles")
       .select("display_name")
-      .eq("id", userId)
+      .eq("user_id", userId)
       .single();
     const patientName = patient?.display_name ?? "Patient";
     const scheduledAt =

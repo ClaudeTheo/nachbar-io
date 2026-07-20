@@ -33,4 +33,40 @@ describe("listUnverifiedNeighbors circle privacy", () => {
     expect(from).toHaveBeenCalledTimes(2);
     expect(from).not.toHaveBeenCalledWith("neighbor_vouches");
   });
+
+  it("zeigt den quartierslesbaren Namen eines noch unverbundenen Nachbarn", async () => {
+    const from = vi
+      .fn()
+      .mockReturnValueOnce(
+        fluentResult({ households: { quarter_id: "quarter-1" } }),
+      )
+      .mockReturnValueOnce(
+        fluentResult([
+          {
+            user_id: "user-neighbor",
+            households: {
+              quarter_id: "quarter-1",
+              street_name: "Testweg",
+              house_number: "7",
+            },
+            users: {
+              id: "user-neighbor",
+              display_name: "Erika Beispiel",
+              trust_level: "new",
+            },
+            public_profile: null,
+          },
+        ]),
+      )
+      .mockReturnValueOnce(fluentResult([]))
+      .mockReturnValueOnce(fluentResult([]));
+
+    const result = await listUnverifiedNeighbors(
+      { from } as never,
+      "user-own",
+    );
+
+    expect(result).toHaveLength(1);
+    expect(result[0].display_name).toBe("Erika Beispiel");
+  });
 });

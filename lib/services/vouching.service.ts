@@ -214,17 +214,16 @@ export async function listUnverifiedNeighbors(
         house_number: string;
       };
       const userRaw = Array.isArray(u.users) ? u.users[0] : u.users;
-      const userInfo = userRaw as unknown as {
-        id: string;
+      const neighbor = userRaw as unknown as {
         display_name: string;
-      };
+      } | null;
       return {
-        id: userInfo.id,
-        display_name: userInfo.display_name,
+        id: u.user_id,
+        display_name: neighbor?.display_name ?? "Nachbar/in",
         street: household.street_name,
         house_number: household.house_number,
-        vouch_count: countMap.get(userInfo.id) ?? 0,
-        already_vouched: vouchedIds.has(userInfo.id),
+        vouch_count: countMap.get(u.user_id) ?? 0,
+        already_vouched: vouchedIds.has(u.user_id),
       };
     });
 }

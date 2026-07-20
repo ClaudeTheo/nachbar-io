@@ -207,9 +207,9 @@ export async function getResidentStatus(
   }
 
   const { data: residentProfile } = await supabase
-    .from("users")
+    .from("user_public_profiles")
     .select("display_name")
-    .eq("id", residentId)
+    .eq("user_id", residentId)
     .maybeSingle();
 
   // Letzter Heartbeat (nur wenn heartbeat_visible)

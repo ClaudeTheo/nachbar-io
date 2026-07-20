@@ -162,6 +162,15 @@ INSERT INTO households (id, street_name, house_number, lat, lng, verified, invit
 --   - Heinrich (014), Ingrid (015), Gertrud (016): Senioren
 --   - Lisa (017), Florian (018): Neue Nutzer (noch nicht verifiziert)
 
+-- Die private Profilprojektion ist an auth.users verankert. Lokale Seed-Nutzer
+-- brauchen deshalb denselben Lifecycle-Anker; es werden keine Login-Daten erzeugt.
+INSERT INTO auth.users (id)
+SELECT (
+  'a0000000-0000-0000-0000-' || lpad(seed_number::text, 12, '0')
+)::uuid
+FROM generate_series(1, 18) AS seed_number
+ON CONFLICT (id) DO NOTHING;
+
 INSERT INTO users (id, email_hash, display_name, avatar_url, ui_mode, trust_level, is_admin, created_at, last_seen, settings, role) VALUES
 -- Verifizierte aktive Nutzer
 ('a0000000-0000-0000-0000-000000000001', 'sha256_thomas',   'Thomas',   NULL, 'active', 'admin',    true,  now() - interval '60 days', now() - interval '1 hour',  '{"notifications": true, "radius": 3}'::jsonb, 'admin'),

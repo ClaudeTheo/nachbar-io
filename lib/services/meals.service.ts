@@ -106,9 +106,9 @@ export async function signupForMeal(
 
       // Anzeigename des Anmelders laden
       const { data: signupUser } = await supabase
-        .from("users")
+        .from("user_public_profiles")
         .select("display_name")
-        .eq("id", userId)
+        .eq("user_id", userId)
         .single();
       const userName = signupUser?.display_name ?? "Ein Nachbar";
 

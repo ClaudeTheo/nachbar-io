@@ -43,7 +43,7 @@ export interface EnrollParams {
 
 const ENROLLMENT_SELECT = `
   *,
-  course:prevention_courses(id, title, starts_at, ends_at, status, instructor:users!prevention_courses_instructor_id_fkey(display_name))
+  course:prevention_courses(id, title, starts_at, ends_at, status, instructor:user_public_profiles!prevention_courses_public_profile_fkey(display_name))
 `;
 
 // In Kurs einschreiben
@@ -112,7 +112,7 @@ export async function getEnrollmentsByCourse(
     .select(
       `
       *,
-      user:users!prevention_enrollments_user_id_fkey(display_name, avatar_url)
+      user:user_public_profiles!prevention_enrollments_public_profile_fkey(display_name, avatar_url)
     `,
     )
     .eq("course_id", courseId)

@@ -124,9 +124,9 @@ export default function HelferTasksPage() {
           new Set(requestRows.map((request) => request.user_id)),
         );
         const { data: requesters } = await supabase
-          .from("users")
-          .select("id, display_name")
-          .in("id", requesterIds);
+          .from("user_public_profiles")
+          .select("id:user_id, display_name")
+          .in("user_id", requesterIds);
 
         const requesterMap = new Map(
           ((requesters ?? []) as UserRow[]).map((requester) => [

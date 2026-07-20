@@ -44,7 +44,7 @@ export default function NoisePage() {
         await Promise.all([
           supabase
             .from("help_requests")
-            .select("*, user:users(display_name, avatar_url)")
+            .select("*, user:user_public_profiles!help_requests_user_public_profile_fkey(display_name, avatar_url)")
             .eq("quarter_id", currentQuarter.id)
             .eq("category", "noise")
             .eq("status", "active")
@@ -143,7 +143,7 @@ export default function NoisePage() {
         status: "active",
         expires_at: expiresAt.toISOString(),
       })
-      .select("*, user:users(display_name, avatar_url)")
+      .select("*, user:user_public_profiles!help_requests_user_public_profile_fkey(display_name, avatar_url)")
       .single();
 
     if (error) {

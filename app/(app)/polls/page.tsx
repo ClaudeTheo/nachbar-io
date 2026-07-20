@@ -22,7 +22,7 @@ export default function PollsPage() {
       const supabase = createClient();
       let query = supabase
         .from("polls")
-        .select("*, user:users(display_name, avatar_url)")
+        .select("*, user:user_public_profiles!polls_user_public_profile_fkey(display_name, avatar_url)")
         .eq("quarter_id", currentQuarter!.id)
         .order("created_at", { ascending: false });
 
@@ -139,7 +139,9 @@ function PollCard({ poll }: { poll: Poll }) {
               {poll.vote_count || 0} Stimmen
             </span>
             <span className="text-xs text-muted-foreground">·</span>
-            <span className="text-xs text-muted-foreground">{poll.user?.display_name}</span>
+            <span className="text-xs text-muted-foreground">
+              {poll.user?.display_name ?? "Nachbar"}
+            </span>
             <span className="text-xs text-muted-foreground">·</span>
             <span className="text-xs text-muted-foreground">{timeAgo}</span>
           </div>

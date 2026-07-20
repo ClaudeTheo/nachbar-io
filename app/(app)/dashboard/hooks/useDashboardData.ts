@@ -172,9 +172,9 @@ export function useDashboardData(): DashboardData {
             (l: { caregiver_id: string }) => l.caregiver_id,
           );
           const { data: caregiverProfiles } = await supabase
-            .from("users")
-            .select("id, display_name, avatar_url")
-            .in("id", caregiverIds);
+            .from("user_public_profiles")
+            .select("id:user_id, display_name, avatar_url")
+            .in("user_id", caregiverIds);
 
           if (caregiverProfiles) {
             setCaregivers(
@@ -214,7 +214,7 @@ export function useDashboardData(): DashboardData {
           supabase
             .from("alerts")
             .select(
-              "*, user:users(display_name, avatar_url), household:households(street_name, house_number, lat, lng)",
+              "*, user:user_public_profiles!alerts_user_public_profile_fkey(display_name, avatar_url), household:households(street_name, house_number, lat, lng)",
             )
             .eq("quarter_id", currentQuarter.id)
             .in("status", ["open", "help_coming"])
@@ -229,7 +229,7 @@ export function useDashboardData(): DashboardData {
             .limit(3),
           supabase
             .from("help_requests")
-            .select("*, user:users(display_name, avatar_url)")
+            .select("*, user:user_public_profiles!help_requests_user_public_profile_fkey(display_name, avatar_url)")
             .eq("quarter_id", currentQuarter.id)
             .eq("status", "active")
             .gte("expires_at", new Date().toISOString())
@@ -238,7 +238,7 @@ export function useDashboardData(): DashboardData {
             .limit(5),
           supabase
             .from("marketplace_items")
-            .select("*, user:users(display_name, avatar_url)")
+            .select("*, user:user_public_profiles!marketplace_user_public_profile_fkey(display_name, avatar_url)")
             .eq("quarter_id", currentQuarter.id)
             .eq("status", "active")
             .order("created_at", { ascending: false })

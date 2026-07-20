@@ -119,7 +119,7 @@ export default function ReportDetailPage() {
       // Kommentare mit Benutzerinfo abrufen
       const { data: commentsData, error: commentsError } = await supabase
         .from("municipal_report_comments")
-        .select("*, user:users(display_name, avatar_url)")
+        .select("*, user:user_public_profiles!report_comments_user_public_profile_fkey(display_name, avatar_url)")
         .eq("report_id", id)
         .order("created_at", { ascending: true });
 
@@ -169,7 +169,7 @@ export default function ReportDetailPage() {
       // Kommentarliste aktualisieren
       const { data: updatedComments } = await supabase
         .from("municipal_report_comments")
-        .select("*, user:users(display_name, avatar_url)")
+        .select("*, user:user_public_profiles!report_comments_user_public_profile_fkey(display_name, avatar_url)")
         .eq("report_id", id)
         .order("created_at", { ascending: true });
 

@@ -53,7 +53,7 @@ vi.mock("@/lib/supabase/server", () => ({
           insert: () => Promise.resolve({ error: null }),
         };
       }
-      if (table === "users") {
+      if (table === "user_public_profiles") {
         return {
           select: () => ({
             eq: () => ({

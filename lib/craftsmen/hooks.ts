@@ -28,7 +28,7 @@ export async function loadCraftsmenList(opts: {
 
   let query = supabase
     .from("community_tips")
-    .select("*, user:users(display_name, avatar_url)")
+    .select("*, user:user_public_profiles!craftsman_recs_user_public_profile_fkey(display_name, avatar_url)")
     .eq("category", "craftsmen")
     .eq("status", "active")
     .order("is_premium", { ascending: false })
@@ -57,12 +57,12 @@ export async function loadCraftsmanDetail(tipId: string) {
   const [tipResult, recResult, usageResult] = await Promise.all([
     supabase
       .from("community_tips")
-      .select("*, user:users(display_name, avatar_url)")
+      .select("*, user:user_public_profiles!craftsman_recs_user_public_profile_fkey(display_name, avatar_url)")
       .eq("id", tipId)
       .single(),
     supabase
       .from("craftsman_recommendations")
-      .select("*, user:users(display_name, avatar_url)")
+      .select("*, user:user_public_profiles!craftsman_recs_user_public_profile_fkey(display_name, avatar_url)")
       .eq("tip_id", tipId)
       .order("created_at", { ascending: false }),
     supabase

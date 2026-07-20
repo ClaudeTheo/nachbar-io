@@ -158,9 +158,9 @@ async function notifyMessageRecipient(
     const serviceClient = createServiceClient(serviceUrl, serviceKey);
 
     const { data: sender } = await serviceClient
-      .from("users")
+      .from("user_public_profiles")
       .select("display_name")
-      .eq("id", senderId)
+      .eq("user_id", senderId)
       .single();
     const firstName =
       (sender?.display_name ?? "").trim().split(/\s+/)[0] || "Jemand";

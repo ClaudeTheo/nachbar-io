@@ -25,7 +25,7 @@ export async function GET() {
 
     let query = adminDb
       .from("help_requests")
-      .select("id, title, description, created_at, user:users(display_name)")
+      .select("id, title, description, created_at, user:user_public_profiles!help_requests_user_public_profile_fkey(display_name)")
       .eq("category", "board")
       .eq("status", "active")
       .order("created_at", { ascending: false })

@@ -22,7 +22,7 @@ export default function LostFoundPage() {
       const supabase = createClient();
       const { data } = await supabase
         .from("lost_found")
-        .select("*, user:users(display_name)")
+        .select("*, user:user_public_profiles!lost_found_user_public_profile_fkey(display_name)")
         .eq("quarter_id", currentQuarter!.id)
         .eq("status", "open")
         .order("created_at", { ascending: false });
@@ -103,7 +103,7 @@ function LostFoundCard({ item }: { item: LostFoundItem }) {
         <p className="mt-1 text-xs text-info-blue">📍 {item.location_hint}</p>
       )}
       <p className="mt-2 text-xs text-muted-foreground">
-        {item.user?.display_name} · {timeAgo}
+        {item.user?.display_name ?? "Nachbar"} · {timeAgo}
       </p>
     </div>
   );

@@ -162,7 +162,7 @@ vi.mock("@/lib/supabase/client", () => ({
         };
       }
 
-      if (table === "users") {
+      if (table === "user_public_profiles") {
         return {
           select: () => ({
             in: () => Promise.resolve({ data: mockRequesters, error: null }),

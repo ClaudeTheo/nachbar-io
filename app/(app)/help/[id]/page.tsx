@@ -49,7 +49,7 @@ export default function HelpDetailPage() {
       // Hilfe-Eintrag laden
       const { data, error: fetchError } = await supabase
         .from("help_requests")
-        .select("*, user:users(display_name, avatar_url)")
+        .select("*, user:user_public_profiles!help_requests_user_public_profile_fkey(display_name, avatar_url)")
         .eq("id", id)
         .maybeSingle();
 
@@ -65,7 +65,7 @@ export default function HelpDetailPage() {
       try {
         const { data: respData } = await supabase
           .from("help_responses")
-          .select("*, responder:users(display_name, avatar_url)")
+          .select("*, responder:user_public_profiles!help_responses_public_profile_fkey(display_name, avatar_url)")
           .eq("help_request_id", id as string)
           .order("created_at", { ascending: true });
 

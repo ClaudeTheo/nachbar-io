@@ -188,9 +188,9 @@ export default function CareStatusPage() {
 
         // Profile laden
         const { data: profiles } = await supabase
-          .from("users")
-          .select("id, display_name, avatar_url")
-          .in("id", residentIds);
+          .from("user_public_profiles")
+          .select("id:user_id, display_name, avatar_url")
+          .in("user_id", residentIds);
 
         // Heartbeats laden (letzter pro Bewohner)
         const residents: ConnectedResident[] = [];
@@ -243,9 +243,9 @@ export default function CareStatusPage() {
 
           if (doctorIds.length > 0) {
             const { data: doctorUsers } = await supabase
-              .from("users")
-              .select("id, display_name")
-              .in("id", doctorIds);
+              .from("user_public_profiles")
+              .select("id:user_id, display_name")
+              .in("user_id", doctorIds);
 
             for (const doc of doctorUsers || []) {
               doctorNameMap[doc.id] = doc.display_name || "Arzt";

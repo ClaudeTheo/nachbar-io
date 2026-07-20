@@ -27,7 +27,7 @@ export default function TipsPage() {
       const supabase = createClient();
       let query = supabase
         .from("community_tips")
-        .select("*, user:users(display_name, avatar_url)")
+        .select("*, user:user_public_profiles!community_tips_user_public_profile_fkey(display_name, avatar_url)")
         .eq("status", "active")
         .neq("category", "craftsmen")
         .order("created_at", { ascending: false })

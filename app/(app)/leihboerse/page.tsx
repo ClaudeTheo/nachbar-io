@@ -32,7 +32,7 @@ export default function LeihboersePage() {
     const supabase = createClient();
     let query = supabase
       .from("leihboerse_items")
-      .select("*, user:users!user_id(display_name, avatar_url)")
+      .select("*, user:user_public_profiles!leihboerse_user_public_profile_fkey(display_name, avatar_url)")
       .eq("quarter_id", currentQuarter.id)
       .eq("status", "active")
       .order("created_at", { ascending: false });
@@ -193,7 +193,7 @@ function LeihboerseCard({ item }: { item: LeihboerseItem }) {
           <div className="mt-2 flex items-center justify-between">
             {item.deposit && <span className="text-sm text-muted-foreground">Pfand: {item.deposit}</span>}
             <span className="ml-auto text-xs text-muted-foreground">
-              {item.user?.display_name} · {timeAgo}
+              {item.user?.display_name ?? "Nachbar"} · {timeAgo}
             </span>
           </div>
         </div>

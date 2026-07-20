@@ -7,7 +7,7 @@ import type { Alert, AlertCategory, AlertStatus, AlertResponse, LocationSource }
 
 // Standard-Select mit Joins (User + Household + Responses)
 const ALERT_SELECT_WITH_RELATIONS =
-  "*, user:users(display_name, avatar_url), household:households(street_name, house_number, lat, lng), responses:alert_responses(*, responder:users(display_name, avatar_url))";
+  "*, user:user_public_profiles!alerts_user_public_profile_fkey(display_name, avatar_url), household:households(street_name, house_number, lat, lng), responses:alert_responses(*, responder:user_public_profiles!alert_responses_public_profile_fkey(display_name, avatar_url))";
 
 // ============================================================
 // Typen fuer Insert-Parameter

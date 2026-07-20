@@ -30,7 +30,7 @@ export async function GET(req: NextRequest) {
         id,
         course:prevention_courses(
           id, title, starts_at, ends_at,
-          instructor:users!prevention_courses_instructor_id_fkey(display_name)
+          instructor:user_public_profiles!prevention_courses_public_profile_fkey(display_name)
         )
       `,
       )

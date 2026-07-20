@@ -155,9 +155,9 @@ export function GlobalCallListener() {
 
             // Anrufer-Name laden
             const { data: caller } = await supabase
-              .from('users')
+              .from('user_public_profiles')
               .select('display_name')
-              .eq('id', call.caller_id)
+              .eq('user_id', call.caller_id)
               .single();
 
             // Welle AA-4: Auto-Annahme nur bei beidseitigem Opt-in im Zeitfenster.

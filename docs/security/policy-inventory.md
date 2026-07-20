@@ -326,7 +326,7 @@ Kennzahlen: **562 Policies** · 208 public-Tabellen (1 OHNE RLS) · 36 Trigger �
 | public.household_members | hm_admin | ALL | public | is_admin() |
 | public.household_members | hm_delete_own_or_admin | DELETE | public | ((user_id = auth.uid()) OR (EXISTS ( SELECT 1 FROM users u WHERE ((u.id = auth.uid()) AND (u.is_admin = true))))) |
 | public.household_members | hm_insert_restricted | INSERT | public |  | ((user_id = auth.uid()) AND ((EXISTS ( SELECT 1 FROM verification_requests vr WHERE ((vr.user_id = auth.uid()) AND (vr.household_id = household_members.househol |
-| public.household_members | hm_read | SELECT | public | ((user_id = auth.uid()) OR is_verified_member()) |
+| public.household_members | household_members_own_household_select | SELECT | authenticated | ((user_id = ( SELECT auth.uid() AS uid)) OR is_my_verified_household(household_id)) |
 | public.households | households_admin | ALL | public | is_admin() |
 | public.households | households_quarter_select | SELECT | public | ((quarter_id = get_user_quarter_id()) OR is_super_admin() OR is_quarter_admin_for(quarter_id)) |
 | public.households | households_update | UPDATE | public | ((EXISTS ( SELECT 1 FROM household_members hm WHERE ((hm.household_id = households.id) AND (hm.user_id = auth.uid()) AND (hm.verified_at IS NOT NULL)))) OR (EXI |
@@ -522,7 +522,7 @@ Kennzahlen: **562 Policies** · 208 public-Tabellen (1 OHNE RLS) · 36 Trigger �
 | public.users | users_update_own | UPDATE | public | (id = auth.uid()) |
 | public.vacation_modes | vacation_create | INSERT | public |  | (is_verified_member() AND (user_id = auth.uid())) |
 | public.vacation_modes | vacation_delete | DELETE | public | (user_id = auth.uid()) |
-| public.vacation_modes | vacation_read | SELECT | public | is_verified_member() |
+| public.vacation_modes | vacation_owner_select | SELECT | authenticated | (user_id = ( SELECT auth.uid() AS uid)) |
 | public.vacation_modes | vacation_update | UPDATE | public | (user_id = auth.uid()) |
 | public.verification_requests | verification_requests_admin_read | SELECT | public | (EXISTS ( SELECT 1 FROM users WHERE ((users.id = auth.uid()) AND (users.is_admin = true)))) |
 | public.verification_requests | verification_requests_admin_update | UPDATE | public | (EXISTS ( SELECT 1 FROM users WHERE ((users.id = auth.uid()) AND (users.is_admin = true)))) |

@@ -179,7 +179,7 @@ export async function listUnverifiedNeighbors(
     .eq("households.quarter_id", quarterId)
     .eq("users.trust_level", "new");
 
-  if (!unverified) return [];
+  if (!unverified || unverified.length === 0) return [];
 
   // Eigene Vouches laden
   const { data: myVouches } = await supabase

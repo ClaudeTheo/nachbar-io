@@ -7,6 +7,8 @@ import {
   errorResponse,
   successResponse,
 } from "@/lib/care/api-helpers";
+import { getAuthorizedResidentHouseholdId } from "@/lib/care/resident-household.service";
+import { handleServiceError } from "@/lib/services/service-error";
 
 /**
  * GET /api/care/household?resident_id=...
@@ -24,31 +26,14 @@ export async function GET(request: NextRequest) {
   }
 
   // Zugriffsprüfung: aktiver Caregiver-Link zum Bewohner
-  const { data: link } = await supabase
-    .from("caregiver_links")
-    .select("id")
-    .eq("caregiver_id", user.id)
-    .eq("resident_id", residentId)
-    .is("revoked_at", null)
-    .limit(1)
-    .maybeSingle();
-
-  if (!link) {
-    return errorResponse("Kein aktiver Caregiver-Link zu diesem Bewohner", 403);
+  try {
+    const householdId = await getAuthorizedResidentHouseholdId(
+      supabase,
+      user.id,
+      residentId,
+    );
+    return successResponse({ household_id: householdId });
+  } catch (error) {
+    return handleServiceError(error, request, "/api/care/household");
   }
-
-  // Haushalt des Bewohners ermitteln
-  const { data: member, error } = await supabase
-    .from("household_members")
-    .select("household_id")
-    .eq("user_id", residentId)
-    .not("verified_at", "is", null)
-    .limit(1)
-    .maybeSingle();
-
-  if (error || !member) {
-    return errorResponse("Bewohner ist keinem Haushalt zugeordnet", 404);
-  }
-
-  return successResponse({ household_id: member.household_id });
 }

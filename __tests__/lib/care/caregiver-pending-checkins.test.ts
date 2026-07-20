@@ -68,6 +68,21 @@ describe("loadCaregiverPendingCheckinHouseholds", () => {
     expect(result.size).toBe(0);
   });
 
+  it("liefert nach RLS-leerer Mitgliedersuche ein leeres Set ohne Fehler", async () => {
+    const supabase = createMockSupabase({
+      caregiver_links: [{ resident_id: "senior-1" }],
+      care_checkins: [{ senior_id: "senior-1" }],
+      household_members: [],
+    }) as never;
+
+    const result = await loadCaregiverPendingCheckinHouseholds(
+      supabase,
+      "caregiver-1",
+    );
+
+    expect(result).toEqual(new Set());
+  });
+
   it("liefert household_ids fuer pending Check-ins der zugewiesenen Senioren", async () => {
     const supabase = createMockSupabase({
       caregiver_links: [

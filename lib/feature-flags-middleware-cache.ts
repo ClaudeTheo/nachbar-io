@@ -6,6 +6,11 @@
 
 import { getSecurityRedis } from "@/lib/security/redis";
 import { createClient } from "@/lib/supabase/server";
+import {
+  normalizeFeatureFlagConfig,
+  resolveFeatureFlagAccess,
+  type FeatureFlagGateConfig,
+} from "@/lib/feature-flags-server";
 
 const TTL_SECONDS = 60;
 
@@ -18,14 +23,15 @@ const TTL_SECONDS = 60;
  * PILOT_MODE wird bewusst nicht fuer Feature-Flag-Logik genutzt.
  */
 export async function getCachedFlagEnabled(flagKey: string): Promise<boolean> {
-  const cacheKey = `ff:${flagKey}`;
+  // v2 trennt die neue Konfigurations-Form von alten gecachten Boolean-Werten.
+  const cacheKey = `ff:v2:${flagKey}`;
   const redis = getSecurityRedis();
+  let flag: FeatureFlagGateConfig | null = null;
 
   if (redis) {
     try {
-      const cached = await redis.get<string | number>(cacheKey);
-      if (cached === "1" || cached === 1) return true;
-      if (cached === "0" || cached === 0) return false;
+      const cached = await redis.get<FeatureFlagGateConfig>(cacheKey);
+      flag = normalizeFeatureFlagConfig(cached);
     } catch {
       // Cache-Fehler: weiter zum DB-Fallback
     }
@@ -33,22 +39,26 @@ export async function getCachedFlagEnabled(flagKey: string): Promise<boolean> {
 
   try {
     const supabase = await createClient();
-    const { data } = await supabase
-      .from("feature_flags")
-      .select("enabled")
-      .eq("key", flagKey)
-      .single();
-    const enabled = data?.enabled === true;
 
-    if (redis) {
-      try {
-        await redis.set(cacheKey, enabled ? "1" : "0", { ex: TTL_SECONDS });
-      } catch {
-        // Cache-Write-Fehler ignorieren, Antwort trotzdem zurueckgeben
+    if (!flag) {
+      const { data } = await supabase
+        .from("feature_flags")
+        .select("enabled, enabled_quarters, admin_override")
+        .eq("key", flagKey)
+        .single();
+      flag = normalizeFeatureFlagConfig(data);
+      if (!flag) return false;
+
+      if (redis) {
+        try {
+          await redis.set(cacheKey, flag, { ex: TTL_SECONDS });
+        } catch {
+          // Cache-Write-Fehler ignorieren, Antwort trotzdem zurueckgeben
+        }
       }
     }
 
-    return enabled;
+    return resolveFeatureFlagAccess(supabase, flag);
   } catch {
     // Fail-closed: DB-Fehler -> Feature als disabled behandeln
     return false;

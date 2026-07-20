@@ -20,6 +20,12 @@ describe("getUserQuarterId", () => {
 
     const result = await getUserQuarterId(mock.supabase, "user-1");
     expect(result).toBe("q-bad-saeckingen");
+    expect(mock.fromCalls[0]?.args).toContainEqual([
+      "not",
+      "verified_at",
+      "is",
+      null,
+    ]);
   });
 
   it("gibt null zurueck wenn Nutzer keine Mitgliedschaft hat", async () => {

@@ -35,7 +35,11 @@ function buildSupabaseMock(options: {
   });
 
   const flagSingle: AnyMock = vi.fn(async () => ({
-    data: { enabled: flag },
+    data: {
+      enabled: flag,
+      enabled_quarters: [],
+      admin_override: false,
+    },
     error: null,
   }));
 

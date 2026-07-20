@@ -6,6 +6,7 @@
 import type { ReactNode } from 'react';
 import { useFeatureFlag } from '@/lib/feature-flags';
 import type { UserContext } from '@/lib/feature-flags';
+import { useQuarter } from '@/lib/quarters';
 import { useUserRole } from '@/lib/quarters/hooks';
 import { useSubscription } from '@/lib/care/hooks/useSubscription';
 
@@ -16,22 +17,21 @@ interface FeatureGateProps {
   children: ReactNode;
   /** Wird gerendert wenn das Flag inaktiv ist (Standard: null) */
   fallback?: ReactNode;
-  /** Optionaler Quartier-ID Override (sonst nicht geprüft) */
-  quarterId?: string;
 }
 
 /**
  * Rendert children nur wenn das DB-Feature-Flag für den aktuellen User aktiv ist.
- * Nutzt useUserRole und useSubscription um den UserContext zu ermitteln.
+ * Nutzt den bereits geladenen Quartier-, Rollen- und Abo-Kontext für die UI.
  */
-export function FeatureGate({ feature, children, fallback = null, quarterId }: FeatureGateProps) {
+export function FeatureGate({ feature, children, fallback = null }: FeatureGateProps) {
   const { role } = useUserRole();
+  const { currentQuarter } = useQuarter();
   const { subscription } = useSubscription();
 
   const userContext: UserContext = {
     role,
     plan: subscription?.plan ?? 'free',
-    quarter_id: quarterId,
+    quarter_id: currentQuarter?.id,
   };
 
   const isActive = useFeatureFlag(feature, userContext);

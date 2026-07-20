@@ -56,6 +56,11 @@ keine Berechtigungsquelle.
 - `components/FeatureGate.tsx`
   - entfernt den manipulierbaren `quarterId`-Prop und verwendet den vorhandenen
     geladenen Quartier-Kontext ausschließlich für die UI-Ausblendung.
+- `tests/e2e/helpers/db-seeder.ts`
+  - verifiziert synthetische `household_members` nach jedem erfolgreichen
+    Service-Role-Upsert in einem separaten UPDATE. Der vorhandene INSERT-Trigger
+    entfernt `verified_at` bei fehlender `auth.uid()` absichtlich; ein
+    `merge-duplicates`-Upsert meldet dabei keinen Fehler.
 - Tests decken Serverresolver, Middleware-Cache, Client-Kontext, verifizierte
   Mitgliedschaft sowie bestehende Leistungen-/Municipal-/Health-/Pilot-Consumer ab.
 
@@ -70,6 +75,11 @@ keine Berechtigungsquelle.
    freigegeben (`expected false, received true`).
 5. GREEN nach Implementierung: gezielter Scope 11 Dateien, 144/144 Tests.
 6. Vollsuite: 765 Dateien, 5.334 bestanden, 1 übersprungen, 0 fehlgeschlagen.
+7. Erster PR-CI-Lauf: 91/95 Multi-Agent-Tests bestanden, 1 Skip; S2.1, S2.2
+   und S8.3 reproduzierten den Testfixture-Fehler `quarter_id ist erforderlich`,
+   weil erfolgreiche Membership-Upserts nicht separat verifiziert wurden.
+8. Seeder-Fix lokal: 3 Dateien, 31/31 Tests sowie tsc und ESLint GREEN. Der
+   Produktionsfilter bleibt unverändert fail-closed.
 
 ## Security-Mini-Audit
 
@@ -103,6 +113,7 @@ Mini-Audit Pass W2-FF (2026-07-20):
 | `npm run build` | GREEN — Next.js Production-Build, 246 Seiten |
 | `git diff --check` | GREEN |
 | `npm run test:e2e:pilot` | Infrastruktur-blockiert vor Pilot-Kriterium 1: isolierter Worktree enthält absichtlich keine `.env.local`; Auth-Setup kann daher `.auth/senior_s.json` nicht erzeugen. Setup/Auth-Wrapper 10/10 liefen, 0 Pilot-Kriterien bestanden, 11 nach Serientest-Abbruch nicht ausgeführt. Kein ENV-/Secret-Workaround und kein Cloud-Ausweichen. |
+| PR-CI Erstlauf | Unit/Types/Lint und S7 GREEN; S1–S6 91 bestanden, 1 Skip, 3 fixture-bedingte Fehler. Seeder-Ursache behoben; erneuter CI-Lauf folgt automatisch mit dem Branch-Push. |
 
 ## Offene Risiken und Review-Fokus
 
@@ -117,6 +128,8 @@ Mini-Audit Pass W2-FF (2026-07-20):
 - Der lokale Pilot-Smoke braucht einen separat bereitgestellten lokalen
   E2E-ENV/Auth-State. Das ist ausdrücklich kein Anlass, Prod-/Cloud-Zugang oder
   Secrets in diesen Worktree zu übernehmen.
+- Die synthetische E2E-Verifizierung bleibt test-only. Es wurde weder eine
+  Produktionspolicy noch der sichere `verified_at`-Filter gelockert.
 
 ## Rote Restschritte
 

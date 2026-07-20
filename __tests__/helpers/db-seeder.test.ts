@@ -1,5 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { getE2eUserRole } from "@/tests/e2e/helpers/db-seeder";
+import {
+  getE2eUserRole,
+  shouldVerifyE2eMembership,
+} from "@/tests/e2e/helpers/db-seeder";
 import type { AgentCredentials } from "@/tests/e2e/helpers/types";
 
 function credentials(role: AgentCredentials["role"]): AgentCredentials {
@@ -24,5 +27,22 @@ describe("getE2eUserRole", () => {
     ["unverified", "resident"],
   ] as const)("mappt E2E-Agent %s auf users.role=%s", (agentRole, userRole) => {
     expect(getE2eUserRole(credentials(agentRole))).toBe(userRole);
+  });
+});
+
+describe("shouldVerifyE2eMembership", () => {
+  it("verifiziert auch einen erfolgreichen merge-duplicates-Upsert separat", () => {
+    expect(shouldVerifyE2eMembership(null)).toBe(true);
+  });
+
+  it.each(["duplicate key", "409: conflict"])(
+    "verifiziert eine bereits vorhandene Mitgliedschaft: %s",
+    (error) => {
+      expect(shouldVerifyE2eMembership(error)).toBe(true);
+    },
+  );
+
+  it("patcht nach einem anderen Insert-Fehler nicht", () => {
+    expect(shouldVerifyE2eMembership("500: unavailable")).toBe(false);
   });
 });

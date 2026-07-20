@@ -56,16 +56,16 @@ export async function prepareCertificate(
 
   // Teilnehmer-Name
   const { data: user } = await supabase
-    .from("users")
+    .from("user_public_profiles")
     .select("display_name")
-    .eq("id", enrollment.user_id)
+    .eq("user_id", enrollment.user_id)
     .single();
 
   // Kursleiter-Name
   const { data: instructor } = await supabase
-    .from("users")
+    .from("user_public_profiles")
     .select("display_name")
-    .eq("id", course.instructor_id as string)
+    .eq("user_id", course.instructor_id as string)
     .single();
 
   // Sitzungen zaehlen

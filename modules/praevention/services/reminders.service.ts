@@ -163,9 +163,9 @@ export async function sendCaregiverInactivityNotice(): Promise<ReminderResult> {
 
     // Bewohner-Name laden
     const { data: resident } = await adminDb
-      .from("users")
+      .from("user_public_profiles")
       .select("display_name")
-      .eq("id", consent.user_id)
+      .eq("user_id", consent.user_id)
       .single();
 
     // Alle Caregiver des Bewohners

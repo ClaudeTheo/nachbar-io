@@ -42,7 +42,7 @@ export default function BoardPage() {
 
       const { data } = await supabase
         .from("help_requests")
-        .select("*, user:users(display_name, avatar_url)")
+        .select("*, user:user_public_profiles!help_requests_user_public_profile_fkey(display_name, avatar_url)")
         .eq("quarter_id", currentQuarter.id)
         .eq("category", "board")
         .eq("status", "active")
@@ -151,7 +151,7 @@ export default function BoardPage() {
         status: "active",
         image_url: imageUrl,
       })
-      .select("*, user:users(display_name, avatar_url)")
+      .select("*, user:user_public_profiles!help_requests_user_public_profile_fkey(display_name, avatar_url)")
       .single();
 
     if (error) {

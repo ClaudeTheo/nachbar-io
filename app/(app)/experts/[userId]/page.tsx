@@ -87,7 +87,7 @@ export default function ExpertDetailPage() {
     const { data: reviewsData } = await supabase
       .from("expert_reviews")
       .select(
-        "*, reviewer:users!expert_reviews_reviewer_user_id_fkey(display_name, avatar_url)",
+        "*, reviewer:user_public_profiles!expert_reviews_public_profile_fkey(display_name, avatar_url)",
       )
       .eq("expert_user_id", expertUserId)
       .order("created_at", { ascending: false });
@@ -112,7 +112,7 @@ export default function ExpertDetailPage() {
     const { data: endorsementsData } = await supabase
       .from("expert_endorsements")
       .select(
-        "*, endorser:users!expert_endorsements_endorser_user_id_fkey(display_name, avatar_url)",
+        "*, endorser:user_public_profiles!expert_endorsements_public_profile_fkey(display_name, avatar_url)",
       )
       .eq("expert_user_id", expertUserId)
       .order("created_at", { ascending: false });

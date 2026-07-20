@@ -42,7 +42,7 @@ export async function GET() {
   const { data, error } = await supabase
     .from("alerts")
     .select(
-      "*, user:users(display_name, avatar_url), responses:alert_responses(*, responder:users(display_name, avatar_url))",
+      "*, user:user_public_profiles!alerts_user_public_profile_fkey(display_name, avatar_url), responses:alert_responses(*, responder:user_public_profiles!alert_responses_public_profile_fkey(display_name, avatar_url))",
     )
     .in("status", ["open", "help_coming"])
     .order("created_at", { ascending: false });

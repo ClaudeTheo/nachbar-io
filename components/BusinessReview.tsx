@@ -75,7 +75,7 @@ export function BusinessReview({ tipId, currentUserId }: BusinessReviewProps) {
     const supabase = createClient();
     const { data } = await supabase
       .from("tip_reviews")
-      .select("id, user_id, rating, text, created_at, user:users(display_name)")
+      .select("id, user_id, rating, text, created_at, user:user_public_profiles!tip_reviews_user_public_profile_fkey(display_name)")
       .eq("tip_id", tipId)
       .order("created_at", { ascending: false });
 

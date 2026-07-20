@@ -50,7 +50,9 @@ describe("getAlertsByQuarter", () => {
     const result = await getAlertsByQuarter("q-1");
     expect(mockFrom).toHaveBeenCalledWith("alerts");
     expect(chain.select).toHaveBeenCalledWith(
-      expect.stringContaining("user:users(display_name, avatar_url)")
+      expect.stringContaining(
+        "user:user_public_profiles!alerts_user_public_profile_fkey(display_name, avatar_url)",
+      )
     );
     expect(chain.eq).toHaveBeenCalledWith("quarter_id", "q-1");
     expect(chain.order).toHaveBeenCalledWith("created_at", { ascending: false });

@@ -33,7 +33,7 @@ export default function TipDetailPage() {
     // Tipp laden
     const { data, error: fetchError } = await supabase
       .from("community_tips")
-      .select("*, user:users(display_name, avatar_url)")
+      .select("*, user:user_public_profiles!community_tips_user_public_profile_fkey(display_name, avatar_url)")
       .eq("id", id)
       .single();
 

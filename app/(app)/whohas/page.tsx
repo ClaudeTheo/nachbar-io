@@ -66,7 +66,7 @@ export default function WhoHasPage() {
       const [questionsResult, householdsResult, membersResult] = await Promise.all([
         supabase
           .from("help_requests")
-          .select("*, user:users(display_name, avatar_url)")
+          .select("*, user:user_public_profiles!help_requests_user_public_profile_fkey(display_name, avatar_url)")
           .eq("quarter_id", currentQuarter.id)
           .eq("category", "whohas")
           .eq("status", "active")
@@ -97,7 +97,7 @@ export default function WhoHasPage() {
         const questionIds = activeQuestions.map((q) => q.id);
         const { data: respData } = await supabase
           .from("help_responses")
-          .select("*, responder:users!help_responses_responder_user_id_fkey(display_name, avatar_url)")
+          .select("*, responder:user_public_profiles!help_responses_public_profile_fkey(display_name, avatar_url)")
           .in("help_request_id", questionIds)
           .order("created_at", { ascending: true });
 
@@ -155,7 +155,7 @@ export default function WhoHasPage() {
         status: "active",
         expires_at: expiresAt.toISOString(),
       })
-      .select("*, user:users(display_name, avatar_url)")
+      .select("*, user:user_public_profiles!help_requests_user_public_profile_fkey(display_name, avatar_url)")
       .single();
 
     if (error) {

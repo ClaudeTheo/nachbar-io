@@ -55,7 +55,7 @@ export async function listShoppingRequests(
   let query = supabase
     .from("care_shopping_requests")
     .select(
-      "*, requester:users!requester_id(display_name), claimer:users!claimed_by(display_name)",
+      "*, requester:user_public_profiles!care_shopping_requester_public_profile_fkey(display_name), claimer:user_public_profiles!care_shopping_claimer_public_profile_fkey(display_name)",
     )
     .order("created_at", { ascending: false })
     .limit(50);
@@ -161,7 +161,7 @@ export async function createShoppingRequest(
       due_date: due_date || null,
       status: "open",
     })
-    .select("*, requester:users!requester_id(display_name)")
+    .select("*, requester:user_public_profiles!care_shopping_requester_public_profile_fkey(display_name)")
     .single();
 
   if (insertError || !shopping) {
@@ -302,7 +302,7 @@ export async function updateShoppingStatus(
     .update(updates)
     .eq("id", requestId)
     .select(
-      "*, requester:users!requester_id(display_name), claimer:users!claimed_by(display_name)",
+      "*, requester:user_public_profiles!care_shopping_requester_public_profile_fkey(display_name), claimer:user_public_profiles!care_shopping_claimer_public_profile_fkey(display_name)",
     )
     .single();
 

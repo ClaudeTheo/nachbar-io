@@ -21,7 +21,7 @@ export async function GET() {
     .select(
       `
       *,
-      instructor:users!prevention_courses_instructor_id_fkey(display_name, avatar_url)
+      instructor:user_public_profiles!prevention_courses_public_profile_fkey(display_name, avatar_url)
     `,
     )
     .in("status", ["planned", "active"])

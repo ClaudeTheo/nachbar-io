@@ -33,7 +33,7 @@ export default function MitessenPage() {
         // Aktive Mahlzeiten laden
         const { data, error } = await supabase
           .from("shared_meals")
-          .select("*, user:users(display_name, avatar_url)")
+          .select("*, user:user_public_profiles!shared_meals_user_public_profile_fkey(display_name, avatar_url)")
           .eq("quarter_id", currentQuarter!.id)
           .in("status", ["active", "full"])
           .gte("meal_date", today)

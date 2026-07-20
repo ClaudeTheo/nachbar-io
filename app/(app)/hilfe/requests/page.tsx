@@ -61,7 +61,7 @@ export default function HelferRequestsPage() {
         const supabase = createClient();
         const { data } = await supabase
           .from("help_requests")
-          .select("id, title, description, category, created_at, requester:users!user_id(display_name)")
+          .select("id, title, description, category, created_at, requester:user_public_profiles!help_requests_user_public_profile_fkey(display_name)")
           .eq("status", "open")
           .order("created_at", { ascending: false })
           .limit(30);

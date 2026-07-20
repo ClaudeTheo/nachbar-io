@@ -96,6 +96,28 @@ grant select, insert, delete on table public.group_post_comments to authenticate
 revoke all on table public.group_notification_settings from anon, authenticated;
 grant select, insert, update, delete on table public.group_notification_settings to authenticated;
 
+-- Private Profile Foundation: Migration 204 beschraenkt Projektion und
+-- Discovery auch auf Spaltenebene. Der pauschale Local-Grant oben darf diese
+-- Defense-in-Depth-Grenzen nicht wieder oeffnen.
+revoke all on table public.user_public_profiles from anon, authenticated;
+grant select on table public.user_public_profiles to authenticated;
+
+revoke all on table public.discovery_profiles from anon, authenticated;
+grant select (
+  id, quarter_id, discoverable, intro_text, adult_attested_at, created_at,
+  updated_at
+) on table public.discovery_profiles to authenticated;
+grant insert (discoverable, intro_text)
+  on table public.discovery_profiles to authenticated;
+grant update (discoverable, intro_text)
+  on table public.discovery_profiles to authenticated;
+grant delete on table public.discovery_profiles to authenticated;
+
+revoke execute on function public.sync_user_public_profile()
+  from public, anon, authenticated;
+revoke execute on function public.protect_discovery_profile_fields()
+  from public, anon, authenticated;
+
 -- Audit-Log / Consent: Clients duerfen nicht aendern/loeschen
 --   Quelle: 150_harden_audit_log.sql / 151_consent_grants.sql
 revoke update, delete on table public.org_audit_log from anon, authenticated;

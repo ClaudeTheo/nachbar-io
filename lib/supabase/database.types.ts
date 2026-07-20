@@ -3606,6 +3606,61 @@ export type Database = {
           },
         ]
       }
+      discovery_profiles: {
+        Row: {
+          adult_attested_at: string | null
+          created_at: string
+          discoverable: boolean
+          id: string
+          intro_text: string | null
+          quarter_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          adult_attested_at?: string | null
+          created_at?: string
+          discoverable?: boolean
+          id?: string
+          intro_text?: string | null
+          quarter_id: string
+          updated_at?: string
+          user_id?: string
+        }
+        Update: {
+          adult_attested_at?: string | null
+          created_at?: string
+          discoverable?: boolean
+          id?: string
+          intro_text?: string | null
+          quarter_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "discovery_profiles_quarter_id_fkey"
+            columns: ["quarter_id"]
+            isOneToOne: false
+            referencedRelation: "quarter_collection_areas"
+            referencedColumns: ["quarter_id"]
+          },
+          {
+            foreignKeyName: "discovery_profiles_quarter_id_fkey"
+            columns: ["quarter_id"]
+            isOneToOne: false
+            referencedRelation: "quarters"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "discovery_profiles_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       doctor_consents: {
         Row: {
           consent_text_hash: string
@@ -9316,6 +9371,38 @@ export type Database = {
             columns: ["org_id"]
             isOneToOne: false
             referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_public_profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          display_name: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          display_name: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          display_name?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_public_profiles_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "users"
             referencedColumns: ["id"]
           },
         ]

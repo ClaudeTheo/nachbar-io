@@ -86,9 +86,9 @@ export async function GET(request: NextRequest) {
 
   if (doctorUserIds.length > 0) {
     const { data: users, error: usersError } = await supabase
-      .from("users")
-      .select("id, display_name, avatar_url")
-      .in("id", doctorUserIds);
+      .from("user_public_profiles")
+      .select("id:user_id, display_name, avatar_url")
+      .in("user_id", doctorUserIds);
 
     if (usersError) {
       console.warn("[doctors] Nutzer-Profile konnten nicht geladen werden:", usersError);

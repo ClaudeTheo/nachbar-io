@@ -31,7 +31,7 @@ export default function MarketplaceDetailPage() {
 
       const { data } = await supabase
         .from("marketplace_items")
-        .select("*, user:users(display_name, avatar_url)")
+        .select("*, user:user_public_profiles!marketplace_user_public_profile_fkey(display_name, avatar_url)")
         .eq("id", id)
         .maybeSingle();
 

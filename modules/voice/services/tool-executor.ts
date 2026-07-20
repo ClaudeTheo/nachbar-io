@@ -310,10 +310,10 @@ export async function executeCompanionTool(
 
         // Empfaenger im Quartier suchen (ueber household_members -> households.quarter_id)
         const { data: recipients } = await supabase
-          .from("users")
-          .select("id, display_name")
+          .from("user_public_profiles")
+          .select("id:user_id, display_name")
           .ilike("display_name", `%${recipientName}%`)
-          .neq("id", userId)
+          .neq("user_id", userId)
           .limit(5);
 
         if (!recipients || recipients.length === 0) {
@@ -432,7 +432,7 @@ export async function executeCompanionTool(
         const { data: meals } = await supabase
           .from("shared_meals")
           .select(
-            "title, type, servings, meal_date, meal_time, cost_hint, user:users(display_name)",
+            "title, type, servings, meal_date, meal_time, cost_hint, user:user_public_profiles!shared_meals_user_public_profile_fkey(display_name)",
           )
           .eq("quarter_id", ctx.quarterId)
           .eq("status", "active")
@@ -588,7 +588,7 @@ export async function executeCompanionTool(
         const { data: requests } = await supabase
           .from("help_requests")
           .select(
-            "title, category, status, user:users(display_name), created_at",
+            "title, category, status, user:user_public_profiles!help_requests_user_public_profile_fkey(display_name), created_at",
           )
           .eq("quarter_id", ctx.quarterId)
           .eq("status", "active")

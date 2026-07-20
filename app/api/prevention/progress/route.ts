@@ -24,7 +24,7 @@ export async function GET(request: NextRequest) {
     .select(
       `
       *,
-      course:prevention_courses(id, title, starts_at, ends_at, status, instructor:users!prevention_courses_instructor_id_fkey(display_name))
+      course:prevention_courses(id, title, starts_at, ends_at, status, instructor:user_public_profiles!prevention_courses_public_profile_fkey(display_name))
     `,
     )
     .eq("user_id", user.id);

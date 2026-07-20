@@ -336,7 +336,7 @@ export async function listMembers(
 ): Promise<GroupMemberWithUser[]> {
   const { data, error } = await supabase
     .from("group_members")
-    .select("*, users(display_name, avatar_url)")
+    .select("*, users:user_public_profiles!group_members_user_public_profile_fkey(display_name, avatar_url)")
     .eq("group_id", groupId)
     .in("status", ["active", "pending"])
     .order("joined_at", { ascending: true });

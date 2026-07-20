@@ -76,9 +76,9 @@ export async function getDeviceStatus(
   let userName = "";
   if (userId) {
     const { data: userProfile } = await supabase
-      .from("users")
+      .from("user_public_profiles")
       .select("display_name")
-      .eq("id", userId)
+      .eq("user_id", userId)
       .single();
     userName = userProfile?.display_name ?? "";
   }
@@ -416,7 +416,7 @@ export async function getDeviceContacts(
       auto_answer_start,
       auto_answer_end,
       auto_answer_senior_consented_at,
-      users!caregiver_links_caregiver_id_fkey(display_name, avatar_url)
+        users:user_public_profiles!caregiver_links_caregiver_public_profile_fkey(display_name, avatar_url)
     `,
     )
     .in("resident_id", residentIds)

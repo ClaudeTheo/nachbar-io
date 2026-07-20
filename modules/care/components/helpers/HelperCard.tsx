@@ -55,7 +55,7 @@ export function HelperCard({ helper, showVerifyButton, onVerify, onRevoke, curre
         {helper.user?.avatar_url ? (
           /* eslint-disable-next-line @next/next/no-img-element */
           <img
-            src={helper.user.avatar_url}
+            src={helper.user?.avatar_url ?? ""}
             alt={displayName}
             className="h-12 w-12 shrink-0 rounded-full object-cover"
           />

@@ -59,7 +59,7 @@ export default function FamilyAlertsPage() {
       const { data: alertData } = await supabase
         .from("alerts")
         .select(
-          "*, user:users(display_name, avatar_url), household:households(street_name, house_number, lat, lng)",
+          "*, user:user_public_profiles!alerts_user_public_profile_fkey(display_name, avatar_url), household:households(street_name, house_number, lat, lng)",
         )
         .in("user_id", residentIds)
         .in("status", ["open", "help_coming"])

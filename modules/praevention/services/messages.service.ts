@@ -77,7 +77,7 @@ export async function getMessagesForUser(
 
   let query = supabase
     .from("prevention_messages")
-    .select("*, sender:users!prevention_messages_sender_id_fkey(display_name)")
+    .select("*, sender:user_public_profiles!prevention_messages_sender_public_profile_fkey(display_name)")
     .or(`recipient_id.eq.${userId},recipient_id.is.null`)
     .order("created_at", { ascending: false });
 
@@ -99,7 +99,7 @@ export async function getSentMessages(
   const { data, error } = await supabase
     .from("prevention_messages")
     .select(
-      "*, recipient:users!prevention_messages_recipient_id_fkey(display_name)",
+      "*, recipient:user_public_profiles!prevention_messages_recipient_public_profile_fkey(display_name)",
     )
     .eq("course_id", courseId)
     .eq("sender_id", senderId)

@@ -80,9 +80,9 @@ export function useMyCaregivers(): UseMyCaregiversResult {
 
         // Caregiver-Profile laden
         const { data: profiles, error: profileError } = await supabase
-          .from("users")
-          .select("id, display_name, avatar_url")
-          .in("id", caregiverIds);
+          .from("user_public_profiles")
+          .select("id:user_id, display_name, avatar_url")
+          .in("user_id", caregiverIds);
 
         if (profileError) {
           setError(profileError.message);

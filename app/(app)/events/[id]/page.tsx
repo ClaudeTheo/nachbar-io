@@ -47,7 +47,7 @@ export default function EventDetailPage() {
       // Event laden
       const { data: eventData, error: eventError } = await supabase
         .from("events")
-        .select("*, user:users(display_name, avatar_url)")
+        .select("*, user:user_public_profiles!events_user_public_profile_fkey(display_name, avatar_url)")
         .eq("id", id)
         .maybeSingle();
 
@@ -62,7 +62,7 @@ export default function EventDetailPage() {
       // Teilnehmer laden
       const { data: participantData } = await supabase
         .from("event_participants")
-        .select("*, user:users(display_name, avatar_url)")
+        .select("*, user:user_public_profiles!event_participants_user_public_profile_fkey(display_name, avatar_url)")
         .eq("event_id", id as string)
         .in("status", ["going", "interested"])
         .order("created_at", { ascending: true });
@@ -167,7 +167,7 @@ export default function EventDetailPage() {
       // Teilnehmer-Liste neu laden
       const { data: refreshed } = await supabase
         .from("event_participants")
-        .select("*, user:users(display_name, avatar_url)")
+        .select("*, user:user_public_profiles!event_participants_user_public_profile_fkey(display_name, avatar_url)")
         .eq("event_id", event.id)
         .in("status", ["going", "interested"])
         .order("created_at", { ascending: true });
@@ -439,7 +439,7 @@ export default function EventDetailPage() {
                   {p.user?.avatar_url ? (
                     /* eslint-disable-next-line @next/next/no-img-element */
                     <img
-                      src={p.user.avatar_url}
+                      src={p.user?.avatar_url ?? ""}
                       alt={p.user?.display_name ?? "Teilnehmer"}
                       className="h-9 w-9 rounded-full object-cover"
                     />
@@ -475,7 +475,7 @@ export default function EventDetailPage() {
                     {p.user?.avatar_url ? (
                       /* eslint-disable-next-line @next/next/no-img-element */
                       <img
-                        src={p.user.avatar_url}
+                        src={p.user?.avatar_url ?? ""}
                         alt={p.user?.display_name ?? "Teilnehmer"}
                         className="h-9 w-9 rounded-full object-cover"
                       />

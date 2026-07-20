@@ -24,7 +24,7 @@ export async function generateReportData(
   // 1. Senior-Profil laden
   const [profileResult, userResult] = await Promise.all([
     supabase.from('care_profiles').select('care_level, created_at').eq('user_id', seniorId).maybeSingle(),
-    supabase.from('users').select('display_name').eq('id', seniorId).single(),
+    supabase.from('user_public_profiles').select('display_name').eq('user_id', seniorId).single(),
   ]);
 
   const senior = {
@@ -127,7 +127,7 @@ export async function generateReportData(
   // Actor-Namen laden
   const actorIds = [...new Set((auditEntries ?? []).map(e => e.actor_id))];
   const { data: actors } = actorIds.length > 0
-    ? await supabase.from('users').select('id, display_name').in('id', actorIds)
+    ? await supabase.from('user_public_profiles').select('id:user_id, display_name').in('user_id', actorIds)
     : { data: [] };
   const actorMap = new Map((actors ?? []).map(a => [a.id, a.display_name]));
 

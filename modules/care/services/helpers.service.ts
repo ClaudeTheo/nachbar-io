@@ -48,7 +48,7 @@ export async function listHelpers(
 
   let query = supabase
     .from("care_helpers")
-    .select("*, user:users!care_helpers_user_id_fkey(display_name, avatar_url)")
+    .select("*, user:user_public_profiles!care_helpers_user_public_profile_fkey(display_name, avatar_url)")
     .order("created_at", { ascending: false });
 
   if (status !== "all") query = query.eq("verification_status", status);
@@ -119,7 +119,7 @@ export async function registerHelper(
       skills,
       availability: availability ?? null,
     })
-    .select("*, user:users!care_helpers_user_id_fkey(display_name, avatar_url)")
+    .select("*, user:user_public_profiles!care_helpers_user_public_profile_fkey(display_name, avatar_url)")
     .single();
 
   if (insertError || !helper) {
@@ -151,7 +151,7 @@ export async function getHelper(
 ): Promise<unknown> {
   const { data, error } = await supabase
     .from("care_helpers")
-    .select("*, user:users!care_helpers_user_id_fkey(display_name, avatar_url)")
+    .select("*, user:user_public_profiles!care_helpers_user_public_profile_fkey(display_name, avatar_url)")
     .eq("id", helperId)
     .single();
 
@@ -233,7 +233,7 @@ export async function updateHelper(
     .from("care_helpers")
     .update(updates)
     .eq("id", helperId)
-    .select("*, user:users!care_helpers_user_id_fkey(display_name, avatar_url)")
+    .select("*, user:user_public_profiles!care_helpers_user_public_profile_fkey(display_name, avatar_url)")
     .single();
 
   if (error) throw new ServiceError("Aktualisierung fehlgeschlagen", 500);

@@ -22,7 +22,7 @@ export default function PollsPage() {
       const supabase = createClient();
       let query = supabase
         .from("polls")
-        .select("*, user:users(display_name, avatar_url)")
+        .select("*, user:user_public_profiles!polls_user_public_profile_fkey(display_name, avatar_url)")
         .eq("quarter_id", currentQuarter!.id)
         .order("created_at", { ascending: false });
 

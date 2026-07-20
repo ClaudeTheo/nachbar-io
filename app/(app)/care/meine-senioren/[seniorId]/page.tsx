@@ -138,9 +138,9 @@ export default function SeniorDetailPage() {
 
     // Name
     supabase
-      .from("users")
+      .from("user_public_profiles")
       .select("display_name")
-      .eq("id", seniorId)
+      .eq("user_id", seniorId)
       .single()
       .then(({ data }) => {
         setSeniorName(data?.display_name ?? "Senior");

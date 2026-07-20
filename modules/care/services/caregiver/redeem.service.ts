@@ -125,9 +125,9 @@ export async function redeemInviteCode(
 
   // Name des Bewohners fuer Bestaetigung holen
   const { data: resident } = await supabase
-    .from("users")
+    .from("user_public_profiles")
     .select("display_name")
-    .eq("id", invite.resident_id)
+    .eq("user_id", invite.resident_id)
     .single();
 
   await writeAuditLog(supabase, {

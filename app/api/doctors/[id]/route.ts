@@ -65,9 +65,9 @@ export async function GET(
 
   const profile = data as DoctorProfileRow;
   const { data: userProfile, error: userError } = await supabase
-    .from("users")
+    .from("user_public_profiles")
     .select("display_name, avatar_url")
-    .eq("id", profile.user_id)
+    .eq("user_id", profile.user_id)
     .maybeSingle();
 
   if (userError) {

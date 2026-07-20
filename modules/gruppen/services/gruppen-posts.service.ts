@@ -16,7 +16,7 @@ export async function listPosts(
 
   const { data, error } = await supabase
     .from("group_posts")
-    .select("*, users(display_name, avatar_url)")
+    .select("*, users:user_public_profiles!group_posts_user_public_profile_fkey(display_name, avatar_url)")
     .eq("group_id", groupId)
     .order("created_at", { ascending: false })
     .range(from, to);
@@ -83,7 +83,7 @@ export async function createPost(
       content: payload.content.trim(),
       image_url: payload.image_url ?? null,
     })
-    .select("*, users(display_name, avatar_url)")
+    .select("*, users:user_public_profiles!group_posts_user_public_profile_fkey(display_name, avatar_url)")
     .single();
 
   if (error)
@@ -104,7 +104,7 @@ export async function listComments(
 ): Promise<GroupPostComment[]> {
   const { data, error } = await supabase
     .from("group_post_comments")
-    .select("*, users(display_name, avatar_url)")
+    .select("*, users:user_public_profiles!group_comments_user_public_profile_fkey(display_name, avatar_url)")
     .eq("post_id", postId)
     .order("created_at", { ascending: true });
 
@@ -158,7 +158,7 @@ export async function createComment(
       user_id: userId,
       content: content.trim(),
     })
-    .select("*, users(display_name, avatar_url)")
+    .select("*, users:user_public_profiles!group_comments_user_public_profile_fkey(display_name, avatar_url)")
     .single();
 
   if (error)

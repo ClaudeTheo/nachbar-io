@@ -74,7 +74,7 @@ export async function listTasks(
   let query = supabase
     .from("care_tasks")
     .select(
-      "*, creator:users!creator_id(display_name), claimer:users!claimed_by(display_name)",
+      "*, creator:user_public_profiles!care_tasks_creator_public_profile_fkey(display_name), claimer:user_public_profiles!care_tasks_claimer_public_profile_fkey(display_name)",
     )
     .order("created_at", { ascending: false })
     .limit(50);
@@ -188,7 +188,7 @@ export async function createTask(
       preferred_time_from: preferred_time_from ?? null,
       preferred_time_to: preferred_time_to ?? null,
     })
-    .select("*, creator:users!creator_id(display_name)")
+    .select("*, creator:user_public_profiles!care_tasks_creator_public_profile_fkey(display_name)")
     .single();
 
   if (insertError || !task) {
@@ -318,7 +318,7 @@ export async function updateTaskStatus(
     .update(updates)
     .eq("id", taskId)
     .select(
-      "*, creator:users!creator_id(display_name), claimer:users!claimed_by(display_name)",
+      "*, creator:user_public_profiles!care_tasks_creator_public_profile_fkey(display_name), claimer:user_public_profiles!care_tasks_claimer_public_profile_fkey(display_name)",
     )
     .single();
 

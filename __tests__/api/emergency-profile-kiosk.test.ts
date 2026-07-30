@@ -1,16 +1,18 @@
 // __tests__/api/emergency-profile-kiosk.test.ts
 // Tests fuer Kiosk-Notfallprofil-Endpoint (Level-1 Only, Device-Auth)
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { createHash } from 'crypto';
 
 // Einzelner maybeSingle-Mock pro Aufruf — wird per mockResolvedValueOnce gesteuert
 const mockMaybeSingle = vi.fn();
 const mockInsert = vi.fn();
+const mockEq = vi.fn();
 
 // Chainable Builder: select().eq().eq().maybeSingle() und select().eq().maybeSingle()
 function chainable() {
   const obj: Record<string, unknown> = {};
   obj.select = vi.fn().mockReturnValue(obj);
-  obj.eq = vi.fn().mockReturnValue(obj);
+  obj.eq = mockEq.mockImplementation(() => obj);
   obj.maybeSingle = mockMaybeSingle;
   obj.insert = mockInsert;
   return obj;
@@ -109,6 +111,35 @@ describe('GET /api/care/emergency-profile/kiosk', () => {
       request as unknown as import('next/server').NextRequest
     );
     expect(response.status).toBe(403);
+  });
+
+  it('fragt kiosk_devices nur per device_token_hash ab, nie per Klartext', async () => {
+    process.env.KIOSK_DEVICE_TOKEN = 'valid-device-token';
+
+    const { GET } = await import(
+      '@/app/api/care/emergency-profile/kiosk/route'
+    );
+
+    // kiosk_devices: nicht gefunden → ENV-Fallback greift
+    mockMaybeSingle.mockResolvedValueOnce({ data: null });
+
+    const request = new Request(
+      'http://localhost/api/care/emergency-profile/kiosk?deviceId=device-1',
+      {
+        method: 'GET',
+        headers: { 'x-device-token': 'valid-device-token' },
+      }
+    );
+    await GET(request as unknown as import('next/server').NextRequest);
+
+    const expectedHash = createHash('sha256')
+      .update('valid-device-token')
+      .digest('hex');
+    const eqCalls = mockEq.mock.calls;
+    expect(eqCalls.some(([col]) => col === 'device_token')).toBe(false);
+    expect(
+      eqCalls.some(([col, val]) => col === 'device_token_hash' && val === expectedHash)
+    ).toBe(true);
   });
 
   it('gibt Level-1 Notfalldaten bei gueltigem Token (ENV-Fallback)', async () => {

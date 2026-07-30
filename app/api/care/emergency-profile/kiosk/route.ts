@@ -5,6 +5,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { decrypt } from "@/modules/care/services/crypto";
+import { hashDeviceToken } from "@/lib/device/auth";
 
 // Service-Client erstellen (umgeht RLS — Kiosk hat keine User-Session)
 function getServiceClient() {
@@ -19,15 +20,19 @@ async function verifyDevice(
   deviceId: string,
   deviceToken: string,
 ): Promise<{ valid: boolean; userId?: string }> {
-  // Versuch 1: kiosk_devices Tabelle (fuer Produktionsbetrieb)
+  // Versuch 1: kiosk_devices Tabelle (fuer Produktionsbetrieb).
+  // Vergleich nur gegen device_token_hash (SHA-256) — nie Klartext.
+  // Stand 2026-07-30 existiert kiosk_devices weder in einer Migration noch
+  // in Prod (Lookup faellt durch); wird die Tabelle eingefuehrt, MUSS sie
+  // device_token_hash speichern.
   try {
     const { data: device } = (await supabase
       .from("kiosk_devices")
-      .select("id, user_id, device_token")
+      .select("id, user_id, device_token_hash")
       .eq("device_id", deviceId)
-      .eq("device_token", deviceToken)
+      .eq("device_token_hash", hashDeviceToken(deviceToken))
       .maybeSingle()) as {
-      data: { id: string; user_id: string; device_token: string } | null;
+      data: { id: string; user_id: string; device_token_hash: string } | null;
     };
 
     if (device) {

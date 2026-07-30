@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import Anthropic from "@anthropic-ai/sdk";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { createClient as createServiceClient } from "@supabase/supabase-js";
+import { hashDeviceToken } from "@/lib/device/auth";
 import {
   AI_DAILY_USER_LIMIT,
   consumeAiDailyUserLimit,
@@ -80,14 +81,18 @@ async function verifyDevice(
   deviceId: string,
   deviceToken: string,
 ): Promise<{ valid: boolean; userId?: string }> {
+  // Vergleich nur gegen device_token_hash (SHA-256) — nie Klartext.
+  // Stand 2026-07-30 existiert kiosk_devices weder in einer Migration noch
+  // in Prod (Lookup faellt durch); wird die Tabelle eingefuehrt, MUSS sie
+  // device_token_hash speichern.
   try {
     const { data } = (await supabase
       .from("kiosk_devices")
-      .select("id, user_id, device_token")
+      .select("id, user_id, device_token_hash")
       .eq("device_id", deviceId)
-      .eq("device_token", deviceToken)
+      .eq("device_token_hash", hashDeviceToken(deviceToken))
       .maybeSingle()) as {
-      data: { id: string; user_id: string | null; device_token: string } | null;
+      data: { id: string; user_id: string | null; device_token_hash: string } | null;
     };
 
     if (data) {

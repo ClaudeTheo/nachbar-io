@@ -1,6 +1,7 @@
 // __tests__/api/sos-events.test.ts
 // Tests fuer SOS Event-Splitting: sos_opened (nur Log) vs sos_alerted (Log + Push)
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { createHash } from 'crypto';
 
 // Mocks fuer Supabase-Chainable-Queries
 const mockMaybeSingle = vi.fn();
@@ -69,6 +70,26 @@ describe('POST /api/escalation/sos', () => {
     );
     const res = await POST(req as unknown as import('next/server').NextRequest);
     expect(res.status).toBe(403);
+  });
+
+  it('fragt kiosk_devices nur per device_token_hash ab, nie per Klartext', async () => {
+    const { POST } = await import('@/app/api/escalation/sos/route');
+
+    // kiosk_devices: nicht gefunden → ENV-Fallback greift
+    mockMaybeSingle.mockResolvedValueOnce({ data: null });
+    // audit_log insert (sos_opened)
+    mockInsert.mockResolvedValueOnce({ error: null });
+
+    const req = makeRequest(
+      { deviceId: 'dev-1', event_type: 'sos_opened' },
+      { 'x-device-token': 'valid-device-token' }
+    );
+    await POST(req as unknown as import('next/server').NextRequest);
+
+    const expectedHash = createHash('sha256').update('valid-device-token').digest('hex');
+    const eqCalls = mockEq.mock.calls;
+    expect(eqCalls.some(([col]) => col === 'device_token')).toBe(false);
+    expect(eqCalls.some(([col, val]) => col === 'device_token_hash' && val === expectedHash)).toBe(true);
   });
 
   it('gibt 400 bei unbekanntem event_type', async () => {

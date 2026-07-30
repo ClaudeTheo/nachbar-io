@@ -63,34 +63,14 @@ export async function authenticateDevice(
   const supabase = getSupabase();
   const tokenHash = hashDeviceToken(token);
 
-  // Primaer: Lookup via token_hash (nach Migration 041)
-  let device: { id: string; household_id: string } | null = null;
-
-  const { data: hashMatch } = await supabase
+  // Lookup ausschliesslich via token_hash — der Klartext-Fallback der
+  // Uebergangsphase (Mig 041) ist entfernt, die Klartext-Spalte faellt
+  // mit Migration 204 (K7-Abschluss).
+  const { data: device } = await supabase
     .from("device_tokens")
     .select("id, household_id")
     .eq("token_hash", tokenHash)
     .single();
-
-  if (hashMatch) {
-    device = hashMatch;
-  } else {
-    // Fallback: Klartext-Token (fuer Uebergangsphase vor Migration 041)
-    const { data: plainMatch } = await supabase
-      .from("device_tokens")
-      .select("id, household_id")
-      .eq("token", token)
-      .single();
-
-    if (plainMatch) {
-      device = plainMatch;
-      // Automatisch den Hash nachpflegen
-      await supabase
-        .from("device_tokens")
-        .update({ token_hash: tokenHash })
-        .eq("id", plainMatch.id);
-    }
-  }
 
   if (!device) {
     return NextResponse.json({ error: "Ungueltiger Token" }, { status: 401 });

@@ -1,6 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { createHash } from "crypto";
 
 const mockMaybeSingle = vi.fn();
+const mockEq = vi.fn();
 const mockLoadMemoryContext = vi.fn();
 const mockConsumeAiDailyUserLimit = vi.fn();
 const mockSendMessage = vi.fn();
@@ -12,7 +14,7 @@ const mockCanUsePersonalAi = vi.fn();
 function chainable() {
   const obj: Record<string, unknown> = {};
   obj.select = vi.fn(() => obj);
-  obj.eq = vi.fn(() => obj);
+  obj.eq = mockEq.mockImplementation(() => obj);
   obj.maybeSingle = mockMaybeSingle;
   return obj;
 }
@@ -111,6 +113,27 @@ describe("POST /api/kiosk/companion security", () => {
     expect(mockLoadMemoryContext).not.toHaveBeenCalled();
     expect(mockConsumeAiDailyUserLimit).not.toHaveBeenCalled();
     expect(mockSendMessage).not.toHaveBeenCalled();
+  });
+
+  it("fragt kiosk_devices nur per device_token_hash ab, nie per Klartext", async () => {
+    const { POST } = await importRoute();
+
+    // kiosk_devices: nicht gefunden (Default-Mock) → ENV-Fallback greift
+    await POST(
+      makeRequest(
+        { deviceId: "dev-1", message: "Guten Tag" },
+        { "x-device-token": "valid-device-token" },
+      ),
+    );
+
+    const expectedHash = createHash("sha256")
+      .update("valid-device-token")
+      .digest("hex");
+    const eqCalls = mockEq.mock.calls;
+    expect(eqCalls.some(([col]) => col === "device_token")).toBe(false);
+    expect(
+      eqCalls.some(([col, val]) => col === "device_token_hash" && val === expectedHash),
+    ).toBe(true);
   });
 
   it("gibt 400 ohne deviceId im Body", async () => {
